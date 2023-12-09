@@ -59,10 +59,12 @@ class FluidInjectionTemplate(EditableDevice):
         self.generator: Generator = generator
         self.build_status = build_status
 
+        self.power = 0.0  # MW -> LpVar
+
         self.register(key='efficiency', units="MWh/m3", tpe=float,
                       definition="Power plant energy production per fluid unit")
         self.register(key='max_flow_rate', units="m3/h", tpe=float, definition="maximum fluid flow")
-        self.register(key='plant', units="", tpe=DeviceType.FluidNode, definition="Connection reservoir/node")
+        self.register(key='plant', units="", tpe=DeviceType.FluidNodeDevice, definition="Connection reservoir/node")
         self.register(key='generator', units="", tpe=DeviceType.GeneratorDevice, definition="Electrical machine")
         self.register(key='build_status', units='', tpe=BuildStatus,
                       definition='Branch build status. Used in expansion planning.')

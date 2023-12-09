@@ -102,7 +102,7 @@ class BusVars:
                 data.branch_injections[t, i] = model.get_value(self.branch_injections[t, i]) * Sbase
                 data.shadow_prices[t, i] = model.get_dual_value(self.kirchhoff[t, i])
 
-        # format the arrays aproprietly
+        # format the arrays appropriately
         data.theta = data.theta.astype(float, copy=False)
         data.Pcalc = data.Pcalc.astype(float, copy=False)
         data.branch_injections = data.branch_injections.astype(float, copy=False)
@@ -139,7 +139,7 @@ class LoadVars:
             for i in range(n_elm):
                 data.shedding[t, i] = model.get_value(self.shedding[t, i]) * Sbase
 
-        # format the arrays aproprietly
+        # format the arrays appropriately
         data.shedding = data.shedding.astype(float, copy=False)
 
         return data
@@ -192,7 +192,7 @@ class GenerationVars:
                 # data.fuel[t, i] = model.get_value(self.fuel[t, i])
                 # data.emissions[t, i] = model.get_value(self.emissions[t, i])
 
-        # format the arrays aproprietly
+        # format the arrays appropriately
         data.p = data.p.astype(float, copy=False)
         data.shedding = data.shedding.astype(float, copy=False)
         data.producing = data.producing.astype(bool, copy=False)
@@ -236,7 +236,7 @@ class BatteryVars(GenerationVars):
                 data.starting_up[t, i] = model.get_value(self.starting_up[t, i])
                 data.shutting_down[t, i] = model.get_value(self.shutting_down[t, i])
 
-            # format the arrays aproprietly
+            # format the arrays appropriately
             data.p = data.p.astype(float, copy=False)
             data.e = data.e.astype(float, copy=False)
             data.shedding = data.shedding.astype(float, copy=False)
@@ -410,6 +410,89 @@ class FluidNodeVars:
         return data
 
 
+class FluidPathVars:
+    """
+    Struct to store the vars of paths of fluid type
+    """
+
+    def __init__(self, nt: int, n_elm: int):
+        """
+        FluidPathVars structure
+        :param nt: Number of time steps
+        :param n_elm: Number of paths (rivers)
+        """
+
+        self.min_flow = np.zeros((nt, n_elm), dtype=float)  # m3/h
+        self.max_flow = np.zeros((nt, n_elm), dtype=float)  # m3/h
+
+        self.flow = np.zeros((nt, n_elm), dtye=float)  # m3/h
+
+    def get_values(self, model: LpModel) -> "FluidPathVars":
+        """
+        Return an instance of this class where the arrays content are not LP vars but their value
+        :param model: LP model from where we extract the values
+        :return: FluidPathVars
+        """
+        nt, n_elm = self.min_flow.shape
+        data = FluidPathVars(nt=nt, n_elm=n_elm)
+
+        for t in range(nt):
+            for i in range(n_elm):
+                data.flow[t, i] = model.get_value(self.flow[t, i])
+
+        # format the arrays appropriately
+        data.flow = data.flow.astype(float, copy=False)
+
+        data.min_flow = self.min_flow
+        data.max_flow = self.max_flow
+
+        return data
+
+
+class FluidInjectionVars:
+    """
+    Struct to store the vars of injections of fluid type
+    """
+
+    def __init__(self, nt: int, n_elm: int):
+        """
+        FluidInjectionVars structure
+        :param nt: Number of time steps
+        :param n_elm: Number of elements moving fluid
+        """
+
+        self.efficiency = np.zeros((nt, n_elm), dtype=float)  # m3
+        self.max_flow_rate = np.zeros((nt, n_elm), dtype=float)  # m3
+
+        self.p_max = np.zeros((nt, n_elm), dtype=float)  # MW
+        self.p_min = np.zeros((nt, n_elm), dtype=float)  # MW
+
+        self.power = np.zeros((nt, n_elm), dtype=float)  # MW
+
+    def get_values(self, model: LpModel) -> "FluidInjectionVars":
+        """
+        Return an instance of this class where the arrays content are not LP vars but their value
+        :param model: LP model from where we extract the values
+        :return: FluidInjectionVars
+        """
+        nt, n_elm = self.efficiency.shape
+        data = FluidInjectionVars(nt=nt, n_elm=n_elm)
+
+        for t in range(nt):
+            for i in range(n_elm):
+                data.power[t, i] = model.get_value(self.power[t, i])
+
+        # format the arrays appropriately
+        data.power = data.power.astype(float, copy=False)
+
+        data.efficiency = self.efficiency
+        data.max_flow_rate = self.max_flow_rate
+        data.p_max = self.generator.Pmax  # TODO: think how to make this link
+        data.p_min = self.generator.Pmin
+
+        return data
+
+
 class SystemVars:
     """
     Struct to store the system vars
@@ -448,7 +531,8 @@ class OpfVars:
     Structure to host the opf variables
     """
 
-    def __init__(self, nt: int, nbus: int, ng: int, nb: int, nl: int, nbr: int, n_hvdc: int):
+    def __init__(self, nt: int, nbus: int, ng: int, nb: int, nl: int, nbr: int, n_hvdc: int, n_nod: int,
+                 n_path: int, n_inj: int):
         """
         Constructor
         :param nt: number of time steps
@@ -458,6 +542,9 @@ class OpfVars:
         :param nl: number of loads
         :param nbr: number of branches
         :param n_hvdc: number of HVDC
+        :param n_nod: number of fluid nodes
+        :param n_path: number of fluid paths
+        :param n_inj: number of fluid injections
         """
         self.nt = nt
         self.nbus = nbus
@@ -466,6 +553,9 @@ class OpfVars:
         self.nl = nl
         self.nbr = nbr
         self.n_hvdc = n_hvdc
+        self.n_nod = n_nod
+        self.n_path = n_path
+        self.n_inj = n_inj
 
         self.acceptable_solution = False
 
@@ -475,6 +565,11 @@ class OpfVars:
         self.batt_vars = BatteryVars(nt=nt, n_elm=nb)
         self.branch_vars = BranchVars(nt=nt, n_elm=nbr)
         self.hvdc_vars = HvdcVars(nt=nt, n_elm=n_hvdc)
+
+        self.fluid_node_vars = FluidNodeVars(nt=nt, n_elm=n_nod)
+        self.fluid_path_vars = FluidPathVars(nt=nt, n_elm=n_path)
+        self.fluid_inject_vars = FluidInjectionVars(nt=nt, n_elm=n_inj)
+
         self.sys_vars = SystemVars(nt=nt)
 
     def get_values(self, Sbase: float, model: LpModel, gen_emissions_rates_matrix, gen_fuel_rates_matrix) -> "OpfVars":
@@ -488,7 +583,10 @@ class OpfVars:
                        nb=self.nb,
                        nl=self.nl,
                        nbr=self.nbr,
-                       n_hvdc=self.n_hvdc)
+                       n_hvdc=self.n_hvdc,
+                       n_nod=self.n_nod,
+                       n_path=self.n_path,
+                       n_inj=self.n_inj)
         data.bus_vars = self.bus_vars.get_values(Sbase, model)
         data.load_vars = self.load_vars.get_values(Sbase, model)
         data.gen_vars = self.gen_vars.get_values(Sbase=Sbase,
@@ -498,6 +596,9 @@ class OpfVars:
         data.batt_vars = self.batt_vars.get_values(Sbase, model)
         data.branch_vars = self.branch_vars.get_values(Sbase, model)
         data.hvdc_vars = self.hvdc_vars.get_values(Sbase, model)
+        data.fluid_node_vars = self.fluid_node_vars.get_values(model)
+        self.fluid_path_vars = self.fluid_path_vars.get_values(model)
+        self.fluid_inject_vars = self.fluid_inject_vars.get_values(model)
         data.sys_vars = self.sys_vars
 
         data.acceptable_solution = self.acceptable_solution
@@ -1150,6 +1251,31 @@ def add_linear_node_balance(t_idx: int,
 
     for i in vd:
         set_var_bounds(var=bus_vars.theta[t_idx, i], lb=0.0, ub=0.0)
+
+
+def add_hydro_formulation(t: int,
+                          node_vars: FluidNodeVars,
+                          path_vars: FluidPathVars,
+                          inj_vars: FluidInjectionVars,
+                          prob: LpModel):
+    """
+    Formulate the branches
+    :param t: time index
+    :param node_vars: FluidNodeVars
+    :param path_vars: FluidPathVars
+    :param inj_vars: FluidInjectionVars
+    :param prob: OR problem
+    :return objective function
+    """
+    f_obj = 0.0
+
+    # for each node
+
+    # for each path
+
+    # for each injection
+
+    return f_obj
 
 
 def run_linear_opf_ts(grid: MultiCircuit,
