@@ -8,8 +8,9 @@
 \usepackage{bm}
 \usepackage{indentfirst}
 \usepackage[english]{babel}
-\usepackage[square,numbers]{natbib}  % For bibliography management
-\bibliographystyle{abbrvnat}
+
+\bibliographystyle{unsrtnat}
+\usepackage[numbers,sort&compress]{natbib}
 
 \geometry{a4paper, margin=1in}  % Adjust margins as needed
 
@@ -28,7 +29,7 @@ The Optimal Power Flow (OPF) is regarded as a complicated mathematical problem o
 As an originally non-convex hard problem, the OPF can take many forms. For instance, an economical dispatch would be the simplest variation in which the power flows are dismissed; the DCOPF considers line flows but only solves for the voltage angles; whereas the ACOPF follows the purest formulation, which comes at a cost~\cite{chatzivasileiadis2018optimization}. Relaxations are commonly employed to convexify the problem~\cite{ergun2019optimal}, which makes it easier to obtain a satisfactory feasible solution. Nonetheless, in this document we abstain ourselves from any oversimplification that deviates from the original problem, and we build an Interior Point Method (IPM) to achieve maximum performance as well as avoiding third-party dependencies such as IPOPT.
 
 \section{ACOPF}
-This chapter provides the necessary details of the ACOPF formulation. In broad terms, the optimization problem reads: 
+This section provides the necessary details of the ACOPF formulation. In broad terms, the optimization problem reads: 
 \begin{equation}
 \begin{split}
     \text{min} \quad & f(\bm{x}) \\
@@ -110,48 +111,56 @@ Mathematically, they become:
     - \bm{P_g} + \bm{p}_{g,\text{max}} & \geq 0 \\
     \bm{P_g} - \bm{p}_{g,\text{min}} & \geq 0 \\
     - \bm{Q_g} + \bm{q}_{g,\text{max}} & \geq 0 \\
-    \bm{Q_g} - \bm{q}_{g,\text{min}} & \geq 0 \\
+    \bm{Q_g} - \bm{q}_{g,\text{min}} & \geq 0
 \end{align}
 
 \section{IPM}
+The interior-point method (IPM) is an optimization algorithm meant to solve convex optimization problems. The algorithm remains in the interior of the feasible region throughout the optimization process. It does not directly deal with the extreme points (vertices) of the feasible region. A common variation of the regular IPM is to introduce a barrier parameter that penalizes operating near the boundaries of the feasible region. The barrier parameter is progressively reduced after each iteration to diminish its influence. The formulation that follows is adopted from~\cite{nocedal1999numerical}, and particularized for the ACOPF.
 
-\section{Mathematics}
-
-\subsection{Equations}
-
-You can write mathematical equations inline like this: $a^2 + b^2 = c^2$, or display them on a separate line:
-
-\begin{equation}
-  \int_{a}^{b} f(x) \,dx = F(b) - F(a)
-\end{equation}
-
-\subsection{Mathematical Symbols}
-
-Some mathematical symbols include $\alpha$, $\beta$, $\gamma$, $\delta$, $\pi$, $\Sigma$, $\int$, etc.
-
-\subsection{Mathematical Environments}
-
+This way, the general structure of the problem becomes: 
 \begin{align}
-  f(x) &= x^2 + 3x + 2 \\
-  g(x) &= \frac{1}{x} \\
-  h(x) &= \sqrt{x}
+    \label{eq:block1}
+\nabla f(\bm{x}) - \bm{A_e}^T(\bm{x}) \bm{y} - \bm{A_i}^T(\bm{x}) \bm{z} &= \bm{0} \\
+[\bm{s}] \bm{z} - \mu \bm{1}_{n_i} &= \bm{0} \\
+\bm{g}(\bm{x}) &= \bm{0} \\
+\bm{h}(\bm{x}) - \bm{s} &= \bm{0}
+\label{eq:block2}
 \end{align}
+where $\nabla f(\bm{x})$ is the gradient of the objective function and takes the form $[\frac{\partial f}{\partial x_1}, \frac{\partial f}{\partial x_2}, ..., \frac{\partial f}{\partial x_n}]^T$, $\bm{A_e} (\bm{x})$ is a matrix concatenating the gradients of the equality constraints as $[\nabla g_1^T, \nabla g_2^T, ..., \nabla g_{n_e}^T]$ with $n_e$ the number of equality constraints, $\bm{A_i} (\bm{x})$ is a matrix concatenating the gradients of the inequality constraints as $[\nabla h_1^T, \nabla h_2^T, ..., \nabla h_{n_i}^T]$ with $n_i$ the number of inequality constraints, $\bm{y}$ and $\bm{z}$ are column vectors of Lagrange multipliers of lengths $n_e$ and $n_i$ respectively, $\bm{s}$ is a column vector of length $n_i$, and $\mu$ is the barrier parameter which is in fact an input of the problem.
 
-\subsection{Matrices}
+Then, the algorithm consists of performing several Newton-Raphson steps until the equations~\ref{eq:block1} to~\ref{eq:block2} are solved. The full structure looks as follows:
+\begin{equation}
+    - \begin{pmatrix}
+        \bm{\nabla^2_{xx}\mathcal{L}} & \bm{0} & -\bm{A_e}^T(\bm{x}) & -\bm{A_i}^T(\bm{x}) \\ 
+        \bm{0} & [\bm{z}] & \bm{0} & [\bm{s}] \\
+        \bm{A_e}(\bm{x}) & \bm{0} & \bm{0} & \bm{0} \\
+        \bm{A_i}(\bm{x}) & -\bm{I} & \bm{0} & \bm{0}
+    \end{pmatrix}
+    \begin{pmatrix}
+        \bm{\Delta x} \\
+        \bm{\Delta s} \\
+        \bm{\Delta y} \\
+        \bm{\Delta z}
+    \end{pmatrix} = 
+    \begin{pmatrix}
+        \nabla f(\bm{x}) - \bm{A_e}^T (\bm{x}) \bm{y} - \bm{A_i}^T (\bm{x}) \bm{z} \\
+[\bm{s}] \bm{z} - \mu \bm{1}_{n_i} \\
+\bm{g}(\bm{x}) \\
+\bm{h}(\bm{x}) - \bm{s}
+    \end{pmatrix}
+\end{equation}
+where $\bm{\Delta x}$ represents the variation of $\bm{x}$ (and similarly to $\bm{s}$, $\bm{y}$, $\bm{z}$), $\bm{I}$ is the identity matrix, and the term  $\bm{\nabla^2_{xx}\mathcal{L}}$ is the Hessian matrix, in other words corresponds to the derivative of~\eqref{eq:block1}.
 
-Matrices can be represented as follows:
+Both sets of equalities and inequalities have to be further developed. The next subsections unpack them.
 
-\[
-A = \begin{bmatrix}
-  1 & 2 & 3 \\
-  4 & 5 & 6 \\
-  7 & 8 & 9
-\end{bmatrix}
-\]
+\subsection{Equalities}
+
+\subsection{Inequalities}
+
 
 \section{Conclusion}
 
-This is just a basic template, and there is much more you can do with LaTeX for mathematical typesetting. Refer to the LaTeX documentation for more details.
+This document has formulated a generic ACOPF ready to be implemented. 
 
 % Bibliography
 \bibliography{references}  % Specify the name of your BibTeX file without the .bib extension
