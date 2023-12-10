@@ -28,10 +28,19 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Add 3bus acopf and maybe generalize from there">
-      <change afterPath="$PROJECT_DIR$/examples/acopf_generalize.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Write a bit of the IPM">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/rst_source/theory/opf/nonconvex_acopf/main.aux" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/theory/opf/nonconvex_acopf/main.aux" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/rst_source/theory/opf/nonconvex_acopf/main.bbl" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/theory/opf/nonconvex_acopf/main.bbl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/rst_source/theory/opf/nonconvex_acopf/main.blg" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/theory/opf/nonconvex_acopf/main.blg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/rst_source/theory/opf/nonconvex_acopf/main.fdb_latexmk" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/theory/opf/nonconvex_acopf/main.fdb_latexmk" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/rst_source/theory/opf/nonconvex_acopf/main.fls" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/theory/opf/nonconvex_acopf/main.fls" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/rst_source/theory/opf/nonconvex_acopf/main.log" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/theory/opf/nonconvex_acopf/main.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/rst_source/theory/opf/nonconvex_acopf/main.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/theory/opf/nonconvex_acopf/main.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/rst_source/theory/opf/nonconvex_acopf/main.synctex.gz" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/theory/opf/nonconvex_acopf/main.synctex.gz" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/rst_source/theory/opf/nonconvex_acopf/main.tex" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/theory/opf/nonconvex_acopf/main.tex" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/rst_source/theory/opf/nonconvex_acopf/references.bib" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/theory/opf/nonconvex_acopf/references.bib" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/acopf_3bus.py" beforeDir="false" afterPath="$PROJECT_DIR$/examples/acopf_3bus.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -110,24 +119,24 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
-    &quot;Git.Branch.Popup.ShowAllRemotes&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;205__ACOPF&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/a1003/Desktop/GridCal&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;run.code.analysis.last.selected.profile&quot;: &quot;aDefault&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "Git.Branch.Popup.ShowAllRemotes": "true",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "git-widget-placeholder": "205__ACOPF",
+    "last_opened_file_path": "C:/Users/a1003/Desktop/GridCal",
+    "node.js.detected.package.eslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "run.code.analysis.last.selected.profile": "aDefault",
+    "settings.editor.selected.configurable": "debugger.dataViews.python.type.renderers",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="PyDebuggerOptionsProvider">
     <option name="mySaveCallSignatures" value="true" />
     <option name="mySupportGeventDebugging" value="true" />
@@ -149,7 +158,7 @@
       <recent name="$PROJECT_DIR$/src/research/PTDF" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.acopf_generalize">
+  <component name="RunManager">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -583,11 +592,11 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.acopf_generalize" />
         <item itemvalue="Python tests.Nosetests in tests" />
         <item itemvalue="Python tests.Nosetests for tests.admittance_matrix_test.test1" />
         <item itemvalue="Python tests.Nosetests for tests.test_opf.test_opf" />
         <item itemvalue="Python.ExecuteGridCal" />
+        <item itemvalue="Python.acopf_generalize" />
       </list>
     </recent_temporary>
   </component>
@@ -1565,7 +1574,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="427" />
+    <option name="localTasksCounter" value="431" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1592,17 +1601,25 @@
         </entry>
         <entry key="MAIN">
           <value>
-            <State />
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="205_ACOPF" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
           </value>
         </entry>
       </map>
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="5.0.2" />
-    <MESSAGE value="updated pic" />
-    <MESSAGE value="Updated readthedocs requirements" />
-    <MESSAGE value="Fixed dependency" />
     <MESSAGE value="fixed dependency" />
     <MESSAGE value="Updated docs" />
     <MESSAGE value="Updated changelog" />
@@ -1624,7 +1641,11 @@
     <MESSAGE value="5.0.8&#10;improved NR ability to detect sparse solution errors" />
     <MESSAGE value="added newtonpa recommended version" />
     <MESSAGE value="Add 3bus acopf and maybe generalize from there" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add 3bus acopf and maybe generalize from there" />
+    <MESSAGE value="Start writing about the problem" />
+    <MESSAGE value="Write more about the equality constraints" />
+    <MESSAGE value="Write the inequalities" />
+    <MESSAGE value="Write a bit of the IPM" />
+    <option name="LAST_COMMIT_MESSAGE" value="Write a bit of the IPM" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
