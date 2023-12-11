@@ -80,12 +80,6 @@ class FluidNode(EditableDevice):
         self.register(key='initial_level', units='m3', tpe=float,
                       definition="Initial level of the node/reservoir")
 
-        self.register(key='current_level', units='m3', tpe=float,
-                      definition="Current level of the node/reservoir")
-
-        self.register(key='spillage', units='m3/h', tpe=float,
-                      definition="Spillage suffered by the node/reservoir")
-
         self.register(key='bus', units='', tpe=DeviceType.BusDevice,
                       definition='Electrical bus.', editable=False)
 

@@ -2717,6 +2717,13 @@ class MultiCircuit:
         """
         return self.fluid_nodes
 
+    def get_fluid_nodes_number(self) -> int:
+        """
+
+        :return:
+        """
+        return len(self.fluid_nodes)
+
     def add_fluid_path(self, obj: dev.FluidPath):
         """
         Add fluid path
@@ -2731,12 +2738,19 @@ class MultiCircuit:
         """
         self.fluid_paths.remove(obj)
 
-    def get_fluid_paths(self):
+    def get_fluid_paths(self) -> List[dev.FluidPath]:
         """
 
         :return:
         """
         return self.fluid_paths
+
+    def get_fluid_paths_number(self) -> int:
+        """
+
+        :return:
+        """
+        return len(self.fluid_paths)
 
     def add_fluid_turbine(self, node: dev.FluidNode, api_obj: Union[dev.FluidTurbine, None]) -> dev.FluidTurbine:
         """
@@ -2843,6 +2857,17 @@ class MultiCircuit:
                 elm.plant = node
             lst = lst + node.p2xs
         return lst
+
+    def get_fluid_injection_number(self) -> int:
+        """
+        GEt number of fluid injections
+        :return:
+        """
+        n = 0
+        for fn in self.fluid_nodes:
+            n += len(fn.turbines) + len(fn.pumps) + len(fn.p2xs)
+
+        return n
 
     def convert_line_to_hvdc(self, line: dev.Line) -> dev.HvdcLine:
         """
