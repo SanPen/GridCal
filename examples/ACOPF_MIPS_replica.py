@@ -24,19 +24,21 @@ def solver():
 
     mu = 1
     gamma = 1
-    error = 100
+    error = 1000000
     #YK = INIT_STATE()
     NV = 3
     NE = 0
     NI = 2
 
-    X = [0, 0, 0]
+    k = 0
+
+    X = np.array([1., 1., 0.])
     PI = sparse.csc_matrix([0] * NE)
-    LAMBDA = sparse.csc_matrix([0] * NI)
-    LAMBDA_MAT = sparse.dia_matrix(([0] * NI, 0), shape = (NI, NI))
-    T = sparse.csc_matrix([0] * NI)
-    T_MAT = sparse.dia_matrix(([1] * NI, 0), shape = (NI, NI))
-    E = sparse.csc_matrix([1] * NV)
+    LAMBDA = sparse.csc_matrix([1] * NI)
+    LAMBDA_MAT = sparse.dia_matrix(([1] * NI, 0), shape = (NI, NI)).tocsc()
+    T = sparse.csc_matrix([1] * NI)
+    T_MAT = sparse.dia_matrix(([1] * NI, 0), shape = (NI, NI)).tocsc()
+    E = sparse.csc_matrix(([1] * NI, ([i for i in range(NI)],[0] * NI)), shape = (NI, 1))
     while (error > gamma):
 
 
@@ -44,7 +46,7 @@ def solver():
         f, G, H, fx, Gx, Hx, fxx, Gxx, Hxx = NLP_test(X, LAMBDA, PI)
 
         M = fxx + Gxx + Hxx  + Hx @ sparse.linalg.inv(T_MAT) @ LAMBDA_MAT @ Hx.transpose()
-        N =  fx + Hx @ LAMBDA + Hx @ sparse.linalg.inv(T_MAT) @ (gamma * E - LAMBDA_MAT @ H) #+ Gx.transpose() @ PI
+        N = fx + Hx @ LAMBDA.transpose() + Hx @ sparse.linalg.inv(T_MAT) @ (gamma * E + LAMBDA_MAT @ H) #+ Gx.transpose() @ PI
 
         J1 = sparse.hstack([M, Gx.transpose()])
         J2 = sparse.hstack([Gx, sparse.csc_matrix((NE,NE))])
@@ -56,24 +58,35 @@ def solver():
         dXP = sparse.linalg.spsolve(J, r)
 
         dX = dXP[0 : NV]
+        dXsp = sparse.csc_matrix(dX).transpose()
         dP = dXP[NV : NE + NV]
-        dT = - H - T - Hx.transpose() @ dX
-        dL = - LAMBDA + sparse.linalg.inv(T_MAT) @ (gamma * E - LAMBDA_MAT @ dP)
+        dPsp = sparse.csc_matrix(dP).transpose()
 
-        #alfap = step_calculation(T, dT)
-        #alfad = step_calculation(L, dL)
-        TAU = 0.9995
-        alphap =min(min(TAU * T / abs(dT)), 1)
-        alphad = min(min(TAU * LAMBDA / abs(dL)), 1)
+        dT = - H - T.transpose() - Hx.transpose() @ dXsp
+        dL = - LAMBDA.transpose() + sparse.linalg.inv(T_MAT) @ (gamma * E - LAMBDA_MAT @ dT)
+
+        alphap = step_calculation(T.toarray(), dT.transpose().toarray(), NI)
+        alphad = step_calculation(LAMBDA.toarray(), dL.transpose().toarray(), NI)
+        #TAU = 0.9995
+        #alphap = min(min(TAU * T.transpose() / abs(dT)), [1])[0]
+        #alphad = min(min(TAU * LAMBDA.transpose() / abs(dL)), [1])[0]
 
 
         alpha = 0.3
         X += dX * alphap
-        T += dT * alphap
-        LAMBDA += dL * alphad
+        T += dT.transpose() * alphap
+        LAMBDA += dL.transpose() * alphad
+
+        T_MAT = sparse.dia_matrix((T.toarray(), 0), shape = (NI, NI)).tocsc()
+        LAMBDA_MAT =  sparse.dia_matrix((LAMBDA.toarray(), 0), shape = (NI, NI)).tocsc()
+
         error = max(max(abs(dX)), max(abs(dL)), max(abs(dT)))
-        newgamma = gamma * 0.1
+        newgamma = 0.1 * (T @ LAMBDA.transpose()).toarray()[0][0]/2
         gamma = max(newgamma, 1e-8)
+
+        k+=1
+        if k == 100:
+            break
         print(X, error)
     print('SOLUTION: ',X, NLP_test(X, LAMBDA, PI)[0])
     return
@@ -87,11 +100,11 @@ def NLP_test(x, LAMBDA, PI):
     NI = 2
 
     f = -x[0] * x[1] - x[1] * x[2]
-    fx = sparse.csc_matrix([[-x[1]],[-x[0] - x[2]],[-x[1]]])
-    fxx = sparse.csc_matrix([[0, -1, 0],[-1, 0, -1],[0, -1, 0]])
+    fx = sparse.csc_matrix([[-x[1]], [-x[0] - x[2]], [-x[1]]])
+    fxx = sparse.csc_matrix([[0, -1, 0], [-1, 0, -1], [0, -1, 0]])
 
-    G = sparse.csc_matrix((0,0))
-    Gx = sparse.csc_matrix((0,0))
+    G = sparse.csc_matrix((0,1))
+    Gx = sparse.csc_matrix((0,NV))
     Gxx = sparse.csc_matrix((3,3))
 
     H = sparse.csc_matrix([[x[0] ** 2 - x[1] ** 2 + x[2] ** 2 - 2], [x[0] ** 2 + x[1] ** 2 + x[2] ** 2 - 10]])
@@ -136,10 +149,25 @@ def feval(N, L, LINES, V_U, V_L, P_U, P_L, Q_U, Q_L, PD, QD, SMAX, DELTA_MAX, YK
     return f, G, H, fx, Gx, Hx, fxx, Gxx, Hxx
 
 
-def step_calculation():
-    return
+def step_calculation(V, dV, NI):
+
+    
+    alpha = 1
+
+    for i in range(NI):
+
+        if dV[0][i] >= 0:
+            pass
+        else:
+            alpha = min(alpha, -V[0][i]/dV[0][i])
+    
+    alpha = min(0.995*alpha, 1)
+
+    return alpha
 
 
 
 
 
+if __name__ == '__main__':
+    solver()
