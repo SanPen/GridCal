@@ -57,10 +57,10 @@ class FluidNode(EditableDevice):
         self._bus: Bus = bus
         self.build_status = build_status
 
-        self.current_level = current_level  # m3 -> LpVar
-        self.spillage = spillage  # m3/h -> LpVar
-        self.inflow = 0.0  # m3/h -> LpExpression
-        self.outflow = 0.0  # m3/h -> LpExpression
+        # self.current_level = current_level  # m3 -> LpVar
+        # self.spillage = spillage  # m3/h -> LpVar
+        # self.inflow = 0.0  # m3/h -> LpExpression
+        # self.outflow = 0.0  # m3/h -> LpExpression
 
         # list of turbines
         self.turbines = list()
@@ -79,12 +79,6 @@ class FluidNode(EditableDevice):
 
         self.register(key='initial_level', units='m3', tpe=float,
                       definition="Initial level of the node/reservoir")
-
-        self.register(key='current_level', units='m3', tpe=float,
-                      definition="Current level of the node/reservoir")
-
-        self.register(key='spillage', units='m3/h', tpe=float,
-                      definition="Spillage suffered by the node/reservoir")
 
         self.register(key='bus', units='', tpe=DeviceType.BusDevice,
                       definition='Electrical bus.', editable=False)
@@ -147,3 +141,10 @@ class FluidNode(EditableDevice):
 
         else:
             raise Exception('Fluid Device type not understood:' + str(device.device_type))
+
+    def get_device_number(self) -> int:
+        """
+        Get number of injection devices
+        :return: int
+        """
+        return len(self.turbines) + len(self.pumps) + len(self.p2xs)

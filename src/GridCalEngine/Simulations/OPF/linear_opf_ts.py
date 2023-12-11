@@ -376,10 +376,10 @@ class FluidNodeVars:
         self.max_level = np.zeros((nt, n_elm), dtype=float)  # m3
         self.initial_level = np.zeros((nt, n_elm), dtype=float)  # m3
 
-        self.current_level = np.zeros((nt, n_elm), dtye=float)  # m3
-        self.spillage = np.zeros((nt, n_elm), dtye=float)  # m3/h
-        self.inflow = np.zeros((nt, n_elm), dtye=float)  # m3/h
-        self.outflow = np.zeros((nt, n_elm), dtye=float)  # m3/h
+        self.current_level = np.zeros((nt, n_elm), dtype=float)  # m3
+        self.spillage = np.zeros((nt, n_elm), dtype=float)  # m3/h
+        self.inflow = np.zeros((nt, n_elm), dtype=float)  # m3/h
+        self.outflow = np.zeros((nt, n_elm), dtype=float)  # m3/h
 
     def get_values(self, model: LpModel) -> "FluidNodeVars":
         """
@@ -425,7 +425,7 @@ class FluidPathVars:
         self.min_flow = np.zeros((nt, n_elm), dtype=float)  # m3/h
         self.max_flow = np.zeros((nt, n_elm), dtype=float)  # m3/h
 
-        self.flow = np.zeros((nt, n_elm), dtye=float)  # m3/h
+        self.flow = np.zeros((nt, n_elm), dtype=float)  # m3/h
 
     def get_values(self, model: LpModel) -> "FluidPathVars":
         """
@@ -487,8 +487,8 @@ class FluidInjectionVars:
 
         data.efficiency = self.efficiency
         data.max_flow_rate = self.max_flow_rate
-        data.p_max = self.generator.Pmax  # TODO: think how to make this link
-        data.p_min = self.generator.Pmin
+        data.p_max = self.p_max  # TODO: think how to make this link
+        data.p_min = self.p_min
 
         return data
 
@@ -531,8 +531,8 @@ class OpfVars:
     Structure to host the opf variables
     """
 
-    def __init__(self, nt: int, nbus: int, ng: int, nb: int, nl: int, nbr: int, n_hvdc: int, n_nod: int,
-                 n_path: int, n_inj: int):
+    def __init__(self, nt: int, nbus: int, ng: int, nb: int, nl: int, nbr: int, n_hvdc: int, n_fluid_node: int,
+                 n_fluid_path: int, n_fluid_inj: int):
         """
         Constructor
         :param nt: number of time steps
@@ -542,9 +542,9 @@ class OpfVars:
         :param nl: number of loads
         :param nbr: number of branches
         :param n_hvdc: number of HVDC
-        :param n_nod: number of fluid nodes
-        :param n_path: number of fluid paths
-        :param n_inj: number of fluid injections
+        :param n_fluid_node: number of fluid nodes
+        :param n_fluid_path: number of fluid paths
+        :param n_fluid_inj: number of fluid injections
         """
         self.nt = nt
         self.nbus = nbus
@@ -553,9 +553,9 @@ class OpfVars:
         self.nl = nl
         self.nbr = nbr
         self.n_hvdc = n_hvdc
-        self.n_nod = n_nod
-        self.n_path = n_path
-        self.n_inj = n_inj
+        self.n_fluid_node = n_fluid_node
+        self.n_fluid_path = n_fluid_path
+        self.n_fluid_inj = n_fluid_inj
 
         self.acceptable_solution = False
 
@@ -566,9 +566,9 @@ class OpfVars:
         self.branch_vars = BranchVars(nt=nt, n_elm=nbr)
         self.hvdc_vars = HvdcVars(nt=nt, n_elm=n_hvdc)
 
-        self.fluid_node_vars = FluidNodeVars(nt=nt, n_elm=n_nod)
-        self.fluid_path_vars = FluidPathVars(nt=nt, n_elm=n_path)
-        self.fluid_inject_vars = FluidInjectionVars(nt=nt, n_elm=n_inj)
+        self.fluid_node_vars = FluidNodeVars(nt=nt, n_elm=n_fluid_node)
+        self.fluid_path_vars = FluidPathVars(nt=nt, n_elm=n_fluid_path)
+        self.fluid_inject_vars = FluidInjectionVars(nt=nt, n_elm=n_fluid_inj)
 
         self.sys_vars = SystemVars(nt=nt)
 
@@ -584,9 +584,9 @@ class OpfVars:
                        nl=self.nl,
                        nbr=self.nbr,
                        n_hvdc=self.n_hvdc,
-                       n_nod=self.n_nod,
-                       n_path=self.n_path,
-                       n_inj=self.n_inj)
+                       n_fluid_node=self.n_fluid_node,
+                       n_fluid_path=self.n_fluid_path,
+                       n_fluid_inj=self.n_fluid_inj)
         data.bus_vars = self.bus_vars.get_values(Sbase, model)
         data.load_vars = self.load_vars.get_values(Sbase, model)
         data.gen_vars = self.gen_vars.get_values(Sbase=Sbase,
@@ -1335,6 +1335,9 @@ def run_linear_opf_ts(grid: MultiCircuit,
     nb = grid.get_batteries_number()
     nl = grid.get_calculation_loads_number()
     n_hvdc = grid.get_hvdc_number()
+    n_fluid_node = grid.get_fluid_nodes_number()
+    n_fluid_path = grid.get_fluid_paths_number()
+    n_fluid_inj = grid.get_fluid_injection_number()
 
     # gather the fuels and emission rates matrices
     gen_emissions_rates_matrix = grid.get_emission_rates_sparse_matrix()
@@ -1348,7 +1351,8 @@ def run_linear_opf_ts(grid: MultiCircuit,
         inter_area_hvdc = list()
 
     # declare structures of LP vars
-    mip_vars = OpfVars(nt=nt, nbus=n, ng=ng, nb=nb, nl=nl, nbr=nbr, n_hvdc=n_hvdc)
+    mip_vars = OpfVars(nt=nt, nbus=n, ng=ng, nb=nb, nl=nl, nbr=nbr, n_hvdc=n_hvdc,
+                       n_fluid_node=n_fluid_node, n_fluid_path=n_fluid_path, n_fluid_inj=n_fluid_inj)
 
     # create the MIP problem object
     lp_model: LpModel = LpModel(solver_type)

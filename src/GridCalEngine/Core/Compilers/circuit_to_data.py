@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
-from typing import Dict, Union, TYPE_CHECKING
+from typing import Dict, Union, TYPE_CHECKING, Tuple
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Core.Devices.Substation.bus import Bus
 from GridCalEngine.Core.Devices.Aggregation.area import Area
@@ -275,7 +275,7 @@ def get_generator_data(circuit: MultiCircuit,
                        opf_results: Union[OptimalPowerFlowResults, None] = None,
                        t_idx=-1,
                        time_series=False,
-                       use_stored_guess=False) -> ds.GeneratorData:
+                       use_stored_guess=False) -> Tuple[ds.GeneratorData, Dict[str, int]]:
     """
 
     :param circuit:
@@ -383,7 +383,7 @@ def get_generator_data(circuit: MultiCircuit,
 
         data.C_bus_elm[i, k] = 1
 
-    return data
+    return data, gen_index_dict
 
 
 def get_battery_data(circuit: MultiCircuit,
@@ -1039,5 +1039,137 @@ def get_hvdc_data(circuit: MultiCircuit,
         # the bus-hvdc line connectivity
         data.C_hvdc_bus_f[i, f] = 1
         data.C_hvdc_bus_t[i, t] = 1
+
+    return data
+
+def get_fluid_node_data(circuit: MultiCircuit,
+                        t_idx=-1) -> Tuple[ds.FluidNodeData, Dict[str, int]]:
+    """
+
+    :param circuit:
+    :param t_idx:
+    :return:
+    """
+    devices = circuit.get_fluid_nodes()
+    plant_dict: Dict[str, int] = dict()
+
+    data = ds.FluidNodeData(nelm=len(devices))
+
+    for k, elm in enumerate(devices):
+
+        plant_dict[elm.idtag] = k
+
+        data.names[k] = elm.name
+        data.idtag[k] = elm.idtag
+
+        data.min_level[k] = elm.min_level
+        data.max_level[k] = elm.max_level
+        data.initial_level[k] = elm.initial_level
+
+    return data, plant_dict
+
+
+def get_fluid_turbine_data(circuit: MultiCircuit,
+                           plant_dict: Dict[str, int],
+                           gen_dict: Dict[str, int],
+                           t_idx=-1) -> ds.FluidTurbineData:
+    """
+
+    :param circuit:
+    :param t_idx:
+    :return:
+    """
+    devices = circuit.get_fluid_turbines()
+
+    data = ds.FluidTurbineData(nelm=len(devices))
+
+    for k, elm in enumerate(devices):
+
+        data.plant_idx[k] = plant_dict[elm.plant.idtag]
+        data.generator_idx[k] = gen_dict[elm.generator.idtag]
+
+        data.names[k] = elm.name
+        data.idtag[k] = elm.idtag
+
+        data.efficiency[k] = elm.efficiency
+        data.max_flow_rate[k] = elm.max_flow_rate
+
+    return data
+
+
+def get_fluid_pump_data(circuit: MultiCircuit,
+                           plant_dict: Dict[str, int],
+                           gen_dict: Dict[str, int],
+                           t_idx=-1) -> ds.FluidPumpData:
+    """
+
+    :param circuit:
+    :param t_idx:
+    :return:
+    """
+    devices = circuit.get_fluid_pumps()
+
+    data = ds.FluidPumpData(nelm=len(devices))
+
+    for k, elm in enumerate(devices):
+        data.plant_idx[k] = plant_dict[elm.plant.idtag]
+        data.generator_idx[k] = gen_dict[elm.generator.idtag]
+
+        data.names[k] = elm.name
+        data.idtag[k] = elm.idtag
+
+        data.efficiency[k] = elm.efficiency
+        data.max_flow_rate[k] = elm.max_flow_rate
+
+    return data
+
+
+def get_fluid_p2x_data(circuit: MultiCircuit,
+                       plant_dict: Dict[str, int],
+                       gen_dict: Dict[str, int],
+                       t_idx=-1) -> ds.FluidP2XData:
+    """
+
+    :param circuit:
+    :param t_idx:
+    :return:
+    """
+    devices = circuit.get_fluid_p2xs()
+
+    data = ds.FluidP2XData(nelm=len(devices))
+
+    for k, elm in enumerate(devices):
+        data.plant_idx[k] = plant_dict[elm.plant.idtag]
+        data.generator_idx[k] = gen_dict[elm.generator.idtag]
+
+        data.names[k] = elm.name
+        data.idtag[k] = elm.idtag
+
+        data.efficiency[k] = elm.efficiency
+        data.max_flow_rate[k] = elm.max_flow_rate
+
+    return data
+
+def get_fluid_path_data(circuit: MultiCircuit,
+                       t_idx=-1) -> ds.FluidPathData:
+    """
+
+    :param circuit:
+    :param t_idx:
+    :return:
+    """
+    devices = circuit.get_fluid_p2xs()
+
+    data = ds.FluidPathData(nelm=len(devices))
+
+    for k, elm in enumerate(devices):
+        data.names[k] = elm.name
+        data.idtag[k] = elm.idtag
+
+        data.source_idx[k] = elm.source_idx
+        data.target_idx[k] = elm.target_idx
+
+        data.min_flow[k] = elm.min_flow
+        data.max_flow[k] = elm.max_flow
 
     return data
