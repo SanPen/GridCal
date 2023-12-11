@@ -252,7 +252,7 @@ class DiagramsMain(CompiledArraysMain):
                 else:
                     buses = [b for i, b, graphic in selected]
 
-                diagram.center_nodes(buses=buses)
+                diagram.center_nodes(elements=buses)
 
     def get_selected_buses(self) -> List[Tuple[int, dev.Bus, "BusGraphicItem"]]:
         """

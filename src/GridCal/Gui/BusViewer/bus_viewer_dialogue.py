@@ -136,13 +136,13 @@ class BusViewerWidget(QMainWindow):
         if self.grid_editor is not None:
             self.grid_editor.shrink_node_distances()
 
-    def center_nodes(self, margin_factor: float = 0.1, buses: Union[None, List[Bus]] = None):
+    def center_nodes(self, margin_factor: float = 0.1, elements: Union[None, List[Bus]] = None):
         """
         Center the nodes in the screen
         """
         if self.grid_editor is not None:
             self.grid_editor.center_nodes(margin_factor=margin_factor,
-                                          elements=buses)
+                                          elements=elements)
 
     def colour_results(self, **kwargs):
         """
