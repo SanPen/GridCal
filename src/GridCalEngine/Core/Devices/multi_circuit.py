@@ -2710,7 +2710,7 @@ class MultiCircuit:
 
         self.fluid_nodes.remove(obj)
 
-    def get_fluid_nodes(self):
+    def get_fluid_nodes(self) -> List[dev.FluidNode]:
         """
 
         :return:

@@ -14,15 +14,20 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from GridCalEngine.Core.DataStructures.battery_data import BatteryData
-from GridCalEngine.Core.DataStructures.branch_data import BranchData
-from GridCalEngine.Core.DataStructures.bus_data import BusData
-from GridCalEngine.Core.DataStructures.generator_data import GeneratorData
-from GridCalEngine.Core.DataStructures.hvdc_data import HvdcData
-from GridCalEngine.Core.DataStructures.load_data import LoadData
-from GridCalEngine.Core.DataStructures.shunt_data import ShuntData
-from GridCalEngine.Core.DataStructures.fluid_node_data import FluidNodeData
 from GridCalEngine.Core.DataStructures.fluid_turbine_data import FluidTurbineData
-from GridCalEngine.Core.DataStructures.fluid_pump_data import FluidPumpData
-from GridCalEngine.Core.DataStructures.fluid_p2x_data import FluidP2XData
-from GridCalEngine.Core.DataStructures.fluid_path_data import FluidPathData
+
+
+class FluidP2XData(FluidTurbineData):
+    """
+    FluidP2XData
+    """
+
+    def __init__(self, nelm: int):
+        """
+        Fluid P2X data arrays
+        :param nelm: number of fluid p2xs
+        """
+
+        FluidTurbineData.__init__(self,
+                                  nelm=nelm)
+

@@ -57,10 +57,10 @@ class FluidNode(EditableDevice):
         self._bus: Bus = bus
         self.build_status = build_status
 
-        self.current_level = current_level  # m3 -> LpVar
-        self.spillage = spillage  # m3/h -> LpVar
-        self.inflow = 0.0  # m3/h -> LpExpression
-        self.outflow = 0.0  # m3/h -> LpExpression
+        # self.current_level = current_level  # m3 -> LpVar
+        # self.spillage = spillage  # m3/h -> LpVar
+        # self.inflow = 0.0  # m3/h -> LpExpression
+        # self.outflow = 0.0  # m3/h -> LpExpression
 
         # list of turbines
         self.turbines = list()
