@@ -141,3 +141,10 @@ class FluidNode(EditableDevice):
 
         else:
             raise Exception('Fluid Device type not understood:' + str(device.device_type))
+
+    def get_device_number(self) -> int:
+        """
+        Get number of injection devices
+        :return: int
+        """
+        return len(self.turbines) + len(self.pumps) + len(self.p2xs)

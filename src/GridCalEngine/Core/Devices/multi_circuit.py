@@ -32,7 +32,6 @@ from GridCalEngine.Core import EditableDevice, Switch, UPFC, VSC, Winding, Trans
 from GridCalEngine.basic_structures import DateVec, IntVec, StrVec, Vec, Mat, CxVec, IntMat, CxMat
 from GridCalEngine.data_logger import DataLogger
 import GridCalEngine.Core.Devices as dev
-# import GridCalEngine.basic_structures as bs
 from GridCalEngine.basic_structures import Logger
 import GridCalEngine.Core.topology as tp
 from GridCalEngine.enumerations import DeviceType
@@ -664,7 +663,8 @@ class MultiCircuit:
         Return all the branch objects.
         :return: lines + transformers 2w + hvdc
         """
-        return self.lines + self.dc_lines + self.transformers2w + self.windings + self.vsc_devices + self.upfc_devices + self.switch_devices
+        return (self.lines + self.dc_lines + self.transformers2w + self.windings +
+                self.vsc_devices + self.upfc_devices + self.switch_devices)
 
     def get_branches_wo_hvdc_names(self) -> List[str]:
         """
@@ -692,7 +692,8 @@ class MultiCircuit:
         Get a list of devices susceptible to be included in investments
         :return: list of devices
         """
-        return self.get_branches() + self.get_generators() + self.get_batteries() + self.get_shunts() + self.get_loads() + self.buses
+        return (self.get_branches() + self.get_generators() + self.get_batteries() +
+                self.get_shunts() + self.get_loads() + self.buses)
 
     def get_investmenst_by_groups(self) -> List[Tuple[dev.InvestmentsGroup, List[dev.Investment]]]:
         """
@@ -1525,7 +1526,7 @@ class MultiCircuit:
         else:
             raise Exception('Element type not understood ' + str(element_type))
 
-    def copy(self):
+    def copy(self) -> "MultiCircuit":
         """
         Returns a deep (true) copy of this circuit.
         """
@@ -1892,10 +1893,8 @@ class MultiCircuit:
     def delete_bus(self, obj: dev.Bus, ask=True):
         """
         Delete a :ref:`Bus<bus>` object from the grid.
-
-        Arguments:
-
-            **obj** (:ref:`Bus<bus>`): :ref:`Bus<bus>` object
+        :param obj: :ref:`Bus<bus>` object
+        :param ask: Ask about it
         """
 
         # remove associated Branches in reverse order
@@ -2061,7 +2060,7 @@ class MultiCircuit:
         for branch_list in self.get_branch_lists():
             try:
                 branch_list.remove(obj)
-            except:
+            except ValueError:  # element not found ...
                 pass
 
     def delete_line(self, obj: dev.Line):
@@ -2480,7 +2479,7 @@ class MultiCircuit:
         """
         self.contingency_groups.remove(obj)
 
-    def get_contingency_group_names(self):
+    def get_contingency_group_names(self) -> List[str]:
         """
         Get list of contingency group names
         :return:
@@ -2503,9 +2502,17 @@ class MultiCircuit:
         return d
 
     def get_branches_wo_hvdc_dict(self) -> Dict[str, List[dev.Branch]]:
+        """
+        Get dictionary of branches (excluding HVDC)
+        :return: Dict[str, List[Branch]]
+        """
         return {e.idtag: ei for ei, e in enumerate(self.get_branches_wo_hvdc())}
 
     def add_contingency(self, obj: dev.Contingency):
+        """
+        Add a contingency
+        :param obj: Contingency
+        """
         self.contingencies.append(obj)
 
     def delete_contingency(self, obj):
@@ -2823,7 +2830,8 @@ class MultiCircuit:
             lst = lst + node.pumps
         return lst
 
-    def add_fluid_p2x(self, node: dev.FluidNode, api_obj: Union[dev.FluidP2x, None]) -> dev.FluidP2x:
+    def add_fluid_p2x(self, node: dev.FluidNode,
+                      api_obj: Union[dev.FluidP2x, None]) -> dev.FluidP2x:
         """
         Add power to x
         :param node: Fluid node to add to
@@ -2860,12 +2868,12 @@ class MultiCircuit:
 
     def get_fluid_injection_number(self) -> int:
         """
-        GEt number of fluid injections
-        :return:
+        Get number of fluid injections
+        :return: int
         """
         n = 0
         for fn in self.fluid_nodes:
-            n += len(fn.turbines) + len(fn.pumps) + len(fn.p2xs)
+            n += fn.get_device_number()
 
         return n
 
@@ -3869,14 +3877,14 @@ class MultiCircuit:
 
         return val
 
-    def get_Pbus(self, non_dispatchable_only=False) -> Vec:
+    def get_Pbus(self) -> Vec:
         """
         Get snapshot active power array per bus
         :return: Vec
         """
         return self.get_Sbus().real
 
-    def get_Pbus_prof(self, non_dispatchable_only=False) -> Mat:
+    def get_Pbus_prof(self) -> Mat:
         """
         Get profiles active power per bus
         :return: Mat
