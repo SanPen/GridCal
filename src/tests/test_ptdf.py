@@ -200,6 +200,59 @@ def test_lodf_ieee14_psse():
 
     assert (np.isclose(lodf, simulation.results.LODF, atol=1e-5).all())
 
+def test_ptdf_psse():
+    """
+    Compare the PSSE PTDF and the GridCal PTDF for IEEE14, IEEE30 and IEEE118 networks
+    """
+    for fname, pssename, name in [
+        (os.path.join('data', 'grids', 'RAW', 'IEEE 14 bus.raw'),os.path.join('data', 'results', 'comparison', 'IEEE 14 bus PTDF PSSe.csv'), 'IEEE14'),
+        (os.path.join('data', 'grids', 'RAW', 'IEEE 30 bus.raw'), os.path.join('data', 'results', 'comparison', 'IEEE 30 bus PTDF PSSe.csv'), 'IEEE30'),
+        (os.path.join('data', 'grids', 'RAW', 'IEEE 118 Bus.raw'), os.path.join('data', 'results', 'comparison', 'IEEE 118 bus PTDF PSSe.csv'), 'IEEE118')]:
+
+        main_circuit = FileOpen(fname).open()
+
+        # Network ordering
+        branches = main_circuit.get_branches()
+        branches_id = [x.code[:-2] for x in branches]
+        nodes = main_circuit.get_buses()
+        nodes_id = [x.code for x in nodes]
+
+        # Calculate GridCal PTDF
+        pf_options = PowerFlowOptions(SolverType.NR,
+                                           verbose=False,
+                                           initialize_with_existing_solution=False,
+                                           dispatch_storage=True,
+                                           control_q=ReactivePowerControlMode.NoControl,
+                                           control_p=False)
+
+        linear_analysis_opt = LinearAnalysisOptions(distribute_slack=False, correct_values=False)
+        linear_analysis = LinearAnalysisDriver(grid=main_circuit, options=linear_analysis_opt)
+        linear_analysis.run()
+
+        ptdf_gridcal = pd.DataFrame(linear_analysis.results.PTDF, columns = nodes_id)
+        ptdf_gridcal['branches'] = branches_id
+
+        # Import PSSe PDTF
+
+        ptdf_psse = pd.read_csv(pssename, index_col=0)
+        ptdf_psse.drop(['vbase_nodefrom', 'vbase_nodeto', 'ckt'], axis=1, inplace=True)
+        ptdf_psse['branches'] = ptdf_psse['nodefrom'].astype(str) + '_' + ptdf_psse['nodeto'].astype(str)
+
+        # Test comparison
+        ptdf = ptdf_gridcal.merge(ptdf_psse, on='branches', how='inner')
+        print('Testing PTDF in {}'.format(name))
+        for i in nodes_id:
+            print('Node ongoing: {}'.format(i))
+            if i == '1': continue   # Skipping slack (is zero)
+            nodegridcal = np.array(ptdf[i])
+            nodepsse = np.array(ptdf['NUDO{}'.format(str(i))])
+            if not (np.isclose(nodegridcal, -nodepsse, atol=1e-2).all()):
+                print('')
+
+
+
+
+        print("")
 
 if __name__ == '__main__':
     test_ptdf()
