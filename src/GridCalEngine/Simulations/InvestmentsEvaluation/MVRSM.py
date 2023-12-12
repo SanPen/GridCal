@@ -406,3 +406,171 @@ def MVRSM_minimize(obj_func, x0, lb, ub, num_int, max_evals, rand_evals=0, obj_t
             print(f'Iteration time: {time.time() - iter_start}')
 
     return best_x, inv_scale(best_y, y0, scale_threshold), model
+
+
+def MVRSM_minimize_md(obj_func, x0, lb, ub, num_int, max_evals, rand_evals=0, obj_threshold=0.0, args=(),
+                   stop_crit=None, rand_search_bias=0.5, log_times=False, scale_threshold=1e-8, f_obj_dim=1):
+    """
+
+    :param obj_func: objective function
+    :param x0: Initial solution
+    :param lb: lower bound
+    :param ub: Upper bound
+    :param num_int: number of integer variables
+    :param max_evals: maximum number of evaluations
+    :param rand_evals: number of random initial evaluations
+    :param obj_threshold:
+    :param args: extra arguments to be passed to obj_func appart from x
+    :param stop_crit:
+    :param rand_search_bias:
+    :param log_times:
+    :param scale_threshold: value under which no scaling is done
+    :param f_obj_dim: if 1 objective function returns single float, otherwise a vector of size = f_obj_dim
+    :return: best x, best y, SurrogateModel
+    """
+    d = len(x0)  # number of decision variables
+    assert num_int == d  # [GTEP] This is a modified version that only supports discrete variables.
+
+    model = SurrogateModel.init(d, lb, ub, num_int)
+    next_x = x0  # candidate solution
+    best_x = np.copy(next_x)  # best candidate solution found so far
+    best_y = math.inf  # least objective function value found so far, equal to obj(best_x).
+
+    scaling_values = np.zeros((rand_evals, f_obj_dim))
+
+    # TODO: bucle for para iteraciones previas a escalado
+    for i in range(rand_evals):
+        if log_times:
+            iter_start = time.time()
+        if stop_crit is not None and stop_crit:
+            break
+
+        # Evaluate the objective and scale it.
+        x = next_x.astype(float, copy=False)
+        y_unscaled = obj_func(x.astype(int), *args)  # [GTEP]: added astype(int)
+        # TODO: if i > rand_evals and escalar multidimensional else seguimos igual
+
+        if i == 0:
+            y0 = y_unscaled
+        # noinspection PyUnboundLocalVariable
+        y = scale(y_unscaled, y0, scale_threshold=1e-8)
+
+        # Keep track of the best found objective value and candidate solution so far.
+        if y < best_y:
+            best_x = np.copy(x)
+            best_y = y
+
+        # Update the surrogate model
+        if log_times:
+            update_start = time.time()
+        model.update(x, y)
+        if log_times:
+            # noinspection PyUnboundLocalVariable
+            print(f'Update time: {time.time() - update_start}')
+
+        # Perform random search
+        next_x = np.random.binomial(1, rand_search_bias, num_int)  # [GTEP]
+        # next_x[0:num_int] = np.random.randint(lb[0:num_int], ub[0:num_int] + 1)  # integer variables
+        # next_x[num_int:d] = np.random.uniform(lb[num_int:d], ub[num_int:d])  # continuous variables
+
+
+        scaling_values[i,:] = y
+
+        pass
+
+    # Iteratively evaluate the objective, update the model, find the minimum of the model,
+    # and explore the search space.
+    for i in range(rand_evals, max_evals):
+        if log_times:
+            iter_start = time.time()
+        if stop_crit is not None and stop_crit:
+            break
+
+        # Evaluate the objective and scale it.
+        x = next_x.astype(float, copy=False)
+        y_unscaled = obj_func(x.astype(int), *args)  # [GTEP]: added astype(int)
+
+        if i == 0:
+            y0 = y_unscaled
+        # noinspection PyUnboundLocalVariable
+        y = scale(y_unscaled, y0, scale_threshold=1e-8)
+
+        # Keep track of the best found objective value and candidate solution so far.
+        if y < best_y:
+            best_x = np.copy(x)
+            best_y = y
+
+        # Update the surrogate model
+        if log_times:
+            update_start = time.time()
+        model.update(x, y)
+        if log_times:
+            # noinspection PyUnboundLocalVariable
+            print(f'Update time: {time.time() - update_start}')
+
+
+        # Minimize surrogate model
+        if log_times:
+            min_start = time.time()
+        next_x = model.minimum(best_x)
+        if log_times:
+            # noinspection PyUnboundLocalVariable
+            print(f'Minimization time: {time.time() - min_start}')
+
+        # Round discrete variables to the nearest integer.
+        next_x[0:num_int].round(out=next_x[0:num_int])
+
+        # Just to be sure, clip the decision variables to the bounds.
+        np.clip(next_x, lb, ub, out=next_x)
+
+        # Check if minimizer really gives better result
+        # if model.g(next_X) > model.g(x) + 1e-8:
+        # print('Warning: minimization of the surrogate model yielded a worse solution')
+
+        # Perform exploration to prevent the algorithm from getting stuck in local minima
+        # of the surrogate model.
+
+        # Skip exploration in the last iteration (to end at the exact minimum of the surrogate model).
+        if i < max_evals - 2:
+            # Randomly perturb the discrete variables. Each x_i is shifted n units
+            # to the left (if dir is False) or to the right (if dir is True).
+            # The bounds of each variable are respected.
+            int_pert_prob = 1 / d  # probability that x_i is permuted
+            for j in range(num_int):
+                r = random.random()  # determines n
+                direction = random.getrandbits(1)  # whether to explore towards -∞ or +∞
+                value = next_x[j]
+                while r < int_pert_prob:
+                    if lb[j] == value < ub[j]:
+                        value += 1
+                    elif lb[j] < value == ub[j]:
+                        value -= 1
+                    elif lb[j] < value < ub[j]:
+                        value += 1 if direction else -1
+                    r *= 2
+                next_x[j] = value
+
+            # # Continuous exploration
+            # for j in range(num_int, d):
+            #     value = next_x[j]
+            #     while True:  # re-sample while out of bounds.
+            #         # Choose a variance that scales inversely with the number of decision variables.
+            #         # Note that Var(aX) = a^2 Var(X) for any random variable.
+            #         delta = np.random.normal() * (ub[j] - lb[j]) * 0.1 / math.sqrt(d)
+            #         if lb[j] <= value + delta <= ub[j]:
+            #             next_x[j] += delta
+            #             break
+
+            # # Just to be sure, clip the decision variables to the bounds again.
+            # np.clip(next_x, lb, ub, out=next_x)
+            if stop_crit is not None:
+                stop_crit.add(y_unscaled)
+
+        if y_unscaled < obj_threshold:
+            break
+
+        if log_times:
+            # noinspection PyUnboundLocalVariable
+            print(f'Iteration time: {time.time() - iter_start}')
+
+    return best_x, inv_scale(best_y, y0, scale_threshold), model
