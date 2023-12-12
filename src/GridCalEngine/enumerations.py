@@ -777,6 +777,7 @@ class DeviceType(Enum):
 
     GeneratorQCurve = 'Generator Q curve'
 
+    FluidInjection = 'Fluid Injection'
     FluidTurbine = 'Fluid Turbine'
     FluidPump = 'Fluid Pump'
     FluidP2X = 'Fluid P2X'

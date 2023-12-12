@@ -31,6 +31,11 @@ from GridCalEngine.Core.DataStructures.load_data import LoadData
 from GridCalEngine.Core.DataStructures.branch_data import BranchData
 from GridCalEngine.Core.DataStructures.hvdc_data import HvdcData
 from GridCalEngine.Core.DataStructures.bus_data import BusData
+from GridCalEngine.Core.DataStructures.fluid_node_data import FluidNodeData
+from GridCalEngine.Core.DataStructures.fluid_path_data import FluidPathData
+from GridCalEngine.Core.DataStructures.fluid_turbine_data import FluidTurbineData
+from GridCalEngine.Core.DataStructures.fluid_pump_data import FluidPumpData
+from GridCalEngine.Core.DataStructures.fluid_p2x_data import FluidP2XData
 from GridCalEngine.basic_structures import Logger, Vec, IntVec, DateVec, Mat
 from GridCalEngine.Utils.MIP.selected_interface import LpExp, LpVar, LpModel, lpDot, set_var_bounds, join
 from GridCalEngine.enumerations import TransformerControlType, HvdcControlType, ZonalGrouping, MIPSolvers
@@ -1257,6 +1262,12 @@ def add_hydro_formulation(t: int,
                           node_vars: FluidNodeVars,
                           path_vars: FluidPathVars,
                           inj_vars: FluidInjectionVars,
+                          node_data: FluidNodeData,
+                          path_data: FluidPathData,
+                          turbine_data: FluidTurbineData,
+                          pump_data: FluidPumpData,
+                          p2x_data: FluidP2XData,
+                          generator_data: GeneratorData,
                           prob: LpModel):
     """
     Formulate the branches
@@ -1264,10 +1275,36 @@ def add_hydro_formulation(t: int,
     :param node_vars: FluidNodeVars
     :param path_vars: FluidPathVars
     :param inj_vars: FluidInjectionVars
+    :param node_data: FluidNodeData
+    :param path_data: FluidPathData
+    :param turbine_data: FluidTurbineData
+    :param pump_data: FluidPumpData
+    :param p2x_data: FluidP2XData
+    :param generator_data: GeneratorData
     :param prob: OR problem
     :return objective function
     """
-    f_obj = 0.0
+
+    # add variables
+    for m in range(turbine_data.nelm):
+        inj_vars.power = prob.add_var(lb=generator_data.pmin[turbine_data.generator_idx[m]],
+                                      ub=generator_data.pmax[turbine_data.generator_idx[m]],
+                                      name=f'TurbinePower_{turbine_data.names[m]}')
+
+    for m in range(pump_data.nelm):
+        inj_vars.power = prob.add_var(lb=generator_data.pmin[pump_data.generator_idx[m]],
+                                      ub=generator_data.pmax[pump_data.generator_idx[m]],
+                                      name=f'PumpPower_{pump_data.names[m]}')
+
+    for m in range(p2x_data.nelm):
+        inj_vars.power = prob.add_var(lb=generator_data.pmin[p2x_data.generator_idx[m]],
+                                      ub=generator_data.pmax[p2x_data.generator_idx[m]],
+                                      name=f'P2XPower_{p2x_data.names[m]}')
+
+    for m in range(node_data.nelm):
+        node_vars.spillage = prob.add_var(lb=0.0,
+                                          ub=1e20,
+                                          name=f'NodeSpillage_{node_data.names[m]}')
 
     # for each node
 
@@ -1337,6 +1374,9 @@ def run_linear_opf_ts(grid: MultiCircuit,
     n_hvdc = grid.get_hvdc_number()
     n_fluid_node = grid.get_fluid_nodes_number()
     n_fluid_path = grid.get_fluid_paths_number()
+    n_fluid_turbine = grid.get_fluid_turbines_number()
+    n_fluid_pump = grid.get_fluid_pumps_number()
+    n_fluid_p2x = grid.get_fluid_p2xs_number()
     n_fluid_inj = grid.get_fluid_injection_number()
 
     # gather the fuels and emission rates matrices
@@ -1494,6 +1534,21 @@ def run_linear_opf_ts(grid: MultiCircuit,
                     for k, branch, sense in branches_list:
                         # we want to maximize, hence the minus sign
                         f_obj += mip_vars.branch_vars.flows[local_t_idx, k] * (- sense)
+
+            # add hydro side -------------------------------------------------------------------------------------------
+            if n_fluid_node > 0:
+                f_obj += add_hydro_formulation(t=local_t_idx,
+                                               node_vars=mip_vars.fluid_node_vars,
+                                               path_vars=mip_vars.fluid_path_vars,
+                                               inj_vars=mip_vars.fluid_inject_vars,
+                                               node_data=nc.fluid_node_data,
+                                               path_data=nc.fluid_path_data,
+                                               turbine_data=nc.fluid_turbine_data,
+                                               pump_data=nc.fluid_pump_data,
+                                               p2x_data=nc.fluid_p2x_data,
+                                               gen_data=nc.generator_data,
+                                               prob=lp_model
+                                               )
 
         elif zonal_grouping == ZonalGrouping.All:
             # this is the copper plate approach

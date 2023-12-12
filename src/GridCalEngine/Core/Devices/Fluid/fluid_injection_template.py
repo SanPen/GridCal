@@ -32,8 +32,8 @@ class FluidInjectionTemplate(EditableDevice):
                  max_flow_rate: float = 0.0,
                  plant: FluidNode = None,
                  generator: Generator = None,
-                 device_type: Union[DeviceType.FluidTurbine, DeviceType.FluidPump, DeviceType.FluidP2X] =
-                 DeviceType.FluidTurbine,
+                 device_type: DeviceType.FluidInjection =
+                 DeviceType.FluidInjection,
                  build_status: BuildStatus = BuildStatus.Commissioned):
         """
         Fluid turbine
