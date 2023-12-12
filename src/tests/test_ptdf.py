@@ -253,5 +253,53 @@ def test_ptdf_psse():
                 print('---PTDFs not equal')
         print(' ')
 
+def test_lodf_psse():
+    """
+    Compare the PSSE LODF and the GridCal LODF for IEEE14, IEEE30 and IEEE118 networks
+    """
+    for fname, pssename, name in [
+        (os.path.join('data', 'grids', 'RAW', 'IEEE 14 bus.raw'), os.path.join('data', 'results', 'comparison', 'IEEE 14 bus LODF PSSe.csv'), 'IEEE14'),
+        (os.path.join('data', 'grids', 'RAW', 'IEEE 30 bus.raw'), os.path.join('data', 'results', 'comparison', 'IEEE 30 bus LODF PSSe.csv'), 'IEEE30'),
+        (os.path.join('data', 'grids', 'RAW', 'IEEE 118 Bus.raw'), os.path.join('data', 'results', 'comparison', 'IEEE 118 bus LODF PSSe.csv'), 'IEEE118')
+    ]:
+
+        main_circuit = FileOpen(fname).open()
+
+        # Network ordering
+        branches = main_circuit.get_branches()
+        branches_id = [x.code[:-2] for x in branches]
+        # Calculate GridCal LODF
+        pf_options = PowerFlowOptions(SolverType.NR,
+                                      verbose=False,
+                                      initialize_with_existing_solution=False,
+                                      dispatch_storage=True,
+                                      control_q=ReactivePowerControlMode.NoControl,
+                                      control_p=False)
+
+        linear_analysis_opt = LinearAnalysisOptions(distribute_slack=False, correct_values=False)
+        linear_analysis = LinearAnalysisDriver(grid=main_circuit, options=linear_analysis_opt)
+        linear_analysis.run()
+
+        lodf_gridcal = pd.DataFrame(linear_analysis.results.LODF, columns=branches_id)
+        lodf_gridcal['branches'] = branches_id
+
+        # Import PSSe LODF
+
+        lodf_psse = pd.read_csv(pssename)
+        lodf_psse.drop(['vbase_nodefrom', 'vbase_nodeto', 'ckt'], axis=1, inplace=True)
+        lodf_psse['branches'] = lodf_psse['nodefrom'].astype(str) + '_' + lodf_psse['nodeto'].astype(str)
+
+        # Test comparison
+        lodf = lodf_gridcal.merge(lodf_psse, on='branches', how='inner')
+        print('Testing LODF in {}'.format(name))
+        for i in branches_id:
+            print('branch ongoing: {}'.format(i))
+            branchgridcal = np.array(lodf[i])
+            branchpsse = np.array(lodf[i.split("_")[0]+"-"+i.split("_")[1]+'(1)'])
+            if not (np.isclose(branchgridcal, branchpsse, atol=1e-2).all()):
+                print('---LODFs not equal')
+
+        print("")
+
 if __name__ == '__main__':
     test_ptdf()
