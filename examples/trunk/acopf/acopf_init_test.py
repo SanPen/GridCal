@@ -8,7 +8,7 @@ import jax.numpy as jnp
 import random
 import math
 from GridCalEngine.basic_structures import CxVec, Vec
-from ACOPF_functions import *
+from acopf_functions import *
 
 
 def import_grid(nc):

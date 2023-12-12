@@ -27,13 +27,13 @@ def solver():
     error = 1000000
     #YK = INIT_STATE()
     NV = 3
-    NE = 0
+    NE = 1
     NI = 2
 
     k = 0
 
-    X = np.array([1., 1., 0.])
-    PI = sparse.csc_matrix([0] * NE)
+    X = np.array([8., 5., 1.])
+    PI = sparse.csc_matrix([1] * NE)
     LAMBDA = sparse.csc_matrix([1] * NI)
     LAMBDA_MAT = sparse.dia_matrix(([1] * NI, 0), shape = (NI, NI)).tocsc()
     T = sparse.csc_matrix([1] * NI)
@@ -45,11 +45,11 @@ def solver():
         #f, G, H, fx, Gx, Hx, fxx, Gxx, Hxx = feval(N, L, LINES, V_U, V_L, P_U, P_L, Q_U, Q_L, PD, QD, SMAX, DELTA_MAX, YK)
         f, G, H, fx, Gx, Hx, fxx, Gxx, Hxx = NLP_test(X, LAMBDA, PI)
 
-        M = fxx + Gxx + Hxx  + Hx @ sparse.linalg.inv(T_MAT) @ LAMBDA_MAT @ Hx.transpose()
-        N = fx + Hx @ LAMBDA.transpose() + Hx @ sparse.linalg.inv(T_MAT) @ (gamma * E + LAMBDA_MAT @ H) #+ Gx.transpose() @ PI
+        M = fxx + Gxx + Hxx + Hx @ sparse.linalg.inv(T_MAT) @ LAMBDA_MAT @ Hx.transpose()
+        N = fx + Hx @ LAMBDA.transpose() + Hx @ sparse.linalg.inv(T_MAT) @ (gamma * E + LAMBDA_MAT @ H) + Gx @ PI.transpose()
 
-        J1 = sparse.hstack([M, Gx.transpose()])
-        J2 = sparse.hstack([Gx, sparse.csc_matrix((NE,NE))])
+        J1 = sparse.hstack([M, Gx])
+        J2 = sparse.hstack([Gx.transpose(), sparse.csc_matrix((NE,NE))])
 
         J = sparse.vstack([J1, J2]).tocsc()
 
@@ -59,8 +59,7 @@ def solver():
 
         dX = dXP[0 : NV]
         dXsp = sparse.csc_matrix(dX).transpose()
-        dP = dXP[NV : NE + NV]
-        dPsp = sparse.csc_matrix(dP).transpose()
+        dP = sparse.csc_matrix(dXP[NV : NE + NV])
 
         dT = - H - T.transpose() - Hx.transpose() @ dXsp
         dL = - LAMBDA.transpose() + sparse.linalg.inv(T_MAT) @ (gamma * E - LAMBDA_MAT @ dT)
@@ -76,18 +75,19 @@ def solver():
         X += dX * alphap
         T += dT.transpose() * alphap
         LAMBDA += dL.transpose() * alphad
+        PI += dP * alphad
 
         T_MAT = sparse.dia_matrix((T.toarray(), 0), shape = (NI, NI)).tocsc()
         LAMBDA_MAT =  sparse.dia_matrix((LAMBDA.toarray(), 0), shape = (NI, NI)).tocsc()
 
-        error = max(max(abs(dX)), max(abs(dL)), max(abs(dT)))
+        error = max(max(abs(dX)), max(abs(dL)), max(abs(dT)), max(abs(dP)))
         newgamma = 0.1 * (T @ LAMBDA.transpose()).toarray()[0][0]/2
         gamma = max(newgamma, 1e-8)
 
         k+=1
         if k == 100:
             break
-        print(X, error)
+        print(X, error, gamma)
     print('SOLUTION: ',X, NLP_test(X, LAMBDA, PI)[0])
     return
 
@@ -96,16 +96,16 @@ def solver():
 def NLP_test(x, LAMBDA, PI):
 
     NV = 3
-    NE = 0
+    NE = 1
     NI = 2
 
     f = -x[0] * x[1] - x[1] * x[2]
     fx = sparse.csc_matrix([[-x[1]], [-x[0] - x[2]], [-x[1]]])
     fxx = sparse.csc_matrix([[0, -1, 0], [-1, 0, -1], [0, -1, 0]])
 
-    G = sparse.csc_matrix((0,1))
-    Gx = sparse.csc_matrix((0,NV))
-    Gxx = sparse.csc_matrix((3,3))
+    G = sparse.csc_matrix([x[0] - x[1] - x[2]])
+    Gx = sparse.csc_matrix([[1],[-1], [-1]])
+    Gxx = PI.toarray()[0][0] * sparse.csc_matrix((3,3))
 
     H = sparse.csc_matrix([[x[0] ** 2 - x[1] ** 2 + x[2] ** 2 - 2], [x[0] ** 2 + x[1] ** 2 + x[2] ** 2 - 10]])
     Hx = sparse.csc_matrix([[2 * x[0], 2 * x[0]],[-2 * x[1], 2* x[1]],[2 * x[2], 2 * x[2]]])
