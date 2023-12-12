@@ -1,6 +1,8 @@
 import math
 import numpy as np
 from scipy import sparse
+import timeit
+from ipm_test import brock_eval, NLP_test
 #from ACOPF_init_test import *
 #from ACOPF_functions import *
 #import GridCalEngine.api as gce
@@ -19,11 +21,10 @@ def init_state(N, L):
 #def solver(nc, mu, gam):
 def solver():
 
-
+    START = timeit.default_timer()
     #N, L, LINES, V_U, V_L, P_U, P_L, Q_U, Q_L, PD, QD, SMAX, DELTA_MAX = grid_parameters(nc:gce.NumericalCircuit)
 
-    mu = 1
-    gamma = 1
+    gamma = 10
     error = 1000000
     #YK = INIT_STATE()
     NV = 3
@@ -32,13 +33,14 @@ def solver():
 
     k = 0
 
-    X = np.array([8., 5., 1.])
+    X = np.array([2., 1., 0.])
     PI = sparse.csc_matrix([1] * NE)
     LAMBDA = sparse.csc_matrix([1] * NI)
     LAMBDA_MAT = sparse.dia_matrix(([1] * NI, 0), shape = (NI, NI)).tocsc()
     T = sparse.csc_matrix([1] * NI)
     T_MAT = sparse.dia_matrix(([1] * NI, 0), shape = (NI, NI)).tocsc()
     E = sparse.csc_matrix(([1] * NI, ([i for i in range(NI)],[0] * NI)), shape = (NI, 1))
+
     while (error > gamma):
 
 
@@ -71,7 +73,6 @@ def solver():
         #alphad = min(min(TAU * LAMBDA.transpose() / abs(dL)), [1])[0]
 
 
-        alpha = 0.3
         X += dX * alphap
         T += dT.transpose() * alphap
         LAMBDA += dL.transpose() * alphad
@@ -81,64 +82,17 @@ def solver():
         LAMBDA_MAT =  sparse.dia_matrix((LAMBDA.toarray(), 0), shape = (NI, NI)).tocsc()
 
         error = max(max(abs(dX)), max(abs(dL)), max(abs(dT)), max(abs(dP)))
-        newgamma = 0.1 * (T @ LAMBDA.transpose()).toarray()[0][0]/2
-        gamma = max(newgamma, 1e-8)
+        newgamma = 0.1 * (T @ LAMBDA.transpose()).toarray()[0][0]/NI
+        gamma = max(newgamma, 1e-5)
 
-        k+=1
+        k += 1
         if k == 100:
             break
         print(X, error, gamma)
+    END = timeit.default_timer()
     print('SOLUTION: ',X, NLP_test(X, LAMBDA, PI)[0])
+    print('Time elapsed (s): ', END-START)
     return
-
-
-
-def NLP_test(x, LAMBDA, PI):
-
-    NV = 3
-    NE = 1
-    NI = 2
-
-    f = -x[0] * x[1] - x[1] * x[2]
-    fx = sparse.csc_matrix([[-x[1]], [-x[0] - x[2]], [-x[1]]])
-    fxx = sparse.csc_matrix([[0, -1, 0], [-1, 0, -1], [0, -1, 0]])
-
-    G = sparse.csc_matrix([x[0] - x[1] - x[2]])
-    Gx = sparse.csc_matrix([[1],[-1], [-1]])
-    Gxx = PI.toarray()[0][0] * sparse.csc_matrix((3,3))
-
-    H = sparse.csc_matrix([[x[0] ** 2 - x[1] ** 2 + x[2] ** 2 - 2], [x[0] ** 2 + x[1] ** 2 + x[2] ** 2 - 10]])
-    Hx = sparse.csc_matrix([[2 * x[0], 2 * x[0]],[-2 * x[1], 2* x[1]],[2 * x[2], 2 * x[2]]])
-    Hxx = LAMBDA.toarray()[0][0] * sparse.csc_matrix([[2, 0, 0], [0, -2, 0], [0, 0, 2]])
-    Hxx += LAMBDA.toarray()[0][1] * sparse.csc_matrix([[2, 0, 0], [0, 2, 0], [0, 0, 2]])
-
-
-
-    return f, G, H, fx, Gx, Hx, fxx, Gxx, Hxx
-
-
-
-
-
-def brock_eval(x):
-
-    NV = 3
-    NE = 0
-    NI = 2
-
-    f = 100 * (x[1] - x[0] ** 2) ** 2 + (1 - x[0]) ** 2
-    fx = sparse.csc_matrix([[400 * (x[1] ** 3 - x[0] * x[1]) + 2 * x[0] -  2],[ 200 * (x[1] - x[0]**2 )]])
-    fxx =sparse.csc_matrix([[1200 * x[0]**2 - x[1] + 2, -400 * x[0]],[-400 * x[0], 200]])
-
-    G = sparse.csc_matrix((0,1))
-    Gx = sparse.csc_matrix((NE, NV))
-    Gxx = sparse.csc_matrix((NV, NV))
-
-    H = sparse.csc_matrix((0, 1))
-    Hx = sparse.csc_matrix((NI, NV))
-    Hxx = sparse.csc_matrix((NV, NV))
-
-    return f, G, H, fx, Gx, Hx, fxx, Gxx, Hxx
 
 
 
@@ -151,7 +105,6 @@ def feval(N, L, LINES, V_U, V_L, P_U, P_L, Q_U, Q_L, PD, QD, SMAX, DELTA_MAX, YK
 
 def step_calculation(V, dV, NI):
 
-    
     alpha = 1
 
     for i in range(NI):
@@ -161,11 +114,9 @@ def step_calculation(V, dV, NI):
         else:
             alpha = min(alpha, -V[0][i]/dV[0][i])
     
-    alpha = min(0.995*alpha, 1)
+    alpha = min(0.999995*alpha, 1)
 
     return alpha
-
-
 
 
 
