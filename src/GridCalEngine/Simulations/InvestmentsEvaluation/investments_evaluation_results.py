@@ -135,7 +135,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
             labels = self._index_names
             columns = ["CAPEX (M€) + OPEX (M€)", "Objective function"]
             x = self._capex + self._opex
-            y = self._f_obj
+            y = self._losses + self._overload_score + self._voltage_score
             data = np.c_[x, y]
             y_label = ''
             title = ''
@@ -144,14 +144,13 @@ class InvestmentsEvaluationResults(ResultsTemplate):
             color_norm = plt_colors.LogNorm()
             fig = plt.figure(figsize=(8, 6))
             ax3 = plt.subplot(1, 1, 1)
-            sc3 = ax3.scatter(x, y, c=y, norm=color_norm)
+            sc3 = ax3.scatter(x, y, c=x+y, norm=color_norm)
             ax3.set_xlabel('Investment cost (M€)')
             ax3.set_ylabel('Total cost of losses (M€)')
             plt.colorbar(sc3, fraction=0.05, label='Objective function')
             fig.suptitle(result_type.value[0])
             plt.tight_layout()
             plt.show()
-            print('Plot!')
 
         elif result_type == ResultTypes.InvestmentsIterationsPlot:
             labels = self._index_names

@@ -28,7 +28,7 @@ the curse of dimensionality. The methodology we have adopted here consists of:
 Formulation
 _______
 
-1. **Objective function**
+1. **Basic objective function**
 
 The selected objective function considers both technical and economical criteria. In particular, it is defined as:
 
@@ -48,15 +48,6 @@ set of boolean variables that account for the activated or deactivated investmen
 
 or in compact form, equivalently, :math:`x \in \mathbb{Z}^n_2`.
 
-Given potential differences in the order of magnitude of the different costs, it is decided to normalize the calculated
-costs by dividing the sum by the highest value obtained each iteration. Additionally, the user may want to give more
-importance to some costs rather than others, to implement this differentiation, each cost is multiplied by a user-defined weight.
-Then, the objective function ends up:
-
-.. math::
-    f_o(x) = w_l \frac{\sum C_l(x)_{br}}{||C_l(x)||} + w_o \frac{\sum C_o(x)_{br}}{||C_o(x)||} +
-    w_{vm} \frac{\sum C_vm(x)_b}{||C_vm(x)||} + w_{vp} \frac{\sum C_{vp}(x)_b}{||C_{vp}(x)||} +
-    w_{cx} \frac{\sum CAPEX(x)_i}{||CAPEX(x)||} + w_{ox} \frac{\sum OPEX(x)_i}{||OPEX(x)||}
 
 2. **Costs calculation**
 
@@ -84,6 +75,7 @@ maximum voltage, minimum voltage limit and voltage module penalization for each 
 
 Testing
 _______
+1. **Grid**
 
 In order to test the algorithm for different variations of the objective function, a 130-bus grid has been prepared with
 389 Investment Candidates including lines and buses. The diagram of the grid is shown in Figure 1.
@@ -94,10 +86,87 @@ In order to test the algorithm for different variations of the objective functio
 
     Figure 1: Test grid diagram. Grey lines and repeated elements are investment candidates.
 
-Añadir pruebas diferentes weight CAPEX
-Añadir figures
+2. **Base case**
 
+Initially, the algorithm did not include the economical criteria in the objective function. Although it is clear that it
+is needed to somehow include the CAPEX and OPEX to the minimization, the results obtained are useful to grasp the effect
+of including economical criterion.
 
-.. figure:: ../figures/investments/Figure_1_w_capex-e-6.png
-    :alt: Results1
+.. figure:: ../figures/investments/Figure_1_wo_capex.png
+    :alt: Results wo CAPEX
     :scale: 50 %
+
+    Figure 2: Paretto plot for investments evaluation without CAPEX.
+
+It is clear in Figure 2 that the more investments are selected, the lower the technical criteria are and, therefore, the
+lower the objective function. Hence, the algorithm learns that more investments equal minimum objective function values.
+By adding the CAPEX to the objective function, it is expected to correct this tendency and instead find an optimal point
+regarding both technical and economic criteria.
+
+3. **Initial tests**
+
+Including the CAPEX in the objective function is a delicate problem. As seen in Figure 2, the CAPEX values can be above
+:math:`10^4` while the technical criteria are below :math:`10^{-1}`. Therefore, when adding these values to the objective
+function, the CAPEX will inherently have more weight and unbalance the results.
+
+As an example, the reader can find below the graphs corresponding to multiplying the CAPEX by different minimization
+factors
+
+.. figure:: ../figures/investments/Figure_1_w_capex-e-6_v2.png
+    :alt: Results CAPEX 10^-6
+    :scale: 50 %
+
+    Figure 3: Results obtained when CAPEX is multiplied by :math:`10^{-6}`.
+
+.. figure:: ../figures/investments/Figure_1_w_capex-e-5_v2.png
+    :alt: Results CAPEX 10^-5
+    :scale: 50 %
+
+    Figure 4: Results obtained when CAPEX is multiplied by :math:`10^{-5}`.
+
+.. figure:: ../figures/investments/Figure_1_w_capex-e-4_v2.png
+    :alt: Results CAPEX 10^-4
+    :scale: 50 %
+
+    Figure 5: Results obtained when CAPEX is multiplied by :math:`10^{-4}`.
+
+.. figure:: ../figures/investments/Figure_1_w_capex-e-3_v2.png
+    :alt: Results CAPEX 10^-3
+    :scale: 50 %
+
+    Figure 6: Results obtained when CAPEX is multiplied by :math:`10^{-3}`.
+
+The previous figures show that the more disparate the economic and technical criterion are, the more likely is the
+objective function to tend to lesser investments solutions. The situation from the Base case is reverted,
+but another problem arises: How should the different criteria values be computed so that all elements in the objective
+function are around the same order of magnitude?
+
+4. **Normalization**
+When dealing with multicriteria optimization, it is common to establish some reference values for each criteria in
+the objective function and normalize the terms by dividing the factors by the reference point. In essence, the basic
+objective function presented in Formulation would be modified as:
+
+.. math::
+    f_o(x) = \frac{\sum{C_l(x)_{br}}}{l_{ref}} + \frac{\sum C_o(x)_{br}}{o_{ref}} + \frac{\sum C_vm(x)_b}{vm_{ref}} +
+    \frac{\sum C_va(x)_b}{va_{ref}} + \frac{\sum CAPEX(x)_i}{CAPEX_{ref}} + \frac{\sum OPEX(x)_i}{OPEX_{ref}}
+
+However, given the nature of the problem being solved, it is not possible to determine reference values for each
+criteria beforehand. Hence, one proposed solution consists in taking the values of the terms for the first iteration
+with investments, compute scaling factors referent to that iteration as:
+
+.. math::
+    sf_{i} = \frac{mean_i}{min(mean)}
+
+being:
+
+    - :math:`sf_{i}`: the scale factor for each :math:`i` criteria; losses scaling factor, overload scaling factor, etc.),
+    - :math:`mean_i`: the mean between the maximum and minimum value of each criteria; :math:`\frac{max(losses) + min(losses)}{2}`,
+    - :math:`mean`: an array of all the computed means of the factors; :math:`[mean_{losses}, mean_{overload}, mean_{vm}, ... ]`.
+
+The results obtained from this normalization can be seen in Figure 7.
+
+.. figure:: ../figures/investments/Figure_2_normalization.png
+    :alt: First normalization results
+    :scale: 50 %
+
+    Figure 7: Results obtained for the first normalization type.

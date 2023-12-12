@@ -70,6 +70,11 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         # gather a dictionary of all the elements, this serves for the investments generation
         self.get_all_elements_dict = self.grid.get_all_elements_dict()
 
+        self.capex_factor = 1
+        self.l_factor = 1
+        self.oload_factor = 1
+        self.vm_factor = 1
+
     def get_steps(self):
         """
 
@@ -156,29 +161,44 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         driver.run()
         res = driver.results
 
-        norm = True
+        norm = False
 
-        overload_score = get_overload_score(res, branches, norm)
-        losses_score = get_normalized_score((res.losses.real))
-        voltage_module_score = get_voltage_module_score(res, buses, norm)
+        overload_score, oload_limits = get_overload_score(res, branches, norm)
+        voltage_module_score, vm_limits = get_voltage_module_score(res, buses, norm)
         voltage_angle_score = 0.0
-        capex_score = get_normalized_score(np.array([inv.CAPEX for inv in inv_list]))
+        voltage_angle_score, va_limits = get_voltage_phase_score(res,buses,norm)
+        capex_array = np.array([inv.CAPEX for inv in inv_list])
+        if self.__eval_index == 0:
+            capex_array = np.array([0])
+
+        if norm:
+            losses_score, losses_limits = get_normalized_score(res.losses.real), (
+            np.max(res.losses.real), np.min(res.losses.real))
+            capex_score, capex_limits = get_normalized_score(capex_array), (np.max(capex_array), np.min(capex_array))
+        else:
+            losses_score = np.sum(res.losses.real)
+            losses_limits = (np.max(res.losses.real),np.min(res.losses.real))
+            capex_score = np.sum(capex_array)
+            capex_limits = (np.max(capex_array), np.min(capex_array))
+
         # opex_score = get_opex_score()
 
-        loss_score, oload_score, vm_score, cpx_score = get_scores(results=res, buses=buses, branches=branches,
-                                                                      inv_list=inv_list)
+        if self.__eval_index == 1:
+            self.l_factor, self.oload_factor, self.vm_factor, self.capex_factor = get_scale_factors([losses_limits, oload_limits, vm_limits, capex_limits])
 
-        f = losses_score + overload_score + voltage_module_score + capex_score
-        # f = loss_score + oload_score + vm_score + cpx_score
+        f = (losses_score * self.l_factor * self.options.w_losses +
+             overload_score * self.oload_factor * self.options.w_overload +
+             voltage_module_score * self.vm_factor * self.options.w_voltage_module +
+             capex_score * self.capex_factor * self.options.w_capex)
 
         # store the results
         self.results.set_at(eval_idx=self.__eval_index,
-                            capex=sum([inv.CAPEX for inv in inv_list]),
+                            capex=capex_score*self.capex_factor,
                             opex=sum([inv.OPEX for inv in inv_list]),
-                            losses=losses_score,
+                            losses=losses_score*self.l_factor,
                             overload_score=overload_score,
                             voltage_score=voltage_module_score,
-                            objective_function=f-capex_score,
+                            objective_function=f,
                             combination=combination,
                             index_name="Evaluation {}".format(self.__eval_index))
 
@@ -192,7 +212,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
 
         self.progress_signal.emit(self.__eval_index / self.options.max_eval * 100.0)
 
-
+        # print(losses_score*self.l_factor, capex_score * self.capex_factor, f)
         return f
 
     def independent_evaluation(self) -> None:
@@ -337,15 +357,18 @@ def get_overload_score(results, branches, norm):
     branches_cost = np.array([e.Cost for e in branches], dtype=float)
     branches_loading = np.abs(results.loading)
 
-    # get lines where loading is above 1 -- why 1 ?
-    branches_idx = np.where(branches_loading>1)[0]
+    # get lines where loading is above 1 -- why not 0.9 ?
+    branches_idx = np.where(branches_loading > 1)[0]
 
     # multiply by the load or only the overload?
     cost = branches_cost[branches_idx] * branches_loading[branches_idx]
 
+    max_oload = 0
+    min_oload = 0
+
     if norm:
-        return get_normalized_score(cost)
-    return np.sum(cost)
+        return get_normalized_score(cost), (max_oload, min_oload)
+    return np.sum(cost), (max_oload, min_oload)
 
 
 def get_voltage_module_score(results, buses, norm):
@@ -358,8 +381,22 @@ def get_voltage_module_score(results, buses, norm):
     cost = (vmax_diffs + vmin_diffs) * bus_cost
 
     if norm:
-        return get_normalized_score(cost)
-    return np.sum(cost)
+        return get_normalized_score(cost), (np.max(cost), np.min(cost))
+    return np.sum(cost), (np.max(cost), np.min(cost))
+
+
+def get_voltage_phase_score(results, buses, norm):
+    bus_cost = np.array([e.voltage_angle_cost for e in buses], dtype=float)
+    vpmax = np.array([e.angle_max for e in buses], dtype=float)
+    vpmin = np.array([e.angle_min for e in buses], dtype=float)
+    vp = np.abs(results.voltage)
+    vpmax_diffs = np.array(vp - vpmax).clip(min=0)
+    vpmin_diffs = np.array(vpmin - vp).clip(min=0)
+    cost = (vpmax_diffs + vpmin_diffs) * bus_cost
+
+    if norm:
+        return get_normalized_score(cost), (np.max(cost), np.min(cost))
+    return np.sum(cost), (np.max(cost), np.min(cost))
 
 
 def get_opex_score(inv_list):
@@ -378,74 +415,17 @@ def get_normalized_score(array):
 
     return 0.0
 
-def get_scores(results, buses, branches, inv_list):
-    # get losses array and max
-    loss_cost = results.losses.real
-    loss_max = np.max(loss_cost)
-    loss_sum = np.sum(loss_cost)
 
-    # get overload cost array and max
-    branches_cost = np.array([e.Cost for e in branches], dtype=float)
-    branches_loading = np.abs(results.loading)
+def get_scale_factors(list):
+    med = np.zeros(len(list))
+    max_values, min_values = zip(*list)
+    for i, tpe in enumerate(list):
+        med[i] = (tpe[0]+tpe[1])/2
 
-    # get lines where loading is above 1 -- why 1 ?
-    branches_idx = np.where(branches_loading > 1)[0]
+    min_med = np.min(med[med != 0])
 
-    # multiply by the load or only the overload?
-    oload_cost = branches_cost[branches_idx] * branches_loading[branches_idx]
-    if len(oload_cost) < 1:
-        oload_max = 0
-        oload_sum = 0
+    med[med == 0] = min_med
 
-    else:
-        oload_max = np.max(oload_cost)
-        oload_sum = np.sum(oload_cost)
-
-    # get voltage cost array and max
-    bus_cost = np.array([e.voltage_module_cost for e in buses], dtype=float)
-    vmax = np.array([e.Vmax for e in buses], dtype=float)
-    vmin = np.array([e.Vmin for e in buses], dtype=float)
-    vm = np.abs(results.voltage)
-    vmax_diffs = np.array(vm - vmax).clip(min=0)
-    vmin_diffs = np.array(vmin - vm).clip(min=0)
-
-    vm_cost = (vmax_diffs + vmin_diffs) * bus_cost
-    vm_max = np.max(vm_cost)
-    vm_sum = np.sum(vm_cost)
-
-    # get CAPEX array and max
-    capex = np.array([inv.CAPEX for inv in inv_list])
-    if len(capex) < 1:
-        capex_max = 0
-        capex_sum = 0
-
-    else:
-        capex_max = np.max(capex)
-        capex_sum = np.sum(capex)
-
-    # normalize
-    max_total = np.max([loss_max, oload_max, vm_max, capex_max])
-
-    if loss_max == 0:
-        loss_score = 0
-    else:
-        loss_score = loss_sum * max_total / loss_max
-    if oload_max == 0:
-        oload_score = 0
-    else:
-        oload_score = oload_sum * max_total / oload_max
-    if vm_max == 0:
-        vm_score = 0
-    else:
-        vm_score = vm_sum * max_total / vm_max
-    if capex_max == 0:
-        capex_score = 0
-    else:
-        capex_score = capex_sum * max_total / capex_max
-
-    return loss_score, oload_score, vm_score, capex_score
-
-
-
+    return min_med/med[0], min_med/med[1], min_med/med[2], min_med/med[3]
 
 
