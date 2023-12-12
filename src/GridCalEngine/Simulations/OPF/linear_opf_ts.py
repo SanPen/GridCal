@@ -1258,6 +1258,20 @@ def add_linear_node_balance(t_idx: int,
         set_var_bounds(var=bus_vars.theta[t_idx, i], lb=0.0, ub=0.0)
 
 
+def make_node_device_relationship(devices: List[Union[FluidTurbineData, FluidPumpData, FluidP2XData]],
+                                  nodes: List[FluidNodeData]):
+    """
+    Create dictionary of the devices attached at each node
+    :param devices: list of fluid moving devices (Turbines, pumps, power2xs, ...)
+    :param nodes: list of hosting fluid nodes (FluidNode, ...)
+    :return: Dict[FluidNode] -> List[Union[Turbine, Pump]]
+    """
+    plants_dict = {plant: list() for plant in nodes}
+    for turbine in devices:
+        plants_dict[turbine.plant].append(turbine)
+    return plants_dict
+
+
 def add_hydro_formulation(t: int,
                           node_vars: FluidNodeVars,
                           path_vars: FluidPathVars,
@@ -1268,6 +1282,7 @@ def add_hydro_formulation(t: int,
                           pump_data: FluidPumpData,
                           p2x_data: FluidP2XData,
                           generator_data: GeneratorData,
+                          generator_vars: GenerationVars,
                           prob: LpModel):
     """
     Formulate the branches
@@ -1285,32 +1300,45 @@ def add_hydro_formulation(t: int,
     :return objective function
     """
 
-    # add variables
-    for m in range(turbine_data.nelm):
-        inj_vars.power = prob.add_var(lb=generator_data.pmin[turbine_data.generator_idx[m]],
-                                      ub=generator_data.pmax[turbine_data.generator_idx[m]],
-                                      name=f'TurbinePower_{turbine_data.names[m]}')
-
-    for m in range(pump_data.nelm):
-        inj_vars.power = prob.add_var(lb=generator_data.pmin[pump_data.generator_idx[m]],
-                                      ub=generator_data.pmax[pump_data.generator_idx[m]],
-                                      name=f'PumpPower_{pump_data.names[m]}')
-
-    for m in range(p2x_data.nelm):
-        inj_vars.power = prob.add_var(lb=generator_data.pmin[p2x_data.generator_idx[m]],
-                                      ub=generator_data.pmax[p2x_data.generator_idx[m]],
-                                      name=f'P2XPower_{p2x_data.names[m]}')
-
+    f_obj = 0.0
+    # LP variables
+    # i = 0
+    # for m in range(turbine_data.nelm):
+    #     inj_vars.power[t, i] = generator_vars.p[turbine_data.generator_idx[m]]
+    #     i += 1
+    #
+    # for m in range(pump_data.nelm):
+    #     inj_vars.power[t, i] = generator_vars.p[pump_data.generator_idx[m]]
+    #     i += 1
+    #
+    # for m in range(p2x_data.nelm):
+    #     inj_vars.power[t, i] = generator_vars.p[p2x_data.generator_idx[m]]
+    #     i += 1
+    #
     for m in range(node_data.nelm):
-        node_vars.spillage = prob.add_var(lb=0.0,
-                                          ub=1e20,
-                                          name=f'NodeSpillage_{node_data.names[m]}')
+        node_vars.spillage[t, m] = prob.add_var(lb=0.0,
+                                                ub=1e20,
+                                                name=f'NodeSpillage_{node_data.names[m]}')
 
-    # for each node
+        node_vars.current_level[t, m] = prob.add_var(lb=node_data.min_level[m],
+                                                     ub=node_data.max_level[m],
+                                                     name=f'Level_{node_data.names[m]}')
 
-    # for each path
+    for m in range(path_data.nelm):
+        path_vars.flow[t, m] = prob.add_var(lb=path_data.min_flow[m],
+                                            ub=path_data.max_flow[m],
+                                            name=f'Flow_{path_data.names[m]}')
 
-    # for each injection
+    # Constraints
+    for m in range(path_data.nelm):
+        node_vars.inflow[t, path_data.target_idx[m]] += path_vars.flow[t, m]
+        node_vars.outflow[t, path_data.source_idx[m]] += path_vars.flow[t, m]
+
+    total_power_balance = 0.0  # Mw
+    total_power_generated = 0.0  # MW
+
+    # go over injection devices to determine the node balance
+
 
     return f_obj
 
@@ -1546,7 +1574,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
                                                turbine_data=nc.fluid_turbine_data,
                                                pump_data=nc.fluid_pump_data,
                                                p2x_data=nc.fluid_p2x_data,
-                                               gen_data=nc.generator_data,
+                                               generator_data=nc.generator_data,
                                                prob=lp_model
                                                )
 

@@ -1,7 +1,8 @@
 import GridCalEngine.api as gce
 import numpy as np
 
-main_circuit = gce.FileOpen('../Grids_and_profiles/grids/hydro_grid1.gridcal').open()
+# main_circuit = gce.FileOpen('../Grids_and_profiles/grids/hydro_grid1.gridcal').open()
+main_circuit = gce.FileOpen('../Grids_and_profiles/grids/hydro_grid2.gridcal').open()
 
 # declare the snapshot opf
 opf_driver = gce.OptimalPowerFlowDriver(grid=main_circuit)
