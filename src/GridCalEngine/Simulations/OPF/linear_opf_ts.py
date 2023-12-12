@@ -381,6 +381,7 @@ class FluidNodeVars:
         self.max_level = np.zeros((nt, n_elm), dtype=float)  # m3
         self.initial_level = np.zeros((nt, n_elm), dtype=float)  # m3
 
+        self.p2x_flow = np.zeros((nt, n_elm), dtype=float)  # m3
         self.current_level = np.zeros((nt, n_elm), dtype=float)  # m3
         self.spillage = np.zeros((nt, n_elm), dtype=float)  # m3/h
         self.inflow = np.zeros((nt, n_elm), dtype=float)  # m3/h
@@ -397,12 +398,14 @@ class FluidNodeVars:
 
         for t in range(nt):
             for i in range(n_elm):
+                data.p2x_flow[t, i] = model.get_value(self.p2x_flow[t, i])
                 data.current_level[t, i] = model.get_value(self.current_level[t, i])
                 data.spillage[t, i] = model.get_value(self.spillage[t, i])
                 data.inflow[t, i] = model.get_value(self.inflow[t, i])
                 data.outflow[t, i] = model.get_value(self.outflow[t, i])
 
         # format the arrays appropriately
+        data.p2x_flow = data.p2x_flow.astype(float, copy=False)
         data.current_level = data.current_level.astype(float, copy=False)
         data.spillage = data.spillage.astype(float, copy=False)
         data.inflow = data.inflow.astype(float, copy=False)
@@ -1272,7 +1275,8 @@ def make_node_device_relationship(devices: List[Union[FluidTurbineData, FluidPum
     return plants_dict
 
 
-def add_hydro_formulation(t: int,
+def add_hydro_formulation(t: Union[int, None],
+                          time_array: DateVec,
                           node_vars: FluidNodeVars,
                           path_vars: FluidPathVars,
                           inj_vars: FluidInjectionVars,
@@ -1287,6 +1291,7 @@ def add_hydro_formulation(t: int,
     """
     Formulate the branches
     :param t: time index
+    :param time_array: list of time indices
     :param node_vars: FluidNodeVars
     :param path_vars: FluidPathVars
     :param inj_vars: FluidInjectionVars
@@ -1296,6 +1301,7 @@ def add_hydro_formulation(t: int,
     :param pump_data: FluidPumpData
     :param p2x_data: FluidP2XData
     :param generator_data: GeneratorData
+    :param generator_vars: GeneratorVars
     :param prob: OR problem
     :return objective function
     """
@@ -1315,6 +1321,8 @@ def add_hydro_formulation(t: int,
     #     inj_vars.power[t, i] = generator_vars.p[p2x_data.generator_idx[m]]
     #     i += 1
     #
+
+
     for m in range(node_data.nelm):
         node_vars.spillage[t, m] = prob.add_var(lb=0.0,
                                                 ub=1e20,
@@ -1334,11 +1342,31 @@ def add_hydro_formulation(t: int,
         node_vars.inflow[t, path_data.target_idx[m]] += path_vars.flow[t, m]
         node_vars.outflow[t, path_data.source_idx[m]] += path_vars.flow[t, m]
 
-    total_power_balance = 0.0  # Mw
-    total_power_generated = 0.0  # MW
+    for m in range(turbine_data.nelm):
+        turbine_flow = generator_vars.p[turbine_data.generator_idx[m]] / turbine_data.efficiency[m]
+        node_vars.outflow[t, turbine_data.plant_idx[m]] += turbine_flow
 
-    # go over injection devices to determine the node balance
+    for m in range(pump_data.nelm):
+        pump_flow = generator_vars.p[pump_data.generator_idx[m]] / pump_data.efficiency[m]
+        node_vars.inflow[t, pump_data.plant_idx[m]] += pump_flow
 
+    for m in range(p2x_data.nelm):
+        p2x_flow = generator_data.p[p2x_data.generator_idx[m]] / p2x_data.efficiency[m]
+        node_vars.p2x_flow[t, p2x_data.plant_idx[m]] += p2x_flow
+
+    if t is not None:
+        if t > 0:
+            for m in range(node_data.nelm):
+                dt = (time_array[t] - time_array[t - 1]).seconds / 3600.0  # time increment in hours
+                prob.add_cst(cst=(node_vars.current_level[t, m] ==
+                                  node_vars.initial_level[t, m]
+                                  + dt * node_vars.inflow[t, m],
+                                  + dt * node_vars.p2x_flow[t, m],
+                                  - dt * node_vars.spillage[t, m],
+                                  - dt * node_vars.outflow[t, m]),
+                             name=f'{node_data.names[m]} Nodal Balance')
+        else:
+            # no time to consider there is water to flow, as if dt = 0
 
     return f_obj
 
@@ -1566,6 +1594,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
             # add hydro side -------------------------------------------------------------------------------------------
             if n_fluid_node > 0:
                 f_obj += add_hydro_formulation(t=local_t_idx,
+                                               time_array=grid.time_profile,
                                                node_vars=mip_vars.fluid_node_vars,
                                                path_vars=mip_vars.fluid_path_vars,
                                                inj_vars=mip_vars.fluid_inject_vars,
