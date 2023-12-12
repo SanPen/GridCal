@@ -243,16 +243,15 @@ def test_ptdf_psse():
         print('Testing PTDF in {}'.format(name))
         for i in nodes_id:
             print('Node ongoing: {}'.format(i))
-            if i == '1': continue   # Skipping slack (is zero)
+            if name == "IEEE118":
+                if i == '69': continue   # Skipping slack (is zero)
+            else:
+                if i == '1': continue   # Skipping slack (is zero)
             nodegridcal = np.array(ptdf[i])
             nodepsse = np.array(ptdf['NUDO{}'.format(str(i))])
             if not (np.isclose(nodegridcal, -nodepsse, atol=1e-2).all()):
-                print('')
-
-
-
-
-        print("")
+                print('---PTDFs not equal')
+        print(' ')
 
 if __name__ == '__main__':
     test_ptdf()
