@@ -17,6 +17,7 @@
 
 from PySide6.QtGui import QPen, QIcon, QPixmap
 from PySide6.QtWidgets import QMenu, QGraphicsTextItem
+from GridCalEngine.Core.Devices.Injections.static_generator import StaticGenerator, DeviceType
 from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Square
 from GridCal.Gui.GridEditorWidget.Injections.injections_template_graphics import InjectionTemplateGraphicItem
 from GridCal.Gui.GuiFunctions import ObjectsModel
@@ -25,7 +26,7 @@ from GridCal.Gui.messages import yes_no_question
 
 class StaticGeneratorGraphicItem(InjectionTemplateGraphicItem):
 
-    def __init__(self, parent, api_obj, diagramScene):
+    def __init__(self, parent, api_obj: StaticGenerator, diagramScene):
         """
 
         :param parent:
@@ -41,7 +42,7 @@ class StaticGeneratorGraphicItem(InjectionTemplateGraphicItem):
 
         pen = QPen(self.color, self.width, self.style)
 
-        self.glyph = Square(parent)
+        self.glyph = Square(self)
         self.glyph.setRect(0, 0, self.h, self.w)
         self.glyph.setPen(pen)
         self.addToGroup(self.glyph)
@@ -186,3 +187,14 @@ class StaticGeneratorGraphicItem(InjectionTemplateGraphicItem):
 
         # plot the profiles
         self.api_object.plot_profiles(time=ts)
+
+    def mousePressEvent(self, QGraphicsSceneMouseEvent):
+        """
+        mouse press: display the editor
+        :param QGraphicsSceneMouseEvent:
+        :return:
+        """
+        mdl = ObjectsModel([self.api_object], self.api_object.editable_headers,
+                           parent=self.diagramScene.parent().object_editor_table, editable=True, transposed=True,
+                           dictionary_of_lists={DeviceType.Technology.value: self.diagramScene.circuit.technologies, })
+        self.diagramScene.parent().object_editor_table.setModel(mdl)
