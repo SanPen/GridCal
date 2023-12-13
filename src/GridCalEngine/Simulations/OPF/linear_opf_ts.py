@@ -377,15 +377,16 @@ class FluidNodeVars:
         :param n_elm: Number of nodes
         """
 
-        self.min_level = np.zeros((nt, n_elm), dtype=float)  # m3
-        self.max_level = np.zeros((nt, n_elm), dtype=float)  # m3
-        self.initial_level = np.zeros((nt, n_elm), dtype=float)  # m3
+        # the objects below are extracted from data
+        # self.min_level = np.zeros((nt, n_elm), dtype=float)  # m3
+        # self.max_level = np.zeros((nt, n_elm), dtype=float)  # m3
+        # self.initial_level = np.zeros((nt, n_elm), dtype=float)  # m3
 
-        self.p2x_flow = np.zeros((nt, n_elm), dtype=float)  # m3
-        self.current_level = np.zeros((nt, n_elm), dtype=float)  # m3
-        self.spillage = np.zeros((nt, n_elm), dtype=float)  # m3/h
-        self.inflow = np.zeros((nt, n_elm), dtype=float)  # m3/h
-        self.outflow = np.zeros((nt, n_elm), dtype=float)  # m3/h
+        self.p2x_flow = np.zeros((nt, n_elm), dtype=object)  # m3
+        self.current_level = np.zeros((nt, n_elm), dtype=object)  # m3
+        self.spillage = np.zeros((nt, n_elm), dtype=object)  # m3/h
+        self.inflow = np.zeros((nt, n_elm), dtype=object)  # m3/h
+        self.outflow = np.zeros((nt, n_elm), dtype=object)  # m3/h
 
     def get_values(self, model: LpModel) -> "FluidNodeVars":
         """
@@ -393,7 +394,7 @@ class FluidNodeVars:
         :param model: LP model from where we extract the values
         :return: FluidNodeVars
         """
-        nt, n_elm = self.min_level.shape
+        nt, n_elm = self.p2x_flow.shape
         data = FluidNodeVars(nt=nt, n_elm=n_elm)
 
         for t in range(nt):
@@ -411,9 +412,10 @@ class FluidNodeVars:
         data.inflow = data.inflow.astype(float, copy=False)
         data.outflow = data.outflow.astype(float, copy=False)
 
-        data.min_level = self.min_level
-        data.max_level = self.max_level
-        data.initial_level = self.initial_level
+        # from the data object itself
+        # data.min_level = self.min_level
+        # data.max_level = self.max_level
+        # data.initial_level = self.initial_level
 
         return data
 
@@ -430,10 +432,11 @@ class FluidPathVars:
         :param n_elm: Number of paths (rivers)
         """
 
-        self.min_flow = np.zeros((nt, n_elm), dtype=float)  # m3/h
-        self.max_flow = np.zeros((nt, n_elm), dtype=float)  # m3/h
+        # from the data object
+        # self.min_flow = np.zeros((nt, n_elm), dtype=float)  # m3/h
+        # self.max_flow = np.zeros((nt, n_elm), dtype=float)  # m3/h
 
-        self.flow = np.zeros((nt, n_elm), dtype=float)  # m3/h
+        self.flow = np.zeros((nt, n_elm), dtype=object)  # m3/h
 
     def get_values(self, model: LpModel) -> "FluidPathVars":
         """
@@ -441,7 +444,7 @@ class FluidPathVars:
         :param model: LP model from where we extract the values
         :return: FluidPathVars
         """
-        nt, n_elm = self.min_flow.shape
+        nt, n_elm = self.flow.shape
         data = FluidPathVars(nt=nt, n_elm=n_elm)
 
         for t in range(nt):
@@ -451,8 +454,8 @@ class FluidPathVars:
         # format the arrays appropriately
         data.flow = data.flow.astype(float, copy=False)
 
-        data.min_flow = self.min_flow
-        data.max_flow = self.max_flow
+        # data.min_flow = self.min_flow
+        # data.max_flow = self.max_flow
 
         return data
 
@@ -469,13 +472,13 @@ class FluidInjectionVars:
         :param n_elm: Number of elements moving fluid
         """
 
-        self.efficiency = np.zeros((nt, n_elm), dtype=float)  # m3
-        self.max_flow_rate = np.zeros((nt, n_elm), dtype=float)  # m3
-
-        self.p_max = np.zeros((nt, n_elm), dtype=float)  # MW
-        self.p_min = np.zeros((nt, n_elm), dtype=float)  # MW
-
-        self.power = np.zeros((nt, n_elm), dtype=float)  # MW
+        # self.efficiency = np.zeros((nt, n_elm), dtype=float)  # m3
+        # self.max_flow_rate = np.zeros((nt, n_elm), dtype=float)  # m3
+        #
+        # self.p_max = np.zeros((nt, n_elm), dtype=float)  # MW
+        # self.p_min = np.zeros((nt, n_elm), dtype=float)  # MW
+        #
+        self.power = np.zeros((nt, n_elm), dtype=object)  # MW
 
     def get_values(self, model: LpModel) -> "FluidInjectionVars":
         """
@@ -483,7 +486,7 @@ class FluidInjectionVars:
         :param model: LP model from where we extract the values
         :return: FluidInjectionVars
         """
-        nt, n_elm = self.efficiency.shape
+        nt, n_elm = self.power.shape
         data = FluidInjectionVars(nt=nt, n_elm=n_elm)
 
         for t in range(nt):
@@ -493,11 +496,11 @@ class FluidInjectionVars:
         # format the arrays appropriately
         data.power = data.power.astype(float, copy=False)
 
-        data.efficiency = self.efficiency
-        data.max_flow_rate = self.max_flow_rate
-        data.p_max = self.p_max  # TODO: think how to make this link
-        data.p_min = self.p_min
-
+        # data.efficiency = self.efficiency
+        # data.max_flow_rate = self.max_flow_rate
+        # data.p_max = self.p_max  # TODO: think how to make this link
+        # data.p_min = self.p_min
+        #
         return data
 
 
@@ -1307,26 +1310,13 @@ def add_hydro_formulation(t: Union[int, None],
     """
 
     f_obj = 0.0
-    # LP variables
-    # i = 0
-    # for m in range(turbine_data.nelm):
-    #     inj_vars.power[t, i] = generator_vars.p[turbine_data.generator_idx[m]]
-    #     i += 1
-    #
-    # for m in range(pump_data.nelm):
-    #     inj_vars.power[t, i] = generator_vars.p[pump_data.generator_idx[m]]
-    #     i += 1
-    #
-    # for m in range(p2x_data.nelm):
-    #     inj_vars.power[t, i] = generator_vars.p[p2x_data.generator_idx[m]]
-    #     i += 1
-    #
-
 
     for m in range(node_data.nelm):
         node_vars.spillage[t, m] = prob.add_var(lb=0.0,
                                                 ub=1e20,
                                                 name=f'NodeSpillage_{node_data.names[m]}')
+
+        f_obj += node_vars.spillage[t, m]
 
         node_vars.current_level[t, m] = prob.add_var(lb=node_data.min_level[m],
                                                      ub=node_data.max_level[m],
@@ -1343,23 +1333,29 @@ def add_hydro_formulation(t: Union[int, None],
         node_vars.outflow[t, path_data.source_idx[m]] += path_vars.flow[t, m]
 
     for m in range(turbine_data.nelm):
-        turbine_flow = generator_vars.p[turbine_data.generator_idx[m]] / turbine_data.efficiency[m]
+        turbine_flow = generator_vars.p[t, turbine_data.generator_idx[m]] / turbine_data.efficiency[m]
         node_vars.outflow[t, turbine_data.plant_idx[m]] += turbine_flow
 
+        f_obj += turbine_flow
+
     for m in range(pump_data.nelm):
-        pump_flow = generator_vars.p[pump_data.generator_idx[m]] / pump_data.efficiency[m]
+        pump_flow = generator_vars.p[t, pump_data.generator_idx[m]] / pump_data.efficiency[m]
         node_vars.inflow[t, pump_data.plant_idx[m]] += pump_flow
 
+        f_obj += pump_flow
+
     for m in range(p2x_data.nelm):
-        p2x_flow = generator_data.p[p2x_data.generator_idx[m]] / p2x_data.efficiency[m]
+        p2x_flow = generator_data.p[t, p2x_data.generator_idx[m]] / p2x_data.efficiency[m]
         node_vars.p2x_flow[t, p2x_data.plant_idx[m]] += p2x_flow
+
+        f_obj += p2x_flow
 
     if t is not None:
         if t > 0:
             for m in range(node_data.nelm):
                 dt = (time_array[t] - time_array[t - 1]).seconds / 3600.0  # time increment in hours
                 prob.add_cst(cst=(node_vars.current_level[t, m] ==
-                                  node_vars.initial_level[t, m]
+                                  node_vars.current_level[t-1, m]
                                   + dt * node_vars.inflow[t, m],
                                   + dt * node_vars.p2x_flow[t, m],
                                   - dt * node_vars.spillage[t, m],
@@ -1367,6 +1363,10 @@ def add_hydro_formulation(t: Union[int, None],
                              name=f'{node_data.names[m]} Nodal Balance')
         else:
             # no time to consider there is water to flow, as if dt = 0
+            for m in range(node_data.nelm):
+                prob.add_cst(cst=(node_vars.current_level[t, m] ==
+                                  node_data.initial_level[m]),
+                             name=f'{node_data.names[m]} Nodal Balance')
 
     return f_obj
 
@@ -1604,8 +1604,8 @@ def run_linear_opf_ts(grid: MultiCircuit,
                                                pump_data=nc.fluid_pump_data,
                                                p2x_data=nc.fluid_p2x_data,
                                                generator_data=nc.generator_data,
-                                               prob=lp_model
-                                               )
+                                               generator_vars=mip_vars.gen_vars,
+                                               prob=lp_model)
 
         elif zonal_grouping == ZonalGrouping.All:
             # this is the copper plate approach

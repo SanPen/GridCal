@@ -836,7 +836,7 @@ class BusBranchEditorWidget(QSplitter):
                     graphic_object.change_size(h=location.h,
                                                w=location.w)
 
-                    # add buses refference for later
+                    # add buses reference for later
                     bus_dict[idtag] = graphic_object
                     points_group.locations[idtag].graphic_object = graphic_object
 
@@ -900,7 +900,7 @@ class BusBranchEditorWidget(QSplitter):
                     graphic_object.change_size(h=location.h,
                                                w=location.w)
 
-                    # add fluid node refference for later
+                    # add fluid node reference for later
                     fluid_node_dict[idtag] = graphic_object
                     points_group.locations[idtag].graphic_object = graphic_object
 
