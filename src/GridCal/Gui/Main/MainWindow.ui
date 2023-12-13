@@ -8801,6 +8801,7 @@ QProgressBar::chunk{
     <addaction name="actionAutoatic_layout"/>
     <addaction name="actionTry_to_fix_buses_location"/>
     <addaction name="actionSet_schematic_positions_from_GPS_coordinates"/>
+    <addaction name="actionSearchDiagram"/>
    </widget>
    <addaction name="menuProject"/>
    <addaction name="menuActions"/>
@@ -9817,6 +9818,15 @@ QProgressBar::chunk{
    </property>
    <property name="text">
     <string>Report a bug or feature</string>
+   </property>
+  </action>
+  <action name="actionSearchDiagram">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/magnifying_glass.svg</normaloff>:/Icons/icons/magnifying_glass.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Search</string>
    </property>
   </action>
  </widget>

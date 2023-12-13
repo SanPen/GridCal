@@ -19,7 +19,7 @@ from typing import Union
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, QPoint
 from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor
-from PySide6.QtWidgets import QMenu
+from PySide6.QtWidgets import QMenu, QGraphicsTextItem
 from GridCalEngine.Core.Devices.Substation import Bus
 from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, FONT_SCALE, EMERGENCY
 from GridCal.Gui.GuiFunctions import ObjectsModel
@@ -231,13 +231,17 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         self.setRect(0.0, 0.0, self.w, h)
         self.h = h
 
-    def change_size(self, w: int, h: Union[None, int] = None):
+    def change_size(self, w: int, h: Union[None, int] = None, scale: float = 1.0):
         """
         Resize block function
         @param w:
         @param h:
         @return:
         """
+
+        if scale < 1:
+            scale = 1.0
+
         # Limit the block size to the minimum size:
         if h is None:
             h = self.min_h
@@ -245,41 +249,57 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         if w < self.min_w:
             w = self.min_w
 
-        self.setRect(0.0, 0.0, w, h)
+        ho = h
+        wo = w
+
+        newh = h / scale
+        neww = w / scale
+
+        self.setRect(0.0, 0.0, neww, newh)
         self.h = h
         self.w = w
 
         # center label:
         rect = self.label.boundingRect()
-        lw, lh = rect.width(), rect.height()
-        lx = (w - lw) / 2
-        ly = (h - lh) / 2 - lh * (FONT_SCALE - 1)
+        lw, lh = rect.width() / scale, rect.height() / scale
+        lx = (neww - lw) / 2
+        ly = (newh - lh) / 2 - lh * (FONT_SCALE - 1)
         self.label.setPos(lx, ly)
+        self.label.setScale(FONT_SCALE / scale)
 
         # lower
-        y0 = h + self.offset
+        y0 = newh + self.offset / scale
         x0 = 0
         self.terminal.setPos(x0, y0)
-        self.terminal.setRect(0, 0, w, 10)
+        self.terminal.setRect(0, 0, neww, 10 / scale)
+
+        if scale > 1:
+            self.tile.setPen(QPen(Qt.black, 2.0 / scale, Qt.SolidLine))
+            self.tile.setRect(0, 0, self.min_h / scale, self.min_h / scale)
+            self.sizer.posChangeCallbacks.remove(self.change_size)  # Disconnect the callback
+            self.sizer.setPos(neww, newh)
+            self.sizer.setPen(QPen(Qt.black, 1.0 / scale, Qt.SolidLine))
+            self.sizer.setRect(0, 0, self.min_h / scale, self.min_h / scale)
+            self.sizer.posChangeCallbacks.append(self.change_size)  # Connect the callback
 
         # Set text
         if self.api_object is not None:
             self.label.setPlainText(self.api_object.name)
 
         # rearrange children
-        self.arrange_children()
+        self.arrange_children(scale)
 
         self.scene.parent_.update_diagram_element(device=self.api_object,
                                                   x=self.pos().x(),
                                                   y=self.pos().y(),
-                                                  w=w,
-                                                  h=h,
+                                                  w=neww,
+                                                  h=newh,
                                                   r=self.rotation(),
                                                   graphic_object=self)
 
         return w, h
 
-    def arrange_children(self):
+    def arrange_children(self, scale: float = 1.0):
         """
         This function sorts the load and generators icons
         Returns:
@@ -293,8 +313,12 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
             elm.setPos(x - elm.w / 2, y0)
             x += inc_x
 
+            if elm != None:
+                elm.rescale(scale)
+
+
         # Arrange line positions
-        self.terminal.process_callbacks(self.pos() + self.terminal.pos())
+        self.terminal.process_callbacks(self.pos() + self.terminal.pos(), scale)
 
     def create_children_widgets(self):
         """

@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'MainWindow.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.5.3
+## Created by: Qt User Interface Compiler version 6.6.0
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -420,6 +420,11 @@ class Ui_mainWindow(object):
         icon64 = QIcon()
         icon64.addFile(u":/Icons/icons/bug.svg", QSize(), QIcon.Normal, QIcon.Off)
         self.actionReport_a_bug.setIcon(icon64)
+        self.actionSearchDiagram = QAction(mainWindow)
+        self.actionSearchDiagram.setObjectName(u"actionSearchDiagram")
+        icon65 = QIcon()
+        icon65.addFile(u":/Icons/icons/magnifying_glass.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.actionSearchDiagram.setIcon(icon65)
         self.centralwidget = QWidget(mainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.verticalLayout = QVBoxLayout(self.centralwidget)
@@ -498,9 +503,9 @@ class Ui_mainWindow(object):
         self.gridLayout_20.setContentsMargins(1, 1, 1, 1)
         self.view_previous_simulation_step_pushButton = QPushButton(self.grid_colouring_frame)
         self.view_previous_simulation_step_pushButton.setObjectName(u"view_previous_simulation_step_pushButton")
-        icon65 = QIcon()
-        icon65.addFile(u":/Icons/icons/prev.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.view_previous_simulation_step_pushButton.setIcon(icon65)
+        icon66 = QIcon()
+        icon66.addFile(u":/Icons/icons/prev.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.view_previous_simulation_step_pushButton.setIcon(icon66)
 
         self.gridLayout_20.addWidget(self.view_previous_simulation_step_pushButton, 1, 8, 1, 1)
 
@@ -530,17 +535,17 @@ class Ui_mainWindow(object):
 
         self.colour_results_pushButton = QPushButton(self.grid_colouring_frame)
         self.colour_results_pushButton.setObjectName(u"colour_results_pushButton")
-        icon66 = QIcon()
-        icon66.addFile(u":/Icons/icons/color_grid.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.colour_results_pushButton.setIcon(icon66)
+        icon67 = QIcon()
+        icon67.addFile(u":/Icons/icons/color_grid.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.colour_results_pushButton.setIcon(icon67)
 
         self.gridLayout_20.addWidget(self.colour_results_pushButton, 1, 14, 1, 1)
 
         self.view_next_simulation_step_pushButton = QPushButton(self.grid_colouring_frame)
         self.view_next_simulation_step_pushButton.setObjectName(u"view_next_simulation_step_pushButton")
-        icon67 = QIcon()
-        icon67.addFile(u":/Icons/icons/next.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.view_next_simulation_step_pushButton.setIcon(icon67)
+        icon68 = QIcon()
+        icon68.addFile(u":/Icons/icons/next.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.view_next_simulation_step_pushButton.setIcon(icon68)
 
         self.gridLayout_20.addWidget(self.view_next_simulation_step_pushButton, 1, 10, 1, 1)
 
@@ -556,9 +561,9 @@ class Ui_mainWindow(object):
 
         self.editTimeIntervalButton = QPushButton(self.grid_colouring_frame)
         self.editTimeIntervalButton.setObjectName(u"editTimeIntervalButton")
-        icon68 = QIcon()
-        icon68.addFile(u":/Icons/icons/edit.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.editTimeIntervalButton.setIcon(icon68)
+        icon69 = QIcon()
+        icon69.addFile(u":/Icons/icons/edit.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.editTimeIntervalButton.setIcon(icon69)
 
         self.gridLayout_20.addWidget(self.editTimeIntervalButton, 1, 11, 1, 1)
 
@@ -629,9 +634,7 @@ class Ui_mainWindow(object):
 
         self.filter_pushButton = QPushButton(self.frame_54)
         self.filter_pushButton.setObjectName(u"filter_pushButton")
-        icon69 = QIcon()
-        icon69.addFile(u":/Icons/icons/magnifying_glass.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.filter_pushButton.setIcon(icon69)
+        self.filter_pushButton.setIcon(icon65)
 
         self.horizontalLayout_28.addWidget(self.filter_pushButton)
 
@@ -762,7 +765,7 @@ class Ui_mainWindow(object):
 
         self.catalogue_edit_pushButton = QPushButton(self.frame_9)
         self.catalogue_edit_pushButton.setObjectName(u"catalogue_edit_pushButton")
-        self.catalogue_edit_pushButton.setIcon(icon68)
+        self.catalogue_edit_pushButton.setIcon(icon69)
 
         self.horizontalLayout_25.addWidget(self.catalogue_edit_pushButton)
 
@@ -1070,7 +1073,7 @@ class Ui_mainWindow(object):
 
         self.verticalLayout_18.addWidget(self.comments_textEdit)
 
-        self.tabWidget_3.addTab(self.commentsTab, icon68, "")
+        self.tabWidget_3.addTab(self.commentsTab, icon69, "")
 
         self.verticalLayout_9.addWidget(self.tabWidget_3)
 
@@ -1278,7 +1281,7 @@ class Ui_mainWindow(object):
 
         self.search_results_Button = QPushButton(self.frame_8)
         self.search_results_Button.setObjectName(u"search_results_Button")
-        self.search_results_Button.setIcon(icon69)
+        self.search_results_Button.setIcon(icon65)
 
         self.horizontalLayout_2.addWidget(self.search_results_Button)
 
@@ -1447,7 +1450,7 @@ class Ui_mainWindow(object):
 
         self.runSourceCodeButton = QPushButton(self.frame_55)
         self.runSourceCodeButton.setObjectName(u"runSourceCodeButton")
-        self.runSourceCodeButton.setIcon(icon67)
+        self.runSourceCodeButton.setIcon(icon68)
 
         self.horizontalLayout_3.addWidget(self.runSourceCodeButton)
 
@@ -3799,7 +3802,7 @@ class Ui_mainWindow(object):
 
         self.horizontalLayout_18.addWidget(self.frame_3)
 
-        self.settings_tabWidget.addTab(self.tab_10, icon66, "")
+        self.settings_tabWidget.addTab(self.tab_10, icon67, "")
         self.tab_8 = QWidget()
         self.tab_8.setObjectName(u"tab_8")
         self.horizontalLayout_40 = QHBoxLayout(self.tab_8)
@@ -4171,6 +4174,7 @@ class Ui_mainWindow(object):
         self.menuDiagrams.addAction(self.actionAutoatic_layout)
         self.menuDiagrams.addAction(self.actionTry_to_fix_buses_location)
         self.menuDiagrams.addAction(self.actionSet_schematic_positions_from_GPS_coordinates)
+        self.menuDiagrams.addAction(self.actionSearchDiagram)
         self.menuSelect_buses_by.addAction(self.actionSetSelectedBusCountry)
         self.menuSelect_buses_by.addAction(self.actionSetSelectedBusArea)
         self.menuSelect_buses_by.addAction(self.actionSetSelectedBusZone)
@@ -4499,6 +4503,7 @@ class Ui_mainWindow(object):
         self.actionAdd_substation_diagram.setText(QCoreApplication.translate("mainWindow", u"Add substation diagram", None))
         self.actionRemove_selected_diagram.setText(QCoreApplication.translate("mainWindow", u"Remove selected diagram", None))
         self.actionReport_a_bug.setText(QCoreApplication.translate("mainWindow", u"Report a bug or feature", None))
+        self.actionSearchDiagram.setText(QCoreApplication.translate("mainWindow", u"Search", None))
 #if QT_CONFIG(tooltip)
         self.diagramsListView.setToolTip(QCoreApplication.translate("mainWindow", u"List of available diagrams", None))
 #endif // QT_CONFIG(tooltip)

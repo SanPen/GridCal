@@ -19,7 +19,9 @@ from typing import List, Tuple, Union
 
 import networkx as nx
 import numpy as np
-from PySide6 import QtGui, QtWidgets
+import qdarktheme
+from PySide6 import QtGui, QtWidgets, QtCore
+from PySide6.QtCore import QRectF, Qt
 from matplotlib import pyplot as plt
 from pandas.plotting import register_matplotlib_converters
 
@@ -29,7 +31,7 @@ from GridCalEngine.enumerations import DeviceType
 import GridCal.Gui.GuiFunctions as gf
 import GridCal.Gui.Visualization.palettes as palettes
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
-from GridCal.Gui.GeneralDialogues import CheckListDialogue, StartEndSelectionDialogue
+from GridCal.Gui.GeneralDialogues import LogsDialogue, CheckListDialogue, StartEndSelectionDialogue, InputSearchDialogue
 from GridCal.Gui.BusViewer.bus_viewer_dialogue import BusViewerWidget
 from GridCal.Gui.GridEditorWidget import BusBranchEditorWidget, generate_bus_branch_diagram
 from GridCal.Gui.MapWidget.grid_map_widget import GridMapWidget
@@ -130,6 +132,7 @@ class DiagramsMain(CompiledArraysMain):
         self.ui.actionSmaller_nodes.triggered.connect(self.smaller_nodes)
         self.ui.actionCenter_view.triggered.connect(self.center_nodes)
         self.ui.actionAutoatic_layout.triggered.connect(self.auto_layout)
+        self.ui.actionSearchDiagram.triggered.connect(self.search_diagram)
 
         # Buttons
         self.ui.colour_results_pushButton.clicked.connect(self.colour_diagrams)
@@ -1446,3 +1449,58 @@ class DiagramsMain(CompiledArraysMain):
             elif isinstance(diagram_widget, GridMapWidget):
                 pass
                 # diagram_widget.delete_diagram_elements(elements)
+
+    def search_diagram(self):
+        """
+        Search elements by name, code or idtag and center them in the screen
+        """
+
+        dlg = InputSearchDialogue(deafault_value="",
+                                  title="Search",
+                                  prompt="")
+        if dlg.exec_():
+
+            if dlg.is_accepted:
+                diagram = self.get_selected_diagram_widget()
+
+                # Initialize boundaries
+                min_x = min_y = max_x = max_y = None
+
+                if diagram is not None:
+                    if isinstance(diagram, BusBranchEditorWidget):
+                        for key, points_group in diagram.diagram.data.items():
+                            for idTag, location in points_group.locations.items():
+                                if location.api_object is not None:
+                                    if location.graphic_object is not None:
+                                        search_text = dlg.searchText.lower()  # Assuming you want case-insensitive search
+                                        # Check if searchText is in the name, code, or idtag of the api_object
+                                        if (search_text in location.api_object.name.lower() or
+                                            search_text in location.api_object.code.lower() or
+                                            search_text in str(location.api_object.idtag).lower()):
+
+                                            # Calculate boundaries
+                                            left = location.x
+                                            right = location.x + location.w
+                                            top = location.y
+                                            bottom = location.y + location.h
+
+                                            if min_x is None or left < min_x:
+                                                min_x = left
+                                            if min_y is None or top < min_y:
+                                                min_y = top
+                                            if max_x is None or right > max_x:
+                                                max_x = right
+                                            if max_y is None or bottom > max_y:
+                                                max_y = bottom
+
+                # After all matching elements have been processed
+                if None not in (min_x, min_y, max_x, max_y):
+                    # Calculate width and height
+                    width = max_x - min_x
+                    height = max_y - min_y
+
+                    # Create the bounding rectangle
+                    boundaries = QRectF(min_x, min_y, width, height)
+
+                    # Fit the view
+                    diagram.editor_graphics_view.fitInView(boundaries, Qt.KeepAspectRatio)
