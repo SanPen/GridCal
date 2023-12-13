@@ -1657,4 +1657,5 @@ def run_linear_opf_ts(grid: MultiCircuit,
     # add the model logger to the main logger
     logger += lp_model.logger
 
+    lp_model.save_model('hydro_opf.lp')
     return vars_v

@@ -28,11 +28,11 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Add hydro constraints">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Have a hydro + electrical case running fine">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Grids_and_profiles/grids/hydro_grid1.gridcal" beforeDir="false" afterPath="$PROJECT_DIR$/Grids_and_profiles/grids/hydro_grid1.gridcal" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Grids_and_profiles/grids/hydro_grid2.gridcal" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/examples/hydro_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/examples/hydro_opf.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/bus_branch_editor_widget.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/bus_branch_editor_widget.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/linear_opf_ts.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/linear_opf_ts.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -1566,7 +1566,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="432" />
+    <option name="localTasksCounter" value="433" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1612,7 +1612,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Updated docs" />
     <MESSAGE value="Updated changelog" />
     <MESSAGE value="Small improvements for the MIP interfaces" />
     <MESSAGE value="Minimal interface refactor" />
@@ -1637,7 +1636,8 @@
     <MESSAGE value="Start writing the LP problem for hydro" />
     <MESSAGE value="Fix path plant dict" />
     <MESSAGE value="Add hydro constraints" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add hydro constraints" />
+    <MESSAGE value="Have a hydro + electrical case running fine" />
+    <option name="LAST_COMMIT_MESSAGE" value="Have a hydro + electrical case running fine" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2077,8 +2077,8 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/linear_opf_ts.py</url>
-          <line>1335</line>
-          <option name="timeStamp" value="1239" />
+          <line>1356</line>
+          <option name="timeStamp" value="1242" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
