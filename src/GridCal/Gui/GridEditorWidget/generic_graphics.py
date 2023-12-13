@@ -20,14 +20,14 @@ from PySide6.QtWidgets import (QPushButton, QGraphicsLineItem, QGraphicsItem, QV
                                QDialog, QGraphicsRectItem, QGraphicsEllipseItem)
 
 try:
-    is_dark = darkdetect.theme() == "Dark"
+    IS_DARK = darkdetect.theme() == "Dark"
 except ImportError:
-    is_dark = False
+    IS_DARK = False
 
 # Declare colors
 ACTIVE = {'style': Qt.SolidLine,
-          'color': Qt.white if is_dark else Qt.black,
-          'text': Qt.white if is_dark else Qt.black}
+          'color': Qt.white if IS_DARK else Qt.black,
+          'text': Qt.white if IS_DARK else Qt.black}
 
 DEACTIVATED = {'style': Qt.DashLine, 'color': Qt.gray}
 EMERGENCY = {'style': Qt.SolidLine, 'color': Qt.yellow}
@@ -39,7 +39,7 @@ def set_dark_mode():
     """
     Set the dark mode
     """
-    is_dark = True
+    IS_DARK = True
     ACTIVE['color'] = Qt.white
     ACTIVE['text'] = Qt.white
 
@@ -48,12 +48,21 @@ def set_light_mode():
     """
     Set the light mode
     """
-    is_dark = False
+    IS_DARK = False
     ACTIVE['color'] = Qt.black
     ACTIVE['text'] = Qt.black
 
 
+if IS_DARK:
+    set_dark_mode()
+else:
+    set_light_mode()
+
+
 class LineUpdateMixin:
+    """
+    LineUpdateMixin
+    """
 
     def __init__(self, parent):
         super(LineUpdateMixin, self).__init__(parent)
