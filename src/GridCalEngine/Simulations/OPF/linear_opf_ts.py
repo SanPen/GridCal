@@ -22,6 +22,8 @@ That means that solves the OPF problem for a complete time series at once
 import numpy as np
 from typing import List, Union, Tuple, Callable
 from scipy.sparse import csc_matrix
+
+import GridCalEngine.enumerations
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Core.Devices.Aggregation.area import Area
 from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit, compile_numerical_circuit_at
@@ -473,12 +475,12 @@ class FluidInjectionVars:
         """
 
         # self.efficiency = np.zeros((nt, n_elm), dtype=float)  # m3
-        # self.max_flow_rate = np.zeros((nt, n_elm), dtype=float)  # m3
+        # self.max_flow_rate = np.zeros((nt, n_elm), dtype=float)  # m3/h
         #
         # self.p_max = np.zeros((nt, n_elm), dtype=float)  # MW
         # self.p_min = np.zeros((nt, n_elm), dtype=float)  # MW
         #
-        self.power = np.zeros((nt, n_elm), dtype=object)  # MW
+        self.flow = np.zeros((nt, n_elm), dtype=object)  # m3/h
 
     def get_values(self, model: LpModel) -> "FluidInjectionVars":
         """
@@ -486,21 +488,16 @@ class FluidInjectionVars:
         :param model: LP model from where we extract the values
         :return: FluidInjectionVars
         """
-        nt, n_elm = self.power.shape
+        nt, n_elm = self.flow.shape
         data = FluidInjectionVars(nt=nt, n_elm=n_elm)
 
         for t in range(nt):
             for i in range(n_elm):
-                data.power[t, i] = model.get_value(self.power[t, i])
+                data.flow[t, i] = model.get_value(self.flow[t, i])
 
         # format the arrays appropriately
-        data.power = data.power.astype(float, copy=False)
+        data.flow = data.flow.astype(float, copy=False)
 
-        # data.efficiency = self.efficiency
-        # data.max_flow_rate = self.max_flow_rate
-        # data.p_max = self.p_max  # TODO: think how to make this link
-        # data.p_min = self.p_min
-        #
         return data
 
 
@@ -608,8 +605,8 @@ class OpfVars:
         data.branch_vars = self.branch_vars.get_values(Sbase, model)
         data.hvdc_vars = self.hvdc_vars.get_values(Sbase, model)
         data.fluid_node_vars = self.fluid_node_vars.get_values(model)
-        self.fluid_path_vars = self.fluid_path_vars.get_values(model)
-        self.fluid_inject_vars = self.fluid_inject_vars.get_values(model)
+        data.fluid_path_vars = self.fluid_path_vars.get_values(model)
+        data.fluid_inject_vars = self.fluid_inject_vars.get_values(model)
         data.sys_vars = self.sys_vars
 
         data.acceptable_solution = self.acceptable_solution
@@ -1264,21 +1261,8 @@ def add_linear_node_balance(t_idx: int,
         set_var_bounds(var=bus_vars.theta[t_idx, i], lb=0.0, ub=0.0)
 
 
-def make_node_device_relationship(devices: List[Union[FluidTurbineData, FluidPumpData, FluidP2XData]],
-                                  nodes: List[FluidNodeData]):
-    """
-    Create dictionary of the devices attached at each node
-    :param devices: list of fluid moving devices (Turbines, pumps, power2xs, ...)
-    :param nodes: list of hosting fluid nodes (FluidNode, ...)
-    :return: Dict[FluidNode] -> List[Union[Turbine, Pump]]
-    """
-    plants_dict = {plant: list() for plant in nodes}
-    for turbine in devices:
-        plants_dict[turbine.plant].append(turbine)
-    return plants_dict
-
-
 def add_hydro_formulation(t: Union[int, None],
+                          time_global_tidx: Union[int, None],
                           time_array: DateVec,
                           node_vars: FluidNodeVars,
                           path_vars: FluidPathVars,
@@ -1290,10 +1274,12 @@ def add_hydro_formulation(t: Union[int, None],
                           p2x_data: FluidP2XData,
                           generator_data: GeneratorData,
                           generator_vars: GenerationVars,
-                          prob: LpModel):
+                          prob: LpModel,
+                          logger: Logger):
     """
     Formulate the branches
-    :param t: time index
+    :param t: local time index
+    :param time_global_tidx: global time index
     :param time_array: list of time indices
     :param node_vars: FluidNodeVars
     :param path_vars: FluidPathVars
@@ -1306,6 +1292,7 @@ def add_hydro_formulation(t: Union[int, None],
     :param generator_data: GeneratorData
     :param generator_vars: GeneratorVars
     :param prob: OR problem
+    :param logger: log of the LP
     :return objective function
     """
 
@@ -1327,33 +1314,71 @@ def add_hydro_formulation(t: Union[int, None],
                                             ub=path_data.max_flow[m],
                                             name=f'Flow_{path_data.names[m]}')
 
+    # add flow variables for turbines and pumps to be recovered later on
+    # for m in range(turbine_data.nelm):
+    #     inj_vars.flow[t, m] = prob.add_var()
+
     # Constraints
     for m in range(path_data.nelm):
+        # inflow: fluid flow entering the target node in m3/h
+        # outflow: fluid flow leaving the source node in m3/h
+        # flow: amount of fluid flowing through the river in m3/h
         node_vars.inflow[t, path_data.target_idx[m]] += path_vars.flow[t, m]
         node_vars.outflow[t, path_data.source_idx[m]] += path_vars.flow[t, m]
 
     for m in range(turbine_data.nelm):
-        turbine_flow = generator_vars.p[t, turbine_data.generator_idx[m]] / turbine_data.efficiency[m]
-        node_vars.outflow[t, turbine_data.plant_idx[m]] += turbine_flow
+        gen_idx = turbine_data.generator_idx[m]
+        plant_idx = turbine_data.plant_idx[m]
+
+        # flow = Pgen * max_flow / (Pgen_max * eff)
+        turbine_flow = (generator_vars.p[t, gen_idx] * turbine_data.max_flow_rate[m]
+                        / (generator_data.pmax[gen_idx] * turbine_data.efficiency[m]))
+        node_vars.outflow[t, plant_idx] = turbine_flow  # assume only 1 turbine connected
+        inj_vars.flow[t, m] = turbine_flow  # to retrieve the value later on
+
+        if generator_data.pmin[gen_idx] < 0:
+            logger.add_error(msg='Turbine generator pmin < 0 is not possible',
+                             value=generator_data.pmin[gen_idx])
 
         f_obj += turbine_flow
 
     for m in range(pump_data.nelm):
-        pump_flow = generator_vars.p[t, pump_data.generator_idx[m]] / pump_data.efficiency[m]
-        node_vars.inflow[t, pump_data.plant_idx[m]] += pump_flow
+        gen_idx = pump_data.generator_idx[m]
+        plant_idx = pump_data.plant_idx[m]
+
+        # flow = Pcons * max_flow * eff / Pcons_max (invert the efficiency compared to a turbine)
+        pump_flow = (generator_vars.p[t, gen_idx] * pump_data.max_flow_rate[m]
+                     * pump_data.efficiency[m] / pump_data.efficiency[m])
+        node_vars.inflow[t, plant_idx] = pump_flow  # assume only 1 pump connected
+        inj_vars.flow[t, m + turbine_data.nelm] = pump_flow
+
+        if generator_data.pmax[gen_idx] > 0:
+            logger.add_error(msg='Pump generator pmax > 0 is not possible',
+                             value=generator_data.pmax[gen_idx])
 
         f_obj += pump_flow
 
     for m in range(p2x_data.nelm):
-        p2x_flow = generator_data.p[t, p2x_data.generator_idx[m]] / p2x_data.efficiency[m]
+        gen_idx = pump_data.generator_idx[m]
+
+        # flow = Pcons * max_flow * eff / Pcons_max (invert the efficiency compared to a turbine)
+        p2x_flow = (generator_vars.p[t, gen_idx] * p2x_data.max_flow_rate[m]
+                    * p2x_data.efficiency[m] / p2x_data.efficiency[m])
         node_vars.p2x_flow[t, p2x_data.plant_idx[m]] += p2x_flow
+        inj_vars.flow[t, m + turbine_data.nelm + pump_data.nelm] = p2x_flow
+
+        if generator_data.pmax[gen_idx] > 0:
+            logger.add_error(msg='P2X generator pmax > 0 is not possible',
+                             value=generator_data.pmax[gen_idx])
 
         f_obj += p2x_flow
 
     if t is not None:
-        if t > 0:
-            for m in range(node_data.nelm):
-                dt = (time_array[t] - time_array[t - 1]).seconds / 3600.0  # time increment in hours
+        # constraints for the node level
+        for m in range(node_data.nelm):
+            if t > 0:
+                # calculate dt in hours
+                dt = (time_array[time_global_tidx] - time_array[time_global_tidx - 1]).seconds / 3600.0
                 prob.add_cst(cst=(node_vars.current_level[t, m] ==
                                   node_vars.current_level[t-1, m]
                                   + dt * node_vars.inflow[t, m],
@@ -1361,9 +1386,8 @@ def add_hydro_formulation(t: Union[int, None],
                                   - dt * node_vars.spillage[t, m],
                                   - dt * node_vars.outflow[t, m]),
                              name=f'{node_data.names[m]} Nodal Balance')
-        else:
-            # no time to consider there is water to flow, as if dt = 0
-            for m in range(node_data.nelm):
+            else:
+                # no time to consider there is water to flow, as if dt = 0
                 prob.add_cst(cst=(node_vars.current_level[t, m] ==
                                   node_data.initial_level[m]),
                              name=f'{node_data.names[m]} Nodal Balance')
@@ -1594,6 +1618,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
             # add hydro side -------------------------------------------------------------------------------------------
             if n_fluid_node > 0:
                 f_obj += add_hydro_formulation(t=local_t_idx,
+                                               time_global_tidx=global_t_idx,
                                                time_array=grid.time_profile,
                                                node_vars=mip_vars.fluid_node_vars,
                                                path_vars=mip_vars.fluid_path_vars,
@@ -1605,7 +1630,8 @@ def run_linear_opf_ts(grid: MultiCircuit,
                                                p2x_data=nc.fluid_p2x_data,
                                                generator_data=nc.generator_data,
                                                generator_vars=mip_vars.gen_vars,
-                                               prob=lp_model)
+                                               prob=lp_model,
+                                               logger=logger)
 
         elif zonal_grouping == ZonalGrouping.All:
             # this is the copper plate approach
@@ -1657,5 +1683,5 @@ def run_linear_opf_ts(grid: MultiCircuit,
     # add the model logger to the main logger
     logger += lp_model.logger
 
-    lp_model.save_model('hydro_opf.lp')
+    # lp_model.save_model('hydro_opf.lp')
     return vars_v

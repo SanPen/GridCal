@@ -28,11 +28,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Have a hydro + electrical case running fine">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Start debugging the hydro scenario">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Grids_and_profiles/grids/hydro_grid1.gridcal" beforeDir="false" afterPath="$PROJECT_DIR$/Grids_and_profiles/grids/hydro_grid1.gridcal" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Grids_and_profiles/grids/hydro_grid2.gridcal" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/hydro_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/examples/hydro_opf.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/linear_opf_ts.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/linear_opf_ts.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -1566,7 +1564,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="433" />
+    <option name="localTasksCounter" value="434" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1612,7 +1610,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Updated changelog" />
     <MESSAGE value="Small improvements for the MIP interfaces" />
     <MESSAGE value="Minimal interface refactor" />
     <MESSAGE value="Linear analysis refactor" />
@@ -1637,7 +1634,8 @@
     <MESSAGE value="Fix path plant dict" />
     <MESSAGE value="Add hydro constraints" />
     <MESSAGE value="Have a hydro + electrical case running fine" />
-    <option name="LAST_COMMIT_MESSAGE" value="Have a hydro + electrical case running fine" />
+    <MESSAGE value="Start debugging the hydro scenario" />
+    <option name="LAST_COMMIT_MESSAGE" value="Start debugging the hydro scenario" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2074,11 +2072,6 @@
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/Fluid/fluid_node_graphics.py</url>
           <line>87</line>
           <option name="timeStamp" value="1236" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/linear_opf_ts.py</url>
-          <line>1356</line>
-          <option name="timeStamp" value="1242" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
