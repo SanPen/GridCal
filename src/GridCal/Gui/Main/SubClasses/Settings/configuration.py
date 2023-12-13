@@ -23,6 +23,7 @@ from PySide6 import QtWidgets
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCal.Gui.Main.SubClasses.Results.results import ResultsMain
 from GridCal.Gui.GridEditorWidget import BusBranchEditorWidget
+from GridCal.Gui.GridEditorWidget.generic_graphics import set_dark_mode, set_light_mode
 
 
 class ConfigurationMain(ResultsMain):
@@ -51,6 +52,7 @@ class ConfigurationMain(ResultsMain):
                          "primary>list.selectionBackground": "#00aa88be"}
 
         if self.ui.dark_mode_checkBox.isChecked():
+            set_dark_mode()
             qdarktheme.setup_theme(theme='dark', custom_colors=custom_colors)
 
             diagram = self.get_selected_diagram_widget()
@@ -63,6 +65,7 @@ class ConfigurationMain(ResultsMain):
             if self.console is not None:
                 self.console.set_dark_theme()
         else:
+            set_light_mode()
             qdarktheme.setup_theme(theme='light', custom_colors=custom_colors)
 
             diagram = self.get_selected_diagram_widget()
@@ -309,6 +312,11 @@ class ConfigurationMain(ResultsMain):
 
         struct = self.get_config_structure()
         data_to_struct(data_=data, struct_=struct)
+
+        if self.ui.dark_mode_checkBox.isChecked():
+            set_dark_mode()
+        else:
+            set_light_mode()
 
     def load_gui_config(self) -> None:
         """

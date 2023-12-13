@@ -18,7 +18,9 @@ GridCal
 """
 from typing import Dict, Tuple, List, Union
 import numpy as np
-import GridCalEngine.basic_structures as bs
+
+from GridCalEngine.basic_structures import Logger
+from GridCalEngine.enumerations import ConverterControlType
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 import GridCalEngine.Core.Devices as dev
 import GridCalEngine.IO.matpower.matpower_branch_definitions as matpower_branches
@@ -85,7 +87,7 @@ def txt2mat(txt, line_splitter=';', col_splitter='\t', to_float=True):
             if to_float:
                 arr = np.zeros((nrows, ncols))
             else:
-                arr = np.zeros((nrows, ncols), dtype=np.object)
+                arr = np.zeros((nrows, ncols), dtype=object)
 
         # fill-in the data
         for j, val in enumerate(vec):
@@ -97,7 +99,7 @@ def txt2mat(txt, line_splitter=';', col_splitter='\t', to_float=True):
     return np.array(arr)
 
 
-def parse_areas_data(circuit: MultiCircuit, data, logger: bs.Logger):
+def parse_areas_data(circuit: MultiCircuit, data, logger: Logger):
     """
     Parse Matpower / FUBM Matpower area data into GridCal
     :param circuit: MultiCircuit instance
@@ -127,7 +129,7 @@ def parse_areas_data(circuit: MultiCircuit, data, logger: bs.Logger):
     return area_idx_dict
 
 
-def parse_buses_data(circuit: MultiCircuit, data, area_idx_dict, logger: bs.Logger):
+def parse_buses_data(circuit: MultiCircuit, data, area_idx_dict, logger: Logger):
     """
     Parse Matpower / FUBM Matpower bus data into GridCal
     :param circuit: MultiCircuit instance
@@ -169,7 +171,7 @@ def parse_buses_data(circuit: MultiCircuit, data, area_idx_dict, logger: bs.Logg
             if ref_idx == bus_idx:
                 is_slack = True
         else:
-            area = circuit.default_area
+            area = None
 
         code = str(bus_idx)
 
@@ -207,7 +209,7 @@ def parse_buses_data(circuit: MultiCircuit, data, area_idx_dict, logger: bs.Logg
     return bus_idx_dict
 
 
-def parse_generators(circuit: MultiCircuit, data, bus_idx_dict, logger: bs.Logger):
+def parse_generators(circuit: MultiCircuit, data, bus_idx_dict, logger: Logger):
     """
     Parse Matpower / FUBM Matpower generator data into GridCal
     :param circuit: MultiCircuit instance
@@ -280,7 +282,7 @@ def parse_generators(circuit: MultiCircuit, data, bus_idx_dict, logger: bs.Logge
             #     gen_dict[i].enabled_dispatch = False
 
 
-def parse_branches_data(circuit: MultiCircuit, data, bus_idx_dict, logger: bs.Logger):
+def parse_branches_data(circuit: MultiCircuit, data, bus_idx_dict, logger: Logger):
     """
     Parse Matpower / FUBM Matpower branch data into GridCal
     :param circuit: MultiCircuit instance
@@ -302,8 +304,10 @@ def parse_branches_data(circuit: MultiCircuit, data, bus_idx_dict, logger: bs.Lo
     else:
         names = ['branch ' + str(i) for i in range(n)]
     for i in range(len(table)):
-        f = circuit.buses[bus_idx_dict[int(table[i, matpower_branches.F_BUS])]]
-        t = circuit.buses[bus_idx_dict[int(table[i, matpower_branches.T_BUS])]]
+        f_idx = int(table[i, matpower_branches.F_BUS])
+        t_idx = int(table[i, matpower_branches.T_BUS])
+        f = circuit.buses[bus_idx_dict[f_idx]]
+        t = circuit.buses[bus_idx_dict[t_idx]]
 
         if table.shape[1] == 37:  # FUBM model
 
@@ -332,37 +336,38 @@ def parse_branches_data(circuit: MultiCircuit, data, bus_idx_dict, logger: bs.Lo
                     if Pfset != 0.0:
 
                         if Qtset != 0.0:
-                            control_mode = dev.ConverterControlType.type_I_2
+                            control_mode = ConverterControlType.type_I_2
 
                         elif Vac_set != 0.0:
-                            control_mode = dev.ConverterControlType.type_I_3
+                            control_mode = ConverterControlType.type_I_3
 
                         else:
-                            control_mode = dev.ConverterControlType.type_I_1
+                            control_mode = ConverterControlType.type_I_1
 
                     else:
-                        control_mode = dev.ConverterControlType.type_0_free
+                        control_mode = ConverterControlType.type_0_free
 
                 elif matpower_converter_mode == 2:
 
                     if Vac_set == 0.0:
-                        control_mode = dev.ConverterControlType.type_II_4
+                        control_mode = ConverterControlType.type_II_4
                     else:
-                        control_mode = dev.ConverterControlType.type_II_5
+                        control_mode = ConverterControlType.type_II_5
 
                 elif matpower_converter_mode == 3:
-                    control_mode = dev.ConverterControlType.type_III_6
+                    control_mode = ConverterControlType.type_III_6
 
                 elif matpower_converter_mode == 4:
-                    control_mode = dev.ConverterControlType.type_III_7
+                    control_mode = ConverterControlType.type_III_7
 
                 else:
-                    control_mode = dev.ConverterControlType.type_0_free
+                    control_mode = ConverterControlType.type_0_free
 
                 rate = max(table[i, [matpower_branches.RATE_A, matpower_branches.RATE_B, matpower_branches.RATE_C]])
 
                 branch = dev.VSC(bus_from=f,
                                  bus_to=t,
+                                 code="{0}_{1}_1".format(f_idx, t_idx),
                                  name='VSC' + str(len(circuit.vsc_devices) + 1),
                                  active=bool(table[i, matpower_branches.BR_STATUS]),
                                  r=table[i, matpower_branches.BR_R],
@@ -401,6 +406,7 @@ def parse_branches_data(circuit: MultiCircuit, data, bus_idx_dict, logger: bs.Lo
 
                     branch = dev.Transformer2W(bus_from=f,
                                                bus_to=t,
+                                               code="{0}_{1}_1".format(f_idx, t_idx),
                                                name=names[i],
                                                r=table[i, matpower_branches.BR_R],
                                                x=table[i, matpower_branches.BR_X],
@@ -416,6 +422,7 @@ def parse_branches_data(circuit: MultiCircuit, data, bus_idx_dict, logger: bs.Lo
                 else:
                     branch = dev.Line(bus_from=f,
                                       bus_to=t,
+                                      code="{0}_{1}_1".format(f_idx, t_idx),
                                       name=names[i],
                                       r=table[i, matpower_branches.BR_R],
                                       x=table[i, matpower_branches.BR_X],
@@ -433,6 +440,7 @@ def parse_branches_data(circuit: MultiCircuit, data, bus_idx_dict, logger: bs.Lo
 
                 branch = dev.Transformer2W(bus_from=f,
                                            bus_to=t,
+                                           code="{0}_{1}_1".format(f_idx, t_idx),
                                            name=names[i],
                                            r=table[i, matpower_branches.BR_R],
                                            x=table[i, matpower_branches.BR_X],
@@ -448,6 +456,7 @@ def parse_branches_data(circuit: MultiCircuit, data, bus_idx_dict, logger: bs.Lo
             else:
                 branch = dev.Line(bus_from=f,
                                   bus_to=t,
+                                  code="{0}_{1}_1".format(f_idx, t_idx),
                                   name=names[i],
                                   r=table[i, matpower_branches.BR_R],
                                   x=table[i, matpower_branches.BR_X],
@@ -463,6 +472,7 @@ def parse_branches_data(circuit: MultiCircuit, data, bus_idx_dict, logger: bs.Lo
         if line.bus_to.is_dc and line.bus_from.is_dc:
             dc_line = dev.DcLine(bus_from=line.bus_from,
                                  bus_to=line.bus_to,
+                                 code=line.code,
                                  name=line.name,
                                  active=line.active,
                                  rate=line.rate,
@@ -478,7 +488,7 @@ def parse_branches_data(circuit: MultiCircuit, data, bus_idx_dict, logger: bs.Lo
             logger.add_info('Converted to DC line', line.name)
 
 
-def interpret_data_v1(circuit: MultiCircuit, data, logger: bs.Logger) -> MultiCircuit:
+def interpret_data_v1(circuit: MultiCircuit, data, logger: Logger) -> MultiCircuit:
     """
     Pass the loaded table-like data to the  structures
     :param circuit:
@@ -514,7 +524,7 @@ def interpret_data_v1(circuit: MultiCircuit, data, logger: bs.Logger) -> MultiCi
     return circuit
 
 
-def read_matpower_file(filename: str) -> [MultiCircuit, bs.Logger]:
+def read_matpower_file(filename: str) -> [MultiCircuit, Logger]:
     """
 
     :param filename:
@@ -566,7 +576,7 @@ def read_matpower_file(filename: str) -> [MultiCircuit, bs.Logger]:
     return data
 
 
-def parse_matpower_file(filename, export=False) -> [MultiCircuit, bs.Logger]:
+def parse_matpower_file(filename, export=False) -> [MultiCircuit, Logger]:
     """
 
     Args:
@@ -580,7 +590,7 @@ def parse_matpower_file(filename, export=False) -> [MultiCircuit, bs.Logger]:
     # declare circuit
     circuit = MultiCircuit()
 
-    logger = bs.Logger()
+    logger = Logger()
 
     data = read_matpower_file(filename)
 
@@ -610,7 +620,7 @@ def get_matpower_case_data(filename, force_linear_cost=False) -> Dict:
     :param force_linear_cost: Force linear cost when costs are found?
     :return: Matpower case data dictionary
     """
-    logger = bs.Logger()
+    logger = Logger()
 
     data = read_matpower_file(filename)
 
@@ -796,7 +806,7 @@ def get_branches(circuit: MultiCircuit, bus_dict: Dict[dev.Bus, int]) -> List[Di
     return data
 
 
-def to_matpower(circuit: MultiCircuit, logger: bs.Logger = bs.Logger()) -> Dict[str, Union[float, List[Dict[str, float]]]]:
+def to_matpower(circuit: MultiCircuit, logger: Logger = Logger()) -> Dict[str, Union[float, List[Dict[str, float]]]]:
     """
 
     :param circuit:

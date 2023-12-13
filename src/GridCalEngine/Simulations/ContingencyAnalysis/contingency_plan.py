@@ -49,7 +49,11 @@ def enumerate_states_n_k(m: int, k: int = 1):
     return np.array(states), indices
 
 
-def add_n1_contingencies(branches, vmin, vmax, filter_branches_by_voltage, branch_types):
+def add_n1_contingencies(branches: List[dev.BranchTemplate],
+                         vmin: float,
+                         vmax: float,
+                         filter_branches_by_voltage: bool,
+                         branch_types: List[DeviceType]):
     """
     generate N-1 contingencies on branches
     :param branches:

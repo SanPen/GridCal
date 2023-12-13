@@ -82,6 +82,11 @@ class ResultTypes(Enum):
     GeneratorShedding = 'Generator shedding', DeviceType.GeneratorDevice
     GeneratorPower = 'Generator power', DeviceType.GeneratorDevice
     GeneratorCost = 'Generator cost', DeviceType.GeneratorDevice
+    GeneratorFuels = 'Generator fuels', DeviceType.GeneratorDevice
+    GeneratorEmissions = 'Generator emissions', DeviceType.GeneratorDevice
+    GeneratorProducing = 'Generator producing', DeviceType.GeneratorDevice
+    GeneratorStartingUp = 'Generator starting up', DeviceType.GeneratorDevice
+    GeneratorShuttingDown = 'Generator shutting down', DeviceType.GeneratorDevice
     BusVoltagePolarPlot = 'Voltage plot', DeviceType.BusDevice
 
     # OPF-NTC

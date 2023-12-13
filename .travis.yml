@@ -1,14 +1,13 @@
-dist: focal   # required for Python >= 3.7
+dist: jammy   # ubuntu distro 22.04 name (jammy jellyfish)
 services:
   - xvfb  # this is necessary for travis-ci to work with Qt
 language: python
 python:
-  #- "3.6"
-  - "3.7"
-  - "3.8"
+  - "3.10"
+  - "3.11"
 # command to install dependencies
 install:
-  - pip install -r requirements_nose.txt
+  - pip install -r requirements.txt
 # command to run tests
 script:
   - cd src/tests

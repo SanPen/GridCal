@@ -15,22 +15,20 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-import time
-
 import numpy as np
 from numba import jit, prange
 from typing import Union
 
-import GridCalEngine.basic_structures as bs
 from GridCalEngine.basic_structures import IntVec, StrVec
+from GridCalEngine.enumerations import EngineType, ContingencyEngine
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearMultiContingencies
 from GridCalEngine.Simulations.LinearFactors.linear_analysis_options import LinearAnalysisOptions
 from GridCalEngine.Simulations.LinearFactors.linear_analysis_ts_driver import LinearAnalysisTimeSeriesDriver
-from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_driver import ContingencyAnalysisOptions, \
-    ContingencyAnalysisDriver
-from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_ts_results import \
-    ContingencyAnalysisTimeSeriesResults
+from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_driver import (ContingencyAnalysisOptions,
+                                                                                       ContingencyAnalysisDriver)
+from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_ts_results import (
+    ContingencyAnalysisTimeSeriesResults)
 from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.driver_template import TimeSeriesDriverTemplate
 from GridCalEngine.Simulations.Clustering.clustering_results import ClusteringResults
@@ -130,7 +128,7 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
                  options: Union[ContingencyAnalysisOptions, LinearAnalysisOptions],
                  time_indices: IntVec,
                  clustering_results: Union["ClusteringResults", None] = None,
-                 engine: bs.EngineType = bs.EngineType.GridCal):
+                 engine: EngineType = EngineType.GridCal):
         """
         Contingecny analysis constructor
         :param grid: Multicircuit instance
@@ -195,7 +193,7 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
 
         contingency_count = None
 
-        if self.options.engine == bs.ContingencyEngine.PTDF:
+        if self.options.engine == ContingencyEngine.PTDF:
             linear = LinearAnalysisTimeSeriesDriver(
                 grid=self.grid,
                 options=self.options,
@@ -209,13 +207,13 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
             self.progress_signal.emit((it + 1) / len(self.time_indices) * 100)
 
             # run contingency at t using the specified method
-            if self.options.engine == bs.ContingencyEngine.PowerFlow:
+            if self.options.engine == ContingencyEngine.PowerFlow:
                 res_t = cdriver.n_minus_k(t=t)
 
-            elif self.options.engine == bs.ContingencyEngine.PTDF:
+            elif self.options.engine == ContingencyEngine.PTDF:
                 res_t = cdriver.n_minus_k_ptdf(t=t)
 
-            elif self.options.engine == bs.ContingencyEngine.HELM:
+            elif self.options.engine == ContingencyEngine.HELM:
                 res_t = cdriver.n_minus_k_helm(t=t)
 
             else:
@@ -296,10 +294,10 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
         """
         self.tic()
 
-        if self.engine == bs.EngineType.GridCal:
+        if self.engine == EngineType.GridCal:
             self.results = self.run_contingency_analysis()
 
-        elif self.engine == bs.EngineType.NewtonPA:
+        elif self.engine == EngineType.NewtonPA:
             self.progress_text.emit('Running Newton power analytics... ')
             self.results = self.run_newton_pa()
 

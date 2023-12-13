@@ -19,7 +19,8 @@
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
-from GridCalEngine.basic_structures import BusMode, ExternalGridMode, Vec, CxVec
+from GridCalEngine.enumerations import BusMode, ExternalGridMode
+from GridCalEngine.basic_structures import Vec, CxVec
 from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceType
 from GridCalEngine.Core.Devices.Aggregation import Area, Zone, Country
 from GridCalEngine.Core.Devices.Substation.substation import Substation
@@ -100,7 +101,7 @@ class Bus(EditableDevice):
                  active=True,
                  is_slack=False,
                  is_dc=False,
-                 is_tr_bus=False,
+                 is_internal=False,
                  area: Area = None,
                  zone: Zone = None,
                  substation: Substation = None,
@@ -124,6 +125,7 @@ class Bus(EditableDevice):
 
         # minimum voltage limit
         self.Vmin = vmin
+        self.voltage_module_cost = 0
 
         # maximum voltage limit
         self.Vmax = vmax
@@ -135,6 +137,8 @@ class Bus(EditableDevice):
         self.angle_min = angle_min
 
         self.angle_max = angle_max
+
+        self.voltage_angle_cost = 0
 
         # summation of lower reactive power limits connected
         self.Qmin_sum = 0
@@ -188,7 +192,7 @@ class Bus(EditableDevice):
         self.is_dc = is_dc
 
         # determine if this bus is part of a composite transformer such as a 3-winding transformer
-        self.is_tr_bus = is_tr_bus
+        self.is_internal = is_internal
 
         # if true, the presence of storage devices turn the bus into a Reference bus in practice
         # So that P +jQ are computed
@@ -211,9 +215,10 @@ class Bus(EditableDevice):
         self.register(key='is_slack', units='', tpe=bool, definition='Force the bus to be of slack type.',
                       profile_name='')
         self.register(key='is_dc', units='', tpe=bool, definition='Is this bus of DC type?.', profile_name='')
-        self.register(key='is_tr_bus', units='', tpe=bool,
-                      definition='Is this bus part of a composite transformer, such as  a 3-winding transformer?.',
-                      profile_name='')
+        self.register(key='is_internal', units='', tpe=bool,
+                      definition='Is this bus part of a composite transformer, '
+                                 'such as  a 3-winding transformer or a fluid node?.',
+                      profile_name='', old_names=['is_tr_bus'])
         self.register(key='Vnom', units='kV', tpe=float, definition='Nominal line voltage of the bus.', profile_name='')
         self.register(key='Vm0', units='p.u.', tpe=float, definition='Voltage module guess.', profile_name='')
         self.register(key='Va0', units='rad.', tpe=float, definition='Voltage angle guess.', profile_name='')
@@ -221,10 +226,12 @@ class Bus(EditableDevice):
                       profile_name='')
         self.register(key='Vmax', units='p.u.', tpe=float, definition='Higher range of allowed voltage module.',
                       profile_name='')
+        self.register(key='voltage_module_cost', units='€/unit', tpe=float, definition='Cost of over and under voltages')
         self.register(key='angle_min', units='rad.', tpe=float, definition='Lower range of allowed voltage angle.',
                       profile_name='')
         self.register(key='angle_max', units='rad.', tpe=float, definition='Higher range of allowed voltage angle.',
                       profile_name='')
+        self.register(key='voltage_angle_cost', units='€/unit', tpe=float, definition='Cost of over and under angles')
         self.register(key='r_fault', units='p.u.', tpe=float,
                       definition='Resistance of the fault.This is used for short circuit studies.', profile_name='')
         self.register(key='x_fault', units='p.u.', tpe=float,

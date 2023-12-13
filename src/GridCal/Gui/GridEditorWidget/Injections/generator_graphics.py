@@ -311,23 +311,6 @@ class GeneratorGraphicItem(InjectionTemplateGraphicItem):
         self.setPos(self.parent.x(), self.parent.y() + 100)
         self.update_line(self.pos())
 
-    def mousePressEvent(self, QGraphicsSceneMouseEvent):
-        """
-        mouse press: display the editor
-        :param QGraphicsSceneMouseEvent:
-        :return:
-        """
-        mdl = ObjectsModel([self.api_object],
-                           self.api_object.editable_headers,
-                           parent=self.diagramScene.parent().object_editor_table,
-                           editable=True,
-                           transposed=True,
-                           dictionary_of_lists={DeviceType.Technology.value: self.diagramScene.circuit.technologies,
-                                                DeviceType.FuelDevice.value: self.diagramScene.circuit.fuels,
-                                                DeviceType.EmissionGasDevice.value: self.diagramScene.circuit.emission_gases,
-                                                })
-        self.diagramScene.parent().object_editor_table.setModel(mdl)
-
     def mouseDoubleClickEvent(self, event):
         """
 

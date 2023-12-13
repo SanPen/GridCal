@@ -22,7 +22,7 @@ from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.result_types import ResultTypes
 from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.basic_structures import DateVec, IntVec, Vec, StrVec, CxMat, Mat, BoolVec
+from GridCalEngine.basic_structures import IntVec, Vec, StrVec, CxMat, Mat, BoolVec
 from GridCalEngine.enumerations import StudyResultsType
 
 
@@ -64,7 +64,13 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
 
                                                     ResultTypes.GeneratorResults: [ResultTypes.GeneratorPower,
                                                                                    ResultTypes.GeneratorShedding,
-                                                                                   ResultTypes.GeneratorCost],
+                                                                                   ResultTypes.GeneratorCost,
+                                                                                   # ResultTypes.GeneratorFuels,
+                                                                                   # ResultTypes.GeneratorEmissions,
+                                                                                   ResultTypes.GeneratorProducing,
+                                                                                   ResultTypes.GeneratorStartingUp,
+                                                                                   ResultTypes.GeneratorShuttingDown
+                                                                                   ],
 
                                                     ResultTypes.BatteryResults: [ResultTypes.BatteryPower,
                                                                                  ResultTypes.BatteryEnergy],
@@ -100,6 +106,9 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
         self.emission_names = emission_names
         self.bus_types = bus_types
 
+        nfuels = len(fuel_names)
+        nemissions = len(emission_names)
+
         self.voltage = np.zeros((nt, n), dtype=complex)
         self.Sbus = np.zeros((nt, n), dtype=complex)
         self.bus_shadow_prices = np.zeros((nt, n), dtype=float)
@@ -124,13 +133,18 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
         self.generator_power = np.zeros((nt, ngen), dtype=float)
         self.generator_shedding = np.zeros((nt, ngen), dtype=float)
         self.generator_cost = np.zeros((nt, ngen), dtype=float)
+        # self.generator_fuel = np.zeros((nt, ngen), dtype=float)
+        # self.generator_emissions = np.zeros((nt, ngen), dtype=float)
+        self.generator_producing = np.zeros((nt, ngen), dtype=bool)
+        self.generator_starting_up = np.zeros((nt, ngen), dtype=bool)
+        self.generator_shutting_down = np.zeros((nt, ngen), dtype=bool)
 
         self.battery_power = np.zeros((nt, nbat), dtype=float)
         self.battery_energy = np.zeros((nt, nbat), dtype=float)
 
         self.converged = np.empty(nt, dtype=bool)
-        self.system_fuel = np.empty(nt, dtype=float)
-        self.system_emissions = np.empty(nt, dtype=float)
+        self.system_fuel = np.empty((nt, nemissions), dtype=float)
+        self.system_emissions = np.empty((nt, nfuels), dtype=float)
         self.system_energy_cost = np.empty(nt, dtype=float)
 
         self.register(name='bus_names', tpe=StrVec)
@@ -164,6 +178,12 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
 
         self.register(name='generator_power', tpe=Mat)
         self.register(name='generator_shedding', tpe=Mat)
+        self.register(name='generator_cost', tpe=Mat)
+        # self.register(name='generator_fuel', tpe=Mat)
+        # self.register(name='generator_emissions', tpe=Mat)
+        self.register(name='generator_producing', tpe=Mat)
+        self.register(name='generator_starting_up', tpe=Mat)
+        self.register(name='generator_shutting_down', tpe=Mat)
 
         self.register(name='battery_power', tpe=Mat)
         self.register(name='battery_energy', tpe=Mat)
@@ -326,6 +346,36 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
             y_label = '(€/MWh)'
             title = 'Generator cost'
 
+        elif result_type == ResultTypes.GeneratorFuels:
+            labels = self.generator_names
+            y = self.generator_fuel
+            y_label = '(t)'
+            title = 'Generator fuels'
+
+        elif result_type == ResultTypes.GeneratorEmissions:
+            labels = self.generator_names
+            y = self.generator_emissions
+            y_label = '(t)'
+            title = 'Generator emissions'
+
+        elif result_type == ResultTypes.GeneratorProducing:
+            labels = self.generator_names
+            y = self.generator_producing
+            y_label = '(t)'
+            title = 'Generator producing'
+
+        elif result_type == ResultTypes.GeneratorStartingUp:
+            labels = self.generator_names
+            y = self.generator_starting_up
+            y_label = '(t)'
+            title = 'Generator starting up'
+
+        elif result_type == ResultTypes.GeneratorShuttingDown:
+            labels = self.generator_names
+            y = self.generator_shutting_down
+            y_label = '(t)'
+            title = 'Generator shutting down'
+
         elif result_type == ResultTypes.BatteryPower:
             labels = self.battery_names
             y = self.battery_power
@@ -351,8 +401,8 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
             title = ResultTypes.SystemEmissions.value[0]
 
         elif result_type == ResultTypes.SystemEnergyCost:
-            labels = self.system_energy_cost
-            y = self.system_fuel
+            labels = ['System cost']
+            y = self.system_energy_cost
             y_label = '(€/MWh)'
             title = ResultTypes.SystemEnergyCost.value[0]
 

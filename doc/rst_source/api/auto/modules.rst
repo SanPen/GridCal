@@ -1,7 +1,7 @@
-GridCalEngine API documentation
-===================================
+GridCal
+=======
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 4
 
-   GridCalEngine
+   GridCal

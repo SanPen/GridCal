@@ -20,7 +20,7 @@ from PySide6.QtCore import Qt, QRectF
 from PySide6.QtGui import QPen, QIcon, QPixmap, QBrush
 from PySide6.QtWidgets import QMenu, QGraphicsRectItem
 from GridCal.Gui.GeneralDialogues import InputNumberDialogue
-from GridCal.Gui.GridEditorWidget.substation.bus_graphics import TerminalItem
+from GridCal.Gui.GridEditorWidget.Substation.bus_graphics import TerminalItem
 from GridCal.Gui.GridEditorWidget.Branches.line_editor import LineEditor
 from GridCal.Gui.messages import yes_no_question, warning_msg
 from GridCal.Gui.GridEditorWidget.Branches.line_graphics_template import LineGraphicTemplateItem

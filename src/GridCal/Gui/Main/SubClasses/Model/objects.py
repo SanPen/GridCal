@@ -29,7 +29,7 @@ from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_m
 from GridCal.Gui.Main.SubClasses.Model.diagrams import DiagramsMain
 from GridCal.Gui.TowerBuilder.LineBuilderDialogue import TowerBuilderGUI
 from GridCal.Gui.GeneralDialogues import LogsDialogue
-from GridCal.Gui.GridEditorWidget import BusBranchEditorWidget
+
 
 class ObjectsTableMain(DiagramsMain):
     """
@@ -205,19 +205,31 @@ class ObjectsTableMain(DiagramsMain):
             dictionary_of_lists = {DeviceType.GeneratorDevice.value: self.circuit.get_generators(),
                                    DeviceType.EmissionGasDevice.value: self.circuit.emission_gases, }
 
-        elif elm_type == DeviceType.FluidNode:
+        elif elm_type == DeviceType.FluidNodeDevice:
             elm = dev.FluidNode()
+            # dictionary_of_lists = {DeviceType.FluidNodeDevice.value: self.circuit.fluid_nodes, }
 
         elif elm_type == DeviceType.FluidPath:
             elm = dev.FluidPath()
+            dictionary_of_lists = {DeviceType.FluidNodeDevice.value: self.circuit.fluid_nodes, }
 
         elif elm_type == DeviceType.FluidTurbine:
             elm = dev.FluidTurbine()
-            dictionary_of_lists = {DeviceType.FluidNode.value: self.circuit.fluid_nodes, }
+            dictionary_of_lists = {DeviceType.FluidNodeDevice.value: self.circuit.fluid_nodes,
+                                   DeviceType.GeneratorDevice.value: self.circuit.get_generators(),
+                                   }
 
         elif elm_type == DeviceType.FluidPump:
             elm = dev.FluidPump()
-            dictionary_of_lists = {DeviceType.FluidNode.value: self.circuit.fluid_nodes, }
+            dictionary_of_lists = {DeviceType.FluidNodeDevice.value: self.circuit.fluid_nodes,
+                                   DeviceType.GeneratorDevice.value: self.circuit.get_generators(),
+                                   }
+
+        elif elm_type == DeviceType.FluidP2X:
+            elm = dev.FluidP2x()
+            dictionary_of_lists = {DeviceType.FluidNodeDevice.value: self.circuit.fluid_nodes,
+                                   DeviceType.GeneratorDevice.value: self.circuit.get_generators(),
+                                   }
 
         else:
             raise Exception('elm_type not understood: ' + elm_type.value)
@@ -226,7 +238,6 @@ class ObjectsTableMain(DiagramsMain):
                               editable_headers=elm.editable_headers,
                               parent=self.ui.dataStructureTableView,
                               editable=True,
-                              non_editable_attributes=elm.non_editable_attributes,
                               dictionary_of_lists=dictionary_of_lists)
 
         return mdl

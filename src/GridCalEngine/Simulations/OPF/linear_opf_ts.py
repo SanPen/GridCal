@@ -22,8 +22,6 @@ That means that solves the OPF problem for a complete time series at once
 import numpy as np
 from typing import List, Union, Tuple, Callable
 from scipy.sparse import csc_matrix
-from GridCalEngine.basic_structures import ZonalGrouping
-from GridCalEngine.basic_structures import MIPSolvers
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Core.Devices.Aggregation.area import Area
 from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit, compile_numerical_circuit_at
@@ -35,9 +33,9 @@ from GridCalEngine.Core.DataStructures.hvdc_data import HvdcData
 from GridCalEngine.Core.DataStructures.bus_data import BusData
 from GridCalEngine.basic_structures import Logger, Vec, IntVec, DateVec, Mat
 from GridCalEngine.Utils.MIP.selected_interface import LpExp, LpVar, LpModel, lpDot, set_var_bounds, join
-from GridCalEngine.enumerations import TransformerControlType, HvdcControlType
-from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearAnalysis, LinearMultiContingency, \
-    LinearMultiContingencies
+from GridCalEngine.enumerations import TransformerControlType, HvdcControlType, ZonalGrouping, MIPSolvers
+from GridCalEngine.Simulations.LinearFactors.linear_analysis import (LinearAnalysis, LinearMultiContingency,
+                                                                     LinearMultiContingencies)
 
 
 def get_contingency_flow_with_filter(multi_contingency: LinearMultiContingency,
@@ -104,7 +102,7 @@ class BusVars:
                 data.branch_injections[t, i] = model.get_value(self.branch_injections[t, i]) * Sbase
                 data.shadow_prices[t, i] = model.get_dual_value(self.kirchhoff[t, i])
 
-        # format the arrays aproprietly
+        # format the arrays appropriately
         data.theta = data.theta.astype(float, copy=False)
         data.Pcalc = data.Pcalc.astype(float, copy=False)
         data.branch_injections = data.branch_injections.astype(float, copy=False)
@@ -141,7 +139,7 @@ class LoadVars:
             for i in range(n_elm):
                 data.shedding[t, i] = model.get_value(self.shedding[t, i]) * Sbase
 
-        # format the arrays aproprietly
+        # format the arrays appropriately
         data.shedding = data.shedding.astype(float, copy=False)
 
         return data
@@ -164,10 +162,20 @@ class GenerationVars:
         self.starting_up = np.zeros((nt, n_elm), dtype=object)
         self.shutting_down = np.zeros((nt, n_elm), dtype=object)
         self.cost = np.zeros((nt, n_elm), dtype=object)
+        # self.fuel = np.zeros((nt, n_elm), dtype=object)
+        # self.emissions = np.zeros((nt, n_elm), dtype=object)
 
-    def get_values(self, Sbase: float, model: LpModel) -> "GenerationVars":
+    def get_values(self,
+                   Sbase: float,
+                   model: LpModel,
+                   gen_emissions_rates_matrix: csc_matrix,
+                   gen_fuel_rates_matrix: csc_matrix) -> "GenerationVars":
         """
         Return an instance of this class where the arrays content are not LP vars but their value
+        :param Sbase: Base power (100 MVA)
+        :param model: LpModel
+        :param gen_emissions_rates_matrix: emissins rates matrix (n_emissions, n_gen)
+        :param gen_fuel_rates_matrix: fuel rates matrix (n_fuels, n_gen)
         :return: GenerationVars
         """
         nt, n_elm = self.p.shape
@@ -180,15 +188,19 @@ class GenerationVars:
                 data.producing[t, i] = model.get_value(self.producing[t, i])
                 data.starting_up[t, i] = model.get_value(self.starting_up[t, i])
                 data.shutting_down[t, i] = model.get_value(self.shutting_down[t, i])
-                data.cost[t, i] = model.get_value(self.shutting_down[t, i])
+                data.cost[t, i] = model.get_value(self.cost[t, i])
+                # data.fuel[t, i] = model.get_value(self.fuel[t, i])
+                # data.emissions[t, i] = model.get_value(self.emissions[t, i])
 
-        # format the arrays aproprietly
+        # format the arrays appropriately
         data.p = data.p.astype(float, copy=False)
         data.shedding = data.shedding.astype(float, copy=False)
-        data.producing = data.producing.astype(int, copy=False)
-        data.starting_up = data.starting_up.astype(int, copy=False)
-        data.shutting_down = data.shutting_down.astype(int, copy=False)
+        data.producing = data.producing.astype(bool, copy=False)
+        data.starting_up = data.starting_up.astype(bool, copy=False)
+        data.shutting_down = data.shutting_down.astype(bool, copy=False)
         data.cost = data.cost.astype(float, copy=False)
+        # data.fuel = (gen_fuel_rates_matrix.T * data.p.T).T
+        # data.emissions = (gen_emissions_rates_matrix.T * data.p.T).T
 
         return data
 
@@ -224,7 +236,7 @@ class BatteryVars(GenerationVars):
                 data.starting_up[t, i] = model.get_value(self.starting_up[t, i])
                 data.shutting_down[t, i] = model.get_value(self.shutting_down[t, i])
 
-            # format the arrays aproprietly
+            # format the arrays appropriately
             data.p = data.p.astype(float, copy=False)
             data.e = data.e.astype(float, copy=False)
             data.shedding = data.shedding.astype(float, copy=False)
@@ -284,7 +296,7 @@ class BranchVars:
                                              model.get_value(neg_slack),
                                              model.get_value(pos_slack))
 
-        # format the arrays aproprietly
+        # format the arrays appropriately
         data.flows = data.flows.astype(float, copy=False)
         data.flow_slacks_pos = data.flow_slacks_pos.astype(float, copy=False)
         data.flow_slacks_neg = data.flow_slacks_neg.astype(float, copy=False)
@@ -340,10 +352,143 @@ class HvdcVars:
             for i in range(n_elm):
                 data.flows[t, i] = model.get_value(self.flows[t, i]) * Sbase
 
-        # format the arrays aproprietly
+        # format the arrays appropriately
         data.flows = data.flows.astype(float, copy=False)
 
         data.loading = data.flows / (data.rates + 1e-20)
+
+        return data
+
+
+class FluidNodeVars:
+    """
+    Struct to store the vars of nodes of fluid type
+    """
+
+    def __init__(self, nt: int, n_elm: int):
+        """
+        FluidNodeVars structure
+        :param nt: Number of time steps
+        :param n_elm: Number of nodes
+        """
+
+        self.min_level = np.zeros((nt, n_elm), dtype=float)  # m3
+        self.max_level = np.zeros((nt, n_elm), dtype=float)  # m3
+        self.initial_level = np.zeros((nt, n_elm), dtype=float)  # m3
+
+        self.current_level = np.zeros((nt, n_elm), dtype=float)  # m3
+        self.spillage = np.zeros((nt, n_elm), dtype=float)  # m3/h
+        self.inflow = np.zeros((nt, n_elm), dtype=float)  # m3/h
+        self.outflow = np.zeros((nt, n_elm), dtype=float)  # m3/h
+
+    def get_values(self, model: LpModel) -> "FluidNodeVars":
+        """
+        Return an instance of this class where the arrays content are not LP vars but their value
+        :param model: LP model from where we extract the values
+        :return: FluidNodeVars
+        """
+        nt, n_elm = self.min_level.shape
+        data = FluidNodeVars(nt=nt, n_elm=n_elm)
+
+        for t in range(nt):
+            for i in range(n_elm):
+                data.current_level[t, i] = model.get_value(self.current_level[t, i])
+                data.spillage[t, i] = model.get_value(self.spillage[t, i])
+                data.inflow[t, i] = model.get_value(self.inflow[t, i])
+                data.outflow[t, i] = model.get_value(self.outflow[t, i])
+
+        # format the arrays appropriately
+        data.current_level = data.current_level.astype(float, copy=False)
+        data.spillage = data.spillage.astype(float, copy=False)
+        data.inflow = data.inflow.astype(float, copy=False)
+        data.outflow = data.outflow.astype(float, copy=False)
+
+        data.min_level = self.min_level
+        data.max_level = self.max_level
+        data.initial_level = self.initial_level
+
+        return data
+
+
+class FluidPathVars:
+    """
+    Struct to store the vars of paths of fluid type
+    """
+
+    def __init__(self, nt: int, n_elm: int):
+        """
+        FluidPathVars structure
+        :param nt: Number of time steps
+        :param n_elm: Number of paths (rivers)
+        """
+
+        self.min_flow = np.zeros((nt, n_elm), dtype=float)  # m3/h
+        self.max_flow = np.zeros((nt, n_elm), dtype=float)  # m3/h
+
+        self.flow = np.zeros((nt, n_elm), dtype=float)  # m3/h
+
+    def get_values(self, model: LpModel) -> "FluidPathVars":
+        """
+        Return an instance of this class where the arrays content are not LP vars but their value
+        :param model: LP model from where we extract the values
+        :return: FluidPathVars
+        """
+        nt, n_elm = self.min_flow.shape
+        data = FluidPathVars(nt=nt, n_elm=n_elm)
+
+        for t in range(nt):
+            for i in range(n_elm):
+                data.flow[t, i] = model.get_value(self.flow[t, i])
+
+        # format the arrays appropriately
+        data.flow = data.flow.astype(float, copy=False)
+
+        data.min_flow = self.min_flow
+        data.max_flow = self.max_flow
+
+        return data
+
+
+class FluidInjectionVars:
+    """
+    Struct to store the vars of injections of fluid type
+    """
+
+    def __init__(self, nt: int, n_elm: int):
+        """
+        FluidInjectionVars structure
+        :param nt: Number of time steps
+        :param n_elm: Number of elements moving fluid
+        """
+
+        self.efficiency = np.zeros((nt, n_elm), dtype=float)  # m3
+        self.max_flow_rate = np.zeros((nt, n_elm), dtype=float)  # m3
+
+        self.p_max = np.zeros((nt, n_elm), dtype=float)  # MW
+        self.p_min = np.zeros((nt, n_elm), dtype=float)  # MW
+
+        self.power = np.zeros((nt, n_elm), dtype=float)  # MW
+
+    def get_values(self, model: LpModel) -> "FluidInjectionVars":
+        """
+        Return an instance of this class where the arrays content are not LP vars but their value
+        :param model: LP model from where we extract the values
+        :return: FluidInjectionVars
+        """
+        nt, n_elm = self.efficiency.shape
+        data = FluidInjectionVars(nt=nt, n_elm=n_elm)
+
+        for t in range(nt):
+            for i in range(n_elm):
+                data.power[t, i] = model.get_value(self.power[t, i])
+
+        # format the arrays appropriately
+        data.power = data.power.astype(float, copy=False)
+
+        data.efficiency = self.efficiency
+        data.max_flow_rate = self.max_flow_rate
+        data.p_max = self.p_max  # TODO: think how to make this link
+        data.p_min = self.p_min
 
         return data
 
@@ -362,11 +507,23 @@ class SystemVars:
         self.system_emissions = np.zeros(nt, dtype=float)
         self.system_energy_cost = np.zeros(nt, dtype=float)
 
-    def compute(self, gen_emissions_rates_matrix, gen_fuel_rates_matrix, gen_p: Mat, gen_cost: Mat):
-
+    def compute(self,
+                gen_emissions_rates_matrix: csc_matrix,
+                gen_fuel_rates_matrix: csc_matrix,
+                gen_p: Mat,
+                gen_cost: Mat):
+        """
+        Compute the system values
+        :param gen_emissions_rates_matrix: emissins rates matrix (n_emissions, n_gen)
+        :param gen_fuel_rates_matrix: fuel rates matrix (n_fuels, n_gen)
+        :param gen_p: Generation power values (nt, ngen)
+        :param gen_cost: Generation cost values (nt, ngen)
+        """
         self.system_fuel = (gen_fuel_rates_matrix * gen_p.T).T
         self.system_emissions = (gen_emissions_rates_matrix * gen_p.T).T
-        self.system_emissions = np.nan_to_num(gen_cost / gen_p)
+
+        with np.errstate(divide='ignore', invalid='ignore'):  # numpy magic to ignore the zero divisions
+            self.system_energy_cost = np.nan_to_num(gen_cost / gen_p).sum(axis=1)
 
 
 class OpfVars:
@@ -374,7 +531,8 @@ class OpfVars:
     Structure to host the opf variables
     """
 
-    def __init__(self, nt: int, nbus: int, ng: int, nb: int, nl: int, nbr: int, n_hvdc: int):
+    def __init__(self, nt: int, nbus: int, ng: int, nb: int, nl: int, nbr: int, n_hvdc: int, n_fluid_node: int,
+                 n_fluid_path: int, n_fluid_inj: int):
         """
         Constructor
         :param nt: number of time steps
@@ -384,6 +542,9 @@ class OpfVars:
         :param nl: number of loads
         :param nbr: number of branches
         :param n_hvdc: number of HVDC
+        :param n_fluid_node: number of fluid nodes
+        :param n_fluid_path: number of fluid paths
+        :param n_fluid_inj: number of fluid injections
         """
         self.nt = nt
         self.nbus = nbus
@@ -392,6 +553,9 @@ class OpfVars:
         self.nl = nl
         self.nbr = nbr
         self.n_hvdc = n_hvdc
+        self.n_fluid_node = n_fluid_node
+        self.n_fluid_path = n_fluid_path
+        self.n_fluid_inj = n_fluid_inj
 
         self.acceptable_solution = False
 
@@ -401,6 +565,11 @@ class OpfVars:
         self.batt_vars = BatteryVars(nt=nt, n_elm=nb)
         self.branch_vars = BranchVars(nt=nt, n_elm=nbr)
         self.hvdc_vars = HvdcVars(nt=nt, n_elm=n_hvdc)
+
+        self.fluid_node_vars = FluidNodeVars(nt=nt, n_elm=n_fluid_node)
+        self.fluid_path_vars = FluidPathVars(nt=nt, n_elm=n_fluid_path)
+        self.fluid_inject_vars = FluidInjectionVars(nt=nt, n_elm=n_fluid_inj)
+
         self.sys_vars = SystemVars(nt=nt)
 
     def get_values(self, Sbase: float, model: LpModel, gen_emissions_rates_matrix, gen_fuel_rates_matrix) -> "OpfVars":
@@ -414,13 +583,22 @@ class OpfVars:
                        nb=self.nb,
                        nl=self.nl,
                        nbr=self.nbr,
-                       n_hvdc=self.n_hvdc)
+                       n_hvdc=self.n_hvdc,
+                       n_fluid_node=self.n_fluid_node,
+                       n_fluid_path=self.n_fluid_path,
+                       n_fluid_inj=self.n_fluid_inj)
         data.bus_vars = self.bus_vars.get_values(Sbase, model)
         data.load_vars = self.load_vars.get_values(Sbase, model)
-        data.gen_vars = self.gen_vars.get_values(Sbase, model)
+        data.gen_vars = self.gen_vars.get_values(Sbase=Sbase,
+                                                 model=model,
+                                                 gen_emissions_rates_matrix=gen_emissions_rates_matrix,
+                                                 gen_fuel_rates_matrix=gen_fuel_rates_matrix)
         data.batt_vars = self.batt_vars.get_values(Sbase, model)
         data.branch_vars = self.branch_vars.get_values(Sbase, model)
         data.hvdc_vars = self.hvdc_vars.get_values(Sbase, model)
+        data.fluid_node_vars = self.fluid_node_vars.get_values(model)
+        self.fluid_path_vars = self.fluid_path_vars.get_values(model)
+        self.fluid_inject_vars = self.fluid_inject_vars.get_values(model)
         data.sys_vars = self.sys_vars
 
         data.acceptable_solution = self.acceptable_solution
@@ -480,7 +658,8 @@ def add_linear_generation_formulation(t: Union[int, None],
                                                                 join("gen_shutting_down_", [t, k], "_"))
 
                     # operational cost (linear...)
-                    gen_vars.cost[t, k] += gen_data_t.cost_1[k] * gen_vars.p[t, k] + gen_data_t.cost_0[k] * gen_vars.producing[t, k]
+                    gen_vars.cost[t, k] += gen_data_t.cost_1[k] * gen_vars.p[t, k] + gen_data_t.cost_0[k] * \
+                                           gen_vars.producing[t, k]
 
                     # start-up cost
                     gen_vars.cost[t, k] += gen_data_t.startup_cost[k] * gen_vars.starting_up[t, k]
@@ -1049,7 +1228,6 @@ def add_linear_node_balance(t_idx: int,
     :param batt_vars: BatteryVars
     :param load_vars: LoadVars
     :param prob: LpModel
-    :param logger: Logger
     """
     B = Bbus.tocsc()
 
@@ -1073,6 +1251,31 @@ def add_linear_node_balance(t_idx: int,
 
     for i in vd:
         set_var_bounds(var=bus_vars.theta[t_idx, i], lb=0.0, ub=0.0)
+
+
+def add_hydro_formulation(t: int,
+                          node_vars: FluidNodeVars,
+                          path_vars: FluidPathVars,
+                          inj_vars: FluidInjectionVars,
+                          prob: LpModel):
+    """
+    Formulate the branches
+    :param t: time index
+    :param node_vars: FluidNodeVars
+    :param path_vars: FluidPathVars
+    :param inj_vars: FluidInjectionVars
+    :param prob: OR problem
+    :return objective function
+    """
+    f_obj = 0.0
+
+    # for each node
+
+    # for each path
+
+    # for each injection
+
+    return f_obj
 
 
 def run_linear_opf_ts(grid: MultiCircuit,
@@ -1132,6 +1335,9 @@ def run_linear_opf_ts(grid: MultiCircuit,
     nb = grid.get_batteries_number()
     nl = grid.get_calculation_loads_number()
     n_hvdc = grid.get_hvdc_number()
+    n_fluid_node = grid.get_fluid_nodes_number()
+    n_fluid_path = grid.get_fluid_paths_number()
+    n_fluid_inj = grid.get_fluid_injection_number()
 
     # gather the fuels and emission rates matrices
     gen_emissions_rates_matrix = grid.get_emission_rates_sparse_matrix()
@@ -1145,7 +1351,8 @@ def run_linear_opf_ts(grid: MultiCircuit,
         inter_area_hvdc = list()
 
     # declare structures of LP vars
-    mip_vars = OpfVars(nt=nt, nbus=n, ng=ng, nb=nb, nl=nl, nbr=nbr, n_hvdc=n_hvdc)
+    mip_vars = OpfVars(nt=nt, nbus=n, ng=ng, nb=nb, nl=nl, nbr=nbr, n_hvdc=n_hvdc,
+                       n_fluid_node=n_fluid_node, n_fluid_path=n_fluid_path, n_fluid_inj=n_fluid_inj)
 
     # create the MIP problem object
     lp_model: LpModel = LpModel(solver_type)
@@ -1153,31 +1360,37 @@ def run_linear_opf_ts(grid: MultiCircuit,
     # objective function
     f_obj: Union[LpExp, float] = 0.0
 
-    for t_idx, t in enumerate(time_indices):  # use time_indices = [None] to simulate the snapshot
+    for local_t_idx, global_t_idx in enumerate(time_indices):  # use time_indices = [None] to simulate the snapshot
+
+        # time indices:
+        # imagine that the complete GridCal DB time goes from 0 to 1000
+        # but, for whatever reason, time_indices is [100..200]
+        # local_t_idx would go fro 0..100
+        # global_t_idx would go from 100..200
 
         # compile the circuit at the master time index ------------------------------------------------------------
         # note: There are very little chances of simplifying this step and experience shows
         #       it is not worth the effort, so compile every time step
         nc: NumericalCircuit = compile_numerical_circuit_at(circuit=grid,
-                                                            t_idx=t,  # yes, this is not a bug
+                                                            t_idx=global_t_idx,  # yes, this is not a bug
                                                             bus_dict=bus_dict,
                                                             areas_dict=areas_dict)
 
         # formulate the bus angles ---------------------------------------------------------------------------------
         for k in range(nc.bus_data.nbus):
-            mip_vars.bus_vars.theta[t_idx, k] = lp_model.add_var(lb=nc.bus_data.angle_min[k],
-                                                                 ub=nc.bus_data.angle_max[k],
-                                                                 name=join("th_", [t_idx, k], "_"))
+            mip_vars.bus_vars.theta[local_t_idx, k] = lp_model.add_var(lb=nc.bus_data.angle_min[k],
+                                                                       ub=nc.bus_data.angle_max[k],
+                                                                       name=join("th_", [local_t_idx, k], "_"))
 
         # formulate loads ------------------------------------------------------------------------------------------
-        f_obj += add_linear_load_formulation(t=t_idx,
+        f_obj += add_linear_load_formulation(t=local_t_idx,
                                              Sbase=nc.Sbase,
                                              load_data_t=nc.load_data,
                                              load_vars=mip_vars.load_vars,
                                              prob=lp_model)
 
         # formulate generation -------------------------------------------------------------------------------------
-        f_obj += add_linear_generation_formulation(t=t_idx,
+        f_obj += add_linear_generation_formulation(t=local_t_idx,
                                                    Sbase=nc.Sbase,
                                                    time_array=grid.time_profile,
                                                    gen_data_t=nc.generator_data,
@@ -1188,11 +1401,11 @@ def run_linear_opf_ts(grid: MultiCircuit,
                                                    skip_generation_limits=skip_generation_limits)
 
         # formulate batteries --------------------------------------------------------------------------------------
-        if t_idx == 0 and energy_0 is None:
+        if local_t_idx == 0 and energy_0 is None:
             # declare the initial energy of the batteries
             energy_0 = nc.battery_data.soc_0 * nc.battery_data.enom  # in MWh here
 
-        f_obj += add_linear_battery_formulation(t=t_idx,
+        f_obj += add_linear_battery_formulation(t=local_t_idx,
                                                 Sbase=nc.Sbase,
                                                 time_array=grid.time_profile,
                                                 batt_data_t=nc.battery_data,
@@ -1205,17 +1418,15 @@ def run_linear_opf_ts(grid: MultiCircuit,
 
         # add emissions ------------------------------------------------------------------------------------------------
         if gen_emissions_rates_matrix.shape[0] > 0:
-
             # amount of emissions per gas
-            emissions = lpDot(gen_emissions_rates_matrix, mip_vars.gen_vars.p[t_idx, :])
+            emissions = lpDot(gen_emissions_rates_matrix, mip_vars.gen_vars.p[local_t_idx, :])
 
             f_obj += lp_model.sum(emissions)
 
         # add fuels ----------------------------------------------------------------------------------------------------
         if gen_fuel_rates_matrix.shape[0] > 0:
-
             # amount of fuels
-            fuels_amount = lpDot(gen_fuel_rates_matrix, mip_vars.gen_vars.p[t_idx, :])
+            fuels_amount = lpDot(gen_fuel_rates_matrix, mip_vars.gen_vars.p[local_t_idx, :])
 
             f_obj += lp_model.sum(fuels_amount)
 
@@ -1224,7 +1435,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
         if zonal_grouping == ZonalGrouping.NoGrouping:
 
             # formulate hvdc -------------------------------------------------------------------------------------------
-            f_obj += add_linear_hvdc_formulation(t=t_idx,
+            f_obj += add_linear_hvdc_formulation(t=local_t_idx,
                                                  Sbase=nc.Sbase,
                                                  hvdc_data_t=nc.hvdc_data,
                                                  hvdc_vars=mip_vars.hvdc_vars,
@@ -1232,7 +1443,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
                                                  prob=lp_model)
 
             # formulate branches ---------------------------------------------------------------------------------------
-            f_obj += add_linear_branches_formulation(t=t_idx,
+            f_obj += add_linear_branches_formulation(t=local_t_idx,
                                                      Sbase=nc.Sbase,
                                                      branch_data_t=nc.branch_data,
                                                      branch_vars=mip_vars.branch_vars,
@@ -1241,7 +1452,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
                                                      inf=1e20)
 
             # formulate nodes ------------------------------------------------------------------------------------------
-            add_linear_node_balance(t_idx=t_idx,
+            add_linear_node_balance(t_idx=local_t_idx,
                                     Bbus=nc.Bbus,
                                     vd=nc.vd,
                                     bus_data=nc.bus_data,
@@ -1268,7 +1479,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
                 mctg.update(lodf=ls.LODF, ptdf=ls.PTDF, threshold=lodf_threshold)
 
                 # formulate the contingencies
-                f_obj += add_linear_branches_contingencies_formulation(t_idx=t_idx,
+                f_obj += add_linear_branches_contingencies_formulation(t_idx=local_t_idx,
                                                                        Sbase=nc.Sbase,
                                                                        branch_data_t=nc.branch_data,
                                                                        branch_vars=mip_vars.branch_vars,
@@ -1282,20 +1493,21 @@ def run_linear_opf_ts(grid: MultiCircuit,
                 for branches_list in [inter_area_branches, inter_area_hvdc]:
                     for k, branch, sense in branches_list:
                         # we want to maximize, hence the minus sign
-                        f_obj += mip_vars.branch_vars.flows[t_idx, k] * (- sense)
+                        f_obj += mip_vars.branch_vars.flows[local_t_idx, k] * (- sense)
 
         elif zonal_grouping == ZonalGrouping.All:
             # this is the copper plate approach
             pass
 
         # production equals demand -------------------------------------------------------------------------------------
-        lp_model.add_cst(cst=(lp_model.sum(mip_vars.gen_vars.p[t_idx, :]) +
-                              lp_model.sum(mip_vars.batt_vars.p[t_idx, :]) >=
-                              mip_vars.load_vars.p[t_idx, :].sum() - mip_vars.load_vars.shedding[t_idx].sum()),
-                         name="satisfy_demand_at_{0}".format(t_idx))
+        lp_model.add_cst(cst=(lp_model.sum(mip_vars.gen_vars.p[local_t_idx, :]) +
+                              lp_model.sum(mip_vars.batt_vars.p[local_t_idx, :]) >=
+                              mip_vars.load_vars.p[local_t_idx, :].sum() - mip_vars.load_vars.shedding[
+                                  local_t_idx].sum()),
+                         name="satisfy_demand_at_{0}".format(local_t_idx))
 
         if progress_func is not None:
-            progress_func((t_idx + 1) / nt * 100.0)
+            progress_func((local_t_idx + 1) / nt * 100.0)
 
     # set the objective function
     lp_model.minimize(f_obj)

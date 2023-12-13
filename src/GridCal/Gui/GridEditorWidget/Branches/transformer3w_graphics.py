@@ -18,7 +18,7 @@ import numpy as np
 from typing import List
 from PySide6.QtCore import Qt, QPoint, QPointF
 from PySide6.QtGui import QPen, QCursor, QColor, QIcon, QPixmap
-from PySide6.QtWidgets import QGraphicsItem, QGraphicsEllipseItem, QGraphicsRectItem, QMenu
+from PySide6.QtWidgets import QGraphicsItem, QGraphicsEllipseItem, QGraphicsRectItem, QMenu, QGraphicsSceneMouseEvent
 
 from GridCalEngine.Core.Devices.Branches.transformer3w import Transformer3W
 from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED
@@ -195,17 +195,18 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
 
         self.update_conn()
 
-    def mousePressEvent(self, QGraphicsSceneMouseEvent):
+    def mousePressEvent(self, event: QGraphicsSceneMouseEvent):
         """
         mouse press: display the editor
-        :param QGraphicsSceneMouseEvent:
+        :param event:
         :return:
         """
         if self.api_object is not None:
-            mdl = ObjectsModel([self.api_object], self.api_object.editable_headers,
+            mdl = ObjectsModel(objects=[self.api_object],
+                               editable_headers=self.api_object.editable_headers,
                                parent=self.diagramScene.parent().object_editor_table,
-                               editable=True, transposed=True,
-                               non_editable_attributes=self.api_object.non_editable_attributes)
+                               editable=True,
+                               transposed=True)
 
             self.diagramScene.parent().object_editor_table.setModel(mdl)
 

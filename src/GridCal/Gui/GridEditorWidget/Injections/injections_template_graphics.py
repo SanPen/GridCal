@@ -14,13 +14,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from typing import Union
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPen, QCursor
 from PySide6.QtWidgets import QGraphicsLineItem, QGraphicsItemGroup
 from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER
 from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg
+from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Core.Devices.Injections.injection_template import InjectionTemplate
+from GridCalEngine.Core.Devices.Fluid.fluid_injection_template import FluidInjectionTemplate
 
 
 class InjectionTemplateGraphicItem(QGraphicsItemGroup):
@@ -28,11 +31,21 @@ class InjectionTemplateGraphicItem(QGraphicsItemGroup):
     InjectionTemplateGraphicItem
     """
 
-    def __init__(self, parent, api_obj: InjectionTemplate, diagramScene, device_type_name, w, h):
+    def __init__(self,
+                 parent,
+                 api_obj: Union[InjectionTemplate, FluidInjectionTemplate],
+                 diagramScene,
+                 device_type_name: str,
+                 w: int,
+                 h: int):
         """
 
         :param parent:
         :param api_obj:
+        :param diagramScene:
+        :param device_type_name:
+        :param w:
+        :param h:
         """
         super(InjectionTemplateGraphicItem, self).__init__(parent)
 
@@ -55,16 +68,8 @@ class InjectionTemplateGraphicItem(QGraphicsItemGroup):
 
         self.width = 4
 
-        if self.api_object is not None:
-            if self.api_object.active:
-                self.style = ACTIVE['style']
-                self.color = ACTIVE['color']
-            else:
-                self.style = DEACTIVATED['style']
-                self.color = DEACTIVATED['color']
-        else:
-            self.style = OTHER['style']
-            self.color = OTHER['color']
+        self.style = OTHER['style']
+        self.color = OTHER['color']
 
         # line to tie this object with the original bus (the parent)
         self.nexus = QGraphicsLineItem()
@@ -131,8 +136,14 @@ class InjectionTemplateGraphicItem(QGraphicsItemGroup):
         :param QGraphicsSceneMouseEvent:
         :return:
         """
-        mdl = ObjectsModel([self.api_object], self.api_object.editable_headers,
-                           parent=self.diagramScene.parent().object_editor_table, editable=True, transposed=True)
+        mdl = ObjectsModel(objects=[self.api_object],
+                           editable_headers=self.api_object.editable_headers,
+                           parent=self.diagramScene.parent().object_editor_table,
+                           editable=True,
+                           transposed=True,
+                           dictionary_of_lists={
+                               DeviceType.GeneratorDevice.value: self.diagramScene.circuit.get_generators(),
+                           })
         self.diagramScene.parent().object_editor_table.setModel(mdl)
 
     def change_bus(self):

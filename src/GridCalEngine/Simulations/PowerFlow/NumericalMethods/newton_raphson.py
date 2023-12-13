@@ -22,7 +22,7 @@ from GridCalEngine.Simulations.sparse_solve import get_sparse_type, get_linear_s
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
 import GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions as cf
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
-from GridCalEngine.basic_structures import ReactivePowerControlMode
+from GridCalEngine.enumerations import ReactivePowerControlMode
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_inside_method
 from GridCalEngine.basic_structures import Logger
 
@@ -96,13 +96,24 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
             J = AC_jacobian(Ybus, V, pvpq, pq)
 
             # compute update step
-            dx = linear_solver(J, f)
+            try:
+                dx = linear_solver(J, f)
 
-            if np.isnan(dx).any():
+                if np.isnan(dx).any():
+                    end = time.time()
+                    elapsed = end - start
+                    logger.add_error('NR Singular matrix @iter:'.format(iteration))
+
+                    return NumericPowerFlowResults(V=V0, converged=converged, norm_f=norm_f,
+                                                   Scalc=S0, ma=None, theta=None, Beq=None,
+                                                   Ybus=None, Yf=None, Yt=None,
+                                                   iterations=iteration, elapsed=elapsed)
+            except RuntimeError:
                 end = time.time()
                 elapsed = end - start
-                # return NumericPowerFlowResults(V0, converged, norm_f, S0,
-                #                                None, None, None, None, None, None, iteration, elapsed)
+
+                logger.add_error('NR Singular matrix @iter:'.format(iteration))
+
                 return NumericPowerFlowResults(V=V0, converged=converged, norm_f=norm_f,
                                                Scalc=S0, ma=None, theta=None, Beq=None,
                                                Ybus=None, Yf=None, Yt=None,
