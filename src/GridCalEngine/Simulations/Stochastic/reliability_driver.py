@@ -45,9 +45,12 @@ def get_repair_time(mttr):
 def get_reliability_events(horizon, mttf, mttr, tpe: DeviceType):
     """
     Get random fail-repair events until a given time horizon in hours
+
     :param horizon: maximum horizon in hours
-    :return: list of events,
-    Each event tuple has: (time in hours, element index, activation state (True/False))
+    :param mttf: Mean time to failure (h)
+    :param mttr: Mean time to repair (h)
+    :param tpe: device type (DeviceType)
+    :return: list of events, each event tuple has: (time in hours, element index, activation state (True/False))
     """
     n_samples = len(mttf)
     t = np.zeros(n_samples)
@@ -89,14 +92,13 @@ def get_reliability_events(horizon, mttf, mttr, tpe: DeviceType):
 def get_reliability_scenario(nc: NumericalCircuit, horizon=10000):
     """
     Get reliability events
-    Args:
-        nc: numerical circuit instance
-        horizon: time horizon in hours
-
-    Returns: dictionary of events
-    Each event tuple has: (time in hours, element index, activation state (True/False))
+    :param nc: numerical circuit instance
+    :param horizon: time horizon in hours
+    :return: dictionary of events, each event tuple has: (time in hours, element index, activation state (True/False))
     """
     all_events = list()
+
+    # TODO: Add MTTF and MTTR to data devices
 
     # Branches
     all_events += get_reliability_events(horizon,
