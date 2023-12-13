@@ -130,7 +130,7 @@ IPM
  [Ay],
  [Az]]
 =
-[[Tf - Atg * y - Ath * z],
+-[[Tf - Atg * y - Ath * z],
  [S * z - mu * e],
  [g],
  [h - s]]
