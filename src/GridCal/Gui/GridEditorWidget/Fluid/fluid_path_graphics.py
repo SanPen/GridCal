@@ -17,7 +17,7 @@
 
 from typing import Union
 from PySide6.QtCore import Qt, QRectF
-from PySide6.QtGui import QPen, QIcon, QPixmap, QBrush
+from PySide6.QtGui import QPen, QIcon, QPixmap, QBrush, QColor
 from PySide6.QtWidgets import QMenu, QGraphicsRectItem
 from GridCal.Gui.GeneralDialogues import InputNumberDialogue
 from GridCal.Gui.GridEditorWidget.Substation.bus_graphics import TerminalItem
@@ -53,6 +53,29 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
                                          editor=editor,
                                          width=width,
                                          api_object=api_object)
+
+        self.style = Qt.CustomDashLine
+
+    def set_colour(self, color: QColor, w, style: Qt.PenStyle):
+        """
+        Set color and style
+        :param color: QColor instance
+        :param w: width
+        :param style: PenStyle instance
+        :return:
+        """
+
+        pen = QPen(color, w, style, Qt.RoundCap, Qt.RoundJoin)
+        pen.setDashPattern([5, 3, 2, 3])
+
+        self.setPen(pen)
+        self.arrow_from_1.set_colour(color, w, style)
+        self.arrow_from_2.set_colour(color, w, style)
+        self.arrow_to_1.set_colour(color, w, style)
+        self.arrow_to_2.set_colour(color, w, style)
+
+        if self.symbol is not None:
+            self.symbol.set_colour(color, w, style)
 
     def recolour_mode(self):
         """

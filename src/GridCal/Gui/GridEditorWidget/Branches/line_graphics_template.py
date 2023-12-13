@@ -449,7 +449,10 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         :param style: PenStyle instance
         :return:
         """
-        self.setPen(QPen(color, w, style, Qt.RoundCap, Qt.RoundJoin))
+
+        pen = QPen(color, w, style, Qt.RoundCap, Qt.RoundJoin)
+
+        self.setPen(pen)
         self.arrow_from_1.set_colour(color, w, style)
         self.arrow_from_2.set_colour(color, w, style)
         self.arrow_to_1.set_colour(color, w, style)
@@ -748,8 +751,7 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         change the from or to bus of the nbranch with another selected bus
         """
 
-        editor = self.diagramScene.parent()
-        idx_bus_list = editor.get_selected_buses()
+        idx_bus_list = self.editor.get_selected_buses()
 
         if len(idx_bus_list) == 2:
 
