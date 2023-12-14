@@ -387,8 +387,8 @@ class FluidNodeVars:
         self.p2x_flow = np.zeros((nt, n_elm), dtype=object)  # m3
         self.current_level = np.zeros((nt, n_elm), dtype=object)  # m3
         self.spillage = np.zeros((nt, n_elm), dtype=object)  # m3/h
-        self.inflow = np.zeros((nt, n_elm), dtype=object)  # m3/h
-        self.outflow = np.zeros((nt, n_elm), dtype=object)  # m3/h
+        self.flow_in = np.zeros((nt, n_elm), dtype=object)  # m3/h
+        self.flow_out = np.zeros((nt, n_elm), dtype=object)  # m3/h
 
     def get_values(self, model: LpModel) -> "FluidNodeVars":
         """
@@ -404,15 +404,15 @@ class FluidNodeVars:
                 data.p2x_flow[t, i] = model.get_value(self.p2x_flow[t, i])
                 data.current_level[t, i] = model.get_value(self.current_level[t, i])
                 data.spillage[t, i] = model.get_value(self.spillage[t, i])
-                data.inflow[t, i] = model.get_value(self.inflow[t, i])
-                data.outflow[t, i] = model.get_value(self.outflow[t, i])
+                data.flow_in[t, i] = model.get_value(self.flow_in[t, i])
+                data.flow_out[t, i] = model.get_value(self.flow_out[t, i])
 
         # format the arrays appropriately
         data.p2x_flow = data.p2x_flow.astype(float, copy=False)
         data.current_level = data.current_level.astype(float, copy=False)
         data.spillage = data.spillage.astype(float, copy=False)
-        data.inflow = data.inflow.astype(float, copy=False)
-        data.outflow = data.outflow.astype(float, copy=False)
+        data.flow_in = data.flow_in.astype(float, copy=False)
+        data.flow_out = data.flow_out.astype(float, copy=False)
 
         # from the data object itself
         # data.min_level = self.min_level
@@ -1323,8 +1323,8 @@ def add_hydro_formulation(t: Union[int, None],
         # inflow: fluid flow entering the target node in m3/h
         # outflow: fluid flow leaving the source node in m3/h
         # flow: amount of fluid flowing through the river in m3/h
-        node_vars.inflow[t, path_data.target_idx[m]] += path_vars.flow[t, m]
-        node_vars.outflow[t, path_data.source_idx[m]] += path_vars.flow[t, m]
+        node_vars.flow_in[t, path_data.target_idx[m]] += path_vars.flow[t, m]
+        node_vars.flow_out[t, path_data.source_idx[m]] += path_vars.flow[t, m]
 
     for m in range(turbine_data.nelm):
         gen_idx = turbine_data.generator_idx[m]
@@ -1333,7 +1333,7 @@ def add_hydro_formulation(t: Union[int, None],
         # flow = Pgen * max_flow / (Pgen_max * eff)
         turbine_flow = (generator_vars.p[t, gen_idx] * turbine_data.max_flow_rate[m]
                         / (generator_data.pmax[gen_idx] * turbine_data.efficiency[m]))
-        node_vars.outflow[t, plant_idx] = turbine_flow  # assume only 1 turbine connected
+        node_vars.flow_out[t, plant_idx] = turbine_flow  # assume only 1 turbine connected
         inj_vars.flow[t, m] = turbine_flow  # to retrieve the value later on
 
         if generator_data.pmin[gen_idx] < 0:
@@ -1349,7 +1349,7 @@ def add_hydro_formulation(t: Union[int, None],
         # flow = Pcons * max_flow * eff / Pcons_max (invert the efficiency compared to a turbine)
         pump_flow = (generator_vars.p[t, gen_idx] * pump_data.max_flow_rate[m]
                      * pump_data.efficiency[m] / pump_data.efficiency[m])
-        node_vars.inflow[t, plant_idx] = pump_flow  # assume only 1 pump connected
+        node_vars.flow_in[t, plant_idx] = pump_flow  # assume only 1 pump connected
         inj_vars.flow[t, m + turbine_data.nelm] = pump_flow
 
         if generator_data.pmax[gen_idx] > 0:
@@ -1381,17 +1381,16 @@ def add_hydro_formulation(t: Union[int, None],
                 dt = (time_array[time_global_tidx] - time_array[time_global_tidx - 1]).seconds / 3600.0
                 prob.add_cst(cst=(node_vars.current_level[t, m] ==
                                   node_vars.current_level[t - 1, m]
-                                  + node_data.inflow[t, m],
-                                  + dt * node_vars.inflow[t, m],
-                                  + dt * node_vars.p2x_flow[t, m],
-                                  - dt * node_vars.spillage[t, m],
-                                  - dt * node_vars.outflow[t, m]),
+                                  + dt * node_data.inflow[m]
+                                  + dt * node_vars.flow_in[t, m]
+                                  + dt * node_vars.p2x_flow[t, m]
+                                  - dt * node_vars.spillage[t, m]
+                                  - dt * node_vars.flow_out[t, m]),
                              name=f'{node_data.names[m]} Nodal Balance')
             else:
                 # no time to consider there is water to flow, as if dt = 0
                 prob.add_cst(cst=(node_vars.current_level[t, m] ==
-                                  node_data.initial_level[m]
-                                  + node_data.inflow[m]),
+                                  node_data.initial_level[m]),
                              name=f'{node_data.names[m]} Nodal Balance')
 
     return f_obj

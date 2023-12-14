@@ -5,7 +5,7 @@ import numpy as np
 main_circuit = gce.FileOpen('../Grids_and_profiles/grids/hydro_grid2.gridcal').open()
 
 # declare the snapshot opf
-opf_driver = gce.OptimalPowerFlowDriver(grid=main_circuit)
+opf_driver = gce.OptimalPowerFlowTimeSeriesDriver(grid=main_circuit)
 
 print('Solving...')
 opf_driver.run()

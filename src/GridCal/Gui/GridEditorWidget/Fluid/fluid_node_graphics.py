@@ -376,6 +376,7 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
 
             if self.api_object.bus is None:
                 self.api_object.bus = self.editor.circuit.add_bus()
+                self.api_object.bus.name = self.api_object.name
 
             api_obj.generator = self.editor.circuit.add_generator(bus=self.api_object.bus)
             api_obj.generator.name = self.api_object.name
@@ -396,6 +397,7 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
 
             if self.api_object.bus is None:
                 self.api_object.bus = self.editor.circuit.add_bus()
+                self.api_object.bus.name = self.api_object.name
 
             api_obj.generator = self.editor.circuit.add_generator(bus=self.api_object.bus)
             api_obj.generator.name = self.api_object.name
@@ -416,6 +418,7 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
 
             if self.api_object.bus is None:
                 self.api_object.bus = self.editor.circuit.add_bus()
+                self.api_object.bus.name = self.api_object.name
 
             api_obj.generator = self.editor.circuit.add_generator(bus=self.api_object.bus)
             api_obj.generator.name = self.api_object.name

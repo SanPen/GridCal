@@ -93,7 +93,9 @@ class FluidNode(EditableDevice):
                       definition='Flow of fluid lost at the node')
 
         self.register(key='inflow', units='m3/h', tpe=float,
-                      definition='Flow of fluid coming from the rain')
+                      definition='Flow of fluid coming from the rain',
+                      profile_name='inflow_prof')
+
 
     @property
     def bus(self) -> Bus:
