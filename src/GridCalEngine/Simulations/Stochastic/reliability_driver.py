@@ -98,32 +98,30 @@ def get_reliability_scenario(nc: NumericalCircuit, horizon=10000):
     """
     all_events = list()
 
-    # TODO: Add MTTF and MTTR to data devices
-
     # Branches
     all_events += get_reliability_events(horizon,
-                                         nc.branch_data.branch_mttf,
-                                         nc.branch_data.branch_mttr,
+                                         nc.branch_data.mttf,
+                                         nc.branch_data.mttr,
                                          DeviceType.BranchDevice)
 
     all_events += get_reliability_events(horizon,
-                                         nc.generator_data.generator_mttf,
-                                         nc.generator_data.generator_mttr,
+                                         nc.generator_data.mttf,
+                                         nc.generator_data.mttr,
                                          DeviceType.GeneratorDevice)
 
     all_events += get_reliability_events(horizon,
-                                         nc.battery_data.battery_mttf,
-                                         nc.battery_data.battery_mttr,
+                                         nc.battery_data.mttf,
+                                         nc.battery_data.mttr,
                                          DeviceType.BatteryDevice)
 
     all_events += get_reliability_events(horizon,
-                                         nc.load_data.load_mttf,
-                                         nc.load_data.load_mttr,
+                                         nc.load_data.mttf,
+                                         nc.load_data.mttr,
                                          DeviceType.LoadDevice)
 
     all_events += get_reliability_events(horizon,
-                                         nc.shunt_data.shunt_mttf,
-                                         nc.shunt_data.shunt_mttr,
+                                         nc.shunt_data.mttf,
+                                         nc.shunt_data.mttr,
                                          DeviceType.ShuntDevice)
 
     # sort all
