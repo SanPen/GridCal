@@ -28,10 +28,8 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Changed the river line pattern to be recognisable&#10;Fixed a couple of bugs">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Remove types and properties to get the GUI working">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Core/DataStructures/numerical_circuit.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Core/DataStructures/numerical_circuit.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/Fluid/fluid_node.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/Fluid/fluid_node.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1903,7 +1901,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="435" />
+    <option name="localTasksCounter" value="436" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1949,7 +1947,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Minimal interface refactor" />
     <MESSAGE value="Linear analysis refactor" />
     <MESSAGE value="more graphic_obj refactoring" />
     <MESSAGE value="Improved the LinearMultiContingencies update function which was likely missing operations" />
@@ -1974,7 +1971,8 @@
     <MESSAGE value="improved dark detect" />
     <MESSAGE value="Fixed bug with fluid_injection_template.py typing" />
     <MESSAGE value="Changed the river line pattern to be recognisable&#10;Fixed a couple of bugs" />
-    <option name="LAST_COMMIT_MESSAGE" value="Changed the river line pattern to be recognisable&#10;Fixed a couple of bugs" />
+    <MESSAGE value="Remove types and properties to get the GUI working" />
+    <option name="LAST_COMMIT_MESSAGE" value="Remove types and properties to get the GUI working" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2411,6 +2409,11 @@
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/Fluid/fluid_node_graphics.py</url>
           <line>87</line>
           <option name="timeStamp" value="1236" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/linear_opf_ts.py</url>
+          <line>1618</line>
+          <option name="timeStamp" value="1263" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>

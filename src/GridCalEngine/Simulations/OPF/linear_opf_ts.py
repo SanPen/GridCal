@@ -1380,7 +1380,8 @@ def add_hydro_formulation(t: Union[int, None],
                 # calculate dt in hours
                 dt = (time_array[time_global_tidx] - time_array[time_global_tidx - 1]).seconds / 3600.0
                 prob.add_cst(cst=(node_vars.current_level[t, m] ==
-                                  node_vars.current_level[t-1, m]
+                                  node_vars.current_level[t - 1, m]
+                                  + node_data.inflow[t, m],
                                   + dt * node_vars.inflow[t, m],
                                   + dt * node_vars.p2x_flow[t, m],
                                   - dt * node_vars.spillage[t, m],
@@ -1389,7 +1390,8 @@ def add_hydro_formulation(t: Union[int, None],
             else:
                 # no time to consider there is water to flow, as if dt = 0
                 prob.add_cst(cst=(node_vars.current_level[t, m] ==
-                                  node_data.initial_level[m]),
+                                  node_data.initial_level[m]
+                                  + node_data.inflow[m]),
                              name=f'{node_data.names[m]} Nodal Balance')
 
     return f_obj
