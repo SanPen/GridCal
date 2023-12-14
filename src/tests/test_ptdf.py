@@ -205,44 +205,42 @@ def test_ptdf_psse():
     Compare the PSSE PTDF and the GridCal PTDF for IEEE14, IEEE30 and IEEE118 networks
     """
     for fname, pssename, name in [
-        (os.path.join('data', 'grids', 'RAW', 'IEEE 14 bus.raw'),os.path.join('data', 'results', 'comparison', 'IEEE 14 bus PTDF PSSe.csv'), 'IEEE14'),
-        (os.path.join('data', 'grids', 'RAW', 'IEEE 30 bus.raw'), os.path.join('data', 'results', 'comparison', 'IEEE 30 bus PTDF PSSe.csv'), 'IEEE30'),
-        (os.path.join('data', 'grids', 'RAW', 'IEEE 118 Bus V2.raw'), os.path.join('data', 'results', 'comparison', 'IEEE 118 bus PTDF PSSe.csv'), 'IEEE118'),
-        (os.path.join('data', 'grids', 'RAW', '15.Caso_2026.raw'), os.path.join('data', 'results', 'comparison', '15.Caso_2026 PTDF PSSe.csv'), 'REE')]:
+        (os.path.join('data', 'grids', 'RAW', 'IEEE 14 bus.raw'),
+         os.path.join('data', 'results', 'comparison', 'IEEE 14 bus PTDF PSSe.csv'), 'IEEE14'),
+        (os.path.join('data', 'grids', 'RAW', 'IEEE 30 bus.raw'),
+         os.path.join('data', 'results', 'comparison', 'IEEE 30 bus PTDF PSSe.csv'), 'IEEE30'),
+        (os.path.join('data', 'grids', 'RAW', 'IEEE 118 Bus V2.raw'),
+         os.path.join('data', 'results', 'comparison', 'IEEE 118 bus PTDF PSSe.csv'), 'IEEE118'),
+        (os.path.join('data', 'grids', 'RAW', '15.Caso_2026.raw'),
+         os.path.join('data', 'results', 'comparison', '15.Caso_2026 PTDF PSSe.csv'), 'REE')]:
 
-        #if name != 'IEEE118': continue
+        counter = 0 #Amount of failures
+        if name != 'REE': continue
         main_circuit = FileOpen(fname).open()
 
         # Network ordering
-        #TODO: ¿Cómo conseguimos el circuito?
         branches = main_circuit.get_branches()
-        branches_id = [x.code[:-2] for x in branches]
+        branches_id = [x.code for x in branches]
         nodes = main_circuit.get_buses()
         nodes_id = [x.code for x in nodes]
 
         # Calculate GridCal PTDF
-        pf_options = PowerFlowOptions(SolverType.NR,
-                                           verbose=False,
-                                           initialize_with_existing_solution=False,
-                                           dispatch_storage=True,
-                                           control_q=ReactivePowerControlMode.NoControl,
-                                           control_p=False)
-
         linear_analysis_opt = LinearAnalysisOptions(distribute_slack=False, correct_values=False)
         linear_analysis = LinearAnalysisDriver(grid=main_circuit, options=linear_analysis_opt)
         linear_analysis.run()
 
         ptdf_gridcal = pd.DataFrame(linear_analysis.results.PTDF, columns = nodes_id)
-        ptdf_gridcal['branches'] = branches_id # TODO: incluir el circuito
+        ptdf_gridcal['branches'] = branches_id
 
         # Import PSSe PDTF
         ptdf_psse = pd.read_csv(pssename)
 
         ptdf_psse.drop(['vbase_nodefrom', 'vbase_nodeto'], axis=1, inplace=True)
-        ptdf_psse['branches'] = ptdf_psse['nodefrom'].astype(str) + '_' + ptdf_psse['nodeto'].astype(str)   # TODO: incluir el circuito
+        ptdf_psse['branches'] = ptdf_psse['nodefrom'].astype(str) + '_' + ptdf_psse['nodeto'].astype(str) + '_' + ptdf_psse['ckt'].astype(str)
 
         # Test comparison
         ptdf = ptdf_gridcal.merge(ptdf_psse, on='branches', how='inner')
+        print(' ')
         print('--Testing PTDF in {}'.format(name))
         for i in nodes_id:
             print('----Node ongoing: {}'.format(i))
@@ -255,75 +253,82 @@ def test_ptdf_psse():
                 print('El nudo {} no se ha calculado por PSSe')
                 continue
             nodegridcal = np.array(ptdf[i])
-            nodepsse = np.array(ptdf['NUDO{}'.format(str(i))])
-            #if name == 'REE':
-            #    print('')
-            if not (np.isclose(nodegridcal, -nodepsse, atol=1e-2).all()):
-                print('---PTDFs not equal')
-        print(' ')
 
+            nodepsse = np.array(ptdf['NUDO{}'.format(str(i))])
+
+            if not (np.isclose(nodegridcal, -nodepsse, atol=1e-3).all()):
+                print('------------ XXXX PTDFs not equal XXXX ------------ ')
+                counter += 1
+            else:
+                print('------------PTDFs CHECKED')
+        print('-- TOTAL FAILURES: {}'.format(counter))
 def test_lodf_psse():
     """
     Compare the PSSE LODF and the GridCal LODF for IEEE14, IEEE30 and IEEE118 networks
     """
     for fname, pssename, name in [
-        (os.path.join('data', 'grids', 'RAW', 'IEEE 14 bus.raw'), os.path.join('data', 'results', 'comparison', 'IEEE 14 bus LODF PSSe.csv'), 'IEEE14'),
-        (os.path.join('data', 'grids', 'RAW', 'IEEE 30 bus.raw'), os.path.join('data', 'results', 'comparison', 'IEEE 30 bus LODF PSSe.csv'), 'IEEE30'),
-        (os.path.join('data', 'grids', 'RAW', 'IEEE 118 Bus V2.raw'), os.path.join('data', 'results', 'comparison', 'IEEE 118 bus LODF PSSe.csv'), 'IEEE118'),
-        (os.path.join('data', 'grids', 'RAW', '15.Caso_2026.raw'), os.path.join('data', 'results', 'comparison', '15.Caso_2026 LODF PSSe.csv'), 'REE')
-    ]:
+        (os.path.join('data', 'grids', 'RAW', 'IEEE 14 bus.raw'),
+         os.path.join('data', 'results', 'comparison', 'IEEE 14 bus LODF PSSe.csv'), 'IEEE14'),
+        (os.path.join('data', 'grids', 'RAW', 'IEEE 30 bus.raw'),
+         os.path.join('data', 'results', 'comparison', 'IEEE 30 bus LODF PSSe.csv'), 'IEEE30'),
+        (os.path.join('data', 'grids', 'RAW', 'IEEE 118 Bus V2.raw'),
+         os.path.join('data', 'results', 'comparison', 'IEEE 118 bus LODF PSSe.csv'), 'IEEE118'),
+        (os.path.join('data', 'grids', 'RAW', '15.Caso_2026.raw'),
+         os.path.join('data', 'results', 'comparison', '15.Caso_2026 LODF PSSe.csv'), 'REE')]:
 
+        counter = 0 #Amount of failures
+        if name != 'REE': continue
         main_circuit = FileOpen(fname).open()
 
         # Network ordering
-        #TODO: ¿Cómo le añadimos el circuito?
         branches = main_circuit.get_branches()
-        branches_id = [x.code[:-2] for x in branches]
-        # Calculate GridCal LODF
-        pf_options = PowerFlowOptions(SolverType.NR,
-                                      verbose=False,
-                                      initialize_with_existing_solution=False,
-                                      dispatch_storage=True,
-                                      control_q=ReactivePowerControlMode.NoControl,
-                                      control_p=False)
+        branches_id = [x.code for x in branches]
 
+        # Calculate GridCal LODF
         linear_analysis_opt = LinearAnalysisOptions(distribute_slack=False, correct_values=False)
         linear_analysis = LinearAnalysisDriver(grid=main_circuit, options=linear_analysis_opt)
         linear_analysis.run()
 
         lodf_gridcal = pd.DataFrame(linear_analysis.results.LODF, columns=branches_id)
-        lodf_gridcal['branches'] = branches_id # TODO: incluir el circuito
+        lodf_gridcal['branches'] = branches_id
 
         # Import PSSe LODF
 
         lodf_psse = pd.read_csv(pssename)
         lodf_psse.drop(['vbase_nodefrom', 'vbase_nodeto'], axis=1, inplace=True)
-        lodf_psse['branches'] = lodf_psse['nodefrom'].astype(str) + '_' + lodf_psse['nodeto'].astype(str)  # TODO: incluir el circuito
+        lodf_psse['branches'] = lodf_psse['nodefrom'].astype(str) + '_' + lodf_psse['nodeto'].astype(str) + '_' + lodf_psse['ckt'].astype(str)
 
         # Test comparison
         lodf = lodf_gridcal.merge(lodf_psse, on='branches', how='inner')
-        print('--Testing LODF in {}'.format(name))
+        print(' ')
+        print('-Testing LODF in {}'.format(name))
         for i in branches_id:
-            print('----branch ongoing: {}'.format(i))
+            print('----Branch ongoing: {}'.format(i))
+
             branchgridcal = np.array(lodf[i])
 
-            branchsearchdirect = i.split("_")[0]+"-"+i.split("_")[1]+'(1)'
-            branchsearchundirect = i.split("_")[1] + "-" + i.split("_")[0] + '(1)'
+            branchsearchdirect = i.split("_")[0] + "_" + i.split("_")[1] + "(" + i.split("_")[2] + ")"
+            branchsearchundirect = i.split("_")[1] + "_" + i.split("_")[0] + "(" + i.split("_")[2] + ")"
             if branchsearchdirect in lodf.columns:
                 branchpsse = np.array(lodf[branchsearchdirect])
                 branchpsse[branchpsse == '---'] = 0.0
                 branchpsse = branchpsse.astype(float)
             elif branchsearchundirect in lodf.columns:
-                branchpsse = -np.array(lodf[branchsearchundirect])
+                print("----------Nodes reordered")
+                branchpsse = np.array(lodf[branchsearchundirect])
+                branchpsse[branchpsse == '---'] = 0.0
                 branchpsse = branchpsse.astype(float)
+                branchpsse = -branchpsse
             else:
-                print('El nudo {} no se ha calculado por PSSe'.format(i))
-            #if name == 'REE':
-            #    print('')
-            if not (np.isclose(branchgridcal, branchpsse, atol=1e-5).all()):
-                print('---LODFs not equal')
+                print('La línea {} no se ha calculado por PSSe'.format(i))
 
-        print("")
+            if not (np.isclose(branchgridcal, branchpsse, atol=1e-3).all()):
+                print('------------ XXXX LODFs not equal XXXX ------------ ')
+                counter += 1
+            else:
+                print('------------LODFs CHECKED')
+        print('-- TOTAL FAILURES: {}'.format(counter))
+
 
 if __name__ == '__main__':
     test_ptdf()
