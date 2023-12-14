@@ -28,14 +28,11 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Changed the river line pattern to be recognisable&#10;Fixed a couple of bugs">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="minimal refactoring changes in reliability_study_run.py">
+      <change afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/Stochastic/reliability_iterable.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Core/Compilers/circuit_to_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Core/Compilers/circuit_to_data.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Core/DataStructures/branch_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Core/DataStructures/branch_data.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Core/DataStructures/generator_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Core/DataStructures/generator_data.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Core/DataStructures/load_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Core/DataStructures/load_data.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Core/DataStructures/shunt_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Core/DataStructures/shunt_data.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/Stochastic/reliability_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/Stochastic/reliability_driver.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/reliability_study_run.py" beforeDir="false" afterPath="$PROJECT_DIR$/examples/reliability_study_run.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/Stochastic/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/Stochastic/__init__.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -76,7 +73,7 @@
     </favorite-branches>
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="205_ACOPF" />
+        <entry key="$PROJECT_DIR$" value="190_analisis_flujo_lineal" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -167,7 +164,7 @@
       <recent name="$PROJECT_DIR$/src/research/PTDF" />
     </key>
   </component>
-  <component name="RunManager" selected="Python tests.Nosetests in tests">
+  <component name="RunManager" selected="Python.ExecuteGridCal">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -751,6 +748,28 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="reliability_study_run" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="GridCal" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/examples" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/examples/reliability_study_run.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration default="true" type="Python.FlaskServer">
       <module name="GridCalEngine" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -808,22 +827,6 @@
       <option name="docutils_params" value="" />
       <option name="docutils_task" value="" />
       <option name="docutils_open_in_browser" value="false" />
-      <method v="2" />
-    </configuration>
-    <configuration name="Nosetests in mips.py" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
-      <module name="GridCal" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/GridCalEngine/Utils/MIPS" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="_new_regexPattern" value="&quot;&quot;" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;$PROJECT_DIR$/src/GridCalEngine/Utils/MIPS/mips.py&quot;" />
-      <option name="_new_targetType" value="&quot;PATH&quot;" />
       <method v="2" />
     </configuration>
     <configuration name="Nosetests in mips.py" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
@@ -928,6 +931,7 @@
     </configuration>
     <list>
       <item itemvalue="Python.mips" />
+      <item itemvalue="Python.reliability_study_run" />
       <item itemvalue="Python.hydro_opf" />
       <item itemvalue="Python.acopf_jax" />
       <item itemvalue="Python.ExecuteGridCal" />
@@ -936,11 +940,11 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python tests.Nosetests in tests" />
         <item itemvalue="Python.ExecuteGridCal" />
+        <item itemvalue="Python.reliability_study_run" />
+        <item itemvalue="Python tests.Nosetests in tests" />
         <item itemvalue="Python.hydro_opf" />
         <item itemvalue="Python.acopf_jax" />
-        <item itemvalue="Python tests.Nosetests in mips.py" />
       </list>
     </recent_temporary>
   </component>
@@ -1581,7 +1585,7 @@
       <workItem from="1702385265374" duration="3087000" />
       <workItem from="1702413669897" duration="5110000" />
       <workItem from="1702543871362" duration="490000" />
-      <workItem from="1702552316509" duration="927000" />
+      <workItem from="1702552316509" duration="8302000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1926,7 +1930,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="435" />
+    <option name="localTasksCounter" value="437" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1972,8 +1976,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Minimal interface refactor" />
-    <MESSAGE value="Linear analysis refactor" />
     <MESSAGE value="more graphic_obj refactoring" />
     <MESSAGE value="Improved the LinearMultiContingencies update function which was likely missing operations" />
     <MESSAGE value="Added the roseta figures&#10;minor refactor" />
@@ -1997,7 +1999,9 @@
     <MESSAGE value="improved dark detect" />
     <MESSAGE value="Fixed bug with fluid_injection_template.py typing" />
     <MESSAGE value="Changed the river line pattern to be recognisable&#10;Fixed a couple of bugs" />
-    <option name="LAST_COMMIT_MESSAGE" value="Changed the river line pattern to be recognisable&#10;Fixed a couple of bugs" />
+    <MESSAGE value="added mttf and mttr to the datastuctures" />
+    <MESSAGE value="minimal refactoring changes in reliability_study_run.py" />
+    <option name="LAST_COMMIT_MESSAGE" value="minimal refactoring changes in reliability_study_run.py" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2617,6 +2621,7 @@
     <SUITE FILE_PATH="coverage/GridCal$linear_factors_research.coverage" NAME="linear_factors_research Coverage Results" MODIFIED="1646235632825" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research" />
     <SUITE FILE_PATH="coverage/GridCal$auto_document_models.coverage" NAME="auto_document_models Coverage Results" MODIFIED="1700582798036" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/doc" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_test_transformer_type_test_transformer_type.coverage" NAME="Nosetests for test_transformer_type.test_transformer_type Coverage Results" MODIFIED="1619382593243" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
+    <SUITE FILE_PATH="coverage/GridCal$reliability_study_run.coverage" NAME="reliability_study_run Coverage Results" MODIFIED="1702564264050" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/examples" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_test_contingency_test_contingency.coverage" NAME="Nosetests for test_contingency.test_contingency Coverage Results" MODIFIED="1701702177042" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$GeneralDialogues.coverage" NAME="GeneralDialogues Coverage Results" MODIFIED="1698838468153" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_tests_test_opf_time_series_test_opf_ts.coverage" NAME="Nosetests for tests.test_opf_time_series.test_opf_ts Coverage Results" MODIFIED="1697191214514" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
@@ -2697,7 +2702,7 @@
     <SUITE FILE_PATH="coverage/GridCal$binary_ga.coverage" NAME="binary_ga Coverage Results" MODIFIED="1663317448376" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/genetic_algorithms" />
     <SUITE FILE_PATH="coverage/GridCal$reactive_power_curve.coverage" NAME="reactive_power_curve Coverage Results" MODIFIED="1606723746932" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/generator" />
     <SUITE FILE_PATH="coverage/GridCal$update_gui_all.coverage" NAME="update_gui_all Coverage Results" MODIFIED="1696580506087" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui" />
-    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1702493456814" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
+    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1702568416033" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_api_helm_py.coverage" NAME="Nosetests in test_api_helm.py Coverage Results" MODIFIED="1609500335381" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_ACPTDF_research2_py.coverage" NAME="Nosetests in ACPTDF_research2.py Coverage Results" MODIFIED="1601969138193" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PTDF" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_PTDF_research_py.coverage" NAME="Nosetests in PTDF_research.py Coverage Results" MODIFIED="1592575743464" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PTDF" />
