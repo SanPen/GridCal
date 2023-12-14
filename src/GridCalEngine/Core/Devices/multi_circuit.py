@@ -2652,7 +2652,7 @@ class MultiCircuit:
             if elm.technology == obj:
                 rels.append(elm)
 
-        # delete the assciations
+        # delete the associations
         for elm in rels:
             self.delete_generator_technology(elm)
 
