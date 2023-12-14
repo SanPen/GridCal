@@ -1099,8 +1099,6 @@ def get_fluid_node_data(circuit: MultiCircuit,
         data.max_level[k] = elm.max_level
         data.initial_level[k] = elm.initial_level
 
-        data.spillage[k] = elm.spillage
-
         if time_series:
             data.inflow[k] = elm.inflow_prof[t_idx]
         else:

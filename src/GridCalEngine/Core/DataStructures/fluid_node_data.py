@@ -54,6 +54,8 @@ class FluidNodeData:
         data.max_level = self.max_level.copy()
         data.initial_level = self.initial_level.copy()
 
+        data.inflow = self.inflow.copy()
+
         return data
 
 
