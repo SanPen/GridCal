@@ -94,7 +94,8 @@ def get_reliability_scenario(nc: NumericalCircuit, horizon=10000):
     Get reliability events
     :param nc: numerical circuit instance
     :param horizon: time horizon in hours
-    :return: dictionary of events, each event tuple has: (time in hours, element index, activation state (True/False))
+    :return: dictionary of events, each event tuple has:
+    (time in hours, DataType, element index, activation state (True/False))
     """
     all_events = list()
 
@@ -131,7 +132,11 @@ def get_reliability_scenario(nc: NumericalCircuit, horizon=10000):
 
 
 def run_events(nc: NumericalCircuit, events_list: list):
+    """
 
+    :param nc:
+    :param events_list:
+    """
     for t, tpe, i, state in events_list:
 
         # Set the state of the event
@@ -195,7 +200,8 @@ class ReliabilityStudy(DriverTemplate):
         # compile the numerical circuit
         numerical_circuit = compile_numerical_circuit_at(self.grid, t_idx=None)
 
-        evt = get_reliability_scenario(numerical_circuit)
+        evt = get_reliability_scenario(numerical_circuit,
+                                       horizon=1)
 
         run_events(nc=numerical_circuit, events_list=evt)
 

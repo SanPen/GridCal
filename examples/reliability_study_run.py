@@ -1,6 +1,7 @@
+import os
 from GridCalEngine.api import *
 
-fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 30 Bus with storage.xlsx'
+fname = os.path.join('..', 'Grids_and_profiles', 'grids', 'IEEE 30 Bus with storage.xlsx')
 
 circuit_ = FileOpen(fname).open()
 
