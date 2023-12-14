@@ -37,6 +37,7 @@ class FluidNodeData:
         self.max_level = np.zeros(nelm, dtype=float)
         self.initial_level = np.zeros(nelm, dtype=float)
         # self.bus_index = np.empty()  # TODO: check if relevant
+        self.inflow = np.zeros(nelm, dtype=float)
 
     def copy(self) -> "FluidNodeData":
         """

@@ -31,6 +31,8 @@ class FluidNode(EditableDevice):
                  max_level: float = 0.0,
                  current_level: float = 0.0,
                  spillage: float = 0.0,
+                 inflow: float = 0.0,
+                 inflow_prof=None,
                  bus: Union[None, Bus] = None,
                  build_status: BuildStatus = BuildStatus.Commissioned):
         """
@@ -42,6 +44,8 @@ class FluidNode(EditableDevice):
         :param max_level: Maximum amount of fluid at the node/reservoir [m3]
         :param current_level: Initial level of the node/reservoir [m3]
         :param spillage: Spillage value [m3/h]
+        :param inflow: Inflow from the rain [m3/h]
+        :param inflow_prof: Profile for the inflow [m3/h]
         :param bus: electrical bus they are linked with
         :param build_status
         """
@@ -54,13 +58,12 @@ class FluidNode(EditableDevice):
         self.min_level = min_level  # m3
         self.max_level = max_level  # m3
         self.initial_level = current_level  # m3
+        self.spillage = spillage  # m3/h
+        self.inflow = inflow  # m3/h
         self._bus: Bus = bus
         self.build_status = build_status
 
-        # self.current_level = current_level  # m3 -> LpVar
-        # self.spillage = spillage  # m3/h -> LpVar
-        # self.inflow = 0.0  # m3/h -> LpExpression
-        # self.outflow = 0.0  # m3/h -> LpExpression
+        self.inflow_prof = inflow_prof  # m3/h
 
         # list of turbines
         self.turbines = list()
@@ -85,6 +88,12 @@ class FluidNode(EditableDevice):
 
         self.register(key='build_status', units='', tpe=BuildStatus,
                       definition='Branch build status. Used in expansion planning.')
+
+        self.register(key='spillage', units='m3/h', tpe=float,
+                      definition='Flow of fluid lost at the node')
+
+        self.register(key='inflow', units='m3/h', tpe=float,
+                      definition='Flow of fluid coming from the rain')
 
     @property
     def bus(self) -> Bus:
@@ -125,7 +134,7 @@ class FluidNode(EditableDevice):
         """
         self.p2xs.append(elm)
 
-    def add_device(self, device) -> None:
+    def add_device(self, device: Union[DeviceType.FluidTurbine, DeviceType.FluidPump, DeviceType.FluidP2X]) -> None:
         """
         Add device to the bus in the corresponding list
         :param device: FluidTurbine, FluidPump or FluidP2X

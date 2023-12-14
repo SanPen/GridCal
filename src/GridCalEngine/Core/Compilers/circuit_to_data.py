@@ -1042,11 +1042,14 @@ def get_hvdc_data(circuit: MultiCircuit,
 
     return data
 
+
 def get_fluid_node_data(circuit: MultiCircuit,
-                        t_idx=-1) -> Tuple[ds.FluidNodeData, Dict[str, int]]:
+                        t_idx=-1,
+                        time_series=False) -> Tuple[ds.FluidNodeData, Dict[str, int]]:
     """
 
     :param circuit:
+    :param time_series:
     :param t_idx:
     :return:
     """
@@ -1066,6 +1069,13 @@ def get_fluid_node_data(circuit: MultiCircuit,
         data.max_level[k] = elm.max_level
         data.initial_level[k] = elm.initial_level
 
+        data.spillage[k] = elm.spillage
+
+        if time_series:
+            data.inflow[k] = elm.inflow_prof[t_idx]
+        else:
+            data.inflow[k] = elm.inflow
+
     return data, plant_dict
 
 
@@ -1077,6 +1087,8 @@ def get_fluid_turbine_data(circuit: MultiCircuit,
 
     :param circuit:
     :param t_idx:
+    :param plant_dict:
+    :param gen_dict:
     :return:
     """
     devices = circuit.get_fluid_turbines()
@@ -1104,6 +1116,8 @@ def get_fluid_pump_data(circuit: MultiCircuit,
     """
 
     :param circuit:
+    :param plant_dict:
+    :param gen_dict:
     :param t_idx:
     :return:
     """
