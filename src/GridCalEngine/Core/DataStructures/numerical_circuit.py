@@ -2098,7 +2098,6 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
                                                             t_idx=t_idx)
 
         nc.fluid_path_data = gc_compiler2.get_fluid_path_data(circuit=circuit,
-                                                              plant_dict=plant_dict,
                                                               t_idx=t_idx)
 
     nc.consolidate_information(use_stored_guess=use_stored_guess)

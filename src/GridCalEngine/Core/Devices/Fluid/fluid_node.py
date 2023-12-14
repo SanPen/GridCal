@@ -134,7 +134,7 @@ class FluidNode(EditableDevice):
         """
         self.p2xs.append(elm)
 
-    def add_device(self, device: Union[DeviceType.FluidTurbine, DeviceType.FluidPump, DeviceType.FluidP2X]) -> None:
+    def add_device(self, device) -> None:
         """
         Add device to the bus in the corresponding list
         :param device: FluidTurbine, FluidPump or FluidP2X
