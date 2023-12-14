@@ -94,36 +94,35 @@ def get_reliability_scenario(nc: NumericalCircuit, horizon=10000):
     Get reliability events
     :param nc: numerical circuit instance
     :param horizon: time horizon in hours
-    :return: dictionary of events, each event tuple has: (time in hours, element index, activation state (True/False))
+    :return: dictionary of events, each event tuple has:
+    (time in hours, DataType, element index, activation state (True/False))
     """
     all_events = list()
 
-    # TODO: Add MTTF and MTTR to data devices
-
     # Branches
     all_events += get_reliability_events(horizon,
-                                         nc.branch_data.branch_mttf,
-                                         nc.branch_data.branch_mttr,
+                                         nc.branch_data.mttf,
+                                         nc.branch_data.mttr,
                                          DeviceType.BranchDevice)
 
     all_events += get_reliability_events(horizon,
-                                         nc.generator_data.generator_mttf,
-                                         nc.generator_data.generator_mttr,
+                                         nc.generator_data.mttf,
+                                         nc.generator_data.mttr,
                                          DeviceType.GeneratorDevice)
 
     all_events += get_reliability_events(horizon,
-                                         nc.battery_data.battery_mttf,
-                                         nc.battery_data.battery_mttr,
+                                         nc.battery_data.mttf,
+                                         nc.battery_data.mttr,
                                          DeviceType.BatteryDevice)
 
     all_events += get_reliability_events(horizon,
-                                         nc.load_data.load_mttf,
-                                         nc.load_data.load_mttr,
+                                         nc.load_data.mttf,
+                                         nc.load_data.mttr,
                                          DeviceType.LoadDevice)
 
     all_events += get_reliability_events(horizon,
-                                         nc.shunt_data.shunt_mttf,
-                                         nc.shunt_data.shunt_mttr,
+                                         nc.shunt_data.mttf,
+                                         nc.shunt_data.mttr,
                                          DeviceType.ShuntDevice)
 
     # sort all
@@ -133,7 +132,11 @@ def get_reliability_scenario(nc: NumericalCircuit, horizon=10000):
 
 
 def run_events(nc: NumericalCircuit, events_list: list):
+    """
 
+    :param nc:
+    :param events_list:
+    """
     for t, tpe, i, state in events_list:
 
         # Set the state of the event
@@ -197,7 +200,8 @@ class ReliabilityStudy(DriverTemplate):
         # compile the numerical circuit
         numerical_circuit = compile_numerical_circuit_at(self.grid, t_idx=None)
 
-        evt = get_reliability_scenario(numerical_circuit)
+        evt = get_reliability_scenario(numerical_circuit,
+                                       horizon=1)
 
         run_events(nc=numerical_circuit, events_list=evt)
 
