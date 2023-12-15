@@ -16,10 +16,10 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import numpy as np
-from typing import Tuple
-from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
+from typing import Tuple, Union
+from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions, multi_island_pf_nc, PowerFlowResults
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit, compile_numerical_circuit_at
+from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.basic_structures import Vec, IntVec
@@ -46,8 +46,15 @@ class ReliabilityIterable:
     RealTimeStateEnumeration
     """
 
-    def __init__(self, grid: MultiCircuit):
+    def __init__(self, grid: MultiCircuit,
+                 forced_mttf: Union[None, float] = None,
+                 forced_mttr: Union[None, float] = None):
+        """
 
+        :param grid: MultiCircuit
+        :param forced_mttf: override the branches MTTF with this value
+        :param forced_mttr: override the branches MTTR with this value
+        """
         self.grid = grid
 
         # number of time steps
@@ -56,10 +63,29 @@ class ReliabilityIterable:
         # time index
         self.t_idx = 0
 
+        # declare the power flow options
+        self.pf_options = PowerFlowOptions()
+
+        # compile the time step
+        nc = compile_numerical_circuit_at(self.grid, t_idx=None)
+
+        # compute the transition probabilities
+        if forced_mttf is None:
+            lbda = 1.0 / nc.branch_data.mttf
+        else:
+            lbda = 1.0 / np.full(nc.nbr, forced_mttf)
+
+        if forced_mttr is None:
+            mu = 1.0 / nc.branch_data.mttr
+        else:
+            mu = 1.0 / np.full(nc.nbr, forced_mttr)
+
+        self.p_up, self.p_dwn = staeady_state_probability(lbda=lbda, mu=mu)
+
     def __iter__(self) -> "ReliabilityIterable":
         return self
 
-    def __next__(self) -> IntVec:
+    def __next__(self) -> Tuple[IntVec, PowerFlowResults]:
 
         if self.nt == 0:  # no time steps, no fun
             print('No time steps :/')
@@ -68,17 +94,14 @@ class ReliabilityIterable:
         # compile the time step
         nc = compile_numerical_circuit_at(self.grid, t_idx=self.t_idx)
 
-        # compute the transition probabilities
-        lbda = 1.0 / nc.branch_data.mttf
-        mu = 1.0 / nc.branch_data.mttr
-        p_up, p_dwn = staeady_state_probability(lbda=lbda, mu=mu)
-
         # determine the Markov states
         p = np.random.random(nc.nbr)
-        br_active = (p > p_dwn).astype(int)
+        br_active = (p > self.p_dwn).astype(int)
 
         # apply the transitioning states
         nc.branch_data.active = br_active
+
+        pf_res = multi_island_pf_nc(nc=nc, options=self.pf_options)
 
         # determine the next state
         if self.t_idx < (self.nt - 1):
@@ -88,4 +111,4 @@ class ReliabilityIterable:
             # raise StopIteration
             self.t_idx = 0  # restart
 
-        return br_active
+        return br_active, pf_res
