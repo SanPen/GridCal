@@ -2238,9 +2238,9 @@ class BusBranchEditorWidget(QSplitter):
 
     def convert_fluid_path_to_line(self, element: FluidPath, item_graphic: FluidPathGraphicItem):
         """
-        Convert a line to voltage source converter
-        :param element: Line instance
-        :param item_graphic: LineGraphicItem
+        Convert a fluid node to an electrical line
+        :param element: FluidPath instance
+        :param item_graphic: FluidPathGraphicItem
         :return: Nothing
         """
 
