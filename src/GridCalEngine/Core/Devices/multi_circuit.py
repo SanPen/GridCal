@@ -216,6 +216,7 @@ class MultiCircuit:
         self.fluid_paths: List[dev.FluidPath] = list()
         # self.fluid_turbines: List[dev.FluidTurbine] = list()
         # self.fluid_pumps: List[dev.FluidPump] = list()
+        # self.fluid_p2xs: List[dev.FluidP2x] = list()
 
         # objects with profiles
         self.objects_with_profiles = {
@@ -2651,7 +2652,7 @@ class MultiCircuit:
             if elm.technology == obj:
                 rels.append(elm)
 
-        # delete the assciations
+        # delete the associations
         for elm in rels:
             self.delete_generator_technology(elm)
 
@@ -2795,6 +2796,16 @@ class MultiCircuit:
             lst = lst + node.turbines
         return lst
 
+    def get_fluid_turbines_number(self) -> int:
+        """
+        :return: number of total turbines in the network
+        """
+        i = 0
+        for node in self.fluid_nodes:
+            for elm in node.turbines:
+                i += 1
+        return i
+
     def add_fluid_pump(self, node: dev.FluidNode, api_obj: Union[dev.FluidPump, None]) -> dev.FluidPump:
         """
         Add fluid pump
@@ -2829,6 +2840,16 @@ class MultiCircuit:
                 elm.plant = node
             lst = lst + node.pumps
         return lst
+
+    def get_fluid_pumps_number(self) -> int:
+        """
+        :return: number of total pumps in the network
+        """
+        i = 0
+        for node in self.fluid_nodes:
+            for elm in node.pumps:
+                i += 1
+        return i
 
     def add_fluid_p2x(self, node: dev.FluidNode,
                       api_obj: Union[dev.FluidP2x, None]) -> dev.FluidP2x:
@@ -2865,6 +2886,16 @@ class MultiCircuit:
                 elm.plant = node
             lst = lst + node.p2xs
         return lst
+
+    def get_fluid_p2xs_number(self) -> int:
+        """
+        :return: number of total pumps in the network
+        """
+        i = 0
+        for node in self.fluid_nodes:
+            for elm in node.p2xs:
+                i += 1
+        return i
 
     def get_fluid_injection_number(self) -> int:
         """
@@ -3012,6 +3043,28 @@ class MultiCircuit:
         self.delete_line(line)
 
         return upfc
+
+    def convert_fluid_path_to_line(self, fluid_path: dev.FluidPath) -> dev.Line:
+        """
+        Convert a line to voltage source converter
+        :param fluid_path: FluidPath
+        :return: Line
+        """
+        line = dev.Line(bus_from=fluid_path.source.bus,
+                        bus_to=fluid_path.target.bus,
+                        name='line',
+                        active=True,
+                        rate=9999,
+                        r=0.001,
+                        x=0.01)
+
+        # add device to the circuit
+        self.add_line(line)
+
+        # delete the line from the circuit
+        self.delete_fluid_path(fluid_path)
+
+        return line
 
     def plot_graph(self, ax=None):
         """

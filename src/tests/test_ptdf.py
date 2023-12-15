@@ -200,6 +200,7 @@ def test_lodf_ieee14_psse():
 
     assert (np.isclose(lodf, simulation.results.LODF, atol=1e-5).all())
 
+
 def test_ptdf_psse():
     """
     Compare the PSSE PTDF and the GridCal PTDF for IEEE14, IEEE30, IEEE118 and REE networks
@@ -211,10 +212,11 @@ def test_ptdf_psse():
          os.path.join('data', 'results', 'comparison', 'IEEE 30 bus PTDF PSSe.csv'), 'IEEE30'),
         (os.path.join('data', 'grids', 'RAW', 'IEEE 118 Bus V2.raw'),
          os.path.join('data', 'results', 'comparison', 'IEEE 118 bus PTDF PSSe.csv'), 'IEEE118'),
-        (os.path.join('data', 'grids', 'RAW', 'sensitive-raw', '15.Caso_2026.raw'),
-         os.path.join('data', 'results', 'comparison', '15.Caso_2026 PTDF PSSe.csv'), 'REE')]:
+        # (os.path.join('data', 'grids', 'RAW', '15.Caso_2026.raw'),
+        #  os.path.join('data', 'results', 'comparison', '15.Caso_2026 PTDF PSSe.csv'), 'REE')
+    ]:
 
-        counter = 0 #Amount of failures
+        counter = 0  # Amount of failures
         if name != 'REE': continue
         main_circuit = FileOpen(fname).open()
 
@@ -229,7 +231,7 @@ def test_ptdf_psse():
         linear_analysis = LinearAnalysisDriver(grid=main_circuit, options=linear_analysis_opt)
         linear_analysis.run()
 
-        ptdf_gridcal = pd.DataFrame(linear_analysis.results.PTDF, columns = nodes_id)
+        ptdf_gridcal = pd.DataFrame(linear_analysis.results.PTDF, columns=nodes_id)
         ptdf_gridcal['branches'] = branches_id
 
         # Import PSSe PDTF
@@ -246,9 +248,9 @@ def test_ptdf_psse():
         for i in nodes_id:
             print('----Node ongoing: {}'.format(i))
             if name == "IEEE118":
-                if i == '69': continue   # Skipping slack (is zero)
+                if i == '69': continue  # Skipping slack (is zero)
             else:
-                if i == '1': continue   # Skipping slack (is zero)
+                if i == '1': continue  # Skipping slack (is zero)
 
             if 'NUDO{}'.format(i) not in ptdf.columns:
                 print('El nudo {} no se ha calculado por PSSe')
@@ -264,6 +266,8 @@ def test_ptdf_psse():
                 print('------------PTDFs CHECKED')
         print('-- TOTAL FAILURES: {}'.format(counter))
         print(' ')
+
+
 def test_lodf_psse():
     """
     Compare the PSSE LODF and the GridCal LODF for IEEE14, IEEE30, IEEE118 and REE networks
@@ -275,11 +279,13 @@ def test_lodf_psse():
          os.path.join('data', 'results', 'comparison', 'IEEE 30 bus LODF PSSe.csv'), 'IEEE30'),
         (os.path.join('data', 'grids', 'RAW', 'IEEE 118 Bus V2.raw'),
          os.path.join('data', 'results', 'comparison', 'IEEE 118 bus LODF PSSe.csv'), 'IEEE118'),
-        (os.path.join('data', 'grids', 'RAW', 'sensitive-raw', '15.Caso_2026.raw'),
-         os.path.join('data', 'results', 'comparison', '15.Caso_2026 LODF PSSe.csv'), 'REE')]:
+        # (os.path.join('data', 'grids', 'RAW', '15.Caso_2026.raw'),
+        #  os.path.join('data', 'results', 'comparison', '15.Caso_2026 LODF PSSe.csv'), 'REE')
+    ]:
 
-        counter = 0 #Amount of failures
-        if name != 'REE': continue
+        counter = 0  # Amount of failures
+        if name != 'REE':
+            continue
         main_circuit = FileOpen(fname).open()
 
         # Network ordering

@@ -109,12 +109,7 @@ class FluidTurbineGraphicItem(InjectionTemplateGraphicItem):
         @return:
         """
         menu = QMenu()
-        menu.addSection("Generator")
-
-        pe = menu.addAction('Active')
-        pe.setCheckable(True)
-        pe.setChecked(self.api_object.active)
-        pe.triggered.connect(self.enable_disable_toggle)
+        menu.addSection("Turbine")
 
         # pc = menu.addAction('Voltage control')
         # pc.setCheckable(True)
