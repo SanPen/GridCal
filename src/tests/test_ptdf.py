@@ -211,7 +211,7 @@ def test_ptdf_psse():
          os.path.join('data', 'results', 'comparison', 'IEEE 30 bus PTDF PSSe.csv'), 'IEEE30'),
         (os.path.join('data', 'grids', 'RAW', 'IEEE 118 Bus V2.raw'),
          os.path.join('data', 'results', 'comparison', 'IEEE 118 bus PTDF PSSe.csv'), 'IEEE118'),
-        (os.path.join('data', 'grids', 'RAW', '15.Caso_2026.raw'),
+        (os.path.join('data', 'grids', 'RAW', 'sensitive-raw', '15.Caso_2026.raw'),
          os.path.join('data', 'results', 'comparison', '15.Caso_2026 PTDF PSSe.csv'), 'REE')]:
 
         counter = 0 #Amount of failures
@@ -275,7 +275,7 @@ def test_lodf_psse():
          os.path.join('data', 'results', 'comparison', 'IEEE 30 bus LODF PSSe.csv'), 'IEEE30'),
         (os.path.join('data', 'grids', 'RAW', 'IEEE 118 Bus V2.raw'),
          os.path.join('data', 'results', 'comparison', 'IEEE 118 bus LODF PSSe.csv'), 'IEEE118'),
-        (os.path.join('data', 'grids', 'RAW', '15.Caso_2026.raw'),
+        (os.path.join('data', 'grids', 'RAW', 'sensitive-raw', '15.Caso_2026.raw'),
          os.path.join('data', 'results', 'comparison', '15.Caso_2026 LODF PSSe.csv'), 'REE')]:
 
         counter = 0 #Amount of failures
