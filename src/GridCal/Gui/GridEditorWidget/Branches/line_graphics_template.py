@@ -38,6 +38,7 @@ from GridCalEngine.Core.Devices.Branches.upfc import UPFC
 from GridCalEngine.Core.Devices.Branches.dc_line import DcLine
 from GridCalEngine.Core.Devices.Branches.hvdc_line import HvdcLine
 from GridCalEngine.Core.Devices.Fluid.fluid_node import FluidNode
+from GridCalEngine.Core.Devices.Fluid.fluid_path import FluidPath
 from GridCalEngine.Simulations.Topology.topology_driver import reduce_grid_brute
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
@@ -363,7 +364,7 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
                  toPort: Union[TerminalItem, None],
                  editor,
                  width=5,
-                 api_object: Union[Line, Transformer2W, VSC, UPFC, HvdcLine, DcLine, None] = None):
+                 api_object: Union[Line, Transformer2W, VSC, UPFC, HvdcLine, DcLine, FluidPath, None] = None):
         """
 
         :param fromPort:
@@ -876,6 +877,12 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
 
     def get_fluid_node_to(self) -> FluidNode:
         return self.get_to_graphic_object().api_object
+
+    def get_fluid_node_graphics_from(self) -> FluidNodeGraphicItem:
+        return self.get_from_graphic_object()
+
+    def get_fluid_node_graphics_to(self) -> FluidNodeGraphicItem:
+        return self.get_to_graphic_object()
 
     def connected_between_buses(self):
 

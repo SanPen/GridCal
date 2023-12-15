@@ -3044,6 +3044,28 @@ class MultiCircuit:
 
         return upfc
 
+    def convert_fluid_path_to_line(self, fluid_path: dev.FluidPath) -> dev.Line:
+        """
+        Convert a line to voltage source converter
+        :param fluid_path: FluidPath
+        :return: Line
+        """
+        line = dev.Line(bus_from=fluid_path.source.bus,
+                        bus_to=fluid_path.target.bus,
+                        name='line',
+                        active=True,
+                        rate=9999,
+                        r=0.001,
+                        x=0.01)
+
+        # add device to the circuit
+        self.add_line(line)
+
+        # delete the line from the circuit
+        self.delete_fluid_path(fluid_path)
+
+        return line
+
     def plot_graph(self, ax=None):
         """
         Plot the grid.

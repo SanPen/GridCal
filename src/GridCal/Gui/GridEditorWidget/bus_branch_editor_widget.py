@@ -808,10 +808,6 @@ class BusBranchEditorWidget(QSplitter):
         Draw diagram
         :return:
         """
-        # create all the schematic objects and replace the existing ones
-        # self.diagramScene = DiagramScene(parent=self, circuit=self.circuit)  # scene to add to the QGraphicsView
-        # self.diagramView = EditorGraphicsView(self.diagramScene, parent=self, editor=self)
-
         # add buses first
         bus_dict: Dict[str, BusGraphicItem] = dict()
         fluid_node_dict: Dict[str, FluidNodeGraphicItem] = dict()
@@ -912,7 +908,7 @@ class BusBranchEditorWidget(QSplitter):
                 # pass for now...
                 pass
 
-        def find_my_node(idtag_):
+        def find_my_node(idtag_: str):
             """
             Function to look for the bus or fluid node
             :param idtag_: bus or fluidnode idtag
@@ -1079,8 +1075,10 @@ class BusBranchEditorWidget(QSplitter):
                         terminal_to.hosting_connections.append(graphic_object)
                         graphic_object.redraw()
                         points_group.locations[idtag].graphic_object = graphic_object
+
             else:
-                print('draw: Unrecognized category: {}'.format(category))
+                pass
+                # print('draw: Unrecognized category: {}'.format(category))
 
         # last pass: arange children
         for category, points_group in self.diagram.data.items():
@@ -1886,6 +1884,31 @@ class BusBranchEditorWidget(QSplitter):
             print("Branch's buses were not found in the diagram :(")
             return None
 
+    def add_api_line_between_fluid_graphics(self, branch: Line,
+                                            bus_f_graphic: FluidNodeGraphicItem,
+                                            bus_t_graphic: FluidNodeGraphicItem):
+        """
+        add API branch to the Scene
+
+        :param branch: Branch instance
+        :param bus_f_graphic
+        :param bus_t_graphic
+        """
+        terminal_from = bus_f_graphic.terminal
+        terminal_to = bus_t_graphic.terminal
+
+        graphic_object = LineGraphicItem(fromPort=terminal_from,
+                                         toPort=terminal_to,
+                                         editor=self,
+                                         api_object=branch)
+
+        graphic_object.diagramScene.circuit = self.circuit  # add pointer to the circuit
+        terminal_from.hosting_connections.append(graphic_object)
+        terminal_to.hosting_connections.append(graphic_object)
+        graphic_object.redraw()
+        self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_object)
+        return graphic_object
+
     def add_api_dc_line(self, branch: DcLine):
         """
         add API branch to the Scene
@@ -2212,6 +2235,37 @@ class BusBranchEditorWidget(QSplitter):
 
         self.update_diagram_element(device=upfc, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_obj)
         self.delete_diagram_element(device=line)
+
+    def convert_fluid_path_to_line(self, element: FluidPath, item_graphic: FluidPathGraphicItem):
+        """
+        Convert a line to voltage source converter
+        :param element: Line instance
+        :param item_graphic: LineGraphicItem
+        :return: Nothing
+        """
+
+        fl_from = item_graphic.get_fluid_node_graphics_from()
+        fl_from.create_bus_if_necessary()
+
+        fl_to = item_graphic.get_fluid_node_graphics_to()
+        fl_to.create_bus_if_necessary()
+
+        line = self.circuit.convert_fluid_path_to_line(element)
+
+        # add device to the schematic
+        graphic_obj = self.add_api_line_between_fluid_graphics(line,
+                                                               bus_f_graphic=fl_from,
+                                                               bus_t_graphic=fl_to)
+
+        # update position
+        fl_from.terminal.update()
+        fl_to.terminal.update()
+
+        # delete from the schematic
+        self.diagramScene.removeItem(item_graphic)
+
+        self.update_diagram_element(device=line, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_obj)
+        self.delete_diagram_element(device=element)
 
     def convert_generator_to_battery(self, gen: Generator, graphic_object: GeneratorGraphicItem):
         """

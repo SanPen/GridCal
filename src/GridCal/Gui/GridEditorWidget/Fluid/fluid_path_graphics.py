@@ -83,44 +83,6 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
         """
         self.set_colour(self.color, self.width, self.style)
 
-    def remove_symbol(self) -> None:
-        """
-        Remove all symbols
-        """
-        for elm in [self.symbol]:
-            if elm is not None:
-                try:
-                    self.diagramScene.removeItem(elm)
-                    # sip.delete(elm)
-                    elm = None
-                except:
-                    pass
-
-    def make_switch_symbol(self):
-        """
-        Mathe the switch symbol
-        :return:
-        """
-        h = 40.0
-        w = h
-        self.symbol = QGraphicsRectItem(QRectF(0, 0, w, h), parent=self)
-        self.symbol.setPen(QPen(self.color, self.width, self.style))
-        if self.api_object.active:
-            self.symbol.setBrush(self.color)
-        else:
-            self.symbol.setBrush(QBrush(Qt.white))
-
-    def make_reactance_symbol(self):
-        """
-        Make the reactance symbol
-        :return:
-        """
-        h = 40.0
-        w = 2 * h
-        self.symbol = QGraphicsRectItem(QRectF(0, 0, w, h), parent=self)
-        self.symbol.setPen(QPen(self.color, self.width, self.style))
-        self.symbol.setBrush(self.color)
-
     def mouseDoubleClickEvent(self, event):
         """
         On double click, edit
@@ -170,11 +132,7 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
             ra6.setIcon(plot_icon)
             ra6.triggered.connect(self.plot_profiles)
 
-            # ra4 = menu.addAction('Assign rate to profile')
-            # ra4_icon = QIcon()
-            # ra4_icon.addPixmap(QPixmap(":/Icons/icons/assign_to_profile.svg"))
-            # ra4.setIcon(ra4_icon)
-            # ra4.triggered.connect(self.assign_rate_to_profile)
+
             #
             # ra5 = menu.addAction('Assign active state to profile')
             # ra5_icon = QIcon()
@@ -195,6 +153,16 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
             del_icon.addPixmap(QPixmap(":/Icons/icons/delete3.svg"))
             ra2.setIcon(del_icon)
             ra2.triggered.connect(self.remove)
+
+            # menu.addSeparator()
+
+            menu.addSection('Convert to')
+
+            ra4 = menu.addAction('Line')
+            ra4_icon = QIcon()
+            ra4_icon.addPixmap(QPixmap(":/Icons/icons/assign_to_profile.svg"))
+            ra4.setIcon(ra4_icon)
+            ra4.triggered.connect(self.to_line)
 
             menu.exec_(event.screenPos())
         else:
@@ -295,3 +263,13 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
 
                 # remove this line
                 self.remove(ask=False)
+
+    def to_line(self):
+        """
+        Convert this object to transformer
+        :return:
+        """
+        ok = yes_no_question('Are you sure that you want to convert this fluid path into a line?',
+                             'Convert fluid path')
+        if ok:
+            self.editor.convert_fluid_path_to_line(element=self.api_object, item_graphic=self)
