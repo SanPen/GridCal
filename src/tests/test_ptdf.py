@@ -202,7 +202,7 @@ def test_lodf_ieee14_psse():
 
 def test_ptdf_psse():
     """
-    Compare the PSSE PTDF and the GridCal PTDF for IEEE14, IEEE30 and IEEE118 networks
+    Compare the PSSE PTDF and the GridCal PTDF for IEEE14, IEEE30, IEEE118 and REE networks
     """
     for fname, pssename, name in [
         (os.path.join('data', 'grids', 'RAW', 'IEEE 14 bus.raw'),
@@ -236,7 +236,8 @@ def test_ptdf_psse():
         ptdf_psse = pd.read_csv(pssename)
 
         ptdf_psse.drop(['vbase_nodefrom', 'vbase_nodeto'], axis=1, inplace=True)
-        ptdf_psse['branches'] = ptdf_psse['nodefrom'].astype(str) + '_' + ptdf_psse['nodeto'].astype(str) + '_' + ptdf_psse['ckt'].astype(str)
+        ptdf_psse['branches'] = (ptdf_psse['nodefrom'].astype(str) + '_' + ptdf_psse['nodeto'].astype(str) + '_'
+                                 + ptdf_psse['ckt'].astype(str))
 
         # Test comparison
         ptdf = ptdf_gridcal.merge(ptdf_psse, on='branches', how='inner')
@@ -262,9 +263,10 @@ def test_ptdf_psse():
             else:
                 print('------------PTDFs CHECKED')
         print('-- TOTAL FAILURES: {}'.format(counter))
+        print(' ')
 def test_lodf_psse():
     """
-    Compare the PSSE LODF and the GridCal LODF for IEEE14, IEEE30 and IEEE118 networks
+    Compare the PSSE LODF and the GridCal LODF for IEEE14, IEEE30, IEEE118 and REE networks
     """
     for fname, pssename, name in [
         (os.path.join('data', 'grids', 'RAW', 'IEEE 14 bus.raw'),
@@ -296,7 +298,8 @@ def test_lodf_psse():
 
         lodf_psse = pd.read_csv(pssename)
         lodf_psse.drop(['vbase_nodefrom', 'vbase_nodeto'], axis=1, inplace=True)
-        lodf_psse['branches'] = lodf_psse['nodefrom'].astype(str) + '_' + lodf_psse['nodeto'].astype(str) + '_' + lodf_psse['ckt'].astype(str)
+        lodf_psse['branches'] = (lodf_psse['nodefrom'].astype(str) + '_' + lodf_psse['nodeto'].astype(str) + '_'
+                                 + lodf_psse['ckt'].astype(str))
 
         # Test comparison
         lodf = lodf_gridcal.merge(lodf_psse, on='branches', how='inner')
