@@ -509,7 +509,7 @@ class GeneratorGraphicItem(InjectionTemplateGraphicItem):
         if dlg.exec():
             pass
 
-        self.api_object.Snom = np.round(dlg.Snomm, 1) if dlg.Snom > 1 else dlg.Snom
+        self.api_object.Snom = np.round(dlg.Snom, 1) if dlg.Snom > 1 else dlg.Snom
         self.api_object.Qmin = dlg.Qmin
         self.api_object.Qmax = dlg.Qmax
         self.api_object.Pmin = dlg.Pmin
