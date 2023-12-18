@@ -22,6 +22,7 @@ from GridCalEngine.IO.cim.cgmes_2_4_15.devices.identified_object import Identifi
 from GridCalEngine.IO.cim.cgmes_2_4_15.cgmes_circuit import CgmesCircuit
 from GridCalEngine.IO.cim.cgmes_2_4_15.devices.branches.transformer.power_transformer_end import PowerTransformerEnd
 from GridCalEngine.IO.cim.cgmes_2_4_15.devices.branches.line.ac_line_segment import ACLineSegment
+from GridCalEngine.IO.cim.cgmes_2_4_15.devices.conducting_equipment import ConductingEquipment
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 import GridCalEngine.Core.Devices as gcdev
 from GridCalEngine.data_logger import DataLogger
@@ -607,11 +608,19 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit, logger: DataLogger) -> MultiCirc
     # dictionary relating the conducting equipement to the terminal object
     device_to_terminal_dict: Dict[str, List[Terminal]] = dict()
     for e in cgmes_model.Terminal_list:
-        lst = device_to_terminal_dict.get(e.ConductingEquipment.uuid, None)
-        if lst is None:
-            device_to_terminal_dict[e.ConductingEquipment.uuid] = [e]
+        if isinstance(e.ConductingEquipment, ConductingEquipment):
+            lst = device_to_terminal_dict.get(e.ConductingEquipment.uuid, None)
+            if lst is None:
+                device_to_terminal_dict[e.ConductingEquipment.uuid] = [e]
+            else:
+                lst.append(e)
         else:
-            lst.append(e)
+            logger.add_error(msg='The object is not a ConductingEquipment',
+                             device=e.rdfid,
+                             device_class=e.tpe,
+                             device_property="ConductingEquipment",
+                             value=e.ConductingEquipment,
+                             expected_value='object')
 
     calc_node_dict = get_gcdev_calculation_nodes(cgmes_model, gc_model, v_dict, logger)
     cn_dict = get_gcdev_connectivity_nodes(cgmes_model, gc_model)
