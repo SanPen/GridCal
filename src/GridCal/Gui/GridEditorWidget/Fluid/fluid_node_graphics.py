@@ -344,13 +344,13 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
         :param api_obj: EditableDevice
         """
 
-        if api_obj.device_type == DeviceType.FluidTurbine:
+        if api_obj.device_type == DeviceType.FluidTurbineDevice:
             self.add_turbine(api_obj=api_obj)
 
-        elif api_obj.device_type == DeviceType.FluidPump:
+        elif api_obj.device_type == DeviceType.FluidPumpDevice:
             self.add_pump(api_obj=api_obj)
 
-        elif api_obj.device_type == DeviceType.FluidP2X:
+        elif api_obj.device_type == DeviceType.FluidP2XDevice:
             self.add_p2x(api_obj=api_obj)
 
         else:
