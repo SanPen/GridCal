@@ -32,6 +32,7 @@ Qt5 = 0.3
 Sl5 = 1.0 + 0.5 * 1j  # load at 5
 V6 = 1 * np.exp(1j * 0.0)
 
+
 def pol2rec(m, a):
     return m * np.exp(1j * a)
 
