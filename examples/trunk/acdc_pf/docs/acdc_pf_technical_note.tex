@@ -21,6 +21,9 @@
 \usepackage{nccmath}
 \usepackage{relsize}
 
+\usepackage{biblatex} %Imports biblatex package
+\addbibresource{refs.bib} %Import the bibliography file
+
 \usepackage{geometry}
  \geometry{
 	a4paper,
@@ -148,6 +151,7 @@
 	The power flow linearization formulation is:
 	
 	\begin{equation}
+		\label{eq:acdc_syst}
 		\begin{bmatrix}
 			\frac{\partial P}{\partial \theta} & \frac{\partial P}{\partial V_m} & \frac{\partial P}{\partial P_f} & \frac{\partial P}{\partial P_t} & \frac{\partial P}{\partial Q_t}\\
 			\frac{\partial Q}{\partial \theta} & \frac{\partial Q}{\partial V_m} & \frac{\partial Q}{\partial P_f} & \frac{\partial Q}{\partial P_t} & \frac{\partial Q}{\partial Q_t}\\
@@ -204,5 +208,53 @@
 		\label{fig:acdc6busdiagram}
 	\end{figure}
 
+	\subsection{Control mapping}
+	It is assumed that each converter controls two magnitudes. Then, the control modes are the ones indicated in Table~\ref{table:contr_vsc}, as described in~\cite{alvarez2021universal}. The AC and DC sides of each control mode are classified into grid-forming (GFM) or grid-following (GFL) following the principles depicted in~\cite{gomis2020principles}.
 
+	\begin{table}[!htb]\centering
+		\caption{Control modes and types of VSCs with the corresponding constraints.}
+		\begin{tabular}{ccccc}
+			\hline
+			\textbf{Control mode} & \textbf{Constraint DC} & \textbf{Constraint AC} & \textbf{AC Type} & \textbf{DC Type} \\
+			\hline
+			\hline
+			1 & $\theta$ & $V_t$ & GFM & GFL \\
+			2 & $P_f$ & $Q_t$ & GFL & GFL \\
+			3 & $P_f$ & $V_t$ & GFL & GFL \\
+			4 & $V_f$ & $Q_t$ & GFL & GFM \\
+			5 & $V_f$ & $V_t$ & GFL & GFM \\
+			6 & $V_f$ droop & $Q_t$ & GFL & GFM \\
+			7 & $V_f$ droop & $V_t$ & GFL & GFM \\
+			\hline
+		\end{tabular}
+		\label{table:contr_vsc}
+	\end{table}
+There are only 2 rules to be followed when setting the control modes of VSCs:
+\begin{enumerate}
+	\item Each AC grid has to have only 1 slack bus.
+	\item Each DC grid has to have only 1 slack bus.
+\end{enumerate}
+The next step is to merge the controls in Table~\ref{table:contr_vsc} with the system of equations~\eqref{eq:acdc_syst}. Table~\ref{table:vsc_map} identifies the map between the known and unknown variables and the controls.
+
+	\begin{table}[!htb]\centering
+		\caption{Control modes and types of VSCs with the corresponding constraints.}
+		\begin{tabular}{ccccc}
+			\hline
+			\textbf{Control mode} & \textbf{Known DC} & \textbf{Known AC} & \textbf{Unknown DC} & \textbf{Unknown AC} \\
+			\hline
+			\hline
+			1 & - & $\theta$, $V_t$ & $V_f$, $P_f$ & $P_t$, $Q_t$ \\
+			2 & $P_f$ & $Q_t$ & $V_f$ & $\theta$, $V_t$, $P_t$ \\
+			3 & $P_f$ & $V_t$ & $V_f$ & $\theta$, $P_t$, $Q_t$ \\
+			4 & $V_f$ & $Q_t$ & $P_f$ & $\theta$, $V_t$, $P_t$ \\
+			5 & $V_f$ & $V_t$ & $P_f$ & $\theta$, $P_t$, $Q_t$ \\
+			6 & $V_f$ droop & $Q_t$ & $P_f$ & $\theta$, $V_t$, $P_t$ \\
+			7 & $V_f$ droop & $V_t$ & $P_f$ & $\theta$, $P_t$, $Q_t$ \\
+			\hline
+		\end{tabular}
+		\label{table:vsc_map}
+	\end{table}
+
+
+	\printbibliography
 \end{document}
