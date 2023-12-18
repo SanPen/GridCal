@@ -26,10 +26,10 @@ def hessf(x, c2):
 # Equality constraints
 
 
-def pij(x, gii, gij, bij):
+#def pij(x, gii, gij, bij):
     # x = [Pij, vi, vj, phiij]
     # return gij * (x[1] ** 2 - x[1] * x[2] * math.cos(x[3])) - bij * x[1] * x[2] * math.sin(x[3]) - x[0]
-    return gii * (x[1] ** 2) + x[1] * x[2] * (gij * math.cos(x[3]) + bij * math.sin(x[3])) - x[0]  # Check 3.19 ExaGO
+#    return gii * (x[1] ** 2) + x[1] * x[2] * (gij * math.cos(x[3]) + bij * math.sin(x[3])) - x[0]  # Check 3.19 ExaGO
 
 
 def grad_pij(x, gii, gij, bij):
@@ -115,13 +115,22 @@ def hess_qij(x, gij, bii, bij):
 
 
 def pi(x, pd):
-    # x = [Pi, Pij, Pik, ...]
-    return sum(x[1:]) + pd - x[0]
+
+    """
+    #This function calculates the nodal active power balance in the form
+    #PG_i - PD_i - sum_over_j(Pij) = Delta_P
+    :param x: Vector with the first index being the nodal generation and the rest of entries being the branch powers
+    x = [Pi, Pij, Pik, ...].
+    :param pd: Demand associated to the node.
+    :return: The power difference of the balance. This is associated to an equality condition of an OPF, should be 0.
+    """
+
+    return x[0] - pd - sum(x[1:])
 
 
 def grad_pi(x):
-    lis = [-1]
-    lis.extend([1] * len(x[1:]))
+    lis = [1]
+    lis.extend([-1] * len(x[1:]))
     return np.array(lis)
 
 

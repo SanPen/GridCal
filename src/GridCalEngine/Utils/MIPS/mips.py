@@ -28,13 +28,13 @@ def solver(X0:Vec, NV:int, NE:int, NI:int, f_eval: Callable[[Vec, csc, csc], Tup
     '''
     START = timeit.default_timer()
 
-    #Init iteration values
+    # Init iteration values
     error = 1000000
     k = 0
     X = X0.copy()
     gamma = gamma0
 
-    #Init multiplier values. Defaulted at 1.
+    # Init multiplier values. Defaulted at 1.
     PI = csc(np.ones(NE))
     LAMBDA = csc(np.ones(NI))
     LAMBDA_MAT = sparse.dia_matrix((np.ones(NI), 0), shape = (NI, NI)).tocsc()
@@ -45,30 +45,30 @@ def solver(X0:Vec, NV:int, NE:int, NI:int, f_eval: Callable[[Vec, csc, csc], Tup
 
     while (error > gamma):
 
-        #Evaluate the functions, gradients and hessians at the current iteration.
+        # Evaluate the functions, gradients and hessians at the current iteration.
         f, G, H, fx, Gx, Hx, fxx, Gxx, Hxx = f_eval(X, LAMBDA, PI)
 
-        #Compute the submatrices of the reduced NR method
+        # Compute the submatrices of the reduced NR method
         M = fxx + Gxx + Hxx + Hx @ inv_T @ LAMBDA_MAT @ Hx.transpose()
         N = fx + Hx @ LAMBDA.transpose() + Hx @ inv_T @ (gamma * E + LAMBDA_MAT @ H) + Gx @ PI.transpose()
 
-        #Stack the submatrices and vectors
+        # Stack the submatrices and vectors
         J1 = sparse.hstack([M, Gx])
         J2 = sparse.hstack([Gx.transpose(), csc((NE,NE))])
         J = sparse.vstack([J1, J2]).tocsc()
         r = - sparse.vstack([N, G]).tocsc()
 
-        #Find the reduced problem residuals and split them
+        # Find the reduced problem residuals and split them
         dXP = sparse.linalg.spsolve(J, r)
         dX = dXP[0 : NV]
         dXsp = csc(dX).transpose()
         dP = csc(dXP[NV : NE + NV])
 
-        #Calculate the inequalities residuals using the reduced problem residuals
+        # Calculate the inequalities residuals using the reduced problem residuals
         dT = - H - T.transpose() - Hx.transpose() @ dXsp
         dL = - LAMBDA.transpose() + inv_T @ (gamma * E - LAMBDA_MAT @ dT)
 
-        #Compute the maximum step allowed
+        # Compute the maximum step allowed
         alphap = step_calculator(T.toarray(), dT.transpose().toarray(), NI)
         alphad = step_calculator(LAMBDA.toarray(), dL.transpose().toarray(), NI)
 
@@ -81,15 +81,15 @@ def solver(X0:Vec, NV:int, NE:int, NI:int, f_eval: Callable[[Vec, csc, csc], Tup
         inv_T = sparse.dia_matrix((1/T.toarray(), 0), shape = (NI, NI)).tocsc()
         LAMBDA_MAT =  sparse.dia_matrix((LAMBDA.toarray(), 0), shape = (NI, NI)).tocsc()
 
-        #Compute the maximum error and the new gamma value
+        # Compute the maximum error and the new gamma value
         error = max(max(abs(dX)), max(abs(dL)), max(abs(dT)), max(abs(dP)))
         newgamma = 0.1 * (T @ LAMBDA.transpose()).toarray()[0][0]/NI
-        gamma = max(newgamma, 1e-5) #Maximum tolerance requested.
+        gamma = max(newgamma, 1e-5) # Maximum tolerance requested.
 
-        #Add an iteration step
+        # Add an iteration step
         k += 1
         if k == max_iter:
-            #If max_iter is reached, break. Should raise a Convergency Error, TODO.
+            # If max_iter is reached, break. Should raise a Convergency Error, TODO.
             break
         print(X, error, gamma)
 
