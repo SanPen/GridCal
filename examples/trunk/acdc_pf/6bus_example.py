@@ -36,6 +36,7 @@ V6 = 1 * np.exp(1j * 0.0)
 def pol2rec(m, a):
     return m * np.exp(1j * a)
 
+
 def f1(d2, d5, Vm4, Vm5, Pf2, Pt3, Pt5, Qf2):
     # balance de P en 2
     V2 = Vm2 * np.exp(1j * d2)
@@ -44,6 +45,7 @@ def f1(d2, d5, Vm4, Vm5, Pf2, Pt3, Pt5, Qf2):
     i2 = (V2 - V1) * y12 + np.conj(Sl2 / V2) + np.conj((Pf2 + 1j * Qf2) / V2)
     # i2 = (V2 - V1) * y12 + np.conj(Sl2 / V2) + np.conj((Pf2 + 1j * Qf2) / V2) + (V2 - V5) * y25
     return np.real(i2)
+
 
 def f2(d2, d5, Vm4, Vm5, Pf2, Pt3, Pt5, Qf2):
     # balance de Q en 2
@@ -54,6 +56,7 @@ def f2(d2, d5, Vm4, Vm5, Pf2, Pt3, Pt5, Qf2):
     # i2 = (V2 - V1) * y12 + np.conj(Sl2 / V2) + np.conj((Pf2 + 1j * Qf2) / V2) + (V2 - V5) * y25
     return np.imag(i2)
 
+
 def f3(d2, d5, Vm4, Vm5, Pf2, Pt3, Pt5, Qf2):
     # balance de P en 5
     V2 = Vm2 * np.exp(1j * d2)
@@ -62,6 +65,7 @@ def f3(d2, d5, Vm4, Vm5, Pf2, Pt3, Pt5, Qf2):
     i5 = (V5 - V6) * y56 + np.conj(Sl5 / V5) + np.conj((Pt5 + 1j * Qt5) / V5) 
     # i5 = (V5 - V6) * y56 + np.conj(Sl5 / V5) + np.conj((Pt5 + 1j * Qt5) / V5) + (V5 - V2) * y25
     return np.real(i5)
+
 
 def f4(d2, d5, Vm4, Vm5, Pf2, Pt3, Pt5, Qf2):
     # balance de Q en 5
@@ -72,10 +76,12 @@ def f4(d2, d5, Vm4, Vm5, Pf2, Pt3, Pt5, Qf2):
     # i5 = (V5 - V6) * y56 + np.conj(Sl5 / V5) + np.conj((Pt5 + 1j * Qt5) / V5) + (V5 - V2) * y25
     return np.imag(i5)
 
+
 def f5(d2, d5, Vm4, Vm5, Pf2, Pt3, Pt5, Qf2):
     # balance de P en 3 (DC)
     i3 = Pt3 / Vm3 + (Vm3 - Vm4) * g34
     return i3
+
 
 def f6(d2, d5, Vm4, Vm5, Pf2, Pt3, Pt5, Qf2):
     # balance de P en 4 (DC)
@@ -87,6 +93,7 @@ def f7(d2, d5, Vm4, Vm5, Pf2, Pt3, Pt5, Qf2):
     # Pfrom + Pt + Ploss = 0 en el convertidor 1
     ploss1 = a1 + b1 * np.sqrt(Pf2**2 + Qf2**2) / Vm2 + c1 * (Pf2**2 + Qf2**2) / Vm2**2
     return ploss1 - Pf2 - Pt3
+
 
 def f8(d2, d5, Vm4, Vm5, Pf2, Pt3, Pt5, Qf2):
     # los convertidores no tienen impedancia y se trabaja con las potencias como incógnitas
