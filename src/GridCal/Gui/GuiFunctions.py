@@ -24,6 +24,7 @@ from enum import EnumMeta
 from collections import defaultdict
 
 from GridCalEngine.Core.Devices import BranchTemplate, Bus, ContingencyGroup
+from GridCalEngine.Core.Devices.editable_device import GCProp, EditableDevice
 from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Simulations.result_types import ResultTypes
 from GridCalEngine.basic_structures import IntVec
@@ -656,16 +657,20 @@ class ObjectsModel(QtCore.QAbstractTableModel):
     """
     Class to populate a Qt table view with the properties of objects
     """
-    def __init__(self, objects, editable_headers, parent=None, editable=False,
-                 non_editable_attributes=list(), transposed=False, check_unique=list(),
-                 dictionary_of_lists={}):
+    def __init__(self,
+                 objects: List[EditableDevice],
+                 editable_headers: Dict[str, GCProp],
+                 parent=None,
+                 editable=False,
+                 transposed=False,
+                 check_unique=list(),
+                 dictionary_of_lists: Dict[str, List[EditableDevice]] = {}):
         """
 
         :param objects: list of objects associated to the editor
         :param editable_headers: Dictionary with the properties and the units and type {attribute: ('unit', type)}
         :param parent: Parent object: the QTableView object
         :param editable: Is the table editable?
-        :param non_editable_attributes: List of attributes that are not enabled for editing
         :param transposed: Display the table transposed?
         :param dictionary_of_lists: dictionary of lists for the Delegates
         """
@@ -685,7 +690,7 @@ class ObjectsModel(QtCore.QAbstractTableModel):
 
         self.editable = editable
 
-        self.non_editable_attributes = non_editable_attributes
+        self.non_editable_attributes = [attr for attr in self.attributes if not editable_headers[attr].editable]
 
         self.check_unique = check_unique
 

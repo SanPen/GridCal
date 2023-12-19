@@ -14,17 +14,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
-
-import numpy as np
-import pandas as pd
-from matplotlib import pyplot as plt
-from GridCalEngine.basic_structures import BusMode
-from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceType, GCProp
-
 from typing import Union
 from GridCalEngine.basic_structures import Vec
-from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceType, GCProp
+from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceType
 
 
 class Fuel(EditableDevice):

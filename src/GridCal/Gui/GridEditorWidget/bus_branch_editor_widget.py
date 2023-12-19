@@ -43,6 +43,7 @@ from GridCalEngine.Core.Devices.Branches.upfc import UPFC
 from GridCalEngine.Core.Devices.Branches.hvdc_line import HvdcLine
 from GridCalEngine.Core.Devices.Branches.transformer3w import Transformer3W, Winding
 from GridCalEngine.Core.Devices.Injections.generator import Generator
+from GridCalEngine.Core.Devices.Fluid import FluidTurbine, FluidPump, FluidP2x, FluidNode, FluidPath
 from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.driver_template import DriverTemplate
@@ -51,7 +52,9 @@ from GridCalEngine.Core.Devices.Diagrams.graphic_location import GraphicLocation
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec
 
 from GridCal.Gui.GridEditorWidget.terminal_item import TerminalItem
-from GridCal.Gui.GridEditorWidget.substation.bus_graphics import BusGraphicItem
+from GridCal.Gui.GridEditorWidget.Substation.bus_graphics import BusGraphicItem
+from GridCal.Gui.GridEditorWidget.Fluid.fluid_node_graphics import FluidNodeGraphicItem
+from GridCal.Gui.GridEditorWidget.Fluid.fluid_path_graphics import FluidPathGraphicItem
 from GridCal.Gui.GridEditorWidget.Branches.line_graphics import LineGraphicItem
 from GridCal.Gui.GridEditorWidget.Branches.winding_graphics import WindingGraphicItem
 from GridCal.Gui.GridEditorWidget.Branches.dc_line_graphics import DcLineGraphicItem
@@ -484,7 +487,7 @@ class DiagramScene(QGraphicsScene):
         @param event:
         @return:
         """
-        self.parent_.scene_mouse_release_event(event)
+        self.parent_.create_branch_on_mouse_release_event(event)
 
         # call mouseReleaseEvent on "me" (continue with the rest of the actions)
         super(DiagramScene, self).mouseReleaseEvent(event)
@@ -540,6 +543,7 @@ class EditorGraphicsView(QGraphicsView):
             obj_type = event.mimeData().data('component/name')
             bus_data = toQBytesArray('Bus')
             tr3w_data = toQBytesArray('3W-Transformer')
+            fluid_node_data = toQBytesArray("Fluid-node")
 
             point0 = self.mapToScene(event.position().x(), event.position().y())
             x0 = point0.x()
@@ -576,6 +580,25 @@ class EditorGraphicsView(QGraphicsView):
 
                 # weird but it's the only way to have graphical-API communication
                 self.diagram_scene.circuit.add_transformer3w(obj)
+
+                # add to the diagram list
+                self.editor.update_diagram_element(device=obj,
+                                                   x=x0,
+                                                   y=y0,
+                                                   w=graphic_object.w,
+                                                   h=graphic_object.h,
+                                                   r=0,
+                                                   graphic_object=graphic_object)
+
+            elif fluid_node_data == obj_type:
+                name = 'FluidNode ' + str(len(self.diagram_scene.circuit.fluid_nodes))
+
+                obj = FluidNode(name=name)
+
+                graphic_object = self.add_fluid_node(node=obj, x=x0, y=y0, h=20, w=80)
+
+                # weird but it's the only way to have graphical-API communication
+                self.diagram_scene.circuit.add_fluid_node(obj)
 
                 # add to the diagram list
                 self.editor.update_diagram_element(device=obj,
@@ -648,6 +671,22 @@ class EditorGraphicsView(QGraphicsView):
         self.diagram_scene.addItem(graphic_object)
         return graphic_object
 
+    def add_fluid_node(self, node: FluidNode, x: int, y: int, h: int, w: int) -> FluidNodeGraphicItem:
+        """
+        Add bus
+        :param node: GridCal FluidNode object
+        :param x: x coordinate
+        :param y: y coordinate
+        :param h: height (px)
+        :param w: width (px)
+        :return: FluidNodeGraphicItem
+        """
+
+        graphic_object = FluidNodeGraphicItem(scene=self.scene(), editor=self.editor,
+                                              fluid_node=node, x=x, y=y, h=h, w=w)
+        self.diagram_scene.addItem(graphic_object)
+        return graphic_object
+
 
 class BusBranchEditorWidget(QSplitter):
     """
@@ -700,6 +739,13 @@ class BusBranchEditorWidget(QSplitter):
         t3w_icon = QIcon()
         t3w_icon.addPixmap(QPixmap(":/Icons/icons/transformer3w.svg"))
         item = QStandardItem(t3w_icon, "3W-Transformer")
+        item.setToolTip("Drag & drop this into the schematic")
+        self.libItems.append(item)
+
+        # add fluid-node to the drag&drop
+        dam_icon = QIcon()
+        dam_icon.addPixmap(QPixmap(":/Icons/icons/dam.svg"))
+        item = QStandardItem(dam_icon, "Fluid-node")
         item.setToolTip("Drag & drop this into the schematic")
         self.libItems.append(item)
 
@@ -762,12 +808,9 @@ class BusBranchEditorWidget(QSplitter):
         Draw diagram
         :return:
         """
-        # create all the schematic objects and replace the existing ones
-        # self.diagramScene = DiagramScene(parent=self, circuit=self.circuit)  # scene to add to the QGraphicsView
-        # self.diagramView = EditorGraphicsView(self.diagramScene, parent=self, editor=self)
-
         # add buses first
         bus_dict: Dict[str, BusGraphicItem] = dict()
+        fluid_node_dict: Dict[str, FluidNodeGraphicItem] = dict()
         for category, points_group in self.diagram.data.items():
 
             if category == DeviceType.BusDevice.value:
@@ -789,7 +832,7 @@ class BusBranchEditorWidget(QSplitter):
                     graphic_object.change_size(h=location.h,
                                                w=location.w)
 
-                    # add buses refference for later
+                    # add buses reference for later
                     bus_dict[idtag] = graphic_object
                     points_group.locations[idtag].graphic_object = graphic_object
 
@@ -834,9 +877,47 @@ class BusBranchEditorWidget(QSplitter):
                     graphic_object.update_conn()
                     points_group.locations[idtag].graphic_object = graphic_object
 
+            if category == DeviceType.FluidNodeDevice.value:
+
+                for idtag, location in points_group.locations.items():
+                    # add the graphic object to the diagram view
+                    graphic_object = self.editor_graphics_view.add_fluid_node(node=location.api_object,
+                                                                              x=location.x,
+                                                                              y=location.y,
+                                                                              h=location.h,
+                                                                              w=location.w)
+
+                    # add circuit pointer to the bus graphic element
+                    graphic_object.scene.circuit = self.circuit  # add pointer to the circuit
+
+                    # create the bus children
+                    graphic_object.create_children_widgets()
+
+                    graphic_object.change_size(h=location.h,
+                                               w=location.w)
+
+                    # add fluid node reference for later
+                    fluid_node_dict[idtag] = graphic_object
+                    points_group.locations[idtag].graphic_object = graphic_object
+
+                    # map the internal bus
+                    if location.api_object.bus is not None:
+                        bus_dict[location.api_object.bus.idtag] = graphic_object
+
             else:
                 # pass for now...
                 pass
+
+        def find_my_node(idtag_: str):
+            """
+            Function to look for the bus or fluid node
+            :param idtag_: bus or fluidnode idtag
+            :return: Matching graphic object
+            """
+            graphic_obj = bus_dict.get(idtag_, None)
+            if graphic_obj is None:
+                graphic_obj = fluid_node_dict.get(idtag_, None)
+            return graphic_obj
 
         # add the rest of the branches
         for category, points_group in self.diagram.data.items():
@@ -845,8 +926,8 @@ class BusBranchEditorWidget(QSplitter):
 
                 for idtag, location in points_group.locations.items():
                     branch: Line = location.api_object
-                    bus_f_graphic_obj = bus_dict.get(branch.bus_from.idtag, None)
-                    bus_t_graphic_obj = bus_dict.get(branch.bus_to.idtag, None)
+                    bus_f_graphic_obj = find_my_node(branch.bus_from.idtag)
+                    bus_t_graphic_obj = find_my_node(branch.bus_to.idtag)
 
                     if bus_f_graphic_obj and bus_t_graphic_obj:
                         terminal_from = bus_f_graphic_obj.terminal
@@ -867,8 +948,8 @@ class BusBranchEditorWidget(QSplitter):
 
                 for idtag, location in points_group.locations.items():
                     branch: DcLine = location.api_object
-                    bus_f_graphic_obj = bus_dict.get(branch.bus_from.idtag, None)
-                    bus_t_graphic_obj = bus_dict.get(branch.bus_to.idtag, None)
+                    bus_f_graphic_obj = find_my_node(branch.bus_from.idtag)
+                    bus_t_graphic_obj = find_my_node(branch.bus_to.idtag)
 
                     if bus_f_graphic_obj and bus_t_graphic_obj:
                         terminal_from = bus_f_graphic_obj.terminal
@@ -889,8 +970,8 @@ class BusBranchEditorWidget(QSplitter):
 
                 for idtag, location in points_group.locations.items():
                     branch: HvdcLine = location.api_object
-                    bus_f_graphic_obj = bus_dict.get(branch.bus_from.idtag, None)
-                    bus_t_graphic_obj = bus_dict.get(branch.bus_to.idtag, None)
+                    bus_f_graphic_obj = find_my_node(branch.bus_from.idtag)
+                    bus_t_graphic_obj = find_my_node(branch.bus_to.idtag)
 
                     if bus_f_graphic_obj and bus_t_graphic_obj:
                         terminal_from = bus_f_graphic_obj.terminal
@@ -911,8 +992,8 @@ class BusBranchEditorWidget(QSplitter):
 
                 for idtag, location in points_group.locations.items():
                     branch: VSC = location.api_object
-                    bus_f_graphic_obj = bus_dict.get(branch.bus_from.idtag, None)
-                    bus_t_graphic_obj = bus_dict.get(branch.bus_to.idtag, None)
+                    bus_f_graphic_obj = find_my_node(branch.bus_from.idtag)
+                    bus_t_graphic_obj = find_my_node(branch.bus_to.idtag)
 
                     if bus_f_graphic_obj and bus_t_graphic_obj:
                         terminal_from = bus_f_graphic_obj.terminal
@@ -933,8 +1014,8 @@ class BusBranchEditorWidget(QSplitter):
 
                 for idtag, location in points_group.locations.items():
                     branch: UPFC = location.api_object
-                    bus_f_graphic_obj = bus_dict.get(branch.bus_from.idtag, None)
-                    bus_t_graphic_obj = bus_dict.get(branch.bus_to.idtag, None)
+                    bus_f_graphic_obj = find_my_node(branch.bus_from.idtag)
+                    bus_t_graphic_obj = find_my_node(branch.bus_to.idtag)
 
                     if bus_f_graphic_obj and bus_t_graphic_obj:
                         terminal_from = bus_f_graphic_obj.terminal
@@ -955,8 +1036,8 @@ class BusBranchEditorWidget(QSplitter):
 
                 for idtag, location in points_group.locations.items():
                     branch: Transformer2W = location.api_object
-                    bus_f_graphic_obj = bus_dict.get(branch.bus_from.idtag, None)
-                    bus_t_graphic_obj = bus_dict.get(branch.bus_to.idtag, None)
+                    bus_f_graphic_obj = find_my_node(branch.bus_from.idtag)
+                    bus_t_graphic_obj = find_my_node(branch.bus_to.idtag)
 
                     if bus_f_graphic_obj and bus_t_graphic_obj:
                         terminal_from = bus_f_graphic_obj.terminal
@@ -973,9 +1054,35 @@ class BusBranchEditorWidget(QSplitter):
                         graphic_object.redraw()
                         points_group.locations[idtag].graphic_object = graphic_object
 
+            elif category == DeviceType.FluidPathDevice.value:
+
+                for idtag, location in points_group.locations.items():
+                    branch: FluidPath = location.api_object
+                    bus_f_graphic_obj = fluid_node_dict.get(branch.source.idtag, None)
+                    bus_t_graphic_obj = fluid_node_dict.get(branch.target.idtag, None)
+
+                    if bus_f_graphic_obj and bus_t_graphic_obj:
+                        terminal_from = bus_f_graphic_obj.terminal
+                        terminal_to = bus_t_graphic_obj.terminal
+
+                        graphic_object = FluidPathGraphicItem(fromPort=terminal_from,
+                                                              toPort=terminal_to,
+                                                              editor=self,
+                                                              api_object=branch)
+
+                        graphic_object.diagramScene.circuit = self.circuit  # add pointer to the circuit
+                        terminal_from.hosting_connections.append(graphic_object)
+                        terminal_to.hosting_connections.append(graphic_object)
+                        graphic_object.redraw()
+                        points_group.locations[idtag].graphic_object = graphic_object
+
+            else:
+                pass
+                # print('draw: Unrecognized category: {}'.format(category))
+
         # last pass: arange children
         for category, points_group in self.diagram.data.items():
-            if category == DeviceType.BusDevice.value:
+            if category in [DeviceType.BusDevice.value, DeviceType.FluidNodeDevice.value]:
                 for idtag, location in points_group.locations.items():
                     # arrange children
                     location.graphic_object.arrange_children()
@@ -1107,7 +1214,166 @@ class BusBranchEditorWidget(QSplitter):
             pos = event.scenePos()
             self.started_branch.setEndPos(pos)
 
-    def scene_mouse_release_event(self, event: QGraphicsSceneMouseEvent) -> None:
+    def create_line(self, bus_from: Bus, bus_to: Bus, fromPort: TerminalItem, toPort: TerminalItem):
+        """
+
+        :param bus_from:
+        :param bus_to:
+        :param fromPort:
+        :param toPort:
+        :return:
+        """
+        name = 'Line ' + str(len(self.circuit.lines) + 1)
+        obj = Line(bus_from=bus_from,
+                   bus_to=bus_to,
+                   name=name)
+
+        graphic_object = LineGraphicItem(fromPort=fromPort,
+                                         toPort=toPort,
+                                         editor=self,
+                                         api_object=obj)
+
+        self.update_diagram_element(device=obj,
+                                    graphic_object=graphic_object)
+
+        # add the new object to the circuit
+        self.circuit.add_branch(obj)
+
+        # update the connection placement
+        graphic_object.fromPort.update()
+        graphic_object.toPort.update()
+
+        # set the connection placement
+        graphic_object.setZValue(-1)
+
+    def create_dc_line(self, bus_from: Bus, bus_to: Bus, fromPort: TerminalItem, toPort: TerminalItem):
+        """
+
+        :param bus_from:
+        :param bus_to:
+        :param fromPort:
+        :param toPort:
+        :return:
+        """
+        name = 'Dc line ' + str(len(self.circuit.dc_lines) + 1)
+        obj = DcLine(bus_from=bus_from,
+                     bus_to=bus_to,
+                     name=name)
+
+        graphic_object = DcLineGraphicItem(fromPort=fromPort,
+                                           toPort=toPort,
+                                           editor=self,
+                                           api_object=obj)
+
+        self.update_diagram_element(device=obj,
+                                    graphic_object=graphic_object)
+
+        # add the new object to the circuit
+        self.circuit.add_branch(obj)
+
+        # update the connection placement
+        graphic_object.fromPort.update()
+        graphic_object.toPort.update()
+
+        # set the connection placement
+        graphic_object.setZValue(-1)
+
+    def create_transformer(self, bus_from: Bus, bus_to: Bus, fromPort: TerminalItem, toPort: TerminalItem):
+        """
+
+        :param bus_from:
+        :param bus_to:
+        :param fromPort:
+        :param toPort:
+        :return:
+        """
+        name = 'Transformer ' + str(len(self.circuit.transformers2w) + 1)
+        obj = Transformer2W(bus_from=bus_from,
+                            bus_to=bus_to,
+                            name=name)
+
+        graphic_object = TransformerGraphicItem(fromPort=fromPort,
+                                                toPort=toPort,
+                                                editor=self,
+                                                api_object=obj)
+
+        self.update_diagram_element(device=obj,
+                                    graphic_object=graphic_object)
+
+        # add the new object to the circuit
+        self.circuit.add_branch(obj)
+
+        # update the connection placement
+        graphic_object.fromPort.update()
+        graphic_object.toPort.update()
+
+        # set the connection placement
+        graphic_object.setZValue(-1)
+
+    def create_vsc(self, bus_from: Bus, bus_to: Bus, fromPort: TerminalItem, toPort: TerminalItem):
+        """
+
+        :param bus_from:
+        :param bus_to:
+        :param fromPort:
+        :param toPort:
+        :return:
+        """
+        name = 'VSC ' + str(len(self.circuit.vsc_devices) + 1)
+        obj = VSC(bus_from=bus_from,
+                  bus_to=bus_to,
+                  name=name)
+
+        graphic_object = VscGraphicItem(fromPort=fromPort,
+                                        toPort=toPort,
+                                        editor=self,
+                                        api_object=obj)
+
+        self.update_diagram_element(device=obj,
+                                    graphic_object=graphic_object)
+
+        # add the new object to the circuit
+        self.circuit.add_branch(obj)
+
+        # update the connection placement
+        graphic_object.fromPort.update()
+        graphic_object.toPort.update()
+
+        # set the connection placement
+        graphic_object.setZValue(-1)
+
+    def create_fluid_path(self, source: FluidNode, target: FluidNode, fromPort: TerminalItem, toPort: TerminalItem):
+        """
+
+        :param source:
+        :param target:
+        :param fromPort:
+        :param toPort:
+        :return:
+        """
+        name = 'FluidPath ' + str(len(self.circuit.fluid_paths) + 1)
+        obj = FluidPath(source=source,
+                        target=target,
+                        name=name)
+
+        graphic_object = FluidPathGraphicItem(fromPort=fromPort,
+                                              toPort=toPort,
+                                              editor=self,
+                                              api_object=obj)
+
+        self.update_diagram_element(device=obj,
+                                    graphic_object=graphic_object)
+
+        # update the connection placement
+        graphic_object.fromPort.update()
+        graphic_object.toPort.update()
+
+        # set the connection placement
+        graphic_object.setZValue(-1)
+
+        self.circuit.add_fluid_path(obj=obj)
+
+    def create_branch_on_mouse_release_event(self, event: QGraphicsSceneMouseEvent) -> None:
         """
         Finalize the branch creation if its drawing ends in a terminal
         @param event:
@@ -1131,77 +1397,46 @@ class BusBranchEditorWidget(QSplitter):
                             if self.started_branch.should_be_a_converter():
                                 # different DC status -> VSC
 
-                                name = 'VSC ' + str(len(self.circuit.vsc_devices) + 1)
-                                obj = VSC(bus_from=self.started_branch.get_bus_from(),
-                                          bus_to=self.started_branch.get_bus_to(),
-                                          name=name)
-
-                                graphic_object = VscGraphicItem(fromPort=self.started_branch.fromPort,
-                                                                toPort=self.started_branch.toPort,
-                                                                editor=self,
-                                                                api_object=obj)
-
-                                self.update_diagram_element(device=obj,
-                                                            graphic_object=graphic_object)
+                                self.create_vsc(bus_from=self.started_branch.get_bus_from(),
+                                                bus_to=self.started_branch.get_bus_to(),
+                                                fromPort=self.started_branch.fromPort,
+                                                toPort=self.started_branch.toPort)
 
                             elif self.started_branch.should_be_a_dc_line():
                                 # both buses are DC
 
-                                name = 'Dc line ' + str(len(self.circuit.dc_lines) + 1)
-                                obj = DcLine(bus_from=self.started_branch.get_bus_from(),
-                                             bus_to=self.started_branch.get_bus_to(),
-                                             name=name)
-
-                                graphic_object = DcLineGraphicItem(fromPort=self.started_branch.fromPort,
-                                                                   toPort=self.started_branch.toPort,
-                                                                   editor=self,
-                                                                   api_object=obj)
-
-                                self.update_diagram_element(device=obj,
-                                                            graphic_object=graphic_object)
+                                self.create_dc_line(bus_from=self.started_branch.get_bus_from(),
+                                                    bus_to=self.started_branch.get_bus_to(),
+                                                    fromPort=self.started_branch.fromPort,
+                                                    toPort=self.started_branch.toPort)
 
                             elif self.started_branch.should_be_a_transformer():
-                                name = 'Transformer ' + str(len(self.circuit.transformers2w) + 1)
-                                obj = Transformer2W(bus_from=self.started_branch.get_bus_from(),
-                                                    bus_to=self.started_branch.get_bus_to(),
-                                                    name=name)
 
-                                graphic_object = TransformerGraphicItem(fromPort=self.started_branch.fromPort,
-                                                                        toPort=self.started_branch.toPort,
-                                                                        editor=self,
-                                                                        api_object=obj)
-
-                                self.update_diagram_element(device=obj,
-                                                            graphic_object=graphic_object)
+                                self.create_transformer(bus_from=self.started_branch.get_bus_from(),
+                                                        bus_to=self.started_branch.get_bus_to(),
+                                                        fromPort=self.started_branch.fromPort,
+                                                        toPort=self.started_branch.toPort)
 
                             else:
-                                name = 'Line ' + str(len(self.circuit.lines) + 1)
-                                obj = Line(bus_from=self.started_branch.get_bus_from(),
-                                           bus_to=self.started_branch.get_bus_to(),
-                                           name=name)
 
-                                graphic_object = LineGraphicItem(fromPort=self.started_branch.fromPort,
-                                                                 toPort=self.started_branch.toPort,
-                                                                 editor=self,
-                                                                 api_object=obj)
+                                self.create_line(bus_from=self.started_branch.get_bus_from(),
+                                                 bus_to=self.started_branch.get_bus_to(),
+                                                 fromPort=self.started_branch.fromPort,
+                                                 toPort=self.started_branch.toPort)
 
-                                self.update_diagram_element(device=obj,
-                                                            graphic_object=graphic_object)
-
-                            # add the new object to the circuit
-                            self.circuit.add_branch(obj)
-
-                            # update the connection placement
-                            graphic_object.fromPort.update()
-                            graphic_object.toPort.update()
-
-                            # set the connection placement
-                            graphic_object.setZValue(-1)
+                            # # add the new object to the circuit
+                            # self.circuit.add_branch(obj)
+                            #
+                            # # update the connection placement
+                            # graphic_object.fromPort.update()
+                            # graphic_object.toPort.update()
+                            #
+                            # # set the connection placement
+                            # graphic_object.setZValue(-1)
 
                         elif self.started_branch.conneted_between_tr3_and_bus():
 
                             tr3_graphic_object = self.started_branch.get_from_graphic_object()
-                            # obj = graphic_object.api_object
 
                             if self.started_branch.is_to_port_a_bus():
                                 # if the bus "from" is the TR3W, the "to" is the bus
@@ -1248,6 +1483,54 @@ class BusBranchEditorWidget(QSplitter):
                                 tr3_graphic_object.update_conn()
                                 self.update_diagram_element(device=winding_graphics.api_object,
                                                             graphic_object=winding_graphics)
+
+                        elif self.started_branch.connected_between_fluid_nodes():
+
+                            self.create_fluid_path(source=self.started_branch.get_fluid_node_from(),
+                                                   target=self.started_branch.get_fluid_node_to(),
+                                                   fromPort=self.started_branch.fromPort,
+                                                   toPort=self.started_branch.toPort)
+
+                        elif self.started_branch.connected_between_fluid_node_and_bus():
+
+                            # electrical bus
+                            bus = self.started_branch.get_bus_to()
+
+                            # check if the fluid node has a bus
+                            fn = self.started_branch.get_fluid_node_from()
+
+                            if fn.bus is None:
+                                # the fluid node does not have a bus, make one
+                                fn_bus = Bus(fn.name, vnom=bus.Vnom)
+                                self.circuit.add_bus(fn_bus)
+                                fn.bus = fn_bus
+                            else:
+                                fn_bus = fn.bus
+
+                            self.create_line(bus_from=fn_bus,
+                                             bus_to=bus,
+                                             fromPort=self.started_branch.fromPort,
+                                             toPort=self.started_branch.toPort)
+
+                        elif self.started_branch.connected_between_bus_and_fluid_node():
+                            # electrical bus
+                            bus = self.started_branch.get_bus_from()
+
+                            # check if the fluid node has a bus
+                            fn = self.started_branch.get_fluid_node_to()
+
+                            if fn.bus is None:
+                                # the fluid node does not have a bus, make one
+                                fn_bus = Bus(fn.name, vnom=bus.Vnom)
+                                self.circuit.add_bus(fn_bus)
+                                fn.bus = fn_bus
+                            else:
+                                fn_bus = fn.bus
+
+                            self.create_line(bus_from=bus,
+                                             bus_to=fn_bus,
+                                             fromPort=self.started_branch.fromPort,
+                                             toPort=self.started_branch.toPort)
 
                         else:
                             print('unknown connection')
@@ -1341,18 +1624,21 @@ class BusBranchEditorWidget(QSplitter):
         w = dx + 2 * mx + 80
         self.diagramScene.setSceneRect(QRectF(min_x - mx, min_y - my, w, h))
 
-    def center_nodes(self, margin_factor: float = 0.1, buses: Union[None, List[Bus]] = None):
+    def center_nodes(self, margin_factor: float = 0.1, elements: Union[None, List[Union[Bus, FluidNode]]] = None):
         """
         Center the view in the nodes
-        @return: Nothing
+        :param margin_factor:
+        :param elements:
+        :return:
         """
+
         min_x = sys.maxsize
         min_y = sys.maxsize
         max_x = -sys.maxsize
         max_y = -sys.maxsize
-        if buses is None:
+        if elements is None:
             for item in self.diagramScene.items():
-                if type(item) is BusGraphicItem:
+                if type(item) in [BusGraphicItem, FluidNodeGraphicItem]:
                     x = item.pos().x()
                     y = item.pos().y()
 
@@ -1362,9 +1648,9 @@ class BusBranchEditorWidget(QSplitter):
                     min_y = min(min_y, y)
         else:
             for item in self.diagramScene.items():
-                if type(item) is BusGraphicItem:
+                if type(item) in [BusGraphicItem, FluidNodeGraphicItem]:
 
-                    if item.api_object in buses:
+                    if item.api_object in elements:
                         x = item.pos().x()
                         y = item.pos().y()
 
@@ -1453,7 +1739,6 @@ class BusBranchEditorWidget(QSplitter):
 
         # assign the positions to the graphical objects of the nodes
         for i, bus in enumerate(buses_graphic_objects):
-
             loc = self.diagram.query_point(bus)
 
             x, y = pos[i] * 500
@@ -1541,48 +1826,6 @@ class BusBranchEditorWidget(QSplitter):
         else:
             raise Exception('Extension ' + str(extension) + ' not supported :(')
 
-    # def add_line(self, branch: Line):
-    #     """
-    #     Add branch to the schematic
-    #     :param branch: Branch object
-    #     """
-    #     terminal_from = branch.bus_from.graphic_obj.terminal
-    #     terminal_to = branch.bus_to.graphic_obj.terminal
-    #     graphic_obj = LineGraphicItem(fromPort=terminal_from, toPort=terminal_to, editor=self, api_object=branch)
-    #     graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
-    #     terminal_from.hosting_connections.append(graphic_obj)
-    #     terminal_to.hosting_connections.append(graphic_obj)
-    #     graphic_obj.redraw()
-    #     self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_obj)
-
-    # def add_dc_line(self, branch: DcLine):
-    #     """
-    #     Add branch to the schematic
-    #     :param branch: Branch object
-    #     """
-    #     terminal_from = branch.bus_from.graphic_obj.terminal
-    #     terminal_to = branch.bus_to.graphic_obj.terminal
-    #     graphic_obj = DcLineGraphicItem(fromPort=terminal_from, toPort=terminal_to, editor=self, api_object=branch)
-    #     graphic_obj.diagramScene.grid = self.circuit  # add pointer to the circuit
-    #     terminal_from.hosting_connections.append(graphic_obj)
-    #     terminal_to.hosting_connections.append(graphic_obj)
-    #     graphic_obj.redraw()
-    #     self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_obj)
-
-    # def add_transformer(self, branch: Transformer2W):
-    #     """
-    #     Add branch to the schematic
-    #     :param branch: Branch object
-    #     """
-    #     terminal_from = branch.bus_from.graphic_obj.terminal
-    #     terminal_to = branch.bus_to.graphic_obj.terminal
-    #     graphic_obj = TransformerGraphicItem(fromPort=terminal_from, toPort=terminal_to, editor=self, api_object=branch)
-    #     graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
-    #     terminal_from.hosting_connections.append(graphic_obj)
-    #     terminal_to.hosting_connections.append(graphic_obj)
-    #     graphic_obj.redraw()
-    #     self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_obj)
-
     def add_api_bus(self, bus: Bus, explode_factor: float = 1.0):
         """
         Add API bus to the diagram
@@ -1640,6 +1883,31 @@ class BusBranchEditorWidget(QSplitter):
         else:
             print("Branch's buses were not found in the diagram :(")
             return None
+
+    def add_api_line_between_fluid_graphics(self, branch: Line,
+                                            bus_f_graphic: FluidNodeGraphicItem,
+                                            bus_t_graphic: FluidNodeGraphicItem):
+        """
+        add API branch to the Scene
+
+        :param branch: Branch instance
+        :param bus_f_graphic
+        :param bus_t_graphic
+        """
+        terminal_from = bus_f_graphic.terminal
+        terminal_to = bus_t_graphic.terminal
+
+        graphic_object = LineGraphicItem(fromPort=terminal_from,
+                                         toPort=terminal_to,
+                                         editor=self,
+                                         api_object=branch)
+
+        graphic_object.diagramScene.circuit = self.circuit  # add pointer to the circuit
+        terminal_from.hosting_connections.append(graphic_object)
+        terminal_to.hosting_connections.append(graphic_object)
+        graphic_object.redraw()
+        self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_object)
+        return graphic_object
 
     def add_api_dc_line(self, branch: DcLine):
         """
@@ -1822,6 +2090,64 @@ class BusBranchEditorWidget(QSplitter):
 
         return tr3_graphic_object
 
+    def add_api_fluid_node(self, node: FluidNode, explode_factor: float = 1.0):
+        """
+        Add API bus to the diagram
+        :param node: FluidNode instance
+        :param explode_factor: explode factor
+        """
+        x = 0
+        y = 0
+
+        # add the graphic object to the diagram view
+        graphic_object = self.editor_graphics_view.add_fluid_node(node=node, x=x, y=y, w=80, h=40)
+
+        # add circuit pointer to the bus graphic element
+        graphic_object.scene.circuit = self.circuit  # add pointer to the circuit
+
+        # create the bus children
+        graphic_object.create_children_widgets()
+
+        # arrange the children
+        graphic_object.arrange_children()
+
+        self.update_diagram_element(device=node,
+                                    x=x,
+                                    y=y,
+                                    w=graphic_object.w,
+                                    h=graphic_object.h,
+                                    r=0,
+                                    graphic_object=graphic_object)
+
+        return graphic_object
+
+    def add_api_fluid_path(self, branch: FluidPath):
+        """
+        add API branch to the Scene
+        :param branch: Branch instance
+        """
+        bus_f_graphic_data = self.diagram.query_point(branch.source)
+        bus_t_graphic_data = self.diagram.query_point(branch.target)
+
+        if bus_f_graphic_data and bus_t_graphic_data:
+            terminal_from = bus_f_graphic_data.graphic_object.terminal
+            terminal_to = bus_t_graphic_data.graphic_object.terminal
+
+            graphic_object = FluidPathGraphicItem(fromPort=terminal_from,
+                                                  toPort=terminal_to,
+                                                  editor=self,
+                                                  api_object=branch)
+
+            graphic_object.diagramScene.circuit = self.circuit  # add pointer to the circuit
+            terminal_from.hosting_connections.append(graphic_object)
+            terminal_to.hosting_connections.append(graphic_object)
+            graphic_object.redraw()
+            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_object)
+            return graphic_object
+        else:
+            print("Branch's fluid nodes were not found in the diagram :(")
+            return None
+
     def convert_line_to_hvdc(self, line: Line, line_graphic: LineGraphicItem):
         """
         Convert a line to HVDC, this is the GUI way to create HVDC objects
@@ -1910,6 +2236,37 @@ class BusBranchEditorWidget(QSplitter):
         self.update_diagram_element(device=upfc, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_obj)
         self.delete_diagram_element(device=line)
 
+    def convert_fluid_path_to_line(self, element: FluidPath, item_graphic: FluidPathGraphicItem):
+        """
+        Convert a fluid node to an electrical line
+        :param element: FluidPath instance
+        :param item_graphic: FluidPathGraphicItem
+        :return: Nothing
+        """
+
+        fl_from = item_graphic.get_fluid_node_graphics_from()
+        fl_from.create_bus_if_necessary()
+
+        fl_to = item_graphic.get_fluid_node_graphics_to()
+        fl_to.create_bus_if_necessary()
+
+        line = self.circuit.convert_fluid_path_to_line(element)
+
+        # add device to the schematic
+        graphic_obj = self.add_api_line_between_fluid_graphics(line,
+                                                               bus_f_graphic=fl_from,
+                                                               bus_t_graphic=fl_to)
+
+        # update position
+        fl_from.terminal.update()
+        fl_to.terminal.update()
+
+        # delete from the schematic
+        self.diagramScene.removeItem(item_graphic)
+
+        self.update_diagram_element(device=line, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_obj)
+        self.delete_diagram_element(device=element)
+
     def convert_generator_to_battery(self, gen: Generator, graphic_object: GeneratorGraphicItem):
         """
         Convert a generator to a battery
@@ -1939,6 +2296,8 @@ class BusBranchEditorWidget(QSplitter):
                                   hvdc_lines: List[HvdcLine],
                                   vsc_devices: List[VSC],
                                   upfc_devices: List[UPFC],
+                                  fluid_nodes: List[FluidNode],
+                                  fluid_paths: List[FluidPath],
                                   explode_factor=1.0,
                                   prog_func: Union[Callable, None] = None,
                                   text_func: Union[Callable, None] = None):
@@ -1952,6 +2311,8 @@ class BusBranchEditorWidget(QSplitter):
         :param hvdc_lines: list of HvdcLine objects
         :param vsc_devices: list Vsc objects
         :param upfc_devices: List of UPFC devices
+        :param fluid_nodes: List of FluidNode devices
+        :param fluid_paths: List of FluidPath devices
         :param explode_factor: factor of "explosion": Separation of the nodes factor
         :param prog_func: progress report function
         :param text_func: Text report function
@@ -1964,12 +2325,24 @@ class BusBranchEditorWidget(QSplitter):
         nn = len(buses)
         for i, bus in enumerate(buses):
 
-            if not bus.is_tr_bus:  # 3w transformer buses are not represented
+            if not bus.is_internal:  # 3w transformer buses are not represented
 
                 if prog_func is not None:
                     prog_func((i + 1) / nn * 100.0)
 
                 self.add_api_bus(bus, explode_factor)
+
+        # --------------------------------------------------------------------------------------------------------------
+        if text_func is not None:
+            text_func('Creating schematic Fluid nodes devices')
+
+        nn = len(fluid_nodes)
+        for i, elm in enumerate(fluid_nodes):
+
+            if prog_func is not None:
+                prog_func((i + 1) / nn * 100.0)
+
+            self.add_api_fluid_node(elm)
 
         # --------------------------------------------------------------------------------------------------------------
         if text_func is not None:
@@ -2054,6 +2427,18 @@ class BusBranchEditorWidget(QSplitter):
                 prog_func((i + 1) / nn * 100.0)
 
             self.add_api_upfc(branch)
+
+        # --------------------------------------------------------------------------------------------------------------
+        if text_func is not None:
+            text_func('Creating schematic Fluid paths devices')
+
+        nn = len(fluid_paths)
+        for i, elm in enumerate(fluid_paths):
+
+            if prog_func is not None:
+                prog_func((i + 1) / nn * 100.0)
+
+            self.add_api_fluid_path(elm)
 
     def align_schematic(self, buses: List[Bus] = ()):
         """
@@ -2597,7 +2982,7 @@ class BusBranchEditorWidget(QSplitter):
         max_y = -sys.maxsize
 
         # shrink selection only
-        for i, bus, graphic_object in self.get_buses():
+        for i, bus, graphic_object in self.get_buses():  # TODO add fluid nodes
             x = graphic_object.x()
             y = graphic_object.y()
             max_x = max(max_x, x)
@@ -2631,6 +3016,8 @@ def generate_bus_branch_diagram(buses: List[Bus],
                                 hvdc_lines: List[HvdcLine],
                                 vsc_devices: List[VSC],
                                 upfc_devices: List[UPFC],
+                                fluid_nodes: List[FluidNode],
+                                fluid_paths: List[FluidPath],
                                 explode_factor=1.0,
                                 prog_func: Union[Callable, None] = None,
                                 text_func: Union[Callable, None] = None,
@@ -2645,6 +3032,8 @@ def generate_bus_branch_diagram(buses: List[Bus],
     :param hvdc_lines: list of HvdcLine objects
     :param vsc_devices: list Vsc objects
     :param upfc_devices: List of UPFC devices
+    :param fluid_nodes:
+    :param fluid_paths:
     :param explode_factor: factor of "explosion": Separation of the nodes factor
     :param prog_func: progress report function
     :param text_func: Text report function
@@ -2660,7 +3049,7 @@ def generate_bus_branch_diagram(buses: List[Bus],
     nn = len(buses)
     for i, bus in enumerate(buses):
 
-        if not bus.is_tr_bus:  # 3w transformer buses are not represented
+        if not bus.is_internal:  # 3w transformer buses are not represented
 
             if prog_func is not None:
                 prog_func((i + 1) / nn * 100.0)
@@ -2674,6 +3063,19 @@ def generate_bus_branch_diagram(buses: List[Bus],
             x = int(bus.x * explode_factor)
             y = int(bus.y * explode_factor)
             diagram.set_point(device=bus, location=GraphicLocation(x=x, y=y, h=bus.h, w=bus.w))
+
+    # --------------------------------------------------------------------------------------------------------------
+    if text_func is not None:
+        text_func('Creating schematic fluid nodes devices')
+
+    nn = len(fluid_nodes)
+    for i, elm in enumerate(fluid_nodes):
+
+        if prog_func is not None:
+            prog_func((i + 1) / nn * 100.0)
+
+        # branch.graphic_obj = self.add_api_upfc(branch)
+        diagram.set_point(device=elm, location=GraphicLocation())
 
     # --------------------------------------------------------------------------------------------------------------
     if text_func is not None:
@@ -2767,6 +3169,19 @@ def generate_bus_branch_diagram(buses: List[Bus],
 
         # branch.graphic_obj = self.add_api_upfc(branch)
         diagram.set_point(device=branch, location=GraphicLocation())
+
+    # --------------------------------------------------------------------------------------------------------------
+    if text_func is not None:
+        text_func('Creating schematic fluid paths devices')
+
+    nn = len(fluid_paths)
+    for i, elm in enumerate(fluid_paths):
+
+        if prog_func is not None:
+            prog_func((i + 1) / nn * 100.0)
+
+        # branch.graphic_obj = self.add_api_upfc(branch)
+        diagram.set_point(device=elm, location=GraphicLocation())
 
     return diagram
 

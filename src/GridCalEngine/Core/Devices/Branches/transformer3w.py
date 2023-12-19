@@ -52,7 +52,7 @@ class Transformer3W(EditableDevice):
                                 code=code,
                                 device_type=DeviceType.Transformer3WDevice)
 
-        self.bus0 = Bus(name=name + '_bus', vnom=1.0, xpos=x, ypos=y, is_tr_bus=True)
+        self.bus0 = Bus(name=name + '_bus', vnom=1.0, xpos=x, ypos=y, is_internal=True)
 
         self._bus1 = bus1
         self._bus2 = bus2

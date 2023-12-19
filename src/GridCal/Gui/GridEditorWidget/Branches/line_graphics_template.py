@@ -14,25 +14,35 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+import sys
+
 import numpy as np
 
-from typing import Union
+from typing import Union, TYPE_CHECKING
 from PySide6.QtCore import Qt, QLineF, QPointF, QRectF
 from PySide6.QtGui import QPen, QCursor, QPixmap, QBrush, QColor, QTransform, QPolygonF
-from PySide6.QtWidgets import QGraphicsLineItem, QGraphicsRectItem, QGraphicsPolygonItem, QGraphicsEllipseItem, QGraphicsScene
+from PySide6.QtWidgets import (QGraphicsLineItem, QGraphicsRectItem, QGraphicsPolygonItem,
+                               QGraphicsEllipseItem, QGraphicsSceneMouseEvent)
 from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER
-from GridCal.Gui.GridEditorWidget.substation.bus_graphics import TerminalItem
-from GridCal.Gui.GridEditorWidget.substation.bus_graphics import BusGraphicItem
+from GridCal.Gui.GridEditorWidget.Substation.bus_graphics import TerminalItem
+from GridCal.Gui.GridEditorWidget.Substation.bus_graphics import BusGraphicItem
+from GridCal.Gui.GridEditorWidget.Fluid.fluid_node_graphics import FluidNodeGraphicItem
+
 from GridCal.Gui.messages import yes_no_question, warning_msg, error_msg
 from GridCal.Gui.GuiFunctions import ObjectsModel
+from GridCalEngine.Core.Devices.Substation.bus import Bus
 from GridCalEngine.Core.Devices.Branches.line import Line
 from GridCalEngine.Core.Devices.Branches.transformer import Transformer2W
 from GridCalEngine.Core.Devices.Branches.vsc import VSC
 from GridCalEngine.Core.Devices.Branches.upfc import UPFC
 from GridCalEngine.Core.Devices.Branches.dc_line import DcLine
 from GridCalEngine.Core.Devices.Branches.hvdc_line import HvdcLine
+from GridCalEngine.Core.Devices.Fluid.fluid_node import FluidNode
+from GridCalEngine.Core.Devices.Fluid.fluid_path import FluidPath
 from GridCalEngine.Simulations.Topology.topology_driver import reduce_grid_brute
-import GridCal
+
+if TYPE_CHECKING:  # Only imports the below statements during type checking
+    from GridCal.Gui.GridEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget, DiagramScene
 
 
 class ArrowHead(QGraphicsPolygonItem):
@@ -354,7 +364,7 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
                  toPort: Union[TerminalItem, None],
                  editor,
                  width=5,
-                 api_object: Union[Line, Transformer2W, VSC, UPFC, HvdcLine, DcLine, None] = None):
+                 api_object: Union[Line, Transformer2W, VSC, UPFC, HvdcLine, DcLine, FluidPath, None] = None):
         """
 
         :param fromPort:
@@ -390,8 +400,8 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         self.pos2 = None
         self.fromPort: Union[TerminalItem, None] = None
         self.toPort: Union[TerminalItem, None] = None
-        self.editor: GridCal.Gui.GridEditorWidget.bus_branch_editor_widget.BusBranchEditorWidget = editor
-        self.diagramScene: QGraphicsScene = self.editor.diagramScene
+        self.editor: BusBranchEditorWidget = editor
+        self.diagramScene: DiagramScene = self.editor.diagramScene
 
         if fromPort:
             self.setFromPort(fromPort)
@@ -440,7 +450,10 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         :param style: PenStyle instance
         :return:
         """
-        self.setPen(QPen(color, w, style, Qt.RoundCap, Qt.RoundJoin))
+
+        pen = QPen(color, w, style, Qt.RoundCap, Qt.RoundJoin)
+
+        self.setPen(pen)
         self.arrow_from_1.set_colour(color, w, style)
         self.arrow_from_2.set_colour(color, w, style)
         self.arrow_to_1.set_colour(color, w, style)
@@ -460,17 +473,18 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         if self.symbol is not None:
             self.symbol.setToolTipText(toolTip=toolTip)
 
-    def mousePressEvent(self, QGraphicsSceneMouseEvent):
+    def mousePressEvent(self, event: QGraphicsSceneMouseEvent):
         """
         mouse press: display the editor
-        :param QGraphicsSceneMouseEvent:
+        :param event:
         :return:
         """
         if self.api_object is not None:
-            mdl = ObjectsModel([self.api_object], self.api_object.editable_headers,
+            mdl = ObjectsModel(objects=[self.api_object],
+                               editable_headers=self.api_object.editable_headers,
                                parent=self.diagramScene.parent().object_editor_table,
-                               editable=True, transposed=True,
-                               non_editable_attributes=self.api_object.non_editable_attributes)
+                               editable=True,
+                               transposed=True)
 
             self.diagramScene.parent().object_editor_table.setModel(mdl)
 
@@ -508,7 +522,7 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
             else:
                 self.set_enable(True)
 
-            if self.diagramScene.circuit.has_time_series:
+            if self.editor.circuit.has_time_series:
                 ok = yes_no_question('Do you want to update the time series active status accordingly?',
                                      'Update time series active status')
 
@@ -700,8 +714,8 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
             br_idx = self.editor.circuit.get_branches().index(self.api_object)
 
             # call the reduction routine
-            removed_branch, removed_bus, \
-                updated_bus, updated_branches = reduce_grid_brute(self.editor.circuit, br_idx)
+            (removed_branch, removed_bus,
+             updated_bus, updated_branches) = reduce_grid_brute(self.editor.circuit, br_idx)
 
             # remove the reduced branch
             removed_branch.graphic_obj.remove_symbol()
@@ -728,7 +742,7 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
                 # remove the branch from the schematic
                 self.diagramScene.removeItem(br.graphic_obj)
                 # add the branch to the schematic with the rerouting and all
-                self.diagramScene.parent_.add_line(br)
+                self.editor.add_api_line(br)
                 # update both buses
                 br.bus_from.graphic_obj.update()
                 br.bus_to.graphic_obj.update()
@@ -738,8 +752,7 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         change the from or to bus of the nbranch with another selected bus
         """
 
-        editor = self.diagramScene.parent()
-        idx_bus_list = editor.get_selected_buses()
+        idx_bus_list = self.editor.get_selected_buses()
 
         if len(idx_bus_list) == 2:
 
@@ -824,24 +837,52 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
     def is_from_port_a_tr3(self) -> bool:
 
         if self.fromPort:
-            return isinstance(self.fromPort.parent,
-                              GridCal.Gui.GridEditorWidget.Branches.transformer3w_graphics.Transformer3WGraphicItem)
+            if 'Transformer3WGraphicItem' not in sys.modules:
+                from GridCal.Gui.GridEditorWidget.Branches.transformer3w_graphics import Transformer3WGraphicItem
+            return isinstance(self.fromPort.parent, Transformer3WGraphicItem)
         else:
             return False
 
     def is_to_port_a_tr3(self) -> bool:
 
         if self.toPort:
-            return isinstance(self.toPort.parent,
-                              GridCal.Gui.GridEditorWidget.Branches.transformer3w_graphics.Transformer3WGraphicItem)
+            if 'Transformer3WGraphicItem' not in sys.modules:
+                from GridCal.Gui.GridEditorWidget.Branches.transformer3w_graphics import Transformer3WGraphicItem
+            return isinstance(self.toPort.parent, Transformer3WGraphicItem)
         else:
             return False
 
-    def get_bus_from(self):
+    def is_from_port_a_fluid_node(self) -> bool:
+
+        if self.fromPort:
+            return isinstance(self.fromPort.parent, FluidNodeGraphicItem)
+        else:
+            return False
+
+    def is_to_port_a_fluid_node(self) -> bool:
+
+        if self.toPort:
+            return isinstance(self.toPort.parent, FluidNodeGraphicItem)
+        else:
+            return False
+
+    def get_bus_from(self) -> Bus:
         return self.get_from_graphic_object().api_object
 
-    def get_bus_to(self):
+    def get_bus_to(self) -> Bus:
         return self.get_to_graphic_object().api_object
+
+    def get_fluid_node_from(self) -> FluidNode:
+        return self.get_from_graphic_object().api_object
+
+    def get_fluid_node_to(self) -> FluidNode:
+        return self.get_to_graphic_object().api_object
+
+    def get_fluid_node_graphics_from(self) -> FluidNodeGraphicItem:
+        return self.get_from_graphic_object()
+
+    def get_fluid_node_graphics_to(self) -> FluidNodeGraphicItem:
+        return self.get_to_graphic_object()
 
     def connected_between_buses(self):
 
@@ -853,6 +894,18 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
     def conneted_between_tr3_and_bus(self):
 
         return self.is_from_port_a_tr3() and self.is_to_port_a_bus()
+
+    def connected_between_fluid_nodes(self):
+
+        return self.is_from_port_a_fluid_node() and self.is_to_port_a_fluid_node()
+
+    def connected_between_fluid_node_and_bus(self):
+
+        return self.is_from_port_a_fluid_node() and self.is_to_port_a_bus()
+
+    def connected_between_bus_and_fluid_node(self):
+
+        return self.is_from_port_a_bus() and self.is_to_port_a_fluid_node()
 
     def should_be_a_converter(self):
 

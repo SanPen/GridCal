@@ -15,10 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-
-
-from GridCalEngine.basic_structures import TimeGrouping, ZonalGrouping, MIPSolvers
-from GridCalEngine.Simulations.NTC.ntc_opf import GenerationNtcFormulation
+from GridCalEngine.enumerations import TimeGrouping, ZonalGrouping, MIPSolvers, GenerationNtcFormulation
 from GridCalEngine.enumerations import AvailableTransferMode
 
 

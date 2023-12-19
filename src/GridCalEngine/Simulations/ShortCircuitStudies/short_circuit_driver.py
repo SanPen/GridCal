@@ -19,17 +19,17 @@ import numpy as np
 from typing import Union
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.basic_structures import BranchImpedanceMode, CxVec
+from GridCalEngine.basic_structures import CxVec
 from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowResults, PowerFlowOptions
-from GridCalEngine.Simulations.ShortCircuitStudies.short_circuit_worker import short_circuit_ph3, \
-    short_circuit_unbalanced
+from GridCalEngine.Simulations.ShortCircuitStudies.short_circuit_worker import (short_circuit_ph3,
+                                                                                short_circuit_unbalanced)
 from GridCalEngine.Simulations.ShortCircuitStudies.short_circuit_results import ShortCircuitResults
 from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Core.Devices import Branch, Bus
 from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.driver_template import DriverTemplate
-from GridCalEngine.enumerations import FaultType
+from GridCalEngine.enumerations import FaultType, BranchImpedanceMode
 
 
 class ShortCircuitOptions:
@@ -93,8 +93,12 @@ class ShortCircuitDriver(DriverTemplate):
                  pf_results: PowerFlowResults,
                  opf_results=None):
         """
-        PowerFlowDriver class constructor
-        @param grid: MultiCircuit Object
+        ShortCircuitDriver class constructor
+        :param grid: MultiCircuit Object
+        :param options: ShortCircuitOptions
+        :param pf_options: PowerFlowOptions
+        :param pf_results: PowerFlowResults
+        :param opf_results: OptimalPowerFlowResults
         """
         DriverTemplate.__init__(self, grid=grid)
 
@@ -204,15 +208,15 @@ class ShortCircuitDriver(DriverTemplate):
         # is dense, so no need to store it as sparse
         if calculation_inputs.Ybus.shape[0] > 1:
             if fault_type == FaultType.ph3:
-                return short_circuit_ph3(calculation_inputs,
-                                         Vpf[calculation_inputs.original_bus_idx],
-                                         Zf,
+                return short_circuit_ph3(calculation_inputs=calculation_inputs,
+                                         Vpf=Vpf[calculation_inputs.original_bus_idx],
+                                         Zf=Zf,
                                          bus_index=island_bus_index)
 
             elif fault_type in [FaultType.LG, FaultType.LL, FaultType.LLG]:
-                return short_circuit_unbalanced(calculation_inputs,
-                                                Vpf[calculation_inputs.original_bus_idx],
-                                                Zf,
+                return short_circuit_unbalanced(calculation_inputs=calculation_inputs,
+                                                Vpf=Vpf[calculation_inputs.original_bus_idx],
+                                                Zf=Zf,
                                                 bus_index=island_bus_index,
                                                 fault_type=fault_type)
 

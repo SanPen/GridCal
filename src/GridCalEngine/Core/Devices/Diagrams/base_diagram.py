@@ -235,41 +235,72 @@ class BaseDiagram:
         """
         graph = nx.DiGraph()
 
-        bus_dictionary = dict()
+        node_devices = list()  # buses + fluid nodes
 
+        # Add buses ----------------------------------------------------------------------------------------------------
+        n_bus = 0
+        graph_node_dictionary = dict()
         buses_groups = self.data.get(DeviceType.BusDevice.value, None)
-        buses = list()
         if buses_groups:
             for i, (idtag, location) in enumerate(buses_groups.locations.items()):
                 graph.add_node(i)
-                bus_dictionary[idtag] = i
-                buses.append(location.api_object)
+                graph_node_dictionary[idtag] = i
+                node_devices.append(location.api_object)
+                n_bus += 1
 
-            # branch_groups = dict()
-            tuples = list()
-            for dev_type in [DeviceType.LineDevice,
-                             DeviceType.DCLineDevice,
-                             DeviceType.HVDCLineDevice,
-                             DeviceType.Transformer2WDevice,
-                             DeviceType.VscDevice,
-                             DeviceType.UpfcDevice]:
+        # Add fluid ndes -----------------------------------------------------------------------------------------------
+        fluid_node_groups = self.data.get(DeviceType.FluidNodeDevice.value, None)
+        if fluid_node_groups:
+            for i, (idtag, location) in enumerate(fluid_node_groups.locations.items()):
+                graph.add_node(i)
+                graph_node_dictionary[idtag] = i + n_bus
 
-                groups = self.data.get(dev_type.value, None)
+                if location.api_object.bus is not None:
+                    # the electrical bus location is the same
+                    graph_node_dictionary[location.api_object.bus.idtag] = i + n_bus
 
-                if groups:
-                    for i, (idtag, location) in enumerate(groups.locations.items()):
-                        branch = location.api_object
-                        f = bus_dictionary[branch.bus_from.idtag]
-                        t = bus_dictionary[branch.bus_to.idtag]
+                node_devices.append(location.api_object)
 
-                        if hasattr(branch, 'X'):
-                            w = branch.X
-                        else:
-                            w = 1e-6
+        # Add the electrical branches ----------------------------------------------------------------------------------
+        tuples = list()
+        for dev_type in [DeviceType.LineDevice,
+                         DeviceType.DCLineDevice,
+                         DeviceType.HVDCLineDevice,
+                         DeviceType.Transformer2WDevice,
+                         DeviceType.VscDevice,
+                         DeviceType.UpfcDevice]:
 
-                        # self.graph.add_edge(f, t)
-                        tuples.append((f, t, w))
+            groups = self.data.get(dev_type.value, None)
 
-            graph.add_weighted_edges_from(tuples)
+            if groups:
+                for i, (idtag, location) in enumerate(groups.locations.items()):
+                    branch = location.api_object
+                    f = graph_node_dictionary[branch.bus_from.idtag]
+                    t = graph_node_dictionary[branch.bus_to.idtag]
 
-        return graph, buses
+                    if hasattr(branch, 'X'):
+                        w = branch.X
+                    else:
+                        w = 1e-6
+
+                    tuples.append((f, t, w))
+
+        # Add fluid branches -------------------------------------------------------------------------------------------
+        for dev_type in [DeviceType.FluidPathDevice]:
+
+            groups = self.data.get(dev_type.value, None)
+
+            if groups:
+                for i, (idtag, location) in enumerate(groups.locations.items()):
+                    branch = location.api_object
+                    f = graph_node_dictionary[branch.source.idtag]
+                    t = graph_node_dictionary[branch.target.idtag]
+
+                    w = 0.01
+
+                    tuples.append((f, t, w))
+
+        # add all the tuples
+        graph.add_weighted_edges_from(tuples)
+
+        return graph, node_devices
