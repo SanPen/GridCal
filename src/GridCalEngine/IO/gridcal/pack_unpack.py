@@ -443,9 +443,9 @@ def data_frames_to_circuit(data: Dict, logger: Logger = Logger()):
                                     setattr(devices[i], gc_prop.name, parent_bus)
 
                                     # add the device to the bus
-                                    if template_elm.device_type in [DeviceType.FluidTurbine,
-                                                                    DeviceType.FluidPump,
-                                                                    DeviceType.FluidP2X]:
+                                    if template_elm.device_type in [DeviceType.FluidTurbineDevice,
+                                                                    DeviceType.FluidPumpDevice,
+                                                                    DeviceType.FluidP2XDevice]:
                                         parent_bus.add_device(devices[i])
 
                                 else:
@@ -621,7 +621,7 @@ def data_frames_to_circuit(data: Dict, logger: Logger = Logger()):
             elif template_elm.device_type == DeviceType.FluidNodeDevice:
                 circuit.fluid_nodes = devices
 
-            elif template_elm.device_type == DeviceType.FluidPath:
+            elif template_elm.device_type == DeviceType.FluidPathDevice:
                 circuit.fluid_paths = devices
 
         else:

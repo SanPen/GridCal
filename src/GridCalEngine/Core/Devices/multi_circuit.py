@@ -1236,16 +1236,16 @@ class MultiCircuit:
         elif element_type == DeviceType.FluidNodeDevice:
             return self.fluid_nodes
 
-        elif element_type == DeviceType.FluidPath:
+        elif element_type == DeviceType.FluidPathDevice:
             return self.fluid_paths
 
-        elif element_type == DeviceType.FluidTurbine:
+        elif element_type == DeviceType.FluidTurbineDevice:
             return self.get_fluid_turbines()
 
-        elif element_type == DeviceType.FluidPump:
+        elif element_type == DeviceType.FluidPumpDevice:
             return self.get_fluid_pumps()
 
-        elif element_type == DeviceType.FluidP2X:
+        elif element_type == DeviceType.FluidP2XDevice:
             return self.get_fluid_p2xs()
 
         else:
@@ -1365,16 +1365,16 @@ class MultiCircuit:
         elif element_type == DeviceType.FluidNodeDevice:
             return self.delete_fluid_node(obj)
 
-        elif element_type == DeviceType.FluidTurbine:
+        elif element_type == DeviceType.FluidTurbineDevice:
             return self.delete_fluid_turbine(obj)
 
-        elif element_type == DeviceType.FluidP2X:
+        elif element_type == DeviceType.FluidP2XDevice:
             return self.delete_fluid_p2x(obj)
 
-        elif element_type == DeviceType.FluidPump:
+        elif element_type == DeviceType.FluidPumpDevice:
             return self.delete_fluid_pump(obj)
 
-        elif element_type == DeviceType.FluidPath:
+        elif element_type == DeviceType.FluidPathDevice:
             return self.delete_fluid_path(obj)
 
         else:
@@ -1512,16 +1512,16 @@ class MultiCircuit:
         elif element_type == DeviceType.FluidNodeDevice:
             return self.get_fluid_nodes()
 
-        elif element_type == DeviceType.FluidTurbine:
+        elif element_type == DeviceType.FluidTurbineDevice:
             return self.get_fluid_turbines()
 
-        elif element_type == DeviceType.FluidP2X:
+        elif element_type == DeviceType.FluidP2XDevice:
             return self.get_fluid_p2xs()
 
-        elif element_type == DeviceType.FluidPump:
+        elif element_type == DeviceType.FluidPumpDevice:
             return self.get_fluid_pumps()
 
-        elif element_type == DeviceType.FluidPath:
+        elif element_type == DeviceType.FluidPathDevice:
             return self.get_fluid_paths()
 
         else:
@@ -2732,6 +2732,13 @@ class MultiCircuit:
         """
         return len(self.fluid_nodes)
 
+    def get_fluid_node_names(self) -> StrVec:
+        """
+        List of fluid node names
+        :return:
+        """
+        return np.array([e.name for e in self.fluid_nodes])
+
     def add_fluid_path(self, obj: dev.FluidPath):
         """
         Add fluid path
@@ -2752,6 +2759,13 @@ class MultiCircuit:
         :return:
         """
         return self.fluid_paths
+
+    def get_fluid_path_names(self) -> StrVec:
+        """
+        List of fluid paths names
+        :return:
+        """
+        return np.array([e.name for e in self.fluid_paths])
 
     def get_fluid_paths_number(self) -> int:
         """
@@ -2806,6 +2820,16 @@ class MultiCircuit:
                 i += 1
         return i
 
+    def get_fluid_turbines_names(self) -> StrVec:
+        """
+        Returns a list of :ref:`Turbine<turbine>` names.
+        """
+        lst = list()
+        for node in self.fluid_nodes:
+            for elm in node.turbines:
+                lst.append(elm.name)
+        return np.array(lst)
+
     def add_fluid_pump(self, node: dev.FluidNode, api_obj: Union[dev.FluidPump, None]) -> dev.FluidPump:
         """
         Add fluid pump
@@ -2850,6 +2874,16 @@ class MultiCircuit:
             for elm in node.pumps:
                 i += 1
         return i
+
+    def get_fluid_pumps_names(self) -> StrVec:
+        """
+        Returns a list of :ref:`Pump<pump>` names.
+        """
+        lst = list()
+        for node in self.fluid_nodes:
+            for elm in node.pumps:
+                lst.append(elm.name)
+        return np.array(lst)
 
     def add_fluid_p2x(self, node: dev.FluidNode,
                       api_obj: Union[dev.FluidP2x, None]) -> dev.FluidP2x:
@@ -2897,6 +2931,16 @@ class MultiCircuit:
                 i += 1
         return i
 
+    def get_fluid_p2xs_names(self) -> StrVec:
+        """
+        Returns a list of :ref:`P2X<P2X>` names.
+        """
+        lst = list()
+        for node in self.fluid_nodes:
+            for elm in node.p2xs:
+                lst.append(elm.name)
+        return np.array(lst)
+
     def get_fluid_injection_number(self) -> int:
         """
         Get number of fluid injections
@@ -2907,6 +2951,20 @@ class MultiCircuit:
             n += fn.get_device_number()
 
         return n
+
+    def get_fluid_injection_names(self) -> StrVec:
+        """
+        Returns a list of :ref:`Injection<Injection>` names.
+        """
+        lst = list()
+        for node in self.fluid_nodes:
+            for elm in node.p2xs:
+                lst.append(elm.name)
+            for elm in node.turbines:
+                lst.append(elm.name)
+            for elm in node.pumps:
+                lst.append(elm.name)
+        return np.array(lst)
 
     def convert_line_to_hvdc(self, line: dev.Line) -> dev.HvdcLine:
         """

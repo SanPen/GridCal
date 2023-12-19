@@ -777,11 +777,11 @@ class DeviceType(Enum):
 
     GeneratorQCurve = 'Generator Q curve'
 
-    FluidInjection = 'Fluid Injection'
-    FluidTurbine = 'Fluid Turbine'
-    FluidPump = 'Fluid Pump'
-    FluidP2X = 'Fluid P2X'
-    FluidPath = 'Fluid path'
+    FluidInjectionDevice = 'Fluid Injection'
+    FluidTurbineDevice = 'Fluid Turbine'
+    FluidPumpDevice = 'Fluid Pump'
+    FluidP2XDevice = 'Fluid P2X'
+    FluidPathDevice = 'Fluid path'
     FluidNodeDevice = 'Fluid node'
 
     def __str__(self):
