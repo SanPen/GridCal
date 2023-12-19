@@ -263,6 +263,7 @@ class ResultTypes(Enum):
     # fluid
     FluidNodeResults = 'Fluid nodes', DeviceType.FluidNodeDevice
     FluidPathResults = 'Fluid paths', DeviceType.FluidPathDevice
+    FluidInjectionResults = 'Fluid injections', DeviceType.FluidInjectionDevice
     FluidTurbineResults = 'Fluid turbines', DeviceType.FluidTurbineDevice
     FluidPumpResults = 'Fluid pumps', DeviceType.FluidPumpDevice
     FluidP2XResults = 'Fluid P2Xs', DeviceType.FluidP2XDevice

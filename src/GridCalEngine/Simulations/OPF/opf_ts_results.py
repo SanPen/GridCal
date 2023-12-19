@@ -98,9 +98,11 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                                     ResultTypes.FluidNodeResults: [ResultTypes.FluidFlowIn,
                                                                                    ResultTypes.FluidFlowOut,
                                                                                    ResultTypes.FluidP2XFlow,
-                                                                                   ResultTypes.FluidSpillage,
-                                                                                   ResultTypes.FluidFlowPath,
-                                                                                   ResultTypes.FluidFlowInjection],
+                                                                                   ResultTypes.FluidSpillage],
+
+                                                    ResultTypes.FluidPathResults: [ResultTypes.FluidFlowPath],
+
+                                                    ResultTypes.FluidInjectionResults: [ResultTypes.FluidFlowInjection],
 
                                                     ResultTypes.SystemResults: [ResultTypes.SystemFuel,
                                                                                 ResultTypes.SystemEmissions,
