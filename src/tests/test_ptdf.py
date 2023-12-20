@@ -212,8 +212,8 @@ def test_ptdf_psse():
          os.path.join('data', 'results', 'comparison', 'IEEE 30 bus PTDF PSSe.csv'), 'IEEE30'),
         (os.path.join('data', 'grids', 'RAW', 'IEEE 118 Bus V2.raw'),
          os.path.join('data', 'results', 'comparison', 'IEEE 118 bus PTDF PSSe.csv'), 'IEEE118'),
-        # (os.path.join('data', 'grids', 'RAW', '15.Caso_2026.raw'),
-        #  os.path.join('data', 'results', 'comparison', '15.Caso_2026 PTDF PSSe.csv'), 'REE')
+        (os.path.join('data', 'grids', 'RAW', 'sensitive-raw', '15.Caso_2026.raw'),
+         os.path.join('data', 'results', 'comparison', '15.Caso_2026 PTDF PSSe.csv'), 'REE')
     ]:
 
         counter = 0  # Amount of failures
@@ -261,9 +261,10 @@ def test_ptdf_psse():
 
             if not (np.isclose(nodegridcal, -nodepsse, atol=1e-3).all()):
                 print('------------ XXXX PTDFs not equal XXXX ------------ ')
+                print('------------------Difference: {}'.format(np.sum(nodegridcal-(-nodepsse))))
                 counter += 1
-            else:
-                print('------------PTDFs CHECKED')
+            #else:
+            #    print('------------PTDFs CHECKED')
         print('-- TOTAL FAILURES: {}'.format(counter))
         print(' ')
 
@@ -279,8 +280,8 @@ def test_lodf_psse():
          os.path.join('data', 'results', 'comparison', 'IEEE 30 bus LODF PSSe.csv'), 'IEEE30'),
         (os.path.join('data', 'grids', 'RAW', 'IEEE 118 Bus V2.raw'),
          os.path.join('data', 'results', 'comparison', 'IEEE 118 bus LODF PSSe.csv'), 'IEEE118'),
-        # (os.path.join('data', 'grids', 'RAW', '15.Caso_2026.raw'),
-        #  os.path.join('data', 'results', 'comparison', '15.Caso_2026 LODF PSSe.csv'), 'REE')
+        (os.path.join('data', 'grids', 'RAW', 'sensitive-raw', '15.Caso_2026.raw'),
+         os.path.join('data', 'results', 'comparison', '15.Caso_2026 LODF PSSe.csv'), 'REE')
     ]:
 
         counter = 0  # Amount of failures
@@ -333,9 +334,10 @@ def test_lodf_psse():
 
             if not (np.isclose(branchgridcal, branchpsse, atol=1e-3).all()):
                 print('------------ XXXX LODFs not equal XXXX ------------ ')
+                print('------------------Difference: {}'.format(np.sum(branchgridcal-branchpsse)))
                 counter += 1
-            else:
-                print('------------LODFs CHECKED')
+            #else:
+            #    print('------------LODFs CHECKED')
         print('-- TOTAL FAILURES: {}'.format(counter))
 
 
