@@ -340,6 +340,50 @@ def test_lodf_psse():
             #    print('------------LODFs CHECKED')
         print('-- TOTAL FAILURES: {}'.format(counter))
 
+def test_mlodf():
+    """
+    Compare power flow per branches in N-2 contingencies using theoretical methodology and MLODF
+    """
+    #fname = os.path.join('data', 'grids', 'IEEE14-2_4_1-3_4_1.gridcal')
+    fname = os.path.join('data', 'grids', 'IEEE14-2_5_1-1_5_1.gridcal')
+
+    main_circuit = FileOpen(fname).open()
+
+    # Branches ordering
+    branchdict = {}
+    for i, t in enumerate(main_circuit.get_branches()):
+        branchdict[t.code] = i
+
+    # Power flow initial using linear method
+    linear_analysis = LinearAnalysisDriver(grid=main_circuit)
+    linear_analysis.run()
+
+    Sf0 = linear_analysis.results.Sf
+    Sf0red = np.array([Sf0[branchdict[t.code]] for t in main_circuit.contingencies])
+
+    linear_multi_contingency = LinearMultiContingencies(grid=main_circuit)
+    linear_multi_contingency.update(ptdf=linear_analysis.results.PTDF, lodf=linear_analysis.results.LODF)
+    mlodf = linear_multi_contingency.multi_contingencies[0].mlodf_factors.A #TODO: Suponemos que son los MLODF
+
+    # Power flow per branches after multicontingency using MLODF method
+    Sfmlodf = Sf0 + np.matmul(mlodf, Sf0red)
+
+    # Theoretical method
+    pf_options = PowerFlowOptions(SolverType.NR,
+                                  verbose=False,
+                                  initialize_with_existing_solution=False,
+                                  dispatch_storage=True,
+                                  control_q=ReactivePowerControlMode.NoControl,
+                                  control_p=False)
+
+    options = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyEngine.PTDF)
+    cont_analysis_driver = ContingencyAnalysisDriver(grid=main_circuit, options=options,
+                                                     linear_multiple_contingencies=linear_multi_contingency)
+    cont_analysis_driver.run()
+    Sfnr = cont_analysis_driver.results.Sf.real * 1e-2 #TODO: pensamos que las unidades son erróneas
+
+    assert (np.isclose(Sfmlodf, Sfnr, atol=1e-2).all())
+
 
 if __name__ == '__main__':
     test_ptdf()
