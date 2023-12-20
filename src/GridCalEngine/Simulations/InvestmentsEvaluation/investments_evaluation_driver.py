@@ -344,7 +344,7 @@ def get_overload_score(results, branches, norm):
 
 
 def get_voltage_module_score(results, buses, norm):
-    bus_cost = np.array([e.voltage_module_cost for e in buses], dtype=float)
+    bus_cost = np.array([e.Vm_cost for e in buses], dtype=float)
     vmax = np.array([e.Vmax for e in buses], dtype=float)
     vmin = np.array([e.Vmin for e in buses], dtype=float)
     vm = np.abs(results.voltage)

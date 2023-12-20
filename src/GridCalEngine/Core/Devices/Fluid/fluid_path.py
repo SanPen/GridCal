@@ -46,7 +46,7 @@ class FluidPath(EditableDevice):
                                 name=name,
                                 idtag=idtag,
                                 code=code,
-                                device_type=DeviceType.FluidPath)
+                                device_type=DeviceType.FluidPathDevice)
 
         self.source = source
         self.target = target

@@ -15,6 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+from typing import Tuple
 import numpy as np
 import scipy.sparse as sp
 from scipy.sparse.linalg import inv
@@ -23,23 +24,23 @@ from GridCalEngine.Simulations.ShortCircuitStudies.short_circuit import short_ci
 from GridCalEngine.Core.admittance_matrices import compute_admittances
 from GridCalEngine.Simulations.ShortCircuitStudies.short_circuit_results import ShortCircuitResults
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import polar_to_rect
+from GridCalEngine.enumerations import FaultType
+from GridCalEngine.basic_structures import CxVec, Vec
 
 
-def short_circuit_post_process(calculation_inputs: NumericalCircuit, V, branch_rates, Yf, Yt):
+# Sfb, Stb, If, It, Vbranch, loading, losses
+def short_circuit_post_process(
+        calculation_inputs: NumericalCircuit,
+        V: CxVec, branch_rates: Vec,
+        Yf: sp.csc_matrix, Yt: sp.csc_matrix) -> Tuple[CxVec, CxVec, CxVec, CxVec, CxVec, CxVec, CxVec]:
     """
     Compute the important results for short-circuits
-
-    Arguments:
-
-        **calculation_inputs**: instance of Circuit
-
-        **V**: Voltage solution array for the circuit buses
-
-        **only_power**: compute only the power injection
-
-    Returns:
-
-        Sf (MVA), If (p.u.), loading (p.u.), losses (MVA), Sbus(MVA)
+    :param calculation_inputs: instance of Circuit
+    :param V: Voltage solution array for the circuit buses
+    :param branch_rates:
+    :param Yf:
+    :param Yt:
+    :return: Sf (MVA), If (p.u.), loading (p.u.), losses (MVA), Sbus(MVA)
     """
 
     Vf = calculation_inputs.Cf * V
@@ -67,14 +68,16 @@ def short_circuit_post_process(calculation_inputs: NumericalCircuit, V, branch_r
     return Sfb, Stb, If, It, Vbranch, loading, losses
 
 
-def short_circuit_ph3(calculation_inputs: NumericalCircuit, Vpf, Zf, bus_index):
+def short_circuit_ph3(calculation_inputs: NumericalCircuit, Vpf: CxVec, Zf: CxVec, bus_index: int):
     """
     Run a 3-phase short circuit simulation for a single island
-    @param calculation_inputs:
-    @param Vpf: Power flow voltage vector applicable to the island
-    @param Zf: Short circuit impedance vector applicable to the island
-    @return: short circuit results
+    :param calculation_inputs: NumericalCircuit
+    :param Vpf: Power flow voltage vector applicable to the island
+    :param Zf: Short circuit impedance vector applicable to the island
+    :param bus_index: Bus index
+    :return: short circuit results
     """
+
     Y_gen = calculation_inputs.generator_data.get_Yshunt(seq=1)
     Y_batt = calculation_inputs.battery_data.get_Yshunt(seq=1)
     Ybus_gen_batt = calculation_inputs.Ybus + sp.diags(Y_gen) + sp.diags(Y_batt)
@@ -117,13 +120,19 @@ def short_circuit_ph3(calculation_inputs: NumericalCircuit, Vpf, Zf, bus_index):
     return results
 
 
-def short_circuit_unbalanced(calculation_inputs: NumericalCircuit, Vpf, Zf, bus_index, fault_type):
+def short_circuit_unbalanced(calculation_inputs: NumericalCircuit,
+                             Vpf: CxVec,
+                             Zf: complex,
+                             bus_index: int,
+                             fault_type: FaultType):
     """
     Run an unbalanced short circuit simulation for a single island
-    @param calculation_inputs:
-    @param Vpf: Power flow voltage vector applicable to the island
-    @param Zf: Short circuit impedance vector applicable to the island
-    @return: short circuit results
+    :param calculation_inputs:
+    :param Vpf: Power flow voltage vector applicable to the island
+    :param Zf: Short circuit impedance vector applicable to the island
+    :param bus_index:
+    :param fault_type:
+    :return: short circuit results
     """
 
     # build Y0, Y1, Y2
@@ -279,26 +288,26 @@ def short_circuit_unbalanced(calculation_inputs: NumericalCircuit, Vpf, Zf, bus_
                                               baseMVA=calculation_inputs.Sbase)
 
     # process results in the sequences
-    Sfb0, Stb0, If0, It0, Vbranch0, \
-        loading0, losses0 = short_circuit_post_process(calculation_inputs=calculation_inputs,
-                                                       V=V0,
-                                                       branch_rates=calculation_inputs.branch_rates,
-                                                       Yf=adm0.Yf,
-                                                       Yt=adm0.Yt)
+    (Sfb0, Stb0, If0, It0, Vbranch0,
+     loading0, losses0) = short_circuit_post_process(calculation_inputs=calculation_inputs,
+                                                     V=V0,
+                                                     branch_rates=calculation_inputs.branch_rates,
+                                                     Yf=adm0.Yf,
+                                                     Yt=adm0.Yt)
 
-    Sfb1, Stb1, If1, It1, Vbranch1, \
-        loading1, losses1 = short_circuit_post_process(calculation_inputs=calculation_inputs,
-                                                       V=V1,
-                                                       branch_rates=calculation_inputs.branch_rates,
-                                                       Yf=adm1.Yf,
-                                                       Yt=adm1.Yt)
+    (Sfb1, Stb1, If1, It1, Vbranch1,
+     loading1, losses1) = short_circuit_post_process(calculation_inputs=calculation_inputs,
+                                                     V=V1,
+                                                     branch_rates=calculation_inputs.branch_rates,
+                                                     Yf=adm1.Yf,
+                                                     Yt=adm1.Yt)
 
-    Sfb2, Stb2, If2, It2, Vbranch2, \
-        loading2, losses2 = short_circuit_post_process(calculation_inputs=calculation_inputs,
-                                                       V=V2,
-                                                       branch_rates=calculation_inputs.branch_rates,
-                                                       Yf=adm2.Yf,
-                                                       Yt=adm2.Yt)
+    (Sfb2, Stb2, If2, It2, Vbranch2,
+     loading2, losses2) = short_circuit_post_process(calculation_inputs=calculation_inputs,
+                                                     V=V2,
+                                                     branch_rates=calculation_inputs.branch_rates,
+                                                     Yf=adm2.Yf,
+                                                     Yt=adm2.Yt)
 
     # voltage, Sf, loading, losses, error, converged, Qpv
     results = ShortCircuitResults(n=calculation_inputs.nbus,

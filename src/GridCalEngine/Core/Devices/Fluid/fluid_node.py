@@ -141,13 +141,13 @@ class FluidNode(EditableDevice):
         Add device to the bus in the corresponding list
         :param device: FluidTurbine, FluidPump or FluidP2X
         """
-        if device.device_type == DeviceType.FluidTurbine:
+        if device.device_type == DeviceType.FluidTurbineDevice:
             self.add_turbine(device)
 
-        elif device.device_type == DeviceType.FluidPump:
+        elif device.device_type == DeviceType.FluidPumpDevice:
             self.add_pump(device)
 
-        elif device.device_type == DeviceType.FluidP2X:
+        elif device.device_type == DeviceType.FluidP2XDevice:
             self.add_p2x(device)
 
         else:

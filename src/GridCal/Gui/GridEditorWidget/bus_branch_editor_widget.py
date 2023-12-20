@@ -1054,7 +1054,7 @@ class BusBranchEditorWidget(QSplitter):
                         graphic_object.redraw()
                         points_group.locations[idtag].graphic_object = graphic_object
 
-            elif category == DeviceType.FluidPath.value:
+            elif category == DeviceType.FluidPathDevice.value:
 
                 for idtag, location in points_group.locations.items():
                     branch: FluidPath = location.api_object
