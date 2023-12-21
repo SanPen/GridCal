@@ -6,6 +6,19 @@ import numpy as np
 
 # Objective function
 
+
+def jacobian():
+
+
+
+
+    return
+
+
+
+
+
+
 def f(x, c2, c1):
     # x = [P1, P2, ...]
     return sum(c2[i] * x[i] ** 2 + c1[i] * x[i] for i in range(len(x)))
