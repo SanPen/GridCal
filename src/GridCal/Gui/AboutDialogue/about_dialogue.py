@@ -7,6 +7,16 @@ from typing import List
 from GridCal.Gui.AboutDialogue.gui import Ui_AboutDialog
 from GridCal.__version__ import __GridCal_VERSION__, contributors_msg, copyright_msg
 from GridCal.update import check_version, get_upgrade_command
+from GridCalEngine.__version__ import __GridCalEngine_VERSION__
+from GridCalEngine.Core.Compilers.circuit_to_newton_pa import (NEWTON_PA_AVAILABLE,
+                                                               NEWTON_PA_RECOMMENDED_VERSION,
+                                                               NEWTON_PA_VERSION)
+from GridCalEngine.Core.Compilers.circuit_to_bentayga import (BENTAYGA_AVAILABLE,
+                                                              BENTAYGA_RECOMMENDED_VERSION,
+                                                              BENTAYGA_VERSION)
+from GridCalEngine.Core.Compilers.circuit_to_pgm import (PGM_AVAILABLE,
+                                                         PGM_RECOMMENDED_VERSION,
+                                                         PGM_VERSION)
 
 
 class AboutDialogueGuiGUI(QtWidgets.QDialog):
@@ -21,6 +31,36 @@ class AboutDialogueGuiGUI(QtWidgets.QDialog):
         self.ui.setupUi(self)
         self.setWindowTitle('About GridCal')
         self.setAcceptDrops(True)
+
+        self.ui.librariesTableWidget.setColumnCount(4)
+        self.ui.librariesTableWidget.setRowCount(4)
+        self.ui.librariesTableWidget.setHorizontalHeaderLabels(["Name", "version", "supported version", "licensed"])
+
+        self.ui.librariesTableWidget.setItem(0, 0, QtWidgets.QTableWidgetItem("GridCal"))
+        self.ui.librariesTableWidget.setItem(0, 1, QtWidgets.QTableWidgetItem(__GridCal_VERSION__))
+        self.ui.librariesTableWidget.setItem(0, 2, QtWidgets.QTableWidgetItem(__GridCalEngine_VERSION__))
+        self.ui.librariesTableWidget.setItem(0, 3, QtWidgets.QTableWidgetItem("True"))
+
+        self.ui.librariesTableWidget.setItem(1, 0, QtWidgets.QTableWidgetItem("NewtonPa"))
+        self.ui.librariesTableWidget.setItem(1, 1, QtWidgets.QTableWidgetItem(NEWTON_PA_VERSION
+                                                                              if NEWTON_PA_AVAILABLE else
+                                                                              "Not installed"))
+        self.ui.librariesTableWidget.setItem(1, 2, QtWidgets.QTableWidgetItem(NEWTON_PA_RECOMMENDED_VERSION))
+        self.ui.librariesTableWidget.setItem(1, 3, QtWidgets.QTableWidgetItem(str(NEWTON_PA_AVAILABLE)))
+
+        self.ui.librariesTableWidget.setItem(2, 0, QtWidgets.QTableWidgetItem("Bentayga"))
+        self.ui.librariesTableWidget.setItem(2, 1, QtWidgets.QTableWidgetItem(BENTAYGA_VERSION
+                                                                              if BENTAYGA_AVAILABLE else
+                                                                              "Not installed"))
+        self.ui.librariesTableWidget.setItem(2, 2, QtWidgets.QTableWidgetItem(BENTAYGA_RECOMMENDED_VERSION))
+        self.ui.librariesTableWidget.setItem(2, 3, QtWidgets.QTableWidgetItem(str(BENTAYGA_AVAILABLE)))
+
+        self.ui.librariesTableWidget.setItem(3, 0, QtWidgets.QTableWidgetItem("power-grid-model"))
+        self.ui.librariesTableWidget.setItem(3, 1, QtWidgets.QTableWidgetItem(PGM_VERSION
+                                                                              if PGM_AVAILABLE else
+                                                                              "Not installed"))
+        self.ui.librariesTableWidget.setItem(3, 2, QtWidgets.QTableWidgetItem(PGM_RECOMMENDED_VERSION))
+        self.ui.librariesTableWidget.setItem(3, 3, QtWidgets.QTableWidgetItem(str(PGM_AVAILABLE)))
 
         # check the version in pypi
         version_code, latest_version = check_version()
@@ -111,10 +151,8 @@ class AboutDialogueGuiGUI(QtWidgets.QDialog):
 
 
 if __name__ == "__main__":
-
     app = QtWidgets.QApplication(sys.argv)
     window = AboutDialogueGuiGUI()
     # window.resize(1.61 * 700.0, 600.0)  # golden ratio
     window.show()
     sys.exit(app.exec_())
-

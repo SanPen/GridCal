@@ -15,7 +15,6 @@ so that you can get started.
     script_cheat_sheet
     distribution_grid_standalone
     distribution_grid_library
-    example_files
 
 
 

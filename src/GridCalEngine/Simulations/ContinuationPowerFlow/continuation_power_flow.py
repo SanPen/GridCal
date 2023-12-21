@@ -4,8 +4,9 @@
 import numpy as np
 import scipy
 import scipy.sparse as sp
-from enum import Enum
-from GridCalEngine.basic_structures import ReactivePowerControlMode, Logger
+
+from GridCalEngine.enumerations import ReactivePowerControlMode, CpfParametrization, CpfStopAt
+from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_direct
 from GridCalEngine.Core.topology import compile_types
@@ -16,18 +17,6 @@ linear_solver = get_linear_solver()
 sparse = get_sparse_type()
 scipy.ALLOW_THREADS = True
 np.set_printoptions(precision=8, suppress=True, linewidth=320)
-
-
-class CpfStopAt(Enum):
-    Nose = 'Nose'
-    ExtraOverloads = 'Extra overloads'
-    Full = 'Full curve'
-
-
-class CpfParametrization(Enum):
-    Natural = 'Natural'
-    ArcLength = 'Arc Length'
-    PseudoArcLength = 'Pseudo Arc Length'
 
 
 class CpfNumericResults:

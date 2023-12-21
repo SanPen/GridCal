@@ -16,8 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 from typing import List, Union
-from GridCalEngine.basic_structures import TimeGrouping, MIPSolvers, ZonalGrouping
-from GridCalEngine.basic_structures import SolverType
+from GridCalEngine.enumerations import SolverType, MIPSolvers, ZonalGrouping, TimeGrouping
 
 
 class OptimalPowerFlowOptions:
