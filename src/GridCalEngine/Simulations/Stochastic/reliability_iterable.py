@@ -20,12 +20,10 @@ from typing import Tuple, Union
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions, multi_island_pf_nc, PowerFlowResults
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
-from GridCalEngine.enumerations import DeviceType
-from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.basic_structures import Vec, IntVec
 
 
-def staeady_state_probability(lbda: Vec, mu: Vec) -> Tuple[Vec, Vec]:
+def get_transition_probabilities(lbda: Vec, mu: Vec) -> Tuple[Vec, Vec]:
     """
     Probability of the component beign unavailable
     See: Power distriution system reliability p.67
@@ -80,7 +78,7 @@ class ReliabilityIterable:
         else:
             mu = 1.0 / np.full(nc.nbr, forced_mttr)
 
-        self.p_up, self.p_dwn = staeady_state_probability(lbda=lbda, mu=mu)
+        self.p_up, self.p_dwn = get_transition_probabilities(lbda=lbda, mu=mu)
 
     def __iter__(self) -> "ReliabilityIterable":
         return self

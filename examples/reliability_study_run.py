@@ -22,10 +22,6 @@ fname = os.path.join('..', 'Grids_and_profiles', 'grids', 'IEEE 30 Bus with stor
 
 circuit_ = FileOpen(fname).open()
 
-# study = ReliabilityStudy(circuit=circuit_, pf_options=PowerFlowOptions())
-#
-# study.run()
-
 
 iterator = ReliabilityIterable(grid=circuit_,
                                forced_mttf=10.0,
