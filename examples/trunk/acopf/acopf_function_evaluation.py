@@ -56,7 +56,38 @@ def var2x(vm, th, Pg, Qg, phi, Pf, Qf, Pt, Qt, Lf):
 
     return np.r_[vm, th, Pg, Qg, phi, Pf, Qf, Pt, Qt, Lf]
 
-def fx(x, Ybus, Yf, Yt, from_idx, to_idx, Cg, Sd):
+
+def eval_f(x, Yf, Cg):
+    M, N = Yf.shape
+    Ng = Cg.shape[1]  # Check
+
+    vm, th, Pg, Qg, phi, Pf, Qf, Pt, Qt, Lf = x2var(x, n_v=N, n_th=N, n_P=Ng, n_Q=Ng, n_phi=M, n_Pf=M,
+                                                    n_Qf=M, n_Pt=M, n_Qt=M, n_Lf=M)
+
+    fval = np.sum(Pg)
+
+    return fval
+
+def eval_g(x, Ybus, Yf, Cg, Sd, pvpq, pq):
+
+    M, N = Yf.shape
+    Ng = Cg.shape[1]  # Check
+
+    vm, th, Pg, Qg, phi, Pf, Qf, Pt, Qt, Lf = x2var(x, n_v = N, n_th = N, n_P = Ng, n_Q = Ng, n_phi = M, n_Pf = M,
+                                                    n_Qf = M, n_Pt = M, n_Qt = M, n_Lf = M)
+    V = vm * np.exp(1j * th)
+    S = V * np.conj(Ybus @ V)
+
+    Sg = Pg + 1j * Qg
+    dS = S + Sd - (Cg @ Sg)
+
+    # Incrementos de las variables.
+    # gxval = var2x(vm, th, Pg, Qg, phi, Pf, Qf, Pt, Qt, Lf)
+    gval = np.r_[dS.real[pvpq], dS.imag[pq]] # Check, may not need slicing
+
+    return gval
+
+def eval_h(x, Yf, Yt, from_idx, to_idx, Cg, rates):
 
     M, N = Yf.shape
     Ng = Cg.shape[1]  # Check
@@ -65,22 +96,16 @@ def fx(x, Ybus, Yf, Yt, from_idx, to_idx, Cg, Sd):
                                                     n_Qf = M, n_Pt = M, n_Qt = M, n_Lf = M)
 
     V = vm * np.exp(1j * th)
-    S = V * np.conj(Ybus @ V)
 
     If = np.conj(Yf @ V)
     Lf = If * If
     Sf = V[from_idx] * If
     St = V[to_idx] * np.conj(Yt @ V)
 
-    Sg = Pg + 1j * Qg
-    dS = S + Sd - (Cg @ Sg)
-
     # Incrementos de las variables.
-    fxval = var2x(vm, th, Pg, Qg, phi, Pf, Qf, Pt, Qt, Lf)
+    hval = np.r_[Sf.real - rates, St.real - rates]
 
-
-    return fxval
-
+    return hval
 
 
 def calc_jacobian(func, x, arg = (), h=1e-5):
@@ -142,6 +167,35 @@ def calc_hessian(func, x, arg=(), h=1e-5):
             hessian[i, j] = (f_ijp - f_ijm - f_jim + f_jjm) / (4 * h ** 2)
 
     return hessian
+
+
+def evaluate_power_flow(x, Ybus, Yf, Cg, Sd, pvpq, pq, Yt, from_idx, to_idx, rates, h=1e-5):
+
+    f = eval_f(x=x, Yf=Yf, Cg=Cg)
+    G = eval_g(x=x, Ybus=Ybus, Yf=Yf, Cg=Cg, Sd=Sd, pvpq=pvpq, pq=pq)
+    H = eval_h(x=x, Yf=Yf, Yt=Yt, from_idx=from_idx, to_idx=to_idx, Cg=Cg, rates=rates)
+
+    fx = calc_jacobian(func=eval_f, x=x, arg=(Yf, Cg), h=h)
+    Gx = calc_jacobian(func=eval_g, x=x, arg=(Ybus, Yf, Cg, Sd, pvpq, pq))
+    Hx = calc_jacobian(func=eval_h, x=x, arg=(Yf, Yt, from_idx, to_idx, Cg, rates))
+
+    fxx = calc_hessian(func=eval_f, x=x, arg=(Yf, Cg), h=h)
+    Gxx = calc_hessian(func=eval_g, x=x, arg=(Ybus, Yf, Cg, Sd, pvpq, pq))
+    Hxx = calc_hessian(func=eval_h, x=x, arg=(Yf, Yt, from_idx, to_idx, Cg, rates))
+
+    return f, G, H, fx, Gx, Hx, fxx, Gxx, Hxx
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
