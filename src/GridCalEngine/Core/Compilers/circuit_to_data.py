@@ -1195,14 +1195,16 @@ def get_fluid_p2x_data(circuit: MultiCircuit,
 
 
 def get_fluid_path_data(circuit: MultiCircuit,
+                        plant_dict: Dict[str, int],
                         t_idx=-1) -> ds.FluidPathData:
     """
 
     :param circuit:
+    :param plant_dict:
     :param t_idx:
     :return:
     """
-    devices = circuit.get_fluid_p2xs()
+    devices = circuit.get_fluid_paths()
 
     data = ds.FluidPathData(nelm=len(devices))
 
@@ -1210,8 +1212,9 @@ def get_fluid_path_data(circuit: MultiCircuit,
         data.names[k] = elm.name
         data.idtag[k] = elm.idtag
 
-        data.source_idx[k] = elm.source_idx
-        data.target_idx[k] = elm.target_idx
+        # pass idx, check
+        data.source_idx[k] = plant_dict[elm.source.idtag]
+        data.target_idx[k] = plant_dict[elm.target.idtag]
 
         data.min_flow[k] = elm.min_flow
         data.max_flow[k] = elm.max_flow
