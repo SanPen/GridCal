@@ -94,6 +94,7 @@ class PowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
             progress = ((it + 1) / len(time_indices)) * 100
             self.progress_signal.emit(progress)
 
+            # TODO: pass the results by reference to be filled inside
             pf_res = pf_worker.multi_island_pf(multi_circuit=self.grid,
                                                t=t,
                                                options=self.options,
