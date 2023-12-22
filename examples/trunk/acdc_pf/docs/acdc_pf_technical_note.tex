@@ -20,8 +20,10 @@
 \usepackage{amssymb}
 \usepackage{nccmath}
 \usepackage{relsize}
-
 \usepackage{biblatex} %Imports biblatex package
+
+\usepackage[colorlinks=true,allcolors=black]{hyperref}
+
 \addbibresource{refs.bib} %Import the bibliography file
 
 \usepackage{geometry}
@@ -141,8 +143,8 @@
 	
 	\begin{table}[h!]
 	\begin{tabular}{cc} % The table has 2 columns, both centered (cc)
-		\includegraphics[width=0.55\linewidth]{branch.eps} &
-		\includegraphics[width=0.4\linewidth]{decoupled_converter_model.eps} \\
+		\includegraphics[width=0.65\linewidth]{branch.eps} &
+		\includegraphics[width=0.35\linewidth]{decoupled_converter_model.eps} \\
 	\end{tabular}
 	\caption{General branch on the left. Decoupled converter model on the right}
 	\label{table:branch_and_converter}
@@ -153,25 +155,32 @@
 	\begin{equation}
 		\label{eq:acdc_syst}
 		\begin{bmatrix}
-			\frac{\partial P}{\partial \theta} & \frac{\partial P}{\partial V_m} & \frac{\partial P}{\partial P_f} & \frac{\partial P}{\partial P_t} & \frac{\partial P}{\partial Q_t}\\
-			\frac{\partial Q}{\partial \theta} & \frac{\partial Q}{\partial V_m} & \frac{\partial Q}{\partial P_f} & \frac{\partial Q}{\partial P_t} & \frac{\partial Q}{\partial Q_t}\\
-			\frac{\partial P_{conv}}{\partial \theta} & \frac{\partial P_{conv}}{\partial V_m} & \frac{\partial P_{conv}}{\partial P_f} & \frac{\partial P_{conv}}{\partial P_t} & \frac{\partial P_{conv}}{\partial Q_t}\\
+			\frac{\partial P}{\partial \theta} & \frac{\partial P}{\partial V_m} & \frac{\partial P}{\partial P_f^{conv}} & \frac{\partial P}{\partial P_t^{conv}} & \frac{\partial P}{\partial Q_t^{conv}}\\
+			\frac{\partial Q}{\partial \theta} & \frac{\partial Q}{\partial V_m} & \frac{\partial Q}{\partial P_f^{conv}} & \frac{\partial Q}{\partial P_t^{conv}} & \frac{\partial Q}{\partial Q_t^{conv}}\\
+			\frac{\partial P_{conv}^{conv}}{\partial \theta} & \frac{\partial P_{eq}^{conv}}{\partial V_m} & \frac{\partial P_{eq}^{conv}}{\partial P_f^{conv}} & \frac{\partial P_{eq}^{conv}}{\partial P_t^{conv}} & \frac{\partial P_{eq}^{conv}}{\partial Q_t^{conv}}\\
 		\end{bmatrix}	
 		\times 
 		\begin{bmatrix*}[l]
 			\Delta \theta  \quad \forall \ i_{pv} \cup i_{pq}   \\
 			\Delta V_m     \quad \forall \ i_{pq}  \\
-			\Delta P_f     \quad \forall \ k_{conv} \\
-			\Delta P_t     \quad \forall \ k_{conv} \\
-			\Delta Q_t     \quad \forall \ k_{conv}
+			\Delta P_f^{conv}     \quad \forall \ k_{conv} \\
+			\Delta P_t^{conv}     \quad \forall \ k_{conv} \\
+			\Delta Q_t^{conv}     \quad \forall \ k_{conv}
 		\end{bmatrix*}
 		= 
 		\begin{bmatrix*}[l]
 			\Delta P \quad \ \ \forall \ i_{pv} \cup i_{pq} \\
 			\Delta Q \quad \ \ \forall \ i_{pq}  \\
-			\Delta P_{conv} \quad \forall \ k_{conv} 
+			\Delta P_{eq}^{conv} \quad \forall \ k_{conv} 
 		\end{bmatrix*}
 	\end{equation}
+
+\begin{itemize}
+	
+	\item $i_{pv}$: Indices of the PV buses.
+	\item $i_{pq}$: Indices of the PQ buses.
+	\item $k_{conv}$: Indices of the converters.
+\end{itemize}
 	
 	
 	Active power nodal balance:
@@ -185,28 +194,19 @@
 		\Delta Q = Q^{calc} - Q^{esp}
 	\end{equation}
 	
-	
-
 		
 	Converter power balance:
 	
 	\begin{equation}
-		\Delta P_{conv} = P_f + P_t - P_{loss}
+		\Delta P_{eq}^{conv} = P_f^{conv} + P_t^{conv} - P_{loss}^{conv}
 	\end{equation}
 	
-	In this equation $P_f$ and $P_t$ are variables to be found iteratively.
+	In this equation $P_f^{conv}$ and $P_t^{conv}$ are variables to be found iteratively, and are not the same as the regular branches power flow ($P_f$, $P_t$) since these variables are introduced to couple the linear system and avoid singularities.
 	
 	
-	\subsection{Example}
-		
 	
-	
-	\begin{figure}[h!]
-		\centering
-		\includegraphics[width=1.0\linewidth]{acdc_6bus_diagram}
-		\caption{Decoupled converter model example grid.}
-		\label{fig:acdc6busdiagram}
-	\end{figure}
+
+	\newpage
 
 	\subsection{Control mapping}
 	It is assumed that each converter controls two magnitudes. Then, the control modes are the ones indicated in Table~\ref{table:contr_vsc}, as described in~\cite{alvarez2021universal}. The AC and DC sides of each control mode are classified into grid-forming (GFM) or grid-following (GFL) following the principles depicted in~\cite{gomis2020principles}.
@@ -229,12 +229,13 @@
 		\end{tabular}
 		\label{table:contr_vsc}
 	\end{table}
-There are only 2 rules to be followed when setting the control modes of VSCs:
-\begin{enumerate}
-	\item Each AC grid has to have only 1 slack bus.
-	\item Each DC grid has to have only 1 slack bus.
-\end{enumerate}
-The next step is to merge the controls in Table~\ref{table:contr_vsc} with the system of equations~\eqref{eq:acdc_syst}. Table~\ref{table:vsc_map} identifies the map between the known and unknown variables and the controls.
+
+	There are only 2 rules to be followed when setting the control modes of VSCs:
+	\begin{enumerate}
+		\item Each AC grid has to have only 1 slack bus.
+		\item Each DC grid has to have only 1 slack bus.
+	\end{enumerate}
+	The next step is to merge the controls in Table~\ref{table:contr_vsc} with the system of equations~\eqref{eq:acdc_syst}. Table~\ref{table:vsc_map} identifies the map between the known and unknown variables and the controls.
 
 	\begin{table}[!htb]\centering
 		\caption{Control modes and types of VSCs with the corresponding constraints.}
@@ -255,6 +256,19 @@ The next step is to merge the controls in Table~\ref{table:contr_vsc} with the s
 		\label{table:vsc_map}
 	\end{table}
 
+	\subsection{Example}
+	
+	
+	
+	\begin{figure}[h!]
+		\centering
+		\includegraphics[width=1.0\linewidth]{acdc_6bus_diagram}
+		\caption{Decoupled converter model example grid.}
+		\label{fig:acdc6busdiagram}
+	\end{figure}
 
+	
+	\section{Bibliography}
 	\printbibliography
+	
 \end{document}
