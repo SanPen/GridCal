@@ -1337,11 +1337,11 @@ def add_hydro_formulation(t: Union[int, None],
                         / (generator_data.pmax[gen_idx] / Sbase * turbine_data.efficiency[m]))
         # node_vars.flow_out[t, plant_idx] = turbine_flow  # assume only 1 turbine connected
 
-        if t > 0:
-            inj_vars.flow[t, m] = turbine_flow  # to retrieve the value later on
-            prob.add_cst(cst=(node_vars.flow_out[t, plant_idx] ==
-                              turbine_flow),
-                         name=f'{turbine_data.names[m]} Turbine-river connection')
+        # if t > 0:
+        inj_vars.flow[t, m] = turbine_flow  # to retrieve the value later on
+        prob.add_cst(cst=(node_vars.flow_out[t, plant_idx] ==
+                          turbine_flow),
+                     name=f'{turbine_data.names[m]} Turbine-river connection')
 
         if generator_data.pmin[gen_idx] < 0:
             logger.add_error(msg='Turbine generator pmin < 0 is not possible',
@@ -1360,11 +1360,11 @@ def add_hydro_formulation(t: Union[int, None],
                      * pump_data.efficiency[m] / (abs(generator_data.pmin[gen_idx]) / Sbase))
         # node_vars.flow_in[t, plant_idx] = pump_flow  # assume only 1 pump connected
 
-        if t > 0:
-            inj_vars.flow[t, m + turbine_data.nelm] = pump_flow
-            prob.add_cst(cst=(node_vars.flow_in[t, plant_idx] ==
-                              pump_flow),
-                         name=f'{pump_data.names[m]} Turbine-river connection')
+        # if t > 0:
+        inj_vars.flow[t, m + turbine_data.nelm] = pump_flow
+        prob.add_cst(cst=(node_vars.flow_in[t, plant_idx] ==
+                          pump_flow),
+                     name=f'{pump_data.names[m]} Turbine-river connection')
 
         if generator_data.pmax[gen_idx] > 0:
             logger.add_error(msg='Pump generator pmax > 0 is not possible',
@@ -1381,9 +1381,9 @@ def add_hydro_formulation(t: Union[int, None],
         p2x_flow = (generator_vars.p[t, gen_idx] * p2x_data.max_flow_rate[m]
                     * p2x_data.efficiency[m] / (abs(generator_data.pmin[gen_idx]) / Sbase))
 
-        if t > 0:
-            node_vars.p2x_flow[t, p2x_data.plant_idx[m]] += p2x_flow
-            inj_vars.flow[t, m + turbine_data.nelm + pump_data.nelm] = p2x_flow
+        # if t > 0:
+        node_vars.p2x_flow[t, p2x_data.plant_idx[m]] += p2x_flow
+        inj_vars.flow[t, m + turbine_data.nelm + pump_data.nelm] = p2x_flow
 
         if generator_data.pmax[gen_idx] > 0:
             logger.add_error(msg='P2X generator pmax > 0 is not possible',
@@ -1391,12 +1391,33 @@ def add_hydro_formulation(t: Union[int, None],
 
         f_obj += p2x_flow
 
+    """
+    
+
+    """
+
     if t is not None:
         # constraints for the node level
         for m in range(node_data.nelm):
-            if t > 0:
-                # calculate dt in hours
+            if t == 0:
+                # Initialize level at the initial one (from snapshot), akin to dt=0
+                if len(time_array) > time_global_tidx + 1:
+                    dt = (time_array[time_global_tidx + 1] - time_array[time_global_tidx]).seconds / 3600.0
+                else:
+                    dt = 1
+
+                prob.add_cst(cst=(node_vars.current_level[t, m] ==
+                                  node_data.initial_level[m]
+                                  + dt * node_data.inflow[m]
+                                  + dt * node_vars.flow_in[t, m]
+                                  + dt * node_vars.p2x_flow[t, m]
+                                  - dt * node_vars.spillage[t, m]
+                                  - dt * node_vars.flow_out[t, m]),
+                             name=f'{node_data.names[m]} Nodal Balance')
+            else:
+                # Update the level according to the in and out flows as time passess
                 dt = (time_array[time_global_tidx] - time_array[time_global_tidx - 1]).seconds / 3600.0
+
                 prob.add_cst(cst=(node_vars.current_level[t, m] ==
                                   node_vars.current_level[t - 1, m]
                                   + dt * node_data.inflow[m]
@@ -1405,12 +1426,6 @@ def add_hydro_formulation(t: Union[int, None],
                                   - dt * node_vars.spillage[t, m]
                                   - dt * node_vars.flow_out[t, m]),
                              name=f'{node_data.names[m]} Nodal Balance')
-            else:
-                # no time to consider there is water to flow, as if dt = 0, initial_level akin to energy_0
-                prob.add_cst(cst=(node_vars.current_level[t, m] ==
-                                  node_data.initial_level[m]),
-                             name=f'{node_data.names[m]} Nodal Balance')
-
     return f_obj
 
 
