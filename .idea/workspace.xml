@@ -28,13 +28,12 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="changes to mips">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Added prange in csc_mat_dense_mat_ff">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/examples/trunk/acdc_pf/docs/acdc_pf_technical_note.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/examples/trunk/acdc_pf/docs/acdc_pf_technical_note.pdf" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/examples/trunk/acdc_pf/docs/acdc_pf_technical_note.tex" beforeDir="false" afterPath="$PROJECT_DIR$/examples/trunk/acdc_pf/docs/acdc_pf_technical_note.tex" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/examples/trunk/acdc_pf/docs/decoupled_converter_model.dia" beforeDir="false" afterPath="$PROJECT_DIR$/examples/trunk/acdc_pf/docs/decoupled_converter_model.dia" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/examples/trunk/acdc_pf/docs/decoupled_converter_model.eps" beforeDir="false" afterPath="$PROJECT_DIR$/examples/trunk/acdc_pf/docs/decoupled_converter_model.eps" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/MIPS/mips.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/MIPS/mips.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -62,7 +61,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="205_ACOPF" />
+        <entry key="$PROJECT_DIR$" value="186_SRAP" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -77,7 +76,6 @@
     </file-type-list>
   </component>
   <component name="HighlightingSettingsPerFile">
-    <setting file="file://$USER_HOME$/AppData/Local/Programs/Python/Python310/Lib/site-packages/GridCalEngine/Core/DataStructures/numerical_circuit.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/requirements.txt" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/GridCal/Gui/ConsoleWidget.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/GridCal/Gui/CoordinatesInput/coordinates_dialogue.py" root0="FORCE_HIGHLIGHTING" />
@@ -113,25 +111,24 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "Git.Branch.Popup.ShowAllRemotes": "true",
-    "MATLAB_INTERPRETER": "/usr/local/MATLAB/R2018a/bin/matlab",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "205__ACOPF",
-    "last_opened_file_path": "C:/Users/a1003/Desktop/GridCal",
-    "node.js.detected.package.eslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "run.code.analysis.last.selected.profile": "aDefault",
-    "settings.editor.selected.configurable": "debugger.dataViews.python.type.renderers",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;Git.Branch.Popup.ShowAllRemotes&quot;: &quot;true&quot;,
+    &quot;MATLAB_INTERPRETER&quot;: &quot;/usr/local/MATLAB/R2018a/bin/matlab&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/santi/Documentos/Git/GitHub/GridCal/doc/rst_source/figures&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;run.code.analysis.last.selected.profile&quot;: &quot;aDefault&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="PyDebuggerOptionsProvider">
     <option name="mySaveCallSignatures" value="true" />
     <option name="mySupportGeventDebugging" value="true" />
@@ -139,11 +136,11 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="C:\Users\a1003\Desktop\GridCal\examples" />
       <recent name="$PROJECT_DIR$/doc/rst_source/figures" />
       <recent name="$PROJECT_DIR$/examples" />
       <recent name="$PROJECT_DIR$/src/tests/data/grids" />
       <recent name="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/Fluid" />
+      <recent name="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/Hydro" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Git\Github\GridCal\src\research\short_circuit" />
@@ -153,7 +150,7 @@
       <recent name="$PROJECT_DIR$/src/research/PTDF" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.acopf_generalize">
+  <component name="RunManager" selected="Python.srap_example">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -406,7 +403,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="acopf_generalize" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="make" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -414,12 +411,34 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/examples" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/doc" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/examples/acopf_generalize.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/doc/make.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="srap_example" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="GridCal" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/examples/trunk/srap" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/examples/trunk/srap/srap_example.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -487,7 +506,7 @@
       <option name="docutils_open_in_browser" value="false" />
       <method v="2" />
     </configuration>
-    <configuration name="Nosetests for tests.admittance_matrix_test.test1" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
+    <configuration name="Nosetests for test_contingency.test_contingency" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -499,23 +518,7 @@
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="_new_regexPattern" value="&quot;&quot;" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;tests.admittance_matrix_test.test1&quot;" />
-      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
-      <method v="2" />
-    </configuration>
-    <configuration name="Nosetests for tests.test_opf.test_opf" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
-      <module name="GridCal" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/tests" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="_new_regexPattern" value="&quot;&quot;" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;tests.test_opf.test_opf&quot;" />
+      <option name="_new_target" value="&quot;test_contingency.test_contingency&quot;" />
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
@@ -588,19 +591,19 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python.acopf_generalize" />
+      <item itemvalue="Python.srap_example" />
+      <item itemvalue="Python.make" />
       <item itemvalue="Python.ExecuteGridCal" />
-      <item itemvalue="Python tests.Nosetests for tests.test_opf.test_opf" />
-      <item itemvalue="Python tests.Nosetests for tests.admittance_matrix_test.test1" />
+      <item itemvalue="Python tests.Nosetests for test_contingency.test_contingency" />
       <item itemvalue="Python tests.Nosetests in tests" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python tests.Nosetests in tests" />
-        <item itemvalue="Python tests.Nosetests for tests.admittance_matrix_test.test1" />
-        <item itemvalue="Python tests.Nosetests for tests.test_opf.test_opf" />
+        <item itemvalue="Python.srap_example" />
         <item itemvalue="Python.ExecuteGridCal" />
-        <item itemvalue="Python.acopf_generalize" />
+        <item itemvalue="Python tests.Nosetests in tests" />
+        <item itemvalue="Python tests.Nosetests for test_contingency.test_contingency" />
+        <item itemvalue="Python.make" />
       </list>
     </recent_temporary>
   </component>
@@ -1233,8 +1236,19 @@
       <workItem from="1701168598414" duration="3582000" />
       <workItem from="1701177452262" duration="932000" />
       <workItem from="1701182230848" duration="2306000" />
-      <workItem from="1701262178348" duration="3698000" />
-      <workItem from="1703231733258" duration="1753000" />
+      <workItem from="1701262178348" duration="9580000" />
+      <workItem from="1701289311090" duration="35000" />
+      <workItem from="1701335755260" duration="1356000" />
+      <workItem from="1701337492557" duration="6473000" />
+      <workItem from="1701359521945" duration="3165000" />
+      <workItem from="1701371589436" duration="14000" />
+      <workItem from="1701372871930" duration="3916000" />
+      <workItem from="1701414413988" duration="1196000" />
+      <workItem from="1701439321660" duration="5923000" />
+      <workItem from="1701515185476" duration="6030000" />
+      <workItem from="1701619255897" duration="5741000" />
+      <workItem from="1701678938702" duration="2528000" />
+      <workItem from="1701762816722" duration="2202000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1579,7 +1593,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="431" />
+    <option name="localTasksCounter" value="442" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1606,34 +1620,13 @@
         </entry>
         <entry key="MAIN">
           <value>
-            <State>
-              <option name="FILTERS">
-                <map>
-                  <entry key="branch">
-                    <value>
-                      <list>
-                        <option value="205_ACOPF" />
-                      </list>
-                    </value>
-                  </entry>
-                </map>
-              </option>
-            </State>
+            <State />
           </value>
         </entry>
       </map>
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Updated docs" />
-    <MESSAGE value="Updated changelog" />
-    <MESSAGE value="Small improvements for the MIP interfaces" />
-    <MESSAGE value="Minimal interface refactor" />
-    <MESSAGE value="Linear analysis refactor" />
-    <MESSAGE value="more graphic_obj refactoring" />
-    <MESSAGE value="Improved the LinearMultiContingencies update function which was likely missing operations" />
-    <MESSAGE value="Added the roseta figures&#10;minor refactor" />
-    <MESSAGE value="Fixed bug when setting the file label for when loading many CIM files&#10;&#10;Minor refactoring" />
     <MESSAGE value="5.0.3 - light refactoring of some functions" />
     <MESSAGE value="some changes to make it work in python 3.9" />
     <MESSAGE value="updated the README.md and the docs" />
@@ -1644,13 +1637,22 @@
     <MESSAGE value="added connectivity matrices for fuels emissions and technologies to the multi-circuit" />
     <MESSAGE value="5.0.8&#10;improved NR ability to detect sparse solution errors" />
     <MESSAGE value="added newtonpa recommended version" />
-    <MESSAGE value="Add 3bus acopf and maybe generalize from there" />
-    <MESSAGE value="Start writing about the problem" />
-    <MESSAGE value="Write more about the equality constraints" />
-    <MESSAGE value="Write the inequalities" />
-    <MESSAGE value="Write a bit of the IPM" />
-    <MESSAGE value="changes to mips" />
-    <option name="LAST_COMMIT_MESSAGE" value="changes to mips" />
+    <MESSAGE value="Type changes in the LpModel&#10;Replaced OrTools specific operations in fluids_try.py" />
+    <MESSAGE value="create multi_circuit deep copy and matching test" />
+    <MESSAGE value="added gat_all_elements_dict and improved gat_all_elements_dict_by_type" />
+    <MESSAGE value="fixed typo" />
+    <MESSAGE value="added profile and sparse array &#10; tests" />
+    <MESSAGE value="added fluid_node diagrams" />
+    <MESSAGE value="Improved the copy function of the multicircuit&#10;improved the set_investments_status function&#10;improved the investments evaluation by not using deep copies" />
+    <MESSAGE value="Minimal requirements update" />
+    <MESSAGE value="Added investments' test pictures" />
+    <MESSAGE value="massive restructuring of enums and basic_structures" />
+    <MESSAGE value="Improved about dialogue by displaying the optional libraries" />
+    <MESSAGE value="improved docs structure" />
+    <MESSAGE value="Fixed test_contingency and improved the matpower code property setting" />
+    <MESSAGE value="Added csc_mat_dense_mat_ff" />
+    <MESSAGE value="Added prange in csc_mat_dense_mat_ff" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added prange in csc_mat_dense_mat_ff" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2294,6 +2296,7 @@
     <SUITE FILE_PATH="coverage/GridCal$update.coverage" NAME="update Coverage Results" MODIFIED="1610117098642" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
     <SUITE FILE_PATH="coverage/GridCal$PTDF_research.coverage" NAME="PTDF_research Coverage Results" MODIFIED="1600707513093" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PTDF" />
     <SUITE FILE_PATH="coverage/GridCal$banner.coverage" NAME="banner Coverage Results" MODIFIED="1617272129031" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/Main" />
+    <SUITE FILE_PATH="coverage/GridCal$srap_example.coverage" NAME="srap_example Coverage Results" MODIFIED="1703241759382" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/examples/trunk/srap" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_bus_types_py.coverage" NAME="Nosetests in test_bus_types.py Coverage Results" MODIFIED="1687726595619" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$about_dialogue.coverage" NAME="about_dialogue Coverage Results" MODIFIED="1689665218256" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/AboutDialogue" />
     <SUITE FILE_PATH="coverage/GridCal$raw_parser.coverage" NAME="raw_parser Coverage Results" MODIFIED="1619379740833" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/IO" />

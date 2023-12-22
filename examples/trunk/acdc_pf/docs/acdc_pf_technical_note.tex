@@ -138,8 +138,7 @@
 	\newpage
 	\section{Converter decoupled AC-DC modeling}
 	
-	The converter is a decoupled branch in the sent that the from and to sides are not galvanically connected in the model.
-	Hence the coupling needs to be done via equations.
+	The converter is a decoupled branch in the sense that the \textit{from} and \textit{to} sides are not galvanically connected in the model. The converter is \textit{hollow}. Hence, the coupling needs to be done via equations in the jacobian matrix since the coupling cannot be done in the admittance matrix.
 	
 	\begin{table}[h!]
 	\begin{tabular}{cc} % The table has 2 columns, both centered (cc)
@@ -203,22 +202,29 @@
 	
 	In this equation $P_f^{conv}$ and $P_t^{conv}$ are variables to be found iteratively, and are not the same as the regular branches power flow ($P_f$, $P_t$) since these variables are introduced to couple the linear system and avoid singularities.
 	
+	\subsection{Example}
 	
+	
+	\begin{figure}[h!]
+		\centering
+		\includegraphics[width=1.0\linewidth]{acdc_6bus_diagram}
+		\caption{Decoupled converter model example grid.}
+		\label{fig:acdc6busdiagram}
+	\end{figure}
 	
 
 	\newpage
 
-	\subsection{Control mapping}
+	\section{Control mapping}
 	It is assumed that each converter controls two magnitudes. Then, the control modes are the ones indicated in Table~\ref{table:contr_vsc}, as described in~\cite{alvarez2021universal}. The AC and DC sides of each control mode are classified into grid-forming (GFM) or grid-following (GFL) following the principles depicted in~\cite{gomis2020principles}.
 
 	\begin{table}[!htb]\centering
 		\caption{Control modes and types of VSCs with the corresponding constraints.}
 		\begin{tabular}{ccccc}
 			\hline
-			\textbf{Control mode} & \textbf{Constraint DC} & \textbf{Constraint AC} & \textbf{AC Type} & \textbf{DC Type} \\
+			\textbf{Control mode} & \textbf{DC Variable} & \textbf{AC Variable} & \textbf{AC Type} & \textbf{DC Type} \\
 			\hline
-			\hline
-			1 & $\theta$ & $V_t$ & GFM & GFL \\
+			1 & - & $\theta$, $V_t$ & GFM & GFL \\
 			2 & $P_f$ & $Q_t$ & GFL & GFL \\
 			3 & $P_f$ & $V_t$ & GFL & GFL \\
 			4 & $V_f$ & $Q_t$ & GFL & GFM \\
@@ -232,40 +238,31 @@
 
 	There are only 2 rules to be followed when setting the control modes of VSCs:
 	\begin{enumerate}
-		\item Each AC grid has to have only 1 slack bus.
-		\item Each DC grid has to have only 1 slack bus.
+		\item Each AC grid has to have only 1 slack bus where $\theta$ and $V$ are set.
+		\item Each DC grid has to have only 1 slack bus where $V$ is set.
 	\end{enumerate}
 	The next step is to merge the controls in Table~\ref{table:contr_vsc} with the system of equations~\eqref{eq:acdc_syst}. Table~\ref{table:vsc_map} identifies the map between the known and unknown variables and the controls.
 
 	\begin{table}[!htb]\centering
 		\caption{Control modes and types of VSCs with the corresponding constraints.}
-		\begin{tabular}{ccccc}
+		\begin{tabular}{ccccccc}
 			\hline
-			\textbf{Control mode} & \textbf{Known DC} & \textbf{Known AC} & \textbf{Unknown DC} & \textbf{Unknown AC} \\
+			\textbf{Mode} & \textbf{Bus from} & \textbf{Bus to} & \textbf{Known} & \textbf{Known} & \textbf{Unknown} & \textbf{Unknown} \\
+			\textbf{} & \textbf{DC} & \textbf{AC} & \textbf{DC} & \textbf{AC} & \textbf{DC} & \textbf{AC} \\
 			\hline
-			\hline
-			1 & - & $\theta$, $V_t$ & $V_f$, $P_f$ & $P_t$, $Q_t$ \\
-			2 & $P_f$ & $Q_t$ & $V_f$ & $\theta$, $V_t$, $P_t$ \\
-			3 & $P_f$ & $V_t$ & $V_f$ & $\theta$, $P_t$, $Q_t$ \\
-			4 & $V_f$ & $Q_t$ & $P_f$ & $\theta$, $V_t$, $P_t$ \\
-			5 & $V_f$ & $V_t$ & $P_f$ & $\theta$, $P_t$, $Q_t$ \\
-			6 & $V_f$ droop & $Q_t$ & $P_f$ & $\theta$, $V_t$, $P_t$ \\
-			7 & $V_f$ droop & $V_t$ & $P_f$ & $\theta$, $P_t$, $Q_t$ \\
+			1 & $P$ & Slack & - & $\theta$, $V_t$ & $V_f$, $P_f$ & $P_t$, $Q_t$ \\
+			2 & $P$ & $PQ$ & $P_f$ & $Q_t$ & $V_f$ & $\theta$, $V_t$, $P_t$ \\
+			3 & $P$ & $PV$ & $P_f$ & $V_t$ & $V_f$ & $\theta$, $P_t$, $Q_t$ \\
+			4 & $V$ & $PQ$ & $V_f$ & $Q_t$ & $P_f$ & $\theta$, $V_t$, $P_t$ \\
+			5 & $V$ & $PV$ & $V_f$ & $V_t$ & $P_f$ & $\theta$, $P_t$, $Q_t$ \\
+			6 & $V$ & $PQ$ & $V_f$ droop & $Q_t$ & $P_f$ & $\theta$, $V_t$, $P_t$ \\
+			7 & $V$ & $PV$ & $V_f$ droop & $V_t$ & $P_f$ & $\theta$, $P_t$, $Q_t$ \\
 			\hline
 		\end{tabular}
 		\label{table:vsc_map}
 	\end{table}
 
-	\subsection{Example}
-	
-	
-	
-	\begin{figure}[h!]
-		\centering
-		\includegraphics[width=1.0\linewidth]{acdc_6bus_diagram}
-		\caption{Decoupled converter model example grid.}
-		\label{fig:acdc6busdiagram}
-	\end{figure}
+
 
 	
 	\section{Bibliography}
