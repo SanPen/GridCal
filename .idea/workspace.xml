@@ -28,12 +28,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Added prange in csc_mat_dense_mat_ff">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Improved the acdc power flow technical note">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/acdc_pf/docs/acdc_pf_technical_note.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/examples/trunk/acdc_pf/docs/acdc_pf_technical_note.pdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/acdc_pf/docs/acdc_pf_technical_note.tex" beforeDir="false" afterPath="$PROJECT_DIR$/examples/trunk/acdc_pf/docs/acdc_pf_technical_note.tex" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/acdc_pf/docs/decoupled_converter_model.dia" beforeDir="false" afterPath="$PROJECT_DIR$/examples/trunk/acdc_pf/docs/decoupled_converter_model.dia" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/acdc_pf/docs/decoupled_converter_model.eps" beforeDir="false" afterPath="$PROJECT_DIR$/examples/trunk/acdc_pf/docs/decoupled_converter_model.eps" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Core/Compilers/circuit_to_newton_pa.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Core/Compilers/circuit_to_newton_pa.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1249,6 +1246,7 @@
       <workItem from="1701619255897" duration="5741000" />
       <workItem from="1701678938702" duration="2528000" />
       <workItem from="1701762816722" duration="2202000" />
+      <workItem from="1703334778528" duration="522000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1593,7 +1591,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="442" />
+    <option name="localTasksCounter" value="443" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1627,7 +1625,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="5.0.3 - light refactoring of some functions" />
     <MESSAGE value="some changes to make it work in python 3.9" />
     <MESSAGE value="updated the README.md and the docs" />
     <MESSAGE value="created setup entry point" />
@@ -1652,7 +1649,8 @@
     <MESSAGE value="Fixed test_contingency and improved the matpower code property setting" />
     <MESSAGE value="Added csc_mat_dense_mat_ff" />
     <MESSAGE value="Added prange in csc_mat_dense_mat_ff" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added prange in csc_mat_dense_mat_ff" />
+    <MESSAGE value="Improved the acdc power flow technical note" />
+    <option name="LAST_COMMIT_MESSAGE" value="Improved the acdc power flow technical note" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
