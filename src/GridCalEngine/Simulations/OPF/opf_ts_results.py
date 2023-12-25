@@ -95,7 +95,8 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                                     ResultTypes.HvdcResults: [ResultTypes.HvdcPowerFrom,
                                                                               ResultTypes.HvdcLoading],
 
-                                                    ResultTypes.FluidNodeResults: [ResultTypes.FluidFlowIn,
+                                                    ResultTypes.FluidNodeResults: [ResultTypes.FluidCurrentLevel,
+                                                                                   ResultTypes.FluidFlowIn,
                                                                                    ResultTypes.FluidFlowOut,
                                                                                    ResultTypes.FluidP2XFlow,
                                                                                    ResultTypes.FluidSpillage],

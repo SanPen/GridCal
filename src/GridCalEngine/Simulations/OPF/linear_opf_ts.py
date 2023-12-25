@@ -1382,19 +1382,14 @@ def add_hydro_formulation(t: Union[int, None],
                     * p2x_data.efficiency[m] / (abs(generator_data.pmin[gen_idx]) / Sbase))
 
         # if t > 0:
-        node_vars.p2x_flow[t, p2x_data.plant_idx[m]] += p2x_flow
-        inj_vars.flow[t, m + turbine_data.nelm + pump_data.nelm] = p2x_flow
+        node_vars.p2x_flow[t, p2x_data.plant_idx[m]] -= p2x_flow
+        inj_vars.flow[t, m + turbine_data.nelm + pump_data.nelm] = - p2x_flow
 
         if generator_data.pmax[gen_idx] > 0:
             logger.add_error(msg='P2X generator pmax > 0 is not possible',
                              value=generator_data.pmax[gen_idx])
 
-        f_obj += p2x_flow
-
-    """
-    
-
-    """
+        f_obj -= p2x_flow
 
     if t is not None:
         # constraints for the node level
