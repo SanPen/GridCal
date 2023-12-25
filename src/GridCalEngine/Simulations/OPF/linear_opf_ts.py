@@ -1373,7 +1373,7 @@ def add_hydro_formulation(t: Union[int, None],
         f_obj += pump_flow
 
     for m in range(p2x_data.nelm):
-        gen_idx = pump_data.generator_idx[m]
+        gen_idx = p2x_data.generator_idx[m]
 
         # flow = pcons [pu] * max_flow [m3/h] * eff / (Pcons_max [MW] / Sbase [MW])
         # invert the efficiency compared to a turbine
