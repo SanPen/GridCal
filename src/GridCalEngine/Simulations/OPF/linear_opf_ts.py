@@ -1361,16 +1361,16 @@ def add_hydro_formulation(t: Union[int, None],
         # node_vars.flow_in[t, plant_idx] = pump_flow  # assume only 1 pump connected
 
         # if t > 0:
-        inj_vars.flow[t, m + turbine_data.nelm] = pump_flow
+        inj_vars.flow[t, m + turbine_data.nelm] = - pump_flow
         prob.add_cst(cst=(node_vars.flow_in[t, plant_idx] ==
-                          pump_flow),
+                          - pump_flow),
                      name=f'{pump_data.names[m]} Turbine-river connection')
 
         if generator_data.pmax[gen_idx] > 0:
             logger.add_error(msg='Pump generator pmax > 0 is not possible',
-                             value=generator_data.pmin[gen_idx])
+                             value=generator_data.pmax[gen_idx])
 
-        f_obj += pump_flow
+        f_obj -= pump_flow
 
     for m in range(p2x_data.nelm):
         gen_idx = p2x_data.generator_idx[m]
