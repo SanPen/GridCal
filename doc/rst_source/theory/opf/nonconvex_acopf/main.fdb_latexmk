@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex main"] 1703609300 "main.aux" "main.bbl" "main" 1703609302 0
+["bibtex main"] 1703609300 "main.aux" "main.bbl" "main" 1703681460 0
   "./references.bib" 1702490431 1225 af8b7309ca4248c178c21d9b5b063306 ""
   "C:/Users/a1003/AppData/Local/Programs/MiKTeX/bibtex/bst/natbib/unsrtnat.bst" 1284451856 24550 a41a6405f4de768c43e871d9fbce2bc8 ""
-  "main.aux" 1703609301 1287 5296d7ba84a9c9e018fdee75ac73828f "pdflatex"
+  "main.aux" 1703681459 1287 5296d7ba84a9c9e018fdee75ac73828f "pdflatex"
   (generated)
   "main.bbl"
   "main.blg"
   (rewritten before read)
-["pdflatex"] 1703609301 "c:/Users/a1003/Desktop/GridCal/doc/rst_source/theory/opf/nonconvex_acopf/main.tex" "main.pdf" "main" 1703609302 0
+["pdflatex"] 1703681458 "c:/Users/a1003/Desktop/GridCal/doc/rst_source/theory/opf/nonconvex_acopf/main.tex" "main.pdf" "main" 1703681460 0
   "C:/Users/a1003/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map" 1702917987 157773 9822ecd8e05a3cb006776caa6aa9bbf3 ""
   "C:/Users/a1003/AppData/Local/MiKTeX/fonts/pk/ljfour/jknappen/ec/dpi600/tcrm1000.pk" 1702124154 11548 e049888a8e84730848a3eca0bbb03fd6 ""
   "C:/Users/a1003/AppData/Local/MiKTeX/miktex/data/le/pdftex/pdflatex.fmt" 1680368863 23176373 5b3bde6f669750772f4652ecec661e21 ""
@@ -93,10 +93,10 @@
   "C:/Users/a1003/AppData/Local/Programs/MiKTeX/tex/latex/natbib/natbib.sty" 1292249081 46712 1c8843383c0bd05870c45fa0ebea6cc2 ""
   "C:/Users/a1003/AppData/Local/Programs/MiKTeX/tex/latex/tools/bm.sty" 1667242266 13231 b52297489a0e9d929aae403417d92a02 ""
   "C:/Users/a1003/AppData/Local/Programs/MiKTeX/tex/latex/tools/indentfirst.sty" 1667242266 1618 6f0598aa81f9ba5cf5d393b4abd3e091 ""
-  "c:/Users/a1003/Desktop/GridCal/doc/rst_source/theory/opf/nonconvex_acopf/main.tex" 1703609295 14923 28a1ba3b475f115f37ed285528b02efd ""
-  "main.aux" 1703609301 1287 5296d7ba84a9c9e018fdee75ac73828f "pdflatex"
+  "c:/Users/a1003/Desktop/GridCal/doc/rst_source/theory/opf/nonconvex_acopf/main.tex" 1703681457 15050 5585996d0238618c776773554af227dc ""
+  "main.aux" 1703681459 1287 5296d7ba84a9c9e018fdee75ac73828f "pdflatex"
   "main.bbl" 1703609301 1322 e57e5414f1ddb119e447cf86654c4dce "bibtex main"
-  "main.tex" 1703609295 14923 28a1ba3b475f115f37ed285528b02efd ""
+  "main.tex" 1703681457 15050 5585996d0238618c776773554af227dc ""
   (generated)
   "main.aux"
   "main.log"

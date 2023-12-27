@@ -63,6 +63,7 @@ where $j=\sqrt{-1}$, and $\bm{G}_\text{bus}$ and $\bm{B}_\text{bus}$ are the rea
 \begin{equation}
     \bm{S}_{b,\text{bus}} = ([\bm{e}]\bm{G}\bm{e} + [\bm{f}]\bm{G}\bm{f} - [\bm{e}]\bm{B}\bm{f} + [\bm{f}]\bm{B}\bm{e}) + j(-[\bm{e}]\bm{B}\bm{e} - [\bm{f}]\bm{B}\bm{f} - [\bm{e}]\bm{G}\bm{f} + [\bm{f}]\bm{G}\bm{e})
 \end{equation}
+where to simplify the notation, $\bm{G}$ and $\bm{B}$ symbolize $\bm{G}_\text{bus}$ and $\bm{B}_\text{bus}$ respectively.
 
 This bus power has to be equal to the one injected by the sum of generators and loads. The nodal power provided by generators is:
 \begin{equation}
@@ -106,8 +107,8 @@ Mathematically, they become:
 \begin{align}
     - [\bm{e}]\bm{e} - [\bm{f}]\bm{f} + \bm{v_u}^2 & \geq 0 \\
     [\bm{e}]\bm{e} + [\bm{f}]\bm{f} - \bm{v_l}^2 & \geq 0 \\
-    - [[\bm{C_f}(\bm{e} + j\bm{f})]\bm{Y_f}^* ([\bm{e} + j\bm{f}])^*] ([\bm{C_f}(\bm{e} + j\bm{f})]^* \bm{Y_f}(\bm{e} + j\bm{f})) + \bm{s_{fu}} & \geq 0 \\
-    - [[\bm{C_t}(\bm{e} + j\bm{f})]\bm{Y_t}^* ([\bm{e} + j\bm{f}])^*] ([\bm{C_t}(\bm{e} + j\bm{f})]^* \bm{Y_t}(\bm{e} + j\bm{f})) + \bm{s_{tu}} & \geq 0 \\
+    - [[\bm{C_f}(\bm{e} + j\bm{f})]\bm{Y_f}^* ([\bm{e} + j\bm{f}])^*] ([\bm{C_f}(\bm{e} + j\bm{f})]^* \bm{Y_f}(\bm{e} + j\bm{f})) + \bm{s_{fu}}^2 & \geq 0 \\
+    - [[\bm{C_t}(\bm{e} + j\bm{f})]\bm{Y_t}^* ([\bm{e} + j\bm{f}])^*] ([\bm{C_t}(\bm{e} + j\bm{f})]^* \bm{Y_t}(\bm{e} + j\bm{f})) + \bm{s_{tu}}^2 & \geq 0 \\
     - \bm{P_g} + \bm{p}_{g,\text{max}} & \geq 0 \\
     \bm{P_g} - \bm{p}_{g,\text{min}} & \geq 0 \\
     - \bm{Q_g} + \bm{q}_{g,\text{max}} & \geq 0 \\
