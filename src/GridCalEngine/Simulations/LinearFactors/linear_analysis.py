@@ -138,8 +138,9 @@ def make_acptdf(Ybus: sp.csc_matrix,
     return PTDF
 
 
-def make_ptdf(Bbus: sp.csc_matrix,
+def make_ptdf(Bpqpv: sp.csc_matrix,
               Bf: sp.csc_matrix,
+              Btheta: Vec,
               pqpv: IntVec,
               distribute_slack: bool = True) -> Mat:
     """
@@ -151,10 +152,10 @@ def make_ptdf(Bbus: sp.csc_matrix,
     :return: PTDF matrix. It is a full matrix of dimensions Branches x buses
     """
 
-    n = Bbus.shape[0]
+    n = Bf.shape[1]
     nb = n
     nbi = n
-    noref = np.arange(1, nb)
+    noref = pqpv  # np.arange(1, nb)
     noslack = pqpv
 
     if distribute_slack:
@@ -166,8 +167,8 @@ def make_ptdf(Bbus: sp.csc_matrix,
 
     # solve for change in voltage angles
     dTheta = np.zeros((nb, nbi))
-    Bref = Bbus[noslack, :][:, noref].tocsc()
-    dtheta_ref = spsolve(Bref, dP[noslack, :])
+    # Bref = Bbus[noslack, :][:, noref].tocsc()
+    dtheta_ref = spsolve(Bpqpv, dP[noslack, :])
 
     if sp.issparse(dtheta_ref):
         dTheta[noref, :] = dtheta_ref.toarray()
@@ -564,8 +565,9 @@ class LinearAnalysis:
                     if len(island.pqpv) > 0:
 
                         # compute the PTDF of the island
-                        ptdf_island = make_ptdf(Bbus=island.Bbus,
+                        ptdf_island = make_ptdf(Bpqpv=island.Bpqpv,
                                                 Bf=island.Bf,
+                                                Btheta=island.Btau,
                                                 pqpv=island.pqpv,
                                                 distribute_slack=self.distributed_slack)
 
@@ -591,8 +593,9 @@ class LinearAnalysis:
         else:
 
             # there is only 1 island, compute the PTDF
-            self.PTDF = make_ptdf(Bbus=islands[0].Bbus,
+            self.PTDF = make_ptdf(Bpqpv=islands[0].Bpqpv,
                                   Bf=islands[0].Bf,
+                                  Btheta=islands[0].Btau,
                                   pqpv=islands[0].pqpv,
                                   distribute_slack=self.distributed_slack)
 

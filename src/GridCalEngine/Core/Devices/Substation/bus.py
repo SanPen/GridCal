@@ -19,69 +19,14 @@
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
-from GridCalEngine.basic_structures import BusMode, ExternalGridMode, Vec, CxVec
+from GridCalEngine.enumerations import BusMode, ExternalGridMode
+from GridCalEngine.basic_structures import Vec, CxVec
 from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceType
 from GridCalEngine.Core.Devices.Aggregation import Area, Zone, Country
 from GridCalEngine.Core.Devices.Substation.substation import Substation
 
 
 class Bus(EditableDevice):
-    """
-    The Bus object is the container of all the possible devices that can be attached to
-    a bus bar or Substation. Such objects can be loads, voltage controlled generators,
-    static generators, batteries, shunt elements, etc.
-
-    Arguments:
-
-        **name** (str, "Bus"): Name of the bus
-
-        **vnom** (float, 10.0): Nominal voltage in kV
-
-        **vmin** (float, 0.9): Minimum per unit voltage
-
-        **vmax** (float, 1.1): Maximum per unit voltage
-
-        **r_fault** (float, 0.0): Resistance of the fault in per unit (SC only)
-
-        **x_fault** (float, 0.0): Reactance of the fault in per unit (SC only)
-
-        **xpos** (int, 0): X position in pixels (GUI only)
-
-        **ypos** (int, 0): Y position in pixels (GUI only)
-
-        **height** (int, 0): Height of the graphic object (GUI only)
-
-        **width** (int, 0): Width of the graphic object (GUI only)
-
-        **active** (bool, True): Is the bus active?
-
-        **is_slack** (bool, False): Is this bus a slack bus?
-
-        **area** (str, "Default"): Name of the area
-
-        **zone** (str, "Default"): Name of the zone
-
-        **Substation** (str, "Default"): Name of the Substation
-
-    Additional Properties:
-
-        **Qmin_sum** (float, 0): Minimum reactive power of this bus (inferred from the devices)
-
-        **Qmax_sum** (float, 0): Maximum reactive power of this bus (inferred from the devices)
-
-        **loads** (list, list()): List of loads attached to this bus
-
-        **controlled_generators** (list, list()): List of controlled generators attached to this bus
-
-        **shunts** (list, list()): List of shunts attached to this bus
-
-        **batteries** (list, list()): List of batteries attached to this bus
-
-        **static_generators** (list, list()): List of static generators attached to this bus
-
-        **measurements** (list, list()): List of measurements
-
-    """
 
     def __init__(self, name="Bus",
                  idtag=None,
@@ -100,7 +45,7 @@ class Bus(EditableDevice):
                  active=True,
                  is_slack=False,
                  is_dc=False,
-                 is_tr_bus=False,
+                 is_internal=False,
                  area: Area = None,
                  zone: Zone = None,
                  substation: Substation = None,
@@ -109,6 +54,37 @@ class Bus(EditableDevice):
                  latitude=0.0,
                  Vm0=1,
                  Va0=0):
+        """
+        The Bus object is the container of all the possible devices that can be attached to
+        a bus bar or Substation. Such objects can be loads, voltage controlled generators,
+        static generators, batteries, shunt elements, etc.
+        :param name: Name of the bus
+        :param idtag: Unique identifier, if empty or None, a random one is generated
+        :param code: Compatibility id with legacy systems
+        :param vnom: Nominal voltage in kV
+        :param vmin: Minimum per unit voltage (p.u.)
+        :param vmax: Maximum per unit voltage (p.u.)
+        :param angle_min: Minimum voltage angle (rad)
+        :param angle_max: Maximum voltage angle (rad)
+        :param r_fault: Resistance of the fault in per unit (SC only)
+        :param x_fault: Reactance of the fault in per unit (SC only)
+        :param xpos: X position in pixels (GUI only)
+        :param ypos: Y position in pixels (GUI only)
+        :param height: Height of the graphic object (GUI only)
+        :param width: Width of the graphic object (GUI only)
+        :param active: Is the bus active?
+        :param is_slack: Is this bus a slack bus?
+        :param is_dc: Is this bus a DC bus?
+        :param is_internal: Is this bus an internal bus? (i.e. the central bus on a 3W transformer, or the bus of a FluidNode)
+        :param area: Area object
+        :param zone: Zone object
+        :param substation: Substation object
+        :param country: Country object
+        :param longitude: longitude (deg)
+        :param latitude: latitude (deg)
+        :param Vm0: initial solution for the voltage module (p.u.)
+        :param Va0: initial solution for the voltage angle (rad)
+        """
 
         EditableDevice.__init__(self,
                                 name=name,
@@ -124,7 +100,7 @@ class Bus(EditableDevice):
 
         # minimum voltage limit
         self.Vmin = vmin
-        self.voltage_module_cost = 0
+        self.Vm_cost = 0
 
         # maximum voltage limit
         self.Vmax = vmax
@@ -137,7 +113,7 @@ class Bus(EditableDevice):
 
         self.angle_max = angle_max
 
-        self.voltage_angle_cost = 0
+        self.angle_cost = 0
 
         # summation of lower reactive power limits connected
         self.Qmin_sum = 0
@@ -191,7 +167,7 @@ class Bus(EditableDevice):
         self.is_dc = is_dc
 
         # determine if this bus is part of a composite transformer such as a 3-winding transformer
-        self.is_tr_bus = is_tr_bus
+        self.is_internal = is_internal
 
         # if true, the presence of storage devices turn the bus into a Reference bus in practice
         # So that P +jQ are computed
@@ -214,9 +190,10 @@ class Bus(EditableDevice):
         self.register(key='is_slack', units='', tpe=bool, definition='Force the bus to be of slack type.',
                       profile_name='')
         self.register(key='is_dc', units='', tpe=bool, definition='Is this bus of DC type?.', profile_name='')
-        self.register(key='is_tr_bus', units='', tpe=bool,
-                      definition='Is this bus part of a composite transformer, such as  a 3-winding transformer?.',
-                      profile_name='')
+        self.register(key='is_internal', units='', tpe=bool,
+                      definition='Is this bus part of a composite transformer, '
+                                 'such as  a 3-winding transformer or a fluid node?.',
+                      profile_name='', old_names=['is_tr_bus'])
         self.register(key='Vnom', units='kV', tpe=float, definition='Nominal line voltage of the bus.', profile_name='')
         self.register(key='Vm0', units='p.u.', tpe=float, definition='Voltage module guess.', profile_name='')
         self.register(key='Va0', units='rad.', tpe=float, definition='Voltage angle guess.', profile_name='')
@@ -224,12 +201,12 @@ class Bus(EditableDevice):
                       profile_name='')
         self.register(key='Vmax', units='p.u.', tpe=float, definition='Higher range of allowed voltage module.',
                       profile_name='')
-        self.register(key='voltage_module_cost', units='€/unit', tpe=float, definition='Cost of over and under voltages')
+        self.register(key='Vm_cost', units='€/unit', tpe=float, definition='Cost of over and under voltages')
         self.register(key='angle_min', units='rad.', tpe=float, definition='Lower range of allowed voltage angle.',
                       profile_name='')
         self.register(key='angle_max', units='rad.', tpe=float, definition='Higher range of allowed voltage angle.',
                       profile_name='')
-        self.register(key='voltage_angle_cost', units='€/unit', tpe=float, definition='Cost of over and under angles')
+        self.register(key='angle_cost', units='€/unit', tpe=float, definition='Cost of over and under angles')
         self.register(key='r_fault', units='p.u.', tpe=float,
                       definition='Resistance of the fault.This is used for short circuit studies.', profile_name='')
         self.register(key='x_fault', units='p.u.', tpe=float,

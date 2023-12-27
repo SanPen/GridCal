@@ -17,8 +17,7 @@
 import numpy as np
 import hyperopt
 import functools
-import copy
-import time
+
 from typing import List, Dict, Union
 from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver, PowerFlowOptions
@@ -31,7 +30,8 @@ from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerica
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
 from GridCalEngine.Simulations.InvestmentsEvaluation.MVRSM import MVRSM_minimize
 from GridCalEngine.Simulations.InvestmentsEvaluation.stop_crits import StochStopCriterion
-from GridCalEngine.basic_structures import IntVec, InvestmentEvaluationMethod
+from GridCalEngine.basic_structures import IntVec
+from GridCalEngine.enumerations import InvestmentEvaluationMethod
 from GridCalEngine.Simulations.InvestmentsEvaluation.investments_evaluation_options import InvestmentsEvaluationOptions
 
 
@@ -344,7 +344,7 @@ def get_overload_score(results, branches, norm):
 
 
 def get_voltage_module_score(results, buses, norm):
-    bus_cost = np.array([e.voltage_module_cost for e in buses], dtype=float)
+    bus_cost = np.array([e.Vm_cost for e in buses], dtype=float)
     vmax = np.array([e.Vmax for e in buses], dtype=float)
     vmin = np.array([e.Vmin for e in buses], dtype=float)
     vm = np.abs(results.voltage)

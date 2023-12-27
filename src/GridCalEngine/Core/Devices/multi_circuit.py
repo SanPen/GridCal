@@ -32,7 +32,7 @@ from GridCalEngine.Core import EditableDevice, Switch, UPFC, VSC, Winding, Trans
 from GridCalEngine.basic_structures import DateVec, IntVec, StrVec, Vec, Mat, CxVec, IntMat, CxMat
 from GridCalEngine.data_logger import DataLogger
 import GridCalEngine.Core.Devices as dev
-import GridCalEngine.basic_structures as bs
+from GridCalEngine.basic_structures import Logger
 import GridCalEngine.Core.topology as tp
 from GridCalEngine.enumerations import DeviceType
 
@@ -179,7 +179,7 @@ class MultiCircuit:
         self.countries: List[dev.Country] = list()  # [self.default_country]
 
         # logger of events
-        self.logger: bs.Logger = bs.Logger()
+        self.logger: Logger = Logger()
 
         # master time profile
         self.time_profile: DateVec = None
@@ -214,8 +214,9 @@ class MultiCircuit:
         # fluids
         self.fluid_nodes: List[dev.FluidNode] = list()
         self.fluid_paths: List[dev.FluidPath] = list()
-        self.fluid_turbines: List[dev.FluidTurbine] = list()
-        self.fluid_pumps: List[dev.FluidPump] = list()
+        # self.fluid_turbines: List[dev.FluidTurbine] = list()
+        # self.fluid_pumps: List[dev.FluidPump] = list()
+        # self.fluid_p2xs: List[dev.FluidP2x] = list()
 
         # objects with profiles
         self.objects_with_profiles = {
@@ -249,6 +250,7 @@ class MultiCircuit:
                 dev.FluidPath(),
                 dev.FluidTurbine(),
                 dev.FluidPump(),
+                dev.FluidP2x(),
             ],
             "Groups": [
                 dev.ContingencyGroup(),
@@ -662,7 +664,8 @@ class MultiCircuit:
         Return all the branch objects.
         :return: lines + transformers 2w + hvdc
         """
-        return self.lines + self.dc_lines + self.transformers2w + self.windings + self.vsc_devices + self.upfc_devices + self.switch_devices
+        return (self.lines + self.dc_lines + self.transformers2w + self.windings +
+                self.vsc_devices + self.upfc_devices + self.switch_devices)
 
     def get_branches_wo_hvdc_names(self) -> List[str]:
         """
@@ -690,7 +693,8 @@ class MultiCircuit:
         Get a list of devices susceptible to be included in investments
         :return: list of devices
         """
-        return self.get_branches() + self.get_generators() + self.get_batteries() + self.get_shunts() + self.get_loads() + self.buses
+        return (self.get_branches() + self.get_generators() + self.get_batteries() +
+                self.get_shunts() + self.get_loads() + self.buses)
 
     def get_investmenst_by_groups(self) -> List[Tuple[dev.InvestmentsGroup, List[dev.Investment]]]:
         """
@@ -1229,17 +1233,20 @@ class MultiCircuit:
         elif element_type == DeviceType.ConnectivityNodeDevice:
             return self.connectivity_nodes
 
-        elif element_type == DeviceType.FluidNode:
+        elif element_type == DeviceType.FluidNodeDevice:
             return self.fluid_nodes
 
-        elif element_type == DeviceType.FluidPath:
+        elif element_type == DeviceType.FluidPathDevice:
             return self.fluid_paths
 
-        elif element_type == DeviceType.FluidTurbine:
-            return self.fluid_turbines
+        elif element_type == DeviceType.FluidTurbineDevice:
+            return self.get_fluid_turbines()
 
-        elif element_type == DeviceType.FluidPump:
-            return self.fluid_pumps
+        elif element_type == DeviceType.FluidPumpDevice:
+            return self.get_fluid_pumps()
+
+        elif element_type == DeviceType.FluidP2XDevice:
+            return self.get_fluid_p2xs()
 
         else:
             raise Exception('Element type not understood ' + str(element_type))
@@ -1355,16 +1362,19 @@ class MultiCircuit:
         elif element_type == DeviceType.GeneratorEmissionAssociation:
             return self.delete_generator_emission(obj)
 
-        elif element_type == DeviceType.FluidNode:
+        elif element_type == DeviceType.FluidNodeDevice:
             return self.delete_fluid_node(obj)
 
-        elif element_type == DeviceType.FluidTurbine:
+        elif element_type == DeviceType.FluidTurbineDevice:
             return self.delete_fluid_turbine(obj)
 
-        elif element_type == DeviceType.FluidPump:
+        elif element_type == DeviceType.FluidP2XDevice:
+            return self.delete_fluid_p2x(obj)
+
+        elif element_type == DeviceType.FluidPumpDevice:
             return self.delete_fluid_pump(obj)
 
-        elif element_type == DeviceType.FluidPath:
+        elif element_type == DeviceType.FluidPathDevice:
             return self.delete_fluid_path(obj)
 
         else:
@@ -1499,10 +1509,25 @@ class MultiCircuit:
         elif element_type == DeviceType.WindingDevice:
             return self.get_windings()
 
+        elif element_type == DeviceType.FluidNodeDevice:
+            return self.get_fluid_nodes()
+
+        elif element_type == DeviceType.FluidTurbineDevice:
+            return self.get_fluid_turbines()
+
+        elif element_type == DeviceType.FluidP2XDevice:
+            return self.get_fluid_p2xs()
+
+        elif element_type == DeviceType.FluidPumpDevice:
+            return self.get_fluid_pumps()
+
+        elif element_type == DeviceType.FluidPathDevice:
+            return self.get_fluid_paths()
+
         else:
             raise Exception('Element type not understood ' + str(element_type))
 
-    def copy(self):
+    def copy(self) -> "MultiCircuit":
         """
         Returns a deep (true) copy of this circuit.
         """
@@ -1541,8 +1566,6 @@ class MultiCircuit:
                 'generators_emissions',
                 'fluid_nodes',
                 'fluid_paths',
-                'fluid_turbines',
-                'fluid_pumps'
                 ]
 
         for pr in ppts:
@@ -1850,7 +1873,7 @@ class MultiCircuit:
         """
         return {b: i for i, b in enumerate(self.buses)}
 
-    def add_bus(self, obj: dev.Bus):
+    def add_bus(self, obj: Union[None, dev.Bus] = None) -> dev.Bus:
         """
         Add a :ref:`Bus<bus>` object to the grid.
 
@@ -1858,30 +1881,21 @@ class MultiCircuit:
 
             **obj** (:ref:`Bus<bus>`): :ref:`Bus<bus>` object
         """
+        if obj is None:
+            obj = dev.Bus()
+
         if self.time_profile is not None:
             obj.create_profiles(self.time_profile)
 
-        # if obj.substation is None:
-        #     obj.substation = self.default_substation
-        #
-        # if obj.zone is None:
-        #     obj.zone = self.default_zone
-        #
-        # if obj.area is None:
-        #     obj.area = self.default_area
-        #
-        # if obj.country is None:
-        #     obj.country = self.default_country
-
         self.buses.append(obj)
+
+        return obj
 
     def delete_bus(self, obj: dev.Bus, ask=True):
         """
         Delete a :ref:`Bus<bus>` object from the grid.
-
-        Arguments:
-
-            **obj** (:ref:`Bus<bus>`): :ref:`Bus<bus>` object
+        :param obj: :ref:`Bus<bus>` object
+        :param ask: Ask about it
         """
 
         # remove associated Branches in reverse order
@@ -1894,7 +1908,7 @@ class MultiCircuit:
         if obj in self.buses:
             self.buses.remove(obj)
 
-    def add_line(self, obj: dev.Line, logger: Union[bs.Logger, DataLogger] = bs.Logger()):
+    def add_line(self, obj: dev.Line, logger: Union[Logger, DataLogger] = Logger()):
         """
         Add a line object
         :param obj: Line instance
@@ -2047,7 +2061,7 @@ class MultiCircuit:
         for branch_list in self.get_branch_lists():
             try:
                 branch_list.remove(obj)
-            except:
+            except ValueError:  # element not found ...
                 pass
 
     def delete_line(self, obj: dev.Line):
@@ -2394,11 +2408,11 @@ class MultiCircuit:
         self.delete_transformer_template_dependency(obj=obj)
         self.transformer_types.remove(obj)
 
-    def apply_all_branch_types(self) -> bs.Logger:
+    def apply_all_branch_types(self) -> Logger:
         """
         Apply all the branch types
         """
-        logger = bs.Logger()
+        logger = Logger()
         for branch in self.lines:
             if branch.template is not None:
                 branch.apply_template(branch.template, self.Sbase, logger=logger)
@@ -2466,7 +2480,7 @@ class MultiCircuit:
         """
         self.contingency_groups.remove(obj)
 
-    def get_contingency_group_names(self):
+    def get_contingency_group_names(self) -> List[str]:
         """
         Get list of contingency group names
         :return:
@@ -2489,9 +2503,17 @@ class MultiCircuit:
         return d
 
     def get_branches_wo_hvdc_dict(self) -> Dict[str, List[dev.Branch]]:
+        """
+        Get dictionary of branches (excluding HVDC)
+        :return: Dict[str, List[Branch]]
+        """
         return {e.idtag: ei for ei, e in enumerate(self.get_branches_wo_hvdc())}
 
     def add_contingency(self, obj: dev.Contingency):
+        """
+        Add a contingency
+        :param obj: Contingency
+        """
         self.contingencies.append(obj)
 
     def delete_contingency(self, obj):
@@ -2630,7 +2652,7 @@ class MultiCircuit:
             if elm.technology == obj:
                 rels.append(elm)
 
-        # delete the assciations
+        # delete the associations
         for elm in rels:
             self.delete_generator_technology(elm)
 
@@ -2690,19 +2712,32 @@ class MultiCircuit:
         :param obj: FluidNode
         """
         # delete dependencies
-        for elm in reversed(self.fluid_turbines):
-            if elm.plant == obj:
-                self.delete_fluid_turbine(elm)
-
-        for elm in reversed(self.fluid_pumps):
-            if elm.reservoir == obj:
-                self.delete_fluid_pump(elm)
-
         for fluid_path in reversed(self.fluid_paths):
             if fluid_path.source == obj or fluid_path.target == obj:
                 self.delete_fluid_path(fluid_path)
 
         self.fluid_nodes.remove(obj)
+
+    def get_fluid_nodes(self) -> List[dev.FluidNode]:
+        """
+
+        :return:
+        """
+        return self.fluid_nodes
+
+    def get_fluid_nodes_number(self) -> int:
+        """
+
+        :return:
+        """
+        return len(self.fluid_nodes)
+
+    def get_fluid_node_names(self) -> StrVec:
+        """
+        List of fluid node names
+        :return:
+        """
+        return np.array([e.name for e in self.fluid_nodes])
 
     def add_fluid_path(self, obj: dev.FluidPath):
         """
@@ -2718,33 +2753,218 @@ class MultiCircuit:
         """
         self.fluid_paths.remove(obj)
 
-    def add_fluid_turbine(self, obj: dev.FluidTurbine):
+    def get_fluid_paths(self) -> List[dev.FluidPath]:
+        """
+
+        :return:
+        """
+        return self.fluid_paths
+
+    def get_fluid_path_names(self) -> StrVec:
+        """
+        List of fluid paths names
+        :return:
+        """
+        return np.array([e.name for e in self.fluid_paths])
+
+    def get_fluid_paths_number(self) -> int:
+        """
+
+        :return:
+        """
+        return len(self.fluid_paths)
+
+    def add_fluid_turbine(self, node: dev.FluidNode, api_obj: Union[dev.FluidTurbine, None]) -> dev.FluidTurbine:
         """
         Add fluid turbine
-        :param obj:FluidTurbine
+        :param node: Fluid node to add to
+        :param api_obj: FluidTurbine
         """
-        self.fluid_turbines.append(obj)
+
+        if api_obj is None:
+            api_obj = dev.FluidTurbine()
+        api_obj.plant = node
+
+        if self.time_profile is not None:
+            api_obj.create_profiles(self.time_profile)
+
+        node.turbines.append(api_obj)
+
+        return api_obj
 
     def delete_fluid_turbine(self, obj: dev.FluidTurbine):
         """
         Delete fuid turbine
         :param obj: FluidTurbine
         """
-        self.fluid_turbines.remove(obj)
+        obj.plant.turbines.remove(obj)
 
-    def add_fluid_pump(self, obj: dev.FluidPump):
+    def get_fluid_turbines(self) -> List[dev.FluidTurbine]:
+        """
+        Returns a list of :ref:`Load<load>` objects in the grid.
+        """
+        lst = list()
+        for node in self.fluid_nodes:
+            for elm in node.turbines:
+                elm.plant = node
+            lst = lst + node.turbines
+        return lst
+
+    def get_fluid_turbines_number(self) -> int:
+        """
+        :return: number of total turbines in the network
+        """
+        i = 0
+        for node in self.fluid_nodes:
+            for elm in node.turbines:
+                i += 1
+        return i
+
+    def get_fluid_turbines_names(self) -> StrVec:
+        """
+        Returns a list of :ref:`Turbine<turbine>` names.
+        """
+        lst = list()
+        for node in self.fluid_nodes:
+            for elm in node.turbines:
+                lst.append(elm.name)
+        return np.array(lst)
+
+    def add_fluid_pump(self, node: dev.FluidNode, api_obj: Union[dev.FluidPump, None]) -> dev.FluidPump:
         """
         Add fluid pump
-        :param obj:FluidPump
+        :param node: Fluid node to add to
+        :param api_obj:FluidPump
         """
-        self.fluid_pumps.append(obj)
+        if api_obj is None:
+            api_obj = dev.FluidTurbine()
+        api_obj.plant = node
+
+        if self.time_profile is not None:
+            api_obj.create_profiles(self.time_profile)
+
+        node.pumps.append(api_obj)
+
+        return api_obj
 
     def delete_fluid_pump(self, obj: dev.FluidPump):
         """
         Delete fuid pump
         :param obj: FluidPump
         """
-        self.fluid_pumps.remove(obj)
+        obj.plant.pumps.remove(obj)
+
+    def get_fluid_pumps(self) -> List[dev.FluidPump]:
+        """
+        Returns a list of :ref:`Load<load>` objects in the grid.
+        """
+        lst = list()
+        for node in self.fluid_nodes:
+            for elm in node.pumps:
+                elm.plant = node
+            lst = lst + node.pumps
+        return lst
+
+    def get_fluid_pumps_number(self) -> int:
+        """
+        :return: number of total pumps in the network
+        """
+        i = 0
+        for node in self.fluid_nodes:
+            for elm in node.pumps:
+                i += 1
+        return i
+
+    def get_fluid_pumps_names(self) -> StrVec:
+        """
+        Returns a list of :ref:`Pump<pump>` names.
+        """
+        lst = list()
+        for node in self.fluid_nodes:
+            for elm in node.pumps:
+                lst.append(elm.name)
+        return np.array(lst)
+
+    def add_fluid_p2x(self, node: dev.FluidNode,
+                      api_obj: Union[dev.FluidP2x, None]) -> dev.FluidP2x:
+        """
+        Add power to x
+        :param node: Fluid node to add to
+        :param api_obj:FluidP2x
+        """
+        if api_obj is None:
+            api_obj = dev.FluidTurbine()
+        api_obj.plant = node
+
+        if self.time_profile is not None:
+            api_obj.create_profiles(self.time_profile)
+
+        node.p2xs.append(api_obj)
+
+        return api_obj
+
+    def delete_fluid_p2x(self, obj: dev.FluidP2x):
+        """
+        Delete fuid pump
+        :param obj: FluidP2x
+        """
+        obj.plant.p2xs.remove(obj)
+
+    def get_fluid_p2xs(self) -> List[dev.FluidP2x]:
+        """
+        Returns a list of :ref:`Load<load>` objects in the grid.
+        """
+        lst = list()
+        for node in self.fluid_nodes:
+            for elm in node.p2xs:
+                elm.plant = node
+            lst = lst + node.p2xs
+        return lst
+
+    def get_fluid_p2xs_number(self) -> int:
+        """
+        :return: number of total pumps in the network
+        """
+        i = 0
+        for node in self.fluid_nodes:
+            for elm in node.p2xs:
+                i += 1
+        return i
+
+    def get_fluid_p2xs_names(self) -> StrVec:
+        """
+        Returns a list of :ref:`P2X<P2X>` names.
+        """
+        lst = list()
+        for node in self.fluid_nodes:
+            for elm in node.p2xs:
+                lst.append(elm.name)
+        return np.array(lst)
+
+    def get_fluid_injection_number(self) -> int:
+        """
+        Get number of fluid injections
+        :return: int
+        """
+        n = 0
+        for fn in self.fluid_nodes:
+            n += fn.get_device_number()
+
+        return n
+
+    def get_fluid_injection_names(self) -> StrVec:
+        """
+        Returns a list of :ref:`Injection<Injection>` names.
+        """
+        lst = list()
+        for node in self.fluid_nodes:
+            for elm in node.p2xs:
+                lst.append(elm.name)
+            for elm in node.turbines:
+                lst.append(elm.name)
+            for elm in node.pumps:
+                lst.append(elm.name)
+        return np.array(lst)
 
     def convert_line_to_hvdc(self, line: dev.Line) -> dev.HvdcLine:
         """
@@ -2881,6 +3101,28 @@ class MultiCircuit:
         self.delete_line(line)
 
         return upfc
+
+    def convert_fluid_path_to_line(self, fluid_path: dev.FluidPath) -> dev.Line:
+        """
+        Convert a line to voltage source converter
+        :param fluid_path: FluidPath
+        :return: Line
+        """
+        line = dev.Line(bus_from=fluid_path.source.bus,
+                        bus_to=fluid_path.target.bus,
+                        name='line',
+                        active=True,
+                        rate=9999,
+                        r=0.001,
+                        x=0.01)
+
+        # add device to the circuit
+        self.add_line(line)
+
+        # delete the line from the circuit
+        self.delete_fluid_path(fluid_path)
+
+        return line
 
     def plot_graph(self, ax=None):
         """
@@ -3216,7 +3458,7 @@ class MultiCircuit:
     def fill_xy_from_lat_lon(self,
                              destructive: bool = True,
                              factor: float = 0.01,
-                             remove_offset: bool = True) -> bs.Logger:
+                             remove_offset: bool = True) -> Logger:
         """
         fill the x and y value from the latitude and longitude values
         :param destructive: if true, the values are overwritten regardless, otherwise only if x and y are 0
@@ -3233,7 +3475,7 @@ class MultiCircuit:
             lat[i] = bus.latitude
 
         # perform the coordinate transformation
-        logger = bs.Logger()
+        logger = Logger()
         try:
             import pyproj
         except ImportError:
@@ -3278,7 +3520,7 @@ class MultiCircuit:
             x[i] = bus.x * factor + offset_x
             y[i] = bus.y * factor + offset_y
 
-        logger = bs.Logger()
+        logger = Logger()
         try:
             import pyproj
         except ImportError:
@@ -3300,7 +3542,7 @@ class MultiCircuit:
 
         return logger
 
-    def import_bus_lat_lon(self, df: pd.DataFrame, bus_col, lat_col, lon_col) -> bs.Logger:
+    def import_bus_lat_lon(self, df: pd.DataFrame, bus_col, lat_col, lon_col) -> Logger:
         """
         Import the buses' latitude and longitude
         :param df: Pandas DataFrame with the information
@@ -3309,7 +3551,7 @@ class MultiCircuit:
         :param lon_col: longitude column name
         :return: Logger
         """
-        logger = bs.Logger()
+        logger = Logger()
         lats = df[lat_col].values
         lons = df[lon_col].values
         names = df[bus_col].values
@@ -3339,7 +3581,7 @@ class MultiCircuit:
         :param df:
         :return: Logger
         """
-        logger = bs.Logger()
+        logger = Logger()
         nn = df.shape[0]
         if self.get_time_number() != nn:
             self.format_profiles(df.index.values)
@@ -3369,7 +3611,7 @@ class MultiCircuit:
         :param df:
         :return: Logger
         """
-        logger = bs.Logger()
+        logger = Logger()
         nn = df.shape[0]
         if self.get_time_number() != nn:
             self.format_profiles(df.index.values)
@@ -3394,7 +3636,7 @@ class MultiCircuit:
         :param df:
         :return: Logger
         """
-        logger = bs.Logger()
+        logger = Logger()
         nn = df.shape[0]
         if self.get_time_number() != nn:
             self.format_profiles(df.index.values)
@@ -3659,7 +3901,7 @@ class MultiCircuit:
         devices_key_dict = {d.idtag: d for d in devices}
         devices_dict = {**devices_code_dict, **devices_key_dict}
 
-        logger = bs.Logger()
+        logger = Logger()
 
         for contingency in contingencies:
             if contingency.code in devices_dict.keys() or contingency.idtag in devices_dict.keys():
@@ -3746,14 +3988,14 @@ class MultiCircuit:
 
         return val
 
-    def get_Pbus(self, non_dispatchable_only=False) -> Vec:
+    def get_Pbus(self) -> Vec:
         """
         Get snapshot active power array per bus
         :return: Vec
         """
         return self.get_Sbus().real
 
-    def get_Pbus_prof(self, non_dispatchable_only=False) -> Mat:
+    def get_Pbus_prof(self) -> Mat:
         """
         Get profiles active power per bus
         :return: Mat

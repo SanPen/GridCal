@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-import GridCalEngine.basic_structures as bs
+from GridCalEngine.enumerations import ContingencyEngine
 from GridCalEngine.basic_structures import Vec
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions, SolverType
 
@@ -31,7 +31,7 @@ class ContingencyAnalysisOptions:
                  use_provided_flows: bool = False,
                  Pf: Vec = None,
                  pf_results=None,
-                 engine=bs.ContingencyEngine.PowerFlow,
+                 engine=ContingencyEngine.PowerFlow,
                  pf_options=PowerFlowOptions(SolverType.DC)):
         """
 

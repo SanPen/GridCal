@@ -16,8 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import pandas as pd
 from matplotlib import pyplot as plt
-from GridCalEngine.basic_structures import ExternalGridMode
-from GridCalEngine.enumerations import DeviceType, BuildStatus
+from GridCalEngine.enumerations import DeviceType, BuildStatus, ExternalGridMode
 from GridCalEngine.Core.Devices.Injections.injection_template import InjectionTemplate
 
 

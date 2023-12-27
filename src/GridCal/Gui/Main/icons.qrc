@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="Icons">
+    <file>icons/transpose.svg</file>
     <file>icons/schematicadd_to.svg</file>
     <file>icons/bug.svg</file>
     <file>icons/add_substation.svg</file>
@@ -32,6 +33,7 @@
     <file>icons/ntc_opf_ts.svg</file>
     <file>icons/atc_ts.svg</file>
     <file>icons/atc.svg</file>
+    <file>icons/dam.svg</file>
     <file>icons/pf_ts_cluster.svg</file>
     <file>icons/assign_to_profile.svg</file>
     <file>icons/otdf_ts.svg</file>

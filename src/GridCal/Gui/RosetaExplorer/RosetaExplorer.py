@@ -488,7 +488,6 @@ class RosetaExplorerGUI(QMainWindow):
                                    editable_headers=editable_headers,
                                    parent=self.ui.propertiesTableView,
                                    editable=True,
-                                   non_editable_attributes=[],
                                    dictionary_of_lists={})
             else:
                 return

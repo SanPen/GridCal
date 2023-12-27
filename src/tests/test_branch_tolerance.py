@@ -20,9 +20,8 @@ from GridCalEngine.Core.Devices import Line
 from GridCalEngine.Core.Devices import Bus
 from GridCalEngine.Core.Devices import Generator
 from GridCalEngine.Core.Devices import Load
-from GridCalEngine.Simulations.PowerFlow.power_flow_driver import \
-    PowerFlowOptions, PowerFlowDriver
-from GridCalEngine.basic_structures import BranchImpedanceMode
+from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions, PowerFlowDriver
+from GridCalEngine.enumerations import BranchImpedanceMode
 
 Sbase = 100  # MVA
 

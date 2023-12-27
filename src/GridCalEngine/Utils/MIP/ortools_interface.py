@@ -24,13 +24,13 @@ other solver interface easily
 from typing import List, Union, Tuple, Iterable
 import ortools.linear_solver.pywraplp as ort
 from ortools.linear_solver.python import model_builder
-from ortools.linear_solver.python.model_builder import BoundedLinearExpression as LpCstBounded, LinearConstraint
+from ortools.linear_solver.python.model_builder import BoundedLinearExpression as LpCstBounded
 from ortools.linear_solver.python.model_builder import LinearConstraint as LpCst
 from ortools.linear_solver.python.model_builder import LinearExpr as LpExp
 from ortools.linear_solver.python.model_builder import Variable as LpVar
 from ortools.linear_solver.python.model_builder import _Sum as LpSum
-
-from GridCalEngine.basic_structures import MIPSolvers, Logger
+from GridCalEngine.enumerations import MIPSolvers
+from GridCalEngine.basic_structures import Logger
 
 
 def get_available_mip_solvers() -> List[str]:

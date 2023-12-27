@@ -16,7 +16,6 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import numpy as np
-import time
 from typing import Union
 from GridCalEngine.Simulations.PowerFlow.power_flow_ts_results import PowerFlowTimeSeriesResults
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
@@ -28,7 +27,8 @@ import GridCalEngine.Simulations.PowerFlow.power_flow_worker as pf_worker
 from GridCalEngine.Core.Compilers.circuit_to_bentayga import bentayga_pf
 from GridCalEngine.Core.Compilers.circuit_to_newton_pa import newton_pa_pf
 from GridCalEngine.Core.Compilers.circuit_to_pgm import pgm_pf
-from GridCalEngine.basic_structures import EngineType, IntVec
+from GridCalEngine.basic_structures import IntVec
+from GridCalEngine.enumerations import EngineType
 
 
 class PowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
@@ -94,6 +94,7 @@ class PowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
             progress = ((it + 1) / len(time_indices)) * 100
             self.progress_signal.emit(progress)
 
+            # TODO: pass the results by reference to be filled inside
             pf_res = pf_worker.multi_island_pf(multi_circuit=self.grid,
                                                t=t,
                                                options=self.options,

@@ -19,7 +19,8 @@ import numpy as np
 from typing import Union
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
-import GridCalEngine.basic_structures as bs
+
+from GridCalEngine.enumerations import EngineType, ContingencyEngine
 from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_results import ContingencyAnalysisResults
 from GridCalEngine.Simulations.ContingencyAnalysis.helm_contingencies import HelmVariations
 from GridCalEngine.Simulations.driver_types import SimulationTypes
@@ -40,7 +41,7 @@ class ContingencyAnalysisDriver(DriverTemplate):
     def __init__(self, grid: MultiCircuit,
                  options: ContingencyAnalysisOptions,
                  linear_multiple_contingencies: Union[LinearMultiContingencies, None],
-                 engine: bs.EngineType = bs.EngineType.GridCal):
+                 engine: EngineType = EngineType.GridCal):
         """
         ContingencyAnalysisDriver constructor
         :param grid: MultiCircuit Object
@@ -122,19 +123,8 @@ class ContingencyAnalysisDriver(DriverTemplate):
             # get the group's contingencies
             contingencies = cg_dict[contingency_group.idtag]
 
-            # apply the contingencies
-            for cnt in contingencies:
-
-                # search for the contingency in the Branches
-                if cnt.device_idtag in branches_dict:
-                    br_idx = branches_dict[cnt.device_idtag]
-
-                    if cnt.prop == 'active':
-                        numerical_circuit.branch_data.active[br_idx] = int(cnt.value)
-                    else:
-                        print(f'Unknown contingency property {cnt.prop} at {cnt.name} {cnt.idtag}')
-                else:
-                    pass
+            # set the status
+            numerical_circuit.set_contingency_status(contingencies)
 
             # report progress
             if t is None:
@@ -161,10 +151,13 @@ class ContingencyAnalysisDriver(DriverTemplate):
                                    contingency_idx=ic,
                                    contingency_group=contingency_group)
 
+            # set the status
+            numerical_circuit.set_contingency_status(contingencies, revert=True)
+
             # revert the states for the next run
-            numerical_circuit.branch_data.active = original_br_active.copy()
-            numerical_circuit.generator_data.active = original_gen_active.copy()
-            numerical_circuit.generator_data.p = original_gen_p.copy()
+            # numerical_circuit.branch_data.active = original_br_active.copy()
+            # numerical_circuit.generator_data.active = original_gen_active.copy()
+            # numerical_circuit.generator_data.p = original_gen_p.copy()
 
             if self.__cancel__:
                 return results
@@ -359,13 +352,13 @@ class ContingencyAnalysisDriver(DriverTemplate):
         """
         self.tic()
 
-        if self.options.engine == bs.ContingencyEngine.PowerFlow:
+        if self.options.engine == ContingencyEngine.PowerFlow:
             self.results = self.n_minus_k()
 
-        elif self.options.engine == bs.ContingencyEngine.PTDF:
+        elif self.options.engine == ContingencyEngine.PTDF:
             self.results = self.n_minus_k_ptdf()
 
-        elif self.options.engine == bs.ContingencyEngine.HELM:
+        elif self.options.engine == ContingencyEngine.HELM:
             self.results = self.n_minus_k_helm()
 
         else:
