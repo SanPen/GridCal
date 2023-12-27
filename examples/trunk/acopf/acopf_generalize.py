@@ -22,7 +22,7 @@ def build_grid_3bus():
     grid.add_line(gce.Line(bus_from=b3, bus_to=b1, name='line 3-1_2', r=0.001, x=0.05, rate=100))
 
     grid.add_load(b3, gce.Load(name='L3', P=50, Q=20))
-    grid.add_generator(b1, gce.Generator('G1', vset=1.0))
+    grid.add_generator(b1, gce.Generator('G1', vset=1.001))
     grid.add_generator(b2, gce.Generator('G2', P=10, vset=0.995))
 
     options = gce.PowerFlowOptions(gce.SolverType.NR, verbose=False)
@@ -205,27 +205,37 @@ def solve_opf(grid, h=1e-5, tol=1e-6, max_iter=50):
     nc = gce.compile_numerical_circuit_at(grid)
 
     # Initialize unknowns
-    e = np.ones(nc.nbus)
+    pqpv = nc.pqpv
+    vd = nc.vd
+    npqpv = len(pqpv)
+    nbus = nc.nbus
+    ngen = nc.ngen
+    nbr = nc.nbr
+    sbase = nc.Sbase
+
+    e = np.real(nc.Vbus)
+    f = np.imag(nc.Vbus)
+    # introduce some variability
     e[0] = 1.005
-    e[2] = 0.995  # to introduce some variability
-    f = np.zeros(nc.nbus)
+    e[2] = 0.995
     f[0] = 0.001
     f[1] = -0.003
     f[2] = 0.0015
-    pgen = nc.generator_data.p / nc.Sbase
-    qgen = np.zeros(nc.ngen)
+
+    pgen = nc.generator_data.p / sbase
+    qgen = np.zeros(ngen)
 
     # Equalities: g = [g_p, g_q]
     # First associate the slack bus type to identify the slack generators
-    ones_vd = np.zeros(nc.nbus)
-    ones_vd[nc.vd] = 1
+    ones_vd = np.zeros(nbus)
+    ones_vd[vd] = 1
     id_slack0 = nc.generator_data.C_bus_elm.T @ ones_vd
     id_slack = []
     for i, v in enumerate(id_slack0):
         if v == 1:
             id_slack.append(i)
 
-    # Get the vectors that conform g
+    # Get power mismatch and slack generation
     g_p, g_q, pgen[id_slack], qgen[id_slack] = g_pq(g_bus=np.real(nc.Ybus),
                                                     b_bus=np.imag(nc.Ybus),
                                                     cg_bus=nc.generator_data.C_bus_elm,
@@ -233,17 +243,16 @@ def solve_opf(grid, h=1e-5, tol=1e-6, max_iter=50):
                                                     sl=nc.load_data.S,
                                                     il=nc.load_data.I,
                                                     yl=nc.load_data.Y,
-                                                    sbase=nc.Sbase,
-                                                    pqpv=nc.pqpv,
-                                                    vd=nc.vd,
+                                                    sbase=sbase,
+                                                    pqpv=pqpv,
+                                                    vd=vd,
                                                     e=e,
                                                     f=f,
                                                     pgen=pgen,
                                                     qgen=qgen)
 
-    # Inequalities g = [h_vu, h_vl, h_sf, h_st, h_pmax, h_pmin, h_qmax, h_qmin]
+    # Inequalities h = [h_vu, h_vl, h_sf, h_st, h_pmax, h_pmin, h_qmax, h_qmin]
 
-    # Upper voltage limit h_vu
     h_vu = h_voltage_upper(vmax=nc.bus_data.Vmax,
                            e=e,
                            f=f)
@@ -255,38 +264,94 @@ def solve_opf(grid, h=1e-5, tol=1e-6, max_iter=50):
     h_sf = h_branch_from_to(rate=nc.branch_data.rates,
                             cf=nc.Cf,
                             yf=nc.Yf,
-                            sbase=nc.Sbase,
+                            sbase=sbase,
                             e=e,
                             f=f)
 
-    h_st = h_branch_from_to(rate=nc.branch_data.rates,
+    # would be redundant with sf, change a bit the limits
+    h_st = h_branch_from_to(rate=nc.branch_data.rates * 1.01,
                             cf=nc.Ct,
                             yf=nc.Yt,
-                            sbase=nc.Sbase,
+                            sbase=sbase,
                             e=e,
                             f=f)
 
     h_pmax = h_pqgen_upper(pmax=nc.generator_data.pmax,
                            pgen=pgen,
-                           sbase=nc.Sbase)
+                           sbase=sbase)
 
     h_pmin = h_pqgen_lower(pmin=nc.generator_data.pmin,
                            pgen=pgen,
-                           sbase=nc.Sbase)
+                           sbase=sbase)
 
     h_qmax = h_pqgen_upper(pmax=nc.generator_data.qmax,
                            pgen=qgen,
-                           sbase=nc.Sbase)
+                           sbase=sbase)
 
     h_qmin = h_pqgen_lower(pmin=nc.generator_data.qmin,
                            pgen=qgen,
-                           sbase=nc.Sbase)
+                           sbase=sbase)
 
     # Objective function
     f_obj = compute_f_obj(pg=pgen,
                           cost0=nc.generator_data.cost_0,
                           cost1=nc.generator_data.cost_1,
                           cost2=nc.generator_data.cost_2)
+
+    # Build IPM
+    n_x = 2 * npqpv + 2 * gen
+    n_eq = 2 * npqpv
+    n_ineq = 2 * nbus + 2 * nbr + 4 * ngen
+
+    x = np.zeros(n_x)
+    g = np.zeros(n_eq)
+    h = np.zeros(n_ineq)
+
+    # store x indices to slice
+    x_ind = [0,
+             npqpv,
+             2 * npqpv,
+             2 * npqpv + ngen,
+             2 * npqpv + 2 * ngen]
+
+    x[x_ind[0], x_ind[1]] = e
+    x[x_ind[1], x_ind[2]] = f
+    x[x_ind[2], x_ind[3]] = pgen
+    x[x_ind[3], x_ind[4]] = qgen
+
+    # store g indices to slice
+    g_ind = [0,
+             npqpv,
+             2*npqpv]
+
+    g[g_ind[0]:g_ind[1]] = g_p
+    g[g_ind[1]:g_ind[2]] = g_q
+
+    # store h indices to slice
+    h_ind = [0,
+             nbus,
+             2*nbus,
+             2*nbus+nbr,
+             2*nbus+2*nbr,
+             2*nbus+2*nbr+ngen,
+             2*nbus+2*nbr+2*ngen,
+             2*nbus+2*nbr+3*ngen,
+             2*nbus+2*nbr+4*nbus]
+
+    h[h_ind[0]:h_ind[1]] = h_vu
+    h[h_ind[1]:h_ind[2]] = h_vl
+    h[h_ind[2]:h_ind[3]] = h_sf
+    h[h_ind[3]:h_ind[4]] = h_st
+    h[h_ind[4]:h_ind[5]] = h_pmax
+    h[h_ind[5]:h_ind[6]] = h_pmin
+    h[h_ind[6]:h_ind[7]] = h_qmax
+    h[h_ind[7]:h_ind[8]] = h_qmin
+
+    # multipliers, try other initializations maybe
+    mu = 1.0
+    s = np.ones(n_ineq)
+    z = np.ones(n_ineq)
+    y = np.ones(n_ineq)
 
     return 0
 
