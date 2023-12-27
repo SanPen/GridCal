@@ -585,10 +585,10 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python.ExecuteGridCal" />
       <item itemvalue="Python.upload_to_pypi" />
-      <item itemvalue="Python tests.Nosetests for tests.admittance_matrix_test.test1" />
+      <item itemvalue="Python.ExecuteGridCal" />
       <item itemvalue="Python tests.Nosetests for tests.test_opf.test_opf" />
+      <item itemvalue="Python tests.Nosetests for tests.admittance_matrix_test.test1" />
       <item itemvalue="Python tests.Nosetests in tests" />
     </list>
     <recent_temporary>
