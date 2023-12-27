@@ -28,9 +28,8 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Add equalities and inequalities generalized">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Start generating IPM solver">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/acopf/acopf_3bus.py" beforeDir="false" afterPath="$PROJECT_DIR$/examples/trunk/acopf/acopf_3bus.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/examples/trunk/acopf/acopf_generalize.py" beforeDir="false" afterPath="$PROJECT_DIR$/examples/trunk/acopf/acopf_generalize.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -1565,7 +1564,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="433" />
+    <option name="localTasksCounter" value="434" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1611,7 +1610,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Small improvements for the MIP interfaces" />
     <MESSAGE value="Minimal interface refactor" />
     <MESSAGE value="Linear analysis refactor" />
     <MESSAGE value="more graphic_obj refactoring" />
@@ -1636,7 +1634,8 @@
     <MESSAGE value="Created test hydro3 with pump" />
     <MESSAGE value="Update OPF formulation and add cost2 to generator data" />
     <MESSAGE value="Add equalities and inequalities generalized" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add equalities and inequalities generalized" />
+    <MESSAGE value="Start generating IPM solver" />
+    <option name="LAST_COMMIT_MESSAGE" value="Start generating IPM solver" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2076,8 +2075,13 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/examples/trunk/acopf/acopf_generalize.py</url>
-          <line>355</line>
+          <line>486</line>
           <option name="timeStamp" value="1289" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/examples/trunk/acopf/acopf_generalize.py</url>
+          <line>474</line>
+          <option name="timeStamp" value="1293" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>

@@ -38,10 +38,10 @@ def build_grid_3bus():
     return grid
 
 
-def compute_f_obj(pg: np.ndarray = None,
-                  cost0: np.ndarray = None,
-                  cost1: np.ndarray = None,
-                  cost2: np.ndarray = None):
+def compute_fobj(pg: np.ndarray = None,
+                 cost0: np.ndarray = None,
+                 cost1: np.ndarray = None,
+                 cost2: np.ndarray = None):
     """
     Compute the objective function considering the quadratic cost function of generation
     Cost = cost0 + cost1 * Pg + cost2 * Pg^2
@@ -57,22 +57,29 @@ def compute_f_obj(pg: np.ndarray = None,
     return fout
 
 
-def g_pq(g_bus: np.ndarray = None,
-         b_bus: np.ndarray = None,
-         cg_bus: sp.spmatrix = None,
-         cl_bus: sp.spmatrix = None,
-         sl: np.ndarray = None,
-         il: np.ndarray = None,
-         yl: np.ndarray = None,
-         sbase: float = 100,
-         pqpv: np.ndarray = None,
-         vd: np.ndarray = None,
-         e: np.ndarray = None,
-         f: np.ndarray = None,
-         pgen: np.ndarray = None,
-         qgen: np.ndarray = None):
+def build_g(x: np.ndarray = None,
+            x_ind: np.ndarray = None,
+            g: np.ndarray = None,
+            g_ind: np.ndarray = None,
+            g_bus: np.ndarray = None,
+            b_bus: np.ndarray = None,
+            cg_bus: sp.spmatrix = None,
+            cl_bus: sp.spmatrix = None,
+            sl: np.ndarray = None,
+            il: np.ndarray = None,
+            yl: np.ndarray = None,
+            sbase: float = 100.0,
+            pqpv: np.ndarray = None,
+            vd: np.ndarray = None,
+            v_sl: np.ndarray = None,
+            nbus: int = 0):
+
     """
-    Compute the equalities (P and Q balances) and extract the slack generation powers
+    Compute the equalities (P and Q balances)
+    :param x: vector of unknowns, unpack into e, f, pgen, qgen
+    :param x_ind: vector of indices to unpack x
+    :param g: vector of equality residuals, pack from gp, gq
+    :param g_ind: vector of indices to pack g
     :param g_bus: real part of the bus admittance matrix
     :param b_bus: imaginary part of the bus admittance matrix
     :param cg_bus: generators connectivity matrix
@@ -82,13 +89,21 @@ def g_pq(g_bus: np.ndarray = None,
     :param yl: load complex admittance in equivalent MVA
     :param sbase: system base power in MVA
     :param pqpv: array of PQ and PV nodes
-    :param vd: array of slack buses, in principle only one
-    :param e: real part of the voltages, unknown
-    :param f: imaginary part of the voltages, unknown
-    :param pgen: active generation power, unknown
-    :param qgen: reactive generation power, unknown
-    :return: P and Q residual vectors indicating the error, and P and Q from the slack
+    :param vd: array of slack nodes
+    :param v_sl: voltages of slack buses
+    :param nbus: number of buses
+    :return: updated vector g
     """
+
+    e = np.empty(nbus)
+    f = np.empty(nbus)
+
+    e[pqpv] = x[x_ind[0]:x_ind[1]]
+    f[pqpv] = x[x_ind[1]:x_ind[2]]
+    e[vd] = np.real(v_sl[:])
+    f[vd] = np.imag(v_sl[:])
+    pgen = x[x_ind[2]:x_ind[3]]
+    qgen = x[x_ind[3]:x_ind[4]]
 
     # Branches
     pbbus = e * (g_bus @ e) + f * (g_bus @ f) - e * (b_bus @ f) + f * (b_bus @ e)
@@ -114,83 +129,95 @@ def g_pq(g_bus: np.ndarray = None,
     qbal = qgbus - qlbus - qbbus
 
     # Slack powers assuming the balance is perfectly kept at 0
-    pgslack = plbus[vd] + pbbus[vd]
-    qgslack = qlbus[vd] + qbbus[vd]
+    # pgslack = plbus[vd] + pbbus[vd]
+    # qgslack = qlbus[vd] + qbbus[vd]
 
-    return pbal[pqpv], qbal[pqpv], pgslack, qgslack
+    g[g_ind[0]:g_ind[1]] = pbal[pqpv]
+    g[g_ind[1]:g_ind[2]] = qbal[pqpv]
+
+    return g
 
 
-def h_voltage_upper(vmax: np.ndarray = None,
-                    e: np.ndarray = None,
-                    f: np.ndarray = None):
+def build_h(x: np.ndarray = None,
+            x_ind: np.ndarray = None,
+            h: np.ndarray = None,
+            h_ind: np.ndarray = None,
+            v_max: np.ndarray = None,
+            v_min: np.ndarray = None,
+            rate_f: np.ndarray = None,
+            rate_t: np.ndarray = None,
+            cf: sp.spmatrix = None,
+            ct: sp.spmatrix = None,
+            yf: sp.spmatrix = None,
+            yt: sp.spmatrix = None,
+            p_max: np.ndarray = None,
+            p_min: np.ndarray = None,
+            q_max: np.ndarray = None,
+            q_min: np.ndarray = None,
+            sbase: float = 100.0,
+            pqpv: np.ndarray = None,
+            vd: np.ndarray = None,
+            v_sl: np.ndarray = None,
+            nbus: int = 0):
+
     """
-    Upper voltage inequality
-    :param vmax: array of maximum bus voltages
-    :param e: real part of the voltages, unknown
-    :param f: imaginary part of the voltages, unknown
-    :return: vector of the errors
+    Build the vector of inequalities
+    :param x: vector of unknowns, unpack into e, f, pgen, qgen
+    :param x_ind: vector of indices to unpack x
+    :param h: vector of inequality residuals
+    :param h_ind: vector of indices to pack h
+    :param v_max: maximum bus voltages
+    :param v_min: minimum bus voltages
+    :param rate_f: maximum from apparent power supported by branches
+    :param rate_t: maximum to apparent power supported by branches
+    :param cf: branch connectivity matrix from side
+    :param ct: branch connectivity matrix to side
+    :param yf: from admittance matrix
+    :param yt: to admittance matrix
+    :param p_max: maximum active power generation
+    :param p_min: minimum active power generation
+    :param q_max: maximum reactive power generation
+    :param q_min: minimum reactive power generation
+    :param sbase: system base power in MVA
+    :param pqpv: array of PQ and PV nodes
+    :param vd: array of slack nodes
+    :param v_sl: voltages of slack buses
+    :param nbus: number of buses
+    :return: updated vector h
     """
-    return - e * e - f * f + vmax * vmax
 
+    e = np.empty(nbus)
+    f = np.empty(nbus)
 
-def h_voltage_lower(vmin: np.ndarray = None,
-                    e: np.ndarray = None,
-                    f: np.ndarray = None):
-    """
-    Lower voltage inequality
-    :param vmin: array of minimum bus voltages
-    :param e: real part of the voltages, unknown
-    :param f: imaginary part of the voltages, unknown
-    :return: vector of the errors
-    """
-    return + e * e + f * f - vmin * vmin
+    e[pqpv] = x[x_ind[0]:x_ind[1]]
+    f[pqpv] = x[x_ind[1]:x_ind[2]]
+    e[vd] = np.real(v_sl[:])
+    f[vd] = np.imag(v_sl[:])
+    pgen = x[x_ind[2]:x_ind[3]]
+    qgen = x[x_ind[3]:x_ind[4]]
 
-
-def h_pqgen_upper(pmax: np.ndarray = None,
-                  pgen: np.ndarray = None,
-                  sbase: float = 100):
-    """
-    Maximum generation power inequality
-    :param pmax: array of maximum generation powers
-    :param pgen: generation power, unknown
-    :param sbase: base power, in MVA
-    :return: vector of the errors
-    """
-    return - pgen + pmax / sbase
-
-
-def h_pqgen_lower(pmin: np.ndarray = None,
-                  pgen: np.ndarray = None,
-                  sbase: float = 100):
-    """
-    Minimum generation power inequality
-    :param pmin: array of minimum generation powers
-    :param pgen: generation active power, unknown
-    :param sbase: base power, in MVA
-    :return: vector of the errors
-    """
-    return + pgen - pmin / sbase
-
-
-def h_branch_from_to(rate: np.ndarray = None,
-                     cf: sp.spmatrix = None,
-                     yf: sp.spmatrix = None,
-                     sbase: float = 100,
-                     e: np.ndarray = None,
-                     f: np.ndarray = None):
-    """
-    Maximum apparent power seen from one side
-    :param rate: maximum power the branch admits, in MVA
-    :param cf: connectivity matrix
-    :param yf: admittance matrix seen from one side
-    :param sbase: base power, in MVA
-    :param e: real part of the voltages, unknown
-    :param f: imaginary part of the voltages, unknown
-    :return: vector of the errors
-    """
     sf = (cf @ (e + 1j * f)) * np.conj(yf @ (e + 1j * f))
+    st = (ct @ (e + 1j * f)) * np.conj(yt @ (e + 1j * f))
 
-    return - abs(sf)**2 + (rate / sbase)**2
+    h_vu = - e * e - f * f + v_max * v_max
+    h_vl = + e * e + f * f - v_min * v_min
+    h_sf = - abs(sf)**2 + (rate_f / sbase)**2
+    h_st = - abs(st)**2 + (rate_t / sbase)**2
+    h_pmax = - pgen + p_max / sbase
+    h_pmin = + pgen - p_min / sbase
+    h_qmax = - qgen + q_max / sbase
+    h_qmin = + qgen - q_min / sbase
+
+    h[h_ind[0]:h_ind[1]] = h_vu
+    h[h_ind[1]:h_ind[2]] = h_vl
+    h[h_ind[2]:h_ind[3]] = h_sf
+    h[h_ind[3]:h_ind[4]] = h_st
+    h[h_ind[4]:h_ind[5]] = h_pmax
+    h[h_ind[5]:h_ind[6]] = h_pmin
+    h[h_ind[6]:h_ind[7]] = h_qmax
+    h[h_ind[7]:h_ind[8]] = h_qmin
+
+    return h
 
 
 def solve_opf(grid, h=1e-5, tol=1e-6, max_iter=50):
@@ -211,22 +238,8 @@ def solve_opf(grid, h=1e-5, tol=1e-6, max_iter=50):
     nbus = nc.nbus
     ngen = nc.ngen
     nbr = nc.nbr
-    sbase = nc.Sbase
 
-    e = np.real(nc.Vbus)
-    f = np.imag(nc.Vbus)
-    # introduce some variability
-    e[0] = 1.005
-    e[2] = 0.995
-    f[0] = 0.001
-    f[1] = -0.003
-    f[2] = 0.0015
-
-    pgen = nc.generator_data.p / sbase
-    qgen = np.zeros(ngen)
-
-    # Equalities: g = [g_p, g_q]
-    # First associate the slack bus type to identify the slack generators
+    # Associate the slack bus type to identify the slack generators
     ones_vd = np.zeros(nbus)
     ones_vd[vd] = 1
     id_slack0 = nc.generator_data.C_bus_elm.T @ ones_vd
@@ -235,71 +248,8 @@ def solve_opf(grid, h=1e-5, tol=1e-6, max_iter=50):
         if v == 1:
             id_slack.append(i)
 
-    # Get power mismatch and slack generation
-    g_p, g_q, pgen[id_slack], qgen[id_slack] = g_pq(g_bus=np.real(nc.Ybus),
-                                                    b_bus=np.imag(nc.Ybus),
-                                                    cg_bus=nc.generator_data.C_bus_elm,
-                                                    cl_bus=nc.load_data.C_bus_elm,
-                                                    sl=nc.load_data.S,
-                                                    il=nc.load_data.I,
-                                                    yl=nc.load_data.Y,
-                                                    sbase=sbase,
-                                                    pqpv=pqpv,
-                                                    vd=vd,
-                                                    e=e,
-                                                    f=f,
-                                                    pgen=pgen,
-                                                    qgen=qgen)
-
-    # Inequalities h = [h_vu, h_vl, h_sf, h_st, h_pmax, h_pmin, h_qmax, h_qmin]
-
-    h_vu = h_voltage_upper(vmax=nc.bus_data.Vmax,
-                           e=e,
-                           f=f)
-
-    h_vl = h_voltage_lower(vmin=nc.bus_data.Vmin,
-                           e=e,
-                           f=f)
-
-    h_sf = h_branch_from_to(rate=nc.branch_data.rates,
-                            cf=nc.Cf,
-                            yf=nc.Yf,
-                            sbase=sbase,
-                            e=e,
-                            f=f)
-
-    # would be redundant with sf, change a bit the limits
-    h_st = h_branch_from_to(rate=nc.branch_data.rates * 1.01,
-                            cf=nc.Ct,
-                            yf=nc.Yt,
-                            sbase=sbase,
-                            e=e,
-                            f=f)
-
-    h_pmax = h_pqgen_upper(pmax=nc.generator_data.pmax,
-                           pgen=pgen,
-                           sbase=sbase)
-
-    h_pmin = h_pqgen_lower(pmin=nc.generator_data.pmin,
-                           pgen=pgen,
-                           sbase=sbase)
-
-    h_qmax = h_pqgen_upper(pmax=nc.generator_data.qmax,
-                           pgen=qgen,
-                           sbase=sbase)
-
-    h_qmin = h_pqgen_lower(pmin=nc.generator_data.qmin,
-                           pgen=qgen,
-                           sbase=sbase)
-
-    # Objective function
-    f_obj = compute_f_obj(pg=pgen,
-                          cost0=nc.generator_data.cost_0,
-                          cost1=nc.generator_data.cost_1,
-                          cost2=nc.generator_data.cost_2)
-
-    # Build IPM
-    n_x = 2 * npqpv + 2 * gen
+    # Initialize IPM
+    n_x = 2 * npqpv + 2 * ngen
     n_eq = 2 * npqpv
     n_ineq = 2 * nbus + 2 * nbr + 4 * ngen
 
@@ -308,50 +258,95 @@ def solve_opf(grid, h=1e-5, tol=1e-6, max_iter=50):
     h = np.zeros(n_ineq)
 
     # store x indices to slice
-    x_ind = [0,
-             npqpv,
-             2 * npqpv,
-             2 * npqpv + ngen,
-             2 * npqpv + 2 * ngen]
+    x_ind = np.array([0,
+                      npqpv,
+                      2 * npqpv,
+                      2 * npqpv + ngen,
+                      2 * npqpv + 2 * ngen])
 
-    x[x_ind[0], x_ind[1]] = e
-    x[x_ind[1], x_ind[2]] = f
-    x[x_ind[2], x_ind[3]] = pgen
-    x[x_ind[3], x_ind[4]] = qgen
+    x[x_ind[0]:x_ind[1]] = np.real(nc.Vbus)[pqpv]  # e
+    x[x_ind[1]:x_ind[2]] = np.imag(nc.Vbus)[pqpv]  # f
+    x[x_ind[2]:x_ind[3]] = nc.generator_data.p / nc.Sbase  # pgen
+    x[x_ind[3]:x_ind[4]] = np.zeros(ngen)  # qgen
+
+    v_sl = nc.Vbus[vd]
 
     # store g indices to slice
-    g_ind = [0,
-             npqpv,
-             2*npqpv]
-
-    g[g_ind[0]:g_ind[1]] = g_p
-    g[g_ind[1]:g_ind[2]] = g_q
+    g_ind = np.array([0,
+                      npqpv,
+                      2 * npqpv])
 
     # store h indices to slice
-    h_ind = [0,
-             nbus,
-             2*nbus,
-             2*nbus+nbr,
-             2*nbus+2*nbr,
-             2*nbus+2*nbr+ngen,
-             2*nbus+2*nbr+2*ngen,
-             2*nbus+2*nbr+3*ngen,
-             2*nbus+2*nbr+4*nbus]
-
-    h[h_ind[0]:h_ind[1]] = h_vu
-    h[h_ind[1]:h_ind[2]] = h_vl
-    h[h_ind[2]:h_ind[3]] = h_sf
-    h[h_ind[3]:h_ind[4]] = h_st
-    h[h_ind[4]:h_ind[5]] = h_pmax
-    h[h_ind[5]:h_ind[6]] = h_pmin
-    h[h_ind[6]:h_ind[7]] = h_qmax
-    h[h_ind[7]:h_ind[8]] = h_qmin
+    h_ind = np.array([0,
+                      nbus,
+                      2 * nbus,
+                      2 * nbus + nbr,
+                      2 * nbus + 2 * nbr,
+                      2 * nbus + 2 * nbr + ngen,
+                      2 * nbus + 2 * nbr + 2 * ngen,
+                      2 * nbus + 2 * nbr + 3 * ngen,
+                      2 * nbus + 2*nbr+4*nbus])
 
     # multipliers, try other initializations maybe
     mu = 1.0
     s = np.ones(n_ineq)
     z = np.ones(n_ineq)
     y = np.ones(n_ineq)
+
+    # start loop
+    err = 1.0
+    it = 0
+    while err > tol and it < max_iter:
+
+        # Equalities
+        g = build_g(x=x,
+                    x_ind=x_ind,
+                    g=g,
+                    g_ind=g_ind,
+                    g_bus=np.real(nc.Ybus),
+                    b_bus=np.imag(nc.Ybus),
+                    cg_bus=nc.generator_data.C_bus_elm,
+                    cl_bus=nc.load_data.C_bus_elm,
+                    sl=nc.load_data.S,
+                    il=nc.load_data.I,
+                    yl=nc.load_data.Y,
+                    sbase=nc.Sbase,
+                    pqpv=pqpv,
+                    vd=vd,
+                    v_sl=v_sl,
+                    nbus=nbus)
+
+        # Inequalities
+        h = build_h(x=x,
+                    x_ind=x_ind,
+                    h=h,
+                    h_ind=h_ind,
+                    v_max=nc.bus_data.Vmax,
+                    v_min=nc.bus_data.Vmin,
+                    rate_f=nc.branch_data.rates,
+                    rate_t=nc.branch_data.rates * 1.01,  # to add some variability
+                    cf=nc.Cf,
+                    ct=nc.Ct,
+                    yf=nc.Yf,
+                    yt=nc.Yt,
+                    p_max=nc.generator_data.pmax,
+                    p_min=nc.generator_data.pmin,
+                    q_max=nc.generator_data.qmax,
+                    q_min=nc.generator_data.qmin,
+                    sbase=nc.Sbase,
+                    pqpv=pqpv,
+                    vd=vd,
+                    v_sl=v_sl,
+                    nbus=nbus)
+
+        # Objective function
+        f_obj = compute_fobj(pg=x[x_ind[2]:x_ind[3]],
+                             cost0=nc.generator_data.cost_0,
+                             cost1=nc.generator_data.cost_1,
+                             cost2=nc.generator_data.cost_2)
+
+        it += 1
+
 
     return 0
 
