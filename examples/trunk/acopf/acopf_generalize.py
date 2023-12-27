@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.sparse as sp
 import GridCalEngine.api as gce
-from typing import List
+from typing import List, Dict
 
 
 def build_grid_3bus():
@@ -220,11 +220,67 @@ def build_h(x: np.ndarray = None,
     return h
 
 
-def solve_opf(grid, h=1e-5, tol=1e-6, max_iter=50):
+def build_gae(x: np.ndarray = None,
+              g_dict: Dict = None,
+              n_eq: int = 0,
+              n_x: int = 0,
+              dh: float = 1e-5):
+    """
+    Build the concatenation of g gradients
+    :param x: vector of unknowns
+    :param g_dict: dictionary of constant data to pass to g
+    :param n_eq: number of equalities
+    :param n_x: number of unknowns
+    :param dh: step parameter
+    :return: matrix Ae of size n_eq x n_x containing the gradients
+    """
+
+    gae = np.zeros((n_eq, n_x), dtype=float)
+    g0 = np.copy(build_g(x, **g_dict))
+
+    # Compute the gradients as (g(x + h) - g0) / dh
+    for i in range(n_x):
+        x_it = np.copy(x)
+        x_it[i] += dh
+        g_it = build_g(x_it, **g_dict)
+        gae[:, i] = (g_it - g0) / dh
+
+    return gae
+
+
+def build_gai(x: np.ndarray = None,
+              h_dict: Dict = None,
+              n_ineq: int = 0,
+              n_x: int = 0,
+              dh: float = 1e-5):
+    """
+    Build the concatenation of h gradients
+    :param x: vector of unknowns
+    :param h_dict: dictionary of constant data to pass to h
+    :param n_ineq: number of inequalities
+    :param n_x: number of unknowns
+    :param dh: step parameter
+    :return: matrix Ai of size n_ineq x n_x containing the gradients
+    """
+
+    gai = np.zeros((n_ineq, n_x), dtype=float)
+    h0 = np.copy(build_h(x, **h_dict))
+
+    # Compute the gradients as (h(x + h) - h0) / dh
+    for i in range(n_x):
+        x_it = np.copy(x)
+        x_it[i] += dh
+        h_it = build_h(x_it, **h_dict)
+        gai[:, i] = (h_it - h0) / dh
+
+    return gai
+
+
+def solve_opf(grid, dh=1e-5, tol=1e-6, max_iter=50):
     """
     Main function to solve the OPF, it calls other functions and assembles the IPM
     :param grid: multicircuit where we want to compute the OPF
-    :param h: delta used in the derivatives definition
+    :param dh: delta used in the derivatives definition
     :param tol: tolerance to stop the algorithm
     :param max_iter: maximum number of iterations of the algorithm
     :return: the vectors of solutions
@@ -293,51 +349,69 @@ def solve_opf(grid, h=1e-5, tol=1e-6, max_iter=50):
     z = np.ones(n_ineq)
     y = np.ones(n_ineq)
 
+    # Pack the keyword arguments into a dictionary
+    g_dict = {'x_ind': x_ind,
+              'g': g,
+              'g_ind': g_ind,
+              'g_bus': np.real(nc.Ybus),
+              'b_bus': np.imag(nc.Ybus),
+              'cg_bus': nc.generator_data.C_bus_elm,
+              'cl_bus': nc.load_data.C_bus_elm,
+              'sl': nc.load_data.S,
+              'il': nc.load_data.I,
+              'yl': nc.load_data.Y,
+              'sbase': nc.Sbase,
+              'pqpv': pqpv,
+              'vd': vd,
+              'v_sl': v_sl,
+              'nbus': nbus}
+
+    h_dict = {'x_ind': x_ind,
+              'h': h,
+              'h_ind': h_ind,
+              'v_max': nc.bus_data.Vmax,
+              'v_min': nc.bus_data.Vmin,
+              'rate_f': nc.branch_data.rates,
+              'rate_t': nc.branch_data.rates * 1.01,
+              'cf': nc.Cf,
+              'ct': nc.Ct,
+              'yf': nc.Yf,
+              'yt': nc.Yt,
+              'p_max': nc.generator_data.pmax,
+              'p_min': nc.generator_data.pmin,
+              'q_max': nc.generator_data.qmax,
+              'q_min': nc.generator_data.qmin,
+              'sbase': nc.Sbase,
+              'pqpv': pqpv,
+              'vd': vd,
+              'v_sl': v_sl,
+              'nbus': nbus}
+
     # start loop
     err = 1.0
     it = 0
     while err > tol and it < max_iter:
 
-        # Equalities
-        g = build_g(x=x,
-                    x_ind=x_ind,
-                    g=g,
-                    g_ind=g_ind,
-                    g_bus=np.real(nc.Ybus),
-                    b_bus=np.imag(nc.Ybus),
-                    cg_bus=nc.generator_data.C_bus_elm,
-                    cl_bus=nc.load_data.C_bus_elm,
-                    sl=nc.load_data.S,
-                    il=nc.load_data.I,
-                    yl=nc.load_data.Y,
-                    sbase=nc.Sbase,
-                    pqpv=pqpv,
-                    vd=vd,
-                    v_sl=v_sl,
-                    nbus=nbus)
+        g = build_g(x, **g_dict)
+        h = build_h(x, **h_dict)
 
-        # Inequalities
-        h = build_h(x=x,
-                    x_ind=x_ind,
-                    h=h,
-                    h_ind=h_ind,
-                    v_max=nc.bus_data.Vmax,
-                    v_min=nc.bus_data.Vmin,
-                    rate_f=nc.branch_data.rates,
-                    rate_t=nc.branch_data.rates * 1.01,  # to add some variability
-                    cf=nc.Cf,
-                    ct=nc.Ct,
-                    yf=nc.Yf,
-                    yt=nc.Yt,
-                    p_max=nc.generator_data.pmax,
-                    p_min=nc.generator_data.pmin,
-                    q_max=nc.generator_data.qmax,
-                    q_min=nc.generator_data.qmin,
-                    sbase=nc.Sbase,
-                    pqpv=pqpv,
-                    vd=vd,
-                    v_sl=v_sl,
-                    nbus=nbus)
+        gae = build_gae(x=x,
+                        g_dict=g_dict,
+                        n_eq=n_eq,
+                        n_x=n_x,
+                        dh=dh)
+
+        gai = build_gai(x=x,
+                        h_dict=h_dict,
+                        n_ineq=n_ineq,
+                        n_x=n_x,
+                        dh=dh)
+
+        # r = build_r(s=s,
+        #             z=z,
+        #             mu=mu,
+        #             g=g,
+        #             h=h)
 
         # Objective function
         f_obj = compute_fobj(pg=x[x_ind[2]:x_ind[3]],
@@ -346,7 +420,6 @@ def solve_opf(grid, h=1e-5, tol=1e-6, max_iter=50):
                              cost2=nc.generator_data.cost_2)
 
         it += 1
-
 
     return 0
 
