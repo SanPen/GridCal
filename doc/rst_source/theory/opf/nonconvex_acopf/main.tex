@@ -66,15 +66,15 @@ where $j=\sqrt{-1}$, and $\bm{G}_\text{bus}$ and $\bm{B}_\text{bus}$ are the rea
 
 This bus power has to be equal to the one injected by the sum of generators and loads. The nodal power provided by generators is:
 \begin{equation}
-    \bm{S}_{g,\text{bus}} = (\bm{C}_{g,\text{bus}}^T \bm{P_g}) + j(\bm{C}_{g,\text{bus}}^T \bm{Q_g})
+    \bm{S}_{g,\text{bus}} = (\bm{C}_{g,\text{bus}} \bm{P_g}) + j(\bm{C}_{g,\text{bus}} \bm{Q_g})
 \end{equation}
 
 If loads are to be modelled by following the ZIP model, the total power consumed at the buses is:
 \begin{equation}
     \begin{split}
-    \bm{S}_{l,\text{bus}} & = (\bm{C}_{l,\text{bus}}^T\bm{P_l}) + j (\bm{C}_{l,\text{bus}}^T\bm{Q_l}) \\
-                          & + ([\bm{e}]\bm{C}_{l,\text{bus}}^T \bm{I_{rl}} + [\bm{f}]\bm{C}_{l,\text{bus}}^T \bm{I_{il}}) + j(-[\bm{e}]\bm{C}_{l,\text{bus}}^T \bm{I_{il}} + [\bm{f}]\bm{C}_{l,\text{bus}}^T \bm{I_{rl}}) \\
-                          & + ([\bm{C}_{l,\text{bus}}^T \bm{G_l}]([\bm{e}]\bm{e} + [\bm{f}]\bm{f})) -j([\bm{C}_{l,\text{bus}}^T \bm{B_l}]([\bm{e}]\bm{e} + [\bm{f}]\bm{f}))
+    \bm{S}_{l,\text{bus}} & = (\bm{C}_{l,\text{bus}}\bm{P_l}) + j (\bm{C}_{l,\text{bus}}\bm{Q_l}) \\
+                          & + ([\bm{e}]\bm{C}_{l,\text{bus}} \bm{I_{rl}} + [\bm{f}]\bm{C}_{l,\text{bus}} \bm{I_{il}}) + j(-[\bm{e}]\bm{C}_{l,\text{bus}} \bm{I_{il}} + [\bm{f}]\bm{C}_{l,\text{bus}} \bm{I_{rl}}) \\
+                          & + ([\bm{C}_{l,\text{bus}} \bm{G_l}]([\bm{e}]\bm{e} + [\bm{f}]\bm{f})) -j([\bm{C}_{l,\text{bus}} \bm{B_l}]([\bm{e}]\bm{e} + [\bm{f}]\bm{f}))
     \end{split}
 \end{equation}
 where $\bm{P_l}$ and $\bm{Q_l}$ are the active and reactive power demands, $\bm{I_{rl}}$ and $\bm{I_{il}}$ are the real and imaginary current demands, and $\bm{G_l}$ and $\bm{B_l}$ stand for the load real and imaginary parts of the admittances. As the load data are considered to be constant and independent from the decision variables, they can be compacted as:
@@ -161,7 +161,7 @@ As the equalities refer to the power balances, there are two sets of equalities:
 \end{itemize}
 \begin{equation}
     \begin{split}
-    \bm{g_1}(\bm{x}) &= \bm{C}_{g,\text{bus}}^T \bm{P_g} \\ 
+    \bm{g_1}(\bm{x}) &= \bm{C}_{g,\text{bus}} \bm{P_g} \\ 
                      &- (\bm{P}_{l,\text{bus}} + [\bm{e}]\bm{I}_{rl,\text{bus}} + [\bm{f}]\bm{I}_{il,\text{bus}} + [\bm{G}_{l,\text{bus}}]([\bm{e}]\bm{e} + [\bm{f}]\bm{f})) \\
                      &- ([\bm{e}]\bm{G}\bm{e} + [\bm{f}]\bm{G}\bm{f} - [\bm{e}]\bm{B}\bm{f} + [\bm{f}]\bm{B}\bm{e})
     \end{split}
@@ -172,7 +172,7 @@ As the equalities refer to the power balances, there are two sets of equalities:
 \end{itemize}
 \begin{equation}
     \begin{split}
-    \bm{g_2}(\bm{x}) &= \bm{C}_{g,\text{bus}}^T \bm{Q_g} \\
+    \bm{g_2}(\bm{x}) &= \bm{C}_{g,\text{bus}} \bm{Q_g} \\
                      &- (\bm{Q}_{l,\text{bus}} -[\bm{e}]\bm{I}_{il,\text{bus}} + [\bm{f}]\bm{I}_{rl,\text{bus}} + [\bm{B}_{l,\text{bus}}]([\bm{e}]\bm{e} + [\bm{f}]\bm{f})) \\
                      &- (-[\bm{e}]\bm{B}\bm{e} - [\bm{f}]\bm{B}\bm{f} - [\bm{e}]\bm{G}\bm{f} + [\bm{f}]\bm{G}\bm{e})
     \end{split}

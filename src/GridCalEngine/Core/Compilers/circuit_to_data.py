@@ -347,6 +347,7 @@ def get_generator_data(circuit: MultiCircuit,
 
             data.cost_0[k] = elm.Cost0_prof[t_idx]
             data.cost_1[k] = elm.Cost_prof[t_idx]
+            data.cost_2[k] = elm.Cost2_prof[t_idx]
 
             if elm.active_prof[t_idx] and elm.is_controlled:
 
@@ -371,6 +372,7 @@ def get_generator_data(circuit: MultiCircuit,
 
             data.cost_0[k] = elm.Cost0
             data.cost_1[k] = elm.Cost
+            data.cost_2[k] = elm.Cost2
 
             if elm.active and elm.is_controlled:
                 if bus_data.bus_types[i] != 3:  # if it is not Slack
@@ -474,6 +476,7 @@ def get_battery_data(circuit: MultiCircuit,
 
             data.cost_0[k] = elm.Cost0_prof[t_idx]
             data.cost_1[k] = elm.Cost_prof[t_idx]
+            data.cost_2[k] = elm.Cost2_prof[t_idx]
 
             if elm.active_prof[t_idx] and elm.is_controlled:
                 if bus_data.bus_types[i] != 3:  # if it is not Slack
@@ -497,6 +500,7 @@ def get_battery_data(circuit: MultiCircuit,
 
             data.cost_0[k] = elm.Cost0
             data.cost_1[k] = elm.Cost
+            data.cost_2[k] = elm.Cost2
 
             if elm.active and elm.is_controlled:
                 if bus_data.bus_types[i] != 3:  # if it is not Slack
