@@ -28,7 +28,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Build sets of gradients Ai and Ae">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Build full set of residuals">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/examples/trunk/acopf/acopf_generalize.py" beforeDir="false" afterPath="$PROJECT_DIR$/examples/trunk/acopf/acopf_generalize.py" afterDir="false" />
     </list>
@@ -1564,7 +1564,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="436" />
+    <option name="localTasksCounter" value="437" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1610,7 +1610,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="more graphic_obj refactoring" />
     <MESSAGE value="Improved the LinearMultiContingencies update function which was likely missing operations" />
     <MESSAGE value="Added the roseta figures&#10;minor refactor" />
     <MESSAGE value="Fixed bug when setting the file label for when loading many CIM files&#10;&#10;Minor refactoring" />
@@ -1635,7 +1634,8 @@
     <MESSAGE value="Start generating IPM solver" />
     <MESSAGE value="Pack construction of g, h and fobj" />
     <MESSAGE value="Build sets of gradients Ai and Ae" />
-    <option name="LAST_COMMIT_MESSAGE" value="Build sets of gradients Ai and Ae" />
+    <MESSAGE value="Build full set of residuals" />
+    <option name="LAST_COMMIT_MESSAGE" value="Build full set of residuals" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2075,8 +2075,18 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/examples/trunk/acopf/acopf_generalize.py</url>
-          <line>487</line>
+          <line>668</line>
           <option name="timeStamp" value="1293" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/examples/trunk/acopf/acopf_generalize.py</url>
+          <line>662</line>
+          <option name="timeStamp" value="1308" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/examples/trunk/acopf/acopf_generalize.py</url>
+          <line>548</line>
+          <option name="timeStamp" value="1311" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
@@ -2087,5 +2097,10 @@
         </breakpoint>
       </default-breakpoints>
     </breakpoint-manager>
+    <watches-manager>
+      <configuration name="PythonConfigurationType">
+        <watch expression="pf_driver.progress_text" />
+      </configuration>
+    </watches-manager>
   </component>
 </project>

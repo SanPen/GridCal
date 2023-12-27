@@ -19,7 +19,7 @@ def build_grid_3bus():
     grid.add_line(gce.Line(bus_from=b1, bus_to=b2, name='line 1-2', r=0.001, x=0.05, rate=100))
     grid.add_line(gce.Line(bus_from=b2, bus_to=b3, name='line 2-3', r=0.001, x=0.05, rate=100))
     grid.add_line(gce.Line(bus_from=b3, bus_to=b1, name='line 3-1_1', r=0.001, x=0.05, rate=100))
-    grid.add_line(gce.Line(bus_from=b3, bus_to=b1, name='line 3-1_2', r=0.001, x=0.05, rate=100))
+    # grid.add_line(gce.Line(bus_from=b3, bus_to=b1, name='line 3-1_2', r=0.001, x=0.05, rate=100))
 
     grid.add_load(b3, gce.Load(name='L3', P=50, Q=20))
     grid.add_generator(b1, gce.Generator('G1', vset=1.001))
@@ -276,34 +276,23 @@ def build_gai(x: np.ndarray = None,
     return sp.csr_matrix.transpose(gai)
 
 
-def build_r(x: np.ndarray = None,
-            x_ind: np.ndarray = None,
-            y: np.ndarray = None,
-            s: np.ndarray = None,
-            z: np.ndarray = None,
-            mu: float = 1.0,
-            g: np.ndarray = None,
-            h: np.ndarray = None,
-            gae: sp.spmatrix = None,
-            gai: sp.spmatrix = None,
-            n_ineq: int = 0,
-            n_x: int = 0,
-            dh: float = 1e-5,
-            fobj_dict: Dict = None):
-
+def build_r1(x: np.ndarray = None,
+             x_ind: np.ndarray = None,
+             y: np.ndarray = None,
+             z: np.ndarray = None,
+             gae: sp.spmatrix = None,
+             gai: sp.spmatrix = None,
+             n_x: int = 0,
+             dh: float = 1e-5,
+             fobj_dict: Dict = None):
     """
-    Build the full vector of residuals
+    Build the Lagrangian of the residual
     :param x: vector of unknowns
     :param x_ind: vector of indices to unpack x
     :param y: equality multiplier
-    :param s: slack variable for inequalities
     :param z: inequality multiplier
-    :param mu: barrier parameter
-    :param g: vector of equalities
-    :param h: vector of inequalities
     :param gae: set of equality gradients
     :param gai: set of inequality gradients
-    :param n_ineq: number of inequalities
     :param n_x: number of unknowns
     :param dh: delta of x to autodifferentiate
     :param fobj_dict: dictionary to pack the objective function parameters
@@ -319,14 +308,184 @@ def build_r(x: np.ndarray = None,
         f_it = compute_fobj(pg=x_it[x_ind[2]:x_ind[3]], **fobj_dict)
         gf[i] = (f_it - f0) / dh
 
-    r1 = gf - gae.T @ y - gai.T @ z
+    return gf - gae.T @ y - gai.T @ z
+
+
+def build_r(x: np.ndarray = None,
+            x_ind: np.ndarray = None,
+            y: np.ndarray = None,
+            s: np.ndarray = None,
+            z: np.ndarray = None,
+            mu: float = 1.0,
+            n_eq: int = 0,
+            n_ineq: int = 0,
+            n_x: int = 0,
+            dh: float = 1e-5,
+            g_dict: Dict = None,
+            h_dict: Dict = None,
+            fobj_dict: Dict = None):
+    """
+    Build the full vector of residuals
+    :param x: vector of unknowns
+    :param x_ind: vector of indices to unpack x
+    :param y: equality multiplier
+    :param s: slack variable for inequalities
+    :param z: inequality multiplier
+    :param mu: barrier parameter
+    :param n_eq: number of equalities
+    :param n_ineq: number of inequalities
+    :param n_x: number of unknowns
+    :param dh: delta of x to autodifferentiate
+    :param g_dict: dictionary to pack the equalities
+    :param h_dict: dictionary to pack the inequalities
+    :param fobj_dict: dictionary to pack the objective function parameters
+    :return: array of residuals
+    """
+
+    g = build_g(x, **g_dict)
+    h = build_h(x, **h_dict)
+
+    gae = build_gae(x=x,
+                    g_dict=g_dict,
+                    n_eq=n_eq,
+                    n_x=n_x,
+                    dh=dh)
+
+    gai = build_gai(x=x,
+                    h_dict=h_dict,
+                    n_ineq=n_ineq,
+                    n_x=n_x,
+                    dh=dh)
+
+    r1 = build_r1(x=x,
+                  x_ind=x_ind,
+                  y=y,
+                  z=z,
+                  gae=gae,
+                  gai=gai,
+                  n_x=n_x,
+                  dh=dh,
+                  fobj_dict=fobj_dict)
+
     r2 = s * z - mu * np.ones(n_ineq)
     r3 = g
     r4 = h - s
 
-    r = np.hstack((r1, r2, r3, r4))
+    return np.hstack((r1, r2, r3, r4))
 
-    return r
+
+def build_j(x: np.ndarray = None,
+            x_ind: np.ndarray = None,
+            y: np.ndarray = None,
+            s: np.ndarray = None,
+            z: np.ndarray = None,
+            n_eq: int = 0,
+            n_ineq: int = 0,
+            n_x: int = 0,
+            dh: float = 1e-5,
+            g_dict: Dict = None,
+            h_dict: Dict = None,
+            fobj_dict: Dict = None):
+    """
+    Build the full vector of residuals
+    :param x: vector of unknowns
+    :param x_ind: vector of indices to unpack x
+    :param y: equality multiplier
+    :param s: slack variable for inequalities
+    :param z: inequality multiplier
+    :param n_eq: number of equalities
+    :param n_ineq: number of inequalities
+    :param n_x: number of unknowns
+    :param dh: delta of x to autodifferentiate
+    :param g_dict: dictionary to pack the equalities
+    :param h_dict: dictionary to pack the inequalities
+    :param fobj_dict: dictionary to pack the objective function parameters
+    :return: Jacobian matrix
+
+    J1, J2, J3, J4
+    J5, J6, J7, J8
+    J9, J10, J11, J12
+    J13, J14, J15, J16
+    """
+
+    gae_0 = build_gae(x=x,
+                      g_dict=g_dict,
+                      n_eq=n_eq,
+                      n_x=n_x,
+                      dh=dh)
+
+    gai_0 = build_gai(x=x,
+                      h_dict=h_dict,
+                      n_ineq=n_ineq,
+                      n_x=n_x,
+                      dh=dh)
+
+    # J1
+    j1 = sp.csr_matrix((n_x, n_x), dtype=float)
+
+    r1_0 = build_r1(x=x,
+                    x_ind=x_ind,
+                    y=y,
+                    z=z,
+                    gae=gae_0,
+                    gai=gai_0,
+                    n_x=n_x,
+                    dh=dh,
+                    fobj_dict=fobj_dict)
+
+    for i in range(n_x):
+        x_it = np.copy(x)
+        x_it[i] += dh
+
+        gae_it = build_gae(x=x_it,
+                           g_dict=g_dict,
+                           n_eq=n_eq,
+                           n_x=n_x,
+                           dh=dh)
+
+        gai_it = build_gai(x=x_it,
+                           h_dict=h_dict,
+                           n_ineq=n_ineq,
+                           n_x=n_x,
+                           dh=dh)
+
+        r1_it = build_r1(x=x_it,
+                         x_ind=x_ind,
+                         y=y,
+                         z=z,
+                         gae=gae_it,
+                         gai=gai_it,
+                         n_x=n_x,
+                         dh=dh,
+                         fobj_dict=fobj_dict)
+
+        j1[:, i] = (r1_it - r1_0) / dh
+
+    # J2 to J16
+    j2 = sp.csr_matrix((n_x, n_ineq), dtype=float)
+    j3 = sp.csr_matrix(-gae_0.T)
+    j4 = sp.csr_matrix(-gai_0.T)
+    j5 = sp.csr_matrix((n_ineq, n_x), dtype=float)
+    j6 = sp.diags(z)
+    j7 = sp.csr_matrix((n_ineq, n_eq), dtype=float)
+    j8 = sp.diags(s)
+    j9 = sp.csr_matrix(gae_0)
+    j10 = sp.csr_matrix((n_eq, n_ineq), dtype=float)
+    j11 = sp.csr_matrix((n_eq, n_eq), dtype=float)
+    j12 = sp.csr_matrix((n_eq, n_ineq), dtype=float)
+    j13 = sp.csr_matrix(gai_0)
+    j14 = sp.eye(n_ineq, dtype=float)
+    j15 = sp.csr_matrix((n_ineq, n_eq), dtype=float)
+    j16 = sp.csr_matrix((n_ineq, n_ineq), dtype=float)
+
+    jj_block = [[j1, j2, j3, j4],
+                [j5, j6, j7, j8],
+                [j9, j10, j11, j12],
+                [j13, j14, j15, j16]]
+
+    jj = sp.bmat(jj_block)
+
+    return jj.tocsr()
 
 
 def solve_opf(grid, dh=1e-5, tol=1e-6, max_iter=50):
@@ -373,10 +532,21 @@ def solve_opf(grid, dh=1e-5, tol=1e-6, max_iter=50):
                       2 * npqpv + ngen,
                       2 * npqpv + 2 * ngen])
 
-    x[x_ind[0]:x_ind[1]] = np.real(nc.Vbus)[pqpv]  # e
-    x[x_ind[1]:x_ind[2]] = np.imag(nc.Vbus)[pqpv]  # f
-    x[x_ind[2]:x_ind[3]] = nc.generator_data.p / nc.Sbase  # pgen
-    x[x_ind[3]:x_ind[4]] = np.zeros(ngen)  # qgen
+    # Initialize results with a power flow
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR)
+    pf_driver = gce.PowerFlowDriver(grid=grid,
+                                    options=pf_options)
+    pf_driver.run()
+
+    # ignore power from Z and I of the load
+    s0gen = pf_driver.results.Sbus / nc.Sbase - nc.load_data.C_bus_elm @ nc.load_data.S / nc.Sbase
+    p0gen = nc.generator_data.C_bus_elm.T @ np.real(s0gen)
+    q0gen = nc.generator_data.C_bus_elm.T @ np.imag(s0gen)
+
+    x[x_ind[0]:x_ind[1]] = np.real(pf_driver.results.voltage)[pqpv]  # e
+    x[x_ind[1]:x_ind[2]] = np.imag(pf_driver.results.voltage)[pqpv]  # f
+    x[x_ind[2]:x_ind[3]] = p0gen  # pgen
+    x[x_ind[3]:x_ind[4]] = q0gen  # qgen
 
     v_sl = nc.Vbus[vd]
 
@@ -397,10 +567,10 @@ def solve_opf(grid, dh=1e-5, tol=1e-6, max_iter=50):
                       2 * npqpv + 2 * nbr + 4 * ngen])
 
     # multipliers, try other initializations maybe
-    mu = 1.0
-    s = np.ones(n_ineq)
-    z = np.ones(n_ineq)
-    y = np.ones(n_eq)
+    mu = 10.0
+    s = 10 * np.ones(n_ineq)
+    z = 5 * np.ones(n_ineq)
+    y = 7 * np.ones(n_eq)
 
     # Pack the keyword arguments into a dictionary
     g_dict = {'x_ind': x_ind,
@@ -449,35 +619,44 @@ def solve_opf(grid, dh=1e-5, tol=1e-6, max_iter=50):
     it = 0
     while err > tol and it < max_iter:
 
-        g = build_g(x, **g_dict)
-        h = build_h(x, **h_dict)
-
-        gae = build_gae(x=x,
-                        g_dict=g_dict,
-                        n_eq=n_eq,
-                        n_x=n_x,
-                        dh=dh)
-
-        gai = build_gai(x=x,
-                        h_dict=h_dict,
-                        n_ineq=n_ineq,
-                        n_x=n_x,
-                        dh=dh)
-
         r = build_r(x=x,
                     x_ind=x_ind,
                     y=y,
                     s=s,
                     z=z,
                     mu=mu,
-                    g=g,
-                    h=h,
-                    gae=gae,
-                    gai=gai,
+                    n_eq=n_eq,
                     n_ineq=n_ineq,
                     n_x=n_x,
                     dh=dh,
+                    g_dict=g_dict,
+                    h_dict=h_dict,
                     fobj_dict=fobj_dict)
+
+        jj = build_j(x=x,
+                     x_ind=x_ind,
+                     y=y,
+                     s=s,
+                     z=z,
+                     n_eq=n_eq,
+                     n_ineq=n_ineq,
+                     n_x=n_x,
+                     dh=dh,
+                     g_dict=g_dict,
+                     h_dict=h_dict,
+                     fobj_dict=fobj_dict)
+
+        ax = - sp.linalg.spsolve(jj, r)
+
+        dxx = ax[0:n_x]
+        dss = ax[n_x:n_x+n_ineq]
+        dyy = ax[n_x+n_ineq:n_x+n_ineq+n_eq]
+        dzz = ax[n_x+n_ineq+n_eq:n_x+n_ineq+n_eq+n_ineq]
+
+        x += dxx
+        s += dss
+        y += dyy
+        z += dzz
 
         # Objective function
         f_obj = compute_fobj(pg=x[x_ind[2]:x_ind[3]],
@@ -485,7 +664,10 @@ def solve_opf(grid, dh=1e-5, tol=1e-6, max_iter=50):
                              cost1=nc.generator_data.cost_1,
                              cost2=nc.generator_data.cost_2)
 
+        mu *= 0.5
         it += 1
+
+        print('x: ', x)
 
     return 0
 
