@@ -199,8 +199,8 @@ def build_h(x: np.ndarray = None,
     sf = (cf @ (e + 1j * f)) * np.conj(yf @ (e + 1j * f))
     st = (ct @ (e + 1j * f)) * np.conj(yt @ (e + 1j * f))
 
-    h_vu = - e * e - f * f + v_max * v_max
-    h_vl = + e * e + f * f - v_min * v_min
+    h_vu = - e[pqpv] * e[pqpv] - f[pqpv] * f[pqpv] + v_max[pqpv] * v_max[pqpv]
+    h_vl = + e[pqpv] * e[pqpv] + f[pqpv] * f[pqpv] - v_min[pqpv] * v_min[pqpv]
     h_sf = - abs(sf)**2 + (rate_f / sbase)**2
     h_st = - abs(st)**2 + (rate_t / sbase)**2
     h_pmax = - pgen + p_max / sbase
@@ -235,17 +235,17 @@ def build_gae(x: np.ndarray = None,
     :return: matrix Ae of size n_eq x n_x containing the gradients
     """
 
-    gae = np.zeros((n_eq, n_x), dtype=float)
-    g0 = np.copy(build_g(x, **g_dict))
+    gae = sp.csr_matrix((n_x, n_eq), dtype=float)
+    g0 = sp.csr_matrix(np.copy(build_g(x, **g_dict)))
 
     # Compute the gradients as (g(x + h) - g0) / dh
     for i in range(n_x):
         x_it = np.copy(x)
         x_it[i] += dh
-        g_it = build_g(x_it, **g_dict)
-        gae[:, i] = (g_it - g0) / dh
+        g_it = sp.csr_matrix(build_g(x_it, **g_dict))
+        gae[i, :] = (g_it - g0) / dh
 
-    return gae
+    return sp.csr_matrix.transpose(gae)
 
 
 def build_gai(x: np.ndarray = None,
@@ -263,17 +263,70 @@ def build_gai(x: np.ndarray = None,
     :return: matrix Ai of size n_ineq x n_x containing the gradients
     """
 
-    gai = np.zeros((n_ineq, n_x), dtype=float)
-    h0 = np.copy(build_h(x, **h_dict))
+    gai = sp.csr_matrix((n_x, n_ineq), dtype=float)
+    h0 = sp.csr_matrix(np.copy(build_h(x, **h_dict)))
 
     # Compute the gradients as (h(x + h) - h0) / dh
     for i in range(n_x):
         x_it = np.copy(x)
         x_it[i] += dh
-        h_it = build_h(x_it, **h_dict)
-        gai[:, i] = (h_it - h0) / dh
+        h_it = sp.csr_matrix(build_h(x_it, **h_dict))
+        gai[i, :] = (h_it - h0) / dh
 
-    return gai
+    return sp.csr_matrix.transpose(gai)
+
+
+def build_r(x: np.ndarray = None,
+            x_ind: np.ndarray = None,
+            y: np.ndarray = None,
+            s: np.ndarray = None,
+            z: np.ndarray = None,
+            mu: float = 1.0,
+            g: np.ndarray = None,
+            h: np.ndarray = None,
+            gae: sp.spmatrix = None,
+            gai: sp.spmatrix = None,
+            n_ineq: int = 0,
+            n_x: int = 0,
+            dh: float = 1e-5,
+            fobj_dict: Dict = None):
+
+    """
+    Build the full vector of residuals
+    :param x: vector of unknowns
+    :param x_ind: vector of indices to unpack x
+    :param y: equality multiplier
+    :param s: slack variable for inequalities
+    :param z: inequality multiplier
+    :param mu: barrier parameter
+    :param g: vector of equalities
+    :param h: vector of inequalities
+    :param gae: set of equality gradients
+    :param gai: set of inequality gradients
+    :param n_ineq: number of inequalities
+    :param n_x: number of unknowns
+    :param dh: delta of x to autodifferentiate
+    :param fobj_dict: dictionary to pack the objective function parameters
+    :return: array of residuals
+    """
+
+    gf = np.zeros(n_x, dtype=float)
+    f0 = np.copy(compute_fobj(pg=x[x_ind[2]:x_ind[3]], **fobj_dict))
+
+    for i in range(n_x):
+        x_it = np.copy(x)
+        x_it[i] += dh
+        f_it = compute_fobj(pg=x_it[x_ind[2]:x_ind[3]], **fobj_dict)
+        gf[i] = (f_it - f0) / dh
+
+    r1 = gf - gae.T @ y - gai.T @ z
+    r2 = s * z - mu * np.ones(n_ineq)
+    r3 = g
+    r4 = h - s
+
+    r = np.hstack((r1, r2, r3, r4))
+
+    return r
 
 
 def solve_opf(grid, dh=1e-5, tol=1e-6, max_iter=50):
@@ -307,7 +360,7 @@ def solve_opf(grid, dh=1e-5, tol=1e-6, max_iter=50):
     # Initialize IPM
     n_x = 2 * npqpv + 2 * ngen
     n_eq = 2 * npqpv
-    n_ineq = 2 * nbus + 2 * nbr + 4 * ngen
+    n_ineq = 2 * npqpv + 2 * nbr + 4 * ngen
 
     x = np.zeros(n_x)
     g = np.zeros(n_eq)
@@ -334,20 +387,20 @@ def solve_opf(grid, dh=1e-5, tol=1e-6, max_iter=50):
 
     # store h indices to slice
     h_ind = np.array([0,
-                      nbus,
-                      2 * nbus,
-                      2 * nbus + nbr,
-                      2 * nbus + 2 * nbr,
-                      2 * nbus + 2 * nbr + ngen,
-                      2 * nbus + 2 * nbr + 2 * ngen,
-                      2 * nbus + 2 * nbr + 3 * ngen,
-                      2 * nbus + 2*nbr+4*nbus])
+                      npqpv,
+                      2 * npqpv,
+                      2 * npqpv + nbr,
+                      2 * npqpv + 2 * nbr,
+                      2 * npqpv + 2 * nbr + ngen,
+                      2 * npqpv + 2 * nbr + 2 * ngen,
+                      2 * npqpv + 2 * nbr + 3 * ngen,
+                      2 * npqpv + 2 * nbr + 4 * ngen])
 
     # multipliers, try other initializations maybe
     mu = 1.0
     s = np.ones(n_ineq)
     z = np.ones(n_ineq)
-    y = np.ones(n_ineq)
+    y = np.ones(n_eq)
 
     # Pack the keyword arguments into a dictionary
     g_dict = {'x_ind': x_ind,
@@ -387,6 +440,10 @@ def solve_opf(grid, dh=1e-5, tol=1e-6, max_iter=50):
               'v_sl': v_sl,
               'nbus': nbus}
 
+    fobj_dict = {'cost0': nc.generator_data.cost_0,
+                 'cost1': nc.generator_data.cost_1,
+                 'cost2': nc.generator_data.cost_2}
+
     # start loop
     err = 1.0
     it = 0
@@ -407,11 +464,20 @@ def solve_opf(grid, dh=1e-5, tol=1e-6, max_iter=50):
                         n_x=n_x,
                         dh=dh)
 
-        # r = build_r(s=s,
-        #             z=z,
-        #             mu=mu,
-        #             g=g,
-        #             h=h)
+        r = build_r(x=x,
+                    x_ind=x_ind,
+                    y=y,
+                    s=s,
+                    z=z,
+                    mu=mu,
+                    g=g,
+                    h=h,
+                    gae=gae,
+                    gai=gai,
+                    n_ineq=n_ineq,
+                    n_x=n_x,
+                    dh=dh,
+                    fobj_dict=fobj_dict)
 
         # Objective function
         f_obj = compute_fobj(pg=x[x_ind[2]:x_ind[3]],
