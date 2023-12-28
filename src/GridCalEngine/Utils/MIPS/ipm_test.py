@@ -84,7 +84,6 @@ def eval_g(x):
 
 def eval_h(x):
 
-
     hval1 = x[0] ** 2 - x[1] ** 2 + x[2] ** 2 - 2
     hval2 = x[0] ** 2 + x[1] ** 2 + x[2] ** 2 - 10
 
