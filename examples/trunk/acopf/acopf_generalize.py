@@ -132,8 +132,11 @@ def build_g(x: np.ndarray = None,
     # pgslack = plbus[vd] + pbbus[vd]
     # qgslack = qlbus[vd] + qbbus[vd]
 
-    g[g_ind[0]:g_ind[1]] = pbal[pqpv]
-    g[g_ind[1]:g_ind[2]] = qbal[pqpv]
+    # g[g_ind[0]:g_ind[1]] = pbal[pqpv]
+    # g[g_ind[1]:g_ind[2]] = qbal[pqpv]
+
+    g[g_ind[0]:g_ind[1]] = pbal
+    g[g_ind[1]:g_ind[2]] = qbal
 
     return g
 
@@ -518,7 +521,8 @@ def solve_opf(grid, dh=1e-5, tol=1e-6, max_iter=50):
 
     # Initialize IPM
     n_x = 2 * npqpv + 2 * ngen
-    n_eq = 2 * npqpv
+    # n_eq = 2 * npqpv
+    n_eq = 2 * nbus
     n_ineq = 2 * npqpv + 2 * nbr + 4 * ngen
 
     x = np.zeros(n_x)
@@ -551,9 +555,13 @@ def solve_opf(grid, dh=1e-5, tol=1e-6, max_iter=50):
     v_sl = nc.Vbus[vd]
 
     # store g indices to slice
+    # g_ind = np.array([0,
+    #                   npqpv,
+    #                   2 * npqpv])
+
     g_ind = np.array([0,
-                      npqpv,
-                      2 * npqpv])
+                      nbus,
+                      2 * nbus])
 
     # store h indices to slice
     h_ind = np.array([0,
@@ -567,10 +575,10 @@ def solve_opf(grid, dh=1e-5, tol=1e-6, max_iter=50):
                       2 * npqpv + 2 * nbr + 4 * ngen])
 
     # multipliers, try other initializations maybe
-    mu = 10.0
-    s = 10 * np.ones(n_ineq)
-    z = 5 * np.ones(n_ineq)
-    y = 7 * np.ones(n_eq)
+    mu = 1.0
+    s = 1.0 * np.ones(n_ineq)
+    z = 1.0 * np.ones(n_ineq)
+    y = 1.0 * np.ones(n_eq)
 
     # Pack the keyword arguments into a dictionary
     g_dict = {'x_ind': x_ind,
@@ -653,10 +661,12 @@ def solve_opf(grid, dh=1e-5, tol=1e-6, max_iter=50):
         dyy = ax[n_x+n_ineq:n_x+n_ineq+n_eq]
         dzz = ax[n_x+n_ineq+n_eq:n_x+n_ineq+n_eq+n_ineq]
 
-        x += dxx
-        s += dss
-        y += dyy
-        z += dzz
+        incr = 0.5
+
+        x += incr * dxx
+        s += incr * dss
+        y += incr * dyy
+        z += incr * dzz
 
         # Objective function
         f_obj = compute_fobj(pg=x[x_ind[2]:x_ind[3]],
@@ -664,7 +674,7 @@ def solve_opf(grid, dh=1e-5, tol=1e-6, max_iter=50):
                              cost1=nc.generator_data.cost_1,
                              cost2=nc.generator_data.cost_2)
 
-        mu *= 0.5
+        mu *= 0.8
         it += 1
 
         print('x: ', x)
