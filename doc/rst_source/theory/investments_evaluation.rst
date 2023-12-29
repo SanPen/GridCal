@@ -73,6 +73,18 @@ Regarding the undervoltages and overvoltages, the associated penalty is computed
 where :math:`V_m , V^{\text{max}}_m, V^{\text{min}}_m, P_{vm}` are vectors containing voltage module results, allowed
 maximum voltage, minimum voltage limit and voltage module penalization for each bus.
 
+3. **Machine-learning algorithm**
+Once the objective function is defined, each evaluation is sent to the machine-learning model previously mentioned.
+The algorithm being tested is the so called Mixed-Variable ReLU-based Surrogate Modelling (MVRSM). For further
+information, the reader can find the reference paper_ to understand the insights of the model.
+
+.. _paper: https://dl.acm.org/doi/pdf/10.1145/3449726.3463136
+
+As for the electrical problem, it is not initially relevant what goes on inside the machine-learning algorithm, it
+works as a black-box model. The objective function is evaluated and sent to the model in each iteration and in the end
+the model outputs the optimal point.
+
+
 Testing
 _______
 1. **Grid**
@@ -112,26 +124,26 @@ function, the CAPEX will inherently have more weight and unbalance the results.
 As an example, the reader can find below the graphs corresponding to multiplying the CAPEX by different minimization
 factors
 
-.. figure:: ../figures/investments/Figure_1_w_capex-e-6_v2.png
-    :alt: Results CAPEX 10^-6
+.. figure:: ../figures/investments/Figure_1_w_capex_e-6_v2.png
+    :alt: Results CAPEX 1e-6
     :scale: 50 %
 
     Figure 3: Results obtained when CAPEX is multiplied by :math:`10^{-6}`.
 
-.. figure:: ../figures/investments/Figure_1_w_capex-e-5_v2.png
-    :alt: Results CAPEX 10^-5
+.. figure:: ../figures/investments/Figure_1_w_capex_e-5_v2.png
+    :alt: Results CAPEX 1e-5
     :scale: 50 %
 
     Figure 4: Results obtained when CAPEX is multiplied by :math:`10^{-5}`.
 
-.. figure:: ../figures/investments/Figure_1_w_capex-e-4_v2.png
-    :alt: Results CAPEX 10^-4
+.. figure:: ../figures/investments/Figure_1_w_capex_e-4_v2.png
+    :alt: Results CAPEX 1e-4
     :scale: 50 %
 
     Figure 5: Results obtained when CAPEX is multiplied by :math:`10^{-4}`.
 
-.. figure:: ../figures/investments/Figure_1_w_capex-e-3_v2.png
-    :alt: Results CAPEX 10^-3
+.. figure:: ../figures/investments/Figure_1_w_capex_e-3_v2.png
+    :alt: Results CAPEX 1e-3
     :scale: 50 %
 
     Figure 6: Results obtained when CAPEX is multiplied by :math:`10^{-3}`.
@@ -151,11 +163,16 @@ objective function presented in Formulation would be modified as:
     \frac{\sum C_va(x)_b}{va_{ref}} + \frac{\sum CAPEX(x)_i}{CAPEX_{ref}} + \frac{\sum OPEX(x)_i}{OPEX_{ref}}
 
 However, given the nature of the problem being solved, it is not possible to determine reference values for each
-criteria beforehand. Hence, one proposed solution consists in taking the values of the terms for the first iteration
-with investments, compute scaling factors referent to that iteration as:
+criteria beforehand. Hence, some solutions are proposed, the reader can find the explanation and results obtained in the
+following subsections.
+
+4.1. First iteration normalization
+
+The first solution studied consists in taking the values of the terms for the first iteration with investments,
+compute scaling factors referent to that iteration as
 
 .. math::
-    sf_{i} = \frac{mean_i}{min(mean)}
+    sf_{i} = \frac{min(mean)}{mean_i}
 
 being:
 
@@ -163,10 +180,78 @@ being:
     - :math:`mean_i`: the mean between the maximum and minimum value of each criteria; :math:`\frac{max(losses) + min(losses)}{2}`,
     - :math:`mean`: an array of all the computed means of the factors; :math:`[mean_{losses}, mean_{overload}, mean_{vm}, ... ]`.
 
-The results obtained from this normalization can be seen in Figure 7.
+and multiply each term for its scaling facter throughout the rest of the iterations. Therefore,
+the objective function ends up being:
+
+.. math::
+    f_o(x) = sf_l \sum{C_l(x)_{br}} + sf_o \sum C_o(x)_{br} + sf_{vm} \sum C_{vm}(x)_b +
+    sf_{va} \sum C_va(x)_b + sf_{CAPEX} \sum CAPEX(x)_i + sf_{OPEX} \sum OPEX(x)_i
+
+
+The results obtained in this normalization resemble the ones shown in Figure 5, given that the CAPEX scaling factor is
+essentially :math:`10^{-4}`.
 
 .. figure:: ../figures/investments/Figure_2_normalization.png
     :alt: First normalization results
     :scale: 50 %
 
     Figure 7: Results obtained for the first normalization type.
+
+4.2. Scale after random evaluations
+
+For the second solution, the MVRSM is altered so that the normalization of the different criteria is done internally.
+The new algorithm consists first of some random evaluations, in the studied case, 1.5 times the number of possible investments.
+During the random evaluations, the model is not updated nor the :math:`x` are updated by minimizing the model.
+Afterwards, the maximum :math:`y_{max}` and minimum :math:`y_{min}` values throughout the evaluations are saved in
+order to apply the normalization as:
+
+.. math::
+    y_{norm} = \frac{y - y_{min}}{y_{max} - y_{min}}
+
+where :math:`y` is a vector containing the values of the criteria before normalization and :math:´y_{norm}´ represents
+the values after normalization. Hence, this normalization is applied to all the values found in the random process and
+the model is now updated with the normalized values.
+
+The second and final part of the algorithm consists of the rest of the evaluations, where each time the criteria are
+found, they are normalized and the model is updated and minimized.
+
+Therefore, the algorithm ends up being:
+
+.. figure:: ../figures/investments/simple_algo.png
+    :alt: Updated algorithm
+    :scale: 50 %
+
+    Figure 8: Updated algorithm "grosso modo".
+
+This new configuration has been tested using two different functions:
+
+    - Using Rosenbrock's function :math:`f(x, y) = (1 - x)^2 + 100 \cdot (y - x^2)^2` where :math:`x \in [-200, 200]` and :math:`y \in [-1,3]`. this way, :math:`x,y` are the criteria that need to be normalized before entering the objective function :math:`f`
+    - Using a Sum function :math:`f(x, y) = x +y` where :math:`x` is computed by multiplying a binary vector and a costs vector and :math:`y = \frac{1}{k+1}` where :math:`k` is the number of 1 in the binary vector previously mentioned.
+
+The results obtained show that the algorithm works and tends to the actual minimum point of the functions.
+
+.. figure:: ../figures/investments/3d_rosenbrock.png
+    :alt: Results Rosenbrock
+    :scale: 50 %
+
+    Figure 9: Results obtained for the Rosenbrock function.
+
+.. figure:: ../figures/investments/3d_sumfunction.png
+    :alt: Results Sum
+    :scale: 50 %
+
+    Figure 10: Results obtained for the Sum function.
+
+Finally, the algorithm is tested in the presented grid.
+
+.. figure:: ../figures/investments/Figure_3_normalization.png
+    :alt: Second normalization results
+    :scale: 50 %
+
+    Figure 11: Results obtained for the updated algorithm.
+
+The results show a similar points distribution as Figure 5. This is not a coincidence, given that by applying the
+normalization, both the technical and economic criteria end up being a similar order of magnitude, which is the same
+case as the one shown in Figure 5.
+
+It is worth mentioning that due to the fact that the objective function can now take negative values, the normalization used in the colors visualization can no longer be LogNorm() and has been changed to Normalize().
