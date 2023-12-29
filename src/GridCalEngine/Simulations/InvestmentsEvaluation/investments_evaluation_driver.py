@@ -28,7 +28,7 @@ from GridCalEngine.Core.Devices.Aggregation.investment import Investment
 from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
-from GridCalEngine.Simulations.InvestmentsEvaluation.MVRSM import MVRSM_minimize
+from GridCalEngine.Simulations.InvestmentsEvaluation.MVRSM import MVRSM_minimize, MVRSM_minimize_md
 from GridCalEngine.Simulations.InvestmentsEvaluation.stop_crits import StochStopCriterion
 from GridCalEngine.basic_structures import IntVec
 from GridCalEngine.enumerations import InvestmentEvaluationMethod
@@ -110,7 +110,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         #                                                        vmax=self.nc.bus_data.Vmax)
         voltage_score = 0.0
 
-        capex_score = sum([inv.CAPEX for inv in inv_list])*0.00001
+        capex_score = sum([inv.CAPEX for inv in inv_list]) * 0.00001
 
         f = total_losses + overload_score + voltage_score + capex_score
 
@@ -139,7 +139,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         """
         Function to evaluate a combination of investments
         :param combination: vector of investments (yes/no). Length = number of investment groups
-        :return: objective function value
+        :return: objective function criteria values
         """
 
         # add all the investments of the investment groups reflected in the combination
@@ -161,46 +161,45 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         driver.run()
         res = driver.results
 
-        norm = False
-
-        overload_score, oload_limits = get_overload_score(res, branches, norm)
-        voltage_module_score, vm_limits = get_voltage_module_score(res, buses, norm)
-        voltage_angle_score = 0.0
-        voltage_angle_score, va_limits = get_voltage_phase_score(res,buses,norm)
+        # compute scores
+        losses_score = np.sum(res.losses.real)
+        overload_score = get_overload_score(res.loading, branches)
+        voltage_module_score = get_voltage_module_score(res.voltage, buses)
+        voltage_angle_score = get_voltage_phase_score(res.voltage, buses)
         capex_array = np.array([inv.CAPEX for inv in inv_list])
+        opex_array = np.array([inv.OPEX for inv in inv_list])
+
+        # get arrays for first iteration
         if self.__eval_index == 0:
             capex_array = np.array([0])
+            opex_array = np.array([0])
 
-        if norm:
-            losses_score, losses_limits = get_normalized_score(res.losses.real), (
-            np.max(res.losses.real), np.min(res.losses.real))
-            capex_score, capex_limits = get_normalized_score(capex_array), (np.max(capex_array), np.min(capex_array))
-        else:
-            losses_score = np.sum(res.losses.real)
-            losses_limits = (np.max(res.losses.real),np.min(res.losses.real))
-            capex_score = np.sum(capex_array)
-            capex_limits = (np.max(capex_array), np.min(capex_array))
+        capex_score = np.sum(capex_array)
+        opex_score = np.sum(opex_array)
 
-        # opex_score = get_opex_score()
+        all_scores = np.array([losses_score, overload_score, voltage_module_score, voltage_angle_score, capex_score,
+                               opex_score])
 
-        if self.__eval_index == 1:
-            self.l_factor, self.oload_factor, self.vm_factor, self.capex_factor = get_scale_factors([losses_limits, oload_limits, vm_limits, capex_limits])
+        # # Compute objective function with wights and normalization factors (old)
+        # f = (losses_score * self.l_factor * self.options.w_losses +
+        #      overload_score * self.oload_factor * self.options.w_overload +
+        #      voltage_module_score * self.vm_factor * self.options.w_voltage_module +
+        #      capex_score * self.capex_factor * self.options.w_capex)
 
-        f = (losses_score * self.l_factor * self.options.w_losses +
-             overload_score * self.oload_factor * self.options.w_overload +
-             voltage_module_score * self.vm_factor * self.options.w_voltage_module +
-             capex_score * self.capex_factor * self.options.w_capex)
+        # Get f ( only for results visualization purposes)
+        # TODO: maybe this is not the best way to show results
+        f = np.sum(all_scores)
 
-        # store the results
-        self.results.set_at(eval_idx=self.__eval_index,
-                            capex=capex_score*self.capex_factor,
-                            opex=sum([inv.OPEX for inv in inv_list]),
-                            losses=losses_score*self.l_factor,
-                            overload_score=overload_score,
-                            voltage_score=voltage_module_score,
-                            objective_function=f,
-                            combination=combination,
-                            index_name="Evaluation {}".format(self.__eval_index))
+        # store the results. Objective function is actually technical criteria ( y-axis of paretto plot)
+        # self.results.set_at(eval_idx=self.__eval_index,
+        #                     capex=capex_score,
+        #                     opex=opex_score,
+        #                     losses=losses_score * self.l_factor,
+        #                     overload_score=overload_score,
+        #                     voltage_score=voltage_module_score,
+        #                     objective_function=f - opex_score - capex_score,
+        #                     combination=combination,
+        #                     index_name="Evaluation {}".format(self.__eval_index))
 
         # revert to disabled
         self.grid.set_investments_status(investments_list=inv_list,
@@ -212,8 +211,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
 
         self.progress_signal.emit(self.__eval_index / self.options.max_eval * 100.0)
 
-        # print(losses_score*self.l_factor, capex_score * self.capex_factor, f)
-        return f
+        return all_scores
 
     def independent_evaluation(self) -> None:
         """
@@ -297,12 +295,13 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         conf_dist = 0.0
         conf_level = 0.95
         stop_crit = StochStopCriterion(conf_dist, conf_level)
-        x0 = np.random.binomial(1, rand_search_active_prob, self.dim)
+        # x0 = np.random.binomial(1, rand_search_active_prob, self.dim)
+        x0 = np.zeros(self.dim)
 
         # compile the snapshot
         self.nc = compile_numerical_circuit_at(circuit=self.grid, t_idx=None)
         self.results = InvestmentsEvaluationResults(investment_groups_names=self.grid.get_investment_groups_names(),
-                                                    max_eval=self.options.max_eval + 1)
+                                                    max_eval=self.options.max_eval)
         # disable all status
         self.nc.set_investments_status(investments_list=self.grid.investments, status=0)
 
@@ -313,16 +312,27 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         self.objective_function(combination=np.zeros(self.results.n_groups, dtype=int))
 
         # optimize
-        best_x, inv_scale, model = MVRSM_minimize(obj_func=self.objective_function,
-                                                  x0=x0,
-                                                  lb=lb,
-                                                  ub=ub,
-                                                  num_int=self.dim,
-                                                  max_evals=self.options.max_eval,
-                                                  rand_evals=rand_evals,
-                                                  obj_threshold=threshold,
-                                                  stop_crit=stop_crit,
-                                                  rand_search_bias=rand_search_active_prob)
+        all_x, all_crits, all_ys, model = MVRSM_minimize_md(obj_func=self.objective_function,
+                                                            x0=x0,
+                                                            lb=lb,
+                                                            ub=ub,
+                                                            num_int=self.dim,
+                                                            max_evals=self.options.max_eval,
+                                                            rand_evals=rand_evals,
+                                                            obj_threshold=threshold,
+                                                            stop_crit=stop_crit,
+                                                            rand_search_bias=rand_search_active_prob,
+                                                            f_obj_dim=6)
+
+        self.results.set_at(eval_idx=np.arange(self.options.max_eval),
+                            capex=all_crits[:, 4],
+                            opex=all_crits[:, 5],
+                            losses=all_crits[:, 0],
+                            overload_score=all_crits[:, 1],
+                            voltage_score=all_crits[:, 2],
+                            objective_function=all_ys,
+                            combination=all_x,
+                            index_name=np.array(['Evaluation {}'.format(i) for i in range(self.options.max_eval)]))
 
         self.progress_text.emit("Done!")
         self.progress_signal.emit(0.0)
@@ -353,9 +363,15 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         self.__cancel__ = True
 
 
-def get_overload_score(results, branches, norm):
+def get_overload_score(loading, branches):
+    """
+    Compute overload score by multiplying the loadings above 100% by the associated branch cost.
+    :param loading: load results
+    :param branches: all branch elements from studied grid
+    :return: sum of all costs associated to branch overloads
+    """
     branches_cost = np.array([e.Cost for e in branches], dtype=float)
-    branches_loading = np.abs(results.loading)
+    branches_loading = np.abs(loading)
 
     # get lines where loading is above 1 -- why not 0.9 ?
     branches_idx = np.where(branches_loading > 1)[0]
@@ -363,69 +379,40 @@ def get_overload_score(results, branches, norm):
     # multiply by the load or only the overload?
     cost = branches_cost[branches_idx] * branches_loading[branches_idx]
 
-    max_oload = 0
-    min_oload = 0
-
-    if norm:
-        return get_normalized_score(cost), (max_oload, min_oload)
-    return np.sum(cost), (max_oload, min_oload)
+    return np.sum(cost)
 
 
-def get_voltage_module_score(results, buses, norm):
+def get_voltage_module_score(voltage, buses):
+    """
+    Compute voltage module score by multiplying the voltages outside limits by the associated bus costs.
+    :param voltage: voltage results
+    :param buses: all bus elements from studied grid
+    :return: sum of all costs associated to voltage module deviation
+    """
     bus_cost = np.array([e.voltage_module_cost for e in buses], dtype=float)
     vmax = np.array([e.Vmax for e in buses], dtype=float)
     vmin = np.array([e.Vmin for e in buses], dtype=float)
-    vm = np.abs(results.voltage)
+    vm = np.abs(voltage)
     vmax_diffs = np.array(vm - vmax).clip(min=0)
     vmin_diffs = np.array(vmin - vm).clip(min=0)
     cost = (vmax_diffs + vmin_diffs) * bus_cost
 
-    if norm:
-        return get_normalized_score(cost), (np.max(cost), np.min(cost))
-    return np.sum(cost), (np.max(cost), np.min(cost))
+    return np.sum(cost)
 
 
-def get_voltage_phase_score(results, buses, norm):
+def get_voltage_phase_score(voltage, buses):
+    """
+    Compute voltage phase score by multiplying the phases outside limits by the associated bus costs.
+    :param voltage: voltage results
+    :param buses: all bus elements from studied grid
+    :return: sum of all costs associated to voltage module deviation
+    """
     bus_cost = np.array([e.voltage_angle_cost for e in buses], dtype=float)
     vpmax = np.array([e.angle_max for e in buses], dtype=float)
     vpmin = np.array([e.angle_min for e in buses], dtype=float)
-    vp = np.abs(results.voltage)
+    vp = np.angle(voltage)
     vpmax_diffs = np.array(vp - vpmax).clip(min=0)
     vpmin_diffs = np.array(vpmin - vp).clip(min=0)
     cost = (vpmax_diffs + vpmin_diffs) * bus_cost
 
-    if norm:
-        return get_normalized_score(cost), (np.max(cost), np.min(cost))
-    return np.sum(cost), (np.max(cost), np.min(cost))
-
-
-def get_opex_score(inv_list):
-    for inv in inv_list:
-        opex = inv.OPEX
-
-
-def get_normalized_score(array):
-    if len(array) < 1:
-        return 0.0
-
-    max_value = np.max(array)
-
-    if max_value != 0:
-        return np.sum(array)/max_value
-
-    return 0.0
-
-
-def get_scale_factors(list):
-    med = np.zeros(len(list))
-    max_values, min_values = zip(*list)
-    for i, tpe in enumerate(list):
-        med[i] = (tpe[0]+tpe[1])/2
-
-    min_med = np.min(med[med != 0])
-
-    med[med == 0] = min_med
-
-    return min_med/med[0], min_med/med[1], min_med/med[2], min_med/med[3]
-
-
+    return np.sum(cost)

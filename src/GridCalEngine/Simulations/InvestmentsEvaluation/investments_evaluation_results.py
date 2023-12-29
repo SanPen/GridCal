@@ -83,7 +83,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         return self._index_names
 
     def set_at(self, eval_idx, capex, opex, losses, overload_score, voltage_score, objective_function,
-               combination: IntVec, index_name: str) -> None:
+               combination: IntVec, index_name) -> None:
         """
         Set the results at an investment group
         :param eval_idx: evaluation index
@@ -136,15 +136,21 @@ class InvestmentsEvaluationResults(ResultsTemplate):
             columns = ["CAPEX (M€) + OPEX (M€)", "Objective function"]
             x = self._capex + self._opex
             y = self._losses + self._overload_score + self._voltage_score
+            z = self._f_obj
+
+            if np.min(z) <= 0:  # necessary to apply color_norm correctly
+                color_norm = plt_colors.Normalize()
+            else:
+                color_norm = plt_colors.LogNorm()
+
             data = np.c_[x, y]
             y_label = ''
             title = ''
 
             #plt.ion()
-            color_norm = plt_colors.LogNorm()
             fig = plt.figure(figsize=(8, 6))
             ax3 = plt.subplot(1, 1, 1)
-            sc3 = ax3.scatter(x, y, c=x+y, norm=color_norm)
+            sc3 = ax3.scatter(x, y, c=z, norm=color_norm)
             ax3.set_xlabel('Investment cost (M€)')
             ax3.set_ylabel('Total cost of losses (M€)')
             plt.colorbar(sc3, fraction=0.05, label='Objective function')

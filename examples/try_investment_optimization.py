@@ -170,8 +170,8 @@ if __name__ == "__main__":
     pf_options = sim.PowerFlowOptions()
     mvrsm = InvestmentEvaluationMethod.MVRSM
 
-    print(4*len(grid.investments))
-    options = sim.InvestmentsEvaluationOptions(solver=mvrsm, max_eval=4*len(grid.investments), pf_options=pf_options)
+    print(6*len(grid.investments))
+    options = sim.InvestmentsEvaluationOptions(solver=mvrsm, max_eval=6*len(grid.investments), pf_options=pf_options)
     inv = sim.InvestmentsEvaluationDriver(grid, options=options)
     inv.run()
 

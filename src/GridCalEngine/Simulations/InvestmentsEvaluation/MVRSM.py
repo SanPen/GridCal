@@ -267,6 +267,44 @@ def scale(y, y0, scale_threshold=1e-8):
     return y
 
 
+def normalize_md(y_no_normalized, norm_factors):
+    """
+    Computes the normalization of y_no_normalized --> y_normalized=(y_no_normalized-y_min)/(y_max-y_min).
+    :param y_no_normalized: The no normalized objective function values: np.array.shape[1]=f_obj_dim.
+    :param norm_factors: Tuple of arrays where 1st array is maximum values of y and second minimum values.
+    :return: the value `y_normalized` such that `normalize_md(y_no_normalized, y0) = y_normalized`.
+    """
+    max_min = norm_factors[0] - norm_factors[1]
+    max_min[max_min == 0] = 1
+
+    return (y_no_normalized - norm_factors[1]) / max_min
+
+
+def inv_normalize_md(y_normalized, norm_factors):
+    """
+    Computes the inverse of normalize_md(y_no_normalized, norm_factors).
+    :param y_normalized: The normalized objective function values: np.array.shape[1]=f_obj_dim.
+    :param norm_factors: Tuple of arrays where 1st array is maximum values of y and second minimum values.
+    :return: the value `y_no_normalized` such that `inv_normalize_md(y_normalized, y0) = y_no_normalized`.
+    """
+
+    max_min = norm_factors[0] - norm_factors[1]
+
+    return y_normalized * max_min + norm_factors[1]
+
+
+def get_norm_factors(scaling_values):
+    """
+    Computes the factors used to normalize objective function criteria..
+    :param scaling_values: Array with all the criteria obtained during random evaluation process.
+    :return: Tuple of arrays where 1st array is maximum values of y and second minimum values.
+    """
+    terms_max = np.max(scaling_values, axis=0)
+    terms_min = np.min(scaling_values, axis=0)
+
+    return terms_max, terms_min
+
+
 def inv_scale(y_scaled, y0, scale_threshold=1e-8):
     """
     Computes the inverse function of `scale(y, y0)`.
@@ -321,7 +359,7 @@ def MVRSM_minimize(obj_func, x0, lb, ub, num_int, max_evals, rand_evals=0, obj_t
         if i == 0:
             y0 = y_unscaled
         # noinspection PyUnboundLocalVariable
-        y = scale(y_unscaled, y0, scale_threshold= 1e-8)
+        y = scale(y_unscaled, y0, scale_threshold=1e-8)
 
         # Keep track of the best found objective value and candidate solution so far.
         if y < best_y:
@@ -408,8 +446,8 @@ def MVRSM_minimize(obj_func, x0, lb, ub, num_int, max_evals, rand_evals=0, obj_t
     return best_x, inv_scale(best_y, y0, scale_threshold), model
 
 
-def MVRSM_minimize_md(obj_func, x0, lb, ub, num_int, max_evals, rand_evals=0, obj_threshold=0.0, args=(),
-                   stop_crit=None, rand_search_bias=0.5, log_times=False, scale_threshold=1e-8, f_obj_dim=1):
+def MVRSM_minimize_md(obj_func, x0, lb, ub, num_int, max_evals, rand_evals=1, obj_threshold=0.0, args=(),
+                      stop_crit=None, rand_search_bias=0.5, log_times=False, scale_threshold=1e-8, f_obj_dim=1):
     """
 
     :param obj_func: objective function
@@ -426,74 +464,72 @@ def MVRSM_minimize_md(obj_func, x0, lb, ub, num_int, max_evals, rand_evals=0, ob
     :param log_times:
     :param scale_threshold: value under which no scaling is done
     :param f_obj_dim: if 1 objective function returns single float, otherwise a vector of size = f_obj_dim
-    :return: best x, best y, SurrogateModel
+    :return: all combinations, all y, SurrogateModel
     """
+
     d = len(x0)  # number of decision variables
     assert num_int == d  # [GTEP] This is a modified version that only supports discrete variables.
 
     model = SurrogateModel.init(d, lb, ub, num_int)
-    next_x = x0  # candidate solution
+    next_x = np.array(x0)  # candidate solution
     best_x = np.copy(next_x)  # best candidate solution found so far
     best_y = math.inf  # least objective function value found so far, equal to obj(best_x).
 
     scaling_values = np.zeros((rand_evals, f_obj_dim))
+    x_rand_evals = np.zeros((rand_evals, len(x0)))
+    all_evaluations = np.zeros((max_evals, len(x0)))
+    all_crits = np.zeros((max_evals, f_obj_dim))
+    all_ys = np.zeros(max_evals)
 
-    # TODO: bucle for para iteraciones previas a escalado
     for i in range(rand_evals):
         if log_times:
             iter_start = time.time()
         if stop_crit is not None and stop_crit:
             break
 
-        # Evaluate the objective and scale it.
+        # Evaluate the objective and get economic and technical criteria no normalized.
         x = next_x.astype(float, copy=False)
-        y_unscaled = obj_func(x.astype(int), *args)  # [GTEP]: added astype(int)
-        # TODO: if i > rand_evals and escalar multidimensional else seguimos igual
-
-        if i == 0:
-            y0 = y_unscaled
-        # noinspection PyUnboundLocalVariable
-        y = scale(y_unscaled, y0, scale_threshold=1e-8)
-
-        # Keep track of the best found objective value and candidate solution so far.
-        if y < best_y:
-            best_x = np.copy(x)
-            best_y = y
-
-        # Update the surrogate model
-        if log_times:
-            update_start = time.time()
-        model.update(x, y)
-        if log_times:
-            # noinspection PyUnboundLocalVariable
-            print(f'Update time: {time.time() - update_start}')
+        criteria_no_normalized = obj_func(x.astype(int), *args)  # [GTEP]: added astype(int)
 
         # Perform random search
         next_x = np.random.binomial(1, rand_search_bias, num_int)  # [GTEP]
         # next_x[0:num_int] = np.random.randint(lb[0:num_int], ub[0:num_int] + 1)  # integer variables
         # next_x[num_int:d] = np.random.uniform(lb[num_int:d], ub[num_int:d])  # continuous variables
 
-
-        scaling_values[i,:] = y
+        scaling_values[i, :] = criteria_no_normalized
+        x_rand_evals[i, :] = x
+        all_evaluations[i, :] = x
 
         pass
+
+    # Get scale factors from random evaluations, update the model with the found points
+    norm_factors = get_norm_factors(scaling_values)
+    criteria_normalized = normalize_md(scaling_values, norm_factors)
+    y_rand_evals_unscaled = np.sum(criteria_normalized, axis=1)
+    y0 = y_rand_evals_unscaled[-1]
+    y_rand_evals_scaled = scale(y_rand_evals_unscaled, y0, scale_threshold=1e-8)
+    for i in range(len(x_rand_evals)):
+        model.update(x_rand_evals[i], y_rand_evals_scaled[i])
+    best_y = np.min(y_rand_evals_scaled)
+
+    # Update results array
+    all_crits[:len(scaling_values), :] = scaling_values
+    all_ys[:len(scaling_values)] = y_rand_evals_scaled
 
     # Iteratively evaluate the objective, update the model, find the minimum of the model,
     # and explore the search space.
     for i in range(rand_evals, max_evals):
-        if log_times:
-            iter_start = time.time()
-        if stop_crit is not None and stop_crit:
-            break
 
         # Evaluate the objective and scale it.
         x = next_x.astype(float, copy=False)
-        y_unscaled = obj_func(x.astype(int), *args)  # [GTEP]: added astype(int)
-
-        if i == 0:
-            y0 = y_unscaled
-        # noinspection PyUnboundLocalVariable
+        values_orig = obj_func(x.astype(int), *args)  # [GTEP]: added astype(int)
+        values_norm = normalize_md(values_orig, norm_factors)
+        y_unscaled = np.sum(values_norm)
         y = scale(y_unscaled, y0, scale_threshold=1e-8)
+
+        all_evaluations[i, :] = x
+        all_ys[i] = y
+        all_crits[i, :] = values_orig
 
         # Keep track of the best found objective value and candidate solution so far.
         if y < best_y:
@@ -507,7 +543,6 @@ def MVRSM_minimize_md(obj_func, x0, lb, ub, num_int, max_evals, rand_evals=0, ob
         if log_times:
             # noinspection PyUnboundLocalVariable
             print(f'Update time: {time.time() - update_start}')
-
 
         # Minimize surrogate model
         if log_times:
@@ -573,4 +608,4 @@ def MVRSM_minimize_md(obj_func, x0, lb, ub, num_int, max_evals, rand_evals=0, ob
             # noinspection PyUnboundLocalVariable
             print(f'Iteration time: {time.time() - iter_start}')
 
-    return best_x, inv_scale(best_y, y0, scale_threshold), model
+    return all_evaluations, all_crits, all_ys, model
