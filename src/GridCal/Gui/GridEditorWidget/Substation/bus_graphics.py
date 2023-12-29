@@ -19,7 +19,7 @@ from typing import Union
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, QPoint
 from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor
-from PySide6.QtWidgets import QMenu
+from PySide6.QtWidgets import QMenu, QGraphicsSceneMouseEvent
 from GridCalEngine.Core.Devices.Substation import Bus
 from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, FONT_SCALE, EMERGENCY
 from GridCal.Gui.GuiFunctions import ObjectsModel
@@ -157,7 +157,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         """
         self.label.setPlainText(val)
 
-    def mouseMoveEvent(self, event: 'QGraphicsSceneMouseEvent'):
+    def mouseMoveEvent(self, event: QGraphicsSceneMouseEvent):
         """
         On mouse move of this object...
         Args:
@@ -725,7 +725,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         :param api_obj: if None, a new generator is created
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.scene.circuit.add_generator(bus=self.api_object)
+            api_obj = self.editor.circuit.add_generator(bus=self.api_object)
 
         _grph = GeneratorGraphicItem(parent=self, api_obj=api_obj, diagramScene=self.scene)
         self.shunt_children.append(_grph)
@@ -739,7 +739,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         :return:
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.scene.circuit.add_static_generator(bus=self.api_object)
+            api_obj = self.editor.circuit.add_static_generator(bus=self.api_object)
 
         _grph = StaticGeneratorGraphicItem(parent=self, api_obj=api_obj, diagramScene=self.scene)
         self.shunt_children.append(_grph)
@@ -750,11 +750,11 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
     def add_battery(self, api_obj=None):
         """
 
-        Returns:
-
+        :param api_obj:
+        :return:
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.scene.circuit.add_battery(bus=self.api_object)
+            api_obj = self.editor.circuit.add_battery(bus=self.api_object)
 
         _grph = BatteryGraphicItem(parent=self, api_obj=api_obj, diagramScene=self.scene)
         self.shunt_children.append(_grph)
@@ -765,11 +765,11 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
     def add_external_grid(self, api_obj=None):
         """
 
-        Returns:
-
+        :param api_obj:
+        :return:
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.scene.circuit.add_external_grid(bus=self.api_object)
+            api_obj = self.editor.circuit.add_external_grid(bus=self.api_object)
 
         _grph = ExternalGridGraphicItem(parent=self, api_obj=api_obj, diagramScene=self.scene)
         self.shunt_children.append(_grph)

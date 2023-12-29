@@ -112,13 +112,27 @@ class DriverTemplate:
         """
         pass
 
+    def report_progress(self, val: float):
+        """
+        Report progress
+        :param val: float value
+        """
+        self.progress_signal.emit(val)
+
+    def report_text(self, val: str):
+        """
+        Report text
+        :param val: text value
+        """
+        self.progress_text.emit(val)
+
     def cancel(self):
         """
         Cancel the simulation
         """
         self.__cancel__ = True
-        self.progress_signal.emit(0)
-        self.progress_text.emit('Cancelled!')
+        self.report_progress(0)
+        self.report_text('Cancelled!')
         self.done_signal.emit()
 
 

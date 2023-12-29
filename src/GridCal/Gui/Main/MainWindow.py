@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'MainWindow.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.5.3
+## Created by: Qt User Interface Compiler version 6.5.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -30,7 +30,7 @@ class Ui_mainWindow(object):
     def setupUi(self, mainWindow):
         if not mainWindow.objectName():
             mainWindow.setObjectName(u"mainWindow")
-        mainWindow.resize(1352, 805)
+        mainWindow.resize(1426, 805)
         mainWindow.setBaseSize(QSize(0, 0))
         icon = QIcon()
         icon.addFile(u":/Program icon/GridCal_icon.svg", QSize(), QIcon.Normal, QIcon.Off)
@@ -1255,19 +1255,27 @@ class Ui_mainWindow(object):
 
         self.horizontalLayout_2.addWidget(self.saveResultsButton)
 
+        self.results_traspose_checkBox = QCheckBox(self.frame_8)
+        self.results_traspose_checkBox.setObjectName(u"results_traspose_checkBox")
+        icon94 = QIcon()
+        icon94.addFile(u":/Icons/icons/transpose.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.results_traspose_checkBox.setIcon(icon94)
+
+        self.horizontalLayout_2.addWidget(self.results_traspose_checkBox)
+
         self.results_as_cdf_checkBox = QCheckBox(self.frame_8)
         self.results_as_cdf_checkBox.setObjectName(u"results_as_cdf_checkBox")
-        icon94 = QIcon()
-        icon94.addFile(u":/Icons/icons/cdf.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.results_as_cdf_checkBox.setIcon(icon94)
+        icon95 = QIcon()
+        icon95.addFile(u":/Icons/icons/cdf.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.results_as_cdf_checkBox.setIcon(icon95)
 
         self.horizontalLayout_2.addWidget(self.results_as_cdf_checkBox)
 
         self.results_as_abs_checkBox = QCheckBox(self.frame_8)
         self.results_as_abs_checkBox.setObjectName(u"results_as_abs_checkBox")
-        icon95 = QIcon()
-        icon95.addFile(u":/Icons/icons/abs.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.results_as_abs_checkBox.setIcon(icon95)
+        icon96 = QIcon()
+        icon96.addFile(u":/Icons/icons/abs.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.results_as_abs_checkBox.setIcon(icon96)
 
         self.horizontalLayout_2.addWidget(self.results_as_abs_checkBox)
 
@@ -1390,9 +1398,9 @@ class Ui_mainWindow(object):
 
         self.verticalLayout_42.addWidget(self.outputTextEdit)
 
-        icon96 = QIcon()
-        icon96.addFile(u":/Icons/icons/uncheck_all.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.tabWidget_4.addTab(self.tab_15, icon96, "")
+        icon97 = QIcon()
+        icon97.addFile(u":/Icons/icons/uncheck_all.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.tabWidget_4.addTab(self.tab_15, icon97, "")
         self.results_splitter.addWidget(self.tabWidget_4)
 
         self.verticalLayout_28.addWidget(self.results_splitter)
@@ -1482,9 +1490,9 @@ class Ui_mainWindow(object):
         self.verticalLayout_33 = QVBoxLayout(self.pythonConsoleTab)
         self.verticalLayout_33.setObjectName(u"verticalLayout_33")
         self.verticalLayout_33.setContentsMargins(0, 0, 0, 0)
-        icon97 = QIcon()
-        icon97.addFile(u":/Icons/icons/console.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.tabWidget_2.addTab(self.pythonConsoleTab, icon97, "")
+        icon98 = QIcon()
+        icon98.addFile(u":/Icons/icons/console.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.tabWidget_2.addTab(self.pythonConsoleTab, icon98, "")
         self.sourceCodeTab = QWidget()
         self.sourceCodeTab.setObjectName(u"sourceCodeTab")
         self.verticalLayout_39 = QVBoxLayout(self.sourceCodeTab)
@@ -1528,7 +1536,7 @@ class Ui_mainWindow(object):
 
         self.verticalLayout_22.addWidget(self.frame_10)
 
-        self.tabWidget.addTab(self.main_console_tab, icon97, "")
+        self.tabWidget.addTab(self.main_console_tab, icon98, "")
         self.SettingsTab = QWidget()
         self.SettingsTab.setObjectName(u"SettingsTab")
         self.gridLayout_8 = QGridLayout(self.SettingsTab)
@@ -2680,9 +2688,9 @@ class Ui_mainWindow(object):
 
         self.gridLayout_12.addWidget(self.frame_22, 2, 1, 1, 1)
 
-        icon98 = QIcon()
-        icon98.addFile(u":/Icons/icons/stochastic_power_flow.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.settings_tabWidget.addTab(self.tab_6, icon98, "")
+        icon99 = QIcon()
+        icon99.addFile(u":/Icons/icons/stochastic_power_flow.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.settings_tabWidget.addTab(self.tab_6, icon99, "")
         self.tab_9 = QWidget()
         self.tab_9.setObjectName(u"tab_9")
         self.horizontalLayout_8 = QHBoxLayout(self.tab_9)
@@ -2935,9 +2943,9 @@ class Ui_mainWindow(object):
 
         self.horizontalLayout_12.addItem(self.horizontalSpacer_11)
 
-        icon99 = QIcon()
-        icon99.addFile(u":/Icons/icons/area_transfer.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.settings_tabWidget.addTab(self.tab, icon99, "")
+        icon100 = QIcon()
+        icon100.addFile(u":/Icons/icons/area_transfer.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.settings_tabWidget.addTab(self.tab, icon100, "")
         self.tab_2 = QWidget()
         self.tab_2.setObjectName(u"tab_2")
         self.horizontalLayout_6 = QHBoxLayout(self.tab_2)
@@ -3134,9 +3142,9 @@ class Ui_mainWindow(object):
 
         self.horizontalLayout_6.addItem(self.horizontalSpacer_3)
 
-        icon100 = QIcon()
-        icon100.addFile(u":/Icons/icons/ml.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.settings_tabWidget.addTab(self.tab_2, icon100, "")
+        icon101 = QIcon()
+        icon101.addFile(u":/Icons/icons/ml.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.settings_tabWidget.addTab(self.tab_2, icon101, "")
         self.tab_13 = QWidget()
         self.tab_13.setObjectName(u"tab_13")
         self.gridLayout_17 = QGridLayout(self.tab_13)
@@ -4051,7 +4059,7 @@ class Ui_mainWindow(object):
         mainWindow.setCentralWidget(self.centralwidget)
         self.menuBar = QMenuBar(mainWindow)
         self.menuBar.setObjectName(u"menuBar")
-        self.menuBar.setGeometry(QRect(0, 0, 1352, 22))
+        self.menuBar.setGeometry(QRect(0, 0, 1426, 24))
         self.menuProject = QMenu(self.menuBar)
         self.menuProject.setObjectName(u"menuProject")
         self.menuExport = QMenu(self.menuProject)
@@ -4730,6 +4738,10 @@ class Ui_mainWindow(object):
         self.saveResultsButton.setToolTip(QCoreApplication.translate("mainWindow", u"Export data", None))
 #endif // QT_CONFIG(tooltip)
         self.saveResultsButton.setText("")
+#if QT_CONFIG(tooltip)
+        self.results_traspose_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"Transpose the results", None))
+#endif // QT_CONFIG(tooltip)
+        self.results_traspose_checkBox.setText("")
 #if QT_CONFIG(tooltip)
         self.results_as_cdf_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"Results as cummulative density functions", None))
 #endif // QT_CONFIG(tooltip)

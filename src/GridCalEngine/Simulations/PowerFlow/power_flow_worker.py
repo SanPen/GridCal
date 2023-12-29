@@ -14,9 +14,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
+from __future__ import annotations
 import numpy as np
-from typing import Union, Dict, Tuple
+from typing import Union, Dict, Tuple, TYPE_CHECKING
 
 import GridCalEngine.Simulations.PowerFlow as pflw
 from GridCalEngine.enumerations import SolverType
@@ -30,6 +30,9 @@ from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerica
 from GridCalEngine.Core.Devices.Substation.bus import Bus
 from GridCalEngine.Core.Devices.Aggregation.area import Area
 from GridCalEngine.basic_structures import CxVec, Vec, IntVec
+
+if TYPE_CHECKING:  # Only imports the below statements during type checking
+    from GridCalEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults
 
 
 def solve(circuit: NumericalCircuit,
@@ -137,12 +140,13 @@ def solve(circuit: NumericalCircuit,
             solution = pflw.dcpf(Ybus=circuit.Ybus,
                                  Bpqpv=circuit.Bpqpv,
                                  Bref=circuit.Bref,
-                                 Btheta=circuit.Btheta,
+                                 Btau=circuit.Btau,
                                  S0=S0,
                                  I0=I0,
+                                 Y0=Y0,
                                  V0=V0,
-                                 theta=tap_angles,
-                                 ref=ref,
+                                 tau=tap_angles,
+                                 vd=ref,
                                  pvpq=pqpv,
                                  pq=pq,
                                  pv=pv)
@@ -595,27 +599,6 @@ def multi_island_pf_nc(nc: NumericalCircuit,
                 else:
                     Sbus = Sbus_input + Shvdc[island.original_bus_idx]
 
-                # run circuit power flow
-                # res = single_island_pf(
-                #     circuit=island,
-                #     Vbus=island.Vbus if V_guess is None else V_guess[island.original_bus_idx],
-                #     Sbus=Sbus,
-                #     Ibus=island.Ibus,
-                #     Yloadbus=island.YLoadBus,
-                #     ma=island.branch_data.tap_module,
-                #     theta=island.branch_data.tap_angle,
-                #     Beq=island.branch_data.Beq,
-                #     branch_rates=island.Rates,
-                #     pq=island.pq,
-                #     pv=island.pv,
-                #     vd=island.vd,
-                #     pqpv=island.pqpv,
-                #     Qmin=island.Qmin_bus,
-                #     Qmax=island.Qmax_bus,
-                #     options=options,
-                #     logger=logger,
-                # )
-
                 res = single_island_pf(
                     circuit=island,
                     options=options,
@@ -711,11 +694,11 @@ def multi_island_pf_nc(nc: NumericalCircuit,
 
 def multi_island_pf(multi_circuit: MultiCircuit,
                     options: PowerFlowOptions,
-                    opf_results: Union["OptimalPowerFlowResults", None] = None,
+                    opf_results: Union[OptimalPowerFlowResults, None] = None,
                     t: Union[int, None] = None,
                     logger: Logger = Logger(),
                     bus_dict: Union[Dict[Bus, int], None] = None,
-                    areas_dict: Union[Dict[Area, int], None] = None) -> "PowerFlowResults":
+                    areas_dict: Union[Dict[Area, int], None] = None) -> PowerFlowResults:
     """
     Multiple islands power flow (this is the most generic power flow function)
     :param multi_circuit: MultiCircuit instance

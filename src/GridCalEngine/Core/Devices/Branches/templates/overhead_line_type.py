@@ -126,7 +126,7 @@ class OverheadLineType(EditableDevice):
         self.register(key='Imax', units='kA', tpe=float, definition='Current rating of the tower', old_names=['rating'])
         self.register(key='Vnom', units='kV', tpe=float, definition='Voltage rating of the line')
 
-    def add_wire(self, w: Wire):
+    def add_wire(self, w: WireInTower):
         """
 
         :param w:

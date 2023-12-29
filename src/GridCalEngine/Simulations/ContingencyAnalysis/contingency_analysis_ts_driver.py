@@ -32,7 +32,7 @@ from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_ts_resul
 from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.driver_template import TimeSeriesDriverTemplate
 from GridCalEngine.Simulations.Clustering.clustering_results import ClusteringResults
-from GridCalEngine.Core.Compilers.circuit_to_newton_pa import newton_pa_contingencies
+from GridCalEngine.Core.Compilers.circuit_to_newton_pa import newton_pa_contingencies, translate_contingency_report
 
 
 @jit(nopython=True, parallel=False, cache=True)
@@ -272,19 +272,7 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
         results.worst_flows = np.abs(res.contingency_flows)
         results.worst_loading = res.contingency_loading
 
-        for entry in res.report.entries:
-            results.report.add(time_index=entry.time_index,
-                               base_name=entry.base_name,
-                               base_uuid=entry.base_uuid,
-                               base_flow=np.abs(entry.base_flow),
-                               base_rating=entry.base_rating,
-                               base_loading=entry.base_loading,
-                               contingency_idx=entry.contingency_idx,
-                               contingency_name=entry.contingency_name,
-                               contingency_uuid=entry.contingency_uuid,
-                               post_contingency_flow=entry.post_contingency_flow,
-                               contingency_rating=entry.contingency_rating,
-                               post_contingency_loading=entry.post_contingency_loading)
+        translate_contingency_report(newton_report=res.report, gridcal_report=results.report)
 
         return results
 

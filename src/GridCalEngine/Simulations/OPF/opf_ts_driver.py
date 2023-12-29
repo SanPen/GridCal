@@ -30,7 +30,6 @@ from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOpti
 from GridCalEngine.Simulations.driver_template import TimeSeriesDriverTemplate
 from GridCalEngine.Core.Compilers.circuit_to_newton_pa import newton_pa_linear_opf, newton_pa_nonlinear_opf
 from GridCalEngine.Simulations.Clustering.clustering_results import ClusteringResults
-# import GridCalEngine.basic_structures as bs
 from GridCalEngine.basic_structures import IntVec, Vec, get_time_groups
 
 
@@ -74,6 +73,9 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
             hvdc_names=self.grid.get_hvdc_names(),
             fuel_names=self.grid.get_fuel_names(),
             emission_names=self.grid.get_emission_names(),
+            fluid_node_names=self.grid.get_fluid_node_names(),
+            fluid_path_names=self.grid.get_fluid_path_names(),
+            fluid_injection_names=self.grid.get_fluid_injection_names(),
             n=self.grid.get_bus_number(),
             m=self.grid.get_branch_number_wo_hvdc(),
             nt=nt,
@@ -81,6 +83,9 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
             nbat=self.grid.get_batteries_number(),
             nload=self.grid.get_loads_number(),
             nhvdc=self.grid.get_hvdc_number(),
+            n_fluid_node=self.grid.get_fluid_nodes_number(),
+            n_fluid_path=self.grid.get_fluid_paths_number(),
+            n_fluid_injection=self.grid.get_fluid_injection_number(),
             time_array=self.grid.time_profile[self.time_indices] if self.time_indices is not None else [datetime.datetime.now()],
             bus_types=np.ones(self.grid.get_bus_number(), dtype=int),
             clustering_results=clustering_results)
@@ -156,6 +161,14 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
 
             self.results.hvdc_Pf = opf_vars.hvdc_vars.flows
             self.results.hvdc_loading = opf_vars.hvdc_vars.loading
+
+            self.results.fluid_node_current_level = opf_vars.fluid_node_vars.current_level
+            self.results.fluid_node_flow_in = opf_vars.fluid_node_vars.flow_in
+            self.results.fluid_node_flow_out = opf_vars.fluid_node_vars.flow_out
+            self.results.fluid_node_p2x_flow = opf_vars.fluid_node_vars.p2x_flow
+            self.results.fluid_node_spillage = opf_vars.fluid_node_vars.spillage
+            self.results.fluid_path_flow = opf_vars.fluid_path_vars.flow
+            self.results.fluid_injection_flow = opf_vars.fluid_inject_vars.flow
 
             self.results.system_fuel = opf_vars.sys_vars.system_fuel
             self.results.system_emissions = opf_vars.sys_vars.system_emissions
@@ -246,6 +259,14 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
 
             self.results.hvdc_Pf[time_indices, :] = opf_vars.hvdc_vars.flows
             self.results.hvdc_loading[time_indices, :] = opf_vars.hvdc_vars.loading
+
+            self.results.fluid_node_current_level[time_indices, :] = opf_vars.fluid_node_vars.current_level
+            self.results.fluid_node_flow_in[time_indices, :] = opf_vars.fluid_node_vars.flow_in
+            self.results.fluid_node_flow_out[time_indices, :] = opf_vars.fluid_node_vars.flow_out
+            self.results.fluid_node_p2x_flow[time_indices, :] = opf_vars.fluid_node_vars.p2x_flow
+            self.results.fluid_node_spillage[time_indices, :] = opf_vars.fluid_node_vars.spillage
+            self.results.fluid_path_flow[time_indices, :] = opf_vars.fluid_path_vars.flow
+            self.results.fluid_injection_flow[time_indices, :] = opf_vars.fluid_inject_vars.flow
 
             self.results.system_fuel[time_indices, :] = opf_vars.sys_vars.system_fuel
             self.results.system_emissions[time_indices, :] = opf_vars.sys_vars.system_emissions
@@ -365,6 +386,15 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                 self.results.hvdc_Pf[ti, :] = npa_res.hvdc_flows
                 self.results.hvdc_loading[ti, :] = npa_res.hvdc_loading
 
+                self.results.fluid_node_current_level[ti, :] = npa_res.fluid_node_vars.current_level
+                self.results.fluid_node_flow_in[ti, :] = npa_res.fluid_node_vars.flow_in
+                self.results.fluid_node_flow_out[ti, :] = npa_res.fluid_node_vars.flow_out
+                self.results.fluid_node_p2x_flow[ti, :] = npa_res.fluid_node_vars.p2x_flow
+                self.results.fluid_node_spillage[ti, :] = npa_res.fluid_node_vars.spillage
+                self.results.fluid_path_flow[ti, :] = npa_res.fluid_path_vars.flow
+                self.results.fluid_injection_flow[ti, :] = npa_res.fluid_inject_vars.flow
+
+
             if self.options.solver == SolverType.AC_OPF:
                 self.progress_text.emit('Running Non-Linear OPF with Newton...')
 
@@ -391,6 +421,14 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                 # self.results.Sbus[ti, :] = problem.get_power_injections()
                 self.results.hvdc_Pf[ti, :] = npa_res.hvdc_Pf
                 self.results.hvdc_loading[ti, :] = npa_res.hvdc_loading
+
+                self.results.fluid_node_current_level[ti, :] = npa_res.fluid_node_vars.current_level
+                self.results.fluid_node_flow_in[ti, :] = npa_res.fluid_node_vars.flow_in
+                self.results.fluid_node_flow_out[ti, :] = npa_res.fluid_node_vars.flow_out
+                self.results.fluid_node_p2x_flow[ti, :] = npa_res.fluid_node_vars.p2x_flow
+                self.results.fluid_node_spillage[ti, :] = npa_res.fluid_node_vars.spillage
+                self.results.fluid_path_flow[ti, :] = npa_res.fluid_path_vars.flow
+                self.results.fluid_injection_flow[ti, :] = npa_res.fluid_inject_vars.flow
 
         if self.options.generate_report:
             self.add_report()

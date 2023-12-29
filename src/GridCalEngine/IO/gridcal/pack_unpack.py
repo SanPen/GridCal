@@ -61,51 +61,40 @@ def get_objects_dictionary() -> Dict[str, dev.EditableDevice]:
                     'shunt': dev.Shunt(),
 
                     'wires': dev.Wire(),
-
                     'overhead_line_types': dev.OverheadLineType(),
-
                     'underground_cable_types': dev.UndergroundLineType(),
-
                     'sequence_line_types': dev.SequenceLineType(),
-
                     'transformer_types': dev.TransformerType(),
 
                     'branch': dev.Branch(),
-
                     'transformer2w': dev.Transformer2W(),
 
                     'windings': dev.Winding(),
-
                     'transformer3w': dev.Transformer3W(),
 
                     'line': dev.Line(),
-
                     'dc_line': dev.DcLine(None, None),
 
                     'hvdc': dev.HvdcLine(),
 
                     'vsc': dev.VSC(None, None),
-
                     'upfc': dev.UPFC(None, None),
 
                     'contingency_group': dev.ContingencyGroup(),
-
                     'contingency': dev.Contingency(),
 
                     'investments_group': dev.InvestmentsGroup(),
-
                     'investment': dev.Investment(),
 
                     'generator_technology': dev.GeneratorTechnology(),
-
                     'generator_fuel': dev.GeneratorFuel(),
-
                     'generator_emission': dev.GeneratorEmission(),
 
                     'fluid_node': dev.FluidNode(),
                     'fluid_path': dev.FluidPath(),
                     'fluid_turbine': dev.FluidTurbine(),
                     'fluid_pump': dev.FluidPump(),
+                    'fluid_p2x': dev.FluidP2x(),
 
                     }
 
@@ -352,157 +341,6 @@ def data_frames_to_circuit(data: Dict, logger: Logger = Logger()):
             # fill in the objects
             if df.shape[0] > 0:
 
-                # # for each property ...
-                # for object_property_name, gc_prop in template_elm.editable_headers.items():
-                #
-                #     # if the object property exists in the data file, set all the object's property
-                #     if object_property_name in df.columns.values:
-                #
-                #         # get the type converter
-                #         dtype = gc_prop.tpe
-                #
-                #         # for each object, set the property
-                #         for i in range(df.shape[0]):
-                #
-                #             # convert and assign the data
-                #             if dtype is None:
-                #                 val = df[object_property_name].values[i]
-                #                 setattr(devices[i], object_property_name, val)
-                #
-                #             elif dtype in [DeviceType.SubstationDevice,
-                #                            DeviceType.AreaDevice,
-                #                            DeviceType.ZoneDevice,
-                #                            DeviceType.CountryDevice,
-                #                            DeviceType.Technology,
-                #                            DeviceType.ContingencyGroupDevice,
-                #                            DeviceType.InvestmentsGroupDevice,
-                #                            DeviceType.FuelDevice,
-                #                            DeviceType.EmissionGasDevice,
-                #                            DeviceType.GeneratorDevice,
-                #                            ]:
-                #
-                #                 """
-                #                 This piece is to assign the objects matching the Area, Substation, Zone and Country
-                #                 The cases may be:
-                #                 a) there is a matching id tag -> ok, assign it
-                #                 b) the value is a string -> create the relevant object,
-                #                                             make sure it is not repeated by name
-                #                                             inset the object in its matching object dictionary
-                #                 """
-                #
-                #                 # search for the Substation, Area, Zone or Country matching object and assign the object
-                #                 # this is the stored string (either idtag or name...)
-                #                 val = str(df[object_property_name].values[i])
-                #
-                #                 if dtype not in elements_dict.keys():
-                #                     elements_dict[dtype] = dict()
-                #
-                #                 if dtype not in elements_dict_by_name.keys():
-                #                     elements_dict_by_name[dtype] = dict()
-                #
-                #                 if val in elements_dict[dtype].keys():
-                #                     # the grouping exists as object, use it
-                #                     grouping = elements_dict[dtype][val]
-                #                 else:
-                #                     # create the grouping
-                #
-                #                     if val in elements_dict_by_name[dtype].keys():
-                #                         grouping = elements_dict_by_name[dtype][val]
-                #
-                #                     else:
-                #                         grouping = type(object_types[dtype.value.lower()])(name=val)
-                #                         elements_dict[dtype][grouping.idtag] = grouping
-                #
-                #                         # store also by name
-                #                         elements_dict_by_name[dtype][grouping.name] = grouping
-                #
-                #                 # set the object
-                #                 setattr(devices[i], object_property_name, grouping)
-                #
-                #             elif dtype == DeviceType.BusDevice:
-                #
-                #                 # check if the bus is in the dictionary...
-                #                 if df[object_property_name].values[i] in elements_dict[DeviceType.BusDevice].keys():
-                #
-                #                     parent_bus: dev.Bus = elements_dict[DeviceType.BusDevice][df[object_property_name].values[i]]
-                #                     setattr(devices[i], object_property_name, parent_bus)
-                #
-                #                     # add the device to the bus
-                #                     if template_elm.device_type in [DeviceType.LoadDevice,
-                #                                                     DeviceType.GeneratorDevice,
-                #                                                     DeviceType.BatteryDevice,
-                #                                                     DeviceType.StaticGeneratorDevice,
-                #                                                     DeviceType.ShuntDevice,
-                #                                                     DeviceType.ExternalGridDevice]:
-                #
-                #                         parent_bus.add_device(devices[i])
-                #
-                #                 else:
-                #                     logger.add_error('Bus not found', str(df[object_property_name].values[i]))
-                #
-                #             elif dtype in [DeviceType.TransformerTypeDevice,  # template types mostly
-                #                            DeviceType.SequenceLineDevice,
-                #                            DeviceType.OverheadLineTypeDevice,
-                #                            DeviceType.WindingDevice]:
-                #
-                #                 if df[object_property_name].values[i] in elements_dict[dtype].keys():
-                #
-                #                     # get the actual template and set it
-                #                     val = elements_dict[dtype][df[object_property_name].values[i]]
-                #                     setattr(devices[i], object_property_name, val)
-                #
-                #                 else:
-                #                     logger.add_error(dtype.value + ' type not found',
-                #                                              str(df[object_property_name].values[i]))
-                #
-                #             elif dtype == bool:
-                #                 # regular types (int, str, float, etc...)
-                #                 val = df[object_property_name].values[i]
-                #                 if val == 'False':
-                #                     setattr(devices[i], object_property_name, False)
-                #                 elif val == 'True':
-                #                     setattr(devices[i], object_property_name, True)
-                #                 else:
-                #                     setattr(devices[i], object_property_name, bool(val))
-                #
-                #             elif dtype == str:
-                #                 val = dtype(df[object_property_name].values[i]).replace('nan', '')
-                #                 setattr(devices[i], object_property_name, val)
-                #
-                #             else:
-                #                 # regular types (int, str, float, etc...)
-                #                 try:
-                #                     val = dtype(df[object_property_name].values[i])
-                #                     setattr(devices[i], object_property_name, val)
-                #                 except ValueError:
-                #                     logger.add_error('type error', devices[i].name, df[object_property_name].values[i])
-                #
-                #         # search the profiles in the data and assign them
-                #         if object_property_name in template_elm.properties_with_profile.keys():
-                #
-                #             # get the profile property
-                #             prop_prof = template_elm.properties_with_profile[object_property_name]
-                #
-                #             # build the profile property file-name to get it from the data
-                #             profile_name = key + '_' + prop_prof
-                #
-                #             if profile_name in data.keys():
-                #
-                #                 # get the profile DataFrame
-                #                 dfp = data[profile_name]
-                #
-                #                 # for each object, set the profile
-                #                 for i in range(dfp.shape[1]):
-                #                     profile = dfp.values[:, i]
-                #                     setattr(devices[i], prop_prof, profile.astype(dtype))
-                #
-                #             else:
-                #                 logger.add_error('Profile was not found in the data', object_property_name)
-                #
-                #     else:
-                #         logger.add_error(object_property_name + ' of object type ' + str(template_elm.device_type) +
-                #                                  ' not found in the input data')
-
                 for file_object_property in df.columns.values:
                     # for each property in the file ...
 
@@ -536,9 +374,7 @@ def data_frames_to_circuit(data: Dict, logger: Logger = Logger()):
                                                  DeviceType.InvestmentsGroupDevice,
                                                  DeviceType.FuelDevice,
                                                  DeviceType.EmissionGasDevice,
-                                                 DeviceType.GeneratorDevice,
-                                                 DeviceType.ConnectivityNodeDevice,
-                                                 DeviceType.FluidNode]:
+                                                 DeviceType.GeneratorDevice]:
 
                                 """
                                 This piece is to assign the objects matching the Area, Substation, Zone and Country
@@ -597,6 +433,35 @@ def data_frames_to_circuit(data: Dict, logger: Logger = Logger()):
 
                                 else:
                                     logger.add_error('Bus not found', str(property_value))
+
+                            elif gc_prop.tpe == DeviceType.FluidNodeDevice:
+
+                                # check if the bus is in the dictionary...
+                                if property_value in elements_dict[DeviceType.FluidNodeDevice].keys():
+
+                                    parent_bus: dev.FluidNode = elements_dict[DeviceType.FluidNodeDevice][property_value]
+                                    setattr(devices[i], gc_prop.name, parent_bus)
+
+                                    # add the device to the bus
+                                    if template_elm.device_type in [DeviceType.FluidTurbineDevice,
+                                                                    DeviceType.FluidPumpDevice,
+                                                                    DeviceType.FluidP2XDevice]:
+                                        parent_bus.add_device(devices[i])
+
+                                else:
+                                    logger.add_error('Fluid node not found', str(property_value))
+
+                            elif gc_prop.tpe == DeviceType.ConnectivityNodeDevice:
+
+                                # check if the bus is in the dictionary...
+                                if property_value in elements_dict[DeviceType.ConnectivityNodeDevice].keys():
+
+                                    if property_value != 'nan' and property_value != '':
+                                        parent_bus: dev.FluidNode = elements_dict[DeviceType.ConnectivityNodeDevice][property_value]
+                                        setattr(devices[i], gc_prop.name, parent_bus)
+
+                                else:
+                                    logger.add_error('Fluid node not found', str(property_value))
 
                             elif gc_prop.tpe in [DeviceType.TransformerTypeDevice,  # template types mostly
                                                  DeviceType.SequenceLineDevice,
@@ -677,18 +542,6 @@ def data_frames_to_circuit(data: Dict, logger: Logger = Logger()):
             if template_elm.device_type == DeviceType.BusDevice:
                 circuit.buses = devices
 
-            # elif template_elm.device_type == DeviceType.SubstationDevice:
-            #     circuit.substations = devices
-            #
-            # elif template_elm.device_type == DeviceType.AreaDevice:
-            #     circuit.areas = devices
-            #
-            # elif template_elm.device_type == DeviceType.ZoneDevice:
-            #     circuit.zones = devices
-            #
-            # elif template_elm.device_type == DeviceType.CountryDevice:
-            #     circuit.countries = devices
-
             elif template_elm.device_type == DeviceType.BranchDevice:
                 for d in devices:
                     circuit.add_branch(d)  # each branch needs to be converted accordingly
@@ -696,7 +549,6 @@ def data_frames_to_circuit(data: Dict, logger: Logger = Logger()):
             elif template_elm.device_type == DeviceType.LineDevice:
                 for d in devices:
                     circuit.add_line(d, logger=logger)  # this is done to detect those lines that should be transformers
-                # circuit.lines = devices
 
             elif template_elm.device_type == DeviceType.DCLineDevice:
                 circuit.dc_lines = devices
@@ -766,17 +618,12 @@ def data_frames_to_circuit(data: Dict, logger: Logger = Logger()):
             elif template_elm.device_type == DeviceType.GeneratorEmissionAssociation:
                 circuit.generators_emissions = devices
 
-            elif template_elm.device_type == DeviceType.FluidNode:
+            elif template_elm.device_type == DeviceType.FluidNodeDevice:
                 circuit.fluid_nodes = devices
 
-            elif template_elm.device_type == DeviceType.FluidPath:
+            elif template_elm.device_type == DeviceType.FluidPathDevice:
                 circuit.fluid_paths = devices
 
-            elif template_elm.device_type == DeviceType.FluidTurbine:
-                circuit.fluid_turbines = devices
-
-            elif template_elm.device_type == DeviceType.FluidPump:
-                circuit.fluid_pumps = devices
         else:
             # the file does not contain information for the data type (not a problem...)
             pass
@@ -791,8 +638,8 @@ def data_frames_to_circuit(data: Dict, logger: Logger = Logger()):
 
             if (tower_name in elements_dict[DeviceType.OverheadLineTypeDevice].keys()) and \
                     (wire_name in elements_dict[DeviceType.WireDevice].keys()):
-                tower = elements_dict[DeviceType.OverheadLineTypeDevice][tower_name]
-                wire = elements_dict[DeviceType.WireDevice][wire_name]
+                tower: dev.OverheadLineType = elements_dict[DeviceType.OverheadLineTypeDevice][tower_name]
+                wire: dev.Wire = elements_dict[DeviceType.WireDevice][wire_name]
                 xpos = df['xpos'].values[i]
                 ypos = df['ypos'].values[i]
                 phase = df['phase'].values[i]
@@ -840,14 +687,5 @@ def data_frames_to_circuit(data: Dict, logger: Logger = Logger()):
 
     if DeviceType.CountryDevice in elements_dict.keys():
         circuit.countries = list(elements_dict[DeviceType.CountryDevice].values())
-
-    # if DeviceType.Technology in elements_dict.keys():
-    #     circuit.technologies = list(elements_dict[DeviceType.Technology].values())
-    #
-    # if DeviceType.ContingencyGroupDevice in elements_dict.keys():
-    #     circuit.contingency_groups = list(elements_dict[DeviceType.ContingencyGroupDevice].values())
-    #
-    # if DeviceType.ContingencyDevice in elements_dict.keys():
-    #     circuit.contingencies = list(elements_dict[DeviceType.ContingencyDevice].values())
 
     return circuit

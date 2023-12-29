@@ -111,6 +111,9 @@ class ResultsMain(SimulationsMain):
 
                         if self.results_mdl is not None:
 
+                            if self.ui.results_traspose_checkBox.isChecked():
+                                self.results_mdl.transpose()
+
                             if self.ui.results_as_abs_checkBox.isChecked():
                                 self.results_mdl.convert_to_abs()
 
