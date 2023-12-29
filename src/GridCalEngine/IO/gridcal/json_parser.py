@@ -28,6 +28,30 @@ from GridCalEngine.enumerations import DeviceType, ConverterControlType, HvdcCon
 from GridCalEngine.Core.Devices.profile import compress_array_numba
 
 
+def add_to_dict(d, d2, key):
+    """
+
+    :param d:
+    :param d2:
+    :param key:
+    """
+    if key in d.keys():
+        d[key].append(d2)
+    else:
+        d[key] = [d2]
+
+
+def add_to_dict2(d, d2, key):
+    """
+
+    :param d:
+    :param d2:
+    :param key:
+    """
+    if key not in d.keys():
+        d[key] = d2
+
+
 def get_most_frequent(arr):
     """
 
@@ -1207,27 +1231,7 @@ def save_json_file_v3(file_path: str, circuit: MultiCircuit, simulation_drivers:
     units_dict = dict()
     logger = Logger()
 
-    def add_to_dict(d, d2, key):
-        """
 
-        :param d:
-        :param d2:
-        :param key:
-        """
-        if key in d.keys():
-            d[key].append(d2)
-        else:
-            d[key] = [d2]
-
-    def add_to_dict2(d, d2, key):
-        """
-
-        :param d:
-        :param d2:
-        :param key:
-        """
-        if key not in d.keys():
-            d[key] = d2
 
     # add the circuit
     elements[DeviceType.CircuitDevice.value] = circuit.get_properties_dict()

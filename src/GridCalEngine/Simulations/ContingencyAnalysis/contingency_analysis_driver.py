@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import numpy as np
-from typing import Union
+from typing import Union, List
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
 
@@ -30,7 +30,8 @@ from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOpti
 from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearAnalysis, LinearMultiContingencies
 from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_options import ContingencyAnalysisOptions
 from GridCalEngine.Core.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE
-from GridCalEngine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE, newton_pa_contingencies
+from GridCalEngine.Core.Compilers.circuit_to_newton_pa import (NEWTON_PA_AVAILABLE, newton_pa_contingencies,
+                                                               translate_newton_pa_contingencies)
 from GridCalEngine.Core.Compilers.circuit_to_pgm import PGM_AVAILABLE
 
 
@@ -71,7 +72,7 @@ class ContingencyAnalysisDriver(DriverTemplate):
             con_names=()
         )
 
-    def get_steps(self):
+    def get_steps(self) -> List[str]:
         """
         Get variations list of strings
         """
@@ -107,15 +108,8 @@ class ContingencyAnalysisDriver(DriverTemplate):
 
         # get contingency groups dictionary
         cg_dict = self.grid.get_contingency_group_dict()
-
-        branches_dict = self.grid.get_branches_wo_hvdc_dict()
         calc_branches = self.grid.get_branches_wo_hvdc()
         mon_idx = numerical_circuit.branch_data.get_monitor_enabled_indices()
-
-        # keep the original states
-        original_br_active = numerical_circuit.branch_data.active.copy()
-        original_gen_active = numerical_circuit.generator_data.active.copy()
-        original_gen_p = numerical_circuit.generator_data.p.copy()
 
         # run 0
         pf_res_0 = multi_island_pf_nc(nc=numerical_circuit,
@@ -388,5 +382,8 @@ class ContingencyAnalysisDriver(DriverTemplate):
                                               con_opt=self.options,
                                               time_series=False,
                                               time_indices=None)
+
+            self.results = translate_newton_pa_contingencies(grid=self.grid,
+                                                             con_res=con_res)
 
         self.toc()

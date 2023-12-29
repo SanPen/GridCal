@@ -35,9 +35,9 @@ if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCalEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults
     from GridCalEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
     from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_options import ContingencyAnalysisOptions
+    from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_results import ContingencyAnalysisResults
 
-
-NEWTON_PA_RECOMMENDED_VERSION = "2.1.13"
+NEWTON_PA_RECOMMENDED_VERSION = "2.1.14"
 NEWTON_PA_VERSION = ''
 NEWTON_PA_AVAILABLE = False
 try:
@@ -1322,7 +1322,6 @@ def newton_pa_contingencies(circuit: MultiCircuit,
         mode = npa.ContingencyAnalysisMode.Full
 
     # npa.FileHandler().save(npa_circuit, "whatever.newton")
-
     # print('time_indices')
     # print(time_indices)
 
@@ -1560,6 +1559,65 @@ def translate_newton_pa_opf_results(grid: MultiCircuit, res: "npa.NonlinearOpfRe
     results.converged = res.stats[0][0].converged[0]
 
     print(res.stats[0][0].getTable())
+
+    return results
+
+
+def translate_contingency_report(newton_report, gridcal_report):
+    """
+    Translate contingency report
+    :param newton_report:
+    :param gridcal_report:
+    :return:
+    """
+    for entry in newton_report.entries:
+        gridcal_report.add(time_index=entry.time_index,
+                           base_name=entry.base_name,
+                           base_uuid=entry.base_uuid,
+                           base_flow=np.abs(entry.base_flow),
+                           base_rating=entry.base_rating,
+                           base_loading=entry.base_loading,
+                           contingency_idx=entry.contingency_idx,
+                           contingency_name=entry.contingency_name,
+                           contingency_uuid=entry.contingency_uuid,
+                           post_contingency_flow=np.abs(entry.post_contingency_flow),
+                           contingency_rating=entry.contingency_rating,
+                           post_contingency_loading=entry.post_contingency_loading)
+
+
+def translate_newton_pa_contingencies(grid: MultiCircuit,
+                                      con_res: "npa.ContingencyAnalysisResults") -> ContingencyAnalysisResults:
+    """
+
+    :param grid:
+    :param con_res:
+    :return:
+    """
+    from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_results import ContingencyAnalysisResults
+
+    # declare the results
+    results = ContingencyAnalysisResults(ncon=len(grid.contingency_groups),
+                                         nbr=grid.get_branch_number_wo_hvdc(),
+                                         nbus=grid.get_bus_number(),
+                                         branch_names=grid.get_branch_names_wo_hvdc(),
+                                         bus_names=grid.get_bus_names(),
+                                         bus_types=grid.get_bus_default_types(),
+                                         con_names=grid.get_contingency_group_names())
+
+    """
+    self.voltage: CxMat = np.ones((ncon, nbus), dtype=complex)
+    self.Sbus: CxMat = np.zeros((ncon, nbus), dtype=complex)
+    self.Sf: CxMat = np.zeros((ncon, nbr), dtype=complex)
+    self.loading: CxMat = np.zeros((ncon, nbr), dtype=complex)
+
+    self.report: ContingencyResultsReport = ContingencyResultsReport()
+    """
+
+    # results.voltage = con_res.contingency_voltages[0]  # these are not translatable
+    # results.Sf = con_res.contingency_flows[0]
+    # results.loading = con_res.contingency_loading[0]
+    translate_contingency_report(newton_report=con_res.report,
+                                 gridcal_report=results.report)
 
     return results
 
