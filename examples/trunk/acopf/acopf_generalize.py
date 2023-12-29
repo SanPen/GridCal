@@ -16,16 +16,16 @@ def build_grid_3bus():
     grid.add_bus(b2)
     grid.add_bus(b3)
 
-    grid.add_line(gce.Line(bus_from=b1, bus_to=b2, name='line 1-2', r=0.001, x=0.05, rate=100))
-    grid.add_line(gce.Line(bus_from=b2, bus_to=b3, name='line 2-3', r=0.001, x=0.05, rate=100))
-    grid.add_line(gce.Line(bus_from=b3, bus_to=b1, name='line 3-1_1', r=0.001, x=0.05, rate=100))
+    grid.add_line(gce.Line(bus_from=b1, bus_to=b2, name='line 1-2', r=0.01, x=0.05, rate=100))
+    grid.add_line(gce.Line(bus_from=b2, bus_to=b3, name='line 2-3', r=0.01, x=0.05, rate=100))
+    grid.add_line(gce.Line(bus_from=b3, bus_to=b1, name='line 3-1_1', r=0.01, x=0.05, rate=100))
     # grid.add_line(gce.Line(bus_from=b3, bus_to=b1, name='line 3-1_2', r=0.001, x=0.05, rate=100))
 
     gen1 = gce.Generator('G1', vset=1.001, Cost=1.0)
     gen2 = gce.Generator('G2', P=10, vset=0.995, Cost=1.0)
 
-    gen1.Cost2 = 1.5
-    gen2.Cost2 = 0.7
+    gen1.Cost2 = 1.1
+    gen2.Cost2 = 0.5
 
     grid.add_load(b3, gce.Load(name='L3', P=50, Q=20))
     grid.add_generator(b1, gen1)
@@ -233,7 +233,7 @@ def build_gae(x: np.ndarray = None,
               g_dict: Dict = None,
               n_eq: int = 0,
               n_x: int = 0,
-              dh: float = 1e-10):
+              dh: float = 1e-5):
     """
     Build the concatenation of g gradients
     :param x: vector of unknowns
@@ -261,7 +261,7 @@ def build_gai(x: np.ndarray = None,
               h_dict: Dict = None,
               n_ineq: int = 0,
               n_x: int = 0,
-              dh: float = 1e-10):
+              dh: float = 1e-5):
     """
     Build the concatenation of h gradients
     :param x: vector of unknowns
@@ -292,7 +292,7 @@ def build_r1(x: np.ndarray = None,
              gae: sp.spmatrix = None,
              gai: sp.spmatrix = None,
              n_x: int = 0,
-             dh: float = 1e-10,
+             dh: float = 1e-5,
              fobj_dict: Dict = None):
     """
     Build the Lagrangian of the residual
@@ -329,7 +329,7 @@ def build_r(x: np.ndarray = None,
             n_eq: int = 0,
             n_ineq: int = 0,
             n_x: int = 0,
-            dh: float = 1e-10,
+            dh: float = 1e-5,
             g_dict: Dict = None,
             h_dict: Dict = None,
             fobj_dict: Dict = None):
@@ -391,7 +391,7 @@ def build_j(x: np.ndarray = None,
             n_eq: int = 0,
             n_ineq: int = 0,
             n_x: int = 0,
-            dh: float = 1e-10,
+            dh: float = 1e-5,
             g_dict: Dict = None,
             h_dict: Dict = None,
             fobj_dict: Dict = None):
@@ -497,7 +497,7 @@ def build_j(x: np.ndarray = None,
     return jj.tocsr()
 
 
-def solve_opf(grid, dh=1e-10, tol=1e-6, max_iter=100):
+def solve_opf(grid, dh=1e-5, tol=1e-6, max_iter=100):
     """
     Main function to solve the OPF, it calls other functions and assembles the IPM
     :param grid: multicircuit where we want to compute the OPF
@@ -552,6 +552,9 @@ def solve_opf(grid, dh=1e-10, tol=1e-6, max_iter=100):
     p0gen = nc.generator_data.C_bus_elm.T @ np.real(s0gen)
     q0gen = nc.generator_data.C_bus_elm.T @ np.imag(s0gen)
 
+    p0gen = nc.generator_data.C_bus_elm.T @ np.zeros(len(s0gen))
+    q0gen = nc.generator_data.C_bus_elm.T @ np.zeros(len(s0gen))
+
     x[x_ind[0]:x_ind[1]] = np.real(pf_driver.results.voltage)[pqpv]  # e
     x[x_ind[1]:x_ind[2]] = np.imag(pf_driver.results.voltage)[pqpv]  # f
     x[x_ind[2]:x_ind[3]] = p0gen  # pgen
@@ -575,9 +578,9 @@ def solve_opf(grid, dh=1e-10, tol=1e-6, max_iter=100):
                       2 * npqpv + 2 * nbr + 4 * ngen])
 
     # multipliers, try other initializations maybe
-    mu = 10.0
-    s = 5.0 * np.ones(n_ineq)
-    z = 2.0 * np.ones(n_ineq)
+    mu = 1.0
+    s = 1.0 * np.ones(n_ineq)
+    z = 1.0 * np.ones(n_ineq)
     y = 0.0 * np.ones(n_eq)
 
     # Pack the keyword arguments into a dictionary
@@ -624,8 +627,12 @@ def solve_opf(grid, dh=1e-10, tol=1e-6, max_iter=100):
 
     # start loop
     err = 1.0
+    f_obj0 = 1e15
     it = 0
+    inn_it = 10
     while err > tol and it < max_iter:
+
+        # for kk in range(inn_it):
 
         r = build_r(x=x,
                     x_ind=x_ind,
@@ -654,6 +661,8 @@ def solve_opf(grid, dh=1e-10, tol=1e-6, max_iter=100):
                      h_dict=h_dict,
                      fobj_dict=fobj_dict)
 
+        err = max(abs(r))
+
         ax = - sp.linalg.spsolve(jj, r)
 
         dxx = ax[0:n_x]
@@ -663,14 +672,14 @@ def solve_opf(grid, dh=1e-10, tol=1e-6, max_iter=100):
 
         s_list = []
         for ii in range(n_ineq):
-            s_list.append(-0.99 * s[ii] / (dss[ii] + 1e-20))
+            s_list.append(-0.995 * s[ii] / (dss[ii] + 1e-20))
 
         s_list_filtered = [num for num in s_list if 0 < num <= 1]
         as_max = min(s_list_filtered, default=1)
 
         z_list = []
         for ii in range(n_ineq):
-            z_list.append(-0.99 * z[ii] / (dzz[ii] + 1e-20))
+            z_list.append(-0.995 * z[ii] / (dzz[ii] + 1e-20))
 
         z_list_filtered = [num for num in z_list if 0 < num <= 1]
         az_max = min(z_list_filtered, default=1)
@@ -693,13 +702,23 @@ def solve_opf(grid, dh=1e-10, tol=1e-6, max_iter=100):
                              cost1=nc.generator_data.cost_1,
                              cost2=nc.generator_data.cost_2)
 
-        mu *= 0.2
+        # if f_obj > f_obj0:
+        #     # Get back to previous solution
+        #     x -= as_max * dxx
+        #     s -= as_max * dss
+        #     y -= az_max * dyy
+        #     z -= az_max * dzz
+        # else:
+        #     f_obj0 = f_obj
+
+        mu *= 0.5
         it += 1
 
         print('x: ', x)
         print('s: ', s)
         print('z: ', z)
         print('y: ', y)
+        print('f: ', f_obj)
         print('--------------------')
 
     return 0

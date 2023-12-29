@@ -28,7 +28,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Add the slack balance and got it converging">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Fix identity sign and improved significantly convergence">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/examples/trunk/acopf/acopf_generalize.py" beforeDir="false" afterPath="$PROJECT_DIR$/examples/trunk/acopf/acopf_generalize.py" afterDir="false" />
     </list>
@@ -1564,7 +1564,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="439" />
+    <option name="localTasksCounter" value="440" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1610,7 +1610,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Fixed bug when setting the file label for when loading many CIM files&#10;&#10;Minor refactoring" />
     <MESSAGE value="5.0.3 - light refactoring of some functions" />
     <MESSAGE value="some changes to make it work in python 3.9" />
     <MESSAGE value="updated the README.md and the docs" />
@@ -1635,7 +1634,8 @@
     <MESSAGE value="Build full set of residuals" />
     <MESSAGE value="Finish the algorithm but missing debug" />
     <MESSAGE value="Add the slack balance and got it converging" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add the slack balance and got it converging" />
+    <MESSAGE value="Fix identity sign and improved significantly convergence" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fix identity sign and improved significantly convergence" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2075,13 +2075,8 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/examples/trunk/acopf/acopf_generalize.py</url>
-          <line>382</line>
-          <option name="timeStamp" value="1314" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/examples/trunk/acopf/acopf_generalize.py</url>
-          <line>684</line>
-          <option name="timeStamp" value="1315" />
+          <line>470</line>
+          <option name="timeStamp" value="1319" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
