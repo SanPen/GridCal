@@ -63,7 +63,7 @@ def eval_g(x, Ybus, Yf, Cg, Sd, slack, pqpv, pq):
     # Incrementos de las variables. También se incluyen las tensiones de los buses PQPV. Usamos V_U, aunque es igual
     # que V_L en este caso al ser nodos de tensión fija. Tambien fijamos la tensión del slack.
     # gxval = var2x(vm, th, Pg, Qg, phi, Pf, Qf, Pt, Qt, Lf)
-    gval = np.r_[dS.real[pqpv], dS.imag[pq], vm[pv] - V_U[pv], vm[slack] - 1, va[slack]]  # Check, may not need slicing
+    gval = np.r_[dS.real, dS.imag, vm[pv] - V_U[pv], vm[slack] - 1, va[slack]]  # Check, may not need slicing
 
     return gval
 
