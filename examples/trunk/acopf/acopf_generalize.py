@@ -24,8 +24,8 @@ def build_grid_3bus():
     gen1 = gce.Generator('G1', vset=1.001, Cost=1.0)
     gen2 = gce.Generator('G2', P=10, vset=0.995, Cost=1.0)
 
-    # gen1.Cost2 = 1.1
-    # gen2.Cost2 = 1.1
+    gen1.Cost2 = 1.5
+    gen2.Cost2 = 0.7
 
     grid.add_load(b3, gce.Load(name='L3', P=50, Q=20))
     grid.add_generator(b1, gen1)
@@ -233,7 +233,7 @@ def build_gae(x: np.ndarray = None,
               g_dict: Dict = None,
               n_eq: int = 0,
               n_x: int = 0,
-              dh: float = 1e-5):
+              dh: float = 1e-10):
     """
     Build the concatenation of g gradients
     :param x: vector of unknowns
@@ -261,7 +261,7 @@ def build_gai(x: np.ndarray = None,
               h_dict: Dict = None,
               n_ineq: int = 0,
               n_x: int = 0,
-              dh: float = 1e-5):
+              dh: float = 1e-10):
     """
     Build the concatenation of h gradients
     :param x: vector of unknowns
@@ -292,7 +292,7 @@ def build_r1(x: np.ndarray = None,
              gae: sp.spmatrix = None,
              gai: sp.spmatrix = None,
              n_x: int = 0,
-             dh: float = 1e-5,
+             dh: float = 1e-10,
              fobj_dict: Dict = None):
     """
     Build the Lagrangian of the residual
@@ -329,7 +329,7 @@ def build_r(x: np.ndarray = None,
             n_eq: int = 0,
             n_ineq: int = 0,
             n_x: int = 0,
-            dh: float = 1e-5,
+            dh: float = 1e-10,
             g_dict: Dict = None,
             h_dict: Dict = None,
             fobj_dict: Dict = None):
@@ -391,7 +391,7 @@ def build_j(x: np.ndarray = None,
             n_eq: int = 0,
             n_ineq: int = 0,
             n_x: int = 0,
-            dh: float = 1e-5,
+            dh: float = 1e-10,
             g_dict: Dict = None,
             h_dict: Dict = None,
             fobj_dict: Dict = None):
@@ -483,7 +483,7 @@ def build_j(x: np.ndarray = None,
     j11 = sp.csr_matrix((n_eq, n_eq), dtype=float)
     j12 = sp.csr_matrix((n_eq, n_ineq), dtype=float)
     j13 = sp.csr_matrix(gai_0)
-    j14 = sp.eye(n_ineq, dtype=float)
+    j14 = - sp.eye(n_ineq, dtype=float)
     j15 = sp.csr_matrix((n_ineq, n_eq), dtype=float)
     j16 = sp.csr_matrix((n_ineq, n_ineq), dtype=float)
 
@@ -497,7 +497,7 @@ def build_j(x: np.ndarray = None,
     return jj.tocsr()
 
 
-def solve_opf(grid, dh=1e-5, tol=1e-6, max_iter=100):
+def solve_opf(grid, dh=1e-10, tol=1e-6, max_iter=100):
     """
     Main function to solve the OPF, it calls other functions and assembles the IPM
     :param grid: multicircuit where we want to compute the OPF
@@ -577,8 +577,8 @@ def solve_opf(grid, dh=1e-5, tol=1e-6, max_iter=100):
     # multipliers, try other initializations maybe
     mu = 10.0
     s = 5.0 * np.ones(n_ineq)
-    z = 0.2 * np.ones(n_ineq)
-    y = 0.1 * np.ones(n_eq)
+    z = 2.0 * np.ones(n_ineq)
+    y = 0.0 * np.ones(n_eq)
 
     # Pack the keyword arguments into a dictionary
     g_dict = {'x_ind': x_ind,
@@ -663,17 +663,17 @@ def solve_opf(grid, dh=1e-5, tol=1e-6, max_iter=100):
 
         s_list = []
         for ii in range(n_ineq):
-            s_list.append(-0.995 * s[ii] / (dss[ii] + 1e-20))
+            s_list.append(-0.99 * s[ii] / (dss[ii] + 1e-20))
 
         s_list_filtered = [num for num in s_list if 0 < num <= 1]
-        as_max = max(s_list_filtered, default=1)
+        as_max = min(s_list_filtered, default=1)
 
         z_list = []
         for ii in range(n_ineq):
-            z_list.append(-0.995 * z[ii] / (dzz[ii] + 1e-20))
+            z_list.append(-0.99 * z[ii] / (dzz[ii] + 1e-20))
 
         z_list_filtered = [num for num in z_list if 0 < num <= 1]
-        az_max = max(z_list_filtered, default=1)
+        az_max = min(z_list_filtered, default=1)
 
         incr = 0.5
 
