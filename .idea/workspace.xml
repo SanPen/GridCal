@@ -28,7 +28,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Finish the algorithm but missing debug">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Add the slack balance and got it converging">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/examples/trunk/acopf/acopf_generalize.py" beforeDir="false" afterPath="$PROJECT_DIR$/examples/trunk/acopf/acopf_generalize.py" afterDir="false" />
     </list>
@@ -148,7 +148,7 @@
       <recent name="$PROJECT_DIR$/src/research/PTDF" />
     </key>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Python.acopf_generalize">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -1564,7 +1564,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="438" />
+    <option name="localTasksCounter" value="439" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1610,7 +1610,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Added the roseta figures&#10;minor refactor" />
     <MESSAGE value="Fixed bug when setting the file label for when loading many CIM files&#10;&#10;Minor refactoring" />
     <MESSAGE value="5.0.3 - light refactoring of some functions" />
     <MESSAGE value="some changes to make it work in python 3.9" />
@@ -1635,7 +1634,8 @@
     <MESSAGE value="Build sets of gradients Ai and Ae" />
     <MESSAGE value="Build full set of residuals" />
     <MESSAGE value="Finish the algorithm but missing debug" />
-    <option name="LAST_COMMIT_MESSAGE" value="Finish the algorithm but missing debug" />
+    <MESSAGE value="Add the slack balance and got it converging" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add the slack balance and got it converging" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2075,13 +2075,23 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/examples/trunk/acopf/acopf_generalize.py</url>
-          <line>677</line>
+          <line>696</line>
           <option name="timeStamp" value="1293" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/examples/trunk/acopf/acopf_generalize.py</url>
-          <line>671</line>
+          <line>690</line>
           <option name="timeStamp" value="1308" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/examples/trunk/acopf/acopf_generalize.py</url>
+          <line>677</line>
+          <option name="timeStamp" value="1309" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/examples/trunk/acopf/acopf_generalize.py</url>
+          <line>319</line>
+          <option name="timeStamp" value="1311" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
