@@ -28,7 +28,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Fix identity sign and improved significantly convergence">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Use dh of 1e-5 to avoid numerical issues!">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/examples/trunk/acopf/acopf_generalize.py" beforeDir="false" afterPath="$PROJECT_DIR$/examples/trunk/acopf/acopf_generalize.py" afterDir="false" />
     </list>
@@ -1564,7 +1564,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="440" />
+    <option name="localTasksCounter" value="441" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1597,7 +1597,7 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="205_ACOPF" />
+                        <option value="devel" />
                       </list>
                     </value>
                   </entry>
@@ -1610,7 +1610,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="5.0.3 - light refactoring of some functions" />
     <MESSAGE value="some changes to make it work in python 3.9" />
     <MESSAGE value="updated the README.md and the docs" />
     <MESSAGE value="created setup entry point" />
@@ -1635,7 +1634,8 @@
     <MESSAGE value="Finish the algorithm but missing debug" />
     <MESSAGE value="Add the slack balance and got it converging" />
     <MESSAGE value="Fix identity sign and improved significantly convergence" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fix identity sign and improved significantly convergence" />
+    <MESSAGE value="Use dh of 1e-5 to avoid numerical issues!" />
+    <option name="LAST_COMMIT_MESSAGE" value="Use dh of 1e-5 to avoid numerical issues!" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2075,8 +2075,13 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/examples/trunk/acopf/acopf_generalize.py</url>
-          <line>470</line>
+          <line>473</line>
           <option name="timeStamp" value="1319" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/examples/trunk/acopf/acopf_generalize.py</url>
+          <line>44</line>
+          <option name="timeStamp" value="1320" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>

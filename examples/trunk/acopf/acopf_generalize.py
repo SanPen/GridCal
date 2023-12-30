@@ -16,9 +16,9 @@ def build_grid_3bus():
     grid.add_bus(b2)
     grid.add_bus(b3)
 
-    grid.add_line(gce.Line(bus_from=b1, bus_to=b2, name='line 1-2', r=0.01, x=0.05, rate=100))
-    grid.add_line(gce.Line(bus_from=b2, bus_to=b3, name='line 2-3', r=0.01, x=0.05, rate=100))
-    grid.add_line(gce.Line(bus_from=b3, bus_to=b1, name='line 3-1_1', r=0.01, x=0.05, rate=100))
+    grid.add_line(gce.Line(bus_from=b1, bus_to=b2, name='line 1-2', r=0.01, x=0.05, rate=28))
+    grid.add_line(gce.Line(bus_from=b2, bus_to=b3, name='line 2-3', r=0.01, x=0.05, rate=28))
+    grid.add_line(gce.Line(bus_from=b3, bus_to=b1, name='line 3-1_1', r=0.01, x=0.05, rate=28))
     # grid.add_line(gce.Line(bus_from=b3, bus_to=b1, name='line 3-1_2', r=0.001, x=0.05, rate=100))
 
     gen1 = gce.Generator('G1', vset=1.001, Cost=1.0)
@@ -26,6 +26,9 @@ def build_grid_3bus():
 
     gen1.Cost2 = 1.1
     gen2.Cost2 = 0.5
+
+    b2.Vmax = 0.996
+    b2.Vmin = 0.995
 
     grid.add_load(b3, gce.Load(name='L3', P=50, Q=20))
     grid.add_generator(b1, gen1)
@@ -606,7 +609,7 @@ def solve_opf(grid, dh=1e-5, tol=1e-6, max_iter=100):
               'v_max': nc.bus_data.Vmax,
               'v_min': nc.bus_data.Vmin,
               'rate_f': nc.branch_data.rates,
-              'rate_t': nc.branch_data.rates * 1.01,
+              'rate_t': nc.branch_data.rates,
               'cf': nc.Cf,
               'ct': nc.Ct,
               'yf': nc.Yf,
@@ -686,11 +689,6 @@ def solve_opf(grid, dh=1e-5, tol=1e-6, max_iter=100):
 
         incr = 0.5
 
-        # x += incr * dxx
-        # s += incr * dss
-        # y += incr * dyy
-        # z += incr * dzz
-
         x += as_max * dxx
         s += as_max * dss
         y += az_max * dyy
@@ -702,15 +700,6 @@ def solve_opf(grid, dh=1e-5, tol=1e-6, max_iter=100):
                              cost1=nc.generator_data.cost_1,
                              cost2=nc.generator_data.cost_2)
 
-        # if f_obj > f_obj0:
-        #     # Get back to previous solution
-        #     x -= as_max * dxx
-        #     s -= as_max * dss
-        #     y -= az_max * dyy
-        #     z -= az_max * dzz
-        # else:
-        #     f_obj0 = f_obj
-
         mu *= 0.5
         it += 1
 
@@ -720,6 +709,28 @@ def solve_opf(grid, dh=1e-5, tol=1e-6, max_iter=100):
         print('y: ', y)
         print('f: ', f_obj)
         print('--------------------')
+
+    # Post-process, print a bit better the results
+
+    vv = x[x_ind[0]:x_ind[1]] + 1j * x[x_ind[1]:x_ind[2]]
+    vx = nc.Vbus
+    vx[pqpv] = vv[:]
+    vm = abs(vx)
+    va = np.angle(vx) * 180 / np.pi
+
+    ppgen = x[x_ind[2]:x_ind[3]]
+    qqgen = x[x_ind[3]:x_ind[4]]
+
+    ssf = (nc.Cf @ vx) * np.conj(nc.Yf @ vx)
+    sst = (nc.Ct @ vx) * np.conj(nc.Yt @ vx)
+
+    print(f'N iter: {it}')
+    print(f'Vm: {vm}')
+    print(f'Va: {va}')
+    print(f'Pg: {ppgen}')
+    print(f'Qg: {qqgen}')
+    print(f'Sf: {abs(ssf)}')
+    print(f'St: {abs(sst)}')
 
     return 0
 
