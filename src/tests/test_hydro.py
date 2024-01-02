@@ -88,6 +88,7 @@ def test_hydro_opf3():
     assert np.allclose(opf_driv.results.generator_power, p_results)
     assert np.allclose(opf_driv.results.loading, l_results)
 
+
 if __name__ == '__main__':
     test_hydro_opf1()
     test_hydro_opf2()

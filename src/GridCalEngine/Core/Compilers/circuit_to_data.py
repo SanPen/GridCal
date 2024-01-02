@@ -1095,9 +1095,10 @@ def get_fluid_node_data(circuit: MultiCircuit,
         data.names[k] = elm.name
         data.idtag[k] = elm.idtag
 
-        data.min_level[k] = elm.min_level
-        data.max_level[k] = elm.max_level
-        data.initial_level[k] = elm.initial_level
+        # Convert input data in hm3 to m3
+        data.min_level[k] = 1e6 * elm.min_level
+        data.max_level[k] = 1e6 * elm.max_level
+        data.initial_level[k] = 1e6 * elm.initial_level
 
         if time_series:
             data.inflow[k] = elm.inflow_prof[t_idx]
