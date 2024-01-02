@@ -2,13 +2,47 @@ import math
 import numpy as np
 from scipy import sparse
 from scipy.sparse import csc_matrix as csc
-from acopf_functions import *
 import GridCalEngine.api as gce
 from GridCalEngine.basic_structures import Vec, CxVec
 from GridCalEngine.Utils.MIPS.mips import solver, step_calculation
+from typing import Callable, Tuple
+
+def build_grid_3bus():
+
+    grid = gce.MultiCircuit()
+
+    b1 = gce.Bus(is_slack=True)
+    b2 = gce.Bus()
+    b3 = gce.Bus()
+
+    grid.add_bus(b1)
+    grid.add_bus(b2)
+    grid.add_bus(b3)
+
+    grid.add_line(gce.Line(bus_from=b1, bus_to=b2, name='line 1-2', r=0.001, x=0.05, rate=100))
+    grid.add_line(gce.Line(bus_from=b2, bus_to=b3, name='line 2-3', r=0.001, x=0.05, rate=100))
+    grid.add_line(gce.Line(bus_from=b3, bus_to=b1, name='line 3-1_1', r=0.001, x=0.05, rate=100))
+    # grid.add_line(gce.Line(bus_from=b3, bus_to=b1, name='line 3-1_2', r=0.001, x=0.05, rate=100))
+
+    grid.add_load(b3, gce.Load(name='L3', P=50, Q=20))
+    grid.add_generator(b1, gce.Generator('G1', vset=1.001))
+    grid.add_generator(b2, gce.Generator('G2', P=10, vset=0.995))
+
+    options = gce.PowerFlowOptions(gce.SolverType.NR, verbose=False)
+    power_flow = gce.PowerFlowDriver(grid, options)
+    power_flow.run()
+
+    print('\n\n', grid.name)
+    print('\tConv:', power_flow.results.get_bus_df())
+    print('\tConv:', power_flow.results.get_branch_df())
+
+    nc = gce.compile_numerical_circuit_at(grid)
+
+    return nc
 
 
 def x2var(x, n_v, n_th, n_P, n_Q):
+
     a = 0
     b = n_v
 
@@ -25,9 +59,6 @@ def x2var(x, n_v, n_th, n_P, n_Q):
     b += n_Q
 
     Qg = x[a: b]
-    a += b
-    b += n_phi
-
 
     return vm, th, Pg, Qg
 
@@ -38,6 +69,7 @@ def var2x(vm, th, Pg, Qg):
 
 
 def eval_f(x, Yf, Cg):
+
     M, N = Yf.shape
     Ng = Cg.shape[1]  # Check
 
@@ -45,10 +77,10 @@ def eval_f(x, Yf, Cg):
 
     fval = np.sum(Pg)
 
-    return fval
+    return np.array([fval])
 
 
-def eval_g(x, Ybus, Yf, Cg, Sd, slack, pqpv, pq):
+def eval_g(x, Ybus, Yf, Cg, Sd, slack, pv, V_U):
 
     M, N = Yf.shape
     Ng = Cg.shape[1]  # Check
@@ -60,15 +92,12 @@ def eval_g(x, Ybus, Yf, Cg, Sd, slack, pqpv, pq):
     Sg = Pg + 1j * Qg
     dS = S + Sd - (Cg @ Sg)
 
-    # Incrementos de las variables. También se incluyen las tensiones de los buses PQPV. Usamos V_U, aunque es igual
-    # que V_L en este caso al ser nodos de tensión fija. Tambien fijamos la tensión del slack.
-    # gxval = var2x(vm, th, Pg, Qg, phi, Pf, Qf, Pt, Qt, Lf)
     gval = np.r_[dS.real, dS.imag, vm[pv] - V_U[pv], vm[slack] - 1, va[slack]]  # Check, may not need slicing
 
     return gval
 
 
-def eval_h(x, Yf, Yt, from_idx, to_idx, slack, pqpv, pq, Cg, rates):
+def eval_h(x, Yf, Yt, from_idx, to_idx, pqpv, pq, th_max, th_min, V_U, V_L, P_U, P_L, Q_U, Q_L, Cg, rates):
 
     M, N = Yf.shape
     Ng = Cg.shape[1]  # Check
@@ -82,10 +111,8 @@ def eval_h(x, Yf, Yt, from_idx, to_idx, slack, pqpv, pq, Cg, rates):
     Sf = V[from_idx] * If
     St = V[to_idx] * np.conj(Yt @ V)
 
-    # Incrementos de las variables. Los límites de las varianbles también se cuentan, en este caso serán las V,th de los
-    # buses PQ y las potencias de generador de los buses PQPV, así como sus angulos.
-    hval = np.r_[Sf.real - rates, St.real - rates, vm[pq] - V_U, V_L - vm[pq], th - angle_max, angle_min - th,
-    Pg - P_U, P_L - Pg, Qg - Q_U, Q_L, - Qg]
+    hval = np.r_[Sf.real - rates, St.real - rates, vm[pq] - V_U[pq], V_L[pq] - vm[pq], th[pqpv] - th_max[pqpv],
+    th_min[pqpv] - th[pqpv], Pg - P_U, P_L - Pg, Qg - Q_U, Q_L, - Qg]
 
     return hval
 
@@ -94,7 +121,8 @@ def calc_jacobian(func, x, arg = (), h=1e-5):
     """
     Compute the Jacobian matrix of `func` at `x` using finite differences.
 
-    :param func: Vector-valued function (R^n -> R^m).
+    :param func: Linear map (R^n -> R^m). m is 1 for the objective function, NE (Number of Equalities) for
+    G or NI (Number of inequalities) for H.
     :param x: Point at which to evaluate the Jacobian (numpy array).
     :param h: Small step for finite difference.
     :return: Jacobian matrix as a numpy array.
@@ -116,8 +144,10 @@ def calc_hessian(func, x, MULT, arg=(), h=1e-5):
     """
     Compute the Hessian matrix of `func` at `x` using finite differences.
 
-    :param func: Scalar-valued function (R^n -> R).
+    :param func: Linear map (R^n -> R^m). m is 1 for the objective function, NE (Number of Equalities) for
+    G or NI (Number of inequalities) for H.
     :param x: Point at which to evaluate the Hessian (numpy array).
+    :param MULT: Array of multipliers associated with the functions. The objective function passes value 1 (no action)
     :param h: Small step for finite difference.
     :return: Hessian matrix as a numpy array.
     """
@@ -155,20 +185,24 @@ def calc_hessian(func, x, MULT, arg=(), h=1e-5):
     return hessians
 
 
-def evaluate_power_flow(x, Ybus, Yf, Cg, Sd, slack, pqpv, pq, Yt, from_idx, to_idx, rates, h=1e-5):
+def evaluate_power_flow(x, PI, LAMBDA, Ybus, Yf, Cg, Sd, slack, pqpv, pq, pv, Yt, from_idx, to_idx,
+                        th_max, th_min, V_U, V_L, P_U, P_L, Q_U, Q_L, rates, h=1e-5):
 
     f = eval_f(x=x, Yf=Yf, Cg=Cg)
-    G = eval_g(x=x, Ybus=Ybus, Yf=Yf, Cg=Cg, Sd=Sd, slack=slack, pqpv=pqpv, pq=pq)
-    H = eval_h(x=x, Yf=Yf, Yt=Yt, from_idx=from_idx, to_idx=to_idx, slack=slack, pqpv=pqpv, pq=pq, Cg=Cg, rates=rates)
+    G = csc((eval_g(x=x, Ybus=Ybus, Yf=Yf, Cg=Cg, Sd=Sd, slack=slack, pv=pv, V_U=V_U)))
+    H = csc((eval_h(x=x, Yf=Yf, Yt=Yt, from_idx=from_idx, to_idx=to_idx, pqpv=pqpv, pq=pq, th_max=th_max, th_min=th_min,
+                    V_U=V_U, V_L=V_L, P_U=P_U, P_L=P_L, Q_U=Q_U, Q_L=Q_L, Cg=Cg, rates=rates)))
 
-    fx = calc_jacobian(func=eval_f, x=x, arg=(Yf, Cg), h=h)
-    Gx = calc_jacobian(func=eval_g, x=x, arg=(Ybus, Yf, Cg, Sd, slack, pqpv, pq))
-    Hx = calc_jacobian(func=eval_h, x=x, arg=(Yf, Yt, from_idx, to_idx, slack, pqpv, pq, Cg, rates))
+    fx = csc((calc_jacobian(func=eval_f, x=x, arg=(Yf, Cg), h=h)))
+    Gx = csc((calc_jacobian(func=eval_g, x=x, arg=(Ybus, Yf, Cg, Sd, slack, pv, V_U))))
+    Hx = csc((calc_jacobian(func=eval_h, x=x, arg=(Yf, Yt, from_idx, to_idx, slack, pqpv, pq, th_max, th_min,
+                                                   V_U, V_L, P_U, P_L, Q_U, Q_L, Cg, rates))))
 
     # TODO input the multipliers for each iteration
-    fxx = calc_hessian(func=eval_f, x=x, MULT = [], arg=(Yf, Cg), h=h)
-    Gxx = calc_hessian(func=eval_g, x=x, MULT = [], arg=(Ybus, Yf, Cg, Sd, slack, pqpv, pq))
-    Hxx = calc_hessian(func=eval_h, x=x, MULT = [], arg=(Yf, Yt, from_idx, to_idx, slack, pqpv, pq, Cg, rates))
+    fxx = csc((calc_hessian(func=eval_f, x=x, MULT = [1], arg=(Yf, Cg), h=h)))
+    Gxx = csc((calc_hessian(func=eval_g, x=x, MULT = PI, arg=(Ybus, Yf, Cg, Sd, slack, pv, V_U))))
+    Hxx = csc((calc_hessian(func=eval_h, x=x, MULT = LAMBDA, arg=(Yf, Yt, from_idx, to_idx, slack, pqpv, pq, th_max,
+                                                                  th_min, V_U, V_L, P_U, P_L, Q_U, Q_L, Cg, rates))))
 
     return f, G, H, fx, Gx, Hx, fxx, Gxx, Hxx
 
@@ -179,8 +213,6 @@ def power_flow_evaluation(nc: gce.NumericalCircuit):
     Ybus = nc.Ybus
     Yf = nc.Yf
     Yt = nc.Yt
-    Cf = nc.Cf
-    Ct = nc.Ct
     Cg = nc.generator_data.C_bus_elm
 
     # Bus identification lists
@@ -191,7 +223,7 @@ def power_flow_evaluation(nc: gce.NumericalCircuit):
     from_idx = nc.F
     to_idx = nc.T
 
-    #Bus and line parameters
+    # Bus and line parameters
     Sd = nc.Sbus
     P_U = nc.generator_data.pmax
     P_L = nc.generator_data.pmin
@@ -200,28 +232,43 @@ def power_flow_evaluation(nc: gce.NumericalCircuit):
     V_U = nc.bus_data.Vmax
     V_L = nc.bus_data.Vmin
     rates = nc.rates
-    angle_max = nc.bus_data.angle_max
-    angle_min = nc.bus_data.angle_min
+    th_max = nc.bus_data.angle_max
+    th_min = nc.bus_data.angle_min
 
     M, N = Yf.shape
     Ng = Cg.shape[1]
     npq = len(pq)
     npv = len(pv)
 
-    NV = 2 * N + 2 * Ng  # V, th of all buses, active and reactive of the generators
+    NV = 2 * N + 2 * Ng  # V, th of all buses (slack reference in constraints), active and reactive of the generators
     NE = 2 + 2 * N + npv  # Nodal power balances, the voltage module of slack and pv buses and the slack reference
     NI = 2 * M + 2 * N + 2 * npq + 4 * Ng  # Line ratings, max and min angle of buses, voltage module range and
     # active and reactive power generation range.
 
     ########
 
-    x0 = []
+    x0 = np.zeros(NV)
 
     # TODO request correct input and output items and types.
     solution = solver(x0=x0, NV=NV, NE=NE, NI=NI,
-           f_eval=evaluate_power_flow(xk, Ybus, Yf, Cg, Sd, slack, pqpv,
-                                      pq, Yt, from_idx, to_idx, rates, h=1e-5),
-           step_calculator=step_calculation, verbose=1)
+                      f_eval=evaluate_power_flow, arg=(Ybus, Yf, Cg, Sd, slack, pqpv, pq, pv, Yt, from_idx, to_idx,
+                                                       th_max, th_min, V_U, V_L, P_U, P_L, Q_U, Q_L, rates),
+                      step_calculator=step_calculation, verbose=1)
+
+    return solution
 
 
+def test_acopf():
+    nc = build_grid_3bus()
+    power_flow_evaluation(nc)
     return
+
+
+if __name__  == '__main__':
+    test_acopf()
+
+
+
+
+
+
