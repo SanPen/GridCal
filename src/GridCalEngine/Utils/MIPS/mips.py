@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+import collections
+collections.Callable = collections.abc.Callable
 
 from typing import Callable, Tuple
 import numpy as np
@@ -28,8 +30,10 @@ def solver(x0: Vec,
            NV: int,
            NE: int,
            NI: int,
-           f_eval: Callable[[Vec, csc, csc], Tuple[Vec, csc, csc, csc, csc, csc, csc, csc, csc]],
-           step_calculator: Callable[[Vec, Vec, int], float],
+           f_eval, #:Callable[[csc, csc, csc, csc, csc, Vec, Vec, Vec, csc, csc, csc, csc, float],
+           #Tuple[Vec, csc, csc, csc, csc, csc, csc, csc, csc]],
+           step_calculator, #: Callable[[Vec, Vec, int], float],
+           arg=(),
            gamma0=10,
            max_iter=100,
            verbose: int = 0):
@@ -48,8 +52,8 @@ def solver(x0: Vec,
 
     where:
         x: array of variables
-        lambda: acceleration factor
-        pi: ??
+        lambda: Lagrange Multiplier associated with the inequality constraints
+        pi: Lagrange Multiplier associated with the equality constraints
         f: objective function value
         G: Array of equality mismatches
         H: Array of inequality mismatches
@@ -92,7 +96,7 @@ def solver(x0: Vec,
     while error > gamma and iter_counter < max_iter:
 
         # Evaluate the functions, gradients and hessians at the current iteration.
-        f, G, H, fx, Gx, Hx, fxx, Gxx, Hxx = f_eval(x, LAMBDA, PI)
+        f, G, H, fx, Gx, Hx, fxx, Gxx, Hxx = f_eval(x, LAMBDA, PI, *arg)
 
         # Compute the submatrices of the reduced NR method
         M = fxx + Gxx + Hxx + Hx @ inv_T @ LAMBDA_MAT @ Hx.T
@@ -149,10 +153,11 @@ def solver(x0: Vec,
 
 def step_calculation(V: Mat, dV: Mat, NI: int):
     """
-
-    :param V:
-    :param dV:
-    :param NI:
+    This function calculates for each Lambda multiplier or its associated Slack variable
+    the maximum allowed step in order to not violate the KKT condition Lambda > 0 and S > 0
+    :param V: Array of multipliers or slack variables
+    :param dV: Variation calculated in the Newton step
+    :param NI: Number of inequalities.
     :return:
     """
     alpha = 1.0
@@ -168,7 +173,7 @@ def step_calculation(V: Mat, dV: Mat, NI: int):
 
 def test_solver():
     X = np.array([2., 1., 0.])
-    solver(x0=X, NV=3, NE=1, NI=2, f_eval=NLP_test, step_calculator=step_calculation, verbose=1)
+    solver(x0=X, NV=3, NE=1, NI=2, f_eval=NLP_test, arg=(), step_calculator=step_calculation, verbose=1)
 
     return
 
