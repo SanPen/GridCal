@@ -16,14 +16,23 @@ def build_grid_3bus():
     grid.add_bus(b2)
     grid.add_bus(b3)
 
-    grid.add_line(gce.Line(bus_from=b1, bus_to=b2, name='line 1-2', r=0.001, x=0.05, rate=100))
-    grid.add_line(gce.Line(bus_from=b2, bus_to=b3, name='line 2-3', r=0.001, x=0.05, rate=100))
-    grid.add_line(gce.Line(bus_from=b3, bus_to=b1, name='line 3-1_1', r=0.001, x=0.05, rate=100))
+    grid.add_line(gce.Line(bus_from=b1, bus_to=b2, name='line 1-2', r=0.01, x=0.05, rate=28))
+    grid.add_line(gce.Line(bus_from=b2, bus_to=b3, name='line 2-3', r=0.01, x=0.05, rate=28))
+    grid.add_line(gce.Line(bus_from=b3, bus_to=b1, name='line 3-1_1', r=0.01, x=0.05, rate=28))
     # grid.add_line(gce.Line(bus_from=b3, bus_to=b1, name='line 3-1_2', r=0.001, x=0.05, rate=100))
 
+    gen1 = gce.Generator('G1', vset=1.001, Cost=1.0)
+    gen2 = gce.Generator('G2', P=10, vset=0.995, Cost=1.0)
+
+    gen1.Cost2 = 1.1
+    gen2.Cost2 = 0.5
+
+    b2.Vmax = 0.996
+    b2.Vmin = 0.995
+
     grid.add_load(b3, gce.Load(name='L3', P=50, Q=20))
-    grid.add_generator(b1, gce.Generator('G1', vset=1.001))
-    grid.add_generator(b2, gce.Generator('G2', P=10, vset=0.995))
+    grid.add_generator(b1, gen1)
+    grid.add_generator(b2, gen2)
 
     options = gce.PowerFlowOptions(gce.SolverType.NR, verbose=False)
     power_flow = gce.PowerFlowDriver(grid, options)
@@ -477,7 +486,7 @@ def build_j(x: np.ndarray = None,
     j11 = sp.csr_matrix((n_eq, n_eq), dtype=float)
     j12 = sp.csr_matrix((n_eq, n_ineq), dtype=float)
     j13 = sp.csr_matrix(gai_0)
-    j14 = sp.eye(n_ineq, dtype=float)
+    j14 = - sp.eye(n_ineq, dtype=float)
     j15 = sp.csr_matrix((n_ineq, n_eq), dtype=float)
     j16 = sp.csr_matrix((n_ineq, n_ineq), dtype=float)
 
@@ -491,7 +500,7 @@ def build_j(x: np.ndarray = None,
     return jj.tocsr()
 
 
-def solve_opf(grid, dh=1e-5, tol=1e-6, max_iter=50):
+def solve_opf(grid, dh=1e-5, tol=1e-6, max_iter=100):
     """
     Main function to solve the OPF, it calls other functions and assembles the IPM
     :param grid: multicircuit where we want to compute the OPF
@@ -521,7 +530,6 @@ def solve_opf(grid, dh=1e-5, tol=1e-6, max_iter=50):
 
     # Initialize IPM
     n_x = 2 * npqpv + 2 * ngen
-    # n_eq = 2 * npqpv
     n_eq = 2 * nbus
     n_ineq = 2 * npqpv + 2 * nbr + 4 * ngen
 
@@ -547,17 +555,15 @@ def solve_opf(grid, dh=1e-5, tol=1e-6, max_iter=50):
     p0gen = nc.generator_data.C_bus_elm.T @ np.real(s0gen)
     q0gen = nc.generator_data.C_bus_elm.T @ np.imag(s0gen)
 
+    p0gen = nc.generator_data.C_bus_elm.T @ np.zeros(len(s0gen))
+    q0gen = nc.generator_data.C_bus_elm.T @ np.zeros(len(s0gen))
+
     x[x_ind[0]:x_ind[1]] = np.real(pf_driver.results.voltage)[pqpv]  # e
     x[x_ind[1]:x_ind[2]] = np.imag(pf_driver.results.voltage)[pqpv]  # f
     x[x_ind[2]:x_ind[3]] = p0gen  # pgen
     x[x_ind[3]:x_ind[4]] = q0gen  # qgen
 
     v_sl = nc.Vbus[vd]
-
-    # store g indices to slice
-    # g_ind = np.array([0,
-    #                   npqpv,
-    #                   2 * npqpv])
 
     g_ind = np.array([0,
                       nbus,
@@ -578,7 +584,7 @@ def solve_opf(grid, dh=1e-5, tol=1e-6, max_iter=50):
     mu = 1.0
     s = 1.0 * np.ones(n_ineq)
     z = 1.0 * np.ones(n_ineq)
-    y = 1.0 * np.ones(n_eq)
+    y = 0.0 * np.ones(n_eq)
 
     # Pack the keyword arguments into a dictionary
     g_dict = {'x_ind': x_ind,
@@ -603,7 +609,7 @@ def solve_opf(grid, dh=1e-5, tol=1e-6, max_iter=50):
               'v_max': nc.bus_data.Vmax,
               'v_min': nc.bus_data.Vmin,
               'rate_f': nc.branch_data.rates,
-              'rate_t': nc.branch_data.rates * 1.01,
+              'rate_t': nc.branch_data.rates,
               'cf': nc.Cf,
               'ct': nc.Ct,
               'yf': nc.Yf,
@@ -624,8 +630,12 @@ def solve_opf(grid, dh=1e-5, tol=1e-6, max_iter=50):
 
     # start loop
     err = 1.0
+    f_obj0 = 1e15
     it = 0
+    inn_it = 10
     while err > tol and it < max_iter:
+
+        # for kk in range(inn_it):
 
         r = build_r(x=x,
                     x_ind=x_ind,
@@ -654,6 +664,8 @@ def solve_opf(grid, dh=1e-5, tol=1e-6, max_iter=50):
                      h_dict=h_dict,
                      fobj_dict=fobj_dict)
 
+        err = max(abs(r))
+
         ax = - sp.linalg.spsolve(jj, r)
 
         dxx = ax[0:n_x]
@@ -661,12 +673,26 @@ def solve_opf(grid, dh=1e-5, tol=1e-6, max_iter=50):
         dyy = ax[n_x+n_ineq:n_x+n_ineq+n_eq]
         dzz = ax[n_x+n_ineq+n_eq:n_x+n_ineq+n_eq+n_ineq]
 
+        s_list = []
+        for ii in range(n_ineq):
+            s_list.append(-0.995 * s[ii] / (dss[ii] + 1e-20))
+
+        s_list_filtered = [num for num in s_list if 0 < num <= 1]
+        as_max = min(s_list_filtered, default=1)
+
+        z_list = []
+        for ii in range(n_ineq):
+            z_list.append(-0.995 * z[ii] / (dzz[ii] + 1e-20))
+
+        z_list_filtered = [num for num in z_list if 0 < num <= 1]
+        az_max = min(z_list_filtered, default=1)
+
         incr = 0.5
 
-        x += incr * dxx
-        s += incr * dss
-        y += incr * dyy
-        z += incr * dzz
+        x += as_max * dxx
+        s += as_max * dss
+        y += az_max * dyy
+        z += az_max * dzz
 
         # Objective function
         f_obj = compute_fobj(pg=x[x_ind[2]:x_ind[3]],
@@ -674,10 +700,37 @@ def solve_opf(grid, dh=1e-5, tol=1e-6, max_iter=50):
                              cost1=nc.generator_data.cost_1,
                              cost2=nc.generator_data.cost_2)
 
-        mu *= 0.8
+        mu *= 0.5
         it += 1
 
         print('x: ', x)
+        print('s: ', s)
+        print('z: ', z)
+        print('y: ', y)
+        print('f: ', f_obj)
+        print('--------------------')
+
+    # Post-process, print a bit better the results
+
+    vv = x[x_ind[0]:x_ind[1]] + 1j * x[x_ind[1]:x_ind[2]]
+    vx = nc.Vbus
+    vx[pqpv] = vv[:]
+    vm = abs(vx)
+    va = np.angle(vx) * 180 / np.pi
+
+    ppgen = x[x_ind[2]:x_ind[3]]
+    qqgen = x[x_ind[3]:x_ind[4]]
+
+    ssf = (nc.Cf @ vx) * np.conj(nc.Yf @ vx)
+    sst = (nc.Ct @ vx) * np.conj(nc.Yt @ vx)
+
+    print(f'N iter: {it}')
+    print(f'Vm: {vm}')
+    print(f'Va: {va}')
+    print(f'Pg: {ppgen}')
+    print(f'Qg: {qqgen}')
+    print(f'Sf: {abs(ssf)}')
+    print(f'St: {abs(sst)}')
 
     return 0
 
