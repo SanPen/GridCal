@@ -28,10 +28,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Use dh of 1e-5 to avoid numerical issues!">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Use modify function to test variations">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/examples/trunk/acopf/acopf_generalize.py" beforeDir="false" afterPath="$PROJECT_DIR$/examples/trunk/acopf/acopf_generalize.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/Injections/generator.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/Injections/generator.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1565,7 +1564,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="441" />
+    <option name="localTasksCounter" value="442" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1611,7 +1610,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="updated the README.md and the docs" />
     <MESSAGE value="created setup entry point" />
     <MESSAGE value="improved docs" />
     <MESSAGE value="added investment grid test" />
@@ -1636,7 +1634,8 @@
     <MESSAGE value="Fix identity sign and improved significantly convergence" />
     <MESSAGE value="Use dh of 1e-5 to avoid numerical issues!" />
     <MESSAGE value="Change m3 to hm3 in the levels" />
-    <option name="LAST_COMMIT_MESSAGE" value="Change m3 to hm3 in the levels" />
+    <MESSAGE value="Use modify function to test variations" />
+    <option name="LAST_COMMIT_MESSAGE" value="Use modify function to test variations" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2071,12 +2070,12 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Utils/MIPS/mips.py</url>
-          <line>17</line>
+          <line>19</line>
           <option name="timeStamp" value="1283" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/examples/trunk/acopf/acopf_generalize.py</url>
-          <line>467</line>
+          <line>468</line>
           <option name="timeStamp" value="1319" />
         </line-breakpoint>
       </breakpoints>
@@ -2091,6 +2090,8 @@
     <watches-manager>
       <configuration name="PythonConfigurationType">
         <watch expression="pf_driver.progress_text" />
+        <watch expression="dh*2" language="Python" />
+        <watch expression="dh*3" language="Python" />
       </configuration>
     </watches-manager>
   </component>
