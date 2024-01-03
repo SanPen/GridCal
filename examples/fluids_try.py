@@ -316,7 +316,7 @@ def hydro_dispatch_transport(fluid_nodes: List[FluidNode],
                             node.initial_level
                             + dt * node.inflow
                             + dt * power2x_flow
-                            - dt * node.spillage
+                            # - dt * node.spillage
                             - dt * node.outflow),
                        name=f'{node.name} Node Balance')
 

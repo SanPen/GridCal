@@ -167,7 +167,7 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
         :return: returns the results
         """
 
-        self.progress_text.emit("Analyzing...")
+        self.report_text("Analyzing...")
 
         nb = self.grid.get_bus_number()
 
@@ -203,8 +203,8 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
 
         for it, t in enumerate(self.time_indices):
 
-            self.progress_text.emit('Contingency at ' + str(self.grid.time_profile[t]))
-            self.progress_signal.emit((it + 1) / len(self.time_indices) * 100)
+            self.report_text('Contingency at ' + str(self.grid.time_profile[t]))
+            self.report_progress2(it, len(self.time_indices))
 
             # run contingency at t using the specified method
             if self.options.engine == ContingencyEngine.PowerFlow:
@@ -286,7 +286,7 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
             self.results = self.run_contingency_analysis()
 
         elif self.engine == EngineType.NewtonPA:
-            self.progress_text.emit('Running Newton power analytics... ')
+            self.report_text('Running Newton power analytics... ')
             self.results = self.run_newton_pa()
 
         else:

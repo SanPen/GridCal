@@ -127,7 +127,7 @@ class ContingencyAnalysisDriver(DriverTemplate):
             # report progress
             if t is None:
                 self.report_text(f'Contingency group: {contingency_group.name}')
-                self.report_progress((ic + 1) / len(self.grid.contingency_groups) * 100)
+                self.report_progress2(ic, len(self.grid.contingency_groups) * 100)
 
             # run
             pf_res = multi_island_pf_nc(nc=numerical_circuit,
@@ -230,7 +230,7 @@ class ContingencyAnalysisDriver(DriverTemplate):
             # report progress
             if t is None:
                 self.report_text(f'Contingency group: {contingency_group.name}')
-                self.report_progress((ic + 1) / len(self.grid.contingency_groups) * 100)
+                self.report_progress2(ic, len(self.grid.contingency_groups) * 100)
 
             # run
             V, Sf, loading = helm_variations.compute_variations(contingency_br_indices=contingency_br_indices)
@@ -307,7 +307,7 @@ class ContingencyAnalysisDriver(DriverTemplate):
 
         loadings_n = flows_n / (numerical_circuit.rates + 1e-9)
 
-        self.progress_text('Computing loading...')
+        self.report_text('Computing loading...')
 
         # for each contingency group
         for ic, multi_contingency in enumerate(self.linear_multiple_contingencies.multi_contingencies):
@@ -337,7 +337,7 @@ class ContingencyAnalysisDriver(DriverTemplate):
             # report progress
             if t is None:
                 self.report_text(f'Contingency group: {self.grid.contingency_groups[ic].name}')
-                self.report_progress((ic + 1) / len(self.linear_multiple_contingencies.multi_contingencies) * 100)
+                self.report_progress2(ic, len(self.linear_multiple_contingencies.multi_contingencies))
 
         results.lodf = linear_analysis.LODF
 

@@ -188,7 +188,7 @@ class ReliabilityStudy(DriverTemplate):
         :param l: lambda value
         :return: None
         """
-        self.progress_text.emit('Running voltage collapse lambda:' + "{0:.2f}".format(l) + '...')
+        self.report_text('Running voltage collapse lambda:' + "{0:.2f}".format(l) + '...')
 
     def run(self):
         """

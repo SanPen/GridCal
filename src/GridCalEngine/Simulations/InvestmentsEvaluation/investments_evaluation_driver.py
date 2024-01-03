@@ -126,7 +126,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         # increase evaluations
         self.__eval_index += 1
 
-        self.progress_signal.emit(self.__eval_index / self.options.max_eval * 100.0)
+        self.report_progress2(self.__eval_index, self.options.max_eval)
 
         return f
 
@@ -204,7 +204,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         # increase evaluations
         self.__eval_index += 1
 
-        self.progress_signal.emit(self.__eval_index / self.options.max_eval * 100.0)
+        self.report_progress2(self.__eval_index, self.options.max_eval)
 
         return all_scores
 
@@ -228,15 +228,14 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         dim = len(self.grid.investments_groups)
 
         for k in range(dim):
-            self.progress_text.emit("Evaluating investment group {}...".format(k))
+            self.report_text("Evaluating investment group {}...".format(k))
 
             combination = np.zeros(dim, dtype=int)
             combination[k] = 1
 
             self.objective_function(combination=combination)
 
-        self.progress_text.emit("Done!")
-        self.progress_signal.emit(0.0)
+        self.report_done()
 
     def optimized_evaluation_hyperopt(self) -> None:
         """
@@ -271,8 +270,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
 
         hyperopt.fmin(self.objective_function, space, algo, self.options.max_eval)
 
-        self.progress_text.emit("Done!")
-        self.progress_signal.emit(0.0)
+        self.report_done()
 
     def optimized_evaluation_mvrsm(self) -> None:
         """
@@ -329,8 +327,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
                             combination=all_x,
                             index_name=np.array(['Evaluation {}'.format(i) for i in range(self.options.max_eval)]))
 
-        self.progress_text.emit("Done!")
-        self.progress_signal.emit(0.0)
+        self.report_done()
 
     def run(self):
         """
