@@ -174,6 +174,10 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
             self.results.system_emissions = opf_vars.sys_vars.system_emissions
             self.results.system_energy_cost = opf_vars.sys_vars.system_energy_cost
 
+            # set converged for all t to the value of acceptable solution
+            self.results.converged = np.array([opf_vars.acceptable_solution] * opf_vars.nt)
+
+
         elif self.options.solver == SolverType.Simple_OPF:
 
             # AC optimal power flow
@@ -271,6 +275,9 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
             self.results.system_fuel[time_indices, :] = opf_vars.sys_vars.system_fuel
             self.results.system_emissions[time_indices, :] = opf_vars.sys_vars.system_emissions
             self.results.system_energy_cost[time_indices] = opf_vars.sys_vars.system_energy_cost
+
+            # set converged for all t to the value of acceptable solution
+            self.results.converged[time_indices] = np.array([opf_vars.acceptable_solution] * opf_vars.nt)
 
             energy_0 = self.results.battery_energy[end_ - 1, :]
 
@@ -393,7 +400,6 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                 self.results.fluid_node_spillage[ti, :] = npa_res.fluid_node_vars.spillage
                 self.results.fluid_path_flow[ti, :] = npa_res.fluid_path_vars.flow
                 self.results.fluid_injection_flow[ti, :] = npa_res.fluid_inject_vars.flow
-
 
             if self.options.solver == SolverType.AC_OPF:
                 self.progress_text.emit('Running Non-Linear OPF with Newton...')

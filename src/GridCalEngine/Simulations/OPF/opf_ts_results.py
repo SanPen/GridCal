@@ -95,7 +95,8 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                                     ResultTypes.HvdcResults: [ResultTypes.HvdcPowerFrom,
                                                                               ResultTypes.HvdcLoading],
 
-                                                    ResultTypes.FluidNodeResults: [ResultTypes.FluidFlowIn,
+                                                    ResultTypes.FluidNodeResults: [ResultTypes.FluidCurrentLevel,
+                                                                                   ResultTypes.FluidFlowIn,
                                                                                    ResultTypes.FluidFlowOut,
                                                                                    ResultTypes.FluidP2XFlow,
                                                                                    ResultTypes.FluidSpillage],
@@ -361,8 +362,8 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
 
         elif result_type == ResultTypes.FluidCurrentLevel:
             labels = self.fluid_node_names
-            y = self.fluid_node_current_level
-            y_label = '(m3)'
+            y = self.fluid_node_current_level * 1e-6  # convert m3 to hm3
+            y_label = '(hm3)'
             title = result_type.value[0]
 
         elif result_type == ResultTypes.FluidFlowIn:
