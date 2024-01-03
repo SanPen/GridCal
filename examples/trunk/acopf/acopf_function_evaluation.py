@@ -12,7 +12,7 @@ def build_grid_3bus():
     grid = gce.MultiCircuit()
 
     b1 = gce.Bus(is_slack=True)
-    b2 = gce.Bus()
+    b2 = gce.Bus(vmin = 0.995, vmax = 0.995)
     b3 = gce.Bus()
 
     grid.add_bus(b1)
@@ -25,7 +25,7 @@ def build_grid_3bus():
     # grid.add_line(gce.Line(bus_from=b3, bus_to=b1, name='line 3-1_2', r=0.001, x=0.05, rate=100))
 
     grid.add_load(b3, gce.Load(name='L3', P=50, Q=20))
-    grid.add_generator(b1, gce.Generator('G1', vset=1.001))
+    grid.add_generator(b1, gce.Generator('G1', vset=1.00))
     grid.add_generator(b2, gce.Generator('G2', P=10, vset=0.995))
 
     options = gce.PowerFlowOptions(gce.SolverType.NR, verbose=False)
@@ -38,7 +38,7 @@ def build_grid_3bus():
 
     nc = gce.compile_numerical_circuit_at(grid)
 
-    return nc
+    return grid
 
 
 def x2var(x, n_v, n_th, n_P, n_Q):
@@ -47,15 +47,15 @@ def x2var(x, n_v, n_th, n_P, n_Q):
     b = n_v
 
     vm = x[a: b]
-    a += b
+    a = b
     b += n_th
 
     th = x[a: b]
-    a += b
+    a = b
     b += n_P
 
     Pg = x[a: b]
-    a += b
+    a = b
     b += n_Q
 
     Qg = x[a: b]
@@ -73,7 +73,7 @@ def eval_f(x, Yf, Cg):
     M, N = Yf.shape
     Ng = Cg.shape[1]  # Check
 
-    vm, th, Pg, Qg = x2var(x, n_v=N, n_th=N, n_P=Ng, n_Q=Ng)
+    vm, va, Pg, Qg = x2var(x, n_v=N, n_th=N, n_P=Ng, n_Q=Ng)
 
     fval = np.sum(Pg)
 
@@ -85,8 +85,8 @@ def eval_g(x, Ybus, Yf, Cg, Sd, slack, pv, V_U):
     M, N = Yf.shape
     Ng = Cg.shape[1]  # Check
 
-    vm, th, Pg, Qg = x2var(x, n_v = N, n_th = N, n_P = Ng, n_Q = Ng)
-    V = vm * np.exp(1j * th)
+    vm, va, Pg, Qg = x2var(x, n_v = N, n_th = N, n_P = Ng, n_Q = Ng)
+    V = vm * np.exp(1j * va)
     S = V * np.conj(Ybus @ V)
 
     Sg = Pg + 1j * Qg
@@ -102,17 +102,17 @@ def eval_h(x, Yf, Yt, from_idx, to_idx, pqpv, pq, th_max, th_min, V_U, V_L, P_U,
     M, N = Yf.shape
     Ng = Cg.shape[1]  # Check
 
-    vm, th, Pg, Qg = x2var(x, n_v = N, n_th = N, n_P = Ng, n_Q = Ng)
+    vm, va, Pg, Qg = x2var(x, n_v = N, n_th = N, n_P = Ng, n_Q = Ng)
 
-    V = vm * np.exp(1j * th)
+    V = vm * np.exp(1j * va)
 
     If = np.conj(Yf @ V)
     Lf = If * If
     Sf = V[from_idx] * If
     St = V[to_idx] * np.conj(Yt @ V)
 
-    hval = np.r_[Sf.real - rates, St.real - rates, vm[pq] - V_U[pq], V_L[pq] - vm[pq], th[pqpv] - th_max[pqpv],
-    th_min[pqpv] - th[pqpv], Pg - P_U, P_L - Pg, Qg - Q_U, Q_L, - Qg]
+    hval = np.r_[Sf.real - rates, St.real - rates, vm[pq] - V_U[pq], V_L[pq] - vm[pq], va[pqpv] - th_max[pqpv],
+    th_min[pqpv] - va[pqpv], Pg - P_U, P_L - Pg, Qg - Q_U, Q_L, - Qg]
 
     return hval
 
@@ -128,7 +128,7 @@ def calc_jacobian(func, x, arg = (), h=1e-5):
     :return: Jacobian matrix as a numpy array.
     """
     nx = len(x)
-    f0 = func(x)
+    f0 = func(x, *arg)
     jac = np.zeros((len(f0), nx))
 
     for i in range(nx):
@@ -152,7 +152,7 @@ def calc_hessian(func, x, MULT, arg=(), h=1e-5):
     :return: Hessian matrix as a numpy array.
     """
     n = len(x)
-    const = len(func(x)) # For objective function, it will be passed as 1. The MULT will be 1 aswell.
+    const = len(func(x, *arg)) # For objective function, it will be passed as 1. The MULT will be 1 aswell.
     hessians = np.zeros((n, n))
 
     for eq in range(const):
@@ -179,36 +179,38 @@ def calc_hessian(func, x, MULT, arg=(), h=1e-5):
                 x_jjm[j] -= h
                 f_jjm = func(x_jjm, *arg)[eq]
 
-                a = MULT[eq] * (f_ijp - f_ijm - f_jim + f_jjm) / (4 * h ** 2)
-                hessian[i, j] = a
+                a = MULT[0][eq] * (f_ijp - f_ijm - f_jim + f_jjm) / (4 * h ** 2)
+                hessian[i][j] = a
         hessians += hessian
     return hessians
 
 
-def evaluate_power_flow(x, PI, LAMBDA, Ybus, Yf, Cg, Sd, slack, pqpv, pq, pv, Yt, from_idx, to_idx,
+def evaluate_power_flow(x, LAMBDA, PI, Ybus, Yf, Cg, Sd, slack, pqpv, pq, pv, Yt, from_idx, to_idx,
                         th_max, th_min, V_U, V_L, P_U, P_L, Q_U, Q_L, rates, h=1e-5):
 
     f = eval_f(x=x, Yf=Yf, Cg=Cg)
-    G = csc((eval_g(x=x, Ybus=Ybus, Yf=Yf, Cg=Cg, Sd=Sd, slack=slack, pv=pv, V_U=V_U)))
+    G = csc((eval_g(x=x, Ybus=Ybus, Yf=Yf, Cg=Cg, Sd=Sd, slack=slack, pv=pv, V_U=V_U))).T
     H = csc((eval_h(x=x, Yf=Yf, Yt=Yt, from_idx=from_idx, to_idx=to_idx, pqpv=pqpv, pq=pq, th_max=th_max, th_min=th_min,
-                    V_U=V_U, V_L=V_L, P_U=P_U, P_L=P_L, Q_U=Q_U, Q_L=Q_L, Cg=Cg, rates=rates)))
+                    V_U=V_U, V_L=V_L, P_U=P_U, P_L=P_L, Q_U=Q_U, Q_L=Q_L, Cg=Cg, rates=rates))).T
 
-    fx = csc((calc_jacobian(func=eval_f, x=x, arg=(Yf, Cg), h=h)))
-    Gx = csc((calc_jacobian(func=eval_g, x=x, arg=(Ybus, Yf, Cg, Sd, slack, pv, V_U))))
-    Hx = csc((calc_jacobian(func=eval_h, x=x, arg=(Yf, Yt, from_idx, to_idx, slack, pqpv, pq, th_max, th_min,
-                                                   V_U, V_L, P_U, P_L, Q_U, Q_L, Cg, rates))))
+    fx = csc((calc_jacobian(func=eval_f, x=x, arg=(Yf, Cg), h=h))).T
+    Gx = csc((calc_jacobian(func=eval_g, x=x, arg=(Ybus, Yf, Cg, Sd, slack, pv, V_U)))).T
+    Hx = csc((calc_jacobian(func=eval_h, x=x, arg=(Yf, Yt, from_idx, to_idx, pqpv, pq, th_max, th_min,
+                                                   V_U, V_L, P_U, P_L, Q_U, Q_L, Cg, rates)))).T
 
     # TODO input the multipliers for each iteration
-    fxx = csc((calc_hessian(func=eval_f, x=x, MULT = [1], arg=(Yf, Cg), h=h)))
-    Gxx = csc((calc_hessian(func=eval_g, x=x, MULT = PI, arg=(Ybus, Yf, Cg, Sd, slack, pv, V_U))))
-    Hxx = csc((calc_hessian(func=eval_h, x=x, MULT = LAMBDA, arg=(Yf, Yt, from_idx, to_idx, slack, pqpv, pq, th_max,
-                                                                  th_min, V_U, V_L, P_U, P_L, Q_U, Q_L, Cg, rates))))
+    fxx = csc((calc_hessian(func=eval_f, x=x, MULT = [[1]], arg=(Yf, Cg), h=h)))
+    Gxx = csc((calc_hessian(func=eval_g, x=x, MULT = PI.toarray(), arg=(Ybus, Yf, Cg, Sd, slack, pv, V_U))))
+    Hxx = csc((calc_hessian(func=eval_h, x=x, MULT = LAMBDA.toarray(), arg=(Yf, Yt, from_idx, to_idx, pqpv, pq, th_max,
+                                                                            th_min, V_U, V_L, P_U, P_L, Q_U, Q_L, Cg,
+                                                                            rates))))
 
     return f, G, H, fx, Gx, Hx, fxx, Gxx, Hxx
 
 
-def power_flow_evaluation(nc: gce.NumericalCircuit):
+def power_flow_evaluation(grid: gce.MultiCircuit):
 
+    nc = gce.compile_numerical_circuit_at(grid)
     # Numerical Circuit matrices (admittance and connectivity matrices)
     Ybus = nc.Ybus
     Yf = nc.Yf
@@ -247,7 +249,32 @@ def power_flow_evaluation(nc: gce.NumericalCircuit):
 
     ########
 
+    #vm0 = np.array([1, 0.98, 0.95])
+    #va0 = np.array([0, 0.05, -0.03])
+    #Pg0 = np.array([0.5, 0.3])
+    #Qg0 = np.array([0.2, 0.1])
+
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR)
+    pf_driver = gce.PowerFlowDriver(grid=grid,
+                                    options=pf_options)
+    pf_driver.run()
+
+    # ignore power from Z and I of the load
+    s0gen = pf_driver.results.Sbus / nc.Sbase - nc.load_data.C_bus_elm @ nc.load_data.S / nc.Sbase
+    p0gen = nc.generator_data.C_bus_elm.T @ np.real(s0gen)
+    q0gen = nc.generator_data.C_bus_elm.T @ np.imag(s0gen)
+
+    #p0gen = nc.generator_data.C_bus_elm.T @ np.zeros(len(s0gen))
+    #q0gen = nc.generator_data.C_bus_elm.T @ np.zeros(len(s0gen))
+
     x0 = np.zeros(NV)
+    x0[0 : N] = abs(pf_driver.results.voltage)#[pqpv]  # e
+    x0[N : 2*N] = np.angle(pf_driver.results.voltage)#[pqpv]  # f
+    x0[2*N : 2*N + Ng] = p0gen  # pgen
+    x0[2*N + Ng : 2*N + 2*Ng] = q0gen  # qgen
+
+    print(x0)
+    #x0 = var2x(vm0, va0, Pg0, Qg0)
 
     # TODO request correct input and output items and types.
     solution = solver(x0=x0, NV=NV, NE=NE, NI=NI,
@@ -259,12 +286,12 @@ def power_flow_evaluation(nc: gce.NumericalCircuit):
 
 
 def test_acopf():
-    nc = build_grid_3bus()
-    power_flow_evaluation(nc)
+    grid = build_grid_3bus()
+    power_flow_evaluation(grid)
     return
 
 
-if __name__  == '__main__':
+if __name__ == '__main__':
     test_acopf()
 
 

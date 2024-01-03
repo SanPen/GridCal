@@ -34,7 +34,7 @@ def solver(x0: Vec,
            #Tuple[Vec, csc, csc, csc, csc, csc, csc, csc, csc]],
            step_calculator, #: Callable[[Vec, Vec, int], float],
            arg=(),
-           gamma0=10,
+           gamma0=1,
            max_iter=100,
            verbose: int = 0):
     """
@@ -132,7 +132,7 @@ def solver(x0: Vec,
         LAMBDA_MAT = sparse.dia_matrix((LAMBDA.toarray(), 0), shape=(NI, NI)).tocsc()
 
         # Compute the maximum error and the new gamma value
-        error = max(max(abs(dX)), max(abs(dL)), max(abs(dT)), max(abs(dP)))
+        error = np.max([np.max(abs(dX)), np.max(abs(dP)), np.max(abs(dL)), np.max(abs(dT))])
         newgamma = 0.1 * (T @ LAMBDA.T).toarray()[0][0] / NI
         gamma = max(newgamma, 1e-5)  # Maximum tolerance requested.
 
