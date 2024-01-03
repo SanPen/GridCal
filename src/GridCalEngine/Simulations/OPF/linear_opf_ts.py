@@ -1305,7 +1305,8 @@ def add_hydro_formulation(t: Union[int, None],
                                                 ub=1e20,
                                                 name=f'NodeSpillage_{node_data.names[m]}')
 
-        f_obj += node_vars.spillage[t, m]
+        f_obj += node_data.spillage_cost[m] * node_vars.spillage[t, m]
+        # f_obj += node_vars.spillage[t, m]
 
         node_vars.current_level[t, m] = prob.add_var(lb=node_data.min_level[m],
                                                      ub=node_data.max_level[m],
@@ -1410,7 +1411,7 @@ def add_hydro_formulation(t: Union[int, None],
                                   - dt * node_vars.flow_out[t, m]),
                              name=f'{node_data.names[m]} Nodal Balance')
             else:
-                # Update the level according to the in and out flows as time passess
+                # Update the level according to the in and out flows as time passes
                 dt = (time_array[time_global_tidx] - time_array[time_global_tidx - 1]).seconds / 3600.0
 
                 prob.add_cst(cst=(node_vars.current_level[t, m] ==
@@ -1691,9 +1692,10 @@ def run_linear_opf_ts(grid: MultiCircuit,
         lp_model.save_model(file_name=export_model_fname)
         print('LP model saved as:', export_model_fname)
 
-    status = lp_model.solve()
+    status = lp_model.solve(robust=False)
 
     # gather the results
+    logger.add_info("Status", value=str(status))
     if status == LpModel.OPTIMAL:
         logger.add_info("Objective function", value=lp_model.fobj_value())
         mip_vars.acceptable_solution = True
@@ -1709,6 +1711,37 @@ def run_linear_opf_ts(grid: MultiCircuit,
                                  model=lp_model,
                                  gen_emissions_rates_matrix=gen_emissions_rates_matrix,
                                  gen_fuel_rates_matrix=gen_fuel_rates_matrix)
+
+    # if vars_v.fluid_node_vars.spillage.sum() != 0:
+    lp_file_name = "hydro_debug.lp"
+    lp_model.save_model(file_name=lp_file_name)
+
+    for t, global_t_idx in enumerate(time_indices):  # use time_indices = [None] to simulate the snapshot
+        nc: NumericalCircuit = compile_numerical_circuit_at(circuit=grid,
+                                                            t_idx=global_t_idx,  # yes, this is not a bug
+                                                            bus_dict=bus_dict,
+                                                            areas_dict=areas_dict)
+        # for m in range(nc.fluid_node_data.nelm):
+        #     print(nc.fluid_node_data.names[m])
+        #
+        #     if t == 0:
+        #         print(f'Current level {m}: {vars_v.fluid_node_vars.current_level[t, m]}')
+        #         print(f'Initial level {m}: {nc.fluid_node_data.initial_level[m]}')
+        #         print(f'Inflow {m}: {nc.fluid_node_data.inflow[m]}')
+        #         print(f'Flow in {m}: {vars_v.fluid_node_vars.flow_in[t, m]}')
+        #         print(f'P2X flow {m}: {vars_v.fluid_node_vars.p2x_flow[t, m]}')
+        #         print(f'Spillage {m}: {vars_v.fluid_node_vars.spillage[t, m]}')
+        #         print(f'Flow out {m}: {vars_v.fluid_node_vars.flow_out[t, m]}')
+        #         print()
+        #     else:
+        #         print(f'Current level {m}: {vars_v.fluid_node_vars.current_level[t, m]}')
+        #         print(f'Initial level {m}: {vars_v.fluid_node_vars.current_level[t-1, m]}')
+        #         print(f'Inflow {m}: {nc.fluid_node_data.inflow[m]}')
+        #         print(f'Flow in {m}: {vars_v.fluid_node_vars.flow_in[t, m]}')
+        #         print(f'P2X flow {m}: {vars_v.fluid_node_vars.p2x_flow[t, m]}')
+        #         print(f'Spillage {m}: {vars_v.fluid_node_vars.spillage[t, m]}')
+        #         print(f'Flow out {m}: {vars_v.fluid_node_vars.flow_out[t, m]}')
+        #         print()
 
     # add the model logger to the main logger
     logger += lp_model.logger

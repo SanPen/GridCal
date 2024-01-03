@@ -2080,7 +2080,8 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
 
     if len(circuit.fluid_nodes) > 0:
         nc.fluid_node_data, plant_dict = gc_compiler2.get_fluid_node_data(circuit=circuit,
-                                                                          t_idx=t_idx)
+                                                                          t_idx=t_idx,
+                                                                          time_series=time_series)
 
         nc.fluid_turbine_data = gc_compiler2.get_fluid_turbine_data(circuit=circuit,
                                                                     plant_dict=plant_dict,

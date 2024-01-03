@@ -315,6 +315,14 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                                             value=load_shedding,
                                             expected_value=0.0)
 
+            for fluid_node_name, fluid_node_spillage in zip(self.results.fluid_node_names,
+                                                            self.results.fluid_node_spillage[t, :]):
+                if fluid_node_spillage != 0:
+                    self.logger.add_warning("Fluid node spillage {}".format(t_name),
+                                            device=fluid_node_name,
+                                            value=fluid_node_spillage,
+                                            expected_value=0.0)
+
             for name, val in zip(self.results.branch_names, self.results.loading[t, :]):
                 if val > 1:
                     self.logger.add_warning("Overload {}".format(t_name),
