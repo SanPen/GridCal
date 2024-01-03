@@ -41,7 +41,7 @@ def NLP_test(x, LAMBDA, PI):
     return f, G, H, fx, Gx, Hx, fxx, Gxx, Hxx
 
 
-def brock_eval(x):
+def brock_eval(x, LAMBDA, PI):
     NV = 3
     NE = 0
     NI = 2
