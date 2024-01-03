@@ -20,7 +20,7 @@ import numpy as np
 from scipy.sparse import csc_matrix as csc
 from scipy import sparse
 import timeit
-from GridCalEngine.Utils.MIPS.ipm_test import brock_eval, NLP_test
+from GridCalEngine.Utils.MIPS.ipm_test import NLP_test
 from GridCalEngine.basic_structures import Vec, Mat
 
 

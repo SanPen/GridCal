@@ -973,7 +973,8 @@ class SimulationsMain(TimeEventsMain):
 
                     drv = sim.ContingencyAnalysisDriver(grid=self.circuit,
                                                         options=options,
-                                                        linear_multiple_contingencies=linear_multiple_contingencies)
+                                                        linear_multiple_contingencies=linear_multiple_contingencies,
+                                                        engine=self.get_preferred_engine())
 
                     self.session.run(drv,
                                      post_func=self.post_contingency_analysis,
