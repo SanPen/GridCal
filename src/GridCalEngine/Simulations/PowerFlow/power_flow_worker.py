@@ -599,27 +599,6 @@ def multi_island_pf_nc(nc: NumericalCircuit,
                 else:
                     Sbus = Sbus_input + Shvdc[island.original_bus_idx]
 
-                # run circuit power flow
-                # res = single_island_pf(
-                #     circuit=island,
-                #     Vbus=island.Vbus if V_guess is None else V_guess[island.original_bus_idx],
-                #     Sbus=Sbus,
-                #     Ibus=island.Ibus,
-                #     Yloadbus=island.YLoadBus,
-                #     ma=island.branch_data.tap_module,
-                #     theta=island.branch_data.tap_angle,
-                #     Beq=island.branch_data.Beq,
-                #     branch_rates=island.Rates,
-                #     pq=island.pq,
-                #     pv=island.pv,
-                #     vd=island.vd,
-                #     pqpv=island.pqpv,
-                #     Qmin=island.Qmin_bus,
-                #     Qmax=island.Qmax_bus,
-                #     options=options,
-                #     logger=logger,
-                # )
-
                 res = single_island_pf(
                     circuit=island,
                     options=options,

@@ -1,0 +1,112 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.2 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \datalist[entry]{nty/global//global/global}
+    \entry{alvarez2021universal}{article}{}
+      \name{author}{4}{}{%
+        {{hash=3b18a0a6dd802b8939995067d96481ba}{%
+           family={Alvarez-Bustos},
+           familyi={A\bibinithyphendelim B\bibinitperiod},
+           given={Abraham},
+           giveni={A\bibinitperiod}}}%
+        {{hash=db29f62819c62501fc86061f49f30eef}{%
+           family={Kazemtabrizi},
+           familyi={K\bibinitperiod},
+           given={Behzad},
+           giveni={B\bibinitperiod}}}%
+        {{hash=7903b1efec4b1a04da7ea778c4643c23}{%
+           family={Shahbazi},
+           familyi={S\bibinitperiod},
+           given={Mahmoud},
+           giveni={M\bibinitperiod}}}%
+        {{hash=68b8e9cc27c01a1326b89199116cd5f4}{%
+           family={Acha-Daza},
+           familyi={A\bibinithyphendelim D\bibinitperiod},
+           given={Enrique},
+           giveni={E\bibinitperiod}}}%
+      }
+      \list{publisher}{1}{%
+        {Elsevier}%
+      }
+      \strng{namehash}{7f024cc3f66ad5da0d38bb0b4f6b7899}
+      \strng{fullhash}{c8decf8b25f4f1abe38acadfab3c4ad0}
+      \strng{bibnamehash}{7f024cc3f66ad5da0d38bb0b4f6b7899}
+      \strng{authorbibnamehash}{7f024cc3f66ad5da0d38bb0b4f6b7899}
+      \strng{authornamehash}{7f024cc3f66ad5da0d38bb0b4f6b7899}
+      \strng{authorfullhash}{c8decf8b25f4f1abe38acadfab3c4ad0}
+      \field{sortinit}{A}
+      \field{sortinithash}{2f401846e2029bad6b3ecc16d50031e2}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{International Journal of Electrical Power \& Energy Systems}
+      \field{title}{Universal branch model for the solution of optimal power flows in hybrid AC/DC grids}
+      \field{volume}{126}
+      \field{year}{2021}
+      \field{pages}{106543}
+      \range{pages}{1}
+    \endentry
+    \entry{gomis2020principles}{article}{}
+      \name{author}{4}{}{%
+        {{hash=3241bb77928a8eddfdc6a7a4265eb6ee}{%
+           family={Gomis-Bellmunt},
+           familyi={G\bibinithyphendelim B\bibinitperiod},
+           given={Oriol},
+           giveni={O\bibinitperiod}}}%
+        {{hash=b0a260f9be2eda02262b6ddfc5864eb8}{%
+           family={Sánchez-Sánchez},
+           familyi={S\bibinithyphendelim S\bibinitperiod},
+           given={Enric},
+           giveni={E\bibinitperiod}}}%
+        {{hash=b9522f0eef00eadfc44734d18c4c55f6}{%
+           family={Arévalo-Soler},
+           familyi={A\bibinithyphendelim S\bibinitperiod},
+           given={Josep},
+           giveni={J\bibinitperiod}}}%
+        {{hash=dd60251b6213da382edf3daf634a0ce9}{%
+           family={Prieto-Araujo},
+           familyi={P\bibinithyphendelim A\bibinitperiod},
+           given={Eduardo},
+           giveni={E\bibinitperiod}}}%
+      }
+      \list{publisher}{1}{%
+        {IEEE}%
+      }
+      \strng{namehash}{2b3fb7a5d199af77a3607b7a55fe718b}
+      \strng{fullhash}{b600147020b2e74d97737ec6730c3350}
+      \strng{bibnamehash}{2b3fb7a5d199af77a3607b7a55fe718b}
+      \strng{authorbibnamehash}{2b3fb7a5d199af77a3607b7a55fe718b}
+      \strng{authornamehash}{2b3fb7a5d199af77a3607b7a55fe718b}
+      \strng{authorfullhash}{b600147020b2e74d97737ec6730c3350}
+      \field{sortinit}{G}
+      \field{sortinithash}{32d67eca0634bf53703493fb1090a2e8}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{IEEE Transactions on Power Delivery}
+      \field{number}{2}
+      \field{title}{Principles of operation of grids of DC and AC subgrids interconnected by power converters}
+      \field{volume}{36}
+      \field{year}{2020}
+      \field{pages}{1107\bibrangedash 1117}
+      \range{pages}{11}
+    \endentry
+  \enddatalist
+\endrefsection
+\endinput
+

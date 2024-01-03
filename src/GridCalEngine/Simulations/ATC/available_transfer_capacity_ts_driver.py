@@ -259,10 +259,9 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                       AvailableTransferMode.Load: 2,
                       AvailableTransferMode.GenerationAndLoad: 3}
 
-        self.progress_signal.emit(0)
-
         # declare the linear analysis
-        self.progress_text.emit('Analyzing...')
+        self.report_text("Analyzing...")
+        self.report_progress(0.0)
 
         la_options = LinearAnalysisOptions(
             distribute_slack=self.options.distributed_slack,
@@ -287,8 +286,7 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         for it, t in enumerate(self.time_indices):
 
-            if self.progress_text is not None:
-                self.progress_text.emit('Available transfer capacity at ' + str(self.grid.time_profile[t]))
+            self.report_text('Available transfer capacity at ' + str(self.grid.time_profile[t]))
 
             nc = compile_numerical_circuit_at(circuit=self.grid, t_idx=t)
 
@@ -358,13 +356,12 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             else:
                 self.results.raw_report = np.r_[self.results.raw_report, report]
 
-            if self.progress_signal is not None:
-                self.progress_signal.emit((t + 1) / len(self.time_indices) * 100)
+            self.report_progress2(t, len(self.time_indices))
 
             if self.__cancel__:
                 break
 
-        self.progress_text.emit('Building the report...')
+        self.report_text('Building the report...')
         self.results.make_report()
 
         self.toc()
