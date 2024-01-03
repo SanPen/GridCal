@@ -31,6 +31,7 @@
     <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Use dh of 1e-5 to avoid numerical issues!">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/examples/trunk/acopf/acopf_generalize.py" beforeDir="false" afterPath="$PROJECT_DIR$/examples/trunk/acopf/acopf_generalize.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/Injections/generator.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/Injections/generator.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -58,7 +59,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="16d3bcc15f5ac70fbb9e8d2772d51654dbc8dac5" />
+        <entry key="$PROJECT_DIR$" value="203_Ampliacion_OPF_lineal" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -584,8 +585,8 @@
       <list>
         <item itemvalue="Python.acopf_generalize" />
         <item itemvalue="Python tests.Nosetests in tests" />
-        <item itemvalue="Python tests.Nosetests for tests.test_opf.test_opf" />
         <item itemvalue="Python tests.Nosetests for tests.admittance_matrix_test.test1" />
+        <item itemvalue="Python tests.Nosetests for tests.test_opf.test_opf" />
         <item itemvalue="Python.ExecuteGridCal" />
       </list>
     </recent_temporary>
@@ -1610,7 +1611,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="some changes to make it work in python 3.9" />
     <MESSAGE value="updated the README.md and the docs" />
     <MESSAGE value="created setup entry point" />
     <MESSAGE value="improved docs" />
@@ -1635,7 +1635,8 @@
     <MESSAGE value="Add the slack balance and got it converging" />
     <MESSAGE value="Fix identity sign and improved significantly convergence" />
     <MESSAGE value="Use dh of 1e-5 to avoid numerical issues!" />
-    <option name="LAST_COMMIT_MESSAGE" value="Use dh of 1e-5 to avoid numerical issues!" />
+    <MESSAGE value="Change m3 to hm3 in the levels" />
+    <option name="LAST_COMMIT_MESSAGE" value="Change m3 to hm3 in the levels" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2075,13 +2076,8 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/examples/trunk/acopf/acopf_generalize.py</url>
-          <line>473</line>
+          <line>467</line>
           <option name="timeStamp" value="1319" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/examples/trunk/acopf/acopf_generalize.py</url>
-          <line>44</line>
-          <option name="timeStamp" value="1320" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>

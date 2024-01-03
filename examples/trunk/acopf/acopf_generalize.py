@@ -9,26 +9,20 @@ def build_grid_3bus():
     grid = gce.MultiCircuit()
 
     b1 = gce.Bus(is_slack=True)
-    b2 = gce.Bus()
+    b2 = gce.Bus(vmax=1.1, vmin=0.9)
     b3 = gce.Bus()
 
     grid.add_bus(b1)
     grid.add_bus(b2)
     grid.add_bus(b3)
 
-    grid.add_line(gce.Line(bus_from=b1, bus_to=b2, name='line 1-2', r=0.01, x=0.05, rate=28))
-    grid.add_line(gce.Line(bus_from=b2, bus_to=b3, name='line 2-3', r=0.01, x=0.05, rate=28))
-    grid.add_line(gce.Line(bus_from=b3, bus_to=b1, name='line 3-1_1', r=0.01, x=0.05, rate=28))
+    grid.add_line(gce.Line(bus_from=b1, bus_to=b2, name='line 1-2', r=0.01, x=0.05, rate=100))
+    grid.add_line(gce.Line(bus_from=b2, bus_to=b3, name='line 2-3', r=0.01, x=0.05, rate=100))
+    grid.add_line(gce.Line(bus_from=b3, bus_to=b1, name='line 3-1_1', r=0.01, x=0.05, rate=100))
     # grid.add_line(gce.Line(bus_from=b3, bus_to=b1, name='line 3-1_2', r=0.001, x=0.05, rate=100))
 
-    gen1 = gce.Generator('G1', vset=1.001, Cost=1.0)
-    gen2 = gce.Generator('G2', P=10, vset=0.995, Cost=1.0)
-
-    gen1.Cost2 = 1.1
-    gen2.Cost2 = 0.5
-
-    b2.Vmax = 0.996
-    b2.Vmin = 0.995
+    gen1 = gce.Generator('G1', vset=1.001, Cost=1.0, Cost2=1.1)
+    gen2 = gce.Generator('G2', P=10, vset=0.995, Cost=1.0, Cost2=0.5)
 
     grid.add_load(b3, gce.Load(name='L3', P=50, Q=20))
     grid.add_generator(b1, gen1)
@@ -500,13 +494,15 @@ def build_j(x: np.ndarray = None,
     return jj.tocsr()
 
 
-def solve_opf(grid, dh=1e-5, tol=1e-6, max_iter=100):
+def solve_opf(grid, dh=1e-5, tol=1e-6, max_iter=100, x0=None, s0=None, y0=None, z0=None, mu0:float = 1.0, verbose: int = 0):
     """
     Main function to solve the OPF, it calls other functions and assembles the IPM
     :param grid: multicircuit where we want to compute the OPF
     :param dh: delta used in the derivatives definition
     :param tol: tolerance to stop the algorithm
     :param max_iter: maximum number of iterations of the algorithm
+    :param x0: initial solution
+    :param verbose:
     :return: the vectors of solutions
     """
     nc = gce.compile_numerical_circuit_at(grid)
@@ -518,6 +514,8 @@ def solve_opf(grid, dh=1e-5, tol=1e-6, max_iter=100):
     nbus = nc.nbus
     ngen = nc.ngen
     nbr = nc.nbr
+
+    err_list = []
 
     # Associate the slack bus type to identify the slack generators
     ones_vd = np.zeros(nbus)
@@ -537,6 +535,12 @@ def solve_opf(grid, dh=1e-5, tol=1e-6, max_iter=100):
     g = np.zeros(n_eq)
     h = np.zeros(n_ineq)
 
+    # multipliers, try other initializations maybe
+    mu = 1.0
+    s = 1.0 * np.ones(n_ineq)
+    z = 1.0 * np.ones(n_ineq)
+    y = 0.0 * np.ones(n_eq)
+
     # store x indices to slice
     x_ind = np.array([0,
                       npqpv,
@@ -545,23 +549,31 @@ def solve_opf(grid, dh=1e-5, tol=1e-6, max_iter=100):
                       2 * npqpv + 2 * ngen])
 
     # Initialize results with a power flow
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR)
-    pf_driver = gce.PowerFlowDriver(grid=grid,
-                                    options=pf_options)
-    pf_driver.run()
+    if x0 is not None:
+        x[:] = x0[:]
+        s[:] = s0[:]
+        y[:] = y0[:]
+        z[:] = z0[:]
+        mu = mu0
 
-    # ignore power from Z and I of the load
-    s0gen = pf_driver.results.Sbus / nc.Sbase - nc.load_data.C_bus_elm @ nc.load_data.S / nc.Sbase
-    p0gen = nc.generator_data.C_bus_elm.T @ np.real(s0gen)
-    q0gen = nc.generator_data.C_bus_elm.T @ np.imag(s0gen)
+    else:
+        pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR)
+        pf_driver = gce.PowerFlowDriver(grid=grid,
+                                        options=pf_options)
+        pf_driver.run()
 
-    p0gen = nc.generator_data.C_bus_elm.T @ np.zeros(len(s0gen))
-    q0gen = nc.generator_data.C_bus_elm.T @ np.zeros(len(s0gen))
+        # ignore power from Z and I of the load
+        s0gen = pf_driver.results.Sbus / nc.Sbase - nc.load_data.C_bus_elm @ nc.load_data.S / nc.Sbase
+        p0gen = nc.generator_data.C_bus_elm.T @ np.real(s0gen)
+        q0gen = nc.generator_data.C_bus_elm.T @ np.imag(s0gen)
 
-    x[x_ind[0]:x_ind[1]] = np.real(pf_driver.results.voltage)[pqpv]  # e
-    x[x_ind[1]:x_ind[2]] = np.imag(pf_driver.results.voltage)[pqpv]  # f
-    x[x_ind[2]:x_ind[3]] = p0gen  # pgen
-    x[x_ind[3]:x_ind[4]] = q0gen  # qgen
+        p0gen = nc.generator_data.C_bus_elm.T @ np.zeros(len(s0gen))
+        q0gen = nc.generator_data.C_bus_elm.T @ np.zeros(len(s0gen))
+
+        x[x_ind[0]:x_ind[1]] = np.real(pf_driver.results.voltage)[pqpv]  # e
+        x[x_ind[1]:x_ind[2]] = np.imag(pf_driver.results.voltage)[pqpv]  # f
+        x[x_ind[2]:x_ind[3]] = p0gen  # pgen
+        x[x_ind[3]:x_ind[4]] = q0gen  # qgen
 
     v_sl = nc.Vbus[vd]
 
@@ -580,11 +592,7 @@ def solve_opf(grid, dh=1e-5, tol=1e-6, max_iter=100):
                       2 * npqpv + 2 * nbr + 3 * ngen,
                       2 * npqpv + 2 * nbr + 4 * ngen])
 
-    # multipliers, try other initializations maybe
-    mu = 1.0
-    s = 1.0 * np.ones(n_ineq)
-    z = 1.0 * np.ones(n_ineq)
-    y = 0.0 * np.ones(n_eq)
+
 
     # Pack the keyword arguments into a dictionary
     g_dict = {'x_ind': x_ind,
@@ -703,12 +711,16 @@ def solve_opf(grid, dh=1e-5, tol=1e-6, max_iter=100):
         mu *= 0.5
         it += 1
 
-        print('x: ', x)
-        print('s: ', s)
-        print('z: ', z)
-        print('y: ', y)
-        print('f: ', f_obj)
-        print('--------------------')
+        err_list.append(err)
+
+        if verbose > 1:
+            print('x: ', x)
+            print('s: ', s)
+            print('z: ', z)
+            print('y: ', y)
+            print('f: ', f_obj)
+            print('err: ', err)
+            print('--------------------')
 
     # Post-process, print a bit better the results
 
@@ -724,18 +736,38 @@ def solve_opf(grid, dh=1e-5, tol=1e-6, max_iter=100):
     ssf = (nc.Cf @ vx) * np.conj(nc.Yf @ vx)
     sst = (nc.Ct @ vx) * np.conj(nc.Yt @ vx)
 
-    print(f'N iter: {it}')
-    print(f'Vm: {vm}')
-    print(f'Va: {va}')
-    print(f'Pg: {ppgen}')
-    print(f'Qg: {qqgen}')
-    print(f'Sf: {abs(ssf)}')
-    print(f'St: {abs(sst)}')
+    if verbose > 0:
+        print(f'N iter: {it}')
+        print(f'Vm: {vm}')
+        print(f'Va: {va}')
+        print(f'Pg: {ppgen}')
+        print(f'Qg: {qqgen}')
+        print(f'Sf: {abs(ssf)}')
+        print(f'St: {abs(sst)}')
 
-    return 0
+    return x, s, y, z, mu, err_list
+
+
+def modify_grid(grid:gce.MultiCircuit = None):
+    """
+
+    :param grid:
+    :return:
+    """
+
+    # grid.lines[1].rate = 25
+    # grid.get_generators()[0].Cost2 = 0.5
+    # grid.buses[1].Vmax = 1.1
+    # grid.buses[1].Vmin = 1.09
 
 
 if __name__ == '__main__':
     system = build_grid_3bus()
-    solve_opf(system)
+    x0, s0, y0, z0, mu0, err0 = solve_opf(system, verbose=1)
+    modify_grid(system)
+    # x1, s1, y1, z1, mu1, err1 = solve_opf(system, x0=x0, s0=s0, y0=y0, z0=z0, mu0=mu0, verbose=1)
+    x1, s1, y1, z1, mu1, err1 = solve_opf(system, verbose=1)
+
+    print(err0)
+    print(err1)
 
