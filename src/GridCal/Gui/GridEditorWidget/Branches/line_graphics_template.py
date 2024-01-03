@@ -364,14 +364,16 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
                  toPort: Union[TerminalItem, None],
                  editor,
                  width=5,
-                 api_object: Union[Line, Transformer2W, VSC, UPFC, HvdcLine, DcLine, FluidPath, None] = None):
+                 api_object: Union[Line, Transformer2W, VSC, UPFC, HvdcLine, DcLine, FluidPath, None] = None,
+                 arrow_size=10):
         """
 
         :param fromPort:
         :param toPort:
         :param editor:
         :param width:
-        :param api_object: 
+        :param api_object:
+        :param arrow_size:
         """
         QGraphicsLineItem.__init__(self)
 
@@ -411,10 +413,10 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
 
         # arrows
         self.view_arrows = True
-        self.arrow_from_1 = ArrowHead(parent=self, arrow_size=10, position=0.15, under=False)
-        self.arrow_from_2 = ArrowHead(parent=self, arrow_size=10, position=0.15, under=True)
-        self.arrow_to_1 = ArrowHead(parent=self, arrow_size=10, position=0.85, under=False)
-        self.arrow_to_2 = ArrowHead(parent=self, arrow_size=10, position=0.85, under=True)
+        self.arrow_from_1 = ArrowHead(parent=self, arrow_size=arrow_size, position=0.15, under=False)
+        self.arrow_from_2 = ArrowHead(parent=self, arrow_size=arrow_size, position=0.15, under=True)
+        self.arrow_to_1 = ArrowHead(parent=self, arrow_size=arrow_size, position=0.85, under=False)
+        self.arrow_to_2 = ArrowHead(parent=self, arrow_size=arrow_size, position=0.85, under=True)
 
         # add the line and it possible children to the scene
         self.diagramScene.addItem(self)

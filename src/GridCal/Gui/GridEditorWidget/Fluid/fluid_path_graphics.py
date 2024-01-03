@@ -24,6 +24,7 @@ from GridCal.Gui.GridEditorWidget.Substation.bus_graphics import TerminalItem
 from GridCal.Gui.GridEditorWidget.Branches.line_editor import LineEditor
 from GridCal.Gui.messages import yes_no_question, warning_msg
 from GridCal.Gui.GridEditorWidget.Branches.line_graphics_template import LineGraphicTemplateItem
+from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE
 from GridCalEngine.Core.Devices.Fluid.fluid_path import FluidPath
 from GridCalEngine.enumerations import DeviceType
 
@@ -37,7 +38,7 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
                  fromPort: TerminalItem,
                  toPort: Union[TerminalItem, None],
                  editor,
-                 width=5,
+                 width=10,
                  api_object: FluidPath = None):
         """
 
@@ -52,9 +53,15 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
                                          toPort=toPort,
                                          editor=editor,
                                          width=width,
-                                         api_object=api_object)
+                                         api_object=api_object,
+                                         arrow_size=15)
 
-        self.style = Qt.CustomDashLine
+        # self.style = Qt.CustomDashLine
+        self.style = ACTIVE['style']
+        self.color = ACTIVE['fluid']
+        self.set_colour(color=self.color,
+                        w=self.width,
+                        style=self.style)
 
     def set_colour(self, color: QColor, w, style: Qt.PenStyle):
         """
@@ -66,7 +73,7 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
         """
 
         pen = QPen(color, w, style, Qt.RoundCap, Qt.RoundJoin)
-        pen.setDashPattern([5, 3, 2, 3])
+        # pen.setDashPattern([5, 3, 2, 3])
 
         self.setPen(pen)
         self.arrow_from_1.set_colour(color, w, style)
@@ -81,7 +88,8 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
         """
         Change the colour according to the system theme
         """
-        self.set_colour(self.color, self.width, self.style)
+        pass
+        # self.set_colour(self.color, self.width, self.style)
 
     def mouseDoubleClickEvent(self, event):
         """

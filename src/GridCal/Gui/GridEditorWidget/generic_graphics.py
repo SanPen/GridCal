@@ -18,6 +18,7 @@ import darkdetect
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (QPushButton, QGraphicsLineItem, QGraphicsItem, QVBoxLayout, QGraphicsPolygonItem,
                                QDialog, QGraphicsRectItem, QGraphicsEllipseItem)
+from PySide6.QtGui import QColor
 
 try:
     IS_DARK = darkdetect.theme() == "Dark"
@@ -27,7 +28,8 @@ except ImportError:
 # Declare colors
 ACTIVE = {'style': Qt.SolidLine,
           'color': Qt.white if IS_DARK else Qt.black,
-          'text': Qt.white if IS_DARK else Qt.black}
+          'text': Qt.white if IS_DARK else Qt.black,
+          'fluid': QColor(0, 170, 212, 255)}
 
 DEACTIVATED = {'style': Qt.DashLine, 'color': Qt.gray}
 EMERGENCY = {'style': Qt.SolidLine, 'color': Qt.yellow}
