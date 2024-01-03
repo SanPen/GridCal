@@ -1,0 +1,15 @@
+[0] Config.pm:307> INFO - This is Biber 2.19
+[0] Config.pm:310> INFO - Logfile is 'acdc_pf_technical_note.blg'
+[155] biber-MSWIN64:340> INFO - === 
+[215] Biber.pm:419> INFO - Reading 'acdc_pf_technical_note.bcf'
+[380] Biber.pm:979> INFO - Found 2 citekeys in bib section 0
+[402] Biber.pm:4419> INFO - Processing section 0
+[416] Biber.pm:4610> INFO - Looking for bibtex file 'refs.bib' for section 0
+[515] bibtex.pm:1713> INFO - LaTeX decoding ...
+[528] bibtex.pm:1519> INFO - Found BibTeX data source 'refs.bib'
+[614] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'variable = shifted' with 'variable = non-ignorable'
+[614] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'normalization = NFD' with 'normalization = prenormalized'
+[614] Biber.pm:4239> INFO - Sorting list 'nty/global//global/global' of type 'entry' with template 'nty' and locale 'en-US'
+[614] Biber.pm:4245> INFO - No sort tailoring available for locale 'en-US'
+[618] bbl.pm:660> INFO - Writing 'acdc_pf_technical_note.bbl' with encoding 'UTF-8'
+[620] bbl.pm:763> INFO - Output to acdc_pf_technical_note.bbl

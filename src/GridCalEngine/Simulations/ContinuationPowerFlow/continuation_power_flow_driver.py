@@ -74,7 +74,7 @@ class ContinuationPowerFlowDriver(DriverTemplate):
         :param lmbda: lambda value
         :return: None
         """
-        self.progress_text.emit('Running continuation power flow (lambda:' + "{0:.2f}".format(lmbda) + ')...')
+        self.report_text('Running continuation power flow (lambda:' + "{0:.2f}".format(lmbda) + ')...')
 
     def run(self):
         """
@@ -94,7 +94,7 @@ class ContinuationPowerFlowDriver(DriverTemplate):
 
         for island in islands:
 
-            self.progress_text.emit('Running voltage collapse at circuit ' + str(nc) + '...')
+            self.report_text('Running voltage collapse at circuit ' + str(nc) + '...')
 
             if len(island.vd) > 0 and len(island.pqpv) > 0:
                 results = continuation_nr(Ybus=island.Ybus,

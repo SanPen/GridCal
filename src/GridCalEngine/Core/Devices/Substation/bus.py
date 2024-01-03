@@ -201,12 +201,14 @@ class Bus(EditableDevice):
                       profile_name='')
         self.register(key='Vmax', units='p.u.', tpe=float, definition='Higher range of allowed voltage module.',
                       profile_name='')
-        self.register(key='Vm_cost', units='€/unit', tpe=float, definition='Cost of over and under voltages')
+        self.register(key='Vm_cost', units='€/unit', tpe=float, definition='Cost of over and under voltages',
+                      old_names=['voltage_module_cost'])
         self.register(key='angle_min', units='rad.', tpe=float, definition='Lower range of allowed voltage angle.',
                       profile_name='')
         self.register(key='angle_max', units='rad.', tpe=float, definition='Higher range of allowed voltage angle.',
                       profile_name='')
-        self.register(key='angle_cost', units='€/unit', tpe=float, definition='Cost of over and under angles')
+        self.register(key='angle_cost', units='€/unit', tpe=float, definition='Cost of over and under angles',
+                      old_names=['voltage_angle_cost'])
         self.register(key='r_fault', units='p.u.', tpe=float,
                       definition='Resistance of the fault.This is used for short circuit studies.', profile_name='')
         self.register(key='x_fault', units='p.u.', tpe=float,
