@@ -1301,12 +1301,12 @@ def add_hydro_formulation(t: Union[int, None],
     f_obj = 0.0
 
     for m in range(node_data.nelm):
-        node_vars.spillage[t, m] = prob.add_var(lb=0.0,
-                                                ub=1e20,
+        node_vars.spillage[t, m] = prob.add_var(lb=0.01,
+                                                ub=1e15,
                                                 name=f'NodeSpillage_{node_data.names[m]}')
 
-        f_obj += node_data.spillage_cost[m] * node_vars.spillage[t, m]
-        # f_obj += node_vars.spillage[t, m]
+        # f_obj += node_data.spillage_cost[m] * node_vars.spillage[t, m]
+        f_obj += node_vars.spillage[t, m]
 
         node_vars.current_level[t, m] = prob.add_var(lb=node_data.min_level[m],
                                                      ub=node_data.max_level[m],
