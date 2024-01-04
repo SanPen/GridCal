@@ -15,6 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import collections
+
 collections.Callable = collections.abc.Callable
 
 from typing import Callable, Tuple
@@ -30,9 +31,9 @@ def solver(x0: Vec,
            NV: int,
            NE: int,
            NI: int,
-           f_eval, #:Callable[[csc, csc, csc, csc, csc, Vec, Vec, Vec, csc, csc, csc, csc, float],
-           #Tuple[Vec, csc, csc, csc, csc, csc, csc, csc, csc]],
-           step_calculator, #: Callable[[Vec, Vec, int], float],
+           func,  #:Callable[[csc, csc, csc, csc, csc, Vec, Vec, Vec, csc, csc, csc, csc, float],
+           # Tuple[Vec, csc, csc, csc, csc, csc, csc, csc, csc]],
+           step_calculator,  #: Callable[[Vec, Vec, int], float],
            arg=(),
            gamma0=100,
            max_iter=100,
@@ -68,8 +69,9 @@ def solver(x0: Vec,
     :param NV: Number of variables (size of x)
     :param NE: Number of equality constraints (rows of H)
     :param NI: Number of inequality constraints (rows of G)
-    :param f_eval: A function pointer called with (x, lambda, pi) that returns (f, G, H, fx, Gx, Hx, fxx, Gxx, Hxx)
+    :param func: A function pointer called with (x, lambda, pi) that returns (f, G, H, fx, Gx, Hx, fxx, Gxx, Hxx)
     :param step_calculator:
+    :param arg: Tuple of arguments to call func: func(x, LAMBDA, PI *arg)
     :param gamma0:
     :param max_iter:
     :param verbose:
@@ -96,7 +98,7 @@ def solver(x0: Vec,
     while error > gamma and iter_counter < max_iter:
 
         # Evaluate the functions, gradients and hessians at the current iteration.
-        f, G, H, fx, Gx, Hx, fxx, Gxx, Hxx = f_eval(x, LAMBDA, PI, *arg)
+        f, G, H, fx, Gx, Hx, fxx, Gxx, Hxx = func(x, LAMBDA, PI, *arg)
 
         # Compute the submatrices of the reduced NR method
         M = fxx + Gxx + Hxx + Hx @ inv_T @ LAMBDA_MAT @ Hx.T
@@ -133,7 +135,7 @@ def solver(x0: Vec,
 
         # Compute the maximum error and the new gamma value
         error = np.max([np.max(abs(dX)), np.max(abs(dP)), np.max(abs(dL)), np.max(abs(dT))])
-        #newgamma = 0.5 * gamma
+        # newgamma = 0.5 * gamma
         newgamma = 0.1 * (T @ LAMBDA.T).toarray()[0][0] / NI
         gamma = max(newgamma, 1e-5)  # Maximum tolerance requested.
 
@@ -141,12 +143,19 @@ def solver(x0: Vec,
         iter_counter += 1
 
         if verbose > 0:
-            print(x, error, gamma)
+            print(f'Iteration: {iter_counter}', "-" * 80)
+            print("\tx:", x)
+            print("\tGamma:", gamma)
+            print("\tErr:", error)
+
     END = timeit.default_timer()
 
     if verbose > 0:
-        print('SOLUTION: ', x, f)
-        print('Time elapsed (s): ', END - START)
+        print(f'SOLUTION', "-" * 80)
+        print("\tx:", x)
+        print("\tF.obj:", f)
+        print("\tErr:", error)
+        print('\tTime elapsed (s): ', END - START)
 
     return x, error, gamma
 
@@ -173,7 +182,7 @@ def step_calculation(V: Mat, dV: Mat, NI: int):
 
 def test_solver():
     X = np.array([2., 1., 0.])
-    solver(x0=X, NV=3, NE=1, NI=2, f_eval=NLP_test, arg=(), step_calculator=step_calculation, verbose=1)
+    solver(x0=X, NV=3, NE=1, NI=2, func=NLP_test, arg=(), step_calculator=step_calculation, verbose=1)
 
     return
 
