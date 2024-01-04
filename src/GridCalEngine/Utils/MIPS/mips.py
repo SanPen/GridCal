@@ -181,7 +181,7 @@ def step_calculation(V: Mat, dV: Mat, NI: int):
 
 
 def test_solver():
-    X = np.array([2., 1., 0.])
+    X = np.array([2., 1.1, 0.])
     solver(x0=X, NV=3, NE=1, NI=2, func=NLP_test, arg=(), step_calculator=step_calculation, verbose=1)
 
     return
