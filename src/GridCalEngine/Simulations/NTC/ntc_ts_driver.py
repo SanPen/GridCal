@@ -111,10 +111,10 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
         Run thread
         """
 
-        self.progress_signal.emit(0)
+        self.report_progress(0)
 
         if self.progress_text is not None:
-            self.progress_text.emit('Compiling circuit...')
+            self.report_text('Compiling circuit...')
         else:
             print('Compiling cicuit...')
 
@@ -125,7 +125,7 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         # declare the linear analysis
         if self.progress_text is not None:
-            self.progress_text.emit('Computing linear analysis...')
+            self.report_text('Computing linear analysis...')
         else:
             print('Computing linear analysis...')
 
@@ -147,7 +147,7 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
         if self.use_clustering:
 
             if self.progress_text is not None:
-                self.progress_text.emit('Clustering...')
+                self.report_text('Clustering...')
 
             else:
                 print('Clustering...')
@@ -239,8 +239,8 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                                              buses_areas_1=self.options.area_from_bus_idx,
                                              buses_areas_2=self.options.area_to_bus_idx,
                                              logger=self.logger,
-                                             progress_text=self.progress_text.emit,
-                                             progress_func=self.progress_signal.emit,
+                                             progress_text=self.report_text,
+                                             progress_func=self.report_progress,
                                              export_model_fname=self.options.export_model_fname)
 
             self.results.voltage = np.ones((opf_vars.nt, opf_vars.nbus)) * np.exp(1j * opf_vars.bus_vars.theta)
@@ -259,11 +259,10 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             self.results.hvdc_loading = opf_vars.hvdc_vars.loading
 
             # update progress bar
-            progress = (t_idx + 1) / len(time_indices) * 100
-            self.progress_signal.emit(progress)
+            self.report_progress2(t_idx, len(time_indices))
 
             if self.progress_text is not None:
-                self.progress_text.emit('Optimal net transfer capacity at ' + str(self.grid.time_profile[t]))
+                self.report_text('Optimal net transfer capacity at ' + str(self.grid.time_profile[t]))
 
             else:
                 print('Optimal net transfer capacity at ' + str(self.grid.time_profile[t]))
@@ -281,11 +280,11 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             # time_str = str(nc.time_array[time_indices][t_idx])
             #
             # # Define the problem
-            # self.progress_text.emit('Formulating NTC OPF...['+time_str+']')
+            # self.report_text('Formulating NTC OPF...['+time_str+']')
             # problem.formulate_ts(t=t)
             #
             # # Solve
-            # self.progress_text.emit('Solving NTC OPF...['+time_str+']')
+            # self.report_text('Solving NTC OPF...['+time_str+']')
             # solved = problem.solve_ts(
             #     t=t,
             #     time_limit_ms=self.options.time_limit_ms
@@ -387,7 +386,7 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 reversed_sort_loading=self.options.reversed_sort_loading,
             )
 
-            self.progress_text.emit('Creating report...['+time_str+']')
+            self.report_text('Creating report...['+time_str+']')
 
             result.create_all_reports(
                 loading_threshold=self.options.loading_threshold_to_report,
@@ -396,13 +395,12 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             )
             self.results.results_dict[t] = result
 
-            if self.progress_signal is not None:
-                self.progress_signal.emit((t_idx + 1) / nt * 100)
+            self.report_progress2(t_idx, nt)
 
             if self.__cancel__:
                 break
 
-        self.progress_text.emit('Creating final reports...')
+        self.report_text('Creating final reports...')
 
         self.results.create_all_reports(
             loading_threshold=self.options.loading_threshold_to_report,
@@ -410,7 +408,7 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         )
 
-        self.progress_text.emit('Done!')
+        self.report_text('Done!')
 
         self.logger.add_info('Ejecutado en {0:.2f} scs. para {1} casos'.format(
             time.time()-tm0, len(self.results.time_array)))
@@ -423,7 +421,7 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
         self.tic()
 
         self.opf()
-        self.progress_text.emit('Done!')
+        self.report_text('Done!')
 
         self.toc()
 

@@ -72,16 +72,16 @@ class TransientStability(DriverTemplate):
         :param txt: text to display
         :param progress: progress 0-100
         """
-        self.progress_signal.emit(progress)
-        self.progress_text.emit(txt)
+        self.report_progress(progress)
+        self.report_text(txt)
 
     def run(self):
         """
         Run transient stability
         """
         self.tic()
-        self.progress_signal.emit(0.0)
-        self.progress_text.emit('Running transient stability...')
+        self.report_progress(0.0)
+        self.report_text('Running transient stability...')
 
         # print('Compiling...', end='')
         numerical_circuit = self.grid.compile_snapshot()

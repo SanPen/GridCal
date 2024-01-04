@@ -76,7 +76,7 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
         # index
         self.index = index
 
-        self.color = ACTIVE['color']
+        self.color = ACTIVE['fluid']
         self.style = ACTIVE['style']
 
         # Label:
@@ -168,10 +168,10 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
         """
         Change the colour according to the system theme
         """
-        self.color = ACTIVE['color']
-        self.style = ACTIVE['style']
+        # self.color = ACTIVE['color']
+        # self.style = ACTIVE['style']
         self.label.setDefaultTextColor(ACTIVE['text'])
-        self.set_tile_color(self.color)
+        # self.set_tile_color(self.color)
 
         for e in self.shunt_children:
             if e is not None:

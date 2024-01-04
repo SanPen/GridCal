@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from typing import Union
 from GridCalEngine.IO.cim.cgmes_2_4_15.cgmes_enums import RegulatingControlModeKind, cgmesProfile
 from GridCalEngine.IO.cim.cgmes_2_4_15.devices.identified_object import IdentifiedObject
 from GridCalEngine.IO.cim.cgmes_2_4_15.devices.terminal import Terminal
@@ -33,7 +34,7 @@ class RegulatingControl(IdentifiedObject):
         self.targetValue: float = 0.0
         self.targetValueUnitMultiplier: UnitMultiplier = UnitMultiplier.none
 
-        self.Terminal: Terminal | None = None
+        self.Terminal: Union[Terminal, None] = None
 
         self.register_property(
             name='mode',
