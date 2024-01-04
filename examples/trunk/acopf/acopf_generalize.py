@@ -202,8 +202,9 @@ def build_h(x: np.ndarray = None,
     pgen = x[x_ind[2]:x_ind[3]]
     qgen = x[x_ind[3]:x_ind[4]]
 
-    sf = (cf @ (e + 1j * f)) * np.conj(yf @ (e + 1j * f))
-    st = (ct @ (e + 1j * f)) * np.conj(yt @ (e + 1j * f))
+    vv = e + 1j * f
+    sf = (cf @ vv) * np.conj(yf @ vv)
+    st = (ct @ vv) * np.conj(yt @ vv)
 
     h_vu = - e[pqpv] * e[pqpv] - f[pqpv] * f[pqpv] + v_max[pqpv] * v_max[pqpv]
     h_vl = + e[pqpv] * e[pqpv] + f[pqpv] * f[pqpv] - v_min[pqpv] * v_min[pqpv]
