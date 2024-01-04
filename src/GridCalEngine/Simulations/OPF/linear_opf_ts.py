@@ -1221,7 +1221,8 @@ def add_linear_node_balance(t_idx: int,
                             gen_vars: GenerationVars,
                             batt_vars: BatteryVars,
                             load_vars: LoadVars,
-                            prob: LpModel):
+                            prob: LpModel,
+                            logger: Logger):
     """
     Add the kirchoff nodal equality
     :param t_idx: time step
@@ -1236,6 +1237,7 @@ def add_linear_node_balance(t_idx: int,
     :param batt_vars: BatteryVars
     :param load_vars: LoadVars
     :param prob: LpModel
+    :param logger: Logger
     """
     B = Bbus.tocsc()
 
@@ -1247,15 +1249,23 @@ def add_linear_node_balance(t_idx: int,
     P_esp += lpDot(load_data.C_bus_elm.tocsc(),
                    load_vars.shedding[t_idx, :] - load_vars.p[t_idx, :])
 
-    # calculate the linear nodal inyection
+    # calculate the linear nodal injection
     bus_vars.Pcalc[t_idx, :] = lpDot(B, bus_vars.theta[t_idx, :])
 
     # add the equality restrictions
     for k in range(bus_data.nbus):
-        bus_vars.kirchhoff[t_idx, k] = prob.add_cst(
-            cst=bus_vars.Pcalc[t_idx, k] == P_esp[k],
-            name=join("kirchoff_", [t_idx, k], "_")
-        )
+        if isinstance(bus_vars.Pcalc[t_idx, k], int) or isinstance(bus_vars.Pcalc[t_idx, k], float) :
+            bus_vars.kirchhoff[t_idx, k] = prob.add_cst(
+                cst=bus_vars.theta[t_idx, k] == 0,
+                name=join("island_bus_", [t_idx, k], "_")
+            )
+            logger.add_warning("bus isolated",
+                               device=bus_data.names[k]+f'@t={t_idx}')
+        else:
+            bus_vars.kirchhoff[t_idx, k] = prob.add_cst(
+                cst=bus_vars.Pcalc[t_idx, k] == P_esp[k],
+                name=join("kirchoff_", [t_idx, k], "_")
+            )
 
     for i in vd:
         set_var_bounds(var=bus_vars.theta[t_idx, i], lb=0.0, ub=0.0)
@@ -1301,21 +1311,21 @@ def add_hydro_formulation(t: Union[int, None],
     f_obj = 0.0
 
     for m in range(node_data.nelm):
-        node_vars.spillage[t, m] = prob.add_var(lb=0.01,
-                                                ub=1e15,
-                                                name=f'NodeSpillage_{node_data.names[m]}')
+        node_vars.spillage[t, m] = prob.add_var(lb=0.00,
+                                                ub=1e20,
+                                                name=join("NodeSpillage_", [t, m], "_"))
 
-        # f_obj += node_data.spillage_cost[m] * node_vars.spillage[t, m]
-        f_obj += node_vars.spillage[t, m]
+        f_obj += node_data.spillage_cost[m] * node_vars.spillage[t, m]
+        # f_obj += node_vars.spillage[t, m]
 
         node_vars.current_level[t, m] = prob.add_var(lb=node_data.min_level[m],
                                                      ub=node_data.max_level[m],
-                                                     name=f'Level_{node_data.names[m]}')
+                                                     name=join("level_", [t, m], "_"))
 
     for m in range(path_data.nelm):
         path_vars.flow[t, m] = prob.add_var(lb=path_data.min_flow[m],
                                             ub=path_data.max_flow[m],
-                                            name=f'Flow_{path_data.names[m]}')
+                                            name=join("hflow_", [t, m], "_"))
 
     # add flow variables for turbines and pumps to be recovered later on
     # for m in range(turbine_data.nelm):
@@ -1340,9 +1350,9 @@ def add_hydro_formulation(t: Union[int, None],
 
         # if t > 0:
         inj_vars.flow[t, m] = turbine_flow  # to retrieve the value later on
-        prob.add_cst(cst=(node_vars.flow_out[t, plant_idx] ==
-                          turbine_flow),
-                     name=f'{turbine_data.names[m]} Turbine-river connection')
+
+        prob.add_cst(cst=(node_vars.flow_out[t, plant_idx] == turbine_flow),
+                     name=join("turbine_river_", [t, m], "_"))
 
         if generator_data.pmin[gen_idx] < 0:
             logger.add_error(msg='Turbine generator pmin < 0 is not possible',
@@ -1363,9 +1373,8 @@ def add_hydro_formulation(t: Union[int, None],
 
         # if t > 0:
         inj_vars.flow[t, m + turbine_data.nelm] = - pump_flow
-        prob.add_cst(cst=(node_vars.flow_in[t, plant_idx] ==
-                          - pump_flow),
-                     name=f'{pump_data.names[m]} Turbine-river connection')
+        prob.add_cst(cst=(node_vars.flow_in[t, plant_idx] == - pump_flow),
+                     name=join("pump_river_", [t, m], "_"))
 
         if generator_data.pmax[gen_idx] > 0:
             logger.add_error(msg='Pump generator pmax > 0 is not possible',
@@ -1409,7 +1418,7 @@ def add_hydro_formulation(t: Union[int, None],
                                   + dt * node_vars.p2x_flow[t, m]
                                   - dt * node_vars.spillage[t, m]
                                   - dt * node_vars.flow_out[t, m]),
-                             name=f'{node_data.names[m]} Nodal Balance')
+                             name=join("nodal_balance_", [t, m], "_"))
             else:
                 # Update the level according to the in and out flows as time passes
                 dt = (time_array[time_global_tidx] - time_array[time_global_tidx - 1]).seconds / 3600.0
@@ -1421,7 +1430,7 @@ def add_hydro_formulation(t: Union[int, None],
                                   + dt * node_vars.p2x_flow[t, m]
                                   - dt * node_vars.spillage[t, m]
                                   - dt * node_vars.flow_out[t, m]),
-                             name=f'{node_data.names[m]} Nodal Balance')
+                             name=join("nodal_balance_", [t, m], "_"))
     return f_obj
 
 
@@ -1613,7 +1622,8 @@ def run_linear_opf_ts(grid: MultiCircuit,
                                     gen_vars=mip_vars.gen_vars,
                                     batt_vars=mip_vars.batt_vars,
                                     load_vars=mip_vars.load_vars,
-                                    prob=lp_model)
+                                    prob=lp_model,
+                                    logger=logger)
 
             # add branch contingencies ---------------------------------------------------------------------------------
             if consider_contingencies:
