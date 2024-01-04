@@ -16,13 +16,13 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 from typing import Union
-from PySide6.QtCore import Qt, QRectF
-from PySide6.QtGui import QPen, QIcon, QPixmap, QBrush, QColor
-from PySide6.QtWidgets import QMenu, QGraphicsRectItem
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QPen, QIcon, QPixmap, QColor
+from PySide6.QtWidgets import QMenu
 from GridCal.Gui.GeneralDialogues import InputNumberDialogue
 from GridCal.Gui.GridEditorWidget.Substation.bus_graphics import TerminalItem
 from GridCal.Gui.GridEditorWidget.Branches.line_editor import LineEditor
-from GridCal.Gui.messages import yes_no_question, warning_msg
+from GridCal.Gui.messages import yes_no_question
 from GridCal.Gui.GridEditorWidget.Branches.line_graphics_template import LineGraphicTemplateItem
 from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE
 from GridCalEngine.Core.Devices.Fluid.fluid_path import FluidPath
@@ -39,14 +39,16 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
                  toPort: Union[TerminalItem, None],
                  editor,
                  width=10,
-                 api_object: FluidPath = None):
+                 api_object: FluidPath = None,
+                 arrow_size=15):
         """
-
+        
         :param fromPort:
         :param toPort:
         :param editor:
         :param width:
         :param api_object:
+        :param arrow_size:
         """
         LineGraphicTemplateItem.__init__(self,
                                          fromPort=fromPort,
@@ -54,7 +56,7 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
                                          editor=editor,
                                          width=width,
                                          api_object=api_object,
-                                         arrow_size=15)
+                                         arrow_size=arrow_size)
 
         # self.style = Qt.CustomDashLine
         self.style = ACTIVE['style']
@@ -88,8 +90,7 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
         """
         Change the colour according to the system theme
         """
-        pass
-        # self.set_colour(self.color, self.width, self.style)
+        self.set_colour(self.color, self.width, self.style)
 
     def mouseDoubleClickEvent(self, event):
         """
@@ -201,29 +202,15 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
         @return:
         """
         # get the index of this object
-        i = self.editor.circuit.get_branches().index(self.api_object)
-        self.editor.diagramScene.plot_branch(i, self.api_object)
+        i = self.editor.circuit.get_fluid_paths().index(self.api_object)
+        # self.editor.diagramScene.plot_branch(i, self.api_object)
 
     def edit(self):
         """
         Open the appropriate editor dialogue
         :return:
         """
-        Sbase = self.editor.circuit.Sbase
-        Vnom = self.api_object.get_max_bus_nominal_voltage()
-        templates = list()
-
-        for lst in [self.editor.circuit.sequence_line_types,
-                    self.editor.circuit.underground_cable_types,
-                    self.editor.circuit.overhead_line_types]:
-            for temp in lst:
-                if Vnom == temp.Vnom:
-                    templates.append(temp)
-
-        current_template = self.api_object.template
-        dlg = LineEditor(self.api_object, Sbase, templates, current_template)
-        if dlg.exec_():
-            pass
+        pass
 
     def show_line_editor(self):
         """
@@ -244,9 +231,9 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
         dlg = InputNumberDialogue(min_value=1.0,
                                   max_value=99.0,
                                   is_int=False,
-                                  title="Split line",
+                                  title="Split fluid path",
                                   text="Enter the distance from the beginning of the \n"
-                                       "line as a percentage of the total length",
+                                       "fluid path as a percentage of the total length",
                                   suffix=' %',
                                   decimals=2,
                                   default_value=50.0)
