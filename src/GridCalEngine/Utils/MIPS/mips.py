@@ -133,8 +133,8 @@ def solver(x0: Vec,
 
         # Compute the maximum error and the new gamma value
         error = np.max([np.max(abs(dX)), np.max(abs(dP)), np.max(abs(dL)), np.max(abs(dT))])
-        newgamma = 0.5 * gamma
-        #newgamma = 0.4 * (T @ LAMBDA.T).toarray()[0][0] / NI
+        #newgamma = 0.5 * gamma
+        newgamma = 0.1 * (T @ LAMBDA.T).toarray()[0][0] / NI
         gamma = max(newgamma, 1e-5)  # Maximum tolerance requested.
 
         # Add an iteration step
@@ -142,7 +142,6 @@ def solver(x0: Vec,
 
         if verbose > 0:
             print(x, error, gamma)
-
     END = timeit.default_timer()
 
     if verbose > 0:
@@ -167,7 +166,7 @@ def step_calculation(V: Mat, dV: Mat, NI: int):
         if dV[0, i] < 0:
             alpha = min(alpha, -V[0, i] / dV[0, i])
 
-    alpha = min(0.995 * alpha, 1.0)
+    alpha = min(0.99995 * alpha, 1.0)
 
     return alpha
 

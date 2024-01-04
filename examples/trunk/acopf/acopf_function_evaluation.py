@@ -12,7 +12,7 @@ def build_grid_3bus():
     grid = gce.MultiCircuit()
 
     b1 = gce.Bus(is_slack=True)
-    b2 = gce.Bus(vmin = 0.995, vmax = 0.995)
+    b2 = gce.Bus()
     b3 = gce.Bus()
 
     grid.add_bus(b1)
@@ -96,7 +96,7 @@ def eval_g(x, Ybus, Yf, Cg, Sd, slack, pv, V_U):
     Sg = Pg + 1j * Qg
     dS = S + Sd - (Cg @ Sg)
 
-    gval = np.r_[dS.real, dS.imag, vm[pv] - V_U[pv]]  # Check, may not need slicing
+    gval = np.r_[dS.real, dS.imag]  # Check, may not need slicing
 
     return gval
 
@@ -116,8 +116,8 @@ def eval_h(x, Yf, Yt, from_idx, to_idx, pqpv, pq, th_max, th_min, V_U, V_L, P_U,
     Sf = V[from_idx] * If
     St = V[to_idx] * np.conj(Yt @ V)
 
-    hval = np.r_[Sf.real - rates, St.real - rates, vm[pq] - V_U[pq], V_L[pq] - vm[pq], va[pqpv] - th_max[pqpv],
-    th_min[pqpv] - va[pqpv], Pg - P_U, P_L - Pg, Qg - Q_U, Q_L, - Qg]
+    hval = np.r_[Sf.real - rates, St.real - rates, vm[pqpv] - V_U[pqpv], V_L[pqpv] - vm[pqpv], va[pqpv] - th_max[pqpv],
+    th_min[pqpv] - va[pqpv], Pg - P_U, P_L - Pg, Qg - Q_U, Q_L - Qg]
 
     return hval
 
@@ -254,8 +254,8 @@ def power_flow_evaluation(grid: gce.MultiCircuit):
     npqpv = len(pqpv)
 
     NV = 2 * (N-1) + 2 * Ng  # V, th of all buses (slack reference in constraints), active and reactive of the generators
-    NE = 2 * N + npv  # Nodal power balances, the voltage module of slack and pv buses and the slack reference
-    NI = 2 * M + 2 * N + 2 * npq + 4 * Ng  # Line ratings, max and min angle of buses, voltage module range and
+    NE = 2 * N   # Nodal power balances, the voltage module of slack and pv buses and the slack reference
+    NI = 2 * M + 4 * npqpv + 4 * Ng  # Line ratings, max and min angle of buses, voltage module range and
     # active and reactive power generation range.
 
     ########
