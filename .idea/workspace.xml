@@ -28,10 +28,12 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="minimal changes to better unify pulp and ortools interfaces">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Made comments in MIPS">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/examples/trunk/acopf/acopf_function_evaluation.py" beforeDir="false" afterPath="$PROJECT_DIR$/examples/trunk/acopf/acopf_function_evaluation.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/MIPS/mips.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/MIPS/mips.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/Sparse/csc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/Sparse/csc.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/Sparse/csc_numba.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/Sparse/csc_numba.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -117,7 +119,7 @@
     "MATLAB_INTERPRETER": "/usr/local/MATLAB/R2018a/bin/matlab",
     "Python tests.Nosetests in acopf_function_evaluation.py.executor": "Run",
     "Python.ExecuteGridCal.executor": "Run",
-    "Python.acopf_function_evaluation.executor": "Debug",
+    "Python.acopf_function_evaluation.executor": "Run",
     "Python.hydro_opf.executor": "Run",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
@@ -1263,7 +1265,7 @@
       <workItem from="1701262178348" duration="3698000" />
       <workItem from="1704399865723" duration="263000" />
       <workItem from="1704404622815" duration="6000" />
-      <workItem from="1704444243529" duration="2046000" />
+      <workItem from="1704444243529" duration="6792000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1608,7 +1610,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="444" />
+    <option name="localTasksCounter" value="446" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1654,8 +1656,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="added investment grid test" />
-    <MESSAGE value="added connectivities for fuels emissions and technologies" />
     <MESSAGE value="added connectivity matrices for fuels emissions and technologies to the multi-circuit" />
     <MESSAGE value="5.0.8&#10;improved NR ability to detect sparse solution errors" />
     <MESSAGE value="added newtonpa recommended version" />
@@ -1679,7 +1679,9 @@
     <MESSAGE value="Use modify function to test variations" />
     <MESSAGE value="Cosmetic changes" />
     <MESSAGE value="minimal changes to better unify pulp and ortools interfaces" />
-    <option name="LAST_COMMIT_MESSAGE" value="minimal changes to better unify pulp and ortools interfaces" />
+    <MESSAGE value="Made the jacobian and hessian calculations output a CSC matrix directly" />
+    <MESSAGE value="Made comments in MIPS" />
+    <option name="LAST_COMMIT_MESSAGE" value="Made comments in MIPS" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2137,7 +2139,7 @@
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_tests_test_contingency.coverage" NAME="Nosetests for tests.test_contingency Coverage Results" MODIFIED="1704269547065" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1704400051270" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
-    <SUITE FILE_PATH="coverage/GridCal$acopf_function_evaluation.coverage" NAME="acopf_function_evaluation Coverage Results" MODIFIED="1704448113441" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/examples/trunk/acopf" />
+    <SUITE FILE_PATH="coverage/GridCal$acopf_function_evaluation.coverage" NAME="acopf_function_evaluation Coverage Results" MODIFIED="1704467682101" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/examples/trunk/acopf" />
     <SUITE FILE_PATH="coverage/GridCal$upload_to_pypi.coverage" NAME="upload_to_pypi Coverage Results" MODIFIED="1704384315860" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
     <SUITE FILE_PATH="coverage/GridCal$hydro_opf.coverage" NAME="hydro_opf Coverage Results" MODIFIED="1704400043683" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/examples" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_tests.coverage" NAME="Nosetests in tests Coverage Results" MODIFIED="1704292017290" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />

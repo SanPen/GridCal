@@ -200,7 +200,7 @@ def calc_jacobian(func, x: Vec, arg=(), h=1e-5) -> csc:
     return jac.tocsc()
 
 
-def calc_hessian(func, x: Vec, mult: Mat, arg=(), h=1e-5) -> csc:
+def calc_hessian(func, x: Vec, mult: Vec, arg=(), h=1e-5) -> csc:
     """
     Compute the Hessian matrix of `func` at `x` using finite differences.
 
@@ -240,7 +240,7 @@ def calc_hessian(func, x: Vec, mult: Mat, arg=(), h=1e-5) -> csc:
                 x_jjm[j] -= h
                 f_jjm = func(x_jjm, *arg)[eq]
 
-                a = mult[0, eq] * (f_ijp - f_ijm - f_jim + f_jjm) / (4 * h ** 2)
+                a = mult[eq] * (f_ijp - f_ijm - f_jim + f_jjm) / (4 * h ** 2)
 
                 if a != 0.0:
                     hessian[i, j] = a
@@ -251,7 +251,8 @@ def calc_hessian(func, x: Vec, mult: Mat, arg=(), h=1e-5) -> csc:
 
 
 def evaluate_power_flow(x, LAMBDA, PI, Ybus, Yf, Cg, Sd, slack, pqpv, Yt, from_idx, to_idx,
-                        th_max, th_min, V_U, V_L, P_U, P_L, Q_U, Q_L, c1, c2, rates, h=1e-5):
+                        th_max, th_min, V_U, V_L, P_U, P_L, Q_U, Q_L, c1, c2, rates, h=1e-5) -> (
+        Tuple)[Vec, Vec, Vec, csc, csc, csc, csc, csc, csc]:
     """
 
     :param x:
@@ -281,11 +282,16 @@ def evaluate_power_flow(x, LAMBDA, PI, Ybus, Yf, Cg, Sd, slack, pqpv, Yt, from_i
     :return:
     """
     f = eval_f(x=x, Yf=Yf, Cg=Cg, c1=c1, c2=c2)
-    G = csc((eval_g(x=x, Ybus=Ybus, Yf=Yf, Cg=Cg, Sd=Sd, slack=slack,
-                    pqpv=pqpv))).T  # TODO: this is an array, modify MIPS accordingly, storing a dense array as CSC is very expensive
-    H = csc((eval_h(x=x, Yf=Yf, Yt=Yt, from_idx=from_idx, to_idx=to_idx, slack=slack, pqpv=pqpv, th_max=th_max,
-                    th_min=th_min, V_U=V_U, V_L=V_L, P_U=P_U, P_L=P_L, Q_U=Q_U, Q_L=Q_L, Cg=Cg,
-                    rates=rates))).T  # TODO: this is an array, modify MIPS accordingly, storing a dense array as CSC is very expensive
+    # G = csc((eval_g(x=x, Ybus=Ybus, Yf=Yf, Cg=Cg, Sd=Sd, slack=slack,
+    #                 pqpv=pqpv))).T
+    # H = csc((eval_h(x=x, Yf=Yf, Yt=Yt, from_idx=from_idx, to_idx=to_idx, slack=slack, pqpv=pqpv, th_max=th_max,
+    #                 th_min=th_min, V_U=V_U, V_L=V_L, P_U=P_U, P_L=P_L, Q_U=Q_U, Q_L=Q_L, Cg=Cg,
+    #                 rates=rates))).T
+
+    G = eval_g(x=x, Ybus=Ybus, Yf=Yf, Cg=Cg, Sd=Sd, slack=slack, pqpv=pqpv).T
+    H = eval_h(x=x, Yf=Yf, Yt=Yt, from_idx=from_idx, to_idx=to_idx, slack=slack, pqpv=pqpv, th_max=th_max,
+               th_min=th_min, V_U=V_U, V_L=V_L, P_U=P_U, P_L=P_L, Q_U=Q_U, Q_L=Q_L, Cg=Cg,
+               rates=rates).T
 
     fx = calc_jacobian(func=eval_f, x=x, arg=(Yf, Cg, c1, c2), h=h).T
     Gx = calc_jacobian(func=eval_g, x=x, arg=(Ybus, Yf, Cg, Sd, slack, pqpv)).T
@@ -293,11 +299,11 @@ def evaluate_power_flow(x, LAMBDA, PI, Ybus, Yf, Cg, Sd, slack, pqpv, Yt, from_i
                                               V_U, V_L, P_U, P_L, Q_U, Q_L, Cg, rates)).T
 
     # TODO input the multipliers for each iteration
-    fxx = calc_hessian(func=eval_f, x=x, mult=np.ones((1, 1)), arg=(Yf, Cg, c1, c2), h=h)
-    Gxx = calc_hessian(func=eval_g, x=x, mult=PI.toarray(), arg=(Ybus, Yf, Cg, Sd, slack, pqpv))
-    Hxx = calc_hessian(func=eval_h, x=x, mult=LAMBDA.toarray(), arg=(Yf, Yt, from_idx, to_idx, slack, pqpv, th_max,
-                                                                     th_min, V_U, V_L, P_U, P_L, Q_U, Q_L, Cg,
-                                                                     rates))
+    fxx = calc_hessian(func=eval_f, x=x, mult=np.ones(1), arg=(Yf, Cg, c1, c2), h=h)
+    Gxx = calc_hessian(func=eval_g, x=x, mult=PI, arg=(Ybus, Yf, Cg, Sd, slack, pqpv))
+    Hxx = calc_hessian(func=eval_h, x=x, mult=LAMBDA, arg=(Yf, Yt, from_idx, to_idx, slack, pqpv, th_max,
+                                                           th_min, V_U, V_L, P_U, P_L, Q_U, Q_L, Cg,
+                                                           rates))
 
     return f, G, H, fx, Gx, Hx, fxx, Gxx, Hxx
 
@@ -342,10 +348,15 @@ def power_flow_evaluation(grid: gce.MultiCircuit):
     Ng = Cg.shape[1]
     npqpv = len(pqpv)
 
-    NV = 2 * (
-                N - 1) + 2 * Ng  # V, th of all buses (slack reference in constraints), active and reactive of the generators
-    NE = 2 * N  # Nodal power balances, the voltage module of slack and pv buses and the slack reference
-    NI = 2 * M + 4 * npqpv + 4 * Ng  # Line ratings, max and min angle of buses, voltage module range and
+    # V, th of all buses (slack reference in constraints), active and reactive of the generators
+    NV = 2 * (N - 1) + 2 * Ng
+
+    # Nodal power balances, the voltage module of slack and pv buses and the slack reference
+    NE = 2 * N
+
+    # Line ratings, max and min angle of buses, voltage module range and
+    NI = 2 * M + 4 * npqpv + 4 * Ng
+
     # active and reactive power generation range.
 
     ########

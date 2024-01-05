@@ -411,8 +411,6 @@ def csc_stack_2d_ff(mats, m_rows=1, m_cols=1, row_major=True):
     return csc_matrix((data, indices, indptr), shape=(nrows, ncols))
 
 
-
-
 def csc_stack_2d_ff_old(mats, m_rows=1, m_cols=1):
     """
     Assemble matrix from a list of matrices representing a "super matrix"
@@ -495,3 +493,24 @@ def dense_to_csc(mat: Mat, threshold: float) -> csc_matrix:
     data, indices, indptr = csc_numba.dense_to_csc_numba(mat, threshold)
 
     return csc_matrix((data, indices, indptr), shape=mat.shape)
+
+
+def diags(array) -> csc_matrix:
+    """
+    Convert array to CSC diagonal matrix
+    :param array:
+    :return:
+    """
+    m = len(array)
+    # indptr = np.zeros(m + 1, dtype=int)
+    # indices = np.zeros(m, dtype=int)
+    # data = np.zeros(m, dtype=float)
+    #
+    # for i in range(m):
+    #     indptr[i] = i
+    #     indices[i] = i
+    #     data[i] = array[i]
+    #
+    # indptr[m] = m
+
+    return csc_matrix(csc_numba.csc_diagonal_from_array(array), shape=(m, m))

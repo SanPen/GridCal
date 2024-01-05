@@ -678,23 +678,26 @@ def csc_diagonal(m, value=1.0):
 
 # @nb.njit("Tuple((i4[:], i4[:], f8[:]))(i8, f8[:])")
 @nb.njit()
-def csc_diagonal_from_array(m, array):
+def csc_diagonal_from_array(array):
     """
 
     :param m:
     :param array:
     :return:
     """
-    indptr = np.empty(m + 1, dtype=np.int32)
-    indices = np.empty(m, dtype=np.int32)
-    data = np.empty(m, dtype=np.float64)
+    m = len(array)
+    indptr = np.zeros(m + 1, dtype=np.int32)
+    indices = np.zeros(m, dtype=np.int32)
+    data = np.zeros(m)
+
     for i in range(m):
         indptr[i] = i
         indices[i] = i
         data[i] = array[i]
+
     indptr[m] = m
 
-    return indices, indptr, data
+    return data, indices, indptr
 
 
 # @nb.njit("Tuple((i8, i8, i4[:], i4[:], f8[:]))"
