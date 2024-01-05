@@ -700,12 +700,6 @@ def csc_diagonal_from_array(array):
     return data, indices, indptr
 
 
-# @nb.njit("Tuple((i8, i8, i4[:], i4[:], f8[:]))"
-#          "(i8, i8, i4[:], i4[:], f8[:], "
-#          "i8, i8, i4[:], i4[:], f8[:], "
-#          "i8, i8, i4[:], i4[:], f8[:], "
-#          "i8, i8, i4[:], i4[:], f8[:])",
-#          parallel=False, nogil=True, fastmath=True, cache=True)
 @nb.njit(cache=True)
 def csc_stack_4_by_4_ff(am, an, Ai, Ap, Ax,
                         bm, bn, Bi, Bp, Bx,
@@ -784,7 +778,72 @@ def csc_stack_4_by_4_ff(am, an, Ai, Ap, Ax,
     return m, n, indices, indptr, data
 
 
-# @nb.njit("f8(i8, i4[:], f8[:])")
+
+@nb.njit(cache=True)
+def csc_stack_3_by_4_ff(am, an, Ai, Ap, Ax,
+                        bm, bn, Bi, Bp, Bx,
+                        cm, cn, Ci, Cp, Cx):
+    """
+    stack csc sparse float matrices like this:
+    | A | B |
+    | C | 0 |
+
+    :param am:
+    :param an:
+    :param Ai:
+    :param Ap:
+    :param Ax:
+    :param bm:
+    :param bn:
+    :param Bi:
+    :param Bp:
+    :param Bx:
+    :param cm:
+    :param cn:
+    :param Ci:
+    :param Cp:
+    :param Cx:
+    :return:
+    """
+
+    # check dimensional compatibility
+    assert am == bm
+    assert an == cn
+
+    nnz = Ap[an] + Bp[bn] + Cp[cn]
+
+    m = am + cm
+    n = an + bn
+
+    indptr = np.zeros(n + 1, dtype=nb.int32)
+    indices = np.zeros(nnz, dtype=nb.int32)
+    data = np.zeros(nnz, dtype=nb.float64)
+    cnt = 0
+    indptr[0] = 0
+    for j in range(an):  # for every column, same as range(cols + 1) For A and C
+        for k in range(Ap[j], Ap[j + 1]):  # for every entry in the column from A
+            indices[cnt] = Ai[k]  # row index
+            data[cnt] = Ax[k]
+            cnt += 1
+
+        for k in range(Cp[j], Cp[j + 1]):  # for every entry in the column from C
+            indices[cnt] = Ci[k] + am  # row index
+            data[cnt] = Cx[k]
+            cnt += 1
+
+        indptr[j + 1] = cnt
+
+    for j in range(bn):  # for every column, same as range(cols + 1) For B and D
+        for k in range(Bp[j], Bp[j + 1]):  # for every entry in the column from B
+            indices[cnt] = Bi[k]  # row index
+            data[cnt] = Bx[k]
+            cnt += 1
+
+        indptr[an + j + 1] = cnt
+
+    return m, n, indices, indptr, data
+
+
 @nb.njit(cache=True)
 def csc_norm(n, Ap, Ax):
     """

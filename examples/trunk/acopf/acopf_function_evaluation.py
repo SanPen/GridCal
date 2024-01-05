@@ -84,7 +84,7 @@ def eval_f(x, Yf, Cg, c1, c2) -> Vec:
 
     fval = np.sum((c2 * Pg ** 2 + c1 * Pg))
 
-    return np.array([fval])
+    return fval
 
 
 def eval_g(x, Ybus, Yf, Cg, Sd, slack, pqpv) -> Vec:
@@ -225,6 +225,50 @@ def calc_jacobian(func, x: Vec, arg=(), h=1e-5) -> csc:
     return jac.tocsc()
 
 
+def calc_hessian_f_obj(func, x: Vec, arg=(), h=1e-5) -> csc:
+    """
+    Compute the Hessian matrix of `func` at `x` using finite differences.
+    This considers that the output is a single value, such as is the case of the objective function f
+
+    :param func: Linear map (R^n -> R^m). m is 1 for the objective function, NE (Number of Equalities) for
+    G or NI (Number of inequalities) for H.
+    :param x: Point at which to evaluate the Hessian (numpy array).
+    :param arg: Tuple of arguments to call func aside from x [func(x, *arg)]
+    :param h: Small step for finite difference.
+    :return: Hessian matrix as a CSC matrix.
+    """
+    n = len(x)
+    hessian = lil_matrix((n, n))
+    for i in range(n):
+        for j in range(n):
+            x_ijp = np.copy(x)
+            x_ijp[i] += h
+            x_ijp[j] += h
+            f_ijp = func(x_ijp, *arg)
+
+            x_ijm = np.copy(x)
+            x_ijm[i] += h
+            x_ijm[j] -= h
+            f_ijm = func(x_ijm, *arg)
+
+            x_jim = np.copy(x)
+            x_jim[i] -= h
+            x_jim[j] += h
+            f_jim = func(x_jim, *arg)
+
+            x_jjm = np.copy(x)
+            x_jjm[i] -= h
+            x_jjm[j] -= h
+            f_jjm = func(x_jjm, *arg)
+
+            a = (f_ijp - f_ijm - f_jim + f_jjm) / (4 * h ** 2)
+
+            if a != 0.0:
+                hessian[i, j] = a
+
+    return hessian.tocsc()
+
+
 def calc_hessian(func, x: Vec, mult: Vec, arg=(), h=1e-5) -> csc:
     """
     Compute the Hessian matrix of `func` at `x` using finite differences.
@@ -316,7 +360,7 @@ def evaluate_power_flow(x, LAMBDA, PI, Ybus, Yf, Cg, Sd, slack, pqpv, Yt, from_i
     Hx = calc_jacobian(func=eval_h, x=x, arg=(Yf, Yt, from_idx, to_idx, slack, pqpv, th_max, th_min,
                                               V_U, V_L, P_U, P_L, Q_U, Q_L, Cg, rates)).T
 
-    fxx = calc_hessian(func=eval_f, x=x, mult=np.ones(1), arg=(Yf, Cg, c1, c2), h=h)
+    fxx = calc_hessian_f_obj(func=eval_f, x=x, arg=(Yf, Cg, c1, c2), h=h)
     Gxx = calc_hessian(func=eval_g, x=x, mult=PI, arg=(Ybus, Yf, Cg, Sd, slack, pqpv))
     Hxx = calc_hessian(func=eval_h, x=x, mult=LAMBDA, arg=(Yf, Yt, from_idx, to_idx, slack, pqpv, th_max,
                                                            th_min, V_U, V_L, P_U, P_L, Q_U, Q_L, Cg, rates))
@@ -350,15 +394,15 @@ def power_flow_evaluation(nc: gce.NumericalCircuit, pf_options:gce.PowerFlowOpti
     # Bus and line parameters
     Sbase = nc.Sbase
     Sd = - nc.load_data.get_injections_per_bus() / Sbase
-    P_U = nc.generator_data.pmax / Sbase
-    P_L = nc.generator_data.pmin / Sbase
-    Q_U = nc.generator_data.qmax / Sbase
-    Q_L = nc.generator_data.qmin / Sbase
-    V_U = nc.bus_data.Vmax
-    V_L = nc.bus_data.Vmin
+    Pg_max = nc.generator_data.pmax / Sbase
+    Pg_min = nc.generator_data.pmin / Sbase
+    Qg_max = nc.generator_data.qmax / Sbase
+    Qg_min = nc.generator_data.qmin / Sbase
+    Vm_max = nc.bus_data.Vmax
+    Vm_min = nc.bus_data.Vmin
     rates = nc.rates / Sbase
-    th_max = nc.bus_data.angle_max
-    th_min = nc.bus_data.angle_min
+    Va_max = nc.bus_data.angle_max
+    Va_min = nc.bus_data.angle_min
 
     nbr = nc.branch_data.nelm
     nbus = nc.branch_data.nelm
@@ -393,8 +437,9 @@ def power_flow_evaluation(nc: gce.NumericalCircuit, pf_options:gce.PowerFlowOpti
 
     print("x0:", x0)
     x, error, gamma = solver(x0=x0, NV=NV, NE=NE, NI=NI,
-                             func=evaluate_power_flow, arg=(Ybus, Yf, Cg, Sd, slack, pqpv, Yt, from_idx, to_idx, th_max,
-                                                            th_min, V_U, V_L, P_U, P_L, Q_U, Q_L, c1, c2, rates),
+                             func=evaluate_power_flow,
+                             arg=(Ybus, Yf, Cg, Sd, slack, pqpv, Yt, from_idx, to_idx, Va_max,
+                                  Va_min, Vm_max, Vm_min, Pg_max, Pg_min, Qg_max, Qg_min, c1, c2, rates),
                              step_calculator=step_calculation,
                              verbose=2)
 

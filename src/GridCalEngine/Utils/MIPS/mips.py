@@ -25,7 +25,7 @@ from scipy import sparse
 import timeit
 from GridCalEngine.Utils.MIPS.ipm_test import NLP_test
 from GridCalEngine.basic_structures import Vec, Mat
-from GridCalEngine.Utils.Sparse.csc import pack_4_by_4, diags
+from GridCalEngine.Utils.Sparse.csc import pack_3_by_4, diags
 
 
 # def solver_old(x0: Vec,
@@ -169,8 +169,7 @@ def solver(x0: Vec,
            NV: int,
            NE: int,
            NI: int,
-           func,  #:Callable[[csc, csc, csc, csc, csc, Vec, Vec, Vec, csc, csc, csc, csc, float],
-           # Tuple[Vec, csc, csc, csc, csc, csc, csc, csc, csc]],
+           func: Callable[[csc, csc, csc, csc, csc, Vec, Vec, Vec, csc, csc, csc, csc, float], Tuple[float, Vec, Vec, Vec, csc, csc, csc, csc, csc]],
            step_calculator,  #: Callable[[Vec, Vec, int], float],
            arg=(),
            gamma0=100,
@@ -193,15 +192,15 @@ def solver(x0: Vec,
         x: array of variables
         lambda: Lagrange Multiplier associated with the inequality constraints
         pi: Lagrange Multiplier associated with the equality constraints
-        f: objective function value
-        G: Array of equality mismatches
-        H: Array of inequality mismatches
-        fx: jacobian of f(x)
-        Gx: Jacobian of G(x)
-        Hx: Jacobian of H(x)
-        fxx: Hessian of f(x)
-        Gxx: Hessian of G(x)
-        Hxx: Hessian of H(x)
+        f: objective function value (float)
+        G: Array of equality mismatches (vec)
+        H: Array of inequality mismatches (vec)
+        fx: jacobian of f(x) (vec)
+        Gx: Jacobian of G(x) (CSC mat)
+        Hx: Jacobian of H(x) (CSC mat)
+        fxx: Hessian of f(x) (CSC mat)
+        Gxx: Hessian of G(x) (CSC mat)
+        Hxx: Hessian of H(x) (CSC mat)
 
     :param x0: Initial solution
     :param NV: Number of variables (size of x)
@@ -242,7 +241,7 @@ def solver(x0: Vec,
         N = fx + Hx @ lmbda_vec + Hx @ inv_T @ (gamma * E + lmbda_mat @ H) + Gx @ pi_vec
 
         # compose the Jacobian
-        J = pack_4_by_4(M, Gx.tocsc(), Gx.T, csc((NE, NE)))
+        J = pack_3_by_4(M, Gx.tocsc(), Gx.T)
 
         # compose the residual
         r = - np.r_[N, G]
