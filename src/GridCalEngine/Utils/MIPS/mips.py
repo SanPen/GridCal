@@ -93,7 +93,7 @@ def solver(x0: Vec,
     T = csc(np.ones(NI))
     # T_MAT = sparse.dia_matrix((np.ones(NI), 0), shape=(NI, NI)).tocsc()
     inv_T = sparse.dia_matrix((np.ones(NI), 0), shape=(NI, NI)).tocsc()
-    E = csc(np.ones(NI)).transpose()
+    E = csc(np.ones(NI)).transpose()  # TODO: this is an array
 
     while error > gamma and iter_counter < max_iter:
 
@@ -102,23 +102,26 @@ def solver(x0: Vec,
 
         # Compute the submatrices of the reduced NR method
         M = fxx + Gxx + Hxx + Hx @ inv_T @ LAMBDA_MAT @ Hx.T
+
+        # TODO: H should be an array
+        # TODO: N is an array
         N = fx + Hx @ LAMBDA.T + Hx @ inv_T @ (gamma * E + LAMBDA_MAT @ H) + Gx @ PI.T
 
         # Stack the submatrices and vectors
         J1 = sparse.hstack([M, Gx])
         J2 = sparse.hstack([Gx.T, csc((NE, NE))])
         J = sparse.vstack([J1, J2]).tocsc()
-        r = - sparse.vstack([N, G]).tocsc()
+        r = - sparse.vstack([N, G]).tocsc()  # TODO: this is an array
 
         # Find the reduced problem residuals and split them
         dXP = sparse.linalg.spsolve(J, r)
-        dX = dXP[0: NV]
-        dXsp = csc(dX).T
-        dP = csc(dXP[NV: NE + NV])
+        dX = dXP[0: NV]  # TODO: this is an array
+        dXsp = csc(dX).T  # TODO: this is an array
+        dP = csc(dXP[NV: NE + NV])  # TODO: this is an array
 
         # Calculate the inequalities residuals using the reduced problem residuals
-        dT = - H - T.T - Hx.T @ dXsp
-        dL = - LAMBDA.T + inv_T @ (gamma * E - LAMBDA_MAT @ dT)
+        dT = - H - T.T - Hx.T @ dXsp  # TODO: this is an array
+        dL = - LAMBDA.T + inv_T @ (gamma * E - LAMBDA_MAT @ dT)  # TODO: this is an array
 
         # Compute the maximum step allowed
         alphap = step_calculator(T.toarray(), dT.T.toarray(), NI)
@@ -136,7 +139,7 @@ def solver(x0: Vec,
         # Compute the maximum error and the new gamma value
         error = np.max([np.max(abs(dX)), np.max(abs(dP)), np.max(abs(dL)), np.max(abs(dT))])
         # newgamma = 0.5 * gamma
-        newgamma = 0.1 * (T @ LAMBDA.T).toarray()[0][0] / NI
+        newgamma = 0.1 * (T @ LAMBDA.T).toarray()[0][0] / NI    # TODO: T and Lambda are arrays
         gamma = max(newgamma, 1e-5)  # Maximum tolerance requested.
 
         # Add an iteration step
