@@ -545,8 +545,9 @@ class AvailableTransferCapacityDriver(DriverTemplate):
         Run thread
         """
         self.tic()
-        self.progress_text.emit('Analyzing')
-        self.progress_signal.emit(0)
+
+        self.report_text("Analyzing")
+        self.report_progress(0.0)
 
         # get the converted bus indices
         idx1b = self.options.bus_idx_from

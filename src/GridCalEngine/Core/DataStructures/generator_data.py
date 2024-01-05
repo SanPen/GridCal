@@ -47,6 +47,10 @@ class GeneratorData:
         self.qmin: Vec = np.zeros(nelm, dtype=float)
         self.qmax: Vec = np.zeros(nelm, dtype=float)
 
+        # reliabilty
+        self.mttf: Vec = np.zeros(nelm, dtype=float)
+        self.mttr: Vec = np.zeros(nelm, dtype=float)
+
         self.C_bus_elm: sp.lil_matrix = sp.lil_matrix((nbus, nelm), dtype=int)
 
         # r0, r1, r2, x0, x1, x2
@@ -98,6 +102,9 @@ class GeneratorData:
         data.qmin = self.qmin[elm_idx]
         data.qmax = self.qmax[elm_idx]
 
+        data.mttf = self.mttf[elm_idx]
+        data.mttr = self.mttr[elm_idx]
+
         data.C_bus_elm = self.C_bus_elm[np.ix_(bus_idx, elm_idx)]
 
         data.r0 = self.r0[elm_idx]
@@ -146,6 +153,9 @@ class GeneratorData:
 
         data.qmin = self.qmin.copy()
         data.qmax = self.qmax.copy()
+
+        data.mttf = self.mttf.copy()
+        data.mttr = self.mttr.copy()
 
         data.C_bus_elm = self.C_bus_elm.copy()
 

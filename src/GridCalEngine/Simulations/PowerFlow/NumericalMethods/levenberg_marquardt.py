@@ -23,7 +23,7 @@ from GridCalEngine.Simulations.sparse_solve import get_sparse_type, get_linear_s
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
 import GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions as cf
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
-from GridCalEngine.basic_structures import ReactivePowerControlMode
+from GridCalEngine.enumerations import ReactivePowerControlMode
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_inside_method
 from GridCalEngine.basic_structures import Logger
 

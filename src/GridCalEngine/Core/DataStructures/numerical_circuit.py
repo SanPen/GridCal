@@ -14,16 +14,17 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
+from __future__ import annotations
 import numpy as np
 import numba as nb
 import pandas as pd
 import scipy.sparse as sp
-from typing import List, Tuple, Dict, Union
+from typing import List, Tuple, Dict, Union, TYPE_CHECKING
 
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.basic_structures import BranchImpedanceMode, Vec, IntVec, CxVec
+from GridCalEngine.basic_structures import Vec, IntVec, CxVec
+from GridCalEngine.enumerations import BranchImpedanceMode
 import GridCalEngine.Core.topology as tp
 
 from GridCalEngine.Core.topology import compile_types
@@ -35,10 +36,15 @@ import GridCalEngine.Core.DataStructures as ds
 from GridCalEngine.Core.Devices.Substation.bus import Bus
 from GridCalEngine.Core.Devices.Aggregation.area import Area
 from GridCalEngine.Core.Devices.Aggregation.investment import Investment
+from GridCalEngine.Core.Devices.Aggregation.contingency import Contingency
+
+if TYPE_CHECKING:  # Only imports the below statements during type checking
+    from GridCalEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults
 
 sparse_type = get_sparse_type()
 
-ALL_STRUCTS = Union[ds.BusData, ds.GeneratorData, ds.BatteryData, ds.LoadData, ds.ShuntData, ds.BranchData, ds.HvdcData]
+ALL_STRUCTS = Union[ds.BusData, ds.GeneratorData, ds.BatteryData, ds.LoadData, ds.ShuntData, ds.BranchData, ds.HvdcData,
+                    ds.FluidNodeData, ds.FluidTurbineData, ds.FluidPumpData, ds.FluidP2XData, ds.FluidPathData]
 
 
 @nb.njit(cache=True)
@@ -238,6 +244,11 @@ class NumericalCircuit:
                  ngen: int,
                  nbatt: int,
                  nshunt: int,
+                 nfluidnode: int,
+                 nfluidturbine: int,
+                 nfluidpump: int,
+                 nfluidp2x: int,
+                 nfluidpath: int,
                  sbase: float,
                  t_idx: int = 0):
         """
@@ -261,6 +272,12 @@ class NumericalCircuit:
         self.nbatt: int = nbatt
         self.nshunt: int = nshunt
         self.nhvdc: int = nhvdc
+
+        self.nfluidnode: int = nfluidnode
+        self.nfluidturbine: int = nfluidturbine
+        self.nfluidpump: int = nfluidpump
+        self.nfluidp2x: int = nfluidp2x
+        self.nfluidpath: int = nfluidpath
 
         self.Sbase: float = sbase
 
@@ -297,7 +314,7 @@ class NumericalCircuit:
         self.i_vf_beq: IntVec = np.zeros(0, dtype=int)
 
         # (old Vtmabus) indices of the buses where Vt is controlled by ma
-        self.i_vt_m: IntVec = np.zeros(0, dtype=int)  
+        self.i_vt_m: IntVec = np.zeros(0, dtype=int)
 
         # --------------------------------------------------------------------------------------------------------------
         # Data structures
@@ -313,6 +330,12 @@ class NumericalCircuit:
         self.generator_data: ds.GeneratorData = ds.GeneratorData(nelm=ngen, nbus=nbus)
 
         self.shunt_data: ds.ShuntData = ds.ShuntData(nelm=nshunt, nbus=nbus)
+
+        self.fluid_node_data: ds.FluidNodeData = ds.FluidNodeData(nelm=nfluidnode)
+        self.fluid_turbine_data: ds.FluidTurbineData = ds.FluidTurbineData(nelm=nfluidturbine)
+        self.fluid_pump_data: ds.FluidPumpData = ds.FluidPumpData(nelm=nfluidpump)
+        self.fluid_p2x_data: ds.FluidP2XData = ds.FluidP2XData(nelm=nfluidp2x)
+        self.fluid_path_data: ds.FluidPathData = ds.FluidPathData(nelm=nfluidpath)
 
         # --------------------------------------------------------------------------------------------------------------
         # Internal variables filled on demand, to be ready to consume once computed
@@ -346,7 +369,7 @@ class NumericalCircuit:
         # Admittances for Linear
         self.Bbus_: Union[sp.csc_matrix, None] = None
         self.Bf_: Union[sp.csc_matrix, None] = None
-        self.Btheta_: Union[sp.csc_matrix, None] = None
+        self.Btau_: Union[sp.csc_matrix, None] = None
         self.Bpqpv_: Union[sp.csc_matrix, None] = None
         self.Bref_: Union[sp.csc_matrix, None] = None
 
@@ -396,7 +419,7 @@ class NumericalCircuit:
         # Admittances for Linear
         self.Bbus_: Union[sp.csc_matrix, None] = None
         self.Bf_: Union[sp.csc_matrix, None] = None
-        self.Btheta_: Union[sp.csc_matrix, None] = None
+        self.Btau_: Union[sp.csc_matrix, None] = None
         self.Bpqpv_: Union[sp.csc_matrix, None] = None
         self.Bref_: Union[sp.csc_matrix, None] = None
 
@@ -702,6 +725,11 @@ class NumericalCircuit:
                               ngen=self.ngen,
                               nbatt=self.nbatt,
                               nshunt=self.nshunt,
+                              nfluidnode=self.nfluidnode,
+                              nfluidturbine=self.nfluidturbine,
+                              nfluidpump=self.nfluidpump,
+                              nfluidp2x=self.nfluidp2x,
+                              nfluidpath=self.nfluidpath,
                               sbase=self.Sbase,
                               t_idx=self.t_idx)
 
@@ -712,13 +740,19 @@ class NumericalCircuit:
         nc.shunt_data = self.shunt_data.copy()
         nc.generator_data = self.generator_data.copy()
         nc.battery_data = self.battery_data.copy()
+        nc.fluid_node_data = self.fluid_node_data.copy()
+        nc.fluid_turbine_data = self.fluid_turbine_data.copy()
+        nc.fluid_pump_data = self.fluid_pump_data.copy()
+        nc.fluid_p2x_data = self.fluid_p2x_data.copy()
+        nc.fluid_path_data = self.fluid_path_data.copy()
         nc.consolidate_information()
 
         return nc
 
     def get_structures_list(self) -> List[Union[ds.BusData, ds.LoadData, ds.ShuntData,
     ds.GeneratorData, ds.BatteryData,
-    ds.BranchData, ds.HvdcData]]:
+    ds.BranchData, ds.HvdcData, ds.FluidNodeData, ds.FluidTurbineData, ds.FluidPumpData,
+    ds.FluidP2XData, ds.FluidPathData]]:
         """
         Get a list of the structures inside the NumericalCircuit
         :return:
@@ -729,7 +763,12 @@ class NumericalCircuit:
                 self.load_data,
                 self.shunt_data,
                 self.branch_data,
-                self.hvdc_data]
+                self.hvdc_data,
+                self.fluid_node_data,
+                self.fluid_turbine_data,
+                self.fluid_pump_data,
+                self.fluid_p2x_data,
+                self.fluid_path_data]
 
     def get_structs_idtag_dict(self) -> Dict[str, Tuple[ALL_STRUCTS, int]]:
         """
@@ -761,6 +800,29 @@ class NumericalCircuit:
                 structure.active[idx] = status
             else:
                 raise Exception('Could not find the idtag, is this a programming bug?')
+
+    def set_contingency_status(self, contingencies_list: List[Contingency], revert: bool = False):
+        """
+        Set the status of a list of contingencies
+        :param contingencies_list: list of contingencies
+        :param revert: if false, the contingencies are applied, else they are reversed
+        """
+        # apply the contingencies
+        for cnt in contingencies_list:
+
+            # search the investment device
+            structure, idx = self.structs_dict.get(cnt.device_idtag, (None, 0))
+
+            if structure is not None:
+                if cnt.prop == 'active':
+                    if revert:
+                        structure.active[idx] = int(not bool(cnt.value))
+                    else:
+                        structure.active[idx] = int(cnt.value)
+                else:
+                    print(f'Unknown contingency property {cnt.prop} at {cnt.name} {cnt.idtag}')
+            else:
+                print(f'contingency device not found {cnt.name} {cnt.idtag}')
 
     @property
     def original_bus_idx(self):
@@ -1248,11 +1310,10 @@ class NumericalCircuit:
         :return:
         """
         if self.Bbus_ is None:
-            self.Bbus_, self.Bf_, self.Btheta_ = ycalc.compute_linear_admittances(
+            self.Bbus_, self.Bf_, self.Btau_ = ycalc.compute_linear_admittances(
                 nbr=self.nbr,
                 X=self.branch_data.X,
                 R=self.branch_data.R,
-                tap_modules=self.branch_data.tap_module,
                 active=self.branch_data.active,
                 Cf=self.Cf,
                 Ct=self.Ct,
@@ -1277,7 +1338,7 @@ class NumericalCircuit:
         return self.Bf_
 
     @property
-    def Btheta(self):
+    def Btau(self):
         """
 
         :return:
@@ -1285,7 +1346,7 @@ class NumericalCircuit:
         if self.Bf_ is None:
             _ = self.Bbus  # call the constructor of Bf
 
-        return self.Btheta_
+        return self.Btau_
 
     @property
     def Bpqpv(self):
@@ -1855,6 +1916,11 @@ class NumericalCircuit:
             ngen=len(gen_idx),
             nbatt=len(batt_idx),
             nshunt=len(shunt_idx),
+            nfluidnode=0,
+            nfluidturbine=0,
+            nfluidpump=0,
+            nfluidp2x=0,
+            nfluidpath=0,
             sbase=self.Sbase,
             t_idx=self.t_idx,
         )
@@ -1904,7 +1970,7 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
                                  t_idx: Union[int, None] = None,
                                  apply_temperature=False,
                                  branch_tolerance_mode=BranchImpedanceMode.Specified,
-                                 opf_results: Union["OptimalPowerFlowResults", None] = None,
+                                 opf_results: Union[OptimalPowerFlowResults, None] = None,
                                  use_stored_guess=False,
                                  bus_dict: Union[Dict[Bus, int], None] = None,
                                  areas_dict: Union[Dict[Area, int], None] = None) -> NumericalCircuit:
@@ -1934,8 +2000,16 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
                           ngen=0,
                           nbatt=0,
                           nshunt=0,
+                          nfluidnode=0,
+                          nfluidturbine=0,
+                          nfluidpump=0,
+                          nfluidp2x=0,
+                          nfluidpath=0,
                           sbase=circuit.Sbase,
                           t_idx=t_idx)
+
+    # TODO: check how to assign the internal variables of numerical circuit that refer to the number of devices
+    # nbus...
 
     if bus_dict is None:
         bus_dict = {bus: i for i, bus in enumerate(circuit.buses)}
@@ -1949,15 +2023,15 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
                                             areas_dict=areas_dict,
                                             use_stored_guess=use_stored_guess)
 
-    nc.generator_data = gc_compiler2.get_generator_data(circuit=circuit,
-                                                        bus_dict=bus_dict,
-                                                        bus_data=nc.bus_data,
-                                                        t_idx=t_idx,
-                                                        time_series=time_series,
-                                                        Vbus=nc.bus_data.Vbus,
-                                                        logger=logger,
-                                                        opf_results=opf_results,
-                                                        use_stored_guess=use_stored_guess)
+    nc.generator_data, gen_dict = gc_compiler2.get_generator_data(circuit=circuit,
+                                                                  bus_dict=bus_dict,
+                                                                  bus_data=nc.bus_data,
+                                                                  t_idx=t_idx,
+                                                                  time_series=time_series,
+                                                                  Vbus=nc.bus_data.Vbus,
+                                                                  logger=logger,
+                                                                  opf_results=opf_results,
+                                                                  use_stored_guess=use_stored_guess)
 
     nc.battery_data = gc_compiler2.get_battery_data(circuit=circuit,
                                                     bus_dict=bus_dict,
@@ -2003,6 +2077,29 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
                                               bus_dict=bus_dict,
                                               bus_types=nc.bus_data.bus_types,
                                               opf_results=opf_results)
+
+    if len(circuit.fluid_nodes) > 0:
+        nc.fluid_node_data, plant_dict = gc_compiler2.get_fluid_node_data(circuit=circuit,
+                                                                          t_idx=t_idx)
+
+        nc.fluid_turbine_data = gc_compiler2.get_fluid_turbine_data(circuit=circuit,
+                                                                    plant_dict=plant_dict,
+                                                                    gen_dict=gen_dict,
+                                                                    t_idx=t_idx)
+
+        nc.fluid_pump_data = gc_compiler2.get_fluid_pump_data(circuit=circuit,
+                                                              plant_dict=plant_dict,
+                                                              gen_dict=gen_dict,
+                                                              t_idx=t_idx)
+
+        nc.fluid_p2x_data = gc_compiler2.get_fluid_p2x_data(circuit=circuit,
+                                                            plant_dict=plant_dict,
+                                                            gen_dict=gen_dict,
+                                                            t_idx=t_idx)
+
+        nc.fluid_path_data = gc_compiler2.get_fluid_path_data(circuit=circuit,
+                                                              plant_dict=plant_dict,
+                                                              t_idx=t_idx)
 
     nc.consolidate_information(use_stored_guess=use_stored_guess)
 

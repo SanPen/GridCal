@@ -19,7 +19,8 @@ from typing import List, Dict, Tuple
 import numpy as np
 import numba as nb
 from scipy.sparse import csc_matrix, csr_matrix, diags
-from GridCalEngine.basic_structures import BusMode, IntVec, Vec, Mat, CxVec
+from GridCalEngine.basic_structures import IntVec, Vec, Mat, CxVec
+from GridCalEngine.enumerations import BusMode
 
 
 @nb.njit(cache=True)

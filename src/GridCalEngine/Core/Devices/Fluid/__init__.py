@@ -19,3 +19,4 @@ from GridCalEngine.Core.Devices.Fluid.fluid_node import FluidNode
 from GridCalEngine.Core.Devices.Fluid.fluid_path import FluidPath
 from GridCalEngine.Core.Devices.Fluid.fluid_turbine import FluidTurbine
 from GridCalEngine.Core.Devices.Fluid.fluid_pump import FluidPump
+from GridCalEngine.Core.Devices.Fluid.fluid_p2x import FluidP2x

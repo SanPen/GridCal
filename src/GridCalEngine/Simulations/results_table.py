@@ -15,11 +15,12 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+from typing import Union
 import numpy as np
 import pandas as pd
-
 from matplotlib import pyplot as plt
 from GridCalEngine.Simulations.result_types import ResultTypes
+from GridCalEngine.basic_structures import StrVec, Mat, Vec
 
 
 class ResultsTable:
@@ -28,9 +29,9 @@ class ResultsTable:
     """
 
     def __init__(self,
-                 data: np.ndarray,
-                 columns: np.ndarray,
-                 index: np.ndarray,
+                 data: Union[Mat, Vec],
+                 columns: StrVec,
+                 index: StrVec,
                  palette=None,
                  title: str = '',
                  xlabel: str = '',
@@ -65,7 +66,7 @@ class ResultsTable:
 
             self.data_c = data
         else:
-            raise Exception("Usupported number of dimensions {}".format(data.ndim))
+            raise Exception("Unsupported number of dimensions {}".format(data.ndim))
 
         self.cols_c = columns
         self.index_c = index
@@ -74,8 +75,8 @@ class ResultsTable:
         self.editable_min_idx = editable_min_idx
         self.palette = palette
         self.title = title
-        self.xlabel = xlabel
-        self.ylabel = ylabel
+        self.x_label = xlabel
+        self.y_label = ylabel
         self.units = units
         self.r, self.c = self.data_c.shape
         self.isDate = False
@@ -88,6 +89,15 @@ class ResultsTable:
 
         self.formatter = lambda x: "%.2f" % x
 
+    def transpose(self):
+        """
+        Transpose the results in-place
+        """
+        self.data_c = self.data_c.transpose()
+        self.r, self.c = self.data_c.shape
+        self.x_label, self.y_label = self.y_label, self.x_label
+        self.cols_c, self.index_c = self.index_c, self.cols_c
+
     def slice_cols(self, col_idx):
         """
         Make column slicing
@@ -99,8 +109,8 @@ class ResultsTable:
                                     index=np.array(self.index_c),
                                     palette=None,
                                     title=self.title,
-                                    xlabel=self.xlabel,
-                                    ylabel=self.ylabel,
+                                    xlabel=self.x_label,
+                                    ylabel=self.y_label,
                                     units=self.units,
                                     editable=self.editable,
                                     editable_min_idx=self.editable_min_idx,
@@ -117,11 +127,11 @@ class ResultsTable:
         """
         sliced_model = ResultsTable(data=self.data_c[idx, :],
                                     columns=self.cols_c,
-                                    index=[self.index_c[i] for i in idx],
+                                    index=np.array([self.index_c[i] for i in idx]),
                                     palette=None,
                                     title=self.title,
-                                    xlabel=self.xlabel,
-                                    ylabel=self.ylabel,
+                                    xlabel=self.x_label,
+                                    ylabel=self.y_label,
                                     units=self.units,
                                     editable=self.editable,
                                     editable_min_idx=self.editable_min_idx,
@@ -138,12 +148,12 @@ class ResultsTable:
         :return: Nothing
         """
         sliced_model = ResultsTable(data=self.data_c[row_idx, :][:, col_idx],
-                                    columns=[self.cols_c[i] for i in col_idx],
-                                    index=[self.index_c[i] for i in row_idx],
+                                    columns=np.array([self.cols_c[i] for i in col_idx]),
+                                    index=np.array([self.index_c[i] for i in row_idx]),
                                     palette=None,
                                     title=self.title,
-                                    xlabel=self.xlabel,
-                                    ylabel=self.ylabel,
+                                    xlabel=self.x_label,
+                                    ylabel=self.y_label,
                                     units=self.units,
                                     editable=self.editable,
                                     editable_min_idx=self.editable_min_idx,
@@ -186,7 +196,7 @@ class ResultsTable:
         else:
             return None
 
-    def search(self, txt: str):
+    def search(self, txt: str) -> Union[None, "ResultsTable"]:
         """
         Search stuff
         :param txt:
@@ -275,9 +285,7 @@ class ResultsTable:
 
             return self.slice_all(row_idx, col_idx)
 
-        return None
-
-    def copy_to_column(self, row, col):
+    def copy_to_column(self, row: int, col: int):
         """
         Copies one value to all the column
         @param row: Row of the value
@@ -286,7 +294,7 @@ class ResultsTable:
         """
         self.data_c[:, col] = self.data_c[row, col]
 
-    def is_complex(self):
+    def is_complex(self) -> bool:
         return self.data_c.dtype == complex
 
     def get_data(self):
@@ -297,11 +305,11 @@ class ResultsTable:
 
         if n > 0:
             # gather values
-            if type(self.cols_c) == pd.Index:
+            if isinstance(self.cols_c, pd.Index):
                 names = self.cols_c.values
 
                 if len(names) > 0:
-                    if type(names[0]) == ResultTypes:
+                    if isinstance(names[0], ResultTypes):
                         names = [str(val) for val in names]
             else:
                 names = [str(val) for val in self.cols_c]
@@ -329,7 +337,7 @@ class ResultsTable:
         for i in range(self.data_c.shape[1]):
             self.data_c[:, i] = np.sort(self.data_c[:, i], axis=0)
 
-        self.xlabel = 'Probability of value<=x'
+        self.x_label = 'Probability of value<=x'
 
     def convert_to_abs(self):
         """
@@ -402,8 +410,8 @@ class ResultsTable:
 
         df = pd.DataFrame(data=data, index=index, columns=columns)
         ax.set_title(self.title, fontsize=14)
-        ax.set_ylabel(self.ylabel, fontsize=11)
-        ax.set_xlabel(self.xlabel, fontsize=11)
+        ax.set_ylabel(self.y_label, fontsize=11)
+        ax.set_xlabel(self.x_label, fontsize=11)
         try:
             df.plot(ax=ax, legend=plot_legend, stacked=stacked)
         except TypeError:

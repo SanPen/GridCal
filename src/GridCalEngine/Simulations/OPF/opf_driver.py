@@ -18,7 +18,7 @@ import numpy as np
 import time
 from typing import Union
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.basic_structures import SolverType
+from GridCalEngine.enumerations import SolverType, EngineType
 from GridCalEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
 from GridCalEngine.Simulations.OPF.linear_opf_ts import run_linear_opf_ts
 from GridCalEngine.Simulations.OPF.simple_dispatch_ts import run_simple_dispatch
@@ -27,7 +27,6 @@ from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Simulations.driver_template import TimeSeriesDriverTemplate
 from GridCalEngine.Core.Compilers.circuit_to_newton_pa import newton_pa_linear_opf, newton_pa_nonlinear_opf
-import GridCalEngine.basic_structures as bs
 
 
 class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
@@ -37,7 +36,7 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
     def __init__(self,
                  grid: MultiCircuit,
                  options: Union[OptimalPowerFlowOptions, None] = None,
-                 engine: bs.EngineType = bs.EngineType.GridCal):
+                 engine: EngineType = EngineType.GridCal):
         """
         PowerFlowDriver class constructor
         :param grid: MultiCircuit Object
@@ -138,8 +137,8 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
         """
 
         if not remote:
-            self.progress_signal.emit(0.0)
-            self.progress_text.emit('Formulating problem...')
+            self.report_progress(0.0)
+            self.report_text('Formulating problem...')
 
         if self.options.solver == SolverType.DC_OPF:
 
@@ -179,8 +178,8 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
 
             # AC optimal power flow
             Pl, Pg = run_simple_dispatch(grid=self.grid,
-                                         text_prog=self.progress_text.emit,
-                                         prog_func=self.progress_signal.emit)
+                                         text_prog=self.report_text,
+                                         prog_func=self.report_progress)
 
             self.results.generator_power = Pg
 
@@ -189,8 +188,8 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
             return
 
         if not remote:
-            self.progress_signal.emit(0.0)
-            self.progress_text.emit('Running all in an external solver, this may take a while...')
+            self.report_progress(0.0)
+            self.report_text('Running all in an external solver, this may take a while...')
 
         # self.results.contingency_flows_list += problem.get_contingency_flows_list().tolist()
         # self.results.contingency_indices_list += problem.contingency_indices_list
@@ -205,17 +204,17 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
         """
 
         self.tic()
-        if self.engine == bs.EngineType.GridCal:
+        if self.engine == EngineType.GridCal:
 
             self.opf()
 
-        elif self.engine == bs.EngineType.NewtonPA:
+        elif self.engine == EngineType.NewtonPA:
 
             ti = self.time_indices if self.time_indices is not None else 0
             use_time_series = self.time_indices is not None
 
             if self.options.solver == SolverType.DC_OPF:
-                self.progress_text.emit('Running Linear OPF with Newton...')
+                self.report_text('Running Linear OPF with Newton...')
 
                 npa_res = newton_pa_linear_opf(circuit=self.grid,
                                                opf_options=self.options,
@@ -241,7 +240,7 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
                 self.results.converged = True
 
             if self.options.solver == SolverType.AC_OPF:
-                self.progress_text.emit('Running Non-Linear OPF with Newton...')
+                self.report_text('Running Non-Linear OPF with Newton...')
 
                 # pack the results
                 npa_res = newton_pa_nonlinear_opf(circuit=self.grid,

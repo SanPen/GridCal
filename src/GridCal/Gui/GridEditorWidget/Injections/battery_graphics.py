@@ -186,15 +186,3 @@ class BatteryGraphicItem(InjectionTemplateGraphicItem):
 
         # plot the profiles
         self.api_object.plot_profiles(time=ts)
-
-    def mousePressEvent(self, QGraphicsSceneMouseEvent):
-        """
-        mouse press: display the editor
-        :param QGraphicsSceneMouseEvent:
-        :return:
-        """
-        mdl = ObjectsModel([self.api_object], self.api_object.editable_headers,
-                           parent=self.diagramScene.parent().object_editor_table, editable=True, transposed=True,
-                           dictionary_of_lists={DeviceType.Technology.value: self.diagramScene.circuit.technologies, })
-        self.diagramScene.parent().object_editor_table.setModel(mdl)
-

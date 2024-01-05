@@ -20,26 +20,30 @@ import numpy as np
 from typing import Tuple, Dict
 import json
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.basic_structures import Logger, SolverType
+from GridCalEngine.basic_structures import Logger
+from GridCalEngine.enumerations import SolverType
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCalEngine.Simulations.PowerFlow.power_flow_ts_results import PowerFlowTimeSeriesResults
 from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
 
+PGM_RECOMMENDED_VERSION = "0.0.1"
+PGM_VERSION = ''
+PGM_AVAILABLE = False
 try:
     import power_grid_model as pgm
     from power_grid_model import CalculationMethod, CalculationType
-    from power_grid_model.validation import validate_input_data, assert_valid_input_data, assert_valid_batch_data, \
-        ValidationError, ValidationException
+    from power_grid_model.validation import (validate_input_data,
+                                             assert_valid_input_data,
+                                             assert_valid_batch_data,
+                                             ValidationError,
+                                             ValidationException)
     from power_grid_model.utils import export_json_data
     from power_grid_model.errors import PowerGridError
-    PGM_AVAILABLE = True
-    # print("Power Grid Model available")
 
+    PGM_AVAILABLE = True
 except ImportError:
     PGM_AVAILABLE = False
-    # print("power grid model is not available, try pip install power-grid-model")
-
 
 '''
 hierarchy
@@ -80,7 +84,6 @@ def get_pgm_buses(circuit: MultiCircuit, idx0):
     node = pgm.initialize_array('input', 'node', len(circuit.buses))
     idx = idx0
     for i, bus in enumerate(circuit.buses):
-
         # fill in data
         node['id'][i] = idx
         node['u_rated'][i] = bus.Vnom * 1000.0  # in V
@@ -203,7 +206,7 @@ def get_pgm_shunts(circuit: MultiCircuit, bus_dict, idx0):
 
     idx = idx0
     for k, elm in enumerate(devices):
-        Ybase = circuit.Sbase / (elm.bus.Vnom**2)
+        Ybase = circuit.Sbase / (elm.bus.Vnom ** 2)
 
         shunt['id'][k] = idx
         shunt['node'][k] = bus_dict[elm.bus.idtag]
@@ -776,4 +779,3 @@ def translate_pgm_pf_results2d(grid: MultiCircuit, pf_res) -> PowerFlowTimeSerie
     results.area_names = [a.name for a in grid.areas]
 
     return results
-
