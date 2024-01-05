@@ -171,7 +171,7 @@ def eval_h(x, Yf, Yt, from_idx, to_idx, slack, pqpv, th_max, th_min, V_U, V_L, P
     return hval
 
 
-def calc_jacobian_f_obj(func, x: Vec, arg=(), h=1e-5) -> csc:
+def calc_jacobian_f_obj(func, x: Vec, arg=(), h=1e-5) -> Vec:
     """
     Compute the Jacobian matrix of `func` at `x` using finite differences.
     This considers that the output is a single value, such as is the case of the objective function f
@@ -180,7 +180,7 @@ def calc_jacobian_f_obj(func, x: Vec, arg=(), h=1e-5) -> csc:
     :param x: Point at which to evaluate the Jacobian (numpy array).
     :param arg: Tuple of arguments to call func aside from x [func(x, *arg)]
     :param h: Small step for finite difference.
-    :return: Jacobian matrix as a CSC matrix.
+    :return: Jacobian as a vector, because the objective function is a single value.
     """
     nx = len(x)
     f0 = func(x, *arg)
