@@ -69,7 +69,7 @@ def solver(x0: Vec,
     :param NV: Number of variables (size of x)
     :param NE: Number of equality constraints (rows of H)
     :param NI: Number of inequality constraints (rows of G)
-    :param func: A function pointer called with (x, lambda, pi) that returns (f, G, H, fx, Gx, Hx, fxx, Gxx, Hxx)
+    :param func: A function pointer called with (x, lambda, pi, *args) that returns (f, G, H, fx, Gx, Hx, fxx, Gxx, Hxx)
     :param step_calculator:
     :param arg: Tuple of arguments to call func: func(x, LAMBDA, PI *arg)
     :param gamma0:
@@ -80,7 +80,7 @@ def solver(x0: Vec,
     START = timeit.default_timer()
 
     # Init iteration values
-    error = 1000000
+    error = 1e20
     iter_counter = 0
     f = 0.0  # objective function
     x = x0.copy()

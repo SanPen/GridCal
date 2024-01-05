@@ -2,8 +2,9 @@ import math
 import numpy as np
 from scipy import sparse
 from scipy.sparse import csc_matrix as csc
+from scipy.sparse import lil_matrix
 import GridCalEngine.api as gce
-from GridCalEngine.basic_structures import Vec, CxVec
+from GridCalEngine.basic_structures import Vec, CxVec, Mat
 from GridCalEngine.Utils.MIPS.mips import solver, step_calculation
 from typing import Callable, Tuple
 
@@ -66,7 +67,16 @@ def var2x(vm, th, Pg, Qg):
     return np.r_[vm, th, Pg, Qg]
 
 
-def eval_f(x, Yf, Cg, c1, c2):
+def eval_f(x, Yf, Cg, c1, c2) -> Vec:
+    """
+
+    :param x:
+    :param Yf:
+    :param Cg:
+    :param c1:
+    :param c2:
+    :return:
+    """
     M, N = Yf.shape
     Ng = Cg.shape[1]  # Check
 
@@ -77,7 +87,7 @@ def eval_f(x, Yf, Cg, c1, c2):
     return np.array([fval])
 
 
-def eval_g(x, Ybus, Yf, Cg, Sd, slack, pqpv):
+def eval_g(x, Ybus, Yf, Cg, Sd, slack, pqpv) -> Vec:
     """
 
     :param x:
@@ -86,8 +96,7 @@ def eval_g(x, Ybus, Yf, Cg, Sd, slack, pqpv):
     :param Cg:
     :param Sd:
     :param slack:
-    :param pv:
-    :param V_U:
+    :param pqpv:
     :return:
     """
     M, N = Yf.shape
@@ -110,7 +119,7 @@ def eval_g(x, Ybus, Yf, Cg, Sd, slack, pqpv):
     return gval
 
 
-def eval_h(x, Yf, Yt, from_idx, to_idx, slack, pqpv, th_max, th_min, V_U, V_L, P_U, P_L, Q_U, Q_L, Cg, rates):
+def eval_h(x, Yf, Yt, from_idx, to_idx, slack, pqpv, th_max, th_min, V_U, V_L, P_U, P_L, Q_U, Q_L, Cg, rates) -> Vec:
     """
 
     :param x:
@@ -118,8 +127,8 @@ def eval_h(x, Yf, Yt, from_idx, to_idx, slack, pqpv, th_max, th_min, V_U, V_L, P
     :param Yt:
     :param from_idx:
     :param to_idx:
+    :param slack:
     :param pqpv:
-    :param pq:
     :param th_max:
     :param th_min:
     :param V_U:
@@ -147,22 +156,22 @@ def eval_h(x, Yf, Yt, from_idx, to_idx, slack, pqpv, th_max, th_min, V_U, V_L, P
     Sf = V[from_idx] * If
     St = V[to_idx] * np.conj(Yt @ V)
 
-    hval = np.r_[abs(Sf) - rates,           # rates "lower limit"
-                 abs(St) - rates,           # rates "upper limit"
-                 vm[pqpv] - V_U[pqpv],      # voltage module upper limit
-                 V_L[pqpv] - vm[pqpv],      # voltage module lower limit
-                 va[pqpv] - th_max[pqpv],   # voltage angles upper limit
-                 th_min[pqpv] - va[pqpv],   # voltage angles lower limit
-                 Pg - P_U,                  # generatior P upper limits
-                 P_L - Pg,                  # generation P lower limits
-                 Qg - Q_U,                  # generatior Q upper limits
-                 Q_L - Qg                   # generation Q lower limits
-                 ]
+    hval = np.r_[abs(Sf) - rates,  # rates "lower limit"
+                 abs(St) - rates,  # rates "upper limit"
+                 vm[pqpv] - V_U[pqpv],  # voltage module upper limit
+                 V_L[pqpv] - vm[pqpv],  # voltage module lower limit
+                 va[pqpv] - th_max[pqpv],  # voltage angles upper limit
+                 th_min[pqpv] - va[pqpv],  # voltage angles lower limit
+                 Pg - P_U,  # generatior P upper limits
+                 P_L - Pg,  # generation P lower limits
+                 Qg - Q_U,  # generatior Q upper limits
+                 Q_L - Qg  # generation Q lower limits
+    ]
 
     return hval
 
 
-def calc_jacobian(func, x, arg=(), h=1e-5):
+def calc_jacobian(func, x: Vec, arg=(), h=1e-5) -> csc:
     """
     Compute the Jacobian matrix of `func` at `x` using finite differences.
 
@@ -171,39 +180,44 @@ def calc_jacobian(func, x, arg=(), h=1e-5):
     :param x: Point at which to evaluate the Jacobian (numpy array).
     :param arg: Tuple of arguments to call func aside from x [func(x, *arg)]
     :param h: Small step for finite difference.
-    :return: Jacobian matrix as a numpy array.
+    :return: Jacobian matrix as a CSC matrix.
     """
     nx = len(x)
     f0 = func(x, *arg)
-    jac = np.zeros((len(f0), nx))
+    n_rows = len(f0)
 
-    for i in range(nx):
+    jac = lil_matrix((n_rows, nx))
+
+    for j in range(nx):
         x_plus_h = np.copy(x)
-        x_plus_h[i] += h
+        x_plus_h[j] += h
         f_plus_h = func(x_plus_h, *arg)
-        jac[:, i] = (f_plus_h - f0) / h
+        row = (f_plus_h - f0) / h
+        for i in range(n_rows):
+            if row[i] != 0.0:
+                jac[i, j] = row[i]
 
-    return jac
+    return jac.tocsc()
 
 
-def calc_hessian(func, x, MULT, arg=(), h=1e-5):
+def calc_hessian(func, x: Vec, mult: Mat, arg=(), h=1e-5) -> csc:
     """
     Compute the Hessian matrix of `func` at `x` using finite differences.
 
     :param func: Linear map (R^n -> R^m). m is 1 for the objective function, NE (Number of Equalities) for
     G or NI (Number of inequalities) for H.
     :param x: Point at which to evaluate the Hessian (numpy array).
-    :param MULT: Array of multipliers associated with the functions. The objective function passes value 1 (no action)
+    :param mult: Array of multipliers associated with the functions. The objective function passes value 1 (no action)
     :param arg: Tuple of arguments to call func aside from x [func(x, *arg)]
     :param h: Small step for finite difference.
-    :return: Hessian matrix as a numpy array.
+    :return: Hessian matrix as a CSC matrix.
     """
     n = len(x)
     const = len(func(x, *arg))  # For objective function, it will be passed as 1. The MULT will be 1 aswell.
-    hessians = np.zeros((n, n))
+    hessians = lil_matrix((n, n))
 
     for eq in range(const):
-        hessian = np.zeros((n, n))
+        hessian = lil_matrix((n, n))
         for i in range(n):
             for j in range(n):
                 x_ijp = np.copy(x)
@@ -226,10 +240,14 @@ def calc_hessian(func, x, MULT, arg=(), h=1e-5):
                 x_jjm[j] -= h
                 f_jjm = func(x_jjm, *arg)[eq]
 
-                a = MULT[0][eq] * (f_ijp - f_ijm - f_jim + f_jjm) / (4 * h ** 2)
-                hessian[i][j] = a
+                a = mult[0, eq] * (f_ijp - f_ijm - f_jim + f_jjm) / (4 * h ** 2)
+
+                if a != 0.0:
+                    hessian[i, j] = a
+
         hessians += hessian
-    return hessians
+
+    return hessians.tocsc()
 
 
 def evaluate_power_flow(x, LAMBDA, PI, Ybus, Yf, Cg, Sd, slack, pqpv, Yt, from_idx, to_idx,
@@ -245,8 +263,6 @@ def evaluate_power_flow(x, LAMBDA, PI, Ybus, Yf, Cg, Sd, slack, pqpv, Yt, from_i
     :param Sd:
     :param slack:
     :param pqpv:
-    :param pq:
-    :param pv:
     :param Yt:
     :param from_idx:
     :param to_idx:
@@ -265,21 +281,23 @@ def evaluate_power_flow(x, LAMBDA, PI, Ybus, Yf, Cg, Sd, slack, pqpv, Yt, from_i
     :return:
     """
     f = eval_f(x=x, Yf=Yf, Cg=Cg, c1=c1, c2=c2)
-    G = csc((eval_g(x=x, Ybus=Ybus, Yf=Yf, Cg=Cg, Sd=Sd, slack=slack, pqpv=pqpv))).T
+    G = csc((eval_g(x=x, Ybus=Ybus, Yf=Yf, Cg=Cg, Sd=Sd, slack=slack,
+                    pqpv=pqpv))).T  # TODO: this is an array, modify MIPS accordingly, storing a dense array as CSC is very expensive
     H = csc((eval_h(x=x, Yf=Yf, Yt=Yt, from_idx=from_idx, to_idx=to_idx, slack=slack, pqpv=pqpv, th_max=th_max,
-                    th_min=th_min, V_U=V_U, V_L=V_L, P_U=P_U, P_L=P_L, Q_U=Q_U, Q_L=Q_L, Cg=Cg, rates=rates))).T
+                    th_min=th_min, V_U=V_U, V_L=V_L, P_U=P_U, P_L=P_L, Q_U=Q_U, Q_L=Q_L, Cg=Cg,
+                    rates=rates))).T  # TODO: this is an array, modify MIPS accordingly, storing a dense array as CSC is very expensive
 
-    fx = csc((calc_jacobian(func=eval_f, x=x, arg=(Yf, Cg, c1, c2), h=h))).T
-    Gx = csc((calc_jacobian(func=eval_g, x=x, arg=(Ybus, Yf, Cg, Sd, slack, pqpv)))).T
-    Hx = csc((calc_jacobian(func=eval_h, x=x, arg=(Yf, Yt, from_idx, to_idx, slack, pqpv, th_max, th_min,
-                                                   V_U, V_L, P_U, P_L, Q_U, Q_L, Cg, rates)))).T
+    fx = calc_jacobian(func=eval_f, x=x, arg=(Yf, Cg, c1, c2), h=h).T
+    Gx = calc_jacobian(func=eval_g, x=x, arg=(Ybus, Yf, Cg, Sd, slack, pqpv)).T
+    Hx = calc_jacobian(func=eval_h, x=x, arg=(Yf, Yt, from_idx, to_idx, slack, pqpv, th_max, th_min,
+                                              V_U, V_L, P_U, P_L, Q_U, Q_L, Cg, rates)).T
 
     # TODO input the multipliers for each iteration
-    fxx = csc((calc_hessian(func=eval_f, x=x, MULT=[[1]], arg=(Yf, Cg, c1, c2), h=h)))
-    Gxx = csc((calc_hessian(func=eval_g, x=x, MULT=PI.toarray(), arg=(Ybus, Yf, Cg, Sd, slack, pqpv))))
-    Hxx = csc((calc_hessian(func=eval_h, x=x, MULT=LAMBDA.toarray(), arg=(Yf, Yt, from_idx, to_idx, slack, pqpv, th_max,
-                                                                          th_min, V_U, V_L, P_U, P_L, Q_U, Q_L, Cg,
-                                                                          rates))))
+    fxx = calc_hessian(func=eval_f, x=x, mult=np.ones((1, 1)), arg=(Yf, Cg, c1, c2), h=h)
+    Gxx = calc_hessian(func=eval_g, x=x, mult=PI.toarray(), arg=(Ybus, Yf, Cg, Sd, slack, pqpv))
+    Hxx = calc_hessian(func=eval_h, x=x, mult=LAMBDA.toarray(), arg=(Yf, Yt, from_idx, to_idx, slack, pqpv, th_max,
+                                                                     th_min, V_U, V_L, P_U, P_L, Q_U, Q_L, Cg,
+                                                                     rates))
 
     return f, G, H, fx, Gx, Hx, fxx, Gxx, Hxx
 
@@ -292,7 +310,7 @@ def power_flow_evaluation(grid: gce.MultiCircuit):
     """
     nc = gce.compile_numerical_circuit_at(grid)
     # Numerical Circuit matrices (admittance and connectivity matrices)
-    #nc.generator_data.cost_2 = np.array([2, 3])
+    # nc.generator_data.cost_2 = np.array([2, 3])
     c1 = nc.generator_data.cost_1
     c2 = nc.generator_data.cost_2
 
@@ -324,7 +342,8 @@ def power_flow_evaluation(grid: gce.MultiCircuit):
     Ng = Cg.shape[1]
     npqpv = len(pqpv)
 
-    NV = 2 * (N - 1) + 2 * Ng  # V, th of all buses (slack reference in constraints), active and reactive of the generators
+    NV = 2 * (
+                N - 1) + 2 * Ng  # V, th of all buses (slack reference in constraints), active and reactive of the generators
     NE = 2 * N  # Nodal power balances, the voltage module of slack and pv buses and the slack reference
     NI = 2 * M + 4 * npqpv + 4 * Ng  # Line ratings, max and min angle of buses, voltage module range and
     # active and reactive power generation range.
@@ -355,7 +374,7 @@ def power_flow_evaluation(grid: gce.MultiCircuit):
     x0[2 * npqpv: 2 * npqpv + Ng] = p0gen  # pgen
     x0[2 * npqpv + Ng: 2 * npqpv + 2 * Ng] = q0gen  # qgen
 
-    print(x0)
+    print("x0:", x0)
     # x0 = var2x(vm0, va0, Pg0, Qg0)
 
     x, error, gamma = solver(x0=x0, NV=NV, NE=NE, NI=NI,
@@ -366,11 +385,15 @@ def power_flow_evaluation(grid: gce.MultiCircuit):
     return x
 
 
-def test_acopf():
+def example_acopf():
+    """
+
+    :return:
+    """
     grid = build_grid_3bus()
     power_flow_evaluation(grid)
     return
 
 
 if __name__ == '__main__':
-    test_acopf()
+    example_acopf()
