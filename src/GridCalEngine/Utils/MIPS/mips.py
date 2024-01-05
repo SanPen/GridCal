@@ -240,7 +240,7 @@ def solver(x0: Vec,
 
         # Compute the submatrices of the reduced NR method
         M = fxx + Gxx + Hxx + Hx @ inv_T @ lmbda_mat @ Hx.T
-        N = fx.toarray()[:, 0] + Hx @ lmbda_vec + Hx @ inv_T @ (gamma * E + lmbda_mat @ H) + Gx @ pi_vec
+        N = fx + Hx @ lmbda_vec + Hx @ inv_T @ (gamma * E + lmbda_mat @ H) + Gx @ pi_vec
         # TODO: Figure out why fx is not an array
 
         # compose the Jacobian
@@ -281,7 +281,7 @@ def solver(x0: Vec,
         # Add an iteration step
         iter_counter += 1
 
-        if verbose > 0:
+        if verbose > 1:
             print(f'Iteration: {iter_counter}', "-" * 80)
             print("\tx:", x)
             print("\tGamma:", gamma)
@@ -294,6 +294,7 @@ def solver(x0: Vec,
         print("\tx:", x)
         print("\tF.obj:", f)
         print("\tErr:", error)
+        print(f'Iterations: {iter_counter}')
         print('\tTime elapsed (s): ', END - START)
 
     return x, error, gamma

@@ -6,6 +6,7 @@ from scipy.sparse import lil_matrix
 import GridCalEngine.api as gce
 from GridCalEngine.basic_structures import Vec, CxVec, Mat
 from GridCalEngine.Utils.MIPS.mips import solver, step_calculation
+from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
 from typing import Callable, Tuple
 
 
@@ -63,8 +64,8 @@ def x2var(x, n_v, n_th, n_P, n_Q):
     return vm, th, Pg, Qg
 
 
-def var2x(vm, th, Pg, Qg):
-    return np.r_[vm, th, Pg, Qg]
+def var2x(vm, va, Pg, Qg):
+    return np.r_[vm, va, Pg, Qg]
 
 
 def eval_f(x, Yf, Cg, c1, c2) -> Vec:
@@ -171,6 +172,31 @@ def eval_h(x, Yf, Yt, from_idx, to_idx, slack, pqpv, th_max, th_min, V_U, V_L, P
     return hval
 
 
+def calc_jacobian_f_obj(func, x: Vec, arg=(), h=1e-5) -> csc:
+    """
+    Compute the Jacobian matrix of `func` at `x` using finite differences.
+    This considers that the output is a single value, such as is the case of the objective function f
+    :param func: Linear map (R^n -> R^m). m is 1 for the objective function, NE (Number of Equalities) for
+    G or NI (Number of inequalities) for H.
+    :param x: Point at which to evaluate the Jacobian (numpy array).
+    :param arg: Tuple of arguments to call func aside from x [func(x, *arg)]
+    :param h: Small step for finite difference.
+    :return: Jacobian matrix as a CSC matrix.
+    """
+    nx = len(x)
+    f0 = func(x, *arg)
+
+    jac = np.zeros(nx)
+
+    for j in range(nx):
+        x_plus_h = np.copy(x)
+        x_plus_h[j] += h
+        f_plus_h = func(x_plus_h, *arg)
+        jac[j] = (f_plus_h - f0) / h
+
+    return jac
+
+
 def calc_jacobian(func, x: Vec, arg=(), h=1e-5) -> csc:
     """
     Compute the Jacobian matrix of `func` at `x` using finite differences.
@@ -252,7 +278,7 @@ def calc_hessian(func, x: Vec, mult: Vec, arg=(), h=1e-5) -> csc:
 
 def evaluate_power_flow(x, LAMBDA, PI, Ybus, Yf, Cg, Sd, slack, pqpv, Yt, from_idx, to_idx,
                         th_max, th_min, V_U, V_L, P_U, P_L, Q_U, Q_L, c1, c2, rates, h=1e-5) -> (
-        Tuple)[Vec, Vec, Vec, csc, csc, csc, csc, csc, csc]:
+        Tuple)[Vec, Vec, Vec, Vec, csc, csc, csc, csc, csc]:
     """
 
     :param x:
@@ -282,41 +308,32 @@ def evaluate_power_flow(x, LAMBDA, PI, Ybus, Yf, Cg, Sd, slack, pqpv, Yt, from_i
     :return:
     """
     f = eval_f(x=x, Yf=Yf, Cg=Cg, c1=c1, c2=c2)
-    # G = csc((eval_g(x=x, Ybus=Ybus, Yf=Yf, Cg=Cg, Sd=Sd, slack=slack,
-    #                 pqpv=pqpv))).T
-    # H = csc((eval_h(x=x, Yf=Yf, Yt=Yt, from_idx=from_idx, to_idx=to_idx, slack=slack, pqpv=pqpv, th_max=th_max,
-    #                 th_min=th_min, V_U=V_U, V_L=V_L, P_U=P_U, P_L=P_L, Q_U=Q_U, Q_L=Q_L, Cg=Cg,
-    #                 rates=rates))).T
-
-    G = eval_g(x=x, Ybus=Ybus, Yf=Yf, Cg=Cg, Sd=Sd, slack=slack, pqpv=pqpv).T
+    G = eval_g(x=x, Ybus=Ybus, Yf=Yf, Cg=Cg, Sd=Sd, slack=slack, pqpv=pqpv)
     H = eval_h(x=x, Yf=Yf, Yt=Yt, from_idx=from_idx, to_idx=to_idx, slack=slack, pqpv=pqpv, th_max=th_max,
-               th_min=th_min, V_U=V_U, V_L=V_L, P_U=P_U, P_L=P_L, Q_U=Q_U, Q_L=Q_L, Cg=Cg,
-               rates=rates).T
+               th_min=th_min, V_U=V_U, V_L=V_L, P_U=P_U, P_L=P_L, Q_U=Q_U, Q_L=Q_L, Cg=Cg, rates=rates)
 
-    fx = calc_jacobian(func=eval_f, x=x, arg=(Yf, Cg, c1, c2), h=h).T
+    fx = calc_jacobian_f_obj(func=eval_f, x=x, arg=(Yf, Cg, c1, c2), h=h)  # this is a vector because f_obj is a value
     Gx = calc_jacobian(func=eval_g, x=x, arg=(Ybus, Yf, Cg, Sd, slack, pqpv)).T
     Hx = calc_jacobian(func=eval_h, x=x, arg=(Yf, Yt, from_idx, to_idx, slack, pqpv, th_max, th_min,
                                               V_U, V_L, P_U, P_L, Q_U, Q_L, Cg, rates)).T
 
-    # TODO input the multipliers for each iteration
     fxx = calc_hessian(func=eval_f, x=x, mult=np.ones(1), arg=(Yf, Cg, c1, c2), h=h)
     Gxx = calc_hessian(func=eval_g, x=x, mult=PI, arg=(Ybus, Yf, Cg, Sd, slack, pqpv))
     Hxx = calc_hessian(func=eval_h, x=x, mult=LAMBDA, arg=(Yf, Yt, from_idx, to_idx, slack, pqpv, th_max,
-                                                           th_min, V_U, V_L, P_U, P_L, Q_U, Q_L, Cg,
-                                                           rates))
+                                                           th_min, V_U, V_L, P_U, P_L, Q_U, Q_L, Cg, rates))
 
     return f, G, H, fx, Gx, Hx, fxx, Gxx, Hxx
 
 
-def power_flow_evaluation(grid: gce.MultiCircuit):
+def power_flow_evaluation(nc: gce.NumericalCircuit, pf_options:gce.PowerFlowOptions):
     """
 
-    :param grid:
+    :param nc:
+    :param pf_options:
     :return:
     """
-    nc = gce.compile_numerical_circuit_at(grid)
-    # Numerical Circuit matrices (admittance and connectivity matrices)
-    # nc.generator_data.cost_2 = np.array([2, 3])
+
+    # compile the grid snapshot
     c1 = nc.generator_data.cost_1
     c2 = nc.generator_data.cost_2
 
@@ -333,7 +350,7 @@ def power_flow_evaluation(grid: gce.MultiCircuit):
 
     # Bus and line parameters
     Sbase = nc.Sbase
-    Sd = nc.load_data.C_bus_elm @ nc.load_data.S / Sbase
+    Sd = - nc.load_data.get_injections_per_bus() / Sbase
     P_U = nc.generator_data.pmax / Sbase
     P_L = nc.generator_data.pmin / Sbase
     Q_U = nc.generator_data.qmax / Sbase
@@ -344,67 +361,107 @@ def power_flow_evaluation(grid: gce.MultiCircuit):
     th_max = nc.bus_data.angle_max
     th_min = nc.bus_data.angle_min
 
-    M, N = Yf.shape
-    Ng = Cg.shape[1]
+    nbr = nc.branch_data.nelm
+    nbus = nc.branch_data.nelm
+    ngen = nc.generator_data.nelm
     npqpv = len(pqpv)
 
-    # V, th of all buses (slack reference in constraints), active and reactive of the generators
-    NV = 2 * (N - 1) + 2 * Ng
-
     # Nodal power balances, the voltage module of slack and pv buses and the slack reference
-    NE = 2 * N
+    NE = 2 * nbus
 
     # Line ratings, max and min angle of buses, voltage module range and
-    NI = 2 * M + 4 * npqpv + 4 * Ng
+    NI = 2 * nbr + 4 * npqpv + 4 * ngen
 
     # active and reactive power generation range.
 
     ########
 
-    # vm0 = np.array([1, 0.98, 0.95])
-    # va0 = np.array([0, 0.05, -0.03])
-    # Pg0 = np.array([0.5, 0.3])
-    # Qg0 = np.array([0.2, 0.1])
-
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR)
-    pf_driver = gce.PowerFlowDriver(grid=grid,
-                                    options=pf_options)
-    pf_driver.run()
+    # run power flow to initialize
+    pf_results = multi_island_pf_nc(nc=nc, options=pf_options)
 
     # ignore power from Z and I of the load
-    s0gen = pf_driver.results.Sbus / nc.Sbase - nc.load_data.C_bus_elm @ nc.load_data.S / nc.Sbase
+    s0gen = (pf_results.Sbus - nc.load_data.get_injections_per_bus()) / nc.Sbase
     p0gen = nc.generator_data.C_bus_elm.T @ np.real(s0gen)
     q0gen = nc.generator_data.C_bus_elm.T @ np.imag(s0gen)
 
-    # p0gen = nc.generator_data.C_bus_elm.T @ np.zeros(len(s0gen))
-    # q0gen = nc.generator_data.C_bus_elm.T @ np.zeros(len(s0gen))
+    # compose the initial values
+    x0 = var2x(vm=np.abs(pf_results.voltage[pqpv]),
+               va=np.angle(pf_results.voltage[pqpv]),
+               Pg=p0gen,
+               Qg=q0gen)
 
-    x0 = np.zeros(NV)
-    x0[0: npqpv] = abs(pf_driver.results.voltage[pqpv])  # e
-    x0[npqpv: 2 * npqpv] = np.angle(pf_driver.results.voltage[pqpv])  # f
-    x0[2 * npqpv: 2 * npqpv + Ng] = p0gen  # pgen
-    x0[2 * npqpv + Ng: 2 * npqpv + 2 * Ng] = q0gen  # qgen
+    NV = len(x0)
 
     print("x0:", x0)
-    # x0 = var2x(vm0, va0, Pg0, Qg0)
-
     x, error, gamma = solver(x0=x0, NV=NV, NE=NE, NI=NI,
                              func=evaluate_power_flow, arg=(Ybus, Yf, Cg, Sd, slack, pqpv, Yt, from_idx, to_idx, th_max,
                                                             th_min, V_U, V_L, P_U, P_L, Q_U, Q_L, c1, c2, rates),
-                             step_calculator=step_calculation, verbose=1)
+                             step_calculator=step_calculation,
+                             verbose=2)
 
     return x
 
 
-def example_acopf():
+def example_3bus_acopf():
     """
 
     :return:
     """
     grid = build_grid_3bus()
-    power_flow_evaluation(grid)
+    nc = gce.compile_numerical_circuit_at(grid)
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR)
+    power_flow_evaluation(nc=nc, pf_options=pf_options)
     return
 
 
+def  linn5bus_example():
+
+    # declare a circuit object
+    grid = gce.MultiCircuit()
+
+    # Add the buses and the generators and loads attached
+    bus1 = gce.Bus('Bus 1', vnom=20)
+    # bus1.is_slack = True  # we may mark the bus a slack
+    grid.add_bus(bus1)
+
+    # add a generator to the bus 1
+    gen1 = gce.Generator('Slack Generator', vset=1.0)
+    grid.add_generator(bus1, gen1)
+
+    # add bus 2 with a load attached
+    bus2 = gce.Bus('Bus 2', vnom=20)
+    grid.add_bus(bus2)
+    grid.add_load(bus2, gce.Load('load 2', P=40, Q=20))
+
+    # add bus 3 with a load attached
+    bus3 = gce.Bus('Bus 3', vnom=20)
+    grid.add_bus(bus3)
+    grid.add_load(bus3, gce.Load('load 3', P=25, Q=15))
+
+    # add bus 4 with a load attached
+    bus4 = gce.Bus('Bus 4', vnom=20)
+    grid.add_bus(bus4)
+    grid.add_load(bus4, gce.Load('load 4', P=40, Q=20))
+
+    # add bus 5 with a load attached
+    bus5 = gce.Bus('Bus 5', vnom=20)
+    grid.add_bus(bus5)
+    grid.add_load(bus5, gce.Load('load 5', P=50, Q=20))
+
+    # add Lines connecting the buses
+    grid.add_line(gce.Line(bus1, bus2, 'line 1-2', r=0.05, x=0.11, b=0.02))
+    grid.add_line(gce.Line(bus1, bus3, 'line 1-3', r=0.05, x=0.11, b=0.02))
+    grid.add_line(gce.Line(bus1, bus5, 'line 1-5', r=0.03, x=0.08, b=0.02))
+    grid.add_line(gce.Line(bus2, bus3, 'line 2-3', r=0.04, x=0.09, b=0.02))
+    grid.add_line(gce.Line(bus2, bus5, 'line 2-5', r=0.04, x=0.09, b=0.02))
+    grid.add_line(gce.Line(bus3, bus4, 'line 3-4', r=0.06, x=0.13, b=0.03))
+    grid.add_line(gce.Line(bus4, bus5, 'line 4-5', r=0.04, x=0.09, b=0.02))
+
+    nc = gce.compile_numerical_circuit_at(grid)
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR)
+    power_flow_evaluation(nc=nc, pf_options=pf_options)
+
+
 if __name__ == '__main__':
-    example_acopf()
+    example_3bus_acopf()
+    # linn5bus_example()
