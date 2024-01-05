@@ -1,10 +1,9 @@
-import math
+
 import numpy as np
-from scipy import sparse
 from scipy.sparse import csc_matrix as csc
 from scipy.sparse import lil_matrix
 import GridCalEngine.api as gce
-from GridCalEngine.basic_structures import Vec, CxVec, Mat
+from GridCalEngine.basic_structures import Vec
 from GridCalEngine.Utils.MIPS.mips import solver, step_calculation
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
 from typing import Callable, Tuple

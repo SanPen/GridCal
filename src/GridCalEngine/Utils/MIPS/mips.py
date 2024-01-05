@@ -229,7 +229,6 @@ def solver(x0: Vec,
     lmbda_vec = np.ones(NI)
     T = np.ones(NI)
     E = np.ones(NI)
-
     inv_T = diags(1.0 / T)
     lmbda_mat = diags(lmbda_vec)
 
@@ -241,7 +240,6 @@ def solver(x0: Vec,
         # Compute the submatrices of the reduced NR method
         M = fxx + Gxx + Hxx + Hx @ inv_T @ lmbda_mat @ Hx.T
         N = fx + Hx @ lmbda_vec + Hx @ inv_T @ (gamma * E + lmbda_mat @ H) + Gx @ pi_vec
-        # TODO: Figure out why fx is not an array
 
         # compose the Jacobian
         J = pack_4_by_4(M, Gx.tocsc(), Gx.T, csc((NE, NE)))
