@@ -154,7 +154,7 @@ class LpModel:
         self.model.addVariable(var)
         return var
 
-    def add_cst(self, cst: pulp.LpConstraint, name: str = "") -> LpExp:
+    def add_cst(self, cst: pulp.LpConstraint, name: str = "") -> Union[LpCst, int]:
         """
         Add constraint to the model
         :param cst: constraint object (or general expression)
@@ -162,11 +162,12 @@ class LpModel:
         :return: Constraint object
         """
         if isinstance(cst, bool):
-            return None
+            return 0
         else:
             return self.model.addConstraint(constraint=cst, name=name)
 
-    def sum(self, cst) -> LpExp:
+    @staticmethod
+    def sum(cst) -> LpExp:
         """
         Add sum of the constraints to the model
         :param cst: constraint object (or general expression)
