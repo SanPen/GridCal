@@ -4,7 +4,7 @@ from scipy.sparse import csc_matrix as csc
 from scipy.sparse import lil_matrix
 import GridCalEngine.api as gce
 from GridCalEngine.basic_structures import Vec
-from GridCalEngine.Utils.MIPS.mips import solver, step_calculation
+from GridCalEngine.Utils.MIPS.mips import solver
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
 from typing import Callable, Tuple
 
@@ -440,7 +440,6 @@ def power_flow_evaluation(nc: gce.NumericalCircuit, pf_options:gce.PowerFlowOpti
                              func=evaluate_power_flow,
                              arg=(Ybus, Yf, Cg, Sd, slack, pqpv, Yt, from_idx, to_idx, Va_max,
                                   Va_min, Vm_max, Vm_min, Pg_max, Pg_min, Qg_max, Qg_min, c1, c2, rates),
-                             step_calculator=step_calculation,
                              verbose=2)
 
     return x
