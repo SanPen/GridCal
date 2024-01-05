@@ -49,9 +49,9 @@ def step_calculation(V: Vec, dV: Vec, NI: int):
 
 
 def solver(x0: Vec,
-           NV: int,
-           NE: int,
-           NI: int,
+           n_x: int,
+           n_eq: int,
+           n_ineq: int,
            func: Callable[[csc, csc, csc, csc, csc, Vec, Vec, Vec, csc, csc, csc, csc, float], Tuple[float, Vec, Vec, Vec, csc, csc, csc, csc, csc]],
            arg=(),
            gamma0=100,
@@ -85,12 +85,11 @@ def solver(x0: Vec,
         Hxx: Hessian of H(x) (CSC mat)
 
     :param x0: Initial solution
-    :param NV: Number of variables (size of x)
-    :param NE: Number of equality constraints (rows of H)
-    :param NI: Number of inequality constraints (rows of G)
+    :param n_x: Number of variables (size of x)
+    :param n_eq: Number of equality constraints (rows of H)
+    :param n_ineq: Number of inequality constraints (rows of G)
     :param func: A function pointer called with (x, lambda, pi, *args) that returns (f, G, H, fx, Gx, Hx, fxx, Gxx, Hxx)
-    :param step_calculator:
-    :param arg: Tuple of arguments to call func: func(x, LAMBDA, PI *arg)
+    :param arg: Tuple of arguments to call func: func(x, lambda, pi, *arg)
     :param gamma0:
     :param max_iter:
     :param verbose:
@@ -106,10 +105,10 @@ def solver(x0: Vec,
     gamma = gamma0
 
     # Init multiplier values. Defaulted at 1.
-    pi_vec = np.ones(NE)
-    lmbda_vec = np.ones(NI)
-    T = np.ones(NI)
-    E = np.ones(NI)
+    pi_vec = np.ones(n_eq)
+    lmbda_vec = np.ones(n_ineq)
+    T = np.ones(n_ineq)
+    E = np.ones(n_ineq)
     inv_T = diags(1.0 / T)
     lmbda_mat = diags(lmbda_vec)
 
@@ -118,28 +117,26 @@ def solver(x0: Vec,
         # Evaluate the functions, gradients and hessians at the current iteration.
         f, G, H, fx, Gx, Hx, fxx, Gxx, Hxx = func(x, lmbda_vec, pi_vec, *arg)
 
-        # Compute the submatrices of the reduced NR method
-        M = fxx + Gxx + Hxx + Hx @ inv_T @ lmbda_mat @ Hx.T
-        N = fx + Hx @ lmbda_vec + Hx @ inv_T @ (gamma * E + lmbda_mat @ H) + Gx @ pi_vec
-
         # compose the Jacobian
+        M = fxx + Gxx + Hxx + Hx @ inv_T @ lmbda_mat @ Hx.T
         J = pack_3_by_4(M, Gx.tocsc(), Gx.T)
 
         # compose the residual
+        N = fx + Hx @ lmbda_vec + Hx @ inv_T @ (gamma * E + lmbda_mat @ H) + Gx @ pi_vec
         r = - np.r_[N, G]
 
         # Find the reduced problem residuals and split them
         dXP = sparse.linalg.spsolve(J, r)
-        dX = dXP[:NV]
-        dP = dXP[NV:]
+        dX = dXP[:n_x]
+        dP = dXP[n_x:]
 
         # Calculate the inequalities residuals using the reduced problem residuals
         dT = -H - T - Hx.T @ dX
         dL = -lmbda_vec + inv_T @ (gamma * E - lmbda_mat @ dT)
 
         # Compute the maximum step allowed
-        alphap = step_calculation(T, dT, NI)
-        alphad = step_calculation(lmbda_vec, dL, NI)
+        alphap = step_calculation(T, dT, n_ineq)
+        alphad = step_calculation(lmbda_vec, dL, n_ineq)
 
         # Update the values of the variables and multipliers
         x += dX * alphap
@@ -154,7 +151,7 @@ def solver(x0: Vec,
         error = np.max([np.max(abs(dXP)), np.max(abs(dL)), np.max(abs(dT))])
 
         # newgamma = 0.5 * gamma
-        newgamma = 0.1 * (T @ lmbda_vec) / NI
+        newgamma = 0.1 * (T @ lmbda_vec) / n_ineq
         gamma = max(newgamma, 1e-5)  # Maximum tolerance requested.
 
         # Add an iteration step
@@ -181,7 +178,7 @@ def solver(x0: Vec,
 
 def test_solver():
     X = np.array([2., 1.1, 0.])
-    solver(x0=X, NV=3, NE=1, NI=2, func=NLP_test, arg=(), verbose=1)
+    solver(x0=X, n_x=3, n_eq=1, n_ineq=2, func=NLP_test, arg=(), verbose=1)
 
     return
 

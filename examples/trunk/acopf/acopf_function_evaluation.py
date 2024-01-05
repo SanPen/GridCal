@@ -436,7 +436,7 @@ def power_flow_evaluation(nc: gce.NumericalCircuit, pf_options:gce.PowerFlowOpti
     NV = len(x0)
 
     print("x0:", x0)
-    x, error, gamma = solver(x0=x0, NV=NV, NE=NE, NI=NI,
+    x, error, gamma = solver(x0=x0, n_x=NV, n_eq=NE, n_ineq=NI,
                              func=evaluate_power_flow,
                              arg=(Ybus, Yf, Cg, Sd, slack, pqpv, Yt, from_idx, to_idx, Va_max,
                                   Va_min, Vm_max, Vm_min, Pg_max, Pg_min, Qg_max, Qg_min, c1, c2, rates),
