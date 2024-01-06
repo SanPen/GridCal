@@ -319,14 +319,14 @@ def calc_hessian(func, x: Vec, mult: Vec, arg=(), h=1e-5) -> csc:
     return hessians.tocsc()
 
 
-def evaluate_power_flow(x, LAMBDA, PI, Ybus, Yf, Cg, Sd, slack, pqpv, Yt, from_idx, to_idx,
+def evaluate_power_flow(x, mu, lmbda, Ybus, Yf, Cg, Sd, slack, pqpv, Yt, from_idx, to_idx,
                         th_max, th_min, V_U, V_L, P_U, P_L, Q_U, Q_L, c1, c2, rates, h=1e-5) -> (
         Tuple)[Vec, Vec, Vec, Vec, csc, csc, csc, csc, csc]:
     """
 
     :param x:
-    :param LAMBDA:
-    :param PI:
+    :param mu:
+    :param lmbda:
     :param Ybus:
     :param Yf:
     :param Cg:
@@ -361,9 +361,9 @@ def evaluate_power_flow(x, LAMBDA, PI, Ybus, Yf, Cg, Sd, slack, pqpv, Yt, from_i
                                               V_U, V_L, P_U, P_L, Q_U, Q_L, Cg, rates)).T
 
     fxx = calc_hessian_f_obj(func=eval_f, x=x, arg=(Yf, Cg, c1, c2), h=h)
-    Gxx = calc_hessian(func=eval_g, x=x, mult=PI, arg=(Ybus, Yf, Cg, Sd, slack, pqpv))
-    Hxx = calc_hessian(func=eval_h, x=x, mult=LAMBDA, arg=(Yf, Yt, from_idx, to_idx, slack, pqpv, th_max,
-                                                           th_min, V_U, V_L, P_U, P_L, Q_U, Q_L, Cg, rates))
+    Gxx = calc_hessian(func=eval_g, x=x, mult=lmbda, arg=(Ybus, Yf, Cg, Sd, slack, pqpv))
+    Hxx = calc_hessian(func=eval_h, x=x, mult=mu, arg=(Yf, Yt, from_idx, to_idx, slack, pqpv, th_max,
+                                                       th_min, V_U, V_L, P_U, P_L, Q_U, Q_L, Cg, rates))
 
     return f, G, H, fx, Gx, Hx, fxx, Gxx, Hxx
 
