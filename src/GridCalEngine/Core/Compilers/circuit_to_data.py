@@ -1044,7 +1044,7 @@ def get_hvdc_data(circuit: MultiCircuit,
             data.r[i] = elm.r
 
             if opf_results is not None:
-                # if we are taking the valñues from the OPF, do not allow the free mode
+                # if we are taking the values from the OPF, do not allow the free mode
                 data.control_mode[i] = HvdcControlType.type_1_Pset
                 data.Pset[i] = opf_results.hvdc_Pf[i]
             else:
