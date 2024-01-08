@@ -1,5 +1,5 @@
-
 import numpy as np
+import pandas as pd
 from scipy.sparse import csc_matrix as csc
 from scipy.sparse import lil_matrix
 import GridCalEngine.api as gce
@@ -42,13 +42,13 @@ def build_grid_3bus():
     return grid
 
 
-def x2var(x, n_v, n_th, n_P, n_Q):
+def x2var(x, n_vm, n_va, n_P, n_Q):
     a = 0
-    b = n_v
+    b = n_vm
 
     vm = x[a: b]
     a = b
-    b += n_th
+    b += n_va
 
     th = x[a: b]
     a = b
@@ -80,7 +80,7 @@ def eval_f(x, Yf, Cg, c1, c2, no_slack) -> Vec:
     M, N = Yf.shape
     Ng = Cg.shape[1]  # Check
 
-    _, _, Pg, Qg = x2var(x, n_v=N, n_th=len(no_slack), n_P=Ng, n_Q=Ng)
+    _, _, Pg, Qg = x2var(x, n_vm=N, n_va=len(no_slack), n_P=Ng, n_Q=Ng)
 
     fval = np.sum((c2 * Pg ** 2 + c1 * Pg))
 
@@ -103,7 +103,7 @@ def eval_g(x, Ybus, Yf, Cg, Sd, slack, no_slack) -> Vec:
     Ng = Cg.shape[1]  # Check
 
     va = np.zeros(N)
-    vm, va[no_slack], Pg, Qg = x2var(x, n_v=N, n_th=len(no_slack), n_P=Ng, n_Q=Ng)
+    vm, va[no_slack], Pg, Qg = x2var(x, n_vm=N, n_va=len(no_slack), n_P=Ng, n_Q=Ng)
     # vm[slack] = 1.0
     va[slack] = 0.0
 
@@ -118,7 +118,8 @@ def eval_g(x, Ybus, Yf, Cg, Sd, slack, no_slack) -> Vec:
     return gval
 
 
-def eval_h(x, Yf, Yt, from_idx, to_idx, slack, no_slack, th_max, th_min, V_U, V_L, P_U, P_L, Q_U, Q_L, Cg, rates) -> Vec:
+def eval_h(x, Yf, Yt, from_idx, to_idx, slack, no_slack, th_max, th_min, V_U, V_L, P_U, P_L, Q_U, Q_L, Cg,
+           rates) -> Vec:
     """
 
     :param x:
@@ -144,7 +145,7 @@ def eval_h(x, Yf, Yt, from_idx, to_idx, slack, no_slack, th_max, th_min, V_U, V_
     Ng = Cg.shape[1]  # Check
 
     va = np.zeros(N)
-    vm, va[no_slack], Pg, Qg = x2var(x, n_v=N, n_th=len(no_slack), n_P=Ng, n_Q=Ng)
+    vm, va[no_slack], Pg, Qg = x2var(x, n_vm=N, n_va=len(no_slack), n_P=Ng, n_Q=Ng)
 
     va[slack] = 0.0
 
@@ -353,7 +354,8 @@ def evaluate_power_flow(x, mu, lmbda, Ybus, Yf, Cg, Sd, slack, no_slack, Yt, fro
     H = eval_h(x=x, Yf=Yf, Yt=Yt, from_idx=from_idx, to_idx=to_idx, slack=slack, no_slack=no_slack, th_max=th_max,
                th_min=th_min, V_U=V_U, V_L=V_L, P_U=P_U, P_L=P_L, Q_U=Q_U, Q_L=Q_L, Cg=Cg, rates=rates)
 
-    fx = calc_jacobian_f_obj(func=eval_f, x=x, arg=(Yf, Cg, c1, c2, no_slack), h=h)  # this is a vector because f_obj is a value
+    fx = calc_jacobian_f_obj(func=eval_f, x=x, arg=(Yf, Cg, c1, c2, no_slack),
+                             h=h)  # this is a vector because f_obj is a value
     Gx = calc_jacobian(func=eval_g, x=x, arg=(Ybus, Yf, Cg, Sd, slack, no_slack)).T
     Hx = calc_jacobian(func=eval_h, x=x, arg=(Yf, Yt, from_idx, to_idx, slack, no_slack, th_max, th_min,
                                               V_U, V_L, P_U, P_L, Q_U, Q_L, Cg, rates)).T
@@ -366,7 +368,7 @@ def evaluate_power_flow(x, mu, lmbda, Ybus, Yf, Cg, Sd, slack, no_slack, Yt, fro
     return f, G, H, fx, Gx, Hx, fxx, Gxx, Hxx
 
 
-def power_flow_evaluation(nc: gce.NumericalCircuit, pf_options:gce.PowerFlowOptions):
+def power_flow_evaluation(nc: gce.NumericalCircuit, pf_options: gce.PowerFlowOptions):
     """
 
     :param nc:
@@ -434,11 +436,24 @@ def power_flow_evaluation(nc: gce.NumericalCircuit, pf_options:gce.PowerFlowOpti
     NV = len(x0)
 
     print("x0:", x0)
-    x, error, gamma = solver(x0=x0, n_x=NV, n_eq=NE, n_ineq=NI,
-                             func=evaluate_power_flow,
-                             arg=(Ybus, Yf, Cg, Sd, slack, no_slack, Yt, from_idx, to_idx, Va_max,
-                                  Va_min, Vm_max, Vm_min, Pg_max, Pg_min, Qg_max, Qg_min, c1, c2, rates),
-                             verbose=2)
+    x, error, gamma, lam = solver(x0=x0, n_x=NV, n_eq=NE, n_ineq=NI,
+                                  func=evaluate_power_flow,
+                                  arg=(Ybus, Yf, Cg, Sd, slack, no_slack, Yt, from_idx, to_idx, Va_max,
+                                       Va_min, Vm_max, Vm_min, Pg_max, Pg_min, Qg_max, Qg_min, c1, c2, rates),
+                                  verbose=2)
+
+    va = np.zeros(nbus)
+    vm, va[no_slack], Pg, Qg = x2var(x, n_vm=nbus, n_va=len(no_slack), n_P=ngen, n_Q=ngen)
+
+    lam_p, lam_q = lam[:nbus], lam[:nbus]
+
+    df_bus = pd.DataFrame(data={'Vm (p.u.)': vm, 'Va (rad)': va, 'dual price (€/MW)': lam_p})
+    df_gen = pd.DataFrame(data={'P (MW)': Pg * nc.Sbase, 'Q (MVAr)': Qg * nc.Sbase})
+
+    print()
+    print("Bus:\n", df_bus)
+    print("Gen:\n", df_gen)
+    print("Error", error)
 
     return x
 
@@ -455,8 +470,7 @@ def example_3bus_acopf():
     return
 
 
-def  linn5bus_example():
-
+def linn5bus_example():
     # declare a circuit object
     grid = gce.MultiCircuit()
 
@@ -467,7 +481,7 @@ def  linn5bus_example():
 
     # add a generator to the bus 1
     gen1 = gce.Generator('Slack Generator', vset=1.0, Pmin=0, Pmax=1000,
-                         Qmin=-1000, Qmax=1000, Cost=10, Cost2=0)
+                         Qmin=-1000, Qmax=1000, Cost=15, Cost2=0)
 
     grid.add_generator(bus1, gen1)
 
@@ -492,13 +506,13 @@ def  linn5bus_example():
     grid.add_load(bus5, gce.Load('load 5', P=50, Q=20))
 
     # add Lines connecting the buses
-    grid.add_line(gce.Line(bus1, bus2, 'line 1-2', r=0.05, x=0.11, b=0.02))
-    grid.add_line(gce.Line(bus1, bus3, 'line 1-3', r=0.05, x=0.11, b=0.02))
-    grid.add_line(gce.Line(bus1, bus5, 'line 1-5', r=0.03, x=0.08, b=0.02))
-    grid.add_line(gce.Line(bus2, bus3, 'line 2-3', r=0.04, x=0.09, b=0.02))
-    grid.add_line(gce.Line(bus2, bus5, 'line 2-5', r=0.04, x=0.09, b=0.02))
-    grid.add_line(gce.Line(bus3, bus4, 'line 3-4', r=0.06, x=0.13, b=0.03))
-    grid.add_line(gce.Line(bus4, bus5, 'line 4-5', r=0.04, x=0.09, b=0.02))
+    grid.add_line(gce.Line(bus1, bus2, 'line 1-2', r=0.05, x=0.11, b=0.02, rate=500))
+    grid.add_line(gce.Line(bus1, bus3, 'line 1-3', r=0.05, x=0.11, b=0.02, rate=500))
+    grid.add_line(gce.Line(bus1, bus5, 'line 1-5', r=0.03, x=0.08, b=0.02, rate=500))
+    grid.add_line(gce.Line(bus2, bus3, 'line 2-3', r=0.04, x=0.09, b=0.02, rate=500))
+    grid.add_line(gce.Line(bus2, bus5, 'line 2-5', r=0.04, x=0.09, b=0.02, rate=500))
+    grid.add_line(gce.Line(bus3, bus4, 'line 3-4', r=0.06, x=0.13, b=0.03, rate=500))
+    grid.add_line(gce.Line(bus4, bus5, 'line 4-5', r=0.04, x=0.09, b=0.02, rate=500))
 
     nc = gce.compile_numerical_circuit_at(grid)
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR)

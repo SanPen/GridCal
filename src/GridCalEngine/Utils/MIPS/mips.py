@@ -143,7 +143,7 @@ def solver(x0: Vec,
     gamma = 1.0
 
     # Init multiplier values. Defaulted at 1.
-    lmbda = np.ones(n_eq)
+    lam = np.ones(n_eq)
     mu = np.ones(n_ineq)
     z = np.ones(n_ineq)
     e = np.ones(n_ineq)
@@ -153,18 +153,18 @@ def solver(x0: Vec,
     while error > gamma and iter_counter < max_iter:
 
         # Evaluate the functions, gradients and hessians at the current iteration.
-        f, G, H, fx, Gx, Hx, fxx, Gxx, Hxx = func(x, mu, lmbda, *arg)
+        f, G, H, fx, Gx, Hx, fxx, Gxx, Hxx = func(x, mu, lam, *arg)
 
         # compose the Jacobian
         M = fxx + Gxx + Hxx + Hx @ z_inv @ mu_diag @ Hx.T
         J = pack_3_by_4(M, Gx.tocsc(), Gx.T)
 
         # compose the residual
-        N = fx + Hx @ mu + Hx @ z_inv @ (gamma * e + mu * H) + Gx @ lmbda
+        N = fx + Hx @ mu + Hx @ z_inv @ (gamma * e + mu * H) + Gx @ lam
         r = - np.r_[N, G]
 
         # Find the reduced problem residuals and split them
-        dx, dlmbda = split(sparse.linalg.spsolve(J, r), n_x)
+        dx, dlam = split(sparse.linalg.spsolve(J, r), n_x)
 
         # TODO: Implement step control
 
@@ -179,12 +179,12 @@ def solver(x0: Vec,
         # Update the values of the variables and multipliers
         x += dx * alpha_p
         z += dz * alpha_p
-        lmbda += dlmbda * alpha_d
+        lam += dlam * alpha_d
         mu += dmu * alpha_d
         gamma = max(0.1 * (mu @ z) / n_ineq, tol)  # Maximum tolerance requested.
 
         # Compute the maximum error and the new gamma value
-        error = calc_error(dx, dz, dmu, dlmbda)
+        error = calc_error(dx, dz, dmu, dlam)
 
         z_inv = diags(1.0 / z)
         mu_diag = diags(mu)
@@ -197,7 +197,7 @@ def solver(x0: Vec,
             # print("\tlmbda", lmbda)
 
             x_df = pd.DataFrame(data={'x': x, 'dx': dx})
-            eq_df = pd.DataFrame(data={'λ': lmbda, 'dλ': dlmbda})
+            eq_df = pd.DataFrame(data={'λ': lam, 'dλ': dlam})
             ineq_df = pd.DataFrame(data={'mu': mu, 'z': z, 'dmu': dmu, 'dz': dz})
 
             print("x:\n", x_df)
@@ -214,13 +214,13 @@ def solver(x0: Vec,
     if verbose > 0:
         print(f'SOLUTION', "-" * 80)
         print("\tx:", x)
-        print("\tλ:", lmbda)
+        print("\tλ:", lam)
         print("\tF.obj:", f)
         print("\tErr:", error)
         print(f'\tIterations: {iter_counter}')
         print('\tTime elapsed (s): ', END - START)
 
-    return x, error, gamma
+    return x, error, gamma, lam
 
 
 def test_solver():
