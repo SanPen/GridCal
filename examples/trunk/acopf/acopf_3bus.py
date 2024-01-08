@@ -196,7 +196,7 @@ n_cols = n_rows
 
 
 x = np.array([1.0, 1.0, 0.0, 0.0])
-y = np.array([5.0]*n_g)
+y = np.array([1.0]*n_g)
 z = np.array([1.0]*n_h)
 s = np.array([1.0]*n_h)
 

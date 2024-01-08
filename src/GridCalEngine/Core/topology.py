@@ -288,10 +288,10 @@ def compile_types(Pbus: Vec, types: IntVec) -> Tuple[IntVec, IntVec, IntVec, Int
     else:
         pass  # no problem :)
 
-    pqpv = np.concatenate((pq, pv))
-    pqpv.sort()
+    no_slack = np.concatenate((pq, pv))
+    no_slack.sort()
 
-    return ref, pq, pv, pqpv
+    return ref, pq, pv, no_slack
 
 
 def get_csr_bus_indices(C: csr_matrix):
