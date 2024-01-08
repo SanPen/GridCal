@@ -28,20 +28,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Cosmetic changes">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="minimal refactor">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Grids_and_profiles/grids/ding0_test_network_2_mvlv.gridcal" beforeDir="false" afterPath="$PROJECT_DIR$/Grids_and_profiles/grids/ding0_test_network_2_mvlv.gridcal" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Grids_and_profiles/grids/ding0_test_network_2_mvlv_v2.gridcal" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/acdc_pf/docs/acdc_pf_technical_note.aux" beforeDir="false" afterPath="$PROJECT_DIR$/examples/trunk/acdc_pf/docs/acdc_pf_technical_note.aux" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/acdc_pf/docs/acdc_pf_technical_note.bcf" beforeDir="false" afterPath="$PROJECT_DIR$/examples/trunk/acdc_pf/docs/acdc_pf_technical_note.bcf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/acdc_pf/docs/acdc_pf_technical_note.log" beforeDir="false" afterPath="$PROJECT_DIR$/examples/trunk/acdc_pf/docs/acdc_pf_technical_note.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/acdc_pf/docs/acdc_pf_technical_note.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/examples/trunk/acdc_pf/docs/acdc_pf_technical_note.pdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/acdc_pf/docs/acdc_pf_technical_note.run.xml" beforeDir="false" afterPath="$PROJECT_DIR$/examples/trunk/acdc_pf/docs/acdc_pf_technical_note.run.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/acdc_pf/docs/acdc_pf_technical_note.synctex.gz" beforeDir="false" afterPath="$PROJECT_DIR$/examples/trunk/acdc_pf/docs/acdc_pf_technical_note.synctex.gz" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/__version__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/__version__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/MVRSM.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/MVRSM.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/investments_evaluation_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/investments_evaluation_driver.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/__version__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/__version__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/trunk/acopf/acopf_function_evaluation.py" beforeDir="false" afterPath="$PROJECT_DIR$/examples/trunk/acopf/acopf_function_evaluation.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -120,27 +109,29 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "Git.Branch.Popup.ShowAllRemotes": "true",
-    "MATLAB_INTERPRETER": "/usr/local/MATLAB/R2018a/bin/matlab",
-    "Python tests.Nosetests in acopf_function_evaluation.py.executor": "Run",
-    "Python.ExecuteGridCal.executor": "Run",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "205__ACOPF",
-    "last_opened_file_path": "C:/Users/a1003/Desktop/GridCal",
-    "node.js.detected.package.eslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "run.code.analysis.last.selected.profile": "aDefault",
-    "settings.editor.selected.configurable": "reference.idesettings.debugger.python",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;Git.Branch.Popup.ShowAllRemotes&quot;: &quot;true&quot;,
+    &quot;MATLAB_INTERPRETER&quot;: &quot;/usr/local/MATLAB/R2018a/bin/matlab&quot;,
+    &quot;Python tests.Nosetests in acopf_function_evaluation.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python.ExecuteGridCal.executor&quot;: &quot;Run&quot;,
+    &quot;Python.acopf_function_evaluation.executor&quot;: &quot;Run&quot;,
+    &quot;Python.hydro_opf.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;205__ACOPF&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/a1003/Desktop/GridCal&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;run.code.analysis.last.selected.profile&quot;: &quot;aDefault&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;reference.idesettings.debugger.python&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="PyDebuggerOptionsProvider">
     <option name="mySaveCallSignatures" value="true" />
     <option name="mySupportGeventDebugging" value="true" />
@@ -162,7 +153,7 @@
       <recent name="$PROJECT_DIR$/src/research/PTDF" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.ExecuteGridCal">
+  <component name="RunManager" selected="Python.acopf_function_evaluation">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -383,29 +374,6 @@
       <option name="ADDITIONAL_ARGS" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="ExecuteGridCal" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="GridCal" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/GridCal" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCal/ExecuteGridCal.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -421,6 +389,29 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="acopf_function_evaluation" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="GridCal" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/examples/trunk/acopf" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/examples/trunk/acopf/acopf_function_evaluation.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -616,21 +607,28 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python.ExecuteGridCal" />
-      <item itemvalue="Python tests.Nosetests in acopf_function_evaluation.py" />
-      <item itemvalue="Python tests.Nosetests for tests.test_opf.test_opf" />
+      <item itemvalue="Python.acopf_function_evaluation" />
       <item itemvalue="Python tests.Nosetests for tests.admittance_matrix_test.test1" />
+      <item itemvalue="Python tests.Nosetests for tests.test_opf.test_opf" />
+      <item itemvalue="Python tests.Nosetests in acopf_function_evaluation.py" />
       <item itemvalue="Python tests.Nosetests in tests" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.ExecuteGridCal" />
+        <item itemvalue="Python.acopf_function_evaluation" />
         <item itemvalue="Python tests.Nosetests in tests" />
         <item itemvalue="Python tests.Nosetests for tests.admittance_matrix_test.test1" />
         <item itemvalue="Python tests.Nosetests for tests.test_opf.test_opf" />
         <item itemvalue="Python tests.Nosetests in acopf_function_evaluation.py" />
       </list>
     </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-python-sdk-50da183f06c8-2887949eec09-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-233.13135.95" />
+      </set>
+    </attachedChunks>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="project-level" UseSingleDictionary="true" transferred="true" />
   <component name="SvnConfiguration">
@@ -1262,6 +1260,11 @@
       <workItem from="1701177452262" duration="932000" />
       <workItem from="1701182230848" duration="2306000" />
       <workItem from="1701262178348" duration="3698000" />
+      <workItem from="1704399865723" duration="263000" />
+      <workItem from="1704404622815" duration="6000" />
+      <workItem from="1704444243529" duration="12944000" />
+      <workItem from="1704550826592" duration="4068000" />
+      <workItem from="1704699526728" duration="11151000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1606,7 +1609,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="443" />
+    <option name="localTasksCounter" value="458" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1639,7 +1642,7 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="devel" />
+                        <option value="205_ACOPF" />
                       </list>
                     </value>
                   </entry>
@@ -1652,20 +1655,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="improved docs" />
-    <MESSAGE value="added investment grid test" />
-    <MESSAGE value="added connectivities for fuels emissions and technologies" />
-    <MESSAGE value="added connectivity matrices for fuels emissions and technologies to the multi-circuit" />
-    <MESSAGE value="5.0.8&#10;improved NR ability to detect sparse solution errors" />
-    <MESSAGE value="added newtonpa recommended version" />
-    <MESSAGE value="Add 3bus acopf and maybe generalize from there" />
-    <MESSAGE value="Start writing about the problem" />
-    <MESSAGE value="Write more about the equality constraints" />
-    <MESSAGE value="Write the inequalities" />
-    <MESSAGE value="Write a bit of the IPM" />
-    <MESSAGE value="Created test hydro3 with pump" />
-    <MESSAGE value="Update OPF formulation and add cost2 to generator data" />
-    <MESSAGE value="Add equalities and inequalities generalized" />
     <MESSAGE value="Start generating IPM solver" />
     <MESSAGE value="Pack construction of g, h and fobj" />
     <MESSAGE value="Build sets of gradients Ai and Ae" />
@@ -1677,7 +1666,21 @@
     <MESSAGE value="Change m3 to hm3 in the levels" />
     <MESSAGE value="Use modify function to test variations" />
     <MESSAGE value="Cosmetic changes" />
-    <option name="LAST_COMMIT_MESSAGE" value="Cosmetic changes" />
+    <MESSAGE value="minimal changes to better unify pulp and ortools interfaces" />
+    <MESSAGE value="Made the jacobian and hessian calculations output a CSC matrix directly" />
+    <MESSAGE value="Made comments in MIPS" />
+    <MESSAGE value="refactored most of MIPS" />
+    <MESSAGE value="Minor mips refactoring" />
+    <MESSAGE value="Further refining of the MIPS and ACOPF program" />
+    <MESSAGE value="small refactoring" />
+    <MESSAGE value="removed the step_calculation as a function pointer" />
+    <MESSAGE value="minimal refactoring" />
+    <MESSAGE value="removed the slack voltage constraint in the ACOPF&#10;renamed pqpv to no_slack (WIP) in the numericalcircuit" />
+    <MESSAGE value="Added the pandas prints in mips" />
+    <MESSAGE value="added better end-of-acopf reporting" />
+    <MESSAGE value="added reactive power dual price reporting" />
+    <MESSAGE value="minimal refactor" />
+    <option name="LAST_COMMIT_MESSAGE" value="minimal refactor" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2102,10 +2105,20 @@
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
+    <watches-manager>
+      <configuration name="PythonConfigurationType">
+        <watch expression="pf_driver.progress_text" />
+        <watch expression="dh*2" language="Python" />
+        <watch expression="dh*3" language="Python" />
+      </configuration>
+    </watches-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_tests_test_contingency.coverage" NAME="Nosetests for tests.test_contingency Coverage Results" MODIFIED="1704269547065" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
-    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1704383332531" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
+    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1704400051270" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
+    <SUITE FILE_PATH="coverage/GridCal$acopf_function_evaluation.coverage" NAME="acopf_function_evaluation Coverage Results" MODIFIED="1704712658394" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/examples/trunk/acopf" />
+    <SUITE FILE_PATH="coverage/GridCal$upload_to_pypi.coverage" NAME="upload_to_pypi Coverage Results" MODIFIED="1704384315860" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
+    <SUITE FILE_PATH="coverage/GridCal$hydro_opf.coverage" NAME="hydro_opf Coverage Results" MODIFIED="1704400043683" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/examples" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_tests.coverage" NAME="Nosetests in tests Coverage Results" MODIFIED="1704292017290" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_acopf_function_evaluation_py.coverage" NAME="Nosetests in acopf_function_evaluation.py Coverage Results" MODIFIED="1704358701624" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/examples/trunk/acopf" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_tests_test_ptdf.coverage" NAME="Nosetests for tests.test_ptdf Coverage Results" MODIFIED="1704291895608" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />

@@ -464,6 +464,9 @@ def example_3bus_acopf():
 
 
 def linn5bus_example():
+    """
+    Grid from Lynn Powel's book
+    """
     # declare a circuit object
     grid = gce.MultiCircuit()
 
@@ -512,6 +515,63 @@ def linn5bus_example():
     power_flow_evaluation(nc=nc, pf_options=pf_options)
 
 
+def two_grids_of_3bus():
+    """
+    3 bus grid two times
+    for solving islands at the same time
+    """
+    grid = gce.MultiCircuit()
+
+    # 3 bus grid
+    b1 = gce.Bus(is_slack=True)
+    b2 = gce.Bus()
+    b3 = gce.Bus()
+
+    grid.add_bus(b1)
+    grid.add_bus(b2)
+    grid.add_bus(b3)
+
+    grid.add_line(gce.Line(bus_from=b1, bus_to=b2, name='line 1-2', r=0.001, x=0.05, rate=100))
+    grid.add_line(gce.Line(bus_from=b2, bus_to=b3, name='line 2-3', r=0.001, x=0.05, rate=100))
+    grid.add_line(gce.Line(bus_from=b3, bus_to=b1, name='line 3-1_1', r=0.001, x=0.05, rate=100))
+    # grid.add_line(gce.Line(bus_from=b3, bus_to=b1, name='line 3-1_2', r=0.001, x=0.05, rate=100))
+
+    grid.add_load(b3, gce.Load(name='L3', P=50, Q=20))
+    grid.add_generator(b1, gce.Generator('G1', vset=1.00, Cost=1.0, Cost2=2.0))
+    grid.add_generator(b2, gce.Generator('G2', P=10, vset=0.995, Cost=1.0, Cost2=3.0))
+
+    # 3 bus grid
+    b11 = gce.Bus(is_slack=True)
+    b21 = gce.Bus()
+    b31 = gce.Bus()
+
+    grid.add_bus(b11)
+    grid.add_bus(b21)
+    grid.add_bus(b31)
+
+    grid.add_line(gce.Line(bus_from=b11, bus_to=b21, name='line 1-2 (2)', r=0.001, x=0.05, rate=100))
+    grid.add_line(gce.Line(bus_from=b21, bus_to=b31, name='line 2-3 (2)', r=0.001, x=0.05, rate=100))
+    grid.add_line(gce.Line(bus_from=b31, bus_to=b11, name='line 3-1 (2)', r=0.001, x=0.05, rate=100))
+
+    grid.add_load(b31, gce.Load(name='L3 (2)', P=50, Q=20))
+    grid.add_generator(b11, gce.Generator('G1 (2)', vset=1.00, Cost=1.0, Cost2=2.0))
+    grid.add_generator(b21, gce.Generator('G2 (2)', P=10, vset=0.995, Cost=1.0, Cost2=3.0))
+
+    options = gce.PowerFlowOptions(gce.SolverType.NR, verbose=False)
+    power_flow = gce.PowerFlowDriver(grid, options)
+    power_flow.run()
+
+    # print('\n\n', grid.name)
+    # print('\tConv:\n', power_flow.results.get_bus_df())
+    # print('\tConv:\n', power_flow.results.get_branch_df())
+
+    nc = gce.compile_numerical_circuit_at(grid)
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR)
+    power_flow_evaluation(nc=nc, pf_options=pf_options)
+    return
+
+
 if __name__ == '__main__':
     # example_3bus_acopf()
-    linn5bus_example()
+    # linn5bus_example()
+    two_grids_of_3bus()
