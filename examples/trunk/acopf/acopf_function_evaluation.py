@@ -9,39 +9,6 @@ from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_p
 from typing import Callable, Tuple
 
 
-def build_grid_3bus():
-    grid = gce.MultiCircuit()
-
-    b1 = gce.Bus(is_slack=True)
-    b2 = gce.Bus()
-    b3 = gce.Bus()
-
-    grid.add_bus(b1)
-    grid.add_bus(b2)
-    grid.add_bus(b3)
-
-    grid.add_line(gce.Line(bus_from=b1, bus_to=b2, name='line 1-2', r=0.001, x=0.05, rate=100))
-    grid.add_line(gce.Line(bus_from=b2, bus_to=b3, name='line 2-3', r=0.001, x=0.05, rate=100))
-    grid.add_line(gce.Line(bus_from=b3, bus_to=b1, name='line 3-1_1', r=0.001, x=0.05, rate=100))
-    # grid.add_line(gce.Line(bus_from=b3, bus_to=b1, name='line 3-1_2', r=0.001, x=0.05, rate=100))
-
-    grid.add_load(b3, gce.Load(name='L3', P=50, Q=20))
-    grid.add_generator(b1, gce.Generator('G1', vset=1.00, Cost=1.0, Cost2=2.0))
-    grid.add_generator(b2, gce.Generator('G2', P=10, vset=0.995, Cost=1.0, Cost2=3.0))
-
-    options = gce.PowerFlowOptions(gce.SolverType.NR, verbose=False)
-    power_flow = gce.PowerFlowDriver(grid, options)
-    power_flow.run()
-
-    print('\n\n', grid.name)
-    print('\tConv:\n', power_flow.results.get_bus_df())
-    print('\tConv:\n', power_flow.results.get_branch_df())
-
-    nc = gce.compile_numerical_circuit_at(grid)
-
-    return grid
-
-
 def x2var(x, n_vm, n_va, n_P, n_Q):
     a = 0
     b = n_vm
@@ -445,9 +412,10 @@ def power_flow_evaluation(nc: gce.NumericalCircuit, pf_options: gce.PowerFlowOpt
     va = np.zeros(nbus)
     vm, va[no_slack], Pg, Qg = x2var(x, n_vm=nbus, n_va=len(no_slack), n_P=ngen, n_Q=ngen)
 
-    lam_p, lam_q = lam[:nbus], lam[:nbus]
+    lam_p, lam_q = lam[:nbus], lam[nbus:]
 
-    df_bus = pd.DataFrame(data={'Vm (p.u.)': vm, 'Va (rad)': va, 'dual price (€/MW)': lam_p})
+    df_bus = pd.DataFrame(data={'Vm (p.u.)': vm, 'Va (rad)': va,
+                                'dual price (€/MW)': lam_p, 'dual price (€/MVAr)': lam_q})
     df_gen = pd.DataFrame(data={'P (MW)': Pg * nc.Sbase, 'Q (MVAr)': Qg * nc.Sbase})
 
     print()
@@ -463,7 +431,34 @@ def example_3bus_acopf():
 
     :return:
     """
-    grid = build_grid_3bus()
+
+    grid = gce.MultiCircuit()
+
+    b1 = gce.Bus(is_slack=True)
+    b2 = gce.Bus()
+    b3 = gce.Bus()
+
+    grid.add_bus(b1)
+    grid.add_bus(b2)
+    grid.add_bus(b3)
+
+    grid.add_line(gce.Line(bus_from=b1, bus_to=b2, name='line 1-2', r=0.001, x=0.05, rate=100))
+    grid.add_line(gce.Line(bus_from=b2, bus_to=b3, name='line 2-3', r=0.001, x=0.05, rate=100))
+    grid.add_line(gce.Line(bus_from=b3, bus_to=b1, name='line 3-1_1', r=0.001, x=0.05, rate=100))
+    # grid.add_line(gce.Line(bus_from=b3, bus_to=b1, name='line 3-1_2', r=0.001, x=0.05, rate=100))
+
+    grid.add_load(b3, gce.Load(name='L3', P=50, Q=20))
+    grid.add_generator(b1, gce.Generator('G1', vset=1.00, Cost=1.0, Cost2=2.0))
+    grid.add_generator(b2, gce.Generator('G2', P=10, vset=0.995, Cost=1.0, Cost2=3.0))
+
+    options = gce.PowerFlowOptions(gce.SolverType.NR, verbose=False)
+    power_flow = gce.PowerFlowDriver(grid, options)
+    power_flow.run()
+
+    # print('\n\n', grid.name)
+    # print('\tConv:\n', power_flow.results.get_bus_df())
+    # print('\tConv:\n', power_flow.results.get_branch_df())
+
     nc = gce.compile_numerical_circuit_at(grid)
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR)
     power_flow_evaluation(nc=nc, pf_options=pf_options)
@@ -520,5 +515,5 @@ def linn5bus_example():
 
 
 if __name__ == '__main__':
-    # example_3bus_acopf()
-    linn5bus_example()
+    example_3bus_acopf()
+    # linn5bus_example()
