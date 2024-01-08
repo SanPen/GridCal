@@ -67,7 +67,7 @@ def var2x(vm, va, Pg, Qg):
     return np.r_[vm, va, Pg, Qg]
 
 
-def eval_f(x, Yf, Cg, c1, c2) -> Vec:
+def eval_f(x, Yf, Cg, c1, c2, no_slack) -> Vec:
     """
 
     :param x:
@@ -80,14 +80,14 @@ def eval_f(x, Yf, Cg, c1, c2) -> Vec:
     M, N = Yf.shape
     Ng = Cg.shape[1]  # Check
 
-    vm, va, Pg, Qg = x2var(x, n_v=N - 1, n_th=N - 1, n_P=Ng, n_Q=Ng)
+    _, _, Pg, Qg = x2var(x, n_v=N, n_th=len(no_slack), n_P=Ng, n_Q=Ng)
 
     fval = np.sum((c2 * Pg ** 2 + c1 * Pg))
 
     return fval
 
 
-def eval_g(x, Ybus, Yf, Cg, Sd, slack, pqpv) -> Vec:
+def eval_g(x, Ybus, Yf, Cg, Sd, slack, no_slack) -> Vec:
     """
 
     :param x:
@@ -96,16 +96,15 @@ def eval_g(x, Ybus, Yf, Cg, Sd, slack, pqpv) -> Vec:
     :param Cg:
     :param Sd:
     :param slack:
-    :param pqpv:
+    :param no_slack:
     :return:
     """
     M, N = Yf.shape
     Ng = Cg.shape[1]  # Check
 
-    vm = np.zeros(N)
     va = np.zeros(N)
-    vm[pqpv], va[pqpv], Pg, Qg = x2var(x, n_v=N - 1, n_th=N - 1, n_P=Ng, n_Q=Ng)
-    vm[slack] = 1.0
+    vm, va[no_slack], Pg, Qg = x2var(x, n_v=N, n_th=len(no_slack), n_P=Ng, n_Q=Ng)
+    # vm[slack] = 1.0
     va[slack] = 0.0
 
     V = vm * np.exp(1j * va)
@@ -119,7 +118,7 @@ def eval_g(x, Ybus, Yf, Cg, Sd, slack, pqpv) -> Vec:
     return gval
 
 
-def eval_h(x, Yf, Yt, from_idx, to_idx, slack, pqpv, th_max, th_min, V_U, V_L, P_U, P_L, Q_U, Q_L, Cg, rates) -> Vec:
+def eval_h(x, Yf, Yt, from_idx, to_idx, slack, no_slack, th_max, th_min, V_U, V_L, P_U, P_L, Q_U, Q_L, Cg, rates) -> Vec:
     """
 
     :param x:
@@ -128,7 +127,7 @@ def eval_h(x, Yf, Yt, from_idx, to_idx, slack, pqpv, th_max, th_min, V_U, V_L, P
     :param from_idx:
     :param to_idx:
     :param slack:
-    :param pqpv:
+    :param no_slack:
     :param th_max:
     :param th_min:
     :param V_U:
@@ -144,10 +143,9 @@ def eval_h(x, Yf, Yt, from_idx, to_idx, slack, pqpv, th_max, th_min, V_U, V_L, P
     M, N = Yf.shape
     Ng = Cg.shape[1]  # Check
 
-    vm = np.zeros(N)
     va = np.zeros(N)
-    vm[pqpv], va[pqpv], Pg, Qg = x2var(x, n_v=N - 1, n_th=N - 1, n_P=Ng, n_Q=Ng)
-    vm[slack] = 1.0
+    vm, va[no_slack], Pg, Qg = x2var(x, n_v=N, n_th=len(no_slack), n_P=Ng, n_Q=Ng)
+
     va[slack] = 0.0
 
     V = vm * np.exp(1j * va)
@@ -158,10 +156,10 @@ def eval_h(x, Yf, Yt, from_idx, to_idx, slack, pqpv, th_max, th_min, V_U, V_L, P
 
     hval = np.r_[abs(Sf) - rates,  # rates "lower limit"
                  abs(St) - rates,  # rates "upper limit"
-                 vm[pqpv] - V_U[pqpv],  # voltage module upper limit
-                 V_L[pqpv] - vm[pqpv],  # voltage module lower limit
-                 va[pqpv] - th_max[pqpv],  # voltage angles upper limit
-                 th_min[pqpv] - va[pqpv],  # voltage angles lower limit
+                 vm - V_U,  # voltage module upper limit
+                 V_L - vm,  # voltage module lower limit
+                 va[no_slack] - th_max[no_slack],  # voltage angles upper limit
+                 th_min[no_slack] - va[no_slack],  # voltage angles lower limit
                  Pg - P_U,  # generatior P upper limits
                  P_L - Pg,  # generation P lower limits
                  Qg - Q_U,  # generatior Q upper limits
@@ -319,7 +317,7 @@ def calc_hessian(func, x: Vec, mult: Vec, arg=(), h=1e-5) -> csc:
     return hessians.tocsc()
 
 
-def evaluate_power_flow(x, mu, lmbda, Ybus, Yf, Cg, Sd, slack, pqpv, Yt, from_idx, to_idx,
+def evaluate_power_flow(x, mu, lmbda, Ybus, Yf, Cg, Sd, slack, no_slack, Yt, from_idx, to_idx,
                         th_max, th_min, V_U, V_L, P_U, P_L, Q_U, Q_L, c1, c2, rates, h=1e-5) -> (
         Tuple)[Vec, Vec, Vec, Vec, csc, csc, csc, csc, csc]:
     """
@@ -332,7 +330,7 @@ def evaluate_power_flow(x, mu, lmbda, Ybus, Yf, Cg, Sd, slack, pqpv, Yt, from_id
     :param Cg:
     :param Sd:
     :param slack:
-    :param pqpv:
+    :param no_slack:
     :param Yt:
     :param from_idx:
     :param to_idx:
@@ -350,19 +348,19 @@ def evaluate_power_flow(x, mu, lmbda, Ybus, Yf, Cg, Sd, slack, pqpv, Yt, from_id
     :param h:
     :return:
     """
-    f = eval_f(x=x, Yf=Yf, Cg=Cg, c1=c1, c2=c2)
-    G = eval_g(x=x, Ybus=Ybus, Yf=Yf, Cg=Cg, Sd=Sd, slack=slack, pqpv=pqpv)
-    H = eval_h(x=x, Yf=Yf, Yt=Yt, from_idx=from_idx, to_idx=to_idx, slack=slack, pqpv=pqpv, th_max=th_max,
+    f = eval_f(x=x, Yf=Yf, Cg=Cg, c1=c1, c2=c2, no_slack=no_slack)
+    G = eval_g(x=x, Ybus=Ybus, Yf=Yf, Cg=Cg, Sd=Sd, slack=slack, no_slack=no_slack)
+    H = eval_h(x=x, Yf=Yf, Yt=Yt, from_idx=from_idx, to_idx=to_idx, slack=slack, no_slack=no_slack, th_max=th_max,
                th_min=th_min, V_U=V_U, V_L=V_L, P_U=P_U, P_L=P_L, Q_U=Q_U, Q_L=Q_L, Cg=Cg, rates=rates)
 
-    fx = calc_jacobian_f_obj(func=eval_f, x=x, arg=(Yf, Cg, c1, c2), h=h)  # this is a vector because f_obj is a value
-    Gx = calc_jacobian(func=eval_g, x=x, arg=(Ybus, Yf, Cg, Sd, slack, pqpv)).T
-    Hx = calc_jacobian(func=eval_h, x=x, arg=(Yf, Yt, from_idx, to_idx, slack, pqpv, th_max, th_min,
+    fx = calc_jacobian_f_obj(func=eval_f, x=x, arg=(Yf, Cg, c1, c2, no_slack), h=h)  # this is a vector because f_obj is a value
+    Gx = calc_jacobian(func=eval_g, x=x, arg=(Ybus, Yf, Cg, Sd, slack, no_slack)).T
+    Hx = calc_jacobian(func=eval_h, x=x, arg=(Yf, Yt, from_idx, to_idx, slack, no_slack, th_max, th_min,
                                               V_U, V_L, P_U, P_L, Q_U, Q_L, Cg, rates)).T
 
-    fxx = calc_hessian_f_obj(func=eval_f, x=x, arg=(Yf, Cg, c1, c2), h=h)
-    Gxx = calc_hessian(func=eval_g, x=x, mult=lmbda, arg=(Ybus, Yf, Cg, Sd, slack, pqpv))
-    Hxx = calc_hessian(func=eval_h, x=x, mult=mu, arg=(Yf, Yt, from_idx, to_idx, slack, pqpv, th_max,
+    fxx = calc_hessian_f_obj(func=eval_f, x=x, arg=(Yf, Cg, c1, c2, no_slack), h=h)
+    Gxx = calc_hessian(func=eval_g, x=x, mult=lmbda, arg=(Ybus, Yf, Cg, Sd, slack, no_slack))
+    Hxx = calc_hessian(func=eval_h, x=x, mult=mu, arg=(Yf, Yt, from_idx, to_idx, slack, no_slack, th_max,
                                                        th_min, V_U, V_L, P_U, P_L, Q_U, Q_L, Cg, rates))
 
     return f, G, H, fx, Gx, Hx, fxx, Gxx, Hxx
@@ -387,7 +385,7 @@ def power_flow_evaluation(nc: gce.NumericalCircuit, pf_options:gce.PowerFlowOpti
 
     # Bus identification lists
     slack = nc.vd
-    pqpv = nc.pqpv
+    no_slack = nc.pqpv
     from_idx = nc.F
     to_idx = nc.T
 
@@ -407,13 +405,13 @@ def power_flow_evaluation(nc: gce.NumericalCircuit, pf_options:gce.PowerFlowOpti
     nbr = nc.branch_data.nelm
     nbus = nc.bus_data.nbus
     ngen = nc.generator_data.nelm
-    npqpv = len(pqpv)
+    n_no_slack = len(no_slack)
 
     # Nodal power balances, the voltage module of slack and pv buses and the slack reference
     NE = 2 * nbus
 
     # Line ratings, max and min angle of buses, voltage module range and
-    NI = 2 * nbr + 4 * npqpv + 4 * ngen
+    NI = 2 * nbr + 2 * n_no_slack + 2 * nbus + 4 * ngen
 
     # active and reactive power generation range.
 
@@ -428,8 +426,8 @@ def power_flow_evaluation(nc: gce.NumericalCircuit, pf_options:gce.PowerFlowOpti
     q0gen = nc.generator_data.C_bus_elm.T @ np.imag(s0gen)
 
     # compose the initial values
-    x0 = var2x(vm=np.abs(pf_results.voltage[pqpv]),
-               va=np.angle(pf_results.voltage[pqpv]),
+    x0 = var2x(vm=np.abs(pf_results.voltage),
+               va=np.angle(pf_results.voltage[no_slack]),
                Pg=p0gen,
                Qg=q0gen)
 
@@ -438,7 +436,7 @@ def power_flow_evaluation(nc: gce.NumericalCircuit, pf_options:gce.PowerFlowOpti
     print("x0:", x0)
     x, error, gamma = solver(x0=x0, n_x=NV, n_eq=NE, n_ineq=NI,
                              func=evaluate_power_flow,
-                             arg=(Ybus, Yf, Cg, Sd, slack, pqpv, Yt, from_idx, to_idx, Va_max,
+                             arg=(Ybus, Yf, Cg, Sd, slack, no_slack, Yt, from_idx, to_idx, Va_max,
                                   Va_min, Vm_max, Vm_min, Pg_max, Pg_min, Qg_max, Qg_min, c1, c2, rates),
                              verbose=2)
 
@@ -506,5 +504,5 @@ def  linn5bus_example():
 
 
 if __name__ == '__main__':
-    #example_3bus_acopf()
+    # example_3bus_acopf()
     linn5bus_example()

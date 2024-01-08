@@ -28,6 +28,7 @@ from GridCalEngine.Utils.MIPS.ipm_test import NLP_test
 from GridCalEngine.basic_structures import Vec
 from GridCalEngine.Utils.Sparse.csc import pack_3_by_4, diags
 
+np.set_printoptions(precision=4)
 
 @nb.njit(cache=True)
 def step_calculation(V: Vec, dV: Vec):
@@ -52,8 +53,8 @@ def split(sol: Vec, n: int):
     """
     Split the solution vector in two
     :param sol: solution vector
-    :param n:
-    :return:
+    :param n: integer position at whic to split the solution
+    :return: A before, B after the splitting point
     """
     return sol[:n], sol[n:]
 
@@ -83,7 +84,8 @@ def solver(x0: Vec,
            n_x: int,
            n_eq: int,
            n_ineq: int,
-           func: Callable[[csc, csc, csc, csc, csc, Vec, Vec, Vec, csc, csc, csc, csc, float], Tuple[float, Vec, Vec, Vec, csc, csc, csc, csc, csc]],
+           func: Callable[[csc, csc, csc, csc, csc, Vec, Vec, Vec, csc, csc, csc, csc, float],
+                          Tuple[float, Vec, Vec, Vec, csc, csc, csc, csc, csc]],
            arg=(),
            max_iter=100,
            tol=1e-6,
@@ -192,6 +194,9 @@ def solver(x0: Vec,
         if verbose > 1:
             print(f'Iteration: {iter_counter}', "-" * 80)
             print("\tx:", x)
+            print("\tz:", z)
+            print("\tmu", mu)
+            print("\tlmbda", lmbda)
             print("\tGamma:", gamma)
             print("\tErr:", error)
 

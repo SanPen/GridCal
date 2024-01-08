@@ -376,7 +376,7 @@ class NumericalCircuit:
         self.pq_: IntVec = None
         self.pv_: IntVec = None
         self.vd_: IntVec = None
-        self.pqpv_: IntVec = None
+        self.no_slack_: IntVec = None
         self.ac_: IntVec = None
         self.dc_: IntVec = None
 
@@ -426,7 +426,7 @@ class NumericalCircuit:
         self.pq_: IntVec = None
         self.pv_: IntVec = None
         self.vd_: IntVec = None
-        self.pqpv_: IntVec = None
+        self.no_slack_: IntVec = None
         self.ac_: IntVec = None
         self.dc_: IntVec = None
 
@@ -1377,7 +1377,8 @@ class NumericalCircuit:
         :return:
         """
         if self.vd_ is None:
-            self.vd_, self.pq_, self.pv_, self.pqpv_ = compile_types(Pbus=self.Sbus.real, types=self.bus_data.bus_types)
+            self.vd_, self.pq_, self.pv_, self.no_slack_ = compile_types(Pbus=self.Sbus.real,
+                                                                         types=self.bus_data.bus_types)
 
         return self.vd_
 
@@ -1409,10 +1410,11 @@ class NumericalCircuit:
 
         :return:
         """
-        if self.pqpv_ is None:
+        # TODO: rename to "no_slack"
+        if self.no_slack_ is None:
             _ = self.vd  # call the constructor
 
-        return self.pqpv_
+        return self.no_slack_
 
     @property
     def structs_dict(self):
