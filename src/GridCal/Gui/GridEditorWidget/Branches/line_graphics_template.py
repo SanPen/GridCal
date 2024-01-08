@@ -38,6 +38,7 @@ from GridCalEngine.Core.Devices.Branches.upfc import UPFC
 from GridCalEngine.Core.Devices.Branches.dc_line import DcLine
 from GridCalEngine.Core.Devices.Branches.hvdc_line import HvdcLine
 from GridCalEngine.Core.Devices.Fluid.fluid_node import FluidNode
+from GridCalEngine.Core.Devices.Fluid.fluid_path import FluidPath
 from GridCalEngine.Simulations.Topology.topology_driver import reduce_grid_brute
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
@@ -363,14 +364,16 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
                  toPort: Union[TerminalItem, None],
                  editor,
                  width=5,
-                 api_object: Union[Line, Transformer2W, VSC, UPFC, HvdcLine, DcLine, None] = None):
+                 api_object: Union[Line, Transformer2W, VSC, UPFC, HvdcLine, DcLine, FluidPath, None] = None,
+                 arrow_size=10):
         """
 
         :param fromPort:
         :param toPort:
         :param editor:
         :param width:
-        :param api_object: 
+        :param api_object:
+        :param arrow_size:
         """
         QGraphicsLineItem.__init__(self)
 
@@ -414,10 +417,10 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
 
         # arrows
         self.view_arrows = True
-        self.arrow_from_1 = ArrowHead(parent=self, arrow_size=10, position=0.15, under=False)
-        self.arrow_from_2 = ArrowHead(parent=self, arrow_size=10, position=0.15, under=True)
-        self.arrow_to_1 = ArrowHead(parent=self, arrow_size=10, position=0.85, under=False)
-        self.arrow_to_2 = ArrowHead(parent=self, arrow_size=10, position=0.85, under=True)
+        self.arrow_from_1 = ArrowHead(parent=self, arrow_size=arrow_size, position=0.15, under=False)
+        self.arrow_from_2 = ArrowHead(parent=self, arrow_size=arrow_size, position=0.15, under=True)
+        self.arrow_to_1 = ArrowHead(parent=self, arrow_size=arrow_size, position=0.85, under=False)
+        self.arrow_to_2 = ArrowHead(parent=self, arrow_size=arrow_size, position=0.85, under=True)
 
         # add the line and it possible children to the scene
         self.diagramScene.addItem(self)
@@ -453,7 +456,10 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         :param style: PenStyle instance
         :return:
         """
-        self.setPen(QPen(color, w, style, Qt.RoundCap, Qt.RoundJoin))
+
+        pen = QPen(color, w, style, Qt.RoundCap, Qt.RoundJoin)
+
+        self.setPen(pen)
         self.arrow_from_1.set_colour(color, w, style)
         self.arrow_from_2.set_colour(color, w, style)
         self.arrow_to_1.set_colour(color, w, style)
@@ -760,8 +766,7 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         change the from or to bus of the nbranch with another selected bus
         """
 
-        editor = self.diagramScene.parent()
-        idx_bus_list = editor.get_selected_buses()
+        idx_bus_list = self.editor.get_selected_buses()
 
         if len(idx_bus_list) == 2:
 
@@ -886,6 +891,12 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
 
     def get_fluid_node_to(self) -> FluidNode:
         return self.get_to_graphic_object().api_object
+
+    def get_fluid_node_graphics_from(self) -> FluidNodeGraphicItem:
+        return self.get_from_graphic_object()
+
+    def get_fluid_node_graphics_to(self) -> FluidNodeGraphicItem:
+        return self.get_to_graphic_object()
 
     def connected_between_buses(self):
 

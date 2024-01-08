@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1352</width>
+    <width>1426</width>
     <height>805</height>
    </rect>
   </property>
@@ -1864,6 +1864,20 @@ p, li { white-space: pre-wrap; }
                         <property name="icon">
                          <iconset resource="icons.qrc">
                           <normaloff>:/Icons/icons/save.svg</normaloff>:/Icons/icons/save.svg</iconset>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QCheckBox" name="results_traspose_checkBox">
+                        <property name="toolTip">
+                         <string>Transpose the results</string>
+                        </property>
+                        <property name="text">
+                         <string/>
+                        </property>
+                        <property name="icon">
+                         <iconset resource="icons.qrc">
+                          <normaloff>:/Icons/icons/transpose.svg</normaloff>:/Icons/icons/transpose.svg</iconset>
                         </property>
                        </widget>
                       </item>
@@ -8658,8 +8672,8 @@ QProgressBar::chunk{
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1352</width>
-     <height>22</height>
+     <width>1426</width>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuProject">

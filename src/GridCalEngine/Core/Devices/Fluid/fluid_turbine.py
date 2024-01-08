@@ -50,4 +50,4 @@ class FluidTurbine(FluidInjectionTemplate):
                                         max_flow_rate=max_flow_rate,
                                         plant=plant,
                                         generator=generator,
-                                        device_type=DeviceType.FluidTurbine)
+                                        device_type=DeviceType.FluidTurbineDevice)

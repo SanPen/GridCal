@@ -19,12 +19,13 @@ import numpy as np
 from typing import Union, TYPE_CHECKING
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, QPoint
-from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor
+from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush
 from PySide6.QtWidgets import QMenu, QGraphicsScene, QGraphicsSceneMouseEvent
 
-from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, FONT_SCALE, EMERGENCY
+from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, FONT_SCALE
 from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCalEngine.Core.Devices.Fluid import FluidNode, FluidTurbine, FluidPump, FluidP2x
+from GridCalEngine.Core.Devices.Substation.bus import Bus
 from GridCal.Gui.GridEditorWidget.terminal_item import TerminalItem, HandleItem
 from GridCal.Gui.GridEditorWidget.Fluid.fluid_turbine_graphics import FluidTurbineGraphicItem
 from GridCal.Gui.GridEditorWidget.Fluid.fluid_pump_graphics import FluidPumpGraphicItem
@@ -34,7 +35,7 @@ from GridCalEngine.enumerations import DeviceType, FaultType
 from GridCalEngine.Core.Devices.editable_device import EditableDevice
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
-    from GridCal.Gui.GridEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget, DiagramScene
+    from GridCal.Gui.GridEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
 
 
 class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
@@ -75,16 +76,7 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
         # index
         self.index = index
 
-        # color
-        # if self.api_object is not None:
-        #     if self.api_object.active:
-        #         self.color = ACTIVE['color']
-        #         self.style = ACTIVE['style']
-        #     else:
-        #         self.color = DEACTIVATED['color']
-        #         self.style = DEACTIVATED['style']
-        # else:
-        self.color = ACTIVE['color']
+        self.color = ACTIVE['fluid']
         self.style = ACTIVE['style']
 
         # Label:
@@ -176,10 +168,10 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
         """
         Change the colour according to the system theme
         """
-        self.color = ACTIVE['color']
-        self.style = ACTIVE['style']
+        # self.color = ACTIVE['color']
+        # self.style = ACTIVE['style']
         self.label.setDefaultTextColor(ACTIVE['text'])
-        self.set_tile_color(self.color)
+        # self.set_tile_color(self.color)
 
         for e in self.shunt_children:
             if e is not None:
@@ -352,17 +344,32 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
         :param api_obj: EditableDevice
         """
 
-        if api_obj.device_type == DeviceType.FluidTurbine:
+        if api_obj.device_type == DeviceType.FluidTurbineDevice:
             self.add_turbine(api_obj=api_obj)
 
-        elif api_obj.device_type == DeviceType.FluidPump:
+        elif api_obj.device_type == DeviceType.FluidPumpDevice:
             self.add_pump(api_obj=api_obj)
 
-        elif api_obj.device_type == DeviceType.FluidP2X:
+        elif api_obj.device_type == DeviceType.FluidP2XDevice:
             self.add_p2x(api_obj=api_obj)
 
         else:
             raise Exception("Cannot add device of type {}".format(api_obj.device_type.value))
+
+    def create_bus_if_necessary(self) -> Bus:
+        """
+        Create the internal electrical bus of the fluid node
+        :return api_object.bus
+        """
+
+        if self.api_object.bus is None:
+            # create the bus and assign it
+            self.api_object.bus = self.editor.circuit.add_bus()
+
+            # set the same name
+            self.api_object.bus.name = "Bus of " + self.api_object.name
+
+        return self.api_object.bus
 
     def add_turbine(self, api_obj: Union[None, FluidTurbine] = None):
         """
@@ -373,11 +380,7 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
         if api_obj is None or type(api_obj) is bool:
 
             api_obj = self.editor.circuit.add_fluid_turbine(node=self.api_object, api_obj=None)
-
-            if self.api_object.bus is None:
-                self.api_object.bus = self.editor.circuit.add_bus()
-
-            api_obj.generator = self.editor.circuit.add_generator(bus=self.api_object.bus)
+            api_obj.generator = self.editor.circuit.add_generator(bus=self.create_bus_if_necessary())
             api_obj.generator.name = self.api_object.name
 
         _grph = FluidTurbineGraphicItem(parent=self, api_obj=api_obj, diagramScene=self.scene)
@@ -393,11 +396,7 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
         """
         if api_obj is None or type(api_obj) is bool:
             api_obj = self.editor.circuit.add_fluid_pump(node=self.api_object, api_obj=None)
-
-            if self.api_object.bus is None:
-                self.api_object.bus = self.editor.circuit.add_bus()
-
-            api_obj.generator = self.editor.circuit.add_generator(bus=self.api_object.bus)
+            api_obj.generator = self.editor.circuit.add_generator(bus=self.create_bus_if_necessary())
             api_obj.generator.name = self.api_object.name
 
         _grph = FluidPumpGraphicItem(parent=self, api_obj=api_obj, diagramScene=self.scene)
@@ -413,11 +412,7 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
         """
         if api_obj is None or type(api_obj) is bool:
             api_obj = self.editor.circuit.add_fluid_p2x(node=self.api_object, api_obj=None)
-
-            if self.api_object.bus is None:
-                self.api_object.bus = self.editor.circuit.add_bus()
-
-            api_obj.generator = self.editor.circuit.add_generator(bus=self.api_object.bus)
+            api_obj.generator = self.editor.circuit.add_generator(bus=self.create_bus_if_necessary())
             api_obj.generator.name = self.api_object.name
 
         _grph = FluidP2xGraphicItem(parent=self, api_obj=api_obj, diagramScene=self.scene)

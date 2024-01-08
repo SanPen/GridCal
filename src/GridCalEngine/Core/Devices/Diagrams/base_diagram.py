@@ -286,7 +286,7 @@ class BaseDiagram:
                     tuples.append((f, t, w))
 
         # Add fluid branches -------------------------------------------------------------------------------------------
-        for dev_type in [DeviceType.FluidPath]:
+        for dev_type in [DeviceType.FluidPathDevice]:
 
             groups = self.data.get(dev_type.value, None)
 

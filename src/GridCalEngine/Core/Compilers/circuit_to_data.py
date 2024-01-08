@@ -112,6 +112,9 @@ def get_load_data(circuit: MultiCircuit,
         data.names[ii] = elm.name
         data.idtag[ii] = elm.idtag
 
+        data.mttf[ii] = elm.mttf
+        data.mttr[ii] = elm.mttr
+
         if time_series:
             if opf_results is not None:
                 data.S[ii] = elm.P_prof[t_idx] + 1j * elm.Q_prof[t_idx] - opf_results.load_shedding[t_idx, ii]
@@ -245,6 +248,9 @@ def get_shunt_data(circuit: MultiCircuit,
         data.names[k] = elm.name
         data.idtag[k] = elm.idtag
 
+        data.mttf[k] = elm.mttf
+        data.mttr[k] = elm.mttr
+
         data.controlled[k] = elm.is_controlled
         data.b_min[k] = elm.Bmin
         data.b_max[k] = elm.Bmax
@@ -303,6 +309,9 @@ def get_generator_data(circuit: MultiCircuit,
 
         data.names[k] = elm.name
         data.idtag[k] = elm.idtag
+
+        data.mttf[k] = elm.mttf
+        data.mttr[k] = elm.mttr
 
         data.controllable[k] = elm.is_controlled
         data.installed_p[k] = elm.Snom
@@ -420,6 +429,9 @@ def get_battery_data(circuit: MultiCircuit,
         data.names[k] = elm.name
         data.idtag[k] = elm.idtag
 
+        data.mttf[k] = elm.mttf
+        data.mttr[k] = elm.mttr
+
         data.controllable[k] = elm.is_controlled
         data.installed_p[k] = elm.Snom
 
@@ -510,28 +522,28 @@ def get_battery_data(circuit: MultiCircuit,
 
 
 def get_branch_data(circuit: MultiCircuit,
-                    bus_dict,
-                    Vbus,
-                    apply_temperature,
+                    bus_dict: Dict[Bus, int],
+                    Vbus: CxVec,
+                    apply_temperature: bool,
                     branch_tolerance_mode: BranchImpedanceMode,
-                    t_idx=-1,
-                    time_series=False,
+                    t_idx: int = -1,
+                    time_series: bool = False,
                     opf_results: Union[OptimalPowerFlowResults, None] = None,
-                    use_stored_guess=False,
-                    logger: Logger = Logger()):
+                    use_stored_guess: bool = False,
+                    logger: Logger = Logger()) -> ds.BranchData:
     """
-
-    :param circuit:
-    :param bus_dict:
+    Compile BranchData for a time step or the snapshot
+    :param circuit: MultiCircuit
+    :param bus_dict: Dictionary of buses to compute the indices
     :param Vbus: Array of bus voltages to be modified
-    :param apply_temperature:
-    :param branch_tolerance_mode:
-    :param t_idx:
-    :param time_series:
-    :param opf_results:
-    :param use_stored_guess:
-    :param logger:
-    :return:
+    :param apply_temperature: apply the temperature correction?
+    :param branch_tolerance_mode: BranchImpedanceMode
+    :param t_idx: time index (-1 is useless)
+    :param time_series: compile time series? else the sanpshot is compiled
+    :param opf_results: OptimalPowerFlowResults
+    :param use_stored_guess: use the stored voltage ?
+    :param logger: Logger
+    :return: BranchData
     """
 
     data = ds.BranchData(nelm=circuit.get_branch_number_wo_hvdc(),
@@ -544,6 +556,9 @@ def get_branch_data(circuit: MultiCircuit,
         # generic stuff
         data.names[i] = elm.name
         data.idtag[i] = elm.idtag
+
+        data.mttf[i] = elm.mttf
+        data.mttr[i] = elm.mttr
 
         if time_series:
             data.active[i] = elm.active_prof[t_idx]
@@ -604,6 +619,10 @@ def get_branch_data(circuit: MultiCircuit,
 
         data.names[ii] = elm.name
         data.idtag[ii] = elm.idtag
+
+        data.mttf[ii] = elm.mttf
+        data.mttr[ii] = elm.mttr
+
         data.dc[ii] = 1
 
         if time_series:
@@ -648,6 +667,9 @@ def get_branch_data(circuit: MultiCircuit,
 
         data.names[ii] = elm.name
         data.idtag[ii] = elm.idtag
+
+        data.mttf[ii] = elm.mttf
+        data.mttr[ii] = elm.mttr
 
         if time_series:
             data.active[ii] = elm.active_prof[t_idx]
@@ -729,6 +751,9 @@ def get_branch_data(circuit: MultiCircuit,
 
             data.names[ii] = elm.name
             data.idtag[ii] = elm.idtag
+
+            data.mttf[ii] = elm.mttf
+            data.mttr[ii] = elm.mttr
 
             if time_series:
                 data.active[ii] = elm.active_prof[t_idx]
@@ -812,6 +837,9 @@ def get_branch_data(circuit: MultiCircuit,
 
         data.names[ii] = elm.name
         data.idtag[ii] = elm.idtag
+
+        data.mttf[ii] = elm.mttf
+        data.mttr[ii] = elm.mttr
 
         if time_series:
             data.active[ii] = elm.active_prof[t_idx]
@@ -911,6 +939,9 @@ def get_branch_data(circuit: MultiCircuit,
 
         data.names[ii] = elm.name
         data.idtag[ii] = elm.idtag
+
+        data.mttf[ii] = elm.mttf
+        data.mttr[ii] = elm.mttr
 
         if time_series:
             data.active[ii] = elm.active_prof[t_idx]
@@ -1042,11 +1073,14 @@ def get_hvdc_data(circuit: MultiCircuit,
 
     return data
 
+
 def get_fluid_node_data(circuit: MultiCircuit,
-                        t_idx=-1) -> Tuple[ds.FluidNodeData, Dict[str, int]]:
+                        t_idx=-1,
+                        time_series=False) -> Tuple[ds.FluidNodeData, Dict[str, int]]:
     """
 
     :param circuit:
+    :param time_series:
     :param t_idx:
     :return:
     """
@@ -1056,15 +1090,20 @@ def get_fluid_node_data(circuit: MultiCircuit,
     data = ds.FluidNodeData(nelm=len(devices))
 
     for k, elm in enumerate(devices):
-
         plant_dict[elm.idtag] = k
 
         data.names[k] = elm.name
         data.idtag[k] = elm.idtag
 
-        data.min_level[k] = elm.min_level
-        data.max_level[k] = elm.max_level
-        data.initial_level[k] = elm.initial_level
+        # Convert input data in hm3 to m3
+        data.min_level[k] = 1e6 * elm.min_level
+        data.max_level[k] = 1e6 * elm.max_level
+        data.initial_level[k] = 1e6 * elm.initial_level
+
+        if time_series:
+            data.inflow[k] = elm.inflow_prof[t_idx]
+        else:
+            data.inflow[k] = elm.inflow
 
     return data, plant_dict
 
@@ -1076,6 +1115,8 @@ def get_fluid_turbine_data(circuit: MultiCircuit,
     """
 
     :param circuit:
+    :param plant_dict:
+    :param gen_dict:
     :param t_idx:
     :return:
     """
@@ -1084,7 +1125,6 @@ def get_fluid_turbine_data(circuit: MultiCircuit,
     data = ds.FluidTurbineData(nelm=len(devices))
 
     for k, elm in enumerate(devices):
-
         data.plant_idx[k] = plant_dict[elm.plant.idtag]
         data.generator_idx[k] = gen_dict[elm.generator.idtag]
 
@@ -1098,12 +1138,14 @@ def get_fluid_turbine_data(circuit: MultiCircuit,
 
 
 def get_fluid_pump_data(circuit: MultiCircuit,
-                           plant_dict: Dict[str, int],
-                           gen_dict: Dict[str, int],
-                           t_idx=-1) -> ds.FluidPumpData:
+                        plant_dict: Dict[str, int],
+                        gen_dict: Dict[str, int],
+                        t_idx=-1) -> ds.FluidPumpData:
     """
 
     :param circuit:
+    :param plant_dict:
+    :param gen_dict:
     :param t_idx:
     :return:
     """
@@ -1131,6 +1173,8 @@ def get_fluid_p2x_data(circuit: MultiCircuit,
     """
 
     :param circuit:
+    :param plant_dict:
+    :param gen_dict:
     :param t_idx:
     :return:
     """
@@ -1150,15 +1194,18 @@ def get_fluid_p2x_data(circuit: MultiCircuit,
 
     return data
 
+
 def get_fluid_path_data(circuit: MultiCircuit,
-                       t_idx=-1) -> ds.FluidPathData:
+                        plant_dict: Dict[str, int],
+                        t_idx=-1) -> ds.FluidPathData:
     """
 
     :param circuit:
+    :param plant_dict:
     :param t_idx:
     :return:
     """
-    devices = circuit.get_fluid_p2xs()
+    devices = circuit.get_fluid_paths()
 
     data = ds.FluidPathData(nelm=len(devices))
 
@@ -1166,8 +1213,9 @@ def get_fluid_path_data(circuit: MultiCircuit,
         data.names[k] = elm.name
         data.idtag[k] = elm.idtag
 
-        data.source_idx[k] = elm.source_idx
-        data.target_idx[k] = elm.target_idx
+        # pass idx, check
+        data.source_idx[k] = plant_dict[elm.source.idtag]
+        data.target_idx[k] = plant_dict[elm.target.idtag]
 
         data.min_flow[k] = elm.min_flow
         data.max_flow[k] = elm.max_flow

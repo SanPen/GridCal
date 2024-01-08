@@ -209,23 +209,23 @@ class ObjectsTableMain(DiagramsMain):
             elm = dev.FluidNode()
             # dictionary_of_lists = {DeviceType.FluidNodeDevice.value: self.circuit.fluid_nodes, }
 
-        elif elm_type == DeviceType.FluidPath:
+        elif elm_type == DeviceType.FluidPathDevice:
             elm = dev.FluidPath()
             dictionary_of_lists = {DeviceType.FluidNodeDevice.value: self.circuit.fluid_nodes, }
 
-        elif elm_type == DeviceType.FluidTurbine:
+        elif elm_type == DeviceType.FluidTurbineDevice:
             elm = dev.FluidTurbine()
             dictionary_of_lists = {DeviceType.FluidNodeDevice.value: self.circuit.fluid_nodes,
                                    DeviceType.GeneratorDevice.value: self.circuit.get_generators(),
                                    }
 
-        elif elm_type == DeviceType.FluidPump:
+        elif elm_type == DeviceType.FluidPumpDevice:
             elm = dev.FluidPump()
             dictionary_of_lists = {DeviceType.FluidNodeDevice.value: self.circuit.fluid_nodes,
                                    DeviceType.GeneratorDevice.value: self.circuit.get_generators(),
                                    }
 
-        elif elm_type == DeviceType.FluidP2X:
+        elif elm_type == DeviceType.FluidP2XDevice:
             elm = dev.FluidP2x()
             dictionary_of_lists = {DeviceType.FluidNodeDevice.value: self.circuit.fluid_nodes,
                                    DeviceType.GeneratorDevice.value: self.circuit.get_generators(),

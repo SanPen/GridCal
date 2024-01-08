@@ -73,6 +73,9 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
             hvdc_names=self.grid.get_hvdc_names(),
             fuel_names=self.grid.get_fuel_names(),
             emission_names=self.grid.get_emission_names(),
+            fluid_node_names=self.grid.get_fluid_node_names(),
+            fluid_path_names=self.grid.get_fluid_path_names(),
+            fluid_injection_names=self.grid.get_fluid_injection_names(),
             n=self.grid.get_bus_number(),
             m=self.grid.get_branch_number_wo_hvdc(),
             nt=nt,
@@ -80,6 +83,9 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
             nbat=self.grid.get_batteries_number(),
             nload=self.grid.get_loads_number(),
             nhvdc=self.grid.get_hvdc_number(),
+            n_fluid_node=self.grid.get_fluid_nodes_number(),
+            n_fluid_path=self.grid.get_fluid_paths_number(),
+            n_fluid_injection=self.grid.get_fluid_injection_number(),
             time_array=self.grid.time_profile[self.time_indices] if self.time_indices is not None else [datetime.datetime.now()],
             bus_types=np.ones(self.grid.get_bus_number(), dtype=int),
             clustering_results=clustering_results)
@@ -109,8 +115,8 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
         """
 
         if not remote:
-            self.progress_signal.emit(0.0)
-            self.progress_text.emit('Formulating problem...')
+            self.report_progress(0.0)
+            self.report_text('Formulating problem...')
 
         if self.options.solver == SolverType.DC_OPF:
 
@@ -126,8 +132,8 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                                          areas_from=self.options.areas_from,
                                          areas_to=self.options.areas_to,
                                          logger=self.logger,
-                                         progress_text=self.progress_text.emit,
-                                         progress_func=self.progress_signal.emit,
+                                         progress_text=self.report_text,
+                                         progress_func=self.report_progress,
                                          export_model_fname=self.options.export_model_fname)
 
             self.results.voltage = np.ones((opf_vars.nt, opf_vars.nbus)) * np.exp(1j * opf_vars.bus_vars.theta)
@@ -156,17 +162,29 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
             self.results.hvdc_Pf = opf_vars.hvdc_vars.flows
             self.results.hvdc_loading = opf_vars.hvdc_vars.loading
 
+            self.results.fluid_node_current_level = opf_vars.fluid_node_vars.current_level
+            self.results.fluid_node_flow_in = opf_vars.fluid_node_vars.flow_in
+            self.results.fluid_node_flow_out = opf_vars.fluid_node_vars.flow_out
+            self.results.fluid_node_p2x_flow = opf_vars.fluid_node_vars.p2x_flow
+            self.results.fluid_node_spillage = opf_vars.fluid_node_vars.spillage
+            self.results.fluid_path_flow = opf_vars.fluid_path_vars.flow
+            self.results.fluid_injection_flow = opf_vars.fluid_inject_vars.flow
+
             self.results.system_fuel = opf_vars.sys_vars.system_fuel
             self.results.system_emissions = opf_vars.sys_vars.system_emissions
             self.results.system_energy_cost = opf_vars.sys_vars.system_energy_cost
+
+            # set converged for all t to the value of acceptable solution
+            self.results.converged = np.array([opf_vars.acceptable_solution] * opf_vars.nt)
+
 
         elif self.options.solver == SolverType.Simple_OPF:
 
             # AC optimal power flow
             Pl, Pg = run_simple_dispatch_ts(grid=self.grid,
                                             time_indices=self.time_indices,
-                                            text_prog=self.progress_text.emit,
-                                            prog_func=self.progress_signal.emit)
+                                            text_prog=self.report_text,
+                                            prog_func=self.report_progress)
 
             self.results.generator_power[self.time_indices, :] = Pg  # already in MW
 
@@ -175,8 +193,8 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
             return
 
         if not remote:
-            self.progress_signal.emit(0.0)
-            self.progress_text.emit('Running all in an external solver, this may take a while...')
+            self.report_progress(0.0)
+            self.report_text('Running all in an external solver, this may take a while...')
 
         return self.results
 
@@ -185,8 +203,8 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
         Run the OPF by groups
         """
 
-        self.progress_signal.emit(0.0)
-        self.progress_text.emit('Making groups...')
+        self.report_progress(0.0)
+        self.report_text('Making groups...')
 
         # get the partition points of the time series
         groups = get_time_groups(t_array=self.grid.time_profile[self.time_indices], grouping=self.options.grouping)
@@ -201,7 +219,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
             time_indices = np.arange(start_, end_)
             # show progress message
             print(start_, ':', end_, ' [', end_ - start_, ']')
-            self.progress_text.emit('Running OPF for the time group {0} '
+            self.report_text('Running OPF for the time group {0} '
                                     'start {1} - end {2} in external solver...'.format(i, start_, end_))
 
             # run an opf for the group interval only if the group is within the start:end boundaries
@@ -246,14 +264,25 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
             self.results.hvdc_Pf[time_indices, :] = opf_vars.hvdc_vars.flows
             self.results.hvdc_loading[time_indices, :] = opf_vars.hvdc_vars.loading
 
+            self.results.fluid_node_current_level[time_indices, :] = opf_vars.fluid_node_vars.current_level
+            self.results.fluid_node_flow_in[time_indices, :] = opf_vars.fluid_node_vars.flow_in
+            self.results.fluid_node_flow_out[time_indices, :] = opf_vars.fluid_node_vars.flow_out
+            self.results.fluid_node_p2x_flow[time_indices, :] = opf_vars.fluid_node_vars.p2x_flow
+            self.results.fluid_node_spillage[time_indices, :] = opf_vars.fluid_node_vars.spillage
+            self.results.fluid_path_flow[time_indices, :] = opf_vars.fluid_path_vars.flow
+            self.results.fluid_injection_flow[time_indices, :] = opf_vars.fluid_inject_vars.flow
+
             self.results.system_fuel[time_indices, :] = opf_vars.sys_vars.system_fuel
             self.results.system_emissions[time_indices, :] = opf_vars.sys_vars.system_emissions
             self.results.system_energy_cost[time_indices] = opf_vars.sys_vars.system_energy_cost
 
+            # set converged for all t to the value of acceptable solution
+            self.results.converged[time_indices] = np.array([opf_vars.acceptable_solution] * opf_vars.nt)
+
             energy_0 = self.results.battery_energy[end_ - 1, :]
 
             # update progress bar
-            self.progress_signal.emit((i / len(groups)) * 100)
+            self.report_progress2(i, len(groups))
 
             i += 1
 
@@ -262,13 +291,12 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
         Add a report of the results (in-place)
         """
         if self.progress_text:
-            self.progress_text.emit("Creating report")
+            self.report_text("Creating report")
 
         nt = len(self.time_indices)
         for t, t_idx in enumerate(self.time_indices):
 
-            if self.progress_signal:
-                self.progress_signal.emit((t + 1) / nt * 100)
+            self.report_progress2(t, nt)
 
             t_name = str(self.results.time_array[t])
 
@@ -340,7 +368,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                     ti = self.time_indices
 
             if self.options.solver == SolverType.DC_OPF:
-                self.progress_text.emit('Running Linear OPF with Newton...')
+                self.report_text('Running Linear OPF with Newton...')
 
                 npa_res = newton_pa_linear_opf(circuit=self.grid,
                                                opf_options=self.options,
@@ -364,8 +392,16 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                 self.results.hvdc_Pf[ti, :] = npa_res.hvdc_flows
                 self.results.hvdc_loading[ti, :] = npa_res.hvdc_loading
 
+                self.results.fluid_node_current_level[ti, :] = npa_res.fluid_node_vars.current_level
+                self.results.fluid_node_flow_in[ti, :] = npa_res.fluid_node_vars.flow_in
+                self.results.fluid_node_flow_out[ti, :] = npa_res.fluid_node_vars.flow_out
+                self.results.fluid_node_p2x_flow[ti, :] = npa_res.fluid_node_vars.p2x_flow
+                self.results.fluid_node_spillage[ti, :] = npa_res.fluid_node_vars.spillage
+                self.results.fluid_path_flow[ti, :] = npa_res.fluid_path_vars.flow
+                self.results.fluid_injection_flow[ti, :] = npa_res.fluid_inject_vars.flow
+
             if self.options.solver == SolverType.AC_OPF:
-                self.progress_text.emit('Running Non-Linear OPF with Newton...')
+                self.report_text('Running Non-Linear OPF with Newton...')
 
                 # pack the results
                 npa_res = newton_pa_nonlinear_opf(circuit=self.grid,
@@ -390,6 +426,14 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                 # self.results.Sbus[ti, :] = problem.get_power_injections()
                 self.results.hvdc_Pf[ti, :] = npa_res.hvdc_Pf
                 self.results.hvdc_loading[ti, :] = npa_res.hvdc_loading
+
+                self.results.fluid_node_current_level[ti, :] = npa_res.fluid_node_vars.current_level
+                self.results.fluid_node_flow_in[ti, :] = npa_res.fluid_node_vars.flow_in
+                self.results.fluid_node_flow_out[ti, :] = npa_res.fluid_node_vars.flow_out
+                self.results.fluid_node_p2x_flow[ti, :] = npa_res.fluid_node_vars.p2x_flow
+                self.results.fluid_node_spillage[ti, :] = npa_res.fluid_node_vars.spillage
+                self.results.fluid_path_flow[ti, :] = npa_res.fluid_path_vars.flow
+                self.results.fluid_injection_flow[ti, :] = npa_res.fluid_inject_vars.flow
 
         if self.options.generate_report:
             self.add_report()

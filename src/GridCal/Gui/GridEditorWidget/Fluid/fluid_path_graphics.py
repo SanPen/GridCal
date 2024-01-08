@@ -16,14 +16,15 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 from typing import Union
-from PySide6.QtCore import Qt, QRectF
-from PySide6.QtGui import QPen, QIcon, QPixmap, QBrush
-from PySide6.QtWidgets import QMenu, QGraphicsRectItem
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QPen, QIcon, QPixmap, QColor
+from PySide6.QtWidgets import QMenu
 from GridCal.Gui.GeneralDialogues import InputNumberDialogue
 from GridCal.Gui.GridEditorWidget.Substation.bus_graphics import TerminalItem
 from GridCal.Gui.GridEditorWidget.Branches.line_editor import LineEditor
-from GridCal.Gui.messages import yes_no_question, warning_msg
+from GridCal.Gui.messages import yes_no_question
 from GridCal.Gui.GridEditorWidget.Branches.line_graphics_template import LineGraphicTemplateItem
+from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE
 from GridCalEngine.Core.Devices.Fluid.fluid_path import FluidPath
 from GridCalEngine.enumerations import DeviceType
 
@@ -37,66 +38,59 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
                  fromPort: TerminalItem,
                  toPort: Union[TerminalItem, None],
                  editor,
-                 width=5,
-                 api_object: FluidPath = None):
+                 width=10,
+                 api_object: FluidPath = None,
+                 arrow_size=15):
         """
-
+        
         :param fromPort:
         :param toPort:
         :param editor:
         :param width:
         :param api_object:
+        :param arrow_size:
         """
         LineGraphicTemplateItem.__init__(self,
                                          fromPort=fromPort,
                                          toPort=toPort,
                                          editor=editor,
                                          width=width,
-                                         api_object=api_object)
+                                         api_object=api_object,
+                                         arrow_size=arrow_size)
+
+        # self.style = Qt.CustomDashLine
+        self.style = ACTIVE['style']
+        self.color = ACTIVE['fluid']
+        self.set_colour(color=self.color,
+                        w=self.width,
+                        style=self.style)
+
+    def set_colour(self, color: QColor, w, style: Qt.PenStyle):
+        """
+        Set color and style
+        :param color: QColor instance
+        :param w: width
+        :param style: PenStyle instance
+        :return:
+        """
+
+        pen = QPen(color, w, style, Qt.RoundCap, Qt.RoundJoin)
+        # pen.setDashPattern([5, 3, 2, 3])
+
+        self.setPen(pen)
+        self.arrow_from_1.set_colour(color, w, style)
+        self.arrow_from_2.set_colour(color, w, style)
+        self.arrow_to_1.set_colour(color, w, style)
+        self.arrow_to_2.set_colour(color, w, style)
+
+        if self.symbol is not None:
+            self.symbol.set_colour(color, w, style)
 
     def recolour_mode(self):
         """
         Change the colour according to the system theme
         """
         self.set_colour(self.color, self.width, self.style)
-
-    def remove_symbol(self) -> None:
-        """
-        Remove all symbols
-        """
-        for elm in [self.symbol]:
-            if elm is not None:
-                try:
-                    self.diagramScene.removeItem(elm)
-                    # sip.delete(elm)
-                    elm = None
-                except:
-                    pass
-
-    def make_switch_symbol(self):
-        """
-        Mathe the switch symbol
-        :return:
-        """
-        h = 40.0
-        w = h
-        self.symbol = QGraphicsRectItem(QRectF(0, 0, w, h), parent=self)
-        self.symbol.setPen(QPen(self.color, self.width, self.style))
-        if self.api_object.active:
-            self.symbol.setBrush(self.color)
-        else:
-            self.symbol.setBrush(QBrush(Qt.white))
-
-    def make_reactance_symbol(self):
-        """
-        Make the reactance symbol
-        :return:
-        """
-        h = 40.0
-        w = 2 * h
-        self.symbol = QGraphicsRectItem(QRectF(0, 0, w, h), parent=self)
-        self.symbol.setPen(QPen(self.color, self.width, self.style))
-        self.symbol.setBrush(self.color)
 
     def mouseDoubleClickEvent(self, event):
         """
@@ -147,11 +141,7 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
             ra6.setIcon(plot_icon)
             ra6.triggered.connect(self.plot_profiles)
 
-            # ra4 = menu.addAction('Assign rate to profile')
-            # ra4_icon = QIcon()
-            # ra4_icon.addPixmap(QPixmap(":/Icons/icons/assign_to_profile.svg"))
-            # ra4.setIcon(ra4_icon)
-            # ra4.triggered.connect(self.assign_rate_to_profile)
+
             #
             # ra5 = menu.addAction('Assign active state to profile')
             # ra5_icon = QIcon()
@@ -172,6 +162,16 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
             del_icon.addPixmap(QPixmap(":/Icons/icons/delete3.svg"))
             ra2.setIcon(del_icon)
             ra2.triggered.connect(self.remove)
+
+            # menu.addSeparator()
+
+            menu.addSection('Convert to')
+
+            ra4 = menu.addAction('Line')
+            ra4_icon = QIcon()
+            ra4_icon.addPixmap(QPixmap(":/Icons/icons/assign_to_profile.svg"))
+            ra4.setIcon(ra4_icon)
+            ra4.triggered.connect(self.to_line)
 
             menu.exec_(event.screenPos())
         else:
@@ -202,29 +202,15 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
         @return:
         """
         # get the index of this object
-        i = self.editor.circuit.get_branches().index(self.api_object)
-        self.editor.diagramScene.plot_branch(i, self.api_object)
+        i = self.editor.circuit.get_fluid_paths().index(self.api_object)
+        # self.editor.diagramScene.plot_branch(i, self.api_object)
 
     def edit(self):
         """
         Open the appropriate editor dialogue
         :return:
         """
-        Sbase = self.editor.circuit.Sbase
-        Vnom = self.api_object.get_max_bus_nominal_voltage()
-        templates = list()
-
-        for lst in [self.editor.circuit.sequence_line_types,
-                    self.editor.circuit.underground_cable_types,
-                    self.editor.circuit.overhead_line_types]:
-            for temp in lst:
-                if Vnom == temp.Vnom:
-                    templates.append(temp)
-
-        current_template = self.api_object.template
-        dlg = LineEditor(self.api_object, Sbase, templates, current_template)
-        if dlg.exec_():
-            pass
+        pass
 
     def show_line_editor(self):
         """
@@ -245,9 +231,9 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
         dlg = InputNumberDialogue(min_value=1.0,
                                   max_value=99.0,
                                   is_int=False,
-                                  title="Split line",
+                                  title="Split fluid path",
                                   text="Enter the distance from the beginning of the \n"
-                                       "line as a percentage of the total length",
+                                       "fluid path as a percentage of the total length",
                                   suffix=' %',
                                   decimals=2,
                                   default_value=50.0)
@@ -272,3 +258,13 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
 
                 # remove this line
                 self.remove(ask=False)
+
+    def to_line(self):
+        """
+        Convert this object to transformer
+        :return:
+        """
+        ok = yes_no_question('Are you sure that you want to convert this fluid path into a line?',
+                             'Convert fluid path')
+        if ok:
+            self.editor.convert_fluid_path_to_line(element=self.api_object, item_graphic=self)

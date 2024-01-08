@@ -178,43 +178,44 @@ def compute_admittances(R: Vec,
     # form the admittance matrices
     ys = 1.0 / (R + 1.0j * X + 1e-20)  # series admittance
     bc2 = (G + 1j * B) / 2.0  # shunt admittance
+
     # k is already filled with the appropriate value for each type of branch
     mp = k * tap_module
 
     # compose the primitives
-    if seq == 0:  # zero sequence
-        # add always the shunt term, the series depends on the connection
-        # one ys vector for the from side, another for the to side, and the shared one
-        ysf = np.zeros(len(ys), dtype=complex)
-        yst = np.zeros(len(ys), dtype=complex)
-        ysft = np.zeros(len(ys), dtype=complex)
+    if add_windings_phase:
+        if seq == 0:  # zero sequence
+            # add always the shunt term, the series depends on the connection
+            # one ys vector for the from side, another for the to side, and the shared one
+            ysf = np.zeros(len(ys), dtype=complex)
+            yst = np.zeros(len(ys), dtype=complex)
+            ysft = np.zeros(len(ys), dtype=complex)
 
-        for i, con in enumerate(conn):
-            if con == WindingsConnection.GG:
-                ysf[i] = ys[i]
-                yst[i] = ys[i]
-                ysft[i] = ys[i]
-            elif con == WindingsConnection.GD:
-                ysf[i] = ys[i]
+            for i, con in enumerate(conn):
+                if con == WindingsConnection.GG:
+                    ysf[i] = ys[i]
+                    yst[i] = ys[i]
+                    ysft[i] = ys[i]
+                elif con == WindingsConnection.GD:
+                    ysf[i] = ys[i]
 
-        Yff = (ysf + bc2) / (mp * mp * vtap_f * vtap_f)
-        Yft = -ysft / (mp * np.exp(-1.0j * tap_angle) * vtap_f * vtap_t)
-        Ytf = -ysft / (mp * np.exp(+1.0j * tap_angle) * vtap_t * vtap_f)
-        Ytt = (yst + bc2) / (vtap_t * vtap_t)
+            Yff = (ysf + bc2) / (mp * mp * vtap_f * vtap_f)
+            Yft = -ysft / (mp * np.exp(-1.0j * tap_angle) * vtap_f * vtap_t)
+            Ytf = -ysft / (mp * np.exp(+1.0j * tap_angle) * vtap_t * vtap_f)
+            Ytt = (yst + bc2) / (vtap_t * vtap_t)
 
-    elif seq == 2:  # negative sequence
-        # only need to include the phase shift of +-30 degrees
-        factor_psh = np.array([r30_deg if con == WindingsConnection.GD or con == WindingsConnection.SD else 1
-                               for con in conn])
+        elif seq == 2:  # negative sequence
+            # only need to include the phase shift of +-30 degrees
+            factor_psh = np.array([r30_deg if con == WindingsConnection.GD or con == WindingsConnection.SD else 1
+                                   for con in conn])
 
-        Yff = (ys + bc2) / (mp * mp * vtap_f * vtap_f)
-        Yft = -ys / (mp * np.exp(+1.0j * tap_angle) * vtap_f * vtap_t) * factor_psh
-        Ytf = -ys / (mp * np.exp(-1.0j * tap_angle) * vtap_t * vtap_f) * np.conj(factor_psh)
-        Ytt = (ys + bc2) / (vtap_t * vtap_t)
+            Yff = (ys + bc2) / (mp * mp * vtap_f * vtap_f)
+            Yft = -ys / (mp * np.exp(+1.0j * tap_angle) * vtap_f * vtap_t) * factor_psh
+            Ytf = -ys / (mp * np.exp(-1.0j * tap_angle) * vtap_t * vtap_f) * np.conj(factor_psh)
+            Ytt = (ys + bc2) / (vtap_t * vtap_t)
 
-    elif seq == 1:  # positive sequence
+        elif seq == 1:  # positive sequence
 
-        if add_windings_phase:
             # only need to include the phase shift of +-30 degrees
             factor_psh = np.array([r30_deg if con == WindingsConnection.GD or con == WindingsConnection.SD else 1.0
                                    for con in conn])
@@ -224,17 +225,13 @@ def compute_admittances(R: Vec,
             Ytf = -ys / (mp * np.exp(1.0j * tap_angle) * vtap_t * vtap_f) * np.conj(factor_psh)
             Ytt = (ys + bc2) / (vtap_t * vtap_t)
         else:
-            Yff = Gsw + (ys + bc2 + 1.0j * Beq) / (mp * mp * vtap_f * vtap_f)
-            Yft = -ys / (mp * np.exp(-1.0j * tap_angle) * vtap_f * vtap_t)
-            Ytf = -ys / (mp * np.exp(1.0j * tap_angle) * vtap_t * vtap_f)
-            Ytt = (ys + bc2) / (vtap_t * vtap_t)
+            raise Exception('Unsupported sequence when computing the admittance matrix sequence={}'.format(seq))
 
     else:  # original
-        # Yff = Gsw + (ys + bc2 + 1.0j * Beq) / (mp * mp * vtap_f * vtap_f)
-        # Yft = -ys / (mp * np.exp(-1.0j * tap_angle) * vtap_f * vtap_t)
-        # Ytf = -ys / (mp * np.exp(1.0j * tap_angle) * vtap_t * vtap_f)
-        # Ytt = (ys + bc2) / (vtap_t * vtap_t)
-        raise Exception('Unsupported sequence when computing the admittance matrix sequence={}'.format(seq))
+        Yff = Gsw + (ys + bc2 + 1.0j * Beq) / (mp * mp * vtap_f * vtap_f)
+        Yft = -ys / (mp * np.exp(-1.0j * tap_angle) * vtap_f * vtap_t)
+        Ytf = -ys / (mp * np.exp(1.0j * tap_angle) * vtap_t * vtap_f)
+        Ytt = (ys + bc2) / (vtap_t * vtap_t)
 
     # compose the matrices
     Yf = sp.diags(Yff) * Cf + sp.diags(Yft) * Ct
