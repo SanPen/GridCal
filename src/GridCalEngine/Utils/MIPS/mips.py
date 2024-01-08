@@ -21,6 +21,7 @@
 from typing import Callable, Tuple
 import numba as nb
 import numpy as np
+import pandas as pd
 from scipy.sparse import csc_matrix as csc
 from scipy import sparse
 import timeit
@@ -188,17 +189,25 @@ def solver(x0: Vec,
         z_inv = diags(1.0 / z)
         mu_diag = diags(mu)
 
-        # Add an iteration step
-        iter_counter += 1
-
         if verbose > 1:
             print(f'Iteration: {iter_counter}', "-" * 80)
-            print("\tx:", x)
-            print("\tz:", z)
-            print("\tmu", mu)
-            print("\tlmbda", lmbda)
+            # print("\tx:", x)
+            # print("\tz:", z)
+            # print("\tmu", mu)
+            # print("\tlmbda", lmbda)
+
+            x_df = pd.DataFrame(data={'x': x, 'dx': dx})
+            eq_df = pd.DataFrame(data={'λ': lmbda, 'dλ': dlmbda})
+            ineq_df = pd.DataFrame(data={'mu': mu, 'z': z, 'dmu': dmu, 'dz': dz})
+
+            print("x:\n", x_df)
+            print("EQ:\n", eq_df)
+            print("INEQ:\n", ineq_df)
             print("\tGamma:", gamma)
             print("\tErr:", error)
+
+        # Add an iteration step
+        iter_counter += 1
 
     END = timeit.default_timer()
 

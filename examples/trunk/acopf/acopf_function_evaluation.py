@@ -466,7 +466,9 @@ def  linn5bus_example():
     grid.add_bus(bus1)
 
     # add a generator to the bus 1
-    gen1 = gce.Generator('Slack Generator', vset=1.0)
+    gen1 = gce.Generator('Slack Generator', vset=1.0, Pmin=0, Pmax=1000,
+                         Qmin=-1000, Qmax=1000, Cost=10, Cost2=0)
+
     grid.add_generator(bus1, gen1)
 
     # add bus 2 with a load attached
