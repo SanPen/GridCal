@@ -34,7 +34,7 @@ def var2x(vm, va, Pg, Qg):
     return np.r_[vm, va, Pg, Qg]
 
 
-def eval_f(x, Yf, Cg, c1, c2, no_slack) -> Vec:
+def eval_f(x, Yf, Cg, c0, c1, c2, Sbase, no_slack) -> Vec:
     """
 
     :param x:
@@ -50,7 +50,7 @@ def eval_f(x, Yf, Cg, c1, c2, no_slack) -> Vec:
 
     _, _, Pg, Qg = x2var(x, n_vm=N, n_va=len(no_slack), n_P=Ng, n_Q=Ng)
 
-    fval = np.sum((c2 * np.power(Pg, 2) + c1 * Pg))
+    fval = np.sum((c2 * np.power(Pg * Sbase, 2) + c1 * Pg * Sbase + c0))
 
     return fval
 
@@ -127,9 +127,9 @@ def eval_h(x, Yf, Yt, from_idx, to_idx, slack, no_slack, th_max, th_min, V_U, V_
                  V_L - vm,  # voltage module lower limit
                  va[no_slack] - th_max[no_slack],  # voltage angles upper limit
                  th_min[no_slack] - va[no_slack],  # voltage angles lower limit
-                 Pg - P_U,  # generatior P upper limits
-                 P_L - Pg,  # generation P lower limits
-                 Qg - Q_U,  # generatior Q upper limits
+                 Pg - P_U,  # generator P upper limits
+                 P_L - Pg,  # generator P lower limits
+                 Qg - Q_U,  # generator Q upper limits
                  Q_L - Qg  # generation Q lower limits
     ]
 
@@ -285,7 +285,7 @@ def calc_hessian(func, x: Vec, mult: Vec, arg=(), h=1e-5) -> csc:
 
 
 def evaluate_power_flow(x, mu, lmbda, Ybus, Yf, Cg, Sd, slack, no_slack, Yt, from_idx, to_idx,
-                        th_max, th_min, V_U, V_L, P_U, P_L, Q_U, Q_L, c1, c2, rates, h=1e-5) -> (
+                        th_max, th_min, V_U, V_L, P_U, P_L, Q_U, Q_L, c0, c1, c2, Sbase, rates, h=1e-5) -> (
         Tuple)[Vec, Vec, Vec, Vec, csc, csc, csc, csc, csc]:
     """
 
@@ -315,17 +315,17 @@ def evaluate_power_flow(x, mu, lmbda, Ybus, Yf, Cg, Sd, slack, no_slack, Yt, fro
     :param h:
     :return:
     """
-    f = eval_f(x=x, Yf=Yf, Cg=Cg, c1=c1, c2=c2, no_slack=no_slack)
+    f = eval_f(x=x, Yf=Yf, Cg=Cg, c0=c0, c1=c1, c2=c2, Sbase=Sbase, no_slack=no_slack)
     G = eval_g(x=x, Ybus=Ybus, Yf=Yf, Cg=Cg, Sd=Sd, slack=slack, no_slack=no_slack)
     H = eval_h(x=x, Yf=Yf, Yt=Yt, from_idx=from_idx, to_idx=to_idx, slack=slack, no_slack=no_slack, th_max=th_max,
                th_min=th_min, V_U=V_U, V_L=V_L, P_U=P_U, P_L=P_L, Q_U=Q_U, Q_L=Q_L, Cg=Cg, rates=rates)
 
-    fx = calc_jacobian_f_obj(func=eval_f, x=x, arg=(Yf, Cg, c1, c2, no_slack), h=h)
+    fx = calc_jacobian_f_obj(func=eval_f, x=x, arg=(Yf, Cg, c0, c1, c2, Sbase, no_slack), h=h)
     Gx = calc_jacobian(func=eval_g, x=x, arg=(Ybus, Yf, Cg, Sd, slack, no_slack)).T
     Hx = calc_jacobian(func=eval_h, x=x, arg=(Yf, Yt, from_idx, to_idx, slack, no_slack, th_max, th_min,
                                               V_U, V_L, P_U, P_L, Q_U, Q_L, Cg, rates)).T
 
-    fxx = calc_hessian_f_obj(func=eval_f, x=x, arg=(Yf, Cg, c1, c2, no_slack), h=h)
+    fxx = calc_hessian_f_obj(func=eval_f, x=x, arg=(Yf, Cg, c0, c1, c2, Sbase, no_slack), h=h)
     Gxx = calc_hessian(func=eval_g, x=x, mult=lmbda, arg=(Ybus, Yf, Cg, Sd, slack, no_slack))
     Hxx = calc_hessian(func=eval_h, x=x, mult=mu, arg=(Yf, Yt, from_idx, to_idx, slack, no_slack, th_max,
                                                        th_min, V_U, V_L, P_U, P_L, Q_U, Q_L, Cg, rates))
@@ -342,6 +342,7 @@ def power_flow_evaluation(nc: gce.NumericalCircuit, pf_options: gce.PowerFlowOpt
     """
 
     # compile the grid snapshot
+    c0 = nc.generator_data.cost_0
     c1 = nc.generator_data.cost_1
     c2 = nc.generator_data.cost_2
 
@@ -404,7 +405,7 @@ def power_flow_evaluation(nc: gce.NumericalCircuit, pf_options: gce.PowerFlowOpt
     x, error, gamma, lam = solver(x0=x0, n_x=NV, n_eq=NE, n_ineq=NI,
                                   func=evaluate_power_flow,
                                   arg=(Ybus, Yf, Cg, Sd, slack, no_slack, Yt, from_idx, to_idx, Va_max,
-                                       Va_min, Vm_max, Vm_min, Pg_max, Pg_min, Qg_max, Qg_min, c1, c2, rates),
+                                       Va_min, Vm_max, Vm_min, Pg_max, Pg_min, Qg_max, Qg_min, c0, c1, c2, Sbase, rates),
                                   verbose=2)
 
     va = np.zeros(nbus)
@@ -502,13 +503,13 @@ def linn5bus_example():
     grid.add_load(bus5, gce.Load('load 5', P=50, Q=20))
 
     # add Lines connecting the buses
-    grid.add_line(gce.Line(bus1, bus2, 'line 1-2', r=0.05, x=0.11, b=0.02, rate=500))
-    grid.add_line(gce.Line(bus1, bus3, 'line 1-3', r=0.05, x=0.11, b=0.02, rate=500))
-    grid.add_line(gce.Line(bus1, bus5, 'line 1-5', r=0.03, x=0.08, b=0.02, rate=500))
-    grid.add_line(gce.Line(bus2, bus3, 'line 2-3', r=0.04, x=0.09, b=0.02, rate=500))
-    grid.add_line(gce.Line(bus2, bus5, 'line 2-5', r=0.04, x=0.09, b=0.02, rate=500))
-    grid.add_line(gce.Line(bus3, bus4, 'line 3-4', r=0.06, x=0.13, b=0.03, rate=500))
-    grid.add_line(gce.Line(bus4, bus5, 'line 4-5', r=0.04, x=0.09, b=0.02, rate=500))
+    grid.add_line(gce.Line(bus1, bus2, 'line 1-2', r=0.05, x=0.11, b=0.02, rate=1000))
+    grid.add_line(gce.Line(bus1, bus3, 'line 1-3', r=0.05, x=0.11, b=0.02, rate=1000))
+    grid.add_line(gce.Line(bus1, bus5, 'line 1-5', r=0.03, x=0.08, b=0.02, rate=1000))
+    grid.add_line(gce.Line(bus2, bus3, 'line 2-3', r=0.04, x=0.09, b=0.02, rate=1000))
+    grid.add_line(gce.Line(bus2, bus5, 'line 2-5', r=0.04, x=0.09, b=0.02, rate=1000))
+    grid.add_line(gce.Line(bus3, bus4, 'line 3-4', r=0.06, x=0.13, b=0.03, rate=1000))
+    grid.add_line(gce.Line(bus4, bus5, 'line 4-5', r=0.04, x=0.09, b=0.02, rate=1000))
 
     nc = gce.compile_numerical_circuit_at(grid)
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR)
@@ -571,7 +572,25 @@ def two_grids_of_3bus():
     return
 
 
+def case9():
+
+    import os
+    cwd = os.getcwd()
+    print(cwd)
+
+    # Go back two directories
+    new_directory = os.path.abspath(os.path.join(cwd, '..', '..', '..'))
+    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case9.m')
+
+    grid = gce.FileOpen(file_path).open()
+    nc = gce.compile_numerical_circuit_at(grid)
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR)
+    power_flow_evaluation(nc=nc, pf_options=pf_options)
+    return
+
+
 if __name__ == '__main__':
     # example_3bus_acopf()
-    # linn5bus_example()
-    two_grids_of_3bus()
+    linn5bus_example()
+    # two_grids_of_3bus()
+    # case9()
