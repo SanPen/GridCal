@@ -405,7 +405,7 @@ def power_flow_evaluation(nc: gce.NumericalCircuit, pf_options:gce.PowerFlowOpti
     Va_min = nc.bus_data.angle_min
 
     nbr = nc.branch_data.nelm
-    nbus = nc.branch_data.nelm
+    nbus = nc.bus_data.nbus
     ngen = nc.generator_data.nelm
     npqpv = len(pqpv)
 
@@ -506,5 +506,5 @@ def  linn5bus_example():
 
 
 if __name__ == '__main__':
-    example_3bus_acopf()
-    # linn5bus_example()
+    #example_3bus_acopf()
+    linn5bus_example()
