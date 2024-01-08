@@ -105,28 +105,28 @@ class FluidNode(EditableDevice):
         :return: Copy of this object
         """
 
-    # make a new instance (separated object in memory)
-    fluid_node = FluidNode()
+        # make a new instance (separated object in memory)
+        fluid_node = FluidNode()
 
-    fluid_node.min_level = self.min_level  # hm3
-    fluid_node.max_level = self.max_level  # hm3
-    fluid_node.initial_level = self.current_level  # hm3
-    fluid_node.spillage_cost = self.spillage_cost  # m3/h
-    fluid_node.inflow = self.inflow  # m3/h
-    fluid_node._bus: Bus = self.bus
-    fluid_node.build_status = self.build_status
+        fluid_node.min_level = self.min_level  # hm3
+        fluid_node.max_level = self.max_level  # hm3
+        fluid_node.initial_level = self.current_level  # hm3
+        fluid_node.spillage_cost = self.spillage_cost  # m3/h
+        fluid_node.inflow = self.inflow  # m3/h
+        fluid_node._bus: Bus = self.bus
+        fluid_node.build_status = self.build_status
 
-    fluid_node.inflow_prof = self.inflow_prof  # m3/h
-    fluid_node.spillage_cost_prof = self.spillage_cost_prof  # €/(m3/h)
+        fluid_node.inflow_prof = self.inflow_prof  # m3/h
+        fluid_node.spillage_cost_prof = self.spillage_cost_prof  # €/(m3/h)
 
-    # list of turbines
-    fluid_node.turbines = self.turbines
+        # list of turbines
+        fluid_node.turbines = self.turbines
 
-    # list of pumps
-    fluid_node.pumps = self.pumps
+        # list of pumps
+        fluid_node.pumps = self.pumps
 
-    # list of power to gas devices
-    fluid_node.p2xs = self.p2xs
+        # list of power to gas devices
+        fluid_node.p2xs = self.p2xs
 
     @property
     def bus(self) -> Bus:

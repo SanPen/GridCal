@@ -1327,10 +1327,6 @@ def add_hydro_formulation(t: Union[int, None],
                                             ub=path_data.max_flow[m],
                                             name=join("hflow_", [t, m], "_"))
 
-    # add flow variables for turbines and pumps to be recovered later on
-    # for m in range(turbine_data.nelm):
-    #     inj_vars.flow[t, m] = prob.add_var()
-
     # Constraints
     for m in range(path_data.nelm):
         # inflow: fluid flow entering the target node in m3/h
@@ -1358,7 +1354,7 @@ def add_hydro_formulation(t: Union[int, None],
             logger.add_error(msg='Turbine generator pmin < 0 is not possible',
                              value=generator_data.pmin[gen_idx])
 
-        f_obj += turbine_flow
+        # f_obj += turbine_flow
 
     for m in range(pump_data.nelm):
         gen_idx = pump_data.generator_idx[m]
@@ -1380,7 +1376,7 @@ def add_hydro_formulation(t: Union[int, None],
             logger.add_error(msg='Pump generator pmax > 0 is not possible',
                              value=generator_data.pmax[gen_idx])
 
-        f_obj -= pump_flow
+        # f_obj -= pump_flow
 
     for m in range(p2x_data.nelm):
         gen_idx = p2x_data.generator_idx[m]
@@ -1399,7 +1395,7 @@ def add_hydro_formulation(t: Union[int, None],
             logger.add_error(msg='P2X generator pmax > 0 is not possible',
                              value=generator_data.pmax[gen_idx])
 
-        f_obj -= p2x_flow
+        # f_obj -= p2x_flow
 
     if t is not None:
         # constraints for the node level
