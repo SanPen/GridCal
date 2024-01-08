@@ -42,6 +42,7 @@ def eval_f(x, Yf, Cg, c1, c2, no_slack) -> Vec:
     :param Cg:
     :param c1:
     :param c2:
+    :param no_slack:
     :return:
     """
     M, N = Yf.shape
@@ -49,7 +50,7 @@ def eval_f(x, Yf, Cg, c1, c2, no_slack) -> Vec:
 
     _, _, Pg, Qg = x2var(x, n_vm=N, n_va=len(no_slack), n_P=Ng, n_Q=Ng)
 
-    fval = np.sum((c2 * Pg ** 2 + c1 * Pg))
+    fval = np.sum((c2 * np.power(Pg, 2) + c1 * Pg))
 
     return fval
 
@@ -70,9 +71,8 @@ def eval_g(x, Ybus, Yf, Cg, Sd, slack, no_slack) -> Vec:
     Ng = Cg.shape[1]  # Check
 
     va = np.zeros(N)
-    vm, va[no_slack], Pg, Qg = x2var(x, n_vm=N, n_va=len(no_slack), n_P=Ng, n_Q=Ng)
-    # vm[slack] = 1.0
     va[slack] = 0.0
+    vm, va[no_slack], Pg, Qg = x2var(x, n_vm=N, n_va=len(no_slack), n_P=Ng, n_Q=Ng)
 
     V = vm * np.exp(1j * va)
     S = V * np.conj(Ybus @ V)
@@ -112,9 +112,8 @@ def eval_h(x, Yf, Yt, from_idx, to_idx, slack, no_slack, th_max, th_min, V_U, V_
     Ng = Cg.shape[1]  # Check
 
     va = np.zeros(N)
-    vm, va[no_slack], Pg, Qg = x2var(x, n_vm=N, n_va=len(no_slack), n_P=Ng, n_Q=Ng)
-
     va[slack] = 0.0
+    vm, va[no_slack], Pg, Qg = x2var(x, n_vm=N, n_va=len(no_slack), n_P=Ng, n_Q=Ng)
 
     V = vm * np.exp(1j * va)
     If = np.conj(Yf @ V)
@@ -227,7 +226,7 @@ def calc_hessian_f_obj(func, x: Vec, arg=(), h=1e-5) -> csc:
             x_jjm[j] -= h
             f_jjm = func(x_jjm, *arg)
 
-            a = (f_ijp - f_ijm - f_jim + f_jjm) / (4 * h ** 2)
+            a = (f_ijp - f_ijm - f_jim + f_jjm) / (4 * np.power(h, 2))
 
             if a != 0.0:
                 hessian[i, j] = a
@@ -275,7 +274,7 @@ def calc_hessian(func, x: Vec, mult: Vec, arg=(), h=1e-5) -> csc:
                 x_jjm[j] -= h
                 f_jjm = func(x_jjm, *arg)[eq]
 
-                a = mult[eq] * (f_ijp - f_ijm - f_jim + f_jjm) / (4 * h ** 2)
+                a = mult[eq] * (f_ijp - f_ijm - f_jim + f_jjm) / (4 * np.power(h, 2))
 
                 if a != 0.0:
                     hessian[i, j] = a
@@ -321,8 +320,7 @@ def evaluate_power_flow(x, mu, lmbda, Ybus, Yf, Cg, Sd, slack, no_slack, Yt, fro
     H = eval_h(x=x, Yf=Yf, Yt=Yt, from_idx=from_idx, to_idx=to_idx, slack=slack, no_slack=no_slack, th_max=th_max,
                th_min=th_min, V_U=V_U, V_L=V_L, P_U=P_U, P_L=P_L, Q_U=Q_U, Q_L=Q_L, Cg=Cg, rates=rates)
 
-    fx = calc_jacobian_f_obj(func=eval_f, x=x, arg=(Yf, Cg, c1, c2, no_slack),
-                             h=h)  # this is a vector because f_obj is a value
+    fx = calc_jacobian_f_obj(func=eval_f, x=x, arg=(Yf, Cg, c1, c2, no_slack), h=h)
     Gx = calc_jacobian(func=eval_g, x=x, arg=(Ybus, Yf, Cg, Sd, slack, no_slack)).T
     Hx = calc_jacobian(func=eval_h, x=x, arg=(Yf, Yt, from_idx, to_idx, slack, no_slack, th_max, th_min,
                                               V_U, V_L, P_U, P_L, Q_U, Q_L, Cg, rates)).T
@@ -515,5 +513,5 @@ def linn5bus_example():
 
 
 if __name__ == '__main__':
-    example_3bus_acopf()
-    # linn5bus_example()
+    # example_3bus_acopf()
+    linn5bus_example()
