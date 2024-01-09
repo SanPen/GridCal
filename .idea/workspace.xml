@@ -28,12 +28,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="minimal refactor">
-      <change afterPath="$PROJECT_DIR$/Grids_and_profiles/grids/case9.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/acopf/acopf_function_evaluation.py" beforeDir="false" afterPath="$PROJECT_DIR$/examples/trunk/acopf/acopf_function_evaluation.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/acopf/acopf_generalize.py" beforeDir="false" afterPath="$PROJECT_DIR$/examples/trunk/acopf/acopf_generalize.py" afterDir="false" />
-    </list>
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Highs minimal change" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -60,7 +55,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="1f8005d8ce7209c2b2fe8dfa90c5ed3704bbac82" />
+        <entry key="$PROJECT_DIR$" value="205_ACOPF" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -111,29 +106,29 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "Git.Branch.Popup.ShowAllRemotes": "true",
-    "MATLAB_INTERPRETER": "/usr/local/MATLAB/R2018a/bin/matlab",
-    "Python tests.Nosetests in acopf_function_evaluation.py.executor": "Run",
-    "Python.ExecuteGridCal.executor": "Run",
-    "Python.acopf_function_evaluation.executor": "Run",
-    "Python.hydro_opf.executor": "Run",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "205__ACOPF",
-    "last_opened_file_path": "C:/Users/a1003/Desktop/GridCal/Grids_and_profiles/grids",
-    "node.js.detected.package.eslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "run.code.analysis.last.selected.profile": "aDefault",
-    "settings.editor.selected.configurable": "reference.idesettings.debugger.python",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;Git.Branch.Popup.ShowAllRemotes&quot;: &quot;true&quot;,
+    &quot;MATLAB_INTERPRETER&quot;: &quot;/usr/local/MATLAB/R2018a/bin/matlab&quot;,
+    &quot;Python tests.Nosetests in acopf_function_evaluation.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python.ExecuteGridCal.executor&quot;: &quot;Run&quot;,
+    &quot;Python.acopf_function_evaluation.executor&quot;: &quot;Debug&quot;,
+    &quot;Python.hydro_opf.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;205__ACOPF&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/a1003/Desktop/GridCal&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;run.code.analysis.last.selected.profile&quot;: &quot;aDefault&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;reference.idesettings.debugger.python&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="PyDebuggerOptionsProvider">
     <option name="mySaveCallSignatures" value="true" />
     <option name="mySupportGeventDebugging" value="true" />
@@ -141,11 +136,11 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="C:\Users\a1003\Desktop\GridCal\Grids_and_profiles\grids" />
       <recent name="C:\Users\a1003\Desktop\GridCal\examples" />
       <recent name="$PROJECT_DIR$/doc/rst_source/figures" />
       <recent name="$PROJECT_DIR$/examples" />
       <recent name="$PROJECT_DIR$/src/tests/data/grids" />
+      <recent name="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/Fluid" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Git\Github\GridCal\src\research\short_circuit" />
@@ -237,7 +232,6 @@
     </configuration>
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
       <module name="GridCalEngine" />
-      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -288,7 +282,6 @@
     </configuration>
     <configuration default="true" type="Tox" factoryName="Tox">
       <module name="GridCalEngine" />
-      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
@@ -301,7 +294,6 @@
     </configuration>
     <configuration default="true" type="docs" factoryName="Docutils task">
       <module name="GridCalEngine" />
-      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
@@ -319,7 +311,6 @@
     </configuration>
     <configuration default="true" type="docs" factoryName="Sphinx task">
       <module name="GridCalEngine" />
-      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
@@ -337,7 +328,6 @@
     </configuration>
     <configuration default="true" type="tests" factoryName="Doctests">
       <module name="GridCalEngine" />
-      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
@@ -357,7 +347,6 @@
     </configuration>
     <configuration default="true" type="tests" factoryName="Nosetests">
       <module name="GridCalEngine" />
-      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
@@ -374,7 +363,6 @@
     </configuration>
     <configuration default="true" type="tests" factoryName="py.test">
       <module name="GridCalEngine" />
-      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
@@ -1252,9 +1240,7 @@
       <workItem from="1701262178348" duration="3698000" />
       <workItem from="1704399865723" duration="263000" />
       <workItem from="1704404622815" duration="6000" />
-      <workItem from="1704444243529" duration="12944000" />
-      <workItem from="1704550826592" duration="4068000" />
-      <workItem from="1704699526728" duration="11151000" />
+      <workItem from="1704444243529" duration="2046000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1599,7 +1585,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="458" />
+    <option name="localTasksCounter" value="449" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1632,7 +1618,7 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="205_ACOPF" />
+                        <option value="203_Ampliacion_OPF_lineal" />
                       </list>
                     </value>
                   </entry>
@@ -1645,6 +1631,14 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
+    <MESSAGE value="Add 3bus acopf and maybe generalize from there" />
+    <MESSAGE value="Start writing about the problem" />
+    <MESSAGE value="Write more about the equality constraints" />
+    <MESSAGE value="Write the inequalities" />
+    <MESSAGE value="Write a bit of the IPM" />
+    <MESSAGE value="Created test hydro3 with pump" />
+    <MESSAGE value="Update OPF formulation and add cost2 to generator data" />
+    <MESSAGE value="Add equalities and inequalities generalized" />
     <MESSAGE value="Start generating IPM solver" />
     <MESSAGE value="Pack construction of g, h and fobj" />
     <MESSAGE value="Build sets of gradients Ai and Ae" />
@@ -1657,20 +1651,12 @@
     <MESSAGE value="Use modify function to test variations" />
     <MESSAGE value="Cosmetic changes" />
     <MESSAGE value="minimal changes to better unify pulp and ortools interfaces" />
-    <MESSAGE value="Made the jacobian and hessian calculations output a CSC matrix directly" />
-    <MESSAGE value="Made comments in MIPS" />
-    <MESSAGE value="refactored most of MIPS" />
-    <MESSAGE value="Minor mips refactoring" />
-    <MESSAGE value="Further refining of the MIPS and ACOPF program" />
-    <MESSAGE value="small refactoring" />
-    <MESSAGE value="removed the step_calculation as a function pointer" />
-    <MESSAGE value="minimal refactoring" />
-    <MESSAGE value="removed the slack voltage constraint in the ACOPF&#10;renamed pqpv to no_slack (WIP) in the numericalcircuit" />
-    <MESSAGE value="Added the pandas prints in mips" />
-    <MESSAGE value="added better end-of-acopf reporting" />
-    <MESSAGE value="added reactive power dual price reporting" />
-    <MESSAGE value="minimal refactor" />
-    <option name="LAST_COMMIT_MESSAGE" value="minimal refactor" />
+    <MESSAGE value="Make copy of fluid node, maybe have to do for all fluid" />
+    <MESSAGE value="Change cost profiles and converging nicely" />
+    <MESSAGE value="Define copy method and new grid hydro_ieee39_2" />
+    <MESSAGE value="Try issues related to branch and creating new element wo profile" />
+    <MESSAGE value="Highs minimal change" />
+    <option name="LAST_COMMIT_MESSAGE" value="Highs minimal change" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2089,9 +2075,29 @@
           <option name="timeStamp" value="1212" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/base_gui.py</url>
-          <line>17</line>
-          <option name="timeStamp" value="1213" />
+          <url>file://$PROJECT_DIR$/src/tests/test_contingency.py</url>
+          <line>45</line>
+          <option name="timeStamp" value="1214" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/gauss_power_flow.py</url>
+          <line>76</line>
+          <option name="timeStamp" value="1243" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/bus_branch_editor_widget.py</url>
+          <line>2260</line>
+          <option name="timeStamp" value="1244" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/linear_opf_ts.py</url>
+          <line>1721</line>
+          <option name="timeStamp" value="1274" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Core/Compilers/circuit_to_data.py</url>
+          <line>1106</line>
+          <option name="timeStamp" value="1323" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

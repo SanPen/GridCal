@@ -50,7 +50,8 @@ def eval_f(x, Yf, Cg, c0, c1, c2, Sbase, no_slack) -> Vec:
 
     _, _, Pg, Qg = x2var(x, n_vm=N, n_va=len(no_slack), n_P=Ng, n_Q=Ng)
 
-    fval = np.sum((c2 * np.power(Pg * Sbase, 2) + c1 * Pg * Sbase + c0))
+    # fval = np.sum((c2 * np.power(Pg * Sbase, 2) + c1 * Pg * Sbase + c0))
+    fval = np.sum((c2 * np.power(Pg, 2) + c1 * Pg + c0))
 
     return fval
 
@@ -342,9 +343,10 @@ def power_flow_evaluation(nc: gce.NumericalCircuit, pf_options: gce.PowerFlowOpt
     """
 
     # compile the grid snapshot
+    Sbase = nc.Sbase
     c0 = nc.generator_data.cost_0
-    c1 = nc.generator_data.cost_1
-    c2 = nc.generator_data.cost_2
+    c1 = nc.generator_data.cost_1 / Sbase
+    c2 = nc.generator_data.cost_2 / Sbase**2
 
     Ybus = nc.Ybus
     Yf = nc.Yf
@@ -358,7 +360,6 @@ def power_flow_evaluation(nc: gce.NumericalCircuit, pf_options: gce.PowerFlowOpt
     to_idx = nc.T
 
     # Bus and line parameters
-    Sbase = nc.Sbase
     Sd = - nc.load_data.get_injections_per_bus() / Sbase
     Pg_max = nc.generator_data.pmax / Sbase
     Pg_min = nc.generator_data.pmin / Sbase
@@ -591,6 +592,6 @@ def case9():
 
 if __name__ == '__main__':
     # example_3bus_acopf()
-    linn5bus_example()
+    # linn5bus_example()
     # two_grids_of_3bus()
-    # case9()
+    case9()
