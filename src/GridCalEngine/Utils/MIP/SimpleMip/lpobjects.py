@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
-from typing import Union, Dict, Tuple, TYPE_CHECKING
+from typing import Union, Dict, Tuple
 from uuid import uuid4
 
 
@@ -86,14 +86,15 @@ class LpVar:
     def __radd__(self, other):
         return LpExp(self) + other
 
-    def __mul__(self, other: Union[int, float]) -> "LpExp":
+    def __mul__(self, other: Union[int, float]) -> Union["LpExp", float]:
         """
         Multiply this variable with a int or float
         :param other:
         :return:
         """
         if isinstance(other, (int, float)):
-            return LpExp(self, other)
+            return LpExp(self, other) if other != 0 else 0.0
+
         raise ValueError("Can only multiply a Variable by a scalar")
 
     def __rmul__(self, other):
@@ -110,7 +111,9 @@ class LpVar:
         elif isinstance(other, LpExp):
             return LpExp(self) - other
         elif isinstance(other, (int, float)):
-            return LpExp(self) - LpExp(None, other)
+            e = LpExp(self)
+            e.offset -= other
+            return e
         else:
             raise ValueError("Unsupported operand type(s) for -: 'Variable' and '{}'".format(type(other)))
 
@@ -124,7 +127,6 @@ class LpVar:
             return LpExp(None, other) - LpExp(self)
         else:
             raise ValueError("Unsupported operand type(s) for -: '{}' and 'Variable'".format(type(other)))
-
 
 
 class LpCst:
@@ -149,6 +151,14 @@ class LpCst:
         self.sense = sense
         self.coefficient = coefficient  # Right-hand side value
         self._index: int = internal_index  # internal index to the solver
+
+    @property
+    def terms(self):
+        """
+        Terms property of the linear expression
+        :return:
+        """
+        return self.linear_expression.terms
 
     def copy(self) -> "LpCst":
         """
@@ -332,9 +342,14 @@ class LpExp:
 
         if isinstance(other, (int, float)):
             new_expr = LpExp()
-            new_expr.offset *= other
-            for var, coeff in self.terms.items():
-                new_expr.terms[var] = coeff * other
+            if other != 0:
+                new_expr.offset *= other
+                for var, coeff in self.terms.items():
+                    new_expr.terms[var] = coeff * other
+            else:
+                # if we multiply by zero, the expression should remain empty
+                pass
+
             return new_expr
 
         else:

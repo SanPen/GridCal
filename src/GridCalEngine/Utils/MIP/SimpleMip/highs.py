@@ -85,4 +85,4 @@ def solve_with_highs(mip: Problem, verbose: int = 0):
                      row_values=solution.row_value,
                      row_duals=solution.row_dual,
                      f_obj=info.objective_function_value,
-                     optimal=model_status == highspy.highs.HighsModelStatus.kOptimal)
+                     is_optimal=model_status == highspy.highs.HighsModelStatus.kOptimal)

@@ -67,7 +67,7 @@ class LpModel:
         self.constraints: List[LpCst] = []
         self.variables: List[LpVar] = []
         self.relaxed_slacks: List[Tuple[int, LpVar, float]] = []
-        self._minimize = True
+        self._is_minimize = True
         self._is_mip = False
 
         # solution vars
@@ -85,7 +85,7 @@ class LpModel:
         Minimize?
         :return: bool
         """
-        return self._minimize
+        return self._is_minimize
 
     def copy(self, copy_results: bool = False) -> "LpModel":
         """
@@ -95,7 +95,7 @@ class LpModel:
         """
         cpy = LpModel(self.solver_type)
 
-        cpy._minimize = self._minimize
+        cpy._is_minimize = self._is_minimize
         cpy._is_mip = self._is_mip
         cpy.objective = self.objective.copy()
 
@@ -144,7 +144,7 @@ class LpModel:
         """
         return self.add_variable(lb=lb, ub=ub, name=name, is_int=True)
 
-    def add_var(self, lb: float, ub: float, name: str = "") -> LpVar:
+    def add_var(self, lb: float = 0.0, ub: float = 1e20, name: str = "") -> LpVar:
         """
         Make floating point LP var
         :param lb: lower bound
@@ -154,28 +154,41 @@ class LpModel:
         """
         return self.add_variable(lb=lb, ub=ub, name=name, is_int=False)
 
-    def _set_objective(self, expression: LpExp, minimize=True):
+    def add_vars(self, size: int, lb: float = 0.0, ub: float = 1e20, name: str = "", is_int=False) -> List[LpVar]:
+        """
+        Make floating point LP var
+        :param size: number of variables
+        :param lb: lower bound
+        :param ub: upper bound
+        :param name: name (optional)
+        :param is_int: create integer variables
+        :return: LpVar
+        """
+        return [self.add_variable(lb=lb, ub=ub, name=f"{name}_{i}", is_int=is_int)
+                for i in range(size)]
+
+    def _set_objective(self, expression: LpExp, is_minimize=True):
         """
         Set the objective function
         :param expression: Expression
-        :param minimize: minimize?
+        :param is_minimize: minimize?
         """
         self.objective = expression
-        self._minimize = minimize
+        self._is_minimize = is_minimize
 
     def minimize(self, obj_function: LpExp):
         """
         Set the objective to minimize
         :param obj_function: Expression
         """
-        self._set_objective(obj_function, minimize=True)
+        self._set_objective(obj_function, is_minimize=True)
 
     def maximize(self, obj_function: LpExp):
         """
         Set the objective to maximize
         :param obj_function: Expression
         """
-        self._set_objective(obj_function, minimize=False)
+        self._set_objective(obj_function, is_minimize=False)
 
     def add_cst(self, cst: Union[LpCst, bool], name: str = "") -> Union[LpCst, int]:
         """
@@ -217,7 +230,7 @@ class LpModel:
         """
         with open(filename, 'w') as file:
             # Write Objective Function
-            obj_type = "Minimize" if self._minimize else "Maximize"
+            obj_type = "Minimize" if self._is_minimize else "Maximize"
             objective_expression = " + ".join([f"{coeff}*{var.name}"
                                                for var, coeff
                                                in self.objective.terms.items()])
@@ -332,7 +345,7 @@ class LpModel:
             res += f"{var.name}: {var_type}\n"
 
         res += "\nObjective:\n"
-        obj_type = "Minimize" if self._minimize else "Maximize"
+        obj_type = "Minimize" if self._is_minimize else "Maximize"
 
         objective_expression = " + ".join([f"{coeff} * {var.name}"
                                            for var, coeff
@@ -549,7 +562,7 @@ class LpModel:
 
     def set_solution(self, col_values: Vec, col_duals: Vec,
                      row_values: Vec, row_duals: Vec,
-                     f_obj: float, optimal: bool):
+                     f_obj: float, is_optimal: bool):
         """
         Set solution from the MIP solver
         :param col_values: array of variables' values
@@ -557,14 +570,14 @@ class LpModel:
         :param row_values: array of constraint values
         :param row_duals: array of constraint dual values
         :param f_obj: value of the objective function
-        :param optimal: is optimal
+        :param is_optimal: is optimal
         """
         self._col_value = col_values
         self._col_dual = col_duals
         self._row_value = row_values
         self._row_dual = row_duals
         self._objective_value = f_obj
-        self._is_optimal = optimal
+        self._is_optimal = is_optimal
 
     def fobj_value(self) -> float:
         """
@@ -580,6 +593,14 @@ class LpModel:
         """
 
         return self._is_mip
+
+    def get_objective_value(self) -> float:
+        """
+        Get the objective function value
+        :return: float
+        """
+
+        return self._objective_value
 
     def get_value(self, var: LpVar) -> float:
         """
@@ -620,6 +641,18 @@ class LpModel:
             return var
         else:
             raise TypeError("Unsupported variable type {0}".format(type(var)))
+
+    def get_array_value(self, arr: Union[List[LpVar]]) -> np.ndarray:
+        """
+        Get the array of var values
+        :param arr: array of variables
+        :return:
+        """
+        res = np.empty(len(arr))
+        for i, var in enumerate(arr):
+            res[i] = self.get_value(var)
+        return res
+
 
     def solution_available(self) -> bool:
         """
