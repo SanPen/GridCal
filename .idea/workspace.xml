@@ -28,8 +28,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Change cost profiles and converging nicely">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Define copy method and new grid hydro_ieee39_2">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/GuiFunctions.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/GuiFunctions.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/Fluid/fluid_injection_template.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/Fluid/fluid_injection_template.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/Fluid/fluid_node.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/Fluid/fluid_node.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/Fluid/fluid_path.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/Fluid/fluid_path.py" afterDir="false" />
@@ -1602,7 +1603,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="446" />
+    <option name="localTasksCounter" value="447" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1648,7 +1649,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="added connectivity matrices for fuels emissions and technologies to the multi-circuit" />
     <MESSAGE value="5.0.8&#10;improved NR ability to detect sparse solution errors" />
     <MESSAGE value="added newtonpa recommended version" />
     <MESSAGE value="Add 3bus acopf and maybe generalize from there" />
@@ -1673,7 +1673,8 @@
     <MESSAGE value="minimal changes to better unify pulp and ortools interfaces" />
     <MESSAGE value="Make copy of fluid node, maybe have to do for all fluid" />
     <MESSAGE value="Change cost profiles and converging nicely" />
-    <option name="LAST_COMMIT_MESSAGE" value="Change cost profiles and converging nicely" />
+    <MESSAGE value="Define copy method and new grid hydro_ieee39_2" />
+    <option name="LAST_COMMIT_MESSAGE" value="Define copy method and new grid hydro_ieee39_2" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

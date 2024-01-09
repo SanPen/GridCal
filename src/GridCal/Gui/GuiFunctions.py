@@ -1719,8 +1719,10 @@ class ProfilesModel(QtCore.QAbstractTableModel):
         data = dict()
 
         for col in columns:
-            profile_property = self.elements[col].properties_with_profile[self.magnitude]
-            data[col] = getattr(self.elements[col], profile_property).copy()
+            # profile_property = self.elements[col].properties_with_profile[self.magnitude]
+            # data[col] = getattr(self.elements[col], profile_property).copy()
+            data[col] = self.elements[col].get_profile(self.magnitude)
+            # TODO: check if devices do not have a profile
 
         self.history.add_state(action_name, data)
 
