@@ -51,6 +51,7 @@ try:
         BENTAYGA_AVAILABLE = True
 
 except ImportError:
+    btg = None
     BENTAYGA_AVAILABLE = False
 
 # numpy integer type for bentayga's uword

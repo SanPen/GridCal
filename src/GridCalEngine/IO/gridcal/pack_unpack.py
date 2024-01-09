@@ -657,17 +657,17 @@ def data_frames_to_circuit(data: Dict, logger: Logger = Logger()):
 
                 if diagram_dict['type'] == DiagramType.BusBranch.value:
                     diagram = dev.BusBranchDiagram()
-                    diagram.parse_data(data=diagram_dict, obj_dict=obj_dict)
+                    diagram.parse_data(data=diagram_dict, obj_dict=obj_dict, logger=logger)
                     circuit.add_diagram(diagram)
 
                 elif diagram_dict['type'] == DiagramType.NodeBreaker.value:
                     diagram = dev.NodeBreakerDiagram()
-                    diagram.parse_data(data=diagram_dict, obj_dict=obj_dict)
+                    diagram.parse_data(data=diagram_dict, obj_dict=obj_dict, logger=logger)
                     circuit.add_diagram(diagram)
 
                 elif diagram_dict['type'] == DiagramType.SubstationLineMap.value:
                     diagram = dev.MapDiagram()
-                    diagram.parse_data(data=diagram_dict, obj_dict=obj_dict)
+                    diagram.parse_data(data=diagram_dict, obj_dict=obj_dict, logger=logger)
                     circuit.add_diagram(diagram)
                 else:
                     print('unrecognized diagram', diagram_dict['type'])

@@ -26,7 +26,9 @@ import pulp
 from pulp import LpAffineExpression as LpExp
 from pulp import LpConstraint as LpCst
 from pulp import LpVariable as LpVar
-from GridCalEngine.basic_structures import MIPSolvers
+# from GridCalEngine.basic_structures import MIPSolvers
+from GridCalEngine.enumerations import MIPSolvers
+from GridCalEngine.basic_structures import Logger
 
 
 def get_lp_var_value(x: Union[float, LpVar]) -> float:
@@ -107,6 +109,8 @@ class LpModel:
 
         self.model = pulp.LpProblem("myProblem", pulp.LpMinimize)
 
+        self.logger = Logger()
+
         if self.model is None:
             raise Exception("{} is not present".format(solver_type.value))
 
@@ -123,8 +127,8 @@ class LpModel:
         else:
             raise Exception('Unsupported file format')
 
-        with open(file_name, "w") as f:
-            f.write(lp_content)
+        # with open(file_name, "w") as f:
+            # f.write(lp_content)
 
     def add_int(self, lb: int, ub: int, name: str = "") -> LpVar:
         """
@@ -150,16 +154,20 @@ class LpModel:
         self.model.addVariable(var)
         return var
 
-    def add_cst(self, cst: pulp.LpConstraint, name: str = "") -> LpExp:
+    def add_cst(self, cst: pulp.LpConstraint, name: str = "") -> Union[LpCst, int]:
         """
         Add constraint to the model
         :param cst: constraint object (or general expression)
         :param name: name of the constraint (optional)
         :return: Constraint object
         """
-        return self.model.addConstraint(constraint=cst, name=name)
+        if isinstance(cst, bool):
+            return 0
+        else:
+            return self.model.addConstraint(constraint=cst, name=name)
 
-    def sum(self, cst) -> LpExp:
+    @staticmethod
+    def sum(cst) -> LpExp:
         """
         Add sum of the constraints to the model
         :param cst: constraint object (or general expression)
@@ -250,6 +258,9 @@ class LpModel:
         :param x: constraint
         :return: result or zero
         """
+        if x is None:
+            return 0.0
+
         if isinstance(x, LpCst):
             val = x.pi
         else:

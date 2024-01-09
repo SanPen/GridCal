@@ -14,9 +14,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+import datetime
 from collections import OrderedDict
 from typing import List, Tuple, Dict, Union
-
+import os
 import numpy as np
 # GUI importswa
 from PySide6 import QtGui, QtWidgets
@@ -36,6 +37,7 @@ from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_m
 from GridCal.Gui.Main.SubClasses.Model.time_events import TimeEventsMain
 from GridCal.Gui.SigmaAnalysis.sigma_analysis_dialogue import SigmaAnalysisGUI
 from GridCalEngine.Utils.MIP.selected_interface import get_available_mip_solvers
+from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCalEngine.enumerations import (DeviceType, AvailableTransferMode, GenerationNtcFormulation, SolverType,
                                         ReactivePowerControlMode, TapsControlMode, MIPSolvers, TimeGrouping,
                                         ZonalGrouping, ContingencyEngine, InvestmentEvaluationMethod, EngineType,
@@ -1679,6 +1681,18 @@ class SimulationsMain(TimeEventsMain):
         if not self.session.is_anything_running():
             self.UNLOCK()
 
+    @staticmethod
+    def opf_file_path() -> str:
+        """
+        get the OPF files folder path
+        :return: str
+        """
+        d = os.path.join(get_create_gridcal_folder(), 'mip_files')
+
+        if not os.path.exists(d):
+            os.makedirs(d)
+        return d
+
     def get_opf_options(self) -> Union[None, sim.OptimalPowerFlowOptions]:
         """
         Get the GUI OPF options
@@ -1695,6 +1709,13 @@ class SimulationsMain(TimeEventsMain):
         maximize_flows = self.ui.opfMaximizeExcahngeCheckBox.isChecked()
         unit_commitment = self.ui.opfUnitCommitmentCheckBox.isChecked()
         generate_report = self.ui.addOptimalPowerFlowReportCheckBox.isChecked()
+
+        if self.ui.save_mip_checkBox.isChecked():
+            folder = self.opf_file_path()
+            fname = f'mip_{datetime.datetime.now()}.lp'
+            export_model_fname = os.path.join(folder, fname)
+        else:
+            export_model_fname = None
 
         # available transfer capacity inter areas
         if maximize_flows:
@@ -1730,6 +1751,7 @@ class SimulationsMain(TimeEventsMain):
                                               areas_from=areas_from,
                                               areas_to=areas_to,
                                               unit_commitment=unit_commitment,
+                                              export_model_fname=export_model_fname,
                                               generate_report=generate_report)
 
         options.max_vm = self.ui.maxVoltageModuleStepSpinBox.value()
@@ -1747,24 +1769,20 @@ class SimulationsMain(TimeEventsMain):
 
                 self.remove_simulation(sim.SimulationTypes.OPF_run)
 
-                options = self.get_opf_options()
+                self.ui.progress_label.setText('Running optimal power flow...')
+                QtGui.QGuiApplication.processEvents()
 
-                if options is not None:
-                    self.ui.progress_label.setText('Running optimal power flow...')
-                    QtGui.QGuiApplication.processEvents()
-                    pf_options = self.get_selected_power_flow_options()
+                self.LOCK()
 
-                    self.LOCK()
+                # set power flow object instance
+                drv = sim.OptimalPowerFlowDriver(grid=self.circuit,
+                                                 options=self.get_opf_options(),
+                                                 engine=self.get_preferred_engine())
 
-                    # set power flow object instance
-                    drv = sim.OptimalPowerFlowDriver(grid=self.circuit,
-                                                     options=options,
-                                                     engine=self.get_preferred_engine())
-
-                    self.session.run(drv,
-                                     post_func=self.post_opf,
-                                     prog_func=self.ui.progressBar.setValue,
-                                     text_func=self.ui.progress_label.setText)
+                self.session.run(drv,
+                                 post_func=self.post_opf,
+                                 prog_func=self.ui.progressBar.setValue,
+                                 text_func=self.ui.progress_label.setText)
 
             else:
                 warning_msg('Another OPF is being run...')

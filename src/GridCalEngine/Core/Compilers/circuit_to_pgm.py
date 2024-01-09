@@ -43,6 +43,7 @@ try:
 
     PGM_AVAILABLE = True
 except ImportError:
+    pgm = None
     PGM_AVAILABLE = False
 
 '''

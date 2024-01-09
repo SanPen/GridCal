@@ -77,6 +77,7 @@ try:
                           f"instead of {NEWTON_PA_VERSION}")
 
 except ImportError as e:
+    npa = None
     NEWTON_PA_AVAILABLE = False
     NEWTON_PA_VERSION = ''
 

@@ -38,6 +38,7 @@ class FluidNodeData:
         self.initial_level = np.zeros(nelm, dtype=float)
         # self.bus_index = np.empty()  # TODO: check if relevant
         self.inflow = np.zeros(nelm, dtype=float)
+        self.spillage_cost = np.zeros(nelm, dtype=float)
 
     def copy(self) -> "FluidNodeData":
         """
@@ -55,6 +56,7 @@ class FluidNodeData:
         data.initial_level = self.initial_level.copy()
 
         data.inflow = self.inflow.copy()
+        data.spillage_cost = self.spillage_cost.copy()
 
         return data
 

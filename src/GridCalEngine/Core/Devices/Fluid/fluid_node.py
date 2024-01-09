@@ -30,8 +30,9 @@ class FluidNode(EditableDevice):
                  min_level: float = 0.0,
                  max_level: float = 0.0,
                  current_level: float = 0.0,
-                 spillage: float = 0.0,
+                 spillage_cost: float = 1000.0,
                  inflow: float = 0.0,
+                 spillage_cost_prof=None,
                  inflow_prof=None,
                  bus: Union[None, Bus] = None,
                  build_status: BuildStatus = BuildStatus.Commissioned):
@@ -43,7 +44,7 @@ class FluidNode(EditableDevice):
         :param min_level: Minimum amount of fluid at the node/reservoir [m3]
         :param max_level: Maximum amount of fluid at the node/reservoir [m3]
         :param current_level: Initial level of the node/reservoir [m3]
-        :param spillage: Spillage value [m3/h]
+        :param spillage_cost: Spillage cost [€/(m3/h)]
         :param inflow: Inflow from the rain [m3/h]
         :param inflow_prof: Profile for the inflow [m3/h]
         :param bus: electrical bus they are linked with
@@ -58,12 +59,13 @@ class FluidNode(EditableDevice):
         self.min_level = min_level  # hm3
         self.max_level = max_level  # hm3
         self.initial_level = current_level  # hm3
-        # self.spillage = spillage  # m3/h
+        self.spillage_cost = spillage_cost  # m3/h
         self.inflow = inflow  # m3/h
         self._bus: Bus = bus
         self.build_status = build_status
 
         self.inflow_prof = inflow_prof  # m3/h
+        self.spillage_cost_prof = spillage_cost_prof  # €/(m3/h)
 
         # list of turbines
         self.turbines = list()
@@ -89,13 +91,44 @@ class FluidNode(EditableDevice):
         self.register(key='build_status', units='', tpe=BuildStatus,
                       definition='Branch build status. Used in expansion planning.')
 
-        # self.register(key='spillage', units='m3/h', tpe=float,
-        #               definition='Flow of fluid lost at the node')
+        self.register(key='spillage_cost', units='€/(m3/h)', tpe=float,
+                      definition='Cost of nodal spillage',
+                      profile_name='spillage_cost_prof')
 
         self.register(key='inflow', units='m3/h', tpe=float,
                       definition='Flow of fluid coming from the rain',
                       profile_name='inflow_prof')
 
+    def copy(self):
+        """
+        Make a deep copy of this object
+        :return: Copy of this object
+        """
+
+        # make a new instance (separated object in memory)
+        fluid_node = FluidNode()
+
+        fluid_node.min_level = self.min_level  # hm3
+        fluid_node.max_level = self.max_level  # hm3
+        fluid_node.initial_level = self.initial_level  # hm3
+        fluid_node.spillage_cost = self.spillage_cost  # m3/h
+        fluid_node.inflow = self.inflow  # m3/h
+        fluid_node._bus = self._bus
+        fluid_node.build_status = self.build_status
+
+        fluid_node.inflow_prof = self.inflow_prof  # m3/h
+        fluid_node.spillage_cost_prof = self.spillage_cost_prof  # €/(m3/h)
+
+        # list of turbines
+        fluid_node.turbines = self.turbines.copy()
+
+        # list of pumps
+        fluid_node.pumps = self.pumps.copy()
+
+        # list of power to gas devices
+        fluid_node.p2xs = self.p2xs.copy()
+
+        return fluid_node
 
     @property
     def bus(self) -> Bus:
@@ -159,3 +192,5 @@ class FluidNode(EditableDevice):
         :return: int
         """
         return len(self.turbines) + len(self.pumps) + len(self.p2xs)
+
+

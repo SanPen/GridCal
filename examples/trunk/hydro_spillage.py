@@ -4,7 +4,7 @@ from GridCalEngine.api import *
 np.set_printoptions(linewidth=10000)
 
 
-def test_hydro_opf1():
+def hydro_opf1():
 
     fname = os.path.join('..', '..', 'Grids_and_profiles', 'grids', 'hydro_grid1.gridcal')
     main_circuit = FileOpen(fname).open()
@@ -21,7 +21,7 @@ def test_hydro_opf1():
     assert np.allclose(opf_driv.results.generator_power, results)
 
 
-def test_hydro_opf2():
+def hydro_opf2():
 
     fname = os.path.join('..', '..', 'Grids_and_profiles', 'grids', 'hydro_grid2.gridcal')
     main_circuit = FileOpen(fname).open()
@@ -65,7 +65,7 @@ def test_hydro_opf2():
     assert np.allclose(opf_driv.results.loading, l_results)
 
 
-def test_hydro_opf3():
+def hydro_opf3():
 
     fname = os.path.join('..', '..', 'Grids_and_profiles', 'grids', 'hydro_grid3.gridcal')
     main_circuit = FileOpen(fname).open()
@@ -89,7 +89,7 @@ def test_hydro_opf3():
     assert np.allclose(opf_driv.results.loading, l_results)
 
 
-def test_hydro_opf4():
+def hydro_opf4():
 
     fname = os.path.join('..', '..', 'Grids_and_profiles', 'grids', 'hydro_grid4.gridcal')
     main_circuit = FileOpen(fname).open()
@@ -99,7 +99,7 @@ def test_hydro_opf4():
 
 
 if __name__ == '__main__':
-    test_hydro_opf1()
-    test_hydro_opf2()
-    test_hydro_opf3()
-    test_hydro_opf4()
+    hydro_opf1()
+    # hydro_opf2()
+    # hydro_opf3()
+    # hydro_opf4()
