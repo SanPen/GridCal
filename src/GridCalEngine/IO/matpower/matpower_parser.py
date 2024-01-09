@@ -260,8 +260,8 @@ def parse_generators(circuit: MultiCircuit, data, bus_idx_dict, logger: Logger):
 
         for i in range(opf_table.shape[0]):
             curve_model = opf_table[i, 0]
-            startup_cost = opf_table[i, 1]
-            shutdown_cost = opf_table[i, 2]
+            gen_dict[i].StartupCost = opf_table[i, 1]
+            gen_dict[i].ShutdownCost = opf_table[i, 2]
             n_cost = opf_table[i, 3]
             points = opf_table[i, 4:]
             if curve_model == 2:
