@@ -60,20 +60,20 @@ class FluidPath(EditableDevice):
         self.register(key='min_flow', units="m3/h", tpe=float, definition="Minimum flow")
         self.register(key='max_flow', units="m3/h", tpe=float, definition="Maximum flow")
 
-    # def copy(self):
-    #     """
-    #     Make a deep copy of this object
-    #     :return: Copy of this object
-    #     """
-    #
-    #     # make a new instance (separated object in memory)
-    #     fluid_path = FluidPath()
-    #
-    #     fluid_path.source = self.source
-    #     fluid_path.target = self.target
-    #     fluid_path.min_flow = self.min_flow
-    #     fluid_path.max_flow = self.max_flow
-    #
-    #     fluid_path.flow = self.flow
-    #
-    #     return fluid_path
+    def copy(self):
+        """
+        Make a deep copy of this object
+        :return: Copy of this object
+        """
+
+        # make a new instance (separated object in memory)
+        fluid_path = FluidPath()
+
+        fluid_path.source = self.source
+        fluid_path.target = self.target
+        fluid_path.min_flow = self.min_flow
+        fluid_path.max_flow = self.max_flow
+
+        fluid_path.flow = self.flow
+
+        return fluid_path

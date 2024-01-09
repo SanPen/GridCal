@@ -2706,6 +2706,9 @@ class MultiCircuit:
         """
         self.fluid_nodes.append(obj)
 
+        if self.time_profile is not None:
+            obj.create_profiles(self.time_profile)
+
     def delete_fluid_node(self, obj: dev.FluidNode):
         """
         Delete fluid node
@@ -2745,6 +2748,9 @@ class MultiCircuit:
         :param obj:FluidPath
         """
         self.fluid_paths.append(obj)
+
+        if self.time_profile is not None:
+            obj.create_profiles(self.time_profile)
 
     def delete_fluid_path(self, obj: dev.FluidPath):
         """
