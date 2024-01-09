@@ -23,9 +23,8 @@ import numpy as np
 from scipy.sparse import csc_matrix
 from GridCalEngine.basic_structures import ObjVec, ObjMat, Vec
 
+# from GridCalEngine.Utils.MIP.SimpleMip import LpExp, LpVar, LpModel, get_available_mip_solvers, set_var_bounds
 # from GridCalEngine.Utils.MIP.ortools_interface import LpExp, LpVar, LpModel, get_available_mip_solvers, set_var_bounds
-
-
 from GridCalEngine.Utils.MIP.pulp_interface import LpExp, LpVar, LpModel, get_available_mip_solvers, set_var_bounds
 
 
