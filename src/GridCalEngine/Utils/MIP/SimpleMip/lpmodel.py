@@ -19,9 +19,7 @@ from typing import List, Union, Tuple, Iterable
 import numpy as np
 
 from scipy.sparse import csc_matrix
-from GridCalEngine.Utils.MIP.SimpleMip.lpexp import LpExp
-from GridCalEngine.Utils.MIP.SimpleMip.lpcst import LpCst
-from GridCalEngine.Utils.MIP.SimpleMip.lpvar import LpVar
+from GridCalEngine.Utils.MIP.SimpleMip.lpobjects import LpExp, LpCst, LpVar
 from GridCalEngine.Utils.MIP.SimpleMip.highs import HIGHS_AVAILABLE, solve_with_highs
 from GridCalEngine.basic_structures import Vec, Logger
 from GridCalEngine.enumerations import MIPSolvers
@@ -589,7 +587,19 @@ class LpModel:
         :param var: LpVar object
         :return: float
         """
-        return self._col_value[var.get_index()]
+        if isinstance(var, LpVar):
+            return self._col_value[var.get_index()]
+        elif isinstance(var, LpCst):
+            return self._row_value[var.get_index()]
+        elif isinstance(var, LpExp):
+            val = var.offset
+            for var2, coeff in var.terms.items():
+                val += coeff * self._col_value[var2.get_index()]
+            return val
+        elif isinstance(var, int) or isinstance(var, float):
+            return var
+        else:
+            raise TypeError("Unsupported variable type {0}".format(type(var)))
 
     def get_dual_value(self, var: LpVar) -> float:
         """
@@ -597,7 +607,19 @@ class LpModel:
         :param var: LpVar object
         :return: float
         """
-        return self._col_dual[var.get_index()]
+        if isinstance(var, LpVar):
+            return self._col_dual[var.get_index()]
+        elif isinstance(var, LpCst):
+            return self._row_dual[var.get_index()]
+        elif isinstance(var, LpExp):
+            val = var.offset
+            for var2, coeff in var.terms.items():
+                val += coeff * self._col_dual[var2.get_index()]
+            return val
+        elif isinstance(var, int) or isinstance(var, float):
+            return var
+        else:
+            raise TypeError("Unsupported variable type {0}".format(type(var)))
 
     def solution_available(self) -> bool:
         """

@@ -15,6 +15,5 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from GridCalEngine.Utils.MIP.SimpleMip.lpexp import LpExp
-from GridCalEngine.Utils.MIP.SimpleMip.lpvar import LpVar
-from GridCalEngine.Utils.MIP.SimpleMip.problem import LpModel, get_available_mip_solvers, set_var_bounds
+from GridCalEngine.Utils.MIP.SimpleMip.lpobjects import LpExp, LpCst, LpVar
+from GridCalEngine.Utils.MIP.SimpleMip.lpmodel import LpModel, get_available_mip_solvers, set_var_bounds
