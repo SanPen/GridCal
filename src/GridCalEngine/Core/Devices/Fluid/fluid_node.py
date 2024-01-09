@@ -128,6 +128,8 @@ class FluidNode(EditableDevice):
         # list of power to gas devices
         fluid_node.p2xs = self.p2xs
 
+        return fluid_node
+
     @property
     def bus(self) -> Bus:
         """

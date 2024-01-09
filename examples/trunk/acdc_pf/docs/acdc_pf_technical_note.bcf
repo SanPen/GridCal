@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bcf:controlfile version="3.10" bltxversion="3.19" xmlns:bcf="https://sourceforge.net/projects/biblatex">
+<bcf:controlfile version="3.8" bltxversion="3.17" xmlns:bcf="https://sourceforge.net/projects/biblatex">
   <!-- BIBER OPTIONS -->
   <bcf:options component="biber" type="global">
     <bcf:option type="singlevalued">
@@ -37,11 +37,6 @@
     <bcf:option type="singlevalued">
       <bcf:key>alphaothers</bcf:key>
       <bcf:value>+</bcf:value>
-    </bcf:option>
-    <bcf:option type="multivalued">
-      <bcf:key>extradatecontext</bcf:key>
-      <bcf:value order="1">labelname</bcf:value>
-      <bcf:value order="2">labeltitle</bcf:value>
     </bcf:option>
     <bcf:option type="singlevalued">
       <bcf:key>labelalpha</bcf:key>
@@ -140,10 +135,6 @@
     </bcf:option>
     <bcf:option type="singlevalued">
       <bcf:key>nosortothers</bcf:key>
-      <bcf:value>0</bcf:value>
-    </bcf:option>
-    <bcf:option type="singlevalued">
-      <bcf:key>pluralothers</bcf:key>
       <bcf:value>0</bcf:value>
     </bcf:option>
     <bcf:option type="singlevalued">
@@ -281,11 +272,6 @@
   </bcf:options>
   <!-- online -->
   <bcf:options component="biblatex" type="online">
-    <bcf:option type="multivalued">
-      <bcf:key>extradatecontext</bcf:key>
-      <bcf:value order="1">labelname</bcf:value>
-      <bcf:value order="2">labeltitle</bcf:value>
-    </bcf:option>
     <bcf:option type="singlevalued">
       <bcf:key>labelalpha</bcf:key>
       <bcf:value>0</bcf:value>
@@ -386,11 +372,11 @@
       <bcf:value>0</bcf:value>
     </bcf:option>
     <bcf:option type="singlevalued">
-      <bcf:key>skipbiblist</bcf:key>
+      <bcf:key>skiplab</bcf:key>
       <bcf:value>0</bcf:value>
     </bcf:option>
     <bcf:option type="singlevalued">
-      <bcf:key>skiplab</bcf:key>
+      <bcf:key>skipbiblist</bcf:key>
       <bcf:value>0</bcf:value>
     </bcf:option>
     <bcf:option type="singlevalued">
@@ -505,7 +491,6 @@
     <bcf:option datatype="xml">sortingnamekeytemplate</bcf:option>
     <bcf:option datatype="xml">sortingtemplate</bcf:option>
     <bcf:option datatype="xml">extradatespec</bcf:option>
-    <bcf:option datatype="xml">extradatecontext</bcf:option>
     <bcf:option datatype="xml">labelnamespec</bcf:option>
     <bcf:option datatype="xml">labeltitlespec</bcf:option>
     <bcf:option datatype="xml">labeldatespec</bcf:option>
@@ -614,7 +599,6 @@
     <bcf:option datatype="boolean">labeltitle</bcf:option>
     <bcf:option datatype="boolean">labeltitleyear</bcf:option>
     <bcf:option datatype="boolean">labeldateparts</bcf:option>
-    <bcf:option datatype="boolean">pluralothers</bcf:option>
     <bcf:option datatype="boolean">nohashothers</bcf:option>
     <bcf:option datatype="boolean">nosortothers</bcf:option>
     <bcf:option datatype="boolean">noroman</bcf:option>
@@ -729,7 +713,6 @@
     <bcf:option datatype="xml">translit</bcf:option>
     <bcf:option datatype="xml">sortexclusion</bcf:option>
     <bcf:option datatype="xml">sortinclusion</bcf:option>
-    <bcf:option datatype="xml">extradatecontext</bcf:option>
     <bcf:option datatype="xml">labelnamespec</bcf:option>
     <bcf:option datatype="xml">labeltitlespec</bcf:option>
     <bcf:option datatype="xml">labeldatespec</bcf:option>
@@ -1060,7 +1043,7 @@
     <bcf:namepart order="3">given</bcf:namepart>
   </bcf:uniquenametemplate>
   <!-- SORTING NAME KEY TEMPLATES -->
-  <bcf:sortingnamekeytemplate name="global" visibility="sort">
+  <bcf:sortingnamekeytemplate name="global">
     <bcf:keypart order="1">
       <bcf:part type="namepart" order="1" use="1">prefix</bcf:part>
       <bcf:part type="namepart" order="2">family</bcf:part>
@@ -2361,8 +2344,10 @@
     <bcf:datasource type="file" datatype="bibtex" glob="false">refs.bib</bcf:datasource>
   </bcf:bibdata>
   <bcf:section number="0">
-    <bcf:citekey order="1" intorder="1">alvarez2021universal</bcf:citekey>
-    <bcf:citekey order="2" intorder="1">gomis2020principles</bcf:citekey>
+    <bcf:citekey order="1">alvarez2021universal</bcf:citekey>
+    <bcf:citekey order="2">gomis2020principles</bcf:citekey>
+    <bcf:citekey order="3">alvarez2021universal</bcf:citekey>
+    <bcf:citekey order="4">gomis2020principles</bcf:citekey>
   </bcf:section>
   <!-- SORTING TEMPLATES -->
   <bcf:sortingtemplate name="nty">
