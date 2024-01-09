@@ -18,7 +18,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
-    from GridCalEngine.Utils.MIP.SimpleMip.problem import Problem
+    from GridCalEngine.Utils.MIP.SimpleMip.lpmodel import Problem
 
 try:
     import highspy
@@ -78,7 +78,7 @@ def solve_with_highs(mip: Problem, verbose: int = 0):
         print("Model status = ", h.modelStatusToString(model_status))
         print("Optimal objective = ", info.objective_function_value)
         print("Iteration count = ", info.simplex_iteration_count)
-        print("Primal solution status = ", h.solutionStatusToString(info.primal_solution_status) )
+        print("Primal solution status = ", h.solutionStatusToString(info.primal_solution_status))
 
     mip.set_solution(col_values=solution.col_value,
                      col_duals=solution.col_dual,
