@@ -44,9 +44,9 @@ class FluidNode(EditableDevice):
         :param min_level: Minimum amount of fluid at the node/reservoir [m3]
         :param max_level: Maximum amount of fluid at the node/reservoir [m3]
         :param current_level: Initial level of the node/reservoir [m3]
-        :param spillage_cost: Spillage cost [€/(m3/h)]
-        :param inflow: Inflow from the rain [m3/h]
-        :param inflow_prof: Profile for the inflow [m3/h]
+        :param spillage_cost: Spillage cost [€/(m3/s)]
+        :param inflow: Inflow from the rain [m3/s]
+        :param inflow_prof: Profile for the inflow [m3/s]
         :param bus: electrical bus they are linked with
         :param build_status
         """
@@ -59,13 +59,13 @@ class FluidNode(EditableDevice):
         self.min_level = min_level  # hm3
         self.max_level = max_level  # hm3
         self.initial_level = current_level  # hm3
-        self.spillage_cost = spillage_cost  # m3/h
-        self.inflow = inflow  # m3/h
+        self.spillage_cost = spillage_cost  # m3/s
+        self.inflow = inflow  # m3/s
         self._bus: Bus = bus
         self.build_status = build_status
 
-        self.inflow_prof = inflow_prof  # m3/h
-        self.spillage_cost_prof = spillage_cost_prof  # €/(m3/h)
+        self.inflow_prof = inflow_prof  # m3/s
+        self.spillage_cost_prof = spillage_cost_prof  # €/(m3/s)
 
         # list of turbines
         self.turbines = list()
@@ -91,11 +91,11 @@ class FluidNode(EditableDevice):
         self.register(key='build_status', units='', tpe=BuildStatus,
                       definition='Branch build status. Used in expansion planning.')
 
-        self.register(key='spillage_cost', units='€/(m3/h)', tpe=float,
+        self.register(key='spillage_cost', units='€/(m3/s)', tpe=float,
                       definition='Cost of nodal spillage',
                       profile_name='spillage_cost_prof')
 
-        self.register(key='inflow', units='m3/h', tpe=float,
+        self.register(key='inflow', units='m3/s', tpe=float,
                       definition='Flow of fluid coming from the rain',
                       profile_name='inflow_prof')
 
@@ -111,13 +111,13 @@ class FluidNode(EditableDevice):
         fluid_node.min_level = self.min_level  # hm3
         fluid_node.max_level = self.max_level  # hm3
         fluid_node.initial_level = self.initial_level  # hm3
-        fluid_node.spillage_cost = self.spillage_cost  # m3/h
-        fluid_node.inflow = self.inflow  # m3/h
+        fluid_node.spillage_cost = self.spillage_cost  # m3/s
+        fluid_node.inflow = self.inflow  # m3/s
         fluid_node._bus = self._bus
         fluid_node.build_status = self.build_status
 
-        fluid_node.inflow_prof = self.inflow_prof  # m3/h
-        fluid_node.spillage_cost_prof = self.spillage_cost_prof  # €/(m3/h)
+        fluid_node.inflow_prof = self.inflow_prof  # m3/s
+        fluid_node.spillage_cost_prof = self.spillage_cost_prof  # €/(m3/s)
 
         # list of turbines
         fluid_node.turbines = self.turbines.copy()
