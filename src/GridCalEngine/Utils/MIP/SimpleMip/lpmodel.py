@@ -53,7 +53,7 @@ class LpModel:
     """
     SimpleMIP
     """
-    OPTIMAL = False
+    OPTIMAL = 100
     INFINITY = 1e20
     originally_infesible = False
 
@@ -121,7 +121,7 @@ class LpModel:
         """
         return self.objective.terms.get(var, 0.0)
 
-    def add_variable(self, lb: float = 0.0, ub: float = 1e20, name: str = "", is_int: bool = False):
+    def _add_variable(self, lb: float = 0.0, ub: float = 1e20, name: str = "", is_int: bool = False):
         """
         Add a variable to the problem
         :param lb:
@@ -142,7 +142,7 @@ class LpModel:
         :param name: name (optional)
         :return: LpVar
         """
-        return self.add_variable(lb=lb, ub=ub, name=name, is_int=True)
+        return self._add_variable(lb=lb, ub=ub, name=name, is_int=True)
 
     def add_var(self, lb: float = 0.0, ub: float = 1e20, name: str = "") -> LpVar:
         """
@@ -152,11 +152,11 @@ class LpModel:
         :param name: name (optional)
         :return: LpVar
         """
-        return self.add_variable(lb=lb, ub=ub, name=name, is_int=False)
+        return self._add_variable(lb=lb, ub=ub, name=name, is_int=False)
 
     def add_vars(self, size: int, lb: float = 0.0, ub: float = 1e20, name: str = "", is_int=False) -> List[LpVar]:
         """
-        Make floating point LP var
+        Make array of LP vars
         :param size: number of variables
         :param lb: lower bound
         :param ub: upper bound
@@ -164,7 +164,7 @@ class LpModel:
         :param is_int: create integer variables
         :return: LpVar
         """
-        return [self.add_variable(lb=lb, ub=ub, name=f"{name}_{i}", is_int=is_int)
+        return [self._add_variable(lb=lb, ub=ub, name=f"{name}_{i}", is_int=is_int)
                 for i in range(size)]
 
     def _set_objective(self, expression: LpExp, is_minimize=True):
@@ -197,9 +197,7 @@ class LpModel:
         :param name: name of the constraint (optional)
         :return: Constraint object
         """
-        if isinstance(cst, bool):
-            return 0
-        elif isinstance(cst, LpCst):
+        if isinstance(cst, LpCst):
             cst.name = name
             self.constraints.append(cst)
             return cst
@@ -250,7 +248,8 @@ class LpModel:
                 if expression.offset != 0.0:  # Add constant term if exists
                     objective_expression += f" + {expression.offset}"
 
-                file.write(f" c{i}: {constraint_expression} {constraint.sense} {constraint.coefficient}\n")
+                cname = constraint.name.replace(" ", "_")
+                file.write(f"{cname}: {constraint_expression} {constraint.sense} {constraint.coefficient}\n")
 
             # Write Bounds
             file.write("\nBounds\n")
@@ -558,7 +557,7 @@ class LpModel:
             else:
                 pass
 
-        return 0
+        return self.OPTIMAL if self.is_optimal() else 0
 
     def set_solution(self, col_values: Vec, col_duals: Vec,
                      row_values: Vec, row_duals: Vec,

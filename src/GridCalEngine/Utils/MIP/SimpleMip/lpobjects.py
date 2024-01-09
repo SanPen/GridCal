@@ -72,13 +72,45 @@ class LpVar:
                      internal_idx=self._index,
                      hash_id=self._hash_id)
 
-    def __hash__(self):
+    def __str__(self) -> str:
+        return self.name
+
+    def __repr__(self) -> str:
+        return self.name
+
+    def __hash__(self) -> int:
         # Makes Variable instances hashable so they can be used as dictionary keys
         return self._hash_id
 
-    def __eq__(self, other):
-        # Ensure that variables with the same name are considered equal
-        return isinstance(other, LpVar) and self.name == other.name
+    def _comparison(self, sense: str, other: Union["LpExp", LpVar, float, int]) -> LpCst:
+
+        if isinstance(other, (int, float)):
+            raise ValueError(f"Doesn't make sense to compare an LpVar with a int or float")
+
+        elif isinstance(other, LpVar):
+            combined_expression = LpExp(self) - LpExp(other)
+            return LpCst(combined_expression, sense, 0)
+
+        elif isinstance(other, LpExp):
+            combined_expression = LpExp(self) - other
+            return LpCst(linear_expression=combined_expression,
+                         sense=sense,
+                         coefficient=-combined_expression.offset)
+        else:
+            raise ValueError(f"Right-hand side of {sense} must be an int or float")
+
+    def __le__(self, other: Union["LpExp", LpVar, float, int]) -> LpCst:
+        return self._comparison(sense="<=", other=other)
+
+    def __ge__(self, other: Union["LpExp", LpVar, float, int]) -> LpCst:
+        return self._comparison(sense=">=", other=other)
+
+    def __eq__(self, other: Union["LpExp", LpVar, float, int]) -> Union[LpCst, bool]:
+
+        if isinstance(other, LpVar):
+            return self._hash_id == other._hash_id
+        else:
+            return self._comparison(sense="==", other=other)
 
     def __add__(self, other):
         return LpExp(self) + other
@@ -240,15 +272,12 @@ class LpExp:
         """
         e = LpExp()
 
-        for var, coefficient in self.terms.items():
-            e.terms[var.copy()] = coefficient
-
+        e.terms = self.terms.copy()
         e.offset = self.offset
 
         return e
 
-    def __le__(self, other):
-        sense = "<="
+    def _comparison(self, sense: str, other: Union["LpExp", LpVar, float, int]) -> LpCst:
 
         if isinstance(other, (int, float)):
             return LpCst(linear_expression=self,
@@ -268,52 +297,17 @@ class LpExp:
 
         raise ValueError(f"Right-hand side of {sense} must be an int or float")
 
-    def __ge__(self, other):
+    def __le__(self, other: Union["LpExp", LpVar, float, int]) -> LpCst:
+        return self._comparison(sense="<=", other=other)
 
-        sense = ">="
+    def __ge__(self, other: Union["LpExp", LpVar, float, int]) -> LpCst:
+        return self._comparison(sense=">=", other=other)
 
-        if isinstance(other, (int, float)):
-            return LpCst(linear_expression=self,
-                         sense=sense,
-                         coefficient=other - self.offset)
+    def __eq__(self, other: Union["LpExp", LpVar, float, int]) -> LpCst:
+        return self._comparison(sense="==", other=other)
 
-        elif isinstance(other, LpVar):
-            other = LpExp(variable=other)
-            combined_expression = self - other
-            return LpCst(combined_expression, sense, 0)
-
-        elif isinstance(other, LpExp):
-            combined_expression = self - other
-            return LpCst(linear_expression=combined_expression,
-                         sense=sense,
-                         coefficient=-combined_expression.offset)
-
-        raise ValueError(f"Right-hand side of {sense} must be an int or float")
-
-    def __eq__(self, other):
-        sense = "=="
-
-        if isinstance(other, (int, float)):
-            return LpCst(linear_expression=self,
-                         sense=sense,
-                         coefficient=other - self.offset)
-
-        elif isinstance(other, LpVar):
-            other = LpExp(variable=other)
-            combined_expression = self - other
-            return LpCst(combined_expression, sense, 0)
-
-        elif isinstance(other, LpExp):
-            combined_expression = self - other
-            return LpCst(linear_expression=combined_expression,
-                         sense=sense,
-                         coefficient=-combined_expression.offset)
-
-        raise ValueError(f"Right-hand side of {sense} must be an int or float")
-
-    def __add__(self, other):
-        new_expr = LpExp()
-        new_expr.terms = self.terms.copy()
+    def __add__(self, other: Union[LpVar, "LpExp", int, float]) -> "LpExp":
+        new_expr = self.copy()
 
         if isinstance(other, LpVar):
             other = LpExp(other)
@@ -335,15 +329,18 @@ class LpExp:
 
         return new_expr
 
-    def __radd__(self, other):
+    def __radd__(self, other: Union[LpVar, "LpExp", int, float]) -> "LpExp":
         return self.__add__(other)
 
-    def __mul__(self, other):
+    def __iadd__(self, other: Union[LpVar, "LpExp", int, float]) -> "LpExp":
+        return self.__add__(other)
+
+    def __mul__(self, other: Union[float, int]) -> "LpExp":
 
         if isinstance(other, (int, float)):
             new_expr = LpExp()
             if other != 0:
-                new_expr.offset *= other
+                new_expr.offset = self.offset * other
                 for var, coeff in self.terms.items():
                     new_expr.terms[var] = coeff * other
             else:
@@ -355,10 +352,10 @@ class LpExp:
         else:
             raise ValueError("Can only multiply by a scalar")
 
-    def __rmul__(self, other):
+    def __rmul__(self, other: Union[float, int]) -> "LpExp":
         return self.__mul__(other)
 
-    def __sub__(self, other):
+    def __sub__(self, other: Union[LpVar, "LpExp", int, float]) -> "LpExp":
         if isinstance(other, LpVar):
             other = LpExp(variable=other)
 
@@ -380,5 +377,8 @@ class LpExp:
         else:
             raise ValueError("Unsupported operand type(s) for -: 'Expression' and '{}'".format(type(other)))
 
-    def __rsub__(self, other):
+    def __rsub__(self, other: Union[LpVar, "LpExp", int, float]) -> "LpExp":
         return (-1 * self).__add__(other)
+
+    def __isub__(self, other: Union[LpVar, "LpExp", int, float]) -> "LpExp":
+        return self.__sub__(other)

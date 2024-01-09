@@ -1254,7 +1254,7 @@ def add_linear_node_balance(t_idx: int,
 
     # add the equality restrictions
     for k in range(bus_data.nbus):
-        if isinstance(bus_vars.Pcalc[t_idx, k], int) or isinstance(bus_vars.Pcalc[t_idx, k], float) :
+        if isinstance(bus_vars.Pcalc[t_idx, k], (int, float)):
             bus_vars.kirchhoff[t_idx, k] = prob.add_cst(
                 cst=bus_vars.theta[t_idx, k] == 0,
                 name=join("island_bus_", [t_idx, k], "_")
@@ -1696,6 +1696,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
 
     if export_model_fname is not None:
         lp_model.save_model(file_name=export_model_fname)
+        logger.add_info("LP model saved as", value=export_model_fname)
         print('LP model saved as:', export_model_fname)
 
     status = lp_model.solve(robust=False)

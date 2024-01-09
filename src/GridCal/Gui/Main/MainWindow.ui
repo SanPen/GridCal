@@ -3818,6 +3818,16 @@ p, li { white-space: pre-wrap; }
                  </property>
                 </spacer>
                </item>
+               <item>
+                <widget class="QCheckBox" name="save_mip_checkBox">
+                 <property name="toolTip">
+                  <string>When checked the program will ask where to save the MIP LP file before running a linear optimization study.</string>
+                 </property>
+                 <property name="text">
+                  <string>Save mip file</string>
+                 </property>
+                </widget>
+               </item>
               </layout>
              </widget>
             </item>
@@ -8673,7 +8683,7 @@ QProgressBar::chunk{
      <x>0</x>
      <y>0</y>
      <width>1426</width>
-     <height>24</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuProject">

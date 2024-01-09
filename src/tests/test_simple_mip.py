@@ -16,15 +16,15 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import numpy as np
-from GridCalEngine.Utils.MIP.SimpleMip import LpModel
+from GridCalEngine.Utils.MIP.SimpleMip import LpModel, LpExp, LpCst, LpVar
 
 
 def test_linear_formulation():
 
     prob = LpModel()
 
-    A = prob.add_variable(name="A")
-    B = prob.add_variable(name="B")
+    A = prob._add_variable(name="A")
+    B = prob._add_variable(name="B")
 
     r1 = A + B <= 10
     assert r1.linear_expression.terms[A] == 1
@@ -87,12 +87,23 @@ def test_linear_formulation():
     r12 = 0 * A
     assert r12 == 0
 
+    r13 = prob.sum([r9, r10])
+    assert r13.terms[A] == 4
+    assert r13.terms[B] == 6
+    assert r13.offset == 0
+
+    r14 = A == r5
+    assert isinstance(r14, LpCst)
+    assert r14.terms[A] == -1
+    assert r14.terms[B] == -3
+    assert r14.coefficient == 5
+
 
 def test_lp_simple2():
     prob = LpModel()
 
-    A = prob.add_variable(lb=1, name="A")
-    B = prob.add_variable(lb=1, name="B")
+    A = prob._add_variable(lb=1, name="A")
+    B = prob._add_variable(lb=1, name="B")
 
     prob.maximize(A + B)
 

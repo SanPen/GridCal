@@ -43,7 +43,7 @@ class OptimalPowerFlowOptions:
                  areas_to: List = None,
                  unit_commitment=False,
                  export_model_fname: Union[None, str] = None,
-                 generate_report=False):
+                 generate_report=False,):
         """
         Optimal power flow options
         :param verbose:
