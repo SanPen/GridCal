@@ -68,6 +68,24 @@ class FluidInjectionTemplate(EditableDevice):
         self.register(key='build_status', units='', tpe=BuildStatus,
                       definition='Branch build status. Used in expansion planning.')
 
+    def copy(self):
+        """
+        Make a deep copy of this object
+        :return: Copy of this object
+        """
+
+        # make a new instance (separated object in memory)
+        fluid_inj = FluidInjectionTemplate()
+
+        fluid_inj.efficiency = self.efficiency
+        fluid_inj.max_flow_rate = self.max_flow_rate
+        fluid_inj._plant = self._plant
+        fluid_inj._generator = self._generator
+        fluid_inj.build_status = self.build_status
+        fluid_inj.power = self.power
+
+        return fluid_inj
+
     @property
     def plant(self) -> FluidNode:
         """
