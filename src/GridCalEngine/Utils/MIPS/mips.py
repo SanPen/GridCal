@@ -200,9 +200,9 @@ def solver(x0: Vec,
             eq_df = pd.DataFrame(data={'λ': lam, 'dλ': dlam})
             ineq_df = pd.DataFrame(data={'mu': mu, 'z': z, 'dmu': dmu, 'dz': dz})
 
-            print("x:\n", x_df)
-            print("EQ:\n", eq_df)
-            print("INEQ:\n", ineq_df)
+            #print("x:\n", x_df)
+            ##print("EQ:\n", eq_df)
+            #print("INEQ:\n", ineq_df)
             print("\tGamma:", gamma)
             print("\tErr:", error)
 
@@ -215,7 +215,7 @@ def solver(x0: Vec,
         print(f'SOLUTION', "-" * 80)
         print("\tx:", x)
         print("\tλ:", lam)
-        print("\tF.obj:", f)
+        print("\tF.obj:", f) #This is the old value of the function, has to be recalculated with the last iteration.
         print("\tErr:", error)
         print(f'\tIterations: {iter_counter}')
         print('\tTime elapsed (s): ', END - START)

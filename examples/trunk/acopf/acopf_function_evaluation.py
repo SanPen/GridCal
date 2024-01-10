@@ -346,7 +346,7 @@ def power_flow_evaluation(nc: gce.NumericalCircuit, pf_options: gce.PowerFlowOpt
     Sbase = nc.Sbase
     c0 = nc.generator_data.cost_0
     c1 = nc.generator_data.cost_1 / Sbase
-    c2 = nc.generator_data.cost_2 / Sbase**2
+    c2 = nc.generator_data.cost_2 / (Sbase**2)
 
     Ybus = nc.Ybus
     Yf = nc.Yf
@@ -589,9 +589,25 @@ def case9():
     power_flow_evaluation(nc=nc, pf_options=pf_options)
     return
 
+def case14():
+
+    import os
+    cwd = os.getcwd()
+    print(cwd)
+
+    # Go back two directories
+    new_directory = os.path.abspath(os.path.join(cwd, '..', '..', '..'))
+    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case14.m')
+
+    grid = gce.FileOpen(file_path).open()
+    nc = gce.compile_numerical_circuit_at(grid)
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR)
+    power_flow_evaluation(nc=nc, pf_options=pf_options)
+    return
 
 if __name__ == '__main__':
     # example_3bus_acopf()
     # linn5bus_example()
     # two_grids_of_3bus()
     case9()
+    # case14()
