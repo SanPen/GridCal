@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
+import warnings
 from typing import List, Union, Tuple, Iterable
 import numpy as np
 
@@ -60,9 +60,10 @@ class LpModel:
     def __init__(self, solver_type: MIPSolvers = MIPSolvers.HIGHS):
 
         if solver_type not in [MIPSolvers.HIGHS]:
-            raise Exception(f"Unsupported solver {solver_type.value}")
-
-        self.solver_type = solver_type
+            warnings.warn(f"Unsupported solver {solver_type.value}, falling back to highs.")
+            self.solver_type = MIPSolvers.HIGHS
+        else:
+            self.solver_type = solver_type
         self.objective: Union[LpExp, None] = None
         self.constraints: List[LpCst] = []
         self.variables: List[LpVar] = []

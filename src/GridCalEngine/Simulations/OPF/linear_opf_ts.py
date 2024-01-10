@@ -1343,8 +1343,8 @@ def add_hydro_formulation(t: Union[int, None],
         plant_idx = turbine_data.plant_idx[m]
 
         # flow [m3/s] = pgen [pu] * max_flow [m3/s] / (Pgen_max [MW] / Sbase [MW] * eff)
-        turbine_flow = (generator_vars.p[t, gen_idx] * turbine_data.max_flow_rate[m]
-                        / (generator_data.pmax[gen_idx] / Sbase * turbine_data.efficiency[m]))
+        coeff = turbine_data.max_flow_rate[m] / (generator_data.pmax[gen_idx] / Sbase * turbine_data.efficiency[m])
+        turbine_flow = (generator_vars.p[t, gen_idx] * coeff)
         # node_vars.flow_out[t, plant_idx] = turbine_flow  # assume only 1 turbine connected
 
         # if t > 0:
@@ -1366,8 +1366,8 @@ def add_hydro_formulation(t: Union[int, None],
         # flow [m3/s] = pcons [pu] * max_flow [m3/s] * eff / (Pcons_min [MW] / Sbase [MW])
         # invert the efficiency compared to a turbine
         # pmin instead of pmax because the sign should be inverted (consuming instead of generating)
-        pump_flow = (generator_vars.p[t, gen_idx] * pump_data.max_flow_rate[m]
-                     * pump_data.efficiency[m] / (abs(generator_data.pmin[gen_idx]) / Sbase))
+        coeff = pump_data.max_flow_rate[m] * pump_data.efficiency[m] / (abs(generator_data.pmin[gen_idx]) / Sbase)
+        pump_flow = (generator_vars.p[t, gen_idx] * coeff)
         # node_vars.flow_in[t, plant_idx] = pump_flow  # assume only 1 pump connected
 
         # if t > 0:
@@ -1387,8 +1387,8 @@ def add_hydro_formulation(t: Union[int, None],
         # flow[m3/s] = pcons [pu] * max_flow [m3/s] * eff / (Pcons_max [MW] / Sbase [MW])
         # invert the efficiency compared to a turbine
         # pmin instead of pmax because the sign should be inverted (consuming instead of generating)
-        p2x_flow = (generator_vars.p[t, gen_idx] * p2x_data.max_flow_rate[m]
-                    * p2x_data.efficiency[m] / (abs(generator_data.pmin[gen_idx]) / Sbase))
+        coeff = p2x_data.max_flow_rate[m] * p2x_data.efficiency[m] / (abs(generator_data.pmin[gen_idx]) / Sbase)
+        p2x_flow = (generator_vars.p[t, gen_idx] * coeff)
 
         # if t > 0:
         node_vars.p2x_flow[t, p2x_data.plant_idx[m]] -= p2x_flow

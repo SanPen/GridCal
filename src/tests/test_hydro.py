@@ -23,6 +23,8 @@ def test_hydro_opf1():
 
 def test_hydro_opf2():
 
+    # TODO: Fix this test
+
     fname = os.path.join('..', '..', 'Grids_and_profiles', 'grids', 'hydro_grid2.gridcal')
     main_circuit = FileOpen(fname).open()
     opf_driv = OptimalPowerFlowTimeSeriesDriver(grid=main_circuit)

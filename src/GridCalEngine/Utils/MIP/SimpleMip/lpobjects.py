@@ -85,7 +85,9 @@ class LpVar:
     def _comparison(self, sense: str, other: Union["LpExp", LpVar, float, int]) -> LpCst:
 
         if isinstance(other, (int, float)):
-            raise ValueError(f"Doesn't make sense to compare an LpVar with a int or float")
+            combined_expression = LpExp(self)
+            combined_expression.offset -= other
+            return LpCst(combined_expression, sense, 0)
 
         elif isinstance(other, LpVar):
             combined_expression = LpExp(self) - LpExp(other)
@@ -382,3 +384,14 @@ class LpExp:
 
     def __isub__(self, other: Union[LpVar, "LpExp", int, float]) -> "LpExp":
         return self.__sub__(other)
+
+    def __neg__(self) -> "LpExp":
+        """
+        Negate
+        :return: LpExp with negative terms
+        """
+        e = LpExp()
+        e.offset = self.offset
+        for var, coeff in self.terms.items():
+            e.terms[var] = -coeff
+        return e
