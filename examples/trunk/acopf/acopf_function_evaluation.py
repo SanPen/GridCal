@@ -51,7 +51,8 @@ def eval_f(x, Yf, Cg, c0, c1, c2, Sbase, no_slack) -> Vec:
     _, _, Pg, Qg = x2var(x, n_vm=N, n_va=len(no_slack), n_P=Ng, n_Q=Ng)
 
     # fval = np.sum((c2 * np.power(Pg * Sbase, 2) + c1 * Pg * Sbase + c0))
-    fval = np.sum((c2 * np.power(Pg, 2) + c1 * Pg + c0))
+    # fval = np.sum((c2 * np.power(Pg, 2) + c1 * Pg + c0))
+    fval = np.sum((c0 + c1 * Pg * Sbase + c2 * np.power(Pg * Sbase, 2))) * 1e-4
 
     return fval
 
@@ -345,8 +346,8 @@ def power_flow_evaluation(nc: gce.NumericalCircuit, pf_options: gce.PowerFlowOpt
     # compile the grid snapshot
     Sbase = nc.Sbase
     c0 = nc.generator_data.cost_0
-    c1 = nc.generator_data.cost_1 / Sbase
-    c2 = nc.generator_data.cost_2 / (Sbase**2)
+    c1 = nc.generator_data.cost_1
+    c2 = nc.generator_data.cost_2
 
     Ybus = nc.Ybus
     Yf = nc.Yf
