@@ -19,6 +19,7 @@ import GridCalEngine.api as gce
 from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import ac_optimal_power_flow
 
 def test_ieee9():
+    # assert np.iallclose(arr1, arr2, atol=1e-4)
     pass
 
 
