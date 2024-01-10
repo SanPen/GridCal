@@ -1392,7 +1392,7 @@ class BusBranchEditorWidget(QSplitter):
                         item.hosting_connections.append(self.started_branch)
                         self.started_branch.bus_to = item.parent
 
-                        if self.started_branch.connected_between_buses():
+                        if self.started_branch.connected_between_buses():  # electrical branch between electrical buses
 
                             if self.started_branch.should_be_a_converter():
                                 # different DC status -> VSC
@@ -1484,7 +1484,7 @@ class BusBranchEditorWidget(QSplitter):
                                 self.update_diagram_element(device=winding_graphics.api_object,
                                                             graphic_object=winding_graphics)
 
-                        elif self.started_branch.connected_between_fluid_nodes():
+                        elif self.started_branch.connected_between_fluid_nodes():  # fluid path
 
                             self.create_fluid_path(source=self.started_branch.get_fluid_node_from(),
                                                    target=self.started_branch.get_fluid_node_to(),

@@ -266,9 +266,9 @@ def parse_generators(circuit: MultiCircuit, data, bus_idx_dict, logger: Logger):
             points = opf_table[i, 4:]
             if curve_model == 2:
                 if len(points) > 1:
-                    gen_dict[i].Cost0 = points[0]
+                    gen_dict[i].Cost0 = points[2]
                     gen_dict[i].Cost = points[1]
-                    gen_dict[i].Cost2 = points[2]
+                    gen_dict[i].Cost2 = points[0]
             elif curve_model == 1:
                 # fit a quadratic curve
                 x = points[0::1]
