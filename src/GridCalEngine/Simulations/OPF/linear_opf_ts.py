@@ -226,7 +226,10 @@ class BatteryVars(GenerationVars):
         GenerationVars.__init__(self, nt=nt, n_elm=n_elm)
         self.e = np.zeros((nt, n_elm), dtype=object)
 
-    def get_values(self, Sbase: float, model: LpModel) -> "BatteryVars":
+    def get_values(self, Sbase: float, model: LpModel,
+                   gen_emissions_rates_matrix: csc_matrix = None,  # not needed but included for compatibiliy
+                   gen_fuel_rates_matrix: csc_matrix = None  # not needed but included for compatibiliy
+                   ) -> "BatteryVars":
         """
         Return an instance of this class where the arrays content are not LP vars but their value
         :return: GenerationVars
