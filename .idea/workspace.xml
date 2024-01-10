@@ -28,10 +28,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="added some comments">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Improved the save_mip check box in the opf settings">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.ui" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.ui" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/linear_opf_ts.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/linear_opf_ts.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1272,7 +1272,7 @@
       <workItem from="1701182230848" duration="2306000" />
       <workItem from="1701262178348" duration="3698000" />
       <workItem from="1704786041917" duration="23280000" />
-      <workItem from="1704876444939" duration="1044000" />
+      <workItem from="1704876444939" duration="2544000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1617,7 +1617,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="449" />
+    <option name="localTasksCounter" value="451" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1663,7 +1663,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Add 3bus acopf and maybe generalize from there" />
     <MESSAGE value="Start writing about the problem" />
     <MESSAGE value="Write more about the equality constraints" />
     <MESSAGE value="Write the inequalities" />
@@ -1688,7 +1687,8 @@
     <MESSAGE value="Fixed some fluid devices not creating their profiles when added to the multicircuit" />
     <MESSAGE value="added some tests for simple mip" />
     <MESSAGE value="added some comments" />
-    <option name="LAST_COMMIT_MESSAGE" value="added some comments" />
+    <MESSAGE value="Improved the save_mip check box in the opf settings" />
+    <option name="LAST_COMMIT_MESSAGE" value="Improved the save_mip check box in the opf settings" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2108,7 +2108,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/linear_opf_ts.py</url>
-          <line>1753</line>
+          <line>1754</line>
           <option name="timeStamp" value="1223" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
