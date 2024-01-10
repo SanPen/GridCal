@@ -15,18 +15,16 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from PySide6 import QtWidgets, QtGui, QtCore
+from PySide6 import QtWidgets, QtGui
 from GridCalEngine.Core.Devices.Injections.battery import Battery, DeviceType
-from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Square
-from GridCal.Gui.GridEditorWidget.Injections.injections_template_graphics import InjectionTemplateGraphicItem
+from GridCal.Gui.BusBranchEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Square
+from GridCal.Gui.BusBranchEditorWidget.Injections.injections_template_graphics import InjectionTemplateGraphicItem
 from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCal.Gui.messages import yes_no_question
 
 
-class ExternalGridGraphicItem(InjectionTemplateGraphicItem):
-    """
-    ExternalGrid graphic item
-    """
+class BatteryGraphicItem(InjectionTemplateGraphicItem):
+
     def __init__(self, parent, api_obj: Battery, diagramScene):
         """
 
@@ -48,7 +46,7 @@ class ExternalGridGraphicItem(InjectionTemplateGraphicItem):
         self.glyph.setPen(pen)
         self.addToGroup(self.glyph)
 
-        self.label = QtWidgets.QGraphicsTextItem('E', parent=self.glyph)
+        self.label = QtWidgets.QGraphicsTextItem('B', parent=self.glyph)
         self.label.setDefaultTextColor(self.color)
         self.label.setPos(self.h / 4, self.w / 5)
 
@@ -98,7 +96,7 @@ class ExternalGridGraphicItem(InjectionTemplateGraphicItem):
         @return:
         """
         menu = QtWidgets.QMenu()
-        menu.addSection("External grid")
+        menu.addSection("Battery")
 
         pe = menu.addAction('Active')
         pe.setCheckable(True)
@@ -131,7 +129,7 @@ class ExternalGridGraphicItem(InjectionTemplateGraphicItem):
         @return:
         """
         if ask:
-            ok = yes_no_question('Are you sure that you want to remove this external grid', 'Remove external grid')
+            ok = yes_no_question('Are you sure that you want to remove this battery', 'Remove battery')
         else:
             ok = True
 
@@ -188,15 +186,3 @@ class ExternalGridGraphicItem(InjectionTemplateGraphicItem):
 
         # plot the profiles
         self.api_object.plot_profiles(time=ts)
-
-    def mousePressEvent(self, QGraphicsSceneMouseEvent):
-        """
-        mouse press: display the editor
-        :param QGraphicsSceneMouseEvent:
-        :return:
-        """
-        mdl = ObjectsModel([self.api_object], self.api_object.editable_headers,
-                           parent=self.diagramScene.parent().object_editor_table, editable=True, transposed=True,
-                           dictionary_of_lists={DeviceType.Technology.value: self.diagramScene.circuit.technologies, })
-        self.diagramScene.parent().object_editor_table.setModel(mdl)
-

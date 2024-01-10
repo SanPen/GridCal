@@ -21,10 +21,10 @@ from PySide6.QtGui import QPen, QCursor, QColor, QIcon, QPixmap
 from PySide6.QtWidgets import QGraphicsItem, QGraphicsEllipseItem, QGraphicsRectItem, QMenu, QGraphicsSceneMouseEvent
 
 from GridCalEngine.Core.Devices.Branches.transformer3w import Transformer3W
-from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED
+from GridCal.Gui.BusBranchEditorWidget.generic_graphics import ACTIVE, DEACTIVATED
 from GridCal.Gui.GuiFunctions import ObjectsModel
-from GridCal.Gui.GridEditorWidget.terminal_item import TerminalItem
-from GridCal.Gui.GridEditorWidget.Branches.winding_graphics import WindingGraphicItem
+from GridCal.Gui.BusBranchEditorWidget.terminal_item import TerminalItem
+from GridCal.Gui.BusBranchEditorWidget.Branches.winding_graphics import WindingGraphicItem
 from GridCal.Gui.messages import yes_no_question
 
 

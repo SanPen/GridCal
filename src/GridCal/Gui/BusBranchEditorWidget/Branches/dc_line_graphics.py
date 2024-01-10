@@ -20,12 +20,12 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtWidgets import QMenu, QLabel, QDoubleSpinBox, QPushButton, QVBoxLayout, QComboBox, QDialog, QGraphicsScene
 from GridCal.Gui.GuiFunctions import get_list_model
-from GridCal.Gui.GridEditorWidget.Substation.bus_graphics import TerminalItem
+from GridCal.Gui.BusBranchEditorWidget.Substation.bus_graphics import TerminalItem
 from GridCal.Gui.messages import yes_no_question
 from GridCalEngine.Core.Devices.Branches.line import SequenceLineType, OverheadLineType, UndergroundLineType
 from GridCalEngine.Core.Devices.Branches.dc_line import DcLine
 from GridCalEngine.enumerations import DeviceType
-from GridCal.Gui.GridEditorWidget.Branches.line_graphics_template import LineGraphicTemplateItem
+from GridCal.Gui.BusBranchEditorWidget.Branches.line_graphics_template import LineGraphicTemplateItem
 
 
 class DcLineEditor(QDialog):

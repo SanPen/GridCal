@@ -22,8 +22,8 @@ from PySide6 import QtWidgets
 
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCal.Gui.Main.SubClasses.Results.results import ResultsMain
-from GridCal.Gui.GridEditorWidget import BusBranchEditorWidget
-from GridCal.Gui.GridEditorWidget.generic_graphics import set_dark_mode, set_light_mode
+from GridCal.Gui.BusBranchEditorWidget import BusBranchEditorWidget
+from GridCal.Gui.BusBranchEditorWidget.generic_graphics import set_dark_mode, set_light_mode
 
 
 class ConfigurationMain(ResultsMain):

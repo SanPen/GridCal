@@ -22,11 +22,11 @@ from PySide6.QtWidgets import (QMenu, QGraphicsTextItem, QDialog, QTableView, QV
 from GridCalEngine.Core.Devices.Injections.generator import Generator, DeviceType
 from GridCalEngine.Core.Devices.Injections.generator_q_curve import GeneratorQCurve
 from GridCalEngine.basic_structures import Mat, Vec
-from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Circle
-from GridCal.Gui.GridEditorWidget.matplotlibwidget import MatplotlibWidget
+from GridCal.Gui.BusBranchEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Circle
+from GridCal.Gui.BusBranchEditorWidget.matplotlibwidget import MatplotlibWidget
 from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCal.Gui.messages import yes_no_question, info_msg, warning_msg, error_msg
-from GridCal.Gui.GridEditorWidget.Injections.injections_template_graphics import InjectionTemplateGraphicItem
+from GridCal.Gui.BusBranchEditorWidget.Injections.injections_template_graphics import InjectionTemplateGraphicItem
 from GridCal.Gui.SolarPowerWizard.solar_power_wizzard import SolarPvWizard
 from GridCal.Gui.WindPowerWizard.wind_power_wizzard import WindFarmWizard
 

@@ -14,12 +14,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
-from PySide6.QtCore import Qt, QPointF, QRectF
+from typing import Union
+from PySide6.QtCore import Qt, QPointF, QRectF, QRect
 from PySide6.QtGui import QPen, QCursor
 from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsItem, QGraphicsEllipseItem
 
-from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE
+from GridCal.Gui.BusBranchEditorWidget.generic_graphics import ACTIVE
 
 
 class TerminalItem(QGraphicsRectItem):
@@ -81,7 +81,7 @@ class TerminalItem(QGraphicsRectItem):
     def yc(self):
         return self.pos().y() - self.h / 2
 
-    def update(self):
+    def update(self, rect: Union[QRectF, QRect] = ...):
 
         self.process_callbacks(self.parent.pos() + self.pos())
 

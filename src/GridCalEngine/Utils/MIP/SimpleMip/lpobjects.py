@@ -40,9 +40,9 @@ class LpVar:
         :param hash_id: internal unique Hash id so that this var can be used in a dictionary as key  (not required)
         """
         self.name = name
-        self.lower_bound = lower_bound
-        self.upper_bound = upper_bound
-        self.is_integer = is_integer  # Indicates if the variable is an integer
+        self.lower_bound: float = lower_bound
+        self.upper_bound: float = upper_bound
+        self.is_integer: bool = is_integer  # Indicates if the variable is an integer
         self._index: int = internal_idx  # internal index to the solver
         self._hash_id: int = uuid4().int if hash_id is None else hash_id
 

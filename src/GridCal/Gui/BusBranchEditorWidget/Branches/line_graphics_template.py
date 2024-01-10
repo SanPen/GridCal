@@ -23,10 +23,10 @@ from PySide6.QtCore import Qt, QLineF, QPointF, QRectF
 from PySide6.QtGui import QPen, QCursor, QPixmap, QBrush, QColor, QTransform, QPolygonF
 from PySide6.QtWidgets import (QGraphicsLineItem, QGraphicsRectItem, QGraphicsPolygonItem,
                                QGraphicsEllipseItem, QGraphicsSceneMouseEvent)
-from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER
-from GridCal.Gui.GridEditorWidget.Substation.bus_graphics import TerminalItem
-from GridCal.Gui.GridEditorWidget.Substation.bus_graphics import BusGraphicItem
-from GridCal.Gui.GridEditorWidget.Fluid.fluid_node_graphics import FluidNodeGraphicItem
+from GridCal.Gui.BusBranchEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER
+from GridCal.Gui.BusBranchEditorWidget.Substation.bus_graphics import TerminalItem
+from GridCal.Gui.BusBranchEditorWidget.Substation.bus_graphics import BusGraphicItem
+from GridCal.Gui.BusBranchEditorWidget.Fluid.fluid_node_graphics import FluidNodeGraphicItem
 
 from GridCal.Gui.messages import yes_no_question, warning_msg, error_msg
 from GridCal.Gui.GuiFunctions import ObjectsModel
@@ -42,7 +42,7 @@ from GridCalEngine.Core.Devices.Fluid.fluid_path import FluidPath
 from GridCalEngine.Simulations.Topology.topology_driver import reduce_grid_brute
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
-    from GridCal.Gui.GridEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget, DiagramScene
+    from GridCal.Gui.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget, DiagramScene
 
 
 class ArrowHead(QGraphicsPolygonItem):
@@ -840,7 +840,7 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
 
         if self.fromPort:
             if 'Transformer3WGraphicItem' not in sys.modules:
-                from GridCal.Gui.GridEditorWidget.Branches.transformer3w_graphics import Transformer3WGraphicItem
+                from GridCal.Gui.BusBranchEditorWidget.Branches.transformer3w_graphics import Transformer3WGraphicItem
             return isinstance(self.fromPort.parent, Transformer3WGraphicItem)
         else:
             return False
@@ -849,7 +849,7 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
 
         if self.toPort:
             if 'Transformer3WGraphicItem' not in sys.modules:
-                from GridCal.Gui.GridEditorWidget.Branches.transformer3w_graphics import Transformer3WGraphicItem
+                from GridCal.Gui.BusBranchEditorWidget.Branches.transformer3w_graphics import Transformer3WGraphicItem
             return isinstance(self.toPort.parent, Transformer3WGraphicItem)
         else:
             return False

@@ -17,20 +17,20 @@
 import numpy as np
 from typing import Union
 from PySide6 import QtWidgets
-from PySide6.QtCore import Qt, QPoint
+from PySide6.QtCore import Qt, QPoint, QRectF, QRect
 from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor
 from PySide6.QtWidgets import QMenu, QGraphicsSceneMouseEvent
 from GridCalEngine.Core.Devices.Substation import Bus
-from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, FONT_SCALE, EMERGENCY
+from GridCal.Gui.BusBranchEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, FONT_SCALE, EMERGENCY
 from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCalEngine.Simulations.Topology.topology_driver import reduce_buses
-from GridCal.Gui.GridEditorWidget.terminal_item import TerminalItem, HandleItem
-from GridCal.Gui.GridEditorWidget.Injections.load_graphics import LoadGraphicItem
-from GridCal.Gui.GridEditorWidget.Injections.generator_graphics import GeneratorGraphicItem
-from GridCal.Gui.GridEditorWidget.Injections.static_generator_graphics import StaticGeneratorGraphicItem
-from GridCal.Gui.GridEditorWidget.Injections.battery_graphics import BatteryGraphicItem
-from GridCal.Gui.GridEditorWidget.Injections.shunt_graphics import ShuntGraphicItem
-from GridCal.Gui.GridEditorWidget.Injections.external_grid_graphics import ExternalGridGraphicItem
+from GridCal.Gui.BusBranchEditorWidget.terminal_item import TerminalItem, HandleItem
+from GridCal.Gui.BusBranchEditorWidget.Injections.load_graphics import LoadGraphicItem
+from GridCal.Gui.BusBranchEditorWidget.Injections.generator_graphics import GeneratorGraphicItem
+from GridCal.Gui.BusBranchEditorWidget.Injections.static_generator_graphics import StaticGeneratorGraphicItem
+from GridCal.Gui.BusBranchEditorWidget.Injections.battery_graphics import BatteryGraphicItem
+from GridCal.Gui.BusBranchEditorWidget.Injections.shunt_graphics import ShuntGraphicItem
+from GridCal.Gui.BusBranchEditorWidget.Injections.external_grid_graphics import ExternalGridGraphicItem
 from GridCal.Gui.messages import yes_no_question
 from GridCalEngine.enumerations import DeviceType, FaultType
 from GridCalEngine.Core.Devices.editable_device import EditableDevice
@@ -219,7 +219,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
 
         self.shunt_children += other_bus_graphic.shunt_children
 
-    def update(self):
+    def update(self, rect: Union[QRectF, QRect] = ...):
         """
         Update the object
         :return:

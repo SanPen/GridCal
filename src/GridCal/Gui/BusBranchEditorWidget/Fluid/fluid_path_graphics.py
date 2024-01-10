@@ -20,11 +20,11 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QPen, QIcon, QPixmap, QColor
 from PySide6.QtWidgets import QMenu
 from GridCal.Gui.GeneralDialogues import InputNumberDialogue
-from GridCal.Gui.GridEditorWidget.Substation.bus_graphics import TerminalItem
-from GridCal.Gui.GridEditorWidget.Branches.line_editor import LineEditor
+from GridCal.Gui.BusBranchEditorWidget.Substation.bus_graphics import TerminalItem
+from GridCal.Gui.BusBranchEditorWidget.Branches.line_editor import LineEditor
 from GridCal.Gui.messages import yes_no_question
-from GridCal.Gui.GridEditorWidget.Branches.line_graphics_template import LineGraphicTemplateItem
-from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE
+from GridCal.Gui.BusBranchEditorWidget.Branches.line_graphics_template import LineGraphicTemplateItem
+from GridCal.Gui.BusBranchEditorWidget.generic_graphics import ACTIVE
 from GridCalEngine.Core.Devices.Fluid.fluid_path import FluidPath
 from GridCalEngine.enumerations import DeviceType
 

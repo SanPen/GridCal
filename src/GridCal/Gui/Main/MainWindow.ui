@@ -8795,36 +8795,41 @@ QProgressBar::chunk{
     <property name="title">
      <string>Diagram</string>
     </property>
-    <widget class="QMenu" name="menuSelect_buses_by">
+    <widget class="QMenu" name="menuBus_Branch_options">
      <property name="title">
-      <string>Select buses by</string>
+      <string>Bus-Branch options</string>
      </property>
-     <property name="icon">
-      <iconset resource="icons.qrc">
-       <normaloff>:/Icons/icons/schematic.svg</normaloff>:/Icons/icons/schematic.svg</iconset>
-     </property>
-     <addaction name="actionSetSelectedBusCountry"/>
-     <addaction name="actionSetSelectedBusArea"/>
-     <addaction name="actionSetSelectedBusZone"/>
+     <widget class="QMenu" name="menuSelect_buses_by_2">
+      <property name="title">
+       <string>Select buses by</string>
+      </property>
+      <addaction name="actionSetSelectedBusCountry"/>
+      <addaction name="actionSetSelectedBusArea"/>
+      <addaction name="actionSetSelectedBusZone"/>
+     </widget>
+     <addaction name="actionBigger_nodes"/>
+     <addaction name="actionSmaller_nodes"/>
+     <addaction name="actionAutoatic_layout"/>
+     <addaction name="actionTry_to_fix_buses_location"/>
+     <addaction name="actionSet_schematic_positions_from_GPS_coordinates"/>
+     <addaction name="separator"/>
+     <addaction name="menuSelect_buses_by_2"/>
+     <addaction name="actionNew_bus_branch_diagram_from_selection"/>
+     <addaction name="separator"/>
+     <addaction name="actionDelete_selected"/>
     </widget>
     <addaction name="actionAdd_general_bus_branch_diagram"/>
-    <addaction name="menuSelect_buses_by"/>
-    <addaction name="actionAdd_selection_bus_branch_diagram"/>
+    <addaction name="menuBus_Branch_options"/>
     <addaction name="actionAdd_bus_vecinity_diagram"/>
     <addaction name="actionAdd_map"/>
     <addaction name="actionAdd_substation_diagram"/>
     <addaction name="separator"/>
     <addaction name="actionRemove_selected_diagram"/>
-    <addaction name="actionDelete_selected"/>
     <addaction name="separator"/>
     <addaction name="actionZoom_in"/>
     <addaction name="actionZoom_out"/>
     <addaction name="actionCenter_view"/>
-    <addaction name="actionBigger_nodes"/>
-    <addaction name="actionSmaller_nodes"/>
-    <addaction name="actionAutoatic_layout"/>
-    <addaction name="actionTry_to_fix_buses_location"/>
-    <addaction name="actionSet_schematic_positions_from_GPS_coordinates"/>
+    <addaction name="separator"/>
    </widget>
    <addaction name="menuProject"/>
    <addaction name="menuActions"/>
@@ -9780,13 +9785,13 @@ QProgressBar::chunk{
     <string>Ctrl+I, Ctrl+E</string>
    </property>
   </action>
-  <action name="actionAdd_selection_bus_branch_diagram">
+  <action name="actionNew_bus_branch_diagram_from_selection">
    <property name="icon">
     <iconset resource="icons.qrc">
      <normaloff>:/Icons/icons/schematic.svg</normaloff>:/Icons/icons/schematic.svg</iconset>
    </property>
    <property name="text">
-    <string>Add selection bus-branch diagram</string>
+    <string>New diagram from selection</string>
    </property>
   </action>
   <action name="actionAdd_bus_vecinity_diagram">
@@ -9795,7 +9800,7 @@ QProgressBar::chunk{
      <normaloff>:/Icons/icons/grid_icon.svg</normaloff>:/Icons/icons/grid_icon.svg</iconset>
    </property>
    <property name="text">
-    <string>Add bus vecinity diagram</string>
+    <string>New bus vecinity diagram</string>
    </property>
   </action>
   <action name="actionAdd_general_bus_branch_diagram">
@@ -9804,7 +9809,7 @@ QProgressBar::chunk{
      <normaloff>:/Icons/icons/schematic.svg</normaloff>:/Icons/icons/schematic.svg</iconset>
    </property>
    <property name="text">
-    <string>Add general bus-branch diagram</string>
+    <string>New bus-branch diagram</string>
    </property>
   </action>
   <action name="actionAdd_map">
@@ -9813,7 +9818,7 @@ QProgressBar::chunk{
      <normaloff>:/Icons/icons/map (add).svg</normaloff>:/Icons/icons/map (add).svg</iconset>
    </property>
    <property name="text">
-    <string>Add map view</string>
+    <string>New map view</string>
    </property>
   </action>
   <action name="actionAdd_substation_diagram">
@@ -9822,7 +9827,7 @@ QProgressBar::chunk{
      <normaloff>:/Icons/icons/add_substation.svg</normaloff>:/Icons/icons/add_substation.svg</iconset>
    </property>
    <property name="text">
-    <string>Add substation diagram</string>
+    <string>New substation diagram</string>
    </property>
   </action>
   <action name="actionRemove_selected_diagram">

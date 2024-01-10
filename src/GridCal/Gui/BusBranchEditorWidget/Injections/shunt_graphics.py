@@ -1,84 +1,88 @@
 # GridCal
 # Copyright (C) 2015 - 2023 Santiago Peñate Vera
-#
+# 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation; either
 # version 3 of the License, or (at your option) any later version.
-#
+# 
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # Lesser General Public License for more details.
-#
+# 
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from PySide6.QtCore import QPointF
+
+from PySide6 import QtWidgets
+from PySide6.QtCore import QPointF, QLineF
 from PySide6.QtGui import QPen, QIcon, QPixmap
-from PySide6.QtWidgets import (QMenu, QGraphicsTextItem, QGraphicsSceneMouseEvent)
-from GridCalEngine.enumerations import DeviceType
-from GridCalEngine.Core.Devices.Fluid.fluid_pump import FluidPump
-from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Circle
+from GridCal.Gui.BusBranchEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Line
+from GridCal.Gui.BusBranchEditorWidget.Injections.injections_template_graphics import InjectionTemplateGraphicItem
 from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCal.Gui.messages import yes_no_question
-from GridCal.Gui.GridEditorWidget.Injections.injections_template_graphics import InjectionTemplateGraphicItem
 
 
-class FluidPumpGraphicItem(InjectionTemplateGraphicItem):
-    """
-    FluidPumpGraphicItem
-    """
+class ShuntGraphicItem(InjectionTemplateGraphicItem):
 
-    def __init__(self, parent, api_obj: FluidPump, diagramScene):
+    def __init__(self, parent, api_obj, diagramScene):
         """
 
         :param parent:
         :param api_obj:
-        :param diagramScene:
         """
         InjectionTemplateGraphicItem.__init__(self,
                                               parent=parent,
                                               api_obj=api_obj,
                                               diagramScene=diagramScene,
-                                              device_type_name='fluid_pump',
-                                              w=40,
-                                              h=40)
+                                              device_type_name='generator',
+                                              w=15,
+                                              h=30)
 
         pen = QPen(self.color, self.width, self.style)
 
-        self.glyph = Circle(self)
-        self.glyph.setRect(0, 0, self.h, self.w)
-        self.glyph.setPen(pen)
-        self.addToGroup(self.glyph)
+        lines_data = list()
+        lines_data.append(QLineF(QPointF(self.w / 2, 0), QPointF(self.w / 2, self.h * 0.4)))
+        lines_data.append(QLineF(QPointF(0, self.h * 0.4), QPointF(self.w, self.h * 0.4)))
+        lines_data.append(QLineF(QPointF(0, self.h * 0.6), QPointF(self.w, self.h * 0.6)))
+        lines_data.append(QLineF(QPointF(self.w / 2, self.h * 0.6), QPointF(self.w / 2, self.h)))
+        lines_data.append(QLineF(QPointF(0, self.h * 1), QPointF(self.w, self.h * 1)))
+        lines_data.append(QLineF(QPointF(self.w * 0.15, self.h * 1.1), QPointF(self.w * 0.85, self.h * 1.1)))
+        lines_data.append(QLineF(QPointF(self.w * 0.3, self.h * 1.2), QPointF(self.w * 0.7, self.h * 1.2)))
 
-        self.label = QGraphicsTextItem('P', parent=self.glyph)
-        self.label.setDefaultTextColor(self.color)
-        self.label.setPos(self.h / 4, self.w / 5)
+        self.lines = list()
+        for l in lines_data:
+            l1 = Line(self)
+            l1.setLine(l)
+            l1.setPen(pen)
+            self.lines.append(l1)
+            self.addToGroup(l1)
 
         self.setPos(self.parent.x(), self.parent.y() + 100)
         self.update_line(self.pos())
-
-    def mouseDoubleClickEvent(self, event):
-        """
-
-        :param event:
-        """
-        pass
 
     def recolour_mode(self):
         """
         Change the colour according to the system theme
         """
-        self.color = ACTIVE['color']
-        self.style = ACTIVE['style']
+        if self.api_object is not None:
+            if self.api_object.active:
+                self.color = ACTIVE['color']
+                self.style = ACTIVE['style']
+            else:
+                self.color = DEACTIVATED['color']
+                self.style = DEACTIVATED['style']
+        else:
+            self.color = ACTIVE['color']
+            self.style = ACTIVE['style']
 
         pen = QPen(self.color, self.width, self.style)
-        self.glyph.setPen(pen)
         self.nexus.setPen(pen)
-        self.label.setDefaultTextColor(self.color)
+        for l in self.lines:
+            l.setPen(pen)
 
-    def update_line(self, pos: QPointF):
+    def update_line(self, pos):
         """
         Update the line that joins the parent and this object
         :param pos: position of this object
@@ -100,21 +104,24 @@ class FluidPumpGraphicItem(InjectionTemplateGraphicItem):
         @param event:
         @return:
         """
-        menu = QMenu()
-        menu.addSection("Pump")
+        menu = QtWidgets.QMenu()
+        menu.addSection("Shunt")
 
-        # pc = menu.addAction('Voltage control')
-        # pc.setCheckable(True)
-        # pc.setChecked(self.api_object.is_controlled)
-        # pc.triggered.connect(self.enable_disable_control_toggle)
+        pe = menu.addAction('Active')
+        pe.setCheckable(True)
+        pe.setChecked(self.api_object.active)
+        pe.triggered.connect(self.enable_disable_toggle)
+
+        pc = menu.addAction('Voltage control')
+        pc.setCheckable(True)
+        pc.setChecked(self.api_object.is_controlled)
+        pc.triggered.connect(self.enable_disable_control_toggle)
 
         pa = menu.addAction('Plot profiles')
         plot_icon = QIcon()
         plot_icon.addPixmap(QPixmap(":/Icons/icons/plot.svg"))
         pa.setIcon(plot_icon)
         pa.triggered.connect(self.plot)
-
-        menu.addSeparator()
 
         da = menu.addAction('Delete')
         del_icon = QIcon()
@@ -136,20 +143,18 @@ class FluidPumpGraphicItem(InjectionTemplateGraphicItem):
         @return:
         """
         if ask:
-            ok = yes_no_question('Are you sure that you want to remove this generator', 'Remove generator')
+            ok = yes_no_question('Are you sure that you want to remove this shunt', 'Remove shunt')
         else:
             ok = True
 
         if ok:
             self.diagramScene.removeItem(self.nexus)
             self.diagramScene.removeItem(self)
-            if self.api_object in self.api_object.bus.generators:
-                self.api_object.bus.generators.remove(self.api_object)
+            self.api_object.bus.shunts.remove(self.api_object)
 
     def enable_disable_toggle(self):
         """
-
-        @return:
+        Enable / Disable device
         """
         if self.api_object is not None:
             if self.api_object.active:
@@ -189,8 +194,11 @@ class FluidPumpGraphicItem(InjectionTemplateGraphicItem):
         else:
             self.style = OTHER['style']
             self.color = OTHER['color']
-        self.glyph.setPen(QPen(self.color, self.width, self.style))
-        self.label.setDefaultTextColor(self.color)
+
+        pen = QPen(self.color, self.width, self.style)
+
+        for l in self.childItems():
+            l.setPen(pen)
 
     def plot(self):
         """
@@ -200,4 +208,6 @@ class FluidPumpGraphicItem(InjectionTemplateGraphicItem):
         ts = self.diagramScene.circuit.time_profile
 
         # plot the profiles
-        # self.api_object.plot_profiles(time=ts)
+        self.api_object.plot_profiles(time=ts)
+
+

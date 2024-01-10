@@ -26,7 +26,7 @@ import pyproj
 from PySide6.QtCore import (Qt, QPoint, QSize, QPointF, QRect, QRectF, QMimeData, QIODevice, QByteArray,
                             QDataStream, QModelIndex)
 from PySide6.QtGui import (QIcon, QPixmap, QImage, QPainter, QStandardItemModel, QStandardItem, QColor, QPen,
-                           QDragEnterEvent, QDragMoveEvent, QDropEvent, QWheelEvent)
+                           QDragEnterEvent, QDragMoveEvent, QDropEvent, QWheelEvent, QKeyEvent)
 from PySide6.QtWidgets import (QApplication, QGraphicsView, QListView, QTableView, QVBoxLayout, QHBoxLayout, QFrame,
                                QSplitter, QMessageBox, QAbstractItemView, QGraphicsScene, QGraphicsSceneMouseEvent,
                                QGraphicsItem)
@@ -51,22 +51,23 @@ from GridCalEngine.Core.Devices.Diagrams.bus_branch_diagram import BusBranchDiag
 from GridCalEngine.Core.Devices.Diagrams.graphic_location import GraphicLocation
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec
 
-from GridCal.Gui.GridEditorWidget.terminal_item import TerminalItem
-from GridCal.Gui.GridEditorWidget.Substation.bus_graphics import BusGraphicItem
-from GridCal.Gui.GridEditorWidget.Fluid.fluid_node_graphics import FluidNodeGraphicItem
-from GridCal.Gui.GridEditorWidget.Fluid.fluid_path_graphics import FluidPathGraphicItem
-from GridCal.Gui.GridEditorWidget.Branches.line_graphics import LineGraphicItem
-from GridCal.Gui.GridEditorWidget.Branches.winding_graphics import WindingGraphicItem
-from GridCal.Gui.GridEditorWidget.Branches.dc_line_graphics import DcLineGraphicItem
-from GridCal.Gui.GridEditorWidget.Branches.transformer2w_graphics import TransformerGraphicItem
-from GridCal.Gui.GridEditorWidget.Branches.hvdc_graphics import HvdcGraphicItem
-from GridCal.Gui.GridEditorWidget.Branches.vsc_graphics import VscGraphicItem
-from GridCal.Gui.GridEditorWidget.Branches.upfc_graphics import UpfcGraphicItem
-from GridCal.Gui.GridEditorWidget.Branches.transformer3w_graphics import Transformer3WGraphicItem
-from GridCal.Gui.GridEditorWidget.Injections.generator_graphics import GeneratorGraphicItem
-from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE
+from GridCal.Gui.BusBranchEditorWidget.terminal_item import TerminalItem
+from GridCal.Gui.BusBranchEditorWidget.Substation.bus_graphics import BusGraphicItem
+from GridCal.Gui.BusBranchEditorWidget.Fluid.fluid_node_graphics import FluidNodeGraphicItem
+from GridCal.Gui.BusBranchEditorWidget.Fluid.fluid_path_graphics import FluidPathGraphicItem
+from GridCal.Gui.BusBranchEditorWidget.Branches.line_graphics import LineGraphicItem
+from GridCal.Gui.BusBranchEditorWidget.Branches.winding_graphics import WindingGraphicItem
+from GridCal.Gui.BusBranchEditorWidget.Branches.dc_line_graphics import DcLineGraphicItem
+from GridCal.Gui.BusBranchEditorWidget.Branches.transformer2w_graphics import TransformerGraphicItem
+from GridCal.Gui.BusBranchEditorWidget.Branches.hvdc_graphics import HvdcGraphicItem
+from GridCal.Gui.BusBranchEditorWidget.Branches.vsc_graphics import VscGraphicItem
+from GridCal.Gui.BusBranchEditorWidget.Branches.upfc_graphics import UpfcGraphicItem
+from GridCal.Gui.BusBranchEditorWidget.Branches.transformer3w_graphics import Transformer3WGraphicItem
+from GridCal.Gui.BusBranchEditorWidget.Injections.generator_graphics import GeneratorGraphicItem
+from GridCal.Gui.BusBranchEditorWidget.generic_graphics import ACTIVE
 import GridCal.Gui.Visualization.visualization as viz
 import GridCal.Gui.Visualization.palettes as palettes
+from GridCal.Gui.messages import info_msg
 from matplotlib import pyplot as plt
 
 '''
@@ -628,6 +629,15 @@ class EditorGraphicsView(QGraphicsView):
             # Zooming out
             self.zoom_out(scale_factor)
 
+    def keyPressEvent(self, event: QKeyEvent):
+        """
+        Key press event cature
+        :param event:
+        :return:
+        """
+        if event.key() == Qt.Key_Delete:
+            self.editor.delete_Selected()
+
     def zoom_in(self, scale_factor: float = 1.15) -> None:
         """
 
@@ -690,7 +700,7 @@ class EditorGraphicsView(QGraphicsView):
 
 class BusBranchEditorWidget(QSplitter):
     """
-    GridEditorWidget
+    BusBranchEditorWidget
     """
 
     def __init__(self,
@@ -1174,6 +1184,31 @@ class BusBranchEditorWidget(QSplitter):
                     idx, bus = bus_dict[bus_idtag]
                     lst.append((idx, bus, point.graphic_object))
         return lst
+
+    def delete_Selected(self) -> None:
+        """
+        Delete the selected items from the diagram
+        """
+        # get the selected buses
+        selected = self.get_selected_buses()
+
+        if len(selected) > 0:
+            reply = QMessageBox.question(self, 'Delete',
+                                         'Are you sure that you want to delete the selected elements?',
+                                         QMessageBox.StandardButton.Yes,
+                                         QMessageBox.StandardButton.No)
+
+            if reply == QMessageBox.StandardButton.Yes.value:
+
+                # remove the buses (from the schematic and the circuit)
+                for k, bus, graphic_obj in selected:
+                    # TODO: come up with better way to delete both from the scematic and DB
+                    self.diagram.delete_device(bus)
+                    graphic_obj.remove(ask=False)
+            else:
+                pass
+        else:
+            info_msg('Choose some elements from the schematic', 'Delete')
 
     def get_buses(self) -> List[Tuple[int, Bus, BusGraphicItem]]:
         """

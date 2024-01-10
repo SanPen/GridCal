@@ -16,21 +16,21 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from PySide6.QtCore import QPointF
 from PySide6.QtGui import QPen, QIcon, QPixmap
-from PySide6.QtWidgets import (QMenu, QGraphicsTextItem)
+from PySide6.QtWidgets import (QMenu, QGraphicsTextItem, QGraphicsSceneMouseEvent)
 from GridCalEngine.enumerations import DeviceType
-from GridCalEngine.Core.Devices.Fluid.fluid_p2x import FluidP2x
-from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Circle
+from GridCalEngine.Core.Devices.Fluid.fluid_turbine import FluidTurbine
+from GridCal.Gui.BusBranchEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Circle
 from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCal.Gui.messages import yes_no_question
-from GridCal.Gui.GridEditorWidget.Injections.injections_template_graphics import InjectionTemplateGraphicItem
+from GridCal.Gui.BusBranchEditorWidget.Injections.injections_template_graphics import InjectionTemplateGraphicItem
 
 
-class FluidP2xGraphicItem(InjectionTemplateGraphicItem):
+class FluidTurbineGraphicItem(InjectionTemplateGraphicItem):
     """
-    FluidP2xGraphicItem
+    FluidTurbineGraphicItem
     """
 
-    def __init__(self, parent, api_obj: FluidP2x, diagramScene):
+    def __init__(self, parent, api_obj: FluidTurbine, diagramScene):
         """
 
         :param parent:
@@ -41,7 +41,7 @@ class FluidP2xGraphicItem(InjectionTemplateGraphicItem):
                                               parent=parent,
                                               api_obj=api_obj,
                                               diagramScene=diagramScene,
-                                              device_type_name='fluid_p2x',
+                                              device_type_name='fluid_turbine',
                                               w=40,
                                               h=40)
 
@@ -52,9 +52,9 @@ class FluidP2xGraphicItem(InjectionTemplateGraphicItem):
         self.glyph.setPen(pen)
         self.addToGroup(self.glyph)
 
-        self.label = QGraphicsTextItem('P2X', parent=self.glyph)
+        self.label = QGraphicsTextItem('T', parent=self.glyph)
         self.label.setDefaultTextColor(self.color)
-        self.label.setPos(2, self.w / 5)
+        self.label.setPos(self.h / 4, self.w / 5)
 
         self.setPos(self.parent.x(), self.parent.y() + 100)
         self.update_line(self.pos())
@@ -70,8 +70,16 @@ class FluidP2xGraphicItem(InjectionTemplateGraphicItem):
         """
         Change the colour according to the system theme
         """
-        self.color = ACTIVE['color']
-        self.style = ACTIVE['style']
+        if self.api_object is not None:
+            if self.api_object.active:
+                self.color = ACTIVE['color']
+                self.style = ACTIVE['style']
+            else:
+                self.color = DEACTIVATED['color']
+                self.style = DEACTIVATED['style']
+        else:
+            self.color = ACTIVE['color']
+            self.style = ACTIVE['style']
 
         pen = QPen(self.color, self.width, self.style)
         self.glyph.setPen(pen)
@@ -101,7 +109,7 @@ class FluidP2xGraphicItem(InjectionTemplateGraphicItem):
         @return:
         """
         menu = QMenu()
-        menu.addSection("Power2X")
+        menu.addSection("Turbine")
 
         # pc = menu.addAction('Voltage control')
         # pc.setCheckable(True)

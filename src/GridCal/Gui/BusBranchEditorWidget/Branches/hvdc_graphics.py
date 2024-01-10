@@ -17,9 +17,9 @@
 
 from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtWidgets import QMenu
-from GridCal.Gui.GridEditorWidget.Substation.bus_graphics import TerminalItem
+from GridCal.Gui.BusBranchEditorWidget.Substation.bus_graphics import TerminalItem
 from GridCalEngine.Core.Devices.Branches.hvdc_line import HvdcLine
-from GridCal.Gui.GridEditorWidget.Branches.line_graphics_template import LineGraphicTemplateItem
+from GridCal.Gui.BusBranchEditorWidget.Branches.line_graphics_template import LineGraphicTemplateItem
 
 
 class HvdcGraphicItem(LineGraphicTemplateItem):

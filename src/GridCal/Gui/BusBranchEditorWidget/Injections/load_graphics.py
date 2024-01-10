@@ -14,17 +14,17 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
-from PySide6 import QtWidgets
-from PySide6.QtCore import QPointF, QLineF
-from PySide6.QtGui import QPen, QIcon, QPixmap
-from GridCal.Gui.GridEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Line
-from GridCal.Gui.GridEditorWidget.Injections.injections_template_graphics import InjectionTemplateGraphicItem
+from PySide6.QtCore import QPointF
+from PySide6.QtGui import QPen, QIcon, QPixmap, QPolygonF
+from PySide6.QtWidgets import QMenu
+from GridCal.Gui.BusBranchEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER
+from GridCal.Gui.BusBranchEditorWidget.Injections.injections_template_graphics import InjectionTemplateGraphicItem
 from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCal.Gui.messages import yes_no_question
+from GridCal.Gui.BusBranchEditorWidget.generic_graphics import Polygon
 
 
-class ShuntGraphicItem(InjectionTemplateGraphicItem):
+class LoadGraphicItem(InjectionTemplateGraphicItem):
 
     def __init__(self, parent, api_obj, diagramScene):
         """
@@ -37,27 +37,14 @@ class ShuntGraphicItem(InjectionTemplateGraphicItem):
                                               api_obj=api_obj,
                                               diagramScene=diagramScene,
                                               device_type_name='generator',
-                                              w=15,
-                                              h=30)
+                                              w=20,
+                                              h=20)
 
-        pen = QPen(self.color, self.width, self.style)
-
-        lines_data = list()
-        lines_data.append(QLineF(QPointF(self.w / 2, 0), QPointF(self.w / 2, self.h * 0.4)))
-        lines_data.append(QLineF(QPointF(0, self.h * 0.4), QPointF(self.w, self.h * 0.4)))
-        lines_data.append(QLineF(QPointF(0, self.h * 0.6), QPointF(self.w, self.h * 0.6)))
-        lines_data.append(QLineF(QPointF(self.w / 2, self.h * 0.6), QPointF(self.w / 2, self.h)))
-        lines_data.append(QLineF(QPointF(0, self.h * 1), QPointF(self.w, self.h * 1)))
-        lines_data.append(QLineF(QPointF(self.w * 0.15, self.h * 1.1), QPointF(self.w * 0.85, self.h * 1.1)))
-        lines_data.append(QLineF(QPointF(self.w * 0.3, self.h * 1.2), QPointF(self.w * 0.7, self.h * 1.2)))
-
-        self.lines = list()
-        for l in lines_data:
-            l1 = Line(self)
-            l1.setLine(l)
-            l1.setPen(pen)
-            self.lines.append(l1)
-            self.addToGroup(l1)
+        # triangle
+        self.glyph = Polygon(self)
+        self.glyph.setPolygon(QPolygonF([QPointF(0, 0), QPointF(self.w, 0), QPointF(self.w / 2, self.h)]))
+        self.glyph.setPen(QPen(self.color, self.width, self.style))
+        self.addToGroup(self.glyph)
 
         self.setPos(self.parent.x(), self.parent.y() + 100)
         self.update_line(self.pos())
@@ -79,8 +66,7 @@ class ShuntGraphicItem(InjectionTemplateGraphicItem):
 
         pen = QPen(self.color, self.width, self.style)
         self.nexus.setPen(pen)
-        for l in self.lines:
-            l.setPen(pen)
+        self.glyph.setPen(pen)
 
     def update_line(self, pos):
         """
@@ -104,18 +90,13 @@ class ShuntGraphicItem(InjectionTemplateGraphicItem):
         @param event:
         @return:
         """
-        menu = QtWidgets.QMenu()
-        menu.addSection("Shunt")
+        menu = QMenu()
+        menu.addSection("Load")
 
         pe = menu.addAction('Active')
         pe.setCheckable(True)
         pe.setChecked(self.api_object.active)
         pe.triggered.connect(self.enable_disable_toggle)
-
-        pc = menu.addAction('Voltage control')
-        pc.setCheckable(True)
-        pc.setChecked(self.api_object.is_controlled)
-        pc.triggered.connect(self.enable_disable_control_toggle)
 
         pa = menu.addAction('Plot profiles')
         plot_icon = QIcon()
@@ -143,18 +124,19 @@ class ShuntGraphicItem(InjectionTemplateGraphicItem):
         @return:
         """
         if ask:
-            ok = yes_no_question('Are you sure that you want to remove this shunt', 'Remove shunt')
+            ok = yes_no_question('Are you sure that you want to remove this load', 'Remove load')
         else:
             ok = True
 
         if ok:
             self.diagramScene.removeItem(self.nexus)
             self.diagramScene.removeItem(self)
-            self.api_object.bus.shunts.remove(self.api_object)
+            self.api_object.bus.loads.remove(self.api_object)
 
     def enable_disable_toggle(self):
         """
-        Enable / Disable device
+
+        @return:
         """
         if self.api_object is not None:
             if self.api_object.active:
@@ -169,13 +151,6 @@ class ShuntGraphicItem(InjectionTemplateGraphicItem):
                 if ok:
                     # change the bus state (time series)
                     self.diagramScene.set_active_status_to_profile(self.api_object, override_question=True)
-
-    def enable_disable_control_toggle(self):
-        """
-        Enable / Disable device voltage control
-        """
-        if self.api_object is not None:
-            self.api_object.is_controlled = not self.api_object.is_controlled
 
     def set_enable(self, val=True):
         """
@@ -194,20 +169,12 @@ class ShuntGraphicItem(InjectionTemplateGraphicItem):
         else:
             self.style = OTHER['style']
             self.color = OTHER['color']
-
-        pen = QPen(self.color, self.width, self.style)
-
-        for l in self.childItems():
-            l.setPen(pen)
+        self.glyph.setPen(QPen(self.color, self.width, self.style))
 
     def plot(self):
-        """
-        Plot API objects profiles
-        """
         # time series object from the last simulation
         ts = self.diagramScene.circuit.time_profile
 
         # plot the profiles
         self.api_object.plot_profiles(time=ts)
-
 
