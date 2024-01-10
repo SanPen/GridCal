@@ -3646,26 +3646,10 @@ p, li { white-space: pre-wrap; }
                   <enum>QFrame::Raised</enum>
                  </property>
                  <layout class="QGridLayout" name="gridLayout_3">
-                  <item row="3" column="1">
-                   <widget class="QComboBox" name="opfZonalGroupByComboBox"/>
-                  </item>
-                  <item row="10" column="1">
-                   <widget class="QDoubleSpinBox" name="opfContingencyToleranceSpinBox">
-                    <property name="toolTip">
-                     <string>LODF matrix tolerance choosing contingencies</string>
-                    </property>
-                    <property name="decimals">
-                     <number>4</number>
-                    </property>
-                    <property name="value">
-                     <double>0.050000000000000</double>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="0" column="1">
-                   <widget class="QComboBox" name="lpf_solver_comboBox">
-                    <property name="toolTip">
-                     <string>Choose the optimal power flow method</string>
+                  <item row="8" column="0">
+                   <widget class="QCheckBox" name="skipOpfGenerationLimitsCheckBox">
+                    <property name="text">
+                     <string>Skip generation limits</string>
                     </property>
                    </widget>
                   </item>
@@ -3676,14 +3660,47 @@ p, li { white-space: pre-wrap; }
                     </property>
                    </widget>
                   </item>
-                  <item row="1" column="1">
-                   <widget class="QComboBox" name="mip_solver_comboBox">
-                    <property name="toolTip">
-                     <string>Choose the external mixed integer programming solver</string>
+                  <item row="12" column="0">
+                   <widget class="QCheckBox" name="opfUnitCommitmentCheckBox">
+                    <property name="text">
+                     <string>Unit commitment</string>
                     </property>
                    </widget>
                   </item>
+                  <item row="3" column="1">
+                   <widget class="QComboBox" name="opfZonalGroupByComboBox"/>
+                  </item>
                   <item row="15" column="1">
+                   <widget class="QDoubleSpinBox" name="maxVoltageModuleStepSpinBox">
+                    <property name="suffix">
+                     <string> p.u.</string>
+                    </property>
+                    <property name="decimals">
+                     <number>6</number>
+                    </property>
+                    <property name="singleStep">
+                     <double>0.010000000000000</double>
+                    </property>
+                    <property name="value">
+                     <double>0.010000000000000</double>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="0">
+                   <widget class="QLabel" name="label_42">
+                    <property name="text">
+                     <string>Method</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="3" column="0">
+                   <widget class="QLabel" name="label_103">
+                    <property name="text">
+                     <string>Zone grouping</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="16" column="1">
                    <widget class="QDoubleSpinBox" name="maxVoltageAngleStepSpinBox">
                     <property name="suffix">
                      <string> rad</string>
@@ -3699,31 +3716,24 @@ p, li { white-space: pre-wrap; }
                     </property>
                    </widget>
                   </item>
-                  <item row="0" column="0">
-                   <widget class="QLabel" name="label_42">
+                  <item row="16" column="0">
+                   <widget class="QLabel" name="maxVoltageAngleStepLabel">
                     <property name="text">
-                     <string>Method</string>
+                     <string>Max angle step</string>
                     </property>
                    </widget>
                   </item>
-                  <item row="12" column="0">
-                   <widget class="QCheckBox" name="opfUnitCommitmentCheckBox">
-                    <property name="text">
-                     <string>Unit commitment</string>
+                  <item row="0" column="1">
+                   <widget class="QComboBox" name="lpf_solver_comboBox">
+                    <property name="toolTip">
+                     <string>Choose the optimal power flow method</string>
                     </property>
                    </widget>
                   </item>
-                  <item row="10" column="0">
-                   <widget class="QLabel" name="label_104">
-                    <property name="text">
-                     <string>Contingency tolerance</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="2" column="0">
-                   <widget class="QLabel" name="label_4">
-                    <property name="text">
-                     <string>Time grouping</string>
+                  <item row="2" column="1">
+                   <widget class="QComboBox" name="opf_time_grouping_comboBox">
+                    <property name="toolTip">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Choose the time grouping to possibly shorten the solution time.&lt;/p&gt;&lt;p&gt;This splits the time series by week, month, etc. and the subproblems are solved sequentially.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                     </property>
                    </widget>
                   </item>
@@ -3741,54 +3751,16 @@ p, li { white-space: pre-wrap; }
                     </property>
                    </widget>
                   </item>
-                  <item row="15" column="0">
-                   <widget class="QLabel" name="maxVoltageAngleStepLabel">
-                    <property name="text">
-                     <string>Max angle step</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="2" column="1">
-                   <widget class="QComboBox" name="opf_time_grouping_comboBox">
+                  <item row="10" column="1">
+                   <widget class="QDoubleSpinBox" name="opfContingencyToleranceSpinBox">
                     <property name="toolTip">
-                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Choose the time grouping to possibly shorten the solution time.&lt;/p&gt;&lt;p&gt;This splits the time series by week, month, etc. and the subproblems are solved sequentially.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="14" column="0">
-                   <widget class="QLabel" name="maxVoltageModuleStepLabel">
-                    <property name="text">
-                     <string>Max module step</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="3" column="0">
-                   <widget class="QLabel" name="label_103">
-                    <property name="text">
-                     <string>Zone grouping</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="14" column="1">
-                   <widget class="QDoubleSpinBox" name="maxVoltageModuleStepSpinBox">
-                    <property name="suffix">
-                     <string> p.u.</string>
+                     <string>LODF matrix tolerance choosing contingencies</string>
                     </property>
                     <property name="decimals">
-                     <number>6</number>
-                    </property>
-                    <property name="singleStep">
-                     <double>0.010000000000000</double>
+                     <number>4</number>
                     </property>
                     <property name="value">
-                     <double>0.010000000000000</double>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="8" column="0">
-                   <widget class="QCheckBox" name="skipOpfGenerationLimitsCheckBox">
-                    <property name="text">
-                     <string>Skip generation limits</string>
+                     <double>0.050000000000000</double>
                     </property>
                    </widget>
                   </item>
@@ -3799,6 +3771,44 @@ p, li { white-space: pre-wrap; }
                     </property>
                     <property name="text">
                      <string>Add report</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="0">
+                   <widget class="QLabel" name="label_4">
+                    <property name="text">
+                     <string>Time grouping</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="1">
+                   <widget class="QComboBox" name="mip_solver_comboBox">
+                    <property name="toolTip">
+                     <string>Choose the external mixed integer programming solver</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="10" column="0">
+                   <widget class="QLabel" name="label_104">
+                    <property name="text">
+                     <string>Contingency tolerance</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="15" column="0">
+                   <widget class="QLabel" name="maxVoltageModuleStepLabel">
+                    <property name="text">
+                     <string>Max module step</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="14" column="0">
+                   <widget class="QCheckBox" name="save_mip_checkBox">
+                    <property name="toolTip">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The program will save the MIP file in .lp format in the user GridCal folder before running a linear optimization study.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
+                    <property name="text">
+                     <string>Save MIP file</string>
                     </property>
                    </widget>
                   </item>
@@ -3817,16 +3827,6 @@ p, li { white-space: pre-wrap; }
                   </size>
                  </property>
                 </spacer>
-               </item>
-               <item>
-                <widget class="QCheckBox" name="save_mip_checkBox">
-                 <property name="toolTip">
-                  <string>When checked the program will ask where to save the MIP LP file before running a linear optimization study.</string>
-                 </property>
-                 <property name="text">
-                  <string>Save mip file</string>
-                 </property>
-                </widget>
                </item>
               </layout>
              </widget>
