@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 """
-Uncomment the appropriate inteface imports to use: Pulp or OrTools
+Uncomment the appropriate interface imports to use: Pulp or OrTools
 """
 from typing import List, Union, Tuple
 import numpy as np

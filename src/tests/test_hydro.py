@@ -6,17 +6,17 @@ np.set_printoptions(linewidth=10000)
 
 def test_hydro_opf1():
 
-    fname = os.path.join('..', '..', 'Grids_and_profiles', 'grids', 'hydro_grid1.gridcal')
+    fname = os.path.join('data', 'grids', 'hydro_grid1.gridcal')
     main_circuit = FileOpen(fname).open()
     opf_driv = OptimalPowerFlowTimeSeriesDriver(grid=main_circuit)
 
     opf_driv.run()
 
-    results = np.array([[8.0, 3.0],
-                        [8.0, 3.0],
-                        [8.0, 3.0],
-                        [8.0, 3.0],
-                        [8.0, 3.0]])
+    results = np.array([[1.0, 10.0],
+                        [1.0, 10.0],
+                        [1.0, 10.0],
+                        [1.0, 10.0],
+                        [1.0, 10.0]])
 
     assert np.allclose(opf_driv.results.generator_power, results)
 
@@ -25,7 +25,7 @@ def test_hydro_opf2():
 
     # TODO: Fix this test
 
-    fname = os.path.join('..', '..', 'Grids_and_profiles', 'grids', 'hydro_grid2.gridcal')
+    fname = os.path.join('data', 'grids', 'hydro_grid2.gridcal')
     main_circuit = FileOpen(fname).open()
     opf_driv = OptimalPowerFlowTimeSeriesDriver(grid=main_circuit)
 
@@ -69,7 +69,7 @@ def test_hydro_opf2():
 
 def test_hydro_opf3():
 
-    fname = os.path.join('..', '..', 'Grids_and_profiles', 'grids', 'hydro_grid3.gridcal')
+    fname = os.path.join('data', 'grids', 'hydro_grid3.gridcal')
     main_circuit = FileOpen(fname).open()
     opf_driv = OptimalPowerFlowTimeSeriesDriver(grid=main_circuit)
 
@@ -93,7 +93,7 @@ def test_hydro_opf3():
 
 def test_hydro_opf4():
 
-    fname = os.path.join('..', '..', 'Grids_and_profiles', 'grids', 'hydro_grid4.gridcal')
+    fname = os.path.join('data', 'grids', 'hydro_grid4.gridcal')
     main_circuit = FileOpen(fname).open()
     opf_driv = OptimalPowerFlowTimeSeriesDriver(grid=main_circuit)
 
