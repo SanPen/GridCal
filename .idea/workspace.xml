@@ -28,11 +28,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Move hydro grids and update hydro grid 2">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Update test cases and all working fine">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/hydro_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/examples/hydro_opf.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/MIP/selected_interface.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/MIP/selected_interface.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tests/data/grids/hydro_grid2.gridcal" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/data/grids/hydro_grid2.gridcal" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/tests/data/grids/hydro_grid4.gridcal" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/data/grids/hydro_grid4.gridcal" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/tests/test_hydro.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/test_hydro.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -1603,7 +1602,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="456" />
+    <option name="localTasksCounter" value="457" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1649,7 +1648,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Add equalities and inequalities generalized" />
     <MESSAGE value="Start generating IPM solver" />
     <MESSAGE value="Pack construction of g, h and fobj" />
     <MESSAGE value="Build sets of gradients Ai and Ae" />
@@ -1674,7 +1672,8 @@
     <MESSAGE value="Change flow units from m3/h to m3/s" />
     <MESSAGE value="Adapt cost units and use factor of 1e-4" />
     <MESSAGE value="Move hydro grids and update hydro grid 2" />
-    <option name="LAST_COMMIT_MESSAGE" value="Move hydro grids and update hydro grid 2" />
+    <MESSAGE value="Update test cases and all working fine" />
+    <option name="LAST_COMMIT_MESSAGE" value="Update test cases and all working fine" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
