@@ -151,7 +151,7 @@ class ShuntGraphicItem(InjectionTemplateGraphicItem):
             ok = True
 
         if ok:
-            self.editor.diagram_scene.removeItem(self.nexus)
+            self.editor.remove_from_scene(self.nexus)
             self.editor.remove_element(device=self.api_object, graphic_object=self)
 
     def enable_disable_toggle(self):

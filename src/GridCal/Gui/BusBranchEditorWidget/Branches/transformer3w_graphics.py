@@ -251,7 +251,7 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
         Delete the big marker
         """
         if self.big_marker is not None:
-            self.editor.diagram_scene.removeItem(self.big_marker)
+            self.editor.remove_from_scene(self.big_marker)
             self.big_marker = None
 
     def change_size(self, w, h):
@@ -404,7 +404,7 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
             t.remove_all_connections()
 
         for c in self.connection_lines:
-            self.editor.diagram_scene.removeItem(c)
+            self.editor.remove_from_scene(c)
 
     def remove(self, ask=True):
         """

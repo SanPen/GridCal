@@ -220,7 +220,7 @@ class SimulationsMain(TimeEventsMain):
         # # set the threads so that the diagram scene objects can plot them
         for diagram in self.diagram_widgets_list:
             if isinstance(diagram, BusBranchEditorWidget):
-                diagram.diagram_scene.set_results_to_plot(all_threads)
+                diagram.set_results_to_plot(all_threads)
 
         return all_threads
 

@@ -493,7 +493,7 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         Remove this object in the diagram
         @return:
         """
-        self.editor.diagram_scene.removeItem(self)
+        self.editor.remove_from_scene(self)
 
     def remove(self, ask=True):
         """
@@ -728,14 +728,14 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
 
                 # remove the updated bus children
                 for g in updated_bus.graphic_obj.shunt_children:
-                    self.editor.diagram_scene.removeItem(g.nexus)
-                    self.editor.diagram_scene.removeItem(g)
+                    self.editor.remove_from_scene(g.nexus)
+                    self.editor.remove_from_scene(g)
                 # re-draw the children
                 updated_bus.graphic_obj.create_children_widgets()
 
                 # remove bus
                 for g in removed_bus.graphic_obj.shunt_children:
-                    self.editor.diagram_scene.removeItem(g.nexus)  # remove the links between the bus and the children
+                    self.editor.remove_from_scene(g.nexus)  # remove the links between the bus and the children
                 self.editor.delete_diagram_element(device=removed_bus.graphic_obj)  # remove the bus and all the children contained
 
             for br in updated_branches:

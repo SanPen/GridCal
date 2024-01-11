@@ -1453,4 +1453,4 @@ class DiagramsMain(CompiledArraysMain):
 
                 if diagram is not None:
                     if isinstance(diagram, BusBranchEditorWidget):
-                        diagram.graphical_serach(search_text=dlg.searchText.lower())
+                        diagram.graphical_search(search_text=dlg.searchText.lower())

@@ -64,7 +64,7 @@ class LineGraphicItem(LineGraphicTemplateItem):
         for elm in [self.symbol]:
             if elm is not None:
                 try:
-                    self.editor.diagram_scene.removeItem(elm)
+                    self.editor.remove_from_scene(elm)
                     # sip.delete(elm)
                     elm = None
                 except:

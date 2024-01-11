@@ -139,8 +139,8 @@ class BatteryGraphicItem(InjectionTemplateGraphicItem):
             ok = True
 
         if ok:
-            self.editor.diagram_scene.removeItem(self.nexus)
-            self.editor.diagram_scene.removeItem(self)
+            self.editor.remove_from_scene(self.nexus)
+            self.editor.remove_from_scene(self)
             self.api_object.bus.batteries.remove(self.api_object)
 
     def enable_disable_toggle(self):

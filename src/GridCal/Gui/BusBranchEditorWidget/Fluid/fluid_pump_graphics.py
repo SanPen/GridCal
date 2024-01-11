@@ -144,8 +144,8 @@ class FluidPumpGraphicItem(InjectionTemplateGraphicItem):
             ok = True
 
         if ok:
-            self.editor.diagram_scene.removeItem(self.nexus)
-            self.editor.diagram_scene.removeItem(self)
+            self.editor.remove_from_scene(self.nexus)
+            self.editor.remove_from_scene(self)
             if self.api_object in self.api_object.bus.generators:
                 self.api_object.bus.generators.remove(self.api_object)
 

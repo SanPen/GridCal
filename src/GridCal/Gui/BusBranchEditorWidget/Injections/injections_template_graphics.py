@@ -75,7 +75,7 @@ class InjectionTemplateGraphicItem(QGraphicsItemGroup):
         # line to tie this object with the original bus (the parent)
         self.nexus = QGraphicsLineItem()
         self.nexus.setPen(QPen(self.color, self.width, self.style))
-        self.editor.diagram_scene.addItem(self.nexus)
+        self.editor.add_to_scene(self.nexus)
 
         self.setPos(self.parent.x(), self.parent.y() + 100)
         self.update_line(self.pos())
@@ -127,7 +127,7 @@ class InjectionTemplateGraphicItem(QGraphicsItemGroup):
             ok = True
 
         if ok:
-            self.editor.diagram_scene.removeItem(self.nexus)
+            self.editor.remove_from_scene(self.nexus)
             self.editor.remove_element(device=self, graphic_object=self.api_object)
 
     def mousePressEvent(self, QGraphicsSceneMouseEvent):

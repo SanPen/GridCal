@@ -197,7 +197,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         Delete the big marker
         """
         if self.big_marker is not None:
-            self.editor.diagram_scene.removeItem(self.big_marker)
+            self.editor.remove_from_scene(self.big_marker)
             self.big_marker = None
 
     def set_position(self, x, y):
@@ -513,7 +513,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
             self.delete_all_connections()
 
             for g in self.shunt_children:
-                self.editor.diagram_scene.removeItem(g.nexus)
+                self.editor.remove_from_scene(g.nexus)
 
             self.editor.remove_element(device=self.api_object, graphic_object=self)
 
