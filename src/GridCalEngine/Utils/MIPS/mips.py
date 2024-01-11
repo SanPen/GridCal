@@ -25,11 +25,11 @@ import pandas as pd
 from scipy.sparse import csc_matrix as csc
 from scipy import sparse
 import timeit
-from GridCalEngine.Utils.MIPS.ipm_test import NLP_test
 from GridCalEngine.basic_structures import Vec
 from GridCalEngine.Utils.Sparse.csc import pack_3_by_4, diags
 
 np.set_printoptions(precision=4)
+
 
 @nb.njit(cache=True)
 def step_calculation(V: Vec, dV: Vec):
@@ -90,7 +90,7 @@ def solver(x0: Vec,
            arg=(),
            max_iter=100,
            tol=1e-6,
-           verbose: int = 0):
+           verbose: int = 0) -> Tuple[Vec, float, Vec, Vec]:
     """
     Solve a non-linear problem of the form:
 
@@ -128,10 +128,10 @@ def solver(x0: Vec,
     :param n_ineq: Number of inequality constraints (rows of G)
     :param func: A function pointer called with (x, mu, lmbda, *args) that returns (f, G, H, fx, Gx, Hx, fxx, Gxx, Hxx)
     :param arg: Tuple of arguments to call func: func(x, mu, lmbda, *arg)
-    :param max_iter:
+    :param max_iter: Maximum number of iterations
     :param tol: Expected tolerance
-    :param verbose:
-    :return:
+    :param verbose: 0 to 3 (the larger, the more verbose)
+    :return: x, error, gamma, lam
     """
     START = timeit.default_timer()
 
@@ -191,18 +191,14 @@ def solver(x0: Vec,
 
         if verbose > 1:
             print(f'Iteration: {iter_counter}', "-" * 80)
-            # print("\tx:", x)
-            # print("\tz:", z)
-            # print("\tmu", mu)
-            # print("\tlmbda", lmbda)
+            if verbose > 2:
+                x_df = pd.DataFrame(data={'x': x, 'dx': dx})
+                eq_df = pd.DataFrame(data={'λ': lam, 'dλ': dlam})
+                ineq_df = pd.DataFrame(data={'mu': mu, 'z': z, 'dmu': dmu, 'dz': dz})
 
-            x_df = pd.DataFrame(data={'x': x, 'dx': dx})
-            eq_df = pd.DataFrame(data={'λ': lam, 'dλ': dlam})
-            ineq_df = pd.DataFrame(data={'mu': mu, 'z': z, 'dmu': dmu, 'dz': dz})
-
-            # print("x:\n", x_df)
-            # print("EQ:\n", eq_df)
-            # print("INEQ:\n", ineq_df)
+                print("x:\n", x_df)
+                print("EQ:\n", eq_df)
+                print("INEQ:\n", ineq_df)
             print("\tGamma:", gamma)
             print("\tErr:", error)
 
@@ -215,20 +211,9 @@ def solver(x0: Vec,
         print(f'SOLUTION', "-" * 80)
         print("\tx:", x)
         print("\tλ:", lam)
-        print("\tF.obj:", f) #This is the old value of the function, has to be recalculated with the last iteration.
+        print("\tF.obj:", f)  # This is the old value of the function, has to be recalculated with the last iteration.
         print("\tErr:", error)
         print(f'\tIterations: {iter_counter}')
         print('\tTime elapsed (s): ', END - START)
 
     return x, error, gamma, lam
-
-
-def test_solver():
-    X = np.array([2., 1.1, 0.])
-    solver(x0=X, n_x=3, n_eq=1, n_ineq=2, func=NLP_test, arg=(), verbose=1)
-
-    return
-
-
-if __name__ == '__main__':
-    test_solver()

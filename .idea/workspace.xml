@@ -28,9 +28,11 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Fixed drawing again">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Fixed broken tutorials link">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/MIPS/ipm_test.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/MIPS/mips.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/MIPS/mips.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -56,24 +58,9 @@
     </option>
   </component>
   <component name="Git.Settings">
-    <favorite-branches>
-      <branch-storage>
-        <map>
-          <entry type="LOCAL">
-            <value>
-              <list>
-                <branch-info repo="$PROJECT_DIR$" source="205_ACOPF" />
-                <branch-info repo="$PROJECT_DIR$" source="203_Ampliacion_OPF_lineal" />
-                <branch-info repo="$PROJECT_DIR$" source="devel" />
-              </list>
-            </value>
-          </entry>
-        </map>
-      </branch-storage>
-    </favorite-branches>
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="205_ACOPF" />
+        <entry key="$PROJECT_DIR$" value="master" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -129,18 +116,8 @@
     &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
     &quot;Git.Branch.Popup.ShowAllRemotes&quot;: &quot;true&quot;,
     &quot;MATLAB_INTERPRETER&quot;: &quot;/usr/local/MATLAB/R2018a/bin/matlab&quot;,
-    &quot;Python tests.Nosetests for test_simple_mip.test_linear_formulation.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.Nosetests for test_simple_mip.test_lp_simple2.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.Nosetests for test_simple_mip.test_lp_simple3.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Nosetests for test_simple_mip.test_lp_simple4.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Nosetests for tests.test_hydro.test_hydro_opf2.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.Nosetests in /home/santi/Documentos/Git/GitHub/GridCal/src/tests/test_simple_mip.py.executor&quot;: &quot;Run&quot;,
     &quot;Python tests.Nosetests in acopf_function_evaluation.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Nosetests in test_hydro.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Nosetests in test_simple_mip.py.executor&quot;: &quot;Run&quot;,
     &quot;Python.ExecuteGridCal.executor&quot;: &quot;Run&quot;,
-    &quot;Python.acopf_function_evaluation.executor&quot;: &quot;Run&quot;,
-    &quot;Python.update_gui_file.executor&quot;: &quot;Run&quot;,
     &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
@@ -443,29 +420,6 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="update_gui_file" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="GridCal" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/GridCal/Gui/Main" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCal/Gui/Main/update_gui_file.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <configuration default="true" type="Python.FlaskServer">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -529,7 +483,7 @@
       <option name="docutils_open_in_browser" value="false" />
       <method v="2" />
     </configuration>
-    <configuration name="Nosetests for tests.test_hydro.test_hydro_opf2" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
+    <configuration name="Nosetests for tests.admittance_matrix_test.test1" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -542,11 +496,11 @@
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="_new_regexPattern" value="&quot;&quot;" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;tests.test_hydro.test_hydro_opf2&quot;" />
+      <option name="_new_target" value="&quot;tests.admittance_matrix_test.test1&quot;" />
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
-    <configuration name="Nosetests in test_hydro.py" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
+    <configuration name="Nosetests for tests.test_opf.test_opf" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -559,11 +513,28 @@
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="_new_regexPattern" value="&quot;&quot;" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;$PROJECT_DIR$/src/tests/test_hydro.py&quot;" />
+      <option name="_new_target" value="&quot;tests.test_opf.test_opf&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Nosetests in acopf_function_evaluation.py" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
+      <module name="GridCal" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/examples/trunk/acopf" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="_new_regexPattern" value="&quot;&quot;" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;$PROJECT_DIR$/examples/trunk/acopf/acopf_function_evaluation.py&quot;" />
       <option name="_new_targetType" value="&quot;PATH&quot;" />
       <method v="2" />
     </configuration>
-    <configuration name="Nosetests in test_simple_mip.py" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
+    <configuration name="Nosetests in tests" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -576,7 +547,7 @@
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="_new_regexPattern" value="&quot;&quot;" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;$PROJECT_DIR$/src/tests/test_simple_mip.py&quot;" />
+      <option name="_new_target" value="&quot;$PROJECT_DIR$/src/tests&quot;" />
       <option name="_new_targetType" value="&quot;PATH&quot;" />
       <method v="2" />
     </configuration>
@@ -636,28 +607,21 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python.update_gui_file" />
       <item itemvalue="Python.ExecuteGridCal" />
-      <item itemvalue="Python tests.Nosetests in test_simple_mip.py" />
-      <item itemvalue="Python tests.Nosetests for tests.test_hydro.test_hydro_opf2" />
-      <item itemvalue="Python tests.Nosetests in test_hydro.py" />
+      <item itemvalue="Python tests.Nosetests in acopf_function_evaluation.py" />
+      <item itemvalue="Python tests.Nosetests for tests.test_opf.test_opf" />
+      <item itemvalue="Python tests.Nosetests for tests.admittance_matrix_test.test1" />
+      <item itemvalue="Python tests.Nosetests in tests" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Python.ExecuteGridCal" />
-        <item itemvalue="Python.update_gui_file" />
-        <item itemvalue="Python tests.Nosetests in test_hydro.py" />
-        <item itemvalue="Python tests.Nosetests for tests.test_hydro.test_hydro_opf2" />
-        <item itemvalue="Python tests.Nosetests in test_simple_mip.py" />
+        <item itemvalue="Python tests.Nosetests in tests" />
+        <item itemvalue="Python tests.Nosetests for tests.admittance_matrix_test.test1" />
+        <item itemvalue="Python tests.Nosetests for tests.test_opf.test_opf" />
+        <item itemvalue="Python tests.Nosetests in acopf_function_evaluation.py" />
       </list>
     </recent_temporary>
-  </component>
-  <component name="SharedIndexes">
-    <attachedChunks>
-      <set>
-        <option value="bundled-python-sdk-50da183f06c8-2887949eec09-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-233.13135.95" />
-      </set>
-    </attachedChunks>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="project-level" UseSingleDictionary="true" transferred="true" />
   <component name="SvnConfiguration">
@@ -1289,10 +1253,6 @@
       <workItem from="1701177452262" duration="932000" />
       <workItem from="1701182230848" duration="2306000" />
       <workItem from="1701262178348" duration="3698000" />
-      <workItem from="1704786041917" duration="23280000" />
-      <workItem from="1704894567933" duration="2569000" />
-      <workItem from="1704917771605" duration="3276000" />
-      <workItem from="1704963789958" duration="9088000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1637,7 +1597,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="454" />
+    <option name="localTasksCounter" value="444" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1683,6 +1643,16 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
+    <MESSAGE value="added investment grid test" />
+    <MESSAGE value="added connectivities for fuels emissions and technologies" />
+    <MESSAGE value="added connectivity matrices for fuels emissions and technologies to the multi-circuit" />
+    <MESSAGE value="5.0.8&#10;improved NR ability to detect sparse solution errors" />
+    <MESSAGE value="added newtonpa recommended version" />
+    <MESSAGE value="Add 3bus acopf and maybe generalize from there" />
+    <MESSAGE value="Start writing about the problem" />
+    <MESSAGE value="Write more about the equality constraints" />
+    <MESSAGE value="Write the inequalities" />
+    <MESSAGE value="Write a bit of the IPM" />
     <MESSAGE value="Created test hydro3 with pump" />
     <MESSAGE value="Update OPF formulation and add cost2 to generator data" />
     <MESSAGE value="Add equalities and inequalities generalized" />
@@ -1697,18 +1667,8 @@
     <MESSAGE value="Change m3 to hm3 in the levels" />
     <MESSAGE value="Use modify function to test variations" />
     <MESSAGE value="Cosmetic changes" />
-    <MESSAGE value="Added the simple mip interface (untested)" />
-    <MESSAGE value="merged the simple mip objects in a single file to avoid circular dependencies" />
-    <MESSAGE value="Fixed diagram including location without API object" />
-    <MESSAGE value="Fixed some fluid devices not creating their profiles when added to the multicircuit" />
-    <MESSAGE value="added some tests for simple mip" />
-    <MESSAGE value="moved the ACOPF logic into GridCalEngine" />
-    <MESSAGE value="comented acopf tests" />
-    <MESSAGE value="improved the BatteryVars.get_values compatibility with the base method" />
-    <MESSAGE value="Successfully removed EditorGraphicsView" />
-    <MESSAGE value="moved the graphical_serach from diagrams.py to bus_branch_editor_widget.py" />
-    <MESSAGE value="Fixed drawing again" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed drawing again" />
+    <MESSAGE value="Fixed broken tutorials link" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed broken tutorials link" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2160,6 +2120,11 @@
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/BusBranchEditorWidget/bus_branch_editor_widget.py</url>
           <line>803</line>
           <option name="timeStamp" value="1243" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Utils/MIPS/mips.py</url>
+          <line>20</line>
+          <option name="timeStamp" value="1244" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
