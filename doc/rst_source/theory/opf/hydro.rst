@@ -13,11 +13,11 @@ The present document outlines the main additions in this regard, including:
 ---------------
 There are five different models that have been introduced with this update. These are:
 
-1. **Node**: a given point in the fluid network, which is supposed to have a certain fluid level, fluid devices connected to it (such as turbines, pumps or P2Xs) and branches (potentially both electrical and fluid paths).
-2. **Path**: a connection between two fluid nodes, with limits in the flow it can transport. 
-3. **Turbine**: a device that transforms the mechanical energy from the fluid to electrical energy. As such, it has a generator associated to it.
-4. **Pump** a device that works in the reverse direction of a turbine. It converts electrical to mechanical energy.
-5. **P2X** a device responsible for the appearance of fluid from the consumption of power. It symbolizes the generalization of the power-to-gas technology used in hydrogen production, for instance.
+- **Node**: a given point in the fluid network, which is supposed to have a certain fluid level, fluid devices connected to it (such as turbines, pumps or P2Xs) and branches (potentially both electrical and fluid paths).
+- **Path**: a connection between two fluid nodes, with limits in the flow it can transport. 
+- **Turbine**: a device that transforms the mechanical energy from the fluid to electrical energy. As such, it has a generator associated to it.
+- **Pump** a device that works in the reverse direction of a turbine. It converts electrical to mechanical energy.
+- **P2X** a device responsible for the appearance of fluid from the consumption of power. It symbolizes the generalization of the power-to-gas technology used in hydrogen production, for instance.
 
 .. figure:: ../../figures/opf/fluid_elements.png
 
@@ -25,7 +25,7 @@ There are five different models that have been introduced with this update. Thes
 
 Each fluid model has a list of defining attributes. The relationship between the attribute name and the associated description is provided below. 
 
-1. Node 
+Node 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
@@ -46,7 +46,7 @@ Each fluid model has a list of defining attributes. The relationship between the
     =============  ================  ========  ================================================
 
 
-2. Path
+Path
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
@@ -64,7 +64,7 @@ Each fluid model has a list of defining attributes. The relationship between the
     ========  ==========  ====  ===================
 
 
-3. Turbine
+Turbine
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
@@ -82,7 +82,7 @@ Each fluid model has a list of defining attributes. The relationship between the
     build_status   enum BuildStatus          Branch build status. Used in expansion planning.
     =============  ================  ======  ================================================
 
-4. Pump
+Pump
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
@@ -101,7 +101,7 @@ Each fluid model has a list of defining attributes. The relationship between the
     =============  ================  ======  ================================================
 
 
-5. P2X
+P2X
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
@@ -136,6 +136,104 @@ It is worth noting that turbines, pumps and P2Xs are fluid devices coupled to an
 
 2. Optimization adaptation 
 --------------------------
+The fluid transport problem is contemplated similarly with respect to the electrical problem. Basically, the flow balance has to be maintained at each node. The formulation that follows revolves around this idea.
+
+2.1 Objective function
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The general objective function remains nearly untouched, as the generators associated with turbines, pumps and P2Xs are already considered in the code fraction dedicated to generation units. There is only a single addition to be accounted for, and this is the spillage cost. Hence, the following term is added:
+
+.. math::
+
+    \quad f_obj += \sum_m^{nm} cost_spill[m] \sum_t^{nt} spill[t,m] \\
+
+where :math:`f_obj` is the objective function, :math:`m` is the fluid node index, :math:`nm` the number of fluid nodes, :math:`t` the time index, :math:`nt` the length of the time series, and :math:`spill` the actual spillage.
+
+2.2 Balance constraint
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The flow balance has to be maintained at each node :math:`m` for each point in time :math:`t`. In general terms, it is expressed as:
+
+.. math::
+
+    \quad level[t,m] = level[t-1,m] \\
+                       + dt * inflow[m] \\
+                       + dt * flow_in[t,m] \\
+                       + dt * flow_{p2x}[t,m] \\
+                       - dt * spill[t,m] \\
+                       - dt * flow_out[t,m] \\
+
+where :math:`dt` is the time step, :math:`inflow[m]` is known data of the entering fluid flow, :math:`flow_in[t,m]` is the sum of the input flows from the connected paths, :math:`flow_{p2x}[t,m]` is the input flow coming from the P2Xs, and :math:`flow_out[t,m]` is the sum of the output flows from the connected paths. In case the first time index is being simulated, :math:`level[t-1,m]` is simply replaced by :math:`initial_level[m]`, which is input information.
+
+The level of any given node has to be connected somehow to the contribution of injection devices. Hence, to consider turbines:
+
+.. math::
+
+    flow_out[t,m] += \sum_{i \in m}^{ni} p[t,g] * flow_max[i] / (p_max[g] * turb_eff[i])
+
+where :math:`i` is the turbine index, :math:`p[t,g]` is the generation power at time :math:`t` for generator index :math:`g`, :math:`flow_max` is the maximum turbine flow, :math:`p_max` the maximum generator power in per unit, and :math:`turb_eff` the turbine's efficiency.
+
+Similarly, for pumps:
+
+.. math::
+
+    flow_in[t,m] -= \sum_{i \in m}^{ni} p[t,g] * flow_max[i] * pump_eff[i] / abs(p_min[g])
+
+where :math:`i` is the pump index, :math:`p[t,g]` is the generation power at time :math:`t` for generator index :math:`g`, :math:`flow_max` is the maximum pump flow, :math:`p_min` the minimum generator power in per unit, and :math:`pump_eff` the pump's efficiency.
+
+In the case of P2Xs, it follows the same expression as in pumps:
+
+.. math::
+
+    flow_{p2x}[t,m] += \sum_{i \in m}^{ni} p[t,g] * flow_max[i] * p2x_eff[i] / abs(p_min[g])
+
+
+
+
+2.3 Output results
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The results of interest for each device type are shown below.
+
+Node 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. table::
+
+    =============================  ================  ======  =================================================
+    name                           class_type        unit    descriptions                                      
+    =============================  ================  ======  =================================================
+    fluid_node_current_level       float             hm3     Node level                                         
+    fluid_node_flow_in             float             m3/s    Input flow from paths                                                                             
+    fluid_node_flow_out            float             m3/s    Output flow from paths                                       
+    fluid_node_p2x_flow            float             m3/s    Input flow from the P2Xs  
+    fluid_node_spillage            float             m3/s    Lost flow                           
+    =============================  ================  ======  =================================================
+
+
+Path 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. table::
+
+    =============================  ================  ======  =================================================
+    name                           class_type        unit    descriptions                                      
+    =============================  ================  ======  =================================================
+    fluid_path_flow                     float         m3/s   Flow circulating through the path                                            
+    =============================  ================  ======  =================================================
+
+Injection (turbine, pump, P2X)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. table::
+
+    =============================  ================  ======  =================================================
+    name                           class_type        unit    descriptions                                      
+    =============================  ================  ======  =================================================
+    fluid_injection_flow                    float      m3/s   Flow injected by the device                                            
+    =============================  ================  ======  =================================================
+
+
+
+
 
 3. Practical example
 --------------------
