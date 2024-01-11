@@ -108,4 +108,4 @@ class HvdcGraphicItem(LineGraphicTemplateItem):
         """
         # get the index of this object
         i = self.editor.circuit.get_hvdc().index(self.api_object)
-        self.editor.diagramScene.plot_hvdc_branch(i, self.api_object)
+        self.editor.diagram_scene.plot_hvdc_branch(i, self.api_object)

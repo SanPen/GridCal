@@ -165,13 +165,13 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         """
         super().mouseMoveEvent(event)
 
-        self.scene.parent_.update_diagram_element(device=self.api_object,
-                                                  x=self.pos().x(),
-                                                  y=self.pos().y(),
-                                                  w=self.w,
-                                                  h=self.h,
-                                                  r=self.rotation(),
-                                                  graphic_object=self)
+        self.editor.update_diagram_element(device=self.api_object,
+                                           x=self.pos().x(),
+                                           y=self.pos().y(),
+                                           w=self.w,
+                                           h=self.h,
+                                           r=self.rotation(),
+                                           graphic_object=self)
 
     def add_big_marker(self, color=Qt.red, tool_tip_text=""):
         """
@@ -269,13 +269,13 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         # rearrange children
         self.arrange_children()
 
-        self.scene.parent_.update_diagram_element(device=self.api_object,
-                                                  x=self.pos().x(),
-                                                  y=self.pos().y(),
-                                                  w=w,
-                                                  h=h,
-                                                  r=self.rotation(),
-                                                  graphic_object=self)
+        self.editor.update_diagram_element(device=self.api_object,
+                                           x=self.pos().x(),
+                                           y=self.pos().y(),
+                                           w=w,
+                                           h=h,
+                                           r=self.rotation(),
+                                           graphic_object=self)
 
         return w, h
 

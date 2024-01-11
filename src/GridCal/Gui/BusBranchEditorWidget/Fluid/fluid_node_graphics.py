@@ -130,11 +130,11 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
         if self.api_object is not None:
             mdl = ObjectsModel(objects=[self.api_object],
                                editable_headers=self.api_object.editable_headers,
-                               parent=self.editor.diagramScene.parent().object_editor_table,
+                               parent=self.editor.object_editor_table,
                                editable=True,
                                transposed=True)
 
-            self.editor.diagramScene.parent().object_editor_table.setModel(mdl)
+            self.editor.object_editor_table.setModel(mdl)
 
     def mouseMoveEvent(self, event: QGraphicsSceneMouseEvent):
         """

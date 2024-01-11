@@ -403,7 +403,7 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         self.fromPort: Union[TerminalItem, None] = None
         self.toPort: Union[TerminalItem, None] = None
         self.editor: BusBranchEditorWidget = editor
-        self.diagramScene: DiagramScene = self.editor.diagramScene
+        self.diagramScene: DiagramScene = self.editor.diagram_scene
 
         if fromPort:
             self.setFromPort(fromPort)
@@ -566,8 +566,8 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         @return:
         """
         # get the index of this object
-        i = self.editor.diagramScene.circuit.get_branches().index(self.api_object)
-        self.editor.diagramScene.plot_branch(i, self.api_object)
+        i = self.editor.circuit.get_branches().index(self.api_object)
+        self.editor.diagram_scene.plot_branch(i, self.api_object)
 
     def setFromPort(self, fromPort):
         """

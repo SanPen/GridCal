@@ -234,7 +234,7 @@ class LineGraphicItem(LineGraphicTemplateItem):
         """
         # get the index of this object
         i = self.editor.circuit.get_branches().index(self.api_object)
-        self.editor.diagramScene.plot_branch(i, self.api_object)
+        self.editor.diagram_scene.plot_branch(i, self.api_object)
 
     def edit(self):
         """

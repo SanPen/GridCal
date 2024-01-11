@@ -494,208 +494,208 @@ class DiagramScene(QGraphicsScene):
         super(DiagramScene, self).mouseReleaseEvent(event)
 
 
-class EditorGraphicsView(QGraphicsView):
-    """
-    EditorGraphicsView (Handles the drag and drop)
-    """
-
-    def __init__(self, diagram_scene: DiagramScene, editor: "BusBranchEditorWidget"):
-        """
-        Editor where the diagram is displayed
-        @param diagram_scene: DiagramScene object
-        @param editor: BusBranchEditorWidget
-        """
-        QGraphicsView.__init__(self, diagram_scene)
-        self._zoom = 0
-        self.setDragMode(QGraphicsView.DragMode.RubberBandDrag)
-        self.setRubberBandSelectionMode(Qt.IntersectsItemShape)
-        self.setMouseTracking(True)
-        self.setInteractive(True)
-        self.editor = editor
-        self.diagram_scene: DiagramScene = diagram_scene
-        self.setRenderHints(QPainter.Antialiasing | QPainter.SmoothPixmapTransform)
-        self.setAlignment(Qt.AlignCenter)
-
-    def dragEnterEvent(self, event: QDragEnterEvent) -> None:
-        """
-
-        @param event:
-        @return:
-        """
-        if event.mimeData().hasFormat('component/name'):
-            event.accept()
-
-    def dragMoveEvent(self, event: QDragMoveEvent) -> None:
-        """
-        Move element
-        @param event:
-        @return:
-        """
-        if event.mimeData().hasFormat('component/name'):
-            event.accept()
-
-    def dropEvent(self, event: QDropEvent) -> None:
-        """
-        Create an element
-        @param event:
-        @return:
-        """
-        if event.mimeData().hasFormat('component/name'):
-            obj_type = event.mimeData().data('component/name')
-            bus_data = toQBytesArray('Bus')
-            tr3w_data = toQBytesArray('3W-Transformer')
-            fluid_node_data = toQBytesArray("Fluid-node")
-
-            point0 = self.mapToScene(event.position().x(), event.position().y())
-            x0 = point0.x()
-            y0 = point0.y()
-
-            if bus_data == obj_type:
-                name = 'Bus ' + str(len(self.diagram_scene.circuit.buses))
-
-                obj = Bus(name=name,
-                          # area=self.diagram_scene.circuit.areas[0],
-                          # zone=self.diagram_scene.circuit.zones[0],
-                          # substation=self.diagram_scene.circuit.substations[0],
-                          # country=self.diagram_scene.circuit.countries[0],
-                          vnom=self.editor.default_bus_voltage)
-
-                graphic_object = self.add_bus(bus=obj, x=x0, y=y0, h=20, w=80)
-
-                # weird but it's the only way to have graphical-API communication
-                self.diagram_scene.circuit.add_bus(obj)
-
-                # add to the diagram list
-                self.editor.update_diagram_element(device=obj,
-                                                   x=x0,
-                                                   y=y0,
-                                                   w=graphic_object.w,
-                                                   h=graphic_object.h,
-                                                   r=0,
-                                                   graphic_object=graphic_object)
-
-            elif tr3w_data == obj_type:
-                name = "Transformer 3-windings" + str(len(self.diagram_scene.circuit.transformers3w))
-                obj = Transformer3W(name=name)
-                graphic_object = self.add_transformer_3w(elm=obj, x=x0, y=y0)
-
-                # weird but it's the only way to have graphical-API communication
-                self.diagram_scene.circuit.add_transformer3w(obj)
-
-                # add to the diagram list
-                self.editor.update_diagram_element(device=obj,
-                                                   x=x0,
-                                                   y=y0,
-                                                   w=graphic_object.w,
-                                                   h=graphic_object.h,
-                                                   r=0,
-                                                   graphic_object=graphic_object)
-
-            elif fluid_node_data == obj_type:
-                name = 'FluidNode ' + str(len(self.diagram_scene.circuit.fluid_nodes))
-
-                obj = FluidNode(name=name)
-
-                graphic_object = self.add_fluid_node(node=obj, x=x0, y=y0, h=20, w=80)
-
-                # weird but it's the only way to have graphical-API communication
-                self.diagram_scene.circuit.add_fluid_node(obj)
-
-                # add to the diagram list
-                self.editor.update_diagram_element(device=obj,
-                                                   x=x0,
-                                                   y=y0,
-                                                   w=graphic_object.w,
-                                                   h=graphic_object.h,
-                                                   r=0,
-                                                   graphic_object=graphic_object)
-
-    def wheelEvent(self, event: QWheelEvent) -> None:
-        """
-        Zoom
-        @param event:
-        @return:
-        """
-        self.setTransformationAnchor(QGraphicsView.ViewportAnchor.AnchorUnderMouse)
-
-        # Scale the view / do the zoom
-        scale_factor = 1.15
-        # print(event.angleDelta().x(), event.angleDelta().y(), event.angleDelta().manhattanLength() )
-        if event.angleDelta().y() > 0:
-            # Zoom in
-            self.zoom_in(scale_factor)
-
-        else:
-            # Zooming out
-            self.zoom_out(scale_factor)
-
-    def keyPressEvent(self, event: QKeyEvent):
-        """
-        Key press event cature
-        :param event:
-        :return:
-        """
-        if event.key() == Qt.Key_Delete:
-            self.editor.delete_Selected()
-
-    def zoom_in(self, scale_factor: float = 1.15) -> None:
-        """
-
-        :param scale_factor:
-        """
-        self.scale(scale_factor, scale_factor)
-
-    def zoom_out(self, scale_factor: float = 1.15) -> None:
-        """
-
-        :param scale_factor:
-        """
-        self.scale(1.0 / scale_factor, 1.0 / scale_factor)
-
-    def add_bus(self, bus: Bus, x: int, y: int, h: int, w: int) -> BusGraphicItem:
-        """
-        Add bus
-        :param bus: GridCal Bus object
-        :param x: x coordinate
-        :param y: y coordinate
-        :param h: height (px)
-        :param w: width (px)
-        :return: BusGraphicItem
-        """
-
-        graphic_object = BusGraphicItem(scene=self.scene(), editor=self.editor,
-                                        bus=bus, x=x, y=y, h=h, w=w)
-        self.diagram_scene.addItem(graphic_object)
-        return graphic_object
-
-    def add_transformer_3w(self, elm: Transformer3W, x: int, y: int) -> Transformer3WGraphicItem:
-        """
-
-        :param elm: Transformer3W
-        :param x: x coordinate
-        :param y: y coordinate
-        :return: Transformer3WGraphicItem
-        """
-        graphic_object = Transformer3WGraphicItem(diagramScene=self.scene(), editor=self.editor, elm=elm)
-        graphic_object.setPos(QPoint(x, y))
-        self.diagram_scene.addItem(graphic_object)
-        return graphic_object
-
-    def add_fluid_node(self, node: FluidNode, x: int, y: int, h: int, w: int) -> FluidNodeGraphicItem:
-        """
-        Add bus
-        :param node: GridCal FluidNode object
-        :param x: x coordinate
-        :param y: y coordinate
-        :param h: height (px)
-        :param w: width (px)
-        :return: FluidNodeGraphicItem
-        """
-
-        graphic_object = FluidNodeGraphicItem(scene=self.scene(), editor=self.editor,
-                                              fluid_node=node, x=x, y=y, h=h, w=w)
-        self.diagram_scene.addItem(graphic_object)
-        return graphic_object
+# class EditorGraphicsView(QGraphicsView):
+#     """
+#     EditorGraphicsView (Handles the drag and drop)
+#     """
+#
+#     def __init__(self, diagram_scene: DiagramScene, editor: "BusBranchEditorWidget"):
+#         """
+#         Editor where the diagram is displayed
+#         @param diagram_scene: DiagramScene object
+#         @param editor: BusBranchEditorWidget
+#         """
+#         QGraphicsView.__init__(self, diagram_scene)
+#         self._zoom = 0
+#         self.setDragMode(QGraphicsView.DragMode.RubberBandDrag)
+#         self.setRubberBandSelectionMode(Qt.IntersectsItemShape)
+#         self.setMouseTracking(True)
+#         self.setInteractive(True)
+#         self.editor = editor
+#         self.diagram_scene: DiagramScene = diagram_scene
+#         self.setRenderHints(QPainter.Antialiasing | QPainter.SmoothPixmapTransform)
+#         self.setAlignment(Qt.AlignCenter)
+#
+#     def dragEnterEvent(self, event: QDragEnterEvent) -> None:
+#         """
+#
+#         @param event:
+#         @return:
+#         """
+#         if event.mimeData().hasFormat('component/name'):
+#             event.accept()
+#
+#     def dragMoveEvent(self, event: QDragMoveEvent) -> None:
+#         """
+#         Move element
+#         @param event:
+#         @return:
+#         """
+#         if event.mimeData().hasFormat('component/name'):
+#             event.accept()
+#
+#     def dropEvent(self, event: QDropEvent) -> None:
+#         """
+#         Create an element
+#         @param event:
+#         @return:
+#         """
+#         if event.mimeData().hasFormat('component/name'):
+#             obj_type = event.mimeData().data('component/name')
+#             bus_data = toQBytesArray('Bus')
+#             tr3w_data = toQBytesArray('3W-Transformer')
+#             fluid_node_data = toQBytesArray("Fluid-node")
+#
+#             point0 = self.mapToScene(event.position().x(), event.position().y())
+#             x0 = point0.x()
+#             y0 = point0.y()
+#
+#             if bus_data == obj_type:
+#                 name = 'Bus ' + str(len(self.diagram_scene.circuit.buses))
+#
+#                 obj = Bus(name=name,
+#                           # area=self.diagram_scene.circuit.areas[0],
+#                           # zone=self.diagram_scene.circuit.zones[0],
+#                           # substation=self.diagram_scene.circuit.substations[0],
+#                           # country=self.diagram_scene.circuit.countries[0],
+#                           vnom=self.editor.default_bus_voltage)
+#
+#                 graphic_object = self.add_bus(bus=obj, x=x0, y=y0, h=20, w=80)
+#
+#                 # weird but it's the only way to have graphical-API communication
+#                 self.diagram_scene.circuit.add_bus(obj)
+#
+#                 # add to the diagram list
+#                 self.editor.update_diagram_element(device=obj,
+#                                                    x=x0,
+#                                                    y=y0,
+#                                                    w=graphic_object.w,
+#                                                    h=graphic_object.h,
+#                                                    r=0,
+#                                                    graphic_object=graphic_object)
+#
+#             elif tr3w_data == obj_type:
+#                 name = "Transformer 3-windings" + str(len(self.diagram_scene.circuit.transformers3w))
+#                 obj = Transformer3W(name=name)
+#                 graphic_object = self.add_transformer_3w(elm=obj, x=x0, y=y0)
+#
+#                 # weird but it's the only way to have graphical-API communication
+#                 self.diagram_scene.circuit.add_transformer3w(obj)
+#
+#                 # add to the diagram list
+#                 self.editor.update_diagram_element(device=obj,
+#                                                    x=x0,
+#                                                    y=y0,
+#                                                    w=graphic_object.w,
+#                                                    h=graphic_object.h,
+#                                                    r=0,
+#                                                    graphic_object=graphic_object)
+#
+#             elif fluid_node_data == obj_type:
+#                 name = 'FluidNode ' + str(len(self.diagram_scene.circuit.fluid_nodes))
+#
+#                 obj = FluidNode(name=name)
+#
+#                 graphic_object = self.add_fluid_node(node=obj, x=x0, y=y0, h=20, w=80)
+#
+#                 # weird but it's the only way to have graphical-API communication
+#                 self.diagram_scene.circuit.add_fluid_node(obj)
+#
+#                 # add to the diagram list
+#                 self.editor.update_diagram_element(device=obj,
+#                                                    x=x0,
+#                                                    y=y0,
+#                                                    w=graphic_object.w,
+#                                                    h=graphic_object.h,
+#                                                    r=0,
+#                                                    graphic_object=graphic_object)
+#
+#     def wheelEvent(self, event: QWheelEvent) -> None:
+#         """
+#         Zoom
+#         @param event:
+#         @return:
+#         """
+#         self.setTransformationAnchor(QGraphicsView.ViewportAnchor.AnchorUnderMouse)
+#
+#         # Scale the view / do the zoom
+#         scale_factor = 1.15
+#         # print(event.angleDelta().x(), event.angleDelta().y(), event.angleDelta().manhattanLength() )
+#         if event.angleDelta().y() > 0:
+#             # Zoom in
+#             self.zoom_in(scale_factor)
+#
+#         else:
+#             # Zooming out
+#             self.zoom_out(scale_factor)
+#
+#     def keyPressEvent(self, event: QKeyEvent):
+#         """
+#         Key press event cature
+#         :param event:
+#         :return:
+#         """
+#         if event.key() == Qt.Key_Delete:
+#             self.editor.delete_Selected()
+#
+#     def zoom_in(self, scale_factor: float = 1.15) -> None:
+#         """
+#
+#         :param scale_factor:
+#         """
+#         self.scale(scale_factor, scale_factor)
+#
+#     def zoom_out(self, scale_factor: float = 1.15) -> None:
+#         """
+#
+#         :param scale_factor:
+#         """
+#         self.scale(1.0 / scale_factor, 1.0 / scale_factor)
+#
+#     def add_bus(self, bus: Bus, x: int, y: int, h: int, w: int) -> BusGraphicItem:
+#         """
+#         Add bus
+#         :param bus: GridCal Bus object
+#         :param x: x coordinate
+#         :param y: y coordinate
+#         :param h: height (px)
+#         :param w: width (px)
+#         :return: BusGraphicItem
+#         """
+#
+#         graphic_object = BusGraphicItem(scene=self.scene(), editor=self.editor,
+#                                         bus=bus, x=x, y=y, h=h, w=w)
+#         self.diagram_scene.addItem(graphic_object)
+#         return graphic_object
+#
+#     def add_transformer_3w(self, elm: Transformer3W, x: int, y: int) -> Transformer3WGraphicItem:
+#         """
+#
+#         :param elm: Transformer3W
+#         :param x: x coordinate
+#         :param y: y coordinate
+#         :return: Transformer3WGraphicItem
+#         """
+#         graphic_object = Transformer3WGraphicItem(diagramScene=self.scene(), editor=self.editor, elm=elm)
+#         graphic_object.setPos(QPoint(x, y))
+#         self.diagram_scene.addItem(graphic_object)
+#         return graphic_object
+#
+#     def add_fluid_node(self, node: FluidNode, x: int, y: int, h: int, w: int) -> FluidNodeGraphicItem:
+#         """
+#         Add bus
+#         :param node: GridCal FluidNode object
+#         :param x: x coordinate
+#         :param y: y coordinate
+#         :param h: height (px)
+#         :param w: width (px)
+#         :return: FluidNodeGraphicItem
+#         """
+#
+#         graphic_object = FluidNodeGraphicItem(scene=self.scene(), editor=self.editor,
+#                                               fluid_node=node, x=x, y=y, h=h, w=w)
+#         self.diagram_scene.addItem(graphic_object)
+#         return graphic_object
 
 
 class BusBranchEditorWidget(QSplitter):
@@ -771,8 +771,23 @@ class BusBranchEditorWidget(QSplitter):
         self.libraryBrowserView.setDragDropMode(QAbstractItemView.DragDropMode.InternalMove)
 
         # create all the schematic objects and replace the existing ones
-        self.diagramScene = DiagramScene(parent=self, circuit=circuit)  # scene to add to the QGraphicsView
-        self.editor_graphics_view = EditorGraphicsView(diagram_scene=self.diagramScene, editor=self)
+        self.diagram_scene = DiagramScene(parent=self, circuit=circuit)  # scene to add to the QGraphicsView
+
+        self.editor_graphics_view = QGraphicsView(self.diagram_scene)
+        self.editor_graphics_view.setDragMode(QGraphicsView.DragMode.RubberBandDrag)
+        self.editor_graphics_view.setRubberBandSelectionMode(Qt.IntersectsItemShape)
+        self.editor_graphics_view.setMouseTracking(True)
+        self.editor_graphics_view.setInteractive(True)
+        self.editor_graphics_view.setRenderHints(QPainter.Antialiasing | QPainter.SmoothPixmapTransform)
+        self.editor_graphics_view.setAlignment(Qt.AlignCenter)
+        self.editor_graphics_view.dragEnterEvent = self.dragEnterEvent
+        self.editor_graphics_view.dragMoveEvent = self.dragMoveEvent
+        self.editor_graphics_view.dropEvent = self.dropEvent
+        self.editor_graphics_view.wheelEvent = self.wheelEvent
+        self.editor_graphics_view.keyPressEvent = self.keyPressEvent
+
+        # Zoom indicator
+        self._zoom = 0
 
         # create the grid name editor
         self.frame1 = QFrame()
@@ -802,6 +817,192 @@ class BusBranchEditorWidget(QSplitter):
         if diagram is not None:
             self.draw()
 
+    def dragEnterEvent(self, event: QDragEnterEvent) -> None:
+        """
+
+        @param event:
+        @return:
+        """
+        if event.mimeData().hasFormat('component/name'):
+            event.accept()
+
+    def dragMoveEvent(self, event: QDragMoveEvent) -> None:
+        """
+        Move element
+        @param event:
+        @return:
+        """
+        if event.mimeData().hasFormat('component/name'):
+            event.accept()
+
+    def dropEvent(self, event: QDropEvent) -> None:
+        """
+        Create an element
+        @param event:
+        @return:
+        """
+        if event.mimeData().hasFormat('component/name'):
+            obj_type = event.mimeData().data('component/name')
+            bus_data = toQBytesArray('Bus')
+            tr3w_data = toQBytesArray('3W-Transformer')
+            fluid_node_data = toQBytesArray("Fluid-node")
+
+            point0 = self.editor_graphics_view.mapToScene(event.position().x(), event.position().y())
+            x0 = point0.x()
+            y0 = point0.y()
+
+            if bus_data == obj_type:
+                name = 'Bus ' + str(len(self.circuit.buses))
+
+                obj = Bus(name=name,
+                          # area=self.diagram_scene.circuit.areas[0],
+                          # zone=self.diagram_scene.circuit.zones[0],
+                          # substation=self.diagram_scene.circuit.substations[0],
+                          # country=self.diagram_scene.circuit.countries[0],
+                          vnom=self.default_bus_voltage)
+
+                graphic_object = self.create_bus_graphics(bus=obj, x=x0, y=y0, h=20, w=80)
+
+                # weird but it's the only way to have graphical-API communication
+                self.circuit.add_bus(obj)
+
+                # add to the diagram list
+                self.update_diagram_element(device=obj,
+                                            x=x0,
+                                            y=y0,
+                                            w=graphic_object.w,
+                                            h=graphic_object.h,
+                                            r=0,
+                                            graphic_object=graphic_object)
+
+            elif tr3w_data == obj_type:
+                name = "Transformer 3-windings" + str(len(self.circuit.transformers3w))
+                obj = Transformer3W(name=name)
+                graphic_object = self.create_transformer_3w_graphics(elm=obj, x=x0, y=y0)
+
+                # weird but it's the only way to have graphical-API communication
+                self.circuit.add_transformer3w(obj)
+
+                # add to the diagram list
+                self.update_diagram_element(device=obj,
+                                            x=x0,
+                                            y=y0,
+                                            w=graphic_object.w,
+                                            h=graphic_object.h,
+                                            r=0,
+                                            graphic_object=graphic_object)
+
+            elif fluid_node_data == obj_type:
+                name = 'FluidNode ' + str(len(self.circuit.fluid_nodes))
+
+                obj = FluidNode(name=name)
+
+                graphic_object = self.create_fluid_node_graphics(node=obj, x=x0, y=y0, h=20, w=80)
+
+                # weird but it's the only way to have graphical-API communication
+                self.circuit.add_fluid_node(obj)
+
+                # add to the diagram list
+                self.update_diagram_element(device=obj,
+                                            x=x0,
+                                            y=y0,
+                                            w=graphic_object.w,
+                                            h=graphic_object.h,
+                                            r=0,
+                                            graphic_object=graphic_object)
+
+    def wheelEvent(self, event: QWheelEvent) -> None:
+        """
+        Zoom
+        @param event:
+        @return:
+        """
+        self.editor_graphics_view.setTransformationAnchor(QGraphicsView.ViewportAnchor.AnchorUnderMouse)
+
+        # Scale the view / do the zoom
+        scale_factor = 1.15
+        # print(event.angleDelta().x(), event.angleDelta().y(), event.angleDelta().manhattanLength() )
+        if event.angleDelta().y() > 0:
+            # Zoom in
+            self.zoom_in(scale_factor)
+
+        else:
+            # Zooming out
+            self.zoom_out(scale_factor)
+
+    def keyPressEvent(self, event: QKeyEvent):
+        """
+        Key press event cature
+        :param event:
+        :return:
+        """
+        if event.key() == Qt.Key_Delete:
+            self.delete_Selected()
+
+    def zoom_in(self, scale_factor: float = 1.15) -> None:
+        """
+
+        :param scale_factor:
+        """
+        self.editor_graphics_view.scale(scale_factor, scale_factor)
+
+    def zoom_out(self, scale_factor: float = 1.15) -> None:
+        """
+
+        :param scale_factor:
+        """
+        self.editor_graphics_view.scale(1.0 / scale_factor, 1.0 / scale_factor)
+
+    def create_bus_graphics(self, bus: Bus, x: int, y: int, h: int, w: int) -> BusGraphicItem:
+        """
+        create the Bus graphics
+        :param bus: GridCal Bus object
+        :param x: x coordinate
+        :param y: y coordinate
+        :param h: height (px)
+        :param w: width (px)
+        :return: BusGraphicItem
+        """
+
+        graphic_object = BusGraphicItem(scene=self.editor_graphics_view.scene(),
+                                        editor=self,
+                                        bus=bus,
+                                        x=x,
+                                        y=y,
+                                        h=h,
+                                        w=w)
+        self.diagram_scene.addItem(graphic_object)
+        return graphic_object
+
+    def create_transformer_3w_graphics(self, elm: Transformer3W, x: int, y: int) -> Transformer3WGraphicItem:
+        """
+        Add Transformer3W to the graphics
+        :param elm: Transformer3W
+        :param x: x coordinate
+        :param y: y coordinate
+        :return: Transformer3WGraphicItem
+        """
+        graphic_object = Transformer3WGraphicItem(diagramScene=self.editor_graphics_view.scene(), editor=self, elm=elm)
+        graphic_object.setPos(QPoint(x, y))
+        self.diagram_scene.addItem(graphic_object)
+        return graphic_object
+
+    def create_fluid_node_graphics(self, node: FluidNode, x: int, y: int, h: int, w: int) -> FluidNodeGraphicItem:
+        """
+        Add fluid node to graphics
+        :param node: GridCal FluidNode object
+        :param x: x coordinate
+        :param y: y coordinate
+        :param h: height (px)
+        :param w: width (px)
+        :return: FluidNodeGraphicItem
+        """
+
+        graphic_object = FluidNodeGraphicItem(scene=self.editor_graphics_view.scene(), editor=self,
+                                              fluid_node=node, x=x, y=y, h=h, w=w)
+        self.diagram_scene.addItem(graphic_object)
+        return graphic_object
+
     def set_data(self, circuit: MultiCircuit, diagram: BusBranchDiagram):
         """
         Set the widget data and redraw
@@ -827,11 +1028,11 @@ class BusBranchEditorWidget(QSplitter):
 
                 for idtag, location in points_group.locations.items():
                     # add the graphic object to the diagram view
-                    graphic_object = self.editor_graphics_view.add_bus(bus=location.api_object,
-                                                                       x=location.x,
-                                                                       y=location.y,
-                                                                       h=location.h,
-                                                                       w=location.w)
+                    graphic_object = self.create_bus_graphics(bus=location.api_object,
+                                                              x=location.x,
+                                                              y=location.y,
+                                                              h=location.h,
+                                                              w=location.w)
 
                     # add circuit pointer to the bus graphic element
                     graphic_object.scene.circuit = self.circuit  # add pointer to the circuit
@@ -851,16 +1052,13 @@ class BusBranchEditorWidget(QSplitter):
                 for idtag, location in points_group.locations.items():
                     elm: Transformer3W = location.api_object
 
-                    graphic_object = self.editor_graphics_view.add_transformer_3w(elm=elm,
-                                                                                  x=location.x,
-                                                                                  y=location.y)
+                    graphic_object = self.create_transformer_3w_graphics(elm=elm,
+                                                                         x=location.x,
+                                                                         y=location.y)
 
                     bus_1_graphic_data = self.diagram.query_point(elm.bus1)
                     bus_2_graphic_data = self.diagram.query_point(elm.bus2)
                     bus_3_graphic_data = self.diagram.query_point(elm.bus3)
-
-                    # add circuit pointer to the bus graphic element
-                    graphic_object.diagramScene.circuit = self.circuit  # add pointer to the circuit
 
                     conn1 = WindingGraphicItem(fromPort=graphic_object.terminals[0],
                                                toPort=bus_1_graphic_data.graphic_object.terminal,
@@ -891,11 +1089,11 @@ class BusBranchEditorWidget(QSplitter):
 
                 for idtag, location in points_group.locations.items():
                     # add the graphic object to the diagram view
-                    graphic_object = self.editor_graphics_view.add_fluid_node(node=location.api_object,
-                                                                              x=location.x,
-                                                                              y=location.y,
-                                                                              h=location.h,
-                                                                              w=location.w)
+                    graphic_object = self.create_fluid_node_graphics(node=location.api_object,
+                                                                     x=location.x,
+                                                                     y=location.y,
+                                                                     h=location.h,
+                                                                     w=location.w)
 
                     # add circuit pointer to the bus graphic element
                     graphic_object.scene.circuit = self.circuit  # add pointer to the circuit
@@ -1145,7 +1343,7 @@ class BusBranchEditorWidget(QSplitter):
 
         if graphic_object is not None:
             try:
-                self.diagramScene.removeItem(graphic_object)
+                self.diagram_scene.removeItem(graphic_object)
             except:
                 pass
 
@@ -1417,7 +1615,7 @@ class BusBranchEditorWidget(QSplitter):
         # Clear or finnish the started connection:
         if self.started_branch:
             pos = event.scenePos()
-            items = self.diagramScene.items(pos)  # get the item (the terminal) at the mouse position
+            items = self.diagram_scene.items(pos)  # get the item (the terminal) at the mouse position
 
             for item in items:
                 if type(item) is TerminalItem:  # connect only to terminals
@@ -1586,10 +1784,10 @@ class BusBranchEditorWidget(QSplitter):
         max_x = -sys.maxsize
         max_y = -sys.maxsize
 
-        if len(self.diagramScene.selectedItems()) > 0:
+        if len(self.diagram_scene.selectedItems()) > 0:
 
             # expand selection
-            for item in self.diagramScene.selectedItems():
+            for item in self.diagram_scene.selectedItems():
                 if type(item) is BusGraphicItem:
                     x = item.pos().x() * factor
                     y = item.pos().y() * factor
@@ -1609,7 +1807,7 @@ class BusBranchEditorWidget(QSplitter):
         else:
 
             # expand all
-            for item in self.diagramScene.items():
+            for item in self.diagram_scene.items():
                 if type(item) is BusGraphicItem:
                     x = item.pos().x() * factor
                     y = item.pos().y() * factor
@@ -1657,7 +1855,7 @@ class BusBranchEditorWidget(QSplitter):
         my = margin_factor * dy
         h = dy + 2 * my + 80
         w = dx + 2 * mx + 80
-        self.diagramScene.setSceneRect(QRectF(min_x - mx, min_y - my, w, h))
+        self.diagram_scene.setSceneRect(QRectF(min_x - mx, min_y - my, w, h))
 
     def center_nodes(self, margin_factor: float = 0.1, elements: Union[None, List[Union[Bus, FluidNode]]] = None):
         """
@@ -1672,7 +1870,7 @@ class BusBranchEditorWidget(QSplitter):
         max_x = -sys.maxsize
         max_y = -sys.maxsize
         if elements is None:
-            for item in self.diagramScene.items():
+            for item in self.diagram_scene.items():
                 if type(item) in [BusGraphicItem, FluidNodeGraphicItem]:
                     x = item.pos().x()
                     y = item.pos().y()
@@ -1682,7 +1880,7 @@ class BusBranchEditorWidget(QSplitter):
                     max_y = max(max_y, y)
                     min_y = min(min_y, y)
         else:
-            for item in self.diagramScene.items():
+            for item in self.diagram_scene.items():
                 if type(item) in [BusGraphicItem, FluidNodeGraphicItem]:
 
                     if item.api_object in elements:
@@ -1703,7 +1901,7 @@ class BusBranchEditorWidget(QSplitter):
         w = dx + 2 * mx + 80
         boundaries = QRectF(min_x - mx, min_y - my, w, h)
 
-        self.diagramScene.setSceneRect(boundaries)
+        self.diagram_scene.setSceneRect(boundaries)
         self.editor_graphics_view.fitInView(boundaries, Qt.KeepAspectRatio)
         self.editor_graphics_view.scale(1.0, 1.0)
 
@@ -1843,7 +2041,7 @@ class BusBranchEditorWidget(QSplitter):
             image.fill(Qt.transparent)
             painter = QPainter(image)
             painter.setRenderHint(QPainter.Antialiasing)
-            self.diagramScene.render(painter)
+            self.diagram_scene.render(painter)
             image.save(filename)
             painter.end()
 
@@ -1856,7 +2054,7 @@ class BusBranchEditorWidget(QSplitter):
             svg_gen.setDescription("An SVG drawing created by GridCal")
 
             painter = QPainter(svg_gen)
-            self.diagramScene.render(painter)
+            self.diagram_scene.render(painter)
             painter.end()
         else:
             raise Exception('Extension ' + str(extension) + ' not supported :(')
@@ -1871,7 +2069,7 @@ class BusBranchEditorWidget(QSplitter):
         y = int(bus.y * explode_factor)
 
         # add the graphic object to the diagram view
-        graphic_object = self.editor_graphics_view.add_bus(bus=bus, x=x, y=y, w=bus.w, h=bus.h)
+        graphic_object = self.create_bus_graphics(bus=bus, x=x, y=y, w=bus.w, h=bus.h)
 
         # add circuit pointer to the bus graphic element
         graphic_object.scene.circuit = self.circuit  # add pointer to the circuit
@@ -2085,11 +2283,11 @@ class BusBranchEditorWidget(QSplitter):
         :param elm: Branch instance
         """
 
-        tr3_graphic_object = self.editor_graphics_view.add_transformer_3w(elm=elm, x=elm.x, y=elm.y)
+        tr3_graphic_object = self.create_transformer_3w_graphics(elm=elm, x=elm.x, y=elm.y)
 
-        bus1_graphics: BusGraphicItem = self.editor_graphics_view.editor.diagram.query_point(elm.bus1).graphic_object
-        bus2_graphics: BusGraphicItem = self.editor_graphics_view.editor.diagram.query_point(elm.bus2).graphic_object
-        bus3_graphics: BusGraphicItem = self.editor_graphics_view.editor.diagram.query_point(elm.bus3).graphic_object
+        bus1_graphics: BusGraphicItem = self.diagram.query_point(elm.bus1).graphic_object
+        bus2_graphics: BusGraphicItem = self.diagram.query_point(elm.bus2).graphic_object
+        bus3_graphics: BusGraphicItem = self.diagram.query_point(elm.bus3).graphic_object
 
         # add circuit pointer to the bus graphic element
         tr3_graphic_object.diagramScene.circuit = self.circuit  # add pointer to the circuit
@@ -2135,7 +2333,7 @@ class BusBranchEditorWidget(QSplitter):
         y = 0
 
         # add the graphic object to the diagram view
-        graphic_object = self.editor_graphics_view.add_fluid_node(node=node, x=x, y=y, w=80, h=40)
+        graphic_object = self.create_fluid_node_graphics(node=node, x=x, y=y, w=80, h=40)
 
         # add circuit pointer to the bus graphic element
         graphic_object.scene.circuit = self.circuit  # add pointer to the circuit
@@ -2200,7 +2398,7 @@ class BusBranchEditorWidget(QSplitter):
         graphic_obj.toPort.update()
 
         # delete from the schematic
-        self.diagramScene.removeItem(line_graphic)
+        self.diagram_scene.removeItem(line_graphic)
 
         self.update_diagram_element(device=hvdc, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_obj)
         self.delete_diagram_element(device=line)
@@ -2222,7 +2420,7 @@ class BusBranchEditorWidget(QSplitter):
         graphic_obj.toPort.update()
 
         # delete from the schematic
-        self.diagramScene.removeItem(line_graphic)
+        self.diagram_scene.removeItem(line_graphic)
 
         self.update_diagram_element(device=transformer, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_obj)
         self.delete_diagram_element(device=line)
@@ -2244,7 +2442,7 @@ class BusBranchEditorWidget(QSplitter):
         graphic_obj.toPort.update()
 
         # delete from the schematic
-        self.diagramScene.removeItem(line_graphic)
+        self.diagram_scene.removeItem(line_graphic)
 
         self.update_diagram_element(device=vsc, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_obj)
         self.delete_diagram_element(device=line)
@@ -2266,7 +2464,7 @@ class BusBranchEditorWidget(QSplitter):
         graphic_obj.toPort.update()
 
         # delete from the schematic
-        self.diagramScene.removeItem(line_graphic)
+        self.diagram_scene.removeItem(line_graphic)
 
         self.update_diagram_element(device=upfc, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_obj)
         self.delete_diagram_element(device=line)
@@ -2297,7 +2495,7 @@ class BusBranchEditorWidget(QSplitter):
         fl_to.terminal.update()
 
         # delete from the schematic
-        self.diagramScene.removeItem(item_graphic)
+        self.diagram_scene.removeItem(item_graphic)
 
         self.update_diagram_element(device=line, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_obj)
         self.delete_diagram_element(device=element)
@@ -2895,7 +3093,7 @@ class BusBranchEditorWidget(QSplitter):
         Get a list of the API objects from the selection
         :return: List[EditableDevice]
         """
-        return [e.api_object for e in self.diagramScene.selectedItems()]
+        return [e.api_object for e in self.diagram_scene.selectedItems()]
 
     def get_selection_diagram(self) -> BusBranchDiagram:
         """
@@ -2906,7 +3104,7 @@ class BusBranchEditorWidget(QSplitter):
 
         # first pass (only buses)
         bus_dict = dict()
-        for item in self.diagramScene.selectedItems():
+        for item in self.diagram_scene.selectedItems():
             if isinstance(item, BusGraphicItem):
                 # check that the bus is in the original diagram
                 location = self.diagram.query_point(item.api_object)
@@ -2918,7 +3116,7 @@ class BusBranchEditorWidget(QSplitter):
                     raise Exception('Item was selected but was not registered!')
 
         # second pass (Branches, and include their not selected buses)
-        for item in self.diagramScene.selectedItems():
+        for item in self.diagram_scene.selectedItems():
             if not isinstance(item, BusGraphicItem):
 
                 # add the element

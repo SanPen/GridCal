@@ -42,7 +42,7 @@ class TapChanger:
 
         B_C3 = Bus(name="B_C3",
                    vnom=10) #kV
-        grid.add_bus(B_C3)
+        grid.add_bus_to_diagram(B_C3)
 
         # Create transformer types
         SS = TransformerType(name="SS",
