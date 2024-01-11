@@ -20,6 +20,7 @@ from typing import List, Tuple, Union
 import networkx as nx
 import numpy as np
 from PySide6 import QtGui, QtWidgets
+from PySide6.QtCore import QRectF, Qt
 from matplotlib import pyplot as plt
 from pandas.plotting import register_matplotlib_converters
 
@@ -29,7 +30,7 @@ from GridCalEngine.enumerations import DeviceType
 import GridCal.Gui.GuiFunctions as gf
 import GridCal.Gui.Visualization.palettes as palettes
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
-from GridCal.Gui.GeneralDialogues import CheckListDialogue, StartEndSelectionDialogue
+from GridCal.Gui.GeneralDialogues import CheckListDialogue, StartEndSelectionDialogue, InputSearchDialogue
 from GridCal.Gui.BusViewer.bus_viewer_dialogue import BusViewerWidget
 from GridCal.Gui.BusBranchEditorWidget import BusBranchEditorWidget, generate_bus_branch_diagram
 from GridCal.Gui.MapWidget.grid_map_widget import GridMapWidget
@@ -121,7 +122,8 @@ class DiagramsMain(CompiledArraysMain):
         self.ui.actionZoom_in.triggered.connect(self.zoom_in)
         self.ui.actionZoom_out.triggered.connect(self.zoom_out)
         self.ui.actionAdd_general_bus_branch_diagram.triggered.connect(self.add_complete_bus_branch_diagram)
-        self.ui.actionNew_bus_branch_diagram_from_selection.triggered.connect(self.new_bus_branch_diagram_from_selection)
+        self.ui.actionNew_bus_branch_diagram_from_selection.triggered.connect(
+            self.new_bus_branch_diagram_from_selection)
         self.ui.actionAdd_bus_vecinity_diagram.triggered.connect(self.add_bus_vecinity_diagram_from_diagram_selection)
         self.ui.actionAdd_map.triggered.connect(self.add_map_diagram)
         self.ui.actionAdd_substation_diagram.triggered.connect(self.add_substation_diagram)
@@ -130,6 +132,7 @@ class DiagramsMain(CompiledArraysMain):
         self.ui.actionSmaller_nodes.triggered.connect(self.smaller_nodes)
         self.ui.actionCenter_view.triggered.connect(self.center_nodes)
         self.ui.actionAutoatic_layout.triggered.connect(self.auto_layout)
+        self.ui.actionSearchDiagram.triggered.connect(self.search_diagram)
 
         # Buttons
         self.ui.colour_results_pushButton.clicked.connect(self.colour_diagrams)
@@ -1434,3 +1437,20 @@ class DiagramsMain(CompiledArraysMain):
             elif isinstance(diagram_widget, GridMapWidget):
                 pass
                 # diagram_widget.delete_diagram_elements(elements)
+
+    def search_diagram(self):
+        """
+        Search elements by name, code or idtag and center them in the screen
+        """
+
+        dlg = InputSearchDialogue(deafault_value="",
+                                  title="Search",
+                                  prompt="Search object by name, code or idtag in the diagram")
+        if dlg.exec_():
+
+            if dlg.is_accepted:
+                diagram = self.get_selected_diagram_widget()
+
+                if diagram is not None:
+                    if isinstance(diagram, BusBranchEditorWidget):
+                        diagram.graphical_serach(search_text=dlg.searchText.lower())

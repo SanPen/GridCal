@@ -75,7 +75,7 @@ class InjectionTemplateGraphicItem(QGraphicsItemGroup):
         # line to tie this object with the original bus (the parent)
         self.nexus = QGraphicsLineItem()
         self.nexus.setPen(QPen(self.color, self.width, self.style))
-        self.editor.scene_diagram.addItem(self.nexus)
+        self.editor.diagram_scene.addItem(self.nexus)
 
         self.setPos(self.parent.x(), self.parent.y() + 100)
         self.update_line(self.pos())

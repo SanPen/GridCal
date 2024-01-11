@@ -1355,6 +1355,21 @@ class BusBranchEditorWidget(QSplitter):
         w = dx + 2 * mx + 80
         self.diagram_scene.setSceneRect(QRectF(min_x - mx, min_y - my, w, h))
 
+    def set_boundaries(self, min_x, min_y, width, height):
+        """
+
+        :param min_x:
+        :param min_y:
+        :param width:
+        :param height:
+        :return:
+        """
+        # Create the bounding rectangle
+        boundaries = QRectF(min_x, min_y, width, height)
+
+        # Fit the view
+        self.editor_graphics_view.fitInView(boundaries, Qt.KeepAspectRatio)
+
     def center_nodes(self, margin_factor: float = 0.1, elements: Union[None, List[Union[Bus, FluidNode]]] = None):
         """
         Center the view in the nodes
@@ -1402,6 +1417,49 @@ class BusBranchEditorWidget(QSplitter):
         self.diagram_scene.setSceneRect(boundaries)
         self.editor_graphics_view.fitInView(boundaries, Qt.KeepAspectRatio)
         self.editor_graphics_view.scale(1.0, 1.0)
+
+    def graphical_serach(self, search_text: str):
+        """
+        Search object in the diagram and center around it
+        :param search_text: object name, object code or object idtag
+        """
+        # Initialize boundaries
+        min_x = min_y = max_x = max_y = None
+
+        for key, points_group in self.diagram.data.items():
+            for idTag, location in points_group.locations.items():
+                if location.api_object is not None:
+                    if location.graphic_object is not None:
+
+                        # Check if searchText is in the name, code, or idtag of the api_object
+                        if (search_text in location.api_object.name.lower() or
+                                search_text in location.api_object.code.lower() or
+                                search_text in str(location.api_object.idtag).lower()):
+
+                            # Calculate boundaries
+                            left = location.x
+                            right = location.x + location.w
+                            top = location.y
+                            bottom = location.y + location.h
+
+                            if min_x is None or left < min_x:
+                                min_x = left
+                            if min_y is None or top < min_y:
+                                min_y = top
+                            if max_x is None or right > max_x:
+                                max_x = right
+                            if max_y is None or bottom > max_y:
+                                max_y = bottom
+
+        # After all matching elements have been processed
+
+        if None not in (min_x, min_y, max_x, max_y):
+            # Calculate width and height
+            width = max_x - min_x
+            height = max_y - min_y
+
+            # Fit the view
+            self.set_boundaries(min_x, min_y, width, height)
 
     def get_graph(self):
         """

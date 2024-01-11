@@ -8830,6 +8830,7 @@ QProgressBar::chunk{
     <addaction name="actionZoom_out"/>
     <addaction name="actionCenter_view"/>
     <addaction name="separator"/>
+    <addaction name="actionSearchDiagram"/>
    </widget>
    <addaction name="menuProject"/>
    <addaction name="menuActions"/>
@@ -9846,6 +9847,15 @@ QProgressBar::chunk{
    </property>
    <property name="text">
     <string>Report a bug or feature</string>
+   </property>
+  </action>
+  <action name="actionSearchDiagram">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/magnifying_glass.svg</normaloff>:/Icons/icons/magnifying_glass.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Search</string>
    </property>
   </action>
  </widget>
