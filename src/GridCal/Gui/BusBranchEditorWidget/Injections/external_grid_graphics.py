@@ -14,7 +14,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
+from __future__ import annotations
+from typing import TYPE_CHECKING
 from PySide6 import QtWidgets, QtGui, QtCore
 from GridCalEngine.Core.Devices.Injections.battery import Battery, DeviceType
 from GridCal.Gui.BusBranchEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Square
@@ -22,21 +23,25 @@ from GridCal.Gui.BusBranchEditorWidget.Injections.injections_template_graphics i
 from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCal.Gui.messages import yes_no_question
 
+if TYPE_CHECKING:  # Only imports the below statements during type checking
+    from GridCal.Gui.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
+
 
 class ExternalGridGraphicItem(InjectionTemplateGraphicItem):
     """
     ExternalGrid graphic item
     """
-    def __init__(self, parent, api_obj: Battery, diagramScene):
+    def __init__(self, parent, api_obj: Battery, editor: BusBranchEditorWidget):
         """
 
         :param parent:
         :param api_obj:
+        :param editor:
         """
         InjectionTemplateGraphicItem.__init__(self,
                                               parent=parent,
                                               api_obj=api_obj,
-                                              diagramScene=diagramScene,
+                                              editor=editor,
                                               device_type_name='generator',
                                               w=40,
                                               h=40)
@@ -136,8 +141,8 @@ class ExternalGridGraphicItem(InjectionTemplateGraphicItem):
             ok = True
 
         if ok:
-            self.diagramScene.removeItem(self.nexus)
-            self.diagramScene.removeItem(self)
+            self.editor.diagram_scene.removeItem(self.nexus)
+            self.editor.diagram_scene.removeItem(self)
             self.api_object.bus.batteries.remove(self.api_object)
 
     def enable_disable_toggle(self):
@@ -151,13 +156,13 @@ class ExternalGridGraphicItem(InjectionTemplateGraphicItem):
             else:
                 self.set_enable(True)
 
-            if self.diagramScene.circuit.has_time_series:
+            if self.editor.circuit.has_time_series:
                 ok = yes_no_question('Do you want to update the time series active status accordingly?',
                                      'Update time series active status')
 
                 if ok:
                     # change the bus state (time series)
-                    self.diagramScene.set_active_status_to_profile(self.api_object, override_question=True)
+                    self.editor.set_active_status_to_profile(self.api_object, override_question=True)
 
     def set_enable(self, val=True):
         """
@@ -184,7 +189,7 @@ class ExternalGridGraphicItem(InjectionTemplateGraphicItem):
         Plot API objects profiles
         """
         # time series object from the last simulation
-        ts = self.diagramScene.circuit.time_profile
+        ts = self.editor.circuit.time_profile
 
         # plot the profiles
         self.api_object.plot_profiles(time=ts)
@@ -196,7 +201,7 @@ class ExternalGridGraphicItem(InjectionTemplateGraphicItem):
         :return:
         """
         mdl = ObjectsModel([self.api_object], self.api_object.editable_headers,
-                           parent=self.diagramScene.parent().object_editor_table, editable=True, transposed=True,
-                           dictionary_of_lists={DeviceType.Technology.value: self.diagramScene.circuit.technologies, })
-        self.diagramScene.parent().object_editor_table.setModel(mdl)
+                           parent=self.editor.object_editor_table, editable=True, transposed=True,
+                           dictionary_of_lists={DeviceType.Technology.value: self.editor.circuit.technologies, })
+        self.editor.object_editor_table.setModel(mdl)
 

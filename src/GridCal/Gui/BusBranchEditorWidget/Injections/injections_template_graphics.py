@@ -14,7 +14,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from typing import Union
+from __future__ import annotations
+from typing import TYPE_CHECKING, Union
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPen, QCursor
 from PySide6.QtWidgets import QGraphicsLineItem, QGraphicsItemGroup
@@ -25,6 +26,9 @@ from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Core.Devices.Injections.injection_template import InjectionTemplate
 from GridCalEngine.Core.Devices.Fluid.fluid_injection_template import FluidInjectionTemplate
 
+if TYPE_CHECKING:  # Only imports the below statements during type checking
+    from GridCal.Gui.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
+
 
 class InjectionTemplateGraphicItem(QGraphicsItemGroup):
     """
@@ -34,15 +38,14 @@ class InjectionTemplateGraphicItem(QGraphicsItemGroup):
     def __init__(self,
                  parent,
                  api_obj: Union[InjectionTemplate, FluidInjectionTemplate],
-                 diagramScene,
                  device_type_name: str,
                  w: int,
-                 h: int):
+                 h: int,
+                 editor: "BusBranchEditorWidget"):
         """
 
         :param parent:
         :param api_obj:
-        :param diagramScene:
         :param device_type_name:
         :param w:
         :param h:
@@ -56,7 +59,7 @@ class InjectionTemplateGraphicItem(QGraphicsItemGroup):
 
         self.api_object = api_obj
 
-        self.diagramScene = diagramScene
+        self.editor = editor
 
         self.device_type_name = device_type_name
 
@@ -72,7 +75,7 @@ class InjectionTemplateGraphicItem(QGraphicsItemGroup):
         # line to tie this object with the original bus (the parent)
         self.nexus = QGraphicsLineItem()
         self.nexus.setPen(QPen(self.color, self.width, self.style))
-        self.diagramScene.addItem(self.nexus)
+        self.editor.scene_diagram.addItem(self.nexus)
 
         self.setPos(self.parent.x(), self.parent.y() + 100)
         self.update_line(self.pos())
@@ -124,9 +127,8 @@ class InjectionTemplateGraphicItem(QGraphicsItemGroup):
             ok = True
 
         if ok:
-            self.diagramScene.removeItem(self.nexus)
-            self.diagramScene.removeItem(self)
-            self.api_object.bus.loads.remove(self.api_object)
+            self.editor.diagram_scene.removeItem(self.nexus)
+            self.editor.remove_element(device=self, graphic_object=self.api_object)
 
     def mousePressEvent(self, QGraphicsSceneMouseEvent):
         """
@@ -136,20 +138,19 @@ class InjectionTemplateGraphicItem(QGraphicsItemGroup):
         """
         mdl = ObjectsModel(objects=[self.api_object],
                            editable_headers=self.api_object.editable_headers,
-                           parent=self.diagramScene.parent().object_editor_table,
+                           parent=self.editor.object_editor_table,
                            editable=True,
                            transposed=True,
                            dictionary_of_lists={
-                               DeviceType.GeneratorDevice.value: self.diagramScene.circuit.get_generators(),
+                               DeviceType.GeneratorDevice.value: self.editor.circuit.get_generators(),
                            })
-        self.diagramScene.parent().object_editor_table.setModel(mdl)
+        self.editor.object_editor_table.setModel(mdl)
 
     def change_bus(self):
         """
         Change the generator bus
         """
-        editor = self.diagramScene.parent()
-        idx_bus_list = editor.get_selected_buses()
+        idx_bus_list = self.editor.get_selected_buses()
 
         if len(idx_bus_list) == 2:
 

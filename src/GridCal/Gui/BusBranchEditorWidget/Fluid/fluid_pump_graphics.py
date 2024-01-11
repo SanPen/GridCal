@@ -14,15 +14,18 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
+from typing import TYPE_CHECKING
 from PySide6.QtCore import QPointF
 from PySide6.QtGui import QPen, QIcon, QPixmap
-from PySide6.QtWidgets import (QMenu, QGraphicsTextItem, QGraphicsSceneMouseEvent)
-from GridCalEngine.enumerations import DeviceType
+from PySide6.QtWidgets import (QMenu, QGraphicsTextItem)
 from GridCalEngine.Core.Devices.Fluid.fluid_pump import FluidPump
 from GridCal.Gui.BusBranchEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Circle
-from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCal.Gui.messages import yes_no_question
 from GridCal.Gui.BusBranchEditorWidget.Injections.injections_template_graphics import InjectionTemplateGraphicItem
+
+if TYPE_CHECKING:  # Only imports the below statements during type checking
+    from GridCal.Gui.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
 
 
 class FluidPumpGraphicItem(InjectionTemplateGraphicItem):
@@ -30,17 +33,17 @@ class FluidPumpGraphicItem(InjectionTemplateGraphicItem):
     FluidPumpGraphicItem
     """
 
-    def __init__(self, parent, api_obj: FluidPump, diagramScene):
+    def __init__(self, parent, api_obj: FluidPump, editor: "BusBranchEditorWidget"):
         """
 
         :param parent:
         :param api_obj:
-        :param diagramScene:
+        :param editor:
         """
         InjectionTemplateGraphicItem.__init__(self,
                                               parent=parent,
                                               api_obj=api_obj,
-                                              diagramScene=diagramScene,
+                                              editor=editor,
                                               device_type_name='fluid_pump',
                                               w=40,
                                               h=40)
@@ -141,8 +144,8 @@ class FluidPumpGraphicItem(InjectionTemplateGraphicItem):
             ok = True
 
         if ok:
-            self.diagramScene.removeItem(self.nexus)
-            self.diagramScene.removeItem(self)
+            self.editor.diagram_scene.removeItem(self.nexus)
+            self.editor.diagram_scene.removeItem(self)
             if self.api_object in self.api_object.bus.generators:
                 self.api_object.bus.generators.remove(self.api_object)
 
@@ -157,13 +160,13 @@ class FluidPumpGraphicItem(InjectionTemplateGraphicItem):
             else:
                 self.set_enable(True)
 
-            if self.diagramScene.circuit.has_time_series:
+            if self.editor.circuit.has_time_series:
                 ok = yes_no_question('Do you want to update the time series active status accordingly?',
                                      'Update time series active status')
 
                 if ok:
                     # change the bus state (time series)
-                    self.diagramScene.set_active_status_to_profile(self.api_object, override_question=True)
+                    self.editor.set_active_status_to_profile(self.api_object, override_question=True)
 
     def enable_disable_control_toggle(self):
         """
@@ -197,7 +200,7 @@ class FluidPumpGraphicItem(InjectionTemplateGraphicItem):
         Plot API objects profiles
         """
         # time series object from the last simulation
-        ts = self.diagramScene.circuit.time_profile
+        ts = self.editor.circuit.time_profile
 
         # plot the profiles
         # self.api_object.plot_profiles(time=ts)

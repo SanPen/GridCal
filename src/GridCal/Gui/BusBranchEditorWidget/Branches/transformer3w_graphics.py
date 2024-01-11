@@ -14,8 +14,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
 import numpy as np
-from typing import List
+from typing import List, TYPE_CHECKING
 from PySide6.QtCore import Qt, QPoint, QPointF
 from PySide6.QtGui import QPen, QCursor, QColor, QIcon, QPixmap
 from PySide6.QtWidgets import QGraphicsItem, QGraphicsEllipseItem, QGraphicsRectItem, QMenu, QGraphicsSceneMouseEvent
@@ -26,6 +27,9 @@ from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCal.Gui.BusBranchEditorWidget.terminal_item import TerminalItem
 from GridCal.Gui.BusBranchEditorWidget.Branches.winding_graphics import WindingGraphicItem
 from GridCal.Gui.messages import yes_no_question
+
+if TYPE_CHECKING:  # Only imports the below statements during type checking
+    from GridCal.Gui.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
 
 
 class Transformer3WGraphicItem(QGraphicsRectItem):
@@ -39,15 +43,13 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
       - description
     """
 
-    def __init__(self, diagramScene: "DiagramScene",
-                 editor: "GridEditor",
+    def __init__(self, editor: BusBranchEditorWidget,
                  elm: Transformer3W,
                  pos: QPoint = None,
                  parent=None,
                  index=0):
         """
 
-        :param diagramScene: DiagramScene object
         :param editor: GridEditor object
         :param elm: Transformer3W object
         :param pos: position
@@ -64,7 +66,6 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
         self.setRect(0.0, 0.0, self.w, self.h)
 
         self.api_object: Transformer3W = elm
-        self.diagramScene = diagramScene  # this is the parent that hosts the pointer to the circuit
         self.editor = editor
 
         # color
@@ -185,13 +186,13 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
         """
         super().mouseMoveEvent(event)
 
-        self.diagramScene.parent_.update_diagram_element(device=self.api_object,
-                                                         x=self.pos().x(),
-                                                         y=self.pos().y(),
-                                                         w=self.w,
-                                                         h=self.h,
-                                                         r=self.rotation(),
-                                                         graphic_object=self)
+        self.editor.update_diagram_element(device=self.api_object,
+                                           x=self.pos().x(),
+                                           y=self.pos().y(),
+                                           w=self.w,
+                                           h=self.h,
+                                           r=self.rotation(),
+                                           graphic_object=self)
 
         self.update_conn()
 
@@ -204,11 +205,11 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
         if self.api_object is not None:
             mdl = ObjectsModel(objects=[self.api_object],
                                editable_headers=self.api_object.editable_headers,
-                               parent=self.diagramScene.parent().object_editor_table,
+                               parent=self.editor.object_editor_table,
                                editable=True,
                                transposed=True)
 
-            self.diagramScene.parent().object_editor_table.setModel(mdl)
+            self.editor.object_editor_table.setModel(mdl)
 
     def contextMenuEvent(self, event):
         """
@@ -250,7 +251,7 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
         Delete the big marker
         """
         if self.big_marker is not None:
-            self.diagramScene.removeItem(self.big_marker)
+            self.editor.diagram_scene.removeItem(self.big_marker)
             self.big_marker = None
 
     def change_size(self, w, h):
@@ -261,13 +262,13 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
         """
         # Keep for compatibility
 
-        self.diagramScene.parent_.update_diagram_element(idtag=self.api_object.idtag,
-                                                         x=self.pos().x(),
-                                                         y=self.pos().y(),
-                                                         w=w,
-                                                         h=h,
-                                                         r=self.rotation(),
-                                                         graphic_object=self)
+        self.editor.update_diagram_element(device=self.api_object,
+                                           x=self.pos().x(),
+                                           y=self.pos().y(),
+                                           w=w,
+                                           h=h,
+                                           r=self.rotation(),
+                                           graphic_object=self)
 
     def set_position(self, x: float, y: float) -> None:
         """
@@ -403,7 +404,7 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
             t.remove_all_connections()
 
         for c in self.connection_lines:
-            self.diagramScene.removeItem(c)
+            self.editor.diagram_scene.removeItem(c)
 
     def remove(self, ask=True):
         """
@@ -418,5 +419,4 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
 
         if ok:
             self.delete_all_connections()
-            self.diagramScene.removeItem(self)
-            self.diagramScene.circuit.delete_transformer3w(self.api_object)
+            self.editor.remove_element(device=self.api_object, graphic_object=self)

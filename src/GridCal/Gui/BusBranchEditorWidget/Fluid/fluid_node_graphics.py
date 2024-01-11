@@ -49,7 +49,7 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
       - description
     """
 
-    def __init__(self, scene: QGraphicsScene, editor: BusBranchEditorWidget, fluid_node: FluidNode,
+    def __init__(self, editor: BusBranchEditorWidget, fluid_node: FluidNode,
                  parent=None, index=0, h: int = 20, w: int = 80, x: int = 0, y: int = 0):
 
         super(FluidNodeGraphicItem, self).__init__(parent)
@@ -62,7 +62,6 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
 
         self.api_object = fluid_node
 
-        self.scene: QGraphicsScene = scene  # this is the parent that hosts the pointer to the circuit
         self.editor: BusBranchEditorWidget = editor
 
         # loads, shunts, generators, etc...
@@ -383,7 +382,7 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
             api_obj.generator = self.editor.circuit.add_generator(bus=self.create_bus_if_necessary())
             api_obj.generator.name = self.api_object.name
 
-        _grph = FluidTurbineGraphicItem(parent=self, api_obj=api_obj, diagramScene=self.scene)
+        _grph = FluidTurbineGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
         self.shunt_children.append(_grph)
         self.arrange_children()
         return _grph
@@ -399,7 +398,7 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
             api_obj.generator = self.editor.circuit.add_generator(bus=self.create_bus_if_necessary())
             api_obj.generator.name = self.api_object.name
 
-        _grph = FluidPumpGraphicItem(parent=self, api_obj=api_obj, diagramScene=self.scene)
+        _grph = FluidPumpGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
         self.shunt_children.append(_grph)
         self.arrange_children()
         return _grph
@@ -415,7 +414,7 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
             api_obj.generator = self.editor.circuit.add_generator(bus=self.create_bus_if_necessary())
             api_obj.generator.name = self.api_object.name
 
-        _grph = FluidP2xGraphicItem(parent=self, api_obj=api_obj, diagramScene=self.scene)
+        _grph = FluidP2xGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
         self.shunt_children.append(_grph)
         self.arrange_children()
         return _grph
@@ -441,10 +440,9 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
             self.delete_all_connections()
 
             for g in self.shunt_children:
-                self.scene.removeItem(g.nexus)
+                self.editor.diagram_scene.removeItem(g.nexus)
 
-            self.scene.removeItem(self)
-            self.editor.circuit.delete_fluid_node(self.api_object)
+            self.editor.remove_element(device=self.api_object, graphic_object=self)
 
     def update_color(self):
 

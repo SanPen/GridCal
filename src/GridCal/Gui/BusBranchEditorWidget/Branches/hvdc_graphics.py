@@ -14,17 +14,22 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
+from __future__ import annotations
+from typing import TYPE_CHECKING
 from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtWidgets import QMenu
 from GridCal.Gui.BusBranchEditorWidget.Substation.bus_graphics import TerminalItem
 from GridCalEngine.Core.Devices.Branches.hvdc_line import HvdcLine
 from GridCal.Gui.BusBranchEditorWidget.Branches.line_graphics_template import LineGraphicTemplateItem
 
+if TYPE_CHECKING:  # Only imports the below statements during type checking
+    from GridCal.Gui.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
+
 
 class HvdcGraphicItem(LineGraphicTemplateItem):
 
-    def __init__(self, fromPort: TerminalItem, toPort: TerminalItem, editor, width=5,
+    def __init__(self, fromPort: TerminalItem, toPort: TerminalItem,
+                 editor: BusBranchEditorWidget, width=5,
                  api_object: HvdcLine = None):
         """
 
@@ -108,4 +113,4 @@ class HvdcGraphicItem(LineGraphicTemplateItem):
         """
         # get the index of this object
         i = self.editor.circuit.get_hvdc().index(self.api_object)
-        self.editor.diagram_scene.plot_hvdc_branch(i, self.api_object)
+        self.editor.plot_hvdc_branch(i, self.api_object)

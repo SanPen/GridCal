@@ -14,22 +14,27 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
+from typing import TYPE_CHECKING
 import numpy as np
-
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtWidgets import QMenu, QLabel, QDoubleSpinBox, QPushButton, QVBoxLayout, QComboBox, QDialog, QGraphicsScene
 from GridCal.Gui.GuiFunctions import get_list_model
 from GridCal.Gui.BusBranchEditorWidget.Substation.bus_graphics import TerminalItem
-from GridCal.Gui.messages import yes_no_question
 from GridCalEngine.Core.Devices.Branches.line import SequenceLineType, OverheadLineType, UndergroundLineType
 from GridCalEngine.Core.Devices.Branches.dc_line import DcLine
 from GridCalEngine.enumerations import DeviceType
 from GridCal.Gui.BusBranchEditorWidget.Branches.line_graphics_template import LineGraphicTemplateItem
 
+if TYPE_CHECKING:  # Only imports the below statements during type checking
+    from GridCal.Gui.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
+
 
 class DcLineEditor(QDialog):
-
+    """
+    DcLineEditor
+    """
     def __init__(self, branch: DcLine, Sbase=100, templates=None, current_template=None):
         """
         Line Editor constructor
@@ -224,7 +229,9 @@ class DcLineEditor(QDialog):
 
 class DcLineGraphicItem(LineGraphicTemplateItem):
 
-    def __init__(self, fromPort: TerminalItem, toPort: TerminalItem, editor, width=5, api_object: DcLine = None):
+    def __init__(self, fromPort: TerminalItem, toPort: TerminalItem,
+                 editor: BusBranchEditorWidget,
+                 width=5, api_object: DcLine = None):
         """
 
         :param fromPort:

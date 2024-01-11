@@ -14,8 +14,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
-from typing import Union
+from __future__ import annotations
+from typing import Union, TYPE_CHECKING
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPen, QIcon, QPixmap, QColor
 from PySide6.QtWidgets import QMenu
@@ -28,6 +28,9 @@ from GridCal.Gui.BusBranchEditorWidget.generic_graphics import ACTIVE
 from GridCalEngine.Core.Devices.Fluid.fluid_path import FluidPath
 from GridCalEngine.enumerations import DeviceType
 
+if TYPE_CHECKING:  # Only imports the below statements during type checking
+    from GridCal.Gui.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
+
 
 class FluidPathGraphicItem(LineGraphicTemplateItem):
     """
@@ -37,7 +40,7 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
     def __init__(self,
                  fromPort: TerminalItem,
                  toPort: Union[TerminalItem, None],
-                 editor,
+                 editor: BusBranchEditorWidget,
                  width=10,
                  api_object: FluidPath = None,
                  arrow_size=15):
@@ -194,7 +197,7 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
 
                 if ok:
                     # change the bus state (time series)
-                    self.diagramScene.set_active_status_to_profile(self.api_object, override_question=True)
+                    self.editor.set_active_status_to_profile(self.api_object, override_question=True)
 
     def plot_profiles(self):
         """

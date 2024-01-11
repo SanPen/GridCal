@@ -14,21 +14,25 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
+from typing import TYPE_CHECKING
 import numpy as np
 from PySide6.QtCore import Qt, QAbstractTableModel, QModelIndex, QPointF
 from PySide6.QtGui import QPen, QIcon, QPixmap
 from PySide6.QtWidgets import (QMenu, QGraphicsTextItem, QDialog, QTableView, QVBoxLayout, QHBoxLayout,
                                QPushButton, QSplitter, QFrame, QSpacerItem, QSizePolicy)
-from GridCalEngine.Core.Devices.Injections.generator import Generator, DeviceType
+from GridCalEngine.Core.Devices.Injections.generator import Generator
 from GridCalEngine.Core.Devices.Injections.generator_q_curve import GeneratorQCurve
 from GridCalEngine.basic_structures import Mat, Vec
 from GridCal.Gui.BusBranchEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Circle
 from GridCal.Gui.BusBranchEditorWidget.matplotlibwidget import MatplotlibWidget
-from GridCal.Gui.GuiFunctions import ObjectsModel
-from GridCal.Gui.messages import yes_no_question, info_msg, warning_msg, error_msg
+from GridCal.Gui.messages import yes_no_question, info_msg
 from GridCal.Gui.BusBranchEditorWidget.Injections.injections_template_graphics import InjectionTemplateGraphicItem
 from GridCal.Gui.SolarPowerWizard.solar_power_wizzard import SolarPvWizard
 from GridCal.Gui.WindPowerWizard.wind_power_wizzard import WindFarmWizard
+
+if TYPE_CHECKING:  # Only imports the below statements during type checking
+    from GridCal.Gui.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
 
 
 class GeneratorQCurveEditorTableModel(QAbstractTableModel):
@@ -269,30 +273,23 @@ class GeneratorQCurveEditor(QDialog):
         self.plotter.redraw()
         self.plotter.canvas.fig.tight_layout()
 
-    # def cellDoubleClicked(self, index):
-    #     # Double-clicked on the phantom row
-    #     column_name = self.headers[index.column()]
-    #     value, ok = QInputDialog.getDouble(self, f"Enter {column_name}", f"{column_name}:", 0.0, -1000.0, 1000.0, 1)
-    #     if ok:
-    #         self.table_model.setData(index, value, role=Qt.EditRole)
-
 
 class GeneratorGraphicItem(InjectionTemplateGraphicItem):
     """
     GeneratorGraphicItem
     """
 
-    def __init__(self, parent, api_obj: Generator, diagramScene):
+    def __init__(self, parent, api_obj: Generator, editor: BusBranchEditorWidget):
         """
 
         :param parent:
         :param api_obj:
-        :param diagramScene:
+        :param editor:
         """
         InjectionTemplateGraphicItem.__init__(self,
                                               parent=parent,
                                               api_obj=api_obj,
-                                              diagramScene=diagramScene,
+                                              editor=editor,
                                               device_type_name='generator',
                                               w=40,
                                               h=40)
@@ -420,8 +417,7 @@ class GeneratorGraphicItem(InjectionTemplateGraphicItem):
         ok = yes_no_question('Are you sure that you want to convert this generator into a battery?',
                              'Convert generator')
         if ok:
-            editor = self.diagramScene.parent()
-            editor.convert_generator_to_battery(gen=self.api_object, graphic_object=self)
+            self.editor.convert_generator_to_battery(gen=self.api_object, graphic_object=self)
 
     def remove(self, ask=True):
         """
@@ -434,8 +430,8 @@ class GeneratorGraphicItem(InjectionTemplateGraphicItem):
             ok = True
 
         if ok:
-            self.diagramScene.removeItem(self.nexus)
-            self.diagramScene.removeItem(self)
+            self.editor.diagram_scene.removeItem(self.nexus)
+            self.editor.diagram_scene.removeItem(self)
             if self.api_object in self.api_object.bus.generators:
                 self.api_object.bus.generators.remove(self.api_object)
 
@@ -450,13 +446,13 @@ class GeneratorGraphicItem(InjectionTemplateGraphicItem):
             else:
                 self.set_enable(True)
 
-            if self.diagramScene.circuit.has_time_series:
+            if self.editor.circuit.has_time_series:
                 ok = yes_no_question('Do you want to update the time series active status accordingly?',
                                      'Update time series active status')
 
                 if ok:
                     # change the bus state (time series)
-                    self.diagramScene.set_active_status_to_profile(self.api_object, override_question=True)
+                    self.editor.set_active_status_to_profile(self.api_object, override_question=True)
 
     def enable_disable_control_toggle(self):
         """
@@ -490,7 +486,7 @@ class GeneratorGraphicItem(InjectionTemplateGraphicItem):
         Plot API objects profiles
         """
         # time series object from the last simulation
-        ts = self.diagramScene.circuit.time_profile
+        ts = self.editor.circuit.time_profile
 
         # plot the profiles
         self.api_object.plot_profiles(time=ts)
@@ -521,9 +517,9 @@ class GeneratorGraphicItem(InjectionTemplateGraphicItem):
         :return:
         """
 
-        if self.diagramScene.circuit.has_time_series:
+        if self.editor.circuit.has_time_series:
 
-            time_array = self.diagramScene.circuit.time_profile
+            time_array = self.editor.circuit.time_profile
 
             dlg = SolarPvWizard(time_array=time_array,
                                 peak_power=self.api_object.Pmax,
@@ -548,9 +544,9 @@ class GeneratorGraphicItem(InjectionTemplateGraphicItem):
         :return:
         """
 
-        if self.diagramScene.circuit.has_time_series:
+        if self.editor.circuit.has_time_series:
 
-            time_array = self.diagramScene.circuit.time_profile
+            time_array = self.editor.circuit.time_profile
 
             dlg = WindFarmWizard(time_array=time_array,
                                  peak_power=self.api_object.Pmax,

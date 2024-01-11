@@ -14,10 +14,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
 import sys
-
 import numpy as np
-
 from typing import Union, TYPE_CHECKING
 from PySide6.QtCore import Qt, QLineF, QPointF, QRectF
 from PySide6.QtGui import QPen, QCursor, QPixmap, QBrush, QColor, QTransform, QPolygonF
@@ -42,7 +41,7 @@ from GridCalEngine.Core.Devices.Fluid.fluid_path import FluidPath
 from GridCalEngine.Simulations.Topology.topology_driver import reduce_grid_brute
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
-    from GridCal.Gui.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget, DiagramScene
+    from GridCal.Gui.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
 
 
 class ArrowHead(QGraphicsPolygonItem):
@@ -362,7 +361,7 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
     def __init__(self,
                  fromPort: TerminalItem,
                  toPort: Union[TerminalItem, None],
-                 editor,
+                 editor: BusBranchEditorWidget,
                  width=5,
                  api_object: Union[Line, Transformer2W, VSC, UPFC, HvdcLine, DcLine, FluidPath, None] = None,
                  arrow_size=10):
@@ -403,7 +402,6 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         self.fromPort: Union[TerminalItem, None] = None
         self.toPort: Union[TerminalItem, None] = None
         self.editor: BusBranchEditorWidget = editor
-        self.diagramScene: DiagramScene = self.editor.diagram_scene
 
         if fromPort:
             self.setFromPort(fromPort)
@@ -419,7 +417,7 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         self.arrow_to_2 = ArrowHead(parent=self, arrow_size=arrow_size, position=0.85, under=True)
 
         # add the line and it possible children to the scene
-        self.diagramScene.addItem(self)
+        # self.diagramScene.addItem(self)
 
         if fromPort and toPort:
             self.redraw()
@@ -484,18 +482,18 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         if self.api_object is not None:
             mdl = ObjectsModel(objects=[self.api_object],
                                editable_headers=self.api_object.editable_headers,
-                               parent=self.diagramScene.parent().object_editor_table,
+                               parent=self.editor.object_editor_table,
                                editable=True,
                                transposed=True)
 
-            self.diagramScene.parent().object_editor_table.setModel(mdl)
+            self.editor.object_editor_table.setModel(mdl)
 
     def remove_widget(self):
         """
         Remove this object in the diagram
         @return:
         """
-        self.diagramScene.removeItem(self)
+        self.editor.diagram_scene.removeItem(self)
 
     def remove(self, ask=True):
         """
@@ -530,7 +528,7 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
 
                 if ok:
                     # change the bus state (time series)
-                    self.diagramScene.set_active_status_to_profile(self.api_object, override_question=True)
+                    self.editor.set_active_status_to_profile(self.api_object, override_question=True)
 
     def set_enable(self, val=True):
         """
@@ -567,7 +565,7 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         """
         # get the index of this object
         i = self.editor.circuit.get_branches().index(self.api_object)
-        self.editor.diagram_scene.plot_branch(i, self.api_object)
+        self.editor.plot_branch(i, self.api_object)
 
     def setFromPort(self, fromPort):
         """
@@ -651,13 +649,13 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         """
         Assign the snapshot rate to the profile
         """
-        self.diagramScene.set_rate_to_profile(self.api_object)
+        self.editor.set_rate_to_profile(self.api_object)
 
     def assign_status_to_profile(self):
         """
         Assign the snapshot rate to the profile
         """
-        self.diagramScene.set_active_status_to_profile(self.api_object)
+        self.editor.set_active_status_to_profile(self.api_object)
 
     def set_arrows_with_power(self, Sf: complex, St: complex) -> None:
         """
@@ -721,7 +719,7 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
 
             # remove the reduced branch
             removed_branch.graphic_obj.remove_symbol()
-            self.diagramScene.removeItem(removed_branch.graphic_obj)
+            self.editor.delete_diagram_element(device=removed_branch.graphic_obj)
 
             # update the buses (the deleted one and the updated one)
             if removed_bus is not None:
@@ -730,19 +728,19 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
 
                 # remove the updated bus children
                 for g in updated_bus.graphic_obj.shunt_children:
-                    self.diagramScene.removeItem(g.nexus)
-                    self.diagramScene.removeItem(g)
+                    self.editor.diagram_scene.removeItem(g.nexus)
+                    self.editor.diagram_scene.removeItem(g)
                 # re-draw the children
                 updated_bus.graphic_obj.create_children_widgets()
 
                 # remove bus
                 for g in removed_bus.graphic_obj.shunt_children:
-                    self.diagramScene.removeItem(g.nexus)  # remove the links between the bus and the children
-                self.diagramScene.removeItem(removed_bus.graphic_obj)  # remove the bus and all the children contained
+                    self.editor.diagram_scene.removeItem(g.nexus)  # remove the links between the bus and the children
+                self.editor.delete_diagram_element(device=removed_bus.graphic_obj)  # remove the bus and all the children contained
 
             for br in updated_branches:
                 # remove the branch from the schematic
-                self.diagramScene.removeItem(br.graphic_obj)
+                self.editor.delete_diagram_element(br.graphic_obj)
                 # add the branch to the schematic with the rerouting and all
                 self.editor.add_api_line(br)
                 # update both buses

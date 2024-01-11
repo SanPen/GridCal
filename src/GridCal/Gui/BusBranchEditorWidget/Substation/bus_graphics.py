@@ -14,8 +14,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
 import numpy as np
-from typing import Union
+from typing import Union, TYPE_CHECKING
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, QPoint, QRectF, QRect
 from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor
@@ -35,6 +36,9 @@ from GridCal.Gui.messages import yes_no_question
 from GridCalEngine.enumerations import DeviceType, FaultType
 from GridCalEngine.Core.Devices.editable_device import EditableDevice
 
+if TYPE_CHECKING:  # Only imports the below statements during type checking
+    from GridCal.Gui.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
+
 
 class BusGraphicItem(QtWidgets.QGraphicsRectItem):
     """
@@ -47,14 +51,18 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
       - description
     """
 
-    def __init__(self, scene, parent=None, index=0, editor=None, bus: Bus = None,
+    def __init__(self, parent=None, index=0, editor: BusBranchEditorWidget = None, bus: Bus = None,
                  h: int = 20, w: int = 80, x: int = 0, y: int = 0):
         """
 
-        @param scene:
-        @param parent:
-        @param index:
-        @param editor:
+        :param parent:
+        :param index:
+        :param editor:
+        :param bus:
+        :param h:
+        :param w:
+        :param x:
+        :param y:
         """
         super(BusGraphicItem, self).__init__(parent)
 
@@ -65,8 +73,6 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         self.w = w if w >= self.min_w else self.min_w
 
         self.api_object = bus
-
-        self.scene = scene  # this is the parent that hosts the pointer to the circuit
 
         self.editor = editor
 
@@ -191,7 +197,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         Delete the big marker
         """
         if self.big_marker is not None:
-            self.scene.removeItem(self.big_marker)
+            self.editor.diagram_scene.removeItem(self.big_marker)
             self.big_marker = None
 
     def set_position(self, x, y):
@@ -475,7 +481,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         """
         Assign the snapshot rate to the profile
         """
-        self.scene.set_active_status_to_profile(self.api_object)
+        self.editor.set_active_status_to_profile(self.api_object)
 
     def delete_all_connections(self):
         """
@@ -490,7 +496,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         """
         ok = yes_no_question('Are you sure that you want to reduce this bus', 'Reduce bus')
         if ok:
-            reduce_buses(self.scene.circuit, [self.api_object])
+            reduce_buses(self.editor.circuit, [self.api_object])
             self.remove()
 
     def remove(self, ask=True):
@@ -507,10 +513,9 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
             self.delete_all_connections()
 
             for g in self.shunt_children:
-                self.scene.removeItem(g.nexus)
+                self.editor.diagram_scene.removeItem(g.nexus)
 
-            self.scene.removeItem(self)
-            self.scene.circuit.delete_bus(self.api_object, ask)
+            self.editor.remove_element(device=self.api_object, graphic_object=self)
 
     def update_color(self):
         if self.api_object.active:
@@ -535,18 +540,18 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
 
             self.update_color()
 
-            if self.scene.circuit.has_time_series:
+            if self.editor.circuit.has_time_series:
                 ok = yes_no_question('Do you want to update the time series active status accordingly?',
                                      'Update time series active status')
 
                 if ok:
                     # change the bus state (time series)
-                    self.scene.set_active_status_to_profile(self.api_object, override_question=True)
+                    self.editor.set_active_status_to_profile(self.api_object, override_question=True)
 
                     # change the Branches state (time series)
                     for host in self.terminal.hosting_connections:
                         if host.api_object is not None:
-                            self.scene.set_active_status_to_profile(host.api_object, override_question=True)
+                            self.editor.set_active_status_to_profile(host.api_object, override_question=True)
 
     def any_short_circuit(self):
         for t in self.sc_enabled:
@@ -608,7 +613,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         """
         # get the index of this object
         i = self.editor.circuit.buses.index(self.api_object)
-        self.editor.diagramScene.plot_bus(i, self.api_object)
+        self.editor.plot_bus(i, self.api_object)
 
     def mousePressEvent(self, event):
         """
@@ -618,19 +623,19 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         dictionary_of_lists = dict()
 
         if self.api_object.device_type == DeviceType.BusDevice:
-            dictionary_of_lists = {DeviceType.AreaDevice.value: self.scene.circuit.areas,
-                                   DeviceType.ZoneDevice.value: self.scene.circuit.zones,
-                                   DeviceType.SubstationDevice.value: self.scene.circuit.substations,
-                                   DeviceType.CountryDevice.value: self.scene.circuit.countries}
+            dictionary_of_lists = {DeviceType.AreaDevice.value: self.editor.circuit.areas,
+                                   DeviceType.ZoneDevice.value: self.editor.circuit.zones,
+                                   DeviceType.SubstationDevice.value: self.editor.circuit.substations,
+                                   DeviceType.CountryDevice.value: self.editor.circuit.countries}
 
         mdl = ObjectsModel([self.api_object],
                            self.api_object.editable_headers,
-                           parent=self.scene.parent().object_editor_table,
+                           parent=self.editor.object_editor_table,
                            editable=True,
                            transposed=True,
                            dictionary_of_lists=dictionary_of_lists)
 
-        self.scene.parent().object_editor_table.setModel(mdl)
+        self.editor.object_editor_table.setModel(mdl)
 
     def mouseDoubleClickEvent(self, event):
         """
@@ -699,9 +704,9 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         :return:
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.scene.circuit.add_load(bus=self.api_object)
+            api_obj = self.editor.circuit.add_load(bus=self.api_object)
 
-        _grph = LoadGraphicItem(parent=self, api_obj=api_obj, diagramScene=self.scene)
+        _grph = LoadGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
         self.shunt_children.append(_grph)
         self.arrange_children()
         return _grph
@@ -712,9 +717,9 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         :param api_obj: If None, a new shunt is created
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.scene.circuit.add_shunt(bus=self.api_object)
+            api_obj = self.editor.circuit.add_shunt(bus=self.api_object)
 
-        _grph = ShuntGraphicItem(parent=self, api_obj=api_obj, diagramScene=self.scene)
+        _grph = ShuntGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
         self.shunt_children.append(_grph)
         self.arrange_children()
         return _grph
@@ -727,7 +732,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         if api_obj is None or type(api_obj) is bool:
             api_obj = self.editor.circuit.add_generator(bus=self.api_object)
 
-        _grph = GeneratorGraphicItem(parent=self, api_obj=api_obj, diagramScene=self.scene)
+        _grph = GeneratorGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
         self.shunt_children.append(_grph)
         self.arrange_children()
         return _grph
@@ -741,7 +746,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         if api_obj is None or type(api_obj) is bool:
             api_obj = self.editor.circuit.add_static_generator(bus=self.api_object)
 
-        _grph = StaticGeneratorGraphicItem(parent=self, api_obj=api_obj, diagramScene=self.scene)
+        _grph = StaticGeneratorGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
         self.shunt_children.append(_grph)
         self.arrange_children()
 
@@ -756,7 +761,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         if api_obj is None or type(api_obj) is bool:
             api_obj = self.editor.circuit.add_battery(bus=self.api_object)
 
-        _grph = BatteryGraphicItem(parent=self, api_obj=api_obj, diagramScene=self.scene)
+        _grph = BatteryGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
         self.shunt_children.append(_grph)
         self.arrange_children()
 
@@ -771,7 +776,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         if api_obj is None or type(api_obj) is bool:
             api_obj = self.editor.circuit.add_external_grid(bus=self.api_object)
 
-        _grph = ExternalGridGraphicItem(parent=self, api_obj=api_obj, diagramScene=self.scene)
+        _grph = ExternalGridGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
         self.shunt_children.append(_grph)
         self.arrange_children()
 

@@ -14,20 +14,23 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from typing import Union
+from __future__ import annotations
+from typing import TYPE_CHECKING, Union
 from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtWidgets import QMenu, QGraphicsScene
 from GridCal.Gui.BusBranchEditorWidget.Substation.bus_graphics import TerminalItem
-from GridCal.Gui.messages import yes_no_question
 from GridCalEngine.Core.Devices.Branches.switch import Switch
 from GridCal.Gui.BusBranchEditorWidget.Branches.line_graphics_template import LineGraphicTemplateItem
+
+if TYPE_CHECKING:  # Only imports the below statements during type checking
+    from GridCal.Gui.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
 
 
 class SwitchGraphicItem(LineGraphicTemplateItem):
 
     def __init__(self, fromPort: TerminalItem,
                  toPort: Union[TerminalItem, None],
-                 editor,
+                 editor: BusBranchEditorWidget,
                  width=5,
                  api_object: Switch = None):
         """

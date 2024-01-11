@@ -14,8 +14,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
-from typing import Union
+from __future__ import annotations
+from typing import TYPE_CHECKING, Union
 from PySide6.QtCore import Qt, QRectF
 from PySide6.QtGui import QPen, QIcon, QPixmap, QBrush
 from PySide6.QtWidgets import QMenu, QGraphicsRectItem
@@ -27,6 +27,9 @@ from GridCal.Gui.BusBranchEditorWidget.Branches.line_graphics_template import Li
 from GridCalEngine.Core.Devices.Branches.line import Line, SequenceLineType
 from GridCalEngine.enumerations import DeviceType
 
+if TYPE_CHECKING:  # Only imports the below statements during type checking
+    from GridCal.Gui.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
+
 
 class LineGraphicItem(LineGraphicTemplateItem):
     """
@@ -36,7 +39,7 @@ class LineGraphicItem(LineGraphicTemplateItem):
     def __init__(self,
                  fromPort: TerminalItem,
                  toPort: Union[TerminalItem, None],
-                 editor,
+                 editor: BusBranchEditorWidget,
                  width=5,
                  api_object: Line = None):
         """
@@ -61,7 +64,7 @@ class LineGraphicItem(LineGraphicTemplateItem):
         for elm in [self.symbol]:
             if elm is not None:
                 try:
-                    self.diagramScene.removeItem(elm)
+                    self.editor.diagram_scene.removeItem(elm)
                     # sip.delete(elm)
                     elm = None
                 except:
@@ -234,7 +237,7 @@ class LineGraphicItem(LineGraphicTemplateItem):
         """
         # get the index of this object
         i = self.editor.circuit.get_branches().index(self.api_object)
-        self.editor.diagram_scene.plot_branch(i, self.api_object)
+        self.editor.plot_branch(i, self.api_object)
 
     def edit(self):
         """

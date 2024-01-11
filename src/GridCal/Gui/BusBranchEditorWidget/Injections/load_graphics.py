@@ -14,19 +14,23 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
+from typing import TYPE_CHECKING
 from PySide6.QtCore import QPointF
 from PySide6.QtGui import QPen, QIcon, QPixmap, QPolygonF
 from PySide6.QtWidgets import QMenu
 from GridCal.Gui.BusBranchEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER
 from GridCal.Gui.BusBranchEditorWidget.Injections.injections_template_graphics import InjectionTemplateGraphicItem
-from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCal.Gui.messages import yes_no_question
 from GridCal.Gui.BusBranchEditorWidget.generic_graphics import Polygon
+
+if TYPE_CHECKING:  # Only imports the below statements during type checking
+    from GridCal.Gui.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
 
 
 class LoadGraphicItem(InjectionTemplateGraphicItem):
 
-    def __init__(self, parent, api_obj, diagramScene):
+    def __init__(self, parent, api_obj, editor: BusBranchEditorWidget):
         """
 
         :param parent:
@@ -35,7 +39,7 @@ class LoadGraphicItem(InjectionTemplateGraphicItem):
         InjectionTemplateGraphicItem.__init__(self,
                                               parent=parent,
                                               api_obj=api_obj,
-                                              diagramScene=diagramScene,
+                                              editor=editor,
                                               device_type_name='generator',
                                               w=20,
                                               h=20)
@@ -129,9 +133,8 @@ class LoadGraphicItem(InjectionTemplateGraphicItem):
             ok = True
 
         if ok:
-            self.diagramScene.removeItem(self.nexus)
-            self.diagramScene.removeItem(self)
-            self.api_object.bus.loads.remove(self.api_object)
+            self.editor.removeItem(self.nexus)
+            self.editor.remove_element(device=self.api_object, graphic_object=self)
 
     def enable_disable_toggle(self):
         """
@@ -144,13 +147,13 @@ class LoadGraphicItem(InjectionTemplateGraphicItem):
             else:
                 self.set_enable(True)
 
-            if self.diagramScene.circuit.has_time_series:
+            if self.editor.circuit.has_time_series:
                 ok = yes_no_question('Do you want to update the time series active status accordingly?',
                                      'Update time series active status')
 
                 if ok:
                     # change the bus state (time series)
-                    self.diagramScene.set_active_status_to_profile(self.api_object, override_question=True)
+                    self.editor.set_active_status_to_profile(self.api_object, override_question=True)
 
     def set_enable(self, val=True):
         """
@@ -173,7 +176,7 @@ class LoadGraphicItem(InjectionTemplateGraphicItem):
 
     def plot(self):
         # time series object from the last simulation
-        ts = self.diagramScene.circuit.time_profile
+        ts = self.editor.circuit.time_profile
 
         # plot the profiles
         self.api_object.plot_profiles(time=ts)

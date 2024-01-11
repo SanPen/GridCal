@@ -114,6 +114,29 @@ class LibraryModel(QStandardItemModel):
         """
         QStandardItemModel.__init__(self, parent)
 
+        self.setColumnCount(1)
+
+        # add bus to the drag&drop
+        bus_icon = QIcon()
+        bus_icon.addPixmap(QPixmap(":/Icons/icons/bus_icon.svg"))
+        item = QStandardItem(bus_icon, "Bus")
+        item.setToolTip("Drag & drop this into the schematic")
+        self.appendRow(item)
+
+        # add transformer3w to the drag&drop
+        t3w_icon = QIcon()
+        t3w_icon.addPixmap(QPixmap(":/Icons/icons/transformer3w.svg"))
+        item = QStandardItem(t3w_icon, "3W-Transformer")
+        item.setToolTip("Drag & drop this into the schematic")
+        self.appendRow(item)
+
+        # add fluid-node to the drag&drop
+        dam_icon = QIcon()
+        dam_icon.addPixmap(QPixmap(":/Icons/icons/dam.svg"))
+        item = QStandardItem(dam_icon, "Fluid-node")
+        item.setToolTip("Drag & drop this into the schematic")
+        self.appendRow(item)
+
     def mimeTypes(self) -> List[str]:
         """
 
@@ -146,330 +169,16 @@ class LibraryModel(QStandardItemModel):
 class DiagramScene(QGraphicsScene):
     """
     DiagramScene
+    This class is needed to augment the mouse move and release events
     """
 
-    def __init__(self, parent: "BusBranchEditorWidget", circuit: MultiCircuit):
+    def __init__(self, parent: "BusBranchEditorWidget"):
         """
 
         :param parent:
-        :param circuit:
         """
         super(DiagramScene, self).__init__(parent)
         self.parent_ = parent
-        self.circuit = circuit
-        self.results_dictionary = dict()
-
-    def set_results_to_plot(self, all_threads: List[DriverTemplate]):
-        """
-
-        :param all_threads:
-        :return:
-        """
-        self.results_dictionary = {thr.tpe: thr for thr in all_threads if thr is not None}
-
-    def plot_bus(self, i, api_object):
-        """
-        Plot branch results
-        :param i: branch index (not counting HVDC lines because those are not real Branches)
-        :param api_object: API object
-        :return:
-        """
-        fig = plt.figure(figsize=(12, 8))
-        ax_1 = fig.add_subplot(211)
-        # ax_2 = fig.add_subplot(212)
-
-        # set time
-        x = self.circuit.time_profile
-
-        if x is not None:
-            if len(x) > 0:
-
-                # search available results
-                power_data = api_object.get_active_injection_profiles_dictionary()
-                voltage = dict()
-
-                for key, driver in self.results_dictionary.items():
-                    if hasattr(driver, 'results'):
-                        if driver.results is not None:
-                            if key == SimulationTypes.TimeSeries_run:
-                                voltage[key] = np.abs(driver.results.voltage[:, i])
-
-                # Injections
-                if len(power_data.keys()):
-                    df = pd.DataFrame(data=power_data, index=x)
-                    ax_1.set_title('Power', fontsize=14)
-                    ax_1.set_ylabel('Injections [MW]', fontsize=11)
-                    try:
-                        # yt area plots
-                        df.plot.area(ax=ax_1)
-                    except ValueError:
-                        # use regular plots
-                        df.plot(ax=ax_1)
-
-                # voltage
-                if len(voltage.keys()):
-                    ax_2 = fig.add_subplot(212, sharex=ax_1)
-                    df = pd.DataFrame(data=voltage, index=x)
-                    ax_2.set_title('Time', fontsize=14)
-                    ax_2.set_ylabel('Voltage [p.u]', fontsize=11)
-                    df.plot(ax=ax_2)
-
-                plt.legend()
-                fig.suptitle(api_object.name, fontsize=20)
-
-                # plot the profiles
-                plt.show()
-
-    def plot_branch(self, i: int, api_object: Union[Line, DcLine, Transformer2W, VSC, UPFC]):
-        """
-        Plot branch results
-        :param i: branch index (not counting HVDC lines because those are not real Branches)
-        :param api_object: API object
-        """
-        fig = plt.figure(figsize=(12, 8))
-        ax_1 = fig.add_subplot(211)
-        ax_2 = fig.add_subplot(212)
-
-        # set time
-        x = self.circuit.time_profile
-        x_cl = x
-
-        if x is not None:
-            if len(x) > 0:
-
-                p = np.arange(len(x)).astype(float) / len(x)
-
-                # search available results
-                power_data = dict()
-                loading_data = dict()
-                loading_st_data = None
-                loading_clustering_data = None
-                power_clustering_data = None
-
-                for key, driver in self.results_dictionary.items():
-                    if hasattr(driver, 'results'):
-                        if driver.results is not None:
-                            if key == SimulationTypes.TimeSeries_run:
-                                power_data[key.value] = driver.results.Sf.real[:, i]
-                                loading_data[key.value] = np.sort(np.abs(driver.results.loading.real[:, i] * 100.0))
-
-                            elif key == SimulationTypes.ClusteringTimeSeries_run:
-                                x_cl = x[driver.sampled_time_idx]
-                                power_clustering_data = driver.results.Sf.real[:, i]
-                                loading_clustering_data = np.sort(np.abs(driver.results.loading.real[:, i] * 100.0))
-
-                            elif key == SimulationTypes.LinearAnalysis_TS_run:
-                                power_data[key.value] = driver.results.Sf.real[:, i]
-                                loading_data[key.value] = np.sort(np.abs(driver.results.loading.real[:, i] * 100.0))
-
-                            # elif key == SimulationTypes.NetTransferCapacityTS_run:
-                            #     power_data[key.value] = driver.results.atc[:, i]
-                            #     atc_perc = driver.results.atc[:, i] / (api_object.rate_prof + 1e-9)
-                            #     loading_data[key.value] = np.sort(np.abs(atc_perc * 100.0))
-
-                            elif key == SimulationTypes.ContingencyAnalysisTS_run:
-                                power_data[key.value] = driver.results.worst_flows.real[:, i]
-                                loading_data[key.value] = np.sort(
-                                    np.abs(driver.results.worst_loading.real[:, i] * 100.0))
-
-                            elif key == SimulationTypes.OPFTimeSeries_run:
-                                power_data[key.value] = driver.results.Sf.real[:, i]
-                                loading_data[key.value] = np.sort(np.abs(driver.results.loading.real[:, i] * 100.0))
-
-                            elif key == SimulationTypes.StochasticPowerFlow:
-                                loading_st_data = np.sort(np.abs(driver.results.loading_points.real[:, i] * 100.0))
-
-                # add the rating
-                # power_data['Rates+'] = api_object.rate_prof
-                # power_data['Rates-'] = -api_object.rate_prof
-
-                # loading
-                if len(loading_data.keys()):
-                    df = pd.DataFrame(data=loading_data, index=p)
-                    ax_1.set_title('Probability x < value', fontsize=14)
-                    ax_1.set_ylabel('Loading [%]', fontsize=11)
-                    df.plot(ax=ax_1)
-
-                if loading_clustering_data is not None:
-                    p_st = np.arange(len(loading_clustering_data)).astype(float) / len(loading_clustering_data)
-                    df = pd.DataFrame(data=loading_clustering_data,
-                                      index=p_st,
-                                      columns=[SimulationTypes.ClusteringTimeSeries_run.value])
-                    ax_1.set_title('Probability x < value', fontsize=14)
-                    ax_1.set_ylabel('Loading [%]', fontsize=11)
-                    df.plot(ax=ax_1)
-
-                if loading_st_data is not None:
-                    p_st = np.arange(len(loading_st_data)).astype(float) / len(loading_st_data)
-                    df = pd.DataFrame(data=loading_st_data,
-                                      index=p_st,
-                                      columns=[SimulationTypes.StochasticPowerFlow.value])
-                    ax_1.set_title('Probability x < value', fontsize=14)
-                    ax_1.set_ylabel('Loading [%]', fontsize=11)
-                    df.plot(ax=ax_1)
-
-                # power
-                if len(power_data.keys()):
-                    df = pd.DataFrame(data=power_data, index=x)
-                    ax_2.set_title('Power', fontsize=14)
-                    ax_2.set_ylabel('Power [MW]', fontsize=11)
-                    df.plot(ax=ax_2)
-                    ax_2.plot(x, api_object.rate_prof, c='gray', linestyle='dashed', linewidth=1)
-                    ax_2.plot(x, -api_object.rate_prof, c='gray', linestyle='dashed', linewidth=1)
-
-                if power_clustering_data is not None:
-                    df = pd.DataFrame(data=power_clustering_data,
-                                      index=x_cl,
-                                      columns=[SimulationTypes.ClusteringTimeSeries_run.value])
-                    ax_2.set_title('Power', fontsize=14)
-                    ax_2.set_ylabel('Power [MW]', fontsize=11)
-                    df.plot(ax=ax_2)
-
-                plt.legend()
-                fig.suptitle(api_object.name, fontsize=20)
-
-                # plot the profiles
-                plt.show()
-
-    def plot_hvdc_branch(self, i: int, api_object: HvdcLine):
-        """
-        HVDC branch
-        :param i: index of the object
-        :param api_object: HvdcGraphicItem
-        """
-        fig = plt.figure(figsize=(12, 8))
-        ax_1 = fig.add_subplot(211)
-        # ax_2 = fig.add_subplot(212, sharex=ax_1)
-        ax_2 = fig.add_subplot(212)
-
-        # set time
-        x = self.circuit.time_profile
-        x_cl = x
-
-        if x is not None:
-            if len(x) > 0:
-
-                p = np.arange(len(x)).astype(float) / len(x)
-
-                # search available results
-                power_data = dict()
-                loading_data = dict()
-                loading_st_data = None
-                loading_clustering_data = None
-                power_clustering_data = None
-
-                for key, driver in self.results_dictionary.items():
-                    if hasattr(driver, 'results'):
-                        if driver.results is not None:
-                            if key == SimulationTypes.TimeSeries_run:
-                                power_data[key.value] = driver.results.hvdc_Pf[:, i]
-                                loading_data[key.value] = np.sort(np.abs(driver.results.hvdc_loading[:, i] * 100.0))
-
-                            elif key == SimulationTypes.ClusteringTimeSeries_run:
-                                x_cl = x[driver.sampled_time_idx]
-                                power_clustering_data = driver.results.hvdc_Pf[:, i]
-                                loading_clustering_data = np.sort(np.abs(driver.results.hvdc_loading[:, i] * 100.0))
-
-                            elif key == SimulationTypes.LinearAnalysis_TS_run:
-                                power_data[key.value] = driver.results.hvdc_Pf[:, i]
-                                loading_data[key.value] = np.sort(np.abs(driver.results.hvdc_loading[:, i] * 100.0))
-
-                            elif key == SimulationTypes.OPFTimeSeries_run:
-                                power_data[key.value] = driver.results.hvdc_Pf[:, i]
-                                loading_data[key.value] = np.sort(np.abs(driver.results.hvdc_loading[:, i] * 100.0))
-
-                # add the rating
-                # power_data['Rates+'] = api_object.rate_prof
-                # power_data['Rates-'] = -api_object.rate_prof
-
-                # loading
-                if len(loading_data.keys()):
-                    df = pd.DataFrame(data=loading_data, index=p)
-                    ax_1.set_title('Probability x < value', fontsize=14)
-                    ax_1.set_ylabel('Loading [%]', fontsize=11)
-                    df.plot(ax=ax_1)
-
-                if loading_clustering_data is not None:
-                    p_st = np.arange(len(loading_clustering_data)).astype(float) / len(loading_clustering_data)
-                    df = pd.DataFrame(data=loading_clustering_data,
-                                      index=p_st,
-                                      columns=[SimulationTypes.ClusteringTimeSeries_run.value])
-                    ax_1.set_title('Probability x < value', fontsize=14)
-                    ax_1.set_ylabel('Loading [%]', fontsize=11)
-                    df.plot(ax=ax_1)
-
-                if loading_st_data is not None:
-                    p_st = np.arange(len(loading_st_data)).astype(float) / len(loading_st_data)
-                    df = pd.DataFrame(data=loading_st_data,
-                                      index=p_st,
-                                      columns=[SimulationTypes.StochasticPowerFlow.value])
-                    ax_1.set_title('Probability x < value', fontsize=14)
-                    ax_1.set_ylabel('Loading [%]', fontsize=11)
-                    df.plot(ax=ax_1)
-
-                # power
-                if len(power_data.keys()):
-                    df = pd.DataFrame(data=power_data, index=x)
-                    ax_2.set_title('Power', fontsize=14)
-                    ax_2.set_ylabel('Power [MW]', fontsize=11)
-                    df.plot(ax=ax_2)
-                    ax_2.plot(x, api_object.rate_prof, c='gray', linestyle='dashed', linewidth=1)
-                    ax_2.plot(x, -api_object.rate_prof, c='gray', linestyle='dashed', linewidth=1)
-
-                if power_clustering_data is not None:
-                    df = pd.DataFrame(data=power_clustering_data,
-                                      index=x_cl,
-                                      columns=[SimulationTypes.ClusteringTimeSeries_run.value])
-                    ax_2.set_title('Power', fontsize=14)
-                    ax_2.set_ylabel('Power [MW]', fontsize=11)
-                    df.plot(ax=ax_2)
-
-                plt.legend()
-                fig.suptitle(api_object.name, fontsize=20)
-
-                # plot the profiles
-                plt.show()
-
-    def set_rate_to_profile(self, api_object):
-        """
-
-        :param api_object:
-        """
-        if api_object is not None:
-            if api_object.rate_prof is not None:
-                quit_msg = str(api_object.name) + \
-                           "\nAre you sure that you want to overwrite the rates profile with the snapshot value?"
-                reply = QMessageBox.question(self.parent_, 'Overwrite the profile', quit_msg,
-                                             QMessageBox.StandardButton.Yes, QMessageBox.StandardButton.No)
-
-                if reply == QMessageBox.StandardButton.Yes.value:
-                    api_object.rate_prof *= 0
-                    api_object.rate_prof += api_object.rate
-
-    def set_active_status_to_profile(self, api_object, override_question=False):
-        """
-
-        :param api_object:
-        :param override_question:
-        :return:
-        """
-        if api_object is not None:
-            if api_object.active_prof is not None:
-                if not override_question:
-                    quit_msg = str(api_object.name) + \
-                               "\nAre you sure that you want to overwrite the active profile with the snapshot value?"
-                    reply = QMessageBox.question(self.parent_, 'Overwrite the active profile', quit_msg,
-                                                 QMessageBox.StandardButton.Yes, QMessageBox.StandardButton.No)
-                    ok = reply == QMessageBox.StandardButton.Yes
-                else:
-                    ok = True
-
-                if ok:
-                    shape = api_object.active_prof.shape
-                    if api_object.active:
-                        api_object.active_prof = np.ones(shape, dtype=bool)
-                    else:
-                        api_object.active_prof = np.zeros(shape, dtype=bool)
 
     def mouseMoveEvent(self, event: QGraphicsSceneMouseEvent) -> None:
         """
@@ -494,213 +203,10 @@ class DiagramScene(QGraphicsScene):
         super(DiagramScene, self).mouseReleaseEvent(event)
 
 
-# class EditorGraphicsView(QGraphicsView):
-#     """
-#     EditorGraphicsView (Handles the drag and drop)
-#     """
-#
-#     def __init__(self, diagram_scene: DiagramScene, editor: "BusBranchEditorWidget"):
-#         """
-#         Editor where the diagram is displayed
-#         @param diagram_scene: DiagramScene object
-#         @param editor: BusBranchEditorWidget
-#         """
-#         QGraphicsView.__init__(self, diagram_scene)
-#         self._zoom = 0
-#         self.setDragMode(QGraphicsView.DragMode.RubberBandDrag)
-#         self.setRubberBandSelectionMode(Qt.IntersectsItemShape)
-#         self.setMouseTracking(True)
-#         self.setInteractive(True)
-#         self.editor = editor
-#         self.diagram_scene: DiagramScene = diagram_scene
-#         self.setRenderHints(QPainter.Antialiasing | QPainter.SmoothPixmapTransform)
-#         self.setAlignment(Qt.AlignCenter)
-#
-#     def dragEnterEvent(self, event: QDragEnterEvent) -> None:
-#         """
-#
-#         @param event:
-#         @return:
-#         """
-#         if event.mimeData().hasFormat('component/name'):
-#             event.accept()
-#
-#     def dragMoveEvent(self, event: QDragMoveEvent) -> None:
-#         """
-#         Move element
-#         @param event:
-#         @return:
-#         """
-#         if event.mimeData().hasFormat('component/name'):
-#             event.accept()
-#
-#     def dropEvent(self, event: QDropEvent) -> None:
-#         """
-#         Create an element
-#         @param event:
-#         @return:
-#         """
-#         if event.mimeData().hasFormat('component/name'):
-#             obj_type = event.mimeData().data('component/name')
-#             bus_data = toQBytesArray('Bus')
-#             tr3w_data = toQBytesArray('3W-Transformer')
-#             fluid_node_data = toQBytesArray("Fluid-node")
-#
-#             point0 = self.mapToScene(event.position().x(), event.position().y())
-#             x0 = point0.x()
-#             y0 = point0.y()
-#
-#             if bus_data == obj_type:
-#                 name = 'Bus ' + str(len(self.diagram_scene.circuit.buses))
-#
-#                 obj = Bus(name=name,
-#                           # area=self.diagram_scene.circuit.areas[0],
-#                           # zone=self.diagram_scene.circuit.zones[0],
-#                           # substation=self.diagram_scene.circuit.substations[0],
-#                           # country=self.diagram_scene.circuit.countries[0],
-#                           vnom=self.editor.default_bus_voltage)
-#
-#                 graphic_object = self.add_bus(bus=obj, x=x0, y=y0, h=20, w=80)
-#
-#                 # weird but it's the only way to have graphical-API communication
-#                 self.diagram_scene.circuit.add_bus(obj)
-#
-#                 # add to the diagram list
-#                 self.editor.update_diagram_element(device=obj,
-#                                                    x=x0,
-#                                                    y=y0,
-#                                                    w=graphic_object.w,
-#                                                    h=graphic_object.h,
-#                                                    r=0,
-#                                                    graphic_object=graphic_object)
-#
-#             elif tr3w_data == obj_type:
-#                 name = "Transformer 3-windings" + str(len(self.diagram_scene.circuit.transformers3w))
-#                 obj = Transformer3W(name=name)
-#                 graphic_object = self.add_transformer_3w(elm=obj, x=x0, y=y0)
-#
-#                 # weird but it's the only way to have graphical-API communication
-#                 self.diagram_scene.circuit.add_transformer3w(obj)
-#
-#                 # add to the diagram list
-#                 self.editor.update_diagram_element(device=obj,
-#                                                    x=x0,
-#                                                    y=y0,
-#                                                    w=graphic_object.w,
-#                                                    h=graphic_object.h,
-#                                                    r=0,
-#                                                    graphic_object=graphic_object)
-#
-#             elif fluid_node_data == obj_type:
-#                 name = 'FluidNode ' + str(len(self.diagram_scene.circuit.fluid_nodes))
-#
-#                 obj = FluidNode(name=name)
-#
-#                 graphic_object = self.add_fluid_node(node=obj, x=x0, y=y0, h=20, w=80)
-#
-#                 # weird but it's the only way to have graphical-API communication
-#                 self.diagram_scene.circuit.add_fluid_node(obj)
-#
-#                 # add to the diagram list
-#                 self.editor.update_diagram_element(device=obj,
-#                                                    x=x0,
-#                                                    y=y0,
-#                                                    w=graphic_object.w,
-#                                                    h=graphic_object.h,
-#                                                    r=0,
-#                                                    graphic_object=graphic_object)
-#
-#     def wheelEvent(self, event: QWheelEvent) -> None:
-#         """
-#         Zoom
-#         @param event:
-#         @return:
-#         """
-#         self.setTransformationAnchor(QGraphicsView.ViewportAnchor.AnchorUnderMouse)
-#
-#         # Scale the view / do the zoom
-#         scale_factor = 1.15
-#         # print(event.angleDelta().x(), event.angleDelta().y(), event.angleDelta().manhattanLength() )
-#         if event.angleDelta().y() > 0:
-#             # Zoom in
-#             self.zoom_in(scale_factor)
-#
-#         else:
-#             # Zooming out
-#             self.zoom_out(scale_factor)
-#
-#     def keyPressEvent(self, event: QKeyEvent):
-#         """
-#         Key press event cature
-#         :param event:
-#         :return:
-#         """
-#         if event.key() == Qt.Key_Delete:
-#             self.editor.delete_Selected()
-#
-#     def zoom_in(self, scale_factor: float = 1.15) -> None:
-#         """
-#
-#         :param scale_factor:
-#         """
-#         self.scale(scale_factor, scale_factor)
-#
-#     def zoom_out(self, scale_factor: float = 1.15) -> None:
-#         """
-#
-#         :param scale_factor:
-#         """
-#         self.scale(1.0 / scale_factor, 1.0 / scale_factor)
-#
-#     def add_bus(self, bus: Bus, x: int, y: int, h: int, w: int) -> BusGraphicItem:
-#         """
-#         Add bus
-#         :param bus: GridCal Bus object
-#         :param x: x coordinate
-#         :param y: y coordinate
-#         :param h: height (px)
-#         :param w: width (px)
-#         :return: BusGraphicItem
-#         """
-#
-#         graphic_object = BusGraphicItem(scene=self.scene(), editor=self.editor,
-#                                         bus=bus, x=x, y=y, h=h, w=w)
-#         self.diagram_scene.addItem(graphic_object)
-#         return graphic_object
-#
-#     def add_transformer_3w(self, elm: Transformer3W, x: int, y: int) -> Transformer3WGraphicItem:
-#         """
-#
-#         :param elm: Transformer3W
-#         :param x: x coordinate
-#         :param y: y coordinate
-#         :return: Transformer3WGraphicItem
-#         """
-#         graphic_object = Transformer3WGraphicItem(diagramScene=self.scene(), editor=self.editor, elm=elm)
-#         graphic_object.setPos(QPoint(x, y))
-#         self.diagram_scene.addItem(graphic_object)
-#         return graphic_object
-#
-#     def add_fluid_node(self, node: FluidNode, x: int, y: int, h: int, w: int) -> FluidNodeGraphicItem:
-#         """
-#         Add bus
-#         :param node: GridCal FluidNode object
-#         :param x: x coordinate
-#         :param y: y coordinate
-#         :param h: height (px)
-#         :param w: width (px)
-#         :return: FluidNodeGraphicItem
-#         """
-#
-#         graphic_object = FluidNodeGraphicItem(scene=self.scene(), editor=self.editor,
-#                                               fluid_node=node, x=x, y=y, h=h, w=w)
-#         self.diagram_scene.addItem(graphic_object)
-#         return graphic_object
-
-
 class BusBranchEditorWidget(QSplitter):
     """
     BusBranchEditorWidget
+    This is the bus-branch editor
     """
 
     def __init__(self,
@@ -733,34 +239,6 @@ class BusBranchEditorWidget(QSplitter):
         self.object_editor_table = QTableView(self)
         self.libraryBrowserView = QListView(self)
         self.libraryModel = LibraryModel(self)
-        self.libraryModel.setColumnCount(1)
-
-        # initialize library of items
-        self.libItems = list()
-
-        # add bus to the drag&drop
-        bus_icon = QIcon()
-        bus_icon.addPixmap(QPixmap(":/Icons/icons/bus_icon.svg"))
-        item = QStandardItem(bus_icon, "Bus")
-        item.setToolTip("Drag & drop this into the schematic")
-        self.libItems.append(item)
-
-        # add transformer3w to the drag&drop
-        t3w_icon = QIcon()
-        t3w_icon.addPixmap(QPixmap(":/Icons/icons/transformer3w.svg"))
-        item = QStandardItem(t3w_icon, "3W-Transformer")
-        item.setToolTip("Drag & drop this into the schematic")
-        self.libItems.append(item)
-
-        # add fluid-node to the drag&drop
-        dam_icon = QIcon()
-        dam_icon.addPixmap(QPixmap(":/Icons/icons/dam.svg"))
-        item = QStandardItem(dam_icon, "Fluid-node")
-        item.setToolTip("Drag & drop this into the schematic")
-        self.libItems.append(item)
-
-        for i in self.libItems:
-            self.libraryModel.appendRow(i)
 
         # set the objects list
         self.object_types = [dev.device_type.value for dev in circuit.get_objects_with_profiles_list()]
@@ -771,7 +249,8 @@ class BusBranchEditorWidget(QSplitter):
         self.libraryBrowserView.setDragDropMode(QAbstractItemView.DragDropMode.InternalMove)
 
         # create all the schematic objects and replace the existing ones
-        self.diagram_scene = DiagramScene(parent=self, circuit=circuit)  # scene to add to the QGraphicsView
+        self.diagram_scene = DiagramScene(parent=self)  # scene to add to the QGraphicsView
+        self.results_dictionary = dict()
 
         self.editor_graphics_view = QGraphicsView(self.diagram_scene)
         self.editor_graphics_view.setDragMode(QGraphicsView.DragMode.RubberBandDrag)
@@ -861,19 +340,24 @@ class BusBranchEditorWidget(QSplitter):
                           # country=self.diagram_scene.circuit.countries[0],
                           vnom=self.default_bus_voltage)
 
-                graphic_object = self.create_bus_graphics(bus=obj, x=x0, y=y0, h=20, w=80)
+                graphic_object = BusGraphicItem(editor=self,
+                                                bus=obj,
+                                                x=x0,
+                                                y=y0,
+                                                h=20,
+                                                w=80)
 
                 # weird but it's the only way to have graphical-API communication
                 self.circuit.add_bus(obj)
 
                 # add to the diagram list
-                self.update_diagram_element(device=obj,
-                                            x=x0,
-                                            y=y0,
-                                            w=graphic_object.w,
-                                            h=graphic_object.h,
-                                            r=0,
-                                            graphic_object=graphic_object)
+                self.add_diagram_element(device=obj,
+                                         x=x0,
+                                         y=y0,
+                                         w=graphic_object.w,
+                                         h=graphic_object.h,
+                                         r=0,
+                                         graphic_object=graphic_object)
 
             elif tr3w_data == obj_type:
                 name = "Transformer 3-windings" + str(len(self.circuit.transformers3w))
@@ -884,13 +368,13 @@ class BusBranchEditorWidget(QSplitter):
                 self.circuit.add_transformer3w(obj)
 
                 # add to the diagram list
-                self.update_diagram_element(device=obj,
-                                            x=x0,
-                                            y=y0,
-                                            w=graphic_object.w,
-                                            h=graphic_object.h,
-                                            r=0,
-                                            graphic_object=graphic_object)
+                self.add_diagram_element(device=obj,
+                                         x=x0,
+                                         y=y0,
+                                         w=graphic_object.w,
+                                         h=graphic_object.h,
+                                         r=0,
+                                         graphic_object=graphic_object)
 
             elif fluid_node_data == obj_type:
                 name = 'FluidNode ' + str(len(self.circuit.fluid_nodes))
@@ -903,13 +387,13 @@ class BusBranchEditorWidget(QSplitter):
                 self.circuit.add_fluid_node(obj)
 
                 # add to the diagram list
-                self.update_diagram_element(device=obj,
-                                            x=x0,
-                                            y=y0,
-                                            w=graphic_object.w,
-                                            h=graphic_object.h,
-                                            r=0,
-                                            graphic_object=graphic_object)
+                self.add_diagram_element(device=obj,
+                                         x=x0,
+                                         y=y0,
+                                         w=graphic_object.w,
+                                         h=graphic_object.h,
+                                         r=0,
+                                         graphic_object=graphic_object)
 
     def wheelEvent(self, event: QWheelEvent) -> None:
         """
@@ -964,14 +448,12 @@ class BusBranchEditorWidget(QSplitter):
         :return: BusGraphicItem
         """
 
-        graphic_object = BusGraphicItem(scene=self.editor_graphics_view.scene(),
-                                        editor=self,
+        graphic_object = BusGraphicItem(editor=self,
                                         bus=bus,
                                         x=x,
                                         y=y,
                                         h=h,
                                         w=w)
-        self.diagram_scene.addItem(graphic_object)
         return graphic_object
 
     def create_transformer_3w_graphics(self, elm: Transformer3W, x: int, y: int) -> Transformer3WGraphicItem:
@@ -982,9 +464,8 @@ class BusBranchEditorWidget(QSplitter):
         :param y: y coordinate
         :return: Transformer3WGraphicItem
         """
-        graphic_object = Transformer3WGraphicItem(diagramScene=self.editor_graphics_view.scene(), editor=self, elm=elm)
+        graphic_object = Transformer3WGraphicItem(editor=self, elm=elm)
         graphic_object.setPos(QPoint(x, y))
-        self.diagram_scene.addItem(graphic_object)
         return graphic_object
 
     def create_fluid_node_graphics(self, node: FluidNode, x: int, y: int, h: int, w: int) -> FluidNodeGraphicItem:
@@ -998,9 +479,7 @@ class BusBranchEditorWidget(QSplitter):
         :return: FluidNodeGraphicItem
         """
 
-        graphic_object = FluidNodeGraphicItem(scene=self.editor_graphics_view.scene(), editor=self,
-                                              fluid_node=node, x=x, y=y, h=h, w=w)
-        self.diagram_scene.addItem(graphic_object)
+        graphic_object = FluidNodeGraphicItem(editor=self, fluid_node=node, x=x, y=y, h=h, w=w)
         return graphic_object
 
     def set_data(self, circuit: MultiCircuit, diagram: BusBranchDiagram):
@@ -1033,9 +512,6 @@ class BusBranchEditorWidget(QSplitter):
                                                               y=location.y,
                                                               h=location.h,
                                                               w=location.w)
-
-                    # add circuit pointer to the bus graphic element
-                    graphic_object.scene.circuit = self.circuit  # add pointer to the circuit
 
                     # create the bus children
                     graphic_object.create_children_widgets()
@@ -1095,9 +571,6 @@ class BusBranchEditorWidget(QSplitter):
                                                                      h=location.h,
                                                                      w=location.w)
 
-                    # add circuit pointer to the bus graphic element
-                    graphic_object.scene.circuit = self.circuit  # add pointer to the circuit
-
                     # create the bus children
                     graphic_object.create_children_widgets()
 
@@ -1146,7 +619,6 @@ class BusBranchEditorWidget(QSplitter):
                                                          editor=self,
                                                          api_object=branch)
 
-                        graphic_object.diagramScene.circuit = self.circuit  # add pointer to the circuit
                         terminal_from.hosting_connections.append(graphic_object)
                         terminal_to.hosting_connections.append(graphic_object)
                         graphic_object.redraw()
@@ -1168,7 +640,6 @@ class BusBranchEditorWidget(QSplitter):
                                                            editor=self,
                                                            api_object=branch)
 
-                        graphic_object.diagramScene.circuit = self.circuit  # add pointer to the circuit
                         terminal_from.hosting_connections.append(graphic_object)
                         terminal_to.hosting_connections.append(graphic_object)
                         graphic_object.redraw()
@@ -1190,7 +661,6 @@ class BusBranchEditorWidget(QSplitter):
                                                          editor=self,
                                                          api_object=branch)
 
-                        graphic_object.diagramScene.circuit = self.circuit  # add pointer to the circuit
                         terminal_from.hosting_connections.append(graphic_object)
                         terminal_to.hosting_connections.append(graphic_object)
                         graphic_object.redraw()
@@ -1212,7 +682,6 @@ class BusBranchEditorWidget(QSplitter):
                                                         editor=self,
                                                         api_object=branch)
 
-                        graphic_object.diagramScene.circuit = self.circuit  # add pointer to the circuit
                         terminal_from.hosting_connections.append(graphic_object)
                         terminal_to.hosting_connections.append(graphic_object)
                         graphic_object.redraw()
@@ -1234,7 +703,6 @@ class BusBranchEditorWidget(QSplitter):
                                                          editor=self,
                                                          api_object=branch)
 
-                        graphic_object.diagramScene.circuit = self.circuit  # add pointer to the circuit
                         terminal_from.hosting_connections.append(graphic_object)
                         terminal_to.hosting_connections.append(graphic_object)
                         graphic_object.redraw()
@@ -1256,7 +724,6 @@ class BusBranchEditorWidget(QSplitter):
                                                                 editor=self,
                                                                 api_object=branch)
 
-                        graphic_object.diagramScene.circuit = self.circuit  # add pointer to the circuit
                         terminal_from.hosting_connections.append(graphic_object)
                         terminal_to.hosting_connections.append(graphic_object)
                         graphic_object.redraw()
@@ -1278,7 +745,6 @@ class BusBranchEditorWidget(QSplitter):
                                                               editor=self,
                                                               api_object=branch)
 
-                        graphic_object.diagramScene.circuit = self.circuit  # add pointer to the circuit
                         terminal_from.hosting_connections.append(graphic_object)
                         terminal_to.hosting_connections.append(graphic_object)
                         graphic_object.redraw()
@@ -1314,7 +780,7 @@ class BusBranchEditorWidget(QSplitter):
 
     def update_diagram_element(self, device: EditableDevice,
                                x: int = 0, y: int = 0, w: int = 0, h: int = 0, r: float = 0,
-                               graphic_object: object = None) -> None:
+                               graphic_object: QGraphicsItem = None) -> None:
         """
         Set the position of a device in the diagram
         :param device: EditableDevice
@@ -1334,6 +800,26 @@ class BusBranchEditorWidget(QSplitter):
                                                         api_object=device,
                                                         graphic_object=graphic_object))
 
+    def add_diagram_element(self, device: EditableDevice,
+                            x: int = 0, y: int = 0, w: int = 0, h: int = 0, r: float = 0,
+                            graphic_object: QGraphicsItem = None) -> None:
+        """
+        Add item to the diagram and the diagram scene
+        :param device: EditableDevice
+        :param x: x position (px)
+        :param y: y position (px)
+        :param h: height (px)
+        :param w: width (px)
+        :param r: rotation (deg)
+        :param graphic_object: Graphic object associated
+        """
+
+        self.update_diagram_element(device=device,
+                                    x=x, y=y, w=w, h=h, r=r,
+                                    graphic_object=graphic_object)
+        if graphic_object is not None:
+            self.diagram_scene.addItem(graphic_object)
+
     def delete_diagram_element(self, device: EditableDevice) -> None:
         """
         Delete device from the diagram registry
@@ -1346,6 +832,20 @@ class BusBranchEditorWidget(QSplitter):
                 self.diagram_scene.removeItem(graphic_object)
             except:
                 pass
+
+    def remove_element(self, device: EditableDevice,
+                       graphic_object: Union[QGraphicsItem, None] = None) -> None:
+        """
+        Remove device from the diagram and the database
+        :param device: EditableDevice
+        :param graphic_object: optionally provide the graphics object associated
+        """
+        if graphic_object is None:
+            self.delete_diagram_element(device=device)
+        else:
+            self.diagram_scene.removeItem(graphic_object)
+
+        self.circuit.delete_elements_by_type(obj=device)
 
     def delete_diagram_elements(self, elements: List[EditableDevice]):
         """
@@ -1362,8 +862,9 @@ class BusBranchEditorWidget(QSplitter):
         :param buses: list of Buses
         """
         for bus in buses:
-            graphic_object: BusGraphicItem = self.diagram.query_point(bus).graphic_object
-            graphic_object.setSelected(True)
+            graphic_object = self.diagram.query_point(bus).graphic_object
+            if isinstance(graphic_object, BusGraphicItem):
+                graphic_object.setSelected(True)
 
     def get_selected_buses(self) -> List[Tuple[int, Bus, BusGraphicItem]]:
         """
@@ -1433,7 +934,8 @@ class BusBranchEditorWidget(QSplitter):
         @return:
         """
         self.started_branch = LineGraphicItem(fromPort=port, toPort=None, editor=self)
-        # self.started_branch.bus_from = port.parent
+        self.diagram_scene.addItem(self.started_branch)
+
         port.setZValue(0)
         port.process_callbacks(port.parent.pos() + port.pos())
 
@@ -1466,8 +968,8 @@ class BusBranchEditorWidget(QSplitter):
                                          editor=self,
                                          api_object=obj)
 
-        self.update_diagram_element(device=obj,
-                                    graphic_object=graphic_object)
+        self.add_diagram_element(device=obj,
+                                 graphic_object=graphic_object)
 
         # add the new object to the circuit
         self.circuit.add_branch(obj)
@@ -1498,8 +1000,7 @@ class BusBranchEditorWidget(QSplitter):
                                            editor=self,
                                            api_object=obj)
 
-        self.update_diagram_element(device=obj,
-                                    graphic_object=graphic_object)
+        self.add_diagram_element(device=obj, graphic_object=graphic_object)
 
         # add the new object to the circuit
         self.circuit.add_branch(obj)
@@ -1530,8 +1031,7 @@ class BusBranchEditorWidget(QSplitter):
                                                 editor=self,
                                                 api_object=obj)
 
-        self.update_diagram_element(device=obj,
-                                    graphic_object=graphic_object)
+        self.add_diagram_element(device=obj, graphic_object=graphic_object)
 
         # add the new object to the circuit
         self.circuit.add_branch(obj)
@@ -1562,8 +1062,7 @@ class BusBranchEditorWidget(QSplitter):
                                         editor=self,
                                         api_object=obj)
 
-        self.update_diagram_element(device=obj,
-                                    graphic_object=graphic_object)
+        self.add_diagram_element(device=obj, graphic_object=graphic_object)
 
         # add the new object to the circuit
         self.circuit.add_branch(obj)
@@ -1594,8 +1093,7 @@ class BusBranchEditorWidget(QSplitter):
                                               editor=self,
                                               api_object=obj)
 
-        self.update_diagram_element(device=obj,
-                                    graphic_object=graphic_object)
+        self.add_diagram_element(device=obj, graphic_object=graphic_object)
 
         # update the connection placement
         graphic_object.fromPort.update()
@@ -1689,8 +1187,8 @@ class BusBranchEditorWidget(QSplitter):
                                 self.started_branch.fromPort.update()
                                 self.started_branch.toPort.update()
                                 tr3_graphic_object.update_conn()
-                                self.update_diagram_element(device=winding_graphics.api_object,
-                                                            graphic_object=winding_graphics)
+                                self.add_diagram_element(device=winding_graphics.api_object,
+                                                         graphic_object=winding_graphics)
 
                         elif self.started_branch.connected_between_bus_and_tr3():
 
@@ -1714,8 +1212,8 @@ class BusBranchEditorWidget(QSplitter):
                                 self.started_branch.fromPort.update()
                                 self.started_branch.toPort.update()
                                 tr3_graphic_object.update_conn()
-                                self.update_diagram_element(device=winding_graphics.api_object,
-                                                            graphic_object=winding_graphics)
+                                self.add_diagram_element(device=winding_graphics.api_object,
+                                                         graphic_object=winding_graphics)
 
                         elif self.started_branch.connected_between_fluid_nodes():  # fluid path
 
@@ -2071,22 +1569,19 @@ class BusBranchEditorWidget(QSplitter):
         # add the graphic object to the diagram view
         graphic_object = self.create_bus_graphics(bus=bus, x=x, y=y, w=bus.w, h=bus.h)
 
-        # add circuit pointer to the bus graphic element
-        graphic_object.scene.circuit = self.circuit  # add pointer to the circuit
-
         # create the bus children
         graphic_object.create_children_widgets()
 
         # arrange the children
         graphic_object.arrange_children()
 
-        self.update_diagram_element(device=bus,
-                                    x=x,
-                                    y=y,
-                                    w=bus.w,
-                                    h=bus.h,
-                                    r=0,
-                                    graphic_object=graphic_object)
+        self.add_diagram_element(device=bus,
+                                 x=x,
+                                 y=y,
+                                 w=bus.w,
+                                 h=bus.h,
+                                 r=0,
+                                 graphic_object=graphic_object)
 
         return graphic_object
 
@@ -2107,11 +1602,10 @@ class BusBranchEditorWidget(QSplitter):
                                              editor=self,
                                              api_object=branch)
 
-            graphic_object.diagramScene.circuit = self.circuit  # add pointer to the circuit
             terminal_from.hosting_connections.append(graphic_object)
             terminal_to.hosting_connections.append(graphic_object)
             graphic_object.redraw()
-            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_object)
+            self.add_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_object)
             return graphic_object
         else:
             print("Branch's buses were not found in the diagram :(")
@@ -2135,11 +1629,10 @@ class BusBranchEditorWidget(QSplitter):
                                          editor=self,
                                          api_object=branch)
 
-        graphic_object.diagramScene.circuit = self.circuit  # add pointer to the circuit
         terminal_from.hosting_connections.append(graphic_object)
         terminal_to.hosting_connections.append(graphic_object)
         graphic_object.redraw()
-        self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_object)
+        self.add_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_object)
         return graphic_object
 
     def add_api_dc_line(self, branch: DcLine):
@@ -2159,11 +1652,10 @@ class BusBranchEditorWidget(QSplitter):
                                                editor=self,
                                                api_object=branch)
 
-            graphic_object.diagramScene.grid = self.circuit  # add pointer to the circuit
             terminal_from.hosting_connections.append(graphic_object)
             terminal_to.hosting_connections.append(graphic_object)
             graphic_object.redraw()
-            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_object)
+            self.add_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_object)
             return graphic_object
         else:
             print("Branch's buses were not found in the diagram :(")
@@ -2186,11 +1678,10 @@ class BusBranchEditorWidget(QSplitter):
                                              editor=self,
                                              api_object=branch)
 
-            graphic_object.diagramScene.grid = self.circuit  # add pointer to the circuit
             terminal_from.hosting_connections.append(graphic_object)
             terminal_to.hosting_connections.append(graphic_object)
             graphic_object.redraw()
-            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_object)
+            self.add_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_object)
             return graphic_object
         else:
             print("Branch's buses were not found in the diagram :(")
@@ -2213,11 +1704,10 @@ class BusBranchEditorWidget(QSplitter):
                                          editor=self,
                                          api_object=branch)
 
-            graphic_obj.diagramScene.grid = self.circuit  # add pointer to the circuit
             terminal_from.hosting_connections.append(graphic_obj)
             terminal_to.hosting_connections.append(graphic_obj)
             graphic_obj.redraw()
-            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_obj)
+            self.add_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_obj)
             return graphic_obj
         else:
             print("Branch's buses were not found in the diagram :(")
@@ -2240,11 +1730,10 @@ class BusBranchEditorWidget(QSplitter):
                                           editor=self,
                                           api_object=branch)
 
-            graphic_obj.diagramScene.grid = self.circuit  # add pointer to the circuit
             terminal_from.hosting_connections.append(graphic_obj)
             terminal_to.hosting_connections.append(graphic_obj)
             graphic_obj.redraw()
-            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_obj)
+            self.add_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_obj)
             return graphic_obj
         else:
             print("Branch's buses were not found in the diagram :(")
@@ -2267,11 +1756,10 @@ class BusBranchEditorWidget(QSplitter):
                                                  editor=self,
                                                  api_object=branch)
 
-            graphic_obj.diagramScene.circuit = self.circuit  # add pointer to the circuit
             terminal_from.hosting_connections.append(graphic_obj)
             terminal_to.hosting_connections.append(graphic_obj)
             graphic_obj.redraw()
-            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_obj)
+            self.add_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_obj)
             return graphic_obj
         else:
             print("Branch's buses were not found in the diagram :(")
@@ -2288,9 +1776,6 @@ class BusBranchEditorWidget(QSplitter):
         bus1_graphics: BusGraphicItem = self.diagram.query_point(elm.bus1).graphic_object
         bus2_graphics: BusGraphicItem = self.diagram.query_point(elm.bus2).graphic_object
         bus3_graphics: BusGraphicItem = self.diagram.query_point(elm.bus3).graphic_object
-
-        # add circuit pointer to the bus graphic element
-        tr3_graphic_object.diagramScene.circuit = self.circuit  # add pointer to the circuit
 
         conn1 = WindingGraphicItem(fromPort=tr3_graphic_object.terminals[0],
                                    toPort=bus1_graphics.terminal,
@@ -2309,17 +1794,17 @@ class BusBranchEditorWidget(QSplitter):
 
         tr3_graphic_object.update_conn()
 
-        self.update_diagram_element(device=elm.idtag,
-                                    x=elm.x,
-                                    y=elm.y,
-                                    w=80,
-                                    h=80,
-                                    r=0,
-                                    graphic_object=tr3_graphic_object)
+        self.add_diagram_element(device=elm.idtag,
+                                 x=elm.x,
+                                 y=elm.y,
+                                 w=80,
+                                 h=80,
+                                 r=0,
+                                 graphic_object=tr3_graphic_object)
 
-        self.update_diagram_element(device=conn1.api_object, graphic_object=conn1)
-        self.update_diagram_element(device=conn2.api_object, graphic_object=conn2)
-        self.update_diagram_element(device=conn3.api_object, graphic_object=conn3)
+        self.add_diagram_element(device=conn1.api_object, graphic_object=conn1)
+        self.add_diagram_element(device=conn2.api_object, graphic_object=conn2)
+        self.add_diagram_element(device=conn3.api_object, graphic_object=conn3)
 
         return tr3_graphic_object
 
@@ -2335,22 +1820,19 @@ class BusBranchEditorWidget(QSplitter):
         # add the graphic object to the diagram view
         graphic_object = self.create_fluid_node_graphics(node=node, x=x, y=y, w=80, h=40)
 
-        # add circuit pointer to the bus graphic element
-        graphic_object.scene.circuit = self.circuit  # add pointer to the circuit
-
         # create the bus children
         graphic_object.create_children_widgets()
 
         # arrange the children
         graphic_object.arrange_children()
 
-        self.update_diagram_element(device=node,
-                                    x=x,
-                                    y=y,
-                                    w=graphic_object.w,
-                                    h=graphic_object.h,
-                                    r=0,
-                                    graphic_object=graphic_object)
+        self.add_diagram_element(device=node,
+                                 x=x,
+                                 y=y,
+                                 w=graphic_object.w,
+                                 h=graphic_object.h,
+                                 r=0,
+                                 graphic_object=graphic_object)
 
         return graphic_object
 
@@ -2371,11 +1853,10 @@ class BusBranchEditorWidget(QSplitter):
                                                   editor=self,
                                                   api_object=branch)
 
-            graphic_object.diagramScene.circuit = self.circuit  # add pointer to the circuit
             terminal_from.hosting_connections.append(graphic_object)
             terminal_to.hosting_connections.append(graphic_object)
             graphic_object.redraw()
-            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_object)
+            self.add_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_object)
             return graphic_object
         else:
             print("Branch's fluid nodes were not found in the diagram :(")
@@ -3239,6 +2720,318 @@ class BusBranchEditorWidget(QSplitter):
                 separation += s
                 n += 1
         return separation / n
+
+    def set_results_to_plot(self, all_threads: List[DriverTemplate]):
+        """
+
+        :param all_threads:
+        :return:
+        """
+        self.results_dictionary = {thr.tpe: thr for thr in all_threads if thr is not None}
+
+    def plot_bus(self, i, api_object):
+        """
+        Plot branch results
+        :param i: branch index (not counting HVDC lines because those are not real Branches)
+        :param api_object: API object
+        :return:
+        """
+        fig = plt.figure(figsize=(12, 8))
+        ax_1 = fig.add_subplot(211)
+        # ax_2 = fig.add_subplot(212)
+
+        # set time
+        x = self.circuit.time_profile
+
+        if x is not None:
+            if len(x) > 0:
+
+                # search available results
+                power_data = api_object.get_active_injection_profiles_dictionary()
+                voltage = dict()
+
+                for key, driver in self.results_dictionary.items():
+                    if hasattr(driver, 'results'):
+                        if driver.results is not None:
+                            if key == SimulationTypes.TimeSeries_run:
+                                voltage[key] = np.abs(driver.results.voltage[:, i])
+
+                # Injections
+                if len(power_data.keys()):
+                    df = pd.DataFrame(data=power_data, index=x)
+                    ax_1.set_title('Power', fontsize=14)
+                    ax_1.set_ylabel('Injections [MW]', fontsize=11)
+                    try:
+                        # yt area plots
+                        df.plot.area(ax=ax_1)
+                    except ValueError:
+                        # use regular plots
+                        df.plot(ax=ax_1)
+
+                # voltage
+                if len(voltage.keys()):
+                    ax_2 = fig.add_subplot(212, sharex=ax_1)
+                    df = pd.DataFrame(data=voltage, index=x)
+                    ax_2.set_title('Time', fontsize=14)
+                    ax_2.set_ylabel('Voltage [p.u]', fontsize=11)
+                    df.plot(ax=ax_2)
+
+                plt.legend()
+                fig.suptitle(api_object.name, fontsize=20)
+
+                # plot the profiles
+                plt.show()
+
+    def plot_branch(self, i: int, api_object: Union[Line, DcLine, Transformer2W, VSC, UPFC]):
+        """
+        Plot branch results
+        :param i: branch index (not counting HVDC lines because those are not real Branches)
+        :param api_object: API object
+        """
+        fig = plt.figure(figsize=(12, 8))
+        ax_1 = fig.add_subplot(211)
+        ax_2 = fig.add_subplot(212)
+
+        # set time
+        x = self.circuit.time_profile
+        x_cl = x
+
+        if x is not None:
+            if len(x) > 0:
+
+                p = np.arange(len(x)).astype(float) / len(x)
+
+                # search available results
+                power_data = dict()
+                loading_data = dict()
+                loading_st_data = None
+                loading_clustering_data = None
+                power_clustering_data = None
+
+                for key, driver in self.results_dictionary.items():
+                    if hasattr(driver, 'results'):
+                        if driver.results is not None:
+                            if key == SimulationTypes.TimeSeries_run:
+                                power_data[key.value] = driver.results.Sf.real[:, i]
+                                loading_data[key.value] = np.sort(np.abs(driver.results.loading.real[:, i] * 100.0))
+
+                            elif key == SimulationTypes.ClusteringTimeSeries_run:
+                                x_cl = x[driver.sampled_time_idx]
+                                power_clustering_data = driver.results.Sf.real[:, i]
+                                loading_clustering_data = np.sort(np.abs(driver.results.loading.real[:, i] * 100.0))
+
+                            elif key == SimulationTypes.LinearAnalysis_TS_run:
+                                power_data[key.value] = driver.results.Sf.real[:, i]
+                                loading_data[key.value] = np.sort(np.abs(driver.results.loading.real[:, i] * 100.0))
+
+                            # elif key == SimulationTypes.NetTransferCapacityTS_run:
+                            #     power_data[key.value] = driver.results.atc[:, i]
+                            #     atc_perc = driver.results.atc[:, i] / (api_object.rate_prof + 1e-9)
+                            #     loading_data[key.value] = np.sort(np.abs(atc_perc * 100.0))
+
+                            elif key == SimulationTypes.ContingencyAnalysisTS_run:
+                                power_data[key.value] = driver.results.worst_flows.real[:, i]
+                                loading_data[key.value] = np.sort(
+                                    np.abs(driver.results.worst_loading.real[:, i] * 100.0))
+
+                            elif key == SimulationTypes.OPFTimeSeries_run:
+                                power_data[key.value] = driver.results.Sf.real[:, i]
+                                loading_data[key.value] = np.sort(np.abs(driver.results.loading.real[:, i] * 100.0))
+
+                            elif key == SimulationTypes.StochasticPowerFlow:
+                                loading_st_data = np.sort(np.abs(driver.results.loading_points.real[:, i] * 100.0))
+
+                # add the rating
+                # power_data['Rates+'] = api_object.rate_prof
+                # power_data['Rates-'] = -api_object.rate_prof
+
+                # loading
+                if len(loading_data.keys()):
+                    df = pd.DataFrame(data=loading_data, index=p)
+                    ax_1.set_title('Probability x < value', fontsize=14)
+                    ax_1.set_ylabel('Loading [%]', fontsize=11)
+                    df.plot(ax=ax_1)
+
+                if loading_clustering_data is not None:
+                    p_st = np.arange(len(loading_clustering_data)).astype(float) / len(loading_clustering_data)
+                    df = pd.DataFrame(data=loading_clustering_data,
+                                      index=p_st,
+                                      columns=[SimulationTypes.ClusteringTimeSeries_run.value])
+                    ax_1.set_title('Probability x < value', fontsize=14)
+                    ax_1.set_ylabel('Loading [%]', fontsize=11)
+                    df.plot(ax=ax_1)
+
+                if loading_st_data is not None:
+                    p_st = np.arange(len(loading_st_data)).astype(float) / len(loading_st_data)
+                    df = pd.DataFrame(data=loading_st_data,
+                                      index=p_st,
+                                      columns=[SimulationTypes.StochasticPowerFlow.value])
+                    ax_1.set_title('Probability x < value', fontsize=14)
+                    ax_1.set_ylabel('Loading [%]', fontsize=11)
+                    df.plot(ax=ax_1)
+
+                # power
+                if len(power_data.keys()):
+                    df = pd.DataFrame(data=power_data, index=x)
+                    ax_2.set_title('Power', fontsize=14)
+                    ax_2.set_ylabel('Power [MW]', fontsize=11)
+                    df.plot(ax=ax_2)
+                    ax_2.plot(x, api_object.rate_prof, c='gray', linestyle='dashed', linewidth=1)
+                    ax_2.plot(x, -api_object.rate_prof, c='gray', linestyle='dashed', linewidth=1)
+
+                if power_clustering_data is not None:
+                    df = pd.DataFrame(data=power_clustering_data,
+                                      index=x_cl,
+                                      columns=[SimulationTypes.ClusteringTimeSeries_run.value])
+                    ax_2.set_title('Power', fontsize=14)
+                    ax_2.set_ylabel('Power [MW]', fontsize=11)
+                    df.plot(ax=ax_2)
+
+                plt.legend()
+                fig.suptitle(api_object.name, fontsize=20)
+
+                # plot the profiles
+                plt.show()
+
+    def plot_hvdc_branch(self, i: int, api_object: HvdcLine):
+        """
+        HVDC branch
+        :param i: index of the object
+        :param api_object: HvdcGraphicItem
+        """
+        fig = plt.figure(figsize=(12, 8))
+        ax_1 = fig.add_subplot(211)
+        # ax_2 = fig.add_subplot(212, sharex=ax_1)
+        ax_2 = fig.add_subplot(212)
+
+        # set time
+        x = self.circuit.time_profile
+        x_cl = x
+
+        if x is not None:
+            if len(x) > 0:
+
+                p = np.arange(len(x)).astype(float) / len(x)
+
+                # search available results
+                power_data = dict()
+                loading_data = dict()
+                loading_st_data = None
+                loading_clustering_data = None
+                power_clustering_data = None
+
+                for key, driver in self.results_dictionary.items():
+                    if hasattr(driver, 'results'):
+                        if driver.results is not None:
+                            if key == SimulationTypes.TimeSeries_run:
+                                power_data[key.value] = driver.results.hvdc_Pf[:, i]
+                                loading_data[key.value] = np.sort(np.abs(driver.results.hvdc_loading[:, i] * 100.0))
+
+                            elif key == SimulationTypes.ClusteringTimeSeries_run:
+                                x_cl = x[driver.sampled_time_idx]
+                                power_clustering_data = driver.results.hvdc_Pf[:, i]
+                                loading_clustering_data = np.sort(np.abs(driver.results.hvdc_loading[:, i] * 100.0))
+
+                            elif key == SimulationTypes.LinearAnalysis_TS_run:
+                                power_data[key.value] = driver.results.hvdc_Pf[:, i]
+                                loading_data[key.value] = np.sort(np.abs(driver.results.hvdc_loading[:, i] * 100.0))
+
+                            elif key == SimulationTypes.OPFTimeSeries_run:
+                                power_data[key.value] = driver.results.hvdc_Pf[:, i]
+                                loading_data[key.value] = np.sort(np.abs(driver.results.hvdc_loading[:, i] * 100.0))
+
+                # add the rating
+                # power_data['Rates+'] = api_object.rate_prof
+                # power_data['Rates-'] = -api_object.rate_prof
+
+                # loading
+                if len(loading_data.keys()):
+                    df = pd.DataFrame(data=loading_data, index=p)
+                    ax_1.set_title('Probability x < value', fontsize=14)
+                    ax_1.set_ylabel('Loading [%]', fontsize=11)
+                    df.plot(ax=ax_1)
+
+                if loading_clustering_data is not None:
+                    p_st = np.arange(len(loading_clustering_data)).astype(float) / len(loading_clustering_data)
+                    df = pd.DataFrame(data=loading_clustering_data,
+                                      index=p_st,
+                                      columns=[SimulationTypes.ClusteringTimeSeries_run.value])
+                    ax_1.set_title('Probability x < value', fontsize=14)
+                    ax_1.set_ylabel('Loading [%]', fontsize=11)
+                    df.plot(ax=ax_1)
+
+                if loading_st_data is not None:
+                    p_st = np.arange(len(loading_st_data)).astype(float) / len(loading_st_data)
+                    df = pd.DataFrame(data=loading_st_data,
+                                      index=p_st,
+                                      columns=[SimulationTypes.StochasticPowerFlow.value])
+                    ax_1.set_title('Probability x < value', fontsize=14)
+                    ax_1.set_ylabel('Loading [%]', fontsize=11)
+                    df.plot(ax=ax_1)
+
+                # power
+                if len(power_data.keys()):
+                    df = pd.DataFrame(data=power_data, index=x)
+                    ax_2.set_title('Power', fontsize=14)
+                    ax_2.set_ylabel('Power [MW]', fontsize=11)
+                    df.plot(ax=ax_2)
+                    ax_2.plot(x, api_object.rate_prof, c='gray', linestyle='dashed', linewidth=1)
+                    ax_2.plot(x, -api_object.rate_prof, c='gray', linestyle='dashed', linewidth=1)
+
+                if power_clustering_data is not None:
+                    df = pd.DataFrame(data=power_clustering_data,
+                                      index=x_cl,
+                                      columns=[SimulationTypes.ClusteringTimeSeries_run.value])
+                    ax_2.set_title('Power', fontsize=14)
+                    ax_2.set_ylabel('Power [MW]', fontsize=11)
+                    df.plot(ax=ax_2)
+
+                plt.legend()
+                fig.suptitle(api_object.name, fontsize=20)
+
+                # plot the profiles
+                plt.show()
+
+    def set_rate_to_profile(self, api_object):
+        """
+
+        :param api_object:
+        """
+        if api_object is not None:
+            if api_object.rate_prof is not None:
+                quit_msg = str(api_object.name) + \
+                           "\nAre you sure that you want to overwrite the rates profile with the snapshot value?"
+                reply = QMessageBox.question(self, 'Overwrite the profile', quit_msg,
+                                             QMessageBox.StandardButton.Yes, QMessageBox.StandardButton.No)
+
+                if reply == QMessageBox.StandardButton.Yes.value:
+                    api_object.rate_prof *= 0
+                    api_object.rate_prof += api_object.rate
+
+    def set_active_status_to_profile(self, api_object, override_question=False):
+        """
+
+        :param api_object:
+        :param override_question:
+        :return:
+        """
+        if api_object is not None:
+            if api_object.active_prof is not None:
+                if not override_question:
+                    quit_msg = str(api_object.name) + \
+                               "\nAre you sure that you want to overwrite the active profile with the snapshot value?"
+                    reply = QMessageBox.question(self, 'Overwrite the active profile', quit_msg,
+                                                 QMessageBox.StandardButton.Yes, QMessageBox.StandardButton.No)
+                    ok = reply == QMessageBox.StandardButton.Yes
+                else:
+                    ok = True
+
+                if ok:
+                    shape = api_object.active_prof.shape
+                    if api_object.active:
+                        api_object.active_prof = np.ones(shape, dtype=bool)
+                    else:
+                        api_object.active_prof = np.zeros(shape, dtype=bool)
 
 
 def generate_bus_branch_diagram(buses: List[Bus],
