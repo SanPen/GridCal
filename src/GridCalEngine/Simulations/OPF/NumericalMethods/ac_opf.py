@@ -351,7 +351,7 @@ def evaluate_power_flow(x, mu, lmbda, Ybus, Yf, Cg, Sd, slack, no_slack, Yt, fro
     return f, G, H, fx, Gx, Hx, fxx, Gxx, Hxx
 
 
-def ac_optimal_power_flow(nc: gce.NumericalCircuit, pf_options: gce.PowerFlowOptions):
+def ac_optimal_power_flow(nc: gce.NumericalCircuit, pf_options: gce.PowerFlowOptions, verbose = 2):
     """
 
     :param nc:
@@ -419,12 +419,13 @@ def ac_optimal_power_flow(nc: gce.NumericalCircuit, pf_options: gce.PowerFlowOpt
 
     NV = len(x0)
 
-    print("x0:", x0)
+    if verbose>0:
+        print("x0:", x0)
     x, error, gamma, lam = solver(x0=x0, n_x=NV, n_eq=NE, n_ineq=NI,
                                   func=evaluate_power_flow,
                                   arg=(Ybus, Yf, Cg, Sd, slack, no_slack, Yt, from_idx, to_idx, Va_max,
                                        Va_min, Vm_max, Vm_min, Pg_max, Pg_min, Qg_max, Qg_min, c0, c1, c2, Sbase, rates),
-                                  verbose=2)
+                                  verbose=verbose)
 
     va = np.zeros(nbus)
     vm, va[no_slack], Pg, Qg = x2var(x, n_vm=nbus, n_va=len(no_slack), n_P=ngen, n_Q=ngen)
@@ -435,10 +436,11 @@ def ac_optimal_power_flow(nc: gce.NumericalCircuit, pf_options: gce.PowerFlowOpt
                                 'dual price (€/MW)': lam_p, 'dual price (€/MVAr)': lam_q})
     df_gen = pd.DataFrame(data={'P (MW)': Pg * nc.Sbase, 'Q (MVAr)': Qg * nc.Sbase})
 
-    print()
-    print("Bus:\n", df_bus)
-    print("Gen:\n", df_gen)
-    print("Error", error)
+    if verbose>0:
+        print()
+        print("Bus:\n", df_bus)
+        print("Gen:\n", df_gen)
+        print("Error", error)
 
     return x
 
