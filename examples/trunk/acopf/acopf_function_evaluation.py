@@ -49,6 +49,8 @@ def linn5bus_example():
     grid = gce.MultiCircuit()
 
     # Add the buses and the generators and loads attached
+    #bus1 = gce.Bus('Bus 1', vnom=20, vmax=1.01, vmin=0.99)
+
     bus1 = gce.Bus('Bus 1', vnom=20)
     # bus1.is_slack = True  # we may mark the bus a slack
     grid.add_bus(bus1)
@@ -60,22 +62,35 @@ def linn5bus_example():
     grid.add_generator(bus1, gen1)
 
     # add bus 2 with a load attached
+    # bus2 = gce.Bus('Bus 2', vnom=20, vmin=0.97, vmax=0.99)
+
     bus2 = gce.Bus('Bus 2', vnom=20)
+
     grid.add_bus(bus2)
     grid.add_load(bus2, gce.Load('load 2', P=40, Q=20))
 
     # add bus 3 with a load attached
+    #bus3 = gce.Bus('Bus 3', vnom=20, vmin=0.99, vmax=1.01)
     bus3 = gce.Bus('Bus 3', vnom=20)
+
     grid.add_bus(bus3)
     grid.add_load(bus3, gce.Load('load 3', P=25, Q=15))
 
+    gen3 = gce.Generator('G3', vset=1.0, Pmin=0, Pmax=1000,
+                         Qmin=-1000, Qmax=1000, Cost=20, Cost2=0)
+
+    #grid.add_generator(bus3, gen3)
     # add bus 4 with a load attached
+    #bus4 = gce.Bus('Bus 4', vnom=20, vmin = 0.96, vmax = 0.98)
     bus4 = gce.Bus('Bus 4', vnom=20)
+
     grid.add_bus(bus4)
     grid.add_load(bus4, gce.Load('load 4', P=40, Q=20))
 
     # add bus 5 with a load attached
+    #bus5 = gce.Bus('Bus 5', vnom=20, vmin = 0.95, vmax = 0.97)
     bus5 = gce.Bus('Bus 5', vnom=20)
+
     grid.add_bus(bus5)
     grid.add_load(bus5, gce.Load('load 5', P=50, Q=20))
 
@@ -182,8 +197,8 @@ def case14():
     return
 
 if __name__ == '__main__':
-    example_3bus_acopf()
+    # example_3bus_acopf()
     # linn5bus_example()
-    # two_grids_of_3bus()
+    two_grids_of_3bus()
     # case9()
     # case14()

@@ -200,9 +200,9 @@ def solver(x0: Vec,
             eq_df = pd.DataFrame(data={'λ': lam, 'dλ': dlam})
             ineq_df = pd.DataFrame(data={'mu': mu, 'z': z, 'dmu': dmu, 'dz': dz})
 
-            #print("x:\n", x_df)
-            ##print("EQ:\n", eq_df)
-            #print("INEQ:\n", ineq_df)
+            # print("x:\n", x_df)
+            # print("EQ:\n", eq_df)
+            # print("INEQ:\n", ineq_df)
             print("\tGamma:", gamma)
             print("\tErr:", error)
 
