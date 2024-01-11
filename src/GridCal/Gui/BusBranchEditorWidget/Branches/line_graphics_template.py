@@ -416,9 +416,6 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         self.arrow_to_1 = ArrowHead(parent=self, arrow_size=arrow_size, position=0.85, under=False)
         self.arrow_to_2 = ArrowHead(parent=self, arrow_size=arrow_size, position=0.85, under=True)
 
-        # add the line and it possible children to the scene
-        # self.diagramScene.addItem(self)
-
         if fromPort and toPort:
             self.redraw()
 

@@ -120,9 +120,12 @@ class TerminalItem(QGraphicsRectItem):
         Returns:
 
         """
-        self.editor.start_connection(self)
-        if self.editor.started_branch is not None:
-            self.hosting_connections.append(self.editor.started_branch)
+
+        self.hosting_connections.append(self.editor.start_connection(self))
+
+    def remove_connection(self, started_branch):
+
+        self.hosting_connections.remove(started_branch)
 
     def remove_all_connections(self):
         """
