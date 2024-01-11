@@ -26,7 +26,7 @@ import pyproj
 from PySide6.QtCore import (Qt, QPoint, QSize, QPointF, QRect, QRectF, QMimeData, QIODevice, QByteArray,
                             QDataStream, QModelIndex)
 from PySide6.QtGui import (QIcon, QPixmap, QImage, QPainter, QStandardItemModel, QStandardItem, QColor, QPen,
-                           QDragEnterEvent, QDragMoveEvent, QDropEvent, QWheelEvent, QKeyEvent)
+                           QDragEnterEvent, QDragMoveEvent, QDropEvent, QWheelEvent, QKeyEvent, QDrag)
 from PySide6.QtWidgets import (QApplication, QGraphicsView, QListView, QTableView, QVBoxLayout, QHBoxLayout, QFrame,
                                QSplitter, QMessageBox, QAbstractItemView, QGraphicsScene, QGraphicsSceneMouseEvent,
                                QGraphicsItem)
@@ -179,6 +179,7 @@ class DiagramScene(QGraphicsScene):
         """
         super(DiagramScene, self).__init__(parent)
         self.parent_ = parent
+        self.displacement = QPoint(0, 0)
 
     def mouseMoveEvent(self, event: QGraphicsSceneMouseEvent) -> None:
         """
@@ -186,10 +187,31 @@ class DiagramScene(QGraphicsScene):
         @param event:
         @return:
         """
+
+        # pan movement
+        if self.parent_.startPos != None:
+
+            scale_factor = 1.5
+            scene_pos =  QPointF(event.scenePos())
+            self.displacement = self.displacement + ((scene_pos - self.parent_.startPos) / scale_factor)
+            temp_cen = self.parent_.newCenterPos - self.displacement
+            self.parent_.editor_graphics_view.centerOn(temp_cen)
+
         self.parent_.scene_mouse_move_event(event)
 
         # call the parent event
         super(DiagramScene, self).mouseMoveEvent(event)
+
+    def mousePressEvent(self, event: QGraphicsSceneMouseEvent) -> None:
+        """
+
+        :param event:
+        :return:
+        """
+
+        self.parent_.scene_mouse_press_event(event)
+        self.displacement = QPointF(0, 0)
+        super(DiagramScene, self).mousePressEvent(event)
 
     def mouseReleaseEvent(self, event: QGraphicsSceneMouseEvent) -> None:
         """
@@ -292,6 +314,12 @@ class BusBranchEditorWidget(QSplitter):
 
         self.setStretchFactor(0, 0)
         self.setStretchFactor(1, 2000)
+
+        self.setMouseTracking(True)
+        self.startPos = QPoint()
+        self.newCenterPos = QPoint()
+        self.displacement = QPoint()
+        self.startPos = None
 
         if diagram is not None:
             self.draw()
@@ -955,6 +983,24 @@ class BusBranchEditorWidget(QSplitter):
             pos = event.scenePos()
             self.started_branch.setEndPos(pos)
 
+    def scene_mouse_press_event(self, event: QGraphicsSceneMouseEvent) -> None:
+
+        # Mouse pan
+
+        if event.button() == Qt.RightButton:
+
+            viewport_rect = self.editor_graphics_view.viewport().rect()
+            top_left_scene = self.editor_graphics_view.mapToScene(viewport_rect.topLeft())
+            bottom_right_scene = self.editor_graphics_view.mapToScene(viewport_rect.bottomRight())
+            center_x = (top_left_scene.x() + bottom_right_scene.x()) / 2
+            center_y = (top_left_scene.y() + bottom_right_scene.y()) / 2
+            center_scene = QPointF(center_x, center_y)
+            self.startPos = event.scenePos()
+            self.newCenterPos = center_scene
+            self.displacement = self.newCenterPos - self.startPos
+            self.editor_graphics_view.setDragMode(QGraphicsView.DragMode.NoDrag)
+
+
     def create_line(self, bus_from: Bus, bus_to: Bus, fromPort: TerminalItem, toPort: TerminalItem):
         """
 
@@ -1116,6 +1162,11 @@ class BusBranchEditorWidget(QSplitter):
         @param event:
         @return:
         """
+        # Mouse pan
+        if event.button() == Qt.RightButton:
+            self.startPos = None
+            self.editor_graphics_view.setDragMode(QGraphicsView.RubberBandDrag)
+
         # Clear or finnish the started connection:
         if self.started_branch:
             pos = event.scenePos()
