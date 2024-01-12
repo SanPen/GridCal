@@ -180,6 +180,7 @@ class DiagramScene(QGraphicsScene):
         super(DiagramScene, self).__init__(parent)
         self.parent_ = parent
         self.displacement = QPoint(0, 0)
+        # self.setSceneRect(-5000, -5000, 10000, 10000)
 
     def mouseMoveEvent(self, event: QGraphicsSceneMouseEvent) -> None:
         """
@@ -219,6 +220,11 @@ class DiagramScene(QGraphicsScene):
         @return:
         """
         self.parent_.create_branch_on_mouse_release_event(event)
+
+        # Mouse pan
+        if event.button() == Qt.MouseButton.RightButton:
+            self.parent_.startPos = None
+            self.parent_.editor_graphics_view.setDragMode(QGraphicsView.DragMode.RubberBandDrag)
 
         # call mouseReleaseEvent on "me" (continue with the rest of the actions)
         super(DiagramScene, self).mouseReleaseEvent(event)
@@ -271,6 +277,7 @@ class BusBranchEditorWidget(QSplitter):
 
         # create all the schematic objects and replace the existing ones
         self.diagram_scene = DiagramScene(parent=self)  # scene to add to the QGraphicsView
+
         self.results_dictionary = dict()
 
         self.editor_graphics_view = QGraphicsView(self.diagram_scene)
@@ -995,7 +1002,7 @@ class BusBranchEditorWidget(QSplitter):
         :return:
         """
         # Mouse pan
-        if event.button() == Qt.MouseButton.MiddleButton:
+        if event.button() == Qt.MouseButton.RightButton:
             viewport_rect = self.editor_graphics_view.viewport().rect()
             top_left_scene = self.editor_graphics_view.mapToScene(viewport_rect.topLeft())
             bottom_right_scene = self.editor_graphics_view.mapToScene(viewport_rect.bottomRight())
@@ -1178,10 +1185,6 @@ class BusBranchEditorWidget(QSplitter):
         @param event:
         @return:
         """
-        # Mouse pan
-        if event.button() == Qt.RightButton:
-            self.startPos = None
-            self.editor_graphics_view.setDragMode(QGraphicsView.DragMode.RubberBandDrag)
 
         # Clear or finnish the started connection:
         if self.started_branch:
