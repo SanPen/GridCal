@@ -124,9 +124,43 @@ def test_hydro_opf_ieee39():
     assert np.allclose(opf_driv.results.fluid_node_current_level / 1e6, l_results)
 
 
+def test_hydro_opf_simple1():
+    fname = os.path.join('data', 'grids', 'hydro_simple1.gridcal')
+    main_circuit = FileOpen(fname).open()
+    opf_driv = OptimalPowerFlowTimeSeriesDriver(grid=main_circuit)
+
+    opf_driv.run()
+
+    l_results = np.array([[99999820, 180.018],
+                          [99999640, 360.036],
+                          [99999460, 540.05401],
+                          [99999280, 720.07201],
+                          [99999100, 900.09001],
+                          [99998920, 1080.108],
+                          [99998740, 1260.126],
+                          [99998560, 1440.144],
+                          [99998380, 1620.162],
+                          [99998200, 1800.18]])
+
+    p_results = np.array([[10.0],
+                          [10.0],
+                          [10.0],
+                          [10.0],
+                          [10.0],
+                          [10.0],
+                          [10.0],
+                          [10.0],
+                          [10.0],
+                          [10.0]])
+
+    assert np.allclose(opf_driv.results.fluid_node_current_level, l_results)
+    assert np.allclose(opf_driv.results.generator_power, p_results)
+
+
 if __name__ == '__main__':
     test_hydro_opf1()
     test_hydro_opf2()
     test_hydro_opf3()
     test_hydro_opf4()
     test_hydro_opf_ieee39()
+    test_hydro_opf_simple1()
