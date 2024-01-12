@@ -670,7 +670,7 @@ class EditorGraphicsView(QGraphicsView):
 
                         if location.graphic_object:
                             graphic_object: BusGraphicItem = location.graphic_object
-                            graphic_object.change_size(h=graphic_object.h, w=graphic_object.w, scale = current_scale)
+                            graphic_object.change_size(h=graphic_object.h, w=graphic_object.w)
 
 
     def zoom_out(self, scale_factor: float = 1.15) -> None:
@@ -693,7 +693,7 @@ class EditorGraphicsView(QGraphicsView):
 
                         if location.graphic_object:
                             graphic_object: BusGraphicItem = location.graphic_object
-                            graphic_object.change_size(h=graphic_object.h, w=graphic_object.w, scale = current_scale)
+                            graphic_object.change_size(h=graphic_object.h, w=graphic_object.w)
 
     def add_bus(self, bus: Bus, x: int, y: int, h: int, w: int) -> BusGraphicItem:
         """
