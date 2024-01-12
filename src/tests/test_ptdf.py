@@ -212,60 +212,64 @@ def test_ptdf_psse():
          os.path.join('data', 'results', 'comparison', 'IEEE 30 bus PTDF PSSe.csv'), 'IEEE30'),
         (os.path.join('data', 'grids', 'RAW', 'IEEE 118 Bus V2.raw'),
          os.path.join('data', 'results', 'comparison', 'IEEE 118 bus PTDF PSSe.csv'), 'IEEE118'),
-        # (os.path.join('data', 'grids', 'RAW', '15.Caso_2026.raw'),
-        #  os.path.join('data', 'results', 'comparison', '15.Caso_2026 PTDF PSSe.csv'), 'REE')
+        (os.path.join('data', 'grids', 'RAW', 'sensitive-raw', '15.Caso_2026.raw'),
+         os.path.join('data', 'results', 'comparison', '15.Caso_2026 PTDF PSSe.csv'), 'REE')
     ]:
 
-        counter = 0  # Amount of failures
-        if name != 'REE': continue
-        main_circuit = FileOpen(fname).open()
+        if os.path.exists(fname):
 
-        # Network ordering
-        branches = main_circuit.get_branches()
-        branches_id = [x.code for x in branches]
-        nodes = main_circuit.get_buses()
-        nodes_id = [x.code for x in nodes]
+            counter = 0  # Amount of failures
+            main_circuit = FileOpen(fname).open()
 
-        # Calculate GridCal PTDF
-        linear_analysis_opt = LinearAnalysisOptions(distribute_slack=False, correct_values=False)
-        linear_analysis = LinearAnalysisDriver(grid=main_circuit, options=linear_analysis_opt)
-        linear_analysis.run()
+            # Network ordering
+            branches = main_circuit.get_branches()
+            branches_id = [x.code for x in branches]
+            nodes = main_circuit.get_buses()
+            nodes_id = [x.code for x in nodes]
 
-        ptdf_gridcal = pd.DataFrame(linear_analysis.results.PTDF, columns=nodes_id)
-        ptdf_gridcal['branches'] = branches_id
+            # Calculate GridCal PTDF
+            linear_analysis_opt = LinearAnalysisOptions(distribute_slack=False, correct_values=False)
+            linear_analysis = LinearAnalysisDriver(grid=main_circuit, options=linear_analysis_opt)
+            linear_analysis.run()
 
-        # Import PSSe PDTF
-        ptdf_psse = pd.read_csv(pssename)
+            ptdf_gridcal = pd.DataFrame(linear_analysis.results.PTDF, columns=nodes_id)
+            ptdf_gridcal['branches'] = branches_id
 
-        ptdf_psse.drop(['vbase_nodefrom', 'vbase_nodeto'], axis=1, inplace=True)
-        ptdf_psse['branches'] = (ptdf_psse['nodefrom'].astype(str) + '_' + ptdf_psse['nodeto'].astype(str) + '_'
-                                 + ptdf_psse['ckt'].astype(str))
+            # Import PSSe PDTF
+            ptdf_psse = pd.read_csv(pssename)
 
-        # Test comparison
-        ptdf = ptdf_gridcal.merge(ptdf_psse, on='branches', how='inner')
-        print(' ')
-        print('--Testing PTDF in {}'.format(name))
-        for i in nodes_id:
-            print('----Node ongoing: {}'.format(i))
-            if name == "IEEE118":
-                if i == '69': continue  # Skipping slack (is zero)
-            else:
-                if i == '1': continue  # Skipping slack (is zero)
+            ptdf_psse.drop(['vbase_nodefrom', 'vbase_nodeto'], axis=1, inplace=True)
+            ptdf_psse['branches'] = (ptdf_psse['nodefrom'].astype(str) + '_' + ptdf_psse['nodeto'].astype(str) + '_'
+                                     + ptdf_psse['ckt'].astype(str))
 
-            if 'NUDO{}'.format(i) not in ptdf.columns:
-                print('El nudo {} no se ha calculado por PSSe')
-                continue
-            nodegridcal = np.array(ptdf[i])
+            # Test comparison
+            ptdf = ptdf_gridcal.merge(ptdf_psse, on='branches', how='inner')
+            print(' ')
+            print('--Testing PTDF in {}'.format(name))
+            for i in nodes_id:
+                print('----Node ongoing: {}'.format(i))
+                if name == "IEEE118":
+                    if i == '69': continue  # Skipping slack (is zero)
+                else:
+                    if i == '1': continue  # Skipping slack (is zero)
 
-            nodepsse = np.array(ptdf['NUDO{}'.format(str(i))])
+                if 'NUDO{}'.format(i) not in ptdf.columns:
+                    print('El nudo {} no se ha calculado por PSSe')
+                    continue
+                nodegridcal = np.array(ptdf[i])
 
-            if not (np.isclose(nodegridcal, -nodepsse, atol=1e-3).all()):
-                print('------------ XXXX PTDFs not equal XXXX ------------ ')
-                counter += 1
-            else:
-                print('------------PTDFs CHECKED')
-        print('-- TOTAL FAILURES: {}'.format(counter))
-        print(' ')
+                nodepsse = np.array(ptdf['NUDO{}'.format(str(i))])
+
+                if not (np.isclose(nodegridcal, -nodepsse, atol=1e-3).all()):
+                    print('------------ XXXX PTDFs not equal XXXX ------------ ')
+                    print('------------------Difference: {}'.format(np.sum(nodegridcal - (-nodepsse))))
+                    counter += 1
+                # else:
+                #    print('------------PTDFs CHECKED')
+            print('-- TOTAL FAILURES: {}'.format(counter))
+            print(' ')
+        else:
+            print(fname, "does not exists...")
 
 
 def test_lodf_psse():
@@ -279,64 +283,145 @@ def test_lodf_psse():
          os.path.join('data', 'results', 'comparison', 'IEEE 30 bus LODF PSSe.csv'), 'IEEE30'),
         (os.path.join('data', 'grids', 'RAW', 'IEEE 118 Bus V2.raw'),
          os.path.join('data', 'results', 'comparison', 'IEEE 118 bus LODF PSSe.csv'), 'IEEE118'),
-        # (os.path.join('data', 'grids', 'RAW', '15.Caso_2026.raw'),
-        #  os.path.join('data', 'results', 'comparison', '15.Caso_2026 LODF PSSe.csv'), 'REE')
+        (os.path.join('data', 'grids', 'RAW', 'sensitive-raw', '15.Caso_2026.raw'),
+         os.path.join('data', 'results', 'comparison', '15.Caso_2026 LODF PSSe.csv'), 'REE')
     ]:
 
-        counter = 0  # Amount of failures
-        if name != 'REE':
-            continue
-        main_circuit = FileOpen(fname).open()
+        if os.path.exists(fname):
+            counter = 0  # Amount of failures
+            main_circuit = FileOpen(fname).open()
 
-        # Network ordering
-        branches = main_circuit.get_branches()
-        branches_id = [x.code for x in branches]
+            # Network ordering
+            branches = main_circuit.get_branches()
+            branches_id = [x.code for x in branches]
 
-        # Calculate GridCal LODF
-        linear_analysis_opt = LinearAnalysisOptions(distribute_slack=False, correct_values=False)
-        linear_analysis = LinearAnalysisDriver(grid=main_circuit, options=linear_analysis_opt)
-        linear_analysis.run()
+            # Calculate GridCal LODF
+            linear_analysis_opt = LinearAnalysisOptions(distribute_slack=False, correct_values=False)
+            linear_analysis = LinearAnalysisDriver(grid=main_circuit, options=linear_analysis_opt)
+            linear_analysis.run()
 
-        lodf_gridcal = pd.DataFrame(linear_analysis.results.LODF, columns=branches_id)
-        lodf_gridcal['branches'] = branches_id
+            lodf_gridcal = pd.DataFrame(linear_analysis.results.LODF, columns=branches_id)
+            lodf_gridcal['branches'] = branches_id
 
-        # Import PSSe LODF
+            # Import PSSe LODF
 
-        lodf_psse = pd.read_csv(pssename)
-        lodf_psse.drop(['vbase_nodefrom', 'vbase_nodeto'], axis=1, inplace=True)
-        lodf_psse['branches'] = (lodf_psse['nodefrom'].astype(str) + '_' + lodf_psse['nodeto'].astype(str) + '_'
-                                 + lodf_psse['ckt'].astype(str))
+            lodf_psse = pd.read_csv(pssename)
+            lodf_psse.drop(['vbase_nodefrom', 'vbase_nodeto'], axis=1, inplace=True)
+            lodf_psse['branches'] = (lodf_psse['nodefrom'].astype(str) + '_' + lodf_psse['nodeto'].astype(str) + '_'
+                                     + lodf_psse['ckt'].astype(str))
 
-        # Test comparison
-        lodf = lodf_gridcal.merge(lodf_psse, on='branches', how='inner')
-        print(' ')
-        print('-Testing LODF in {}'.format(name))
-        for i in branches_id:
-            print('----Branch ongoing: {}'.format(i))
+            # Test comparison
+            lodf = lodf_gridcal.merge(lodf_psse, on='branches', how='inner')
+            print(' ')
+            print('-Testing LODF in {}'.format(name))
+            for i in branches_id:
+                print('----Branch ongoing: {}'.format(i))
 
-            branchgridcal = np.array(lodf[i])
+                branchgridcal = np.array(lodf[i])
 
-            branchsearchdirect = i.split("_")[0] + "_" + i.split("_")[1] + "(" + i.split("_")[2] + ")"
-            branchsearchundirect = i.split("_")[1] + "_" + i.split("_")[0] + "(" + i.split("_")[2] + ")"
-            if branchsearchdirect in lodf.columns:
-                branchpsse = np.array(lodf[branchsearchdirect])
-                branchpsse[branchpsse == '---'] = 0.0
-                branchpsse = branchpsse.astype(float)
-            elif branchsearchundirect in lodf.columns:
-                print("----------Nodes reordered")
-                branchpsse = np.array(lodf[branchsearchundirect])
-                branchpsse[branchpsse == '---'] = 0.0
-                branchpsse = branchpsse.astype(float)
-                branchpsse = -branchpsse
-            else:
-                print('La línea {} no se ha calculado por PSSe'.format(i))
+                branchsearchdirect = i.split("_")[0] + "_" + i.split("_")[1] + "(" + i.split("_")[2] + ")"
+                branchsearchundirect = i.split("_")[1] + "_" + i.split("_")[0] + "(" + i.split("_")[2] + ")"
+                if branchsearchdirect in lodf.columns:
+                    branchpsse = np.array(lodf[branchsearchdirect])
+                    branchpsse[branchpsse == '---'] = 0.0
+                    branchpsse = branchpsse.astype(float)
+                elif branchsearchundirect in lodf.columns:
+                    print("----------Nodes reordered")
+                    branchpsse = np.array(lodf[branchsearchundirect])
+                    branchpsse[branchpsse == '---'] = 0.0
+                    branchpsse = branchpsse.astype(float)
+                    branchpsse = -branchpsse
+                else:
+                    print('La línea {} no se ha calculado por PSSe'.format(i))
 
-            if not (np.isclose(branchgridcal, branchpsse, atol=1e-3).all()):
-                print('------------ XXXX LODFs not equal XXXX ------------ ')
-                counter += 1
-            else:
-                print('------------LODFs CHECKED')
-        print('-- TOTAL FAILURES: {}'.format(counter))
+                if not (np.isclose(branchgridcal, branchpsse, atol=1e-3).all()):
+                    print('------------ XXXX LODFs not equal XXXX ------------ ')
+                    print('------------------Difference: {}'.format(np.sum(branchgridcal - branchpsse)))
+                    counter += 1
+                # else:
+                #    print('------------LODFs CHECKED')
+            print('-- TOTAL FAILURES: {}'.format(counter))
+        else:
+            print(fname, "does not exists...")
+
+
+def test_mlodf():
+    """
+    Compare power flow per branches in N-2 contingencies using theoretical methodology and MLODF
+    """
+    # fname = os.path.join('data', 'grids', 'IEEE14-2_4_1-3_4_1.gridcal')
+    fname = os.path.join('data', 'grids', 'IEEE14-2_5_1-1_5_1.gridcal')
+
+    main_circuit = FileOpen(fname).open()
+
+    # Branches ordering
+    branchdict = {}
+    for i, t in enumerate(main_circuit.get_branches()):
+        branchdict[t.code] = i
+
+    # Power flow initial using linear method
+    linear_analysis = LinearAnalysisDriver(grid=main_circuit)
+    linear_analysis.run()
+
+    Sf0 = linear_analysis.results.Sf
+    Sf0red = np.array([Sf0[branchdict[t.code]] for t in main_circuit.contingencies])
+
+    linear_multi_contingency = LinearMultiContingencies(grid=main_circuit)
+    linear_multi_contingency.update(ptdf=linear_analysis.results.PTDF, lodf=linear_analysis.results.LODF)
+    mlodf = linear_multi_contingency.multi_contingencies[0].mlodf_factors.A  # TODO: Suponemos que son los MLODF
+
+    # Power flow per branches after multicontingency using MLODF method
+    Sfmlodf = Sf0 + np.matmul(mlodf, Sf0red)
+
+    # Theoretical method
+    pf_options = PowerFlowOptions(SolverType.NR,
+                                  verbose=False,
+                                  initialize_with_existing_solution=False,
+                                  dispatch_storage=True,
+                                  control_q=ReactivePowerControlMode.NoControl,
+                                  control_p=False)
+
+    options = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyEngine.PTDF)
+    cont_analysis_driver = ContingencyAnalysisDriver(grid=main_circuit, options=options,
+                                                     linear_multiple_contingencies=linear_multi_contingency)
+    cont_analysis_driver.run()
+    Sfnr = cont_analysis_driver.results.Sf.real * 1e-2  # TODO: pensamos que las unidades son erróneas
+
+    assert (np.isclose(Sfmlodf, Sfnr, atol=1e-2).all())
+
+
+def test_mlodf_sanpen():
+    """
+    Compare power flow per branches in N-2 contingencies using theoretical methodology and MLODF
+    """
+    # fname = os.path.join('data', 'grids', 'IEEE14-2_4_1-3_4_1.gridcal')
+    fname = os.path.join('data', 'grids', 'IEEE14-2_5_1-1_5_1.gridcal')
+
+    main_circuit = FileOpen(fname).open()
+
+    # DC power flow method
+    pf_options = PowerFlowOptions(SolverType.DC,
+                                  verbose=False,
+                                  initialize_with_existing_solution=False,
+                                  dispatch_storage=True,
+                                  control_q=ReactivePowerControlMode.NoControl,
+                                  control_p=False)
+    options1 = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyEngine.PowerFlow)
+    cont_analysis_driver1 = ContingencyAnalysisDriver(grid=main_circuit, options=options1,
+                                                      linear_multiple_contingencies=None)
+    cont_analysis_driver1.run()
+
+    # MLODF method
+    linear_analysis = LinearAnalysisDriver(grid=main_circuit)
+    linear_analysis.run()
+    linear_multi_contingency = LinearMultiContingencies(grid=main_circuit)
+    linear_multi_contingency.update(ptdf=linear_analysis.results.PTDF, lodf=linear_analysis.results.LODF)
+    options2 = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyEngine.PTDF)
+    cont_analysis_driver2 = ContingencyAnalysisDriver(grid=main_circuit, options=options2,
+                                                      linear_multiple_contingencies=linear_multi_contingency)
+    cont_analysis_driver2.run()
+
+    assert (np.isclose(cont_analysis_driver1.results.Sf, cont_analysis_driver2.results.Sf, atol=1e-2).all())
 
 
 if __name__ == '__main__':

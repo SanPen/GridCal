@@ -65,8 +65,8 @@ class LinearAnalysisDriver(DriverTemplate):
         Run thread
         """
         self.tic()
-        self.progress_text.emit('Analyzing')
-        self.progress_signal.emit(0)
+        self.report_text('Analyzing')
+        self.report_progress(0)
 
         bus_names = self.grid.get_bus_names()
         br_names = self.grid.get_branches_wo_hvdc_names()

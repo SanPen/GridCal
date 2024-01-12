@@ -347,6 +347,7 @@ def get_generator_data(circuit: MultiCircuit,
 
             data.cost_0[k] = elm.Cost0_prof[t_idx]
             data.cost_1[k] = elm.Cost_prof[t_idx]
+            data.cost_2[k] = elm.Cost2_prof[t_idx]
 
             if elm.active_prof[t_idx] and elm.is_controlled:
 
@@ -371,6 +372,7 @@ def get_generator_data(circuit: MultiCircuit,
 
             data.cost_0[k] = elm.Cost0
             data.cost_1[k] = elm.Cost
+            data.cost_2[k] = elm.Cost2
 
             if elm.active and elm.is_controlled:
                 if bus_data.bus_types[i] != 3:  # if it is not Slack
@@ -474,6 +476,7 @@ def get_battery_data(circuit: MultiCircuit,
 
             data.cost_0[k] = elm.Cost0_prof[t_idx]
             data.cost_1[k] = elm.Cost_prof[t_idx]
+            data.cost_2[k] = elm.Cost2_prof[t_idx]
 
             if elm.active_prof[t_idx] and elm.is_controlled:
                 if bus_data.bus_types[i] != 3:  # if it is not Slack
@@ -497,6 +500,7 @@ def get_battery_data(circuit: MultiCircuit,
 
             data.cost_0[k] = elm.Cost0
             data.cost_1[k] = elm.Cost
+            data.cost_2[k] = elm.Cost2
 
             if elm.active and elm.is_controlled:
                 if bus_data.bus_types[i] != 3:  # if it is not Slack
@@ -1044,7 +1048,7 @@ def get_hvdc_data(circuit: MultiCircuit,
             data.r[i] = elm.r
 
             if opf_results is not None:
-                # if we are taking the valñues from the OPF, do not allow the free mode
+                # if we are taking the values from the OPF, do not allow the free mode
                 data.control_mode[i] = HvdcControlType.type_1_Pset
                 data.Pset[i] = opf_results.hvdc_Pf[i]
             else:
@@ -1095,14 +1099,17 @@ def get_fluid_node_data(circuit: MultiCircuit,
         data.names[k] = elm.name
         data.idtag[k] = elm.idtag
 
-        data.min_level[k] = elm.min_level
-        data.max_level[k] = elm.max_level
-        data.initial_level[k] = elm.initial_level
+        # Convert input data in hm3 to m3
+        data.min_level[k] = 1e6 * elm.min_level
+        data.max_level[k] = 1e6 * elm.max_level
+        data.initial_level[k] = 1e6 * elm.initial_level
 
         if time_series:
             data.inflow[k] = elm.inflow_prof[t_idx]
+            data.spillage_cost[k] = elm.spillage_cost_prof[t_idx]
         else:
             data.inflow[k] = elm.inflow
+            data.spillage_cost[k] = elm.spillage_cost
 
     return data, plant_dict
 
@@ -1195,14 +1202,16 @@ def get_fluid_p2x_data(circuit: MultiCircuit,
 
 
 def get_fluid_path_data(circuit: MultiCircuit,
+                        plant_dict: Dict[str, int],
                         t_idx=-1) -> ds.FluidPathData:
     """
 
     :param circuit:
+    :param plant_dict:
     :param t_idx:
     :return:
     """
-    devices = circuit.get_fluid_p2xs()
+    devices = circuit.get_fluid_paths()
 
     data = ds.FluidPathData(nelm=len(devices))
 
@@ -1210,8 +1219,9 @@ def get_fluid_path_data(circuit: MultiCircuit,
         data.names[k] = elm.name
         data.idtag[k] = elm.idtag
 
-        data.source_idx[k] = elm.source_idx
-        data.target_idx[k] = elm.target_idx
+        # pass idx, check
+        data.source_idx[k] = plant_dict[elm.source.idtag]
+        data.target_idx[k] = plant_dict[elm.target.idtag]
 
         data.min_flow[k] = elm.min_flow
         data.max_flow[k] = elm.max_flow

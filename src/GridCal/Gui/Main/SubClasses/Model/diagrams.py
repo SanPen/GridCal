@@ -20,6 +20,7 @@ from typing import List, Tuple, Union
 import networkx as nx
 import numpy as np
 from PySide6 import QtGui, QtWidgets
+from PySide6.QtCore import QRectF, Qt
 from matplotlib import pyplot as plt
 from pandas.plotting import register_matplotlib_converters
 
@@ -29,9 +30,9 @@ from GridCalEngine.enumerations import DeviceType
 import GridCal.Gui.GuiFunctions as gf
 import GridCal.Gui.Visualization.palettes as palettes
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
-from GridCal.Gui.GeneralDialogues import CheckListDialogue, StartEndSelectionDialogue
+from GridCal.Gui.GeneralDialogues import CheckListDialogue, StartEndSelectionDialogue, InputSearchDialogue
 from GridCal.Gui.BusViewer.bus_viewer_dialogue import BusViewerWidget
-from GridCal.Gui.GridEditorWidget import BusBranchEditorWidget, generate_bus_branch_diagram
+from GridCal.Gui.BusBranchEditorWidget import BusBranchEditorWidget, generate_bus_branch_diagram
 from GridCal.Gui.MapWidget.grid_map_widget import GridMapWidget
 from GridCal.Gui.messages import yes_no_question, error_msg, info_msg
 from GridCal.Gui.Main.SubClasses.Model.compiled_arrays import CompiledArraysMain
@@ -121,7 +122,8 @@ class DiagramsMain(CompiledArraysMain):
         self.ui.actionZoom_in.triggered.connect(self.zoom_in)
         self.ui.actionZoom_out.triggered.connect(self.zoom_out)
         self.ui.actionAdd_general_bus_branch_diagram.triggered.connect(self.add_complete_bus_branch_diagram)
-        self.ui.actionAdd_selection_bus_branch_diagram.triggered.connect(self.add_selection_bus_branch_diagram)
+        self.ui.actionNew_bus_branch_diagram_from_selection.triggered.connect(
+            self.new_bus_branch_diagram_from_selection)
         self.ui.actionAdd_bus_vecinity_diagram.triggered.connect(self.add_bus_vecinity_diagram_from_diagram_selection)
         self.ui.actionAdd_map.triggered.connect(self.add_map_diagram)
         self.ui.actionAdd_substation_diagram.triggered.connect(self.add_substation_diagram)
@@ -130,6 +132,7 @@ class DiagramsMain(CompiledArraysMain):
         self.ui.actionSmaller_nodes.triggered.connect(self.smaller_nodes)
         self.ui.actionCenter_view.triggered.connect(self.center_nodes)
         self.ui.actionAutoatic_layout.triggered.connect(self.auto_layout)
+        self.ui.actionSearchDiagram.triggered.connect(self.search_diagram)
 
         # Buttons
         self.ui.colour_results_pushButton.clicked.connect(self.colour_diagrams)
@@ -725,7 +728,7 @@ class DiagramsMain(CompiledArraysMain):
     def get_selected_diagram_widget(self) -> Union[None, BusBranchEditorWidget, GridMapWidget, BusViewerWidget]:
         """
         Get the currently selected diagram
-        :return: None, GridEditorWidget, GridMapWidget, BusViewerGUI
+        :return: None, BusBranchEditorWidget, GridMapWidget, BusViewerGUI
         """
         indices = self.ui.diagramsListView.selectedIndexes()
 
@@ -809,9 +812,9 @@ class DiagramsMain(CompiledArraysMain):
         """
         self.add_complete_bus_branch_diagram_now(name='All bus branches')
 
-    def add_selection_bus_branch_diagram(self):
+    def new_bus_branch_diagram_from_selection(self):
         """
-        Add a bus-branch diagram of a particular area
+        Add a bus-branch diagram of a particular selection of objects
         """
         diagram_widget = self.get_selected_diagram_widget()
 
@@ -1032,7 +1035,7 @@ class DiagramsMain(CompiledArraysMain):
     def set_diagram_widget(self, diagram: Union[BusBranchEditorWidget, GridMapWidget, BusViewerWidget]):
         """
         Set the current diagram in the container
-        :param diagram: GridEditorWidget, GridMapWidget, BusViewerGUI
+        :param diagram: BusBranchEditorWidget, GridMapWidget, BusViewerGUI
         """
         self.remove_all_diagram_widgets()
 
@@ -1194,26 +1197,10 @@ class DiagramsMain(CompiledArraysMain):
         """
         Prompt to delete the selected buses from the schematic
         """
-        if len(self.circuit.buses) > 0:
 
-            # get the selected buses
-            selected = self.get_selected_buses()
-
-            if len(selected) > 0:
-                reply = QtWidgets.QMessageBox.question(self, 'Delete',
-                                                       'Are you sure that you want to delete the selected elements?',
-                                                       QtWidgets.QMessageBox.StandardButton.Yes,
-                                                       QtWidgets.QMessageBox.StandardButton.No)
-
-                if reply == QtWidgets.QMessageBox.StandardButton.Yes.value:
-
-                    # remove the buses (from the schematic and the circuit)
-                    for k, bus, graphic_obj in selected:
-                        graphic_obj.remove(ask=False)
-                else:
-                    pass
-            else:
-                info_msg('Choose some elements from the schematic', 'Delete buses')
+        diagram_widget = self.get_selected_diagram_widget()
+        if isinstance(diagram_widget, BusBranchEditorWidget):
+            diagram_widget.delete_Selected()
         else:
             pass
 
@@ -1450,3 +1437,20 @@ class DiagramsMain(CompiledArraysMain):
             elif isinstance(diagram_widget, GridMapWidget):
                 pass
                 # diagram_widget.delete_diagram_elements(elements)
+
+    def search_diagram(self):
+        """
+        Search elements by name, code or idtag and center them in the screen
+        """
+
+        dlg = InputSearchDialogue(deafault_value="",
+                                  title="Search",
+                                  prompt="Search object by name, code or idtag in the diagram")
+        if dlg.exec_():
+
+            if dlg.is_accepted:
+                diagram = self.get_selected_diagram_widget()
+
+                if diagram is not None:
+                    if isinstance(diagram, BusBranchEditorWidget):
+                        diagram.graphical_search(search_text=dlg.searchText.lower())

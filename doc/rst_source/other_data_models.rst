@@ -2750,7 +2750,7 @@ Fluid Pump
     p_min          float       MW      False                 Minimum power                                        
     p_max          float       MW      False                 Maximum power                                        
     efficiency     float       MWh/m3  False                 Power plant energy production per fluid unit         
-    max_flow_rate  float       m3/h    False                 maximum fluid flow                                   
+    max_flow_rate  float       m3/s    False                 maximum fluid flow
     reservoir      FluidNode           False                 Connection node/reservoir                            
     =============  ==========  ======  =========  =========  ============================================  =======
 
@@ -2769,7 +2769,7 @@ Fluid Turbine
     p_min          float       MW      False                 Minimum power                                        
     p_max          float       MW      False                 Maximum power                                        
     efficiency     float       MWh/m3  False                 Power plant energy production per fluid unit         
-    max_flow_rate  float       m3/h    False                 maximum fluid flow                                   
+    max_flow_rate  float       m3/s    False                 maximum fluid flow
     plant          FluidNode           False                 Connection reservoir/node                            
     =============  ==========  ======  =========  =========  ============================================  =======
 
@@ -2804,8 +2804,8 @@ Fluid path
     code      str               False                 Secondary ID                
     source    FluidNode         False                 Source node                 
     target    FluidNode         False                 Target node                 
-    min_flow  float       m3/h  False                 Minimum power               
-    max_flow  float       m3/h  False                 Maximum power               
+    min_flow  float       m3/s  False                 Minimum power
+    max_flow  float       m3/s  False                 Maximum power
     ========  ==========  ====  =========  =========  ===================  =======
 
 

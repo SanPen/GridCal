@@ -30,7 +30,7 @@ from GridCalEngine.Core.Compilers.circuit_to_pgm import PGM_AVAILABLE
 from GridCalEngine.IO.gridcal.contingency_parser import import_contingencies_from_json, export_contingencies_json_file
 from GridCal.Gui.CoordinatesInput.coordinates_dialogue import CoordinatesInputGUI
 from GridCal.Gui.GeneralDialogues import LogsDialogue, CustomQuestionDialogue
-from GridCal.Gui.GridEditorWidget import BusBranchEditorWidget
+from GridCal.Gui.BusBranchEditorWidget import BusBranchEditorWidget
 from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_msg
 from GridCal.Gui.GridGenerator.grid_generator_dialogue import GridGeneratorGUI
 from GridCal.Gui.RosetaExplorer.RosetaExplorer import RosetaExplorerGUI

@@ -39,7 +39,7 @@ class FluidPump(FluidInjectionTemplate):
         :param idtag: UUID code
         :param code: secondary code
         :param efficiency: energy consumption per fluid unit (MWh/m3)
-        :param max_flow_rate: maximum fluid flow (m3/h)
+        :param max_flow_rate: maximum fluid flow (m3/s)
         :param reservoir: Connection reservoir/node
         :param generator: electrical machine connected
         """

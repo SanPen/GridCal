@@ -39,8 +39,8 @@ class FluidPath(EditableDevice):
         :param code: secondary ID
         :param source: source of fluid (direction matters)
         :param target: target for the fluid (direction matters)
-        :param min_flow: minimum flow (m3/h)
-        :param max_flow: maximum flow (m3/h)
+        :param min_flow: minimum flow (m3/s)
+        :param max_flow: maximum flow (m3/s)
         """
         EditableDevice.__init__(self,
                                 name=name,
@@ -53,9 +53,27 @@ class FluidPath(EditableDevice):
         self.min_flow = min_flow
         self.max_flow = max_flow
 
-        self.flow = 0.0  # m3/h -> LpVar
+        self.flow = 0.0  # m3/s -> LpVar
 
         self.register(key='source', units="", tpe=DeviceType.FluidNodeDevice, definition="Source node")
         self.register(key='target', units="", tpe=DeviceType.FluidNodeDevice, definition="Target node")
-        self.register(key='min_flow', units="m3/h", tpe=float, definition="Minimum flow")
-        self.register(key='max_flow', units="m3/h", tpe=float, definition="Maximum flow")
+        self.register(key='min_flow', units="m3/s", tpe=float, definition="Minimum flow")
+        self.register(key='max_flow', units="m3/s", tpe=float, definition="Maximum flow")
+
+    def copy(self):
+        """
+        Make a deep copy of this object
+        :return: Copy of this object
+        """
+
+        # make a new instance (separated object in memory)
+        fluid_path = FluidPath()
+
+        fluid_path.source = self.source
+        fluid_path.target = self.target
+        fluid_path.min_flow = self.min_flow
+        fluid_path.max_flow = self.max_flow
+
+        fluid_path.flow = self.flow
+
+        return fluid_path

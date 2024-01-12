@@ -21,7 +21,8 @@ from typing import Tuple, Dict, List
 import json
 import pandas as pd
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.basic_structures import Logger, SolverType
+from GridCalEngine.enumerations import SolverType
+from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCalEngine.Simulations.PowerFlow.power_flow_ts_results import PowerFlowTimeSeriesResults

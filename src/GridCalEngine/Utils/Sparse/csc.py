@@ -269,7 +269,10 @@ def scipy_to_mat(scipy_mat: csc_matrix):
 
 def pack_4_by_4(A11: CscMat, A12: CscMat, A21: CscMat, A22: CscMat):
     """
-    Stack 4 CSC matrices
+    Stack 4 CSC matrices in a 2 by 2 structure
+    stack csc sparse float matrices like this:
+    | A11 | A12 |
+    | A21 | A22 |
     :param A11: Upper left matrix
     :param A12: Upper right matrix
     :param A21: Lower left matrix
@@ -281,6 +284,24 @@ def pack_4_by_4(A11: CscMat, A12: CscMat, A21: CscMat, A22: CscMat):
                                                      A12.shape[0], A12.shape[1], A12.indices, A12.indptr, A12.data,
                                                      A21.shape[0], A21.shape[1], A21.indices, A21.indptr, A21.data,
                                                      A22.shape[0], A22.shape[1], A22.indices, A22.indptr, A22.data)
+    return CscMat((Px, Pi, Pp), shape=(m, n))
+
+
+def pack_3_by_4(A11: CscMat, A12: CscMat, A21: CscMat):
+    """
+    Stack 3 CSC matrices in a 2 by 2 structure
+    stack csc sparse float matrices like this:
+    | A11 | A12 |
+    | A21 | 0   |
+    :param A11: Upper left matrix
+    :param A12: Upper right matrix
+    :param A21: Lower left matrix
+    :return: Stitched matrix
+    """
+
+    m, n, Pi, Pp, Px = csc_numba.csc_stack_3_by_4_ff(A11.shape[0], A11.shape[1], A11.indices, A11.indptr, A11.data,
+                                                     A12.shape[0], A12.shape[1], A12.indices, A12.indptr, A12.data,
+                                                     A21.shape[0], A21.shape[1], A21.indices, A21.indptr, A21.data)
     return CscMat((Px, Pi, Pp), shape=(m, n))
 
 
@@ -411,8 +432,6 @@ def csc_stack_2d_ff(mats, m_rows=1, m_cols=1, row_major=True):
     return csc_matrix((data, indices, indptr), shape=(nrows, ncols))
 
 
-
-
 def csc_stack_2d_ff_old(mats, m_rows=1, m_cols=1):
     """
     Assemble matrix from a list of matrices representing a "super matrix"
@@ -495,3 +514,24 @@ def dense_to_csc(mat: Mat, threshold: float) -> csc_matrix:
     data, indices, indptr = csc_numba.dense_to_csc_numba(mat, threshold)
 
     return csc_matrix((data, indices, indptr), shape=mat.shape)
+
+
+def diags(array) -> csc_matrix:
+    """
+    Convert array to CSC diagonal matrix
+    :param array:
+    :return:
+    """
+    m = len(array)
+    # indptr = np.zeros(m + 1, dtype=int)
+    # indices = np.zeros(m, dtype=int)
+    # data = np.zeros(m, dtype=float)
+    #
+    # for i in range(m):
+    #     indptr[i] = i
+    #     indices[i] = i
+    #     data[i] = array[i]
+    #
+    # indptr[m] = m
+
+    return csc_matrix(csc_numba.csc_diagonal_from_array(array), shape=(m, m))

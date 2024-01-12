@@ -376,7 +376,7 @@ class NumericalCircuit:
         self.pq_: IntVec = None
         self.pv_: IntVec = None
         self.vd_: IntVec = None
-        self.pqpv_: IntVec = None
+        self.no_slack_: IntVec = None
         self.ac_: IntVec = None
         self.dc_: IntVec = None
 
@@ -426,7 +426,7 @@ class NumericalCircuit:
         self.pq_: IntVec = None
         self.pv_: IntVec = None
         self.vd_: IntVec = None
-        self.pqpv_: IntVec = None
+        self.no_slack_: IntVec = None
         self.ac_: IntVec = None
         self.dc_: IntVec = None
 
@@ -1377,7 +1377,8 @@ class NumericalCircuit:
         :return:
         """
         if self.vd_ is None:
-            self.vd_, self.pq_, self.pv_, self.pqpv_ = compile_types(Pbus=self.Sbus.real, types=self.bus_data.bus_types)
+            self.vd_, self.pq_, self.pv_, self.no_slack_ = compile_types(Pbus=self.Sbus.real,
+                                                                         types=self.bus_data.bus_types)
 
         return self.vd_
 
@@ -1409,10 +1410,11 @@ class NumericalCircuit:
 
         :return:
         """
-        if self.pqpv_ is None:
+        # TODO: rename to "no_slack"
+        if self.no_slack_ is None:
             _ = self.vd  # call the constructor
 
-        return self.pqpv_
+        return self.no_slack_
 
     @property
     def structs_dict(self):
@@ -2080,7 +2082,8 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
 
     if len(circuit.fluid_nodes) > 0:
         nc.fluid_node_data, plant_dict = gc_compiler2.get_fluid_node_data(circuit=circuit,
-                                                                          t_idx=t_idx)
+                                                                          t_idx=t_idx,
+                                                                          time_series=time_series)
 
         nc.fluid_turbine_data = gc_compiler2.get_fluid_turbine_data(circuit=circuit,
                                                                     plant_dict=plant_dict,
@@ -2098,6 +2101,7 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
                                                             t_idx=t_idx)
 
         nc.fluid_path_data = gc_compiler2.get_fluid_path_data(circuit=circuit,
+                                                              plant_dict=plant_dict,
                                                               t_idx=t_idx)
 
     nc.consolidate_information(use_stored_guess=use_stored_guess)

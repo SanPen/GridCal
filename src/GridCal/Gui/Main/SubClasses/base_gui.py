@@ -58,7 +58,7 @@ from GridCal.Gui.SyncDialogue.sync_dialogue import SyncDialogueWindow
 from GridCal.Gui.TowerBuilder.LineBuilderDialogue import TowerBuilderGUI
 from GridCal.Gui.GeneralDialogues import clear_qt_layout
 from GridCal.Gui.ConsoleWidget import ConsoleWidget
-from GridCal.Gui.GridEditorWidget.generic_graphics import IS_DARK
+from GridCal.Gui.BusBranchEditorWidget.generic_graphics import IS_DARK
 from GridCal.templates import (get_cables_catalogue, get_transformer_catalogue, get_wires_catalogue,
                                get_sequence_lines_catalogue)
 
