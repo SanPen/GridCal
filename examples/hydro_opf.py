@@ -5,20 +5,20 @@ import datetime as dt
 
 # main_circuit = gce.FileOpen('../Grids_and_profiles/grids/hydro_grid1.gridcal').open()
 # main_circuit = gce.FileOpen('../Grids_and_profiles/grids/hydro_grid2.gridcal').open()
-main_circuit = gce.FileOpen('../Grids_and_profiles/grids/hydro_grid4.gridcal').open()
-
-# declare the snapshot opf
-opf_driver = gce.OptimalPowerFlowTimeSeriesDriver(grid=main_circuit)
-
-print('Solving...')
-opf_driver.run()
-
-print("Status:", opf_driver.results.converged)
-print('Angles\n', np.angle(opf_driver.results.voltage))
-print('Branch loading\n', opf_driver.results.loading)
-print('Gen power\n', opf_driver.results.generator_power)
-print('Nodal prices \n', opf_driver.results.bus_shadow_prices)
-
+# main_circuit = gce.FileOpen('../Grids_and_profiles/grids/hydro_grid4.gridcal').open()
+#
+# # declare the snapshot opf
+# opf_driver = gce.OptimalPowerFlowTimeSeriesDriver(grid=main_circuit)
+#
+# print('Solving...')
+# opf_driver.run()
+#
+# print("Status:", opf_driver.results.converged)
+# print('Angles\n', np.angle(opf_driver.results.voltage))
+# print('Branch loading\n', opf_driver.results.loading)
+# print('Gen power\n', opf_driver.results.generator_power)
+# print('Nodal prices \n', opf_driver.results.bus_shadow_prices)
+#
 
 if __name__ == '__main__':
 
@@ -33,17 +33,28 @@ if __name__ == '__main__':
     # set the grid master time profile
     grid.time_profile = df_0.index
 
-    # Add some fluid nodes
+    # Add some fluid nodes, with their electrical buses
+    fb1 = gce.Bus(name='fb1')
+    fb2 = gce.Bus(name='fb2')
+    fb3 = gce.Bus(name='fb3')
+
+    grid.add_bus(fb1)
+    grid.add_bus(fb2)
+    grid.add_bus(fb3)
+
     f1 = gce.FluidNode(name='fluid_node_1',
                        min_level=0.,
                        max_level=1000.,
                        current_level=500.,
                        spillage_cost=10.,
-                       inflow=0.5)
+                       inflow=0.5,
+                       bus=fb1)
 
-    f2 = gce.FluidNode(name='fluid_node_2')
+    f2 = gce.FluidNode(name='fluid_node_2',
+                       bus=fb2)
 
-    f3 = gce.FluidNode(name='fluid_node_3')
+    f3 = gce.FluidNode(name='fluid_node_3',
+                       bus=fb3)
 
     f4 = gce.FluidNode(name='fluid_node_4',
                        min_level=0,
@@ -96,6 +107,10 @@ if __name__ == '__main__':
                        Pmin=-1000.0,
                        Cost=-0.5)
 
+    grid.add_generator(fb1, g1)
+    grid.add_generator(fb2, g2)
+    grid.add_generator(fb3, g3)
+
     # Add a turbine
     turb1 = gce.FluidTurbine(name='turbine_1',
                              plant=f3,
@@ -145,5 +160,40 @@ if __name__ == '__main__':
                      bus_to=b2,
                      rate=10,
                      x=0.05)
+
+    line2 = gce.Line(name='line2',
+                     bus_from=b1,
+                     bus_to=fb1,
+                     rate=10,
+                     x=0.05)
+
+    line3 = gce.Line(name='line3',
+                     bus_from=b1,
+                     bus_to=fb2,
+                     rate=10,
+                     x=0.05)
+
+    line4 = gce.Line(name='line4',
+                     bus_from=b2,
+                     bus_to=fb3,
+                     rate=10,
+                     x=0.05)
+
+    grid.add_line(line1)
+    grid.add_line(line2)
+    grid.add_line(line3)
+    grid.add_line(line4)
+
+    # Run the simulation
+    opf_driver = gce.OptimalPowerFlowTimeSeriesDriver(grid=grid)
+
+    print('Solving...')
+    opf_driver.run()
+
+    print("Status:", opf_driver.results.converged)
+    print('Angles\n', np.angle(opf_driver.results.voltage))
+    print('Branch loading\n', opf_driver.results.loading)
+    print('Gen power\n', opf_driver.results.generator_power)
+    print('Nodal prices \n', opf_driver.results.bus_shadow_prices)
 
 
