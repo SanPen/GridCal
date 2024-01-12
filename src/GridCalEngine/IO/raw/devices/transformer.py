@@ -1199,9 +1199,13 @@ class RawTransformer(RawObject):
             xsh = x_ohm / z_base_sys
 
             # convert shunt impedance to shunt admittance
-            ysh = 1 / (rsh + 1j * xsh)
-            g = ysh.real
-            b = ysh.imag
+            if rsh != 0.0 and xsh != 0.0:
+                ysh = 1 / (rsh + 1j * xsh)
+                g = ysh.real
+                b = ysh.imag
+            else:
+                g = 1e-20
+                b = 1e-20
         else:
             raise Exception("Invalid value of CM")
 
