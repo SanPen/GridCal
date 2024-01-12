@@ -202,25 +202,25 @@ class RawFACTS(RawObject):
         :param logger:
         """
 
-        if version >= 35:
+        if 34 <= version >= 35:
             '''
             'NAME',I,J,MODE,PDES,QDES,VSET,SHMX,TRMX,VTMN,VTMX,VSMX,IMX,LINX,
             RMPCT,OWNER,SET1,SET2,VSREF,REMOT,'MNAME'
             '''
 
-            self.NAME, self.I, self.J, self.MODE, self.PDES, self.QDES, self.VSET, self.SHMX, \
-                self.TRMX, self.VTMN, self.VTMX, self.VSMX, self.IMX, self.LINX, self.RMPCT, self.OWNER, \
-                self.SET1, self.SET2, self.VSREF, self.FCREG, self.NREG, self.MNAME = data[0]
+            (self.NAME, self.I, self.J, self.MODE, self.PDES, self.QDES, self.VSET, self.SHMX,
+             self.TRMX, self.VTMN, self.VTMX, self.VSMX, self.IMX, self.LINX, self.RMPCT, self.OWNER,
+             self.SET1, self.SET2, self.VSREF, self.FCREG, self.NREG, self.MNAME) = data[0]
 
-        elif 30 <= version <= 34:
+        elif 30 <= version <= 33:
             '''
             'NAME',I,J,MODE,PDES,QDES,VSET,SHMX,TRMX,VTMN,VTMX,VSMX,IMX,LINX,
             RMPCT,OWNER,SET1,SET2,VSREF,REMOT,'MNAME'
             '''
 
-            self.NAME, self.I, self.J, self.MODE, self.PDES, self.QDES, self.VSET, self.SHMX, \
-                self.TRMX, self.VTMN, self.VTMX, self.VSMX, self.IMX, self.LINX, self.RMPCT, self.OWNER, \
-                self.SET1, self.SET2, self.VSREF, self.REMOT, self.MNAME = data[0]
+            (self.NAME, self.I, self.J, self.MODE, self.PDES, self.QDES, self.VSET, self.SHMX,
+             self.TRMX, self.VTMN, self.VTMX, self.VSMX, self.IMX, self.LINX, self.RMPCT, self.OWNER,
+             self.SET1, self.SET2, self.VSREF, self.REMOT, self.MNAME) = data[0]
 
         elif version == 29:
             '''
@@ -228,9 +228,9 @@ class RawFACTS(RawObject):
                 RMPCT,OWNER,SET1,SET2,VSREF,REMOT,'MNAME'
             '''
 
-            self.NAME, self.I, self.J, self.MODE, self.PDES, self.QDES, self.VSET, self.SHMX, \
-                self.TRMX, self.VTMN, self.VTMX, self.VSMX, self.IMX, self.LINX, self.RMPCT, self.OWNER, \
-                self.SET1, self.SET2, self.VSREF, self.REMOT, self.MNAME = data[0]
+            (self.NAME, self.I, self.J, self.MODE, self.PDES, self.QDES, self.VSET, self.SHMX,
+             self.TRMX, self.VTMN, self.VTMX, self.VSMX, self.IMX, self.LINX, self.RMPCT, self.OWNER,
+             self.SET1, self.SET2, self.VSREF, self.REMOT, self.MNAME) = data[0]
         else:
             logger.add_warning('Version not implemented for DC Lines', str(version))
 
@@ -274,7 +274,7 @@ class RawFACTS(RawObject):
         """
         Get the element PSSE ID
         :return: 
-        """        
+        """
         return "{0}_{1}_1".format(self.I, self.J)
 
     def is_connected(self):

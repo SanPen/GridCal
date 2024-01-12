@@ -189,10 +189,9 @@ class DiagramScene(QGraphicsScene):
         """
 
         # pan movement
-        if self.parent_.startPos != None:
-
+        if self.parent_.startPos is not None:
             scale_factor = 1.5
-            scene_pos =  QPointF(event.scenePos())
+            scene_pos = QPointF(event.scenePos())
             self.displacement = self.displacement + ((scene_pos - self.parent_.startPos) / scale_factor)
             temp_cen = self.parent_.newCenterPos - self.displacement
             self.parent_.editor_graphics_view.centerOn(temp_cen)
@@ -375,34 +374,37 @@ class BusBranchEditorWidget(QSplitter):
                                                 h=20,
                                                 w=80)
 
+                self.add_to_scene(graphic_object=graphic_object)
+
                 # weird but it's the only way to have graphical-API communication
                 self.circuit.add_bus(obj)
 
                 # add to the diagram list
                 self.update_diagram_element(device=obj,
-                                         x=x0,
-                                         y=y0,
-                                         w=graphic_object.w,
-                                         h=graphic_object.h,
-                                         r=0,
-                                         graphic_object=graphic_object)
+                                            x=x0,
+                                            y=y0,
+                                            w=graphic_object.w,
+                                            h=graphic_object.h,
+                                            r=0,
+                                            graphic_object=graphic_object)
 
             elif tr3w_data == obj_type:
                 name = "Transformer 3-windings" + str(len(self.circuit.transformers3w))
                 obj = Transformer3W(name=name)
                 graphic_object = self.create_transformer_3w_graphics(elm=obj, x=x0, y=y0)
+                self.add_to_scene(graphic_object=graphic_object)
 
                 # weird but it's the only way to have graphical-API communication
                 self.circuit.add_transformer3w(obj)
 
                 # add to the diagram list
                 self.update_diagram_element(device=obj,
-                                         x=x0,
-                                         y=y0,
-                                         w=graphic_object.w,
-                                         h=graphic_object.h,
-                                         r=0,
-                                         graphic_object=graphic_object)
+                                            x=x0,
+                                            y=y0,
+                                            w=graphic_object.w,
+                                            h=graphic_object.h,
+                                            r=0,
+                                            graphic_object=graphic_object)
 
             elif fluid_node_data == obj_type:
                 name = 'FluidNode ' + str(len(self.circuit.fluid_nodes))
@@ -410,18 +412,19 @@ class BusBranchEditorWidget(QSplitter):
                 obj = FluidNode(name=name)
 
                 graphic_object = self.create_fluid_node_graphics(node=obj, x=x0, y=y0, h=20, w=80)
+                self.add_to_scene(graphic_object=graphic_object)
 
                 # weird but it's the only way to have graphical-API communication
                 self.circuit.add_fluid_node(obj)
 
                 # add to the diagram list
                 self.update_diagram_element(device=obj,
-                                         x=x0,
-                                         y=y0,
-                                         w=graphic_object.w,
-                                         h=graphic_object.h,
-                                         r=0,
-                                         graphic_object=graphic_object)
+                                            x=x0,
+                                            y=y0,
+                                            w=graphic_object.w,
+                                            h=graphic_object.h,
+                                            r=0,
+                                            graphic_object=graphic_object)
 
     def wheelEvent(self, event: QWheelEvent) -> None:
         """
@@ -852,7 +855,7 @@ class BusBranchEditorWidget(QSplitter):
         :param graphic_object: Graphic object associated
         """
 
-        self.diagram_scene.addItem(graphic_object)
+        self.diagram_scene.removeItem(graphic_object)
 
     def delete_diagram_element(self, device: EditableDevice) -> None:
         """
@@ -961,7 +964,7 @@ class BusBranchEditorWidget(QSplitter):
 
         return lst
 
-    def start_connection(self, port: TerminalItem):
+    def start_connection(self, port: TerminalItem) -> LineGraphicItem:
         """
         Start the branch creation
         @param port:
@@ -972,6 +975,8 @@ class BusBranchEditorWidget(QSplitter):
 
         port.setZValue(0)
         port.process_callbacks(port.parent.pos() + port.pos())
+
+        return self.started_branch
 
     def scene_mouse_move_event(self, event: QGraphicsSceneMouseEvent) -> None:
         """
@@ -984,11 +989,13 @@ class BusBranchEditorWidget(QSplitter):
             self.started_branch.setEndPos(pos)
 
     def scene_mouse_press_event(self, event: QGraphicsSceneMouseEvent) -> None:
+        """
 
+        :param event:
+        :return:
+        """
         # Mouse pan
-
-        if event.button() == Qt.RightButton:
-
+        if event.button() == Qt.MouseButton.MiddleButton:
             viewport_rect = self.editor_graphics_view.viewport().rect()
             top_left_scene = self.editor_graphics_view.mapToScene(viewport_rect.topLeft())
             bottom_right_scene = self.editor_graphics_view.mapToScene(viewport_rect.bottomRight())
@@ -999,7 +1006,6 @@ class BusBranchEditorWidget(QSplitter):
             self.newCenterPos = center_scene
             self.displacement = self.newCenterPos - self.startPos
             self.editor_graphics_view.setDragMode(QGraphicsView.DragMode.NoDrag)
-
 
     def create_line(self, bus_from: Bus, bus_to: Bus, fromPort: TerminalItem, toPort: TerminalItem):
         """
@@ -1020,8 +1026,10 @@ class BusBranchEditorWidget(QSplitter):
                                          editor=self,
                                          api_object=obj)
 
+        self.add_to_scene(graphic_object=graphic_object)
+
         self.update_diagram_element(device=obj,
-                                 graphic_object=graphic_object)
+                                    graphic_object=graphic_object)
 
         # add the new object to the circuit
         self.circuit.add_branch(obj)
@@ -1051,6 +1059,8 @@ class BusBranchEditorWidget(QSplitter):
                                            toPort=toPort,
                                            editor=self,
                                            api_object=obj)
+
+        self.add_to_scene(graphic_object=graphic_object)
 
         self.update_diagram_element(device=obj, graphic_object=graphic_object)
 
@@ -1083,6 +1093,8 @@ class BusBranchEditorWidget(QSplitter):
                                                 editor=self,
                                                 api_object=obj)
 
+        self.add_to_scene(graphic_object=graphic_object)
+
         self.update_diagram_element(device=obj, graphic_object=graphic_object)
 
         # add the new object to the circuit
@@ -1113,6 +1125,8 @@ class BusBranchEditorWidget(QSplitter):
                                         toPort=toPort,
                                         editor=self,
                                         api_object=obj)
+
+        self.add_to_scene(graphic_object=graphic_object)
 
         self.update_diagram_element(device=obj, graphic_object=graphic_object)
 
@@ -1145,6 +1159,8 @@ class BusBranchEditorWidget(QSplitter):
                                               editor=self,
                                               api_object=obj)
 
+        self.add_to_scene(graphic_object=graphic_object)
+
         self.update_diagram_element(device=obj, graphic_object=graphic_object)
 
         # update the connection placement
@@ -1165,7 +1181,7 @@ class BusBranchEditorWidget(QSplitter):
         # Mouse pan
         if event.button() == Qt.RightButton:
             self.startPos = None
-            self.editor_graphics_view.setDragMode(QGraphicsView.RubberBandDrag)
+            self.editor_graphics_view.setDragMode(QGraphicsView.DragMode.RubberBandDrag)
 
         # Clear or finnish the started connection:
         if self.started_branch:
@@ -1173,7 +1189,7 @@ class BusBranchEditorWidget(QSplitter):
             items = self.diagram_scene.items(pos)  # get the item (the terminal) at the mouse position
 
             for item in items:
-                if type(item) is TerminalItem:  # connect only to terminals
+                if isinstance(item, TerminalItem):  # connect only to terminals
                     if item.parent is not self.started_branch.fromPort.parent:  # forbid connecting to itself
 
                         self.started_branch.setToPort(item)
@@ -1245,7 +1261,7 @@ class BusBranchEditorWidget(QSplitter):
                                 self.started_branch.toPort.update()
                                 tr3_graphic_object.update_conn()
                                 self.update_diagram_element(device=winding_graphics.api_object,
-                                                         graphic_object=winding_graphics)
+                                                            graphic_object=winding_graphics)
 
                         elif self.started_branch.connected_between_bus_and_tr3():
 
@@ -1270,7 +1286,7 @@ class BusBranchEditorWidget(QSplitter):
                                 self.started_branch.toPort.update()
                                 tr3_graphic_object.update_conn()
                                 self.update_diagram_element(device=winding_graphics.api_object,
-                                                         graphic_object=winding_graphics)
+                                                            graphic_object=winding_graphics)
 
                         elif self.started_branch.connected_between_fluid_nodes():  # fluid path
 
@@ -1323,8 +1339,11 @@ class BusBranchEditorWidget(QSplitter):
                         else:
                             print('unknown connection')
 
+                    # remove from the hosted connections
+                    item.remove_connection(started_branch=self.started_branch)
+
             # if self.started_branch.toPort is None:
-            self.started_branch.remove_widget()
+            self.remove_from_scene(self.started_branch)
 
         # release this pointer
         self.started_branch = None
@@ -1691,12 +1710,12 @@ class BusBranchEditorWidget(QSplitter):
         graphic_object.arrange_children()
 
         self.update_diagram_element(device=bus,
-                                 x=x,
-                                 y=y,
-                                 w=bus.w,
-                                 h=bus.h,
-                                 r=0,
-                                 graphic_object=graphic_object)
+                                    x=x,
+                                    y=y,
+                                    w=bus.w,
+                                    h=bus.h,
+                                    r=0,
+                                    graphic_object=graphic_object)
 
         return graphic_object
 
@@ -1910,12 +1929,12 @@ class BusBranchEditorWidget(QSplitter):
         tr3_graphic_object.update_conn()
 
         self.update_diagram_element(device=elm.idtag,
-                                 x=elm.x,
-                                 y=elm.y,
-                                 w=80,
-                                 h=80,
-                                 r=0,
-                                 graphic_object=tr3_graphic_object)
+                                    x=elm.x,
+                                    y=elm.y,
+                                    w=80,
+                                    h=80,
+                                    r=0,
+                                    graphic_object=tr3_graphic_object)
 
         self.update_diagram_element(device=conn1.api_object, graphic_object=conn1)
         self.update_diagram_element(device=conn2.api_object, graphic_object=conn2)
@@ -1942,12 +1961,12 @@ class BusBranchEditorWidget(QSplitter):
         graphic_object.arrange_children()
 
         self.update_diagram_element(device=node,
-                                 x=x,
-                                 y=y,
-                                 w=graphic_object.w,
-                                 h=graphic_object.h,
-                                 r=0,
-                                 graphic_object=graphic_object)
+                                    x=x,
+                                    y=y,
+                                    w=graphic_object.w,
+                                    h=graphic_object.h,
+                                    r=0,
+                                    graphic_object=graphic_object)
 
         return graphic_object
 
@@ -2328,7 +2347,7 @@ class BusBranchEditorWidget(QSplitter):
         """
         Clear the schematic
         """
-        self.editor_graphics_view.diagram_scene.clear()
+        self.diagram_scene.clear()
 
     def recolour_mode(self) -> None:
         """

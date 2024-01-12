@@ -484,45 +484,55 @@ def get_gridcal_line(psse_elm: RawBranch, psse_bus_dict, Sbase, logger: Logger) 
     return branch
 
 
-def get_hvdc_from_vscdc(psse_elm: RawVscDCLine, psse_bus_dict, Sbase, logger: Logger) -> dev.HvdcLine:
+def get_hvdc_from_vscdc(psse_elm: RawVscDCLine, psse_bus_dict, Sbase, logger: Logger) -> Union[dev.HvdcLine, None]:
     """
-    GEt equivalent object
+    Get equivalent object
+    :param psse_elm:
     :param psse_bus_dict:
     :param logger:
     :return:
     """
-    bus1 = psse_bus_dict[abs(psse_elm.IBUS1)]
-    bus2 = psse_bus_dict[abs(psse_elm.IBUS2)]
+    IBUS1 = abs(psse_elm.IBUS1)
+    IBUS2 = abs(psse_elm.IBUS2)
 
-    name1 = psse_elm.NAME.replace("'", "").replace('/', '').strip()
-    idtag = str(psse_elm.IBUS1) + '_' + str(psse_elm.IBUS2) + '_1'
+    if IBUS1 > 0 and IBUS2 > 0:
+        bus1 = psse_bus_dict[IBUS1]
+        bus2 = psse_bus_dict[IBUS2]
 
-    Vset_f = psse_elm.ACSET1
-    Vset_t = psse_elm.ACSET2
-    rate = max(psse_elm.SMAX1, psse_elm.SMAX2)
+        name1 = psse_elm.NAME.replace("'", "").replace('/', '').strip()
+        idtag = str(psse_elm.IBUS1) + '_' + str(psse_elm.IBUS2) + '_1'
 
-    # Estimate power
-    # P = dV^2 / R
-    V1 = bus1.Vnom * Vset_f
-    V2 = bus2.Vnom * Vset_t
-    dV = (V1 - V2) * 1000.0  # in V
-    P = dV * dV / psse_elm.RDC if psse_elm.RDC != 0 else 0  # power in W
-    specified_power = P * 1e-6  # power in MW
+        Vset_f = psse_elm.ACSET1
+        Vset_t = psse_elm.ACSET2
+        rate = max(psse_elm.SMAX1, psse_elm.SMAX2)
 
-    obj = dev.HvdcLine(bus_from=bus1,
-                       bus_to=bus2,
-                       name=name1,
-                       idtag=idtag,
-                       Pset=specified_power,
-                       Vset_f=Vset_f,
-                       Vset_t=Vset_t,
-                       rate=rate)
+        # Estimate power
+        # P = dV^2 / R
+        V1 = bus1.Vnom * Vset_f
+        V2 = bus2.Vnom * Vset_t
+        dV = (V1 - V2) * 1000.0  # in V
+        P = dV * dV / psse_elm.RDC if psse_elm.RDC != 0 else 0  # power in W
+        specified_power = P * 1e-6  # power in MW
 
-    return obj
+        obj = dev.HvdcLine(bus_from=bus1,
+                           bus_to=bus2,
+                           name=name1,
+                           idtag=idtag,
+                           Pset=specified_power,
+                           Vset_f=Vset_f,
+                           Vset_t=Vset_t,
+                           rate=rate)
+
+        return obj
+    else:
+
+        logger.add_error("VscDCLine has no bus from or bus to, or is missing both", device=psse_elm.get_id())
+
+        return None
 
 
 def get_hvdc_from_twotermdc(psse_elm: RawTwoTerminalDCLine, psse_bus_dict, Sbase: float,
-                            logger: Logger) -> dev.HvdcLine:
+                            logger: Logger) -> Union[dev.HvdcLine, None]:
     """
 
     :param psse_elm:
@@ -531,46 +541,54 @@ def get_hvdc_from_twotermdc(psse_elm: RawTwoTerminalDCLine, psse_bus_dict, Sbase
     :param logger:
     :return:
     """
-    bus1 = psse_bus_dict[abs(psse_elm.IPR)]
-    bus2 = psse_bus_dict[abs(psse_elm.IPI)]
+    IPR = abs(psse_elm.IPR)
+    IPI = abs(psse_elm.IPI)
 
-    if psse_elm.MDC == 1 or psse_elm.MDC == 0:
-        # SETVL is in MW
-        specified_power = psse_elm.SETVL
-    elif psse_elm.MDC == 2:
-        # SETVL is in A, specified_power in MW
-        specified_power = psse_elm.SETVL * psse_elm.VSCHD / 1000.0
+    if IPR > 0 and IPI > 0:
+        bus1 = psse_bus_dict[IPR]
+        bus2 = psse_bus_dict[IPI]
+
+        if psse_elm.MDC == 1 or psse_elm.MDC == 0:
+            # SETVL is in MW
+            specified_power = psse_elm.SETVL
+        elif psse_elm.MDC == 2:
+            # SETVL is in A, specified_power in MW
+            specified_power = psse_elm.SETVL * psse_elm.VSCHD / 1000.0
+        else:
+            # doesn't say, so zero
+            specified_power = 0.0
+
+        # z_base = psse_elm.VSCHD * psse_elm.VSCHD / Sbase
+        # r_pu = psse_elm.RDC / z_base
+
+        Vset_f = 1.0
+        Vset_t = 1.0
+
+        name1 = psse_elm.NAME.replace("'", "").replace('"', "").replace('/', '').strip()
+        idtag = str(psse_elm.IPR) + '_' + str(psse_elm.IPI) + '_1'
+
+        # set the HVDC line active
+        active = bus1.active and bus2.active
+
+        obj = dev.HvdcLine(bus_from=bus1,  # Rectifier as of PSSe
+                           bus_to=bus2,  # inverter as of PSSe
+                           active=active,
+                           name=name1,
+                           idtag=idtag,
+                           Pset=specified_power,
+                           Vset_f=Vset_f,
+                           Vset_t=Vset_t,
+                           rate=specified_power,
+                           r=psse_elm.RDC,
+                           min_firing_angle_f=np.deg2rad(psse_elm.ANMNR),
+                           max_firing_angle_f=np.deg2rad(psse_elm.ANMXR),
+                           min_firing_angle_t=np.deg2rad(psse_elm.ANMNI),
+                           max_firing_angle_t=np.deg2rad(psse_elm.ANMXI))
+        return obj
     else:
-        # doesn't say, so zero
-        specified_power = 0.0
+        logger.add_error("HVDC2TermDC has no bus from or bus to, or is missing both", device=psse_elm.get_id())
 
-    # z_base = psse_elm.VSCHD * psse_elm.VSCHD / Sbase
-    # r_pu = psse_elm.RDC / z_base
-
-    Vset_f = 1.0
-    Vset_t = 1.0
-
-    name1 = psse_elm.NAME.replace("'", "").replace('"', "").replace('/', '').strip()
-    idtag = str(psse_elm.IPR) + '_' + str(psse_elm.IPI) + '_1'
-
-    # set the HVDC line active
-    active = bus1.active and bus2.active
-
-    obj = dev.HvdcLine(bus_from=bus1,  # Rectifier as of PSSe
-                       bus_to=bus2,  # inverter as of PSSe
-                       active=active,
-                       name=name1,
-                       idtag=idtag,
-                       Pset=specified_power,
-                       Vset_f=Vset_f,
-                       Vset_t=Vset_t,
-                       rate=specified_power,
-                       r=psse_elm.RDC,
-                       min_firing_angle_f=np.deg2rad(psse_elm.ANMNR),
-                       max_firing_angle_f=np.deg2rad(psse_elm.ANMXR),
-                       min_firing_angle_t=np.deg2rad(psse_elm.ANMNI),
-                       max_firing_angle_t=np.deg2rad(psse_elm.ANMXI))
-    return obj
+        return None
 
 
 def get_upfc_from_facts(psse_elm: RawFACTS, psse_bus_dict, Sbase, logger: Logger) -> None:
@@ -818,29 +836,31 @@ def psse_to_gridcal(psse_circuit: PsseCircuit,
         # get the object
         branch = get_hvdc_from_vscdc(psse_branch, psse_bus_dict, psse_circuit.SBASE, logger)
 
-        if branch.idtag not in branches_already_there:
+        if branch is not None:
+            if branch.idtag not in branches_already_there:
 
-            # Add to the circuit
-            circuit.add_hvdc(branch)
-            branches_already_there.add(branch.idtag)
+                # Add to the circuit
+                circuit.add_hvdc(branch)
+                branches_already_there.add(branch.idtag)
 
-        else:
-            logger.add_warning('The RAW file has a repeated HVDC line device and it is omitted from the model',
-                               str(branch.idtag))
+            else:
+                logger.add_warning('The RAW file has a repeated HVDC line device and it is omitted from the model',
+                                   str(branch.idtag))
 
     for psse_branch in psse_circuit.two_terminal_dc_lines:
         # get the object
         branch = get_hvdc_from_twotermdc(psse_branch, psse_bus_dict, psse_circuit.SBASE, logger)
 
-        if branch.idtag not in branches_already_there:
+        if branch is not None:
+            if branch.idtag not in branches_already_there:
 
-            # Add to the circuit
-            circuit.add_hvdc(branch)
-            branches_already_there.add(branch.idtag)
+                # Add to the circuit
+                circuit.add_hvdc(branch)
+                branches_already_there.add(branch.idtag)
 
-        else:
-            logger.add_warning('The RAW file has a repeated HVDC line device and it is omitted from the model',
-                               str(branch.idtag))
+            else:
+                logger.add_warning('The RAW file has a repeated HVDC line device and it is omitted from the model',
+                                   str(branch.idtag))
 
     # Go through facts
     for psse_elm in psse_circuit.facts:

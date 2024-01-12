@@ -184,24 +184,34 @@ class RawLoad(RawObject):
                 raise Exception("PSSe 35 load data came with {} "
                                 "elements and 18 or 17 were expected :/".format(len(data[0])))
 
-        elif version in [33, 34]:
+        elif version == 34:
+
+            #  I,'ID',STAT,AREA,ZONE,PL, QL,IP,IQ, YP,YQ, OWNER,SCALE,INTRPT,  DGENP,     DGENQ, DGENF
+            n = len(data[0])
+            dta = np.zeros(17, dtype=object)
+            dta[0:n] = data[0]
+
+            (self.I, self.ID, self.STATUS, self.AREA, self.ZONE, self.PL, self.QL,
+             self.IP, self.IQ, self.YP, self.YQ, self.OWNER, self.SCALE,
+             self.INTRPT, self.DGENP, self.DGENQ, self.DGENM) = dta
+
+        elif version == 33:
 
             n = len(data[0])
             dta = np.zeros(14, dtype=object)
             dta[0:n] = data[0]
 
-            self.I, self.ID, self.STATUS, self.AREA, self.ZONE, self.PL, self.QL, \
-            self.IP, self.IQ, self.YP, self.YQ, self.OWNER, self.SCALE, self.INTRPT = dta
-
+            (self.I, self.ID, self.STATUS, self.AREA, self.ZONE, self.PL, self.QL,
+             self.IP, self.IQ, self.YP, self.YQ, self.OWNER, self.SCALE, self.INTRPT) = dta
         elif version == 32:
 
-            self.I, self.ID, self.STATUS, self.AREA, self.ZONE, self.PL, self.QL, \
-            self.IP, self.IQ, self.YP, self.YQ, self.OWNER, self.SCALE = data[0]
+            (self.I, self.ID, self.STATUS, self.AREA, self.ZONE, self.PL, self.QL,
+             self.IP, self.IQ, self.YP, self.YQ, self.OWNER, self.SCALE) = data[0]
 
         elif version in [29, 30]:
             # I, ID, STATUS, AREA, ZONE, PL, QL, IP, IQ, YP, YQ, OWNER
             self.I, self.ID, self.STATUS, self.AREA, self.ZONE, \
-            self.PL, self.QL, self.IP, self.IQ, self.YP, self.YQ, self.OWNER = data[0]
+                self.PL, self.QL, self.IP, self.IQ, self.YP, self.YQ, self.OWNER = data[0]
 
             self.SCALE = 1.0
 
@@ -217,8 +227,8 @@ class RawLoad(RawObject):
         if version >= 35:
 
             return self.format_raw_line([self.I, self.ID, self.STATUS, self.AREA, self.ZONE, self.PL, self.QL,
-                                        self.IP, self.IQ, self.YP, self.YQ, self.OWNER, self.SCALE, self.INTRPT,
-                                        self.DGENP, self.DGENQ, self.DGENM, self.LOADTYPE])
+                                         self.IP, self.IQ, self.YP, self.YQ, self.OWNER, self.SCALE, self.INTRPT,
+                                         self.DGENP, self.DGENQ, self.DGENM, self.LOADTYPE])
 
         elif version in [33, 34]:
 
