@@ -1820,6 +1820,12 @@ class MultiCircuit:
             for elm in branch_list:
                 elm.create_profiles(index)
 
+        for elm in self.fluid_nodes:
+            elm.create_profiles(index)
+
+        for elm in self.fluid_paths:
+            elm.create_profiles(index)
+
     def set_time_profile(self, unix_data: IntVec):
         """
         Set unix array as time array
