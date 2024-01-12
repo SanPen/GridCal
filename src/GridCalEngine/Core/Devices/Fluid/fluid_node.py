@@ -55,10 +55,10 @@ class FluidNode(EditableDevice):
                                 code=code,
                                 device_type=DeviceType.FluidNodeDevice)
 
-        self.min_level = min_level  # m3
-        self.max_level = max_level  # m3
-        self.initial_level = current_level  # m3
-        self.spillage = spillage  # m3/h
+        self.min_level = min_level  # hm3
+        self.max_level = max_level  # hm3
+        self.initial_level = current_level  # hm3
+        # self.spillage = spillage  # m3/h
         self.inflow = inflow  # m3/h
         self._bus: Bus = bus
         self.build_status = build_status
@@ -74,13 +74,13 @@ class FluidNode(EditableDevice):
         # list of power to gas devices
         self.p2xs = list()
 
-        self.register(key='min_level', units='m3', tpe=float,
+        self.register(key='min_level', units='hm3', tpe=float,
                       definition="Minimum amount of fluid at the node/reservoir")
 
-        self.register(key='max_level', units='m3', tpe=float,
+        self.register(key='max_level', units='hm3', tpe=float,
                       definition="Maximum amount of fluid at the node/reservoir")
 
-        self.register(key='initial_level', units='m3', tpe=float,
+        self.register(key='initial_level', units='hm3', tpe=float,
                       definition="Initial level of the node/reservoir")
 
         self.register(key='bus', units='', tpe=DeviceType.BusDevice,
@@ -89,8 +89,8 @@ class FluidNode(EditableDevice):
         self.register(key='build_status', units='', tpe=BuildStatus,
                       definition='Branch build status. Used in expansion planning.')
 
-        self.register(key='spillage', units='m3/h', tpe=float,
-                      definition='Flow of fluid lost at the node')
+        # self.register(key='spillage', units='m3/h', tpe=float,
+        #               definition='Flow of fluid lost at the node')
 
         self.register(key='inflow', units='m3/h', tpe=float,
                       definition='Flow of fluid coming from the rain',

@@ -248,9 +248,7 @@ class Cascading(DriverTemplate):
         # print(model_simulator.results.get_convergence_report())
 
         # send the finnish signal
-        self.progress_signal.emit(0.0)
-        self.progress_text.emit('Done!')
-        self.done_signal.emit()
+        self.report_done()
 
     def run(self):
         """
@@ -279,8 +277,8 @@ class Cascading(DriverTemplate):
         else:
             model_simulator = PowerFlowDriver(self.grid, self.options)
 
-        self.progress_signal.emit(0.0)
-        self.progress_text.emit('Running cascading failure...')
+        self.report_progress(0.0)
+        self.report_text('Running cascading failure...')
 
         n_grids = len(calculation_inputs) + self.max_additional_islands
         if n_grids > len(self.grid.buses):  # safety check
@@ -308,7 +306,7 @@ class Cascading(DriverTemplate):
             it += 1
 
             prog = max(len(calculation_inputs) / (n_grids+1), it/(n_grids+1))
-            self.progress_signal.emit(prog * 100.0)
+            self.report_progress(prog * 100.0)
 
             if self.__cancel__:
                 break
@@ -342,6 +340,4 @@ class Cascading(DriverTemplate):
         :return:
         """
         self.__cancel__ = True
-        self.progress_signal.emit(0.0)
-        self.progress_text.emit('Cancelled')
-        self.done_signal.emit()
+        self.report_done(txt="Cancelled", val=0.0)
