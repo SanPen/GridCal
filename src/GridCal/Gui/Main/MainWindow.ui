@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1426</width>
-    <height>805</height>
+    <width>1392</width>
+    <height>807</height>
    </rect>
   </property>
   <property name="baseSize">
@@ -3646,26 +3646,10 @@ p, li { white-space: pre-wrap; }
                   <enum>QFrame::Raised</enum>
                  </property>
                  <layout class="QGridLayout" name="gridLayout_3">
-                  <item row="3" column="1">
-                   <widget class="QComboBox" name="opfZonalGroupByComboBox"/>
-                  </item>
-                  <item row="10" column="1">
-                   <widget class="QDoubleSpinBox" name="opfContingencyToleranceSpinBox">
-                    <property name="toolTip">
-                     <string>LODF matrix tolerance choosing contingencies</string>
-                    </property>
-                    <property name="decimals">
-                     <number>4</number>
-                    </property>
-                    <property name="value">
-                     <double>0.050000000000000</double>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="0" column="1">
-                   <widget class="QComboBox" name="lpf_solver_comboBox">
-                    <property name="toolTip">
-                     <string>Choose the optimal power flow method</string>
+                  <item row="8" column="0">
+                   <widget class="QCheckBox" name="skipOpfGenerationLimitsCheckBox">
+                    <property name="text">
+                     <string>Skip generation limits</string>
                     </property>
                    </widget>
                   </item>
@@ -3676,14 +3660,47 @@ p, li { white-space: pre-wrap; }
                     </property>
                    </widget>
                   </item>
-                  <item row="1" column="1">
-                   <widget class="QComboBox" name="mip_solver_comboBox">
-                    <property name="toolTip">
-                     <string>Choose the external mixed integer programming solver</string>
+                  <item row="12" column="0">
+                   <widget class="QCheckBox" name="opfUnitCommitmentCheckBox">
+                    <property name="text">
+                     <string>Unit commitment</string>
                     </property>
                    </widget>
                   </item>
+                  <item row="3" column="1">
+                   <widget class="QComboBox" name="opfZonalGroupByComboBox"/>
+                  </item>
                   <item row="15" column="1">
+                   <widget class="QDoubleSpinBox" name="maxVoltageModuleStepSpinBox">
+                    <property name="suffix">
+                     <string> p.u.</string>
+                    </property>
+                    <property name="decimals">
+                     <number>6</number>
+                    </property>
+                    <property name="singleStep">
+                     <double>0.010000000000000</double>
+                    </property>
+                    <property name="value">
+                     <double>0.010000000000000</double>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="0">
+                   <widget class="QLabel" name="label_42">
+                    <property name="text">
+                     <string>Method</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="3" column="0">
+                   <widget class="QLabel" name="label_103">
+                    <property name="text">
+                     <string>Zone grouping</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="16" column="1">
                    <widget class="QDoubleSpinBox" name="maxVoltageAngleStepSpinBox">
                     <property name="suffix">
                      <string> rad</string>
@@ -3699,31 +3716,24 @@ p, li { white-space: pre-wrap; }
                     </property>
                    </widget>
                   </item>
-                  <item row="0" column="0">
-                   <widget class="QLabel" name="label_42">
+                  <item row="16" column="0">
+                   <widget class="QLabel" name="maxVoltageAngleStepLabel">
                     <property name="text">
-                     <string>Method</string>
+                     <string>Max angle step</string>
                     </property>
                    </widget>
                   </item>
-                  <item row="12" column="0">
-                   <widget class="QCheckBox" name="opfUnitCommitmentCheckBox">
-                    <property name="text">
-                     <string>Unit commitment</string>
+                  <item row="0" column="1">
+                   <widget class="QComboBox" name="lpf_solver_comboBox">
+                    <property name="toolTip">
+                     <string>Choose the optimal power flow method</string>
                     </property>
                    </widget>
                   </item>
-                  <item row="10" column="0">
-                   <widget class="QLabel" name="label_104">
-                    <property name="text">
-                     <string>Contingency tolerance</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="2" column="0">
-                   <widget class="QLabel" name="label_4">
-                    <property name="text">
-                     <string>Time grouping</string>
+                  <item row="2" column="1">
+                   <widget class="QComboBox" name="opf_time_grouping_comboBox">
+                    <property name="toolTip">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Choose the time grouping to possibly shorten the solution time.&lt;/p&gt;&lt;p&gt;This splits the time series by week, month, etc. and the subproblems are solved sequentially.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                     </property>
                    </widget>
                   </item>
@@ -3741,54 +3751,16 @@ p, li { white-space: pre-wrap; }
                     </property>
                    </widget>
                   </item>
-                  <item row="15" column="0">
-                   <widget class="QLabel" name="maxVoltageAngleStepLabel">
-                    <property name="text">
-                     <string>Max angle step</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="2" column="1">
-                   <widget class="QComboBox" name="opf_time_grouping_comboBox">
+                  <item row="10" column="1">
+                   <widget class="QDoubleSpinBox" name="opfContingencyToleranceSpinBox">
                     <property name="toolTip">
-                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Choose the time grouping to possibly shorten the solution time.&lt;/p&gt;&lt;p&gt;This splits the time series by week, month, etc. and the subproblems are solved sequentially.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="14" column="0">
-                   <widget class="QLabel" name="maxVoltageModuleStepLabel">
-                    <property name="text">
-                     <string>Max module step</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="3" column="0">
-                   <widget class="QLabel" name="label_103">
-                    <property name="text">
-                     <string>Zone grouping</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="14" column="1">
-                   <widget class="QDoubleSpinBox" name="maxVoltageModuleStepSpinBox">
-                    <property name="suffix">
-                     <string> p.u.</string>
+                     <string>LODF matrix tolerance choosing contingencies</string>
                     </property>
                     <property name="decimals">
-                     <number>6</number>
-                    </property>
-                    <property name="singleStep">
-                     <double>0.010000000000000</double>
+                     <number>4</number>
                     </property>
                     <property name="value">
-                     <double>0.010000000000000</double>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="8" column="0">
-                   <widget class="QCheckBox" name="skipOpfGenerationLimitsCheckBox">
-                    <property name="text">
-                     <string>Skip generation limits</string>
+                     <double>0.050000000000000</double>
                     </property>
                    </widget>
                   </item>
@@ -3799,6 +3771,44 @@ p, li { white-space: pre-wrap; }
                     </property>
                     <property name="text">
                      <string>Add report</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="0">
+                   <widget class="QLabel" name="label_4">
+                    <property name="text">
+                     <string>Time grouping</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="1">
+                   <widget class="QComboBox" name="mip_solver_comboBox">
+                    <property name="toolTip">
+                     <string>Choose the external mixed integer programming solver</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="10" column="0">
+                   <widget class="QLabel" name="label_104">
+                    <property name="text">
+                     <string>Contingency tolerance</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="15" column="0">
+                   <widget class="QLabel" name="maxVoltageModuleStepLabel">
+                    <property name="text">
+                     <string>Max module step</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="14" column="0">
+                   <widget class="QCheckBox" name="save_mip_checkBox">
+                    <property name="toolTip">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The program will save the MIP file in .lp format in the user GridCal folder before running a linear optimization study.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
+                    <property name="text">
+                     <string>Save MIP file</string>
                     </property>
                    </widget>
                   </item>
@@ -8672,8 +8682,8 @@ QProgressBar::chunk{
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1426</width>
-     <height>24</height>
+     <width>1392</width>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuProject">
@@ -8785,36 +8795,42 @@ QProgressBar::chunk{
     <property name="title">
      <string>Diagram</string>
     </property>
-    <widget class="QMenu" name="menuSelect_buses_by">
+    <widget class="QMenu" name="menuBus_Branch_options">
      <property name="title">
-      <string>Select buses by</string>
+      <string>Bus-Branch options</string>
      </property>
-     <property name="icon">
-      <iconset resource="icons.qrc">
-       <normaloff>:/Icons/icons/schematic.svg</normaloff>:/Icons/icons/schematic.svg</iconset>
-     </property>
-     <addaction name="actionSetSelectedBusCountry"/>
-     <addaction name="actionSetSelectedBusArea"/>
-     <addaction name="actionSetSelectedBusZone"/>
+     <widget class="QMenu" name="menuSelect_buses_by_2">
+      <property name="title">
+       <string>Select buses by</string>
+      </property>
+      <addaction name="actionSetSelectedBusCountry"/>
+      <addaction name="actionSetSelectedBusArea"/>
+      <addaction name="actionSetSelectedBusZone"/>
+     </widget>
+     <addaction name="actionBigger_nodes"/>
+     <addaction name="actionSmaller_nodes"/>
+     <addaction name="actionAutoatic_layout"/>
+     <addaction name="actionTry_to_fix_buses_location"/>
+     <addaction name="actionSet_schematic_positions_from_GPS_coordinates"/>
+     <addaction name="separator"/>
+     <addaction name="menuSelect_buses_by_2"/>
+     <addaction name="actionNew_bus_branch_diagram_from_selection"/>
+     <addaction name="separator"/>
+     <addaction name="actionDelete_selected"/>
     </widget>
     <addaction name="actionAdd_general_bus_branch_diagram"/>
-    <addaction name="menuSelect_buses_by"/>
-    <addaction name="actionAdd_selection_bus_branch_diagram"/>
+    <addaction name="menuBus_Branch_options"/>
     <addaction name="actionAdd_bus_vecinity_diagram"/>
     <addaction name="actionAdd_map"/>
     <addaction name="actionAdd_substation_diagram"/>
     <addaction name="separator"/>
     <addaction name="actionRemove_selected_diagram"/>
-    <addaction name="actionDelete_selected"/>
     <addaction name="separator"/>
     <addaction name="actionZoom_in"/>
     <addaction name="actionZoom_out"/>
     <addaction name="actionCenter_view"/>
-    <addaction name="actionBigger_nodes"/>
-    <addaction name="actionSmaller_nodes"/>
-    <addaction name="actionAutoatic_layout"/>
-    <addaction name="actionTry_to_fix_buses_location"/>
-    <addaction name="actionSet_schematic_positions_from_GPS_coordinates"/>
+    <addaction name="separator"/>
+    <addaction name="actionSearchDiagram"/>
    </widget>
    <addaction name="menuProject"/>
    <addaction name="menuActions"/>
@@ -9770,13 +9786,13 @@ QProgressBar::chunk{
     <string>Ctrl+I, Ctrl+E</string>
    </property>
   </action>
-  <action name="actionAdd_selection_bus_branch_diagram">
+  <action name="actionNew_bus_branch_diagram_from_selection">
    <property name="icon">
     <iconset resource="icons.qrc">
      <normaloff>:/Icons/icons/schematic.svg</normaloff>:/Icons/icons/schematic.svg</iconset>
    </property>
    <property name="text">
-    <string>Add selection bus-branch diagram</string>
+    <string>New diagram from selection</string>
    </property>
   </action>
   <action name="actionAdd_bus_vecinity_diagram">
@@ -9785,7 +9801,7 @@ QProgressBar::chunk{
      <normaloff>:/Icons/icons/grid_icon.svg</normaloff>:/Icons/icons/grid_icon.svg</iconset>
    </property>
    <property name="text">
-    <string>Add bus vecinity diagram</string>
+    <string>New bus vecinity diagram</string>
    </property>
   </action>
   <action name="actionAdd_general_bus_branch_diagram">
@@ -9794,7 +9810,7 @@ QProgressBar::chunk{
      <normaloff>:/Icons/icons/schematic.svg</normaloff>:/Icons/icons/schematic.svg</iconset>
    </property>
    <property name="text">
-    <string>Add general bus-branch diagram</string>
+    <string>New bus-branch diagram</string>
    </property>
   </action>
   <action name="actionAdd_map">
@@ -9803,7 +9819,7 @@ QProgressBar::chunk{
      <normaloff>:/Icons/icons/map (add).svg</normaloff>:/Icons/icons/map (add).svg</iconset>
    </property>
    <property name="text">
-    <string>Add map view</string>
+    <string>New map view</string>
    </property>
   </action>
   <action name="actionAdd_substation_diagram">
@@ -9812,7 +9828,7 @@ QProgressBar::chunk{
      <normaloff>:/Icons/icons/add_substation.svg</normaloff>:/Icons/icons/add_substation.svg</iconset>
    </property>
    <property name="text">
-    <string>Add substation diagram</string>
+    <string>New substation diagram</string>
    </property>
   </action>
   <action name="actionRemove_selected_diagram">
@@ -9831,6 +9847,15 @@ QProgressBar::chunk{
    </property>
    <property name="text">
     <string>Report a bug or feature</string>
+   </property>
+  </action>
+  <action name="actionSearchDiagram">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/magnifying_glass.svg</normaloff>:/Icons/icons/magnifying_glass.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Search</string>
    </property>
   </action>
  </widget>

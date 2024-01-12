@@ -2706,6 +2706,9 @@ class MultiCircuit:
         """
         self.fluid_nodes.append(obj)
 
+        if self.time_profile is not None:
+            obj.create_profiles(self.time_profile)
+
     def delete_fluid_node(self, obj: dev.FluidNode):
         """
         Delete fluid node
@@ -2745,6 +2748,9 @@ class MultiCircuit:
         :param obj:FluidPath
         """
         self.fluid_paths.append(obj)
+
+        if self.time_profile is not None:
+            obj.create_profiles(self.time_profile)
 
     def delete_fluid_path(self, obj: dev.FluidPath):
         """
@@ -2955,15 +2961,22 @@ class MultiCircuit:
     def get_fluid_injection_names(self) -> StrVec:
         """
         Returns a list of :ref:`Injection<Injection>` names.
+        Sort by order: turbines, pumps, p2xs
         """
-        lst = list()
+        lst_turb = list()
+        lst_pump = list()
+        lst_p2x = list()
+
         for node in self.fluid_nodes:
-            for elm in node.p2xs:
-                lst.append(elm.name)
             for elm in node.turbines:
-                lst.append(elm.name)
+                lst_turb.append(elm.name)
             for elm in node.pumps:
-                lst.append(elm.name)
+                lst_pump.append(elm.name)
+            for elm in node.p2xs:
+                lst_p2x.append(elm.name)
+
+        lst = lst_turb + lst_pump + lst_p2x
+
         return np.array(lst)
 
     def convert_line_to_hvdc(self, line: dev.Line) -> dev.HvdcLine:

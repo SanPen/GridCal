@@ -2,9 +2,22 @@ import math
 import numpy as np
 
 
-##### Funtions used in the formulation of the AC-OPF problem
+# Functions used in the formulation of the AC-OPF problem
 
 # Objective function
+
+
+def jacobian():
+
+
+
+
+    return
+
+
+
+
+
 
 def f(x, c2, c1):
     # x = [P1, P2, ...]
@@ -12,42 +25,55 @@ def f(x, c2, c1):
 
 
 def gradf(x, c2, c1):
-    l = []
-    l.extend([2 * x[i] * c2[i] + c1[i] for i in range(len(x))])
-    return np.array(l)
+    lis = []
+    lis.extend([2 * x[i] * c2[i] + c1[i] for i in range(len(x))])
+    return np.array(lis)
 
 
 def hessf(x, c2):
-    hess = zeros((len(x), len(x)))
+    hess = np.zeros((len(x), len(x)))
     for i in range(len(x)):
         hess[i][i] = 2 * c2[i]
     return hess
 
 # Equality constraints
 
-def Pij(x, Gij, Bij):
+
+#def pij(x, gii, gij, bij):
     # x = [Pij, vi, vj, phiij]
-    return Gij * (x[1] ** 2 - x[1] * x[2] * math.cos(x[3])) - Bij * x[1] * x[2] * math.sin(x[3]) - x[0]
+    # return gij * (x[1] ** 2 - x[1] * x[2] * math.cos(x[3])) - bij * x[1] * x[2] * math.sin(x[3]) - x[0]
+#    return gii * (x[1] ** 2) + x[1] * x[2] * (gij * math.cos(x[3]) + bij * math.sin(x[3])) - x[0]  # Check 3.19 ExaGO
 
 
-def gradPij(x, Gij, Bij):
+def grad_pij(x, gii, gij, bij):
+    # grad0 = -1
+    # grad1 = gij * (2 * x[1] - x[2] * math.cos(x[3])) - bij * x[2] * math.sin(x[3])
+    # grad2 = gij * (- x[1] * math.cos(x[3])) - bij * x[1] * math.sin(x[3])
+    # grad3 = gij * (x[1] * x[2] * math.sin(x[3])) - bij * x[1] * x[2] * math.cos(x[3])
+
     grad0 = -1
-    grad1 = Gij * (2 * x[1] - x[2] * math.cos(x[3])) - Bij * x[2] * math.sin(x[3])
-    grad2 = Gij * (- x[1] * math.cos(x[3])) - Bij * x[1] * math.sin(x[3])
-    grad3 = Gij * (x[1] * x[2] * math.sin(x[3])) - Bij * x[1] * x[2] * math.cos(x[3])
+    grad1 = 2 * gii * x[1] + x[2] * (gij * math.cos(x[3]) + bij * math.sin(x[3]))
+    grad2 = x[1] * (gij * math.cos(x[3]) + bij * math.sin(x[3]))
+    grad3 = x[1] * x[2] * (- gij * math.sin(x[3]) + bij * math.cos(x[3]))
 
     return np.array([grad0, grad1, grad2, grad3])
 
 
-def hessPij(x, Gij, Bij):
+def hess_pij(x, gii, gij, bij):
 
-    hess = np.zeros((4,4))
+    hess = np.zeros((4, 4))
 
-    hess[1][1] = 2 * Gij
-    hess[1][2] = -Gij * math.cos(x[3]) - Bij * math.sin(x[3])
-    hess[1][3] = Gij * x[2] * math.sin(x[3]) - Bij * x[2] * math.cos(x[3])
-    hess[2][3] = Gij * x[1] * math.sin(x[3]) - Bij * x[1] * math.cos(x[3])
-    hess[3][3] = Gij * x[1] * x[2] * math.cos(x[3]) + Bij * x[1] * x[2] * math.sin(x[3])
+#    hess[1][1] = 2 * gij
+#    hess[1][2] = -gij * math.cos(x[3]) - bij * math.sin(x[3])
+#    hess[1][3] = gij * x[2] * math.sin(x[3]) - bij * x[2] * math.cos(x[3])
+#    hess[2][3] = gij * x[1] * math.sin(x[3]) - bij * x[1] * math.cos(x[3])
+#    hess[3][3] = gij * x[1] * x[2] * math.cos(x[3]) + bij * x[1] * x[2] * math.sin(x[3])
+
+    hess[1][1] = 2 * gii
+    hess[1][2] = gij * math.cos(x[3]) - bij * math.sin(x[3])
+    hess[1][3] = x[2] * (- gij * math.sin(x[3]) + bij * math.cos(x[3]))
+    hess[2][3] = x[1] * (- gij * math.sin(x[3]) + bij * math.cos(x[3]))
+    hess[3][3] = x[1] * x[2] * (- gij * math.cos(x[3]) - bij * math.sin(x[3]))
 
     hess[2][1] = hess[1][2]
     hess[3][1] = hess[1][3]
@@ -56,90 +82,112 @@ def hessPij(x, Gij, Bij):
     return hess
 
 
-def Qij(x, Gij, Bij):
+def qij(x, gij, bii, bij):
     # x = [Pij, vi, vj, phiij]
-    return Bij * (x[1] * x[2] * math.cos(x[3]) - x[1] ** 2) - Gij * x[1] * x[2] * math.sin(x[3]) - x[0]
+    # return bij * (x[1] * x[2] * math.cos(x[3]) - x[1] ** 2) - gij * x[1] * x[2] * math.sin(x[3]) - x[0]
+
+    return -bii * (x[1] ** 2) + x[1] * x[2] * (- bij * math.cos(x[3]) + gij * math.sin(x[3])) - x[0]  # Check 3.20 ExaGO
 
 
-def gradQij(x, Gij, Bij):
+def grad_qij(x, gij, bii, bij):
+
+    # grad0 = -1
+    # grad1 = bij * (x[2] * math.cos(x[3]) - 2 * x[1]) - gij * x[2] * math.sin(x[3])
+    # grad2 = bij * (x[1] * math.cos(x[3])) - gij * x[1] * math.sin(x[3])
+    # grad3 = -bij * (x[1] * x[2] * math.sin(x[3])) - gij * x[1] * x[2] * math.cos(x[3])
 
     grad0 = -1
-    grad1 = Bij * (x[2] * math.cos(x[3]) - 2 * x[1]) - Gij * x[2] * math.sin(x[3])
-    grad2 = Bij * (x[1] * math.cos(x[3])) - Gij * x[1] * math.sin(x[3])
-    grad3 = -Bij * (x[1] * x[2] * math.sin(x[3])) - Gij * x[1] * x[2] * math.cos(x[3])
+    grad1 = - 2 * bii * x[1] + x[2] * (- bij * math.cos(x[3]) + gij * x[2] * math.sin(x[3]))
+    grad2 = x[1] * (- bij * math.cos(x[3]) + gij * math.sin(x[3]))
+    grad3 = x[1] * x[2] * (bij * math.sin(x[3]) + gij * math.cos(x[3]))
 
     return np.array([grad0, grad1, grad2, grad3])
 
 
-def hessQij(x, Gij, Bij):
+def hess_qij(x, gij, bii, bij):
 
-    hess = np.zeros((4,4))
+    hess = np.zeros((4, 4))
 
-    hess[1][1] = -2 * Bij
-    hess[1][2] = Bij * math.cos(x[3]) - Gij * math.sin(x[3])
-    hess[1][3] = -Bij * x[2] * math.sin(x[3]) - Gij * x[2] * math.cos(x[3])
-    hess[2][3] = -Bij * x[1] * math.sin(x[3]) - Gij * x[1] * math.cos(x[3])
-    hess[3][3] = -Bij * x[1] * x[2] * math.cos(x[3]) + Gij * x[1] * x[2] * math.sin(x[3])
+    # hess[1][1] = -2 * bij
+    # hess[1][2] = bij * math.cos(x[3]) - gij * math.sin(x[3])
+    # hess[1][3] = -bij * x[2] * math.sin(x[3]) - gij * x[2] * math.cos(x[3])
+    # hess[2][3] = -bij * x[1] * math.sin(x[3]) - gij * x[1] * math.cos(x[3])
+    # hess[3][3] = -bij * x[1] * x[2] * math.cos(x[3]) + gij * x[1] * x[2] * math.sin(x[3])
+
+    hess[1][1] = - 2 * bii
+    hess[1][2] = - bij * math.cos(x[3]) - gij * math.sin(x[3])
+    hess[1][3] = x[2] * (bij * math.sin(x[3]) + gij * math.cos(x[3]))
+    hess[2][3] = x[1] * (bij * math.sin(x[3]) + gij * math.cos(x[3]))
+    hess[3][3] = x[1] * x[2] * (bij * math.cos(x[3]) - gij * math.sin(x[3]))
 
     hess[2][1] = hess[1][2]
     hess[3][1] = hess[1][3]
     hess[3][2] = hess[2][3]
 
-    return
+    return hess
 
 
-def Pi(x, Pdi):
-    # x = [Pi, Pij, Pik, ...]
-    return sum(x[1:]) + Pdi - x[0]
+def pi(x, pd):
+
+    """
+    #This function calculates the nodal active power balance in the form
+    #PG_i - PD_i - sum_over_j(Pij) = Delta_P
+    :param x: Vector with the first index being the nodal generation and the rest of entries being the branch powers
+    x = [Pi, Pij, Pik, ...].
+    :param pd: Demand associated to the node.
+    :return: The power difference of the balance. This is associated to an equality condition of an OPF, should be 0.
+    """
+
+    return x[0] - pd - sum(x[1:])
 
 
-def gradPi(x):
-    l = [-1]
-    l.extend([1] * len(x[1:]))
-    return np.array(l)
+def grad_pi(x):
+    lis = [1]
+    lis.extend([-1] * len(x[1:]))
+    return np.array(lis)
 
 
-def Qi(x, Qdi):
+def qi(x, qd):
     # x = [Qi, Qij, Qik, ...]
-    return sum(x[1:]) + Qdi - x[0]
+    return sum(x[1:]) + qd - x[0]
 
 
-def gradQi(x):
-    l = [-1]
-    l.extend([1] * len(x[1:]))
-    return np.array(l)
+def grad_qi(x):
+    lis = [-1]
+    lis.extend([1] * len(x[1:]))
+    return np.array(lis)
 
 
-def PLoss(x, Rij):
+def ploss(x, rij):
     # x = [lij, Pij, Pji]
-    return x[1] + x[2] - Rij * x[0]
+    return x[1] + x[2] - rij * x[0]
 
 
-def gradPloss():
+def grad_ploss():
     return np.array([-1, 1, 1])
 
 
-def QLoss(x, Xij):
+def qloss(x, xij):
     # x = [lij, Qij, Qji]
-    return x[1] + x[2] - Xij * x[0]
+    return x[1] + x[2] - xij * x[0]
 
 
-def gradQLoss():
+def grad_qloss():
     return np.array([-1, 1, 1])
 
 
 # Inequality functions:
 
-def Smax(x, su):
+def smax(x, su):
     # x = [Pij, Qij]
-    return su - x[0] ** 2 - x[1] ** 2
+    return x[0] ** 2 + x[1] ** 2 - su
 
 
-def gradSmax(x):
-    return np.array([-2 * x[0], -2 * x[1]])
+def grad_smax(x):
+    return np.array([2 * x[0], 2 * x[1]])
 
 
-def hessSmax():
-    return np.array([[-2, 0], [0, -2]])
+def hess_smax():
+    return np.array([[2, 0], [0, 2]])
 
 ################################

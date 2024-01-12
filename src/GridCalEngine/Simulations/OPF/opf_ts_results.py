@@ -369,37 +369,37 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
         elif result_type == ResultTypes.FluidFlowIn:
             labels = self.fluid_node_names
             y = self.fluid_node_flow_in
-            y_label = '(m3/h)'
+            y_label = '(m3/s)'
             title = result_type.value[0]
 
         elif result_type == ResultTypes.FluidFlowOut:
             labels = self.fluid_node_names
             y = self.fluid_node_flow_out
-            y_label = '(m3/h)'
+            y_label = '(m3/s)'
             title = result_type.value[0]
 
         elif result_type == ResultTypes.FluidP2XFlow:
             labels = self.fluid_node_names
             y = self.fluid_node_p2x_flow
-            y_label = '(m3/h)'
+            y_label = '(m3/s)'
             title = result_type.value[0]
 
         elif result_type == ResultTypes.FluidSpillage:
             labels = self.fluid_node_names
             y = self.fluid_node_spillage
-            y_label = '(m3/h)'
+            y_label = '(m3/s)'
             title = result_type.value[0]
 
         elif result_type == ResultTypes.FluidFlowPath:
             labels = self.fluid_path_names
             y = self.fluid_path_flow
-            y_label = '(m3/h)'
+            y_label = '(m3/s)'
             title = result_type.value[0]
 
         elif result_type == ResultTypes.FluidFlowInjection:
             labels = self.fluid_injection_names
             y = self.fluid_injection_flow
-            y_label = '(m3/h)'
+            y_label = '(m3/s)'
             title = result_type.value[0]
 
         elif result_type == ResultTypes.LoadShedding:

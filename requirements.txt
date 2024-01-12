@@ -29,3 +29,4 @@ pvlib
 hyperopt
 requests
 pytest >= 7.2.0
+highspy >= 1.5.3

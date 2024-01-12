@@ -40,7 +40,7 @@ class FluidInjectionTemplate(EditableDevice):
         :param idtag: UUID code
         :param code: secondary code
         :param efficiency: energy consumption per fluid unit (MWh/m3)
-        :param max_flow_rate: maximum fluid flow (m3/h)
+        :param max_flow_rate: maximum fluid flow (m3/s)
         :param plant: Connection reservoir/node
         :param generator: electrical machine connected
         :param device_type: type of machine (turbine, pump, p2x)
@@ -53,7 +53,7 @@ class FluidInjectionTemplate(EditableDevice):
                                 device_type=device_type)
 
         self.efficiency = efficiency  # MWh/m3
-        self.max_flow_rate = max_flow_rate  # m3/h
+        self.max_flow_rate = max_flow_rate  # m3/s
         self._plant: FluidNode = plant
         self._generator: Generator = generator
         self.build_status = build_status
@@ -62,12 +62,32 @@ class FluidInjectionTemplate(EditableDevice):
 
         self.register(key='efficiency', units="MWh/m3", tpe=float,
                       definition="Power plant energy production per fluid unit")
-        self.register(key='max_flow_rate', units="m3/h", tpe=float, definition="maximum fluid flow")
-        self.register(key='plant', units="", tpe=DeviceType.FluidNodeDevice, definition="Connection reservoir/node", editable=False)
-        self.register(key='generator', units="", tpe=DeviceType.GeneratorDevice, definition="Electrical machine", editable=False)
+        self.register(key='max_flow_rate', units="m3/s", tpe=float, definition="maximum fluid flow")
+        self.register(key='plant', units="", tpe=DeviceType.FluidNodeDevice, definition="Connection reservoir/node",
+                      editable=False)
+        self.register(key='generator', units="", tpe=DeviceType.GeneratorDevice, definition="Electrical machine",
+                      editable=False)
         self.register(key='build_status', units='', tpe=BuildStatus,
                       definition='Branch build status. Used in expansion planning.')
 
+    # def copy(self):
+    #     """
+    #     Make a deep copy of this object
+    #     :return: Copy of this object
+    #     """
+    #
+    #     # make a new instance (separated object in memory)
+    #     fluid_inj = FluidInjectionTemplate()
+    #
+    #     fluid_inj.efficiency = self.efficiency
+    #     fluid_inj.max_flow_rate = self.max_flow_rate
+    #     fluid_inj._plant = self._plant
+    #     fluid_inj._generator = self._generator
+    #     fluid_inj.build_status = self.build_status
+    #     fluid_inj.power = self.power
+    #
+    #     return fluid_inj
+    #
     @property
     def plant(self) -> FluidNode:
         """

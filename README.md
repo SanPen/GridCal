@@ -127,7 +127,7 @@ We have included extra materials to work with. These are included in the standal
 
 ### Tutorials and examples
 
-- [Tutorials](https://gridcal.readthedocs.io/en/latest/tutorials/tutorials_module.html)
+- [Tutorials](https://gridcal.readthedocs.io/en/latest/rst_source/tutorials/tutorials_module.html)
 
 - [Cloning the repository (video)](https://youtu.be/59W_rqimB6w)
 

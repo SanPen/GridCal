@@ -16,16 +16,15 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 """
-Uncomment the appropriate inteface imports to use: Pulp or OrTools
+Uncomment the appropriate interface imports to use: Pulp or OrTools
 """
 from typing import List, Union, Tuple
 import numpy as np
 from scipy.sparse import csc_matrix
 from GridCalEngine.basic_structures import ObjVec, ObjMat, Vec
 
-from GridCalEngine.Utils.MIP.ortools_interface import LpExp, LpVar, LpModel, get_available_mip_solvers, set_var_bounds
-
-
+from GridCalEngine.Utils.MIP.SimpleMip import LpExp, LpVar, LpModel, get_available_mip_solvers, set_var_bounds
+# from GridCalEngine.Utils.MIP.ortools_interface import LpExp, LpVar, LpModel, get_available_mip_solvers, set_var_bounds
 # from GridCalEngine.Utils.MIP.pulp_interface import LpExp, LpVar, LpModel, get_available_mip_solvers, set_var_bounds
 
 

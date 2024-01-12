@@ -347,6 +347,7 @@ def get_generator_data(circuit: MultiCircuit,
 
             data.cost_0[k] = elm.Cost0_prof[t_idx]
             data.cost_1[k] = elm.Cost_prof[t_idx]
+            data.cost_2[k] = elm.Cost2_prof[t_idx]
 
             if elm.active_prof[t_idx] and elm.is_controlled:
 
@@ -371,6 +372,7 @@ def get_generator_data(circuit: MultiCircuit,
 
             data.cost_0[k] = elm.Cost0
             data.cost_1[k] = elm.Cost
+            data.cost_2[k] = elm.Cost2
 
             if elm.active and elm.is_controlled:
                 if bus_data.bus_types[i] != 3:  # if it is not Slack
@@ -474,6 +476,7 @@ def get_battery_data(circuit: MultiCircuit,
 
             data.cost_0[k] = elm.Cost0_prof[t_idx]
             data.cost_1[k] = elm.Cost_prof[t_idx]
+            data.cost_2[k] = elm.Cost2_prof[t_idx]
 
             if elm.active_prof[t_idx] and elm.is_controlled:
                 if bus_data.bus_types[i] != 3:  # if it is not Slack
@@ -497,6 +500,7 @@ def get_battery_data(circuit: MultiCircuit,
 
             data.cost_0[k] = elm.Cost0
             data.cost_1[k] = elm.Cost
+            data.cost_2[k] = elm.Cost2
 
             if elm.active and elm.is_controlled:
                 if bus_data.bus_types[i] != 3:  # if it is not Slack
@@ -1044,7 +1048,7 @@ def get_hvdc_data(circuit: MultiCircuit,
             data.r[i] = elm.r
 
             if opf_results is not None:
-                # if we are taking the valñues from the OPF, do not allow the free mode
+                # if we are taking the values from the OPF, do not allow the free mode
                 data.control_mode[i] = HvdcControlType.type_1_Pset
                 data.Pset[i] = opf_results.hvdc_Pf[i]
             else:
@@ -1102,8 +1106,10 @@ def get_fluid_node_data(circuit: MultiCircuit,
 
         if time_series:
             data.inflow[k] = elm.inflow_prof[t_idx]
+            data.spillage_cost[k] = elm.spillage_cost_prof[t_idx]
         else:
             data.inflow[k] = elm.inflow
+            data.spillage_cost[k] = elm.spillage_cost
 
     return data, plant_dict
 
