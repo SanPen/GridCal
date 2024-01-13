@@ -71,17 +71,17 @@ from GridCal.Gui.messages import info_msg
 from matplotlib import pyplot as plt
 
 '''
-Dependencies:
+Structure:
 
-GridEditor {QSplitter}
+{BusBranchEditorWidget: QSplitter}
  |
-  - EditorGraphicsView {QGraphicsView} (Handles the drag and drop)
- |   |
-  ---- DiagramScene {QGraphicsScene}
-        |
-         - MultiCircuit (Calculation engine)
-        |
-         - Graphic Objects: (BusGraphicItem, BranchGraphicItem, LoadGraphicItem, ...)
+  - .editor_graphics_view {QGraphicsView} (Handles the drag and drop)
+ |      
+  - .diagram_scene {DiagramScene: QGraphicsScene}
+ |       
+  - .circuit {MultiCircuit} (Calculation engine)
+ |       
+  - .diagram {BusBranchDiagram} records the objects and their position to load and save diagrams
 
 
 The graphic objects need to call the API objects and functions inside the MultiCircuit instance.
@@ -89,16 +89,7 @@ To do this the graphic objects call "parent.circuit.<function or object>"
 '''
 
 
-def toQBytesArray(val: str):
-    """
 
-    :param val:
-    :return:
-    """
-    data = QByteArray()
-    stream = QDataStream(data, QIODevice.WriteOnly)
-    stream.writeQString(val)
-    return data
 
 
 class LibraryModel(QStandardItemModel):
@@ -119,23 +110,47 @@ class LibraryModel(QStandardItemModel):
         # add bus to the drag&drop
         bus_icon = QIcon()
         bus_icon.addPixmap(QPixmap(":/Icons/icons/bus_icon.svg"))
-        item = QStandardItem(bus_icon, "Bus")
+        self.bus_name = "Bus"
+        item = QStandardItem(bus_icon, self.bus_name)
         item.setToolTip("Drag & drop this into the schematic")
         self.appendRow(item)
 
         # add transformer3w to the drag&drop
         t3w_icon = QIcon()
         t3w_icon.addPixmap(QPixmap(":/Icons/icons/transformer3w.svg"))
-        item = QStandardItem(t3w_icon, "3W-Transformer")
+        self.transformer3w_name = "3W-Transformer"
+        item = QStandardItem(t3w_icon, self.transformer3w_name)
         item.setToolTip("Drag & drop this into the schematic")
         self.appendRow(item)
 
         # add fluid-node to the drag&drop
         dam_icon = QIcon()
         dam_icon.addPixmap(QPixmap(":/Icons/icons/dam.svg"))
-        item = QStandardItem(dam_icon, "Fluid-node")
+        self.fluid_node_name = "Fluid-node"
+        item = QStandardItem(dam_icon, self.fluid_node_name)
         item.setToolTip("Drag & drop this into the schematic")
         self.appendRow(item)
+
+    @staticmethod
+    def to_bytes_array(val: str) -> QByteArray:
+        """
+        Convert string to QByteArray
+        :param val: string
+        :return: QByteArray
+        """
+        data = QByteArray()
+        stream = QDataStream(data, QIODevice.WriteOnly)
+        stream.writeQString(val)
+        return data
+
+    def get_bus_mime_data(self) -> QByteArray:
+        return self.to_bytes_array(self.bus_name)
+
+    def get_3w_transformer_mime_data(self) -> QByteArray:
+        return self.to_bytes_array(self.transformer3w_name)
+
+    def get_fluid_node_mime_data(self) -> QByteArray:
+        return self.to_bytes_array(self.fluid_node_name)
 
     def mimeTypes(self) -> List[str]:
         """
@@ -262,18 +277,17 @@ class BusBranchEditorWidget(QSplitter):
         self.expand_factor = 1.1
 
         # Widget layout and child widgets:
-        self.horizontalLayout = QHBoxLayout(self)
+        self.horizontal_layout = QHBoxLayout(self)
         self.object_editor_table = QTableView(self)
-        self.libraryBrowserView = QListView(self)
-        self.libraryModel = LibraryModel(self)
 
-        # set the objects list
-        self.object_types = [dev.device_type.value for dev in circuit.get_objects_with_profiles_list()]
+        # library model
+        self.library_model = LibraryModel(self)
 
         # Actual libraryView object
-        self.libraryBrowserView.setModel(self.libraryModel)
-        self.libraryBrowserView.setViewMode(self.libraryBrowserView.ViewMode.ListMode)
-        self.libraryBrowserView.setDragDropMode(QAbstractItemView.DragDropMode.InternalMove)
+        self.library_view = QListView(self)
+        self.library_view.setModel(self.library_model)
+        self.library_view.setViewMode(self.library_view.ViewMode.ListMode)
+        self.library_view.setDragDropMode(QAbstractItemView.DragDropMode.InternalMove)
 
         # create all the schematic objects and replace the existing ones
         self.diagram_scene = DiagramScene(parent=self)  # scene to add to the QGraphicsView
@@ -301,7 +315,7 @@ class BusBranchEditorWidget(QSplitter):
         self.frame1_layout = QVBoxLayout()
         self.frame1_layout.setContentsMargins(0, 0, 0, 0)
 
-        self.frame1_layout.addWidget(self.libraryBrowserView)
+        self.frame1_layout.addWidget(self.library_view)
         self.frame1.setLayout(self.frame1_layout)
 
         # Add the two objects into a layout
@@ -356,22 +370,16 @@ class BusBranchEditorWidget(QSplitter):
         """
         if event.mimeData().hasFormat('component/name'):
             obj_type = event.mimeData().data('component/name')
-            bus_data = toQBytesArray('Bus')
-            tr3w_data = toQBytesArray('3W-Transformer')
-            fluid_node_data = toQBytesArray("Fluid-node")
+            bus_data = self.library_model.get_bus_mime_data()
+            tr3w_data = self.library_model.get_3w_transformer_mime_data()
+            fluid_node_data = self.library_model.get_fluid_node_mime_data()
 
             point0 = self.editor_graphics_view.mapToScene(event.position().x(), event.position().y())
             x0 = point0.x()
             y0 = point0.y()
 
             if bus_data == obj_type:
-                name = 'Bus ' + str(len(self.circuit.buses))
-
-                obj = Bus(name=name,
-                          # area=self.diagram_scene.circuit.areas[0],
-                          # zone=self.diagram_scene.circuit.zones[0],
-                          # substation=self.diagram_scene.circuit.substations[0],
-                          # country=self.diagram_scene.circuit.countries[0],
+                obj = Bus(name=f'Bus {len(self.circuit.buses)}',
                           vnom=self.default_bus_voltage)
 
                 graphic_object = BusGraphicItem(editor=self,
@@ -396,8 +404,7 @@ class BusBranchEditorWidget(QSplitter):
                                             graphic_object=graphic_object)
 
             elif tr3w_data == obj_type:
-                name = "Transformer 3-windings" + str(len(self.circuit.transformers3w))
-                obj = Transformer3W(name=name)
+                obj = Transformer3W(name=f"Transformer 3W {len(self.circuit.transformers3w)}")
                 graphic_object = self.create_transformer_3w_graphics(elm=obj, x=x0, y=y0)
                 self.add_to_scene(graphic_object=graphic_object)
 
@@ -414,9 +421,7 @@ class BusBranchEditorWidget(QSplitter):
                                             graphic_object=graphic_object)
 
             elif fluid_node_data == obj_type:
-                name = 'FluidNode ' + str(len(self.circuit.fluid_nodes))
-
-                obj = FluidNode(name=name)
+                obj = FluidNode(name=f"Fluid node {len(self.circuit.fluid_nodes)}")
 
                 graphic_object = self.create_fluid_node_graphics(node=obj, x=x0, y=y0, h=20, w=80)
                 self.add_to_scene(graphic_object=graphic_object)
