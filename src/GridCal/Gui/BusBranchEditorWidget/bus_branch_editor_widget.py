@@ -89,9 +89,6 @@ To do this the graphic objects call "parent.circuit.<function or object>"
 '''
 
 
-
-
-
 class LibraryModel(QStandardItemModel):
     """
     Items model to host the draggable icons
@@ -207,10 +204,13 @@ class DiagramScene(QGraphicsScene):
         # pan movement
         if self.parent_.startPos is not None:
             scale_factor = 1.5
-            scene_pos = QPointF(event.scenePos())
-            self.displacement = self.displacement + ((scene_pos - self.parent_.startPos) / scale_factor)
-            temp_cen = self.parent_.newCenterPos - self.displacement
-            self.parent_.editor_graphics_view.centerOn(temp_cen)
+            try:
+                scene_pos = QPointF(event.scenePos())
+                self.displacement = self.displacement + ((scene_pos - self.parent_.startPos) / scale_factor)
+                temp_cen = self.parent_.newCenterPos - self.displacement
+                self.parent_.editor_graphics_view.centerOn(temp_cen)
+            except RecursionError:
+                print("Recursion Error at mouseMoveEvent")
 
         self.parent_.scene_mouse_move_event(event)
 
@@ -301,11 +301,12 @@ class BusBranchEditorWidget(QSplitter):
         self.editor_graphics_view.setInteractive(True)
         self.editor_graphics_view.setRenderHints(QPainter.Antialiasing | QPainter.SmoothPixmapTransform)
         self.editor_graphics_view.setAlignment(Qt.AlignCenter)
-        self.editor_graphics_view.dragEnterEvent = self.dragEnterEvent
-        self.editor_graphics_view.dragMoveEvent = self.dragMoveEvent
-        self.editor_graphics_view.dropEvent = self.dropEvent
-        self.editor_graphics_view.wheelEvent = self.wheelEvent
-        self.editor_graphics_view.keyPressEvent = self.keyPressEvent
+
+        self.editor_graphics_view.dragEnterEvent = self.graphicsDragEnterEvent
+        self.editor_graphics_view.dragMoveEvent = self.graphicsDragMoveEvent
+        self.editor_graphics_view.dropEvent = self.graphicsDropEvent
+        self.editor_graphics_view.wheelEvent = self.graphicsWheelEvent
+        self.editor_graphics_view.keyPressEvent = self.graphicsKeyPressEvent
 
         # Zoom indicator
         self._zoom = 0
@@ -344,7 +345,7 @@ class BusBranchEditorWidget(QSplitter):
         if diagram is not None:
             self.draw()
 
-    def dragEnterEvent(self, event: QDragEnterEvent) -> None:
+    def graphicsDragEnterEvent(self, event: QDragEnterEvent) -> None:
         """
 
         @param event:
@@ -353,7 +354,7 @@ class BusBranchEditorWidget(QSplitter):
         if event.mimeData().hasFormat('component/name'):
             event.accept()
 
-    def dragMoveEvent(self, event: QDragMoveEvent) -> None:
+    def graphicsDragMoveEvent(self, event: QDragMoveEvent) -> None:
         """
         Move element
         @param event:
@@ -362,7 +363,7 @@ class BusBranchEditorWidget(QSplitter):
         if event.mimeData().hasFormat('component/name'):
             event.accept()
 
-    def dropEvent(self, event: QDropEvent) -> None:
+    def graphicsDropEvent(self, event: QDropEvent) -> None:
         """
         Create an element
         @param event:
@@ -438,7 +439,7 @@ class BusBranchEditorWidget(QSplitter):
                                             r=0,
                                             graphic_object=graphic_object)
 
-    def wheelEvent(self, event: QWheelEvent) -> None:
+    def graphicsWheelEvent(self, event: QWheelEvent) -> None:
         """
         Zoom
         @param event:
@@ -457,7 +458,7 @@ class BusBranchEditorWidget(QSplitter):
             # Zooming out
             self.zoom_out(scale_factor)
 
-    def keyPressEvent(self, event: QKeyEvent):
+    def graphicsKeyPressEvent(self, event: QKeyEvent):
         """
         Key press event cature
         :param event:
@@ -938,7 +939,7 @@ class BusBranchEditorWidget(QSplitter):
         Delete the selected items from the diagram
         """
         # get the selected buses
-        selected = self.get_selected_buses()
+        selected = self.get_selected()
 
         if len(selected) > 0:
             reply = QMessageBox.question(self, 'Delete',
@@ -949,10 +950,8 @@ class BusBranchEditorWidget(QSplitter):
             if reply == QMessageBox.StandardButton.Yes.value:
 
                 # remove the buses (from the schematic and the circuit)
-                for k, bus, graphic_obj in selected:
-                    # TODO: come up with better way to delete both from the scematic and DB
-                    self.diagram.delete_device(bus)
-                    graphic_obj.remove(ask=False)
+                for bus, graphic_obj in selected:
+                    self.remove_element(device=bus, graphic_object=graphic_obj)
             else:
                 pass
         else:
@@ -1085,6 +1084,33 @@ class BusBranchEditorWidget(QSplitter):
 
         # set the connection placement
         graphic_object.setZValue(-1)
+
+    def create_winding(self, fromPort: TerminalItem, toPort: TerminalItem, api_object: Winding):
+        """
+
+        :param fromPort:
+        :param toPort:
+        :param api_object:
+        :return:
+        """
+
+        winding_graphics = WindingGraphicItem(fromPort=fromPort,
+                                              toPort=toPort,
+                                              editor=self,
+                                              api_object=api_object)
+
+        self.add_to_scene(graphic_object=winding_graphics)
+
+        self.update_diagram_element(device=winding_graphics.api_object,
+                                    graphic_object=winding_graphics)
+
+        self.started_branch.fromPort.update()
+        self.started_branch.toPort.update()
+
+        # set the connection placement
+        winding_graphics.setZValue(-1)
+
+        return winding_graphics
 
     def create_transformer(self, bus_from: Bus, bus_to: Bus, fromPort: TerminalItem, toPort: TerminalItem):
         """
@@ -1236,19 +1262,12 @@ class BusBranchEditorWidget(QSplitter):
                                                  fromPort=self.started_branch.fromPort,
                                                  toPort=self.started_branch.toPort)
 
-                            # # add the new object to the circuit
-                            # self.circuit.add_branch(obj)
-                            #
-                            # # update the connection placement
-                            # graphic_object.fromPort.update()
-                            # graphic_object.toPort.update()
-                            #
-                            # # set the connection placement
-                            # graphic_object.setZValue(-1)
+                            # delete the ghost branch
+                            self.remove_from_scene(self.started_branch)
 
                         elif self.started_branch.conneted_between_tr3_and_bus():
 
-                            tr3_graphic_object = self.started_branch.get_from_graphic_object()
+                            tr3_graphic_object: Transformer3WGraphicItem = self.started_branch.get_from_graphic_object()
 
                             if self.started_branch.is_to_port_a_bus():
                                 # if the bus "from" is the TR3W, the "to" is the bus
@@ -1260,16 +1279,16 @@ class BusBranchEditorWidget(QSplitter):
                                                                           to_port=self.started_branch.toPort)
 
                             if tr3_graphic_object.connection_lines[i] is None:
-                                winding_graphics = WindingGraphicItem(fromPort=self.started_branch.fromPort,
-                                                                      toPort=self.started_branch.toPort,
-                                                                      editor=self)
+                                winding = tr3_graphic_object.api_object.get_winding(i)
+                                winding_graphics = self.create_winding(fromPort=self.started_branch.fromPort,
+                                                                       toPort=self.started_branch.toPort,
+                                                                       api_object=winding)
 
                                 tr3_graphic_object.set_connection(i, bus, winding_graphics)
-                                self.started_branch.fromPort.update()
-                                self.started_branch.toPort.update()
                                 tr3_graphic_object.update_conn()
-                                self.update_diagram_element(device=winding_graphics.api_object,
-                                                            graphic_object=winding_graphics)
+
+                            # delete the ghost branch
+                            self.remove_from_scene(self.started_branch)
 
                         elif self.started_branch.connected_between_bus_and_tr3():
 
@@ -1285,16 +1304,16 @@ class BusBranchEditorWidget(QSplitter):
                                                                           to_port=self.started_branch.toPort)
 
                             if tr3_graphic_object.connection_lines[i] is None:
-                                winding_graphics = WindingGraphicItem(fromPort=self.started_branch.fromPort,
-                                                                      toPort=self.started_branch.toPort,
-                                                                      editor=self)
+                                winding = tr3_graphic_object.api_object.get_winding(i)
+                                winding_graphics = self.create_winding(fromPort=self.started_branch.fromPort,
+                                                                       toPort=self.started_branch.toPort,
+                                                                       api_object=winding)
 
                                 tr3_graphic_object.set_connection(i, bus, winding_graphics)
-                                self.started_branch.fromPort.update()
-                                self.started_branch.toPort.update()
                                 tr3_graphic_object.update_conn()
-                                self.update_diagram_element(device=winding_graphics.api_object,
-                                                            graphic_object=winding_graphics)
+
+                            # delete the ghost branch
+                            self.remove_from_scene(self.started_branch)
 
                         elif self.started_branch.connected_between_fluid_nodes():  # fluid path
 
@@ -1302,6 +1321,9 @@ class BusBranchEditorWidget(QSplitter):
                                                    target=self.started_branch.get_fluid_node_to(),
                                                    fromPort=self.started_branch.fromPort,
                                                    toPort=self.started_branch.toPort)
+
+                            # delete the ghost branch
+                            self.remove_from_scene(self.started_branch)
 
                         elif self.started_branch.connected_between_fluid_node_and_bus():
 
@@ -1324,6 +1346,9 @@ class BusBranchEditorWidget(QSplitter):
                                              fromPort=self.started_branch.fromPort,
                                              toPort=self.started_branch.toPort)
 
+                            # delete the ghost branch
+                            self.remove_from_scene(self.started_branch)
+
                         elif self.started_branch.connected_between_bus_and_fluid_node():
                             # electrical bus
                             bus = self.started_branch.get_bus_from()
@@ -1344,14 +1369,14 @@ class BusBranchEditorWidget(QSplitter):
                                              fromPort=self.started_branch.fromPort,
                                              toPort=self.started_branch.toPort)
 
+                            # delete the ghost branch
+                            self.remove_from_scene(self.started_branch)
+
                         else:
                             print('unknown connection')
 
                     # remove from the hosted connections
                     item.remove_connection(started_branch=self.started_branch)
-
-            # if self.started_branch.toPort is None:
-            self.remove_from_scene(self.started_branch)
 
         # release this pointer
         self.started_branch = None
@@ -2710,6 +2735,13 @@ class BusBranchEditorWidget(QSplitter):
                             graphic_object.set_pen(QPen(color, w, style))
                     else:
                         print("HVDC line {0} {1} has no graphic object!!".format(elm.name, elm.idtag))
+
+    def get_selected(self) -> List[Tuple[EditableDevice, QGraphicsItem]]:
+        """
+        Get selection
+        :return: List of EditableDevice, QGraphicsItem
+        """
+        return [(elm.api_object, elm) for elm in self.diagram_scene.selectedItems()]
 
     def get_selection_api_objects(self) -> List[EditableDevice]:
         """
