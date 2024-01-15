@@ -2795,6 +2795,64 @@ class Ui_mainWindow(object):
         self.gridLayout_28 = QGridLayout(self.frame_76)
         self.gridLayout_28.setObjectName(u"gridLayout_28")
         self.gridLayout_28.setContentsMargins(-1, 0, -1, -1)
+        self.label_119 = QLabel(self.frame_76)
+        self.label_119.setObjectName(u"label_119")
+
+        self.gridLayout_28.addWidget(self.label_119, 3, 0, 1, 2)
+
+        self.verticalSpacer_19 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+
+        self.gridLayout_28.addItem(self.verticalSpacer_19, 11, 0, 1, 2)
+
+        self.use_srap_checkBox = QCheckBox(self.frame_76)
+        self.use_srap_checkBox.setObjectName(u"use_srap_checkBox")
+
+        self.gridLayout_28.addWidget(self.use_srap_checkBox, 6, 0, 1, 2)
+
+        self.srap_limit_doubleSpinBox = QDoubleSpinBox(self.frame_76)
+        self.srap_limit_doubleSpinBox.setObjectName(u"srap_limit_doubleSpinBox")
+        self.srap_limit_doubleSpinBox.setDecimals(1)
+        self.srap_limit_doubleSpinBox.setMaximum(9999999.000000000000000)
+        self.srap_limit_doubleSpinBox.setValue(1400.000000000000000)
+
+        self.gridLayout_28.addWidget(self.srap_limit_doubleSpinBox, 8, 1, 1, 1)
+
+        self.label_52 = QLabel(self.frame_76)
+        self.label_52.setObjectName(u"label_52")
+
+        self.gridLayout_28.addWidget(self.label_52, 5, 0, 1, 1)
+
+        self.line_25 = QFrame(self.frame_76)
+        self.line_25.setObjectName(u"line_25")
+        palette19 = QPalette()
+        palette19.setBrush(QPalette.Active, QPalette.WindowText, brush8)
+        palette19.setBrush(QPalette.Inactive, QPalette.WindowText, brush8)
+        palette19.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
+        self.line_25.setPalette(palette19)
+        self.line_25.setFrameShadow(QFrame.Plain)
+        self.line_25.setLineWidth(4)
+        self.line_25.setFrameShape(QFrame.HLine)
+
+        self.gridLayout_28.addWidget(self.line_25, 2, 0, 1, 2)
+
+        self.label_53 = QLabel(self.frame_76)
+        self.label_53.setObjectName(u"label_53")
+
+        self.gridLayout_28.addWidget(self.label_53, 8, 0, 1, 1)
+
+        self.lodf_threshold_doubleSpinBox = QDoubleSpinBox(self.frame_76)
+        self.lodf_threshold_doubleSpinBox.setObjectName(u"lodf_threshold_doubleSpinBox")
+        self.lodf_threshold_doubleSpinBox.setDecimals(6)
+        self.lodf_threshold_doubleSpinBox.setMaximum(1.000000000000000)
+        self.lodf_threshold_doubleSpinBox.setValue(0.000100000000000)
+
+        self.gridLayout_28.addWidget(self.lodf_threshold_doubleSpinBox, 10, 1, 1, 1)
+
+        self.label_122 = QLabel(self.frame_76)
+        self.label_122.setObjectName(u"label_122")
+
+        self.gridLayout_28.addWidget(self.label_122, 10, 0, 1, 1)
+
         self.frame_78 = QFrame(self.frame_76)
         self.frame_78.setObjectName(u"frame_78")
         self.frame_78.setFrameShape(QFrame.NoFrame)
@@ -2813,11 +2871,11 @@ class Ui_mainWindow(object):
 
         self.label_117 = QLabel(self.frame_78)
         self.label_117.setObjectName(u"label_117")
-        palette19 = QPalette()
-        palette19.setBrush(QPalette.Active, QPalette.WindowText, brush9)
-        palette19.setBrush(QPalette.Inactive, QPalette.WindowText, brush9)
-        palette19.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
-        self.label_117.setPalette(palette19)
+        palette20 = QPalette()
+        palette20.setBrush(QPalette.Active, QPalette.WindowText, brush9)
+        palette20.setBrush(QPalette.Inactive, QPalette.WindowText, brush9)
+        palette20.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
+        self.label_117.setPalette(palette20)
         self.label_117.setFont(font2)
         self.label_117.setAlignment(Qt.AlignBottom|Qt.AlignLeading|Qt.AlignLeft)
 
@@ -2826,32 +2884,36 @@ class Ui_mainWindow(object):
 
         self.gridLayout_28.addWidget(self.frame_78, 0, 0, 1, 2)
 
-        self.line_25 = QFrame(self.frame_76)
-        self.line_25.setObjectName(u"line_25")
-        palette20 = QPalette()
-        palette20.setBrush(QPalette.Active, QPalette.WindowText, brush8)
-        palette20.setBrush(QPalette.Inactive, QPalette.WindowText, brush8)
-        palette20.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
-        self.line_25.setPalette(palette20)
-        self.line_25.setFrameShadow(QFrame.Plain)
-        self.line_25.setLineWidth(4)
-        self.line_25.setFrameShape(QFrame.HLine)
+        self.ptdf_threshold_doubleSpinBox = QDoubleSpinBox(self.frame_76)
+        self.ptdf_threshold_doubleSpinBox.setObjectName(u"ptdf_threshold_doubleSpinBox")
+        self.ptdf_threshold_doubleSpinBox.setDecimals(6)
+        self.ptdf_threshold_doubleSpinBox.setMaximum(1.000000000000000)
+        self.ptdf_threshold_doubleSpinBox.setValue(0.000100000000000)
 
-        self.gridLayout_28.addWidget(self.line_25, 2, 0, 1, 2)
+        self.gridLayout_28.addWidget(self.ptdf_threshold_doubleSpinBox, 9, 1, 1, 1)
 
         self.contingencyEngineComboBox = QComboBox(self.frame_76)
         self.contingencyEngineComboBox.setObjectName(u"contingencyEngineComboBox")
 
         self.gridLayout_28.addWidget(self.contingencyEngineComboBox, 4, 0, 1, 2)
 
-        self.label_119 = QLabel(self.frame_76)
-        self.label_119.setObjectName(u"label_119")
+        self.label_116 = QLabel(self.frame_76)
+        self.label_116.setObjectName(u"label_116")
 
-        self.gridLayout_28.addWidget(self.label_119, 3, 0, 1, 2)
+        self.gridLayout_28.addWidget(self.label_116, 9, 0, 1, 1)
 
-        self.verticalSpacer_19 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.label_123 = QLabel(self.frame_76)
+        self.label_123.setObjectName(u"label_123")
 
-        self.gridLayout_28.addItem(self.verticalSpacer_19, 7, 0, 1, 2)
+        self.gridLayout_28.addWidget(self.label_123, 7, 0, 1, 1)
+
+        self.srap_loading_limit_doubleSpinBox = QDoubleSpinBox(self.frame_76)
+        self.srap_loading_limit_doubleSpinBox.setObjectName(u"srap_loading_limit_doubleSpinBox")
+        self.srap_loading_limit_doubleSpinBox.setDecimals(1)
+        self.srap_loading_limit_doubleSpinBox.setMaximum(999999.000000000000000)
+        self.srap_loading_limit_doubleSpinBox.setValue(140.000000000000000)
+
+        self.gridLayout_28.addWidget(self.srap_loading_limit_doubleSpinBox, 7, 1, 1, 1)
 
 
         self.horizontalLayout_42.addWidget(self.frame_76)
@@ -5031,9 +5093,17 @@ class Ui_mainWindow(object):
 #if QT_CONFIG(tooltip)
         self.settings_tabWidget.setTabToolTip(self.settings_tabWidget.indexOf(self.tab_9), QCoreApplication.translate("mainWindow", u"Linear calculations related settings", None))
 #endif // QT_CONFIG(tooltip)
+        self.label_119.setText(QCoreApplication.translate("mainWindow", u"Contingency engine", None))
+        self.use_srap_checkBox.setText(QCoreApplication.translate("mainWindow", u"Use SRAP", None))
+        self.srap_limit_doubleSpinBox.setSuffix(QCoreApplication.translate("mainWindow", u" MW", None))
+        self.label_52.setText("")
+        self.label_53.setText(QCoreApplication.translate("mainWindow", u"SRAP limit", None))
+        self.label_122.setText(QCoreApplication.translate("mainWindow", u"LODF threshold", None))
         self.label_109.setText("")
         self.label_117.setText(QCoreApplication.translate("mainWindow", u"Contingencies", None))
-        self.label_119.setText(QCoreApplication.translate("mainWindow", u"Contingency engine", None))
+        self.label_116.setText(QCoreApplication.translate("mainWindow", u"PTDF threshold", None))
+        self.label_123.setText(QCoreApplication.translate("mainWindow", u"SRAP max loading", None))
+        self.srap_loading_limit_doubleSpinBox.setSuffix(QCoreApplication.translate("mainWindow", u" %", None))
         self.settings_tabWidget.setTabText(self.settings_tabWidget.indexOf(self.tab_11), QCoreApplication.translate("mainWindow", u"Con", None))
         self.label_95.setText(QCoreApplication.translate("mainWindow", u"Area transfer configuration", None))
         self.label_92.setText("")

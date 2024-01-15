@@ -19,6 +19,8 @@ from typing import List, Union, Any
 from GridCalEngine.basic_structures import IntVec, StrMat, StrVec, Vec
 from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Core.Devices import ContingencyGroup
+from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearMultiContingency
+from GridCalEngine.Simulations.LinearFactors.srap import get_PTDF_LODF_NX_sparse_f16, compute_srap, BusesForSrap
 
 import numpy as np
 
@@ -53,7 +55,9 @@ class ContingencyTableEntry:
                  contingency_uuid: str,
                  post_contingency_flow: complex,
                  contingency_rating: float,
-                 post_contingency_loading: float):
+                 post_contingency_loading: float,
+                 solved_by_srap: bool = False,
+                 buses_for_srap_info: Union[None, BusesForSrap] = None):
         """
         ContingencyTableEntry constructor
         :param time_index:
@@ -68,6 +72,8 @@ class ContingencyTableEntry:
         :param post_contingency_flow:
         :param contingency_rating:
         :param post_contingency_loading:
+        :param solved_by_srap:
+        :param buses_for_srap_info:
         """
         self.time_index: int = time_index
 
@@ -84,6 +90,9 @@ class ContingencyTableEntry:
         self.post_contingency_flow: complex = post_contingency_flow
         self.contingency_rating: float = contingency_rating
         self.post_contingency_loading: float = post_contingency_loading
+
+        self.solved_by_srap: bool = solved_by_srap
+        self.buses_for_srap_info: BusesForSrap = buses_for_srap_info
 
     def get_headers(self) -> List[str]:
         """
@@ -152,7 +161,9 @@ class ContingencyResultsReport:
             contingency_uuid: str,
             post_contingency_flow: complex,
             contingency_rating: float,
-            post_contingency_loading: float):
+            post_contingency_loading: float,
+            solved_by_srap: bool = False,
+            buses_for_srap_info: Union[None, BusesForSrap] = None):
         """
         Add report data
         :param time_index:
@@ -167,6 +178,8 @@ class ContingencyResultsReport:
         :param post_contingency_flow:
         :param contingency_rating:
         :param post_contingency_loading:
+        :param solved_by_srap:
+        :param buses_for_srap_info:
         """
         self.add_entry(ContingencyTableEntry(time_index=time_index,
                                              base_name=base_name,
@@ -179,7 +192,9 @@ class ContingencyResultsReport:
                                              contingency_uuid=contingency_uuid,
                                              post_contingency_flow=post_contingency_flow,
                                              contingency_rating=contingency_rating,
-                                             post_contingency_loading=post_contingency_loading))
+                                             post_contingency_loading=post_contingency_loading,
+                                             solved_by_srap=solved_by_srap,
+                                             buses_for_srap_info=buses_for_srap_info))
 
     def merge(self, other: "ContingencyResultsReport"):
         """
@@ -236,7 +251,11 @@ class ContingencyResultsReport:
                 contingency_flows: Vec,
                 contingency_loadings: Vec,
                 contingency_idx: int,
-                contingency_group: ContingencyGroup):
+                contingency_group: ContingencyGroup,
+                using_srap: bool = False,
+                srap_limit: float = 1.4,
+                srap_pmax_mw: float = 1400.0,
+                buses_for_srap_list: List[BusesForSrap] = None):
         """
         Analize contingency resuts and add them to the report
         :param t: time index
@@ -249,13 +268,48 @@ class ContingencyResultsReport:
         :param contingency_loadings: loading array after the contingency
         :param contingency_idx: contingency group index
         :param contingency_group: ContingencyGroup
+        :param using_srap: Inspect contingency using the SRAP conditions
+        :param srap_limit: Rate multiplier under which we can use SRAP conditions
+        :param srap_pmax_mw: Max amount of power to lower using SRAP conditions
+        :param buses_for_srap_list: list of buses for SRAP conditions
         """
         for m in mon_idx:  # for each monitored branch ...
 
             c_flow = abs(contingency_flows[m])
             b_flow = abs(flows[m])
 
-            if c_flow > numerical_circuit.contingency_rates[m]:  # if the contingency flow is greater than the rate ...
+            # ----------------------------------------------------------------------------------------------------------
+            # determine the continegncy post analysis type
+            # ----------------------------------------------------------------------------------------------------------
+
+            if using_srap:
+
+                if 1.0 < abs(loading[m]) <= srap_limit:
+                    do_srap = True
+
+                else:
+                    do_srap = False
+            else:
+                do_srap = False
+
+            # ----------------------------------------------------------------------------------------------------------
+            # perform the analysis
+            # ----------------------------------------------------------------------------------------------------------
+
+            if do_srap:
+                if c_flow[m] > 0:
+                    # positive flow, ov is positive
+                    ov = c_flow[m] - numerical_circuit.branch_data.rates[m]
+                else:
+                    # negative flow, ov is negative
+                    ov = c_flow[m] + numerical_circuit.branch_data.rates[m]
+
+                # information about the buses that we can use for SRAP
+                buses_for_srap = buses_for_srap_list[m]
+
+                solved_by_srap, max_srap_power = buses_for_srap.is_solvable(overload=ov,
+                                                                            srap_pmax_mw=srap_pmax_mw,
+                                                                            top_n=5)
 
                 self.add(time_index=t if t is not None else 0,
                          base_name=numerical_circuit.branch_data.names[m],
@@ -268,4 +322,23 @@ class ContingencyResultsReport:
                          contingency_uuid=contingency_group.idtag,
                          post_contingency_flow=c_flow,
                          contingency_rating=numerical_circuit.branch_data.contingency_rates[m],
-                         post_contingency_loading=abs(contingency_loadings[m]) * 100.0)
+                         post_contingency_loading=abs(contingency_loadings[m]) * 100.0,
+                         solved_by_srap=solved_by_srap,
+                         buses_for_srap_info=buses_for_srap)
+
+            else:
+                if c_flow > numerical_circuit.contingency_rates[m]:
+                    # if the contingency flow is greater than the rate ...
+
+                    self.add(time_index=t if t is not None else 0,
+                             base_name=numerical_circuit.branch_data.names[m],
+                             base_uuid=calc_branches[m].idtag,
+                             base_flow=b_flow,
+                             base_rating=numerical_circuit.branch_data.rates[m],
+                             base_loading=abs(loading[m] * 100.0),
+                             contingency_idx=contingency_idx,
+                             contingency_name=contingency_group.name,
+                             contingency_uuid=contingency_group.idtag,
+                             post_contingency_flow=c_flow,
+                             contingency_rating=numerical_circuit.branch_data.contingency_rates[m],
+                             post_contingency_loading=abs(contingency_loadings[m]) * 100.0)
