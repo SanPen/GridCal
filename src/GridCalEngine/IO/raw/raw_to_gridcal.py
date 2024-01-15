@@ -591,9 +591,9 @@ def get_hvdc_from_twotermdc(psse_elm: RawTwoTerminalDCLine, psse_bus_dict, Sbase
         return None
 
 
-def get_upfc_from_facts(psse_elm: RawFACTS, psse_bus_dict, Sbase, logger: Logger) -> None:
+def get_upfc_from_facts(psse_elm: RawFACTS, psse_bus_dict, Sbase, logger: Logger, circuit: MultiCircuit):
     """
-    GEt equivalent object
+    Get equivalent object
     :param psse_bus_dict:
     :param logger:
     :param circuit:
@@ -621,11 +621,13 @@ def get_upfc_from_facts(psse_elm: RawFACTS, psse_bus_dict, Sbase, logger: Logger
         active = False
     elif mode == 1 and abs(psse_elm.J) > 0:
         # shunt link
-        logger.add_warning('FACTS mode not implemented', str(mode))
+        sh = dev.Shunt(name='FACTS:' + name1, B=psse_elm.SHMX)
+        circuit.add_shunt(bus1, sh)
+        logger.add_warning('FACTS mode (shunt link) added as shunt', str(mode))
 
     elif mode == 2:
         # only shunt device: STATCOM
-        logger.add_warning('FACTS mode not implemented', str(mode))
+        logger.add_warning('FACTS mode (STATCOM) not implemented', str(mode))
 
     elif mode == 3 and abs(psse_elm.J) > 0:  # const Z
         # series and shunt links operating with series link at constant series impedance
@@ -651,17 +653,17 @@ def get_upfc_from_facts(psse_elm: RawFACTS, psse_bus_dict, Sbase, logger: Logger
                        Qset=psse_elm.QDES,
                        rate=psse_elm.IMX + 1e-20)
 
-        return elm
+        circuit.add_upfc(elm)
 
     elif mode == 4 and abs(psse_elm.J) > 0:
         # series and shunt links operating with series link at constant series voltage
-        logger.add_warning('FACTS mode not implemented', str(mode))
+        logger.add_warning('FACTS mode (series+shunt links) not implemented', str(mode))
 
     elif mode == 5 and abs(psse_elm.J) > 0:
         # master device of an IPFC with P and Q setpoints specified;
         # another FACTS device must be designated as the slave device
         # (i.e., its MODE is 6 or 8) of this IPFC.
-        logger.add_warning('FACTS mode not implemented', str(mode))
+        logger.add_warning('FACTS mode (IPFC) not implemented', str(mode))
 
     elif mode == 6 and abs(psse_elm.J) > 0:
         # 6 slave device of an IPFC with P and Q setpoints specified;
@@ -669,13 +671,13 @@ def get_upfc_from_facts(psse_elm: RawFACTS, psse_bus_dict, Sbase, logger: Logger
         #  device (i.e., its MODE is 5 or 7) of this IPFC. The Q setpoint is
         #  ignored as the master device dictates the active power
         #  exchanged between the two devices.
-        logger.add_warning('FACTS mode not implemented', str(mode))
+        logger.add_warning('FACTS mode (IPFC) not implemented', str(mode))
 
     elif mode == 7 and abs(psse_elm.J) > 0:
         # master device of an IPFC with constant series voltage setpoints
         # specified; another FACTS device must be designated as the slave
         # device (i.e., its MODE is 6 or 8) of this IPFC
-        logger.add_warning('FACTS mode not implemented', str(mode))
+        logger.add_warning('FACTS mode (IPFC) not implemented', str(mode))
 
     elif mode == 8 and abs(psse_elm.J) > 0:
         # slave device of an IPFC with constant series voltage setpoints
@@ -683,7 +685,7 @@ def get_upfc_from_facts(psse_elm: RawFACTS, psse_bus_dict, Sbase, logger: Logger
         # master device (i.e., its MODE is 5 or 7) of this IPFC. The complex
         # Vd + jVq setpoint is modified during power flow solutions to reflect
         # the active power exchange determined by the master device
-        logger.add_warning('FACTS mode not implemented', str(mode))
+        logger.add_warning('FACTS mode (IPFC) not implemented', str(mode))
 
     else:
         return None
@@ -866,12 +868,6 @@ def psse_to_gridcal(psse_circuit: PsseCircuit,
     for psse_elm in psse_circuit.facts:
         # since these may be shunt or series or both, pass the circuit so that the correct device is added
         if psse_elm.is_connected():
-            elm = get_upfc_from_facts(psse_elm, psse_bus_dict, psse_circuit.SBASE, logger)
-
-            if elm is not None:
-                circuit.add_upfc(elm)
-            else:
-                code = str(psse_elm.I) + '_' + str(psse_elm.J) + '_1'
-                logger.add_warning('FACTS device was not converted', str(code))
+            get_upfc_from_facts(psse_elm, psse_bus_dict, psse_circuit.SBASE, logger, circuit=circuit)
 
     return circuit
