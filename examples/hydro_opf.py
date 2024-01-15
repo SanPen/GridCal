@@ -44,24 +44,26 @@ if __name__ == '__main__':
 
     f1 = gce.FluidNode(name='fluid_node_1',
                        min_level=0.,
-                       max_level=1000.,
-                       current_level=500.,
-                       spillage_cost=10.,
-                       inflow=0.5,
+                       max_level=10000.,
+                       current_level=5000.,
+                       spillage_cost=0.,
+                       inflow=0.,
                        bus=fb1)
 
     f2 = gce.FluidNode(name='fluid_node_2',
+                       spillage_cost=0.,
                        bus=fb2)
 
     f3 = gce.FluidNode(name='fluid_node_3',
+                       spillage_cost=0.,
                        bus=fb3)
 
     f4 = gce.FluidNode(name='fluid_node_4',
                        min_level=0,
-                       max_level=1000,
-                       current_level=500,
-                       spillage_cost=10,
-                       inflow=0.5)
+                       max_level=10000,
+                       current_level=5000,
+                       spillage_cost=0.,
+                       inflow=0.)
 
     grid.add_fluid_node(f1)
     grid.add_fluid_node(f2)
@@ -95,7 +97,7 @@ if __name__ == '__main__':
     g1 = gce.Generator(name='turbine_1_gen',
                        Pmax=1000.0,
                        Pmin=0.0,
-                       Cost=0.9)
+                       Cost=0.5)
 
     g2 = gce.Generator(name='pump_1_gen',
                        Pmax=0.0,
@@ -107,16 +109,16 @@ if __name__ == '__main__':
                        Pmin=-1000.0,
                        Cost=-0.5)
 
-    grid.add_generator(fb1, g1)
+    grid.add_generator(fb3, g1)
     grid.add_generator(fb2, g2)
-    grid.add_generator(fb3, g3)
+    grid.add_generator(fb1, g3)
 
     # Add a turbine
     turb1 = gce.FluidTurbine(name='turbine_1',
                              plant=f3,
                              generator=g1,
-                             max_flow_rate=49.0,
-                             efficiency=0.92)
+                             max_flow_rate=45.0,
+                             efficiency=0.95)
 
     grid.add_fluid_turbine(f3, turb1)
 
@@ -124,8 +126,8 @@ if __name__ == '__main__':
     pump1 = gce.FluidPump(name='pump_1',
                           reservoir=f2,
                           generator=g2,
-                          max_flow_rate=45.0,
-                          efficiency=0.91)
+                          max_flow_rate=49.0,
+                          efficiency=0.85)
 
     grid.add_fluid_pump(f2, pump1)
 
@@ -133,8 +135,8 @@ if __name__ == '__main__':
     p2x1 = gce.FluidP2x(name='p2x_1',
                         plant=f1,
                         generator=g3,
-                        max_flow_rate=45.0,
-                        efficiency=0.78)
+                        max_flow_rate=49.0,
+                        efficiency=0.9)
 
     grid.add_fluid_p2x(f1, p2x1)
 
@@ -149,16 +151,23 @@ if __name__ == '__main__':
     grid.add_bus(b1)
     grid.add_bus(b2)
 
+    g0 = gce.Generator(name='slack_gen',
+                       Pmax=1000.0,
+                       Pmin=0.0,
+                       Cost=0.8)
+
+    grid.add_generator(b1, g0)
+
     l1 = gce.Load(name='l1',
                   P=11,
-                  Q=5)
+                  Q=0)
 
     grid.add_load(b2, l1)
 
     line1 = gce.Line(name='line1',
                      bus_from=b1,
                      bus_to=b2,
-                     rate=10,
+                     rate=5,
                      x=0.05)
 
     line2 = gce.Line(name='line2',
@@ -174,15 +183,17 @@ if __name__ == '__main__':
                      x=0.05)
 
     line4 = gce.Line(name='line4',
-                     bus_from=b2,
-                     bus_to=fb3,
-                     rate=10,
+                     bus_from=fb3,
+                     bus_to=b2,
+                     rate=15,
                      x=0.05)
 
     grid.add_line(line1)
     grid.add_line(line2)
     grid.add_line(line3)
     grid.add_line(line4)
+
+    gce.FileSave(grid, 'hy_test.gridcal').save()
 
     # Run the simulation
     opf_driver = gce.OptimalPowerFlowTimeSeriesDriver(grid=grid)
@@ -194,6 +205,5 @@ if __name__ == '__main__':
     print('Angles\n', np.angle(opf_driver.results.voltage))
     print('Branch loading\n', opf_driver.results.loading)
     print('Gen power\n', opf_driver.results.generator_power)
-    print('Nodal prices \n', opf_driver.results.bus_shadow_prices)
 
 
