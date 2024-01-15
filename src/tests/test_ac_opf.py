@@ -21,24 +21,11 @@ import GridCalEngine.api as gce
 from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import ac_optimal_power_flow
 
 
-def test_ieee9():
-    arr1 = [1.0991, 1.0974, 1.0866, 1.0935, 1.0839, 1.0999, 1.0893, 1.0999, 1.0712, 0.0853, 0.0566, -0.0431, -0.0696,
-            0.0104, -0.021, 0.0157, -0.0807, 0.898, 1.3432, 0.9419, 0.1253, 0.0031, -0.2237]
-    arr2 = case9()
-    assert np.allclose(arr1, arr2, atol=1e-3)
-    pass
-
-
-def test_ieee14():
-    arr1 = [1.06, 1.0407, 1.0155, 1.0144, 1.0163, 1.0598, 1.0462, 1.0599, 1.0435, 1.039, 1.0458, 1.0446, 1.0398,
-            1.0237, -0.0702, -0.1733, -0.1512, -0.1296, -0.2214, -0.1953, -0.1819, -0.2269, -0.231, -0.2285, -0.2362,
-            -0.2371, -0.2492, 1.9434, 0.3672, 0.2873, 0.0004, 0.0846, 0.0011, 0.2368, 0.2411, 0.1149, 0.0827]
-    arr2 = case14()
-    assert np.allclose(arr1, arr2, atol=1e-3)
-    pass
-
-
 def case9():
+    """
+    Test case9 from matpower
+    :return:
+    """
     cwd = os.getcwd()
     print(cwd)
 
@@ -54,7 +41,10 @@ def case9():
 
 
 def case14():
-    import os
+    """
+    Test case14 from matpower
+    :return:
+    """
     cwd = os.getcwd()
     print(cwd)
 
@@ -64,12 +54,23 @@ def case14():
 
     grid = gce.FileOpen(file_path).open()
     nc = gce.compile_numerical_circuit_at(grid)
-    nc.rates[:] = 10000  # TODO: remove when the parser understands 0 rate means it is not limited, instead of 0.
+    # nc.rates[:] = 10000  # TODO: remove when the parser understands 0 rate means it is not limited, instead of 0.
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR)
     x = ac_optimal_power_flow(nc=nc, pf_options=pf_options, verbose=0)
     return x
 
 
-if __name__ == '__main__':
-    test_ieee9()
-    # test_ieee14()
+def test_ieee9():
+    arr1 = [1.0991, 1.0974, 1.0866, 1.0935, 1.0839, 1.0999, 1.0893, 1.0999, 1.0712,
+            0.0853, 0.0566, -0.0431, -0.0696, 0.0104, -0.021, 0.0157, -0.0807, 0.898,
+            1.3432, 0.9419, 0.1253, 0.0031, -0.2237]
+    arr2 = case9()
+    assert np.allclose(arr1, arr2, atol=1e-3)
+
+
+def test_ieee14():
+    arr1 = [1.06, 1.0407, 1.0155, 1.0144, 1.0163, 1.0598, 1.0462, 1.0599, 1.0435, 1.039, 1.0458, 1.0446, 1.0398, 1.0237,
+            -0.0702, -0.1733, -0.1512, -0.1296, -0.2214, -0.1953, -0.1819, -0.2269, -0.231, -0.2285, -0.2362,
+            -0.2371, -0.2492, 1.9434, 0.3672, 0.2873, 0.0004, 0.0846, 0.0011, 0.2368, 0.2411, 0.1149, 0.0827]
+    arr2 = case14()
+    assert np.allclose(arr1, arr2, atol=1e-3)
