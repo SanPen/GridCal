@@ -19,7 +19,7 @@ There are five different models that have been introduced with this update. Thes
 - **Pump** a device that works in the reverse direction of a turbine. It converts electrical to mechanical energy.
 - **P2X** a device responsible for the appearance of fluid from the consumption of power. It symbolizes the generalization of the power-to-gas technology used in hydrogen production, for instance.
 
-.. figure:: ../../figures/opf/fluid_elements.png
+.. figure:: ./../../figures/opf/fluid_elements.png
 
     An overview of a fluid network with nodes linked through paths, a P2X, a pump, and a turbine.
 
@@ -144,7 +144,7 @@ The general objective function remains nearly untouched, as the generators assoc
 
 .. math::
 
-    \quad f_obj += \sum_m^{nm} cost_spill[m] \sum_t^{nt} spill[t,m] \\
+    \quad f_obj += \sum_m^{nm} cost_spill[m] \sum_t^{nt} spill[t,m]
 
 where :math:`f_obj` is the objective function, :math:`m` is the fluid node index, :math:`nm` the number of fluid nodes, :math:`t` the time index, :math:`nt` the length of the time series, and :math:`spill` the actual spillage.
 
@@ -159,7 +159,7 @@ The flow balance has to be maintained at each node :math:`m` for each point in t
                        + dt * flow_in[t,m] \\
                        + dt * flow_{p2x}[t,m] \\
                        - dt * spill[t,m] \\
-                       - dt * flow_out[t,m] \\
+                       - dt * flow_out[t,m]
 
 where :math:`dt` is the time step, :math:`inflow[m]` is known data of the entering fluid flow, :math:`flow_in[t,m]` is the sum of the input flows from the connected paths, :math:`flow_{p2x}[t,m]` is the input flow coming from the P2Xs, and :math:`flow_out[t,m]` is the sum of the output flows from the connected paths. In case the first time index is being simulated, :math:`level[t-1,m]` is simply replaced by :math:`initial_level[m]`, which is input information.
 
@@ -427,7 +427,7 @@ Add remaining electrical side
 
 The resulting system is the one shown below.
 
-.. figure:: ../../figures/opf/case6_fluid.png
+.. figure:: ./../../figures/opf/case6_fluid.png
 
 Run optimization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
