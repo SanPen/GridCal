@@ -32,13 +32,18 @@ import GridCal.Gui.Visualization.palettes as palettes
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCal.Gui.GeneralDialogues import CheckListDialogue, StartEndSelectionDialogue, InputSearchDialogue
 from GridCal.Gui.BusViewer.bus_viewer_dialogue import BusViewerWidget
-from GridCal.Gui.BusBranchEditorWidget import BusBranchEditorWidget, generate_bus_branch_diagram
+from GridCal.Gui.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget, generate_bus_branch_diagram
+from GridCal.Gui.BusBranchEditorWidget.node_breaker_editor import NodeBreakerEditorWidget
 from GridCal.Gui.MapWidget.grid_map_widget import GridMapWidget
 from GridCal.Gui.messages import yes_no_question, error_msg, info_msg
 from GridCal.Gui.Main.SubClasses.Model.compiled_arrays import CompiledArraysMain
 from GridCal.Gui.Main.object_select_window import ObjectSelectWindow
 from GridCal.Gui.MapWidget.TileProviders.blue_marble import BlueMarbleTiles
 from GridCal.Gui.MapWidget.TileProviders.cartodb import CartoDbTiles
+
+
+ALL_EDITORS = Union[BusBranchEditorWidget, GridMapWidget, BusViewerWidget, NodeBreakerEditorWidget]
+ALL_EDITORS_NONE = Union[None, BusBranchEditorWidget, GridMapWidget, BusViewerWidget, NodeBreakerEditorWidget]
 
 
 class DiagramsMain(CompiledArraysMain):
@@ -126,7 +131,7 @@ class DiagramsMain(CompiledArraysMain):
             self.new_bus_branch_diagram_from_selection)
         self.ui.actionAdd_bus_vecinity_diagram.triggered.connect(self.add_bus_vecinity_diagram_from_diagram_selection)
         self.ui.actionAdd_map.triggered.connect(self.add_map_diagram)
-        self.ui.actionAdd_substation_diagram.triggered.connect(self.add_substation_diagram)
+        self.ui.actionAdd_substation_diagram.triggered.connect(self.add_node_breaker_diagram)
         self.ui.actionRemove_selected_diagram.triggered.connect(self.remove_diagram)
         self.ui.actionBigger_nodes.triggered.connect(self.bigger_nodes)
         self.ui.actionSmaller_nodes.triggered.connect(self.smaller_nodes)
@@ -725,7 +730,7 @@ class DiagramsMain(CompiledArraysMain):
         mdl = gf.DiagramsModel(self.diagram_widgets_list)
         self.ui.diagramsListView.setModel(mdl)
 
-    def get_selected_diagram_widget(self) -> Union[None, BusBranchEditorWidget, GridMapWidget, BusViewerWidget]:
+    def get_selected_diagram_widget(self) -> ALL_EDITORS_NONE:
         """
         Get the currently selected diagram
         :return: None, BusBranchEditorWidget, GridMapWidget, BusViewerGUI
@@ -966,15 +971,22 @@ class DiagramsMain(CompiledArraysMain):
 
         self.add_diagram(map_widget)
         self.set_diagrams_list_view()
-        self.set_diagram_widget(diagram=map_widget)
+        self.set_diagram_widget(widget=map_widget)
 
-    def add_substation_diagram(self):
+    def add_node_breaker_diagram(self):
         """
         Add substation diagram
         """
-        self.set_diagrams_list_view()
 
-    def add_diagram(self, diagram_widget: Union[BusBranchEditorWidget, GridMapWidget, BusViewerWidget]):
+        node_breaker_widget = NodeBreakerEditorWidget(circuit=self.circuit,
+                                                      diagram=None,
+                                                      default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value())
+
+        self.add_diagram(node_breaker_widget)
+        self.set_diagrams_list_view()
+        self.set_diagram_widget(widget=node_breaker_widget)
+
+    def add_diagram(self, diagram_widget: ALL_EDITORS):
         """
         Add diagram
         :param diagram_widget:
@@ -1032,22 +1044,22 @@ class DiagramsMain(CompiledArraysMain):
             # remove it from the gui
             widget_to_remove.setParent(None)
 
-    def set_diagram_widget(self, diagram: Union[BusBranchEditorWidget, GridMapWidget, BusViewerWidget]):
+    def set_diagram_widget(self, widget: ALL_EDITORS):
         """
         Set the current diagram in the container
-        :param diagram: BusBranchEditorWidget, GridMapWidget, BusViewerGUI
+        :param widget: BusBranchEditorWidget, GridMapWidget, BusViewerGUI
         """
         self.remove_all_diagram_widgets()
 
         # add the new diagram
-        self.ui.schematic_layout.addWidget(diagram)
+        self.ui.schematic_layout.addWidget(widget)
 
         # set the alignment
         self.ui.diagram_selection_splitter.setStretchFactor(0, 10)
         self.ui.diagram_selection_splitter.setStretchFactor(1, 2)
 
         # set the selected index
-        row = self.diagram_widgets_list.index(diagram)
+        row = self.diagram_widgets_list.index(widget)
         index = self.ui.diagramsListView.model().index(row, 0)
         self.ui.diagramsListView.setCurrentIndex(index)
 
@@ -1095,7 +1107,7 @@ class DiagramsMain(CompiledArraysMain):
                 # declare the allowed file types
                 files_types = "Scalable Vector Graphics (*.svg);;Portable Network Graphics (*.png)"
 
-                fname = os.path.join(self.project_directory, self.ui.grid_name_line_edit.text())
+                fname = str(os.path.join(self.project_directory, self.ui.grid_name_line_edit.text()))
 
                 # call dialog to select the file
                 filename, type_selected = QtWidgets.QFileDialog.getSaveFileName(self, 'Save file', fname, files_types)

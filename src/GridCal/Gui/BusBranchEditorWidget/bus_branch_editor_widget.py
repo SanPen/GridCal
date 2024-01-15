@@ -89,7 +89,7 @@ To do this the graphic objects call "parent.circuit.<function or object>"
 '''
 
 
-class LibraryModel(QStandardItemModel):
+class BusBranchLibraryModel(QStandardItemModel):
     """
     Items model to host the draggable icons
     This is the list of draggable items
@@ -178,7 +178,7 @@ class LibraryModel(QStandardItemModel):
         return Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemFlag.ItemIsDragEnabled
 
 
-class DiagramScene(QGraphicsScene):
+class BusBranchDiagramScene(QGraphicsScene):
     """
     DiagramScene
     This class is needed to augment the mouse move and release events
@@ -189,7 +189,7 @@ class DiagramScene(QGraphicsScene):
 
         :param parent:
         """
-        super(DiagramScene, self).__init__(parent)
+        super(BusBranchDiagramScene, self).__init__(parent)
         self.parent_ = parent
         self.displacement = QPoint(0, 0)
         # self.setSceneRect(-5000, -5000, 10000, 10000)
@@ -215,7 +215,7 @@ class DiagramScene(QGraphicsScene):
         self.parent_.scene_mouse_move_event(event)
 
         # call the parent event
-        super(DiagramScene, self).mouseMoveEvent(event)
+        super(BusBranchDiagramScene, self).mouseMoveEvent(event)
 
     def mousePressEvent(self, event: QGraphicsSceneMouseEvent) -> None:
         """
@@ -226,7 +226,7 @@ class DiagramScene(QGraphicsScene):
 
         self.parent_.scene_mouse_press_event(event)
         self.displacement = QPointF(0, 0)
-        super(DiagramScene, self).mousePressEvent(event)
+        super(BusBranchDiagramScene, self).mousePressEvent(event)
 
     def mouseReleaseEvent(self, event: QGraphicsSceneMouseEvent) -> None:
         """
@@ -242,7 +242,7 @@ class DiagramScene(QGraphicsScene):
             self.parent_.editor_graphics_view.setDragMode(QGraphicsView.DragMode.RubberBandDrag)
 
         # call mouseReleaseEvent on "me" (continue with the rest of the actions)
-        super(DiagramScene, self).mouseReleaseEvent(event)
+        super(BusBranchDiagramScene, self).mouseReleaseEvent(event)
 
 
 class BusBranchEditorWidget(QSplitter):
@@ -281,7 +281,7 @@ class BusBranchEditorWidget(QSplitter):
         self.object_editor_table = QTableView(self)
 
         # library model
-        self.library_model = LibraryModel(self)
+        self.library_model = BusBranchLibraryModel(self)
 
         # Actual libraryView object
         self.library_view = QListView(self)
@@ -290,7 +290,7 @@ class BusBranchEditorWidget(QSplitter):
         self.library_view.setDragDropMode(QAbstractItemView.DragDropMode.InternalMove)
 
         # create all the schematic objects and replace the existing ones
-        self.diagram_scene = DiagramScene(parent=self)  # scene to add to the QGraphicsView
+        self.diagram_scene = BusBranchDiagramScene(parent=self)  # scene to add to the QGraphicsView
 
         self.results_dictionary = dict()
 
@@ -2864,19 +2864,9 @@ class BusBranchEditorWidget(QSplitter):
         Get the graphic representation boundaries
         :return: min_x, max_x, min_y, max_y
         """
-        min_x = sys.maxsize
-        min_y = sys.maxsize
-        max_x = -sys.maxsize
-        max_y = -sys.maxsize
 
         # shrink selection only
-        for i, bus, graphic_object in self.get_buses():  # TODO add fluid nodes
-            x = graphic_object.x()
-            y = graphic_object.y()
-            max_x = max(max_x, x)
-            min_x = min(min_x, x)
-            max_y = max(max_y, y)
-            min_y = min(min_y, y)
+        min_x, max_x, min_y, max_y = self.diagram.get_boundaries()
 
         return min_x, max_x, min_y, max_y
 
