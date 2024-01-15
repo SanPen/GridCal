@@ -44,25 +44,25 @@ if __name__ == '__main__':
 
     f1 = gce.FluidNode(name='fluid_node_1',
                        min_level=0.,
-                       max_level=10000.,
-                       current_level=5000.,
-                       spillage_cost=0.,
+                       max_level=100.,
+                       current_level=50.,
+                       spillage_cost=10.,
                        inflow=0.,
                        bus=fb1)
 
     f2 = gce.FluidNode(name='fluid_node_2',
-                       spillage_cost=0.,
+                       spillage_cost=10.,
                        bus=fb2)
 
     f3 = gce.FluidNode(name='fluid_node_3',
-                       spillage_cost=0.,
+                       spillage_cost=10.,
                        bus=fb3)
 
     f4 = gce.FluidNode(name='fluid_node_4',
                        min_level=0,
-                       max_level=10000,
-                       current_level=5000,
-                       spillage_cost=0.,
+                       max_level=100,
+                       current_level=50,
+                       spillage_cost=10.,
                        inflow=0.)
 
     grid.add_fluid_node(f1)
@@ -205,5 +205,6 @@ if __name__ == '__main__':
     print('Angles\n', np.angle(opf_driver.results.voltage))
     print('Branch loading\n', opf_driver.results.loading)
     print('Gen power\n', opf_driver.results.generator_power)
+    print('Reservoir level\n', opf_driver.results.fluid_node_current_level)
 
 

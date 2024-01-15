@@ -240,10 +240,9 @@ Injection (turbine, pump, P2X)
 This section covers a practical case to exemplify how to build a grid containing fluid type devices, run the time-series linear optimization, and explore the results. Everything will be shown through GridCal's scripting functionalities.
 
 
-Model building 
+Model initialization 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. code-block:: python
-
 
     grid = gce.MultiCircuit(name='hydro_grid')
 
@@ -256,24 +255,42 @@ Model building
     # set the grid master time profile
     grid.time_profile = df_0.index
 
-    # Add some fluid nodes
+
+Add fluid side
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. code-block:: python
+
+    # Add some fluid nodes, with their electrical buses
+    fb1 = gce.Bus(name='fb1')
+    fb2 = gce.Bus(name='fb2')
+    fb3 = gce.Bus(name='fb3')
+
+    grid.add_bus(fb1)
+    grid.add_bus(fb2)
+    grid.add_bus(fb3)
+
     f1 = gce.FluidNode(name='fluid_node_1',
                        min_level=0.,
-                       max_level=1000.,
-                       current_level=500.,
+                       max_level=100.,
+                       current_level=50.,
                        spillage_cost=10.,
-                       inflow=0.5)
+                       inflow=0.,
+                       bus=fb1)
 
-    f2 = gce.FluidNode(name='fluid_node_2')
+    f2 = gce.FluidNode(name='fluid_node_2',
+                       spillage_cost=10.,
+                       bus=fb2)
 
-    f3 = gce.FluidNode(name='fluid_node_3')
+    f3 = gce.FluidNode(name='fluid_node_3',
+                       spillage_cost=10.,
+                       bus=fb3)
 
     f4 = gce.FluidNode(name='fluid_node_4',
                        min_level=0,
-                       max_level=1000,
-                       current_level=500,
-                       spillage_cost=10,
-                       inflow=0.5)
+                       max_level=100,
+                       current_level=50,
+                       spillage_cost=10.,
+                       inflow=0.)
 
     grid.add_fluid_node(f1)
     grid.add_fluid_node(f2)
@@ -304,10 +321,10 @@ Model building
     grid.add_fluid_path(p3)
 
     # Add electrical generators for each fluid machine
-    g1 = gce.Generator(name='turbine_1_gen',
+    g1 = gce.Generator(name='turb_1_gen',
                        Pmax=1000.0,
                        Pmin=0.0,
-                       Cost=0.9)
+                       Cost=0.5)
 
     g2 = gce.Generator(name='pump_1_gen',
                        Pmax=0.0,
@@ -319,36 +336,192 @@ Model building
                        Pmin=-1000.0,
                        Cost=-0.5)
 
+    grid.add_generator(fb3, g1)
+    grid.add_generator(fb2, g2)
+    grid.add_generator(fb1, g3)
+
     # Add a turbine
     turb1 = gce.FluidTurbine(name='turbine_1',
                              plant=f3,
                              generator=g1,
-                             max_flow_rate=49.0,
-                             efficiency=0.92)
+                             max_flow_rate=45.0,
+                             efficiency=0.95)
+
+    grid.add_fluid_turbine(f3, turb1)
 
     # Add a pump
     pump1 = gce.FluidPump(name='pump_1',
                           reservoir=f2,
                           generator=g2,
-                          max_flow_rate=45.0,
-                          efficiency=0.91)
+                          max_flow_rate=49.0,
+                          efficiency=0.85)
+
+    grid.add_fluid_pump(f2, pump1)
 
     # Add a p2x
     p2x1 = gce.FluidP2x(name='p2x_1',
                         plant=f1,
                         generator=g3,
-                        max_flow_rate=45.0,
-                        efficiency=0.78)
+                        max_flow_rate=49.0,
+                        efficiency=0.9)
 
-    # Add the electrical grid part
-
-    def hello_world():
-        print("Hello, world!")
+    grid.add_fluid_p2x(f1, p2x1)
 
 
-Simulation execution
+Add remaining electrical side
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. code-block:: python
 
-    def hello_world():
-        print("Hello, world!")
+    # Add the electrical grid part
+    b1 = gce.Bus(name='b1',
+                 vnom=10,
+                 is_slack=True)
+
+    b2 = gce.Bus(name='b2',
+                 vnom=10)
+
+    grid.add_bus(b1)
+    grid.add_bus(b2)
+
+    g0 = gce.Generator(name='slack_gen',
+                       Pmax=1000.0,
+                       Pmin=0.0,
+                       Cost=0.8)
+
+    grid.add_generator(b1, g0)
+
+    l1 = gce.Load(name='l1',
+                  P=11,
+                  Q=0)
+
+    grid.add_load(b2, l1)
+
+    line1 = gce.Line(name='line1',
+                     bus_from=b1,
+                     bus_to=b2,
+                     rate=5,
+                     x=0.05)
+
+    line2 = gce.Line(name='line2',
+                     bus_from=b1,
+                     bus_to=fb1,
+                     rate=10,
+                     x=0.05)
+
+    line3 = gce.Line(name='line3',
+                     bus_from=b1,
+                     bus_to=fb2,
+                     rate=10,
+                     x=0.05)
+
+    line4 = gce.Line(name='line4',
+                     bus_from=fb3,
+                     bus_to=b2,
+                     rate=15,
+                     x=0.05)
+
+    grid.add_line(line1)
+    grid.add_line(line2)
+    grid.add_line(line3)
+    grid.add_line(line4)
+
+The resulting system is the one shown below.
+
+.. figure:: ../../figures/opf/case6_fluid.png
+
+Run optimization
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. code-block:: python
+
+    # Run the simulation
+    opf_driver = gce.OptimalPowerFlowTimeSeriesDriver(grid=grid)
+
+    print('Solving...')
+    opf_driver.run()
+
+    print("Status:", opf_driver.results.converged)
+    print('Angles\n', np.angle(opf_driver.results.voltage))
+    print('Branch loading\n', opf_driver.results.loading)
+    print('Gen power\n', opf_driver.results.generator_power)
+
+
+Results
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**Generation power, in MW**
+
++----------------------+-----------+-------------+--------------+------------+
+| time                 | p2x_1_gen | pump_1_gen  | turb_1_gen   | slack_gen  |
++======================+===========+=============+==============+============+
+| 2023-01-01 00:00:00  | 0.0       | -6.8237821  | 6.0          | 11.823782  |
++----------------------+-----------+-------------+--------------+------------+
+| 2023-01-01 01:00:00  | 0.0       | -6.8237821  | 6.0          | 11.823782  |
++----------------------+-----------+-------------+--------------+------------+
+| 2023-01-01 02:00:00  | 0.0       | -6.8237821  | 6.0          | 11.823782  |
++----------------------+-----------+-------------+--------------+------------+
+| 2023-01-01 03:00:00  | 0.0       | -6.8237821  | 6.0          | 11.823782  |
++----------------------+-----------+-------------+--------------+------------+
+| 2023-01-01 04:00:00  | 0.0       | -6.8237821  | 6.0          | 11.823782  |
++----------------------+-----------+-------------+--------------+------------+
+| 2023-01-01 05:00:00  | 0.0       | -6.8237821  | 6.0          | 11.823782  |
++----------------------+-----------+-------------+--------------+------------+
+| 2023-01-01 06:00:00  | 0.0       | -6.8237821  | 6.0          | 11.823782  |
++----------------------+-----------+-------------+--------------+------------+
+| 2023-01-01 07:00:00  | 0.0       | -6.8237821  | 6.0          | 11.823782  |
++----------------------+-----------+-------------+--------------+------------+
+| 2023-01-01 08:00:00  | 0.0       | -6.8237821  | 6.0          | 11.823782  |
++----------------------+-----------+-------------+--------------+------------+
+| 2023-01-01 09:00:00  | 0.0       | -6.8237821  | 6.0          | 11.823782  |
++----------------------+-----------+-------------+--------------+------------+
+
+**Fluid node level, in m3**
+
++----------------------+--------------+--------------+--------------+--------------+
+| time                 | fluid_node_1 | fluid_node_2 | fluid_node_3 | fluid_node_4 |
++======================+==============+==============+==============+==============+
+| 2023-01-01 00:00:00  | 49.998977    | 0.0          | 0.0          | 50.001023    |
++----------------------+--------------+--------------+--------------+--------------+
+| 2023-01-01 01:00:00  | 49.997954    | 0.0          | 0.0          | 50.002046    |
++----------------------+--------------+--------------+--------------+--------------+
+| 2023-01-01 02:00:00  | 49.996931    | 0.0          | 0.0          | 50.003069    |
++----------------------+--------------+--------------+--------------+--------------+
+| 2023-01-01 03:00:00  | 49.995907    | 0.0          | 0.0          | 50.004093    |
++----------------------+--------------+--------------+--------------+--------------+
+| 2023-01-01 04:00:00  | 49.994884    | 0.0          | 0.0          | 50.005116    |
++----------------------+--------------+--------------+--------------+--------------+
+| 2023-01-01 05:00:00  | 49.993861    | 0.0          | 0.0          | 50.006139    |
++----------------------+--------------+--------------+--------------+--------------+
+| 2023-01-01 06:00:00  | 49.992838    | 0.0          | 0.0          | 50.007162    |
++----------------------+--------------+--------------+--------------+--------------+
+| 2023-01-01 07:00:00  | 49.991815    | 0.0          | 0.0          | 50.008185    |
++----------------------+--------------+--------------+--------------+--------------+
+| 2023-01-01 08:00:00  | 49.990792    | 0.0          | 0.0          | 50.009208    |
++----------------------+--------------+--------------+--------------+--------------+
+| 2023-01-01 09:00:00  | 49.989768    | 0.0          | 0.0          | 50.010232    |
++----------------------+--------------+--------------+--------------+--------------+
+
+**Path flow, in m3/s**
+
++----------------------+----------+----------+----------+
+| time                 | path_1   | path_2   | path_3   |
++======================+==========+==========+==========+
+| 2023-01-01 00:00:00  | 0.284211 | 0.284211 | 0.284211 |
++----------------------+----------+----------+----------+
+| 2023-01-01 01:00:00  | 0.284211 | 0.284211 | 0.284211 |
++----------------------+----------+----------+----------+
+| 2023-01-01 02:00:00  | 0.284211 | 0.284211 | 0.284211 |
++----------------------+----------+----------+----------+
+| 2023-01-01 03:00:00  | 0.284211 | 0.284211 | 0.284211 |
++----------------------+----------+----------+----------+
+| 2023-01-01 04:00:00  | 0.284211 | 0.284211 | 0.284211 |
++----------------------+----------+----------+----------+
+| 2023-01-01 05:00:00  | 0.284211 | 0.284211 | 0.284211 |
++----------------------+----------+----------+----------+
+| 2023-01-01 06:00:00  | 0.284211 | 0.284211 | 0.284211 |
++----------------------+----------+----------+----------+
+| 2023-01-01 07:00:00  | 0.284211 | 0.284211 | 0.284211 |
++----------------------+----------+----------+----------+
+| 2023-01-01 08:00:00  | 0.284211 | 0.284211 | 0.284211 |
++----------------------+----------+----------+----------+
+| 2023-01-01 09:00:00  | 0.284211 | 0.284211 | 0.284211 |
++----------------------+----------+----------+----------+
