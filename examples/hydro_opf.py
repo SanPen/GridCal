@@ -20,7 +20,7 @@ import datetime as dt
 # print('Nodal prices \n', opf_driver.results.bus_shadow_prices)
 #
 
-if __name__ == '__main__':
+if False:
 
     grid = gce.MultiCircuit(name='hydro_grid')
 
@@ -193,7 +193,7 @@ if __name__ == '__main__':
     grid.add_line(line3)
     grid.add_line(line4)
 
-    gce.FileSave(grid, 'hy_test.gridcal').save()
+    # gce.FileSave(grid, 'hy_test.gridcal').save()
 
     # Run the simulation
     opf_driver = gce.OptimalPowerFlowTimeSeriesDriver(grid=grid)
@@ -208,3 +208,20 @@ if __name__ == '__main__':
     print('Reservoir level\n', opf_driver.results.fluid_node_current_level)
 
 
+if __name__ == '__main__':
+    import os
+    import GridCalEngine.api as gce
+
+    folder = os.path.join('..', 'Grids_and_profiles', 'grids')
+    fname = os.path.join(folder, 'hydro_simple.gridcal')
+    grid = gce.open_file(fname)
+
+    # Run the simulation
+    opf_driver = gce.OptimalPowerFlowTimeSeriesDriver(grid=grid)
+
+    print('Solving...')
+    opf_driver.run()
+
+    print('Branch loading\n', opf_driver.results.loading)
+    print('Gen power\n', opf_driver.results.generator_power)
+    print('Reservoir level\n', opf_driver.results.fluid_node_current_level)
