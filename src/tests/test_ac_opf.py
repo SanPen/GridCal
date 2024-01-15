@@ -15,9 +15,11 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+import os
 import numpy as np
 import GridCalEngine.api as gce
 from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import ac_optimal_power_flow
+
 
 def test_ieee9():
     arr1 = [1.0991, 1.0974, 1.0866, 1.0935, 1.0839, 1.0999, 1.0893, 1.0999, 1.0712, 0.0853, 0.0566, -0.0431, -0.0696,
@@ -28,18 +30,15 @@ def test_ieee9():
 
 
 def test_ieee14():
-    arr1 = [ 1.06, 1.0407, 1.0155, 1.0144, 1.0163, 1.0598, 1.0462, 1.0599, 1.0435, 1.039, 1.0458, 1.0446, 1.0398,
-             1.0237, -0.0702, -0.1733, -0.1512, -0.1296, -0.2214, -0.1953, -0.1819, -0.2269, -0.231, -0.2285, -0.2362,
-             -0.2371, -0.2492, 1.9434, 0.3672, 0.2873, 0.0004, 0.0846, 0.0011, 0.2368, 0.2411, 0.1149, 0.0827]
+    arr1 = [1.06, 1.0407, 1.0155, 1.0144, 1.0163, 1.0598, 1.0462, 1.0599, 1.0435, 1.039, 1.0458, 1.0446, 1.0398,
+            1.0237, -0.0702, -0.1733, -0.1512, -0.1296, -0.2214, -0.1953, -0.1819, -0.2269, -0.231, -0.2285, -0.2362,
+            -0.2371, -0.2492, 1.9434, 0.3672, 0.2873, 0.0004, 0.0846, 0.0011, 0.2368, 0.2411, 0.1149, 0.0827]
     arr2 = case14()
     assert np.allclose(arr1, arr2, atol=1e-3)
     pass
 
 
-
 def case9():
-
-    import os
     cwd = os.getcwd()
     print(cwd)
 
@@ -50,11 +49,11 @@ def case9():
     grid = gce.FileOpen(file_path).open()
     nc = gce.compile_numerical_circuit_at(grid)
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR)
-    x =  ac_optimal_power_flow(nc=nc, pf_options=pf_options, verbose=0)
+    x = ac_optimal_power_flow(nc=nc, pf_options=pf_options, verbose=0)
     return x
 
-def case14():
 
+def case14():
     import os
     cwd = os.getcwd()
     print(cwd)
