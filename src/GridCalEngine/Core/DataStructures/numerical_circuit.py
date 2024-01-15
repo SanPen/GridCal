@@ -224,16 +224,16 @@ class NumericalCircuit:
         'pqpv',
         'tap_f',
         'tap_t',
-        'iPfsh',
-        'iQfma',
-        'iBeqz',
-        'iBeqv',
-        'iVtma',
-        'iQtma',
-        'iPfdp',
-        'iVscL',
-        'VfBeqbus',
-        'Vtmabus'
+        'k_pf_tau',
+        'k_qf_m',
+        'k_zero_beq',
+        'k_vf_beq',
+        'k_vt_m',
+        'k_qt_m',
+        'k_pf_dp',
+        'i_vsc',
+        'i_vf_beq',
+        'i_vt_m'
     ]
 
     def __init__(self,
@@ -528,11 +528,9 @@ class NumericalCircuit:
         self.admittances_.Yf = Yf_
         self.admittances_.Yt = Yt_
 
-    def determine_control_indices(self):
+    def determine_control_indices(self) -> None:
         """
         This function fills in the lists of indices to control different magnitudes
-
-        :returns idx_sh, idx_qz, idx_vf, idx_vt, idx_qt, VfBeqbus, Vtmabus
 
         VSC Control modes:
 
@@ -571,19 +569,18 @@ class NumericalCircuit:
         Transformer 4|	1	-	1	-	-   |   Control the power flow and the voltage at the “from” side
         Transformer 5|	1	-	-	1	-   |   Control the power flow and the voltage at the “to” side
         ------------------------------------
-
         """
 
         # indices in the global branch scheme
-        iPfsh = list()  # indices of the Branches controlling Pf flow with theta sh
-        iQfma = list()  # indices of the Branches controlling Qf with ma
-        iBeqz = list()  # indices of the Branches when forcing the Qf flow to zero (aka "the zero condition")
-        iBeqv = list()  # indices of the Branches when controlling Vf with Beq
-        iVtma = list()  # indices of the Branches when controlling Vt with ma
-        iQtma = list()  # indices of the Branches controlling the Qt flow with ma
-        iPfdp = list()  # indices of the drop converters controlling the power flow with theta sh
-        iVscL = list()  # indices of the converters
-        iPfdp_va = list()
+        k_pf_tau_lst = list()  # indices of the Branches controlling Pf flow with theta sh
+        k_qf_m_lst = list()  # indices of the Branches controlling Qf with ma
+        k_zero_beq_lst = list()  # indices of the Branches when forcing the Qf flow to zero (aka "the zero condition")
+        k_vf_beq_lst = list()  # indices of the Branches when controlling Vf with Beq
+        k_vt_m_lst = list()  # indices of the Branches when controlling Vt with ma
+        k_qt_m_lst = list()  # indices of the Branches controlling the Qt flow with ma
+        k_pf_dp_lst = list()  # indices of the drop converters controlling the power flow with theta sh
+        i_vsc_lst = list()  # indices of the converters
+        iPfdp_va_lst = list()
 
         self.any_control = False
 
@@ -593,93 +590,93 @@ class NumericalCircuit:
                 pass
 
             elif tpe == TransformerControlType.Pt:
-                iPfsh.append(k)
+                k_pf_tau_lst.append(k)
                 self.any_control = True
 
             elif tpe == TransformerControlType.Qt:
-                iQtma.append(k)
+                k_qt_m_lst.append(k)
                 self.any_control = True
 
             elif tpe == TransformerControlType.PtQt:
-                iPfsh.append(k)
-                iQtma.append(k)
+                k_pf_tau_lst.append(k)
+                k_qt_m_lst.append(k)
                 self.any_control = True
 
             elif tpe == TransformerControlType.Vt:
-                iVtma.append(k)
+                k_vt_m_lst.append(k)
                 self.any_control = True
 
             elif tpe == TransformerControlType.PtVt:
-                iPfsh.append(k)
-                iVtma.append(k)
+                k_pf_tau_lst.append(k)
+                k_vt_m_lst.append(k)
                 self.any_control = True
 
             # VSC ------------------------------------------------------------------------------------------------------
             elif tpe == ConverterControlType.type_0_free:  # 1a:Free
-                iBeqz.append(k)
-                iVscL.append(k)
+                k_zero_beq_lst.append(k)
+                i_vsc_lst.append(k)
                 self.any_control = True
 
             elif tpe == ConverterControlType.type_I_1:  # 1:Vac
-                iVtma.append(k)
-                iBeqz.append(k)
-                iVscL.append(k)
+                k_vt_m_lst.append(k)
+                k_zero_beq_lst.append(k)
+                i_vsc_lst.append(k)
                 self.any_control = True
 
             elif tpe == ConverterControlType.type_I_2:  # 2:Pdc+Qac
 
-                iPfsh.append(k)
-                iQtma.append(k)
-                iBeqz.append(k)
+                k_pf_tau_lst.append(k)
+                k_qt_m_lst.append(k)
+                k_zero_beq_lst.append(k)
 
-                iVscL.append(k)
+                i_vsc_lst.append(k)
                 self.any_control = True
 
             elif tpe == ConverterControlType.type_I_3:  # 3:Pdc+Vac
-                iPfsh.append(k)
-                iVtma.append(k)
-                iBeqz.append(k)
+                k_pf_tau_lst.append(k)
+                k_vt_m_lst.append(k)
+                k_zero_beq_lst.append(k)
 
-                iVscL.append(k)
+                i_vsc_lst.append(k)
                 self.any_control = True
 
             elif tpe == ConverterControlType.type_II_4:  # 4:Vdc+Qac
-                iBeqv.append(k)
-                iQtma.append(k)
+                k_vf_beq_lst.append(k)
+                k_qt_m_lst.append(k)
 
-                iVscL.append(k)
+                i_vsc_lst.append(k)
                 self.any_control = True
 
             elif tpe == ConverterControlType.type_II_5:  # 5:Vdc+Vac
-                iBeqv.append(k)
-                iVtma.append(k)
+                k_vf_beq_lst.append(k)
+                k_vt_m_lst.append(k)
 
-                iVscL.append(k)
+                i_vsc_lst.append(k)
                 self.any_control = True
 
             elif tpe == ConverterControlType.type_III_6:  # 6:Droop+Qac
-                iPfdp.append(k)
-                iQtma.append(k)
+                k_pf_dp_lst.append(k)
+                k_qt_m_lst.append(k)
 
-                iVscL.append(k)
+                i_vsc_lst.append(k)
                 self.any_control = True
 
             elif tpe == ConverterControlType.type_III_7:  # 4a:Droop-slack
-                iPfdp.append(k)
-                iVtma.append(k)
+                k_pf_dp_lst.append(k)
+                k_vt_m_lst.append(k)
 
-                iVscL.append(k)
+                i_vsc_lst.append(k)
                 self.any_control = True
 
             elif tpe == ConverterControlType.type_IV_I:  # 8:Vdc
-                iBeqv.append(k)
-                iVscL.append(k)
+                k_vf_beq_lst.append(k)
+                i_vsc_lst.append(k)
 
                 self.any_control = True
 
             elif tpe == ConverterControlType.type_IV_II:  # 9:Pdc
-                iPfsh.append(k)
-                iBeqz.append(k)
+                k_pf_tau_lst.append(k)
+                k_zero_beq_lst.append(k)
 
                 self.any_control = True
 
@@ -697,21 +694,21 @@ class NumericalCircuit:
 
         # FUBM- Saves the "from" bus identifier for Vf controlled by Beq
         #  (Converters type II for Vdc control)
-        self.i_vf_beq = self.F[iBeqv]
+        self.i_vf_beq = self.F[k_vf_beq_lst]
 
         # FUBM- Saves the "to"   bus identifier for Vt controlled by ma
         #  (Converters and Transformers)
-        self.i_vt_m = self.T[iVtma]
+        self.i_vt_m = self.T[k_vt_m_lst]
 
-        self.k_pf_tau = np.array(iPfsh, dtype=int)
-        self.k_qf_m = np.array(iQfma, dtype=int)
-        self.k_zero_beq = np.array(iBeqz, dtype=int)
-        self.k_vf_beq = np.array(iBeqv, dtype=int)
-        self.k_vt_m = np.array(iVtma, dtype=int)
-        self.k_qt_m = np.array(iQtma, dtype=int)
-        self.k_pf_dp = np.array(iPfdp, dtype=int)
-        self.iPfdp_va = np.array(iPfdp_va, dtype=int)
-        self.i_vsc = np.array(iVscL, dtype=int)
+        self.k_pf_tau = np.array(k_pf_tau_lst, dtype=int)
+        self.k_qf_m = np.array(k_qf_m_lst, dtype=int)
+        self.k_zero_beq = np.array(k_zero_beq_lst, dtype=int)
+        self.k_vf_beq = np.array(k_vf_beq_lst, dtype=int)
+        self.k_vt_m = np.array(k_vt_m_lst, dtype=int)
+        self.k_qt_m = np.array(k_qt_m_lst, dtype=int)
+        self.k_pf_dp = np.array(k_pf_dp_lst, dtype=int)
+        self.iPfdp_va = np.array(iPfdp_va_lst, dtype=int)
+        self.i_vsc = np.array(i_vsc_lst, dtype=int)
 
     def copy(self) -> "NumericalCircuit":
         """
@@ -750,9 +747,10 @@ class NumericalCircuit:
         return nc
 
     def get_structures_list(self) -> List[Union[ds.BusData, ds.LoadData, ds.ShuntData,
-    ds.GeneratorData, ds.BatteryData,
-    ds.BranchData, ds.HvdcData, ds.FluidNodeData, ds.FluidTurbineData, ds.FluidPumpData,
-    ds.FluidP2XData, ds.FluidPathData]]:
+                                                ds.GeneratorData, ds.BatteryData,
+                                                ds.BranchData, ds.HvdcData,
+                                                ds.FluidNodeData, ds.FluidTurbineData, ds.FluidPumpData,
+                                                ds.FluidP2XData, ds.FluidPathData]]:
         """
         Get a list of the structures inside the NumericalCircuit
         :return:
@@ -1427,7 +1425,7 @@ class NumericalCircuit:
 
         return self.structs_dict_
 
-    def compute_reactive_power_limits(self):
+    def compute_reactive_power_limits(self) -> Tuple[Vec, Vec]:
         """
         compute the reactive power limits in place
         :return: Qmax_bus, Qmin_bus in per unit
@@ -1814,73 +1812,73 @@ class NumericalCircuit:
                 index=self.branch_data.names,
             )
 
-        elif structure_type == 'iPfsh':
+        elif structure_type == 'k_pf_tau':
             df = pd.DataFrame(
                 data=self.k_pf_tau,
-                columns=['iPfsh'],
+                columns=['k_pf_tau'],
                 index=self.branch_data.names[self.k_pf_tau],
             )
 
-        elif structure_type == 'iQfma':
+        elif structure_type == 'k_qf_m':
             df = pd.DataFrame(
                 data=self.k_qf_m,
-                columns=['iQfma'],
+                columns=['k_qf_m'],
                 index=self.branch_data.names[self.k_qf_m],
             )
 
-        elif structure_type == 'iBeqz':
+        elif structure_type == 'k_zero_beq':
             df = pd.DataFrame(
                 data=self.k_zero_beq,
-                columns=['iBeqz'],
+                columns=['k_zero_beq'],
                 index=self.branch_data.names[self.k_zero_beq],
             )
 
-        elif structure_type == 'iBeqv':
+        elif structure_type == 'k_vf_beq':
             df = pd.DataFrame(
                 data=self.k_vf_beq,
-                columns=['iBeqv'],
+                columns=['k_vf_beq'],
                 index=self.branch_data.names[self.k_vf_beq],
             )
 
-        elif structure_type == 'iVtma':
+        elif structure_type == 'k_vt_m':
             df = pd.DataFrame(
                 data=self.k_vt_m,
-                columns=['iVtma'],
+                columns=['k_vt_m'],
                 index=self.branch_data.names[self.k_vt_m],
             )
 
-        elif structure_type == 'iQtma':
+        elif structure_type == 'k_qt_m':
             df = pd.DataFrame(
                 data=self.k_qt_m,
-                columns=['iQtma'],
+                columns=['k_qt_m'],
                 index=self.branch_data.names[self.k_qt_m],
             )
 
-        elif structure_type == 'iPfdp':
+        elif structure_type == 'k_pf_dp':
             df = pd.DataFrame(
                 data=self.k_pf_dp,
-                columns=['iPfdp'],
+                columns=['k_pf_dp'],
                 index=self.branch_data.names[self.k_pf_dp],
             )
 
-        elif structure_type == 'iVscL':
+        elif structure_type == 'i_vsc':
             df = pd.DataFrame(
                 data=self.i_vsc,
-                columns=['iVscL'],
+                columns=['i_vsc'],
                 index=self.branch_data.names[self.i_vsc],
             )
 
-        elif structure_type == 'VfBeqbus':
+        elif structure_type == 'i_vf_beq':
             df = pd.DataFrame(
                 data=self.i_vf_beq,
-                columns=['VfBeqbus'],
+                columns=['i_vf_beq'],
                 index=self.bus_data.names[self.i_vf_beq],
             )
 
-        elif structure_type == 'Vtmabus':
+        elif structure_type == 'i_vt_m':
             df = pd.DataFrame(
                 data=self.i_vt_m,
-                columns=['Vtmabus'],
+                columns=['i_vt_m'],
                 index=self.bus_data.names[self.i_vt_m],
             )
 

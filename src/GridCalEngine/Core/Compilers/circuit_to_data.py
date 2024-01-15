@@ -750,9 +750,6 @@ def get_branch_data(circuit: MultiCircuit,
 
         if elm.bus_from is not None and elm.bus_to is not None:
             # generic stuff
-            f = bus_dict[elm.bus_from]
-            t = bus_dict[elm.bus_to]
-
             data.names[ii] = elm.name
             data.idtag[ii] = elm.idtag
 
@@ -770,6 +767,8 @@ def get_branch_data(circuit: MultiCircuit,
                 data.contingency_rates[ii] = elm.rate * elm.contingency_factor
                 data.overload_cost[ii] = elm.Cost
 
+            f = bus_dict[elm.bus_from]
+            t = bus_dict[elm.bus_to]
             data.C_branch_bus_f[ii, f] = 1
             data.C_branch_bus_t[ii, t] = 1
             data.F[ii] = f
