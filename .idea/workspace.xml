@@ -28,11 +28,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Write the optimization formulation">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Create grid with turbine+pump at the same bus">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/rst_source/other_data_models.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/other_data_models.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/rst_source/theory/opf/hydro.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/theory/opf/hydro.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/hydro_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/examples/hydro_opf.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/tests/data/grids/hydro_simple2.gridcal" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/data/grids/hydro_simple2.gridcal" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/tests/test_hydro.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/test_hydro.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1602,7 +1601,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="459" />
+    <option name="localTasksCounter" value="463" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1648,10 +1647,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Build sets of gradients Ai and Ae" />
-    <MESSAGE value="Build full set of residuals" />
-    <MESSAGE value="Finish the algorithm but missing debug" />
-    <MESSAGE value="Add the slack balance and got it converging" />
     <MESSAGE value="Fix identity sign and improved significantly convergence" />
     <MESSAGE value="Use dh of 1e-5 to avoid numerical issues!" />
     <MESSAGE value="Change m3 to hm3 in the levels" />
@@ -1673,7 +1668,11 @@
     <MESSAGE value="Update test cases and all working fine" />
     <MESSAGE value="Start documenting hydro model" />
     <MESSAGE value="Write the optimization formulation" />
-    <option name="LAST_COMMIT_MESSAGE" value="Write the optimization formulation" />
+    <MESSAGE value="Keep writing the hydro rst, model almost done" />
+    <MESSAGE value="Update the scripted case, debug more" />
+    <MESSAGE value="Add test for simple1" />
+    <MESSAGE value="Create grid with turbine+pump at the same bus" />
+    <option name="LAST_COMMIT_MESSAGE" value="Create grid with turbine+pump at the same bus" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2103,8 +2102,13 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/examples/hydro_opf.py</url>
-          <line>33</line>
-          <option name="timeStamp" value="1244" />
+          <line>187</line>
+          <option name="timeStamp" value="1247" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/tests/test_hydro.py</url>
+          <line>155</line>
+          <option name="timeStamp" value="1248" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
