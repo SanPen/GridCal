@@ -37,7 +37,7 @@ if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_options import ContingencyAnalysisOptions
     from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_results import ContingencyAnalysisResults
 
-NEWTON_PA_RECOMMENDED_VERSION = "2.1.14"
+NEWTON_PA_RECOMMENDED_VERSION = "2.1.15"
 NEWTON_PA_VERSION = ''
 NEWTON_PA_AVAILABLE = False
 try:
@@ -765,12 +765,16 @@ def add_transformer3w_data(circuit: MultiCircuit,
                                 contingency_rate23=elm.rate23,
                                 contingency_rate31=elm.rate31, )
 
+        # this is because the central node is in the buses list already from GridCal
+        tr3.central_node = bus_dict[elm.bus0.idtag]
+
         if time_series:
             pass
         else:
             pass
 
-        npa_circuit.addTransformers3w(tr3)
+        # because the central bus was added already, do not add it here
+        npa_circuit.addTransformers3w(tr3, add_central_node=False)
 
 
 def add_vsc_data(circuit: MultiCircuit,

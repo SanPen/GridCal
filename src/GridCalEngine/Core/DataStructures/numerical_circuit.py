@@ -2008,9 +2008,6 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
                           sbase=circuit.Sbase,
                           t_idx=t_idx)
 
-    # TODO: check how to assign the internal variables of numerical circuit that refer to the number of devices
-    # nbus...
-
     if bus_dict is None:
         bus_dict = {bus: i for i, bus in enumerate(circuit.buses)}
 
