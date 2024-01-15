@@ -1,5 +1,6 @@
 import GridCalEngine.api as gce
 from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import ac_optimal_power_flow
+# from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf_autodif import ac_optimal_power_flow
 
 
 def example_3bus_acopf():
@@ -201,5 +202,5 @@ if __name__ == '__main__':
     # example_3bus_acopf()
     # linn5bus_example()
     # two_grids_of_3bus()
-    # case9()
-    case14()
+    case9()
+    # case14()
