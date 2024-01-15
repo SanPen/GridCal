@@ -380,7 +380,7 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
 
             api_obj = self.editor.circuit.add_fluid_turbine(node=self.api_object, api_obj=None)
             api_obj.generator = self.editor.circuit.add_generator(bus=self.create_bus_if_necessary())
-            api_obj.generator.name = self.api_object.name
+            api_obj.generator.name = f"Turbine @{self.api_object.name}"
 
         _grph = FluidTurbineGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
         self.shunt_children.append(_grph)
@@ -396,7 +396,7 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
         if api_obj is None or type(api_obj) is bool:
             api_obj = self.editor.circuit.add_fluid_pump(node=self.api_object, api_obj=None)
             api_obj.generator = self.editor.circuit.add_generator(bus=self.create_bus_if_necessary())
-            api_obj.generator.name = self.api_object.name
+            api_obj.generator.name = f"Pump @{self.api_object.name}"
 
         _grph = FluidPumpGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
         self.shunt_children.append(_grph)
@@ -412,7 +412,7 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
         if api_obj is None or type(api_obj) is bool:
             api_obj = self.editor.circuit.add_fluid_p2x(node=self.api_object, api_obj=None)
             api_obj.generator = self.editor.circuit.add_generator(bus=self.create_bus_if_necessary())
-            api_obj.generator.name = self.api_object.name
+            api_obj.generator.name = f"P2X @{self.api_object.name}"
 
         _grph = FluidP2xGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
         self.shunt_children.append(_grph)
