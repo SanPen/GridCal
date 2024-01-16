@@ -1163,3 +1163,30 @@ def dense_to_csc_numba(mat: Mat, threshold: float) -> Tuple[Vec, IntVec, IntVec]
         indices = indices[:k]
 
     return data, indices, indptr
+
+
+@nb.njit(cache=True)
+def get_sparse_array_numba(arr: Vec, threshold: float) -> Tuple[Vec, IntVec]:
+    """
+    Extract the sparse matrix from a dense matrix where abs values are below a threshold
+    :param arr: dense matrix
+    :param threshold: threshold
+    :return: data, indices
+    """
+    n = len(arr)
+
+    indices = np.empty(n)
+    data = np.empty(n)
+    k = 0
+    for i in range(n):
+
+        if abs(arr[i]) > threshold:
+            data[k] = arr[i]
+            indices[k] = i
+            k += 1
+
+    if k < n:
+        data = data[:k]
+        indices = indices[:k]
+
+    return data, indices

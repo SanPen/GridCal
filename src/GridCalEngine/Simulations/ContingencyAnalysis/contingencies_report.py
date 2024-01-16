@@ -296,20 +296,14 @@ class ContingencyResultsReport:
             # ----------------------------------------------------------------------------------------------------------
 
             if do_srap:
-                if c_flow[m] > 0:
-                    # positive flow, ov is positive
-                    ov = c_flow[m] - numerical_circuit.branch_data.rates[m]
-                else:
-                    # negative flow, ov is negative
-                    ov = c_flow[m] + numerical_circuit.branch_data.rates[m]
-
                 # information about the buses that we can use for SRAP
                 buses_for_srap = buses_for_srap_list[m]
 
                 solved_by_srap, max_srap_power = buses_for_srap.is_solvable(
-                    overload=ov,
+                    c_flow=contingency_flows[m].real,  # the real part because it must have the sign
+                    rating=numerical_circuit.branch_data.rates[m],
                     srap_pmax_mw=srap_pmax_mw,
-                    p_available=numerical_circuit.generator_data.get_injections_per_bus(),
+                    p_available=numerical_circuit.generator_data.get_injections_per_bus().real,
                     top_n=5
                 )
 

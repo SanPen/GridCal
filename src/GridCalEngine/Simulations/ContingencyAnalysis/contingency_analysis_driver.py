@@ -46,7 +46,7 @@ class ContingencyAnalysisDriver(DriverTemplate):
     def __init__(self,
                  grid: MultiCircuit,
                  options: ContingencyAnalysisOptions,
-                 linear_multiple_contingencies: Union[LinearMultiContingencies, None],
+                 linear_multiple_contingencies: Union[LinearMultiContingencies, None] = None,
                  engine: EngineType = EngineType.GridCal):
         """
         ContingencyAnalysisDriver constructor
@@ -60,7 +60,12 @@ class ContingencyAnalysisDriver(DriverTemplate):
         # Options to use
         self.options = options
 
-        self.linear_multiple_contingencies: Union[LinearMultiContingencies, None] = linear_multiple_contingencies
+        # Set or create the LinearMultiContingencies
+        if self.options.engine == ContingencyEngine.PTDF and linear_multiple_contingencies is None:
+            self.linear_multiple_contingencies = LinearMultiContingencies(self.grid)
+            self.logger.add_info("Created LinearMultiContingencies because they were not provided")
+        else:
+            self.linear_multiple_contingencies: LinearMultiContingencies = linear_multiple_contingencies
 
         # N-K results
         self.results = ContingencyAnalysisResults(
@@ -126,7 +131,8 @@ class ContingencyAnalysisDriver(DriverTemplate):
 
             # construct a list of information structures about how to deal with SRAP
             buses_for_srap_list = get_buses_for_srap_list(PTDF=linear_analysis.PTDF,
-                                                          threshold=self.options.lin_options.ptdf_threshold)
+                                                          threshold=0.01  # self.options.lin_options.ptdf_threshold
+                                                          )
         else:
             buses_for_srap_list = list()
 

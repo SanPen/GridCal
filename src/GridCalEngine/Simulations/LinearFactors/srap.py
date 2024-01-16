@@ -18,7 +18,7 @@ import numpy as np
 from typing import List, Tuple
 
 from GridCalEngine.basic_structures import Vec, Mat, IntVec
-from GridCalEngine.Utils.Sparse.csc import dense_to_csc
+from GridCalEngine.Utils.Sparse.csc_numba import get_sparse_array_numba
 
 
 class BusesForSrap:
@@ -40,58 +40,74 @@ class BusesForSrap:
         self.bus_indices = bus_indices
         self.sensitivities = sensitivities
 
-    def is_solvable(self, overload: float, srap_pmax_mw: float,
+    def is_solvable(self, c_flow: float, rating: float, srap_pmax_mw: float,
                     p_available: Vec, top_n: int = 1000) -> Tuple[bool, float]:
         """
         Get the maximum amount of power (MW) to dispatch using SRAP
-
-        :param overload: Line overload
+        :param c_flow: Contingency flow (MW)
+        :param rating: Branch rating (MVA)
         :param srap_pmax_mw: SRAP limit in MW
         :param p_available: Array of available power per bus
         :param top_n: maximum number of nodes affecting the oveload
         :return: min(srap_limit, sum(p_available))
         """
 
-        if overload > 0:
+        if c_flow > 0:
+
+            # positive flow, ov is positive
+            overload = c_flow - rating
 
             # slice the positive values
             positives = np.where(self.sensitivities >= 0)[0]
-            p_available2 = p_available[positives]
-            sensitivities2 = self.sensitivities[positives]
 
-            # sort greater to lower, more positive first
-            idx = np.argsort(-sensitivities2)
-            idx2 = idx[:top_n]
-            p_available3 = p_available2[idx2]
-            sensitivities3 = sensitivities2[idx2]
+            if len(positives):
+                p_available2 = p_available[positives]
+                sensitivities2 = self.sensitivities[positives]
 
-            # interpolate the srap limit, to get the maximum srap power
-            xp = np.cumsum(p_available3)
-            fp = np.cumsum(p_available3 * sensitivities3)
-            max_srap_power = np.interp(srap_pmax_mw, xp, fp)
+                # sort greater to lower, more positive first
+                idx = np.argsort(-sensitivities2)
+                idx2 = idx[:top_n]
+                p_available3 = p_available2[idx2]
+                sensitivities3 = sensitivities2[idx2]
 
-            # if the max srap power is less than the overload we cannot solve
-            solved = max_srap_power >= overload
+                # interpolate the srap limit, to get the maximum srap power
+                xp = np.cumsum(p_available3)
+                fp = np.cumsum(p_available3 * sensitivities3)
+                max_srap_power = np.interp(srap_pmax_mw, xp, fp)
+
+                # if the max srap power is less than the overload we cannot solve
+                solved = max_srap_power >= overload
+            else:
+                solved = False
+                max_srap_power = 0.0
         else:
+
+            # negative flow, ov is negative
+            overload = c_flow + rating
 
             # slice the negative values
             negatives = np.where(self.sensitivities <= 0)[0]
-            p_available2 = p_available[negatives]
-            sensitivities2 = self.sensitivities[negatives]
 
-            # sort lower to greater, more negative first
-            idx = np.argsort(sensitivities2)
-            idx2 = idx[:top_n]
-            p_available3 = p_available2[idx2]
-            sensitivities3 = sensitivities2[idx2]
+            if len(negatives):
+                p_available2 = p_available[negatives]
+                sensitivities2 = self.sensitivities[negatives]
 
-            # interpolate the srap limit, to get the minimum srap power
-            xp = np.cumsum(p_available3)
-            fp = np.cumsum(p_available3 * sensitivities3)
-            max_srap_power = np.interp(srap_pmax_mw, xp, fp)
+                # sort lower to greater, more negative first
+                idx = np.argsort(sensitivities2)
+                idx2 = idx[:top_n]
+                p_available3 = p_available2[idx2]
+                sensitivities3 = sensitivities2[idx2]
 
-            # if the value is grater than the overload we cannot solve
-            solved = max_srap_power <= overload
+                # interpolate the srap limit, to get the minimum srap power
+                xp = np.cumsum(p_available3)
+                fp = np.cumsum(p_available3 * sensitivities3)
+                max_srap_power = np.interp(srap_pmax_mw, xp, fp)
+
+                # if the value is grater than the overload we cannot solve
+                solved = max_srap_power <= overload
+            else:
+                solved = False
+                max_srap_power = 0.0
 
         return solved, max_srap_power
 
@@ -103,16 +119,11 @@ def get_buses_for_srap_list(PTDF: Mat, threshold=1e-3) -> List[BusesForSrap]:
     :param threshold: Threshold to convert the PTDF to sparse
     :return: List[BusesForSrap]
     """
-    PTDFt = dense_to_csc(PTDF, threshold=threshold).tocsr()
-
     # columns: number of branches, rows: number of nodes
-    n_bus, n_br = PTDFt.shape
+    n_br, n_bus = PTDF.shape
     buses_for_srap_list = list()
     for i in range(n_br):  # para cada columna i
-        a = PTDFt.indptr[i]
-        b = PTDFt.indptr[i + 1]
-        indices = PTDFt.indices[a:b]
-        sensitivities = PTDFt.data[a:b]
+        sensitivities, indices = get_sparse_array_numba(PTDF[i, :], threshold=threshold)
         buses_for_srap_list.append(BusesForSrap(branch_idx=i,
                                                 bus_indices=indices,
                                                 sensitivities=sensitivities))
