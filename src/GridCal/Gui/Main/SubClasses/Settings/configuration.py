@@ -230,7 +230,7 @@ class ConfigurationMain(ResultsMain):
                 "contingencies_engine": self.ui.contingencyEngineComboBox,
                 "use_srap": self.ui.use_srap_checkBox,
                 "srap_loading_limit": self.ui.srap_loading_limit_doubleSpinBox,
-                "srap_max_power": self.ui.srap_max_power_doubleSpinBox
+                "srap_max_power": self.ui.srap_limit_doubleSpinBox
             },
             "file": {
                 "store_results_in_file": self.ui.saveResultsCheckBox
