@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 from GridCalEngine.api import *
-import GridCalEngine.basic_structures as bs
+import GridCalEngine.enumerations as en
 
 # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
 # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
@@ -18,11 +18,9 @@ main_circuit = FileOpen(fname).open()
 
 options_ = ContingencyAnalysisOptions(
     distributed_slack=True,
-    correct_values=True,
     use_provided_flows=False,
     Pf=None,
-    pf_results=None,
-    engine=bs.ContingencyEngine.PTDF,
+    engine=en.ContingencyEngine.PTDF,
     pf_options=PowerFlowOptions(),
 )
 

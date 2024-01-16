@@ -32,25 +32,25 @@ class BusesForSrap:
     def __init__(self,
                  branch_idx: int,
                  bus_indices: IntVec,
-                 sensitivities: Vec,
-                 p_available: Vec):
+                 sensitivities: Vec):
         """
 
         :param branch_idx:
         :param bus_indices:
         :param sensitivities:
-        :param p_available:
         """
         self.branch_idx = branch_idx
         self.bus_indices = bus_indices
         self.sensitivities = sensitivities
-        self.p_available = p_available
 
-    def is_solvable(self, overload: float, srap_pmax_mw: float, top_n: int = 1000) -> Tuple[bool, float]:
+    def is_solvable(self, overload: float, srap_pmax_mw: float,
+                    p_available: Vec, top_n: int = 1000) -> Tuple[bool, float]:
         """
         Get the maximum amount of power (MW) to dispatch using SRAP
-        :param srap_pmax_mw: SRAP limit in MW
+
         :param overload: Line overload
+        :param srap_pmax_mw: SRAP limit in MW
+        :param p_available: Array of available power per bus
         :param top_n: maximum number of nodes affecting the oveload
         :return: min(srap_limit, sum(p_available))
         """
@@ -59,7 +59,7 @@ class BusesForSrap:
 
             # slice the positive values
             positives = np.where(self.sensitivities >= 0)[0]
-            p_available2 = self.p_available[positives]
+            p_available2 = p_available[positives]
             sensitivities2 = self.sensitivities[positives]
 
             # sort greater to lower, more positive first
@@ -79,7 +79,7 @@ class BusesForSrap:
 
             # slice the negative values
             negatives = np.where(self.sensitivities <= 0)[0]
-            p_available2 = self.p_available[negatives]
+            p_available2 = p_available[negatives]
             sensitivities2 = self.sensitivities[negatives]
 
             # sort lower to greater, more negative first
@@ -99,11 +99,10 @@ class BusesForSrap:
         return solved, max_srap_power
 
 
-def get_buses_for_srap_list(PTDF: Mat, p_available_per_bus, threshold=1e-3) -> List[BusesForSrap]:
+def get_buses_for_srap_list(PTDF: Mat, threshold=1e-3) -> List[BusesForSrap]:
     """
     Generate the structues to compute the SRAP
     :param PTDF: dense PTDF
-    :param p_available_per_bus: available power per bus
     :param threshold: Threshold to convert the PTDF to sparse
     :return: List[BusesForSrap]
     """
@@ -119,8 +118,7 @@ def get_buses_for_srap_list(PTDF: Mat, p_available_per_bus, threshold=1e-3) -> L
         sensitivities = PTDFt.data[a:b]
         buses_for_srap_list.append(BusesForSrap(branch_idx=i,
                                                 bus_indices=indices,
-                                                sensitivities=sensitivities,
-                                                p_available=p_available_per_bus[indices]))
+                                                sensitivities=sensitivities))
     return buses_for_srap_list
 
 

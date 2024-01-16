@@ -824,6 +824,20 @@ class SimulationsMain(TimeEventsMain):
         if not self.session.is_anything_running():
             self.UNLOCK()
 
+    def get_linear_options(self) -> sim.LinearAnalysisOptions:
+        """
+        Get the LinearAnalysisOptions defined by the GUI
+        :return: LinearAnalysisOptions
+        """
+        options = sim.LinearAnalysisOptions(
+            distribute_slack=self.ui.ptdf_distributed_slack_checkBox.isChecked(),
+            correct_values=self.ui.ptdf_correct_nonsense_values_checkBox.isChecked(),
+            ptdf_threshold=self.ui.ptdf_threshold_doubleSpinBox.value(),
+            lodf_threshold=self.ui.lodf_threshold_doubleSpinBox.value()
+        )
+
+        return options
+
     def run_linear_analysis(self):
         """
         Run a Power Transfer Distribution Factors analysis
@@ -836,15 +850,11 @@ class SimulationsMain(TimeEventsMain):
 
                 self.LOCK()
 
-                options = sim.LinearAnalysisOptions(
-                    distribute_slack=self.ui.ptdf_distributed_slack_checkBox.isChecked(),
-                    correct_values=self.ui.ptdf_correct_nonsense_values_checkBox.isChecked())
-
                 opf_results = self.get_opf_results(use_opf=self.ui.actionOpf_to_Power_flow.isChecked())
 
                 engine = self.get_preferred_engine()
                 drv = sim.LinearAnalysisDriver(grid=self.circuit,
-                                               options=options,
+                                               options=self.get_linear_options(),
                                                engine=engine,
                                                opf_results=opf_results)
 
@@ -893,14 +903,12 @@ class SimulationsMain(TimeEventsMain):
                     self.add_simulation(sim.SimulationTypes.LinearAnalysis_TS_run)
                     self.LOCK()
 
-                    options = sim.LinearAnalysisOptions(distribute_slack=self.ui.distributed_slack_checkBox.isChecked())
-
                     opf_time_series_results = self.get_opf_ts_results(
                         use_opf=self.ui.actionOpf_to_Power_flow.isChecked()
                     )
 
                     drv = sim.LinearAnalysisTimeSeriesDriver(grid=self.circuit,
-                                                             options=options,
+                                                             options=self.get_linear_options(),
                                                              time_indices=self.get_time_indices(),
                                                              clustering_results=self.get_clustering_results(),
                                                              opf_time_series_results=opf_time_series_results)
@@ -946,6 +954,27 @@ class SimulationsMain(TimeEventsMain):
         if not self.session.is_anything_running():
             self.UNLOCK()
 
+    def get_contingency_options(self) -> sim.ContingencyAnalysisOptions:
+        """
+
+        :return:
+        """
+        pf_options = self.get_selected_power_flow_options()
+
+        options = sim.ContingencyAnalysisOptions(
+            distributed_slack=self.ui.distributed_slack_checkBox.isChecked(),
+            use_provided_flows=False,
+            Pf=None,
+            pf_options=pf_options,
+            lin_options=self.get_linear_options(),
+            use_srap=self.ui.use_srap_checkBox.isChecked(),
+            srap_max_loading=self.ui.srap_loading_limit_doubleSpinBox.value(),
+            srap_limit=self.ui.srap_limit_doubleSpinBox.value(),
+            engine=self.contingency_engines_dict[self.ui.contingencyEngineComboBox.currentText()]
+        )
+
+        return options
+
     def run_contingency_analysis(self):
         """
         Run a Power Transfer Distribution Factors analysis
@@ -961,20 +990,10 @@ class SimulationsMain(TimeEventsMain):
 
                     self.LOCK()
 
-                    pf_options = self.get_selected_power_flow_options()
-
-                    options = sim.ContingencyAnalysisOptions(
-                        distributed_slack=self.ui.distributed_slack_checkBox.isChecked(),
-                        use_provided_flows=False,
-                        Pf=None,
-                        pf_options=pf_options,
-                        engine=self.contingency_engines_dict[self.ui.contingencyEngineComboBox.currentText()]
-                    )
-
                     linear_multiple_contingencies = sim.LinearMultiContingencies(grid=self.circuit)
 
                     drv = sim.ContingencyAnalysisDriver(grid=self.circuit,
-                                                        options=options,
+                                                        options=self.get_contingency_options(),
                                                         linear_multiple_contingencies=linear_multiple_contingencies,
                                                         engine=self.get_preferred_engine())
 
@@ -1031,18 +1050,8 @@ class SimulationsMain(TimeEventsMain):
 
                         self.LOCK()
 
-                        pf_options = self.get_selected_power_flow_options()
-
-                        options = sim.ContingencyAnalysisOptions(
-                            distributed_slack=self.ui.distributed_slack_checkBox.isChecked(),
-                            use_provided_flows=False,
-                            Pf=None,
-                            pf_options=pf_options,
-                            engine=self.contingency_engines_dict[self.ui.contingencyEngineComboBox.currentText()]
-                        )
-
                         drv = sim.ContingencyAnalysisTimeSeries(grid=self.circuit,
-                                                                options=options,
+                                                                options=self.get_contingency_options(),
                                                                 time_indices=self.get_time_indices(),
                                                                 clustering_results=self.get_clustering_results(),
                                                                 engine=self.get_preferred_engine())

@@ -116,6 +116,20 @@ class ContingencyAnalysisDriver(DriverTemplate):
         pf_res_0 = multi_island_pf_nc(nc=numerical_circuit,
                                       options=pf_opts)
 
+        if self.options.use_srap:
+
+            # we need the PTDF for this
+            linear_analysis = LinearAnalysis(numerical_circuit=numerical_circuit,
+                                             distributed_slack=self.options.lin_options.distribute_slack,
+                                             correct_values=self.options.lin_options.correct_values)
+            linear_analysis.run()
+
+            # construct a list of information structures about how to deal with SRAP
+            buses_for_srap_list = get_buses_for_srap_list(PTDF=linear_analysis.PTDF,
+                                                          threshold=self.options.lin_options.ptdf_threshold)
+        else:
+            buses_for_srap_list = list()
+
         # for each contingency group
         for ic, contingency_group in enumerate(self.grid.contingency_groups):
 
@@ -149,18 +163,13 @@ class ContingencyAnalysisDriver(DriverTemplate):
                                    contingency_loadings=np.abs(pf_res.loading),
                                    contingency_idx=ic,
                                    contingency_group=contingency_group,
-                                   using_srap=False,
-                                   srap_limit=1.4,
-                                   srap_pmax_mw=1400.0,
-                                   buses_for_srap_list=None)
+                                   using_srap=self.options.use_srap,
+                                   srap_limit=self.options.srap_limit,
+                                   srap_pmax_mw=self.options.srap_max_loading,
+                                   buses_for_srap_list=buses_for_srap_list)
 
             # set the status
             numerical_circuit.set_contingency_status(contingencies, revert=True)
-
-            # revert the states for the next run
-            # numerical_circuit.branch_data.active = original_br_active.copy()
-            # numerical_circuit.generator_data.active = original_gen_active.copy()
-            # numerical_circuit.generator_data.p = original_gen_p.copy()
 
             if self.__cancel__:
                 return results
@@ -288,13 +297,14 @@ class ContingencyAnalysisDriver(DriverTemplate):
                                              con_names=self.grid.get_contingency_group_names())
 
         linear_analysis = LinearAnalysis(numerical_circuit=numerical_circuit,
-                                         distributed_slack=False,
-                                         correct_values=True)
+                                         distributed_slack=self.options.lin_options.distribute_slack,
+                                         correct_values=self.options.lin_options.correct_values)
         linear_analysis.run()
 
         self.linear_multiple_contingencies.update(lodf=linear_analysis.LODF,
                                                   ptdf=linear_analysis.PTDF,
-                                                  threshold=0.01)  # TODO: Use linear options object
+                                                  ptdf_threshold=self.options.lin_options.ptdf_threshold,
+                                                  lodf_threshold=self.options.lin_options.lodf_threshold)
 
         # get the contingency branch indices
         mon_idx = numerical_circuit.branch_data.get_monitor_enabled_indices()
@@ -313,10 +323,12 @@ class ContingencyAnalysisDriver(DriverTemplate):
 
         loadings_n = flows_n / (numerical_circuit.rates + 1e-9)
 
-        p_available_per_bus = numerical_circuit.generator_data.get_injections_per_bus()
-        buses_for_srap_list = get_buses_for_srap_list(PTDF=linear_analysis.PTDF,
-                                                      p_available_per_bus=p_available_per_bus,
-                                                      threshold=1e-3)
+        if self.options.use_srap:
+            # construct a list of information structures about how to deal with SRAP
+            buses_for_srap_list = get_buses_for_srap_list(PTDF=linear_analysis.PTDF,
+                                                          threshold=self.options.lin_options.ptdf_threshold)
+        else:
+            buses_for_srap_list = list()
 
         self.report_text('Computing loading...')
 
@@ -344,10 +356,9 @@ class ContingencyAnalysisDriver(DriverTemplate):
                                    contingency_loadings=c_loading,
                                    contingency_idx=ic,
                                    contingency_group=self.grid.contingency_groups[ic],
-                                   # TODO: connect these to the options
-                                   using_srap=False,
-                                   srap_limit=1.4,
-                                   srap_pmax_mw=1400.0,
+                                   using_srap=self.options.use_srap,
+                                   srap_limit=self.options.srap_limit,
+                                   srap_pmax_mw=self.options.srap_max_loading,
                                    buses_for_srap_list=buses_for_srap_list)
 
             # report progress

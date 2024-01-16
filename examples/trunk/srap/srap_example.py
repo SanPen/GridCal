@@ -40,7 +40,7 @@ def run_srap(numerical_circuit: NumericalCircuit, srap_limit: float = 1.4, pmax_
 
     linear_multiple_contingencies.update(lodf=linear_analysis.LODF,
                                          ptdf=linear_analysis.PTDF,
-                                         threshold=0.01)  # PTDF LODF threshold to make it sparse
+                                         ptdf_threshold=0.01)  # PTDF LODF threshold to make it sparse
 
     pmax = pmax_mw
 

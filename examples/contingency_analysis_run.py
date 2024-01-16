@@ -1,6 +1,6 @@
 import os
 from GridCalEngine.api import *
-import GridCalEngine.basic_structures as bs
+import GridCalEngine.enumerations as en
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
 fname = os.path.join(folder, 'IEEE 5 Bus.xlsx')
@@ -29,11 +29,9 @@ pf_options = PowerFlowOptions(solver_type=SolverType.NR)
 
 # declare the contingency options
 options_ = ContingencyAnalysisOptions(distributed_slack=True,
-                                      correct_values=True,
                                       use_provided_flows=False,
                                       Pf=None,
-                                      pf_results=None,
-                                      engine=bs.ContingencyEngine.PowerFlow,
+                                      engine=en.ContingencyEngine.PowerFlow,
                                       pf_options=pf_options)
 
 linear_multiple_contingencies = LinearMultiContingencies(grid=main_circuit)

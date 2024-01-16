@@ -440,12 +440,13 @@ class LinearMultiContingencies:
         # list of LinearMultiContingency objects that are used later to compute the contingency flows
         self.multi_contingencies: List[LinearMultiContingency] = list()
 
-    def update(self, lodf: Mat, ptdf: Mat, threshold: float = 0.0001) -> None:
+    def update(self, lodf: Mat, ptdf: Mat, ptdf_threshold: float = 0.0001, lodf_threshold: float = 0.0001) -> None:
         """
         Make the LODF with any contingency combination using the declared contingency objects
         :param lodf: original LODF matrix (nbr, nbr)
         :param ptdf: original PTDF matrix (nbr, nbus)
-        :param threshold: threshold to discard values
+        :param ptdf_threshold: threshold to discard values
+        :param lodf_threshold: Threshold for LODF conversion to sparse
         :return: None
         """
 
@@ -490,19 +491,19 @@ class LinearMultiContingencies:
 
                 # Compute LODF for the multiple failure
                 mlodf_factors = dense_to_csc(mat=L @ np.linalg.inv(M),
-                                             threshold=threshold)
+                                             threshold=lodf_threshold)
 
             elif len(branch_contingency_indices) == 1:
                 # append values
                 mlodf_factors = dense_to_csc(mat=lodf[:, branch_contingency_indices],
-                                             threshold=threshold)
+                                             threshold=lodf_threshold)
 
             else:
                 mlodf_factors = sp.csc_matrix(([], [], [0]), shape=(lodf.shape[0], 0))
 
             if len(bus_contingency_indices):
                 ptdf_factors = dense_to_csc(mat=ptdf[:, bus_contingency_indices],
-                                            threshold=threshold)
+                                            threshold=ptdf_threshold)
             else:
                 ptdf_factors = sp.csc_matrix(([], [], [0]), shape=(lodf.shape[0], 0))
 

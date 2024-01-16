@@ -811,10 +811,8 @@ pf_options = PowerFlowOptions(solver_type=SolverType.NR)
 
 # declare the contingency options
 options_ = ContingencyAnalysisOptions(distributed_slack=True,
-                                      correct_values=True,
                                       use_provided_flows=False,
                                       Pf=None,
-                                      pf_results=None,
                                       engine=bs.ContingencyEngine.PowerFlow,
                                       # if no power flow options are provided 
                                       # a linear power flow is used

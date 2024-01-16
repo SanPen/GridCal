@@ -307,9 +307,12 @@ class ContingencyResultsReport:
                 # information about the buses that we can use for SRAP
                 buses_for_srap = buses_for_srap_list[m]
 
-                solved_by_srap, max_srap_power = buses_for_srap.is_solvable(overload=ov,
-                                                                            srap_pmax_mw=srap_pmax_mw,
-                                                                            top_n=5)
+                solved_by_srap, max_srap_power = buses_for_srap.is_solvable(
+                    overload=ov,
+                    srap_pmax_mw=srap_pmax_mw,
+                    p_available=numerical_circuit.generator_data.get_injections_per_bus(),
+                    top_n=5
+                )
 
                 self.add(time_index=t if t is not None else 0,
                          base_name=numerical_circuit.branch_data.names[m],

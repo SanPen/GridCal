@@ -18,6 +18,7 @@
 from GridCalEngine.enumerations import ContingencyEngine
 from GridCalEngine.basic_structures import Vec
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions, SolverType
+from GridCalEngine.Simulations.LinearFactors.linear_analysis_options import LinearAnalysisOptions
 
 
 class ContingencyAnalysisOptions:
@@ -27,32 +28,40 @@ class ContingencyAnalysisOptions:
 
     def __init__(self,
                  distributed_slack: bool = True,
-                 correct_values: bool = True,
                  use_provided_flows: bool = False,
                  Pf: Vec = None,
-                 pf_results=None,
-                 engine=ContingencyEngine.PowerFlow,
-                 pf_options=PowerFlowOptions(SolverType.DC)):
+                 pf_options=PowerFlowOptions(SolverType.DC),
+                 lin_options=LinearAnalysisOptions(),
+                 use_srap: bool = False,
+                 srap_max_loading: float = 1.4,
+                 srap_limit: float = 1400.0,
+                 engine=ContingencyEngine.PowerFlow):
         """
-
-        :param distributed_slack:
-        :param correct_values:
-        :param use_provided_flows:
-        :param Pf:
-        :param pf_results:
-        :param engine:
-        :param pf_options:
+        ContingencyAnalysisOptions
+        :param distributed_slack: Use distributed slack?
+        :param use_provided_flows: Use the provided flows?
+        :param Pf: Power flows (at the from bus)
+        :param pf_options: PowerFlowOptions
+        :param lin_options: LinearAnalysisOptions
+        :param use_srap: use the SRAP check?
+        :param srap_max_loading: maximum SRAP loading in p.u.
+        :param srap_limit: maximum SRAP usage (limit) in MW
+        :param engine: ContingencyEngine to use (PowerFlow, PTDF, ...)
         """
         self.distributed_slack = distributed_slack
-
-        self.correct_values = correct_values
 
         self.use_provided_flows = use_provided_flows
 
         self.Pf: Vec = Pf
 
-        self.pf_results = pf_results
-
         self.engine = engine
 
         self.pf_options = pf_options
+
+        self.lin_options = lin_options
+
+        self.use_srap: bool = use_srap
+
+        self.srap_max_loading: float = srap_max_loading
+
+        self.srap_limit: float = srap_limit

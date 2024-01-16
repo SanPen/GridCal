@@ -1635,7 +1635,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
 
                 # Compute the more generalistic contingency structures
                 mctg = LinearMultiContingencies(grid=grid)
-                mctg.update(lodf=ls.LODF, ptdf=ls.PTDF, threshold=lodf_threshold)
+                mctg.update(lodf=ls.LODF, ptdf=ls.PTDF, ptdf_threshold=lodf_threshold, lodf_threshold=lodf_threshold)
 
                 # formulate the contingencies
                 f_obj += add_linear_branches_contingencies_formulation(t_idx=local_t_idx,
