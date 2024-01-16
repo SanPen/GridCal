@@ -1,7 +1,8 @@
 
 
 PTDF (Power Transmission Distribution Factors)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+========================================================
+
 
 GridCal features a PTDF simulation of the branches sensitivity to the generation variations.
 This classic method is implemented in GridCal using two variants:
@@ -31,13 +32,13 @@ C. For every variation:
 This renders a simple method to identify how much power flow changed in a branch given the successive
 generation diminishings.
 
-.. figure:: ../figures/ptdf_result.png
+.. figure:: ./../../figures/ptdf_result.png
     :alt: PTDF results
 
     PTDF results for the Pegase 1354-bus grid.
 
 VTDF (Voltage Transmission Distribution Factors)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+======================================================================
 
 We can extend the PTDF simple concept to the capture of other magnitudes' variation.
 In this case we can capture the voltage module variation.
@@ -48,7 +49,7 @@ In this case we can capture the voltage module variation.
 
 
 PTDF and VTDF times series
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+==========================================
 
 To know the sensitivity is alright, but the real use of the PTDF and VTDF is to get estimations of the flows
 and voltages in far less time than performing a normal time series simulation.
@@ -87,10 +88,10 @@ Which in matrix form turns into:
 The results of branch flow and voltage module for the IEEE39 with the weekly profiles
 provided by GridCal is:
 
-.. figure:: ../figures/ptdf_ts.png
+.. figure:: ../../figures/ptdf_ts.png
 
     PTDF results for the IEEE39 with a week's profile
 
-.. figure:: ../figures/vtdf.png
+.. figure:: ../../figures/vtdf.png
 
     VTDF results for the IEEE39 with a week's profile
