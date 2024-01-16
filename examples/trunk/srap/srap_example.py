@@ -2,7 +2,7 @@ import os
 from GridCalEngine.api import FileOpen
 from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_driver import (ContingencyAnalysisOptions,
                                                                                        ContingencyAnalysisDriver)
-from GridCalEngine.enumerations import EngineType
+from GridCalEngine.enumerations import EngineType,ContingencyEngine
 
 if __name__ == '__main__':
     # path = os.path.join(
@@ -18,6 +18,7 @@ if __name__ == '__main__':
     print("Running contingency analysis...")
     con_options = ContingencyAnalysisOptions()
     con_options.use_srap = True
+    con_options.engine = ContingencyEngine.PTDF
 
     con_drv = ContingencyAnalysisDriver(grid=grid,
                                         options=con_options,
