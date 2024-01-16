@@ -40,7 +40,10 @@ class ContingencyTableEntry:
                "contingency uuid",
                "post_contingency flow",
                "contingency rating",
-               "post_contingency loading"]
+               "post_contingency loading",
+               "Solved with SRAP",
+               "SRAP power",
+               "SRAP buses"]
 
     def __init__(self,
                  time_index: int,
@@ -56,7 +59,8 @@ class ContingencyTableEntry:
                  contingency_rating: float,
                  post_contingency_loading: float,
                  solved_by_srap: bool = False,
-                 buses_for_srap_info: Union[None, BusesForSrap] = None):
+                 srap_power: float = 0.0,
+                 srap_bus_indices: IntVec = None):
         """
         ContingencyTableEntry constructor
         :param time_index:
@@ -72,7 +76,8 @@ class ContingencyTableEntry:
         :param contingency_rating:
         :param post_contingency_loading:
         :param solved_by_srap:
-        :param buses_for_srap_info:
+        :param srap_power:
+        :param srap_bus_indices:
         """
         self.time_index: int = time_index
 
@@ -91,7 +96,8 @@ class ContingencyTableEntry:
         self.post_contingency_loading: float = post_contingency_loading
 
         self.solved_by_srap: bool = solved_by_srap
-        self.buses_for_srap_info: BusesForSrap = buses_for_srap_info
+        self.srap_power = srap_power
+        self.srap_bus_indices: IntVec = srap_bus_indices if srap_bus_indices is not None else np.zeros(0, dtype=int)
 
     def get_headers(self) -> List[str]:
         """
@@ -116,7 +122,10 @@ class ContingencyTableEntry:
                 self.contingency_uuid,
                 self.post_contingency_flow,
                 self.contingency_rating,
-                self.post_contingency_loading]
+                self.post_contingency_loading,
+                self.solved_by_srap,
+                self.srap_power,
+                ",".join(self.srap_bus_indices)]
 
     def to_string_list(self) -> List[str]:
         """
@@ -139,6 +148,9 @@ class ContingencyResultsReport:
     """
 
     def __init__(self):
+        """
+        Constructor
+        """
         self.entries: List[ContingencyTableEntry] = list()
 
     def add_entry(self, entry: ContingencyTableEntry):
@@ -162,7 +174,8 @@ class ContingencyResultsReport:
             contingency_rating: float,
             post_contingency_loading: float,
             solved_by_srap: bool = False,
-            buses_for_srap_info: Union[None, BusesForSrap] = None):
+            srap_power: float = 0.0,
+            srap_bus_indices: IntVec = None):
         """
         Add report data
         :param time_index:
@@ -178,7 +191,8 @@ class ContingencyResultsReport:
         :param contingency_rating:
         :param post_contingency_loading:
         :param solved_by_srap:
-        :param buses_for_srap_info:
+        :param srap_power:
+        :param srap_bus_indices:
         """
         self.add_entry(ContingencyTableEntry(time_index=time_index,
                                              base_name=base_name,
@@ -193,7 +207,8 @@ class ContingencyResultsReport:
                                              contingency_rating=contingency_rating,
                                              post_contingency_loading=post_contingency_loading,
                                              solved_by_srap=solved_by_srap,
-                                             buses_for_srap_info=buses_for_srap_info))
+                                             srap_power=srap_power,
+                                             srap_bus_indices=srap_bus_indices))
 
     def merge(self, other: "ContingencyResultsReport"):
         """
@@ -278,24 +293,10 @@ class ContingencyResultsReport:
             b_flow = abs(flows[m])
 
             # ----------------------------------------------------------------------------------------------------------
-            # determine the continegncy post analysis type
-            # ----------------------------------------------------------------------------------------------------------
-
-            if using_srap:
-
-                if 1.0 < abs(loading[m]) <= srap_limit:
-                    do_srap = True
-
-                else:
-                    do_srap = False
-            else:
-                do_srap = False
-
-            # ----------------------------------------------------------------------------------------------------------
             # perform the analysis
             # ----------------------------------------------------------------------------------------------------------
-
-            if do_srap:
+            srap_condition = 1.0 < abs(loading[m]) <= srap_limit
+            if using_srap and srap_condition:
                 # information about the buses that we can use for SRAP
                 buses_for_srap = buses_for_srap_list[m]
 
@@ -320,9 +321,11 @@ class ContingencyResultsReport:
                          contingency_rating=numerical_circuit.branch_data.contingency_rates[m],
                          post_contingency_loading=abs(contingency_loadings[m]) * 100.0,
                          solved_by_srap=solved_by_srap,
-                         buses_for_srap_info=buses_for_srap)
+                         srap_power=max_srap_power,
+                         srap_bus_indices=None)
 
             else:
+
                 if c_flow > numerical_circuit.contingency_rates[m]:
                     # if the contingency flow is greater than the rate ...
 
