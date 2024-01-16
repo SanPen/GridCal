@@ -243,7 +243,7 @@ class ConfigurationMain(ResultsMain):
         :return:
         """
 
-        def struct_to_data(data_: Dict[str, Dict[str, Union[float, int, str, bool, Dict]]],
+        def struct_to_data(data_: Dict[str, Union[float, int, str, bool, Dict[str, Union[float, int, str, bool, Dict]]]],
                            struct_: Dict[str, Dict[str, any]]):
             """
             Recursive function to get the config dictionary from the GUI values
