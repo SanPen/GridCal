@@ -143,7 +143,9 @@ class ConfigurationMain(ResultsMain):
                 "transfer_sensitivity_threshold": self.ui.atcThresholdSpinBox,
                 "transfer_method": self.ui.transferMethodComboBox,
                 "Loading_threshold_to_report": self.ui.ntcReportLoadingThresholdSpinBox,
-                "consider_contingencies": self.ui.n1ConsiderationCheckBox
+                "consider_contingencies": self.ui.n1ConsiderationCheckBox,
+                "ptdf_threshold": self.ui.ptdf_threshold_doubleSpinBox,
+                "lodf_threshold": self.ui.lodf_threshold_doubleSpinBox
             },
             "stochastic": {
                 "method": self.ui.stochastic_pf_method_comboBox,
@@ -225,7 +227,10 @@ class ConfigurationMain(ResultsMain):
                 "engine": self.ui.engineComboBox
             },
             "contingencies": {
-                "contingencies_engine": self.ui.contingencyEngineComboBox
+                "contingencies_engine": self.ui.contingencyEngineComboBox,
+                "use_srap": self.ui.use_srap_checkBox,
+                "srap_loading_limit": self.ui.srap_loading_limit_doubleSpinBox,
+                "srap_max_power": self.ui.srap_max_power_doubleSpinBox
             },
             "file": {
                 "store_results_in_file": self.ui.saveResultsCheckBox
