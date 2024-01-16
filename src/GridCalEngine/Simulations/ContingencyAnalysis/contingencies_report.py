@@ -19,8 +19,7 @@ from typing import List, Union, Any
 from GridCalEngine.basic_structures import IntVec, StrMat, StrVec, Vec
 from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Core.Devices import ContingencyGroup
-from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearMultiContingency
-from GridCalEngine.Simulations.LinearFactors.srap import get_PTDF_LODF_NX_sparse_f16, compute_srap, BusesForSrap
+from GridCalEngine.Simulations.LinearFactors.srap import BusesForSrap
 
 import numpy as np
 
