@@ -34,7 +34,7 @@ class ContingencyAnalysisOptions:
                  lin_options=LinearAnalysisOptions(),
                  use_srap: bool = False,
                  srap_max_loading: float = 1.4,
-                 srap_limit: float = 1400.0,
+                 srap_max_power: float = 1400.0,
                  engine=ContingencyEngine.PowerFlow):
         """
         ContingencyAnalysisOptions
@@ -45,7 +45,7 @@ class ContingencyAnalysisOptions:
         :param lin_options: LinearAnalysisOptions
         :param use_srap: use the SRAP check?
         :param srap_max_loading: maximum SRAP loading in p.u.
-        :param srap_limit: maximum SRAP usage (limit) in MW
+        :param srap_max_power: maximum SRAP usage (limit) in MW
         :param engine: ContingencyEngine to use (PowerFlow, PTDF, ...)
         """
         self.distributed_slack = distributed_slack
@@ -64,4 +64,4 @@ class ContingencyAnalysisOptions:
 
         self.srap_max_loading: float = srap_max_loading
 
-        self.srap_limit: float = srap_limit
+        self.srap_max_power: float = srap_max_power

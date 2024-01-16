@@ -969,7 +969,7 @@ class SimulationsMain(TimeEventsMain):
             lin_options=self.get_linear_options(),
             use_srap=self.ui.use_srap_checkBox.isChecked(),
             srap_max_loading=self.ui.srap_loading_limit_doubleSpinBox.value(),
-            srap_limit=self.ui.srap_limit_doubleSpinBox.value(),
+            srap_max_power=self.ui.srap_limit_doubleSpinBox.value(),
             engine=self.contingency_engines_dict[self.ui.contingencyEngineComboBox.currentText()]
         )
 

@@ -170,8 +170,8 @@ class ContingencyAnalysisDriver(DriverTemplate):
                                    contingency_idx=ic,
                                    contingency_group=contingency_group,
                                    using_srap=self.options.use_srap,
-                                   srap_limit=self.options.srap_limit,
-                                   srap_pmax_mw=self.options.srap_max_loading,
+                                   srap_max_loading=self.options.srap_max_loading,
+                                   srap_max_power=self.options.srap_max_power,
                                    buses_for_srap_list=buses_for_srap_list)
 
             # set the status
@@ -363,8 +363,8 @@ class ContingencyAnalysisDriver(DriverTemplate):
                                    contingency_idx=ic,
                                    contingency_group=self.grid.contingency_groups[ic],
                                    using_srap=self.options.use_srap,
-                                   srap_limit=self.options.srap_limit,
-                                   srap_pmax_mw=self.options.srap_max_loading,
+                                   srap_max_loading=self.options.srap_max_loading,
+                                   srap_max_power=self.options.srap_max_power,
                                    buses_for_srap_list=buses_for_srap_list)
 
             # report progress

@@ -267,8 +267,8 @@ class ContingencyResultsReport:
                 contingency_idx: int,
                 contingency_group: ContingencyGroup,
                 using_srap: bool = False,
-                srap_limit: float = 1.4,
-                srap_pmax_mw: float = 1400.0,
+                srap_max_loading: float = 1.4,
+                srap_max_power: float = 1400.0,
                 buses_for_srap_list: List[BusesForSrap] = None):
         """
         Analize contingency resuts and add them to the report
@@ -283,8 +283,8 @@ class ContingencyResultsReport:
         :param contingency_idx: contingency group index
         :param contingency_group: ContingencyGroup
         :param using_srap: Inspect contingency using the SRAP conditions
-        :param srap_limit: Rate multiplier under which we can use SRAP conditions
-        :param srap_pmax_mw: Max amount of power to lower using SRAP conditions
+        :param srap_max_loading: Rate multiplier under which we can use SRAP conditions
+        :param srap_max_power: Max amount of power to lower using SRAP conditions
         :param buses_for_srap_list: list of buses for SRAP conditions
         """
         for m in mon_idx:  # for each monitored branch ...
@@ -295,7 +295,7 @@ class ContingencyResultsReport:
             # ----------------------------------------------------------------------------------------------------------
             # perform the analysis
             # ----------------------------------------------------------------------------------------------------------
-            srap_condition = 1.0 < abs(loading[m]) <= srap_limit
+            srap_condition = 1.0 < abs(loading[m]) <= srap_max_loading
             if using_srap and srap_condition:
                 # information about the buses that we can use for SRAP
                 buses_for_srap = buses_for_srap_list[m]
@@ -303,8 +303,8 @@ class ContingencyResultsReport:
                 solved_by_srap, max_srap_power = buses_for_srap.is_solvable(
                     c_flow=contingency_flows[m].real,  # the real part because it must have the sign
                     rating=numerical_circuit.branch_data.rates[m],
-                    srap_pmax_mw=srap_pmax_mw,
-                    p_available=numerical_circuit.generator_data.get_injections_per_bus().real,
+                    srap_pmax_mw=srap_max_power,
+                    available_power=numerical_circuit.generator_data.get_injections_per_bus().real,
                     top_n=5
                 )
 

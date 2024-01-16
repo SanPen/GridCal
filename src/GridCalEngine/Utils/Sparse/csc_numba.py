@@ -1175,7 +1175,7 @@ def get_sparse_array_numba(arr: Vec, threshold: float) -> Tuple[Vec, IntVec]:
     """
     n = len(arr)
 
-    indices = np.empty(n)
+    indices = np.empty(n, dtype=nb.int32)
     data = np.empty(n)
     k = 0
     for i in range(n):
