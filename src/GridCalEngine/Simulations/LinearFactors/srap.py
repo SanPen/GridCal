@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -24,7 +24,12 @@ from GridCalEngine.Utils.Sparse.csc_numba import get_sparse_array_numba
 
 @nb.njit(cache=True)
 def get_valid_negatives(sensitivities, p_available):
+    """
 
+    :param sensitivities:
+    :param p_available:
+    :return:
+    """
     assert len(sensitivities) == len(p_available)
     n = len(sensitivities)
     idx = np.empty(n, nb.int32)
@@ -42,6 +47,12 @@ def get_valid_negatives(sensitivities, p_available):
 
 @nb.njit(cache=True)
 def get_valid_positives(sensitivities, p_available):
+    """
+
+    :param sensitivities:
+    :param p_available:
+    :return:
+    """
     assert len(sensitivities) == len(p_available)
     n = len(sensitivities)
     idx = np.empty(n, nb.int32)
@@ -96,11 +107,11 @@ class BusesForSrap:
             overload = c_flow - rating
 
             # slice the positive values
-            positives = get_valid_positives(self.sensitivities, p_available)
+            positive_idx = get_valid_positives(self.sensitivities, p_available)
 
-            if len(positives):
-                p_available2 = p_available[positives]
-                sensitivities2 = self.sensitivities[positives]
+            if len(positive_idx):
+                p_available2 = p_available[positive_idx]
+                sensitivities2 = self.sensitivities[positive_idx]
 
                 # sort greater to lower, more positive first
                 idx = np.argsort(-sensitivities2)
@@ -124,11 +135,11 @@ class BusesForSrap:
             overload = c_flow + rating
 
             # slice the negative values
-            negatives = get_valid_negatives(self.sensitivities, p_available)
+            negative_idx = get_valid_negatives(self.sensitivities, p_available)
 
-            if len(negatives):
-                p_available2 = p_available[negatives]
-                sensitivities2 = self.sensitivities[negatives]
+            if len(negative_idx):
+                p_available2 = p_available[negative_idx]
+                sensitivities2 = self.sensitivities[negative_idx]
 
                 # sort lower to greater, more negative first
                 idx = np.argsort(sensitivities2)
