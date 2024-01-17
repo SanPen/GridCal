@@ -14,26 +14,29 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
+from __future__ import annotations
+from typing import TYPE_CHECKING
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_results import ContingencyAnalysisResults
 from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearAnalysis, LinearMultiContingencies
 from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_options import ContingencyAnalysisOptions
-from GridCalEngine.Simulations.ContingencyAnalysis.Methods.srap import get_buses_for_srap_list
+
+if TYPE_CHECKING:
+    from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_driver import ContingencyAnalysisDriver
 
 
 def linear_contingency_analysis(grid: MultiCircuit,
                                 options: ContingencyAnalysisOptions,
                                 linear_multiple_contingencies: LinearMultiContingencies,
-                                calling_class,
+                                calling_class: ContingencyAnalysisDriver,
                                 t=None) -> ContingencyAnalysisResults:
     """
     Run N-1 simulation in series with HELM, non-linear solution
-    :param grid:
-    :param options:
-    :param linear_multiple_contingencies:
-    :param calling_class:
+    :param grid: MultiCircuit
+    :param options: ContingencyAnalysisOptions
+    :param linear_multiple_contingencies: LinearMultiContingencies
+    :param calling_class: ContingencyAnalysisDriver
     :param t: time index, if None the snapshot is used
     :return: returns the results
     """
@@ -88,18 +91,6 @@ def linear_contingency_analysis(grid: MultiCircuit,
 
     # for each contingency group
     for ic, multi_contingency in enumerate(linear_multiple_contingencies.multi_contingencies):
-
-        # if options.use_srap:
-        #
-        #     # PTDFc = MLODF[:, βδ] x PTDF[βδ, :] + PTDF[:, :]
-        #     PTDFc = (multi_contingency.mlodf_factors @ linear_analysis.PTDF[multi_contingency.branch_indices, :]
-        #              + linear_analysis.PTDF)
-        #
-        #     # construct a list of information structures about how to deal with SRAP
-        #     buses_for_srap_list = get_buses_for_srap_list(PTDF=PTDFc,
-        #                                                   threshold=options.lin_options.ptdf_threshold)
-        # else:
-        #     buses_for_srap_list = list()
 
         if multi_contingency.has_injection_contingencies():
             injections = numerical_circuit.generator_data.get_injections().real

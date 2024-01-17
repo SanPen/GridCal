@@ -106,6 +106,7 @@ class ContingencyAnalysisDriver(DriverTemplate):
                 self.results = nonlinear_contingency_analysis(
                     grid=self.grid,
                     options=self.options,
+                    linear_multiple_contingencies=self.linear_multiple_contingencies,
                     calling_class=self,
                     t=None
                 )

@@ -22,9 +22,8 @@ from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerica
 from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_results import ContingencyAnalysisResults
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions, SolverType
-from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
+from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearAnalysis, LinearMultiContingencies
 from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_options import ContingencyAnalysisOptions
-from GridCalEngine.Simulations.ContingencyAnalysis.Methods.srap import get_buses_for_srap_list
 
 if TYPE_CHECKING:
     from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_driver import ContingencyAnalysisDriver
@@ -32,12 +31,14 @@ if TYPE_CHECKING:
 
 def nonlinear_contingency_analysis(grid: MultiCircuit,
                                    options: ContingencyAnalysisOptions,
+                                   linear_multiple_contingencies: LinearMultiContingencies,
                                    calling_class: ContingencyAnalysisDriver,
                                    t=None) -> ContingencyAnalysisResults:
     """
     Run a contingency analysis using the power flow options
     :param grid: MultiCircuit
     :param options: ContingencyAnalysisOptions
+    :param linear_multiple_contingencies: LinearMultiContingencies
     :param calling_class: ContingencyAnalysisDriver
     :param t: time index, if None the snapshot is used
     :return: returns the results (ContingencyAnalysisResults)
@@ -78,12 +79,14 @@ def nonlinear_contingency_analysis(grid: MultiCircuit,
                                          correct_values=options.lin_options.correct_values)
         linear_analysis.run()
 
-        # construct a list of information structures about how to deal with SRAP
-        buses_for_srap_list = get_buses_for_srap_list(PTDF=linear_analysis.PTDF,
-                                                      threshold=0.01  # self.options.lin_options.ptdf_threshold
-                                                      )
+        linear_multiple_contingencies.compute(lodf=linear_analysis.LODF,
+                                              ptdf=linear_analysis.PTDF,
+                                              ptdf_threshold=options.lin_options.ptdf_threshold,
+                                              lodf_threshold=options.lin_options.lodf_threshold,
+                                              prepare_for_srap=options.use_srap)
+
     else:
-        buses_for_srap_list = list()
+        linear_analysis = None
 
     # for each contingency group
     for ic, contingency_group in enumerate(grid.contingency_groups):
@@ -121,7 +124,8 @@ def nonlinear_contingency_analysis(grid: MultiCircuit,
                                using_srap=options.use_srap,
                                srap_max_loading=options.srap_max_loading,
                                srap_max_power=options.srap_max_power,
-                               buses_for_srap_list=buses_for_srap_list)
+                               multi_contingency=linear_multiple_contingencies.multi_contingencies[ic],
+                               PTDF=linear_analysis.PTDF)
 
         # set the status
         numerical_circuit.set_contingency_status(contingencies, revert=True)

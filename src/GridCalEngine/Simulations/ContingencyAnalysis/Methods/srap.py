@@ -159,22 +159,3 @@ class BusesForSrap:
                 max_srap_power = 0.0
 
         return solved, max_srap_power
-
-
-def get_buses_for_srap_list(PTDF: Mat, threshold=1e-3) -> List[BusesForSrap]:
-    """
-    Generate the structues to compute the SRAP
-    :param PTDF: dense PTDF
-    :param threshold: Threshold to convert the PTDF to sparse
-    :return: List[BusesForSrap]
-    """
-    # columns: number of branches, rows: number of nodes
-    n_br, n_bus = PTDF.shape
-    buses_for_srap_list = list()
-    for i in range(n_br):  # para cada columna i
-        sensitivities, indices = get_sparse_array_numba(PTDF[i, :], threshold=threshold)
-        buses_for_srap_list.append(BusesForSrap(branch_idx=i,
-                                                bus_indices=indices,
-                                                sensitivities=sensitivities))
-    return buses_for_srap_list
-
