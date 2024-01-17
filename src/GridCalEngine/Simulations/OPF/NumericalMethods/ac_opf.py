@@ -154,7 +154,7 @@ def eval_h(x, Yf, Yt, from_idx, to_idx, slack, no_slack, th_max, th_min, V_U, V_
     return hval
 
 
-def jacobians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, slack, no_slack):
+def jacobians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, slack, no_slack, mu, lmbda):
 
     M, N = Yf.shape
     Ng = Cg.shape[1]  # Check
@@ -166,17 +166,18 @@ def jacobians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, slack, no_slack):
     vm, va, Pg, Qg = x2var(x, n_vm=N, n_va=N, n_P=Ng, n_Q=Ng)
     V = vm * np.exp(1j * va)
     Vmat = diags(V)
-    E = Vmat @ diags(1/vm)
+    vm_inv = diags(1/vm)
+    E = Vmat @ vm_inv
     Ibus = Ybus @ V
     IbusCJmat = diags(np.conj(Ibus))
 
     fx = np.zeros(NV)
 
-    fx[2*N : 2*N + Ng] = 2 * c2 * Pg + c1
+    fx[2 * N : 2 * N + Ng] = 2 * c2 * Pg + c1
 
     #########
 
-    GSvm = Vmat @ (IbusCJmat + np.conj(Ybus) @ np.conj(Vmat)) @ diags(1/vm)
+    GSvm = Vmat @ (IbusCJmat + np.conj(Ybus) @ np.conj(Vmat)) @ vm_inv
     GSva = 1j * Vmat @ (IbusCJmat - np.conj(Ybus) @ np.conj(Vmat))
     GSpg = -Cg
     GSqg = -1j * Cg
@@ -238,7 +239,49 @@ def jacobians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, slack, no_slack):
 
     Hx = sparse.vstack([HSf, HSt, Hvu, Hvl, Hvau, Hval, Hpu, Hpl, Hqu, Hql])
 
-    return fx, Gx.tocsc().T, Hx.tocsc().T
+    ##########
+
+    fxx = diags(np.r_[np.zeros(2*N), 2 * c2, np.zeros(Ng)])
+
+    ##########
+    lmbda_mat = diags(lmbda)
+    A = lmbda_mat @ Vmat
+    B = Ybus @ Vmat
+    C = A @ np.conj(B)
+    D = np.conj(Ybus).T @ Vmat
+    F = 1j * lmbda_mat @ GSva
+    I = np.conj(Vmat) @ (D @ lmbda_mat - diags(D @ lmbda))
+
+    GSvava = I + F
+    GSvmva = 1j * vm_inv @ (I - F)
+    GSvavm = GSvmva.T
+    GSvmvm = vm_inv @ (C + C.T) @ vm_inv
+
+    #########
+    mu_mat = diags(mu) # Check if we have to grab just the from branches
+    Af = np.conj(Yf).T @ mu_mat @ Cf
+    Bf = np.conj(Vmat) @ Af @ Vmat
+    Df = diags(Af @ V) @ np.conj(Vmat)
+    Ef = diags(Af.T @ np.conj(V)) @ Vmat
+    Ff = Bf + Bf.T
+    Sfvava = Ff - Df - Ef
+    Sfvmva = 1j * vm_inv @ (Bf - Bf.T - Df + Ef)
+    Sfvavm = Sfvmva.T
+    Sfvmvm = vm_inv @ Ff @ vm_inv
+
+    mu_mat = diags(mu) # Check same
+    At = np.conj(Yt).T @ mu_mat @ Ct
+    Bt = np.conj(Vmat) @ At @ Vmat
+    Dt = diags(At @ V) @ np.conj(Vmat)
+    Et = diags(At.T @ np.conj(V)) @ Vmat
+    Ft = Bt + Bt.T
+    Stvava = Ft - Dt - Et
+    Stvmva = 1j * vm_inv @ (Bt - Bt.T - Dt + Et)
+    Stvavm = Stvmva.T
+    Stvmvm = vm_inv @ Ft @ vm_inv
+
+
+return fx, Gx.tocsc().T, Hx.tocsc().T
 
 
 def calc_jacobian_f_obj(func, x: Vec, arg=(), h=1e-5) -> Vec:
@@ -431,7 +474,7 @@ def evaluate_power_flow(x, mu, lmbda, Ybus, Yf, Cg, Cf, Ct, Sd, slack, no_slack,
     #                                          V_U, V_L, P_U, P_L, Q_U, Q_L, Cg, rates)).T
 
     fx, Gx, Hx = jacobians(x=x, c1=c1, c2=c2, Cg=Cg, Cf=Cf, Ct=Ct, Yf=Yf, Yt=Yt,
-                           Ybus=Ybus, slack=slack, no_slack=no_slack)
+                           Ybus=Ybus, slack=slack, no_slack=no_slack, mu=mu, lmbda=lmbda)
 
     fxx = calc_hessian_f_obj(func=eval_f, x=x, arg=(Yf, Cg, c0, c1, c2, Sbase, no_slack), h=h)
     Gxx = calc_hessian(func=eval_g, x=x, mult=lmbda, arg=(Ybus, Yf, Cg, Sd, slack, no_slack))
