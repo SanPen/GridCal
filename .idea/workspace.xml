@@ -28,9 +28,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Improved docs">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="added complex support for csc diags">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/Sparse/csc_numba.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/Sparse/csc_numba.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/LinearFactors/linear_analysis.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/LinearFactors/linear_analysis.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/linear_opf_ts.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/linear_opf_ts.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1540,7 +1541,7 @@
       <workItem from="1702898831468" duration="9005000" />
       <workItem from="1704277162371" duration="2862000" />
       <workItem from="1704291407336" duration="528000" />
-      <workItem from="1705478162991" duration="2320000" />
+      <workItem from="1705478162991" duration="4226000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1885,7 +1886,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="454" />
+    <option name="localTasksCounter" value="455" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1931,7 +1932,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Fixed unnecesary registers in FluidNode&#10;Fixed type issues in the opf" />
     <MESSAGE value="cosmetic changes" />
     <MESSAGE value="fixed simple bus viewer bug" />
     <MESSAGE value="improved dark detect" />
@@ -1956,7 +1956,8 @@
     <MESSAGE value="Updated the copyright to 2024" />
     <MESSAGE value="changed pulp for ortools" />
     <MESSAGE value="Improved docs" />
-    <option name="LAST_COMMIT_MESSAGE" value="Improved docs" />
+    <MESSAGE value="added complex support for csc diags" />
+    <option name="LAST_COMMIT_MESSAGE" value="added complex support for csc diags" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

@@ -69,8 +69,8 @@ def get_contingency_flow_with_filter(multi_contingency: LinearMultiContingency,
 
     if len(multi_contingency.bus_indices):
         for i, c in enumerate(multi_contingency.bus_indices):
-            if abs(multi_contingency.ptdf_factors[m, i]) >= threshold:
-                res += multi_contingency.ptdf_factors[m, i] * multi_contingency.injections_factor[i] * injections[c]
+            if abs(multi_contingency.compensated_ptdf_factors[m, i]) >= threshold:
+                res += multi_contingency.compensated_ptdf_factors[m, i] * multi_contingency.injections_factor[i] * injections[c]
 
     return res
 

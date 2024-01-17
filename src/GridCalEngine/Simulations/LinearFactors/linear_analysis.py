@@ -352,23 +352,35 @@ class LinearMultiContingency:
                  branch_indices: IntVec,
                  bus_indices: IntVec,
                  mlodf_factors: sp.csc_matrix,
-                 ptdf_factors: sp.csc_matrix,
+                 compensated_ptdf_factors: sp.csc_matrix,
                  injections_factor: Vec):
         """
         Linear multi contingency object
         :param branch_indices: contingency branch indices.
         :param bus_indices: contingency bus indices.
+
         :param mlodf_factors: MLODF factors applicable (all_branches, contingency branches).
-        :param ptdf_factors: PTDF factors applicable (all_branches, contingency buses)
-        :param injections_factor: Injection contingency factors, i.e percentage to decrease an injection (len(bus indices))
+                             Should be: MLODF[k, βδ]
+
+        :param compensated_ptdf_factors: compensated PTDF factors applicable (all_branches, contingency buses)
+                                         should be: MLODF[k, βδ] x PTDF[βδ, i] + PTDF[k, i]
+
+        :param injections_factor: Injection contingency factors,
+                                  i.e percentage to decrease an injection (len(bus indices))
         """
 
         assert len(bus_indices) == len(injections_factor)
 
         self.branch_indices: IntVec = branch_indices
         self.bus_indices: IntVec = bus_indices
+
+        # MLODF[k, βδ]
         self.mlodf_factors: sp.csc_matrix = mlodf_factors
-        self.ptdf_factors: sp.csc_matrix = ptdf_factors
+
+        # MLODF[k, βδ] x PTDF[βδ, i] + PTDF[k, i]
+        self.compensated_ptdf_factors: sp.csc_matrix = compensated_ptdf_factors
+
+        # percentage to decrease an injection, used to compute ΔP
         self.injections_factor: Vec = injections_factor
 
     def has_injection_contingencies(self) -> bool:
@@ -389,11 +401,15 @@ class LinearMultiContingency:
         flow = base_flow.copy()
 
         if len(self.branch_indices):
+
+            # MLODF[k, βδ] x Pf0[βδ]
             flow += self.mlodf_factors @ base_flow[self.branch_indices]
 
         if len(self.bus_indices):
             injection_delta = self.injections_factor * injections[self.bus_indices]
-            flow += self.ptdf_factors @ injection_delta[self.bus_indices]  # TODO: is the slicing necesary here too?
+
+            # (MLODF[k, βδ] x PTDF[βδ, i] + PTDF[k, i]) x ΔP[i]
+            flow += self.compensated_ptdf_factors @ injection_delta[self.bus_indices]  # TODO: is the slicing necesary here too?
 
         return flow
 
@@ -414,7 +430,7 @@ class LinearMultiContingency:
 
         if len(self.bus_indices):
             injection_delta = self.injections_factor * injections[self.bus_indices]
-            flow += lpDot(self.ptdf_factors, injection_delta[self.bus_indices])
+            flow += lpDot(self.compensated_ptdf_factors, injection_delta[self.bus_indices])
 
         return flow
 
@@ -489,7 +505,7 @@ class LinearMultiContingencies:
                 M = create_M_numba(lodf=lodf, branch_contingency_indices=branch_contingency_indices)
                 L = lodf[:, branch_contingency_indices]
 
-                # Compute LODF for the multiple failure
+                # Compute LODF for the multiple failure MLODF[k, βδ]
                 mlodf_factors = dense_to_csc(mat=L @ np.linalg.inv(M),
                                              threshold=lodf_threshold)
 
@@ -502,10 +518,18 @@ class LinearMultiContingencies:
                 mlodf_factors = sp.csc_matrix(([], [], [0]), shape=(lodf.shape[0], 0))
 
             if len(bus_contingency_indices):
-                ptdf_factors = dense_to_csc(mat=ptdf[:, bus_contingency_indices],
-                                            threshold=ptdf_threshold)
+                # must compute MLODF[k, βδ] x PTDF[βδ, i] + PTDF[k, i]
+
+                # this is PTDF[k, i]
+                ptdf_k_i = dense_to_csc(mat=ptdf[:, bus_contingency_indices], threshold=ptdf_threshold)
+
+                # this is PTDF[βδ, i]
+                ptdf_bd_i = dense_to_csc(mat=ptdf[branch_contingency_indices, bus_contingency_indices],
+                                         threshold=ptdf_threshold)
+
+                compensated_ptdf_factors = mlodf_factors @ ptdf_bd_i + ptdf_k_i
             else:
-                ptdf_factors = sp.csc_matrix(([], [], [0]), shape=(lodf.shape[0], 0))
+                compensated_ptdf_factors = sp.csc_matrix(([], [], [0]), shape=(lodf.shape[0], 0))
 
             # append values
             self.multi_contingencies.append(
@@ -513,7 +537,7 @@ class LinearMultiContingencies:
                     branch_indices=branch_contingency_indices,
                     bus_indices=bus_contingency_indices,
                     mlodf_factors=mlodf_factors,
-                    ptdf_factors=ptdf_factors,
+                    compensated_ptdf_factors=compensated_ptdf_factors,
                     injections_factor=injections_factors
                 )
             )
