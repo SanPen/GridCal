@@ -16,27 +16,29 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import numpy as np
+from typing import Union
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_results import ContingencyAnalysisResults
+from GridCalEngine.Simulations.ContingencyAnalysis.Methods.helm_contingencies import HelmVariations
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions, SolverType
-from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
 from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_options import ContingencyAnalysisOptions
-from GridCalEngine.Simulations.LinearFactors.srap import get_buses_for_srap_list
 
 
-def nonlinear_contingency_analysis(grid: MultiCircuit,
-                                   options: ContingencyAnalysisOptions,
-                                   calling_class, t=None) -> ContingencyAnalysisResults:
+def helm_contingency_analysis(grid: MultiCircuit,
+                              options: ContingencyAnalysisOptions,
+                              calling_class,
+                              t: Union[int, None] = None) -> ContingencyAnalysisResults:
     """
-    Run N-1 simulation in series
+    Run N-1 simulation in series with HELM, non-linear solution
     :param grid:
     :param options:
     :param calling_class:
     :param t: time index, if None the snapshot is used
     :return: returns the results
     """
+
     # set the numerical circuit
     numerical_circuit = compile_numerical_circuit_at(grid, t_idx=t)
 
@@ -58,27 +60,21 @@ def nonlinear_contingency_analysis(grid: MultiCircuit,
 
     # get contingency groups dictionary
     cg_dict = grid.get_contingency_group_dict()
+
+    branches_dict = grid.get_branches_wo_hvdc_dict()
     calc_branches = grid.get_branches_wo_hvdc()
     mon_idx = numerical_circuit.branch_data.get_monitor_enabled_indices()
+
+    # keep the original states
+    original_br_active = numerical_circuit.branch_data.active.copy()
+    original_gen_active = numerical_circuit.generator_data.active.copy()
+    original_gen_p = numerical_circuit.generator_data.p.copy()
 
     # run 0
     pf_res_0 = multi_island_pf_nc(nc=numerical_circuit,
                                   options=pf_opts)
 
-    if options.use_srap:
-
-        # we need the PTDF for this
-        linear_analysis = LinearAnalysis(numerical_circuit=numerical_circuit,
-                                         distributed_slack=options.lin_options.distribute_slack,
-                                         correct_values=options.lin_options.correct_values)
-        linear_analysis.run()
-
-        # construct a list of information structures about how to deal with SRAP
-        buses_for_srap_list = get_buses_for_srap_list(PTDF=linear_analysis.PTDF,
-                                                      threshold=0.01  # self.options.lin_options.ptdf_threshold
-                                                      )
-    else:
-        buses_for_srap_list = list()
+    helm_variations = HelmVariations(numerical_circuit=numerical_circuit)
 
     # for each contingency group
     for ic, contingency_group in enumerate(grid.contingency_groups):
@@ -86,43 +82,51 @@ def nonlinear_contingency_analysis(grid: MultiCircuit,
         # get the group's contingencies
         contingencies = cg_dict[contingency_group.idtag]
 
-        # set the status
-        numerical_circuit.set_contingency_status(contingencies)
+        # apply the contingencies
+        contingency_br_indices = list()
+        for cnt in contingencies:
+
+            # search for the contingency in the Branches
+            if cnt.device_idtag in branches_dict:
+                br_idx = branches_dict[cnt.device_idtag]
+
+                if cnt.prop == 'active':
+                    contingency_br_indices.append(br_idx)
+                else:
+                    print(f'Unknown contingency property {cnt.prop} at {cnt.name} {cnt.idtag}')
+            else:
+                pass
 
         # report progress
-        if t is None and calling_class is not None:
-            calling_class.report_text(f'Contingency group: {contingency_group.name}')
-            calling_class.report_progress2(ic, len(grid.contingency_groups) * 100)
+        if t is None:
+            if calling_class is not None:
+                calling_class.report_text(f'Contingency group: {contingency_group.name}')
+                calling_class.report_progress2(ic, len(grid.contingency_groups) * 100)
 
         # run
-        pf_res = multi_island_pf_nc(nc=numerical_circuit,
-                                    options=pf_opts,
-                                    V_guess=pf_res_0.voltage)
+        V, Sf, loading = helm_variations.compute_variations(contingency_br_indices=contingency_br_indices)
 
-        results.Sf[ic, :] = pf_res.Sf
-        results.Sbus[ic, :] = pf_res.Sbus
-        results.loading[ic, :] = pf_res.loading
-        results.voltage[ic, :] = pf_res.voltage
+        results.Sf[ic, :] = Sf
+        results.Sbus[ic, :] = numerical_circuit.Sbus
+        results.loading[ic, :] = loading
         results.report.analyze(t=t,
                                mon_idx=mon_idx,
                                calc_branches=calc_branches,
                                numerical_circuit=numerical_circuit,
                                flows=np.abs(pf_res_0.Sf),
                                loading=np.abs(pf_res_0.loading),
-                               contingency_flows=np.abs(pf_res.Sf),
-                               contingency_loadings=np.abs(pf_res.loading),
+                               contingency_flows=np.abs(Sf),
+                               contingency_loadings=np.abs(loading),
                                contingency_idx=ic,
-                               contingency_group=contingency_group,
-                               using_srap=options.use_srap,
-                               srap_max_loading=options.srap_max_loading,
-                               srap_max_power=options.srap_max_power,
-                               buses_for_srap_list=buses_for_srap_list)
+                               contingency_group=contingency_group)
 
-        # set the status
-        numerical_circuit.set_contingency_status(contingencies, revert=True)
+        # revert the states for the next run
+        numerical_circuit.branch_data.active = original_br_active.copy()
+        numerical_circuit.generator_data.active = original_gen_active.copy()
+        numerical_circuit.generator_data.p = original_gen_p.copy()
 
         if calling_class is not None:
-            if calling_class.is_cancel():
+            if calling_class.is_cancelled():
                 return results
 
     return results

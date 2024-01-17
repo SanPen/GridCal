@@ -50,7 +50,7 @@ Proceso:
 
 - Cargar red con contingencias definidas
 - Para cada contingencia:
-    - Calcular PTDF equivalente PTDFc = MLODF[k, βδ] x PTDF[βδ, :] + PTDF[k, :]
+    - Calcular PTDF equivalente PTDFc = MLODF[:, βδ] x PTDF[βδ, :] + PTDF[:, :]
     - Para cada linea sobrecargada sobrecarga (k):
         - Obtener la lista ordenada de generadores sensibles (usando PTDFc) en la línea k
         - con esta lista, calcular los genera que resuelven el SRAP
@@ -62,7 +62,7 @@ Proceso B:
 - para cada tiempo t:
     - Para cada contingencia:
         - si t == 0:
-            - Calcular PTDF equivalente PTDFc = MLODF[k, βδ] x PTDF[βδ, :] + PTDF[k, :]
+            - Calcular PTDF equivalente PTDFc = MLODF[:, βδ] x PTDF[βδ, :] + PTDF[:, :]
             - Obtener delta: dPTDFc = PTDF - PTDFc
           sino:
             - PTDFc = PTDF - dPTDFc

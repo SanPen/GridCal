@@ -23,9 +23,9 @@ from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearMultiContingencies
 from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_options import ContingencyAnalysisOptions
-from GridCalEngine.Simulations.ContingencyAnalysis.nonlinear_contingency_analysis import nonlinear_contingency_analysis
-from GridCalEngine.Simulations.ContingencyAnalysis.linear_contingency_analysis import linear_contingency_analysis
-from GridCalEngine.Simulations.ContingencyAnalysis.helm_contingency_analysis import helm_contingency_analysis
+from GridCalEngine.Simulations.ContingencyAnalysis.Methods.nonlinear_contingency_analysis import nonlinear_contingency_analysis
+from GridCalEngine.Simulations.ContingencyAnalysis.Methods.linear_contingency_analysis import linear_contingency_analysis
+from GridCalEngine.Simulations.ContingencyAnalysis.Methods.helm_contingency_analysis import helm_contingency_analysis
 from GridCalEngine.Core.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE
 from GridCalEngine.Core.Compilers.circuit_to_newton_pa import (NEWTON_PA_AVAILABLE, newton_pa_contingencies,
                                                                translate_newton_pa_contingencies)

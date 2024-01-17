@@ -14,14 +14,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
+import numpy as np
 from typing import List, Union, Any
-from GridCalEngine.basic_structures import IntVec, StrMat, StrVec, Vec
+from GridCalEngine.basic_structures import IntVec, StrMat, StrVec, Vec, Mat
 from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Core.Devices import ContingencyGroup
-from GridCalEngine.Simulations.LinearFactors.srap import BusesForSrap
-
-import numpy as np
+from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearMultiContingency
+from GridCalEngine.Simulations.ContingencyAnalysis.Methods.srap import BusesForSrap
+from GridCalEngine.Utils.Sparse.csc_numba import get_sparse_array_numba
 
 
 class ContingencyTableEntry:
@@ -147,7 +147,7 @@ class ContingencyResultsReport:
     Contingency results report table
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
         Constructor
         """
@@ -256,7 +256,8 @@ class ContingencyResultsReport:
             data[i, :] = e.to_array()
         return data
 
-    def analyze(self, t: Union[None, int],
+    def analyze(self,
+                t: Union[None, int],
                 mon_idx: IntVec,
                 calc_branches: List[Any],
                 numerical_circuit: NumericalCircuit,
@@ -269,7 +270,8 @@ class ContingencyResultsReport:
                 using_srap: bool = False,
                 srap_max_loading: float = 1.4,
                 srap_max_power: float = 1400.0,
-                buses_for_srap_list: List[BusesForSrap] = None):
+                multi_contingency: LinearMultiContingency = None,
+                PTDF: Mat = None):
         """
         Analize contingency resuts and add them to the report
         :param t: time index
@@ -285,7 +287,8 @@ class ContingencyResultsReport:
         :param using_srap: Inspect contingency using the SRAP conditions
         :param srap_max_loading: Rate multiplier under which we can use SRAP conditions
         :param srap_max_power: Max amount of power to lower using SRAP conditions
-        :param buses_for_srap_list: list of buses for SRAP conditions
+        :param multi_contingency: list of buses for SRAP conditions
+        :param PTDF
         """
         for m in mon_idx:  # for each monitored branch ...
 
@@ -297,8 +300,16 @@ class ContingencyResultsReport:
             # ----------------------------------------------------------------------------------------------------------
             srap_condition = 1.0 < abs(loading[m]) <= srap_max_loading
             if using_srap and srap_condition:
+
+                # compute the sensitivities for the monitored line
+                # PTDFc = MLODF[m, βδ] x PTDF[βδ, :] + PTDF[m, :]
+                PTDFc = multi_contingency.mlodf_factors[m, :] @ PTDF[multi_contingency.branch_indices, :] + PTDF[m, :]
+
                 # information about the buses that we can use for SRAP
-                buses_for_srap = buses_for_srap_list[m]
+                sensitivities, indices = get_sparse_array_numba(PTDFc[0, :], threshold=1e-3)
+                buses_for_srap = BusesForSrap(branch_idx=m,
+                                              bus_indices=indices,
+                                              sensitivities=sensitivities)
 
                 solved_by_srap, max_srap_power = buses_for_srap.is_solvable(
                     c_flow=contingency_flows[m].real,  # the real part because it must have the sign

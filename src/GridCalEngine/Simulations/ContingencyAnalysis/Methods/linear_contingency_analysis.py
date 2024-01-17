@@ -20,7 +20,7 @@ from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerica
 from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_results import ContingencyAnalysisResults
 from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearAnalysis, LinearMultiContingencies
 from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_options import ContingencyAnalysisOptions
-from GridCalEngine.Simulations.LinearFactors.srap import get_buses_for_srap_list
+from GridCalEngine.Simulations.ContingencyAnalysis.Methods.srap import get_buses_for_srap_list
 
 
 def linear_contingency_analysis(grid: MultiCircuit,
@@ -83,18 +83,23 @@ def linear_contingency_analysis(grid: MultiCircuit,
 
     loadings_n = flows_n / (numerical_circuit.rates + 1e-9)
 
-    if options.use_srap:
-        # construct a list of information structures about how to deal with SRAP
-        buses_for_srap_list = get_buses_for_srap_list(PTDF=linear_analysis.PTDF,
-                                                      threshold=options.lin_options.ptdf_threshold)
-    else:
-        buses_for_srap_list = list()
-
     if calling_class is not None:
         calling_class.report_text('Computing loading...')
 
     # for each contingency group
     for ic, multi_contingency in enumerate(linear_multiple_contingencies.multi_contingencies):
+
+        # if options.use_srap:
+        #
+        #     # PTDFc = MLODF[:, βδ] x PTDF[βδ, :] + PTDF[:, :]
+        #     PTDFc = (multi_contingency.mlodf_factors @ linear_analysis.PTDF[multi_contingency.branch_indices, :]
+        #              + linear_analysis.PTDF)
+        #
+        #     # construct a list of information structures about how to deal with SRAP
+        #     buses_for_srap_list = get_buses_for_srap_list(PTDF=PTDFc,
+        #                                                   threshold=options.lin_options.ptdf_threshold)
+        # else:
+        #     buses_for_srap_list = list()
 
         if multi_contingency.has_injection_contingencies():
             injections = numerical_circuit.generator_data.get_injections().real
@@ -120,7 +125,8 @@ def linear_contingency_analysis(grid: MultiCircuit,
                                using_srap=options.use_srap,
                                srap_max_loading=options.srap_max_loading,
                                srap_max_power=options.srap_max_power,
-                               buses_for_srap_list=buses_for_srap_list)
+                               multi_contingency=multi_contingency,
+                               PTDF=linear_analysis.PTDF)
 
         # report progress
         if t is None:
