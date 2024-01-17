@@ -456,7 +456,7 @@ class LinearMultiContingencies:
         # list of LinearMultiContingency objects that are used later to compute the contingency flows
         self.multi_contingencies: List[LinearMultiContingency] = list()
 
-    def update(self, lodf: Mat, ptdf: Mat, ptdf_threshold: float = 0.0001, lodf_threshold: float = 0.0001) -> None:
+    def compute(self, lodf: Mat, ptdf: Mat, ptdf_threshold: float = 0.0001, lodf_threshold: float = 0.0001) -> None:
         """
         Make the LODF with any contingency combination using the declared contingency objects
         :param lodf: original LODF matrix (nbr, nbr)

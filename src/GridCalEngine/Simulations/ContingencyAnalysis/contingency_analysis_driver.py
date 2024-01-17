@@ -307,10 +307,10 @@ class ContingencyAnalysisDriver(DriverTemplate):
                                          correct_values=self.options.lin_options.correct_values)
         linear_analysis.run()
 
-        self.linear_multiple_contingencies.update(lodf=linear_analysis.LODF,
-                                                  ptdf=linear_analysis.PTDF,
-                                                  ptdf_threshold=self.options.lin_options.ptdf_threshold,
-                                                  lodf_threshold=self.options.lin_options.lodf_threshold)
+        self.linear_multiple_contingencies.compute(lodf=linear_analysis.LODF,
+                                                   ptdf=linear_analysis.PTDF,
+                                                   ptdf_threshold=self.options.lin_options.ptdf_threshold,
+                                                   lodf_threshold=self.options.lin_options.lodf_threshold)
 
         # get the contingency branch indices
         mon_idx = numerical_circuit.branch_data.get_monitor_enabled_indices()
