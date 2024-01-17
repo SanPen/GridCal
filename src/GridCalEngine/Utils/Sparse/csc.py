@@ -516,22 +516,15 @@ def dense_to_csc(mat: Mat, threshold: float) -> csc_matrix:
     return csc_matrix((data, indices, indptr), shape=mat.shape)
 
 
-def diags(array) -> csc_matrix:
+def diags(array: np.ndarray) -> csc_matrix:
     """
     Convert array to CSC diagonal matrix
     :param array:
     :return:
     """
     m = len(array)
-    # indptr = np.zeros(m + 1, dtype=int)
-    # indices = np.zeros(m, dtype=int)
-    # data = np.zeros(m, dtype=float)
-    #
-    # for i in range(m):
-    #     indptr[i] = i
-    #     indices[i] = i
-    #     data[i] = array[i]
-    #
-    # indptr[m] = m
 
-    return csc_matrix(csc_numba.csc_diagonal_from_array(array), shape=(m, m))
+    if array.dtype == complex:
+        return csc_matrix(csc_numba.csc_diagonal_from_complex_array(array), shape=(m, m))
+    else:
+        return csc_matrix(csc_numba.csc_diagonal_from_array(array), shape=(m, m))

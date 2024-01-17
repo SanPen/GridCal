@@ -28,17 +28,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="changed pulp for ortools">
-      <change afterPath="$PROJECT_DIR$/doc/rst_source/theory/linear/SRAP.dia" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/rst_source/theory/linear/SRAP.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/doc/rst_source/theory/linear/srap.rst" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Improved docs">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/rst_source/api/auto/modules.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/modules.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/rst_source/figures/fluid_node_diagram.dia" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/opf/fluid_node_diagram.dia" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/rst_source/figures/fluid_node_diagram.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/opf/fluid_node_diagram.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/rst_source/theory/ptdf.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/theory/linear/ptdf.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/rst_source/theory/simulations.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/theory/simulations.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/srap/srap_example.py" beforeDir="false" afterPath="$PROJECT_DIR$/examples/trunk/srap/srap_example.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/Sparse/csc_numba.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/Sparse/csc_numba.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -129,33 +121,33 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "Git.Branch.Popup.ShowAllRemotes": "true",
-    "JavaScript Debug.index.html.executor": "Run",
-    "MATLAB_INTERPRETER": "/usr/local/MATLAB/R2018a/bin/matlab",
-    "Python tests.Nosetests for tests.test_contingency.executor": "Run",
-    "Python tests.Nosetests for tests.test_ptdf.executor": "Run",
-    "Python tests.Nosetests in tests.executor": "Run",
-    "Python.ExecuteGridCal.executor": "Run",
-    "Python.make.executor": "Run",
-    "Python.srap_example.executor": "Debug",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "Shell Script.make.sh.executor": "Run",
-    "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "205__ACOPF",
-    "last_opened_file_path": "/home/santi/Documentos/Git/GitHub/GridCal/doc/rst_source/theory/linear",
-    "node.js.detected.package.eslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "run.code.analysis.last.selected.profile": "aDefault",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyIntegratedToolsModulesConfigurable",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;Git.Branch.Popup.ShowAllRemotes&quot;: &quot;true&quot;,
+    &quot;JavaScript Debug.index.html.executor&quot;: &quot;Run&quot;,
+    &quot;MATLAB_INTERPRETER&quot;: &quot;/usr/local/MATLAB/R2018a/bin/matlab&quot;,
+    &quot;Python tests.Nosetests for tests.test_contingency.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests for tests.test_ptdf.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests in tests.executor&quot;: &quot;Run&quot;,
+    &quot;Python.ExecuteGridCal.executor&quot;: &quot;Run&quot;,
+    &quot;Python.make.executor&quot;: &quot;Run&quot;,
+    &quot;Python.srap_example.executor&quot;: &quot;Debug&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;Shell Script.make.sh.executor&quot;: &quot;Run&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;205__ACOPF&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/santi/Documentos/Git/GitHub/GridCal/doc/rst_source/theory/linear&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;run.code.analysis.last.selected.profile&quot;: &quot;aDefault&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyIntegratedToolsModulesConfigurable&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="PyDebuggerOptionsProvider">
     <option name="mySaveCallSignatures" value="true" />
     <option name="mySupportGeventDebugging" value="true" />
@@ -1548,6 +1540,7 @@
       <workItem from="1702898831468" duration="9005000" />
       <workItem from="1704277162371" duration="2862000" />
       <workItem from="1704291407336" duration="528000" />
+      <workItem from="1705478162991" duration="2320000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1892,7 +1885,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="453" />
+    <option name="localTasksCounter" value="454" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1938,7 +1931,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Write more about the equality constraints" />
     <MESSAGE value="Fixed unnecesary registers in FluidNode&#10;Fixed type issues in the opf" />
     <MESSAGE value="cosmetic changes" />
     <MESSAGE value="fixed simple bus viewer bug" />
@@ -1963,7 +1955,8 @@
     <MESSAGE value="Fixed misnaming" />
     <MESSAGE value="Updated the copyright to 2024" />
     <MESSAGE value="changed pulp for ortools" />
-    <option name="LAST_COMMIT_MESSAGE" value="changed pulp for ortools" />
+    <MESSAGE value="Improved docs" />
+    <option name="LAST_COMMIT_MESSAGE" value="Improved docs" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

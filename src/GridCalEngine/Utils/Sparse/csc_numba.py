@@ -332,25 +332,30 @@ def csc_mat_vec_ff(m, n, Ap, Ai, Ax, x):
 
 # @nb.njit("Tuple((i8, i8, i4[:], i4[:], f8[:]))(i8, i8, i4[:], i4[:], f8[:], i8)")
 @nb.njit(cache=True)
-def coo_to_csc(m, n, Ti, Tj, Tx, nz):
+def coo_to_csc(m, n, Ti, Tj, Tx, nnz):
     """
-    C = compressed-column form of a triplet matrix T. The columns of C are
-    not sorted, and duplicate entries may be present in C.
+    C = compressed-column form of a triplet matrix T.
+    The columns of T are not sorted, and duplicate entries may be present in T.
 
-    @param T: triplet matrix
-    @return: Cm, Cn, Cp, Ci, Cx
+    :param m: row number
+    :param n: column number
+    :param Ti: array of row indices
+    :param Tj: array of column indices
+    :param Tx: array of data
+    :param nnz: non-zero entries, if there are no duplicate entries, nnz = len(Tx)
+    :return: Cm, Cn, Cp, Ci, Cx
     """
 
-    Cm, Cn, Cp, Ci, Cx, nz = csc_spalloc_f(m, n, nz)  # allocate result
+    Cm, Cn, Cp, Ci, Cx, nnz = csc_spalloc_f(m, n, nnz)  # allocate result
 
-    w = w = np.zeros(n, dtype=nb.int32)  # get workspace
+    w = np.zeros(n, dtype=nb.int32)  # get workspace
 
-    for k in range(nz):
+    for k in range(nnz):
         w[Tj[k]] += 1  # column counts
 
     csc_cumsum_i(Cp, w, n)  # column pointers
 
-    for k in range(nz):
+    for k in range(nnz):
         p = w[Tj[k]]
         w[Tj[k]] += 1
         Ci[p] = Ti[k]  # A(i,j) is the pth entry in C
@@ -689,6 +694,29 @@ def csc_diagonal_from_array(array):
     indptr = np.zeros(m + 1, dtype=np.int32)
     indices = np.zeros(m, dtype=np.int32)
     data = np.zeros(m)
+
+    for i in range(m):
+        indptr[i] = i
+        indices[i] = i
+        data[i] = array[i]
+
+    indptr[m] = m
+
+    return data, indices, indptr
+
+
+@nb.njit(cache=True)
+def csc_diagonal_from_complex_array(array):
+    """
+
+    :param m:
+    :param array:
+    :return:
+    """
+    m = len(array)
+    indptr = np.zeros(m + 1, dtype=np.int32)
+    indices = np.zeros(m, dtype=np.int32)
+    data = np.zeros(m, dtype=nb.complex128)
 
     for i in range(m):
         indptr[i] = i
