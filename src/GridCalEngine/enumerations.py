@@ -487,7 +487,7 @@ class ZonalGrouping(Enum):
             return s
 
 
-class ContingencyEngine(Enum):
+class ContingencyMethod(Enum):
     """
     Enumeratio of contingency calculation engines
     """

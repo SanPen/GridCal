@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from GridCalEngine.enumerations import ContingencyEngine
+from GridCalEngine.enumerations import ContingencyMethod
 from GridCalEngine.basic_structures import Vec
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions, SolverType
 from GridCalEngine.Simulations.LinearFactors.linear_analysis_options import LinearAnalysisOptions
@@ -35,7 +35,7 @@ class ContingencyAnalysisOptions:
                  use_srap: bool = False,
                  srap_max_loading: float = 1.4,
                  srap_max_power: float = 1400.0,
-                 engine=ContingencyEngine.PowerFlow):
+                 engine=ContingencyMethod.PowerFlow):
         """
         ContingencyAnalysisOptions
         :param distributed_slack: Use distributed slack?
@@ -54,7 +54,7 @@ class ContingencyAnalysisOptions:
 
         self.Pf: Vec = Pf
 
-        self.engine = engine
+        self.contingency_method = engine
 
         self.pf_options = pf_options
 

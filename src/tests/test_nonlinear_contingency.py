@@ -37,7 +37,7 @@ def test_non_linear_factors():
     # ------------------------------------------------------------------------------------------------------------------
     nl_options = ContingencyAnalysisOptions(distributed_slack=False,
                                             pf_options=pf_options,
-                                            engine=ContingencyEngine.PowerFlow)
+                                            engine=ContingencyMethod.PowerFlow)
 
     # lmc = LinearMultiContingencies(grid=main_circuit)
     nl_simulation = ContingencyAnalysisDriver(grid=main_circuit,

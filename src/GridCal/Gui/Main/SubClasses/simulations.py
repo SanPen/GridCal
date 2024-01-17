@@ -40,7 +40,7 @@ from GridCalEngine.Utils.MIP.selected_interface import get_available_mip_solvers
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCalEngine.enumerations import (DeviceType, AvailableTransferMode, GenerationNtcFormulation, SolverType,
                                         ReactivePowerControlMode, TapsControlMode, MIPSolvers, TimeGrouping,
-                                        ZonalGrouping, ContingencyEngine, InvestmentEvaluationMethod, EngineType,
+                                        ZonalGrouping, ContingencyMethod, InvestmentEvaluationMethod, EngineType,
                                         BranchImpedanceMode)
 
 
@@ -142,9 +142,9 @@ class SimulationsMain(TimeEventsMain):
 
         # reactive power controls
         self.contingency_engines_dict = OrderedDict()
-        self.contingency_engines_dict[ContingencyEngine.PowerFlow.value] = ContingencyEngine.PowerFlow
-        self.contingency_engines_dict[ContingencyEngine.PTDF.value] = ContingencyEngine.PTDF
-        self.contingency_engines_dict[ContingencyEngine.HELM.value] = ContingencyEngine.HELM
+        self.contingency_engines_dict[ContingencyMethod.PowerFlow.value] = ContingencyMethod.PowerFlow
+        self.contingency_engines_dict[ContingencyMethod.PTDF.value] = ContingencyMethod.PTDF
+        self.contingency_engines_dict[ContingencyMethod.HELM.value] = ContingencyMethod.HELM
         self.ui.contingencyEngineComboBox.setModel(gf.get_list_model(list(self.contingency_engines_dict.keys())))
 
         # list of stochastic power flow methods

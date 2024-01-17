@@ -20,7 +20,7 @@ from numba import jit, prange
 from typing import Union
 
 from GridCalEngine.basic_structures import IntVec, StrVec
-from GridCalEngine.enumerations import EngineType, ContingencyEngine
+from GridCalEngine.enumerations import EngineType, ContingencyMethod
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearMultiContingencies
 from GridCalEngine.Simulations.LinearFactors.linear_analysis_options import LinearAnalysisOptions
@@ -193,7 +193,7 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
 
         contingency_count = None
 
-        if self.options.engine == ContingencyEngine.PTDF:
+        if self.options.contingency_method == ContingencyMethod.PTDF:
             linear = LinearAnalysisTimeSeriesDriver(
                 grid=self.grid,
                 options=self.options,
@@ -207,13 +207,13 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
             self.report_progress2(it, len(self.time_indices))
 
             # run contingency at t using the specified method
-            if self.options.engine == ContingencyEngine.PowerFlow:
+            if self.options.contingency_method == ContingencyMethod.PowerFlow:
                 res_t = cdriver.n_minus_k(t=t)
 
-            elif self.options.engine == ContingencyEngine.PTDF:
+            elif self.options.contingency_method == ContingencyMethod.PTDF:
                 res_t = cdriver.n_minus_k_ptdf(t=t)
 
-            elif self.options.engine == ContingencyEngine.HELM:
+            elif self.options.contingency_method == ContingencyMethod.HELM:
                 res_t = cdriver.n_minus_k_helm(t=t)
 
             else:

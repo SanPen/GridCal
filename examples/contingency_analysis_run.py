@@ -31,7 +31,7 @@ pf_options = PowerFlowOptions(solver_type=SolverType.NR)
 options_ = ContingencyAnalysisOptions(distributed_slack=True,
                                       use_provided_flows=False,
                                       Pf=None,
-                                      engine=en.ContingencyEngine.PowerFlow,
+                                      engine=en.ContingencyMethod.PowerFlow,
                                       pf_options=pf_options)
 
 linear_multiple_contingencies = LinearMultiContingencies(grid=main_circuit)

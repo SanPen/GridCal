@@ -381,7 +381,7 @@ def test_mlodf():
                                   control_q=ReactivePowerControlMode.NoControl,
                                   control_p=False)
 
-    options = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyEngine.PTDF)
+    options = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyMethod.PTDF)
     cont_analysis_driver = ContingencyAnalysisDriver(grid=main_circuit, options=options,
                                                      linear_multiple_contingencies=linear_multi_contingency)
     cont_analysis_driver.run()
@@ -406,7 +406,7 @@ def test_mlodf_sanpen():
                                   dispatch_storage=True,
                                   control_q=ReactivePowerControlMode.NoControl,
                                   control_p=False)
-    options1 = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyEngine.PowerFlow)
+    options1 = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyMethod.PowerFlow)
     cont_analysis_driver1 = ContingencyAnalysisDriver(grid=main_circuit, options=options1,
                                                       linear_multiple_contingencies=None)
     cont_analysis_driver1.run()
@@ -416,7 +416,7 @@ def test_mlodf_sanpen():
     linear_analysis.run()
     linear_multi_contingency = LinearMultiContingencies(grid=main_circuit)
     linear_multi_contingency.compute(ptdf=linear_analysis.results.PTDF, lodf=linear_analysis.results.LODF)
-    options2 = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyEngine.PTDF)
+    options2 = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyMethod.PTDF)
     cont_analysis_driver2 = ContingencyAnalysisDriver(grid=main_circuit, options=options2,
                                                       linear_multiple_contingencies=linear_multi_contingency)
     cont_analysis_driver2.run()

@@ -22,7 +22,7 @@ from typing import List, Dict, Union, TYPE_CHECKING
 from GridCalEngine.basic_structures import IntVec, Vec
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.enumerations import (TransformerControlType, HvdcControlType, SolverType, TimeGrouping,
-                                        ReactivePowerControlMode, ZonalGrouping, MIPSolvers, ContingencyEngine)
+                                        ReactivePowerControlMode, ZonalGrouping, MIPSolvers, ContingencyMethod)
 import GridCalEngine.Core.Devices as dev
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
@@ -1319,9 +1319,9 @@ def newton_pa_contingencies(circuit: MultiCircuit,
         time_indices = [0]
         n_threads = 1
 
-    if con_opt.engine == ContingencyEngine.PTDF:
+    if con_opt.contingency_method == ContingencyMethod.PTDF:
         mode = npa.ContingencyAnalysisMode.Linear
-    elif con_opt.engine == ContingencyEngine.PowerFlow:
+    elif con_opt.contingency_method == ContingencyMethod.PowerFlow:
         mode = npa.ContingencyAnalysisMode.Full
     else:
         mode = npa.ContingencyAnalysisMode.Full

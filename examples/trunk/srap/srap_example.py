@@ -2,7 +2,7 @@ import os
 from GridCalEngine.api import FileOpen
 from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_driver import (ContingencyAnalysisOptions,
                                                                                        ContingencyAnalysisDriver)
-from GridCalEngine.enumerations import EngineType, ContingencyEngine
+from GridCalEngine.enumerations import EngineType, ContingencyMethod
 
 path = "/home/santi/Escritorio/Redes/15_Caso_2026.gridcal"
 
@@ -12,7 +12,7 @@ grid = FileOpen(path).open()
 print("Running contingency analysis...")
 con_options = ContingencyAnalysisOptions()
 con_options.use_srap = True
-con_options.engine = ContingencyEngine.PTDF
+con_options.contingency_method = ContingencyMethod.PTDF
 
 con_drv = ContingencyAnalysisDriver(grid=grid,
                                     options=con_options,

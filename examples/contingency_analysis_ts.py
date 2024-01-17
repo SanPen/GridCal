@@ -20,7 +20,7 @@ options_ = ContingencyAnalysisOptions(
     distributed_slack=True,
     use_provided_flows=False,
     Pf=None,
-    engine=en.ContingencyEngine.PTDF,
+    engine=en.ContingencyMethod.PTDF,
     pf_options=PowerFlowOptions(),
 )
 

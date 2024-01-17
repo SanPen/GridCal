@@ -151,6 +151,13 @@ class DriverTemplate:
         self.__cancel__ = True
         self.report_done("Cancelled!")
 
+    def is_cancel(self) -> bool:
+        """
+        Check if cancel was activated
+        :return:
+        """
+        return self.__cancel__
+
 
 class TimeSeriesDriverTemplate(DriverTemplate):
     """
