@@ -16,10 +16,12 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
 import pandas as pd
+from scipy import sparse
 from scipy.sparse import csc_matrix as csc
 from scipy.sparse import lil_matrix
 import GridCalEngine.api as gce
 from GridCalEngine.basic_structures import Vec
+from GridCalEngine.Utils.Sparse.csc import diags
 from GridCalEngine.Utils.MIPS.mips import solver
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
 from typing import Callable, Tuple
@@ -135,9 +137,10 @@ def eval_h(x, Yf, Yt, from_idx, to_idx, slack, no_slack, th_max, th_min, V_U, V_
     Lf = If * If
     Sf = V[from_idx] * If
     St = V[to_idx] * np.conj(Yt @ V)
-
-    hval = np.r_[abs(Sf) - rates,  # rates "lower limit"
-                 abs(St) - rates,  # rates "upper limit"
+    Sf2 = np.conj(Sf) * Sf
+    St2 = np.conj(St) * St
+    hval = np.r_[Sf2.real - (rates ** 2),  # rates "lower limit"
+                 St2.real - (rates ** 2),  # rates "upper limit"
                  vm - V_U,  # voltage module upper limit
                  V_L - vm,  # voltage module lower limit
                  va[no_slack] - th_max[no_slack],  # voltage angles upper limit
@@ -149,6 +152,93 @@ def eval_h(x, Yf, Yt, from_idx, to_idx, slack, no_slack, th_max, th_min, V_U, V_
     ]
 
     return hval
+
+
+def jacobians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, slack, no_slack):
+
+    M, N = Yf.shape
+    Ng = Cg.shape[1]  # Check
+    NV = len(x)
+    #fx = lil_matrix((1, NV))
+    #Gx = lil_matrix((NE, NV))
+    #Hx = lil_matrix((NI, NV))
+
+    vm, va, Pg, Qg = x2var(x, n_vm=N, n_va=N, n_P=Ng, n_Q=Ng)
+    V = vm * np.exp(1j * va)
+    Vmat = diags(V)
+    E = Vmat @ diags(1/vm)
+    Ibus = Ybus @ V
+    IbusCJmat = diags(np.conj(Ibus))
+
+    fx = np.zeros(NV)
+
+    fx[2*N : 2*N + Ng] = 2 * c2 * Pg + c1
+
+    #########
+
+    GSvm = Vmat @ (IbusCJmat + np.conj(Ybus) @ np.conj(Vmat)) @ diags(1/vm)
+    GSva = 1j * Vmat @ (IbusCJmat - np.conj(Ybus) @ np.conj(Vmat))
+    GSpg = -Cg
+    GSqg = -1j * Cg
+
+    GTH = np.zeros(len(x))
+    GTH[slack + N] = 1
+
+    GS = sparse.hstack([GSvm, GSva, GSpg, GSqg])
+    Gx = sparse.vstack([GS.real, GS.imag, GTH])
+
+    #############
+
+    IfCJmat = diags(Yf @ V)
+    ItCJmat = diags(Yt @ V)
+    Sfmat = diags(IfCJmat @ Cf @ V)
+    Stmat = diags(ItCJmat @ Ct @ V)
+
+    Sfvm = IfCJmat @ Cf @ E + diags(Cf @ V) @ np.conj(Yf) @ np.conj(E)
+    Stvm = ItCJmat @ Ct @ E + diags(Ct @ V) @ np.conj(Yt) @ np.conj(E)
+
+    Sfva = 1j * (IfCJmat @ Cf @ Vmat - diags(Cf @ V) @ np.conj(Yf) @ np.conj(Vmat))
+    Stva = 1j * (ItCJmat @ Ct @ Vmat - diags(Ct @ V) @ np.conj(Yt) @ np.conj(Vmat))
+
+    SfX = sparse.hstack([Sfvm, Sfva, lil_matrix((M, 2 * Ng))])
+    StX = sparse.hstack([Stvm, Stva, lil_matrix((M, 2 * Ng))])
+
+    HSf = 2 * (Sfmat.real @ SfX.real + Sfmat.imag @ SfX.imag)
+    HSt = 2 * (Stmat.real @ StX.real + Stmat.imag @ StX.imag)
+
+    Hvu = np.zeros(N)
+    Hvl = np.zeros(N)
+    Hvau = np.zeros(N)
+    Hval = np.zeros(N)
+    Hpu = np.zeros(Ng)
+    Hpl = np.zeros(Ng)
+    Hqu = np.zeros(Ng)
+    Hql = np.zeros(Ng)
+
+    Hvu[0 : N] = 1
+    Hvl[0 : N] = -1
+    #Hvau[no_slack] = 1
+    #Hval[no_slack] = -1
+    Hvau = csc(([1] * (N - 1), (list(range(N-1)), no_slack)))
+    Hval = csc(([-1] * (N - 1), (list(range(N - 1)), no_slack)))
+
+    Hpu[0 : N] = 1
+    Hpl[0 : Ng] = -1
+    Hqu[0 : Ng] = 1
+    Hql[0 : Ng] = -1
+
+    Hvu = sparse.hstack([diags(Hvu), lil_matrix((N, N + 2 * Ng))])
+    Hvl = sparse.hstack([diags(Hvl), lil_matrix((N, N + 2 * Ng))])
+    Hvau = sparse.hstack([lil_matrix((N - 1, N)), Hvau, lil_matrix((N - 1, 2 * Ng))])
+    Hval = sparse.hstack([lil_matrix((N - 1, N)), Hval, lil_matrix((N - 1, 2 * Ng))])
+    Hpu = sparse.hstack([lil_matrix((Ng, 2 * N)), diags(Hpu), lil_matrix((Ng, Ng))])
+    Hpl = sparse.hstack([lil_matrix((Ng, 2 * N)), diags(Hpl), lil_matrix((Ng, Ng))])
+    Hqu = sparse.hstack([lil_matrix((Ng, 2 * N + Ng)), diags(Hqu)])
+    Hql = sparse.hstack([lil_matrix((Ng, 2 * N + Ng)), diags(Hql)])
+
+    Hx = sparse.vstack([HSf, HSt, Hvu, Hvl, Hvau, Hval, Hpu, Hpl, Hqu, Hql])
+
+    return fx, Gx.tocsc().T, Hx.tocsc().T
 
 
 def calc_jacobian_f_obj(func, x: Vec, arg=(), h=1e-5) -> Vec:
@@ -299,7 +389,7 @@ def calc_hessian(func, x: Vec, mult: Vec, arg=(), h=1e-5) -> csc:
     return hessians.tocsc()
 
 
-def evaluate_power_flow(x, mu, lmbda, Ybus, Yf, Cg, Sd, slack, no_slack, Yt, from_idx, to_idx,
+def evaluate_power_flow(x, mu, lmbda, Ybus, Yf, Cg, Cf, Ct, Sd, slack, no_slack, Yt, from_idx, to_idx,
                         th_max, th_min, V_U, V_L, P_U, P_L, Q_U, Q_L, c0, c1, c2, Sbase, rates, h=1e-5) -> (
         Tuple)[Vec, Vec, Vec, Vec, csc, csc, csc, csc, csc]:
     """
@@ -335,10 +425,13 @@ def evaluate_power_flow(x, mu, lmbda, Ybus, Yf, Cg, Sd, slack, no_slack, Yt, fro
     H = eval_h(x=x, Yf=Yf, Yt=Yt, from_idx=from_idx, to_idx=to_idx, slack=slack, no_slack=no_slack, th_max=th_max,
                th_min=th_min, V_U=V_U, V_L=V_L, P_U=P_U, P_L=P_L, Q_U=Q_U, Q_L=Q_L, Cg=Cg, rates=rates)
 
-    fx = calc_jacobian_f_obj(func=eval_f, x=x, arg=(Yf, Cg, c0, c1, c2, Sbase, no_slack), h=h)
-    Gx = calc_jacobian(func=eval_g, x=x, arg=(Ybus, Yf, Cg, Sd, slack, no_slack)).T
-    Hx = calc_jacobian(func=eval_h, x=x, arg=(Yf, Yt, from_idx, to_idx, slack, no_slack, th_max, th_min,
-                                              V_U, V_L, P_U, P_L, Q_U, Q_L, Cg, rates)).T
+    #fx = calc_jacobian_f_obj(func=eval_f, x=x, arg=(Yf, Cg, c0, c1, c2, Sbase, no_slack), h=h)
+    #Gx = calc_jacobian(func=eval_g, x=x, arg=(Ybus, Yf, Cg, Sd, slack, no_slack)).T
+    #Hx = calc_jacobian(func=eval_h, x=x, arg=(Yf, Yt, from_idx, to_idx, slack, no_slack, th_max, th_min,
+    #                                          V_U, V_L, P_U, P_L, Q_U, Q_L, Cg, rates)).T
+
+    fx, Gx, Hx = jacobians(x=x, c1=c1, c2=c2, Cg=Cg, Cf=Cf, Ct=Ct, Yf=Yf, Yt=Yt,
+                           Ybus=Ybus, slack=slack, no_slack=no_slack)
 
     fxx = calc_hessian_f_obj(func=eval_f, x=x, arg=(Yf, Cg, c0, c1, c2, Sbase, no_slack), h=h)
     Gxx = calc_hessian(func=eval_g, x=x, mult=lmbda, arg=(Ybus, Yf, Cg, Sd, slack, no_slack))
@@ -366,6 +459,8 @@ def ac_optimal_power_flow(nc: gce.NumericalCircuit, pf_options: gce.PowerFlowOpt
     Yf = nc.Yf
     Yt = nc.Yt
     Cg = nc.generator_data.C_bus_elm
+    Cf = nc.Cf
+    Ct = nc.Ct
 
     # Bus identification lists
     slack = nc.vd
@@ -421,7 +516,7 @@ def ac_optimal_power_flow(nc: gce.NumericalCircuit, pf_options: gce.PowerFlowOpt
         print("x0:", x0)
     x, error, gamma, lam = solver(x0=x0, n_x=NV, n_eq=NE, n_ineq=NI,
                                   func=evaluate_power_flow,
-                                  arg=(Ybus, Yf, Cg, Sd, slack, no_slack, Yt, from_idx, to_idx, Va_max,
+                                  arg=(Ybus, Yf, Cg, Cf, Ct, Sd, slack, no_slack, Yt, from_idx, to_idx, Va_max,
                                        Va_min, Vm_max, Vm_min, Pg_max, Pg_min, Qg_max, Qg_min, c0, c1, c2, Sbase, rates),
                                   verbose=verbose)
 
@@ -623,7 +718,7 @@ def case14():
 
 if __name__ == '__main__':
     example_3bus_acopf()
-    # linn5bus_example()
+    #linn5bus_example()
     # two_grids_of_3bus()
     # case9()
     # case14()
