@@ -29,6 +29,9 @@ from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_driver i
                                                                                        ContingencyAnalysisDriver)
 from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_ts_results import (
     ContingencyAnalysisTimeSeriesResults)
+from GridCalEngine.Simulations.ContingencyAnalysis.Methods.nonlinear_contingency_analysis import nonlinear_contingency_analysis
+from GridCalEngine.Simulations.ContingencyAnalysis.Methods.linear_contingency_analysis import linear_contingency_analysis
+from GridCalEngine.Simulations.ContingencyAnalysis.Methods.helm_contingency_analysis import helm_contingency_analysis
 from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.driver_template import TimeSeriesDriverTemplate
 from GridCalEngine.Simulations.Clustering.clustering_results import ClusteringResults
@@ -206,19 +209,20 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
             self.report_text('Contingency at ' + str(self.grid.time_profile[t]))
             self.report_progress2(it, len(self.time_indices))
 
-            # run contingency at t using the specified method
-            if self.options.contingency_method == ContingencyMethod.PowerFlow:
-                res_t = cdriver.n_minus_k(t=t)
+            # # run contingency at t using the specified method
+            # if self.options.contingency_method == ContingencyMethod.PowerFlow:
+            #
+            #
+            # elif self.options.contingency_method == ContingencyMethod.PTDF:
+            #     res_t = cdriver.n_minus_k_ptdf(t=t)
+            #
+            # elif self.options.contingency_method == ContingencyMethod.HELM:
+            #     res_t = cdriver.n_minus_k_helm(t=t)
+            #
+            # else:
+            #     res_t = cdriver.n_minus_k(t=t)
 
-            elif self.options.contingency_method == ContingencyMethod.PTDF:
-                res_t = cdriver.n_minus_k_ptdf(t=t)
-
-            elif self.options.contingency_method == ContingencyMethod.HELM:
-                res_t = cdriver.n_minus_k_helm(t=t)
-
-            else:
-                res_t = cdriver.n_minus_k(t=t)
-
+            res_t = cdriver.run_at(t=t)
             l_abs = np.abs(res_t.loading)
             contingency = l_abs > 1
             if contingency_count is None:

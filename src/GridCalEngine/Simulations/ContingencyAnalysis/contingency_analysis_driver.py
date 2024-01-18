@@ -83,12 +83,12 @@ class ContingencyAnalysisDriver(DriverTemplate):
         else:
             return list()
 
-    def run(self) -> None:
+    def run_at(self, t: int = None) -> ContingencyAnalysisResults:
         """
-
-        :return:
+        Run the contingency at a time point
+        :param t: index for any time series index, None for the snapshot
+        :return: ContingencyAnalysisResults
         """
-        self.tic()
         if self.engine == EngineType.NewtonPA and not NEWTON_PA_AVAILABLE:
             self.engine = EngineType.GridCal
             self.logger.add_warning('Tried to use Newton, but failed back to GridCal')
@@ -108,7 +108,7 @@ class ContingencyAnalysisDriver(DriverTemplate):
                     options=self.options,
                     linear_multiple_contingencies=self.linear_multiple_contingencies,
                     calling_class=self,
-                    t=None
+                    t=t
                 )
 
             elif self.options.contingency_method == ContingencyMethod.PTDF:
@@ -117,7 +117,7 @@ class ContingencyAnalysisDriver(DriverTemplate):
                     options=self.options,
                     linear_multiple_contingencies=self.linear_multiple_contingencies,
                     calling_class=self,
-                    t=None
+                    t=t
                 )
 
             elif self.options.contingency_method == ContingencyMethod.HELM:
@@ -125,7 +125,7 @@ class ContingencyAnalysisDriver(DriverTemplate):
                     grid=self.grid,
                     options=self.options,
                     calling_class=self,
-                    t=None
+                    t=t
                 )
 
             else:
@@ -143,4 +143,13 @@ class ContingencyAnalysisDriver(DriverTemplate):
             self.results = translate_newton_pa_contingencies(grid=self.grid,
                                                              con_res=con_res)
 
+        return self.results
+
+    def run(self) -> None:
+        """
+
+        :return:
+        """
+        self.tic()
+        self.run_at(t=None)
         self.toc()
