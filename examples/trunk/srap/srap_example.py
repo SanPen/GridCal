@@ -4,7 +4,9 @@ from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_driver i
                                                                                        ContingencyAnalysisDriver)
 from GridCalEngine.enumerations import EngineType, ContingencyMethod
 
-path = "/home/santi/Escritorio/Redes/15_Caso_2026.gridcal"
+
+path= r'C:\Users\posmarfe\OneDrive - REDEIA\Escritorio\2023 MoU Pmode1-3\srap\15_Caso_2026.gridcal'
+#path = "/home/santi/Escritorio/Redes/15_Caso_2026.gridcal"
 
 print('Loading grical circuit... ', sep=' ')
 grid = FileOpen(path).open()
