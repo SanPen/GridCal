@@ -154,14 +154,11 @@ def eval_h(x, Yf, Yt, from_idx, to_idx, slack, no_slack, th_max, th_min, V_U, V_
     return hval
 
 
-def jacobians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, slack, no_slack, mu, lmbda):
+def jacobians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, slack, no_slack, mu, lmbda):
 
     M, N = Yf.shape
     Ng = Cg.shape[1]  # Check
     NV = len(x)
-    #fx = lil_matrix((1, NV))
-    #Gx = lil_matrix((NE, NV))
-    #Hx = lil_matrix((NI, NV))
 
     vm, va, Pg, Qg = x2var(x, n_vm=N, n_va=N, n_P=Ng, n_Q=Ng)
     V = vm * np.exp(1j * va)
@@ -173,7 +170,7 @@ def jacobians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, slack, no_slack, mu, lmbda):
 
     fx = np.zeros(NV)
 
-    fx[2 * N : 2 * N + Ng] = 2 * c2 * Pg + c1
+    fx[2 * N : 2 * N + Ng] = (2 * c2 * Pg * (Sbase ** 2) + c1 * Sbase) * 1e-4
 
     #########
 
@@ -190,10 +187,10 @@ def jacobians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, slack, no_slack, mu, lmbda):
 
     #############
 
-    IfCJmat = diags(Yf @ V)
-    ItCJmat = diags(Yt @ V)
-    Sfmat = diags(IfCJmat @ Cf @ V)
-    Stmat = diags(ItCJmat @ Ct @ V)
+    IfCJmat = np.conj(diags(Yf @ V))
+    ItCJmat = np.conj(diags(Yt @ V))
+    Sfmat = diags(diags(Cf @ V) @ np.conj(Yf @ V))
+    Stmat = diags(diags(Ct @ V) @ np.conj(Yt @ V))
 
     Sfvm = IfCJmat @ Cf @ E + diags(Cf @ V) @ np.conj(Yf) @ np.conj(E)
     Stvm = ItCJmat @ Ct @ E + diags(Ct @ V) @ np.conj(Yt) @ np.conj(E)
@@ -220,8 +217,8 @@ def jacobians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, slack, no_slack, mu, lmbda):
     Hvl[0 : N] = -1
     #Hvau[no_slack] = 1
     #Hval[no_slack] = -1
-    Hvau = csc(([1] * (N - 1), (list(range(N-1)), no_slack)))
-    Hval = csc(([-1] * (N - 1), (list(range(N - 1)), no_slack)))
+    Hvau = csc(([1] * (N - len(slack)), (list(range(N - len(slack))), no_slack)))
+    Hval = csc(([-1] * (N - len(slack)), (list(range(N - len(slack))), no_slack)))
 
     Hpu[0 : N] = 1
     Hpl[0 : Ng] = -1
@@ -230,8 +227,8 @@ def jacobians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, slack, no_slack, mu, lmbda):
 
     Hvu = sparse.hstack([diags(Hvu), lil_matrix((N, N + 2 * Ng))])
     Hvl = sparse.hstack([diags(Hvl), lil_matrix((N, N + 2 * Ng))])
-    Hvau = sparse.hstack([lil_matrix((N - 1, N)), Hvau, lil_matrix((N - 1, 2 * Ng))])
-    Hval = sparse.hstack([lil_matrix((N - 1, N)), Hval, lil_matrix((N - 1, 2 * Ng))])
+    Hvau = sparse.hstack([lil_matrix((N - len(slack), N)), Hvau, lil_matrix((N - len(slack), 2 * Ng))])
+    Hval = sparse.hstack([lil_matrix((N - len(slack), N)), Hval, lil_matrix((N - len(slack), 2 * Ng))])
     Hpu = sparse.hstack([lil_matrix((Ng, 2 * N)), diags(Hpu), lil_matrix((Ng, Ng))])
     Hpl = sparse.hstack([lil_matrix((Ng, 2 * N)), diags(Hpl), lil_matrix((Ng, Ng))])
     Hqu = sparse.hstack([lil_matrix((Ng, 2 * N + Ng)), diags(Hqu)])
@@ -241,24 +238,39 @@ def jacobians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, slack, no_slack, mu, lmbda):
 
     ##########
 
-    fxx = diags(np.r_[np.zeros(2*N), 2 * c2, np.zeros(Ng)])
+    fxx = diags((np.r_[np.zeros(2*N), 2 * c2 * (Sbase**2), np.zeros(Ng)]) * 1e-4)
 
     ##########
-    lmbda_mat = diags(lmbda)
-    A = lmbda_mat @ Vmat
+
+
+    '''
+    lmbda_mat = diags(lmbda[0 : 2 * N])
+    Ad = lmbda[0 : 2 * N] * np.r_[V.real, V.imag]
+    A = diags(Ad[0 : N] + 1j * Ad[N : 2 * N])
     B = Ybus @ Vmat
     C = A @ np.conj(B)
     D = np.conj(Ybus).T @ Vmat
-    F = 1j * lmbda_mat @ GSva
-    I = np.conj(Vmat) @ (D @ lmbda_mat - diags(D @ lmbda))
+    F = 1j * (diags(lmbda[0 : N]) @ GSva.real + 1j * diags(lmbda[N : 2 * N]) @ GSva.imag)
+    DLmat = D.real @ diags(lmbda[0 : N]) + 1j * D.imag @ diags(lmbda[N : 2 * N])
+    DL = D.real @ lmbda[0 : N] + 1j * D.imag @ lmbda[N : 2 * N]
+    I = np.conj(Vmat) @ (DLmat - diags(DL))
 
-    GSvava = I + F
-    GSvmva = 1j * vm_inv @ (I - F)
-    GSvavm = GSvmva.T
-    GSvmvm = vm_inv @ (C + C.T) @ vm_inv
+    GSvava_d = I + F
+    GSvmva_d = 1j * vm_inv @ (I - F)
+    GSvavm_d = GSvmva_d.T
+    GSvmvm_d = vm_inv @ (C + C.T) @ vm_inv
+
+    GSvava = GSvava_d.real + GSvava_d.imag
+    GSvmva = GSvmva_d.real + GSvmva_d.imag
+    GSvavm = GSvavm_d.real + GSvavm_d.imag
+    GSvmvm = GSvmvm_d.real + GSvmvm_d.imag
+
+    G1 = sparse.hstack([GSvmvm, GSvmva, lil_matrix((N, 2 * Ng))])
+    G2 = sparse.hstack([GSvavm, GSvava, lil_matrix((N, 2 * Ng))])
+    Gxx = sparse.vstack([G1, G2, lil_matrix((2 * Ng, NV))])
 
     #########
-    mu_mat = diags(mu) # Check if we have to grab just the from branches
+    mu_mat = diags(mu[0 : M]) # Check if we have to grab just the from branches
     Af = np.conj(Yf).T @ mu_mat @ Cf
     Bf = np.conj(Vmat) @ Af @ Vmat
     Df = diags(Af @ V) @ np.conj(Vmat)
@@ -269,7 +281,12 @@ def jacobians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, slack, no_slack, mu, lmbda):
     Sfvavm = Sfvmva.T
     Sfvmvm = vm_inv @ Ff @ vm_inv
 
-    mu_mat = diags(mu) # Check same
+    Hfvava = 2 * (Sfvava @ (np.conj(Sfmat) @ mu[0 : M]) + Sfva.T @ mu_mat @ np.conj(Sfva)).real
+    Hfvmva = 2 * (Sfvmva @ (np.conj(Sfmat) @ mu[0 : M]) + Sfvm.T @ mu_mat @ np.conj(Sfva)).real
+    Hfvavm = 2 * (Sfvavm @ (np.conj(Sfmat) @ mu[0 : M]) + Sfva.T @ mu_mat @ np.conj(Sfvm)).real
+    Hfvmvm = 2 * (Sfvmvm @ (np.conj(Sfmat) @ mu[0 : M]) + Sfvm.T @ mu_mat @ np.conj(Sfvm)).real
+
+    mu_mat = diags(mu[M: 2 * M])  # Check same
     At = np.conj(Yt).T @ mu_mat @ Ct
     Bt = np.conj(Vmat) @ At @ Vmat
     Dt = diags(At @ V) @ np.conj(Vmat)
@@ -280,8 +297,82 @@ def jacobians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, slack, no_slack, mu, lmbda):
     Stvavm = Stvmva.T
     Stvmvm = vm_inv @ Ft @ vm_inv
 
+    Htvava = 2 * (Stvava @ (np.conj(Stmat) @ mu[M : 2 * M]) + Stva.T @ mu_mat @ np.conj(Stva)).real
+    Htvmva = 2 * (Stvmva @ (np.conj(Stmat) @ mu[M : 2 * M]) + Stvm.T @ mu_mat @ np.conj(Stva)).real
+    Htvavm = 2 * (Stvavm @ (np.conj(Stmat) @ mu[M : 2 * M]) + Stva.T @ mu_mat @ np.conj(Stvm)).real
+    Htvmvm = 2 * (Stvmvm @ (np.conj(Stmat) @ mu[M : 2 * M]) + Stvm.T @ mu_mat @ np.conj(Stvm)).real
 
-return fx, Gx.tocsc().T, Hx.tocsc().T
+    H1 = sparse.hstack([Hfvmvm + Htvmvm, Hfvmva + Htvmva, lil_matrix((N, 2 * Ng))])
+    H2 = sparse.hstack([Hfvavm + Htvavm, Hfvava + Htvava, lil_matrix((N, 2 * Ng))])
+    Hxx = sparse.vstack([H1, H2, lil_matrix((2 * Ng, NV))])
+    '''
+
+    lmbda_mat = diags(lmbda[0: 2 * N])
+    Ad = lmbda[0: 2 * N] * np.r_[V.real, V.imag]
+    A = diags(Ad[0: N] + 1j * Ad[N: 2 * N])
+    B = Ybus @ Vmat
+    C = A @ np.conj(B)
+    D = np.conj(Ybus).T @ Vmat
+    F = 1j * (diags(lmbda[0: N]) @ GSva.real + 1j * diags(lmbda[N: 2 * N]) @ GSva.imag)
+    DLmat = D.real @ diags(lmbda[0: N]) + 1j * D.imag @ diags(lmbda[N: 2 * N])
+    DL = D.real @ lmbda[0: N] + 1j * D.imag @ lmbda[N: 2 * N]
+    I = np.conj(Vmat) @ (DLmat - diags(DL))
+
+    GSvava_d = I + F
+    GSvmva_d = 1j * vm_inv @ (I - F)
+    GSvavm_d = GSvmva_d.T
+    GSvmvm_d = vm_inv @ (C + C.T) @ vm_inv
+
+    GSvava = GSvava_d.real + GSvava_d.imag
+    GSvmva = GSvmva_d.real + GSvmva_d.imag
+    GSvavm = GSvavm_d.real + GSvavm_d.imag
+    GSvmvm = GSvmvm_d.real + GSvmvm_d.imag
+
+    G1 = sparse.hstack([GSvmvm, GSvmva, lil_matrix((N, 2 * Ng))])
+    G2 = sparse.hstack([GSvavm, GSvava, lil_matrix((N, 2 * Ng))])
+    Gxx = sparse.vstack([G1, G2, lil_matrix((2 * Ng, NV))])
+
+    #########
+
+    mu_mat = diags(np.conj(Sfmat) @ mu[0: M])  # Check if we have to grab just the from branches
+    Af = np.conj(Yf).T @ mu_mat @ Cf
+    Bf = np.conj(Vmat) @ Af @ Vmat
+    Df = diags(Af @ V) @ np.conj(Vmat)
+    Ef = diags(Af.T @ np.conj(V)) @ Vmat
+    Ff = Bf + Bf.T
+    Sfvava = Ff - Df - Ef
+    Sfvmva = 1j * vm_inv @ (Bf - Bf.T - Df + Ef)
+    Sfvavm = Sfvmva.T
+    Sfvmvm = vm_inv @ Ff @ vm_inv
+
+    mu_mat = diags(mu[0:M])
+    Hfvava = 2 * (Sfvava + Sfva.T @ mu_mat @ np.conj(Sfva)).real
+    Hfvmva = 2 * (Sfvmva + Sfvm.T @ mu_mat @ np.conj(Sfva)).real
+    Hfvavm = 2 * (Sfvavm + Sfva.T @ mu_mat @ np.conj(Sfvm)).real
+    Hfvmvm = 2 * (Sfvmvm + Sfvm.T @ mu_mat @ np.conj(Sfvm)).real
+
+    mu_mat = diags(np.conj(Stmat) @ mu[M: 2 * M])  # Check same
+    At = np.conj(Yt).T @ mu_mat @ Ct
+    Bt = np.conj(Vmat) @ At @ Vmat
+    Dt = diags(At @ V) @ np.conj(Vmat)
+    Et = diags(At.T @ np.conj(V)) @ Vmat
+    Ft = Bt + Bt.T
+    Stvava = Ft - Dt - Et
+    Stvmva = 1j * vm_inv @ (Bt - Bt.T - Dt + Et)
+    Stvavm = Stvmva.T
+    Stvmvm = vm_inv @ Ft @ vm_inv
+
+    mu_mat = diags(mu[M:2*M])
+    Htvava = 2 * (Stvava + Stva.T @ mu_mat @ np.conj(Stva)).real
+    Htvmva = 2 * (Stvmva + Stvm.T @ mu_mat @ np.conj(Stva)).real
+    Htvavm = 2 * (Stvavm + Stva.T @ mu_mat @ np.conj(Stvm)).real
+    Htvmvm = 2 * (Stvmvm + Stvm.T @ mu_mat @ np.conj(Stvm)).real
+
+    H1 = sparse.hstack([Hfvmvm + Htvmvm, Hfvmva + Htvmva, lil_matrix((N, 2 * Ng))])
+    H2 = sparse.hstack([Hfvavm + Htvavm, Hfvava + Htvava, lil_matrix((N, 2 * Ng))])
+    Hxx = sparse.vstack([H1, H2, lil_matrix((2 * Ng, NV))])
+
+    return fx, Gx.tocsc().T, Hx.tocsc().T, fxx, Gxx, Hxx
 
 
 def calc_jacobian_f_obj(func, x: Vec, arg=(), h=1e-5) -> Vec:
@@ -468,18 +559,18 @@ def evaluate_power_flow(x, mu, lmbda, Ybus, Yf, Cg, Cf, Ct, Sd, slack, no_slack,
     H = eval_h(x=x, Yf=Yf, Yt=Yt, from_idx=from_idx, to_idx=to_idx, slack=slack, no_slack=no_slack, th_max=th_max,
                th_min=th_min, V_U=V_U, V_L=V_L, P_U=P_U, P_L=P_L, Q_U=Q_U, Q_L=Q_L, Cg=Cg, rates=rates)
 
-    #fx = calc_jacobian_f_obj(func=eval_f, x=x, arg=(Yf, Cg, c0, c1, c2, Sbase, no_slack), h=h)
-    #Gx = calc_jacobian(func=eval_g, x=x, arg=(Ybus, Yf, Cg, Sd, slack, no_slack)).T
-    #Hx = calc_jacobian(func=eval_h, x=x, arg=(Yf, Yt, from_idx, to_idx, slack, no_slack, th_max, th_min,
-    #                                          V_U, V_L, P_U, P_L, Q_U, Q_L, Cg, rates)).T
+    #fx_long = calc_jacobian_f_obj(func=eval_f, x=x, arg=(Yf, Cg, c0, c1, c2, Sbase, no_slack), h=h)
+    #Gx_long = calc_jacobian(func=eval_g, x=x, arg=(Ybus, Yf, Cg, Sd, slack, no_slack)).T
+    #Hx_long = calc_jacobian(func=eval_h, x=x, arg=(Yf, Yt, from_idx, to_idx, slack, no_slack, th_max, th_min,
+    #                                               V_U, V_L, P_U, P_L, Q_U, Q_L, Cg, rates)).T
 
-    fx, Gx, Hx = jacobians(x=x, c1=c1, c2=c2, Cg=Cg, Cf=Cf, Ct=Ct, Yf=Yf, Yt=Yt,
-                           Ybus=Ybus, slack=slack, no_slack=no_slack, mu=mu, lmbda=lmbda)
+    fx, Gx, Hx, fxx, Gxx, Hxx = jacobians(x=x, c1=c1, c2=c2, Cg=Cg, Cf=Cf, Ct=Ct, Yf=Yf, Yt=Yt,
+                                          Ybus=Ybus, Sbase=Sbase, slack=slack, no_slack=no_slack, mu=mu, lmbda=lmbda)
 
-    fxx = calc_hessian_f_obj(func=eval_f, x=x, arg=(Yf, Cg, c0, c1, c2, Sbase, no_slack), h=h)
-    Gxx = calc_hessian(func=eval_g, x=x, mult=lmbda, arg=(Ybus, Yf, Cg, Sd, slack, no_slack))
-    Hxx = calc_hessian(func=eval_h, x=x, mult=mu, arg=(Yf, Yt, from_idx, to_idx, slack, no_slack, th_max,
-                                                       th_min, V_U, V_L, P_U, P_L, Q_U, Q_L, Cg, rates))
+    #fxx_long = calc_hessian_f_obj(func=eval_f, x=x, arg=(Yf, Cg, c0, c1, c2, Sbase, no_slack), h=h)
+    #Gxx_long = calc_hessian(func=eval_g, x=x, mult=lmbda, arg=(Ybus, Yf, Cg, Sd, slack, no_slack))
+    #Hxx_long = calc_hessian(func=eval_h, x=x, mult=mu, arg=(Yf, Yt, from_idx, to_idx, slack, no_slack, th_max,
+    #                                                   th_min, V_U, V_L, P_U, P_L, Q_U, Q_L, Cg, rates))
 
     return f, G, H, fx, Gx, Hx, fxx, Gxx, Hxx
 
@@ -633,7 +724,7 @@ def linn5bus_example():
 
     # add a generator to the bus 1
     gen1 = gce.Generator('Slack Generator', vset=1.0, Pmin=0, Pmax=1000,
-                         Qmin=-1000, Qmax=1000, Cost=15, Cost2=0)
+                         Qmin=-1000, Qmax=1000, Cost=15, Cost2=0.0)
 
     grid.add_generator(bus1, gen1)
 
@@ -734,7 +825,7 @@ def case9():
     print(cwd)
 
     # Go back two directories
-    new_directory = os.path.abspath(os.path.join(cwd, '..', '..', '..'))
+    new_directory = os.path.abspath(os.path.join(cwd, '..', '..', '..', '..', '..'))
     file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case9.m')
 
     grid = gce.FileOpen(file_path).open()
@@ -750,7 +841,8 @@ def case14():
     print(cwd)
 
     # Go back two directories
-    new_directory = os.path.abspath(os.path.join(cwd, '..', '..', '..'))
+    new_directory = os.path.abspath(os.path.join(cwd, '..', '..', '..', '..', '..'))
+
     file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case14.m')
 
     grid = gce.FileOpen(file_path).open()
@@ -760,8 +852,8 @@ def case14():
     return
 
 if __name__ == '__main__':
-    example_3bus_acopf()
-    #linn5bus_example()
+    # example_3bus_acopf()
+    # linn5bus_example()
     # two_grids_of_3bus()
     # case9()
-    # case14()
+    case14()

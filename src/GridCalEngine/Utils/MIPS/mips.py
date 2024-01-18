@@ -46,7 +46,7 @@ def step_calculation(V: Vec, dV: Vec):
         if dV[i] < 0:
             alpha = min(alpha, -V[i] / dV[i])
 
-    return min(0.99995 * alpha, 1.0)
+    return min(0.9999995 * alpha, 1.0)
 
 
 @nb.njit(cache=True)
