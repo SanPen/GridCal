@@ -350,78 +350,88 @@ def test_mlodf():
     Compare power flow per branches in N-2 contingencies using theoretical methodology and MLODF
     """
     # fname = os.path.join('data', 'grids', 'IEEE14-2_4_1-3_4_1.gridcal')
-    fname = os.path.join('data', 'grids', 'IEEE14-2_5_1-1_5_1.gridcal')
+    # fname = os.path.join('data', 'grids', 'IEEE14-2_5_1-1_5_1.gridcal')
 
-    main_circuit = FileOpen(fname).open()
+    for fname in [
+        os.path.join('data', 'grids', 'IEEE14-2_4_1-3_4_1.gridcal'),
+        os.path.join('data', 'grids', 'IEEE14-2_5_1-1_5_1.gridcal'),
+        os.path.join('data', 'grids', 'IEEE14-bus_d-6_11-6_13.gridcal'),
+        os.path.join('data', 'grids', 'IEEE14-bus_d-7_8-9_10.gridcal'),
+    ]:
 
-    # Branches ordering
-    branchdict = {}
-    for i, t in enumerate(main_circuit.get_branches()):
-        branchdict[t.code] = i
+        main_circuit = FileOpen(fname).open()
 
-    # Power flow initial using linear method
-    linear_analysis = LinearAnalysisDriver(grid=main_circuit)
-    linear_analysis.run()
+        # Branches ordering
+        branchdict = {}
+        for i, t in enumerate(main_circuit.get_branches()):
+            branchdict[t.code] = i
 
-    Sf0 = linear_analysis.results.Sf
-    Sf0red = np.array([Sf0[branchdict[t.code]] for t in main_circuit.contingencies])
+        # Power flow initial using linear method
+        linear_analysis = LinearAnalysisDriver(grid=main_circuit)
+        linear_analysis.run()
 
-    linear_multi_contingency = LinearMultiContingencies(grid=main_circuit)
-    linear_multi_contingency.update(ptdf=linear_analysis.results.PTDF, lodf=linear_analysis.results.LODF)
-    mlodf = linear_multi_contingency.multi_contingencies[0].mlodf_factors.A  # TODO: Suponemos que son los MLODF
+        Sf0 = linear_analysis.results.Sf
+        Sf0red = np.array([Sf0[branchdict[t.code]] for t in main_circuit.contingencies])
 
-    # Power flow per branches after multicontingency using MLODF method
-    Sfmlodf = Sf0 + np.matmul(mlodf, Sf0red)
+        linear_multi_contingency = LinearMultiContingencies(grid=main_circuit)
+        linear_multi_contingency.update(ptdf=linear_analysis.results.PTDF, lodf=linear_analysis.results.LODF)
+        mlodf = linear_multi_contingency.multi_contingencies[0].mlodf_factors.A  # TODO: Suponemos que son los MLODF
 
-    # Theoretical method
-    pf_options = PowerFlowOptions(SolverType.NR,
-                                  verbose=False,
-                                  initialize_with_existing_solution=False,
-                                  dispatch_storage=True,
-                                  control_q=ReactivePowerControlMode.NoControl,
-                                  control_p=False)
+        # Power flow per branches after multicontingency using MLODF method
+        Sfmlodf = Sf0 + np.matmul(mlodf, Sf0red)
 
-    options = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyEngine.PTDF)
-    cont_analysis_driver = ContingencyAnalysisDriver(grid=main_circuit, options=options,
-                                                     linear_multiple_contingencies=linear_multi_contingency)
-    cont_analysis_driver.run()
-    Sfnr = cont_analysis_driver.results.Sf.real * 1e-2  # TODO: pensamos que las unidades son erróneas
+        # Theoretical method
+        pf_options = PowerFlowOptions(SolverType.NR,
+                                      verbose=False,
+                                      initialize_with_existing_solution=False,
+                                      dispatch_storage=True,
+                                      control_q=ReactivePowerControlMode.NoControl,
+                                      control_p=False)
 
-    assert (np.isclose(Sfmlodf, Sfnr, atol=1e-2).all())
+        options = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyEngine.PTDF)
+        cont_analysis_driver = ContingencyAnalysisDriver(grid=main_circuit, options=options,
+                                                         linear_multiple_contingencies=linear_multi_contingency)
+        cont_analysis_driver.run()
+        Sfnr = cont_analysis_driver.results.Sf.real * 1e-2  # TODO: pensamos que las unidades son erróneas
+
+        assert (np.isclose(Sfmlodf, Sfnr, atol=1e-2).all())
 
 
 def test_mlodf_sanpen():
     """
     Compare power flow per branches in N-2 contingencies using theoretical methodology and MLODF
     """
-    # fname = os.path.join('data', 'grids', 'IEEE14-2_4_1-3_4_1.gridcal')
-    fname = os.path.join('data', 'grids', 'IEEE14-2_5_1-1_5_1.gridcal')
+    for fname in [
+        #os.path.join('data', 'grids', 'IEEE14-2_4_1-3_4_1.gridcal'),
+        #os.path.join('data', 'grids', 'IEEE14-2_5_1-1_5_1.gridcal'),
+        os.path.join('data', 'grids', 'IEEE14-bus_d-6_11-6_13.gridcal'),
+        #os.path.join('data', 'grids', 'IEEE14-bus_d-7_8-9_10.gridcal'),
+    ]:
+        main_circuit = FileOpen(fname).open()
 
-    main_circuit = FileOpen(fname).open()
+        # DC power flow method
+        pf_options = PowerFlowOptions(SolverType.DC,
+                                      verbose=False,
+                                      initialize_with_existing_solution=False,
+                                      dispatch_storage=True,
+                                      control_q=ReactivePowerControlMode.NoControl,
+                                      control_p=False)
+        options1 = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyEngine.PowerFlow)
+        cont_analysis_driver1 = ContingencyAnalysisDriver(grid=main_circuit, options=options1,
+                                                          linear_multiple_contingencies=None)
+        cont_analysis_driver1.run()
 
-    # DC power flow method
-    pf_options = PowerFlowOptions(SolverType.DC,
-                                  verbose=False,
-                                  initialize_with_existing_solution=False,
-                                  dispatch_storage=True,
-                                  control_q=ReactivePowerControlMode.NoControl,
-                                  control_p=False)
-    options1 = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyEngine.PowerFlow)
-    cont_analysis_driver1 = ContingencyAnalysisDriver(grid=main_circuit, options=options1,
-                                                      linear_multiple_contingencies=None)
-    cont_analysis_driver1.run()
+        # MLODF method
+        linear_analysis = LinearAnalysisDriver(grid=main_circuit)
+        linear_analysis.run()
+        linear_multi_contingency = LinearMultiContingencies(grid=main_circuit)
+        linear_multi_contingency.update(ptdf=linear_analysis.results.PTDF, lodf=linear_analysis.results.LODF)
+        options2 = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyEngine.PTDF)
+        cont_analysis_driver2 = ContingencyAnalysisDriver(grid=main_circuit, options=options2,
+                                                          linear_multiple_contingencies=linear_multi_contingency)
+        cont_analysis_driver2.run()
 
-    # MLODF method
-    linear_analysis = LinearAnalysisDriver(grid=main_circuit)
-    linear_analysis.run()
-    linear_multi_contingency = LinearMultiContingencies(grid=main_circuit)
-    linear_multi_contingency.update(ptdf=linear_analysis.results.PTDF, lodf=linear_analysis.results.LODF)
-    options2 = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyEngine.PTDF)
-    cont_analysis_driver2 = ContingencyAnalysisDriver(grid=main_circuit, options=options2,
-                                                      linear_multiple_contingencies=linear_multi_contingency)
-    cont_analysis_driver2.run()
-
-    assert (np.isclose(cont_analysis_driver1.results.Sf, cont_analysis_driver2.results.Sf, atol=1e-2).all())
+        assert (np.isclose(cont_analysis_driver1.results.Sf, cont_analysis_driver2.results.Sf, atol=1e-2).all())
 
 
 if __name__ == '__main__':
