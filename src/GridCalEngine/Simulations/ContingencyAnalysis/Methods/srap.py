@@ -23,7 +23,7 @@ from GridCalEngine.Utils.Sparse.csc_numba import get_sparse_array_numba
 
 
 @nb.njit(cache=True)
-def get_valid_negatives(sensitivities, p_available):
+def get_valid_negatives(sensitivities: Vec, p_available: Vec):
     """
 
     :param sensitivities:
@@ -46,7 +46,7 @@ def get_valid_negatives(sensitivities, p_available):
 
 
 @nb.njit(cache=True)
-def get_valid_positives(sensitivities, p_available):
+def get_valid_positives(sensitivities: Vec, p_available: Vec):
     """
 
     :param sensitivities:

@@ -261,8 +261,8 @@ class ContingencyResultsReport:
                 mon_idx: IntVec,
                 calc_branches: List[Any],
                 numerical_circuit: NumericalCircuit,
-                flows: Vec,
-                loading: Vec,
+                base_flow: Vec,
+                base_loading: Vec,
                 contingency_flows: Vec,
                 contingency_loadings: Vec,
                 contingency_idx: int,
@@ -278,8 +278,8 @@ class ContingencyResultsReport:
         :param mon_idx: array of monitored branch indices
         :param calc_branches: array of calculation branches
         :param numerical_circuit: NumericalCircuit
-        :param flows: base flows array
-        :param loading: base loading array
+        :param base_flow: base flows array
+        :param base_loading: base loading array
         :param contingency_flows: flows array after the contingency
         :param contingency_loadings: loading array after the contingency
         :param contingency_idx: contingency group index
@@ -293,12 +293,12 @@ class ContingencyResultsReport:
         for m in mon_idx:  # for each monitored branch ...
 
             c_flow = abs(contingency_flows[m])
-            b_flow = abs(flows[m])
+            b_flow = abs(base_flow[m])
 
             # ----------------------------------------------------------------------------------------------------------
             # perform the analysis
             # ----------------------------------------------------------------------------------------------------------
-            srap_condition = 1.0 < abs(loading[m]) <= srap_max_loading
+            srap_condition = 1.0 < abs(contingency_loadings[m]) <= srap_max_loading
             if using_srap and srap_condition:
 
                 # compute the sensitivities for the monitored line with all buses
@@ -324,7 +324,7 @@ class ContingencyResultsReport:
                          base_uuid=calc_branches[m].idtag,
                          base_flow=b_flow,
                          base_rating=numerical_circuit.branch_data.rates[m],
-                         base_loading=abs(loading[m] * 100.0),
+                         base_loading=abs(base_loading[m] * 100.0),
                          contingency_idx=contingency_idx,
                          contingency_name=contingency_group.name,
                          contingency_uuid=contingency_group.idtag,
@@ -345,7 +345,7 @@ class ContingencyResultsReport:
                              base_uuid=calc_branches[m].idtag,
                              base_flow=b_flow,
                              base_rating=numerical_circuit.branch_data.rates[m],
-                             base_loading=abs(loading[m] * 100.0),
+                             base_loading=abs(base_loading[m] * 100.0),
                              contingency_idx=contingency_idx,
                              contingency_name=contingency_group.name,
                              contingency_uuid=contingency_group.idtag,

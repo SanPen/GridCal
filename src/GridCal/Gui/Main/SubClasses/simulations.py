@@ -962,7 +962,6 @@ class SimulationsMain(TimeEventsMain):
         pf_options = self.get_selected_power_flow_options()
 
         options = sim.ContingencyAnalysisOptions(
-            distributed_slack=self.ui.distributed_slack_checkBox.isChecked(),
             use_provided_flows=False,
             Pf=None,
             pf_options=pf_options,

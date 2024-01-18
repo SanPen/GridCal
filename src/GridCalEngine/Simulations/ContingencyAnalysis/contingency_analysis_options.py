@@ -27,7 +27,6 @@ class ContingencyAnalysisOptions:
     """
 
     def __init__(self,
-                 distributed_slack: bool = True,
                  use_provided_flows: bool = False,
                  Pf: Vec = None,
                  pf_options=PowerFlowOptions(SolverType.DC),
@@ -38,7 +37,6 @@ class ContingencyAnalysisOptions:
                  engine=ContingencyMethod.PowerFlow):
         """
         ContingencyAnalysisOptions
-        :param distributed_slack: Use distributed slack?
         :param use_provided_flows: Use the provided flows?
         :param Pf: Power flows (at the from bus)
         :param pf_options: PowerFlowOptions
@@ -48,7 +46,6 @@ class ContingencyAnalysisOptions:
         :param srap_max_power: maximum SRAP usage (limit) in MW
         :param engine: ContingencyEngine to use (PowerFlow, PTDF, ...)
         """
-        self.distributed_slack = distributed_slack
 
         self.use_provided_flows = use_provided_flows
 
