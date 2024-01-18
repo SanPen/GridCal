@@ -5,8 +5,8 @@ from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_driver i
 from GridCalEngine.enumerations import EngineType, ContingencyMethod
 
 
-path= r'C:\Users\posmarfe\OneDrive - REDEIA\Escritorio\2023 MoU Pmode1-3\srap\15_Caso_2026.gridcal'
-#path = "/home/santi/Escritorio/Redes/15_Caso_2026.gridcal"
+# path= r'C:\Users\posmarfe\OneDrive - REDEIA\Escritorio\2023 MoU Pmode1-3\srap\15_Caso_2026.gridcal'
+path = "/home/santi/Escritorio/Redes/15_Caso_2026.gridcal"
 
 print('Loading grical circuit... ', sep=' ')
 grid = FileOpen(path).open()
@@ -18,7 +18,7 @@ con_options.contingency_method = ContingencyMethod.PTDF
 
 con_drv = ContingencyAnalysisDriver(grid=grid,
                                     options=con_options,
-                                    engine=EngineType.GridCal)
+                                    engine=EngineType.NewtonPA)
 
 con_drv.run()
 

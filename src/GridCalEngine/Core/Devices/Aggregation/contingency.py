@@ -128,6 +128,7 @@ class Contingency(EditableDevice):
             'name': self.name,
             'name_code': self.code,
             'group': self._group.idtag,
+            'device_uuid': self.device_idtag,
             'prop': self.prop,
-            'value': self.value
+            'value': self.value,
         }

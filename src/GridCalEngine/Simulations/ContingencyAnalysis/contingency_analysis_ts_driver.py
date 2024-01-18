@@ -252,7 +252,6 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
         :return:
         """
         res = newton_pa_contingencies(circuit=self.grid,
-                                      pf_opt=self.options.pf_options,
                                       con_opt=self.options,
                                       time_series=True,
                                       time_indices=self.time_indices)

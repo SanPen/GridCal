@@ -135,7 +135,6 @@ class ContingencyAnalysisDriver(DriverTemplate):
 
             self.report_text("Running contingencies in newton...")
             con_res = newton_pa_contingencies(circuit=self.grid,
-                                              pf_opt=self.options.pf_options,
                                               con_opt=self.options,
                                               time_series=False,
                                               time_indices=None)
