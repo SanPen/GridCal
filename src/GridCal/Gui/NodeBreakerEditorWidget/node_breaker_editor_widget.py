@@ -51,20 +51,20 @@ from GridCalEngine.Core.Devices.Diagrams.node_breaker_diagram import NodeBreaker
 from GridCalEngine.Core.Devices.Diagrams.graphic_location import GraphicLocation
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec
 
-from GridCal.Gui.BusBranchEditorWidget.terminal_item import TerminalItem
-from GridCal.Gui.BusBranchEditorWidget.Substation.bus_graphics import BusGraphicItem
-from GridCal.Gui.BusBranchEditorWidget.Fluid.fluid_node_graphics import FluidNodeGraphicItem
-from GridCal.Gui.BusBranchEditorWidget.Fluid.fluid_path_graphics import FluidPathGraphicItem
-from GridCal.Gui.BusBranchEditorWidget.Branches.line_graphics import LineGraphicItem
-from GridCal.Gui.BusBranchEditorWidget.Branches.winding_graphics import WindingGraphicItem
-from GridCal.Gui.BusBranchEditorWidget.Branches.dc_line_graphics import DcLineGraphicItem
-from GridCal.Gui.BusBranchEditorWidget.Branches.transformer2w_graphics import TransformerGraphicItem
-from GridCal.Gui.BusBranchEditorWidget.Branches.hvdc_graphics import HvdcGraphicItem
-from GridCal.Gui.BusBranchEditorWidget.Branches.vsc_graphics import VscGraphicItem
-from GridCal.Gui.BusBranchEditorWidget.Branches.upfc_graphics import UpfcGraphicItem
-from GridCal.Gui.BusBranchEditorWidget.Branches.transformer3w_graphics import Transformer3WGraphicItem
-from GridCal.Gui.BusBranchEditorWidget.Injections.generator_graphics import GeneratorGraphicItem
-from GridCal.Gui.BusBranchEditorWidget.generic_graphics import ACTIVE
+from GridCal.Gui.NodeBreakerEditorWidget.terminal_item import TerminalItem
+from GridCal.Gui.NodeBreakerEditorWidget.Substation.bus_graphics import BusGraphicItem
+from GridCal.Gui.NodeBreakerEditorWidget.Fluid.fluid_node_graphics import FluidNodeGraphicItem
+from GridCal.Gui.NodeBreakerEditorWidget.Fluid.fluid_path_graphics import FluidPathGraphicItem
+from GridCal.Gui.NodeBreakerEditorWidget.Branches.line_graphics import LineGraphicItem
+from GridCal.Gui.NodeBreakerEditorWidget.Branches.winding_graphics import WindingGraphicItem
+from GridCal.Gui.NodeBreakerEditorWidget.Branches.dc_line_graphics import DcLineGraphicItem
+from GridCal.Gui.NodeBreakerEditorWidget.Branches.transformer2w_graphics import TransformerGraphicItem
+from GridCal.Gui.NodeBreakerEditorWidget.Branches.hvdc_graphics import HvdcGraphicItem
+from GridCal.Gui.NodeBreakerEditorWidget.Branches.vsc_graphics import VscGraphicItem
+from GridCal.Gui.NodeBreakerEditorWidget.Branches.upfc_graphics import UpfcGraphicItem
+from GridCal.Gui.NodeBreakerEditorWidget.Branches.transformer3w_graphics import Transformer3WGraphicItem
+from GridCal.Gui.NodeBreakerEditorWidget.Injections.generator_graphics import GeneratorGraphicItem
+from GridCal.Gui.NodeBreakerEditorWidget.generic_graphics import ACTIVE
 import GridCal.Gui.Visualization.visualization as viz
 import GridCal.Gui.Visualization.palettes as palettes
 from GridCal.Gui.messages import info_msg
@@ -73,7 +73,7 @@ from matplotlib import pyplot as plt
 '''
 Structure:
 
-{BusBranchEditorWidget: QSplitter}
+{NodeBreakerEditorWidget: QSplitter}
  |
   - .editor_graphics_view {QGraphicsView} (Handles the drag and drop)
  |      
@@ -182,7 +182,7 @@ class NodeBreakerDiagramScene(QGraphicsScene):
     This class is needed to augment the mouse move and release events
     """
 
-    def __init__(self, parent: "BusBranchEditorWidget"):
+    def __init__(self, parent: "NodeBreakerEditorWidget"):
         """
 
         :param parent:

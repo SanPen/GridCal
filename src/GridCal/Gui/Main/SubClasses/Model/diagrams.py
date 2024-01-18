@@ -20,7 +20,6 @@ from typing import List, Tuple, Union
 import networkx as nx
 import numpy as np
 from PySide6 import QtGui, QtWidgets
-from PySide6.QtCore import QRectF, Qt
 from matplotlib import pyplot as plt
 from pandas.plotting import register_matplotlib_converters
 
@@ -34,7 +33,7 @@ from GridCal.Gui.GeneralDialogues import CheckListDialogue, StartEndSelectionDia
 from GridCal.Gui.BusViewer.bus_viewer_dialogue import BusViewerWidget
 from GridCal.Gui.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget, \
     generate_bus_branch_diagram
-from GridCal.Gui.BusBranchEditorWidget.node_breaker_editor import NodeBreakerEditorWidget
+from GridCal.Gui.NodeBreakerEditorWidget.node_breaker_editor_widget import NodeBreakerEditorWidget
 from GridCal.Gui.MapWidget.grid_map_widget import GridMapWidget
 from GridCal.Gui.messages import yes_no_question, error_msg, info_msg
 from GridCal.Gui.Main.SubClasses.Model.compiled_arrays import CompiledArraysMain
