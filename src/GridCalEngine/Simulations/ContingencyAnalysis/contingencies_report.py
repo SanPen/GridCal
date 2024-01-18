@@ -301,7 +301,7 @@ class ContingencyResultsReport:
             srap_condition = 1.0 < abs(loading[m]) <= srap_max_loading
             if using_srap and srap_condition:
 
-                # compute the sensitivities for the monitored line
+                # compute the sensitivities for the monitored line with all buses
                 # PTDFc = MLODF[m, βδ] x PTDF[βδ, :] + PTDF[m, :]
                 PTDFc = multi_contingency.mlodf_factors[m, :] @ PTDF[multi_contingency.branch_indices, :] + PTDF[m, :]
 
