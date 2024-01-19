@@ -180,8 +180,9 @@ def jacobians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, slack, no_slack, mu, l
     GSpg = -Cg
     GSqg = -1j * Cg
 
-    GTH = np.zeros(len(x))
-    GTH[slack + N] = 1
+    GTH = csc((len(slack), len(x)), dtype=float)
+    for i, ss in enumerate(slack):
+        GTH[i, N+ss] = 1.
 
     GS = sparse.hstack([GSvm, GSva, GSpg, GSqg])
     Gx = sparse.vstack([GS.real, GS.imag, GTH])
@@ -791,12 +792,12 @@ def ac_optimal_power_flow(nc: gce.NumericalCircuit, pf_options: gce.PowerFlowOpt
 
     if verbose>0:
         print("x0:", x0)
-    # x, error, gamma, lam, others = solver(x0=x0, n_x=NV, n_eq=NE, n_ineq=NI,
-    #                               func=evaluate_power_flow,
-    #                               arg=(Ybus, Yf, Cg, Cf, Ct, Sd, slack, no_slack, Yt, from_idx, to_idx, Va_max,
-    #                                    Va_min, Vm_max, Vm_min, Pg_max, Pg_min, Qg_max, Qg_min, c0, c1, c2, Sbase, rates),
-    #                               verbose=verbose,
-    #                               max_iter=10)
+    x, error, gamma, lam, others = solver(x0=x0, n_x=NV, n_eq=NE, n_ineq=NI,
+                                  func=evaluate_power_flow,
+                                  arg=(Ybus, Yf, Cg, Cf, Ct, Sd, slack, no_slack, Yt, from_idx, to_idx, Va_max,
+                                       Va_min, Vm_max, Vm_min, Pg_max, Pg_min, Qg_max, Qg_min, c0, c1, c2, Sbase, rates),
+                                  verbose=verbose,
+                                  max_iter=100)
     #
     # f1, G1, H1, fx1, Gx1, Hx1, fxx1, Gxx1, Hxx1 = others
     #
@@ -810,12 +811,12 @@ def ac_optimal_power_flow(nc: gce.NumericalCircuit, pf_options: gce.PowerFlowOpt
     # f2, G2, H2, fx2, Gx2, Hx2, fxx2, Gxx2, Hxx2 = others2
     #
 
-    x, error, gamma, lam, other = solver(x0=x0, n_x=NV, n_eq=NE, n_ineq=NI,
-                                  func=evaluate_power_flow_debug,
-                                  arg=(Ybus, Yf, Cg, Cf, Ct, Sd, slack, no_slack, Yt, from_idx, to_idx, Va_max,
-                                       Va_min, Vm_max, Vm_min, Pg_max, Pg_min, Qg_max, Qg_min, c0, c1, c2, Sbase, rates),
-                                  verbose=verbose,
-                                  max_iter=100)
+    # x, error, gamma, lam, other = solver(x0=x0, n_x=NV, n_eq=NE, n_ineq=NI,
+    #                               func=evaluate_power_flow_debug,
+    #                               arg=(Ybus, Yf, Cg, Cf, Ct, Sd, slack, no_slack, Yt, from_idx, to_idx, Va_max,
+    #                                    Va_min, Vm_max, Vm_min, Pg_max, Pg_min, Qg_max, Qg_min, c0, c1, c2, Sbase, rates),
+    #                               verbose=verbose,
+    #                               max_iter=100)
 
     vm, va, Pg, Qg = x2var(x, n_vm=nbus, n_va=nbus, n_P=ngen, n_Q=ngen)
 
@@ -1017,8 +1018,8 @@ def case14():
 
 
 if __name__ == '__main__':
-    example_3bus_acopf()
+    # example_3bus_acopf()
     # linn5bus_example()
-    # two_grids_of_3bus()
+    two_grids_of_3bus()
     # case9()
     # case14()

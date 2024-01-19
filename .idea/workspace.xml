@@ -28,7 +28,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Define function to spot errors">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Fix issue in Gxx by adding real and imaginary separately">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/NumericalMethods/ac_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/NumericalMethods/ac_opf.py" afterDir="false" />
     </list>
@@ -1865,7 +1865,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="455" />
+    <option name="localTasksCounter" value="456" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1911,7 +1911,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="cosmetic changes" />
     <MESSAGE value="fixed simple bus viewer bug" />
     <MESSAGE value="improved dark detect" />
     <MESSAGE value="Fixed bug with fluid_injection_template.py typing" />
@@ -1936,7 +1935,8 @@
     <MESSAGE value="changed pulp for ortools" />
     <MESSAGE value="Improved docs" />
     <MESSAGE value="Define function to spot errors" />
-    <option name="LAST_COMMIT_MESSAGE" value="Define function to spot errors" />
+    <MESSAGE value="Fix issue in Gxx by adding real and imaginary separately" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fix issue in Gxx by adding real and imaginary separately" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2371,13 +2371,18 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/NumericalMethods/ac_opf.py</url>
-          <line>819</line>
-          <option name="timeStamp" value="1278" />
+          <line>717</line>
+          <option name="timeStamp" value="1287" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/NumericalMethods/ac_opf.py</url>
-          <line>716</line>
-          <option name="timeStamp" value="1285" />
+          <line>190</line>
+          <option name="timeStamp" value="1292" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/NumericalMethods/ac_opf.py</url>
+          <line>195</line>
+          <option name="timeStamp" value="1294" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
