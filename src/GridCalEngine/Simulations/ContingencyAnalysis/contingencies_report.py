@@ -15,6 +15,8 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
+import numba as nb
+from scipy.sparse import csc_matrix
 from typing import List, Union, Any
 from GridCalEngine.basic_structures import IntVec, StrMat, StrVec, Vec, Mat
 from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit
@@ -22,6 +24,55 @@ from GridCalEngine.Core.Devices import ContingencyGroup
 from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearMultiContingency
 from GridCalEngine.Simulations.ContingencyAnalysis.Methods.srap import BusesForSrap
 from GridCalEngine.Utils.Sparse.csc_numba import get_sparse_array_numba
+
+
+@nb.njit(cache=True)
+def get_ptdf_comp_numba(data, indices, indptr, PTDF, m, bd_indices):
+    """
+    This computes the compensatd PTDF for a single branch
+    PTDFc = MLODF[m, βδ] x PTDF[βδ, :] + PTDF[m, :]
+    :param data: MLODF[:, βδ].data
+    :param indices: MLODF[:, βδ].indices
+    :param indptr: MLODF[:, βδ].indptr
+    :param PTDF: Full PTDF matrix
+    :param m: intex of the monitored branch
+    :param bd_indices: indices of the failed branches
+    :return:
+    """
+    # Perform the operation
+    result = PTDF[m, :]
+
+    for j, bd_index in enumerate(bd_indices):
+        for i in range(indptr[j], indptr[j + 1]):
+            row_index = indices[i]
+            if row_index == m:
+                result += data[i] * PTDF[bd_index, :]
+
+    return result
+
+
+def get_ptdf_comp(mon_br_idx: int, branch_indices: IntVec, mlodf_factors: csc_matrix, PTDF: Mat):
+    """
+    Get the compensated PTDF values for a single monitored branch
+    :param mon_br_idx:
+    :param branch_indices:
+    :param mlodf_factors:
+    :param PTDF:
+    :return:
+    """
+    # PTDFc = MLODF[m, βδ] x PTDF[βδ, :] + PTDF[m, :]
+    # PTDFc = mlodf_factors[mon_br_idx, :] @ PTDF[branch_indices, :] + PTDF[mon_br_idx, :]
+
+    res = get_ptdf_comp_numba(data=mlodf_factors.data,
+                              indices=mlodf_factors.indices,
+                              indptr=mlodf_factors.indptr,
+                              PTDF=PTDF,
+                              m=mon_br_idx,
+                              bd_indices=branch_indices)
+
+    # ok = np.allclose(res, PTDFc[0, :], atol=1e-6)
+
+    return res
 
 
 class ContingencyTableEntry:
@@ -271,7 +322,8 @@ class ContingencyResultsReport:
                 srap_max_loading: float = 1.4,
                 srap_max_power: float = 1400.0,
                 multi_contingency: LinearMultiContingency = None,
-                PTDF: Mat = None):
+                PTDF: Mat = None,
+                available_power: Vec = None):
         """
         Analize contingency resuts and add them to the report
         :param t: time index
@@ -289,6 +341,7 @@ class ContingencyResultsReport:
         :param srap_max_power: Max amount of power to lower using SRAP conditions
         :param multi_contingency: list of buses for SRAP conditions
         :param PTDF
+        :param available_power
         """
         for m in mon_idx:  # for each monitored branch ...
 
@@ -303,10 +356,15 @@ class ContingencyResultsReport:
 
                 # compute the sensitivities for the monitored line with all buses
                 # PTDFc = MLODF[m, βδ] x PTDF[βδ, :] + PTDF[m, :]
-                PTDFc = multi_contingency.mlodf_factors[m, :] @ PTDF[multi_contingency.branch_indices, :] + PTDF[m, :]
+                # PTDFc = multi_contingency.mlodf_factors[m, :] @ PTDF[multi_contingency.branch_indices, :] + PTDF[m, :]
+
+                PTDFc = get_ptdf_comp(mon_br_idx=m,
+                                      branch_indices=multi_contingency.branch_indices,
+                                      mlodf_factors=multi_contingency.mlodf_factors,
+                                      PTDF=PTDF)
 
                 # information about the buses that we can use for SRAP
-                sensitivities, indices = get_sparse_array_numba(PTDFc[0, :], threshold=1e-3)
+                sensitivities, indices = get_sparse_array_numba(PTDFc, threshold=1e-3)
                 buses_for_srap = BusesForSrap(branch_idx=m,
                                               bus_indices=indices,
                                               sensitivities=sensitivities)
@@ -315,7 +373,7 @@ class ContingencyResultsReport:
                     c_flow=contingency_flows[m].real,  # the real part because it must have the sign
                     rating=numerical_circuit.branch_data.rates[m],
                     srap_pmax_mw=srap_max_power,
-                    available_power=numerical_circuit.generator_data.get_injections_per_bus().real,
+                    available_power=available_power,
                     top_n=5
                 )
 

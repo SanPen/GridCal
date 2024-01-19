@@ -18,7 +18,7 @@ con_options.contingency_method = ContingencyMethod.PTDF
 
 con_drv = ContingencyAnalysisDriver(grid=grid,
                                     options=con_options,
-                                    engine=EngineType.NewtonPA)
+                                    engine=EngineType.GridCal)
 
 con_drv.run()
 

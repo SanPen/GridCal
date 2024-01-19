@@ -28,9 +28,11 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Fixed json issues&#10;fixed potential contingency issues&#10;Implemented the Newton 2.2.0 changes">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Moved the contingency index finding to a previous more general step to avoid repeating steps that are avoidable">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/LinearFactors/linear_analysis.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/LinearFactors/linear_analysis.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/trunk/srap/srap_example.py" beforeDir="false" afterPath="$PROJECT_DIR$/examples/trunk/srap/srap_example.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/Methods/linear_contingency_analysis.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/Methods/linear_contingency_analysis.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/contingencies_report.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/contingencies_report.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -121,33 +123,33 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
-    &quot;Git.Branch.Popup.ShowAllRemotes&quot;: &quot;true&quot;,
-    &quot;JavaScript Debug.index.html.executor&quot;: &quot;Run&quot;,
-    &quot;MATLAB_INTERPRETER&quot;: &quot;/usr/local/MATLAB/R2018a/bin/matlab&quot;,
-    &quot;Python tests.Nosetests for tests.test_contingency.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Nosetests for tests.test_ptdf.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Nosetests in tests.executor&quot;: &quot;Run&quot;,
-    &quot;Python.ExecuteGridCal.executor&quot;: &quot;Run&quot;,
-    &quot;Python.make.executor&quot;: &quot;Run&quot;,
-    &quot;Python.srap_example.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;Shell Script.make.sh.executor&quot;: &quot;Run&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;205__ACOPF&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/santi/Documentos/Git/GitHub/GridCal/doc/rst_source/theory/linear&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;run.code.analysis.last.selected.profile&quot;: &quot;aDefault&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "Git.Branch.Popup.ShowAllRemotes": "true",
+    "JavaScript Debug.index.html.executor": "Run",
+    "MATLAB_INTERPRETER": "/usr/local/MATLAB/R2018a/bin/matlab",
+    "Python tests.Nosetests for tests.test_contingency.executor": "Run",
+    "Python tests.Nosetests for tests.test_ptdf.executor": "Run",
+    "Python tests.Nosetests in tests.executor": "Run",
+    "Python.ExecuteGridCal.executor": "Run",
+    "Python.make.executor": "Run",
+    "Python.srap_example.executor": "Run",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "Shell Script.make.sh.executor": "Run",
+    "WebServerToolWindowFactoryState": "false",
+    "git-widget-placeholder": "205__ACOPF",
+    "last_opened_file_path": "/home/santi/Documentos/Git/GitHub/GridCal/doc/rst_source/theory/linear",
+    "node.js.detected.package.eslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "run.code.analysis.last.selected.profile": "aDefault",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="PyDebuggerOptionsProvider">
     <option name="mySaveCallSignatures" value="true" />
     <option name="mySupportGeventDebugging" value="true" />
@@ -169,7 +171,7 @@
       <recent name="$PROJECT_DIR$/examples/trunk/acdc_pf/docs" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.ExecuteGridCal">
+  <component name="RunManager" selected="Python.srap_example">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -883,8 +885,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python.srap_example" />
+        <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python tests.Nosetests in tests" />
         <item itemvalue="Python.make" />
         <item itemvalue="JavaScript Debug.index.html" />
@@ -1890,7 +1892,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="464" />
+    <option name="localTasksCounter" value="465" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1936,7 +1938,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Improved the ReliabilityIterable" />
     <MESSAGE value="Added ACDC new modelling concept example and docs" />
     <MESSAGE value="Added openai gym example with GridCal (WIP)" />
     <MESSAGE value="Improved ACDC power flow technical note" />
@@ -1961,7 +1962,8 @@
     <MESSAGE value="fixed the use of the ContingencyAnalysisDriver from the ContingencyAnalysisTimeSeriesDriver" />
     <MESSAGE value="Removed the distributed_slack property in the ContingencyAnalysisOptions because it was not used&#10;Corrected the SRAP loading condition&#10;General refactor" />
     <MESSAGE value="Fixed json issues&#10;fixed potential contingency issues&#10;Implemented the Newton 2.2.0 changes" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed json issues&#10;fixed potential contingency issues&#10;Implemented the Newton 2.2.0 changes" />
+    <MESSAGE value="Moved the contingency index finding to a previous more general step to avoid repeating steps that are avoidable" />
+    <option name="LAST_COMMIT_MESSAGE" value="Moved the contingency index finding to a previous more general step to avoid repeating steps that are avoidable" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2400,11 +2402,6 @@
           <option name="timeStamp" value="1270" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/Methods/srap.py</url>
-          <line>155</line>
-          <option name="timeStamp" value="1274" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Core/Compilers/circuit_to_newton_pa.py</url>
           <line>1371</line>
           <option name="timeStamp" value="1275" />
@@ -2640,7 +2637,7 @@
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_unbalanced_faults_py.coverage" NAME="Nosetests in test_unbalanced_faults.py Coverage Results" MODIFIED="1661172842063" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_tests_admittance_matrix_test.coverage" NAME="Nosetests for tests.admittance_matrix_test Coverage Results" MODIFIED="1602926351044" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$PTDF_ku_leuven.coverage" NAME="PTDF_ku_leuven Coverage Results" MODIFIED="1642342521661" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PTDF" />
-    <SUITE FILE_PATH="coverage/GridCal$srap_example.coverage" NAME="srap_example Coverage Results" MODIFIED="1705656880795" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/examples/trunk/srap" />
+    <SUITE FILE_PATH="coverage/GridCal$srap_example.coverage" NAME="srap_example Coverage Results" MODIFIED="1705667825492" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/examples/trunk/srap" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_ACPTDF_research2_py.coverage" NAME="Nosetests in ACPTDF_research2.py Coverage Results" MODIFIED="1601969138193" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PTDF" />
     <SUITE FILE_PATH="coverage/GridCal$sparse_solve.coverage" NAME="sparse_solve Coverage Results" MODIFIED="1698396568619" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCalEngine/Simulations" />
     <SUITE FILE_PATH="coverage/GridCal$jacobian_based_acdc_power_flow__1_.coverage" NAME="jacobian_based_acdc_power_flow (1) Coverage Results" MODIFIED="1609455735388" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow" />
