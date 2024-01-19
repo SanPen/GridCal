@@ -36,11 +36,7 @@ def case9():
     grid = gce.FileOpen(file_path).open()
     nc = gce.compile_numerical_circuit_at(grid)
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR)
-    x = ac_optimal_power_flow(nc=nc, pf_options=pf_options, verbose=0)
-    vm = x[0:9]
-    va = x[9:18]
-    Pg = x[18:21]
-    Qg = x[21:24]
+    vm, va, Pg, Qg = ac_optimal_power_flow(nc=nc, pf_options=pf_options, verbose=0)
     return vm, va, Pg, Qg
 
 
@@ -58,13 +54,8 @@ def case14():
 
     grid = gce.FileOpen(file_path).open()
     nc = gce.compile_numerical_circuit_at(grid)
-    # nc.rates[:] = 10000  # TODO: remove when the parser understands 0 rate means it is not limited, instead of 0.
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR)
-    x = ac_optimal_power_flow(nc=nc, pf_options=pf_options, verbose=0)
-    vm = x[0:14]
-    va = x[14:28]
-    Pg = x[28:33]
-    Qg = x[33:38]
+    vm, va, Pg, Qg = ac_optimal_power_flow(nc=nc, pf_options=pf_options, verbose=0)
     return vm, va, Pg, Qg
 
 

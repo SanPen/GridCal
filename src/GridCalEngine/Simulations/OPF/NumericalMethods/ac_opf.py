@@ -832,7 +832,7 @@ def ac_optimal_power_flow(nc: gce.NumericalCircuit, pf_options: gce.PowerFlowOpt
         print("Gen:\n", df_gen)
         print("Error", error)
 
-    return x
+    return vm, va, Pg, Qg
 
 
 def example_3bus_acopf():
