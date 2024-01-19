@@ -46,7 +46,7 @@ def step_calculation(V: Vec, dV: Vec):
         if dV[i] < 0:
             alpha = min(alpha, -V[i] / dV[i])
 
-    return min(0.99995 * alpha, 1.0)
+    return min(0.9999995 * alpha, 1.0)
 
 
 @nb.njit(cache=True)
@@ -157,7 +157,7 @@ def solver(x0: Vec,
 
         # compose the Jacobian
         M = fxx + Gxx + Hxx + Hx @ z_inv @ mu_diag @ Hx.T
-        J = pack_3_by_4(M, Gx.tocsc(), Gx.T)
+        J = pack_3_by_4(M.tocsc(), Gx.tocsc(), Gx.T.tocsc())
 
         # compose the residual
         N = fx + Hx @ mu + Hx @ z_inv @ (gamma * e + mu * H) + Gx @ lam
@@ -216,4 +216,4 @@ def solver(x0: Vec,
         print(f'\tIterations: {iter_counter}')
         print('\tTime elapsed (s): ', END - START)
 
-    return x, error, gamma, lam
+    return x, error, gamma, lam, [f, G, H, fx, Gx, Hx, fxx, Gxx, Hxx]

@@ -348,7 +348,7 @@ def evaluate_power_flow(x, mu, lmbda, Ybus, Yf, Cg, Sd, slack, no_slack, Yt, fro
     return f, G, H, fx, Gx, Hx, fxx, Gxx, Hxx
 
 
-def ac_optimal_power_flow(nc: gce.NumericalCircuit, pf_options: gce.PowerFlowOptions, verbose = 2):
+def ac_optimal_power_flow(nc: gce.NumericalCircuit, pf_options: gce.PowerFlowOptions, verbose=2):
     """
 
     :param nc:
@@ -621,9 +621,10 @@ def case14():
     ac_optimal_power_flow(nc=nc, pf_options=pf_options)
     return
 
+
 if __name__ == '__main__':
-    example_3bus_acopf()
-    # linn5bus_example()
+    # example_3bus_acopf()
+    linn5bus_example()
     # two_grids_of_3bus()
     # case9()
     # case14()

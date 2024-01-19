@@ -18,7 +18,7 @@
 import os
 import numpy as np
 import GridCalEngine.api as gce
-from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf_autodif import ac_optimal_power_flow
+from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import ac_optimal_power_flow
 
 
 def case9():

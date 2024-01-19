@@ -181,6 +181,7 @@ def case9():
     ac_optimal_power_flow(nc=nc, pf_options=pf_options)
     return
 
+
 def case14():
 
     import os
@@ -193,14 +194,15 @@ def case14():
 
     grid = gce.FileOpen(file_path).open()
     nc = gce.compile_numerical_circuit_at(grid)
-    nc.rates[:] = 10000 # TODO: remove when the parser understands 0 rate means it is not limited, instead of 0.
+    nc.rates[:] = 10000  # TODO: remove when the parser understands 0 rate means it is not limited, instead of 0.
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR)
     ac_optimal_power_flow(nc=nc, pf_options=pf_options)
     return
 
+
 if __name__ == '__main__':
-    # example_3bus_acopf()
+    example_3bus_acopf()
     # linn5bus_example()
     # two_grids_of_3bus()
-    case9()
+    # case9()
     # case14()
