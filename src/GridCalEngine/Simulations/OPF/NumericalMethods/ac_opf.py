@@ -308,29 +308,69 @@ def jacobians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, slack, no_slack, mu, l
     Hxx = sparse.vstack([H1, H2, lil_matrix((2 * Ng, NV))])
     '''
 
-    lmbda_mat = diags(lmbda[0: 2 * N])
-    Ad = lmbda[0: 2 * N] * np.r_[V.real, V.imag]
-    A = diags(Ad[0: N] + 1j * Ad[N: 2 * N])
-    B = Ybus @ Vmat
-    C = A @ np.conj(B)
-    D = np.conj(Ybus).T @ Vmat
-    F = 1j * (diags(lmbda[0: N]) @ GSva.real + 1j * diags(lmbda[N: 2 * N]) @ GSva.imag)
-    DLmat = D.real @ diags(lmbda[0: N]) + 1j * D.imag @ diags(lmbda[N: 2 * N])
-    DL = D.real @ lmbda[0: N] + 1j * D.imag @ lmbda[N: 2 * N]
-    I = np.conj(Vmat) @ (DLmat - diags(DL))
+    # # Carlos G
+    # lmbda_mat = diags(lmbda[0: 2 * N])
+    # Ad = lmbda[0: 2 * N] * np.r_[V.real, V.imag]
+    # A = diags(Ad[0: N] + 1j * Ad[N: 2 * N])
+    # B = Ybus @ Vmat
+    # C = A @ np.conj(B)
+    # D = np.conj(Ybus).T @ Vmat
+    # F = 1j * (diags(lmbda[0: N]) @ GSva.real + 1j * diags(lmbda[N: 2 * N]) @ GSva.imag)
+    # DLmat = D.real @ diags(lmbda[0: N]) + 1j * D.imag @ diags(lmbda[N: 2 * N])
+    # DL = D.real @ lmbda[0: N] + 1j * D.imag @ lmbda[N: 2 * N]
+    # I = np.conj(Vmat) @ (DLmat - diags(DL))
+    #
+    # GSvava_d = I + F
+    # GSvmva_d = 1j * vm_inv @ (I - F)
+    # GSvavm_d = GSvmva_d.T
+    # GSvmvm_d = vm_inv @ (C + C.T) @ vm_inv
+    #
+    # GSvava = GSvava_d.real + GSvava_d.imag
+    # GSvmva = GSvmva_d.real + GSvmva_d.imag
+    # GSvavm = GSvavm_d.real + GSvavm_d.imag
+    # GSvmvm = GSvmvm_d.real + GSvmvm_d.imag
+    #
+    # G1 = sparse.hstack([GSvmvm, GSvmva, lil_matrix((N, 2 * Ng))])
+    # G2 = sparse.hstack([GSvavm, GSvava, lil_matrix((N, 2 * Ng))])
+    # Gxx = sparse.vstack([G1, G2, lil_matrix((2 * Ng, NV))])
 
-    GSvava_d = I + F
-    GSvmva_d = 1j * vm_inv @ (I - F)
-    GSvavm_d = GSvmva_d.T
-    GSvmvm_d = vm_inv @ (C + C.T) @ vm_inv
+    # Josep G
 
-    GSvava = GSvava_d.real + GSvava_d.imag
-    GSvmva = GSvmva_d.real + GSvmva_d.imag
-    GSvavm = GSvavm_d.real + GSvavm_d.imag
-    GSvmvm = GSvmvm_d.real + GSvmvm_d.imag
+    # P
+    lam_p = lmbda[0:N]
+    lam_diag_p = diags(lam_p)
 
-    G1 = sparse.hstack([GSvmvm, GSvmva, lil_matrix((N, 2 * Ng))])
-    G2 = sparse.hstack([GSvavm, GSvava, lil_matrix((N, 2 * Ng))])
+    B_p = np.conj(Ybus) @ np.conj(Vmat)
+    D_p = np.conj(Ybus).T @ Vmat
+    Ibus_p = Ybus @ V
+    I_p = np.conj(Vmat) @ (D_p @ lam_diag_p - diags(D_p @ lam_p))
+    F_p = lam_diag_p @ Vmat @ (B_p - diags(np.conj(Ibus_p)))
+    C_p = lam_diag_p @ Vmat @ B_p
+
+    Gaa_p = I_p + F_p
+    Gva_p = 1j * vm_inv @ (I_p - F_p)
+    Gav_p = Gva_p.T
+    Gvv_p = vm_inv @ (C_p + C_p.T) @ vm_inv
+
+    # Q
+    lam_q = lmbda[N:2*N]
+    lam_diag_q = diags(lam_q)
+
+    B_q = np.conj(Ybus) @ np.conj(Vmat)
+    D_q = np.conj(Ybus).T @ Vmat
+    Ibus_q = Ybus @ V
+    I_q = np.conj(Vmat) @ (D_q @ lam_diag_q - diags(D_q @ lam_q))
+    F_q = lam_diag_q @ Vmat @ (B_q - diags(np.conj(Ibus_q)))
+    C_q = lam_diag_q @ Vmat @ B_q
+
+    Gaa_q = I_q + F_q
+    Gva_q = 1j * vm_inv @ (I_q - F_q)
+    Gav_q = Gva_q.T
+    Gvv_q = vm_inv @ (C_q + C_q.T) @ vm_inv
+
+    # Add all
+    G1 = sparse.hstack([Gvv_p.real + Gvv_q.imag, Gva_p.real + Gva_q.imag, lil_matrix((N, 2 * Ng))])
+    G2 = sparse.hstack([Gav_p.real + Gav_q.imag, Gaa_p.real + Gaa_q.imag, lil_matrix((N, 2 * Ng))])
     Gxx = sparse.vstack([G1, G2, lil_matrix((2 * Ng, NV))])
 
     #########
@@ -775,7 +815,7 @@ def ac_optimal_power_flow(nc: gce.NumericalCircuit, pf_options: gce.PowerFlowOpt
                                   arg=(Ybus, Yf, Cg, Cf, Ct, Sd, slack, no_slack, Yt, from_idx, to_idx, Va_max,
                                        Va_min, Vm_max, Vm_min, Pg_max, Pg_min, Qg_max, Qg_min, c0, c1, c2, Sbase, rates),
                                   verbose=verbose,
-                                  max_iter=10)
+                                  max_iter=100)
 
     vm, va, Pg, Qg = x2var(x, n_vm=nbus, n_va=nbus, n_P=ngen, n_Q=ngen)
 
