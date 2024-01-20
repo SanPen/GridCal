@@ -20,63 +20,80 @@ from scipy import sparse
 from scipy.sparse import csc_matrix as csc
 from scipy.sparse import csr_matrix as csr
 from scipy.sparse import lil_matrix
-import GridCalEngine.api as gce
+
 from GridCalEngine.basic_structures import Vec
 from GridCalEngine.Utils.Sparse.csc import diags
 from GridCalEngine.Utils.MIPS.mips import solver
+from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at, NumericalCircuit
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
-from typing import Callable, Tuple
+from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
+from typing import Callable, Tuple, Union
 
 
-def x2var(x, n_vm, n_va, n_P, n_Q):
+def x2var(x: Vec, nVm: int, nVa: int, nPg: int, nQg: int) -> Tuple[Vec, Vec, Vec, Vec]:
+    """
+    Convert the x solution vector to its composing variables
+    :param x: solution vector
+    :param nVm: number of voltage module vars
+    :param nVa: number of voltage angle vars
+    :param nPg: number of generator active power vars
+    :param nQg: number of generator reactive power vars
+    :return: Vm, Va, Pg, Qg
+    """
     a = 0
-    b = n_vm
+    b = nVm
 
-    vm = x[a: b]
+    Vm = x[a: b]
     a = b
-    b += n_va
+    b += nVa
 
-    th = x[a: b]
+    Va = x[a: b]
     a = b
-    b += n_P
+    b += nPg
 
     Pg = x[a: b]
     a = b
-    b += n_Q
+    b += nQg
 
     Qg = x[a: b]
 
-    return vm, th, Pg, Qg
+    return Vm, Va, Pg, Qg
 
 
-def var2x(vm, va, Pg, Qg):
-    return np.r_[vm, va, Pg, Qg]
+def var2x(Vm: Vec, Va: Vec, Pg: Vec, Qg: Vec) -> Vec:
+    """
+    Compose the x vector from its componenets
+    :param Vm: Voltage modules
+    :param Va: Voltage angles
+    :param Pg: Generator active powers
+    :param Qg: Generator reactive powers
+    :return: [Vm, Va, Pg, Qg]
+    """
+    return np.r_[Vm, Va, Pg, Qg]
 
 
-def eval_f(x, Yf, Cg, c0, c1, c2, Sbase, no_slack) -> Vec:
+def eval_f(x: Vec, Cg, c0: Vec, c1: Vec, c2: Vec, Sbase: float) -> Vec:
     """
 
     :param x:
-    :param Yf:
     :param Cg:
+    :param c0:
     :param c1:
     :param c2:
-    :param no_slack:
+    :param Sbase:
     :return:
     """
-    M, N = Yf.shape
-    Ng = Cg.shape[1]  # Check
+    N, Ng = Cg.shape  # Check
 
-    _, _, Pg, Qg = x2var(x, n_vm=N, n_va=N, n_P=Ng, n_Q=Ng)
+    _, _, Pg, Qg = x2var(x, nVm=N, nVa=N, nPg=Ng, nQg=Ng)
 
-    # fval = np.sum((c2 * np.power(Pg * Sbase, 2) + c1 * Pg * Sbase + c0))
-    # fval = np.sum((c2 * np.power(Pg, 2) + c1 * Pg + c0))
     fval = np.sum((c0 + c1 * Pg * Sbase + c2 * np.power(Pg * Sbase, 2))) * 1e-4
 
     return fval
 
 
-def eval_g(x, Ybus, Yf, Cg, Sd, slack, no_slack) -> Vec:
+def eval_g(x, Ybus, Yf, Cg, Sd, slack) -> Vec:
     """
 
     :param x:
@@ -85,14 +102,12 @@ def eval_g(x, Ybus, Yf, Cg, Sd, slack, no_slack) -> Vec:
     :param Cg:
     :param Sd:
     :param slack:
-    :param no_slack:
     :return:
     """
     M, N = Yf.shape
     Ng = Cg.shape[1]  # Check
 
-    va = np.zeros(N)
-    vm, va, Pg, Qg = x2var(x, n_vm=N, n_va=N, n_P=Ng, n_Q=Ng)
+    vm, va, Pg, Qg = x2var(x, nVm=N, nVa=N, nPg=Ng, nQg=Ng)
 
     V = vm * np.exp(1j * va)
     S = V * np.conj(Ybus @ V)
@@ -105,8 +120,8 @@ def eval_g(x, Ybus, Yf, Cg, Sd, slack, no_slack) -> Vec:
     return gval
 
 
-def eval_h(x, Yf, Yt, from_idx, to_idx, slack, no_slack, th_max, th_min, V_U, V_L, P_U, P_L, Q_U, Q_L, Cg,
-           rates) -> Vec:
+def eval_h(x, Yf, Yt, from_idx, to_idx, no_slack, Va_max, Va_min, Vm_max, Vm_min,
+           Pg_max, Pg_min, Qg_max, Qg_min, Cg, rates) -> Vec:
     """
 
     :param x:
@@ -114,16 +129,15 @@ def eval_h(x, Yf, Yt, from_idx, to_idx, slack, no_slack, th_max, th_min, V_U, V_
     :param Yt:
     :param from_idx:
     :param to_idx:
-    :param slack:
     :param no_slack:
-    :param th_max:
-    :param th_min:
-    :param V_U:
-    :param V_L:
-    :param P_U:
-    :param P_L:
-    :param Q_U:
-    :param Q_L:
+    :param Va_max:
+    :param Va_min:
+    :param Vm_max:
+    :param Vm_min:
+    :param Pg_max:
+    :param Pg_min:
+    :param Qg_max:
+    :param Qg_min:
     :param Cg:
     :param rates:
     :return:
@@ -131,7 +145,7 @@ def eval_h(x, Yf, Yt, from_idx, to_idx, slack, no_slack, th_max, th_min, V_U, V_
     M, N = Yf.shape
     Ng = Cg.shape[1]  # Check
 
-    vm, va, Pg, Qg = x2var(x, n_vm=N, n_va=N, n_P=Ng, n_Q=Ng)
+    vm, va, Pg, Qg = x2var(x, nVm=N, nVa=N, nPg=Ng, nQg=Ng)
 
     V = vm * np.exp(1j * va)
     If = np.conj(Yf @ V)
@@ -142,36 +156,53 @@ def eval_h(x, Yf, Yt, from_idx, to_idx, slack, no_slack, th_max, th_min, V_U, V_
     St2 = np.conj(St) * St
     hval = np.r_[Sf2.real - (rates ** 2),  # rates "lower limit"
                  St2.real - (rates ** 2),  # rates "upper limit"
-                 vm - V_U,  # voltage module upper limit
-                 V_L - vm,  # voltage module lower limit
-                 va[no_slack] - th_max[no_slack],  # voltage angles upper limit
-                 th_min[no_slack] - va[no_slack],  # voltage angles lower limit
-                 Pg - P_U,  # generator P upper limits
-                 P_L - Pg,  # generator P lower limits
-                 Qg - Q_U,  # generator Q upper limits
-                 Q_L - Qg  # generation Q lower limits
+                 vm - Vm_max,  # voltage module upper limit
+                 Vm_min - vm,  # voltage module lower limit
+                 va[no_slack] - Va_max[no_slack],  # voltage angles upper limit
+                 Va_min[no_slack] - va[no_slack],  # voltage angles lower limit
+                 Pg - Pg_max,  # generator P upper limits
+                 Pg_min - Pg,  # generator P lower limits
+                 Qg - Qg_max,  # generator Q upper limits
+                 Qg_min - Qg  # generation Q lower limits
     ]
 
     return hval
 
 
 def jacobians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, slack, no_slack, mu, lmbda):
+    """
 
+    :param x:
+    :param c1:
+    :param c2:
+    :param Cg:
+    :param Cf:
+    :param Ct:
+    :param Yf:
+    :param Yt:
+    :param Ybus:
+    :param Sbase:
+    :param slack:
+    :param no_slack:
+    :param mu:
+    :param lmbda:
+    :return:
+    """
     M, N = Yf.shape
     Ng = Cg.shape[1]  # Check
     NV = len(x)
 
-    vm, va, Pg, Qg = x2var(x, n_vm=N, n_va=N, n_P=Ng, n_Q=Ng)
+    vm, va, Pg, Qg = x2var(x, nVm=N, nVa=N, nPg=Ng, nQg=Ng)
     V = vm * np.exp(1j * va)
     Vmat = diags(V)
-    vm_inv = diags(1/vm)
+    vm_inv = diags(1 / vm)
     E = Vmat @ vm_inv
     Ibus = Ybus @ V
     IbusCJmat = diags(np.conj(Ibus))
 
     fx = np.zeros(NV)
 
-    fx[2 * N : 2 * N + Ng] = (2 * c2 * Pg * (Sbase ** 2) + c1 * Sbase) * 1e-4
+    fx[2 * N: 2 * N + Ng] = (2 * c2 * Pg * (Sbase ** 2) + c1 * Sbase) * 1e-4
 
     #########
 
@@ -180,9 +211,9 @@ def jacobians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, slack, no_slack, mu, l
     GSpg = -Cg
     GSqg = -1j * Cg
 
-    GTH = csc((len(slack), len(x)), dtype=float)
+    GTH = lil_matrix((len(slack), len(x)), dtype=float)
     for i, ss in enumerate(slack):
-        GTH[i, N+ss] = 1.
+        GTH[i, N + ss] = 1.
 
     GS = sparse.hstack([GSvm, GSva, GSpg, GSqg])
     Gx = sparse.vstack([GS.real, GS.imag, GTH])
@@ -208,19 +239,19 @@ def jacobians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, slack, no_slack, mu, l
 
     Hvu = np.zeros(N)
     Hvl = np.zeros(N)
-    Hvau = np.zeros(N)
-    Hval = np.zeros(N)
+    # Hvau = np.zeros(N)
+    # Hval = np.zeros(N)
     Hpu = np.zeros(Ng)
     Hpl = np.zeros(Ng)
     Hqu = np.zeros(Ng)
     Hql = np.zeros(Ng)
 
-    Hvu[0 : N] = 1
-    Hvl[0 : N] = -1
-    #Hvau[no_slack] = 1
-    #Hval[no_slack] = -1
-    Hvau = csc(([1] * (N - len(slack)), (list(range(N - len(slack))), no_slack)))
-    Hval = csc(([-1] * (N - len(slack)), (list(range(N - len(slack))), no_slack)))
+    Hvu[0: N] = 1
+    Hvl[0: N] = -1
+    # Hvau[no_slack] = 1
+    # Hval[no_slack] = -1
+    Hvau_ = csc(([1] * (N - len(slack)), (list(range(N - len(slack))), no_slack)))
+    Hval_ = csc(([-1] * (N - len(slack)), (list(range(N - len(slack))), no_slack)))
 
     Hpu[0: N] = 1
     Hpl[0: Ng] = -1
@@ -229,8 +260,8 @@ def jacobians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, slack, no_slack, mu, l
 
     Hvu = sparse.hstack([diags(Hvu), lil_matrix((N, N + 2 * Ng))])
     Hvl = sparse.hstack([diags(Hvl), lil_matrix((N, N + 2 * Ng))])
-    Hvau = sparse.hstack([lil_matrix((N - len(slack), N)), Hvau, lil_matrix((N - len(slack), 2 * Ng))])
-    Hval = sparse.hstack([lil_matrix((N - len(slack), N)), Hval, lil_matrix((N - len(slack), 2 * Ng))])
+    Hvau = sparse.hstack([lil_matrix((N - len(slack), N)), Hvau_, lil_matrix((N - len(slack), 2 * Ng))])
+    Hval = sparse.hstack([lil_matrix((N - len(slack), N)), Hval_, lil_matrix((N - len(slack), 2 * Ng))])
     Hpu = sparse.hstack([lil_matrix((Ng, 2 * N)), diags(Hpu), lil_matrix((Ng, Ng))])
     Hpl = sparse.hstack([lil_matrix((Ng, 2 * N)), diags(Hpl), lil_matrix((Ng, Ng))])
     Hqu = sparse.hstack([lil_matrix((Ng, 2 * N + Ng)), diags(Hqu)])
@@ -240,10 +271,9 @@ def jacobians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, slack, no_slack, mu, l
 
     ##########
 
-    fxx = diags((np.r_[np.zeros(2*N), 2 * c2 * (Sbase**2), np.zeros(Ng)]) * 1e-4)
+    fxx = diags((np.r_[np.zeros(2 * N), 2 * c2 * (Sbase ** 2), np.zeros(Ng)]) * 1e-4)
 
     ##########
-
 
     '''
     lmbda_mat = diags(lmbda[0 : 2 * N])
@@ -354,7 +384,7 @@ def jacobians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, slack, no_slack, mu, l
     Gvv_p = vm_inv @ (C_p + C_p.T) @ vm_inv
 
     # Q
-    lam_q = lmbda[N:2*N]
+    lam_q = lmbda[N:2 * N]
     lam_diag_q = diags(lam_q)
 
     B_q = np.conj(Ybus) @ np.conj(Vmat)
@@ -404,7 +434,7 @@ def jacobians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, slack, no_slack, mu, l
     Stvavm = Stvmva.T
     Stvmvm = vm_inv @ Ft @ vm_inv
 
-    mu_mat = diags(mu[M:2*M])
+    mu_mat = diags(mu[M:2 * M])
     Htvava = 2 * (Stvava + Stva.T @ mu_mat @ np.conj(Stva)).real
     Htvmva = 2 * (Stvmva + Stvm.T @ mu_mat @ np.conj(Stva)).real
     Htvavm = 2 * (Stvavm + Stva.T @ mu_mat @ np.conj(Stvm)).real
@@ -566,8 +596,8 @@ def calc_hessian(func, x: Vec, mult: Vec, arg=(), h=1e-5) -> csc:
 
 
 def evaluate_power_flow_exp(x, mu, lmbda, Ybus, Yf, Cg, Sd, slack, no_slack, Yt, from_idx, to_idx,
-                        th_max, th_min, V_U, V_L, P_U, P_L, Q_U, Q_L, c0, c1, c2, Sbase, rates, h=1e-5) -> (
-        Tuple)[Vec, Vec, Vec, Vec, csc, csc, csc, csc, csc]:
+                            th_max, th_min, V_U, V_L, P_U, P_L, Q_U, Q_L,
+                            c0, c1, c2, Sbase, rates, h=1e-5) -> Tuple[Vec, Vec, Vec, Vec, csc, csc, csc, csc, csc]:
     """
 
     :param x:
@@ -590,33 +620,35 @@ def evaluate_power_flow_exp(x, mu, lmbda, Ybus, Yf, Cg, Sd, slack, no_slack, Yt,
     :param P_L:
     :param Q_U:
     :param Q_L:
+    :param c0:
     :param c1:
     :param c2:
+    :param Sbase:
     :param rates:
     :param h:
     :return:
     """
-    f = eval_f(x=x, Yf=Yf, Cg=Cg, c0=c0, c1=c1, c2=c2, Sbase=Sbase, no_slack=no_slack)
-    G = eval_g(x=x, Ybus=Ybus, Yf=Yf, Cg=Cg, Sd=Sd, slack=slack, no_slack=no_slack)
-    H = eval_h(x=x, Yf=Yf, Yt=Yt, from_idx=from_idx, to_idx=to_idx, slack=slack, no_slack=no_slack, th_max=th_max,
-               th_min=th_min, V_U=V_U, V_L=V_L, P_U=P_U, P_L=P_L, Q_U=Q_U, Q_L=Q_L, Cg=Cg, rates=rates)
+    f = eval_f(x=x, Cg=Cg, c0=c0, c1=c1, c2=c2, Sbase=Sbase)
+    G = eval_g(x=x, Ybus=Ybus, Yf=Yf, Cg=Cg, Sd=Sd, slack=slack)
+    H = eval_h(x=x, Yf=Yf, Yt=Yt, from_idx=from_idx, to_idx=to_idx, no_slack=no_slack, Va_max=th_max,
+               Va_min=th_min, Vm_max=V_U, Vm_min=V_L, Pg_max=P_U, Pg_min=P_L, Qg_max=Q_U, Qg_min=Q_L, Cg=Cg, rates=rates)
 
-    fx = calc_jacobian_f_obj(func=eval_f, x=x, arg=(Yf, Cg, c0, c1, c2, Sbase, no_slack), h=h)
-    Gx = calc_jacobian(func=eval_g, x=x, arg=(Ybus, Yf, Cg, Sd, slack, no_slack)).T
-    Hx = calc_jacobian(func=eval_h, x=x, arg=(Yf, Yt, from_idx, to_idx, slack, no_slack, th_max, th_min,
+    fx = calc_jacobian_f_obj(func=eval_f, x=x, arg=(Cg, c0, c1, c2, Sbase), h=h)
+    Gx = calc_jacobian(func=eval_g, x=x, arg=(Ybus, Yf, Cg, Sd, slack)).T
+    Hx = calc_jacobian(func=eval_h, x=x, arg=(Yf, Yt, from_idx, to_idx, no_slack, th_max, th_min,
                                               V_U, V_L, P_U, P_L, Q_U, Q_L, Cg, rates)).T
 
-    fxx = calc_hessian_f_obj(func=eval_f, x=x, arg=(Yf, Cg, c0, c1, c2, Sbase, no_slack), h=h)
-    Gxx = calc_hessian(func=eval_g, x=x, mult=lmbda, arg=(Ybus, Yf, Cg, Sd, slack, no_slack))
-    Hxx = calc_hessian(func=eval_h, x=x, mult=mu, arg=(Yf, Yt, from_idx, to_idx, slack, no_slack, th_max,
+    fxx = calc_hessian_f_obj(func=eval_f, x=x, arg=(Cg, c0, c1, c2, Sbase), h=h)
+    Gxx = calc_hessian(func=eval_g, x=x, mult=lmbda, arg=(Ybus, Yf, Cg, Sd, slack))
+    Hxx = calc_hessian(func=eval_h, x=x, mult=mu, arg=(Yf, Yt, from_idx, to_idx, no_slack, th_max,
                                                        th_min, V_U, V_L, P_U, P_L, Q_U, Q_L, Cg, rates))
 
     return f, G, H, fx, Gx.tocsc(), Hx.tocsc(), fxx.tocsc(), Gxx.tocsc(), Hxx.tocsc()
 
 
 def evaluate_power_flow(x, mu, lmbda, Ybus, Yf, Cg, Cf, Ct, Sd, slack, no_slack, Yt, from_idx, to_idx,
-                        th_max, th_min, V_U, V_L, P_U, P_L, Q_U, Q_L, c0, c1, c2, Sbase, rates, h=1e-5) -> (
-        Tuple)[Vec, Vec, Vec, Vec, csc, csc, csc, csc, csc]:
+                        th_max, th_min, V_U, V_L, P_U, P_L, Q_U, Q_L,
+                        c0, c1, c2, Sbase, rates, h=1e-5) -> Tuple[Vec, Vec, Vec, Vec, csc, csc, csc, csc, csc]:
     """
 
     :param x:
@@ -625,6 +657,8 @@ def evaluate_power_flow(x, mu, lmbda, Ybus, Yf, Cg, Cf, Ct, Sd, slack, no_slack,
     :param Ybus:
     :param Yf:
     :param Cg:
+    :param Cf:
+    :param Ct:
     :param Sd:
     :param slack:
     :param no_slack:
@@ -639,16 +673,18 @@ def evaluate_power_flow(x, mu, lmbda, Ybus, Yf, Cg, Cf, Ct, Sd, slack, no_slack,
     :param P_L:
     :param Q_U:
     :param Q_L:
+    :param c0:
     :param c1:
     :param c2:
+    :param Sbase:
     :param rates:
     :param h:
     :return:
     """
-    f = eval_f(x=x, Yf=Yf, Cg=Cg, c0=c0, c1=c1, c2=c2, Sbase=Sbase, no_slack=no_slack)
-    G = eval_g(x=x, Ybus=Ybus, Yf=Yf, Cg=Cg, Sd=Sd, slack=slack, no_slack=no_slack)
-    H = eval_h(x=x, Yf=Yf, Yt=Yt, from_idx=from_idx, to_idx=to_idx, slack=slack, no_slack=no_slack, th_max=th_max,
-               th_min=th_min, V_U=V_U, V_L=V_L, P_U=P_U, P_L=P_L, Q_U=Q_U, Q_L=Q_L, Cg=Cg, rates=rates)
+    f = eval_f(x=x, Cg=Cg, c0=c0, c1=c1, c2=c2, Sbase=Sbase)
+    G = eval_g(x=x, Ybus=Ybus, Yf=Yf, Cg=Cg, Sd=Sd, slack=slack)
+    H = eval_h(x=x, Yf=Yf, Yt=Yt, from_idx=from_idx, to_idx=to_idx, no_slack=no_slack, Va_max=th_max,
+               Va_min=th_min, Vm_max=V_U, Vm_min=V_L, Pg_max=P_U, Pg_min=P_L, Qg_max=Q_U, Qg_min=Q_L, Cg=Cg, rates=rates)
 
     fx, Gx, Hx, fxx, Gxx, Hxx = jacobians(x=x, c1=c1, c2=c2, Cg=Cg, Cf=Cf, Ct=Ct, Yf=Yf, Yt=Yt,
                                           Ybus=Ybus, Sbase=Sbase, slack=slack, no_slack=no_slack, mu=mu, lmbda=lmbda)
@@ -657,8 +693,8 @@ def evaluate_power_flow(x, mu, lmbda, Ybus, Yf, Cg, Cf, Ct, Sd, slack, no_slack,
 
 
 def evaluate_power_flow_debug(x, mu, lmbda, Ybus, Yf, Cg, Cf, Ct, Sd, slack, no_slack, Yt, from_idx, to_idx,
-                        th_max, th_min, V_U, V_L, P_U, P_L, Q_U, Q_L, c0, c1, c2, Sbase, rates, h=1e-5) -> (
-        Tuple)[Vec, Vec, Vec, Vec, csc, csc, csc, csc, csc]:
+                              th_max, th_min, V_U, V_L, P_U, P_L, Q_U, Q_L,
+                              c0, c1, c2, Sbase, rates, h=1e-5) -> Tuple[Vec, Vec, Vec, Vec, csc, csc, csc, csc, csc]:
     """
 
     :param x:
@@ -667,6 +703,8 @@ def evaluate_power_flow_debug(x, mu, lmbda, Ybus, Yf, Cg, Cf, Ct, Sd, slack, no_
     :param Ybus:
     :param Yf:
     :param Cg:
+    :param Cf:
+    :param Ct:
     :param Sd:
     :param slack:
     :param no_slack:
@@ -681,21 +719,23 @@ def evaluate_power_flow_debug(x, mu, lmbda, Ybus, Yf, Cg, Cf, Ct, Sd, slack, no_
     :param P_L:
     :param Q_U:
     :param Q_L:
+    :param c0:
     :param c1:
     :param c2:
+    :param Sbase:
     :param rates:
     :param h:
     :return:
     """
 
-    mats_perfect = evaluate_power_flow(x, mu, lmbda, Ybus, Yf, Cg, Cf, Ct, Sd, slack, no_slack, Yt, from_idx, to_idx,
-                        th_max, th_min, V_U, V_L, P_U, P_L, Q_U, Q_L, c0, c1, c2, Sbase, rates)
+    mats_analytic = evaluate_power_flow(x, mu, lmbda, Ybus, Yf, Cg, Cf, Ct, Sd, slack, no_slack, Yt, from_idx, to_idx,
+                                        th_max, th_min, V_U, V_L, P_U, P_L, Q_U, Q_L, c0, c1, c2, Sbase, rates)
     mats_finite = evaluate_power_flow_exp(x, mu, lmbda, Ybus, Yf, Cg, Sd, slack, no_slack, Yt, from_idx, to_idx,
-                        th_max, th_min, V_U, V_L, P_U, P_L, Q_U, Q_L, c0, c1, c2, Sbase, rates, h=h)
+                                          th_max, th_min, V_U, V_L, P_U, P_L, Q_U, Q_L, c0, c1, c2, Sbase, rates, h=h)
 
     errors = dict()
     headers = ['f', 'G', 'H', 'fx', 'Gx', 'Hx', 'fxx', 'Gxx', 'Hxx']
-    for i,(analytic_struct, finit_struct, name) in enumerate(zip(mats_perfect, mats_finite, headers)):
+    for i, (analytic_struct, finit_struct, name) in enumerate(zip(mats_analytic, mats_finite, headers)):
         # if isinstance(analytic_struct, np.ndarray):
         if isinstance(analytic_struct, csr) or isinstance(analytic_struct, csc):
             a = analytic_struct.toarray()
@@ -704,26 +744,30 @@ def evaluate_power_flow_debug(x, mu, lmbda, Ybus, Yf, Cg, Cf, Ct, Sd, slack, no_
             a = analytic_struct
             b = finit_struct
 
-        ok = np.allclose(a, b, atol=h*10)
+        ok = np.allclose(a, b, atol=h * 10)
 
         if not ok:
             diff = a - b
             errors[name] = diff
 
     if len(errors) > 0:
-        print()
-    f, G, H, fx, Gx, Hx, fxx, Gxx, Hxx = mats_perfect
-    f2, G2, H2, fx2, Gx2, Hx2, fxx2, Gxx2, Hxx2 = mats_finite
+        for key, struct in errors.items():
+            print(key + "\n", struct)
+
+        raise Exception('The analytic structures differ from the finite differences: {}'.format(errors))
+
+    f, G, H, fx, Gx, Hx, fxx, Gxx, Hxx = mats_analytic
+    # f2, G2, H2, fx2, Gx2, Hx2, fxx2, Gxx2, Hxx2 = mats_finite
 
     return f, G, H, fx, Gx, Hx, fxx, Gxx, Hxx
 
 
-def ac_optimal_power_flow(nc: gce.NumericalCircuit, pf_options: gce.PowerFlowOptions, verbose = 2):
+def ac_optimal_power_flow(nc: NumericalCircuit, pf_options: PowerFlowOptions, debug: bool = False):
     """
 
-    :param nc:
-    :param pf_options:
-    :param verbose:
+    :param nc: NumericalCircuit
+    :param pf_options: PowerFlowOptions
+    :param debug: if true, the jacobians, hessians, etc are checked against finite difeerence versions of them
     :return:
     """
 
@@ -764,15 +808,11 @@ def ac_optimal_power_flow(nc: gce.NumericalCircuit, pf_options: gce.PowerFlowOpt
     n_no_slack = len(no_slack)
     n_slack = len(slack)
 
-    # Nodal power balances, the voltage module of slack and pv buses and the slack reference
+    # Number of equalities: Nodal power balances, the voltage module of slack and pv buses and the slack reference
     NE = 2 * nbus + n_slack
 
-    # Line ratings, max and min angle of buses, voltage module range and
+    # Number of innequalities: Line ratings, max and min angle of buses, voltage module range and
     NI = 2 * nbr + 2 * n_no_slack + 2 * nbus + 4 * ngen
-
-    # active and reactive power generation range.
-
-    ########
 
     # run power flow to initialize
     pf_results = multi_island_pf_nc(nc=nc, options=pf_options)
@@ -783,243 +823,69 @@ def ac_optimal_power_flow(nc: gce.NumericalCircuit, pf_options: gce.PowerFlowOpt
     q0gen = nc.generator_data.C_bus_elm.T @ np.imag(s0gen)
 
     # compose the initial values
-    x0 = var2x(vm=np.abs(pf_results.voltage),
-               va=np.angle(pf_results.voltage),
+    x0 = var2x(Vm=np.abs(pf_results.voltage),
+               Va=np.angle(pf_results.voltage),
                Pg=p0gen,
                Qg=q0gen)
 
+    # number of variables
     NV = len(x0)
 
-    if verbose>0:
+    if pf_options.verbose > 0:
         print("x0:", x0)
-    x, error, gamma, lam, others = solver(x0=x0, n_x=NV, n_eq=NE, n_ineq=NI,
-                                  func=evaluate_power_flow,
-                                  arg=(Ybus, Yf, Cg, Cf, Ct, Sd, slack, no_slack, Yt, from_idx, to_idx, Va_max,
-                                       Va_min, Vm_max, Vm_min, Pg_max, Pg_min, Qg_max, Qg_min, c0, c1, c2, Sbase, rates),
-                                  verbose=verbose,
-                                  max_iter=100)
-    #
-    # f1, G1, H1, fx1, Gx1, Hx1, fxx1, Gxx1, Hxx1 = others
-    #
-    # x2, error2, gamma2, lam2, others2 = solver(x0=x0, n_x=NV, n_eq=NE, n_ineq=NI,
-    #                               func=evaluate_power_flow_exp,
-    #                               arg=(Ybus, Yf, Cg, Sd, slack, no_slack, Yt, from_idx, to_idx, Va_max,
-    #                                    Va_min, Vm_max, Vm_min, Pg_max, Pg_min, Qg_max, Qg_min, c0, c1, c2, Sbase, rates),
-    #                               verbose=verbose,
-    #                               max_iter=10)
-    #
-    # f2, G2, H2, fx2, Gx2, Hx2, fxx2, Gxx2, Hxx2 = others2
-    #
 
-    # x, error, gamma, lam, other = solver(x0=x0, n_x=NV, n_eq=NE, n_ineq=NI,
-    #                               func=evaluate_power_flow_debug,
-    #                               arg=(Ybus, Yf, Cg, Cf, Ct, Sd, slack, no_slack, Yt, from_idx, to_idx, Va_max,
-    #                                    Va_min, Vm_max, Vm_min, Pg_max, Pg_min, Qg_max, Qg_min, c0, c1, c2, Sbase, rates),
-    #                               verbose=verbose,
-    #                               max_iter=100)
+    if debug:
 
-    vm, va, Pg, Qg = x2var(x, n_vm=nbus, n_va=nbus, n_P=ngen, n_Q=ngen)
+        x, error, gamma, lam, structures = solver(x0=x0, n_x=NV, n_eq=NE, n_ineq=NI,
+                                                  func=evaluate_power_flow_debug,
+                                                  arg=(Ybus, Yf, Cg, Cf, Ct, Sd, slack, no_slack, Yt, from_idx, to_idx,
+                                                       Va_max, Va_min, Vm_max, Vm_min, Pg_max, Pg_min, Qg_max, Qg_min,
+                                                       c0, c1, c2, Sbase, rates),
+                                                  verbose=pf_options.verbose,
+                                                  max_iter=pf_options.max_iter)
 
-    lam_p, lam_q = lam[:nbus], lam[nbus:2*nbus]
+    else:
 
-    df_bus = pd.DataFrame(data={'Vm (p.u.)': vm, 'Va (rad)': va,
-                                'dual price (€/MW)': lam_p, 'dual price (€/MVAr)': lam_q})
-    df_gen = pd.DataFrame(data={'P (MW)': Pg * nc.Sbase, 'Q (MVAr)': Qg * nc.Sbase})
+        x, error, gamma, lam, structures = solver(x0=x0, n_x=NV, n_eq=NE, n_ineq=NI,
+                                                  func=evaluate_power_flow,
+                                                  arg=(Ybus, Yf, Cg, Cf, Ct, Sd, slack, no_slack, Yt, from_idx, to_idx,
+                                                       Va_max, Va_min, Vm_max, Vm_min, Pg_max, Pg_min, Qg_max, Qg_min,
+                                                       c0, c1, c2, Sbase, rates),
+                                                  verbose=pf_options.verbose,
+                                                  max_iter=pf_options.max_iter)
 
-    if verbose>0:
+    Vm, Va, Pg, Qg = x2var(x, nVm=nbus, nVa=nbus, nPg=ngen, nQg=ngen)
+
+    lam_p, lam_q = lam[:nbus], lam[nbus:2 * nbus]
+
+    if pf_options.verbose > 0:
+        df_bus = pd.DataFrame(data={'Vm (p.u.)': Vm, 'Va (rad)': Va,
+                                    'dual price (€/MW)': lam_p, 'dual price (€/MVAr)': lam_q})
+        df_gen = pd.DataFrame(data={'P (MW)': Pg * nc.Sbase, 'Q (MVAr)': Qg * nc.Sbase})
         print()
         print("Bus:\n", df_bus)
         print("Gen:\n", df_gen)
         print("Error", error)
 
-    return x
+    return Vm, Va, Pg, Qg, lam_p, lam_q
 
 
-def example_3bus_acopf():
+def run_nonlinear_opf(grid: MultiCircuit,
+                      pf_options: PowerFlowOptions,
+                      t_idx: Union[None, int] = None,
+                      debug: bool = False):
     """
 
+    :param grid:
+    :param pf_options:
+    :param t_idx:
+    :param debug:
     :return:
     """
+    nc = compile_numerical_circuit_at(circuit=grid, t_idx=t_idx)
 
-    grid = gce.MultiCircuit()
+    Vm, Va, Pg, Qg, lam_p, lam_q = ac_optimal_power_flow(nc=nc, pf_options=pf_options, debug=debug)
 
-    b1 = gce.Bus(is_slack=True)
-    b2 = gce.Bus()
-    b3 = gce.Bus()
+    V = Vm * np.exp(1j * Va)
 
-    grid.add_bus(b1)
-    grid.add_bus(b2)
-    grid.add_bus(b3)
-
-    grid.add_line(gce.Line(bus_from=b1, bus_to=b2, name='line 1-2', r=0.001, x=0.05, rate=100))
-    grid.add_line(gce.Line(bus_from=b2, bus_to=b3, name='line 2-3', r=0.001, x=0.05, rate=100))
-    grid.add_line(gce.Line(bus_from=b3, bus_to=b1, name='line 3-1_1', r=0.001, x=0.05, rate=100))
-    # grid.add_line(gce.Line(bus_from=b3, bus_to=b1, name='line 3-1_2', r=0.001, x=0.05, rate=100))
-
-    grid.add_load(b3, gce.Load(name='L3', P=50, Q=20))
-    grid.add_generator(b1, gce.Generator('G1', vset=1.00, Cost=1.0, Cost2=2.0))
-    grid.add_generator(b2, gce.Generator('G2', P=10, vset=0.995, Cost=1.0, Cost2=3.0))
-
-    options = gce.PowerFlowOptions(gce.SolverType.NR, verbose=False)
-    power_flow = gce.PowerFlowDriver(grid, options)
-    power_flow.run()
-
-    # print('\n\n', grid.name)
-    # print('\tConv:\n', power_flow.results.get_bus_df())
-    # print('\tConv:\n', power_flow.results.get_branch_df())
-
-    nc = gce.compile_numerical_circuit_at(grid)
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR)
-    ac_optimal_power_flow(nc=nc, pf_options=pf_options)
-    return
-
-
-def linn5bus_example():
-    """
-    Grid from Lynn Powel's book
-    """
-    # declare a circuit object
-    grid = gce.MultiCircuit()
-
-    # Add the buses and the generators and loads attached
-    bus1 = gce.Bus('Bus 1', vnom=20)
-    # bus1.is_slack = True  # we may mark the bus a slack
-    grid.add_bus(bus1)
-
-    # add a generator to the bus 1
-    gen1 = gce.Generator('Slack Generator', vset=1.0, Pmin=0, Pmax=1000,
-                         Qmin=-1000, Qmax=1000, Cost=15, Cost2=0.0)
-
-    grid.add_generator(bus1, gen1)
-
-    # add bus 2 with a load attached
-    bus2 = gce.Bus('Bus 2', vnom=20)
-    grid.add_bus(bus2)
-    grid.add_load(bus2, gce.Load('load 2', P=40, Q=20))
-
-    # add bus 3 with a load attached
-    bus3 = gce.Bus('Bus 3', vnom=20)
-    grid.add_bus(bus3)
-    grid.add_load(bus3, gce.Load('load 3', P=25, Q=15))
-
-    # add bus 4 with a load attached
-    bus4 = gce.Bus('Bus 4', vnom=20)
-    grid.add_bus(bus4)
-    grid.add_load(bus4, gce.Load('load 4', P=40, Q=20))
-
-    # add bus 5 with a load attached
-    bus5 = gce.Bus('Bus 5', vnom=20)
-    grid.add_bus(bus5)
-    grid.add_load(bus5, gce.Load('load 5', P=50, Q=20))
-
-    # add Lines connecting the buses
-    grid.add_line(gce.Line(bus1, bus2, 'line 1-2', r=0.05, x=0.11, b=0.02, rate=1000))
-    grid.add_line(gce.Line(bus1, bus3, 'line 1-3', r=0.05, x=0.11, b=0.02, rate=1000))
-    grid.add_line(gce.Line(bus1, bus5, 'line 1-5', r=0.03, x=0.08, b=0.02, rate=1000))
-    grid.add_line(gce.Line(bus2, bus3, 'line 2-3', r=0.04, x=0.09, b=0.02, rate=1000))
-    grid.add_line(gce.Line(bus2, bus5, 'line 2-5', r=0.04, x=0.09, b=0.02, rate=1000))
-    grid.add_line(gce.Line(bus3, bus4, 'line 3-4', r=0.06, x=0.13, b=0.03, rate=1000))
-    grid.add_line(gce.Line(bus4, bus5, 'line 4-5', r=0.04, x=0.09, b=0.02, rate=1000))
-
-    nc = gce.compile_numerical_circuit_at(grid)
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR)
-    ac_optimal_power_flow(nc=nc, pf_options=pf_options)
-
-
-def two_grids_of_3bus():
-    """
-    3 bus grid two times
-    for solving islands at the same time
-    """
-    grid = gce.MultiCircuit()
-
-    # 3 bus grid
-    b1 = gce.Bus(is_slack=True)
-    b2 = gce.Bus()
-    b3 = gce.Bus()
-
-    grid.add_bus(b1)
-    grid.add_bus(b2)
-    grid.add_bus(b3)
-
-    grid.add_line(gce.Line(bus_from=b1, bus_to=b2, name='line 1-2', r=0.001, x=0.05, rate=100))
-    grid.add_line(gce.Line(bus_from=b2, bus_to=b3, name='line 2-3', r=0.001, x=0.05, rate=100))
-    grid.add_line(gce.Line(bus_from=b3, bus_to=b1, name='line 3-1_1', r=0.001, x=0.05, rate=100))
-    # grid.add_line(gce.Line(bus_from=b3, bus_to=b1, name='line 3-1_2', r=0.001, x=0.05, rate=100))
-
-    grid.add_load(b3, gce.Load(name='L3', P=50, Q=20))
-    grid.add_generator(b1, gce.Generator('G1', vset=1.00, Cost=1.0, Cost2=2.0))
-    grid.add_generator(b2, gce.Generator('G2', P=10, vset=0.995, Cost=1.0, Cost2=3.0))
-
-    # 3 bus grid
-    b11 = gce.Bus(is_slack=True)
-    b21 = gce.Bus()
-    b31 = gce.Bus()
-
-    grid.add_bus(b11)
-    grid.add_bus(b21)
-    grid.add_bus(b31)
-
-    grid.add_line(gce.Line(bus_from=b11, bus_to=b21, name='line 1-2 (2)', r=0.001, x=0.05, rate=100))
-    grid.add_line(gce.Line(bus_from=b21, bus_to=b31, name='line 2-3 (2)', r=0.001, x=0.05, rate=100))
-    grid.add_line(gce.Line(bus_from=b31, bus_to=b11, name='line 3-1 (2)', r=0.001, x=0.05, rate=100))
-
-    grid.add_load(b31, gce.Load(name='L3 (2)', P=50, Q=20))
-    grid.add_generator(b11, gce.Generator('G1 (2)', vset=1.00, Cost=1.0, Cost2=2.0))
-    grid.add_generator(b21, gce.Generator('G2 (2)', P=10, vset=0.995, Cost=1.0, Cost2=3.0))
-
-    options = gce.PowerFlowOptions(gce.SolverType.NR, verbose=False)
-    power_flow = gce.PowerFlowDriver(grid, options)
-    power_flow.run()
-
-    # print('\n\n', grid.name)
-    # print('\tConv:\n', power_flow.results.get_bus_df())
-    # print('\tConv:\n', power_flow.results.get_branch_df())
-
-    nc = gce.compile_numerical_circuit_at(grid)
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR)
-    ac_optimal_power_flow(nc=nc, pf_options=pf_options)
-    return
-
-
-def case9():
-
-    import os
-    cwd = os.getcwd()
-    print(cwd)
-
-    # Go back two directories
-    new_directory = os.path.abspath(os.path.join(cwd, '..', '..', '..', '..', '..'))
-    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case9.m')
-
-    grid = gce.FileOpen(file_path).open()
-    nc = gce.compile_numerical_circuit_at(grid)
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR)
-    ac_optimal_power_flow(nc=nc, pf_options=pf_options)
-    return
-
-
-def case14():
-
-    import os
-    cwd = os.getcwd()
-    print(cwd)
-
-    # Go back two directories
-    new_directory = os.path.abspath(os.path.join(cwd, '..', '..', '..', '..', '..'))
-
-    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case14.m')
-
-    grid = gce.FileOpen(file_path).open()
-    nc = gce.compile_numerical_circuit_at(grid)
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR)
-    ac_optimal_power_flow(nc=nc, pf_options=pf_options)
-    return
-
-
-if __name__ == '__main__':
-    example_3bus_acopf()
-    # linn5bus_example()
-    # two_grids_of_3bus()
-    # case9()
-    # case14()
+    return V, Pg, Qg, lam_p, lam_q
