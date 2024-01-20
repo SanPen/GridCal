@@ -100,7 +100,6 @@ class SimulationsMain(TimeEventsMain):
         # opf solvers dictionary
         self.lp_solvers_dict = OrderedDict()
         self.lp_solvers_dict[SolverType.LINEAR_OPF.value] = SolverType.LINEAR_OPF
-        # if NEWTON_PA_AVAILABLE:
         self.lp_solvers_dict[SolverType.NONLINEAR_OPF.value] = SolverType.NONLINEAR_OPF
         self.lp_solvers_dict[SolverType.SIMPLE_OPF.value] = SolverType.SIMPLE_OPF
         self.ui.lpf_solver_comboBox.setModel(gf.get_list_model(list(self.lp_solvers_dict.keys())))

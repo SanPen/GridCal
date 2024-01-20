@@ -28,69 +28,16 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Moved the available ower outside&#10;Improved PTDFc efficiency by hand rolling multiplication">
-      <change afterPath="$PROJECT_DIR$/src/trunk/acopf/acopf_run.py" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="refactored the acopf&#10;started integrating the acopf into the OPF driver">
+      <change afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/IPS/autodiff.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/ac_linear_opf_ts_run.py" beforeDir="false" afterPath="$PROJECT_DIR$/examples/ac_linear_opf_ts_run.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/dc_linear_opf_ts_example.py" beforeDir="false" afterPath="$PROJECT_DIR$/examples/dc_linear_opf_ts_example.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/simple_dispatch_run.py" beforeDir="false" afterPath="$PROJECT_DIR$/examples/simple_dispatch_run.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/acdc_pf/6bus_example.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acdc_pf/6bus_example.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/acdc_pf/6bus_example_acdc.gridcal" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acdc_pf/6bus_example_acdc.gridcal" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/acdc_pf/docs/acdc_6bus_diagram.dia" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acdc_pf/docs/acdc_6bus_diagram.dia" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/acdc_pf/docs/acdc_6bus_diagram.eps" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acdc_pf/docs/acdc_6bus_diagram.eps" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/acdc_pf/docs/acdc_6bus_diagram.png" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acdc_pf/docs/acdc_6bus_diagram.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/acdc_pf/docs/acdc_6bus_diagram_fubm-eps-converted-to.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acdc_pf/docs/acdc_6bus_diagram_fubm-eps-converted-to.pdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/acdc_pf/docs/acdc_6bus_diagram_fubm.dia" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acdc_pf/docs/acdc_6bus_diagram_fubm.dia" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/acdc_pf/docs/acdc_6bus_diagram_fubm.eps" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acdc_pf/docs/acdc_6bus_diagram_fubm.eps" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/acdc_pf/docs/acdc_pf_technical_note.aux" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acdc_pf/docs/acdc_pf_technical_note.aux" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/acdc_pf/docs/acdc_pf_technical_note.bbl" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acdc_pf/docs/acdc_pf_technical_note.bbl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/acdc_pf/docs/acdc_pf_technical_note.bcf" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acdc_pf/docs/acdc_pf_technical_note.bcf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/acdc_pf/docs/acdc_pf_technical_note.blg" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acdc_pf/docs/acdc_pf_technical_note.blg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/acdc_pf/docs/acdc_pf_technical_note.fdb_latexmk" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acdc_pf/docs/acdc_pf_technical_note.fdb_latexmk" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/acdc_pf/docs/acdc_pf_technical_note.fls" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acdc_pf/docs/acdc_pf_technical_note.fls" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/acdc_pf/docs/acdc_pf_technical_note.log" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acdc_pf/docs/acdc_pf_technical_note.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/acdc_pf/docs/acdc_pf_technical_note.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acdc_pf/docs/acdc_pf_technical_note.pdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/acdc_pf/docs/acdc_pf_technical_note.run.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acdc_pf/docs/acdc_pf_technical_note.run.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/acdc_pf/docs/acdc_pf_technical_note.synctex.gz" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acdc_pf/docs/acdc_pf_technical_note.synctex.gz" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/acdc_pf/docs/acdc_pf_technical_note.tex" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acdc_pf/docs/acdc_pf_technical_note.tex" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/acdc_pf/docs/branch-eps-converted-to.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acdc_pf/docs/branch-eps-converted-to.pdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/acdc_pf/docs/branch.dia" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acdc_pf/docs/branch.dia" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/acdc_pf/docs/branch.eps" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acdc_pf/docs/branch.eps" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/acdc_pf/docs/decoupled_converter_model-eps-converted-to.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acdc_pf/docs/decoupled_converter_model-eps-converted-to.pdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/acdc_pf/docs/decoupled_converter_model.dia" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acdc_pf/docs/decoupled_converter_model.dia" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/acdc_pf/docs/decoupled_converter_model.eps" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acdc_pf/docs/decoupled_converter_model.eps" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/acdc_pf/docs/fubm-eps-converted-to.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acdc_pf/docs/fubm-eps-converted-to.pdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/acdc_pf/docs/fubm.dia" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acdc_pf/docs/fubm.dia" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/acdc_pf/docs/fubm.eps" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acdc_pf/docs/fubm.eps" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/acdc_pf/docs/refs.bib" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acdc_pf/docs/refs.bib" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/acopf/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acopf/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/acopf/acopf_3bus.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acopf/acopf_3bus.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/acopf/acopf_function_evaluation.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acopf/acopf_function_evaluation.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/acopf/acopf_functions.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acopf/acopf_functions.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/acopf/acopf_generalize.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acopf/acopf_generalize.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/acopf/acopf_init_test.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acopf/acopf_init_test.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/acopf/acopf_ipm.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acopf/acopf_ipm.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/acopf/acopf_jax.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acopf/acopf_jax.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/acopf/acopf_mips_replica.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acopf/acopf_mips_replica.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/acopf/ipm_test.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acopf/ipm_test.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/acopf/jacobian_gomez_exposito.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acopf/jacobian_gomez_exposito.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/fubm_example.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acdc_pf/fubm_example.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/gym/gym_env.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/gym/gym_env.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/gym/gym_example.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/gym/gym_example.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/hydro_spillage.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/hydro/hydro_spillage.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/srap/srap_example.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/srap/srap_example.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/trunk/srap/srap_interpolation_example.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/srap/srap_interpolation_example.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/simulations.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/simulations.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/NumericalMethods/ac_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/NumericalMethods/ac_opf.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/NumericalMethods/ac_opf_autodif.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/NumericalMethods/ac_opf_autodif.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/opf_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/opf_driver.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/opf_options.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/opf_options.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/opf_ts_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/opf_ts_driver.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/driver_template.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/driver_template.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/enumerations.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/enumerations.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/MIPS/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/IPS/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/MIPS/mips.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/IPS/ips.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/tests/test_ac_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/test_ac_opf.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tests/test_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/test_opf.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tests/test_opf_time_series.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/test_opf_time_series.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -191,7 +138,7 @@
     "Python tests.Nosetests for tests.test_ptdf.executor": "Run",
     "Python tests.Nosetests in test_ac_opf.py.executor": "Run",
     "Python tests.Nosetests in tests.executor": "Run",
-    "Python.ExecuteGridCal.executor": "Run",
+    "Python.ExecuteGridCal.executor": "Debug",
     "Python.acopf_run.executor": "Run",
     "Python.make.executor": "Run",
     "Python.srap_example.executor": "Run",
@@ -231,7 +178,7 @@
       <recent name="$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/Methods" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.acopf_run">
+  <component name="RunManager" selected="Python.ExecuteGridCal">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -959,8 +906,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.acopf_run" />
         <item itemvalue="Python.ExecuteGridCal" />
+        <item itemvalue="Python.acopf_run" />
         <item itemvalue="Python tests.Nosetests in test_ac_opf.py" />
         <item itemvalue="Python.srap_example" />
         <item itemvalue="Python tests.Nosetests in tests" />
@@ -1966,7 +1913,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="465" />
+    <option name="localTasksCounter" value="467" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2012,8 +1959,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Added openai gym example with GridCal (WIP)" />
-    <MESSAGE value="Improved ACDC power flow technical note" />
     <MESSAGE value="Split fluid results into node path injection" />
     <MESSAGE value="replaced the progress functions by wrapper functions of the driver_template class" />
     <MESSAGE value="Slightly improved contingency report adding SRAP" />
@@ -2037,7 +1982,9 @@
     <MESSAGE value="Fixed json issues&#10;fixed potential contingency issues&#10;Implemented the Newton 2.2.0 changes" />
     <MESSAGE value="Moved the contingency index finding to a previous more general step to avoid repeating steps that are avoidable" />
     <MESSAGE value="Moved the available ower outside&#10;Improved PTDFc efficiency by hand rolling multiplication" />
-    <option name="LAST_COMMIT_MESSAGE" value="Moved the available ower outside&#10;Improved PTDFc efficiency by hand rolling multiplication" />
+    <MESSAGE value="Moved the trunk out" />
+    <MESSAGE value="refactored the acopf&#10;started integrating the acopf into the OPF driver" />
+    <option name="LAST_COMMIT_MESSAGE" value="refactored the acopf&#10;started integrating the acopf into the OPF driver" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2466,11 +2413,6 @@
           <option name="timeStamp" value="1235" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Utils/MIPS/mips.py</url>
-          <line>20</line>
-          <option name="timeStamp" value="1244" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/trunk/srap/srap_example.py</url>
           <line>28</line>
           <option name="timeStamp" value="1270" />
@@ -2501,9 +2443,44 @@
           <option name="timeStamp" value="1287" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/opf_driver.py</url>
+          <line>185</line>
+          <option name="timeStamp" value="1291" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/opf_driver.py</url>
+          <line>181</line>
+          <option name="timeStamp" value="1292" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/opf_driver.py</url>
+          <line>136</line>
+          <option name="timeStamp" value="1293" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/simulations.py</url>
-          <line>105</line>
-          <option name="timeStamp" value="1288" />
+          <line>1747</line>
+          <option name="timeStamp" value="1294" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/opf_driver.py</url>
+          <line>45</line>
+          <option name="timeStamp" value="1295" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/opf_driver.py</url>
+          <line>53</line>
+          <option name="timeStamp" value="1296" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/opf_driver.py</url>
+          <line>55</line>
+          <option name="timeStamp" value="1297" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/opf_driver.py</url>
+          <line>132</line>
+          <option name="timeStamp" value="1298" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -2529,7 +2506,7 @@
     <SUITE FILE_PATH="coverage/GridCal$derivatives_research1.coverage" NAME="derivatives_research1 Coverage Results" MODIFIED="1608639260953" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/hvdc/fubm" />
     <SUITE FILE_PATH="coverage/GridCal$ortools_opf.coverage" NAME="ortools_opf Coverage Results" MODIFIED="1630067492213" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/or_tools" />
     <SUITE FILE_PATH="coverage/GridCal$V1_refractored.coverage" NAME="V1_refractored Coverage Results" MODIFIED="1617214204840" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PGD" />
-    <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_ac_opf_py.coverage" NAME="Nosetests in test_ac_opf.py Coverage Results" MODIFIED="1705747114184" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
+    <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_ac_opf_py.coverage" NAME="Nosetests in test_ac_opf.py Coverage Results" MODIFIED="1705760497553" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$GeneralDialogues.coverage" NAME="GeneralDialogues Coverage Results" MODIFIED="1698838468153" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui" />
     <SUITE FILE_PATH="coverage/GridCal$example1.coverage" NAME="example1 Coverage Results" MODIFIED="1634669660909" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/or_tools" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_ptdf_py.coverage" NAME="Nosetests in test_ptdf.py Coverage Results" MODIFIED="1702628760189" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
@@ -2631,7 +2608,7 @@
     <SUITE FILE_PATH="coverage/GridCal$flatpak_pip_generator.coverage" NAME="flatpak-pip-generator Coverage Results" MODIFIED="1694345245258" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_tutorials_py.coverage" NAME="Nosetests in test_tutorials.py Coverage Results" MODIFIED="1602941091349" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$PTDF_by_node_groups.coverage" NAME="PTDF_by_node_groups Coverage Results" MODIFIED="1619774485543" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PTDF" />
-    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1705753001979" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
+    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1705760882610" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
     <SUITE FILE_PATH="coverage/GridCal$raw_to_cgmes_mapping.coverage" NAME="raw_to_cgmes_mapping Coverage Results" MODIFIED="1693562939167" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$ConsoleLogController.coverage" NAME="ConsoleLogController Coverage Results" MODIFIED="1663862178388" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/Main" />
     <SUITE FILE_PATH="coverage/GridCal$ntc_opf.coverage" NAME="ntc_opf Coverage Results" MODIFIED="1630509729235" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF" />
@@ -2689,7 +2666,7 @@
     <SUITE FILE_PATH="coverage/GridCal$pulp.coverage" NAME="pulp Coverage Results" MODIFIED="1642610724509" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/ThirdParty/pulp" />
     <SUITE FILE_PATH="coverage/GridCal$grid_editor_widget__1_.coverage" NAME="grid_editor_widget (1) Coverage Results" MODIFIED="1692806772617" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget" />
     <SUITE FILE_PATH="coverage/GridCal$PTDF_research3.coverage" NAME="PTDF_research3 Coverage Results" MODIFIED="1601466744244" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PTDF" />
-    <SUITE FILE_PATH="coverage/GridCal$acopf_run.coverage" NAME="acopf_run Coverage Results" MODIFIED="1705754274347" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/trunk/acopf" />
+    <SUITE FILE_PATH="coverage/GridCal$acopf_run.coverage" NAME="acopf_run Coverage Results" MODIFIED="1705760514071" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/trunk/acopf" />
     <SUITE FILE_PATH="coverage/GridCal$update_gui_common.coverage" NAME="update_gui_common Coverage Results" MODIFIED="1662040207238" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_tests_test_opf.coverage" NAME="Nosetests for tests.test_opf Coverage Results" MODIFIED="1702311536440" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_tests_test_ptdf.coverage" NAME="Nosetests for tests.test_ptdf Coverage Results" MODIFIED="1704291895608" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />

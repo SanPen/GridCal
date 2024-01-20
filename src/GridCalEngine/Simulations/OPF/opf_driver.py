@@ -179,26 +179,26 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
 
         elif self.options.solver == SolverType.NONLINEAR_OPF:
 
-            V, Pg, Qg, lam_p, lam_q = run_nonlinear_opf(grid=self.grid,
-                                                        pf_options=self.pf_options,
-                                                        t_idx=None)
+            res = run_nonlinear_opf(grid=self.grid,
+                                    pf_options=self.pf_options,
+                                    t_idx=None)
 
-            self.results.voltage = V
-            self.results.Sbus = npa_res.Scalc[0, :]
-            self.results.bus_shadow_prices = lam_p
+            self.results.voltage = res.V
+            self.results.Sbus = res.S
+            self.results.bus_shadow_prices = res.lam_p
             # self.results.load_shedding = npa_res.load_shedding[0, :]
             # self.results.battery_power = npa_res.battery_p[0, :]
             # self.results.battery_energy = npa_res.battery_energy[0, :]
-            self.results.generator_power = Pg
-            self.results.Sf = npa_res.Sf[0, :]
-            self.results.St = npa_res.St[0, :]
-            self.results.overloads = npa_res.branch_overload[0, :]
-            self.results.loading = npa_res.Loading[0, :]
+            self.results.generator_power = res.Pg
+            self.results.Sf = res.Sf
+            self.results.St = res.St
+            # self.results.overloads = npa_res.branch_overload[0, :]
+            self.results.loading = res.loading
             # self.results.phase_shift = npa_res.tap_angle[0, :]
 
             # self.results.hvdc_Pf = npa_res.hvdc_Pf[0, :]
             # self.results.hvdc_loading = npa_res.hvdc_loading[0, :]
-            # self.results.converged = npa_res.converged
+            self.results.converged = res.converged
 
         else:
             self.logger.add_error('Solver not supported in this mode', str(self.options.solver))
