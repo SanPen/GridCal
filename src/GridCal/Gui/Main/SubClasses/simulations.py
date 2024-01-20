@@ -99,10 +99,10 @@ class SimulationsMain(TimeEventsMain):
 
         # opf solvers dictionary
         self.lp_solvers_dict = OrderedDict()
-        self.lp_solvers_dict[SolverType.DC_OPF.value] = SolverType.DC_OPF
-        if NEWTON_PA_AVAILABLE:
-            self.lp_solvers_dict[SolverType.AC_OPF.value] = SolverType.AC_OPF
-        self.lp_solvers_dict[SolverType.Simple_OPF.value] = SolverType.Simple_OPF
+        self.lp_solvers_dict[SolverType.LINEAR_OPF.value] = SolverType.LINEAR_OPF
+        # if NEWTON_PA_AVAILABLE:
+        self.lp_solvers_dict[SolverType.NONLINEAR_OPF.value] = SolverType.NONLINEAR_OPF
+        self.lp_solvers_dict[SolverType.SIMPLE_OPF.value] = SolverType.SIMPLE_OPF
         self.ui.lpf_solver_comboBox.setModel(gf.get_list_model(list(self.lp_solvers_dict.keys())))
 
         # the MIP combobox models assigning is done in modify_ui_options_according_to_the_engine
@@ -266,9 +266,9 @@ class SimulationsMain(TimeEventsMain):
 
             # add the AC_OPF option
             self.lp_solvers_dict = OrderedDict()
-            self.lp_solvers_dict[SolverType.DC_OPF.value] = SolverType.DC_OPF
-            self.lp_solvers_dict[SolverType.AC_OPF.value] = SolverType.AC_OPF
-            self.lp_solvers_dict[SolverType.Simple_OPF.value] = SolverType.Simple_OPF
+            self.lp_solvers_dict[SolverType.LINEAR_OPF.value] = SolverType.LINEAR_OPF
+            self.lp_solvers_dict[SolverType.NONLINEAR_OPF.value] = SolverType.NONLINEAR_OPF
+            self.lp_solvers_dict[SolverType.SIMPLE_OPF.value] = SolverType.SIMPLE_OPF
             self.ui.lpf_solver_comboBox.setModel(gf.get_list_model(list(self.lp_solvers_dict.keys())))
 
             # Power Flow Methods
@@ -297,8 +297,9 @@ class SimulationsMain(TimeEventsMain):
 
             # no AC opf option
             self.lp_solvers_dict = OrderedDict()
-            self.lp_solvers_dict[SolverType.DC_OPF.value] = SolverType.DC_OPF
-            self.lp_solvers_dict[SolverType.Simple_OPF.value] = SolverType.Simple_OPF
+            self.lp_solvers_dict[SolverType.LINEAR_OPF.value] = SolverType.LINEAR_OPF
+            self.lp_solvers_dict[SolverType.NONLINEAR_OPF.value] = SolverType.NONLINEAR_OPF
+            self.lp_solvers_dict[SolverType.SIMPLE_OPF.value] = SolverType.SIMPLE_OPF
             self.ui.lpf_solver_comboBox.setModel(gf.get_list_model(list(self.lp_solvers_dict.keys())))
 
             # Power Flow Methods
@@ -329,8 +330,8 @@ class SimulationsMain(TimeEventsMain):
 
             # no AC opf option
             self.lp_solvers_dict = OrderedDict()
-            self.lp_solvers_dict[SolverType.DC_OPF.value] = SolverType.DC_OPF
-            self.lp_solvers_dict[SolverType.Simple_OPF.value] = SolverType.Simple_OPF
+            self.lp_solvers_dict[SolverType.LINEAR_OPF.value] = SolverType.LINEAR_OPF
+            self.lp_solvers_dict[SolverType.SIMPLE_OPF.value] = SolverType.SIMPLE_OPF
             self.ui.lpf_solver_comboBox.setModel(gf.get_list_model(list(self.lp_solvers_dict.keys())))
 
             # Power Flow Methods
@@ -357,8 +358,8 @@ class SimulationsMain(TimeEventsMain):
 
             # no AC opf option
             self.lp_solvers_dict = OrderedDict()
-            self.lp_solvers_dict[SolverType.DC_OPF.value] = SolverType.DC_OPF
-            self.lp_solvers_dict[SolverType.Simple_OPF.value] = SolverType.Simple_OPF
+            self.lp_solvers_dict[SolverType.LINEAR_OPF.value] = SolverType.LINEAR_OPF
+            self.lp_solvers_dict[SolverType.SIMPLE_OPF.value] = SolverType.SIMPLE_OPF
             self.ui.lpf_solver_comboBox.setModel(gf.get_list_model(list(self.lp_solvers_dict.keys())))
 
             # Power Flow Methods

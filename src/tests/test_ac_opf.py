@@ -36,11 +36,8 @@ def case9():
     grid = gce.FileOpen(file_path).open()
     nc = gce.compile_numerical_circuit_at(grid)
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR)
-    x = ac_optimal_power_flow(nc=nc, pf_options=pf_options, verbose=0)
-    vm = x[0:9]
-    va = x[9:18]
-    Pg = x[18:21]
-    Qg = x[21:24]
+    vm, va, Pg, Qg, lam_p, lam_q = ac_optimal_power_flow(nc=nc, pf_options=pf_options, verbose=0)
+
     return vm, va, Pg, Qg
 
 
@@ -58,13 +55,9 @@ def case14():
 
     grid = gce.FileOpen(file_path).open()
     nc = gce.compile_numerical_circuit_at(grid)
-    # nc.rates[:] = 10000  # TODO: remove when the parser understands 0 rate means it is not limited, instead of 0.
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR)
-    x = ac_optimal_power_flow(nc=nc, pf_options=pf_options, verbose=0)
-    vm = x[0:14]
-    va = x[14:28]
-    Pg = x[28:33]
-    Qg = x[33:38]
+    vm, va, Pg, Qg, lam_p, lam_q = ac_optimal_power_flow(nc=nc, pf_options=pf_options, verbose=0)
+
     return vm, va, Pg, Qg
 
 
@@ -73,11 +66,11 @@ def test_ieee9():
     va_test = [0.0, 0.0853, 0.0566, -0.0431, -0.0696, 0.0104, -0.021, 0.0157, -0.0807]
     Pg_test = [0.898, 1.3432, 0.9419]
     Qg_test = [0.1253, 0.0031, -0.2237]
-    # vm, va, Pg, Qg = case9()  # TODO activate when this is fast
-    # assert np.allclose(vm, vm_test, atol=1e-3)
-    # assert np.allclose(va, va_test, atol=1e-3)
-    # assert np.allclose(Pg, Pg_test, atol=1e-3)
-    # assert np.allclose(Qg, Qg_test, atol=1e-3)
+    vm, va, Pg, Qg = case9()
+    assert np.allclose(vm, vm_test, atol=1e-3)
+    assert np.allclose(va, va_test, atol=1e-3)
+    assert np.allclose(Pg, Pg_test, atol=1e-3)
+    assert np.allclose(Qg, Qg_test, atol=1e-3)
     # pass
 
 
@@ -88,12 +81,11 @@ def test_ieee14():
                -0.1819, -0.2269, -0.231, -0.2285, -0.2362, -0.2371, -0.2492]
     Pg_test = [1.9434, 0.3672, 0.2873, 0.0004, 0.0846]
     Qg_test = [0.0011, 0.2368, 0.2411, 0.1149, 0.0827]
-    # vm, va, Pg, Qg = case14()  # TODO activate when this is fast
-    # assert np.allclose(vm, vm_test, atol=1e-3)
-    # assert np.allclose(va, va_test, atol=1e-3)
-    # assert np.allclose(Pg, Pg_test, atol=1e-3)
-    # assert np.allclose(Qg, Qg_test, atol=1e-3)
-    # pass
+    vm, va, Pg, Qg = case14()
+    assert np.allclose(vm, vm_test, atol=1e-3)
+    assert np.allclose(va, va_test, atol=1e-3)
+    assert np.allclose(Pg, Pg_test, atol=1e-3)
+    assert np.allclose(Qg, Qg_test, atol=1e-3)
 
 
 
