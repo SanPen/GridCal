@@ -22,6 +22,7 @@ import pandas as pd
 from scipy.sparse import csc_matrix as csc
 from scipy import sparse
 import timeit
+from matplotlib import pyplot as plt
 from GridCalEngine.basic_structures import Vec, CxVec
 from GridCalEngine.Utils.Sparse.csc import pack_3_by_4, diags
 
@@ -148,8 +149,21 @@ class IpsSolution:
     error: float
     gamma: float
     lam: Vec
-    fx: IpsFunctionReturn
+    structs: IpsFunctionReturn
     converged: bool
+    iterations: int
+    error_evolution: Vec
+
+    def plot_error(self):
+        """
+        Plot the IPS error
+        """
+        plt.figure()
+        plt.plot(self.error_evolution, )
+        plt.xlabel("Iterations")
+        plt.ylabel("Error")
+        plt.yscale('log')
+        plt.show()
 
 
 def interior_point_solver(x0: Vec,
@@ -222,6 +236,8 @@ def interior_point_solver(x0: Vec,
 
     converged = error <= gamma
 
+    error_evolution = np.zeros(max_iter)
+    error_evolution[0] = error
     while not converged and iter_counter < max_iter:
 
         # Evaluate the functions, gradients and hessians at the current iteration.
@@ -279,6 +295,8 @@ def interior_point_solver(x0: Vec,
         # Add an iteration step
         iter_counter += 1
 
+        error_evolution[iter_counter] = error
+
     END = timeit.default_timer()
 
     if verbose > 0:
@@ -290,4 +308,5 @@ def interior_point_solver(x0: Vec,
         print(f'\tIterations: {iter_counter}')
         print('\tTime elapsed (s): ', END - START)
 
-    return IpsSolution(x=x, error=error, gamma=gamma, lam=lam, fx=ret, converged=converged)
+    return IpsSolution(x=x, error=error, gamma=gamma, lam=lam, structs=ret,
+                       converged=converged, iterations=iter_counter, error_evolution=error_evolution)

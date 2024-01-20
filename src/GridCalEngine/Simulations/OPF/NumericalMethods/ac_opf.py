@@ -625,6 +625,7 @@ class NonlinearOPFResults:
     lam_q: Vec
     error: float
     converged: bool
+    iterations: int
 
     @property
     def V(self) -> CxVec:
@@ -737,9 +738,9 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     # convert the lagrange multipliers to significant ones
     lam_p, lam_q = result.lam[:nbus], result.lam[nbus:2 * nbus]
 
-    S = result.fx.S
-    Sf = result.fx.Sf
-    St = result.fx.St
+    S = result.structs.S
+    Sf = result.structs.Sf
+    St = result.structs.St
     loading = np.abs(Sf) / (rates + 1e-9)
     if pf_options.verbose > 0:
         df_bus = pd.DataFrame(data={'Vm (p.u.)': Vm, 'Va (rad)': Va,
@@ -750,9 +751,11 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         print("Gen:\n", df_gen)
         print("Error", result.error)
 
+    result.plot_error()
+
     return NonlinearOPFResults(Vm=Vm, Va=Va, S=S, Sf=Sf, St=St, loading=loading,
                                Pg=Pg, Qg=Qg, lam_p=lam_p, lam_q=lam_q,
-                               error=result.error, converged=result.converged)
+                               error=result.error, converged=result.converged, iterations=result.iterations)
 
 
 def run_nonlinear_opf(grid: MultiCircuit,

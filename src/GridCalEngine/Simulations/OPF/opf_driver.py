@@ -182,16 +182,16 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
             res = run_nonlinear_opf(grid=self.grid,
                                     pf_options=self.pf_options,
                                     t_idx=None)
-
+            Sbase = self.grid.Sbase
             self.results.voltage = res.V
-            self.results.Sbus = res.S
+            self.results.Sbus = res.S * Sbase
             self.results.bus_shadow_prices = res.lam_p
             # self.results.load_shedding = npa_res.load_shedding[0, :]
             # self.results.battery_power = npa_res.battery_p[0, :]
             # self.results.battery_energy = npa_res.battery_energy[0, :]
-            self.results.generator_power = res.Pg
-            self.results.Sf = res.Sf
-            self.results.St = res.St
+            self.results.generator_power = res.Pg * Sbase
+            self.results.Sf = res.Sf * Sbase
+            self.results.St = res.St * Sbase
             # self.results.overloads = npa_res.branch_overload[0, :]
             self.results.loading = res.loading
             # self.results.phase_shift = npa_res.tap_angle[0, :]
@@ -199,6 +199,11 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
             # self.results.hvdc_Pf = npa_res.hvdc_Pf[0, :]
             # self.results.hvdc_loading = npa_res.hvdc_loading[0, :]
             self.results.converged = res.converged
+
+            msg = "Interior point solver"
+            self.logger.add_info(msg=msg, device="Error", value=res.error, expected_value=self.pf_options.tolerance)
+            self.logger.add_info(msg=msg, device="Converged", value=res.converged)
+            self.logger.add_info(msg=msg, device="Iterations", value=res.iterations)
 
         else:
             self.logger.add_error('Solver not supported in this mode', str(self.options.solver))
