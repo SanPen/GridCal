@@ -69,8 +69,8 @@ def get_contingency_flow_with_filter(multi_contingency: LinearMultiContingency,
 
     if len(multi_contingency.bus_indices):
         for i, c in enumerate(multi_contingency.bus_indices):
-            if abs(multi_contingency.ptdf_factors[m, i]) >= threshold:
-                res += multi_contingency.ptdf_factors[m, i] * multi_contingency.injections_factor[i] * injections[c]
+            if abs(multi_contingency.compensated_ptdf_factors[m, i]) >= threshold:
+                res += multi_contingency.compensated_ptdf_factors[m, i] * multi_contingency.injections_factor[i] * injections[c]
 
     return res
 
@@ -1635,7 +1635,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
 
                 # Compute the more generalistic contingency structures
                 mctg = LinearMultiContingencies(grid=grid)
-                mctg.update(lodf=ls.LODF, ptdf=ls.PTDF, ptdf_threshold=lodf_threshold, lodf_threshold=lodf_threshold)
+                mctg.compute(lodf=ls.LODF, ptdf=ls.PTDF, ptdf_threshold=lodf_threshold, lodf_threshold=lodf_threshold)
 
                 # formulate the contingencies
                 f_obj += add_linear_branches_contingencies_formulation(t_idx=local_t_idx,

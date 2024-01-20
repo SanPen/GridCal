@@ -810,8 +810,7 @@ main_circuit.add_contingency(Contingency(device_idtag=branches[5].idtag,
 pf_options = PowerFlowOptions(solver_type=SolverType.NR)
 
 # declare the contingency options
-options_ = ContingencyAnalysisOptions(distributed_slack=True,
-                                      use_provided_flows=False,
+options_ = ContingencyAnalysisOptions(use_provided_flows=False,
                                       Pf=None,
                                       engine=bs.ContingencyEngine.PowerFlow,
                                       # if no power flow options are provided 

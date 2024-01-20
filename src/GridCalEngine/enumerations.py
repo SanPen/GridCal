@@ -160,9 +160,9 @@ class SolverType(Enum):
     LM = 'Levenberg-Marquardt'
     FASTDECOUPLED = 'Fast decoupled'
     LACPF = 'Linear AC'
-    DC_OPF = 'Linear DC OPF'
-    AC_OPF = 'Nonlinear AC OPF'
-    Simple_OPF = 'Simple dispatch'
+    LINEAR_OPF = 'Linear OPF'
+    NONLINEAR_OPF = 'Nonlinear OPF'
+    SIMPLE_OPF = 'Simple dispatch'
     Proportional_OPF = 'Proportional OPF'
     NRI = 'Newton-Raphson in current'
     DYCORS_OPF = 'DYCORS OPF'
@@ -487,7 +487,7 @@ class ZonalGrouping(Enum):
             return s
 
 
-class ContingencyEngine(Enum):
+class ContingencyMethod(Enum):
     """
     Enumeratio of contingency calculation engines
     """

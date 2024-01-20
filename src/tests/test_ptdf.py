@@ -367,7 +367,7 @@ def test_mlodf():
     Sf0red = np.array([Sf0[branchdict[t.code]] for t in main_circuit.contingencies])
 
     linear_multi_contingency = LinearMultiContingencies(grid=main_circuit)
-    linear_multi_contingency.update(ptdf=linear_analysis.results.PTDF, lodf=linear_analysis.results.LODF)
+    linear_multi_contingency.compute(ptdf=linear_analysis.results.PTDF, lodf=linear_analysis.results.LODF)
     mlodf = linear_multi_contingency.multi_contingencies[0].mlodf_factors.A  # TODO: Suponemos que son los MLODF
 
     # Power flow per branches after multicontingency using MLODF method
@@ -381,7 +381,7 @@ def test_mlodf():
                                   control_q=ReactivePowerControlMode.NoControl,
                                   control_p=False)
 
-    options = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyEngine.PTDF)
+    options = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyMethod.PTDF)
     cont_analysis_driver = ContingencyAnalysisDriver(grid=main_circuit, options=options,
                                                      linear_multiple_contingencies=linear_multi_contingency)
     cont_analysis_driver.run()
@@ -406,7 +406,7 @@ def test_mlodf_sanpen():
                                   dispatch_storage=True,
                                   control_q=ReactivePowerControlMode.NoControl,
                                   control_p=False)
-    options1 = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyEngine.PowerFlow)
+    options1 = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyMethod.PowerFlow)
     cont_analysis_driver1 = ContingencyAnalysisDriver(grid=main_circuit, options=options1,
                                                       linear_multiple_contingencies=None)
     cont_analysis_driver1.run()
@@ -415,8 +415,8 @@ def test_mlodf_sanpen():
     linear_analysis = LinearAnalysisDriver(grid=main_circuit)
     linear_analysis.run()
     linear_multi_contingency = LinearMultiContingencies(grid=main_circuit)
-    linear_multi_contingency.update(ptdf=linear_analysis.results.PTDF, lodf=linear_analysis.results.LODF)
-    options2 = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyEngine.PTDF)
+    linear_multi_contingency.compute(ptdf=linear_analysis.results.PTDF, lodf=linear_analysis.results.LODF)
+    options2 = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyMethod.PTDF)
     cont_analysis_driver2 = ContingencyAnalysisDriver(grid=main_circuit, options=options2,
                                                       linear_multiple_contingencies=linear_multi_contingency)
     cont_analysis_driver2.run()

@@ -26,7 +26,7 @@ class OptimalPowerFlowOptions:
 
     def __init__(self,
                  verbose=False,
-                 solver: SolverType = SolverType.DC_OPF,
+                 solver: SolverType = SolverType.LINEAR_OPF,
                  time_grouping: TimeGrouping = TimeGrouping.NoGrouping,
                  zonal_grouping: ZonalGrouping = ZonalGrouping.NoGrouping,
                  mip_solver=MIPSolvers.CBC,
@@ -43,7 +43,7 @@ class OptimalPowerFlowOptions:
                  areas_to: List = None,
                  unit_commitment=False,
                  export_model_fname: Union[None, str] = None,
-                 generate_report=False,):
+                 generate_report=False, ):
         """
         Optimal power flow options
         :param verbose:

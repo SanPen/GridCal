@@ -118,7 +118,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
             self.report_progress(0.0)
             self.report_text('Formulating problem...')
 
-        if self.options.solver == SolverType.DC_OPF:
+        if self.options.solver == SolverType.LINEAR_OPF:
 
             # DC optimal power flow
             opf_vars = run_linear_opf_ts(grid=self.grid,
@@ -178,7 +178,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
             self.results.converged = np.array([opf_vars.acceptable_solution] * opf_vars.nt)
 
 
-        elif self.options.solver == SolverType.Simple_OPF:
+        elif self.options.solver == SolverType.SIMPLE_OPF:
 
             # AC optimal power flow
             Pl, Pg = run_simple_dispatch_ts(grid=self.grid,
@@ -375,7 +375,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                 else:
                     ti = self.time_indices
 
-            if self.options.solver == SolverType.DC_OPF:
+            if self.options.solver == SolverType.LINEAR_OPF:
                 self.report_text('Running Linear OPF with Newton...')
 
                 npa_res = newton_pa_linear_opf(circuit=self.grid,
@@ -408,7 +408,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                 self.results.fluid_path_flow[ti, :] = npa_res.fluid_path_vars.flow
                 self.results.fluid_injection_flow[ti, :] = npa_res.fluid_inject_vars.flow
 
-            if self.options.solver == SolverType.AC_OPF:
+            if self.options.solver == SolverType.NONLINEAR_OPF:
                 self.report_text('Running Non-Linear OPF with Newton...')
 
                 # pack the results

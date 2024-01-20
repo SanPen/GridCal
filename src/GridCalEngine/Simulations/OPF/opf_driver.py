@@ -15,7 +15,6 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
-import time
 from typing import Union
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.enumerations import SolverType, EngineType
@@ -23,6 +22,7 @@ from GridCalEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
 from GridCalEngine.Simulations.OPF.linear_opf_ts import run_linear_opf_ts
 from GridCalEngine.Simulations.OPF.simple_dispatch_ts import run_simple_dispatch
 from GridCalEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults
+from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import run_nonlinear_opf
 from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Simulations.driver_template import TimeSeriesDriverTemplate
@@ -83,13 +83,7 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
         """
         return self.options.power_flow_options
 
-    def get_steps(self):
-        """
-        Get time steps list of strings
-        """
-        return []
-
-    def add_report(self):
+    def add_report(self) -> None:
         """
         Add a report of the results (in-place)
         """
@@ -128,7 +122,7 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
                                         value=va[i],
                                         expected_value=bus.angle_min)
 
-    def opf(self, remote=False, batteries_energy_0=None):
+    def opf(self, remote=False, batteries_energy_0=None) -> OptimalPowerFlowResults:
         """
         Run a power flow for every circuit
         :param remote: is this function being called from the time series?
@@ -140,7 +134,7 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
             self.report_progress(0.0)
             self.report_text('Formulating problem...')
 
-        if self.options.solver == SolverType.DC_OPF:
+        if self.options.solver == SolverType.LINEAR_OPF:
 
             # DC optimal power flow
             opf_vars = run_linear_opf_ts(grid=self.grid,
@@ -174,7 +168,7 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
             self.results.hvdc_loading = opf_vars.hvdc_vars.loading[0, :]
             self.results.converged = opf_vars.acceptable_solution
 
-        elif self.options.solver == SolverType.Simple_OPF:
+        elif self.options.solver == SolverType.SIMPLE_OPF:
 
             # AC optimal power flow
             Pl, Pg = run_simple_dispatch(grid=self.grid,
@@ -183,17 +177,36 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
 
             self.results.generator_power = Pg
 
+        elif self.options.solver == SolverType.NONLINEAR_OPF:
+
+            res = run_nonlinear_opf(grid=self.grid,
+                                    pf_options=self.pf_options,
+                                    t_idx=None)
+
+            self.results.voltage = res.V
+            self.results.Sbus = res.S
+            self.results.bus_shadow_prices = res.lam_p
+            # self.results.load_shedding = npa_res.load_shedding[0, :]
+            # self.results.battery_power = npa_res.battery_p[0, :]
+            # self.results.battery_energy = npa_res.battery_energy[0, :]
+            self.results.generator_power = res.Pg
+            self.results.Sf = res.Sf
+            self.results.St = res.St
+            # self.results.overloads = npa_res.branch_overload[0, :]
+            self.results.loading = res.loading
+            # self.results.phase_shift = npa_res.tap_angle[0, :]
+
+            # self.results.hvdc_Pf = npa_res.hvdc_Pf[0, :]
+            # self.results.hvdc_loading = npa_res.hvdc_loading[0, :]
+            self.results.converged = res.converged
+
         else:
             self.logger.add_error('Solver not supported in this mode', str(self.options.solver))
-            return
+            return self.results
 
         if not remote:
             self.report_progress(0.0)
             self.report_text('Running all in an external solver, this may take a while...')
-
-        # self.results.contingency_flows_list += problem.get_contingency_flows_list().tolist()
-        # self.results.contingency_indices_list += problem.contingency_indices_list
-        # self.results.contingency_flows_slacks_list += problem.get_contingency_flows_slacks_list().tolist()
 
         return self.results
 
@@ -205,7 +218,6 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
 
         self.tic()
         if self.engine == EngineType.GridCal:
-
             self.opf()
 
         elif self.engine == EngineType.NewtonPA:
@@ -213,7 +225,7 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
             ti = self.time_indices if self.time_indices is not None else 0
             use_time_series = self.time_indices is not None
 
-            if self.options.solver == SolverType.DC_OPF:
+            if self.options.solver == SolverType.LINEAR_OPF:
                 self.report_text('Running Linear OPF with Newton...')
 
                 npa_res = newton_pa_linear_opf(circuit=self.grid,
@@ -239,7 +251,7 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
                 self.results.hvdc_loading = npa_res.hvdc_loading[0, :]
                 self.results.converged = True
 
-            if self.options.solver == SolverType.AC_OPF:
+            elif self.options.solver == SolverType.NONLINEAR_OPF:
                 self.report_text('Running Non-Linear OPF with Newton...')
 
                 # pack the results
@@ -265,6 +277,9 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
                 self.results.hvdc_Pf = npa_res.hvdc_Pf[0, :]
                 self.results.hvdc_loading = npa_res.hvdc_loading[0, :]
                 self.results.converged = npa_res.converged
+
+            else:
+                raise Exception(f"{self.options.solver} Not implemented yet")
 
         self.toc()
 

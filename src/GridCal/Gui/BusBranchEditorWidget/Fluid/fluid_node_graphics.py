@@ -19,8 +19,8 @@ import numpy as np
 from typing import Union, TYPE_CHECKING
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, QPoint
-from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush
-from PySide6.QtWidgets import QMenu, QGraphicsScene, QGraphicsSceneMouseEvent
+from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QPainter, QPainterPath, QFont
+from PySide6.QtWidgets import QMenu, QGraphicsRectItem, QGraphicsSceneMouseEvent, QGraphicsTextItem
 
 from GridCal.Gui.BusBranchEditorWidget.generic_graphics import ACTIVE, FONT_SCALE
 from GridCal.Gui.GuiFunctions import ObjectsModel
@@ -36,6 +36,46 @@ from GridCalEngine.Core.Devices.editable_device import EditableDevice
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
+
+
+class RoundedRect(QtWidgets.QGraphicsRectItem):
+    def __init__(self, x, y, width, height, radius, parent):
+        super().__init__(x, y, width, height, parent=parent)
+        self.radius = radius
+
+    def paint(self, painter, option, widget):
+        path = QPainterPath()
+        path.addRoundedRect(self.rect(), self.radius, self.radius)
+        painter.setClipPath(path)
+        painter.setBrush(self.brush())
+        painter.setPen(self.pen())
+        painter.drawRoundedRect(self.rect(), self.radius, self.radius)
+
+
+class VerticalWaterIndicator(QGraphicsRectItem):
+    def __init__(self, x, y, width, height, outer_radius, inner_radius, parent=None):
+        super().__init__(x, y, width, height, parent=parent)
+        self.outer_radius = outer_radius
+        self.inner_radius = inner_radius
+        self.setBrush(Qt.lightGray)  # Set the outer rectangle color
+
+        self.inner_rect = QGraphicsRectItem(self.rect(), self)
+        self.inner_rect.setBrush(Qt.blue)  # Set the inner rectangle color
+
+        self.label = QGraphicsTextItem('', self)
+        self.label.setDefaultTextColor(Qt.black)
+        self.label.setFont(QFont('Arial', 10))
+
+    def set_percentage(self, percentage):
+        # Update the inner rectangle size based on the percentage
+        inner_height = self.rect().height() * percentage / 100
+        self.inner_rect.setRect(self.rect().x(), self.rect().y() + self.rect().height() - inner_height,
+                                self.rect().width(), inner_height)
+        self.inner_rect.setPos(self.rect().x(), self.rect().y())
+
+        # Update the label text
+        self.label.setPlainText(f'{percentage}%')
+
 
 
 class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
@@ -55,7 +95,7 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
         super(FluidNodeGraphicItem, self).__init__(parent)
 
         self.min_w = 180.0
-        self.min_h = 20.0
+        self.min_h = 180.0
         self.offset = 10
         self.h = h if h >= self.min_h else self.min_h
         self.w = w if w >= self.min_w else self.min_w
@@ -78,14 +118,21 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
         self.color = ACTIVE['fluid']
         self.style = ACTIVE['style']
 
+        # square
+        self.tile_inside = RoundedRect(0, self.min_h/3, self.min_w, self.min_h / 3, 15, self)
+        self.tile_inside.setBrush(QBrush(ACTIVE['fluid']))
+        self.tile_inside.setOpacity(0.7)
+
+        # self.tile = VerticalWaterIndicator(0, 0, self.min_w, self.min_h, 15, self)
+        # # self.tile.setPen(QPen(ACTIVE['color']))
+        # self.tile.setBrush(QBrush(ACTIVE['fluid']))
+        # self.tile.setOpacity(0.7)
+        # self.tile.set_percentage(36.0)
+
         # Label:
         self.label = QtWidgets.QGraphicsTextItem(fluid_node.name, self)
         self.label.setDefaultTextColor(ACTIVE['text'])
         self.label.setScale(FONT_SCALE)
-
-        # square
-        self.tile = QtWidgets.QGraphicsRectItem(0, 0, self.min_h, self.min_h, self)
-        self.tile.setOpacity(0.7)
 
         # connection terminals the block
         self.terminal = TerminalItem('s', parent=self, editor=self.editor)  # , h=self.h))
@@ -93,7 +140,7 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
 
         # Create corner for resize:
         self.sizer = HandleItem(self.terminal)
-        self.sizer.setPos(self.w, self.h)
+        self.sizer.setPos(self.w, 20)
         self.sizer.posChangeCallbacks.append(self.change_size)  # Connect the callback
         self.sizer.setFlag(self.GraphicsItemFlag.ItemIsMovable)
         # self.adapt()

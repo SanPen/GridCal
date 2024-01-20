@@ -151,6 +151,13 @@ class DriverTemplate:
         self.__cancel__ = True
         self.report_done("Cancelled!")
 
+    def is_cancel(self) -> bool:
+        """
+        Check if cancel was activated
+        :return:
+        """
+        return self.__cancel__
+
 
 class TimeSeriesDriverTemplate(DriverTemplate):
     """
@@ -205,8 +212,10 @@ class TimeSeriesDriverTemplate(DriverTemplate):
         """
         Get time steps list of strings
         """
-
-        return [self.grid.time_profile[i].strftime('%d-%m-%Y %H:%M') for i in self.time_indices]
+        if self.time_indices is None:
+            return []
+        else:
+            return [self.grid.time_profile[i].strftime('%d-%m-%Y %H:%M') for i in self.time_indices]
 
     def get_topologic_groups(self) -> Dict[int, List[int]]:
         """
