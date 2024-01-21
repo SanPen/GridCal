@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -1769,10 +1769,10 @@ class DiagramsModel(QtCore.QAbstractListModel):
     """
     Model for the diagrams
     # from GridCal.Gui.BusViewer.bus_viewer_dialogue import BusViewerGUI
-    # from GridCal.Gui.GridEditorWidget import GridEditorWidget
+    # from GridCal.Gui.BusBranchEditorWidget import BusBranchEditorWidget
     # from GridCal.Gui.MapWidget.grid_map_widget import GridMapWidget
     """
-    def __init__(self, list_of_diagrams: List[Union["GridEditorWidget", "GridMapWidget", "BusViewerGUI"]]):
+    def __init__(self, list_of_diagrams: List[Union["BusBranchEditorWidget", "GridMapWidget", "BusViewerGUI"]]):
         """
         Enumeration model
         :param list_of_diagrams: list of enumeration values to show
@@ -1820,7 +1820,7 @@ class DiagramsModel(QtCore.QAbstractListModel):
                 return diagram.name
             elif role == QtCore.Qt.ItemDataRole.DecorationRole:
 
-                if isinstance(diagram, GridCal.Gui.GridEditorWidget.BusBranchEditorWidget):
+                if isinstance(diagram, GridCal.Gui.BusBranchEditorWidget.BusBranchEditorWidget):
                     return self.bus_branch_editor_icon
                 elif isinstance(diagram, GridCal.Gui.MapWidget.grid_map_widget.GridMapWidget):
                     return self.map_editor_icon

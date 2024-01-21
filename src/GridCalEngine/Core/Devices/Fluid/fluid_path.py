@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -39,8 +39,8 @@ class FluidPath(EditableDevice):
         :param code: secondary ID
         :param source: source of fluid (direction matters)
         :param target: target for the fluid (direction matters)
-        :param min_flow: minimum flow (m3/h)
-        :param max_flow: maximum flow (m3/h)
+        :param min_flow: minimum flow (m3/s)
+        :param max_flow: maximum flow (m3/s)
         """
         EditableDevice.__init__(self,
                                 name=name,
@@ -53,12 +53,12 @@ class FluidPath(EditableDevice):
         self.min_flow = min_flow
         self.max_flow = max_flow
 
-        self.flow = 0.0  # m3/h -> LpVar
+        self.flow = 0.0  # m3/s -> LpVar
 
         self.register(key='source', units="", tpe=DeviceType.FluidNodeDevice, definition="Source node")
         self.register(key='target', units="", tpe=DeviceType.FluidNodeDevice, definition="Target node")
-        self.register(key='min_flow', units="m3/h", tpe=float, definition="Minimum flow")
-        self.register(key='max_flow', units="m3/h", tpe=float, definition="Maximum flow")
+        self.register(key='min_flow', units="m3/s", tpe=float, definition="Minimum flow")
+        self.register(key='max_flow', units="m3/s", tpe=float, definition="Maximum flow")
 
     def copy(self):
         """

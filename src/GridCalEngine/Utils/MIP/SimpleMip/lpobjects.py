@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -40,9 +40,9 @@ class LpVar:
         :param hash_id: internal unique Hash id so that this var can be used in a dictionary as key  (not required)
         """
         self.name = name
-        self.lower_bound = lower_bound
-        self.upper_bound = upper_bound
-        self.is_integer = is_integer  # Indicates if the variable is an integer
+        self.lower_bound: float = lower_bound
+        self.upper_bound: float = upper_bound
+        self.is_integer: bool = is_integer  # Indicates if the variable is an integer
         self._index: int = internal_idx  # internal index to the solver
         self._hash_id: int = uuid4().int if hash_id is None else hash_id
 
@@ -85,7 +85,9 @@ class LpVar:
     def _comparison(self, sense: str, other: Union["LpExp", LpVar, float, int]) -> LpCst:
 
         if isinstance(other, (int, float)):
-            raise ValueError(f"Doesn't make sense to compare an LpVar with a int or float")
+            combined_expression = LpExp(self)
+            combined_expression.offset -= other
+            return LpCst(combined_expression, sense, 0)
 
         elif isinstance(other, LpVar):
             combined_expression = LpExp(self) - LpExp(other)
@@ -382,3 +384,14 @@ class LpExp:
 
     def __isub__(self, other: Union[LpVar, "LpExp", int, float]) -> "LpExp":
         return self.__sub__(other)
+
+    def __neg__(self) -> "LpExp":
+        """
+        Negate
+        :return: LpExp with negative terms
+        """
+        e = LpExp()
+        e.offset = self.offset
+        for var, coeff in self.terms.items():
+            e.terms[var] = -coeff
+        return e

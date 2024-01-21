@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -18,7 +18,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
-    from GridCalEngine.Utils.MIP.SimpleMip.lpmodel import Problem
+    from GridCalEngine.Utils.MIP.SimpleMip.lpmodel import LpModel
 
 try:
     import highspy
@@ -28,7 +28,7 @@ except ImportError:
     HIGHS_AVAILABLE = False
 
 
-def solve_with_highs(mip: Problem, verbose: int = 0):
+def solve_with_highs(mip: LpModel, verbose: int = 0):
     """
     Solve MIP using Highs via its python interface
     :param mip: Problem to be solved (results are inserted in-place)

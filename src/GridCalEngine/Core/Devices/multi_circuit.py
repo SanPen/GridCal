@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -1819,6 +1819,12 @@ class MultiCircuit:
         for branch_list in self.get_branch_lists():
             for elm in branch_list:
                 elm.create_profiles(index)
+
+        for elm in self.fluid_nodes:
+            elm.create_profiles(index)
+
+        for elm in self.fluid_paths:
+            elm.create_profiles(index)
 
     def set_time_profile(self, unix_data: IntVec):
         """

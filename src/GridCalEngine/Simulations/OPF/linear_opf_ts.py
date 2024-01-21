@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -69,8 +69,8 @@ def get_contingency_flow_with_filter(multi_contingency: LinearMultiContingency,
 
     if len(multi_contingency.bus_indices):
         for i, c in enumerate(multi_contingency.bus_indices):
-            if abs(multi_contingency.ptdf_factors[m, i]) >= threshold:
-                res += multi_contingency.ptdf_factors[m, i] * multi_contingency.injections_factor[i] * injections[c]
+            if abs(multi_contingency.compensated_ptdf_factors[m, i]) >= threshold:
+                res += multi_contingency.compensated_ptdf_factors[m, i] * multi_contingency.injections_factor[i] * injections[c]
 
     return res
 
@@ -226,7 +226,10 @@ class BatteryVars(GenerationVars):
         GenerationVars.__init__(self, nt=nt, n_elm=n_elm)
         self.e = np.zeros((nt, n_elm), dtype=object)
 
-    def get_values(self, Sbase: float, model: LpModel) -> "BatteryVars":
+    def get_values(self, Sbase: float, model: LpModel,
+                   gen_emissions_rates_matrix: csc_matrix = None,  # not needed but included for compatibiliy
+                   gen_fuel_rates_matrix: csc_matrix = None  # not needed but included for compatibiliy
+                   ) -> "BatteryVars":
         """
         Return an instance of this class where the arrays content are not LP vars but their value
         :return: GenerationVars
@@ -386,9 +389,9 @@ class FluidNodeVars:
 
         self.p2x_flow = np.zeros((nt, n_elm), dtype=object)  # m3
         self.current_level = np.zeros((nt, n_elm), dtype=object)  # m3
-        self.spillage = np.zeros((nt, n_elm), dtype=object)  # m3/h
-        self.flow_in = np.zeros((nt, n_elm), dtype=object)  # m3/h
-        self.flow_out = np.zeros((nt, n_elm), dtype=object)  # m3/h
+        self.spillage = np.zeros((nt, n_elm), dtype=object)  # m3/s
+        self.flow_in = np.zeros((nt, n_elm), dtype=object)  # m3/s
+        self.flow_out = np.zeros((nt, n_elm), dtype=object)  # m3/s
 
     def get_values(self, model: LpModel) -> "FluidNodeVars":
         """
@@ -435,10 +438,10 @@ class FluidPathVars:
         """
 
         # from the data object
-        # self.min_flow = np.zeros((nt, n_elm), dtype=float)  # m3/h
-        # self.max_flow = np.zeros((nt, n_elm), dtype=float)  # m3/h
+        # self.min_flow = np.zeros((nt, n_elm), dtype=float)  # m3/s
+        # self.max_flow = np.zeros((nt, n_elm), dtype=float)  # m3/s
 
-        self.flow = np.zeros((nt, n_elm), dtype=object)  # m3/h
+        self.flow = np.zeros((nt, n_elm), dtype=object)  # m3/s
 
     def get_values(self, model: LpModel) -> "FluidPathVars":
         """
@@ -475,12 +478,12 @@ class FluidInjectionVars:
         """
 
         # self.efficiency = np.zeros((nt, n_elm), dtype=float)  # m3
-        # self.max_flow_rate = np.zeros((nt, n_elm), dtype=float)  # m3/h
+        # self.max_flow_rate = np.zeros((nt, n_elm), dtype=float)  # m3/s
         #
         # self.p_max = np.zeros((nt, n_elm), dtype=float)  # MW
         # self.p_min = np.zeros((nt, n_elm), dtype=float)  # MW
         #
-        self.flow = np.zeros((nt, n_elm), dtype=object)  # m3/h
+        self.flow = np.zeros((nt, n_elm), dtype=object)  # m3/s
 
     def get_values(self, model: LpModel) -> "FluidInjectionVars":
         """
@@ -1329,9 +1332,9 @@ def add_hydro_formulation(t: Union[int, None],
 
     # Constraints
     for m in range(path_data.nelm):
-        # inflow: fluid flow entering the target node in m3/h
-        # outflow: fluid flow leaving the source node in m3/h
-        # flow: amount of fluid flowing through the river in m3/h
+        # inflow: fluid flow entering the target node in m3/s
+        # outflow: fluid flow leaving the source node in m3/s
+        # flow: amount of fluid flowing through the river in m3/s
         node_vars.flow_in[t, path_data.target_idx[m]] += path_vars.flow[t, m]
         node_vars.flow_out[t, path_data.source_idx[m]] += path_vars.flow[t, m]
 
@@ -1339,9 +1342,9 @@ def add_hydro_formulation(t: Union[int, None],
         gen_idx = turbine_data.generator_idx[m]
         plant_idx = turbine_data.plant_idx[m]
 
-        # flow = pgen [pu] * max_flow [m3/h] / (Pgen_max [MW] / Sbase [MW] * eff)
-        turbine_flow = (generator_vars.p[t, gen_idx] * turbine_data.max_flow_rate[m]
-                        / (generator_data.pmax[gen_idx] / Sbase * turbine_data.efficiency[m]))
+        # flow [m3/s] = pgen [pu] * max_flow [m3/s] / (Pgen_max [MW] / Sbase [MW] * eff)
+        coeff = turbine_data.max_flow_rate[m] / (generator_data.pmax[gen_idx] / Sbase * turbine_data.efficiency[m])
+        turbine_flow = (generator_vars.p[t, gen_idx] * coeff)
         # node_vars.flow_out[t, plant_idx] = turbine_flow  # assume only 1 turbine connected
 
         # if t > 0:
@@ -1360,11 +1363,11 @@ def add_hydro_formulation(t: Union[int, None],
         gen_idx = pump_data.generator_idx[m]
         plant_idx = pump_data.plant_idx[m]
 
-        # flow = pcons [pu] * max_flow [m3/h] * eff / (Pcons_min [MW] / Sbase [MW])
+        # flow [m3/s] = pcons [pu] * max_flow [m3/s] * eff / (Pcons_min [MW] / Sbase [MW])
         # invert the efficiency compared to a turbine
         # pmin instead of pmax because the sign should be inverted (consuming instead of generating)
-        pump_flow = (generator_vars.p[t, gen_idx] * pump_data.max_flow_rate[m]
-                     * pump_data.efficiency[m] / (abs(generator_data.pmin[gen_idx]) / Sbase))
+        coeff = pump_data.max_flow_rate[m] * pump_data.efficiency[m] / (abs(generator_data.pmin[gen_idx]) / Sbase)
+        pump_flow = (generator_vars.p[t, gen_idx] * coeff)
         # node_vars.flow_in[t, plant_idx] = pump_flow  # assume only 1 pump connected
 
         # if t > 0:
@@ -1381,11 +1384,11 @@ def add_hydro_formulation(t: Union[int, None],
     for m in range(p2x_data.nelm):
         gen_idx = p2x_data.generator_idx[m]
 
-        # flow = pcons [pu] * max_flow [m3/h] * eff / (Pcons_max [MW] / Sbase [MW])
+        # flow[m3/s] = pcons [pu] * max_flow [m3/s] * eff / (Pcons_max [MW] / Sbase [MW])
         # invert the efficiency compared to a turbine
         # pmin instead of pmax because the sign should be inverted (consuming instead of generating)
-        p2x_flow = (generator_vars.p[t, gen_idx] * p2x_data.max_flow_rate[m]
-                    * p2x_data.efficiency[m] / (abs(generator_data.pmin[gen_idx]) / Sbase))
+        coeff = p2x_data.max_flow_rate[m] * p2x_data.efficiency[m] / (abs(generator_data.pmin[gen_idx]) / Sbase)
+        p2x_flow = (generator_vars.p[t, gen_idx] * coeff)
 
         # if t > 0:
         node_vars.p2x_flow[t, p2x_data.plant_idx[m]] -= p2x_flow
@@ -1403,9 +1406,9 @@ def add_hydro_formulation(t: Union[int, None],
             if t == 0:
                 # Initialize level at the initial one (from snapshot), akin to dt=0
                 if len(time_array) > time_global_tidx + 1:
-                    dt = (time_array[time_global_tidx + 1] - time_array[time_global_tidx]).seconds / 3600.0
+                    dt = (time_array[time_global_tidx + 1] - time_array[time_global_tidx]).seconds
                 else:
-                    dt = 1
+                    dt = 3600
 
                 prob.add_cst(cst=(node_vars.current_level[t, m] ==
                                   node_data.initial_level[m]
@@ -1417,7 +1420,7 @@ def add_hydro_formulation(t: Union[int, None],
                              name=join("nodal_balance_", [t, m], "_"))
             else:
                 # Update the level according to the in and out flows as time passes
-                dt = (time_array[time_global_tidx] - time_array[time_global_tidx - 1]).seconds / 3600.0
+                dt = (time_array[time_global_tidx] - time_array[time_global_tidx - 1]).seconds
 
                 prob.add_cst(cst=(node_vars.current_level[t, m] ==
                                   node_vars.current_level[t - 1, m]
@@ -1632,7 +1635,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
 
                 # Compute the more generalistic contingency structures
                 mctg = LinearMultiContingencies(grid=grid)
-                mctg.update(lodf=ls.LODF, ptdf=ls.PTDF, threshold=lodf_threshold)
+                mctg.compute(lodf=ls.LODF, ptdf=ls.PTDF, ptdf_threshold=lodf_threshold, lodf_threshold=lodf_threshold)
 
                 # formulate the contingencies
                 f_obj += add_linear_branches_contingencies_formulation(t_idx=local_t_idx,

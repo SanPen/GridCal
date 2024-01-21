@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -286,3 +286,13 @@ class Transformer3W(EditableDevice):
         self._rate31 = val
         self.compute_delta_to_star()
 
+    def get_winding(self, i: int):
+
+        if i == 0:
+            return self.winding1
+        elif i == 1:
+            return self.winding2
+        elif i == 2:
+            return self.winding3
+        else:
+            raise Exception("Windings int positions go from 0 to 2")

@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -14,9 +14,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
+import uuid
+import warnings
 from typing import List, Union, Tuple, Iterable
 import numpy as np
+from uuid import uuid4
 
 from scipy.sparse import csc_matrix
 from GridCalEngine.Utils.MIP.SimpleMip.lpobjects import LpExp, LpCst, LpVar
@@ -60,9 +62,10 @@ class LpModel:
     def __init__(self, solver_type: MIPSolvers = MIPSolvers.HIGHS):
 
         if solver_type not in [MIPSolvers.HIGHS]:
-            raise Exception(f"Unsupported solver {solver_type.value}")
-
-        self.solver_type = solver_type
+            warnings.warn(f"Unsupported solver {solver_type.value}, falling back to highs.")
+            self.solver_type = MIPSolvers.HIGHS
+        else:
+            self.solver_type = solver_type
         self.objective: Union[LpExp, None] = None
         self.constraints: List[LpCst] = []
         self.variables: List[LpVar] = []
@@ -130,7 +133,7 @@ class LpModel:
         :param is_int:
         :return: Variable instance
         """
-        var = LpVar(name=name, lower_bound=lb, upper_bound=ub, is_integer=is_int)
+        var = LpVar(name=name, lower_bound=lb, upper_bound=ub, is_integer=is_int, hash_id=uuid4().int)
         self.variables.append(var)
         return var
 

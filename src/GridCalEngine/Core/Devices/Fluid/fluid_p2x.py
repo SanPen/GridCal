@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -39,7 +39,7 @@ class FluidP2x(FluidInjectionTemplate):
         :param idtag: UUID code
         :param code: secondary code
         :param efficiency: energy consumption per fluid unit (MWh/m3)
-        :param max_flow_rate: maximum fluid flow (m3/h)
+        :param max_flow_rate: maximum fluid flow (m3/s)
         :param plant: Connection reservoir/node
         :param generator: electrical machine connected
         """
