@@ -170,7 +170,7 @@ def eval_h(x, Yf, Yt, from_idx, to_idx, no_slack, Va_max, Va_min, Vm_max, Vm_min
     return hval, Sf, St
 
 
-def jacobians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, slack, no_slack, mu, lmbda):
+def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, slack, no_slack, mu, lmbda):
     """
 
     :param x:
@@ -550,8 +550,8 @@ def compute_analytic_structures(x, mu, lmbda, Ybus, Yf, Cg, Cf, Ct, Sd, slack, n
                        Va_min=th_min, Vm_max=V_U, Vm_min=V_L, Pg_max=P_U, Pg_min=P_L, Qg_max=Q_U, Qg_min=Q_L, Cg=Cg,
                        rates=rates)
 
-    fx, Gx, Hx, fxx, Gxx, Hxx = jacobians(x=x, c1=c1, c2=c2, Cg=Cg, Cf=Cf, Ct=Ct, Yf=Yf, Yt=Yt,
-                                          Ybus=Ybus, Sbase=Sbase, slack=slack, no_slack=no_slack, mu=mu, lmbda=lmbda)
+    fx, Gx, Hx, fxx, Gxx, Hxx = jacobians_and_hessians(x=x, c1=c1, c2=c2, Cg=Cg, Cf=Cf, Ct=Ct, Yf=Yf, Yt=Yt,
+                                                       Ybus=Ybus, Sbase=Sbase, slack=slack, no_slack=no_slack, mu=mu, lmbda=lmbda)
 
     return IpsFunctionReturn(f=f, G=G, H=H,
                              fx=fx, Gx=Gx.tocsc(), Hx=Hx.tocsc(),
@@ -705,6 +705,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     s0gen = (pf_results.Sbus - nc.load_data.get_injections_per_bus()) / nc.Sbase
     p0gen = nc.generator_data.C_bus_elm.T @ np.real(s0gen)
     q0gen = nc.generator_data.C_bus_elm.T @ np.imag(s0gen)
+
+    # nc.Vbus  # dummy initialization
 
     # compose the initial values
     x0 = var2x(Vm=np.abs(pf_results.voltage),
