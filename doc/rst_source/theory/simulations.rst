@@ -49,7 +49,8 @@ PTDF (Power Transmission Distribution Factors)
 .. toctree::
     :maxdepth: 3
 
-    ptdf
+    linear/ptdf
+    linear/srap
 
 
 Investments Evaluation

@@ -36,7 +36,7 @@ def test_contingency():
                                   control_q=ReactivePowerControlMode.NoControl,
                                   control_p=False)
 
-    options = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyEngine.PowerFlow)
+    options = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyMethod.PowerFlow)
     cont_analysis_driver = ContingencyAnalysisDriver(grid=main_circuit, options=options,
                                                      linear_multiple_contingencies=None)
     cont_analysis_driver.run()
@@ -72,9 +72,9 @@ def test_linear_contingency():
     linear_analysis = LinearAnalysisDriver(grid=main_circuit)
     linear_analysis.run()
     linear_multi_contingency = LinearMultiContingencies(grid=main_circuit)
-    linear_multi_contingency.update(ptdf=linear_analysis.results.PTDF, lodf=linear_analysis.results.LODF)
+    linear_multi_contingency.compute(ptdf=linear_analysis.results.PTDF, lodf=linear_analysis.results.LODF)
 
-    options = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyEngine.PTDF)
+    options = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyMethod.PTDF)
     cont_analysis_driver = ContingencyAnalysisDriver(grid=main_circuit, options=options,
                                                      linear_multiple_contingencies=linear_multi_contingency)
     cont_analysis_driver.run()

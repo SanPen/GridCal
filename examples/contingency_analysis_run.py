@@ -28,10 +28,9 @@ main_circuit.add_contingency(Contingency(device_idtag=branches[5].idtag, name=br
 pf_options = PowerFlowOptions(solver_type=SolverType.NR)
 
 # declare the contingency options
-options_ = ContingencyAnalysisOptions(distributed_slack=True,
-                                      use_provided_flows=False,
+options_ = ContingencyAnalysisOptions(use_provided_flows=False,
                                       Pf=None,
-                                      engine=en.ContingencyEngine.PowerFlow,
+                                      engine=en.ContingencyMethod.PowerFlow,
                                       pf_options=pf_options)
 
 linear_multiple_contingencies = LinearMultiContingencies(grid=main_circuit)

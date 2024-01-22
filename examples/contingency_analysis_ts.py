@@ -17,10 +17,9 @@ fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE
 main_circuit = FileOpen(fname).open()
 
 options_ = ContingencyAnalysisOptions(
-    distributed_slack=True,
     use_provided_flows=False,
     Pf=None,
-    engine=en.ContingencyEngine.PTDF,
+    engine=en.ContingencyMethod.PTDF,
     pf_options=PowerFlowOptions(),
 )
 
