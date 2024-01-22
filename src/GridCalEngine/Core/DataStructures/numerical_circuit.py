@@ -28,7 +28,7 @@ from GridCalEngine.enumerations import BranchImpedanceMode
 import GridCalEngine.Core.topology as tp
 
 from GridCalEngine.Core.topology import compile_types
-from GridCalEngine.Simulations.sparse_solve import get_sparse_type
+from GridCalEngine.Utils.NumericalMethods.sparse_solve import get_sparse_type
 import GridCalEngine.Core.Compilers.circuit_to_data as gc_compiler2
 import GridCalEngine.Core.admittance_matrices as ycalc
 from GridCalEngine.enumerations import TransformerControlType, ConverterControlType
