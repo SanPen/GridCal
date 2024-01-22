@@ -52,7 +52,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
     """
 
     def __init__(self, parent=None, index=0, editor: NodeBreakerEditorWidget = None, bus: Bus = None,
-                 h: int = 20, w: int = 80, x: int = 0, y: int = 0):
+                 h: int = 80, w: int = 20, x: int = 0, y: int = 0):
         """
 
         :param parent:
@@ -66,7 +66,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         """
         super(BusGraphicItem, self).__init__(parent)
 
-        self.min_w = 180.0
+        self.min_w = 20.0
         self.min_h = 20.0
         self.offset = 10
         self.h = h if h >= self.min_h else self.min_h
