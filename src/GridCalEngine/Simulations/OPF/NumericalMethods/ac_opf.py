@@ -448,8 +448,8 @@ def jacobians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, slack, no_slack, mu, l
     return fx, Gx.tocsc().T, Hx.tocsc().T, fxx, Gxx, Hxx
 
 
-def compute_autodiff_structures(x, mu, lmbda, Ybus, Yf, Cg, Sd, slack, no_slack, Yt, from_idx, to_idx,
-                                th_max, th_min, V_U, V_L, P_U, P_L, Q_U, Q_L,
+def compute_autodiff_structures(x, mu, lam, Ybus, Yf, Cg, Sd, slack, no_slack, Yt, from_idx, to_idx,
+                                Va_max, Va_min, Vm_max, Vm_min, Pg_max, Pg_min, Qg_max, Qg_min,
                                 c0, c1, c2, Sbase, rates, h=1e-5) -> IpsFunctionReturn:
     """
 
@@ -465,14 +465,14 @@ def compute_autodiff_structures(x, mu, lmbda, Ybus, Yf, Cg, Sd, slack, no_slack,
     :param Yt:
     :param from_idx:
     :param to_idx:
-    :param th_max:
-    :param th_min:
-    :param V_U:
-    :param V_L:
-    :param P_U:
-    :param P_L:
-    :param Q_U:
-    :param Q_L:
+    :param Va_max:
+    :param Va_min:
+    :param Vm_max:
+    :param Vm_min:
+    :param Pg_max:
+    :param Pg_min:
+    :param Qg_max:
+    :param Qg_min:
     :param c0:
     :param c1:
     :param c2:
@@ -483,19 +483,25 @@ def compute_autodiff_structures(x, mu, lmbda, Ybus, Yf, Cg, Sd, slack, no_slack,
     """
     f = eval_f(x=x, Cg=Cg, c0=c0, c1=c1, c2=c2, Sbase=Sbase)
     G, Scalc = eval_g(x=x, Ybus=Ybus, Yf=Yf, Cg=Cg, Sd=Sd, slack=slack)
-    H, Sf, St = eval_h(x=x, Yf=Yf, Yt=Yt, from_idx=from_idx, to_idx=to_idx, no_slack=no_slack, Va_max=th_max,
-                       Va_min=th_min, Vm_max=V_U, Vm_min=V_L, Pg_max=P_U, Pg_min=P_L, Qg_max=Q_U, Qg_min=Q_L, Cg=Cg,
+    H, Sf, St = eval_h(x=x, Yf=Yf, Yt=Yt, from_idx=from_idx, to_idx=to_idx, no_slack=no_slack, Va_max=Va_max,
+                       Va_min=Va_min, Vm_max=Vm_max, Vm_min=Vm_min, Pg_max=Pg_max, Pg_min=Pg_min,
+                       Qg_max=Qg_max, Qg_min=Qg_min, Cg=Cg,
                        rates=rates)
 
     fx = ad.calc_autodiff_jacobian_f_obj(func=eval_f, x=x, arg=(Cg, c0, c1, c2, Sbase), h=h)
     Gx = ad.calc_autodiff_jacobian(func=eval_g, x=x, arg=(Ybus, Yf, Cg, Sd, slack)).T
-    Hx = ad.calc_autodiff_jacobian(func=eval_h, x=x, arg=(Yf, Yt, from_idx, to_idx, no_slack, th_max, th_min,
-                                                          V_U, V_L, P_U, P_L, Q_U, Q_L, Cg, rates)).T
+    Hx = ad.calc_autodiff_jacobian(func=eval_h, x=x, arg=(Yf, Yt, from_idx, to_idx, no_slack, Va_max, Va_min,
+                                                          Vm_max, Vm_min, Pg_max, Pg_min, Qg_max, Qg_min, Cg, rates)).T
 
     fxx = ad.calc_autodiff_hessian_f_obj(func=eval_f, x=x, arg=(Cg, c0, c1, c2, Sbase), h=h)
-    Gxx = ad.calc_autodiff_hessian(func=eval_g, x=x, mult=lmbda, arg=(Ybus, Yf, Cg, Sd, slack))
-    Hxx = ad.calc_autodiff_hessian(func=eval_h, x=x, mult=mu, arg=(Yf, Yt, from_idx, to_idx, no_slack, th_max,
-                                                                   th_min, V_U, V_L, P_U, P_L, Q_U, Q_L, Cg, rates))
+    Gxx = ad.calc_autodiff_hessian(func=eval_g, x=x, mult=lam, arg=(Ybus, Yf, Cg, Sd, slack))
+    Hxx = ad.calc_autodiff_hessian(func=eval_h, x=x, mult=mu, arg=(Yf, Yt, from_idx, to_idx, no_slack, Va_max,
+                                                                   Va_min, Vm_max, Vm_min, Pg_max, Pg_min,
+                                                                   Qg_max, Qg_min, Cg, rates))
+
+    # approximate the Hessian using the Gauss-Newton matrix
+    # Gxx = Gx @ Gx.T
+    # Hxx = Hx @ Hx.T
 
     return IpsFunctionReturn(f=f, G=G, H=H,
                              fx=fx, Gx=Gx.tocsc(), Hx=Hx.tocsc(),
@@ -638,12 +644,14 @@ class NonlinearOPFResults:
 
 def ac_optimal_power_flow(nc: NumericalCircuit,
                           pf_options: PowerFlowOptions,
-                          debug: bool = False) -> NonlinearOPFResults:
+                          debug: bool = False,
+                          use_autodiff: bool = False) -> NonlinearOPFResults:
     """
 
     :param nc: NumericalCircuit
     :param pf_options: PowerFlowOptions
     :param debug: if true, the jacobians, hessians, etc are checked against finite difeerence versions of them
+    :param use_autodiff: use the autodiff version of the structures
     :return: NonlinearOPFResults
     """
 
@@ -711,7 +719,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         print("x0:", x0)
 
     if debug:
-        # run the solver with the function that checks the derivatives agains their finite differences equivalent
+        # run the solver with the function that checks the derivatives
+        # against their finite differences equivalent
         result = interior_point_solver(x0=x0, n_x=NV, n_eq=NE, n_ineq=NI,
                                        func=evaluate_power_flow_debug,
                                        arg=(Ybus, Yf, Cg, Cf, Ct, Sd, slack, no_slack, Yt,
@@ -722,15 +731,25 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                                        max_iter=pf_options.max_iter)
 
     else:
-        # run the solver with the analytic derivatives
-        result = interior_point_solver(x0=x0, n_x=NV, n_eq=NE, n_ineq=NI,
-                                       func=compute_analytic_structures,
-                                       arg=(Ybus, Yf, Cg, Cf, Ct, Sd, slack, no_slack, Yt,
-                                            from_idx, to_idx, Va_max, Va_min, Vm_max, Vm_min,
-                                            Pg_max, Pg_min, Qg_max, Qg_min,
-                                            c0, c1, c2, Sbase, rates),
-                                       verbose=pf_options.verbose,
-                                       max_iter=pf_options.max_iter)
+        if use_autodiff:
+            # run the solver with the autodiff derivatives
+            result = interior_point_solver(x0=x0, n_x=NV, n_eq=NE, n_ineq=NI,
+                                           func=compute_autodiff_structures,
+                                           arg=(Ybus, Yf, Cg, Sd, slack, no_slack, Yt, from_idx, to_idx,
+                                                Va_max, Va_min, Vm_max, Vm_min, Pg_max, Pg_min, Qg_max, Qg_min,
+                                                c0, c1, c2, Sbase, rates, 1e-5),
+                                           verbose=pf_options.verbose,
+                                           max_iter=pf_options.max_iter)
+        else:
+            # run the solver with the analytic derivatives
+            result = interior_point_solver(x0=x0, n_x=NV, n_eq=NE, n_ineq=NI,
+                                           func=compute_analytic_structures,
+                                           arg=(Ybus, Yf, Cg, Cf, Ct, Sd, slack, no_slack, Yt,
+                                                from_idx, to_idx, Va_max, Va_min, Vm_max, Vm_min,
+                                                Pg_max, Pg_min, Qg_max, Qg_min,
+                                                c0, c1, c2, Sbase, rates),
+                                           verbose=pf_options.verbose,
+                                           max_iter=pf_options.max_iter)
 
     # convert the solution to the problem variables
     Vm, Va, Pg, Qg = x2var(result.x, nVm=nbus, nVa=nbus, nPg=ngen, nQg=ngen)
@@ -761,15 +780,17 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
 def run_nonlinear_opf(grid: MultiCircuit,
                       pf_options: PowerFlowOptions,
                       t_idx: Union[None, int] = None,
-                      debug: bool = False) -> NonlinearOPFResults:
+                      debug: bool = False,
+                      use_autodiff: bool = False) -> NonlinearOPFResults:
     """
 
     :param grid:
     :param pf_options:
     :param t_idx:
     :param debug:
+    :param use_autodiff:
     :return:
     """
     nc = compile_numerical_circuit_at(circuit=grid, t_idx=t_idx)
 
-    return ac_optimal_power_flow(nc=nc, pf_options=pf_options, debug=debug)
+    return ac_optimal_power_flow(nc=nc, pf_options=pf_options, debug=debug, use_autodiff=use_autodiff)

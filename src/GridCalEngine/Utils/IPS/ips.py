@@ -236,7 +236,7 @@ def interior_point_solver(x0: Vec,
 
     converged = error <= gamma
 
-    error_evolution = np.zeros(max_iter)
+    error_evolution = np.zeros(max_iter + 1)
     error_evolution[0] = error
     while not converged and iter_counter < max_iter:
 

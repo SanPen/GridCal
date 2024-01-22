@@ -14,13 +14,19 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from typing import Callable, Union, Tuple, List, Any
 import numpy as np
 from scipy.sparse import csc_matrix as csc
 from scipy.sparse import lil_matrix
 from GridCalEngine.basic_structures import Vec
 
 
-def unpack(ret):
+def unpack(ret: Union[Vec, Tuple[Vec, ...]]) -> Vec:
+    """
+    Unpack the returning vector depending if ret is the vector or a tuple including the vector
+    :param ret: Tuple with the vector or vector directly
+    :return: Vector
+    """
     if isinstance(ret, tuple):
         f0 = ret[0]
     else:
@@ -28,12 +34,11 @@ def unpack(ret):
     return f0
 
 
-def calc_autodiff_jacobian_f_obj(func, x: Vec, arg=(), h=1e-5) -> Vec:
+def calc_autodiff_jacobian_f_obj(func: Callable[[Vec, ...], float], x: Vec, arg=(), h=1e-5) -> Vec:
     """
     Compute the Jacobian matrix of `func` at `x` using finite differences.
     This considers that the output is a single value, such as is the case of the objective function f
-    :param func: Linear map (R^n -> R^m). m is 1 for the objective function, NE (Number of Equalities) for
-    G or NI (Number of inequalities) for H.
+    :param func: objective function accepting `x` and `arg` and returning a float.
     :param x: Point at which to evaluate the Jacobian (numpy array).
     :param arg: Tuple of arguments to call func aside from x [func(x, *arg)]
     :param h: Small step for finite difference.
@@ -53,12 +58,12 @@ def calc_autodiff_jacobian_f_obj(func, x: Vec, arg=(), h=1e-5) -> Vec:
     return jac
 
 
-def calc_autodiff_jacobian(func, x: Vec, arg=(), h=1e-8) -> csc:
+def calc_autodiff_jacobian(func: Callable[[Vec, Any], Union[Vec, Tuple[Vec, Any]]], x: Vec, arg=(), h=1e-8) -> csc:
     """
     Compute the Jacobian matrix of `func` at `x` using finite differences.
 
-    :param func: Linear map (R^n -> R^m). m is 1 for the objective function, NE (Number of Equalities) for
-    G or NI (Number of inequalities) for H.
+    :param func: function accepting a vector x and args, and returning either a vector or a
+                 tuple where the first argument is a vector and the second.
     :param x: Point at which to evaluate the Jacobian (numpy array).
     :param arg: Tuple of arguments to call func aside from x [func(x, *arg)]
     :param h: Small step for finite difference.
@@ -83,13 +88,12 @@ def calc_autodiff_jacobian(func, x: Vec, arg=(), h=1e-8) -> csc:
     return jac.tocsc()
 
 
-def calc_autodiff_hessian_f_obj(func, x: Vec, arg=(), h=1e-5) -> csc:
+def calc_autodiff_hessian_f_obj(func: Callable[[Vec, Any], float], x: Vec, arg=(), h=1e-5) -> csc:
     """
     Compute the Hessian matrix of `func` at `x` using finite differences.
     This considers that the output is a single value, such as is the case of the objective function f
 
-    :param func: Linear map (R^n -> R^m). m is 1 for the objective function, NE (Number of Equalities) for
-    G or NI (Number of inequalities) for H.
+    :param func: objective function accepting `x` and `arg` and returning a float.
     :param x: Point at which to evaluate the Hessian (numpy array).
     :param arg: Tuple of arguments to call func aside from x [func(x, *arg)]
     :param h: Small step for finite difference.
@@ -127,12 +131,13 @@ def calc_autodiff_hessian_f_obj(func, x: Vec, arg=(), h=1e-5) -> csc:
     return hessian.tocsc()
 
 
-def calc_autodiff_hessian(func, x: Vec, mult: Vec, arg=(), h=1e-5) -> csc:
+def calc_autodiff_hessian(func: Callable[[Vec, Any], Union[Vec, Tuple[Vec, Any]]],
+                          x: Vec, mult: Vec, arg=(), h=1e-5) -> csc:
     """
     Compute the Hessian matrix of `func` at `x` using finite differences.
 
-    :param func: Linear map (R^n -> R^m). m is 1 for the objective function, NE (Number of Equalities) for
-    G or NI (Number of inequalities) for H.
+    :param func: function accepting a vector x and args, and returning either a vector or a
+                 tuple where the first argument is a vector and the second.
     :param x: Point at which to evaluate the Hessian (numpy array).
     :param mult: Array of multipliers associated with the functions. The objective function passes value 1 (no action)
     :param arg: Tuple of arguments to call func aside from x [func(x, *arg)]

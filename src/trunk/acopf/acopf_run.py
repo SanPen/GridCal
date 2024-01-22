@@ -143,7 +143,7 @@ def two_grids_of_3bus():
     # print('\tConv:\n', power_flow.results.get_branch_df())
 
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1)
-    run_nonlinear_opf(grid=grid, pf_options=pf_options, debug=True)
+    run_nonlinear_opf(grid=grid, pf_options=pf_options, debug=False, use_autodiff=True)
 
 
 def case9():
