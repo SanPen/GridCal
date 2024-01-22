@@ -225,14 +225,26 @@ def interior_point_solver(x0: Vec,
     f = 0.0  # objective function
     x = x0.copy()
     gamma = 1.0
+    e = np.ones(n_ineq)
 
     # Init multiplier values. Defaulted at 1.
     lam = np.ones(n_eq)
     mu = np.ones(n_ineq)
     z = np.ones(n_ineq)
-    e = np.ones(n_ineq)
     z_inv = diags(1.0 / z)
     mu_diag = diags(mu)
+
+    # Try different init
+    ret = func(x, mu, lam, *arg)
+    z = - ret.H
+    z = np.array([1e-2 if zz < 1e-2 else zz for zz in z])
+
+    z_inv = diags(1.0 / z)
+
+    mu = gamma * (z_inv @ e)
+    mu_diag = diags(mu)
+
+    lam = sparse.linalg.lsqr(ret.Gx, -ret.fx - ret.Hx @ mu.T)[0]
 
     converged = error <= gamma
 
