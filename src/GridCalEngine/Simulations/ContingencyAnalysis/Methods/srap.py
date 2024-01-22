@@ -16,10 +16,8 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
 import numba as nb
-from typing import List, Tuple
-
-from GridCalEngine.basic_structures import Vec, Mat, IntVec
-from GridCalEngine.Utils.Sparse.csc_numba import get_sparse_array_numba
+from typing import Tuple
+from GridCalEngine.basic_structures import Vec, IntVec
 
 
 @nb.njit(cache=True)
