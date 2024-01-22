@@ -67,41 +67,89 @@ def get_valid_positives(sensitivities: Vec, p_available: Vec):
 
     return idx
 
-@nb.njit(cache=True)
-def vector_sum_srap( p_available3, sensitivities3, srap_pmax_mw):
-
-   # inicializar p_available_red con el mismo tamaño que p_available3
-   p_available_red = np.zeros_like(p_available3)
-
-   # inicializar la suma parcial
-   suma = 0
-
-   # recorrer los elementos de p_available3
-   for i in range(len(p_available3)):
-
-       # si la suma más el elemento actual es menor o igual que srap_pmax_mw
-       if suma + p_available3[i] <= srap_pmax_mw:
-           # asignar el elemento a b
-           p_available_red[i] = p_available3[i]
-           # actualizar la suma
-           suma += p_available3[i]
-
-       # si la suma más el elemento actual es mayor que srap_pmax_mw
-       else:
-           # asignar la diferencia entre srap_pmax_mw y la suma
-           p_available_red[i] = srap_pmax_mw - suma
-           # salir del bucle
-           break
-
-   max_srap_power = np.sum(p_available_red * sensitivities3)
-
-   return max_srap_power
 
 @nb.njit(cache=True)
-def is_solvable_numba(bus_indices: Vec,sensitivities: Vec,c_flow: float, rating: float, srap_pmax_mw: float,
-                    available_power: Vec, top_n: int = 1000) -> Tuple[bool, float]:
+def vector_sum_srap_old(p_available3: Vec, sensitivities3: Vec, srap_pmax_mw: float):
+    """
+
+    :param p_available3:
+    :param sensitivities3:
+    :param srap_pmax_mw:
+    :return:
+    """
+    # inicializar p_available_red con el mismo tamaño que p_available3
+    p_available_red = np.zeros_like(p_available3)
+
+    # inicializar la suma parcial
+    suma = 0
+
+    # recorrer los elementos de p_available3
+    for i in range(len(p_available3)):
+
+        # si la suma más el elemento actual es menor o igual que srap_pmax_mw
+        if suma + p_available3[i] <= srap_pmax_mw:
+            # asignar el elemento a b
+            p_available_red[i] = p_available3[i]
+            # actualizar la suma
+            suma += p_available3[i]
+
+        # si la suma más el elemento actual es mayor que srap_pmax_mw
+        else:
+            # asignar la diferencia entre srap_pmax_mw y la suma
+            p_available_red[i] = srap_pmax_mw - suma
+            # salir del bucle
+            break
+
+    max_srap_power = np.sum(p_available_red * sensitivities3)
+
+    return max_srap_power
+
+
+@nb.njit(cache=True)
+def vector_sum_srap(p_available3: Vec, sensitivities3: Vec, srap_pmax_mw: float):
+    """
+
+    :param p_available3:
+    :param sensitivities3:
+    :param srap_pmax_mw:
+    :return:
+    """
+    # inicializar la suma parcial
+    suma = 0.0
+    max_srap_power = 0.0
+
+    # recorrer los elementos de p_available3
+    for i in range(len(p_available3)):
+
+        # si la suma más el elemento actual es menor o igual que srap_pmax_mw
+        if suma + p_available3[i] <= srap_pmax_mw:
+            # asignar el elemento a b
+            # p_available_red[i] = p_available3[i]
+            max_srap_power += p_available3[i] * sensitivities3[i]
+            # actualizar la suma
+            suma += p_available3[i]
+
+        # si la suma más el elemento actual es mayor que srap_pmax_mw
+        else:
+            # asignar la diferencia entre srap_pmax_mw y la suma
+            # p_available_red[i] = srap_pmax_mw - suma
+            max_srap_power += (srap_pmax_mw - suma) * sensitivities3[i]
+            # salir del bucle
+            # break
+            return max_srap_power
+
+    # max_srap_power = np.sum(p_available_red * sensitivities3)
+
+    return max_srap_power
+
+
+@nb.njit(cache=True)
+def is_solvable_numba(bus_indices: Vec, sensitivities: Vec, c_flow: float, rating: float, srap_pmax_mw: float,
+                      available_power: Vec, top_n: int = 1000) -> Tuple[bool, float]:
     """
             Get the maximum amount of power (MW) to dispatch using SRAP
+            :param bus_indices:
+            :param sensitivities:
             :param c_flow: Contingency flow (MW)
             :param rating: Branch rating (MVA)
             :param srap_pmax_mw: SRAP limit in MW
@@ -269,7 +317,6 @@ def is_solvable_numba(bus_indices: Vec,sensitivities: Vec,c_flow: float, rating:
     return solved, max_srap_power
 
 
-
 class BusesForSrap:
     """
     Buses information for SRAP over a particular branch
@@ -360,7 +407,7 @@ class BusesForSrap:
                 # print(max_srap_power)
                 max_srap_power = vector_sum_srap(p_available3, sensitivities3, srap_pmax_mw)
 
-                #print(max_srap_power)
+                # print(max_srap_power)
 
                 # if the value is grater than the overload we cannot solve
                 solved = max_srap_power <= overload

@@ -357,7 +357,6 @@ class ContingencyResultsReport:
                 # compute the sensitivities for the monitored line with all buses
                 # PTDFc = MLODF[m, βδ] x PTDF[βδ, :] + PTDF[m, :]
                 # PTDFc = multi_contingency.mlodf_factors[m, :] @ PTDF[multi_contingency.branch_indices, :] + PTDF[m, :]
-
                 PTDFc = get_ptdf_comp(mon_br_idx=m,
                                       branch_indices=multi_contingency.branch_indices,
                                       mlodf_factors=multi_contingency.mlodf_factors,
@@ -376,6 +375,14 @@ class ContingencyResultsReport:
                     available_power=available_power,
                     top_n=5
                 )
+
+                # solved_by_srap, max_srap_power = calc_srap(m,
+                #                                            multi_contingency,
+                #                                            PTDF,
+                #                                            contingency_flows,
+                #                                            numerical_circuit,
+                #                                            srap_max_power,
+                #                                            available_power)
 
                 self.add(time_index=t if t is not None else 0,
                          base_name=numerical_circuit.branch_data.names[m],
