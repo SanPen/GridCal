@@ -119,10 +119,7 @@ class EditableDevice:
         :param code: alternative code to identify this object in other databases (i.e. psse number tec...)
         """
 
-        if idtag is None or idtag == '':
-            self.idtag = uuid.uuid4().hex
-        else:
-            self.idtag = idtag.replace('_', '').replace('-', '')
+        self.idtag = idtag
 
         self._name = name
 
@@ -142,6 +139,35 @@ class EditableDevice:
         self.register(key='idtag', units='', tpe=str, definition='Unique ID', editable=False)
         self.register(key='name', units='', tpe=str, definition='Name of the branch.')
         self.register(key='code', units='', tpe=str, definition='Secondary ID')
+
+    @property
+    def idtag(self):
+        """
+        :return: the IDTAG
+        :return:
+        """
+        return self._idtag
+
+    @idtag.setter
+    def idtag(self, val):
+        if val is None or val == '':
+            self._idtag = uuid.uuid4().hex
+        else:
+            if isinstance(val, str):
+                candidate_val = val.replace('_', '').replace('-', '')
+                if len(candidate_val) == 32:
+                    self._idtag = candidate_val  # if the string passed can be a UUID, set it
+                else:
+                    self._idtag = val  # otherwise this is just a plain string, that we hope is valid...
+            else:
+                self._idtag = str(val)  # a simple int that we hope is valid...
+
+    def flatten_idtag(self):
+        """
+        Remove useless undercore and
+        :return:
+        """
+        self._idtag = self._idtag.replace('_', '').replace('-', '')
 
     @property
     def type_name(self) -> str:

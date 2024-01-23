@@ -555,11 +555,9 @@ def parse_df(df: pd.DataFrame,
     for i, row in df.iterrows():
 
         # create device
-        elm = type(template_elm)(idtag=row.get('idtag', None))
-
-        # save the element in the dictionary for later
-        devices_dict[elm.idtag] = elm
-        devices.append(elm)
+        idtag = row.get('idtag', None)
+        idtag_provided = idtag is not None
+        elm = type(template_elm)(idtag=idtag)
 
         # ensure the profiles existence
         if time_profile is not None:
@@ -568,95 +566,103 @@ def parse_df(df: pd.DataFrame,
         # parse each property of the row
         for property_name, property_value in row.items():
 
-            gc_prop: GCProp = look_for_property(elm=elm, property_name=property_name)
-
-            if valid_value(property_value):
-
+            if property_name != 'idtag':  # idtag was set already
+                gc_prop: GCProp = look_for_property(elm=elm, property_name=property_name)
                 if gc_prop is not None:
-                    # the property of the file exists, parse it
 
-                    if isinstance(gc_prop.tpe, DeviceType):
+                    if valid_value(property_value):
 
-                        if gc_prop.tpe == DeviceType.GeneratorQCurve:
-                            val = dev.GeneratorQCurve()
-                            val.parse(property_value)
-                            setattr(elm, property_name, val)
+                        # the property of the file exists, parse it
 
-                        else:
-                            # we must look for the refference in elements_dict
-                            collection = elements_dict_by_type.get(gc_prop.tpe, None)
+                        if isinstance(gc_prop.tpe, DeviceType):
 
-                            if collection is not None:
-                                ref_elm = collection.get(property_value, None)
+                            if gc_prop.tpe == DeviceType.GeneratorQCurve:
+                                val = dev.GeneratorQCurve()
+                                val.parse(property_value)
+                                setattr(elm, property_name, val)
 
-                                if ref_elm is not None:
-                                    setattr(elm, property_name, ref_elm)
+                            else:
+                                # we must look for the refference in elements_dict
+                                collection = elements_dict_by_type.get(gc_prop.tpe, None)
+
+                                if collection is not None:
+                                    ref_idtag = str(property_value)
+                                    ref_elm = collection.get(ref_idtag, None)
+
+                                    if ref_elm is not None:
+                                        setattr(elm, property_name, ref_elm)
+                                    else:
+                                        logger.add_error("Could not locate refference",
+                                                         device=row.get('idtag', 'not provided'),
+                                                         device_class=template_elm.device_type.value,
+                                                         device_property=property_name,
+                                                         value=ref_idtag)
                                 else:
-                                    logger.add_error("Could not locate refference",
+                                    logger.add_error("No device of the refferenced type",
                                                      device=row.get('idtag', 'not provided'),
                                                      device_class=template_elm.device_type.value,
                                                      device_property=property_name,
                                                      value=property_value)
-                            else:
-                                logger.add_error("No device of the refferenced type",
-                                                 device=row.get('idtag', 'not provided'),
-                                                 device_class=template_elm.device_type.value,
-                                                 device_property=property_name,
+
+                        elif gc_prop.tpe == str:
+                            # set the value directly
+                            setattr(elm, property_name, property_value)
+
+                        elif gc_prop.tpe == float:
+                            # set the value directly
+                            setattr(elm, property_name, float(property_value))
+
+                        elif gc_prop.tpe == int:
+                            # set the value directly
+                            setattr(elm, property_name, int(property_value))
+
+                        elif gc_prop.tpe == bool:
+                            # set the value directly
+                            setattr(elm, property_name, bool(property_value))
+
+                        elif isinstance(gc_prop.tpe, EnumType):
+
+                            try:
+                                val = gc_prop.tpe(property_value)
+                                setattr(elm, property_name, val)
+                            except ValueError:
+                                logger.add_error(f'Cannot cast value to {gc_prop.tpe}',
+                                                 device=elm.name,
                                                  value=property_value)
 
-                    elif gc_prop.tpe == str:
-                        # set the value directly
-                        setattr(elm, property_name, property_value)
-
-                    elif gc_prop.tpe == float:
-                        # set the value directly
-                        setattr(elm, property_name, float(property_value))
-
-                    elif gc_prop.tpe == int:
-                        # set the value directly
-                        setattr(elm, property_name, int(property_value))
-
-                    elif gc_prop.tpe == bool:
-                        # set the value directly
-                        setattr(elm, property_name, bool(property_value))
-
-                    elif isinstance(gc_prop.tpe, EnumType):
-
-                        try:
-                            val = gc_prop.tpe(property_value)
-                            setattr(elm, property_name, val)
-                        except ValueError:
-                            logger.add_error(f'Cannot cast value to {gc_prop.tpe}',
-                                             device=elm.name,
-                                             value=property_value)
+                        else:
+                            raise Exception(f'Unsupported property type: {gc_prop.tpe}')
 
                     else:
-                        raise Exception(f'Unsupported property type: {gc_prop.tpe}')
+                        # invalid property value
+                        pass
+
+                    # search the profiles in the data and assign them
+                    if gc_prop.has_profile() and time_profile is not None:
+
+                        # build the profile property file-name to get it from the data
+                        profile_key = object_type_key + '_' + gc_prop.profile_name
+
+                        # get the profile DataFrame
+                        dfp = data.get(profile_key, None)
+
+                        if dfp is not None:
+                            profile = dfp.values[:, i].astype(gc_prop.tpe)
+                            setattr(elm, gc_prop.profile_name, profile)
+
+                        else:
+                            logger.add_info('No profile for the property', value=gc_prop.name)
+
                 else:
                     # the property does not exists, neither in the old names
                     logger.add_error("File property could not be found",
                                      device=row.get('idtag', 'not provided'),
                                      device_class=template_elm.device_type.value,
                                      device_property=property_name)
-            else:
-                # invalid property value
-                pass
 
-            # search the profiles in the data and assign them
-            if gc_prop.has_profile():
-
-                # build the profile property file-name to get it from the data
-                profile_key = object_type_key + '_' + gc_prop.profile_name
-
-                # get the profile DataFrame
-                dfp = data.get(profile_key, None)
-
-                if dfp is not None:
-                    profile = dfp.values[:, i].astype(gc_prop.tpe)
-                    setattr(elm, gc_prop.profile_name, profile)
-
-                else:
-                    logger.add_info('No profile for the property', value=gc_prop.name)
+        # save the element in the dictionary for later
+        devices_dict[elm.idtag] = elm
+        devices.append(elm)
 
     return devices, devices_dict
 
