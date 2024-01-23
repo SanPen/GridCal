@@ -288,7 +288,7 @@ class ObjectsTableMain(DiagramsMain):
 
             elm_type = self.ui.dataStructuresTreeView.selectedIndexes()[0].data(role=QtCore.Qt.ItemDataRole.DisplayRole)
 
-            elements = self.circuit.get_elements_by_type(element_type=DeviceType(elm_type))
+            elements = self.circuit.get_elements_by_type(device_type=DeviceType(elm_type))
 
             mdl = self.create_objects_model(elements=elements,
                                             elm_type=DeviceType(elm_type))

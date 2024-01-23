@@ -22,6 +22,7 @@ from GridCalEngine.enumerations import (DeviceType, TimeFrame, BuildStatus, Wind
                                         ConverterControlType)
 from GridCalEngine.basic_structures import Vec, IntVec, BoolVec
 
+
 class GCProp:
     """
     GridCal property
@@ -61,6 +62,13 @@ class GCProp:
         self.editable = editable
 
         self.old_names = old_names
+
+    def has_profile(self) -> bool:
+        """
+        Check if this property has an associated profile
+        :return:
+        """
+        return self.profile_name != ''
 
     def get_class_name(self) -> str:
         """
