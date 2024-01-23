@@ -63,6 +63,7 @@ def test_ieee9():
     Pg_test = [0.898, 1.3432, 0.9419]
     Qg_test = [0.1253, 0.0031, -0.2237]
     res = case9()
+    print(res.Vm)
     assert np.allclose(res.Vm, vm_test, atol=1e-3)
     assert np.allclose(res.Va, va_test, atol=1e-3)
     assert np.allclose(res.Pg, Pg_test, atol=1e-3)

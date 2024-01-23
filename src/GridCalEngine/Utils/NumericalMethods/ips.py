@@ -170,7 +170,7 @@ def interior_point_solver(x0: Vec,
                           n_x: int,
                           n_eq: int,
                           n_ineq: int,
-                          func: Callable[[Vec, Vec, Vec, Any], IpsFunctionReturn],
+                          func: Callable[[Vec, Vec, Vec, bool, Any], IpsFunctionReturn],
                           arg=(),
                           max_iter=100,
                           tol=1e-6,
@@ -219,20 +219,36 @@ def interior_point_solver(x0: Vec,
     """
     START = timeit.default_timer()
 
+
+
     # Init iteration values
     error = 1e20
     iter_counter = 0
     f = 0.0  # objective function
     x = x0.copy()
     gamma = 1.0
+    e = np.ones(n_ineq)
 
     # Init multiplier values. Defaulted at 1.
     lam = np.ones(n_eq)
-    mu = np.ones(n_ineq)
-    z = np.ones(n_ineq)
-    e = np.ones(n_ineq)
+
+    z0 = 1.0  # TODO check what about this
+    z = z0 * np.ones(n_ineq)
+    mu = z.copy()
     z_inv = diags(1.0 / z)
     mu_diag = diags(mu)
+
+    # Try different init
+    ret = func(x, mu, lam, True, False, *arg)
+    z = - ret.H
+    z = np.array([1e-2 if zz < 1e-2 else zz for zz in z])
+
+    z_inv = diags(1.0 / z)
+
+    mu = gamma * (z_inv @ e)
+    mu_diag = diags(mu)
+
+    lam = sparse.linalg.lsqr(ret.Gx, -ret.fx - ret.Hx @ mu.T)[0]
 
     converged = error <= gamma
 
@@ -241,7 +257,7 @@ def interior_point_solver(x0: Vec,
     while not converged and iter_counter < max_iter:
 
         # Evaluate the functions, gradients and hessians at the current iteration.
-        ret = func(x, mu, lam, *arg)
+        ret = func(x, mu, lam, True, True, *arg)
 
         # compose the Jacobian
         M = ret.fxx + ret.Gxx + ret.Hxx + ret.Hx @ z_inv @ mu_diag @ ret.Hx.T
@@ -273,6 +289,7 @@ def interior_point_solver(x0: Vec,
 
         # Compute the maximum error and the new gamma value
         error = calc_error(dx, dz, dmu, dlam)
+        # error = np.max(np.abs(r))
 
         z_inv = diags(1.0 / z)
         mu_diag = diags(mu)
