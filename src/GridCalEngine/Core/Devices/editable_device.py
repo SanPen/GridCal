@@ -150,17 +150,21 @@ class EditableDevice:
 
     @idtag.setter
     def idtag(self, val):
-        if val is None or val == '':
-            self._idtag = uuid.uuid4().hex
-        else:
-            if isinstance(val, str):
+        if val is None:
+            self._idtag = uuid.uuid4().hex  # generate a proper UUIDv4 string
+        elif isinstance(val, str):
+            if len(val) == 32:
+                self._idtag = val  # this is probably a proper UUID
+            elif len(val) == 0:
+                self._idtag = uuid.uuid4().hex  # generate a proper UUIDv4 string
+            else:
                 candidate_val = val.replace('_', '').replace('-', '')
                 if len(candidate_val) == 32:
                     self._idtag = candidate_val  # if the string passed can be a UUID, set it
                 else:
                     self._idtag = val  # otherwise this is just a plain string, that we hope is valid...
-            else:
-                self._idtag = str(val)  # a simple int that we hope is valid...
+        else:
+            self._idtag = str(val)  # any other thing passed as idtag, we convert it to string and hope for the best...
 
     def flatten_idtag(self):
         """
