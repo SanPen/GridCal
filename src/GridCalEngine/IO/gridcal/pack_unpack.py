@@ -48,6 +48,8 @@ def get_objects_dictionary() -> Dict[str, dev.EditableDevice]:
 
                     'bus': dev.Bus(),
 
+                    'bus_bar': dev.BusBar(),
+
                     'connectivity node': dev.ConnectivityNode(),
 
                     'load': dev.Load(),
@@ -451,17 +453,17 @@ def data_frames_to_circuit(data: Dict, logger: Logger = Logger()):
                                 else:
                                     logger.add_error('Fluid node not found', str(property_value))
 
-                            elif gc_prop.tpe == DeviceType.ConnectivityNodeDevice:
-
-                                # check if the bus is in the dictionary...
-                                if property_value in elements_dict[DeviceType.ConnectivityNodeDevice].keys():
-
-                                    if property_value != 'nan' and property_value != '':
-                                        parent_bus: dev.FluidNode = elements_dict[DeviceType.ConnectivityNodeDevice][property_value]
-                                        setattr(devices[i], gc_prop.name, parent_bus)
-
-                                else:
-                                    logger.add_error('Fluid node not found', str(property_value))
+                            # elif gc_prop.tpe == DeviceType.ConnectivityNodeDevice:
+                            #
+                            #     # check if the cn is in the dictionary...
+                            #     if property_value in elements_dict[DeviceType.ConnectivityNodeDevice].keys():
+                            #
+                            #         if property_value != 'nan' and property_value != '':
+                            #             parent_bus: dev.FluidNode = elements_dict[DeviceType.ConnectivityNodeDevice][property_value]
+                            #             setattr(devices[i], gc_prop.name, parent_bus)
+                            #
+                            #     else:
+                            #         logger.add_error('Fluid node not found', str(property_value))
 
                             elif gc_prop.tpe in [DeviceType.TransformerTypeDevice,  # template types mostly
                                                  DeviceType.SequenceLineDevice,

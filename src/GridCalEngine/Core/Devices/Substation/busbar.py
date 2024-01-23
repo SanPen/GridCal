@@ -15,17 +15,20 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-
+from typing import Union
 from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceType
+from GridCalEngine.Core.Devices.Substation.substation import Substation
 
 
 class BusBar(EditableDevice):
 
-    def __init__(self, name='Substation', idtag=None, code=''):
+    def __init__(self, name='BusBar', idtag: Union[None, str] = None, code: str = '',
+                 substation: Union[None, Substation] = None) -> None:
         """
-
-        :param name:
-        :param idtag:
+        Constructor
+        :param name: Name of the bus bar
+        :param idtag: unique identifier of the device
+        :param code: secondary identifyer
         """
         EditableDevice.__init__(self,
                                 name=name,
@@ -33,4 +36,6 @@ class BusBar(EditableDevice):
                                 idtag=idtag,
                                 device_type=DeviceType.BusBarDevice)
 
+        self.substation = substation
 
+        self.register("substation", "", DeviceType.SubstationDevice, "Substation of this bus bar")

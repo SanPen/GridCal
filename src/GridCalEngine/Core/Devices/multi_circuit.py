@@ -217,9 +217,6 @@ class MultiCircuit:
         # fluids
         self.fluid_nodes: List[dev.FluidNode] = list()
         self.fluid_paths: List[dev.FluidPath] = list()
-        # self.fluid_turbines: List[dev.FluidTurbine] = list()
-        # self.fluid_pumps: List[dev.FluidPump] = list()
-        # self.fluid_p2xs: List[dev.FluidP2x] = list()
 
         # objects with profiles
         self.objects_with_profiles = {
@@ -229,6 +226,8 @@ class MultiCircuit:
                 dev.Zone(),
                 dev.Area(),
                 dev.Country(),
+                dev.ConnectivityNode(),
+                dev.BusBar()
             ],
             "Injections": [
                 dev.Generator(),
@@ -1194,6 +1193,12 @@ class MultiCircuit:
         elif element_type == DeviceType.SubstationDevice:
             return self.substations
 
+        elif element_type == DeviceType.ConnectivityNodeDevice:
+            return self.connectivity_nodes
+
+        elif element_type == DeviceType.BusBarDevice:
+            return self.bus_bars
+
         elif element_type == DeviceType.AreaDevice:
             return self.areas
 
@@ -1304,6 +1309,12 @@ class MultiCircuit:
 
         elif element_type == DeviceType.BusDevice:
             return self.delete_bus(obj, False)
+        
+        elif element_type == DeviceType.ConnectivityNodeDevice:
+            return self.delete_connectivity_node(obj)
+        
+        elif element_type == DeviceType.BusBarDevice:
+            return self.delete_bus_bar(obj)
 
         elif element_type == DeviceType.OverheadLineTypeDevice:
             return self.delete_overhead_line(obj)
@@ -1402,32 +1413,7 @@ class MultiCircuit:
         Get a dictionary of all elements by type
         :return:
         """
-
-        # [DeviceType.BusDevice,
-        #     DeviceType.LoadDevice,
-        #     DeviceType.StaticGeneratorDevice,
-        #     DeviceType.GeneratorDevice,
-        #     DeviceType.BatteryDevice,
-        #     DeviceType.ShuntDevice,
-        #     DeviceType.ExternalGridDevice,
-        #     DeviceType.SubstationDevice,
-        #     DeviceType.AreaDevice,
-        #     DeviceType.ZoneDevice,
-        #     DeviceType.CountryDevice,
-        #     DeviceType.LineDevice,
-        #     DeviceType.DCLineDevice,
-        #     DeviceType.Transformer2WDevice,
-        #     DeviceType.Transformer3WDevice,
-        #     DeviceType.UpfcDevice,
-        #     DeviceType.VscDevice,
-        #     DeviceType.HVDCLineDevice,
-        #     DeviceType.SwitchDevice,
-        #     DeviceType.WindingDevice,
-        #
-        #     DeviceType.FluidNode,
-        #     DeviceType.FluidPath,
-        #     DeviceType.FluidTurbine,
-        #     DeviceType.FluidPump]
+        
         data = dict()
         for key, tpe in self.device_type_name_dict.items():
             data[tpe.value] = self.get_elements_dict_by_type(element_type=tpe, use_secondary_key=False)
@@ -1474,16 +1460,22 @@ class MultiCircuit:
             return self.get_external_grids()
 
         elif element_type == DeviceType.SubstationDevice:
-            return [x.substation for x in self.buses]
+            return self.get_substations()
+        
+        elif element_type == DeviceType.ConnectivityNodeDevice:
+            return self.get_connectivity_nodes()
+        
+        elif element_type == DeviceType.BusBarDevice:
+            return self.get_bus_bars()
 
         elif element_type == DeviceType.AreaDevice:
-            return [x.area for x in self.buses]
+            return self.get_areas()
 
         elif element_type == DeviceType.ZoneDevice:
-            return [x.zone for x in self.buses]
+            return self.get_zones()
 
         elif element_type == DeviceType.CountryDevice:
-            return [x.country for x in self.buses]
+            return self.get_countries()
 
         elif element_type == DeviceType.LineDevice:
             return self.get_lines()
@@ -1547,6 +1539,7 @@ class MultiCircuit:
                 'windings',
                 'buses',
                 'connectivity_nodes',
+                'bus_bars',
                 'overhead_line_types',
                 'wire_types',
                 'underground_cable_types',
@@ -1850,7 +1843,7 @@ class MultiCircuit:
             for elm in branch_list:
                 elm.create_profiles(self.time_profile)
 
-    def ensure_profiles_exist(self):
+    def ensure_profiles_exist(self) -> None:
         """
         Format the pandas profiles in place using a time index.
         """
@@ -2449,6 +2442,56 @@ class MultiCircuit:
                 elm.substation = None
 
         self.substations.remove(obj)
+    
+    def get_bus_bars(self) -> List[dev.BusBar]:
+        """
+        Get all bus bars
+        """
+        return self.bus_bars
+
+    def add_bus_bar(self, obj: dev.BusBar):
+        """
+        Add Substation
+        :param obj: BusBar object
+        """
+        self.bus_bars.append(obj)
+
+    def delete_bus_bar(self, obj: dev.BusBar):
+        """
+        Delete Substation
+        :param obj: Substation object
+        """
+        for elm in self.connectivity_nodes:
+            if elm.bus_bar == obj:
+                elm.bus_bar = None
+
+        self.bus_bars.remove(obj)
+    
+    def get_connectivity_nodes(self) -> List[dev.ConnectivityNode]:
+        """
+        Get all connectivity nodes
+        """
+        return self.connectivity_nodes
+    
+    def add_connectivity_node(self, obj: dev.ConnectivityNode):
+        """
+        Add Substation
+        :param obj: BusBar object
+        """
+        self.connectivity_nodes.append(obj)
+
+    def delete_connectivity_node(self, obj: dev.ConnectivityNode):
+        """
+        Delete Substation
+        :param obj: Substation object
+        """
+        for elm in self.substations:
+            try:
+                elm.connectivity_nodes.remove(obj)
+            except ValueError:
+                pass
+
+        self.connectivity_nodes.remove(obj)
 
     def add_area(self, obj: dev.Area):
         """
@@ -2585,6 +2628,12 @@ class MultiCircuit:
                 elm.zone = None
 
         self.zones.remove(obj)
+        
+    def get_countries(self) -> List[dev.Country]:
+        """
+        Get all countries
+        """
+        return self.countries
 
     def add_country(self, obj: dev.Country):
         """

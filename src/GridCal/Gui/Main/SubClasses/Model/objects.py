@@ -143,6 +143,12 @@ class ObjectsTableMain(DiagramsMain):
         elif elm_type == DeviceType.SubstationDevice:
             elm = dev.Substation()
 
+        elif elm_type == DeviceType.ConnectivityNodeDevice:
+            elm = dev.ConnectivityNode()
+
+        elif elm_type == DeviceType.BusBarDevice:
+            elm = dev.BusBar()
+
         elif elm_type == DeviceType.ZoneDevice:
             elm = dev.Zone()
 
