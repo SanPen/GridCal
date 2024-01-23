@@ -18,7 +18,6 @@
 from typing import List
 from GridCalEngine.Core.Devices.editable_device import DeviceType
 from GridCalEngine.Core.Devices.Aggregation.area import GenericAreaGroup
-from GridCalEngine.Core.Devices.Substation.connectivity_node import ConnectivityNode
 
 
 class Substation(GenericAreaGroup):
@@ -38,6 +37,3 @@ class Substation(GenericAreaGroup):
                                   device_type=DeviceType.SubstationDevice,
                                   latitude=latitude,
                                   longitude=longitude)
-
-        # array of connectivity nodes
-        self.connectivity_nodes: List[ConnectivityNode] = list()
