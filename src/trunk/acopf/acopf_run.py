@@ -176,9 +176,27 @@ def case14():
     run_nonlinear_opf(grid=grid, pf_options=pf_options, plot_error=True)
 
 
+def caseBig():
+    """
+    IEEE14
+    """
+    cwd = os.getcwd()
+
+    # Go back two directories
+    new_directory = os.path.abspath(os.path.join(cwd, '..', '..', '..'))
+
+    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', '1354 Pegase.xlsx')
+
+    grid = gce.FileOpen(file_path).open()
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1)
+    run_nonlinear_opf(grid=grid, pf_options=pf_options, plot_error=True)
+
+
+
 if __name__ == '__main__':
     example_3bus_acopf()
-    linn5bus_example()
+    #linn5bus_example()
     # two_grids_of_3bus()
-    case9()
-    case14()
+    #case9()
+    #case14()
+    # caseBig()

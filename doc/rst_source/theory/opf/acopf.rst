@@ -58,121 +58,42 @@ Numerical Circuit data
     c1             Array(float)      €/MWh     Array with the linear cost per generator.
     c2             Array(float)      €/MWh^2   Array with the quadratic cost per generator.
 
-
-
-
-
-
-
-
-
-
     =============  ================  ========  ================================================
 
+Once all the necessary data has been loaded from the *NumericalCircuit* object, the optimization is ready to run. We will see now the mathematical definition of the problem.
 
-Path
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. table::
-
-    ========  ==========  ====  ===================
-      name    class_type  unit     descriptions    
-    ========  ==========  ====  ===================
-    idtag     str               Unique ID          
-    name      str               Name of the branch.
-    code      str               Secondary ID       
-    source    Fluid node        Source node        
-    target    Fluid node        Target node        
-    min_flow  float       m3/s  Minimum flow       
-    max_flow  float       m3/s  Maximum flow       
-    ========  ==========  ====  ===================
-
-
-Turbine
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. table::
-
-    =============  ================  ======  ================================================
-        name          class_type      unit                     descriptions                  
-    =============  ================  ======  ================================================
-    idtag          str                       Unique ID                                       
-    name           str                       Name of the branch.                             
-    code           str                       Secondary ID                                    
-    efficiency     float             MWh/m3  Power plant energy production per fluid unit    
-    max_flow_rate  float             m3/s    maximum fluid flow                              
-    plant          Fluid node                Connection reservoir/node                       
-    generator      Generator                 Electrical machine                              
-    build_status   enum BuildStatus          Branch build status. Used in expansion planning.
-    =============  ================  ======  ================================================
-
-Pump
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. table::
-
-    =============  ================  ======  ================================================
-        name          class_type      unit                     descriptions                  
-    =============  ================  ======  ================================================
-    idtag          str                       Unique ID                                       
-    name           str                       Name of the branch.                             
-    code           str                       Secondary ID                                    
-    efficiency     float             MWh/m3  Power plant energy production per fluid unit    
-    max_flow_rate  float             m3/s    maximum fluid flow                              
-    plant          Fluid node                Connection reservoir/node                       
-    generator      Generator                 Electrical machine                              
-    build_status   enum BuildStatus          Branch build status. Used in expansion planning.
-    =============  ================  ======  ================================================
-
-
-P2X
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. table::
-
-    =============  ================  ======  ================================================
-        name          class_type      unit                     descriptions                  
-    =============  ================  ======  ================================================
-    idtag          str                       Unique ID                                       
-    name           str                       Name of the branch.                             
-    code           str                       Secondary ID                                    
-    efficiency     float             MWh/m3  Power plant energy production per fluid unit    
-    max_flow_rate  float             m3/s    maximum fluid flow                              
-    plant          Fluid node                Connection reservoir/node                       
-    generator      Generator                 Electrical machine                              
-    build_status   enum BuildStatus          Branch build status. Used in expansion planning.
-    =============  ================  ======  ================================================
-
-It is worth noting that turbines, pumps and P2Xs are fluid devices coupled to an electrical machine. That is, a generator is automatically created when these devices are built. The following conditions have to be considered in the corresponding generators:
-
-.. table::
-
-    ============================= ============ ============ ============
-        Fluid device type             Cost         Pmax         Pmin    
-    ============================= ============ ============ ============
-    Turbine                            >=0           >0          >=0
-    Pump                               <=0           <=0         <0
-    P2X                                <=0           <=0         <0
-    ============================= ============ ============ ============
-
-
-
-
-2. Optimization adaptation 
+2. Variables, objective function and constraints definition
 --------------------------
-The fluid transport problem is contemplated similarly with respect to the electrical problem. Basically, the flow balance has to be maintained at each node. The formulation that follows revolves around this idea.
+The problem to be solved has the following structure:
 
-2.1 Objective function
+.. math::
+    min f(x)\\
+    s.t.    g(x) = 0\\
+            h(x) \geq 0
+
+2.1. Variables
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-The general objective function remains nearly untouched, as the generators associated with turbines, pumps and P2Xs are already considered in the code fraction dedicated to generation units. There is only a single addition to be accounted for, and this is the spillage cost. Hence, the following term is added:
+The optimization variables of this problem are:
+
+* **Voltage magnitude** (*v*) of all the buses included in the grid. Note that there is no distinction for slack or PV buses. During a PowerFlow evaluation, these buses would have a known voltage magnitude value, but for this AC-OPF evaluation, we set it as free to avoid overconstraining the model (and also considering them as a variable to optimize).
+* **Voltage angle** (* :math:`\theta` *) of all the buses. We will later see that we consider one bus (the primary *slack* bus) as the reference angle 0 to eliminate the rotating nature of the power flow equations.
+* **Active power generation** (P_g) of all the generators.
+* **Reactive power generation** (Q_g) of all the generators.
+
+
+2.2 Objective function
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The objective function of an AC-OPF can be defined in many different ways, depending on what are we trying to minimize. We can opt to minimize the cost, heat losses, penalties due to overloads or demand mismatching...
+
+In this model, the objective function to minimize corresponds to the sum of the costs of each generator, considered to be quadratic:
 
 .. math::
 
-    \quad f_obj += \sum_m^{nm} cost_spill[m] \sum_t^{nt} spill[t,m]
+    min f(v, \theta, P_g, Q_g) = aaa c_2^T Pg^2 + c_1^T Pg + c_0
 
-where :math:`f_obj` is the objective function, :math:`m` is the fluid node index, :math:`nm` the number of fluid nodes, :math:`t` the time index, :math:`nt` the length of the time series, and :math:`spill` the actual spillage.
+where :math:`c_2` , :math:`c_1` and :math:`c_0` are the vectors with quadratic, linear and constant costs of the generators.
 
-2.2 Balance constraint
+2.3 Balance constraint
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 The flow balance has to be maintained at each node :math:`m` for each point in time :math:`t`. In general terms, it is expressed as:
 
