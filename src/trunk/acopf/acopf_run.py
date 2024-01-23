@@ -37,8 +37,7 @@ def example_3bus_acopf():
     # print('\tConv:\n', power_flow.results.get_branch_df())
 
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1)
-    run_nonlinear_opf(grid=grid, pf_options=pf_options)
-    return
+    run_nonlinear_opf(grid=grid, pf_options=pf_options, plot_error=True)
 
 
 def linn5bus_example():
@@ -89,7 +88,7 @@ def linn5bus_example():
     grid.add_line(gce.Line(bus4, bus5, 'line 4-5', r=0.04, x=0.09, b=0.02, rate=1000))
 
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1)
-    run_nonlinear_opf(grid=grid, pf_options=pf_options)
+    run_nonlinear_opf(grid=grid, pf_options=pf_options, plot_error=True)
 
 
 def two_grids_of_3bus():
@@ -143,7 +142,7 @@ def two_grids_of_3bus():
     # print('\tConv:\n', power_flow.results.get_branch_df())
 
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1)
-    run_nonlinear_opf(grid=grid, pf_options=pf_options, debug=False, use_autodiff=True)
+    run_nonlinear_opf(grid=grid, pf_options=pf_options, debug=False, use_autodiff=True, plot_error=True)
 
 
 def case9():
@@ -158,7 +157,7 @@ def case9():
 
     grid = gce.FileOpen(file_path).open()
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1)
-    run_nonlinear_opf(grid=grid, pf_options=pf_options)
+    run_nonlinear_opf(grid=grid, pf_options=pf_options, plot_error=True)
 
 
 def case14():
@@ -174,7 +173,7 @@ def case14():
 
     grid = gce.FileOpen(file_path).open()
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1)
-    run_nonlinear_opf(grid=grid, pf_options=pf_options)
+    run_nonlinear_opf(grid=grid, pf_options=pf_options, plot_error=True)
 
 
 if __name__ == '__main__':
