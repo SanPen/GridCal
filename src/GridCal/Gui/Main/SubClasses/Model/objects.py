@@ -145,9 +145,11 @@ class ObjectsTableMain(DiagramsMain):
 
         elif elm_type == DeviceType.ConnectivityNodeDevice:
             elm = dev.ConnectivityNode()
+            dictionary_of_lists = {DeviceType.BusBarDevice.value: self.circuit.get_bus_bars(), }
 
         elif elm_type == DeviceType.BusBarDevice:
             elm = dev.BusBar()
+            dictionary_of_lists = {DeviceType.SubstationDevice.value: self.circuit.get_substations(), }
 
         elif elm_type == DeviceType.ZoneDevice:
             elm = dev.Zone()
