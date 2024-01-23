@@ -148,6 +148,9 @@ class MultiCircuit:
         # array of connectivity nodes
         self.connectivity_nodes: List[dev.ConnectivityNode] = list()
 
+        # array of busbars
+        self.bus_bars: List[dev.BusBar] = list()
+
         # List of overhead line objects
         self.overhead_line_types: List[dev.OverheadLineType] = list()
 

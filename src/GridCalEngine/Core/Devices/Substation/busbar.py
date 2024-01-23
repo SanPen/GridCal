@@ -15,7 +15,22 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from GridCalEngine.Core.Devices.Substation.bus import Bus, BusMode
-from GridCalEngine.Core.Devices.Substation.connectivity_node import ConnectivityNode
-from GridCalEngine.Core.Devices.Substation.substation import Substation
-from GridCalEngine.Core.Devices.Substation.busbar import BusBar
+
+from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceType
+
+
+class BusBar(EditableDevice):
+
+    def __init__(self, name='Substation', idtag=None, code=''):
+        """
+
+        :param name:
+        :param idtag:
+        """
+        EditableDevice.__init__(self,
+                                name=name,
+                                code=code,
+                                idtag=idtag,
+                                device_type=DeviceType.BusBarDevice)
+
+
