@@ -213,7 +213,10 @@ def test_ptdf_psse():
         (os.path.join('data', 'grids', 'RAW', 'IEEE 118 Bus V2.raw'),
          os.path.join('data', 'results', 'comparison', 'IEEE 118 bus PTDF PSSe.csv'), 'IEEE118'),
         (os.path.join('data', 'grids', 'RAW', 'sensitive-raw', '15.Caso_2026.raw'),
-         os.path.join('data', 'results', 'comparison', '15.Caso_2026 PTDF PSSe.csv'), 'REE')
+         os.path.join('data', 'results', 'comparison', '15.Caso_2026 PTDF PSSe.csv'), 'REE'),
+        (os.path.join('data', 'grids', 'RAW', 'ieee-14-bus_d_rename_ptdf.raw'),
+         os.path.join('data', 'results', 'comparison', 'ieee-14-bus_d_ptdf.csv'), 'IEEE14_D')
+
     ]:
 
         if os.path.exists(fname):
@@ -284,7 +287,10 @@ def test_lodf_psse():
         (os.path.join('data', 'grids', 'RAW', 'IEEE 118 Bus V2.raw'),
          os.path.join('data', 'results', 'comparison', 'IEEE 118 bus LODF PSSe.csv'), 'IEEE118'),
         (os.path.join('data', 'grids', 'RAW', 'sensitive-raw', '15.Caso_2026.raw'),
-         os.path.join('data', 'results', 'comparison', '15.Caso_2026 LODF PSSe.csv'), 'REE')
+         os.path.join('data', 'results', 'comparison', '15.Caso_2026 LODF PSSe.csv'), 'REE'),
+        (os.path.join('data', 'grids', 'RAW', 'ieee-14-bus_d_rename_lodf.raw'),
+         os.path.join('data', 'results', 'comparison', 'ieee-14-bus_d_branches_lodf.csv'), 'IEEE14_D')
+
     ]:
 
         if os.path.exists(fname):
@@ -402,10 +408,10 @@ def test_mlodf_sanpen():
     Compare power flow per branches in N-2 contingencies using theoretical methodology and MLODF
     """
     for fname in [
-        #os.path.join('data', 'grids', 'IEEE14-2_4_1-3_4_1.gridcal'),
-        #os.path.join('data', 'grids', 'IEEE14-2_5_1-1_5_1.gridcal'),
+        os.path.join('data', 'grids', 'IEEE14-2_4_1-3_4_1.gridcal'),
+        os.path.join('data', 'grids', 'IEEE14-2_5_1-1_5_1.gridcal'),
         os.path.join('data', 'grids', 'IEEE14-bus_d-6_11-6_13.gridcal'),
-        #os.path.join('data', 'grids', 'IEEE14-bus_d-7_8-9_10.gridcal'),
+        os.path.join('data', 'grids', 'IEEE14-bus_d-7_8-9_10.gridcal')
     ]:
         main_circuit = FileOpen(fname).open()
 
