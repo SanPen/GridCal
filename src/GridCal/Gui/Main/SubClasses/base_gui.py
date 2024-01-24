@@ -613,12 +613,6 @@ class BaseMainGui(QMainWindow):
         """
         webbrowser.open('https://github.com/SanPen/GridCal/issues', new=2)
 
-    def clear_text_output(self) -> None:
-        """
-        Clear the text output textEdit
-        """
-        self.ui.outputTextEdit.setPlainText("")
-
     def auto_rate_branches(self):
         """
         Rate the Branches that do not have rate

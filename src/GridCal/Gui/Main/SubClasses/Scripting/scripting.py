@@ -69,30 +69,6 @@ class ScriptingMain(IoMain):
         # double clicked -----------------------------------------------------------------------------------------------
         self.ui.sourceCodeTreeView.doubleClicked.connect(self.source_code_tree_clicked)
 
-    def console_msg(self, *msg_):
-        """
-        Print some message in the console.
-
-        Arguments:
-
-            **msg_** (str): Message
-
-        """
-        dte = dtelib.datetime.now().strftime("%b %d %Y %H:%M:%S")
-
-        txt = self.ui.outputTextEdit.toPlainText()
-
-        for e in msg_:
-            if isinstance(e, list):
-                txt += '\n' + dte + '->\n'
-                for elm in e:
-                    txt += str(elm) + "\n"
-            else:
-                txt += '\n' + dte + '->'
-                txt += " " + str(e)
-
-        self.ui.outputTextEdit.setPlainText(txt)
-
     def run_source_code(self):
         """
         Run the source code in the IPython console
