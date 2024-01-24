@@ -174,7 +174,8 @@ def interior_point_solver(x0: Vec,
                           arg=(),
                           max_iter=100,
                           tol=1e-6,
-                          verbose: int = 0) -> IpsSolution:
+                          verbose: int = 0,
+                          step_control = True) -> IpsSolution:
     """
     Solve a non-linear problem of the form:
 
@@ -250,6 +251,9 @@ def interior_point_solver(x0: Vec,
 
     lam = sparse.linalg.lsqr(ret.Gx, -ret.fx - ret.Hx @ mu.T)[0]
 
+    Lx = ret.fx + ret.Gx @ lam + ret.Hx @ mu
+    feascond = max(max(abs(ret.G)), max(ret.H)) / (1 + max(max(abs(x)), max(abs(z))))
+    gradcond = max(abs(Lx)) / (1 + max(max(abs(lam)), max(abs(mu))))
     converged = error <= gamma
 
     error_evolution = np.zeros(max_iter + 1)
@@ -260,11 +264,13 @@ def interior_point_solver(x0: Vec,
         ret = func(x, mu, lam, True, True, *arg)
 
         # compose the Jacobian
-        M = ret.fxx + ret.Gxx + ret.Hxx + ret.Hx @ z_inv @ mu_diag @ ret.Hx.T
+        Lxx = ret.fxx + ret.Gxx + ret.Hxx
+        M = Lxx + ret.Hx @ z_inv @ mu_diag @ ret.Hx.T
         J = pack_3_by_4(M.tocsc(), ret.Gx.tocsc(), ret.Gx.T.tocsc())
 
         # compose the residual
-        N = ret.fx + ret.Hx @ mu + ret.Hx @ z_inv @ (gamma * e + mu * ret.H) + ret.Gx @ lam
+        Lx = ret.fx + ret.Gx @ lam + ret.Hx @ mu
+        N = Lx + ret.Hx @ z_inv @ (gamma * e + mu * ret.H)
         r = - np.r_[N, ret.G]
 
         # Find the reduced problem residuals and split them
@@ -273,8 +279,40 @@ def interior_point_solver(x0: Vec,
         # TODO: Implement step control
 
         # Calculate the inequalities residuals using the reduced problem residuals
-        dz = -ret.H - z - ret.Hx.T @ dx
-        dmu = -mu + z_inv @ (gamma * e - mu * dz)
+        dz = - ret.H - z - ret.Hx.T @ dx
+        dmu = - mu + z_inv @ (gamma * e - mu * dz)
+
+        # Step control
+        sc = 0
+        if step_control:
+            L = ret.f + lam.T @ ret.G + mu.T @ (ret.H + z) - gamma * sum(np.log(z))
+            x1 = x + dx
+            ret1 = func(x1, mu, lam, True, False, *arg)
+            Lx1 = ret1.fx + ret1.Hx @ mu + ret1.Gx @ lam
+
+            feascond1 = max(max(abs(ret1.G)), max(ret1.H)) / (1 + max(max(abs(x1)), max(abs(z))))
+            gradcond1 = max(abs(Lx1)) / (1 + max(max(abs(lam)), max(abs(mu))))
+
+            if feascond1 > feascond and gradcond1 > gradcond:
+                sc = 1
+        if sc == 1:
+            alpha = 1
+            for j in range(20):
+                dx1 = alpha * dx
+                x1 = x + dx
+                ret1 = func(x1, mu, lam, True, False, *arg)
+
+                L1 = ret1.f + lam.T @ ret1.G + mu.T @ (ret1.H + z) - gamma * sum(np.log(z))
+                rho = (L1 - L) / (Lx.T @ dx1 + 0.5 * dx1.T @ Lxx @ dx1)
+
+                if 0.5 < rho < 1.5:
+                    break
+                else:
+                    alpha = alpha / 2
+            dx *= alpha
+            dz *= alpha
+            dlam *= alpha
+            dmu *= alpha
 
         # Compute the maximum step allowed
         alpha_p = step_calculation(z, dz)
@@ -288,13 +326,18 @@ def interior_point_solver(x0: Vec,
         gamma = max(0.1 * (mu @ z) / n_ineq, tol)  # Maximum tolerance requested.
 
         # Compute the maximum error and the new gamma value
-        error = calc_error(dx, dz, dmu, dlam)
+        # error = calc_error(dx, dz, dmu, dlam)
         # error = np.max(np.abs(r))
+
+
+        feascond = max(max(abs(ret.G)), max(ret.H)) / (1 + max(max(abs(x)), max(abs(z))))
+        gradcond = max(abs(Lx)) / (1 + max(max(abs(lam)), max(abs(mu))))
+        error = np.max([feascond, gradcond])
 
         z_inv = diags(1.0 / z)
         mu_diag = diags(mu)
 
-        converged = error <= gamma
+        converged = feascond < 1e-6 and gradcond < 1e-6
 
         if verbose > 1:
             print(f'Iteration: {iter_counter}', "-" * 80)
