@@ -119,11 +119,12 @@ class EditableDevice:
         :param code: alternative code to identify this object in other databases (i.e. psse number tec...)
         """
 
-        self.idtag = idtag
+        self._idtag = ''
+        self.idtag = idtag  # use the setter to assign _idtag
 
-        self._name = name
+        self._name: str = name
 
-        self.code = code
+        self.code: str = code
 
         self.device_type: DeviceType = device_type
 
@@ -140,16 +141,43 @@ class EditableDevice:
         self.register(key='name', units='', tpe=str, definition='Name of the branch.')
         self.register(key='code', units='', tpe=str, definition='Secondary ID')
 
-    @property
-    def idtag(self):
+    def __str__(self) -> str:
         """
-        :return: the IDTAG
-        :return:
+        Name of the object
+        :return: string
+        """
+        return self.name
+
+    def __repr__(self) -> str:
+        return self.idtag + '::' + self.name
+
+    def __hash__(self) -> int:
+        # alternatively, return hash(repr(self))
+        return int(self.idtag, 16)  # hex string to int
+
+    def __lt__(self, other) -> bool:
+        return self.__hash__() < other.__hash__()
+
+    def __eq__(self, other) -> bool:
+        if hasattr(other, 'idtag'):
+            return self.idtag == other.idtag
+        else:
+            return False
+
+    @property
+    def idtag(self) -> str:
+        """
+        idtag getter
+        :return: string, hopefully an UUIDv4
         """
         return self._idtag
 
     @idtag.setter
-    def idtag(self, val):
+    def idtag(self, val: Union[str, None]):
+        """
+        idtag setter
+        :param val: any string or None
+        """
         if val is None:
             self._idtag = uuid.uuid4().hex  # generate a proper UUIDv4 string
         elif isinstance(val, str):
@@ -234,7 +262,7 @@ class EditableDevice:
                                             old_names=old_names)
 
         if profile_name != '':
-            assert (hasattr(self, profile_name))  # the property must exist, this avoids bugs in registering
+            assert (hasattr(self, profile_name))  # the profile property must exist, this avoids bugs in registering
             self.properties_with_profile[key] = profile_name
 
         if not editable:
@@ -271,29 +299,6 @@ class EditableDevice:
         Generate new UUID for the idtag property
         """
         self.idtag = uuid.uuid4().hex
-
-    def __str__(self) -> AnyStr:
-        """
-        Name of the object
-        :return: string
-        """
-        return self.name
-
-    def __repr__(self):
-        return self.idtag + '::' + self.name
-
-    def __hash__(self):
-        # alternatively, return hash(repr(self))
-        return int(self.idtag, 16)  # hex string to int
-
-    def __lt__(self, other):
-        return self.__hash__() < other.__hash__()
-
-    def __eq__(self, other):
-        if hasattr(other, 'idtag'):
-            return self.idtag == other.idtag
-        else:
-            return False
 
     @property
     def name(self) -> str:
