@@ -26,7 +26,7 @@ def create_class(name: str, attributes: List[str]):
     return res
 
 
-with open("code.py", "w") as f:
+with open("enums_code.py", "w") as f:
 
     f.write("from dataclasses import dataclass\n\n\n")
 
