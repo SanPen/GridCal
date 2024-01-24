@@ -305,7 +305,7 @@ def interior_point_solver(x0: Vec,
                 L1 = ret1.f + lam.T @ ret1.G + mu.T @ (ret1.H + z) - gamma * sum(np.log(z))
                 rho = (L1 - L) / (Lx.T @ dx1 + 0.5 * dx1.T @ Lxx @ dx1)
 
-                if 0.95 < rho < 1.05:
+                if 0.5 < rho < 1.5:
                     break
                 else:
                     alpha = alpha / 2
@@ -326,16 +326,18 @@ def interior_point_solver(x0: Vec,
         gamma = max(0.1 * (mu @ z) / n_ineq, tol)  # Maximum tolerance requested.
 
         # Compute the maximum error and the new gamma value
-        error = calc_error(dx, dz, dmu, dlam)
+        # error = calc_error(dx, dz, dmu, dlam)
         # error = np.max(np.abs(r))
+
 
         feascond = max(max(abs(ret.G)), max(ret.H)) / (1 + max(max(abs(x)), max(abs(z))))
         gradcond = max(abs(Lx)) / (1 + max(max(abs(lam)), max(abs(mu))))
+        error = np.max([feascond, gradcond])
 
         z_inv = diags(1.0 / z)
         mu_diag = diags(mu)
 
-        converged = error <= gamma
+        converged = feascond < 1e-6 and gradcond < 1e-6
 
         if verbose > 1:
             print(f'Iteration: {iter_counter}', "-" * 80)

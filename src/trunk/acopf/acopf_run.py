@@ -185,7 +185,7 @@ def caseBig():
     # Go back two directories
     new_directory = os.path.abspath(os.path.join(cwd, '..', '..', '..'))
 
-    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case1354pegase.m')
+    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case300.m')
 
     grid = gce.FileOpen(file_path).open()
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1)
@@ -196,7 +196,7 @@ def caseBig():
 if __name__ == '__main__':
     #example_3bus_acopf()
     # linn5bus_example()
-    two_grids_of_3bus()
+    # two_grids_of_3bus()
     # case9()
     # case14()
-    #caseBig()
+    caseBig()
