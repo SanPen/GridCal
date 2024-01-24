@@ -221,35 +221,38 @@ def create_data_frames(circuit: MultiCircuit):
     return dfs
 
 
-def serach_property(template_elm, old_props_dict, file_object_property: str, logger: Logger):
+def search_property(template_elm: dev.EditableDevice,
+                    old_props_dict: Dict[str, str],
+                    property_to_search: str,
+                    logger: Logger) -> Union[GCProp, None]:
     """
-
-    :param template_elm:
-    :param old_props_dict:
-    :param file_object_property:
-    :param logger:
-    :return:
+    Search for a property name in the template object registered properties and their old names
+    :param template_elm: Device to loo into
+    :param old_props_dict: Dictionary matching the old names with their current counterpart
+    :param property_to_search: property name to search
+    :param logger: Logger
+    :return: GCProp or None if not found
     """
     # search the property in the object headers
-    gc_prop = template_elm.editable_headers.get(file_object_property, None)
+    gc_prop = template_elm.registered_properties.get(property_to_search, None)
 
     if gc_prop is None:
         # the property is not in the headers, search in the the old list
-        current_prop_name = old_props_dict.get(file_object_property, None)
+        current_prop_name = old_props_dict.get(property_to_search, None)
 
         if current_prop_name:
 
             logger.add_info('The file property was updated in the data model',
                             device=str(template_elm.device_type),
-                            value=file_object_property)
+                            value=property_to_search)
 
-            gc_prop = template_elm.editable_headers.get(current_prop_name, None)
+            gc_prop = template_elm.registered_properties.get(current_prop_name, None)
             return gc_prop
         else:
             # the property does not exists in the registries, this is a bug
             logger.add_error('the property does not exists in the registries',
                              device=str(template_elm.device_type),
-                             value=file_object_property)
+                             value=property_to_search)
             return None
     else:
         return gc_prop
