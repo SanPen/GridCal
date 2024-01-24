@@ -59,9 +59,9 @@ class Investment(EditableDevice):
         self.comment = comment
 
         self.register(key='device_idtag', units='', tpe=str, definition='Unique ID')
-        self.register(key='CAPEX', units='M€', tpe=float,
+        self.register(key='CAPEX', units='Me', tpe=float,
                       definition='Capital expenditures. This is the initial investment.')
-        self.register(key='OPEX', units='M€', tpe=float,
+        self.register(key='OPEX', units='Me', tpe=float,
                       definition='Operation expenditures. Maintenance costs among other recurrent costs.')
         self.register(key='group', units='', tpe=DeviceType.InvestmentsGroupDevice, definition='Investment group')
         self.register(key='comment', units='', tpe=str, definition='Comments')

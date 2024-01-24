@@ -557,7 +557,7 @@ class HvdcLine(ParentBranch):
                 'max_firing_angle_f': 'radians',
                 'min_firing_angle_t': 'radians',
                 'max_firing_angle_t': 'radians',
-                'overload_cost': '€/MWh'}
+                'overload_cost': 'e/MWh'}
 
     def get_max_bus_nominal_voltage(self):
         return max(self.bus_from.Vnom, self.bus_to.Vnom)
