@@ -142,7 +142,7 @@ def two_grids_of_3bus():
     # print('\tConv:\n', power_flow.results.get_branch_df())
 
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1)
-    run_nonlinear_opf(grid=grid, pf_options=pf_options, debug=False, use_autodiff=True, plot_error=True)
+    run_nonlinear_opf(grid=grid, pf_options=pf_options, plot_error=True)
 
 
 def case9():
@@ -185,7 +185,7 @@ def caseBig():
     # Go back two directories
     new_directory = os.path.abspath(os.path.join(cwd, '..', '..', '..'))
 
-    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', '1354 Pegase.xlsx')
+    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case1354pegase.m')
 
     grid = gce.FileOpen(file_path).open()
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1)
@@ -194,9 +194,9 @@ def caseBig():
 
 
 if __name__ == '__main__':
-    example_3bus_acopf()
-    #linn5bus_example()
-    # two_grids_of_3bus()
-    #case9()
-    #case14()
-    # caseBig()
+    #example_3bus_acopf()
+    # linn5bus_example()
+    two_grids_of_3bus()
+    # case9()
+    # case14()
+    #caseBig()
