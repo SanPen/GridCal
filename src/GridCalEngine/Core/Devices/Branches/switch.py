@@ -112,7 +112,7 @@ class Switch(ParentBranch):
         :return:
         """
         data = list()
-        for name, properties in self.editable_headers.items():
+        for name, properties in self.registered_properties.items():
             obj = getattr(self, name)
 
             if properties.tpe == DeviceType.BusDevice:

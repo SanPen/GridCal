@@ -295,7 +295,7 @@ class ElementsDialogue(QtWidgets.QDialog):
         self.objects_table = QtWidgets.QTableView()
 
         if len(elements) > 0:
-            model = ObjectsModel(elements, elements[0].editable_headers,
+            model = ObjectsModel(elements, elements[0].registered_properties,
                                  parent=self.objects_table, editable=False)
 
             self.objects_table.setModel(model)

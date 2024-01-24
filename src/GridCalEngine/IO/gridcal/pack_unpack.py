@@ -154,7 +154,7 @@ def create_data_frames(circuit: MultiCircuit):
     ########################################################################################################
     for object_type_name, object_sample in object_types.items():
 
-        headers = object_sample.editable_headers.keys()
+        headers = object_sample.registered_properties.keys()
 
         lists_of_objects = circuit.get_elements_by_type(object_sample.device_type)
 
@@ -501,21 +501,26 @@ def look_for_property(elm: dev.EditableDevice, property_name) -> Union[GCProp, N
     :param property_name:
     :return:
     """
-    device_property_definition: GCProp = elm.editable_headers.get(property_name, None)
+    device_property_definition: GCProp = elm.registered_properties.get(property_name, None)
 
     if device_property_definition:
         # the property of the file exists directly
         return device_property_definition
     else:
         # the property does not exists directly, look in the older properties
-        for name, prop in elm.editable_headers.items():
+        for name, prop in elm.registered_properties.items():
             if property_name in prop.old_names:
                 return prop
 
         return None  # if we reach here, it wasn't found
 
 
-def valid_value(val):
+def valid_value(val) -> bool:
+    """
+
+    :param val:
+    :return:
+    """
     if isinstance(val, str):
         if val == 'nan':
             return False

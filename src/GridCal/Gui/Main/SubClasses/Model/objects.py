@@ -243,7 +243,7 @@ class ObjectsTableMain(DiagramsMain):
             raise Exception('elm_type not understood: ' + elm_type.value)
 
         mdl = gf.ObjectsModel(objects=elements,
-                              editable_headers=elm.editable_headers,
+                              editable_headers=elm.registered_properties,
                               parent=self.ui.dataStructureTableView,
                               editable=True,
                               dictionary_of_lists=dictionary_of_lists)
@@ -581,7 +581,7 @@ class ObjectsTableMain(DiagramsMain):
 
                 elm = objects[0]
                 attr = self.ui.property_comboBox.currentText()
-                tpe = elm.editable_headers[attr].tpe
+                tpe = elm.registered_properties[attr].tpe
 
                 if tpe in [float, int]:
 
@@ -661,7 +661,7 @@ class ObjectsTableMain(DiagramsMain):
                     p_idx = index.column()
                     elm = objects[i]
                     attr = model.attributes[p_idx]
-                    prof_attr = elm.editable_headers[attr].profile_name
+                    prof_attr = elm.registered_properties[attr].profile_name
 
                     if prof_attr != '':
                         if hasattr(elm, prof_attr):
@@ -721,7 +721,7 @@ class ObjectsTableMain(DiagramsMain):
             attr = self.ui.property_comboBox.currentText()
 
             elm = self.type_objects_list[0]
-            tpe = elm.editable_headers[attr].tpe
+            tpe = elm.registered_properties[attr].tpe
 
             filtered_objects = list()
 

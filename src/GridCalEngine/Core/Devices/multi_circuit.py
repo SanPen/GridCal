@@ -292,7 +292,7 @@ class MultiCircuit:
                 if elm.properties_with_profile is not None:
                     key = str(elm.device_type.value)
                     profile_attr = list(elm.properties_with_profile.keys())
-                    profile_types = [elm.editable_headers[attr].tpe for attr in profile_attr]
+                    profile_types = [elm.registered_properties[attr].tpe for attr in profile_attr]
                     self.profile_magnitudes[key] = (profile_attr, profile_types)
                     self.device_type_name_dict[key] = elm.device_type
 

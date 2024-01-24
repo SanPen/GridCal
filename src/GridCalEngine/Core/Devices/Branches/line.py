@@ -242,7 +242,7 @@ class Line(ParentBranch):
         :return:
         """
         data = list()
-        for name, properties in self.editable_headers.items():
+        for name, properties in self.registered_properties.items():
             obj = getattr(self, name)
 
             if properties.tpe == DeviceType.BusDevice:
@@ -252,7 +252,7 @@ class Line(ParentBranch):
                 if obj is None:
                     obj = ''
                 else:
-                    obj = str(obj)
+                    obj = obj.idtag
 
             elif properties.tpe not in [str, float, int, bool]:
                 obj = str(obj)
