@@ -410,8 +410,7 @@ class LinearMultiContingency:
             injection_delta = self.injections_factor * injections[self.bus_indices]
 
             # (MLODF[k, βδ] x PTDF[βδ, i] + PTDF[k, i]) x ΔP[i]
-            flow += self.compensated_ptdf_factors @ injection_delta[
-                self.bus_indices]  # TODO: is the slicing necesary here too?
+            flow += self.compensated_ptdf_factors @ injection_delta
 
         return flow
 
@@ -441,6 +440,7 @@ class ContingencyIndices:
     """
     Contingency indices
     """
+
     def __init__(self, contingency_group: ContingencyGroup, contingency_group_dict, branches_dict,
                  generator_dict, bus_index_dict):
 
@@ -607,12 +607,16 @@ class LinearMultiContingencies:
                 ptdf_k_i = dense_to_csc(mat=ptdf[:, contingency_indices.bus_contingency_indices],
                                         threshold=ptdf_threshold)
 
-                # this is PTDF[βδ, i]
-                ptdf_bd_i = dense_to_csc(mat=ptdf[contingency_indices.branch_contingency_indices, contingency_indices.bus_contingency_indices],
-                                         threshold=ptdf_threshold)
+                if len(contingency_indices.branch_contingency_indices):
+                    # this is PTDF[βδ, i]
+                    ptdf_bd_i = dense_to_csc(mat=ptdf[
+                        contingency_indices.branch_contingency_indices, contingency_indices.bus_contingency_indices],
+                                             threshold=ptdf_threshold)
 
-                # must compute             MLODF[k, βδ] x PTDF[βδ, i] + PTDF[k, i]
-                compensated_ptdf_factors = mlodf_factors @ ptdf_bd_i + ptdf_k_i
+                    # must compute             MLODF[k, βδ] x PTDF[βδ, i] + PTDF[k, i]
+                    compensated_ptdf_factors = mlodf_factors @ ptdf_bd_i + ptdf_k_i
+                else:
+                    compensated_ptdf_factors = ptdf_k_i  #TODO Comprobar con Jesús
             else:
                 compensated_ptdf_factors = sp.csc_matrix(([], [], [0]), shape=(lodf.shape[0], 0))
 
