@@ -22,14 +22,14 @@ from dataclasses import dataclass
 from scipy.sparse import lil_matrix
 
 from GridCalEngine.Utils.Sparse.csc import diags
-from GridCalEngine.Utils.IPS.ips import interior_point_solver, IpsFunctionReturn
-import GridCalEngine.Utils.IPS.autodiff as ad
+from GridCalEngine.Utils.NumericalMethods.ips import interior_point_solver, IpsFunctionReturn
+import GridCalEngine.Utils.NumericalMethods.autodiff as ad
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at, NumericalCircuit
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from typing import Callable, Tuple, Union
-from GridCalEngine.basic_structures import Vec, CxVec
+from GridCalEngine.basic_structures import Vec, CxVec, IntVec
 
 
 def x2var(x: Vec, nVm: int, nVa: int, nPg: int, nQg: int) -> Tuple[Vec, Vec, Vec, Vec]:
@@ -171,7 +171,7 @@ def eval_h(x, Yf, Yt, from_idx, to_idx, no_slack, Va_max, Va_min, Vm_max, Vm_min
 
 
 def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, slack, no_slack, mu, lmbda,
-                           compute_jac: bool, compute_hess: bool,):
+                           compute_jac: bool, compute_hess: bool, ):
     """
 
     :param x:
@@ -507,7 +507,8 @@ def compute_autodiff_structures(x, mu, lam, compute_jac: bool, compute_hess: boo
         fx = ad.calc_autodiff_jacobian_f_obj(func=eval_f, x=x, arg=(Cg, c0, c1, c2, Sbase), h=h).tocsc()
         Gx = ad.calc_autodiff_jacobian(func=eval_g, x=x, arg=(Ybus, Yf, Cg, Sd, slack)).T.tocsc()
         Hx = ad.calc_autodiff_jacobian(func=eval_h, x=x, arg=(Yf, Yt, from_idx, to_idx, no_slack, Va_max, Va_min,
-                                                              Vm_max, Vm_min, Pg_max, Pg_min, Qg_max, Qg_min, Cg, rates)).T.tocsc()
+                                                              Vm_max, Vm_min, Pg_max, Pg_min, Qg_max, Qg_min, Cg,
+                                                              rates)).T.tocsc()
     else:
         fx = None
         Gx = None
@@ -579,7 +580,8 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
 
     fx, Gx, Hx, fxx, Gxx, Hxx = jacobians_and_hessians(x=x, c1=c1, c2=c2, Cg=Cg, Cf=Cf, Ct=Ct, Yf=Yf, Yt=Yt,
                                                        Ybus=Ybus, Sbase=Sbase, slack=slack, no_slack=no_slack,
-                                                       mu=mu, lmbda=lmbda, compute_jac=compute_jac, compute_hess=compute_hess)
+                                                       mu=mu, lmbda=lmbda, compute_jac=compute_jac,
+                                                       compute_hess=compute_hess)
 
     return IpsFunctionReturn(f=f, G=G, H=H,
                              fx=fx, Gx=Gx, Hx=Hx,
@@ -650,19 +652,64 @@ class NonlinearOPFResults:
     """
     Numerical non linear OPF results
     """
-    Vm: Vec
-    Va: Vec
-    S: CxVec
-    Sf: CxVec
-    St: CxVec
-    loading: Vec
-    Pg: Vec
-    Qg: Vec
-    lam_p: Vec
-    lam_q: Vec
-    error: float
-    converged: bool
-    iterations: int
+    Vm: Vec = None
+    Va: Vec = None
+    S: CxVec = None
+    Sf: CxVec = None
+    St: CxVec = None
+    loading: Vec = None
+    Pg: Vec = None
+    Qg: Vec = None
+    lam_p: Vec = None
+    lam_q: Vec = None
+    error: float = None
+    converged: bool = None
+    iterations: int = None
+
+    def initialize(self, nbus, nbr, ng):
+        """
+        Initialize the arrays
+        :param nbus:
+        :param nbr:
+        :param ng:
+        :return:
+        """
+        self.Vm: Vec = np.zeros(nbus)
+        self.Va: Vec = np.zeros(nbus)
+        self.S: CxVec = np.zeros(nbus)
+        self.Sf: CxVec = np.zeros(nbr)
+        self.St: CxVec = np.zeros(nbr)
+        self.loading: Vec = np.zeros(nbr)
+        self.Pg: Vec = np.zeros(ng)
+        self.Qg: Vec = np.zeros(ng)
+        self.lam_p: Vec = np.zeros(nbus)
+        self.lam_q: Vec = np.zeros(nbus)
+        self.error: float = 0.0
+        self.converged: bool = False
+        self.iterations: int = 0
+
+    def merge(self, other: "NonlinearOPFResults",
+              bus_idx: IntVec, br_idx: IntVec, gen_idx: IntVec):
+        """
+
+        :param other:
+        :param bus_idx:
+        :param br_idx:
+        :param gen_idx:
+        """
+        self.Vm[bus_idx] = other.Vm
+        self.Va[bus_idx] = other.Va
+        self.S[bus_idx] = other.S
+        self.Sf[br_idx] = other.Sf
+        self.St[br_idx] = other.St
+        self.loading[br_idx] = other.loading
+        self.Pg[gen_idx] = other.Pg
+        self.Qg[gen_idx] = other.Qg
+        self.lam_p[bus_idx] = other.lam_p
+        self.lam_q[bus_idx] = other.lam_q
+        self.error: float = 0.0
+        self.converged: bool = False
+        self.iterations: int = 0
 
     @property
     def V(self) -> CxVec:
@@ -741,6 +788,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     # vm0 = np.abs(pf_results.voltage)
     # va0 = np.angle(pf_results.voltage)
 
+    # nc.Vbus  # dummy initialization
+
     p0gen = (nc.generator_data.pmax + nc.generator_data.pmin) / (2 * nc.Sbase)
     q0gen = (nc.generator_data.qmax + nc.generator_data.qmin) / (2 * nc.Sbase)
     vm0 = np.ones(nbus)
@@ -810,6 +859,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         print("Bus:\n", df_bus)
         print("Gen:\n", df_gen)
         print("Error", result.error)
+
     if plot_error:
         result.plot_error()
 
@@ -826,17 +876,42 @@ def run_nonlinear_opf(grid: MultiCircuit,
                       plot_error: bool = False) -> NonlinearOPFResults:
     """
 
+    :param plot_error:
     :param grid:
     :param pf_options:
     :param t_idx:
     :param debug:
     :param use_autodiff:
-    :return:
+    :return: NonlinearOPFResults
     """
 
+    # compile the system
     nc = compile_numerical_circuit_at(circuit=grid, t_idx=t_idx)
-    nc_list = nc.split_into_islands(ignore_single_node_islands=True)
-    for nc in nc_list:
-        return ac_optimal_power_flow(nc=nc, pf_options=pf_options,
-                                     debug=debug, use_autodiff=use_autodiff,
+
+    # filter garbage out mostly since the ACOPF can simulate multi-island systems
+    islands = nc.split_into_islands(ignore_single_node_islands=True)
+
+    if len(islands) > 1:
+        results = NonlinearOPFResults()
+        results.initialize(nbus=nc.nbus, nbr=nc.nbr, ng=nc.ngen)
+
+        for island in islands:
+            island_res = ac_optimal_power_flow(nc=island,
+                                               pf_options=pf_options,
+                                               debug=debug,
+                                               use_autodiff=use_autodiff,
+                                               plot_error=plot_error)
+
+            results.merge(other=island_res,
+                          bus_idx=nc.bus_data.original_idx,
+                          br_idx=nc.branch_data.original_idx,
+                          gen_idx=nc.generator_data.original_idx)
+
+        return results
+    else:
+
+        return ac_optimal_power_flow(nc=islands[0],
+                                     pf_options=pf_options,
+                                     debug=debug,
+                                     use_autodiff=use_autodiff,
                                      plot_error=plot_error)

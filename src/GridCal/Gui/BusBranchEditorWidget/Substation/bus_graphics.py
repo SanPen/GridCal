@@ -629,7 +629,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
                                    DeviceType.CountryDevice.value: self.editor.circuit.countries}
 
         mdl = ObjectsModel([self.api_object],
-                           self.api_object.editable_headers,
+                           self.api_object.registered_properties,
                            parent=self.editor.object_editor_table,
                            editable=True,
                            transposed=True,

@@ -59,7 +59,7 @@ def get_gridcal_data_frames():
         class_name = obj.device_type.value
 
         data = list()
-        for prop_name, prop in obj.editable_headers.items():
+        for prop_name, prop in obj.registered_properties.items():
 
             data.append(prop.get_dict())
 

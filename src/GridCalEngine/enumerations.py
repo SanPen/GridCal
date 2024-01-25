@@ -755,6 +755,7 @@ class DeviceType(Enum):
     AreaDevice = 'Area'
     ZoneDevice = 'Zone'
     CountryDevice = 'Country'
+    BusBarDevice = 'BusBar'
 
     Technology = 'Technology'
     TechnologyGroup = 'Technology Group'
