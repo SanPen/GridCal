@@ -468,24 +468,33 @@ class ContingencyIndices:
         """
         # search for the contingency in the Branches
         br_idx = branches_dict.get(cnt.device_idtag, None)
+        branch_found = False
         if br_idx is not None:
             if cnt.prop == 'active':
                 branch_contingency_indices.append(br_idx)
                 return
             else:
+                branch_found = True
                 print(f'Unknown branch contingency property {cnt.prop} at {cnt.name} {cnt.idtag}')
         else:
-            print(f"contingency branch {cnt.device_idtag} not found")
+            branch_found = False
 
         gen = generator_dict.get(cnt.device_idtag, None)
+        gen_found = False
         if gen is not None:
             if cnt.prop == '%':
                 bus_contingency_indices.append(bus_index_dict[gen.bus])
                 injections_factors.append(cnt.value / 100.0)
                 return
             else:
+                branch_found = True
                 print(f'Unknown generator contingency property {cnt.prop} at {cnt.name} {cnt.idtag}')
         else:
+            gen_found = False
+
+        if not branch_found:
+            print(f"contingency branch {cnt.device_idtag} not found")
+        if not gen_found:
             print(f"contingency generator {cnt.device_idtag} not found")
 
     def get_contingencies_info(self, contingency_group: ContingencyGroup,
