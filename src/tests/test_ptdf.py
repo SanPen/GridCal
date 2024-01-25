@@ -442,5 +442,35 @@ def test_mlodf_sanpen():
         assert ok
 
 
+
+def test_ptdf_psse():
+    """
+    Compare the PSSE PTDF and the GridCal PTDF for IEEE14, IEEE30, IEEE118 and REE networks
+    """
+    for fname  in [
+        os.path.join('data', 'grids', 'IEEE14-gen120.gridcal'),
+        os.path.join('data', 'grids', 'IEEE14-gen80.gridcal'),
+    ]:
+        main_circuit = FileOpen(fname).open()
+
+        # DC power flow method
+        pf_options = PowerFlowOptions(SolverType.DC,
+                                      verbose=False,
+                                      initialize_with_existing_solution=False,
+                                      dispatch_storage=True,
+                                      control_q=ReactivePowerControlMode.NoControl,
+                                      control_p=False)
+        options1 = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyMethod.PowerFlow)
+        cont_analysis_driver1 = ContingencyAnalysisDriver(grid=main_circuit, options=options1,
+                                                          linear_multiple_contingencies=None)
+        cont_analysis_driver1.run()
+
+        #options2 = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyMethod.PTDF)
+        #cont_analysis_driver2 = ContingencyAnalysisDriver(grid=main_circuit, options=options2)
+        #cont_analysis_driver2.run()
+
+        assert np.allclose(cont_analysis_driver1.results.Sf, cont_analysis_driver2.results.Sf)
+
+
 if __name__ == '__main__':
     test_ptdf()
