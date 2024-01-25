@@ -18,7 +18,7 @@ import math
 from typing import Dict, Union, List, Tuple
 import pandas as pd
 import numpy as np
-from enum import EnumType
+from enum import EnumMeta as EnumType
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 import GridCalEngine.Core.Devices as dev
