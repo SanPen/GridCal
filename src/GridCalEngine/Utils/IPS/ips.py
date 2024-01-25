@@ -257,6 +257,7 @@ def interior_point_solver(x0: Vec,
     converged = error <= gamma
 
     error_evolution = np.zeros(max_iter + 1)
+    feascond_evolution = np.zeros(max_iter + 1)
     error_evolution[0] = error
     while not converged and iter_counter < max_iter:
 
@@ -295,6 +296,7 @@ def interior_point_solver(x0: Vec,
 
             if feascond1 > feascond and gradcond1 > gradcond:
                 sc = 1
+
         if sc == 1:
             alpha = 1
             for j in range(20):
@@ -329,10 +331,11 @@ def interior_point_solver(x0: Vec,
         # error = calc_error(dx, dz, dmu, dlam)
         # error = np.max(np.abs(r))
 
-
         feascond = max(max(abs(ret.G)), max(ret.H)) / (1 + max(max(abs(x)), max(abs(z))))
         gradcond = max(abs(Lx)) / (1 + max(max(abs(lam)), max(abs(mu))))
         error = np.max([feascond, gradcond])
+
+        feascond_evolution[iter_counter] = feascond
 
         z_inv = diags(1.0 / z)
         mu_diag = diags(mu)
@@ -367,6 +370,7 @@ def interior_point_solver(x0: Vec,
         print("\tErr:", error)
         print(f'\tIterations: {iter_counter}')
         print('\tTime elapsed (s): ', END - START)
+        print(f'Feas cond: ', max(feascond_evolution))
 
     return IpsSolution(x=x, error=error, gamma=gamma, lam=lam, structs=ret,
                        converged=converged, iterations=iter_counter, error_evolution=error_evolution)
