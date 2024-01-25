@@ -581,7 +581,6 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
                                                        Ybus=Ybus, Sbase=Sbase, slack=slack, no_slack=no_slack,
                                                        mu=mu, lmbda=lmbda, compute_jac=compute_jac, compute_hess=compute_hess)
 
-
     return IpsFunctionReturn(f=f, G=G, H=H,
                              fx=fx, Gx=Gx, Hx=Hx,
                              fxx=fxx, Gxx=Gxx, Hxx=Hxx,
@@ -736,15 +735,20 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     pf_results = multi_island_pf_nc(nc=nc, options=pf_options)
 
     # ignore power from Z and I of the load
-    s0gen = (pf_results.Sbus - nc.load_data.get_injections_per_bus()) / nc.Sbase
-    p0gen = nc.generator_data.C_bus_elm.T @ np.real(s0gen)
-    q0gen = nc.generator_data.C_bus_elm.T @ np.imag(s0gen)
+    # s0gen = (pf_results.Sbus - nc.load_data.get_injections_per_bus()) / nc.Sbase
+    # p0gen = nc.generator_data.C_bus_elm.T @ np.real(s0gen)
+    # q0gen = nc.generator_data.C_bus_elm.T @ np.imag(s0gen)
+    # vm0 = np.abs(pf_results.voltage)
+    # va0 = np.angle(pf_results.voltage)
 
-    # nc.Vbus  # dummy initialization
-    #print(np.angle(pf_results.voltage))
+    p0gen = (nc.generator_data.pmax + nc.generator_data.pmin) / (2 * nc.Sbase)
+    q0gen = (nc.generator_data.qmax + nc.generator_data.qmin) / (2 * nc.Sbase)
+    vm0 = np.ones(nbus)
+    va0 = np.zeros(nbus)
+
     # compose the initial values
-    x0 = var2x(Vm=np.abs(pf_results.voltage),
-               Va=np.angle(pf_results.voltage),
+    x0 = var2x(Vm=vm0,
+               Va=va0,
                Pg=p0gen,
                Qg=q0gen)
 
