@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -14,16 +14,19 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
 import json
-from typing import List, Dict, Union
-
 import numpy as np
+from typing import List, Dict, Union, TYPE_CHECKING
 
 from GridCalEngine.Simulations.result_types import ResultTypes
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.basic_structures import IntVec, Vec, CxVec, StrVec, Mat, DateVec, CxMat
 from GridCalEngine.enumerations import StudyResultsType
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
+
+if TYPE_CHECKING:  # Only imports the below statements during type checking
+    from GridCalEngine.Simulations.Clustering.clustering_results import ClusteringResults
 
 
 class ResultsProperty:
@@ -58,7 +61,7 @@ class ResultsTemplate:
             name: str,
             available_results: Union[Dict[ResultTypes, List[ResultTypes]], List[ResultTypes]],
             time_array: Union[DateVec, None],
-            clustering_results: Union["ClusteringResults", None],
+            clustering_results: Union[ClusteringResults, None],
             study_results_type: StudyResultsType):
         """
         Results template class
@@ -98,19 +101,19 @@ class ResultsTemplate:
         self.bus_area_indices: IntVec = None
         self.area_names: StrVec = None
 
-    def register(self, name: str, tpe: Union[Vec, Mat, CxVec, CxMat], old_names: List[str] = list()):
+    def register(self, name: str, tpe: Union[Vec, Mat, CxVec, CxMat], old_names: Union[None, List[str]] = None):
         """
         Register a results variable for disk persistence
         :param name: name of the variable to register (is checked)
         :param tpe: type of the variable
-        :param old_names: list of old names for retro compatibility
+        :param old_names: list of old names for retro compatibility (optional)
         """
 
         assert (hasattr(self, name))  # the property must exist, this avoids bugs when registering
 
         self.data_variables[name] = ResultsProperty(name=name,
                                                     tpe=tpe,
-                                                    old_names=old_names)
+                                                    old_names=list() if old_names is None else old_names)
 
     def consolidate_after_loading(self):
         """
@@ -214,19 +217,20 @@ class ResultsTemplate:
         na = len(area_names)
         x = np.zeros((na, na), dtype=complex)
 
-        for f, t, flow in zip(F, T, Sf):
-            a1 = bus_area_indices[f]
-            a2 = bus_area_indices[t]
-            if a1 != a2:
-                x[a1, a2] += flow
-                x[a2, a1] -= flow
+        if na > 0:
+            for f, t, flow in zip(F, T, Sf):
+                a1 = bus_area_indices[f]
+                a2 = bus_area_indices[t]
+                if a1 != a2:
+                    x[a1, a2] += flow
+                    x[a2, a1] -= flow
 
-        for f, t, flow in zip(hvdc_F, hvdc_T, hvdc_Pf):
-            a1 = bus_area_indices[f]
-            a2 = bus_area_indices[t]
-            if a1 != a2:
-                x[a1, a2] += flow
-                x[a2, a1] -= flow
+            for f, t, flow in zip(hvdc_F, hvdc_T, hvdc_Pf):
+                a1 = bus_area_indices[f]
+                a2 = bus_area_indices[t]
+                if a1 != a2:
+                    x[a1, a2] += flow
+                    x[a2, a1] -= flow
 
         return x
 
@@ -241,8 +245,9 @@ class ResultsTemplate:
         na = len(area_names)
         x = np.zeros(na, dtype=bus_values.dtype)
 
-        for a, val in zip(bus_area_indices, bus_values):
-            x[a] += val
+        if na > 0:
+            for a, val in zip(bus_area_indices, bus_values):
+                x[a] += val
 
         return x
 
@@ -262,10 +267,11 @@ class ResultsTemplate:
         na = len(area_names)
         x = np.zeros((na, na), dtype=branch_values.dtype)
 
-        for f, t, val in zip(F, T, branch_values):
-            a1 = bus_area_indices[f]
-            a2 = bus_area_indices[t]
-            x[a1, a2] += val
+        if na > 0:
+            for f, t, val in zip(F, T, branch_values):
+                a1 = bus_area_indices[f]
+                a2 = bus_area_indices[t]
+                x[a1, a2] += val
 
         return x
 
@@ -283,10 +289,11 @@ class ResultsTemplate:
         na = len(area_names)
         x = np.zeros((na, na), dtype=hvdc_values.dtype)
 
-        for f, t, val in zip(hvdc_F, hvdc_T, hvdc_values):
-            a1 = bus_area_indices[f]
-            a2 = bus_area_indices[t]
-            x[a1, a2] += val
+        if na > 0:
+            for f, t, val in zip(hvdc_F, hvdc_T, hvdc_values):
+                a1 = bus_area_indices[f]
+                a2 = bus_area_indices[t]
+                x[a1, a2] += val
 
         return x
 

@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -47,6 +47,8 @@ class Generator(InjectionTemplate):
                  Pmin: float = 0.0,
                  Pmax: float = 9999.0,
                  Cost: float = 1.0,
+                 Cost2: float = 0.0,
+                 Cost0: float = 0.0,
                  Sbase: float = 100,
                  enabled_dispatch=True,
                  mttf: float = 0.0,
@@ -193,8 +195,8 @@ class Generator(InjectionTemplate):
             self.q_curve.make_default_q_curve(self.Snom, self.qmin_set, self.qmax_set, n=1)
             self.custom_q_points = False
 
-        self.Cost2 = 0.0  # Cost of operation €/MW²
-        self.Cost0 = 0.0  # Cost of operation €/MW
+        self.Cost2 = Cost2  # Cost of operation e/MW²
+        self.Cost0 = Cost0  # Cost of operation e
 
         self.StartupCost = 0.0
         self.ShutdownCost = 0.0
@@ -440,7 +442,7 @@ class Generator(InjectionTemplate):
                 'qmax': 'MVAr',
                 'pmin': 'MW',
                 'pmax': 'MW',
-                'cost': '€/MWh'}
+                'cost': 'e/MWh'}
 
     def plot_profiles(self, time=None, show_fig=True):
         """

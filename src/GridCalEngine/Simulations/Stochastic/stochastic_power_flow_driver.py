@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -91,8 +91,7 @@ class StochasticPowerFlowDriver(DriverTemplate):
         """
         """
         t, _ = res
-        progress = (t + 1) / self.max_sampling_points * 100
-        self.progress_signal.emit(progress)
+        self.report_progress2(t, self.max_sampling_points)
         self.returned_results.append(res)
 
     def run_single_thread_mc(self, use_lhs=False):
@@ -108,8 +107,8 @@ class StochasticPowerFlowDriver(DriverTemplate):
 
         # batch_size = self.sampling_points
 
-        self.progress_signal.emit(0.0)
-        self.progress_text.emit('Running Monte Carlo Sampling...')
+        self.report_progress(0.0)
+        self.report_text('Running Monte Carlo Sampling...')
 
         # compile the multi-circuit, we'll hack it later
         numerical_circuit = compile_numerical_circuit_at(circuit=self.grid,
@@ -175,7 +174,7 @@ class StochasticPowerFlowDriver(DriverTemplate):
                 std_dev_progress = 100 * self.mc_tol / err
                 if std_dev_progress > 100:
                     std_dev_progress = 100
-                self.progress_signal.emit(max((std_dev_progress, i / self.max_sampling_points * 100)))
+                self.report_progress(max((std_dev_progress, i / self.max_sampling_points * 100)))
 
             if self.__cancel__:
                 break
@@ -183,9 +182,7 @@ class StochasticPowerFlowDriver(DriverTemplate):
         mc_results.compile()
 
         # send the finnish signal
-        self.progress_signal.emit(0.0)
-        self.progress_text.emit('Done!')
-        self.done_signal.emit()
+        self.report_done()
 
         return mc_results
 
@@ -210,6 +207,4 @@ class StochasticPowerFlowDriver(DriverTemplate):
         :return:
         """
         self.__cancel__ = True
-        self.progress_signal.emit(0.0)
-        self.progress_text.emit('Cancelled')
-        self.done_signal.emit()
+        self.report_done("Cancelled!")

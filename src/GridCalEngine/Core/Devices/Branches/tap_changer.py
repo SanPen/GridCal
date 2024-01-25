@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -42,7 +42,7 @@ class TapChanger:
 
         B_C3 = Bus(name="B_C3",
                    vnom=10) #kV
-        grid.add_bus(B_C3)
+        grid.add_bus_to_diagram(B_C3)
 
         # Create transformer types
         SS = TransformerType(name="SS",

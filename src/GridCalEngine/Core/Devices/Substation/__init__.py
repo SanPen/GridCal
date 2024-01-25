@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -18,3 +18,4 @@
 from GridCalEngine.Core.Devices.Substation.bus import Bus, BusMode
 from GridCalEngine.Core.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.Core.Devices.Substation.substation import Substation
+from GridCalEngine.Core.Devices.Substation.busbar import BusBar

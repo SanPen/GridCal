@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -19,7 +19,7 @@ from PySide6 import QtWidgets
 
 from typing import List, Union
 from GridCal.Gui.BusViewer.gui import Ui_BusViewerWindow, QMainWindow
-from GridCal.Gui.GridEditorWidget import BusBranchEditorWidget, generate_bus_branch_diagram
+from GridCal.Gui.BusBranchEditorWidget import BusBranchEditorWidget, generate_bus_branch_diagram
 import GridCalEngine.Core.Devices as dev
 from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
@@ -136,13 +136,13 @@ class BusViewerWidget(QMainWindow):
         if self.grid_editor is not None:
             self.grid_editor.shrink_node_distances()
 
-    def center_nodes(self, margin_factor: float = 0.1, buses: Union[None, List[Bus]] = None):
+    def center_nodes(self, margin_factor: float = 0.1, elements: Union[None, List[Bus]] = None):
         """
         Center the nodes in the screen
         """
         if self.grid_editor is not None:
             self.grid_editor.center_nodes(margin_factor=margin_factor,
-                                          buses=buses)
+                                          elements=elements)
 
     def colour_results(self, **kwargs):
         """
@@ -201,6 +201,7 @@ class BusViewerWidget(QMainWindow):
         bus_pool = [(self.root_bus, 0)]  # store the bus objects and their level from the root
 
         buses = set()
+        fluid_nodes = set()
         selected_branches = set()
 
         while len(bus_pool) > 0:
@@ -236,6 +237,7 @@ class BusViewerWidget(QMainWindow):
         hvdc_lines = list()
         vsc_converters = list()
         upfc_devices = list()
+        fluid_paths = list()
 
         for obj in selected_branches:
 
@@ -278,6 +280,8 @@ class BusViewerWidget(QMainWindow):
                                               hvdc_lines=hvdc_lines,
                                               vsc_devices=vsc_converters,
                                               upfc_devices=upfc_devices,
+                                              fluid_nodes=fluid_nodes,
+                                              fluid_paths=fluid_paths,
                                               explode_factor=1.0,
                                               prog_func=None,
                                               text_func=print,

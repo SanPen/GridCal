@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -68,6 +68,18 @@ class PowerFlowTimeSeriesResults(ResultsTemplate):
                                      ResultTypes.BranchResults: [
                                          ResultTypes.BranchActivePowerFrom,
                                          ResultTypes.BranchReactivePowerFrom,
+                                         ResultTypes.BranchActivePowerTo,
+                                         ResultTypes.BranchReactivePowerTo,
+
+                                         ResultTypes.BranchActiveCurrentFrom,
+                                         ResultTypes.BranchReactiveCurrentFrom,
+                                         ResultTypes.BranchActiveCurrentTo,
+                                         ResultTypes.BranchReactiveCurrentTo,
+
+                                         ResultTypes.BranchTapModule,
+                                         ResultTypes.BranchTapAngle,
+                                         ResultTypes.BranchBeq,
+
                                          ResultTypes.BranchLoading,
                                          ResultTypes.BranchActiveLosses,
                                          ResultTypes.BranchReactiveLosses,
@@ -113,11 +125,15 @@ class PowerFlowTimeSeriesResults(ResultsTemplate):
         nt = len(time_array)
 
         self.voltage = np.zeros((nt, n), dtype=complex)
-
         self.S = np.zeros((nt, n), dtype=complex)
 
         self.Sf = np.zeros((nt, m), dtype=complex)
         self.St = np.zeros((nt, m), dtype=complex)
+        self.If: CxMat = np.zeros((nt, m), dtype=complex)
+        self.It: CxMat = np.zeros((nt, m), dtype=complex)
+        self.tap_module: Mat = np.zeros((nt, m), dtype=float)
+        self.tap_angle: Mat = np.zeros((nt, m), dtype=float)
+        self.Beq: Mat = np.zeros((nt, m), dtype=float)
         self.Vbranch = np.zeros((nt, m), dtype=complex)
         self.loading = np.zeros((nt, m), dtype=complex)
         self.losses = np.zeros((nt, m), dtype=complex)
@@ -148,9 +164,11 @@ class PowerFlowTimeSeriesResults(ResultsTemplate):
 
         self.register(name='Sf', tpe=CxMat)
         self.register(name='St', tpe=CxMat)
-        # self.register(name='tap_module', tpe=Vec)
-        # self.register(name='tap_angle', tpe=Vec)
-        # self.register(name='Beq', tpe=Vec)
+        self.register(name='If', tpe=CxMat)
+        self.register(name='It', tpe=CxMat)
+        self.register(name='tap_module', tpe=Mat)
+        self.register(name='tap_angle', tpe=Mat)
+        self.register(name='Beq', tpe=Mat)
         self.register(name='Vbranch', tpe=CxMat)
         self.register(name='loading', tpe=CxMat)
         self.register(name='losses', tpe=CxMat)
@@ -379,6 +397,60 @@ class PowerFlowTimeSeriesResults(ResultsTemplate):
             data = self.Sf.imag
             y_label = '(MVAr)'
             title = 'Branch power '
+
+        elif result_type == ResultTypes.BranchActivePowerTo:
+            labels = self.branch_names
+            data = self.St.real
+            y_label = '(MW)'
+            title = 'Branch power '
+
+        elif result_type == ResultTypes.BranchReactivePowerTo:
+            labels = self.branch_names
+            data = self.St.imag
+            y_label = '(MVAr)'
+            title = 'Branch power '
+
+        elif result_type == ResultTypes.BranchActiveCurrentFrom:
+            labels = self.branch_names
+            data = self.If.real
+            y_label = '(p.u.)'
+            title = 'Branch power '
+
+        elif result_type == ResultTypes.BranchReactiveCurrentFrom:
+            labels = self.branch_names
+            data = self.If.imag
+            y_label = '(p.u.)'
+            title = 'Branch power '
+
+        elif result_type == ResultTypes.BranchActiveCurrentTo:
+            labels = self.branch_names
+            data = self.It.real
+            y_label = '(p.u.)'
+            title = 'Branch power '
+
+        elif result_type == ResultTypes.BranchReactiveCurrentTo:
+            labels = self.branch_names
+            data = self.It.imag
+            y_label = '(p.u.)'
+            title = 'Branch power '
+
+        elif result_type == ResultTypes.BranchTapModule:
+            labels = self.branch_names
+            data = self.tap_module
+            y_label = '(p.u.)'
+            title = 'Branch tap modules '
+
+        elif result_type == ResultTypes.BranchTapAngle:
+            labels = self.branch_names
+            data = self.tap_angle
+            y_label = '(rad)'
+            title = 'Branch power '
+
+        elif result_type == ResultTypes.BranchBeq:
+            labels = self.branch_names
+            data = self.Beq
+            y_label = '(p.u.)'
+            title = 'Branch equivalent susceptance '
 
         elif result_type == ResultTypes.BranchLoading:
             labels = self.branch_names

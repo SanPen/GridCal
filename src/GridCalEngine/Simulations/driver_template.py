@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -15,6 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import time
+from typing import Union
 import numpy as np
 from typing import List, Dict, Union
 from GridCalEngine.basic_structures import IntVec, Vec
@@ -33,7 +34,7 @@ class DummySignal:
     def __init__(self, tpe: type = str) -> None:
         self.tpe = tpe
 
-    def emit(self, val: str = '') -> None:
+    def emit(self, val: Union[str, float] = '') -> None:
         pass
 
     def connect(self, val):
@@ -112,14 +113,50 @@ class DriverTemplate:
         """
         pass
 
+    def report_progress(self, val: float):
+        """
+        Report progress
+        :param val: float value
+        """
+        self.progress_signal.emit(val)
+
+    def report_progress2(self, current: int, total: int):
+        """
+        Report progress
+        :param current: current value (zero based)
+        :param total: total value
+        """
+        val = ((current + 1) / total) * 100
+        self.progress_signal.emit(val)
+
+    def report_done(self, txt="done!", val=0.0):
+        """
+        Report done
+        """
+        self.report_progress(val)
+        self.report_text(txt)
+        self.done_signal.emit()
+
+    def report_text(self, val: str):
+        """
+        Report text
+        :param val: text value
+        """
+        self.progress_text.emit(val)
+
     def cancel(self):
         """
         Cancel the simulation
         """
         self.__cancel__ = True
-        self.progress_signal.emit(0)
-        self.progress_text.emit('Cancelled!')
-        self.done_signal.emit()
+        self.report_done("Cancelled!")
+
+    def is_cancel(self) -> bool:
+        """
+        Check if cancel was activated
+        :return:
+        """
+        return self.__cancel__
 
 
 class TimeSeriesDriverTemplate(DriverTemplate):
@@ -175,8 +212,10 @@ class TimeSeriesDriverTemplate(DriverTemplate):
         """
         Get time steps list of strings
         """
-
-        return [self.grid.time_profile[i].strftime('%d-%m-%Y %H:%M') for i in self.time_indices]
+        if self.time_indices is None:
+            return []
+        else:
+            return [self.grid.time_profile[i].strftime('%d-%m-%Y %H:%M') for i in self.time_indices]
 
     def get_topologic_groups(self) -> Dict[int, List[int]]:
         """

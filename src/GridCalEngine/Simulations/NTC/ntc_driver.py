@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -61,9 +61,9 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
         @return: OptimalPowerFlowResults object
         """
 
-        self.progress_text.emit('Compiling...')
+        self.report_text('Compiling...')
 
-        self.progress_text.emit('Formulating NTC OPF...')
+        self.report_text('Formulating NTC OPF...')
 
         opf_vars = run_linear_ntc_opf_ts(
             grid=self.grid,
@@ -81,8 +81,8 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
             monitor_only_sensitive_branches=self.options.monitor_only_sensitive_branches,
             ntc_load_rule=self.options.ntc_load_rule,
             logger=self.logger,
-            progress_text=self.progress_text.emit,
-            progress_func=self.progress_signal.emit,
+            progress_text=self.report_text,
+            progress_func=self.report_progress,
             export_model_fname=None)
 
         inter_area_branches = self.grid.get_inter_areas_branches(a1=self.options.area_from_bus_idx,
@@ -153,7 +153,7 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
         self.results.hvdc_Pf = opf_vars.hvdc_vars.flows[0, :]
         self.results.hvdc_loading = opf_vars.hvdc_vars.loading[0, :]
 
-        self.progress_text.emit('Creating reports...')
+        self.report_text('Creating reports...')
 
         # TODO Fix this
         # self.results.create_all_reports(
@@ -161,7 +161,7 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
         #     reverse=self.options.reversed_sort_loading,
         # )
 
-        self.progress_text.emit('Done!')
+        self.report_text('Done!')
 
         return self.results
 

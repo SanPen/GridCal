@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -24,6 +24,7 @@ from enum import EnumMeta
 from collections import defaultdict
 
 from GridCalEngine.Core.Devices import BranchTemplate, Bus, ContingencyGroup
+from GridCalEngine.Core.Devices.editable_device import GCProp, EditableDevice
 from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Simulations.result_types import ResultTypes
 from GridCalEngine.basic_structures import IntVec
@@ -656,16 +657,20 @@ class ObjectsModel(QtCore.QAbstractTableModel):
     """
     Class to populate a Qt table view with the properties of objects
     """
-    def __init__(self, objects, editable_headers, parent=None, editable=False,
-                 non_editable_attributes=list(), transposed=False, check_unique=list(),
-                 dictionary_of_lists={}):
+    def __init__(self,
+                 objects: List[EditableDevice],
+                 editable_headers: Dict[str, GCProp],
+                 parent=None,
+                 editable=False,
+                 transposed=False,
+                 check_unique=list(),
+                 dictionary_of_lists: Dict[str, List[EditableDevice]] = {}):
         """
 
         :param objects: list of objects associated to the editor
         :param editable_headers: Dictionary with the properties and the units and type {attribute: ('unit', type)}
         :param parent: Parent object: the QTableView object
         :param editable: Is the table editable?
-        :param non_editable_attributes: List of attributes that are not enabled for editing
         :param transposed: Display the table transposed?
         :param dictionary_of_lists: dictionary of lists for the Delegates
         """
@@ -685,7 +690,7 @@ class ObjectsModel(QtCore.QAbstractTableModel):
 
         self.editable = editable
 
-        self.non_editable_attributes = non_editable_attributes
+        self.non_editable_attributes = [attr for attr in self.attributes if not editable_headers[attr].editable]
 
         self.check_unique = check_unique
 
@@ -1632,7 +1637,7 @@ class ProfilesModel(QtCore.QAbstractTableModel):
 
         if n > 0:
             profile_property = self.elements[0].properties_with_profile[self.magnitude]
-            formatter = self.elements[0].editable_headers[self.magnitude].tpe
+            formatter = self.elements[0].registered_properties[self.magnitude].tpe
 
             # copy to clipboard
             cb = QtWidgets.QApplication.clipboard()
@@ -1714,8 +1719,10 @@ class ProfilesModel(QtCore.QAbstractTableModel):
         data = dict()
 
         for col in columns:
-            profile_property = self.elements[col].properties_with_profile[self.magnitude]
-            data[col] = getattr(self.elements[col], profile_property).copy()
+            # profile_property = self.elements[col].properties_with_profile[self.magnitude]
+            # data[col] = getattr(self.elements[col], profile_property).copy()
+            data[col] = self.elements[col].get_profile(self.magnitude)
+            # TODO: check if devices do not have a profile
 
         self.history.add_state(action_name, data)
 
@@ -1762,10 +1769,10 @@ class DiagramsModel(QtCore.QAbstractListModel):
     """
     Model for the diagrams
     # from GridCal.Gui.BusViewer.bus_viewer_dialogue import BusViewerGUI
-    # from GridCal.Gui.GridEditorWidget import GridEditorWidget
+    # from GridCal.Gui.BusBranchEditorWidget import BusBranchEditorWidget
     # from GridCal.Gui.MapWidget.grid_map_widget import GridMapWidget
     """
-    def __init__(self, list_of_diagrams: List[Union["GridEditorWidget", "GridMapWidget", "BusViewerGUI"]]):
+    def __init__(self, list_of_diagrams: List[Union["BusBranchEditorWidget", "GridMapWidget", "BusViewerGUI"]]):
         """
         Enumeration model
         :param list_of_diagrams: list of enumeration values to show
@@ -1813,7 +1820,7 @@ class DiagramsModel(QtCore.QAbstractListModel):
                 return diagram.name
             elif role == QtCore.Qt.ItemDataRole.DecorationRole:
 
-                if isinstance(diagram, GridCal.Gui.GridEditorWidget.BusBranchEditorWidget):
+                if isinstance(diagram, GridCal.Gui.BusBranchEditorWidget.BusBranchEditorWidget):
                     return self.bus_branch_editor_icon
                 elif isinstance(diagram, GridCal.Gui.MapWidget.grid_map_widget.GridMapWidget):
                     return self.map_editor_icon

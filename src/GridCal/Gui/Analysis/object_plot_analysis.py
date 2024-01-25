@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -24,7 +24,7 @@ from PySide6 import QtGui
 
 from GridCalEngine.basic_structures import LogSeverity
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-import GridCalEngine.basic_structures as bs
+from GridCalEngine.basic_structures import Logger
 from GridCalEngine.enumerations import DeviceType
 
 
@@ -42,7 +42,15 @@ class GridErrorLog:
 
         self.header = ['Object type', 'Name', 'Index', 'Severity', 'Property', 'Lower', 'Value', 'Upper']
 
-    def add(self, object_type, element_name, element_index, severity: LogSeverity, propty, message, lower='', val='',
+    def add(self,
+            object_type,
+            element_name,
+            element_index,
+            severity: LogSeverity,
+            propty,
+            message,
+            lower='',
+            val='',
             upper=''):
         """
 
@@ -140,7 +148,7 @@ class FixableErrorOutOfRange:
         self.lower_limit = lower_limit
         self.upper_limit = upper_limit
 
-    def fix(self, logger: bs.Logger = bs.Logger(), fix_ts=False):
+    def fix(self, logger: Logger = Logger(), fix_ts=False):
 
         if self.value < self.lower_limit:
             setattr(self.grid_element, self.property_name, self.lower_limit)
@@ -171,13 +179,26 @@ class FixableErrorRangeFlip:
     """
 
     def __init__(self, grid_element, property_name_low, property_name_high, value_low, value_high):
+        """
+
+        :param grid_element:
+        :param property_name_low:
+        :param property_name_high:
+        :param value_low:
+        :param value_high:
+        """
         self.grid_element = grid_element
         self.property_name_low = property_name_low
         self.property_name_high = property_name_high
         self.value_low = value_low
         self.value_high = value_high
 
-    def fix(self, logger: bs.Logger = bs.Logger(), fix_ts=False):
+    def fix(self, logger: Logger = Logger(), fix_ts=False):
+        """
+
+        :param logger:
+        :param fix_ts:
+        """
         if self.value_high < self.value_low:
             # flip the values
             setattr(self.grid_element, self.property_name_low, self.value_high)
@@ -190,11 +211,23 @@ class FixableErrorNegative:
     """
 
     def __init__(self, grid_element, property_name, value):
+        """
+
+        :param grid_element:
+        :param property_name:
+        :param value:
+        """
         self.grid_element = grid_element
         self.property_name = property_name
         self.value = value
 
-    def fix(self, logger: bs.Logger = bs.Logger(), fix_ts=False):
+    def fix(self, logger: Logger = Logger(), fix_ts=False):
+        """
+
+        :param logger:
+        :param fix_ts:
+        :return:
+        """
         # set the same value but positive
         if self.value < 0:
             setattr(self.grid_element, self.property_name, -self.value)
@@ -206,10 +239,21 @@ class FixableTransformerVtaps:
     """
 
     def __init__(self, grid_element, maximum_difference):
+        """
+
+        :param grid_element:
+        :param maximum_difference:
+        """
         self.grid_element = grid_element
         self.maximum_difference = maximum_difference
 
-    def fix(self, logger: bs.Logger = bs.Logger(), fix_ts=False):
+    def fix(self, logger: Logger = Logger(), fix_ts=False):
+        """
+
+        :param logger:
+        :param fix_ts:
+        :return:
+        """
         # set the same value but positive
         self.grid_element.fix_inconsistencies(logger,
                                               maximum_difference=self.maximum_difference)
@@ -627,7 +671,98 @@ def grid_analysis(circuit: MultiCircuit,
 
         elif object_type == DeviceType.GeneratorDevice:
 
-            elements = circuit.get_generators()
+            for k, obj in enumerate(circuit.get_generators()):
+                Pg += obj.P * obj.active
+
+                if circuit.time_profile is not None:
+                    Pg_prof += obj.P_prof * obj.active_prof
+
+                    if obj.Vset < v_low:
+                        logger.add(object_type=object_type.value,
+                                   element_name=obj,
+                                   element_index=k,
+                                   severity=LogSeverity.Warning,
+                                   propty='Vset',
+                                   message='The set point looks too low',
+                                   lower=str(v_low),
+                                   val=obj.Vset)
+                        fixable_errors.append(FixableErrorOutOfRange(grid_element=obj,
+                                                                     property_name='Vset',
+                                                                     value=obj.Vset,
+                                                                     lower_limit=v_low,
+                                                                     upper_limit=v_high))
+
+                    elif obj.Vset > v_high:
+                        logger.add(object_type=object_type.value,
+                                   element_name=obj,
+                                   element_index=k,
+                                   severity=LogSeverity.Warning,
+                                   propty='Vset',
+                                   message='The set point looks too high',
+                                   val=obj.Vset,
+                                   upper=str(v_high))
+                        fixable_errors.append(FixableErrorOutOfRange(grid_element=obj,
+                                                                     property_name='Vset',
+                                                                     value=obj.Vset,
+                                                                     lower_limit=v_low,
+                                                                     upper_limit=v_high))
+
+                    if obj.Qmax < obj.Qmin:
+                        logger.add(object_type=object_type.value,
+                                   element_name=obj,
+                                   element_index=k,
+                                   severity=LogSeverity.Error,
+                                   propty='Qmax < Qmin',
+                                   message='Wrong Q limit bounds',
+                                   upper=obj.Qmax,
+                                   lower=obj.Qmin)
+                        fixable_errors.append(FixableErrorRangeFlip(grid_element=obj,
+                                                                    property_name_low='Qmin',
+                                                                    property_name_high='Qmax',
+                                                                    value_low=obj.Qmin,
+                                                                    value_high=obj.Qmax))
+
+                    if obj.Qmax == obj.Qmin and obj.is_controlled:
+
+                        if obj.Qmax == 0.0:
+                            propty = 'Qmax == Qmin == 0'
+                            message = 'Q limits equal to zero'
+
+                        else:
+                            propty = 'Qmax == Qmin'
+                            message = 'Inflexible Q limit bounds'
+
+                        logger.add(object_type=object_type.value,
+                                   element_name=obj,
+                                   element_index=k,
+                                   severity=LogSeverity.Error,
+                                   propty=propty,
+                                   message=message,
+                                   upper=obj.Qmax,
+                                   lower=obj.Qmin)
+                        fixable_errors.append(FixableErrorRangeFlip(grid_element=obj,
+                                                                    property_name_low='Qmin',
+                                                                    property_name_high='Qmax',
+                                                                    value_low=obj.Qmin,
+                                                                    value_high=obj.Qmax))
+
+                    if obj.Pmax < obj.Pmin:
+                        logger.add(object_type=object_type.value,
+                                   element_name=obj,
+                                   element_index=k,
+                                   severity=LogSeverity.Error,
+                                   propty='Pmax < Pmin',
+                                   message='Wrong P limit bounds',
+                                   upper=obj.Pmax,
+                                   lower=obj.Pmin)
+                        fixable_errors.append(FixableErrorRangeFlip(grid_element=obj,
+                                                                    property_name_low='Pmin',
+                                                                    property_name_high='Pmax',
+                                                                    value_low=obj.Pmin,
+                                                                    value_high=obj.Pmax))
+
+        elif object_type == DeviceType.BatteryDevice:
+            elements = circuit.get_batteries()
 
             for k, obj in enumerate(elements):
                 Pg += obj.P * obj.active
@@ -680,192 +815,123 @@ def grid_analysis(circuit: MultiCircuit,
                                                                 value_low=obj.Qmin,
                                                                 value_high=obj.Qmax))
 
-                    if obj.Pmax < obj.Pmin:
-                        logger.add(object_type=object_type.value,
-                                   element_name=obj,
-                                   element_index=k,
-                                   severity=LogSeverity.Error,
-                                   propty='Pmax < Pmin',
-                                   message='Wrong P limit bounds',
-                                   upper=obj.Pmax,
-                                   lower=obj.Pmin)
-                        fixable_errors.append(FixableErrorRangeFlip(grid_element=obj,
-                                                                    property_name_low='Pmin',
-                                                                    property_name_high='Pmax',
-                                                                    value_low=obj.Pmin,
-                                                                    value_high=obj.Pmax))
+                if obj.Pmax < obj.Pmin:
+                    logger.add(object_type=object_type.value,
+                               element_name=obj,
+                               element_index=k,
+                               severity=LogSeverity.Error,
+                               propty='Pmax < Pmin',
+                               message='Wrong P limit bounds',
+                               upper=obj.Pmax,
+                               lower=obj.Pmin)
+                    fixable_errors.append(FixableErrorRangeFlip(grid_element=obj,
+                                                                property_name_low='Pmin',
+                                                                property_name_high='Pmax',
+                                                                value_low=obj.Pmin,
+                                                                value_high=obj.Pmax))
 
-                    elif object_type == DeviceType.BatteryDevice:
-                        elements = circuit.get_batteries()
+                if obj.max_soc < obj.min_soc:
+                    logger.add(object_type=object_type.value,
+                               element_name=obj,
+                               element_index=k,
+                               severity=LogSeverity.Error,
+                               propty='max_soc < min_soc',
+                               message='Wrong SoC limit bounds',
+                               upper=obj.max_soc,
+                               lower=obj.min_soc)
+                    fixable_errors.append(FixableErrorRangeFlip(grid_element=obj,
+                                                                property_name_low='min_soc',
+                                                                property_name_high='max_soc',
+                                                                value_low=obj.min_soc,
+                                                                value_high=obj.max_soc))
 
-                    for k, obj in enumerate(elements):
-                        Pg += obj.P * obj.active
+                if obj.Enom <= 0:
+                    logger.add(object_type=object_type.value,
+                               element_name=obj,
+                               element_index=k,
+                               severity=LogSeverity.Error,
+                               propty='Enom',
+                               message='Invalid nominal energy',
+                               lower="0",
+                               val=obj.Enom)
 
-                    if circuit.time_profile is not None:
-                        Pg_prof += obj.P_prof * obj.active_prof
+        elif object_type == DeviceType.StaticGeneratorDevice:
+            elements = circuit.get_static_generators()
 
-                    if obj.Vset < v_low:
-                        logger.add(object_type=object_type.value,
-                                   element_name=obj,
-                                   element_index=k,
-                                   severity=LogSeverity.Warning,
-                                   propty='Vset',
-                                   message='The set point looks too low',
-                                   lower=str(v_low),
-                                   val=obj.Vset)
-                        fixable_errors.append(FixableErrorOutOfRange(grid_element=obj,
-                                                                     property_name='Vset',
-                                                                     value=obj.Vset,
-                                                                     lower_limit=v_low,
-                                                                     upper_limit=v_high))
+            for k, obj in enumerate(elements):
+                Pg += obj.P * obj.active
+                Qg += obj.Q * obj.active
 
-                    elif obj.Vset > v_high:
-                        logger.add(object_type=object_type.value,
-                                   element_name=obj,
-                                   element_index=k,
-                                   severity=LogSeverity.Warning,
-                                   propty='Vset',
-                                   message='The set point looks too high',
-                                   val=obj.Vset,
-                                   upper=str(v_high))
-                        fixable_errors.append(FixableErrorOutOfRange(grid_element=obj,
-                                                                     property_name='Vset',
-                                                                     value=obj.Vset,
-                                                                     lower_limit=v_low,
-                                                                     upper_limit=v_high))
+                if circuit.time_profile is not None:
+                    Pg_prof += obj.P_prof * obj.active_prof
+                    Qg_prof += obj.Q_prof * obj.active_prof
 
-                    if obj.Qmax < obj.Qmin:
-                        logger.add(object_type=object_type.value,
-                                   element_name=obj,
-                                   element_index=k,
-                                   severity=LogSeverity.Error,
-                                   propty='Qmax < Qmin',
-                                   message='Wrong Q limit bounds',
-                                   upper=obj.Qmax,
-                                   lower=obj.Qmin)
-                        fixable_errors.append(FixableErrorRangeFlip(grid_element=obj,
-                                                                    property_name_low='Qmin',
-                                                                    property_name_high='Qmax',
-                                                                    value_low=obj.Qmin,
-                                                                    value_high=obj.Qmax))
+                elif object_type == DeviceType.ShuntDevice:
+                    elements = circuit.get_shunts()
 
-                    if obj.Pmax < obj.Pmin:
-                        logger.add(object_type=object_type.value,
-                                   element_name=obj,
-                                   element_index=k,
-                                   severity=LogSeverity.Error,
-                                   propty='Pmax < Pmin',
-                                   message='Wrong P limit bounds',
-                                   upper=obj.Pmax,
-                                   lower=obj.Pmin)
-                        fixable_errors.append(FixableErrorRangeFlip(grid_element=obj,
-                                                                    property_name_low='Pmin',
-                                                                    property_name_high='Pmax',
-                                                                    value_low=obj.Pmin,
-                                                                    value_high=obj.Pmax))
+                elif object_type == DeviceType.LoadDevice:
+                    elements = circuit.get_loads()
 
-                    if obj.max_soc < obj.min_soc:
-                        logger.add(object_type=object_type.value,
-                                   element_name=obj,
-                                   element_index=k,
-                                   severity=LogSeverity.Error,
-                                   propty='max_soc < min_soc',
-                                   message='Wrong SoC limit bounds',
-                                   upper=obj.max_soc,
-                                   lower=obj.min_soc)
-                        fixable_errors.append(FixableErrorRangeFlip(grid_element=obj,
-                                                                    property_name_low='min_soc',
-                                                                    property_name_high='max_soc',
-                                                                    value_low=obj.min_soc,
-                                                                    value_high=obj.max_soc))
+                for obj in elements:
+                    Pl += obj.P * obj.active
+                    Ql += obj.Q * obj.active
 
-                    if obj.Enom <= 0:
-                        logger.add(object_type=object_type.value,
-                                   element_name=obj,
-                                   element_index=k,
-                                   severity=LogSeverity.Error,
-                                   propty='Enom',
-                                   message='Invalid nominal energy',
-                                   lower="0",
-                                   val=obj.Enom)
+                if circuit.time_profile is not None:
+                    Pl_prof += obj.P_prof * obj.active_prof
+                    Ql_prof += obj.Q_prof * obj.active_prof
 
-                    elif object_type == DeviceType.StaticGeneratorDevice:
-                        elements = circuit.get_static_generators()
+                # compare loads
+                p_ratio = abs(Pl - Pg) / (Pl + 1e-20)
 
-                    for k, obj in enumerate(elements):
-                        Pg += obj.P * obj.active
-                        Qg += obj.Q * obj.active
+                if p_ratio > imbalance_threshold:
+                    msg = ">> " + str(imbalance_threshold) + "%"
+                    logger.add(object_type='Grid snapshot',
+                               element_name=circuit,
+                               element_index=-1,
+                               severity=LogSeverity.Error,
+                               propty='Active power balance ' + msg,
+                               message='There is too much active power imbalance',
+                               val="{:.1f}".format(p_ratio * 100))
 
-                    if circuit.time_profile is not None:
-                        Pg_prof += obj.P_prof * obj.active_prof
-                        Qg_prof += obj.Q_prof * obj.active_prof
+                # compare reactive power limits
+                if not (Qmin <= -Ql <= Qmax):
+                    logger.add(object_type='Grid snapshot',
+                               element_name=circuit,
+                               element_index=-1,
+                               severity=LogSeverity.Error,
+                               propty="Reactive power out of bounds",
+                               message='There is too much reactive power imbalance',
+                               lower=str(Qmin),
+                               val=str(Ql),
+                               upper=str(Qmax))
 
-                    elif object_type == DeviceType.ShuntDevice:
-                        elements = circuit.get_shunts()
+                if circuit.time_profile is not None:
+                    nt = len(circuit.time_profile)
 
-                    elif object_type == DeviceType.LoadDevice:
-                        elements = circuit.get_loads()
-
-                    for obj in elements:
-                        Pl += obj.P * obj.active
-                        Ql += obj.Q * obj.active
-
-                    if circuit.time_profile is not None:
-                        Pl_prof += obj.P_prof * obj.active_prof
-                        Ql_prof += obj.Q_prof * obj.active_prof
-
+                for t in range(nt):
                     # compare loads
-                    p_ratio = abs(Pl - Pg) / (Pl + 1e-20)
-
+                    p_ratio = abs(Pl_prof[t] - Pg_prof[t]) / (Pl_prof[t] + 1e-20)
                     if p_ratio > imbalance_threshold:
                         msg = ">> " + str(imbalance_threshold) + "%"
-                        logger.add(object_type='Grid snapshot',
+                        logger.add(object_type='Active power balance',
                                    element_name=circuit,
-                                   element_index=-1,
+                                   element_index=t,
                                    severity=LogSeverity.Error,
-                                   propty='Active power balance ' + msg,
+                                   propty=msg,
                                    message='There is too much active power imbalance',
                                    val="{:.1f}".format(p_ratio * 100))
 
                     # compare reactive power limits
-                    if not (Qmin <= -Ql <= Qmax):
-                        logger.add(object_type='Grid snapshot',
+                    if not (Qmin <= -Ql_prof[t] <= Qmax):
+                        logger.add(object_type='Reactive power power balance',
                                    element_name=circuit,
-                                   element_index=-1,
+                                   element_index=t,
                                    severity=LogSeverity.Error,
                                    propty="Reactive power out of bounds",
                                    message='There is too much reactive power imbalance',
                                    lower=str(Qmin),
-                                   val=str(Ql),
+                                   val=Ql_prof[t],
                                    upper=str(Qmax))
-
-                    if circuit.time_profile is not None:
-                        nt = len(circuit.time_profile)
-
-                    for t in range(nt):
-                        # compare loads
-                        p_ratio = abs(Pl_prof[t] - Pg_prof[t]) / (Pl_prof[t] + 1e-20)
-                        if p_ratio > imbalance_threshold:
-                            msg = ">> " + str(imbalance_threshold) + "%"
-                            logger.add(object_type='Active power balance',
-                                       element_name=circuit,
-                                       element_index=t,
-                                       severity=LogSeverity.Error,
-                                       propty=msg,
-                                       message='There is too much active power imbalance',
-                                       val="{:.1f}".format(p_ratio * 100))
-
-                        # compare reactive power limits
-                        if not (Qmin <= -Ql_prof[t] <= Qmax):
-                            logger.add(object_type='Reactive power power balance',
-                                       element_name=circuit,
-                                       element_index=t,
-                                       severity=LogSeverity.Error,
-                                       propty="Reactive power out of bounds",
-                                       message='There is too much reactive power imbalance',
-                                       lower=str(Qmin),
-                                       val=Ql_prof[t],
-                                       upper=str(Qmax))
 
     return fixable_errors
 
@@ -939,8 +1005,8 @@ def object_histogram_analysis(circuit: MultiCircuit, object_type: DeviceType, fi
 
     n = len(objects)
     vals = np.zeros((n, p))
-    extended_prop = [None] * p
-    log_scale_extended = [None] * p
+    extended_prop = np.zeros(p, dtype=object)
+    log_scale_extended = np.zeros(p, dtype=object)
     for i, elem in enumerate(objects):
         a = 0
         for j in range(len(properties)):
@@ -962,6 +1028,7 @@ def object_histogram_analysis(circuit: MultiCircuit, object_type: DeviceType, fi
     # create figure if needed
     if fig is None:
         fig = plt.figure(figsize=(12, 6))
+
     fig.suptitle('Analysis of the ' + str(object_type), fontsize=16)
     fig.set_facecolor('white')
 
@@ -977,27 +1044,32 @@ def object_histogram_analysis(circuit: MultiCircuit, object_type: DeviceType, fi
             r = (mu - 6 * sigma, mu + 6 * sigma)
 
             # plot
-            axs[j] = fig.add_subplot(k, k + 1, j + 1)
-            axs[j].set_facecolor('white')
-            axs[j].hist(x, bins=100, range=r,
-                        cumulative=False, bottom=None, histtype='bar',
-                        align='mid', orientation='vertical')
-            axs[j].plot(x, np.zeros(n), 'o')
-            axs[j].set_title(extended_prop[j])
+            ax = fig.add_subplot(k, k + 1, j + 1)
+            ax.set_facecolor('white')
+            ax.hist(x, bins=100, range=r,
+                    cumulative=False, bottom=None, histtype='bar',
+                    align='mid', orientation='vertical')
+            ax.plot(x, np.zeros(n), 'o')
+            ax.set_title(extended_prop[j])
 
             if log_scale_extended[j]:
-                axs[j].set_xscale('log')
+                ax.set_xscale('log')
 
-        if object_type == DeviceType.LineDevice.value:
+            axs[j] = ax
+
+        if object_type in [DeviceType.LineDevice.value,
+                           DeviceType.Transformer2WDevice.value]:
+
             r = vals[:, 0]
             x = vals[:, 1]
 
             # plot
-            axs[j] = fig.add_subplot(k, k + 1, p + 2)
-            axs[j].set_facecolor('white')
-            axs[j].scatter(r, x)
-            axs[j].set_title("R-X")
-            axs[j].set_xlabel("R")
-            axs[j].set_ylabel("X")
+            ax = fig.add_subplot(k, k + 1, p + 2)
+            ax.set_facecolor('white')
+            ax.scatter(r, x)
+            ax.set_title("R-X")
+            ax.set_xlabel("R")
+            ax.set_ylabel("X")
+            axs[p] = ax
 
     fig.tight_layout(rect=[0, 0.03, 1, 0.95])

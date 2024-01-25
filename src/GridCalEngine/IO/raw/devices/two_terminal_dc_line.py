@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -374,38 +374,37 @@ class RawTwoTerminalDCLine(RawObject):
         :param logger:
         """
 
-        if version >= 35:
+        if 34 <= version >= 35:
             '''
             'NAME',MDC,RDC,SETVL,VSCHD,VCMOD,RCOMP,DELTI,METER,DCVMIN,CCCITMX,CCCACC
             IPR,NBR,ANMXR,ANMNR,RCR,XCR,EBASR,TRR,TAPR,TMXR,TMNR,STPR,ICR,IFR,ITR,IDR,XCAPR
             IPI,NBI,ANMXI,ANMNI,RCI,XCI,EBASI,TRI,TAPI,TMXI,TMNI,STPI,ICI,IFI,ITI,IDI,XCAPI
             '''
 
-            self.NAME, self.MDC, self.RDC, self.SETVL, self.VSCHD, self.VCMOD, self.RCOMP, self.DELTI, self.METER, \
-            self.DCVMIN, self.CCCITMX, self.CCCACC = data[0]
+            (self.NAME, self.MDC, self.RDC, self.SETVL, self.VSCHD, self.VCMOD, self.RCOMP, self.DELTI, self.METER,
+             self.DCVMIN, self.CCCITMX, self.CCCACC) = data[0]
 
-            self.IPR, self.NBR, self.ANMXR, self.ANMNR, self.RCR, self.XCR, self.EBASR, self.TRR, self.TAPR, \
-            self.TMXR, self.TMNR, self.STPR, self.ICR, self.NDR, self.IFR, self.ITR, self.IDR, self.XCAPR = data[1]
+            (self.IPR, self.NBR, self.ANMXR, self.ANMNR, self.RCR, self.XCR, self.EBASR, self.TRR, self.TAPR,
+             self.TMXR, self.TMNR, self.STPR, self.ICR, self.NDR, self.IFR, self.ITR, self.IDR, self.XCAPR) = data[1]
 
-            self.IPI, self.NBI, self.ANMXI, self.ANMNI, self.RCI, self.XCI, self.EBASI, self.TRI, self.TAPI, \
-            self.TMXI, self.TMNI, self.STPI, self.ICI, self.NDI, self.IFI, self.ITI, self.IDI, self.XCAPI = data[2]
+            (self.IPI, self.NBI, self.ANMXI, self.ANMNI, self.RCI, self.XCI, self.EBASI, self.TRI, self.TAPI,
+             self.TMXI, self.TMNI, self.STPI, self.ICI, self.NDI, self.IFI, self.ITI, self.IDI, self.XCAPI) = data[2]
 
-
-        if 30 <= version <= 34:
+        elif 30 <= version <= 33:
             '''
             'NAME',MDC,RDC,SETVL,VSCHD,VCMOD,RCOMP,DELTI,METER,DCVMIN,CCCITMX,CCCACC
             IPR,NBR,ANMXR,ANMNR,RCR,XCR,EBASR,TRR,TAPR,TMXR,TMNR,STPR,ICR,IFR,ITR,IDR,XCAPR
             IPI,NBI,ANMXI,ANMNI,RCI,XCI,EBASI,TRI,TAPI,TMXI,TMNI,STPI,ICI,IFI,ITI,IDI,XCAPI
             '''
 
-            self.NAME, self.MDC, self.RDC, self.SETVL, self.VSCHD, self.VCMOD, self.RCOMP, self.DELTI, self.METER, \
-            self.DCVMIN, self.CCCITMX, self.CCCACC = data[0]
+            (self.NAME, self.MDC, self.RDC, self.SETVL, self.VSCHD, self.VCMOD, self.RCOMP, self.DELTI, self.METER,
+             self.DCVMIN, self.CCCITMX, self.CCCACC) = data[0]
 
-            self.IPR, self.NBR, self.ANMXR, self.ANMNR, self.RCR, self.XCR, self.EBASR, self.TRR, self.TAPR, \
-            self.TMXR, self.TMNR, self.STPR, self.ICR, self.IFR, self.ITR, self.IDR, self.XCAPR = data[1]
+            (self.IPR, self.NBR, self.ANMXR, self.ANMNR, self.RCR, self.XCR, self.EBASR, self.TRR, self.TAPR,
+             self.TMXR, self.TMNR, self.STPR, self.ICR, self.IFR, self.ITR, self.IDR, self.XCAPR) = data[1]
 
-            self.IPI, self.NBI, self.ANMXI, self.ANMNI, self.RCI, self.XCI, self.EBASI, self.TRI, self.TAPI, \
-            self.TMXI, self.TMNI, self.STPI, self.ICI, self.IFI, self.ITI, self.IDI, self.XCAPI = data[2]
+            (self.IPI, self.NBI, self.ANMXI, self.ANMNI, self.RCI, self.XCI, self.EBASI, self.TRI, self.TAPI,
+             self.TMXI, self.TMNI, self.STPI, self.ICI, self.IFI, self.ITI, self.IDI, self.XCAPI) = data[2]
 
         elif version == 29:
             '''
@@ -414,14 +413,14 @@ class RawTwoTerminalDCLine(RawObject):
             IPI,NBI,GAMMX,GAMMN,RCI,XCI,EBASI,TRI,TAPI,TMXI,TMNI,STPI,ICI,IFI,ITI,IDI,XCAPI
             '''
 
-            self.I, self.MDC, self.RDC, self.SETVL, self.VSCHD, self.VCMOD, self.RCOMP, self.DELTI, self.METER, \
-            self.DCVMIN, self.CCCITMX, self.CCCACC = data[0]
+            (self.I, self.MDC, self.RDC, self.SETVL, self.VSCHD, self.VCMOD, self.RCOMP, self.DELTI, self.METER,
+             self.DCVMIN, self.CCCITMX, self.CCCACC) = data[0]
 
-            self.IPR, self.NBR, self.ANMXR, self.ANMNR, self.RCR, self.XCR, self.EBASR, self.TRR, self.TAPR, \
-            self.TMXR, self.TMNR, self.STPR, self.ICR, self.IFR, self.ITR, self.IDR, self.XCAPR = data[1]
+            (self.IPR, self.NBR, self.ANMXR, self.ANMNR, self.RCR, self.XCR, self.EBASR, self.TRR, self.TAPR,
+             self.TMXR, self.TMNR, self.STPR, self.ICR, self.IFR, self.ITR, self.IDR, self.XCAPR) = data[1]
 
-            self.IPI, self.NBI, self.ANMXI, self.ANMNI, self.RCI, self.XCI, self.EBASI, self.TRI, self.TAPI, \
-            self.TMXI, self.TMNI, self.STPI, self.ICI, self.IFI, self.ITI, self.IDI, self.XCAPI = data[2]
+            (self.IPI, self.NBI, self.ANMXI, self.ANMNI, self.RCI, self.XCI, self.EBASI, self.TRI, self.TAPI,
+             self.TMXI, self.TMNI, self.STPI, self.ICI, self.IFI, self.ITI, self.IDI, self.XCAPI) = data[2]
 
             self.NAME = str(self.I)
         else:
@@ -437,14 +436,15 @@ class RawTwoTerminalDCLine(RawObject):
             '''
 
             l0 = self.format_raw_line([self.NAME, self.MDC, self.RDC, self.SETVL, self.VSCHD, self.VCMOD, self.RCOMP,
-                                      self.DELTI, self.METER, self.DCVMIN, self.CCCITMX, self.CCCACC])
+                                       self.DELTI, self.METER, self.DCVMIN, self.CCCITMX, self.CCCACC])
 
             l1 = self.format_raw_line([self.IPR, self.NBR, self.ANMXR, self.ANMNR, self.RCR, self.XCR, self.EBASR,
                                        self.TRR, self.TAPR, self.TMXR, self.TMNR, self.STPR, self.ICR, self.NDR,
                                        self.IFR, self.ITR, self.IDR, self.XCAPR])
 
             l2 = self.format_raw_line([self.IPI, self.NBI, self.ANMXI, self.ANMNI, self.RCI, self.XCI, self.EBASI,
-                                       self.TRI, self.TAPI, self.TMXI, self.TMNI, self.STPI, self.ICI, self.NDI, self.IFI,
+                                       self.TRI, self.TAPI, self.TMXI, self.TMNI, self.STPI, self.ICI, self.NDI,
+                                       self.IFI,
                                        self.ITI, self.IDI, self.XCAPI])
 
             return l0 + '\n' + l1 + '\n' + l2

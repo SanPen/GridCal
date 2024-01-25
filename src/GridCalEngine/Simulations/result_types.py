@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -135,6 +135,16 @@ class ResultTypes(Enum):
     # contingency analysis
     ContingencyAnalysisReport = 'Contingencies report', DeviceType.NoDevice
 
+    # Hydro OPF
+    FluidCurrentLevel = 'Reservoir fluid level', DeviceType.FluidNodeDevice
+    FluidFlowIn = 'Flow entering the node', DeviceType.FluidNodeDevice
+    FluidFlowOut = 'Flow exiting the node', DeviceType.FluidNodeDevice
+    FluidP2XFlow = 'Flow from the P2X', DeviceType.FluidNodeDevice
+    FluidSpillage = 'Spillage flow leaving', DeviceType.FluidNodeDevice
+
+    FluidFlowPath = 'Flow in the river', DeviceType.FluidPathDevice
+    FluidFlowInjection = 'Flow circulating in the device', DeviceType.FluidInjectionDevice
+
     # sigma
     SigmaReal = 'Sigma real', DeviceType.BusDevice
     SigmaImag = 'Sigma imaginary', DeviceType.BusDevice
@@ -249,6 +259,14 @@ class ResultTypes(Enum):
     GeneratorResults = 'Generators', DeviceType.GeneratorDevice
     LoadResults = 'Loads', DeviceType.LoadDevice
     BatteryResults = 'Batteries', DeviceType.BatteryDevice
+
+    # fluid
+    FluidNodeResults = 'Fluid nodes', DeviceType.FluidNodeDevice
+    FluidPathResults = 'Fluid paths', DeviceType.FluidPathDevice
+    FluidInjectionResults = 'Fluid injections', DeviceType.FluidInjectionDevice
+    FluidTurbineResults = 'Fluid turbines', DeviceType.FluidTurbineDevice
+    FluidPumpResults = 'Fluid pumps', DeviceType.FluidPumpDevice
+    FluidP2XResults = 'Fluid P2Xs', DeviceType.FluidP2XDevice
 
     # investments evaluation
     InvestmentsReportResults = 'Investments evaluation report', DeviceType.NoDevice

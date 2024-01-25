@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -22,7 +22,8 @@ from PySide6 import QtWidgets
 
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCal.Gui.Main.SubClasses.Results.results import ResultsMain
-from GridCal.Gui.GridEditorWidget import BusBranchEditorWidget
+from GridCal.Gui.BusBranchEditorWidget import BusBranchEditorWidget
+from GridCal.Gui.BusBranchEditorWidget.generic_graphics import set_dark_mode, set_light_mode
 
 
 class ConfigurationMain(ResultsMain):
@@ -51,6 +52,7 @@ class ConfigurationMain(ResultsMain):
                          "primary>list.selectionBackground": "#00aa88be"}
 
         if self.ui.dark_mode_checkBox.isChecked():
+            set_dark_mode()
             qdarktheme.setup_theme(theme='dark', custom_colors=custom_colors)
 
             diagram = self.get_selected_diagram_widget()
@@ -63,6 +65,7 @@ class ConfigurationMain(ResultsMain):
             if self.console is not None:
                 self.console.set_dark_theme()
         else:
+            set_light_mode()
             qdarktheme.setup_theme(theme='light', custom_colors=custom_colors)
 
             diagram = self.get_selected_diagram_widget()
@@ -140,7 +143,9 @@ class ConfigurationMain(ResultsMain):
                 "transfer_sensitivity_threshold": self.ui.atcThresholdSpinBox,
                 "transfer_method": self.ui.transferMethodComboBox,
                 "Loading_threshold_to_report": self.ui.ntcReportLoadingThresholdSpinBox,
-                "consider_contingencies": self.ui.n1ConsiderationCheckBox
+                "consider_contingencies": self.ui.n1ConsiderationCheckBox,
+                "ptdf_threshold": self.ui.ptdf_threshold_doubleSpinBox,
+                "lodf_threshold": self.ui.lodf_threshold_doubleSpinBox
             },
             "stochastic": {
                 "method": self.ui.stochastic_pf_method_comboBox,
@@ -181,6 +186,7 @@ class ConfigurationMain(ResultsMain):
                 "maximize_area_exchange": self.ui.opfMaximizeExcahngeCheckBox,
                 "unit_commitment": self.ui.opfUnitCommitmentCheckBox,
                 "add_opf_report": self.ui.addOptimalPowerFlowReportCheckBox,
+                "save_mip": self.ui.save_mip_checkBox,
             },
             "continuation_power_flow": {
                 "max_iterations": self.ui.vs_max_iterations_spinBox,
@@ -221,7 +227,10 @@ class ConfigurationMain(ResultsMain):
                 "engine": self.ui.engineComboBox
             },
             "contingencies": {
-                "contingencies_engine": self.ui.contingencyEngineComboBox
+                "contingencies_engine": self.ui.contingencyEngineComboBox,
+                "use_srap": self.ui.use_srap_checkBox,
+                "srap_loading_limit": self.ui.srap_loading_limit_doubleSpinBox,
+                "srap_max_power": self.ui.srap_limit_doubleSpinBox
             },
             "file": {
                 "store_results_in_file": self.ui.saveResultsCheckBox
@@ -234,7 +243,7 @@ class ConfigurationMain(ResultsMain):
         :return:
         """
 
-        def struct_to_data(data_: Dict[str, Dict[str, Union[float, int, str, bool, Dict]]],
+        def struct_to_data(data_: Dict[str, Union[float, int, str, bool, Dict[str, Union[float, int, str, bool, Dict]]]],
                            struct_: Dict[str, Dict[str, any]]):
             """
             Recursive function to get the config dictionary from the GUI values
@@ -309,6 +318,11 @@ class ConfigurationMain(ResultsMain):
 
         struct = self.get_config_structure()
         data_to_struct(data_=data, struct_=struct)
+
+        if self.ui.dark_mode_checkBox.isChecked():
+            set_dark_mode()
+        else:
+            set_light_mode()
 
     def load_gui_config(self) -> None:
         """

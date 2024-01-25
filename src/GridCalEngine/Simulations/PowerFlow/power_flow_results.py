@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -24,8 +24,7 @@ from GridCalEngine.Simulations.result_types import ResultTypes
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.basic_structures import DateVec, IntVec, Vec, StrVec, CxMat, Mat, BoolVec, CxVec
+from GridCalEngine.basic_structures import IntVec, Vec, StrVec, CxVec, CscMat
 from GridCalEngine.enumerations import StudyResultsType
 
 
@@ -38,12 +37,12 @@ class NumericPowerFlowResults:
                  converged: bool,
                  norm_f: float,
                  Scalc: CxVec,
-                 ma: Vec = None,
-                 theta: Vec = None,
-                 Beq: Vec = None,
-                 Ybus=None,
-                 Yf=None,
-                 Yt=None,
+                 ma: Union[Vec, None] = None,
+                 theta: Union[Vec, None] = None,
+                 Beq: Union[Vec, None] = None,
+                 Ybus: Union[CscMat, None] = None,
+                 Yf: Union[CscMat, None] = None,
+                 Yt: Union[CscMat, None] = None,
                  iterations=0,
                  elapsed=0.0):
         """
@@ -662,7 +661,7 @@ class PowerFlowResults(ResultsTemplate):
         la = self.losses.real
         lr = self.losses.imag
         ls = np.abs(self.losses)
-        tm = np.ans(self.tap_module)
+        tm = np.abs(self.tap_module)
 
         branch_data = np.c_[sr, si, sm, ld, la, lr, ls, tm]
         branch_cols = ['Real power (MW)',

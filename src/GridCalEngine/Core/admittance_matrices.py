@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -178,43 +178,44 @@ def compute_admittances(R: Vec,
     # form the admittance matrices
     ys = 1.0 / (R + 1.0j * X + 1e-20)  # series admittance
     bc2 = (G + 1j * B) / 2.0  # shunt admittance
+
     # k is already filled with the appropriate value for each type of branch
     mp = k * tap_module
 
     # compose the primitives
-    if seq == 0:  # zero sequence
-        # add always the shunt term, the series depends on the connection
-        # one ys vector for the from side, another for the to side, and the shared one
-        ysf = np.zeros(len(ys), dtype=complex)
-        yst = np.zeros(len(ys), dtype=complex)
-        ysft = np.zeros(len(ys), dtype=complex)
+    if add_windings_phase:
+        if seq == 0:  # zero sequence
+            # add always the shunt term, the series depends on the connection
+            # one ys vector for the from side, another for the to side, and the shared one
+            ysf = np.zeros(len(ys), dtype=complex)
+            yst = np.zeros(len(ys), dtype=complex)
+            ysft = np.zeros(len(ys), dtype=complex)
 
-        for i, con in enumerate(conn):
-            if con == WindingsConnection.GG:
-                ysf[i] = ys[i]
-                yst[i] = ys[i]
-                ysft[i] = ys[i]
-            elif con == WindingsConnection.GD:
-                ysf[i] = ys[i]
+            for i, con in enumerate(conn):
+                if con == WindingsConnection.GG:
+                    ysf[i] = ys[i]
+                    yst[i] = ys[i]
+                    ysft[i] = ys[i]
+                elif con == WindingsConnection.GD:
+                    ysf[i] = ys[i]
 
-        Yff = (ysf + bc2) / (mp * mp * vtap_f * vtap_f)
-        Yft = -ysft / (mp * np.exp(-1.0j * tap_angle) * vtap_f * vtap_t)
-        Ytf = -ysft / (mp * np.exp(+1.0j * tap_angle) * vtap_t * vtap_f)
-        Ytt = (yst + bc2) / (vtap_t * vtap_t)
+            Yff = (ysf + bc2) / (mp * mp * vtap_f * vtap_f)
+            Yft = -ysft / (mp * np.exp(-1.0j * tap_angle) * vtap_f * vtap_t)
+            Ytf = -ysft / (mp * np.exp(+1.0j * tap_angle) * vtap_t * vtap_f)
+            Ytt = (yst + bc2) / (vtap_t * vtap_t)
 
-    elif seq == 2:  # negative sequence
-        # only need to include the phase shift of +-30 degrees
-        factor_psh = np.array([r30_deg if con == WindingsConnection.GD or con == WindingsConnection.SD else 1
-                               for con in conn])
+        elif seq == 2:  # negative sequence
+            # only need to include the phase shift of +-30 degrees
+            factor_psh = np.array([r30_deg if con == WindingsConnection.GD or con == WindingsConnection.SD else 1
+                                   for con in conn])
 
-        Yff = (ys + bc2) / (mp * mp * vtap_f * vtap_f)
-        Yft = -ys / (mp * np.exp(+1.0j * tap_angle) * vtap_f * vtap_t) * factor_psh
-        Ytf = -ys / (mp * np.exp(-1.0j * tap_angle) * vtap_t * vtap_f) * np.conj(factor_psh)
-        Ytt = (ys + bc2) / (vtap_t * vtap_t)
+            Yff = (ys + bc2) / (mp * mp * vtap_f * vtap_f)
+            Yft = -ys / (mp * np.exp(+1.0j * tap_angle) * vtap_f * vtap_t) * factor_psh
+            Ytf = -ys / (mp * np.exp(-1.0j * tap_angle) * vtap_t * vtap_f) * np.conj(factor_psh)
+            Ytt = (ys + bc2) / (vtap_t * vtap_t)
 
-    elif seq == 1:  # positive sequence
+        elif seq == 1:  # positive sequence
 
-        if add_windings_phase:
             # only need to include the phase shift of +-30 degrees
             factor_psh = np.array([r30_deg if con == WindingsConnection.GD or con == WindingsConnection.SD else 1.0
                                    for con in conn])
@@ -224,17 +225,13 @@ def compute_admittances(R: Vec,
             Ytf = -ys / (mp * np.exp(1.0j * tap_angle) * vtap_t * vtap_f) * np.conj(factor_psh)
             Ytt = (ys + bc2) / (vtap_t * vtap_t)
         else:
-            Yff = Gsw + (ys + bc2 + 1.0j * Beq) / (mp * mp * vtap_f * vtap_f)
-            Yft = -ys / (mp * np.exp(-1.0j * tap_angle) * vtap_f * vtap_t)
-            Ytf = -ys / (mp * np.exp(1.0j * tap_angle) * vtap_t * vtap_f)
-            Ytt = (ys + bc2) / (vtap_t * vtap_t)
+            raise Exception('Unsupported sequence when computing the admittance matrix sequence={}'.format(seq))
 
     else:  # original
-        # Yff = Gsw + (ys + bc2 + 1.0j * Beq) / (mp * mp * vtap_f * vtap_f)
-        # Yft = -ys / (mp * np.exp(-1.0j * tap_angle) * vtap_f * vtap_t)
-        # Ytf = -ys / (mp * np.exp(1.0j * tap_angle) * vtap_t * vtap_f)
-        # Ytt = (ys + bc2) / (vtap_t * vtap_t)
-        raise Exception('Unsupported sequence when computing the admittance matrix sequence={}'.format(seq))
+        Yff = Gsw + (ys + bc2 + 1.0j * Beq) / (mp * mp * vtap_f * vtap_f)
+        Yft = -ys / (mp * np.exp(-1.0j * tap_angle) * vtap_f * vtap_t)
+        Ytf = -ys / (mp * np.exp(1.0j * tap_angle) * vtap_t * vtap_f)
+        Ytt = (ys + bc2) / (vtap_t * vtap_t)
 
     # compose the matrices
     Yf = sp.diags(Yff) * Cf + sp.diags(Yft) * Ct
@@ -411,7 +408,6 @@ def compute_fast_decoupled_admittances(X: Vec,
 def compute_linear_admittances(nbr: int,
                                X: Vec,
                                R: Vec,
-                               tap_modules: Vec,
                                active: IntVec,
                                Cf: sp.csc_matrix,
                                Ct: sp.csc_matrix,
@@ -422,30 +418,27 @@ def compute_linear_admittances(nbr: int,
     :param nbr: Number of Branches
     :param X: array of branch reactance (p.u.)
     :param R: array of branch resistance (p.u.)
-    :param tap_modules: array of tap modules (for all Branches, regardless of their type)
     :param active: array of branch active (bool)
     :param Cf: Connectivity branch-bus "from" with the branch states computed
     :param Ct: Connectivity branch-bus "to" with the branch states computed
     :param ac: array of ac Branches indices
     :param dc: array of dc Branches indices
-    :return: Bbus, Bf, Btheta
+    :return: Bbus, Bf, Btau
     """
-
-    m_abs = np.abs(tap_modules)
     if len(dc):
         # compose the vector for AC-DC grids where the R is needed for this matrix
         # even if conceptually we only want the susceptance
         b = np.zeros(nbr)
-        b[ac] = 1.0 / (m_abs[ac] * X[ac] * active[ac] + 1e-20)  # for ac Branches
-        b[dc] = 1.0 / (m_abs[dc] * R[dc] * active[dc] + 1e-20)  # for dc Branches
+        b[ac] = 1.0 / (X[ac] * active[ac] + 1e-20)  # for ac Branches
+        b[dc] = 1.0 / (R[dc] * active[dc] + 1e-20)  # for dc Branches
     else:
-        b = 1.0 / (m_abs * X * active + 1e-20)  # for ac Branches
+        b = 1.0 / (X * active + 1e-20)  # for ac Branches
 
     b_tt = sp.diags(b)  # This is Bd from the
     Bf = b_tt * Cf - b_tt * Ct
     Bt = -b_tt * Cf + b_tt * Ct
     Bbus = Cf.T * Bf + Ct.T * Bt
-    Btheta = (b_tt * (Cf + Ct)).T
+    Btau = (b_tt * (Cf + Ct)).T
 
     """
     According to the KULeuven document "DC power flow in unit commitment models"
@@ -455,11 +448,11 @@ def compute_linear_admittances(nbr: int,
     
     Identifying the already computed matrices, it becomes:
     
-    Pbus = Bbus x bus_angles + Btheta x branch_angles
+    Pbus = Bbus x bus_angles + Btau x branch_angles
     
     If we solve for bus angles:
     
-    bus_angles = Bbus^-1 x (Pbus - Btheta x branch_angles)
+    bus_angles = Bbus^-1 x (Pbus - Btau x branch_angles)
     """
 
-    return Bbus, Bf, Btheta
+    return Bbus, Bf, Btau

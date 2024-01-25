@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -18,7 +18,7 @@ import sys
 from PySide6 import QtWidgets, QtGui
 
 from GridCal.Gui.CascadingSteps.gui import Ui_Dialog
-import GridCalEngine.basic_structures as bs
+from GridCalEngine.enumerations import SolverType
 import GridCalEngine.Simulations as sim
 from GridCal.Gui.messages import warning_msg
 
@@ -65,7 +65,7 @@ class CascadingStepsGUI(QtWidgets.QDialog):
             self.gridcal_main.LOCK()
             if self.gridcal_main.session.exists(sim.SimulationTypes.Cascade_run):
                 options = self.gridcal_main.get_selected_power_flow_options()
-                options.solver_type = bs.SolverType.LM
+                options.solver_type = SolverType.LM
                 max_isl = self.gridcal_main.ui.cascading_islands_spinBox.value()
                 drv = sim.Cascading(self.gridcal_main.circuit.copy(), options, max_additional_islands=max_isl)
 
@@ -96,7 +96,7 @@ class CascadingStepsGUI(QtWidgets.QDialog):
                 QtGui.QGuiApplication.processEvents()
 
                 options = self.gridcal_main.get_selected_power_flow_options()
-                options.solver_type = bs.SolverType.LM
+                options.solver_type = SolverType.LM
 
                 max_isl = self.gridcal_main.ui.cascading_islands_spinBox.value()
                 n_lsh_samples = self.gridcal_main.ui.max_iterations_stochastic_spinBox.value()

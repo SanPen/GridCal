@@ -1,7 +1,7 @@
 import os
 from typing import Dict
 import pandas as pd
-# from pytablewriter import RstSimpleTableWriter
+from pytablewriter import RstSimpleTableWriter
 from GridCalEngine.IO.cim.cgmes_2_4_15.cgmes_circuit import CgmesCircuit
 from GridCalEngine.IO.raw.devices.psse_circuit import PsseCircuit
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
@@ -59,7 +59,7 @@ def get_gridcal_data_frames():
         class_name = obj.device_type.value
 
         data = list()
-        for prop_name, prop in obj.editable_headers.items():
+        for prop_name, prop in obj.registered_properties.items():
 
             data.append(prop.get_dict())
 
@@ -69,6 +69,13 @@ def get_gridcal_data_frames():
 
 
 def write_dataframes_to_excel(data_frames: Dict[str, pd.DataFrame], filename):
+
+    with pd.ExcelWriter(filename) as w:
+        for key, df in data_frames.items():
+            df.to_excel(w, sheet_name=key)
+
+
+def write_dataframes_to_excel_one_sheet(data_frames: Dict[str, pd.DataFrame], filename):
 
     df_all = pd.DataFrame()
     for key, df in data_frames.items():
@@ -156,18 +163,19 @@ if __name__ == '__main__':
     psse_info = get_psse_data_frames()
     roseta_info = get_gridcal_data_frames()
 
-    write_dataframes_to_excel(cgmes_info,
+    write_dataframes_to_excel_one_sheet(cgmes_info,
                               'cgmes_classes_all_in_one_sheet.xlsx')
-    write_dataframes_to_excel(psse_info,
+    write_dataframes_to_excel_one_sheet(psse_info,
                               'psse_classes_all_in_one_sheet.xlsx')
-    write_dataframes_to_excel(roseta_info,
+    write_dataframes_to_excel_one_sheet(roseta_info,
                               'roseta_classes_all_in_one_sheet.xlsx')
 
     # write_dataframes_to_rst(cgmes_info, 'cgmes_clases.rst', "CGMES")
     # write_dataframes_to_rst(psse_info, 'psse_clases.rst', "PSSE")
     # write_dataframes_to_rst(roseta_info, 'roseta_clases.rst', "Roseta")
+    write_dataframes_to_rst(roseta_info, 'gridcal_classes.rst', "Roseta")
 
-    # write_models_to_rst(os.path.join('rst_source', 'other_data_models.rst'))
+    write_models_to_rst(os.path.join('rst_source', 'other_data_models.rst'))
 
     print("done")
 

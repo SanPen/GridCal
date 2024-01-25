@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -51,6 +51,7 @@ try:
         BENTAYGA_AVAILABLE = True
 
 except ImportError:
+    btg = None
     BENTAYGA_AVAILABLE = False
 
 # numpy integer type for bentayga's uword
@@ -568,6 +569,11 @@ def get_snapshots_from_bentayga(circuit: MultiCircuit):
                                 ngen=0,
                                 nbatt=0,
                                 nshunt=0,
+                                nfluidnode=0,
+                                nfluidturbine=0,
+                                nfluidpump=0,
+                                nfluidp2x=0,
+                                nfluidpath=0,
                                 sbase=0.0)
 
         data.Vbus_ = btg_data.Vbus.reshape(-1, 1)

@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -110,6 +110,9 @@ class ResultsMain(SimulationsMain):
                                                                                   study_type=study_type)
 
                         if self.results_mdl is not None:
+
+                            if self.ui.results_traspose_checkBox.isChecked():
+                                self.results_mdl.transpose()
 
                             if self.ui.results_as_abs_checkBox.isChecked():
                                 self.results_mdl.convert_to_abs()

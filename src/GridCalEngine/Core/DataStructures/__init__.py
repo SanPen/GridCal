@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -21,3 +21,8 @@ from GridCalEngine.Core.DataStructures.generator_data import GeneratorData
 from GridCalEngine.Core.DataStructures.hvdc_data import HvdcData
 from GridCalEngine.Core.DataStructures.load_data import LoadData
 from GridCalEngine.Core.DataStructures.shunt_data import ShuntData
+from GridCalEngine.Core.DataStructures.fluid_node_data import FluidNodeData
+from GridCalEngine.Core.DataStructures.fluid_turbine_data import FluidTurbineData
+from GridCalEngine.Core.DataStructures.fluid_pump_data import FluidPumpData
+from GridCalEngine.Core.DataStructures.fluid_p2x_data import FluidP2XData
+from GridCalEngine.Core.DataStructures.fluid_path_data import FluidPathData

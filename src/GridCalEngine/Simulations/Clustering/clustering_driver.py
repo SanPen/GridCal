@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -45,8 +45,8 @@ class ClusteringDriver(DriverTemplate):
         Run thread
         """
         self.tic()
-        self.progress_text.emit('Clustering')
-        self.progress_signal.emit(0)
+        self.report_text("Clustering")
+        self.report_progress(0.0)
 
         time_indices, sampled_probabilities, sample_idx = kmeans_sampling(x_input=self.grid.get_Pbus_prof(),
                                                                           n_points=self.options.n_points)

@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -545,8 +545,9 @@ class AvailableTransferCapacityDriver(DriverTemplate):
         Run thread
         """
         self.tic()
-        self.progress_text.emit('Analyzing')
-        self.progress_signal.emit(0)
+
+        self.report_text("Analyzing")
+        self.report_progress(0.0)
 
         # get the converted bus indices
         idx1b = self.options.bus_idx_from

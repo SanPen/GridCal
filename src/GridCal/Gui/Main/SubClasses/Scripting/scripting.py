@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -68,30 +68,6 @@ class ScriptingMain(IoMain):
 
         # double clicked -----------------------------------------------------------------------------------------------
         self.ui.sourceCodeTreeView.doubleClicked.connect(self.source_code_tree_clicked)
-
-    def console_msg(self, *msg_):
-        """
-        Print some message in the console.
-
-        Arguments:
-
-            **msg_** (str): Message
-
-        """
-        dte = dtelib.datetime.now().strftime("%b %d %Y %H:%M:%S")
-
-        txt = self.ui.outputTextEdit.toPlainText()
-
-        for e in msg_:
-            if isinstance(e, list):
-                txt += '\n' + dte + '->\n'
-                for elm in e:
-                    txt += str(elm) + "\n"
-            else:
-                txt += '\n' + dte + '->'
-                txt += " " + str(e)
-
-        self.ui.outputTextEdit.setPlainText(txt)
 
     def run_source_code(self):
         """

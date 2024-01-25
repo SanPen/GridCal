@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -14,27 +14,32 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
 import os.path
 import warnings
-
 import numpy as np
-from typing import List, Dict, Union
+from typing import List, Dict, Union, TYPE_CHECKING
 from GridCalEngine.basic_structures import IntVec, Vec
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.enumerations import (TransformerControlType, HvdcControlType, SolverType, TimeGrouping,
-                                        ReactivePowerControlMode, ZonalGrouping, MIPSolvers, ContingencyEngine)
+                                        ReactivePowerControlMode, ZonalGrouping, MIPSolvers, ContingencyMethod)
 import GridCalEngine.Core.Devices as dev
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
+
 from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit
-# from GridCalEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults
-# from GridCalEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions, ZonalGrouping
-# from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_options import ContingencyAnalysisOptions
+
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCalEngine.basic_structures import ConvergenceReport
 
+if TYPE_CHECKING:  # Only imports the below statements during type checking
+    from GridCalEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults
+    from GridCalEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
+    from GridCalEngine.Simulations.LinearFactors.linear_analysis_options import LinearAnalysisOptions
+    from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_options import ContingencyAnalysisOptions
+    from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_results import ContingencyAnalysisResults
 
-NEWTON_PA_RECOMMENDED_VERSION = "2.1.13"
+NEWTON_PA_RECOMMENDED_VERSION = "2.2.0"
 NEWTON_PA_VERSION = ''
 NEWTON_PA_AVAILABLE = False
 try:
@@ -44,35 +49,39 @@ try:
 
     # activate
     if not npa.isLicenseActivated():
+
+        # search for the license
         npa_license = os.path.join(get_create_gridcal_folder(), 'newton.lic')
         if os.path.exists(npa_license):
+
+            # license found
             npa.activateLicense(npa_license)
             if npa.isLicenseActivated():
-                NEWTON_PA_AVAILABLE = True
 
-                if npa.get_version() < NEWTON_PA_RECOMMENDED_VERSION:
-                    warnings.warn(f"Recommended version for Newton is {NEWTON_PA_RECOMMENDED_VERSION} "
-                                  f"instead of {npa.get_version()}")
+                # license valie
+                NEWTON_PA_AVAILABLE = True
+                NEWTON_PA_VERSION = npa.get_version()
+
             else:
-                # print('Newton Power Analytics v' + npa.get_version(),
-                #       "installed, tried to activate with {} but the license did not work :/".format(npa_license))
+                # license not valid
                 NEWTON_PA_AVAILABLE = False
         else:
-            # print('Newton Power Analytics v' + npa.get_version(), "installed but not licensed")
+            # license not found
             NEWTON_PA_AVAILABLE = False
     else:
-        # print('Newton Power Analytics v' + npa.get_version())
+        # already activated
         NEWTON_PA_AVAILABLE = True
         NEWTON_PA_VERSION = npa.get_version()
 
+    if NEWTON_PA_AVAILABLE:
         if NEWTON_PA_VERSION < NEWTON_PA_RECOMMENDED_VERSION:
             warnings.warn(f"Recommended version for Newton is {NEWTON_PA_RECOMMENDED_VERSION} "
                           f"instead of {NEWTON_PA_VERSION}")
 
 except ImportError as e:
+    npa = None
     NEWTON_PA_AVAILABLE = False
     NEWTON_PA_VERSION = ''
-    # print('Newton Power Analytics is not available:', e)
 
 # numpy integer type for Newton's uword
 BINT = np.ulonglong
@@ -332,7 +341,7 @@ def add_npa_loads(circuit: MultiCircuit,
                   time_series: bool,
                   n_time=1,
                   time_indices: Union[IntVec, None] = None,
-                  opf_results: "OptimelPowerFlowResults" = None):
+                  opf_results: Union[None, OptimalPowerFlowResults] = None):
     """
 
     :param circuit: GridCal circuit
@@ -341,6 +350,7 @@ def add_npa_loads(circuit: MultiCircuit,
     :param time_series: compile the time series from GridCal? otherwise just the snapshot
     :param n_time: number of time steps
     :param time_indices:
+    :param opf_results:
     :return:
     """
     devices = circuit.get_loads()
@@ -454,7 +464,7 @@ def add_npa_generators(circuit: MultiCircuit,
                        time_series: bool,
                        n_time=1,
                        time_indices: Union[IntVec, None] = None,
-                       opf_results: "OptimelPowerFlowResults" = None):
+                       opf_results: Union[None, OptimalPowerFlowResults] = None):
     """
 
     :param circuit: GridCal circuit
@@ -523,7 +533,7 @@ def add_battery_data(circuit: MultiCircuit,
                      time_series: bool,
                      n_time: int = 1,
                      time_indices: Union[IntVec, None] = None,
-                     opf_results: "OptimelPowerFlowResults" = None):
+                     opf_results: Union[None, OptimalPowerFlowResults] = None):
     """
 
     :param circuit: GridCal circuit
@@ -757,12 +767,16 @@ def add_transformer3w_data(circuit: MultiCircuit,
                                 contingency_rate23=elm.rate23,
                                 contingency_rate31=elm.rate31, )
 
+        # this is because the central node is in the buses list already from GridCal
+        tr3.central_node = bus_dict[elm.bus0.idtag]
+
         if time_series:
             pass
         else:
             pass
 
-        npa_circuit.addTransformers3w(tr3)
+        # because the central bus was added already, do not add it here
+        npa_circuit.addTransformers3w(tr3, add_central_node=False)
 
 
 def add_vsc_data(circuit: MultiCircuit,
@@ -950,13 +964,14 @@ def to_newton_pa(circuit: MultiCircuit,
                  use_time_series: bool,
                  time_indices: Union[IntVec, None] = None,
                  override_branch_controls=False,
-                 opf_results: "OptimelPowerFlowResults" = None):
+                 opf_results: Union[None, OptimalPowerFlowResults] = None):
     """
     Convert GridCal circuit to Newton
     :param circuit: MultiCircuit
     :param use_time_series: compile the time series from GridCal? otherwise just the snapshot
     :param time_indices: Array of time indices
     :param override_branch_controls: If true the branch controls are set to Fix
+    :param opf_results:
     :return: npa.HybridCircuit instance
     """
 
@@ -984,8 +999,10 @@ def to_newton_pa(circuit: MultiCircuit,
     add_npa_generators(circuit, npa_circuit, bus_dict, use_time_series, n_time, time_indices, opf_results)
     add_battery_data(circuit, npa_circuit, bus_dict, use_time_series, n_time, time_indices, opf_results)
     add_npa_line(circuit, npa_circuit, bus_dict, use_time_series, n_time, time_indices)
-    add_transformer_data(circuit, npa_circuit, bus_dict, use_time_series, n_time, time_indices, override_branch_controls)
-    add_transformer3w_data(circuit, npa_circuit, bus_dict, use_time_series, n_time, time_indices, override_branch_controls)
+    add_transformer_data(circuit, npa_circuit, bus_dict, use_time_series, n_time, time_indices,
+                         override_branch_controls)
+    add_transformer3w_data(circuit, npa_circuit, bus_dict, use_time_series, n_time, time_indices,
+                           override_branch_controls)
     add_vsc_data(circuit, npa_circuit, bus_dict, use_time_series, n_time, time_indices)
     add_dc_line_data(circuit, npa_circuit, bus_dict, use_time_series, n_time, time_indices)
     add_hvdc_data(circuit, npa_circuit, bus_dict, use_time_series, n_time, time_indices)
@@ -1000,7 +1017,7 @@ class FakeAdmittances:
     Fake admittances class needed to make the translation
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.Ybus = None
         self.Yf = None
         self.Yt = None
@@ -1030,6 +1047,11 @@ def get_snapshots_from_newtonpa(circuit: MultiCircuit, override_branch_controls=
                                 ngen=0,
                                 nbatt=0,
                                 nshunt=0,
+                                nfluidnode=0,
+                                nfluidturbine=0,
+                                nfluidpump=0,
+                                nfluidp2x=0,
+                                nfluidpath=0,
                                 sbase=0,
                                 t_idx=0)
 
@@ -1147,8 +1169,21 @@ def get_newton_pa_pf_options(opt: PowerFlowOptions) -> "npa.PowerFlowOptions":
                                 mu0=opt.mu)
 
 
+def get_newton_pa_linear_options(opt: LinearAnalysisOptions) -> "npa.LinearAnalysisOptions":
+    """
+    Translate GridCal power flow options to Newton power flow options
+    :param opt:
+    :return:
+    """
+    from GridCalEngine.Simulations.LinearFactors.linear_analysis_options import LinearAnalysisOptions
+    return npa.LinearAnalysisOptions(distribute_slack=opt.distribute_slack,
+                                     correct_values=opt.correct_values,
+                                     verbose=False,
+                                     ptdf_threshold=opt.ptdf_threshold,
+                                     lodf_threshold=opt.lodf_threshold)
+
 def get_newton_pa_nonlinear_opf_options(pf_opt: PowerFlowOptions,
-                                        opf_opt: "OptimalPowerFlowOptions") -> "npa.NonlinearOpfOptions":
+                                        opf_opt: OptimalPowerFlowOptions) -> "npa.NonlinearOpfOptions":
     """
     Translate GridCal power flow options to Newton power flow options
     :param pf_opt: PowerFlowOptions instance
@@ -1179,7 +1214,7 @@ def get_newton_pa_nonlinear_opf_options(pf_opt: PowerFlowOptions,
                                    max_va=opf_opt.max_va)
 
 
-def get_newton_pa_linear_opf_options(opf_opt: "OptimalPowerFlowOptions",
+def get_newton_pa_linear_opf_options(opf_opt: OptimalPowerFlowOptions,
                                      pf_opt: PowerFlowOptions,
                                      area_dict):
     """
@@ -1229,7 +1264,7 @@ def newton_pa_pf(circuit: MultiCircuit,
                  pf_opt: PowerFlowOptions,
                  time_series: bool = False,
                  time_indices: Union[IntVec, None] = None,
-                 opf_results: "OptimelPowerFlowResults" = None) -> "npa.PowerFlowResults":
+                 opf_results: Union[None, OptimalPowerFlowResults] = None) -> "npa.PowerFlowResults":
     """
     Newton power flow
     :param circuit: MultiCircuit instance
@@ -1268,14 +1303,12 @@ def newton_pa_pf(circuit: MultiCircuit,
 
 
 def newton_pa_contingencies(circuit: MultiCircuit,
-                            pf_opt: PowerFlowOptions,
-                            con_opt: "ContingencyAnalysisOptions",
+                            con_opt: ContingencyAnalysisOptions,
                             time_series: bool = False,
                             time_indices: Union[IntVec, None] = None) -> "npa.ContingencyAnalysisResults":
     """
     Newton power flow
     :param circuit: MultiCircuit instance
-    :param pf_opt: Power Flow Options
     :param con_opt: ContingencyAnalysisOptions
     :param time_series: Compile with GridCal time series?
     :param time_indices: Array of time indices
@@ -1284,9 +1317,10 @@ def newton_pa_contingencies(circuit: MultiCircuit,
     npa_circuit, _ = to_newton_pa(circuit,
                                   use_time_series=time_series,
                                   time_indices=None,
-                                  override_branch_controls=pf_opt.override_branch_controls)
+                                  override_branch_controls=con_opt.pf_options.override_branch_controls)
 
-    pf_options = get_newton_pa_pf_options(pf_opt)
+    pf_options = get_newton_pa_pf_options(con_opt.pf_options)
+    lin_opt = get_newton_pa_linear_options(con_opt.lin_options)
 
     if time_series:
         # it is already sliced to the relevant time indices
@@ -1297,31 +1331,54 @@ def newton_pa_contingencies(circuit: MultiCircuit,
         n_threads = 0  # max threads
     else:
         time_indices = [0]
-        n_threads = 1
+        n_threads = 0
 
-    if con_opt.engine == ContingencyEngine.PTDF:
+    if con_opt.contingency_method == ContingencyMethod.PTDF:
         mode = npa.ContingencyAnalysisMode.Linear
-    elif con_opt.engine == ContingencyEngine.PowerFlow:
+    elif con_opt.contingency_method == ContingencyMethod.PowerFlow:
         mode = npa.ContingencyAnalysisMode.Full
     else:
         mode = npa.ContingencyAnalysisMode.Full
 
     # npa.FileHandler().save(npa_circuit, "whatever.newton")
-
     # print('time_indices')
     # print(time_indices)
 
+    """
+    lin_options: newtonpa.LinearAnalysisOptions = <newtonpa.LinearAnalysisOptions object at 0x7fe5efdddf30>, 
+    pf_options: newtonpa.PowerFlowOptions = <newtonpa.PowerFlowOptions object at 0x7fe5efdb9ab0>, 
+    mode: newtonpa.ContingencyAnalysisMode = <ContingencyAnalysisMode.Full: 0>, 
+    using_srap: bool = False, 
+    srap_max_loading: float = 1.4, 
+    srap_max_power: float = 1400.0)
+    
+    lin_opt=<newtonpa.LinearAnalysisOptions object at 0x7fe4d5ec0370>, 
+    pf_options=<newtonpa.PowerFlowOptions object at 0x7fe4d5ec0570>, 
+    mode=<ContingencyAnalysisMode.Linear: 1>, 
+    using_srap=True, 
+    srap_max_loading=1.4, 
+    srap_max_power=1400.0
+    """
+
+    options = npa.ContingencyAnalysisOptions(
+        lin_options=lin_opt,
+        pf_options=pf_options,
+        mode=mode,
+        using_srap=con_opt.use_srap,
+        srap_max_loading=con_opt.srap_max_loading,
+        srap_max_power=con_opt.srap_max_power
+    )
+
     con_res = npa.runContingencyAnalysis(circuit=npa_circuit,
-                                         pf_options=pf_options,
+                                         options=options,
                                          time_indices=time_indices,
-                                         mode=mode,
                                          n_threads=n_threads)
 
     return con_res
 
 
 def newton_pa_linear_opf(circuit: MultiCircuit,
-                         opf_options: "OptimalPowerFlowOptions",
+                         opf_options: OptimalPowerFlowOptions,
                          pf_opt: PowerFlowOptions,
                          time_series=False,
                          time_indices: Union[IntVec, None] = None) -> "npa.LinearOpfResults":
@@ -1363,7 +1420,7 @@ def newton_pa_linear_opf(circuit: MultiCircuit,
 
 def newton_pa_nonlinear_opf(circuit: MultiCircuit,
                             pf_opt: PowerFlowOptions,
-                            opf_opt: "OptimalPowerFlowOptions",
+                            opf_opt: OptimalPowerFlowOptions,
                             time_series=False,
                             time_indices: Union[IntVec, None] = None) -> "npa.NonlinearOpfResults":
     """
@@ -1403,7 +1460,9 @@ def newton_pa_nonlinear_opf(circuit: MultiCircuit,
     return pf_res
 
 
-def newton_pa_linear_matrices(circuit: MultiCircuit, distributed_slack=False, override_branch_controls=False):
+def newton_pa_linear_matrices(circuit: MultiCircuit,
+                              distributed_slack=False,
+                              override_branch_controls=False):
     """
     Newton linear analysis
     :param circuit: MultiCircuit instance
@@ -1490,7 +1549,7 @@ def translate_newton_pa_pf_results(grid: MultiCircuit, res: "npa.PowerFlowResult
     return results
 
 
-def translate_newton_pa_opf_results(grid: MultiCircuit, res: "npa.NonlinearOpfResults") -> "OptimalPowerFlowResults":
+def translate_newton_pa_opf_results(grid: MultiCircuit, res: "npa.NonlinearOpfResults") -> OptimalPowerFlowResults:
     """
     Translate Newton OPF results to GridCal
     :param grid: MultiCircuit instance
@@ -1543,6 +1602,65 @@ def translate_newton_pa_opf_results(grid: MultiCircuit, res: "npa.NonlinearOpfRe
     results.converged = res.stats[0][0].converged[0]
 
     print(res.stats[0][0].getTable())
+
+    return results
+
+
+def translate_contingency_report(newton_report, gridcal_report):
+    """
+    Translate contingency report
+    :param newton_report:
+    :param gridcal_report:
+    :return:
+    """
+    for entry in newton_report.entries:
+        gridcal_report.add(time_index=entry.time_index,
+                           base_name=entry.base_name,
+                           base_uuid=entry.base_uuid,
+                           base_flow=np.abs(entry.base_flow),
+                           base_rating=entry.base_rating,
+                           base_loading=entry.base_loading,
+                           contingency_idx=entry.contingency_idx,
+                           contingency_name=entry.contingency_name,
+                           contingency_uuid=entry.contingency_uuid,
+                           post_contingency_flow=np.abs(entry.post_contingency_flow),
+                           contingency_rating=entry.contingency_rating,
+                           post_contingency_loading=entry.post_contingency_loading)
+
+
+def translate_newton_pa_contingencies(grid: MultiCircuit,
+                                      con_res: "npa.ContingencyAnalysisResults") -> ContingencyAnalysisResults:
+    """
+
+    :param grid:
+    :param con_res:
+    :return:
+    """
+    from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_results import ContingencyAnalysisResults
+
+    # declare the results
+    results = ContingencyAnalysisResults(ncon=len(grid.contingency_groups),
+                                         nbr=grid.get_branch_number_wo_hvdc(),
+                                         nbus=grid.get_bus_number(),
+                                         branch_names=grid.get_branch_names_wo_hvdc(),
+                                         bus_names=grid.get_bus_names(),
+                                         bus_types=grid.get_bus_default_types(),
+                                         con_names=grid.get_contingency_group_names())
+
+    """
+    self.voltage: CxMat = np.ones((ncon, nbus), dtype=complex)
+    self.Sbus: CxMat = np.zeros((ncon, nbus), dtype=complex)
+    self.Sf: CxMat = np.zeros((ncon, nbr), dtype=complex)
+    self.loading: CxMat = np.zeros((ncon, nbr), dtype=complex)
+
+    self.report: ContingencyResultsReport = ContingencyResultsReport()
+    """
+
+    # results.voltage = con_res.contingency_voltages[0]  # these are not translatable
+    # results.Sf = con_res.contingency_flows[0]
+    # results.loading = con_res.contingency_loading[0]
+    translate_contingency_report(newton_report=con_res.report,
+                                 gridcal_report=results.report)
 
     return results
 

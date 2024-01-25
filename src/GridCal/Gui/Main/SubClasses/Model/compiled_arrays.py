@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -18,7 +18,7 @@ import numpy as np
 from PySide6 import QtCore
 from matplotlib import pyplot as plt
 
-import GridCalEngine.basic_structures as bs
+from GridCalEngine.enumerations import EngineType
 import GridCal.Gui.GuiFunctions as gf
 from GridCal.Gui.Main.SubClasses.base_gui import BaseMainGui
 from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
@@ -122,16 +122,16 @@ class CompiledArraysMain(BaseMainGui):
 
             engine = self.get_preferred_engine()
 
-            if engine == bs.EngineType.GridCal:
+            if engine == EngineType.GridCal:
                 numerical_circuit = compile_numerical_circuit_at(circuit=self.circuit, t_idx=None)
                 calculation_inputs = numerical_circuit.split_into_islands()
                 self.calculation_inputs_to_display = calculation_inputs
 
-            elif engine == bs.EngineType.Bentayga:
+            elif engine == EngineType.Bentayga:
                 import GridCalEngine.Core.Compilers.circuit_to_bentayga as ben
                 self.calculation_inputs_to_display = ben.get_snapshots_from_bentayga(self.circuit)
 
-            elif engine == bs.EngineType.NewtonPA:
+            elif engine == EngineType.NewtonPA:
                 import GridCalEngine.Core.Compilers.circuit_to_newton_pa as ne
                 self.calculation_inputs_to_display = ne.get_snapshots_from_newtonpa(self.circuit)
 
