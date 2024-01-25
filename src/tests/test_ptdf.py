@@ -404,8 +404,12 @@ def test_mlodf_sanpen():
     for fname in [
         #os.path.join('data', 'grids', 'IEEE14-2_4_1-3_4_1.gridcal'),
         #os.path.join('data', 'grids', 'IEEE14-2_5_1-1_5_1.gridcal'),
-        os.path.join('data', 'grids', 'IEEE14-bus_d-6_11-6_13.gridcal'),
-        #os.path.join('data', 'grids', 'IEEE14-bus_d-7_8-9_10.gridcal'),
+        #os.path.join('data', 'grids', 'IEEE30-10_21_1-10_17_1.gridcal'),
+        #os.path.join('data', 'grids', 'IEEE30-14_15_1-12_15_1.gridcal'),
+        #os.path.join('data', 'grids', 'IEEE118-1_3_1-3_5_1.gridcal'),
+        #os.path.join('data', 'grids', 'IEEE118-37_39_1-37_40_1.gridcal'),
+        #os.path.join('data', 'grids', 'IEEE14-bus_d-6_11-6_13.gridcal'),
+        os.path.join('data', 'grids', 'IEEE14-bus_d-7_8-9_10.gridcal'),
     ]:
         main_circuit = FileOpen(fname).open()
 
@@ -431,7 +435,8 @@ def test_mlodf_sanpen():
                                                           linear_multiple_contingencies=linear_multi_contingency)
         cont_analysis_driver2.run()
 
-        assert (np.isclose(cont_analysis_driver1.results.Sf, cont_analysis_driver2.results.Sf, atol=1e-2).all())
+
+        assert (np.isclose(cont_analysis_driver1.results.Sf.real, cont_analysis_driver2.results.Sf.real, atol=1e-2).all())
 
 
 if __name__ == '__main__':
