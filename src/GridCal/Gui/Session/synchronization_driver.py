@@ -110,7 +110,7 @@ def compare_devices(dev1: EditableDevice, dev2: EditableDevice):
 
     differences = list()
     if dev1.device_type == dev2.device_type:
-        for prop_name, value in dev1.editable_headers.items():
+        for prop_name, value in dev1.registered_properties.items():
 
             val1 = getattr(dev1, prop_name)
             val2 = getattr(dev2, prop_name)

@@ -85,8 +85,10 @@ def nonlinear_contingency_analysis(grid: MultiCircuit,
                                               lodf_threshold=options.lin_options.lodf_threshold,
                                               prepare_for_srap=options.use_srap)
 
+        PTDF = linear_analysis.PTDF
+
     else:
-        linear_analysis = None
+        PTDF = None
 
     # for each contingency group
     for ic, contingency_group in enumerate(grid.contingency_groups):
@@ -111,6 +113,8 @@ def nonlinear_contingency_analysis(grid: MultiCircuit,
         results.Sbus[ic, :] = pf_res.Sbus
         results.loading[ic, :] = pf_res.loading
         results.voltage[ic, :] = pf_res.voltage
+        multi_contingency = linear_multiple_contingencies.multi_contingencies[ic] if options.use_srap else None
+
         results.report.analyze(t=t,
                                mon_idx=mon_idx,
                                calc_branches=calc_branches,
@@ -124,8 +128,8 @@ def nonlinear_contingency_analysis(grid: MultiCircuit,
                                using_srap=options.use_srap,
                                srap_max_loading=options.srap_max_loading,
                                srap_max_power=options.srap_max_power,
-                               multi_contingency=linear_multiple_contingencies.multi_contingencies[ic],
-                               PTDF=linear_analysis.PTDF)
+                               multi_contingency=multi_contingency,
+                               PTDF=PTDF)
 
         # set the status
         numerical_circuit.set_contingency_status(contingencies, revert=True)

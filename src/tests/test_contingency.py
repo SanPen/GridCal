@@ -15,11 +15,8 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import os
-
 import numpy as np
-
 from GridCalEngine.api import *
-from tests.zip_file_mgmt import open_data_frame_from_zip
 
 
 def test_contingency():
@@ -55,12 +52,8 @@ def test_contingency():
         line.active = True
 
 
-
-
-
-
 def test_linear_contingency():
-    #fname = os.path.join('data', 'grids', 'IEEE14_contingency.gridcal')
+    # fname = os.path.join('data', 'grids', 'IEEE14_contingency.gridcal')
     fname = os.path.join('data', 'grids', 'IEEE14-2_4_1-3_4_1.gridcal')
     main_circuit = FileOpen(fname).open()
     pf_options = PowerFlowOptions(SolverType.NR,
@@ -80,8 +73,6 @@ def test_linear_contingency():
                                                      linear_multiple_contingencies=linear_multi_contingency)
     cont_analysis_driver.run()
     print("")
-
-
 
 # def test_lodf():
 #     fname = os.path.join('data', 'grids', 'IEEE14_contingency.gridcal')
@@ -133,6 +124,3 @@ def test_linear_contingency():
 #     #res = linear_analysis.results.PTDF - ptdf_result
 #     #print(res)
 #     assert(np.isclose(linear_analysis.results.PTDF, ptdf_result).all())
-
-
-

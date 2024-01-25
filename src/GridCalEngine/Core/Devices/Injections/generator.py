@@ -195,8 +195,8 @@ class Generator(InjectionTemplate):
             self.q_curve.make_default_q_curve(self.Snom, self.qmin_set, self.qmax_set, n=1)
             self.custom_q_points = False
 
-        self.Cost2 = Cost2  # Cost of operation €/MW²
-        self.Cost0 = Cost0  # Cost of operation €
+        self.Cost2 = Cost2  # Cost of operation e/MW²
+        self.Cost0 = Cost0  # Cost of operation e
 
         self.StartupCost = 0.0
         self.ShutdownCost = 0.0
@@ -442,7 +442,7 @@ class Generator(InjectionTemplate):
                 'qmax': 'MVAr',
                 'pmin': 'MW',
                 'pmax': 'MW',
-                'cost': '€/MWh'}
+                'cost': 'e/MWh'}
 
     def plot_profiles(self, time=None, show_fig=True):
         """

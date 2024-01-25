@@ -22,6 +22,7 @@ from GridCalEngine.enumerations import (DeviceType, TimeFrame, BuildStatus, Wind
                                         ConverterControlType)
 from GridCalEngine.basic_structures import Vec, IntVec, BoolVec
 
+
 class GCProp:
     """
     GridCal property
@@ -61,6 +62,13 @@ class GCProp:
         self.editable = editable
 
         self.old_names = old_names
+
+    def has_profile(self) -> bool:
+        """
+        Check if this property has an associated profile
+        :return:
+        """
+        return self.profile_name != ''
 
     def get_class_name(self) -> str:
         """
@@ -111,29 +119,87 @@ class EditableDevice:
         :param code: alternative code to identify this object in other databases (i.e. psse number tec...)
         """
 
-        if idtag is None or idtag == '':
-            self.idtag = uuid.uuid4().hex
-        else:
-            self.idtag = idtag.replace('_', '').replace('-', '')
+        self._idtag = ''
+        self.idtag = idtag  # use the setter to assign _idtag
 
-        self._name = name
+        self._name: str = name
 
-        self.code = code
+        self.code: str = code
 
         self.device_type: DeviceType = device_type
 
         # associated graphic object
         self._graphic_obj = None  # todo: this should disappear
 
-        self.editable_headers: Dict[str, GCProp] = dict()
+        self.registered_properties: Dict[str, GCProp] = dict()
 
-        self.non_editable_attributes: List[str] = list()
+        self.non_editable_properties: List[str] = list()
 
         self.properties_with_profile: Dict[str, Optional[Any]] = dict()
 
         self.register(key='idtag', units='', tpe=str, definition='Unique ID', editable=False)
         self.register(key='name', units='', tpe=str, definition='Name of the branch.')
         self.register(key='code', units='', tpe=str, definition='Secondary ID')
+
+    def __str__(self) -> str:
+        """
+        Name of the object
+        :return: string
+        """
+        return self.name
+
+    def __repr__(self) -> str:
+        return self.idtag + '::' + self.name
+
+    def __hash__(self) -> int:
+        # alternatively, return hash(repr(self))
+        return int(self.idtag, 16)  # hex string to int
+
+    def __lt__(self, other) -> bool:
+        return self.__hash__() < other.__hash__()
+
+    def __eq__(self, other) -> bool:
+        if hasattr(other, 'idtag'):
+            return self.idtag == other.idtag
+        else:
+            return False
+
+    @property
+    def idtag(self) -> str:
+        """
+        idtag getter
+        :return: string, hopefully an UUIDv4
+        """
+        return self._idtag
+
+    @idtag.setter
+    def idtag(self, val: Union[str, None]):
+        """
+        idtag setter
+        :param val: any string or None
+        """
+        if val is None:
+            self._idtag = uuid.uuid4().hex  # generate a proper UUIDv4 string
+        elif isinstance(val, str):
+            if len(val) == 32:
+                self._idtag = val  # this is probably a proper UUID
+            elif len(val) == 0:
+                self._idtag = uuid.uuid4().hex  # generate a proper UUIDv4 string
+            else:
+                candidate_val = val.replace('_', '').replace('-', '')
+                if len(candidate_val) == 32:
+                    self._idtag = candidate_val  # if the string passed can be a UUID, set it
+                else:
+                    self._idtag = val  # otherwise this is just a plain string, that we hope is valid...
+        else:
+            self._idtag = str(val)  # any other thing passed as idtag, we convert it to string and hope for the best...
+
+    def flatten_idtag(self):
+        """
+        Remove useless undercore and
+        :return:
+        """
+        self._idtag = self._idtag.replace('_', '').replace('-', '')
 
     @property
     def type_name(self) -> str:
@@ -186,21 +252,21 @@ class EditableDevice:
         """
         assert (hasattr(self, key))  # the property must exist, this avoids bugs when registering
 
-        self.editable_headers[key] = GCProp(prop_name=key,
-                                            units=units,
-                                            tpe=tpe,
-                                            definition=definition,
-                                            profile_name=profile_name,
-                                            display=display,
-                                            editable=editable,
-                                            old_names=old_names)
+        self.registered_properties[key] = GCProp(prop_name=key,
+                                                 units=units,
+                                                 tpe=tpe,
+                                                 definition=definition,
+                                                 profile_name=profile_name,
+                                                 display=display,
+                                                 editable=editable,
+                                                 old_names=old_names)
 
         if profile_name != '':
-            assert (hasattr(self, profile_name))  # the property must exist, this avoids bugs in registering
+            assert (hasattr(self, profile_name))  # the profile property must exist, this avoids bugs in registering
             self.properties_with_profile[key] = profile_name
 
         if not editable:
-            self.non_editable_attributes.append(key)
+            self.non_editable_properties.append(key)
 
     def get_property_name_replacements_dict(self) -> Dict[str, str]:
         """
@@ -209,7 +275,7 @@ class EditableDevice:
         :return: {old_name: new_name} dict
         """
         data = dict()
-        for key, prop in self.editable_headers.items():
+        for key, prop in self.registered_properties.items():
 
             for old_name in prop.old_names:
                 data[old_name] = prop.name
@@ -234,29 +300,6 @@ class EditableDevice:
         """
         self.idtag = uuid.uuid4().hex
 
-    def __str__(self) -> AnyStr:
-        """
-        Name of the object
-        :return: string
-        """
-        return self.name
-
-    def __repr__(self):
-        return self.idtag + '::' + self.name
-
-    def __hash__(self):
-        # alternatively, return hash(repr(self))
-        return int(self.idtag, 16)  # hex string to int
-
-    def __lt__(self, other):
-        return self.__hash__() < other.__hash__()
-
-    def __eq__(self, other):
-        if hasattr(other, 'idtag'):
-            return self.idtag == other.idtag
-        else:
-            return False
-
     @property
     def name(self) -> str:
         """
@@ -275,7 +318,7 @@ class EditableDevice:
         """
 
         data = list()
-        for name, properties in self.editable_headers.items():
+        for name, properties in self.registered_properties.items():
             obj = getattr(self, name)
             if properties.tpe in [str, float, int, bool]:
                 data.append(obj)
@@ -294,7 +337,7 @@ class EditableDevice:
         """
         Return a list of headers
         """
-        return list(self.editable_headers.keys())
+        return list(self.registered_properties.keys())
 
     def create_profiles(self, index):
         """
@@ -339,7 +382,7 @@ class EditableDevice:
         """
         # get the value of the magnitude
         x = getattr(self, magnitude)
-        tpe = self.editable_headers[magnitude].tpe
+        tpe = self.registered_properties[magnitude].tpe
         if arr_in_pu:
             val = arr * x
         else:

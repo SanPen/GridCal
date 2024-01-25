@@ -95,7 +95,7 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
         super(FluidNodeGraphicItem, self).__init__(parent)
 
         self.min_w = 180.0
-        self.min_h = 180.0
+        self.min_h = 20.0
         self.offset = 10
         self.h = h if h >= self.min_h else self.min_h
         self.w = w if w >= self.min_w else self.min_w
@@ -119,14 +119,14 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
         self.style = ACTIVE['style']
 
         # square
-        self.tile_inside = RoundedRect(0, self.min_h/3, self.min_w, self.min_h / 3, 15, self)
-        self.tile_inside.setBrush(QBrush(ACTIVE['fluid']))
-        self.tile_inside.setOpacity(0.7)
+        # self.tile_inside = RoundedRect(0, self.min_h/3, self.min_w, self.min_h / 3, 15, self)
+        # self.tile_inside.setBrush(QBrush(ACTIVE['fluid']))
+        # self.tile_inside.setOpacity(0.7)
 
-        # self.tile = VerticalWaterIndicator(0, 0, self.min_w, self.min_h, 15, self)
-        # # self.tile.setPen(QPen(ACTIVE['color']))
-        # self.tile.setBrush(QBrush(ACTIVE['fluid']))
-        # self.tile.setOpacity(0.7)
+        self.tile = QGraphicsRectItem(0, 0, 20, 20)
+        self.tile.setPen(QPen(ACTIVE['color']))
+        self.tile.setBrush(QBrush(ACTIVE['fluid']))
+        self.tile.setOpacity(0.7)
         # self.tile.set_percentage(36.0)
 
         # Label:
@@ -175,7 +175,7 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
         """
         if self.api_object is not None:
             mdl = ObjectsModel(objects=[self.api_object],
-                               editable_headers=self.api_object.editable_headers,
+                               editable_headers=self.api_object.registered_properties,
                                parent=self.editor.object_editor_table,
                                editable=True,
                                transposed=True)

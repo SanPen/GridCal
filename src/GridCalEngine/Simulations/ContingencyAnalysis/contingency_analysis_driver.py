@@ -57,7 +57,7 @@ class ContingencyAnalysisDriver(DriverTemplate):
         self.options = options
 
         # Set or create the LinearMultiContingencies
-        if self.options.contingency_method == ContingencyMethod.PTDF and linear_multiple_contingencies is None:
+        if linear_multiple_contingencies is None:
             self.linear_multiple_contingencies = LinearMultiContingencies(self.grid)
             self.logger.add_info("Created LinearMultiContingencies because they were not provided")
         else:

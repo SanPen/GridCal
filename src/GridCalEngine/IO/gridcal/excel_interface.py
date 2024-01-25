@@ -108,7 +108,7 @@ def get_allowed_sheets():
 
             if profile_property not in allowed_data_sheets.keys():
                 # create the profile
-                allowed_data_sheets[object_type_name + '_' + profile_property] = object_sample.editable_headers[main_property].tpe
+                allowed_data_sheets[object_type_name + '_' + profile_property] = object_sample.registered_properties[main_property].tpe
 
         # declare the DataFrames for the normal data
         allowed_data_sheets[object_type_name] = None
@@ -270,7 +270,7 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
                 attr = 'template'
 
             if hasattr(obj_, attr):
-                conv = obj_.editable_headers[attr].tpe  # get the type converter
+                conv = obj_.registered_properties[attr].tpe  # get the type converter
                 if conv is None:
                     setattr(obj_, attr, values[a])
                 elif conv is dev.BranchType:
@@ -576,12 +576,12 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
                 vals = lst[lst['tower_name'] == tower_name].values
 
                 # set the tower values
-                set_object_attributes(tower, tower.editable_headers.keys(), vals[0, :])
+                set_object_attributes(tower, tower.registered_properties.keys(), vals[0, :])
 
                 # add the wires
                 for i in range(vals.shape[0]):
                     wire = dev.Wire()
-                    set_object_attributes(wire, tower.get_wire_properties(), vals[i, len(tower.editable_headers):])
+                    set_object_attributes(wire, tower.get_wire_properties(), vals[i, len(tower.registered_properties):])
                     tower.wires_in_tower.append(wire)
 
                 circuit.add_overhead_line(tower)
@@ -719,7 +719,7 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
                 attr = 'name'
 
             if hasattr(obj_, attr):
-                prop = obj_.editable_headers.get(attr, None)
+                prop = obj_.registered_properties.get(attr, None)
 
                 if prop is not None:
                     conv = prop.tpe  # get the type converter
@@ -1033,14 +1033,14 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
                 dft = df[df['tower_name'] == tower_name]
                 vals = dft.values
 
-                wire_prop = df.columns.values[len(obj.editable_headers):]
+                wire_prop = df.columns.values[len(obj.registered_properties):]
 
                 # set the tower values
-                set_object_attributes(obj, obj.editable_headers.keys(), vals[0, :])
+                set_object_attributes(obj, obj.registered_properties.keys(), vals[0, :])
 
                 # add the wires
                 if len(wire_prop) == 7:
-                    for i in range(vals.shape[0]) :
+                    for i in range(vals.shape[0]):
 
                         # ['wire_name' 'xpos' 'ypos' 'phase' 'r' 'x' 'gmr']
                         name = dft['wire_name'].values[i]
