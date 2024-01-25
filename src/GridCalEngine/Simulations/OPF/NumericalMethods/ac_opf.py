@@ -741,7 +741,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     q0gen = nc.generator_data.C_bus_elm.T @ np.imag(s0gen)
 
     # nc.Vbus  # dummy initialization
-
+    #print(np.angle(pf_results.voltage))
     # compose the initial values
     x0 = var2x(Vm=np.abs(pf_results.voltage),
                Va=np.angle(pf_results.voltage),
@@ -801,11 +801,11 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         df_bus = pd.DataFrame(data={'Vm (p.u.)': Vm, 'Va (rad)': Va,
                                     'dual price (€/MW)': lam_p, 'dual price (€/MVAr)': lam_q})
         df_gen = pd.DataFrame(data={'P (MW)': Pg * nc.Sbase, 'Q (MVAr)': Qg * nc.Sbase})
+
         print()
         print("Bus:\n", df_bus)
         print("Gen:\n", df_gen)
         print("Error", result.error)
-
     if plot_error:
         result.plot_error()
 
@@ -829,8 +829,10 @@ def run_nonlinear_opf(grid: MultiCircuit,
     :param use_autodiff:
     :return:
     """
-    nc = compile_numerical_circuit_at(circuit=grid, t_idx=t_idx)
 
-    return ac_optimal_power_flow(nc=nc, pf_options=pf_options,
-                                 debug=debug, use_autodiff=use_autodiff,
-                                 plot_error=plot_error)
+    nc = compile_numerical_circuit_at(circuit=grid, t_idx=t_idx)
+    nc_list = nc.split_into_islands(ignore_single_node_islands=True)
+    for nc in nc_list:
+        return ac_optimal_power_flow(nc=nc, pf_options=pf_options,
+                                     debug=debug, use_autodiff=use_autodiff,
+                                     plot_error=plot_error)

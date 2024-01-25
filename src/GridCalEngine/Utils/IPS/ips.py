@@ -42,7 +42,7 @@ def step_calculation(V: Vec, dV: Vec):
         if dV[i] < 0:
             alpha = min(alpha, -V[i] / dV[i])
 
-    return min(0.9999995 * alpha, 1.0)
+    return min(0.99995 * alpha, 1.0)
 
 
 @nb.njit(cache=True)
@@ -173,7 +173,7 @@ def interior_point_solver(x0: Vec,
                           func: Callable[[Vec, Vec, Vec, bool, Any], IpsFunctionReturn],
                           arg=(),
                           max_iter=100,
-                          tol=1e-6,
+                          tol=1e-7,
                           verbose: int = 0,
                           step_control = True) -> IpsSolution:
     """
@@ -223,7 +223,7 @@ def interior_point_solver(x0: Vec,
 
 
     # Init iteration values
-    error = 1e20
+    error = 1e6
     iter_counter = 0
     f = 0.0  # objective function
     x = x0.copy()
@@ -257,7 +257,7 @@ def interior_point_solver(x0: Vec,
     converged = error <= gamma
 
     error_evolution = np.zeros(max_iter + 1)
-    error_evolution[0] = error
+    error_evolution[0] = np.max([feascond, gradcond])
     while not converged and iter_counter < max_iter:
 
         # Evaluate the functions, gradients and hessians at the current iteration.
@@ -299,13 +299,13 @@ def interior_point_solver(x0: Vec,
             alpha = 1
             for j in range(20):
                 dx1 = alpha * dx
-                x1 = x + dx
+                x1 = x + dx1
                 ret1 = func(x1, mu, lam, True, False, *arg)
 
                 L1 = ret1.f + lam.T @ ret1.G + mu.T @ (ret1.H + z) - gamma * sum(np.log(z))
                 rho = (L1 - L) / (Lx.T @ dx1 + 0.5 * dx1.T @ Lxx @ dx1)
 
-                if 0.5 < rho < 1.5:
+                if 0.95 < rho < 1.05:
                     break
                 else:
                     alpha = alpha / 2
@@ -329,7 +329,6 @@ def interior_point_solver(x0: Vec,
         # error = calc_error(dx, dz, dmu, dlam)
         # error = np.max(np.abs(r))
 
-
         feascond = max(max(abs(ret.G)), max(ret.H)) / (1 + max(max(abs(x)), max(abs(z))))
         gradcond = max(abs(Lx)) / (1 + max(max(abs(lam)), max(abs(mu))))
         error = np.max([feascond, gradcond])
@@ -337,7 +336,7 @@ def interior_point_solver(x0: Vec,
         z_inv = diags(1.0 / z)
         mu_diag = diags(mu)
 
-        converged = feascond < 1e-6 and gradcond < 1e-6
+        converged = feascond < tol and gradcond < tol
 
         if verbose > 1:
             print(f'Iteration: {iter_counter}', "-" * 80)
@@ -345,7 +344,6 @@ def interior_point_solver(x0: Vec,
                 x_df = pd.DataFrame(data={'x': x, 'dx': dx})
                 eq_df = pd.DataFrame(data={'λ': lam, 'dλ': dlam})
                 ineq_df = pd.DataFrame(data={'mu': mu, 'z': z, 'dmu': dmu, 'dz': dz})
-
                 print("x:\n", x_df)
                 print("EQ:\n", eq_df)
                 print("INEQ:\n", ineq_df)
@@ -363,7 +361,7 @@ def interior_point_solver(x0: Vec,
         print(f'SOLUTION', "-" * 80)
         print("\tx:", x)
         print("\tλ:", lam)
-        print("\tF.obj:", f)  # This is the old value of the function, has to be recalculated with the last iteration.
+        print("\tF.obj:", ret.f)  # This is the old value of the function, has to be recalculated with the last iteration.
         print("\tErr:", error)
         print(f'\tIterations: {iter_counter}')
         print('\tTime elapsed (s): ', END - START)
