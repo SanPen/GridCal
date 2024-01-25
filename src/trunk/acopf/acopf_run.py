@@ -197,5 +197,5 @@ if __name__ == '__main__':
     # linn5bus_example()
     # two_grids_of_3bus()
     # case9()
-    # case14()
-    caseBig()
+    case14()
+    # caseBig()
