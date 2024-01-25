@@ -1,0 +1,1544 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.20.1: https://docutils.sourceforge.io/" />
+<title>AC - Optimal Power Flow using an Interior Point Solver</title>
+<style type="text/css">
+
+/*
+:Author: David Goodger (goodger@python.org)
+:Id: $Id: html4css1.css 8954 2022-01-20 10:10:25Z milde $
+:Copyright: This stylesheet has been placed in the public domain.
+
+Default cascading style sheet for the HTML output of Docutils.
+
+See https://docutils.sourceforge.io/docs/howto/html-stylesheets.html for how to
+customize this style sheet.
+*/
+
+/* used to remove borders from tables and images */
+.borderless, table.borderless td, table.borderless th {
+  border: 0 }
+
+table.borderless td, table.borderless th {
+  /* Override padding for "table.docutils td" with "! important".
+     The right padding separates the table cells. */
+  padding: 0 0.5em 0 0 ! important }
+
+.first {
+  /* Override more specific margin styles with "! important". */
+  margin-top: 0 ! important }
+
+.last, .with-subtitle {
+  margin-bottom: 0 ! important }
+
+.hidden {
+  display: none }
+
+.subscript {
+  vertical-align: sub;
+  font-size: smaller }
+
+.superscript {
+  vertical-align: super;
+  font-size: smaller }
+
+a.toc-backref {
+  text-decoration: none ;
+  color: black }
+
+blockquote.epigraph {
+  margin: 2em 5em ; }
+
+dl.docutils dd {
+  margin-bottom: 0.5em }
+
+object[type="image/svg+xml"], object[type="application/x-shockwave-flash"] {
+  overflow: hidden;
+}
+
+/* Uncomment (and remove this text!) to get bold-faced definition list terms
+dl.docutils dt {
+  font-weight: bold }
+*/
+
+div.abstract {
+  margin: 2em 5em }
+
+div.abstract p.topic-title {
+  font-weight: bold ;
+  text-align: center }
+
+div.admonition, div.attention, div.caution, div.danger, div.error,
+div.hint, div.important, div.note, div.tip, div.warning {
+  margin: 2em ;
+  border: medium outset ;
+  padding: 1em }
+
+div.admonition p.admonition-title, div.hint p.admonition-title,
+div.important p.admonition-title, div.note p.admonition-title,
+div.tip p.admonition-title {
+  font-weight: bold ;
+  font-family: sans-serif }
+
+div.attention p.admonition-title, div.caution p.admonition-title,
+div.danger p.admonition-title, div.error p.admonition-title,
+div.warning p.admonition-title, .code .error {
+  color: red ;
+  font-weight: bold ;
+  font-family: sans-serif }
+
+/* Uncomment (and remove this text!) to get reduced vertical space in
+   compound paragraphs.
+div.compound .compound-first, div.compound .compound-middle {
+  margin-bottom: 0.5em }
+
+div.compound .compound-last, div.compound .compound-middle {
+  margin-top: 0.5em }
+*/
+
+div.dedication {
+  margin: 2em 5em ;
+  text-align: center ;
+  font-style: italic }
+
+div.dedication p.topic-title {
+  font-weight: bold ;
+  font-style: normal }
+
+div.figure {
+  margin-left: 2em ;
+  margin-right: 2em }
+
+div.footer, div.header {
+  clear: both;
+  font-size: smaller }
+
+div.line-block {
+  display: block ;
+  margin-top: 1em ;
+  margin-bottom: 1em }
+
+div.line-block div.line-block {
+  margin-top: 0 ;
+  margin-bottom: 0 ;
+  margin-left: 1.5em }
+
+div.sidebar {
+  margin: 0 0 0.5em 1em ;
+  border: medium outset ;
+  padding: 1em ;
+  background-color: #ffffee ;
+  width: 40% ;
+  float: right ;
+  clear: right }
+
+div.sidebar p.rubric {
+  font-family: sans-serif ;
+  font-size: medium }
+
+div.system-messages {
+  margin: 5em }
+
+div.system-messages h1 {
+  color: red }
+
+div.system-message {
+  border: medium outset ;
+  padding: 1em }
+
+div.system-message p.system-message-title {
+  color: red ;
+  font-weight: bold }
+
+div.topic {
+  margin: 2em }
+
+h1.section-subtitle, h2.section-subtitle, h3.section-subtitle,
+h4.section-subtitle, h5.section-subtitle, h6.section-subtitle {
+  margin-top: 0.4em }
+
+h1.title {
+  text-align: center }
+
+h2.subtitle {
+  text-align: center }
+
+hr.docutils {
+  width: 75% }
+
+img.align-left, .figure.align-left, object.align-left, table.align-left {
+  clear: left ;
+  float: left ;
+  margin-right: 1em }
+
+img.align-right, .figure.align-right, object.align-right, table.align-right {
+  clear: right ;
+  float: right ;
+  margin-left: 1em }
+
+img.align-center, .figure.align-center, object.align-center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+table.align-center {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.align-left {
+  text-align: left }
+
+.align-center {
+  clear: both ;
+  text-align: center }
+
+.align-right {
+  text-align: right }
+
+/* reset inner alignment in figures */
+div.align-right {
+  text-align: inherit }
+
+/* div.align-center * { */
+/*   text-align: left } */
+
+.align-top    {
+  vertical-align: top }
+
+.align-middle {
+  vertical-align: middle }
+
+.align-bottom {
+  vertical-align: bottom }
+
+ol.simple, ul.simple {
+  margin-bottom: 1em }
+
+ol.arabic {
+  list-style: decimal }
+
+ol.loweralpha {
+  list-style: lower-alpha }
+
+ol.upperalpha {
+  list-style: upper-alpha }
+
+ol.lowerroman {
+  list-style: lower-roman }
+
+ol.upperroman {
+  list-style: upper-roman }
+
+p.attribution {
+  text-align: right ;
+  margin-left: 50% }
+
+p.caption {
+  font-style: italic }
+
+p.credits {
+  font-style: italic ;
+  font-size: smaller }
+
+p.label {
+  white-space: nowrap }
+
+p.rubric {
+  font-weight: bold ;
+  font-size: larger ;
+  color: maroon ;
+  text-align: center }
+
+p.sidebar-title {
+  font-family: sans-serif ;
+  font-weight: bold ;
+  font-size: larger }
+
+p.sidebar-subtitle {
+  font-family: sans-serif ;
+  font-weight: bold }
+
+p.topic-title {
+  font-weight: bold }
+
+pre.address {
+  margin-bottom: 0 ;
+  margin-top: 0 ;
+  font: inherit }
+
+pre.literal-block, pre.doctest-block, pre.math, pre.code {
+  margin-left: 2em ;
+  margin-right: 2em }
+
+pre.code .ln { color: grey; } /* line numbers */
+pre.code, code { background-color: #eeeeee }
+pre.code .comment, code .comment { color: #5C6576 }
+pre.code .keyword, code .keyword { color: #3B0D06; font-weight: bold }
+pre.code .literal.string, code .literal.string { color: #0C5404 }
+pre.code .name.builtin, code .name.builtin { color: #352B84 }
+pre.code .deleted, code .deleted { background-color: #DEB0A1}
+pre.code .inserted, code .inserted { background-color: #A3D289}
+
+span.classifier {
+  font-family: sans-serif ;
+  font-style: oblique }
+
+span.classifier-delimiter {
+  font-family: sans-serif ;
+  font-weight: bold }
+
+span.interpreted {
+  font-family: sans-serif }
+
+span.option {
+  white-space: nowrap }
+
+span.pre {
+  white-space: pre }
+
+span.problematic {
+  color: red }
+
+span.section-subtitle {
+  /* font-size relative to parent (h1..h6 element) */
+  font-size: 80% }
+
+table.citation {
+  border-left: solid 1px gray;
+  margin-left: 1px }
+
+table.docinfo {
+  margin: 2em 4em }
+
+table.docutils {
+  margin-top: 0.5em ;
+  margin-bottom: 0.5em }
+
+table.footnote {
+  border-left: solid 1px black;
+  margin-left: 1px }
+
+table.docutils td, table.docutils th,
+table.docinfo td, table.docinfo th {
+  padding-left: 0.5em ;
+  padding-right: 0.5em ;
+  vertical-align: top }
+
+table.docutils th.field-name, table.docinfo th.docinfo-name {
+  font-weight: bold ;
+  text-align: left ;
+  white-space: nowrap ;
+  padding-left: 0 }
+
+/* "booktabs" style (no vertical lines) */
+table.docutils.booktabs {
+  border: 0px;
+  border-top: 2px solid;
+  border-bottom: 2px solid;
+  border-collapse: collapse;
+}
+table.docutils.booktabs * {
+  border: 0px;
+}
+table.docutils.booktabs th {
+  border-bottom: thin solid;
+  text-align: left;
+}
+
+h1 tt.docutils, h2 tt.docutils, h3 tt.docutils,
+h4 tt.docutils, h5 tt.docutils, h6 tt.docutils {
+  font-size: 100% }
+
+ul.auto-toc {
+  list-style-type: none }
+
+</style>
+<style type="text/css">
+
+/*
+*   math2html: convert LaTeX equations to HTML output.
+*
+*   Copyright (C) 2009,2010 Alex Fernández
+*                 2021      Günter Milde
+*
+*   Released under the terms of the `2-Clause BSD license'_, in short:
+*   Copying and distribution of this file, with or without modification,
+*   are permitted in any medium without royalty provided the copyright
+*   notice and this notice are preserved.
+*   This file is offered as-is, without any warranty.
+*
+* .. _2-Clause BSD license: http://www.spdx.org/licenses/BSD-2-Clause
+*
+*   Based on eLyXer: convert LyX source files to HTML output.
+*   http://elyxer.nongnu.org/
+*
+*
+* CSS file for LaTeX formulas.
+*
+* References: http://www.zipcon.net/~swhite/docs/math/math.html
+*             http://www.cs.tut.fi/~jkorpela/math/
+*/
+
+/* Formulas */
+.formula {
+	text-align: center;
+	margin: 1.2em 0;
+	line-height: 1.4;
+}
+span.formula {
+	white-space: nowrap;
+}
+div.formula {
+	padding: 0.5ex;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+/* Basic features */
+a.eqnumber {
+	display: inline-block;
+	float: right;
+	clear: right;
+	font-weight: bold;
+}
+span.unknown {
+	color: #800000;
+}
+span.ignored, span.arraydef {
+	display: none;
+}
+.phantom {
+	visibility: hidden;
+}
+.formula i {
+	letter-spacing: 0.1ex;
+}
+
+/* Alignment */
+.align-left, .align-l {
+	text-align: left;
+}
+.align-right, .align-r {
+	text-align: right;
+}
+.align-center, .align-c {
+	text-align: center;
+}
+
+/* Structures */
+span.hspace {
+	display: inline-block;
+}
+span.overline, span.bar {
+	text-decoration: overline;
+}
+.fraction, .fullfraction, .textfraction {
+	display: inline-block;
+	vertical-align: middle;
+	text-align: center;
+}
+span.formula .fraction,
+.textfraction,
+span.smallmatrix {
+	font-size: 80%;
+	line-height: 1;
+}
+span.numerator {
+	display: block;
+	line-height: 1;
+}
+span.denominator {
+	display: block;
+	line-height: 1;
+	padding: 0ex;
+	border-top: thin solid;
+}
+.formula sub, .formula sup {
+	font-size: 80%;
+}
+sup.numerator, sup.unit {
+	vertical-align: 80%;
+}
+sub.denominator, sub.unit {
+	vertical-align: -20%;
+}
+span.smallsymbol {
+	font-size: 75%;
+	line-height: 75%;
+}
+span.boldsymbol {
+	font-weight: bold;
+}
+span.sqrt {
+	display: inline-block;
+	vertical-align: middle;
+	padding: 0.1ex;
+}
+sup.root {
+	position: relative;
+	left: 1.4ex;
+}
+span.radical {
+	display: inline-block;
+	padding: 0ex;
+	/* font-size: 160%; for DejaVu, not required with STIX */
+	line-height: 100%;
+	vertical-align: top;
+	vertical-align: middle;
+}
+
+span.root {
+	display: inline-block;
+	border-top: thin solid;
+	padding: 0ex;
+	vertical-align: middle;
+}
+div.formula .bigoperator,
+.displaystyle .bigoperator,
+.displaystyle .bigoperator {
+	line-height: 120%;
+	font-size: 140%;
+	padding-right: 0.2ex;
+}
+span.fraction .bigoperator,
+span.scriptstyle .bigoperator {
+	line-height: inherit;
+	font-size: inherit;
+	padding-right: 0;
+}
+span.bigdelimiter {
+	display: inline-block;
+}
+span.bigdelimiter.size1 {
+	transform: scale(1, 1.2);
+	line-height: 1.2;
+}
+span.bigdelimiter.size2 {
+	transform: scale(1, 1.62);
+	line-height: 1.62%;
+
+}
+span.bigdelimiter.size3 {
+	transform: scale(1, 2.05);
+	line-height: 2.05%;
+}
+span.bigdelimiter.size4 {
+	transform: scale(1, 2.47);
+	line-height: 2.47%;
+}
+/* vertically stacked sub and superscript */
+span.scripts {
+	display: inline-table;
+	vertical-align: middle;
+	padding-right: 0.2ex;
+}
+.script {
+	display: table-row;
+	text-align: left;
+	line-height: 150%;
+}
+span.limits {
+	display: inline-table;
+	vertical-align: middle;
+}
+.limit {
+	display: table-row;
+	line-height: 99%;
+}
+sup.limit, sub.limit {
+	line-height: 100%;
+}
+span.embellished,
+span.embellished > .base {
+	display: inline-block;
+}
+span.embellished > sup,
+span.embellished > sub {
+	display: inline-block;
+	font-size: 100%;
+	position: relative;
+	bottom: 0.3em;
+	width: 0px;
+}
+span.embellished > sub {
+	top: 0.4em;
+}
+
+/* Environments */
+span.array, span.bracketcases, span.binomial, span.environment {
+	display: inline-table;
+	text-align: center;
+	vertical-align: middle;
+}
+span.arrayrow, span.binomrow {
+	display: table-row;
+	padding: 0;
+	border: 0;
+}
+span.arraycell, span.bracket, span.case, span.binomcell, span.environmentcell {
+	display: table-cell;
+	padding: 0ex 0.2ex;
+	line-height: 1; /* 99%; */
+	border: 0ex;
+}
+.environment.align > .arrayrow > .arraycell.align-l {
+	padding-right: 2em;
+}
+
+/* Inline binomials */
+span.binom {
+	display: inline-block;
+	vertical-align: middle;
+	text-align: center;
+	font-size: 80%;
+}
+span.binomstack {
+	display: block;
+	padding: 0em;
+}
+
+/* Over- and underbraces */
+span.overbrace {
+	border-top: 2pt solid;
+}
+span.underbrace {
+	border-bottom: 2pt solid;
+}
+
+/* Stackrel */
+span.stackrel {
+	display: inline-block;
+	text-align: center;
+}
+span.upstackrel {
+	display: block;
+	padding: 0em;
+	font-size: 80%;
+	line-height: 64%;
+	position: relative;
+	top: 0.15em;
+
+}
+span.downstackrel {
+	display: block;
+	vertical-align: bottom;
+	padding: 0em;
+}
+
+/* Fonts */
+.formula {
+	font-family: STIX, "DejaVu Serif", "DejaVu Math TeX Gyre", serif;
+}
+span.radical,   /* ensure correct size of square-root sign */
+span.integral { /* upright integral signs for better alignment of indices */
+	font-family: "STIXIntegralsUp", STIX;
+	/* font-size: 115%; match apparent size with DejaVu */
+}
+span.bracket {
+  /* some "STIX" and "DejaVu Math TeX Gyre" bracket pieces don't fit */
+	font-family: "DejaVu Serif", serif;
+}
+span.mathsf, span.textsf {
+	font-family: sans-serif;
+}
+span.mathrm, span.textrm {
+	font-family: STIX, "DejaVu Serif", "DejaVu Math TeX Gyre", serif;
+}
+span.mathtt, span.texttt {
+	font-family: monospace;
+}
+span.text, span.textnormal,
+span.mathsf, span.mathtt, span.mathrm {
+	font-style: normal;
+}
+span.fraktur {
+	font-family: "Lucida Blackletter", eufm10, blackletter;
+}
+span.blackboard {
+	font-family: Blackboard, msbm10, serif;
+}
+span.scriptfont {
+	font-family: "Monotype Corsiva", "Apple Chancery", "URW Chancery L", cursive;
+	font-style: italic;
+}
+span.mathscr {
+  font-family: MathJax_Script, rsfs10,  cursive;
+  font-style: italic;
+}
+span.textsc {
+	font-variant: small-caps;
+}
+span.textsl {
+	font-style: oblique;
+}
+
+/* Colors */
+span.colorbox {
+	display: inline-block;
+	padding: 5px;
+}
+span.fbox {
+	display: inline-block;
+	border: thin solid black;
+	padding: 2px;
+}
+span.boxed, span.framebox {
+	display: inline-block;
+	border: thin solid black;
+	padding: 5px;
+}
+
+</style>
+</head>
+<body>
+<div class="document" id="ac-optimal-power-flow-using-an-interior-point-solver">
+<h1 class="title">AC - Optimal Power Flow using an Interior Point Solver</h1>
+
+<p>Planning the generation for a given power network is typically done using DC - Optimal Power Flow, a method that relies on approximating the power flow as a linear problem to speed up the process in exchange of precision.
+There are works that seek to solve the full non-linear problem, being one of the most relevant the MATPOWER software. The work described in this technical note integrates the Matpower Interior Point Solver in the GridCal environment using Python with the goal of adding new electrical modelling functionalities (such as including transformer operating point optimization or relaxation of the constraints to have a faster case study methodology).</p>
+<p>The present document outlines the main additions in this regard, including:</p>
+<ul class="simple">
+<li>The model construction from a GridCal object.</li>
+<li>Objective function and constraints definition.</li>
+<li>KKT conditions and Newton-Raphson method.</li>
+<li>Interior Point Solver.</li>
+<li>Optimization output.</li>
+</ul>
+<div class="section" id="grid-model">
+<h1>1. Grid model</h1>
+<p>The two main objects needed to build an electrical grid are buses and branches. The buses are the points where consumption and generation of electricity occur, and branches are the interconnections between buses that transport electricity from points with excess of generation to points lacking electricity. Some of this buses, known as <em>slack</em> buses, serve as references for voltage modulus and phase for the rest of the buses.</p>
+<p>The final topology of the grid will be given by bus connectivity matrices, where the standard direction of the flow is also stored identifying the <em>from</em> and the <em>to</em> buses as the origin and destination respectively. This distinction is important, as it will determine the direction of the flow alongside the sign of the branch power.</p>
+<p>Generators are the third object that have to be considered when modelling the electrical grid. We need at least 1 generator in order for the grid to have any sense. If only on bus has a generator, we directly identify this node as the <em>slack</em> bus. With more generator buses, we will identify those who will be teh reference of the grid (typically will be buses with high and stable power capacity).
+Each grid has its generator connectivity matrix, and each generator has its own cost function, considered to be quadratic in this work as shown in the following chapters.</p>
+<p>Operational limits of each elements have to be gathered to establish the constraints for buses, lines and generators.</p>
+<p>GridCal objects are identified by the class <em>NumericalCircuit</em>, which can be abreviated as <em>nc</em>. We can extract from them all the information needed to construct the grid model as shown in the following table:</p>
+<div class="section" id="numerical-circuit-data">
+<h2>Numerical Circuit data</h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="13%" />
+<col width="16%" />
+<col width="8%" />
+<col width="62%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">name</th>
+<th class="head">class_type</th>
+<th class="head">unit</th>
+<th class="head">descriptions</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>slack</td>
+<td>Array(int)</td>
+<td>&nbsp;</td>
+<td>Array with the slack IDs.</td>
+</tr>
+<tr><td>no_slack</td>
+<td>Array(int)</td>
+<td>&nbsp;</td>
+<td>Array with the rest of the buses IDs.</td>
+</tr>
+<tr><td>from_idx</td>
+<td>Array(int)</td>
+<td>&nbsp;</td>
+<td>Array with the <em>from</em> buses IDs.</td>
+</tr>
+<tr><td>to_idx</td>
+<td>Array(int)</td>
+<td>&nbsp;</td>
+<td>Array with the <em>to</em> buses IDs.</td>
+</tr>
+<tr><td>Ybus</td>
+<td>Matrix(complex)</td>
+<td>&nbsp;</td>
+<td>Bus admittance matrix.</td>
+</tr>
+<tr><td>Yf</td>
+<td>Matrix(complex)</td>
+<td>&nbsp;</td>
+<td><em>From</em> admittance matrix.</td>
+</tr>
+<tr><td>Yt</td>
+<td>Matrix(complex)</td>
+<td>&nbsp;</td>
+<td><em>To</em> admittance matrix.</td>
+</tr>
+<tr><td>Cg</td>
+<td>Matrix(int)</td>
+<td>&nbsp;</td>
+<td>Generator connectivity matrix.</td>
+</tr>
+<tr><td>Cf</td>
+<td>Matrix(int)</td>
+<td>&nbsp;</td>
+<td><em>From</em> connectivity matrix.</td>
+</tr>
+<tr><td>Ct</td>
+<td>Matrix(int)</td>
+<td>&nbsp;</td>
+<td><em>To</em> connectivity matrix.</td>
+</tr>
+<tr><td>Sbase</td>
+<td>float</td>
+<td>MW</td>
+<td>Base power for per unit conversion.</td>
+</tr>
+<tr><td>Sd</td>
+<td>Array(complex)</td>
+<td>MVA</td>
+<td>Array with the complex power loads per bus.</td>
+</tr>
+<tr><td>Pg_max</td>
+<td>Array(float)</td>
+<td>MW</td>
+<td>Array with the upper bound for active power per generator.</td>
+</tr>
+<tr><td>Pg_min</td>
+<td>Array(float)</td>
+<td>MW</td>
+<td>Array with the lower bound for active power per generator.</td>
+</tr>
+<tr><td>Qg_max</td>
+<td>Array(float)</td>
+<td>Mvar</td>
+<td>Array with the upper bound for reactive power per generator.</td>
+</tr>
+<tr><td>Qg_min</td>
+<td>Array(float)</td>
+<td>Mvar</td>
+<td>Array with the lower bound for reactive power per generator.</td>
+</tr>
+<tr><td>Vm_max</td>
+<td>Array(float)</td>
+<td>p.u.</td>
+<td>Array with the upper bound for voltage magnitude per bus.</td>
+</tr>
+<tr><td>Vm_min</td>
+<td>Array(float)</td>
+<td>p.u.</td>
+<td>Array with the lower bound for voltage magnitude per bus.</td>
+</tr>
+<tr><td>Va_max</td>
+<td>Array(float)</td>
+<td>rad</td>
+<td>Array with the upper bound for phase per bus.</td>
+</tr>
+<tr><td>Va_min</td>
+<td>Array(float)</td>
+<td>rad</td>
+<td>Array with the lower bound for phase per bus.</td>
+</tr>
+<tr><td>rates</td>
+<td>Array(float)</td>
+<td>MVA</td>
+<td>Array with the upper bound for line loading per branch.</td>
+</tr>
+<tr><td>c0</td>
+<td>Array(float)</td>
+<td>€</td>
+<td>Array with the base cost per generator.</td>
+</tr>
+<tr><td>c1</td>
+<td>Array(float)</td>
+<td>€/MWh</td>
+<td>Array with the linear cost per generator.</td>
+</tr>
+<tr><td>c2</td>
+<td>Array(float)</td>
+<td>€/MWh^2</td>
+<td>Array with the quadratic cost per generator.</td>
+</tr>
+</tbody>
+</table>
+<p>Once all the necessary data has been loaded from the <em>NumericalCircuit</em> object, the optimization is ready to run. We will see now the mathematical definition of the problem.</p>
+</div>
+</div>
+<div class="section" id="variables-objective-function-and-constraints-definition">
+<h1>2. Variables, objective function and constraints definition</h1>
+<p>The problem to be solved has the following structure:</p>
+<div class="formula">
+<span class="environment align"><span class="arrayrow">
+<span class="arraycell align-r">
+<i>min</i><i>f</i>(<i>x</i>)
+</span>
+
+</span>
+<span class="arrayrow">
+<span class="arraycell align-r">
+ 
+</span>
+
+</span>
+<span class="arrayrow">
+<span class="arraycell align-r">
+<i>s</i>.<i>t</i>.<i>g</i>(<i>x</i>) = 0
+</span>
+
+</span>
+<span class="arrayrow">
+<span class="arraycell align-r">
+ 
+</span>
+
+</span>
+<span class="arrayrow">
+<span class="arraycell align-r">
+<i>h</i>(<i>x</i>) ≥ 0
+</span>
+
+</span>
+</span>
+</div>
+<div class="section" id="variables">
+<h2>2.1. Variables</h2>
+<p>The optimization variables of this problem are:</p>
+<ul class="simple">
+<li><strong>Voltage magnitude</strong> (<em>v</em>) of all the buses included in the grid. Note that there is no distinction for slack or PV buses. During a PowerFlow evaluation, these buses would have a known voltage magnitude value, but for this AC-OPF evaluation, we set it as free to avoid overconstraining the model (and also considering them as a variable to optimize).</li>
+<li><strong>Voltage angle</strong> (* <span class="formula"><i>θ</i></span> <em>) of all the buses. We will later see that we consider one bus (the primary *slack</em> bus) as the reference angle 0 to eliminate the rotating nature of the power flow equations.</li>
+<li><strong>Active power generation</strong> (<em>P_g</em>) of all the generators.</li>
+<li><strong>Reactive power generation</strong> (<em>Q_g</em>) of all the generators.</li>
+</ul>
+</div>
+<div class="section" id="objective-function">
+<h2>2.2 Objective function</h2>
+<p>The objective function of an AC-OPF can be defined in many different ways, depending on what are we trying to minimize. We can opt to minimize the cost, heat losses, penalties due to overloads or demand mismatching...</p>
+<p>In this model, the objective function to minimize corresponds to the sum of the costs of each generator, considered to be quadratic:</p>
+<div class="formula">
+<i>min</i><i>f</i>(<i>v</i>, <i>θ</i>, <i>P</i><sub><i>g</i></sub>, <i>Q</i><sub><i>g</i></sub>) = <i>aaa</i><i>c</i><span class="scripts"><sup class="script"><i>T</i></sup><sub class="script">2</sub></span><i>Pg</i><sup>2</sup> + <i>c</i><span class="scripts"><sup class="script"><i>T</i></sup><sub class="script">1</sub></span><i>Pg</i> + <i>c</i><sub>0</sub>
+</div>
+<p>where <span class="formula"><i>c</i><sub>2</sub></span> , <span class="formula"><i>c</i><sub>1</sub></span> and <span class="formula"><i>c</i><sub>0</sub></span> are the vectors with quadratic, linear and constant costs of the generators.</p>
+</div>
+<div class="section" id="balance-constraint">
+<h2>2.3 Balance constraint</h2>
+<p>The flow balance has to be maintained at each node <span class="formula"><i>m</i></span> for each point in time <span class="formula"><i>t</i></span>. In general terms, it is expressed as:</p>
+<div class="formula">
+<span class="environment align"><span class="arrayrow">
+<span class="arraycell align-r">
+ <i>level</i>[<i>t</i>, <i>m</i>] = <i>level</i>[<i>t</i> − 1, <i>m</i>]
+</span>
+
+</span>
+<span class="arrayrow">
+<span class="arraycell align-r">
+ 
+</span>
+
+</span>
+<span class="arrayrow">
+<span class="arraycell align-r">
+ + <i>dt</i>*<i>inflow</i>[<i>m</i>]
+</span>
+
+</span>
+<span class="arrayrow">
+<span class="arraycell align-r">
+ 
+</span>
+
+</span>
+<span class="arrayrow">
+<span class="arraycell align-r">
+ + <i>dt</i>*<i>flow</i><sub><i>in</i></sub>[<i>t</i>, <i>m</i>]
+</span>
+
+</span>
+<span class="arrayrow">
+<span class="arraycell align-r">
+ 
+</span>
+
+</span>
+<span class="arrayrow">
+<span class="arraycell align-r">
+ + <i>dt</i>*<i>flow</i><sub><i>p</i>2<i>x</i></sub>[<i>t</i>, <i>m</i>]
+</span>
+
+</span>
+<span class="arrayrow">
+<span class="arraycell align-r">
+ 
+</span>
+
+</span>
+<span class="arrayrow">
+<span class="arraycell align-r">
+ − <i>dt</i>*<i>spill</i>[<i>t</i>, <i>m</i>]
+</span>
+
+</span>
+<span class="arrayrow">
+<span class="arraycell align-r">
+ 
+</span>
+
+</span>
+<span class="arrayrow">
+<span class="arraycell align-r">
+ − <i>dt</i>*<i>flow</i><sub><i>out</i></sub>[<i>t</i>, <i>m</i>]
+</span>
+
+</span>
+</span>
+</div>
+<p>where <span class="formula"><i>dt</i></span> is the time step, <span class="formula"><i>inflow</i>[<i>m</i>]</span> is known data of the entering fluid flow, <span class="formula"><i>flow</i><sub><i>in</i></sub>[<i>t</i>, <i>m</i>]</span> is the sum of the input flows from the connected paths, <span class="formula"><i>flow</i><sub><i>p</i>2<i>x</i></sub>[<i>t</i>, <i>m</i>]</span> is the input flow coming from the P2Xs, and <span class="formula"><i>flow</i><sub><i>out</i></sub>[<i>t</i>, <i>m</i>]</span> is the sum of the output flows from the connected paths. In case the first time index is being simulated, <span class="formula"><i>level</i>[<i>t</i> − 1, <i>m</i>]</span> is simply replaced by <span class="formula"><i>initial</i><sub><i>level</i></sub>[<i>m</i>]</span>, which is input information.</p>
+<p>The level of any given node has to be connected somehow to the contribution of injection devices. Hence, to consider turbines:</p>
+<div class="formula">
+<i>flow</i><sub><i>out</i></sub>[<i>t</i>, <i>m</i>] +  = <span class="limits"><sup class="limit"><i>ni</i></sup><span class="limit"><span class="bigoperator">∑</span></span><sub class="limit"><i>i</i> ∈ <i>m</i></sub></span><i>p</i>[<i>t</i>, <i>g</i>]*<i>flow</i><sub><i>max</i></sub>[<i>i</i>] ⁄ (<i>p</i><sub><i>max</i></sub>[<i>g</i>]*<i>turb</i><sub><i>eff</i></sub>[<i>i</i>])
+</div>
+<p>where <span class="formula"><i>i</i></span> is the turbine index, <span class="formula"><i>p</i>[<i>t</i>, <i>g</i>]</span> is the generation power at time <span class="formula"><i>t</i></span> for generator index <span class="formula"><i>g</i></span>, <span class="formula"><i>flow</i><sub><i>max</i></sub></span> is the maximum turbine flow, <span class="formula"><i>p</i><sub><i>max</i></sub></span> the maximum generator power in per unit, and <span class="formula"><i>turb</i><sub><i>eff</i></sub></span> the turbine's efficiency.</p>
+<p>Similarly, for pumps:</p>
+<div class="formula">
+<i>flow</i><sub><i>in</i></sub>[<i>t</i>, <i>m</i>] −  = <span class="limits"><sup class="limit"><i>ni</i></sup><span class="limit"><span class="bigoperator">∑</span></span><sub class="limit"><i>i</i> ∈ <i>m</i></sub></span><i>p</i>[<i>t</i>, <i>g</i>]*<i>flow</i><sub><i>max</i></sub>[<i>i</i>]*<i>pump</i><sub><i>eff</i></sub>[<i>i</i>] ⁄ <i>abs</i>(<i>p</i><sub><i>min</i></sub>[<i>g</i>])
+</div>
+<p>where <span class="formula"><i>i</i></span> is the pump index, <span class="formula"><i>p</i>[<i>t</i>, <i>g</i>]</span> is the generation power at time <span class="formula"><i>t</i></span> for generator index <span class="formula"><i>g</i></span>, <span class="formula"><i>flow</i><sub><i>max</i></sub></span> is the maximum pump flow, <span class="formula"><i>p</i><sub><i>min</i></sub></span> the minimum generator power in per unit, and <span class="formula"><i>pump</i><sub><i>eff</i></sub></span> the pump's efficiency.</p>
+<p>In the case of P2Xs, it follows the same expression as in pumps:</p>
+<div class="formula">
+<i>flow</i><sub><i>p</i>2<i>x</i></sub>[<i>t</i>, <i>m</i>] +  = <span class="limits"><sup class="limit"><i>ni</i></sup><span class="limit"><span class="bigoperator">∑</span></span><sub class="limit"><i>i</i> ∈ <i>m</i></sub></span><i>p</i>[<i>t</i>, <i>g</i>]*<i>flow</i><sub><i>max</i></sub>[<i>i</i>]*<i>p</i>2<i>x</i><sub><i>eff</i></sub>[<i>i</i>] ⁄ <i>abs</i>(<i>p</i><sub><i>min</i></sub>[<i>g</i>])
+</div>
+</div>
+<div class="section" id="output-results">
+<h2>2.3 Output results</h2>
+<p>The results of interest for each device type are shown below.</p>
+</div>
+<div class="section" id="node">
+<h2>Node</h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="29%" />
+<col width="16%" />
+<col width="6%" />
+<col width="49%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">name</th>
+<th class="head">class_type</th>
+<th class="head">unit</th>
+<th class="head">descriptions</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>fluid_node_current_level</td>
+<td>float</td>
+<td>hm3</td>
+<td>Node level</td>
+</tr>
+<tr><td>fluid_node_flow_in</td>
+<td>float</td>
+<td>m3/s</td>
+<td>Input flow from paths</td>
+</tr>
+<tr><td>fluid_node_flow_out</td>
+<td>float</td>
+<td>m3/s</td>
+<td>Output flow from paths</td>
+</tr>
+<tr><td>fluid_node_p2x_flow</td>
+<td>float</td>
+<td>m3/s</td>
+<td>Input flow from the P2Xs</td>
+</tr>
+<tr><td>fluid_node_spillage</td>
+<td>float</td>
+<td>m3/s</td>
+<td>Lost flow</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="path">
+<h2>Path</h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="29%" />
+<col width="16%" />
+<col width="6%" />
+<col width="49%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">name</th>
+<th class="head">class_type</th>
+<th class="head">unit</th>
+<th class="head">descriptions</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>fluid_path_flow</td>
+<td>float</td>
+<td>m3/s</td>
+<td>Flow circulating through the path</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="injection-turbine-pump-p2x">
+<h2>Injection (turbine, pump, P2X)</h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="29%" />
+<col width="16%" />
+<col width="6%" />
+<col width="49%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">name</th>
+<th class="head">class_type</th>
+<th class="head">unit</th>
+<th class="head">descriptions</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>fluid_injection_flow</td>
+<td>float</td>
+<td>m3/s</td>
+<td>Flow injected by the device</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="practical-example">
+<h1>3. Practical example</h1>
+<p>This section covers a practical case to exemplify how to build a grid containing fluid type devices, run the time-series linear optimization, and explore the results. Everything will be shown through GridCal's scripting functionalities.</p>
+<div class="section" id="model-initialization">
+<h2>Model initialization</h2>
+<pre class="code python literal-block">
+<span class="name">grid</span> <span class="operator">=</span> <span class="name">gce</span><span class="operator">.</span><span class="name">MultiCircuit</span><span class="punctuation">(</span><span class="name">name</span><span class="operator">=</span><span class="literal string single">'hydro_grid'</span><span class="punctuation">)</span><span class="whitespace">
+
+</span><span class="comment single"># let's create a master profile</span><span class="whitespace">
+</span><span class="name">date0</span> <span class="operator">=</span> <span class="name">dt</span><span class="operator">.</span><span class="name">datetime</span><span class="punctuation">(</span><span class="literal number integer">2023</span><span class="punctuation">,</span> <span class="literal number integer">1</span><span class="punctuation">,</span> <span class="literal number integer">1</span><span class="punctuation">)</span><span class="whitespace">
+</span><span class="name">time_array</span> <span class="operator">=</span> <span class="name">pd</span><span class="operator">.</span><span class="name">DatetimeIndex</span><span class="punctuation">([</span><span class="name">date0</span> <span class="operator">+</span> <span class="name">dt</span><span class="operator">.</span><span class="name">timedelta</span><span class="punctuation">(</span><span class="name">hours</span><span class="operator">=</span><span class="name">i</span><span class="punctuation">)</span> <span class="keyword">for</span> <span class="name">i</span> <span class="operator word">in</span> <span class="name builtin">range</span><span class="punctuation">(</span><span class="literal number integer">10</span><span class="punctuation">)])</span><span class="whitespace">
+</span><span class="name">x</span> <span class="operator">=</span> <span class="name">np</span><span class="operator">.</span><span class="name">linspace</span><span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">10</span><span class="punctuation">,</span> <span class="name builtin">len</span><span class="punctuation">(</span><span class="name">time_array</span><span class="punctuation">))</span><span class="whitespace">
+</span><span class="name">df_0</span> <span class="operator">=</span> <span class="name">pd</span><span class="operator">.</span><span class="name">DataFrame</span><span class="punctuation">(</span><span class="name">data</span><span class="operator">=</span><span class="name">x</span><span class="punctuation">,</span> <span class="name">index</span><span class="operator">=</span><span class="name">time_array</span><span class="punctuation">)</span>  <span class="comment single"># complex values</span><span class="whitespace">
+
+</span><span class="comment single"># set the grid master time profile</span><span class="whitespace">
+</span><span class="name">grid</span><span class="operator">.</span><span class="name">time_profile</span> <span class="operator">=</span> <span class="name">df_0</span><span class="operator">.</span><span class="name">index</span>
+</pre>
+</div>
+<div class="section" id="add-fluid-side">
+<h2>Add fluid side</h2>
+<pre class="code python literal-block">
+<span class="comment single"># Add some fluid nodes, with their electrical buses</span><span class="whitespace">
+</span><span class="name">fb1</span> <span class="operator">=</span> <span class="name">gce</span><span class="operator">.</span><span class="name">Bus</span><span class="punctuation">(</span><span class="name">name</span><span class="operator">=</span><span class="literal string single">'fb1'</span><span class="punctuation">)</span><span class="whitespace">
+</span><span class="name">fb2</span> <span class="operator">=</span> <span class="name">gce</span><span class="operator">.</span><span class="name">Bus</span><span class="punctuation">(</span><span class="name">name</span><span class="operator">=</span><span class="literal string single">'fb2'</span><span class="punctuation">)</span><span class="whitespace">
+</span><span class="name">fb3</span> <span class="operator">=</span> <span class="name">gce</span><span class="operator">.</span><span class="name">Bus</span><span class="punctuation">(</span><span class="name">name</span><span class="operator">=</span><span class="literal string single">'fb3'</span><span class="punctuation">)</span><span class="whitespace">
+
+</span><span class="name">grid</span><span class="operator">.</span><span class="name">add_bus</span><span class="punctuation">(</span><span class="name">fb1</span><span class="punctuation">)</span><span class="whitespace">
+</span><span class="name">grid</span><span class="operator">.</span><span class="name">add_bus</span><span class="punctuation">(</span><span class="name">fb2</span><span class="punctuation">)</span><span class="whitespace">
+</span><span class="name">grid</span><span class="operator">.</span><span class="name">add_bus</span><span class="punctuation">(</span><span class="name">fb3</span><span class="punctuation">)</span><span class="whitespace">
+
+</span><span class="name">f1</span> <span class="operator">=</span> <span class="name">gce</span><span class="operator">.</span><span class="name">FluidNode</span><span class="punctuation">(</span><span class="name">name</span><span class="operator">=</span><span class="literal string single">'fluid_node_1'</span><span class="punctuation">,</span><span class="whitespace">
+</span>                   <span class="name">min_level</span><span class="operator">=</span><span class="literal number float">0.</span><span class="punctuation">,</span><span class="whitespace">
+</span>                   <span class="name">max_level</span><span class="operator">=</span><span class="literal number float">100.</span><span class="punctuation">,</span><span class="whitespace">
+</span>                   <span class="name">current_level</span><span class="operator">=</span><span class="literal number float">50.</span><span class="punctuation">,</span><span class="whitespace">
+</span>                   <span class="name">spillage_cost</span><span class="operator">=</span><span class="literal number float">10.</span><span class="punctuation">,</span><span class="whitespace">
+</span>                   <span class="name">inflow</span><span class="operator">=</span><span class="literal number float">0.</span><span class="punctuation">,</span><span class="whitespace">
+</span>                   <span class="name">bus</span><span class="operator">=</span><span class="name">fb1</span><span class="punctuation">)</span><span class="whitespace">
+
+</span><span class="name">f2</span> <span class="operator">=</span> <span class="name">gce</span><span class="operator">.</span><span class="name">FluidNode</span><span class="punctuation">(</span><span class="name">name</span><span class="operator">=</span><span class="literal string single">'fluid_node_2'</span><span class="punctuation">,</span><span class="whitespace">
+</span>                   <span class="name">spillage_cost</span><span class="operator">=</span><span class="literal number float">10.</span><span class="punctuation">,</span><span class="whitespace">
+</span>                   <span class="name">bus</span><span class="operator">=</span><span class="name">fb2</span><span class="punctuation">)</span><span class="whitespace">
+
+</span><span class="name">f3</span> <span class="operator">=</span> <span class="name">gce</span><span class="operator">.</span><span class="name">FluidNode</span><span class="punctuation">(</span><span class="name">name</span><span class="operator">=</span><span class="literal string single">'fluid_node_3'</span><span class="punctuation">,</span><span class="whitespace">
+</span>                   <span class="name">spillage_cost</span><span class="operator">=</span><span class="literal number float">10.</span><span class="punctuation">,</span><span class="whitespace">
+</span>                   <span class="name">bus</span><span class="operator">=</span><span class="name">fb3</span><span class="punctuation">)</span><span class="whitespace">
+
+</span><span class="name">f4</span> <span class="operator">=</span> <span class="name">gce</span><span class="operator">.</span><span class="name">FluidNode</span><span class="punctuation">(</span><span class="name">name</span><span class="operator">=</span><span class="literal string single">'fluid_node_4'</span><span class="punctuation">,</span><span class="whitespace">
+</span>                   <span class="name">min_level</span><span class="operator">=</span><span class="literal number integer">0</span><span class="punctuation">,</span><span class="whitespace">
+</span>                   <span class="name">max_level</span><span class="operator">=</span><span class="literal number integer">100</span><span class="punctuation">,</span><span class="whitespace">
+</span>                   <span class="name">current_level</span><span class="operator">=</span><span class="literal number integer">50</span><span class="punctuation">,</span><span class="whitespace">
+</span>                   <span class="name">spillage_cost</span><span class="operator">=</span><span class="literal number float">10.</span><span class="punctuation">,</span><span class="whitespace">
+</span>                   <span class="name">inflow</span><span class="operator">=</span><span class="literal number float">0.</span><span class="punctuation">)</span><span class="whitespace">
+
+</span><span class="name">grid</span><span class="operator">.</span><span class="name">add_fluid_node</span><span class="punctuation">(</span><span class="name">f1</span><span class="punctuation">)</span><span class="whitespace">
+</span><span class="name">grid</span><span class="operator">.</span><span class="name">add_fluid_node</span><span class="punctuation">(</span><span class="name">f2</span><span class="punctuation">)</span><span class="whitespace">
+</span><span class="name">grid</span><span class="operator">.</span><span class="name">add_fluid_node</span><span class="punctuation">(</span><span class="name">f3</span><span class="punctuation">)</span><span class="whitespace">
+</span><span class="name">grid</span><span class="operator">.</span><span class="name">add_fluid_node</span><span class="punctuation">(</span><span class="name">f4</span><span class="punctuation">)</span><span class="whitespace">
+
+</span><span class="comment single"># Add the paths</span><span class="whitespace">
+</span><span class="name">p1</span> <span class="operator">=</span> <span class="name">gce</span><span class="operator">.</span><span class="name">FluidPath</span><span class="punctuation">(</span><span class="name">name</span><span class="operator">=</span><span class="literal string single">'path_1'</span><span class="punctuation">,</span><span class="whitespace">
+</span>                   <span class="name">source</span><span class="operator">=</span><span class="name">f1</span><span class="punctuation">,</span><span class="whitespace">
+</span>                   <span class="name">target</span><span class="operator">=</span><span class="name">f2</span><span class="punctuation">,</span><span class="whitespace">
+</span>                   <span class="name">min_flow</span><span class="operator">=-</span><span class="literal number float">50.</span><span class="punctuation">,</span><span class="whitespace">
+</span>                   <span class="name">max_flow</span><span class="operator">=</span><span class="literal number float">50.</span><span class="punctuation">,)</span><span class="whitespace">
+
+</span><span class="name">p2</span> <span class="operator">=</span> <span class="name">gce</span><span class="operator">.</span><span class="name">FluidPath</span><span class="punctuation">(</span><span class="name">name</span><span class="operator">=</span><span class="literal string single">'path_2'</span><span class="punctuation">,</span><span class="whitespace">
+</span>                   <span class="name">source</span><span class="operator">=</span><span class="name">f2</span><span class="punctuation">,</span><span class="whitespace">
+</span>                   <span class="name">target</span><span class="operator">=</span><span class="name">f3</span><span class="punctuation">,</span><span class="whitespace">
+</span>                   <span class="name">min_flow</span><span class="operator">=-</span><span class="literal number float">50.</span><span class="punctuation">,</span><span class="whitespace">
+</span>                   <span class="name">max_flow</span><span class="operator">=</span><span class="literal number float">50.</span><span class="punctuation">,)</span><span class="whitespace">
+
+</span><span class="name">p3</span> <span class="operator">=</span> <span class="name">gce</span><span class="operator">.</span><span class="name">FluidPath</span><span class="punctuation">(</span><span class="name">name</span><span class="operator">=</span><span class="literal string single">'path_3'</span><span class="punctuation">,</span><span class="whitespace">
+</span>                   <span class="name">source</span><span class="operator">=</span><span class="name">f3</span><span class="punctuation">,</span><span class="whitespace">
+</span>                   <span class="name">target</span><span class="operator">=</span><span class="name">f4</span><span class="punctuation">,</span><span class="whitespace">
+</span>                   <span class="name">min_flow</span><span class="operator">=-</span><span class="literal number float">50.</span><span class="punctuation">,</span><span class="whitespace">
+</span>                   <span class="name">max_flow</span><span class="operator">=</span><span class="literal number float">50.</span><span class="punctuation">,)</span><span class="whitespace">
+
+</span><span class="name">grid</span><span class="operator">.</span><span class="name">add_fluid_path</span><span class="punctuation">(</span><span class="name">p1</span><span class="punctuation">)</span><span class="whitespace">
+</span><span class="name">grid</span><span class="operator">.</span><span class="name">add_fluid_path</span><span class="punctuation">(</span><span class="name">p2</span><span class="punctuation">)</span><span class="whitespace">
+</span><span class="name">grid</span><span class="operator">.</span><span class="name">add_fluid_path</span><span class="punctuation">(</span><span class="name">p3</span><span class="punctuation">)</span><span class="whitespace">
+
+</span><span class="comment single"># Add electrical generators for each fluid machine</span><span class="whitespace">
+</span><span class="name">g1</span> <span class="operator">=</span> <span class="name">gce</span><span class="operator">.</span><span class="name">Generator</span><span class="punctuation">(</span><span class="name">name</span><span class="operator">=</span><span class="literal string single">'turb_1_gen'</span><span class="punctuation">,</span><span class="whitespace">
+</span>                   <span class="name">Pmax</span><span class="operator">=</span><span class="literal number float">1000.0</span><span class="punctuation">,</span><span class="whitespace">
+</span>                   <span class="name">Pmin</span><span class="operator">=</span><span class="literal number float">0.0</span><span class="punctuation">,</span><span class="whitespace">
+</span>                   <span class="name">Cost</span><span class="operator">=</span><span class="literal number float">0.5</span><span class="punctuation">)</span><span class="whitespace">
+
+</span><span class="name">g2</span> <span class="operator">=</span> <span class="name">gce</span><span class="operator">.</span><span class="name">Generator</span><span class="punctuation">(</span><span class="name">name</span><span class="operator">=</span><span class="literal string single">'pump_1_gen'</span><span class="punctuation">,</span><span class="whitespace">
+</span>                   <span class="name">Pmax</span><span class="operator">=</span><span class="literal number float">0.0</span><span class="punctuation">,</span><span class="whitespace">
+</span>                   <span class="name">Pmin</span><span class="operator">=-</span><span class="literal number float">1000.0</span><span class="punctuation">,</span><span class="whitespace">
+</span>                   <span class="name">Cost</span><span class="operator">=-</span><span class="literal number float">0.5</span><span class="punctuation">)</span><span class="whitespace">
+
+</span><span class="name">g3</span> <span class="operator">=</span> <span class="name">gce</span><span class="operator">.</span><span class="name">Generator</span><span class="punctuation">(</span><span class="name">name</span><span class="operator">=</span><span class="literal string single">'p2x_1_gen'</span><span class="punctuation">,</span><span class="whitespace">
+</span>                   <span class="name">Pmax</span><span class="operator">=</span><span class="literal number float">0.0</span><span class="punctuation">,</span><span class="whitespace">
+</span>                   <span class="name">Pmin</span><span class="operator">=-</span><span class="literal number float">1000.0</span><span class="punctuation">,</span><span class="whitespace">
+</span>                   <span class="name">Cost</span><span class="operator">=-</span><span class="literal number float">0.5</span><span class="punctuation">)</span><span class="whitespace">
+
+</span><span class="name">grid</span><span class="operator">.</span><span class="name">add_generator</span><span class="punctuation">(</span><span class="name">fb3</span><span class="punctuation">,</span> <span class="name">g1</span><span class="punctuation">)</span><span class="whitespace">
+</span><span class="name">grid</span><span class="operator">.</span><span class="name">add_generator</span><span class="punctuation">(</span><span class="name">fb2</span><span class="punctuation">,</span> <span class="name">g2</span><span class="punctuation">)</span><span class="whitespace">
+</span><span class="name">grid</span><span class="operator">.</span><span class="name">add_generator</span><span class="punctuation">(</span><span class="name">fb1</span><span class="punctuation">,</span> <span class="name">g3</span><span class="punctuation">)</span><span class="whitespace">
+
+</span><span class="comment single"># Add a turbine</span><span class="whitespace">
+</span><span class="name">turb1</span> <span class="operator">=</span> <span class="name">gce</span><span class="operator">.</span><span class="name">FluidTurbine</span><span class="punctuation">(</span><span class="name">name</span><span class="operator">=</span><span class="literal string single">'turbine_1'</span><span class="punctuation">,</span><span class="whitespace">
+</span>                         <span class="name">plant</span><span class="operator">=</span><span class="name">f3</span><span class="punctuation">,</span><span class="whitespace">
+</span>                         <span class="name">generator</span><span class="operator">=</span><span class="name">g1</span><span class="punctuation">,</span><span class="whitespace">
+</span>                         <span class="name">max_flow_rate</span><span class="operator">=</span><span class="literal number float">45.0</span><span class="punctuation">,</span><span class="whitespace">
+</span>                         <span class="name">efficiency</span><span class="operator">=</span><span class="literal number float">0.95</span><span class="punctuation">)</span><span class="whitespace">
+
+</span><span class="name">grid</span><span class="operator">.</span><span class="name">add_fluid_turbine</span><span class="punctuation">(</span><span class="name">f3</span><span class="punctuation">,</span> <span class="name">turb1</span><span class="punctuation">)</span><span class="whitespace">
+
+</span><span class="comment single"># Add a pump</span><span class="whitespace">
+</span><span class="name">pump1</span> <span class="operator">=</span> <span class="name">gce</span><span class="operator">.</span><span class="name">FluidPump</span><span class="punctuation">(</span><span class="name">name</span><span class="operator">=</span><span class="literal string single">'pump_1'</span><span class="punctuation">,</span><span class="whitespace">
+</span>                      <span class="name">reservoir</span><span class="operator">=</span><span class="name">f2</span><span class="punctuation">,</span><span class="whitespace">
+</span>                      <span class="name">generator</span><span class="operator">=</span><span class="name">g2</span><span class="punctuation">,</span><span class="whitespace">
+</span>                      <span class="name">max_flow_rate</span><span class="operator">=</span><span class="literal number float">49.0</span><span class="punctuation">,</span><span class="whitespace">
+</span>                      <span class="name">efficiency</span><span class="operator">=</span><span class="literal number float">0.85</span><span class="punctuation">)</span><span class="whitespace">
+
+</span><span class="name">grid</span><span class="operator">.</span><span class="name">add_fluid_pump</span><span class="punctuation">(</span><span class="name">f2</span><span class="punctuation">,</span> <span class="name">pump1</span><span class="punctuation">)</span><span class="whitespace">
+
+</span><span class="comment single"># Add a p2x</span><span class="whitespace">
+</span><span class="name">p2x1</span> <span class="operator">=</span> <span class="name">gce</span><span class="operator">.</span><span class="name">FluidP2x</span><span class="punctuation">(</span><span class="name">name</span><span class="operator">=</span><span class="literal string single">'p2x_1'</span><span class="punctuation">,</span><span class="whitespace">
+</span>                    <span class="name">plant</span><span class="operator">=</span><span class="name">f1</span><span class="punctuation">,</span><span class="whitespace">
+</span>                    <span class="name">generator</span><span class="operator">=</span><span class="name">g3</span><span class="punctuation">,</span><span class="whitespace">
+</span>                    <span class="name">max_flow_rate</span><span class="operator">=</span><span class="literal number float">49.0</span><span class="punctuation">,</span><span class="whitespace">
+</span>                    <span class="name">efficiency</span><span class="operator">=</span><span class="literal number float">0.9</span><span class="punctuation">)</span><span class="whitespace">
+
+</span><span class="name">grid</span><span class="operator">.</span><span class="name">add_fluid_p2x</span><span class="punctuation">(</span><span class="name">f1</span><span class="punctuation">,</span> <span class="name">p2x1</span><span class="punctuation">)</span>
+</pre>
+</div>
+<div class="section" id="add-remaining-electrical-side">
+<h2>Add remaining electrical side</h2>
+<pre class="code python literal-block">
+<span class="comment single"># Add the electrical grid part</span><span class="whitespace">
+</span><span class="name">b1</span> <span class="operator">=</span> <span class="name">gce</span><span class="operator">.</span><span class="name">Bus</span><span class="punctuation">(</span><span class="name">name</span><span class="operator">=</span><span class="literal string single">'b1'</span><span class="punctuation">,</span><span class="whitespace">
+</span>             <span class="name">vnom</span><span class="operator">=</span><span class="literal number integer">10</span><span class="punctuation">,</span><span class="whitespace">
+</span>             <span class="name">is_slack</span><span class="operator">=</span><span class="keyword constant">True</span><span class="punctuation">)</span><span class="whitespace">
+
+</span><span class="name">b2</span> <span class="operator">=</span> <span class="name">gce</span><span class="operator">.</span><span class="name">Bus</span><span class="punctuation">(</span><span class="name">name</span><span class="operator">=</span><span class="literal string single">'b2'</span><span class="punctuation">,</span><span class="whitespace">
+</span>             <span class="name">vnom</span><span class="operator">=</span><span class="literal number integer">10</span><span class="punctuation">)</span><span class="whitespace">
+
+</span><span class="name">grid</span><span class="operator">.</span><span class="name">add_bus</span><span class="punctuation">(</span><span class="name">b1</span><span class="punctuation">)</span><span class="whitespace">
+</span><span class="name">grid</span><span class="operator">.</span><span class="name">add_bus</span><span class="punctuation">(</span><span class="name">b2</span><span class="punctuation">)</span><span class="whitespace">
+
+</span><span class="name">g0</span> <span class="operator">=</span> <span class="name">gce</span><span class="operator">.</span><span class="name">Generator</span><span class="punctuation">(</span><span class="name">name</span><span class="operator">=</span><span class="literal string single">'slack_gen'</span><span class="punctuation">,</span><span class="whitespace">
+</span>                   <span class="name">Pmax</span><span class="operator">=</span><span class="literal number float">1000.0</span><span class="punctuation">,</span><span class="whitespace">
+</span>                   <span class="name">Pmin</span><span class="operator">=</span><span class="literal number float">0.0</span><span class="punctuation">,</span><span class="whitespace">
+</span>                   <span class="name">Cost</span><span class="operator">=</span><span class="literal number float">0.8</span><span class="punctuation">)</span><span class="whitespace">
+
+</span><span class="name">grid</span><span class="operator">.</span><span class="name">add_generator</span><span class="punctuation">(</span><span class="name">b1</span><span class="punctuation">,</span> <span class="name">g0</span><span class="punctuation">)</span><span class="whitespace">
+
+</span><span class="name">l1</span> <span class="operator">=</span> <span class="name">gce</span><span class="operator">.</span><span class="name">Load</span><span class="punctuation">(</span><span class="name">name</span><span class="operator">=</span><span class="literal string single">'l1'</span><span class="punctuation">,</span><span class="whitespace">
+</span>              <span class="name">P</span><span class="operator">=</span><span class="literal number integer">11</span><span class="punctuation">,</span><span class="whitespace">
+</span>              <span class="name">Q</span><span class="operator">=</span><span class="literal number integer">0</span><span class="punctuation">)</span><span class="whitespace">
+
+</span><span class="name">grid</span><span class="operator">.</span><span class="name">add_load</span><span class="punctuation">(</span><span class="name">b2</span><span class="punctuation">,</span> <span class="name">l1</span><span class="punctuation">)</span><span class="whitespace">
+
+</span><span class="name">line1</span> <span class="operator">=</span> <span class="name">gce</span><span class="operator">.</span><span class="name">Line</span><span class="punctuation">(</span><span class="name">name</span><span class="operator">=</span><span class="literal string single">'line1'</span><span class="punctuation">,</span><span class="whitespace">
+</span>                 <span class="name">bus_from</span><span class="operator">=</span><span class="name">b1</span><span class="punctuation">,</span><span class="whitespace">
+</span>                 <span class="name">bus_to</span><span class="operator">=</span><span class="name">b2</span><span class="punctuation">,</span><span class="whitespace">
+</span>                 <span class="name">rate</span><span class="operator">=</span><span class="literal number integer">5</span><span class="punctuation">,</span><span class="whitespace">
+</span>                 <span class="name">x</span><span class="operator">=</span><span class="literal number float">0.05</span><span class="punctuation">)</span><span class="whitespace">
+
+</span><span class="name">line2</span> <span class="operator">=</span> <span class="name">gce</span><span class="operator">.</span><span class="name">Line</span><span class="punctuation">(</span><span class="name">name</span><span class="operator">=</span><span class="literal string single">'line2'</span><span class="punctuation">,</span><span class="whitespace">
+</span>                 <span class="name">bus_from</span><span class="operator">=</span><span class="name">b1</span><span class="punctuation">,</span><span class="whitespace">
+</span>                 <span class="name">bus_to</span><span class="operator">=</span><span class="name">fb1</span><span class="punctuation">,</span><span class="whitespace">
+</span>                 <span class="name">rate</span><span class="operator">=</span><span class="literal number integer">10</span><span class="punctuation">,</span><span class="whitespace">
+</span>                 <span class="name">x</span><span class="operator">=</span><span class="literal number float">0.05</span><span class="punctuation">)</span><span class="whitespace">
+
+</span><span class="name">line3</span> <span class="operator">=</span> <span class="name">gce</span><span class="operator">.</span><span class="name">Line</span><span class="punctuation">(</span><span class="name">name</span><span class="operator">=</span><span class="literal string single">'line3'</span><span class="punctuation">,</span><span class="whitespace">
+</span>                 <span class="name">bus_from</span><span class="operator">=</span><span class="name">b1</span><span class="punctuation">,</span><span class="whitespace">
+</span>                 <span class="name">bus_to</span><span class="operator">=</span><span class="name">fb2</span><span class="punctuation">,</span><span class="whitespace">
+</span>                 <span class="name">rate</span><span class="operator">=</span><span class="literal number integer">10</span><span class="punctuation">,</span><span class="whitespace">
+</span>                 <span class="name">x</span><span class="operator">=</span><span class="literal number float">0.05</span><span class="punctuation">)</span><span class="whitespace">
+
+</span><span class="name">line4</span> <span class="operator">=</span> <span class="name">gce</span><span class="operator">.</span><span class="name">Line</span><span class="punctuation">(</span><span class="name">name</span><span class="operator">=</span><span class="literal string single">'line4'</span><span class="punctuation">,</span><span class="whitespace">
+</span>                 <span class="name">bus_from</span><span class="operator">=</span><span class="name">fb3</span><span class="punctuation">,</span><span class="whitespace">
+</span>                 <span class="name">bus_to</span><span class="operator">=</span><span class="name">b2</span><span class="punctuation">,</span><span class="whitespace">
+</span>                 <span class="name">rate</span><span class="operator">=</span><span class="literal number integer">15</span><span class="punctuation">,</span><span class="whitespace">
+</span>                 <span class="name">x</span><span class="operator">=</span><span class="literal number float">0.05</span><span class="punctuation">)</span><span class="whitespace">
+
+</span><span class="name">grid</span><span class="operator">.</span><span class="name">add_line</span><span class="punctuation">(</span><span class="name">line1</span><span class="punctuation">)</span><span class="whitespace">
+</span><span class="name">grid</span><span class="operator">.</span><span class="name">add_line</span><span class="punctuation">(</span><span class="name">line2</span><span class="punctuation">)</span><span class="whitespace">
+</span><span class="name">grid</span><span class="operator">.</span><span class="name">add_line</span><span class="punctuation">(</span><span class="name">line3</span><span class="punctuation">)</span><span class="whitespace">
+</span><span class="name">grid</span><span class="operator">.</span><span class="name">add_line</span><span class="punctuation">(</span><span class="name">line4</span><span class="punctuation">)</span>
+</pre>
+<p>The resulting system is the one shown below.</p>
+<div class="figure">
+<img alt="./../../figures/opf/case6_fluid.png" src="./../../figures/opf/case6_fluid.png" />
+</div>
+</div>
+<div class="section" id="run-optimization">
+<h2>Run optimization</h2>
+<pre class="code python literal-block">
+<span class="comment single"># Run the simulation</span><span class="whitespace">
+</span><span class="name">opf_driver</span> <span class="operator">=</span> <span class="name">gce</span><span class="operator">.</span><span class="name">OptimalPowerFlowTimeSeriesDriver</span><span class="punctuation">(</span><span class="name">grid</span><span class="operator">=</span><span class="name">grid</span><span class="punctuation">)</span><span class="whitespace">
+
+</span><span class="name builtin">print</span><span class="punctuation">(</span><span class="literal string single">'Solving...'</span><span class="punctuation">)</span><span class="whitespace">
+</span><span class="name">opf_driver</span><span class="operator">.</span><span class="name">run</span><span class="punctuation">()</span><span class="whitespace">
+
+</span><span class="name builtin">print</span><span class="punctuation">(</span><span class="literal string double">&quot;Status:&quot;</span><span class="punctuation">,</span> <span class="name">opf_driver</span><span class="operator">.</span><span class="name">results</span><span class="operator">.</span><span class="name">converged</span><span class="punctuation">)</span><span class="whitespace">
+</span><span class="name builtin">print</span><span class="punctuation">(</span><span class="literal string single">'Angles</span><span class="literal string escape">\n</span><span class="literal string single">'</span><span class="punctuation">,</span> <span class="name">np</span><span class="operator">.</span><span class="name">angle</span><span class="punctuation">(</span><span class="name">opf_driver</span><span class="operator">.</span><span class="name">results</span><span class="operator">.</span><span class="name">voltage</span><span class="punctuation">))</span><span class="whitespace">
+</span><span class="name builtin">print</span><span class="punctuation">(</span><span class="literal string single">'Branch loading</span><span class="literal string escape">\n</span><span class="literal string single">'</span><span class="punctuation">,</span> <span class="name">opf_driver</span><span class="operator">.</span><span class="name">results</span><span class="operator">.</span><span class="name">loading</span><span class="punctuation">)</span><span class="whitespace">
+</span><span class="name builtin">print</span><span class="punctuation">(</span><span class="literal string single">'Gen power</span><span class="literal string escape">\n</span><span class="literal string single">'</span><span class="punctuation">,</span> <span class="name">opf_driver</span><span class="operator">.</span><span class="name">results</span><span class="operator">.</span><span class="name">generator_power</span><span class="punctuation">)</span>
+</pre>
+</div>
+<div class="section" id="results">
+<h2>Results</h2>
+<p><strong>Generation power, in MW</strong></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="31%" />
+<col width="15%" />
+<col width="18%" />
+<col width="19%" />
+<col width="17%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">time</th>
+<th class="head">p2x_1_gen</th>
+<th class="head">pump_1_gen</th>
+<th class="head">turb_1_gen</th>
+<th class="head">slack_gen</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>2023-01-01 00:00:00</td>
+<td>0.0</td>
+<td>-6.8237821</td>
+<td>6.0</td>
+<td>11.823782</td>
+</tr>
+<tr><td>2023-01-01 01:00:00</td>
+<td>0.0</td>
+<td>-6.8237821</td>
+<td>6.0</td>
+<td>11.823782</td>
+</tr>
+<tr><td>2023-01-01 02:00:00</td>
+<td>0.0</td>
+<td>-6.8237821</td>
+<td>6.0</td>
+<td>11.823782</td>
+</tr>
+<tr><td>2023-01-01 03:00:00</td>
+<td>0.0</td>
+<td>-6.8237821</td>
+<td>6.0</td>
+<td>11.823782</td>
+</tr>
+<tr><td>2023-01-01 04:00:00</td>
+<td>0.0</td>
+<td>-6.8237821</td>
+<td>6.0</td>
+<td>11.823782</td>
+</tr>
+<tr><td>2023-01-01 05:00:00</td>
+<td>0.0</td>
+<td>-6.8237821</td>
+<td>6.0</td>
+<td>11.823782</td>
+</tr>
+<tr><td>2023-01-01 06:00:00</td>
+<td>0.0</td>
+<td>-6.8237821</td>
+<td>6.0</td>
+<td>11.823782</td>
+</tr>
+<tr><td>2023-01-01 07:00:00</td>
+<td>0.0</td>
+<td>-6.8237821</td>
+<td>6.0</td>
+<td>11.823782</td>
+</tr>
+<tr><td>2023-01-01 08:00:00</td>
+<td>0.0</td>
+<td>-6.8237821</td>
+<td>6.0</td>
+<td>11.823782</td>
+</tr>
+<tr><td>2023-01-01 09:00:00</td>
+<td>0.0</td>
+<td>-6.8237821</td>
+<td>6.0</td>
+<td>11.823782</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Fluid node level, in m3</strong></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="28%" />
+<col width="18%" />
+<col width="18%" />
+<col width="18%" />
+<col width="18%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">time</th>
+<th class="head">fluid_node_1</th>
+<th class="head">fluid_node_2</th>
+<th class="head">fluid_node_3</th>
+<th class="head">fluid_node_4</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>2023-01-01 00:00:00</td>
+<td>49.998977</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>50.001023</td>
+</tr>
+<tr><td>2023-01-01 01:00:00</td>
+<td>49.997954</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>50.002046</td>
+</tr>
+<tr><td>2023-01-01 02:00:00</td>
+<td>49.996931</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>50.003069</td>
+</tr>
+<tr><td>2023-01-01 03:00:00</td>
+<td>49.995907</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>50.004093</td>
+</tr>
+<tr><td>2023-01-01 04:00:00</td>
+<td>49.994884</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>50.005116</td>
+</tr>
+<tr><td>2023-01-01 05:00:00</td>
+<td>49.993861</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>50.006139</td>
+</tr>
+<tr><td>2023-01-01 06:00:00</td>
+<td>49.992838</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>50.007162</td>
+</tr>
+<tr><td>2023-01-01 07:00:00</td>
+<td>49.991815</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>50.008185</td>
+</tr>
+<tr><td>2023-01-01 08:00:00</td>
+<td>49.990792</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>50.009208</td>
+</tr>
+<tr><td>2023-01-01 09:00:00</td>
+<td>49.989768</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>50.010232</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Path flow, in m3/s</strong></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="42%" />
+<col width="19%" />
+<col width="19%" />
+<col width="19%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">time</th>
+<th class="head">path_1</th>
+<th class="head">path_2</th>
+<th class="head">path_3</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>2023-01-01 00:00:00</td>
+<td>0.284211</td>
+<td>0.284211</td>
+<td>0.284211</td>
+</tr>
+<tr><td>2023-01-01 01:00:00</td>
+<td>0.284211</td>
+<td>0.284211</td>
+<td>0.284211</td>
+</tr>
+<tr><td>2023-01-01 02:00:00</td>
+<td>0.284211</td>
+<td>0.284211</td>
+<td>0.284211</td>
+</tr>
+<tr><td>2023-01-01 03:00:00</td>
+<td>0.284211</td>
+<td>0.284211</td>
+<td>0.284211</td>
+</tr>
+<tr><td>2023-01-01 04:00:00</td>
+<td>0.284211</td>
+<td>0.284211</td>
+<td>0.284211</td>
+</tr>
+<tr><td>2023-01-01 05:00:00</td>
+<td>0.284211</td>
+<td>0.284211</td>
+<td>0.284211</td>
+</tr>
+<tr><td>2023-01-01 06:00:00</td>
+<td>0.284211</td>
+<td>0.284211</td>
+<td>0.284211</td>
+</tr>
+<tr><td>2023-01-01 07:00:00</td>
+<td>0.284211</td>
+<td>0.284211</td>
+<td>0.284211</td>
+</tr>
+<tr><td>2023-01-01 08:00:00</td>
+<td>0.284211</td>
+<td>0.284211</td>
+<td>0.284211</td>
+</tr>
+<tr><td>2023-01-01 09:00:00</td>
+<td>0.284211</td>
+<td>0.284211</td>
+<td>0.284211</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</body>
+</html>

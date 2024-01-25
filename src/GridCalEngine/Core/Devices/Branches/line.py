@@ -77,8 +77,8 @@ class Line(ParentBranch):
         :param r2: negative-sequence resistence (p.u.)
         :param x2: negative-sequence reactance (p.u.)
         :param b2: negative-sequence susceptance (p.u.)
-        :param capex: Cost of investment (€/MW)
-        :param opex: Cost of operation (€/MWh)
+        :param capex: Cost of investment (e/MW)
+        :param opex: Cost of operation (e/MWh)
         :param build_status: build status (now time)
         """
 
@@ -242,7 +242,7 @@ class Line(ParentBranch):
         :return:
         """
         data = list()
-        for name, properties in self.editable_headers.items():
+        for name, properties in self.registered_properties.items():
             obj = getattr(self, name)
 
             if properties.tpe == DeviceType.BusDevice:
@@ -252,7 +252,7 @@ class Line(ParentBranch):
                 if obj is None:
                     obj = ''
                 else:
-                    obj = str(obj)
+                    obj = obj.idtag
 
             elif properties.tpe not in [str, float, int, bool]:
                 obj = str(obj)

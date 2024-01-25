@@ -35,7 +35,7 @@ class EmissionGas(EditableDevice):
         :param name: name of the gas (CO2, NOx, etc.)
         :param code: secondary id
         :param idtag: UUID code
-        :param cost: cost per tonn (€/t)
+        :param cost: cost per tonn (e/t)
         :param cost_prof: profile of costs
         :param color: hexadecimal color string (i.e. #AA00FF)
         """
@@ -51,7 +51,7 @@ class EmissionGas(EditableDevice):
 
         self.color = color if color is not None else self.rnd_color()
 
-        self.register(key='cost', units='€/t', tpe=float, definition='Cost of emissions (currency / ton)',
+        self.register(key='cost', units='e/t', tpe=float, definition='Cost of emissions (e / ton)',
                       profile_name='cost_prof')
         self.register(key='color', units='', tpe=str, definition='Color to paint')
 

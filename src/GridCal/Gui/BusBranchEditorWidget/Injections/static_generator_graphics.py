@@ -181,15 +181,15 @@ class StaticGeneratorGraphicItem(InjectionTemplateGraphicItem):
         self.glyph.setPen(QPen(self.color, self.width, self.style))
         self.label.setDefaultTextColor(self.color)
 
-    def plot(self):
-        """
-        Plot API objects profiles
-        """
-        # time series object from the last simulation
-        ts = self.editor.circuit.time_profile
-
-        # plot the profiles
-        self.api_object.plot_profiles(time=ts)
+    # def plot(self):
+    #     """
+    #     Plot API objects profiles
+    #     """
+    #     # time series object from the last simulation
+    #     ts = self.editor.circuit.time_profile
+    #
+    #     # plot the profiles
+    #     self.api_object.plot_profiles(time=ts)
 
     def mousePressEvent(self, QGraphicsSceneMouseEvent):
         """
@@ -197,7 +197,7 @@ class StaticGeneratorGraphicItem(InjectionTemplateGraphicItem):
         :param QGraphicsSceneMouseEvent:
         :return:
         """
-        mdl = ObjectsModel([self.api_object], self.api_object.editable_headers,
+        mdl = ObjectsModel([self.api_object], self.api_object.registered_properties,
                            parent=self.editor.object_editor_table, editable=True, transposed=True,
                            dictionary_of_lists={DeviceType.Technology.value: self.editor.circuit.technologies, })
         self.editor.object_editor_table.setModel(mdl)

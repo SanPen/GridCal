@@ -292,7 +292,7 @@ class MultiCircuit:
                 if elm.properties_with_profile is not None:
                     key = str(elm.device_type.value)
                     profile_attr = list(elm.properties_with_profile.keys())
-                    profile_types = [elm.editable_headers[attr].tpe for attr in profile_attr]
+                    profile_types = [elm.registered_properties[attr].tpe for attr in profile_attr]
                     self.profile_magnitudes[key] = (profile_attr, profile_types)
                     self.device_type_name_dict[key] = elm.device_type
 
@@ -1120,144 +1120,302 @@ class MultiCircuit:
                 lst.append(elm.Enom)
         return np.array(lst)
 
-    def get_elements_by_type(self, element_type: DeviceType):
+    def get_elements_by_type(self, device_type: DeviceType):
         """
         Get set of elements and their parent nodes
-        :param element_type: DeviceTYpe instance
+        :param device_type: DeviceTYpe instance
         :return: List of elements, it raises an exception if the elements are unknown
         """
 
-        if element_type == DeviceType.LoadDevice:
+        if device_type == DeviceType.LoadDevice:
             return self.get_loads()
 
-        elif element_type == DeviceType.StaticGeneratorDevice:
+        elif device_type == DeviceType.StaticGeneratorDevice:
             return self.get_static_generators()
 
-        elif element_type == DeviceType.GeneratorDevice:
+        elif device_type == DeviceType.GeneratorDevice:
             return self.get_generators()
 
-        elif element_type == DeviceType.BatteryDevice:
+        elif device_type == DeviceType.BatteryDevice:
             return self.get_batteries()
 
-        elif element_type == DeviceType.ShuntDevice:
+        elif device_type == DeviceType.ShuntDevice:
             return self.get_shunts()
 
-        elif element_type == DeviceType.ExternalGridDevice:
+        elif device_type == DeviceType.ExternalGridDevice:
             return self.get_external_grids()
 
-        elif element_type == DeviceType.LineDevice:
+        elif device_type == DeviceType.LineDevice:
             return self.lines
 
-        elif element_type == DeviceType.Transformer2WDevice:
+        elif device_type == DeviceType.Transformer2WDevice:
             return self.transformers2w
 
-        elif element_type == DeviceType.Transformer3WDevice:
+        elif device_type == DeviceType.Transformer3WDevice:
             return self.transformers3w
 
-        elif element_type == DeviceType.WindingDevice:
+        elif device_type == DeviceType.WindingDevice:
             return self.windings
 
-        elif element_type == DeviceType.HVDCLineDevice:
+        elif device_type == DeviceType.HVDCLineDevice:
             return self.hvdc_lines
 
-        elif element_type == DeviceType.UpfcDevice:
+        elif device_type == DeviceType.UpfcDevice:
             return self.upfc_devices
 
-        elif element_type == DeviceType.VscDevice:
+        elif device_type == DeviceType.VscDevice:
             return self.vsc_devices
 
-        elif element_type == DeviceType.BusDevice:
+        elif device_type == DeviceType.BusDevice:
             return self.buses
 
-        elif element_type == DeviceType.OverheadLineTypeDevice:
+        elif device_type == DeviceType.OverheadLineTypeDevice:
             return self.overhead_line_types
 
-        elif element_type == DeviceType.TransformerTypeDevice:
+        elif device_type == DeviceType.TransformerTypeDevice:
             return self.transformer_types
 
-        elif element_type == DeviceType.UnderGroundLineDevice:
+        elif device_type == DeviceType.UnderGroundLineDevice:
             return self.underground_cable_types
 
-        elif element_type == DeviceType.SequenceLineDevice:
+        elif device_type == DeviceType.SequenceLineDevice:
             return self.sequence_line_types
 
-        elif element_type == DeviceType.WireDevice:
+        elif device_type == DeviceType.WireDevice:
             return self.wire_types
 
-        elif element_type == DeviceType.DCLineDevice:
+        elif device_type == DeviceType.DCLineDevice:
             return self.dc_lines
 
-        elif element_type == DeviceType.SwitchDevice:
+        elif device_type == DeviceType.SwitchDevice:
             return self.switch_devices
 
-        elif element_type == DeviceType.SubstationDevice:
+        elif device_type == DeviceType.SubstationDevice:
             return self.substations
 
-        elif element_type == DeviceType.ConnectivityNodeDevice:
+        elif device_type == DeviceType.ConnectivityNodeDevice:
             return self.connectivity_nodes
 
-        elif element_type == DeviceType.BusBarDevice:
+        elif device_type == DeviceType.BusBarDevice:
             return self.bus_bars
 
-        elif element_type == DeviceType.AreaDevice:
+        elif device_type == DeviceType.AreaDevice:
             return self.areas
 
-        elif element_type == DeviceType.ZoneDevice:
+        elif device_type == DeviceType.ZoneDevice:
             return self.zones
 
-        elif element_type == DeviceType.CountryDevice:
+        elif device_type == DeviceType.CountryDevice:
             return self.countries
 
-        elif element_type == DeviceType.ContingencyDevice:
+        elif device_type == DeviceType.ContingencyDevice:
             return self.contingencies
 
-        elif element_type == DeviceType.ContingencyGroupDevice:
+        elif device_type == DeviceType.ContingencyGroupDevice:
             return self.contingency_groups
 
-        elif element_type == DeviceType.Technology:
+        elif device_type == DeviceType.Technology:
             return self.technologies
 
-        elif element_type == DeviceType.InvestmentDevice:
+        elif device_type == DeviceType.InvestmentDevice:
             return self.investments
 
-        elif element_type == DeviceType.InvestmentsGroupDevice:
+        elif device_type == DeviceType.InvestmentsGroupDevice:
             return self.investments_groups
 
-        elif element_type == DeviceType.FuelDevice:
+        elif device_type == DeviceType.FuelDevice:
             return self.fuels
 
-        elif element_type == DeviceType.EmissionGasDevice:
+        elif device_type == DeviceType.EmissionGasDevice:
             return self.emission_gases
 
-        elif element_type == DeviceType.GeneratorTechnologyAssociation:
+        elif device_type == DeviceType.GeneratorTechnologyAssociation:
             return self.generators_technologies
 
-        elif element_type == DeviceType.GeneratorFuelAssociation:
+        elif device_type == DeviceType.GeneratorFuelAssociation:
             return self.generators_fuels
 
-        elif element_type == DeviceType.GeneratorEmissionAssociation:
+        elif device_type == DeviceType.GeneratorEmissionAssociation:
             return self.generators_emissions
 
-        elif element_type == DeviceType.ConnectivityNodeDevice:
+        elif device_type == DeviceType.ConnectivityNodeDevice:
             return self.connectivity_nodes
 
-        elif element_type == DeviceType.FluidNodeDevice:
+        elif device_type == DeviceType.FluidNodeDevice:
             return self.fluid_nodes
 
-        elif element_type == DeviceType.FluidPathDevice:
+        elif device_type == DeviceType.FluidPathDevice:
             return self.fluid_paths
 
-        elif element_type == DeviceType.FluidTurbineDevice:
+        elif device_type == DeviceType.FluidTurbineDevice:
             return self.get_fluid_turbines()
 
-        elif element_type == DeviceType.FluidPumpDevice:
+        elif device_type == DeviceType.FluidPumpDevice:
             return self.get_fluid_pumps()
 
-        elif element_type == DeviceType.FluidP2XDevice:
+        elif device_type == DeviceType.FluidP2XDevice:
             return self.get_fluid_p2xs()
 
         else:
-            raise Exception('Element type not understood ' + str(element_type))
+            raise Exception('Element type not understood ' + str(device_type))
+
+    def set_elements_by_type(self, device_type: DeviceType,
+                             devices: List[dev.EditableDevice],
+                             logger: Logger = Logger()):
+        """
+        Set a list of elements all at once
+        :param device_type: DeviceType
+        :param devices: list of devices
+        :param logger: Logger
+        """
+        if device_type == DeviceType.LoadDevice:
+            for elm in devices:
+                elm.bus.add_device(elm)
+
+        elif device_type == DeviceType.StaticGeneratorDevice:
+            for elm in devices:
+                elm.bus.add_device(elm)
+
+        elif device_type == DeviceType.GeneratorDevice:
+            for elm in devices:
+                elm.bus.add_device(elm)
+
+        elif device_type == DeviceType.BatteryDevice:
+            for elm in devices:
+                elm.bus.add_device(elm)
+
+        elif device_type == DeviceType.ShuntDevice:
+            for elm in devices:
+                elm.bus.add_device(elm)
+
+        elif device_type == DeviceType.ExternalGridDevice:
+            for elm in devices:
+                elm.bus.add_device(elm)
+
+        elif device_type == DeviceType.LineDevice:
+            for d in devices:
+                # this is done to detect those lines that should be transformers
+                self.add_line(d, logger=logger)
+
+        elif device_type == DeviceType.Transformer2WDevice:
+            self.transformers2w = devices
+
+        elif device_type == DeviceType.Transformer3WDevice:
+            self.transformers3w = devices
+
+        elif device_type == DeviceType.WindingDevice:
+            self.windings = devices
+
+        elif device_type == DeviceType.HVDCLineDevice:
+            self.hvdc_lines = devices
+
+        elif device_type == DeviceType.UpfcDevice:
+            self.upfc_devices = devices
+
+        elif device_type == DeviceType.VscDevice:
+            for elm in devices:
+                elm.correct_buses_connection()
+            self.vsc_devices = devices
+
+        elif device_type == DeviceType.BusDevice:
+            self.buses = devices
+
+        elif device_type == DeviceType.OverheadLineTypeDevice:
+            self.overhead_line_types = devices
+
+        elif device_type == DeviceType.TransformerTypeDevice:
+            self.transformer_types = devices
+
+        elif device_type == DeviceType.UnderGroundLineDevice:
+            self.underground_cable_types = devices
+
+        elif device_type == DeviceType.SequenceLineDevice:
+            self.sequence_line_types = devices
+
+        elif device_type == DeviceType.WireDevice:
+            self.wire_types = devices
+
+        elif device_type == DeviceType.DCLineDevice:
+            self.dc_lines = devices
+
+        elif device_type == DeviceType.SwitchDevice:
+            self.switch_devices = devices
+
+        elif device_type == DeviceType.SubstationDevice:
+            self.substations = devices
+
+        elif device_type == DeviceType.ConnectivityNodeDevice:
+            self.connectivity_nodes = devices
+
+        elif device_type == DeviceType.BusBarDevice:
+            self.bus_bars = devices
+
+        elif device_type == DeviceType.AreaDevice:
+            self.areas = devices
+
+        elif device_type == DeviceType.ZoneDevice:
+            self.zones = devices
+
+        elif device_type == DeviceType.CountryDevice:
+            self.countries = devices
+
+        elif device_type == DeviceType.ContingencyDevice:
+            self.contingencies = devices
+
+        elif device_type == DeviceType.ContingencyGroupDevice:
+            self.contingency_groups = devices
+
+        elif device_type == DeviceType.Technology:
+            self.technologies = devices
+
+        elif device_type == DeviceType.InvestmentDevice:
+            self.investments = devices
+
+        elif device_type == DeviceType.InvestmentsGroupDevice:
+            self.investments_groups = devices
+
+        elif device_type == DeviceType.FuelDevice:
+            self.fuels = devices
+
+        elif device_type == DeviceType.EmissionGasDevice:
+            self.emission_gases = devices
+
+        elif device_type == DeviceType.GeneratorTechnologyAssociation:
+            self.generators_technologies = devices
+
+        elif device_type == DeviceType.GeneratorFuelAssociation:
+            self.generators_fuels = devices
+
+        elif device_type == DeviceType.GeneratorEmissionAssociation:
+            self.generators_emissions = devices
+
+        elif device_type == DeviceType.ConnectivityNodeDevice:
+            self.connectivity_nodes = devices
+
+        elif device_type == DeviceType.FluidNodeDevice:
+            self.fluid_nodes = devices
+
+        elif device_type == DeviceType.FluidPathDevice:
+            self.fluid_paths = devices
+
+        elif device_type == DeviceType.FluidTurbineDevice:
+            for elm in devices:
+                elm.plant.add_device(elm)
+
+        elif device_type == DeviceType.FluidPumpDevice:
+            for elm in devices:
+                elm.plant.add_device(elm)
+
+        elif device_type == DeviceType.FluidP2XDevice:
+            for elm in devices:
+                elm.plant.add_device(elm)
+
+        elif device_type == DeviceType.BranchDevice:
+            for d in devices:
+                self.add_branch(d)  # each branch needs to be converted accordingly
+
+        else:
+            raise Exception('Element type not understood ' + str(device_type))
 
     def delete_elements_by_type(self, obj: dev.EditableDevice):
         """
@@ -1401,7 +1559,7 @@ class MultiCircuit:
         """
         data = dict()
         for key, tpe in self.device_type_name_dict.items():
-            elements = self.get_elements_by_type(element_type=tpe)
+            elements = self.get_elements_by_type(device_type=tpe)
 
             for elm in elements:
                 data[elm.idtag] = elm
