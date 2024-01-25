@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -15,19 +15,22 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-
+from typing import Union
 from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceType
+from GridCalEngine.Core.Devices.Substation.busbar import BusBar
 
 
 class ConnectivityNode(EditableDevice):
 
-    def __init__(self, name='Substation', idtag=None, code='', x=0.0, y=0.0, dc=False, bus_bar = None):
+    def __init__(self, name='CN', idtag=None, code='', dc: bool = False,
+                 bus_bar: Union[None, BusBar] = None):
         """
-
-        :param name:
-        :param idtag:
-        :param x:
-        :param y:
+        Constructor
+        :param name: Name of the connectivity node
+        :param idtag: unique identifier
+        :param code: secondary identifyier
+        :param dc: is this a DC connectivity node?
+        :param bus_bar: Associated bus bar
         """
         EditableDevice.__init__(self,
                                 name=name,
@@ -38,4 +41,7 @@ class ConnectivityNode(EditableDevice):
         self.dc = dc
 
         self.bus_bar = bus_bar
+
+        self.register("dc", "", bool, "is this a DC connectivity node?")
+        self.register("bus_bar", "", DeviceType.BusBarDevice, "Associated bus bar")
 

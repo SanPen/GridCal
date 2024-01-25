@@ -532,7 +532,7 @@ print('Nodal prices \n', opf_ts_driver.results.bus_shadow_prices)
 
 #### Run a linear optimization and verify with power flow
 
-Often ties, you want to dispatch the generation using a linear optimization, to then _veryfy_ the
+Often ties, you want to dispatch the generation using a linear optimization, to then _verify_ the
 results using the power exact power flow. With GridCal, to do so is as easy as passing the results of the OPF into the
 PowerFlowDriver:
 
@@ -563,7 +563,7 @@ print(pf_driver.results.get_bus_df())
 print(pf_driver.results.get_branch_df())
 ```
 
-Outout:
+Output:
 ```text
 OPF results:
 
@@ -604,11 +604,79 @@ Branch 6 -34.95  -6.66  35.61   6.16   -58.25
 Branch 7  -4.60  -5.88   4.62   4.01   -23.02
 ```
 
+### Hydro linear OPF
+The following example loads and runs the linear optimization for a system that integrates fluid elements into a regular electrical grid. 
+
+```python
+import os
+import GridCalEngine.api as gce
+
+folder = os.path.join('..', 'Grids_and_profiles', 'grids')
+fname = os.path.join(folder, 'hydro_simple.gridcal')
+grid = gce.open_file(fname)
+
+# Run the simulation
+opf_driver = gce.OptimalPowerFlowTimeSeriesDriver(grid=grid)
+
+print('Solving...')
+opf_driver.run()
+
+print('Gen power\n', opf_driver.results.generator_power)
+print('Branch loading\n', opf_driver.results.loading)
+print('Reservoir level\n', opf_driver.results.fluid_node_current_level)
+```
+
+Output:
+```text
+OPF results:
+
+time                | p2x_1_gen | pump_1_gen | turbine_1_gen | slack_gen
+------------------- | --------- | ---------- | ------------- | ---------
+2023-01-01 00:00:00 | 0.0       | -6.8237821 | 6.0           | 11.823782
+2023-01-01 01:00:00 | 0.0       | -6.8237821 | 6.0           | 11.823782
+2023-01-01 02:00:00 | 0.0       | -6.8237821 | 6.0           | 11.823782
+2023-01-01 03:00:00 | 0.0       | -6.8237821 | 6.0           | 11.823782
+2023-01-01 04:00:00 | 0.0       | -6.8237821 | 6.0           | 11.823782
+2023-01-01 05:00:00 | 0.0       | -6.8237821 | 6.0           | 11.823782
+2023-01-01 06:00:00 | 0.0       | -6.8237821 | 6.0           | 11.823782
+2023-01-01 07:00:00 | 0.0       | -6.8237821 | 6.0           | 11.823782
+2023-01-01 08:00:00 | 0.0       | -6.8237821 | 6.0           | 11.823782
+2023-01-01 09:00:00 | 0.0       | -6.8237821 | 6.0           | 11.823782
+
+
+time                | line1  | line2 | line3     | line4
+------------------- | ------ | ----- | --------- | -----
+2023-01-01 00:00:00 | 100.0  | 0.0   | 68.237821 | 40.0
+2023-01-01 01:00:00 | 100.0  | 0.0   | 68.237821 | 40.0
+2023-01-01 02:00:00 | 100.0  | 0.0   | 68.237821 | 40.0
+2023-01-01 03:00:00 | 100.0  | 0.0   | 68.237821 | 40.0
+2023-01-01 04:00:00 | 100.0  | 0.0   | 68.237821 | 40.0
+2023-01-01 05:00:00 | 100.0  | 0.0   | 68.237821 | 40.0
+2023-01-01 06:00:00 | 100.0  | 0.0   | 68.237821 | 40.0
+2023-01-01 07:00:00 | 100.0  | 0.0   | 68.237821 | 40.0
+2023-01-01 08:00:00 | 100.0  | 0.0   | 68.237821 | 40.0
+2023-01-01 09:00:00 | 100.0  | 0.0   | 68.237821 | 40.0
+
+
+time                | f1         | f2  | f3  | f4        
+------------------- | ---------- | --- | --- | ----------
+2023-01-01 00:00:00 | 49.998977  | 0.0 | 0.0 | 50.001022
+2023-01-01 01:00:00 | 49.997954  | 0.0 | 0.0 | 50.002046
+2023-01-01 02:00:00 | 49.996931  | 0.0 | 0.0 | 50.003068
+2023-01-01 03:00:00 | 49.995906  | 0.0 | 0.0 | 50.004093
+2023-01-01 04:00:00 | 49.994884  | 0.0 | 0.0 | 50.005116
+2023-01-01 05:00:00 | 49.993860  | 0.0 | 0.0 | 50.006139
+2023-01-01 06:00:00 | 49.992838  | 0.0 | 0.0 | 50.007162
+2023-01-01 07:00:00 | 49.991814  | 0.0 | 0.0 | 50.008185
+2023-01-01 08:00:00 | 49.990792  | 0.0 | 0.0 | 50.009208
+2023-01-01 09:00:00 | 49.989768  | 0.0 | 0.0 | 50.010231
+```
+
 ### Short circuit
 
 GridCal has unbalanced short circuit calculations. Now let's run a line-ground short circuit in the third bus of
-the South island of New Zealand grid example from refference book 
-_Computer Analys of Power Systems by J.Arrillaga and C.P. Arnold_
+the South island of New Zealand grid example from reference book 
+_Computer Analysis of Power Systems by J. Arrillaga and C.P. Arnold_
 
 ```python
 import os
@@ -742,11 +810,8 @@ main_circuit.add_contingency(Contingency(device_idtag=branches[5].idtag,
 pf_options = PowerFlowOptions(solver_type=SolverType.NR)
 
 # declare the contingency options
-options_ = ContingencyAnalysisOptions(distributed_slack=True,
-                                      correct_values=True,
-                                      use_provided_flows=False,
+options_ = ContingencyAnalysisOptions(use_provided_flows=False,
                                       Pf=None,
-                                      pf_results=None,
                                       engine=bs.ContingencyEngine.PowerFlow,
                                       # if no power flow options are provided 
                                       # a linear power flow is used

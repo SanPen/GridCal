@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -19,8 +19,8 @@ import numpy as np
 from typing import Union, TYPE_CHECKING
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, QPoint
-from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush
-from PySide6.QtWidgets import QMenu, QGraphicsScene, QGraphicsSceneMouseEvent
+from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QPainter, QPainterPath, QFont
+from PySide6.QtWidgets import QMenu, QGraphicsRectItem, QGraphicsSceneMouseEvent, QGraphicsTextItem
 
 from GridCal.Gui.BusBranchEditorWidget.generic_graphics import ACTIVE, FONT_SCALE
 from GridCal.Gui.GuiFunctions import ObjectsModel
@@ -36,6 +36,46 @@ from GridCalEngine.Core.Devices.editable_device import EditableDevice
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
+
+
+class RoundedRect(QtWidgets.QGraphicsRectItem):
+    def __init__(self, x, y, width, height, radius, parent):
+        super().__init__(x, y, width, height, parent=parent)
+        self.radius = radius
+
+    def paint(self, painter, option, widget):
+        path = QPainterPath()
+        path.addRoundedRect(self.rect(), self.radius, self.radius)
+        painter.setClipPath(path)
+        painter.setBrush(self.brush())
+        painter.setPen(self.pen())
+        painter.drawRoundedRect(self.rect(), self.radius, self.radius)
+
+
+class VerticalWaterIndicator(QGraphicsRectItem):
+    def __init__(self, x, y, width, height, outer_radius, inner_radius, parent=None):
+        super().__init__(x, y, width, height, parent=parent)
+        self.outer_radius = outer_radius
+        self.inner_radius = inner_radius
+        self.setBrush(Qt.lightGray)  # Set the outer rectangle color
+
+        self.inner_rect = QGraphicsRectItem(self.rect(), self)
+        self.inner_rect.setBrush(Qt.blue)  # Set the inner rectangle color
+
+        self.label = QGraphicsTextItem('', self)
+        self.label.setDefaultTextColor(Qt.black)
+        self.label.setFont(QFont('Arial', 10))
+
+    def set_percentage(self, percentage):
+        # Update the inner rectangle size based on the percentage
+        inner_height = self.rect().height() * percentage / 100
+        self.inner_rect.setRect(self.rect().x(), self.rect().y() + self.rect().height() - inner_height,
+                                self.rect().width(), inner_height)
+        self.inner_rect.setPos(self.rect().x(), self.rect().y())
+
+        # Update the label text
+        self.label.setPlainText(f'{percentage}%')
+
 
 
 class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
@@ -78,14 +118,21 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
         self.color = ACTIVE['fluid']
         self.style = ACTIVE['style']
 
+        # square
+        # self.tile_inside = RoundedRect(0, self.min_h/3, self.min_w, self.min_h / 3, 15, self)
+        # self.tile_inside.setBrush(QBrush(ACTIVE['fluid']))
+        # self.tile_inside.setOpacity(0.7)
+
+        self.tile = QGraphicsRectItem(0, 0, 20, 20)
+        self.tile.setPen(QPen(ACTIVE['color']))
+        self.tile.setBrush(QBrush(ACTIVE['fluid']))
+        self.tile.setOpacity(0.7)
+        # self.tile.set_percentage(36.0)
+
         # Label:
         self.label = QtWidgets.QGraphicsTextItem(fluid_node.name, self)
         self.label.setDefaultTextColor(ACTIVE['text'])
         self.label.setScale(FONT_SCALE)
-
-        # square
-        self.tile = QtWidgets.QGraphicsRectItem(0, 0, self.min_h, self.min_h, self)
-        self.tile.setOpacity(0.7)
 
         # connection terminals the block
         self.terminal = TerminalItem('s', parent=self, editor=self.editor)  # , h=self.h))
@@ -93,7 +140,7 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
 
         # Create corner for resize:
         self.sizer = HandleItem(self.terminal)
-        self.sizer.setPos(self.w, self.h)
+        self.sizer.setPos(self.w, 20)
         self.sizer.posChangeCallbacks.append(self.change_size)  # Connect the callback
         self.sizer.setFlag(self.GraphicsItemFlag.ItemIsMovable)
         # self.adapt()
@@ -380,7 +427,7 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
 
             api_obj = self.editor.circuit.add_fluid_turbine(node=self.api_object, api_obj=None)
             api_obj.generator = self.editor.circuit.add_generator(bus=self.create_bus_if_necessary())
-            api_obj.generator.name = self.api_object.name
+            api_obj.generator.name = f"Turbine @{self.api_object.name}"
 
         _grph = FluidTurbineGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
         self.shunt_children.append(_grph)
@@ -396,7 +443,7 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
         if api_obj is None or type(api_obj) is bool:
             api_obj = self.editor.circuit.add_fluid_pump(node=self.api_object, api_obj=None)
             api_obj.generator = self.editor.circuit.add_generator(bus=self.create_bus_if_necessary())
-            api_obj.generator.name = self.api_object.name
+            api_obj.generator.name = f"Pump @{self.api_object.name}"
 
         _grph = FluidPumpGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
         self.shunt_children.append(_grph)
@@ -412,7 +459,7 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
         if api_obj is None or type(api_obj) is bool:
             api_obj = self.editor.circuit.add_fluid_p2x(node=self.api_object, api_obj=None)
             api_obj.generator = self.editor.circuit.add_generator(bus=self.create_bus_if_necessary())
-            api_obj.generator.name = self.api_object.name
+            api_obj.generator.name = f"P2X @{self.api_object.name}"
 
         _grph = FluidP2xGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
         self.shunt_children.append(_grph)

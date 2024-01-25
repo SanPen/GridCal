@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -193,4 +193,19 @@ class FluidNode(EditableDevice):
         """
         return len(self.turbines) + len(self.pumps) + len(self.p2xs)
 
+    def create_profiles(self, index):
+        """
+        Format all profiles
+        """
 
+        # create the profiles of this very object
+        super().create_profiles(index)
+
+        for elm in self.turbines:
+            elm.create_profiles(index)
+
+        for elm in self.pumps:
+            elm.create_profiles(index)
+
+        for elm in self.p2xs:
+            elm.create_profiles(index)

@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -14,21 +14,17 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-# import collections
-#
-# collections.Callable = collections.abc.Callable
-
-from typing import Callable, Tuple
+from typing import Callable, Any, Union, List, Dict
+from dataclasses import dataclass
 import numba as nb
 import numpy as np
 import pandas as pd
 from scipy.sparse import csc_matrix as csc
 from scipy import sparse
 import timeit
-from GridCalEngine.basic_structures import Vec
+from matplotlib import pyplot as plt
+from GridCalEngine.basic_structures import Vec, CxVec
 from GridCalEngine.Utils.Sparse.csc import pack_3_by_4, diags
-
-np.set_printoptions(precision=4)
 
 
 @nb.njit(cache=True)
@@ -46,7 +42,7 @@ def step_calculation(V: Vec, dV: Vec):
         if dV[i] < 0:
             alpha = min(alpha, -V[i] / dV[i])
 
-    return min(0.99995 * alpha, 1.0)
+    return min(0.9999995 * alpha, 1.0)
 
 
 @nb.njit(cache=True)
@@ -81,16 +77,104 @@ def calc_error(dx, dz, dmu, dlmbda):
     return err
 
 
-def solver(x0: Vec,
-           n_x: int,
-           n_eq: int,
-           n_ineq: int,
-           func: Callable[[csc, csc, csc, csc, csc, Vec, Vec, Vec, csc, csc, csc, csc, float],
-                          Tuple[float, Vec, Vec, Vec, csc, csc, csc, csc, csc]],
-           arg=(),
-           max_iter=100,
-           tol=1e-6,
-           verbose: int = 0) -> Tuple[Vec, float, Vec, Vec]:
+@dataclass
+class IpsFunctionReturn:
+    """
+    Represents the returning value of the interior point evaluation
+    """
+    f: float  # objective function value
+    G: Vec    # equalities increment vector
+    H: Vec    # innequalities increment vector
+    fx: Vec   # objective function Jacobian Vector
+    Gx: csc   # equalities Jacobian Matrix
+    Hx: csc   # innequalities Jacobian Matrix
+    fxx: csc  # objective function Hessian Matrix
+    Gxx: csc  # equalities Hessian Matrix
+    Hxx: csc  # innequalities Hessian Matrix
+
+    # extra data passed through for the results
+    S: CxVec
+    Sf: CxVec
+    St: CxVec
+
+    def get_data(self) -> List[Union[float, Vec, csc]]:
+        """
+        Returns the structures in a list
+        :return: List of float, Vec, and csc
+        """
+        return [self.f, self.G, self.H, self.fx, self.Gx, self.Hx, self.fxx, self.Gxx, self.Hxx]
+
+    @staticmethod
+    def get_headers() -> List[str]:
+        """
+        Returns the structures' names
+        :return: list of str
+        """
+        return ['f', 'G', 'H', 'fx', 'Gx', 'Hx', 'fxx', 'Gxx', 'Hxx']
+
+    def compare(self, other: "IpsFunctionReturn", h: float) -> Dict[str, Union[float, Vec, csc]]:
+        """
+        Returns the comparison between this structure and another structure of this type
+        :param other: IpsFunctionReturn
+        :param h: finite differences step
+        :return: Dictionary with the structure name and the difference
+        """
+        errors = dict()
+        for i, (analytic_struct, finit_struct, name) in enumerate(zip(self.get_data(),
+                                                                      other.get_data(),
+                                                                      self.get_headers())):
+            # if isinstance(analytic_struct, np.ndarray):
+            if sparse.isspmatrix(analytic_struct):
+                a = analytic_struct.toarray()
+                b = finit_struct.toarray()
+            else:
+                a = analytic_struct
+                b = finit_struct
+
+            ok = np.allclose(a, b, atol=h * 10)
+
+            if not ok:
+                diff = a - b
+                errors[name] = diff
+
+        return errors
+
+
+@dataclass
+class IpsSolution:
+    """
+    Represents the returning value of the interior point solution
+    """
+    x: Vec
+    error: float
+    gamma: float
+    lam: Vec
+    structs: IpsFunctionReturn
+    converged: bool
+    iterations: int
+    error_evolution: Vec
+
+    def plot_error(self):
+        """
+        Plot the IPS error
+        """
+        plt.figure()
+        plt.plot(self.error_evolution, )
+        plt.xlabel("Iterations")
+        plt.ylabel("Error")
+        plt.yscale('log')
+        plt.show()
+
+
+def interior_point_solver(x0: Vec,
+                          n_x: int,
+                          n_eq: int,
+                          n_ineq: int,
+                          func: Callable[[Vec, Vec, Vec, bool, Any], IpsFunctionReturn],
+                          arg=(),
+                          max_iter=100,
+                          tol=1e-6,
+                          verbose: int = 0) -> IpsSolution:
     """
     Solve a non-linear problem of the form:
 
@@ -131,9 +215,11 @@ def solver(x0: Vec,
     :param max_iter: Maximum number of iterations
     :param tol: Expected tolerance
     :param verbose: 0 to 3 (the larger, the more verbose)
-    :return: x, error, gamma, lam
+    :return: IpsSolution
     """
     START = timeit.default_timer()
+
+
 
     # Init iteration values
     error = 1e20
@@ -141,27 +227,45 @@ def solver(x0: Vec,
     f = 0.0  # objective function
     x = x0.copy()
     gamma = 1.0
+    e = np.ones(n_ineq)
 
     # Init multiplier values. Defaulted at 1.
     lam = np.ones(n_eq)
-    mu = np.ones(n_ineq)
-    z = np.ones(n_ineq)
-    e = np.ones(n_ineq)
+
+    z0 = 1.0  # TODO check what about this
+    z = z0 * np.ones(n_ineq)
+    mu = z.copy()
     z_inv = diags(1.0 / z)
     mu_diag = diags(mu)
 
-    while error > gamma and iter_counter < max_iter:
+    # Try different init
+    ret = func(x, mu, lam, True, False, *arg)
+    z = - ret.H
+    z = np.array([1e-2 if zz < 1e-2 else zz for zz in z])
+
+    z_inv = diags(1.0 / z)
+
+    mu = gamma * (z_inv @ e)
+    mu_diag = diags(mu)
+
+    lam = sparse.linalg.lsqr(ret.Gx, -ret.fx - ret.Hx @ mu.T)[0]
+
+    converged = error <= gamma
+
+    error_evolution = np.zeros(max_iter + 1)
+    error_evolution[0] = error
+    while not converged and iter_counter < max_iter:
 
         # Evaluate the functions, gradients and hessians at the current iteration.
-        f, G, H, fx, Gx, Hx, fxx, Gxx, Hxx = func(x, mu, lam, *arg)
+        ret = func(x, mu, lam, True, True, *arg)
 
         # compose the Jacobian
-        M = fxx + Gxx + Hxx + Hx @ z_inv @ mu_diag @ Hx.T
-        J = pack_3_by_4(M, Gx.tocsc(), Gx.T)
+        M = ret.fxx + ret.Gxx + ret.Hxx + ret.Hx @ z_inv @ mu_diag @ ret.Hx.T
+        J = pack_3_by_4(M.tocsc(), ret.Gx.tocsc(), ret.Gx.T.tocsc())
 
         # compose the residual
-        N = fx + Hx @ mu + Hx @ z_inv @ (gamma * e + mu * H) + Gx @ lam
-        r = - np.r_[N, G]
+        N = ret.fx + ret.Hx @ mu + ret.Hx @ z_inv @ (gamma * e + mu * ret.H) + ret.Gx @ lam
+        r = - np.r_[N, ret.G]
 
         # Find the reduced problem residuals and split them
         dx, dlam = split(sparse.linalg.spsolve(J, r), n_x)
@@ -169,7 +273,7 @@ def solver(x0: Vec,
         # TODO: Implement step control
 
         # Calculate the inequalities residuals using the reduced problem residuals
-        dz = -H - z - Hx.T @ dx
+        dz = -ret.H - z - ret.Hx.T @ dx
         dmu = -mu + z_inv @ (gamma * e - mu * dz)
 
         # Compute the maximum step allowed
@@ -185,9 +289,12 @@ def solver(x0: Vec,
 
         # Compute the maximum error and the new gamma value
         error = calc_error(dx, dz, dmu, dlam)
+        # error = np.max(np.abs(r))
 
         z_inv = diags(1.0 / z)
         mu_diag = diags(mu)
+
+        converged = error <= gamma
 
         if verbose > 1:
             print(f'Iteration: {iter_counter}', "-" * 80)
@@ -205,6 +312,8 @@ def solver(x0: Vec,
         # Add an iteration step
         iter_counter += 1
 
+        error_evolution[iter_counter] = error
+
     END = timeit.default_timer()
 
     if verbose > 0:
@@ -216,4 +325,5 @@ def solver(x0: Vec,
         print(f'\tIterations: {iter_counter}')
         print('\tTime elapsed (s): ', END - START)
 
-    return x, error, gamma, lam
+    return IpsSolution(x=x, error=error, gamma=gamma, lam=lam, structs=ret,
+                       converged=converged, iterations=iter_counter, error_evolution=error_evolution)

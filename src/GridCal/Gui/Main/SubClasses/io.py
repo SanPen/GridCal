@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -25,9 +25,6 @@ import GridCalEngine.Core as core
 import GridCal.Gui.GuiFunctions as gf
 import GridCal.Gui.Session.export_results_driver as exprtdrv
 import GridCal.Gui.Session.file_handler as filedrv
-from GridCalEngine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE
-from GridCalEngine.Core.Compilers.circuit_to_pgm import PGM_AVAILABLE
-from GridCalEngine.IO.gridcal.contingency_parser import import_contingencies_from_json, export_contingencies_json_file
 from GridCal.Gui.CoordinatesInput.coordinates_dialogue import CoordinatesInputGUI
 from GridCal.Gui.GeneralDialogues import LogsDialogue, CustomQuestionDialogue
 from GridCal.Gui.BusBranchEditorWidget import BusBranchEditorWidget
@@ -35,6 +32,11 @@ from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_m
 from GridCal.Gui.GridGenerator.grid_generator_dialogue import GridGeneratorGUI
 from GridCal.Gui.RosetaExplorer.RosetaExplorer import RosetaExplorerGUI
 from GridCal.Gui.Main.SubClasses.Settings.configuration import ConfigurationMain
+
+from GridCalEngine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE
+from GridCalEngine.Core.Compilers.circuit_to_pgm import PGM_AVAILABLE
+from GridCalEngine.IO.gridcal.contingency_parser import import_contingencies_from_json, export_contingencies_json_file
+from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
 
 
 class IoMain(ConfigurationMain):
@@ -767,7 +769,7 @@ class IoMain(ConfigurationMain):
             if not filename.endswith('.xlsx'):
                 filename += '.xlsx'
 
-            numerical_circuit = core.compile_numerical_circuit_at(circuit=self.circuit)
+            numerical_circuit = compile_numerical_circuit_at(circuit=self.circuit)
             calculation_inputs = numerical_circuit.split_into_islands()
 
             with pd.ExcelWriter(filename) as writer:  # pylint: disable=abstract-class-instantiated

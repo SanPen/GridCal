@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -32,13 +32,18 @@ import GridCal.Gui.Visualization.palettes as palettes
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCal.Gui.GeneralDialogues import CheckListDialogue, StartEndSelectionDialogue, InputSearchDialogue
 from GridCal.Gui.BusViewer.bus_viewer_dialogue import BusViewerWidget
-from GridCal.Gui.BusBranchEditorWidget import BusBranchEditorWidget, generate_bus_branch_diagram
+from GridCal.Gui.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget, \
+    generate_bus_branch_diagram
+from GridCal.Gui.BusBranchEditorWidget.node_breaker_editor import NodeBreakerEditorWidget
 from GridCal.Gui.MapWidget.grid_map_widget import GridMapWidget
 from GridCal.Gui.messages import yes_no_question, error_msg, info_msg
 from GridCal.Gui.Main.SubClasses.Model.compiled_arrays import CompiledArraysMain
 from GridCal.Gui.Main.object_select_window import ObjectSelectWindow
 from GridCal.Gui.MapWidget.TileProviders.blue_marble import BlueMarbleTiles
 from GridCal.Gui.MapWidget.TileProviders.cartodb import CartoDbTiles
+
+ALL_EDITORS = Union[BusBranchEditorWidget, GridMapWidget, BusViewerWidget, NodeBreakerEditorWidget]
+ALL_EDITORS_NONE = Union[None, BusBranchEditorWidget, GridMapWidget, BusViewerWidget, NodeBreakerEditorWidget]
 
 
 class DiagramsMain(CompiledArraysMain):
@@ -56,7 +61,7 @@ class DiagramsMain(CompiledArraysMain):
         CompiledArraysMain.__init__(self, parent)
 
         # list of diagrams
-        self.diagram_widgets_list: List[Union[BusBranchEditorWidget, BusViewerWidget, GridMapWidget]] = list()
+        self.diagram_widgets_list: List[ALL_EDITORS] = list()
 
         # Declare the map
         palettes_list = [palettes.Colormaps.GridCal,
@@ -126,7 +131,7 @@ class DiagramsMain(CompiledArraysMain):
             self.new_bus_branch_diagram_from_selection)
         self.ui.actionAdd_bus_vecinity_diagram.triggered.connect(self.add_bus_vecinity_diagram_from_diagram_selection)
         self.ui.actionAdd_map.triggered.connect(self.add_map_diagram)
-        self.ui.actionAdd_substation_diagram.triggered.connect(self.add_substation_diagram)
+        self.ui.actionAdd_substation_diagram.triggered.connect(self.add_node_breaker_diagram)
         self.ui.actionRemove_selected_diagram.triggered.connect(self.remove_diagram)
         self.ui.actionBigger_nodes.triggered.connect(self.bigger_nodes)
         self.ui.actionSmaller_nodes.triggered.connect(self.smaller_nodes)
@@ -184,38 +189,6 @@ class DiagramsMain(CompiledArraysMain):
 
                 if do_it:
                     diagram_widget.auto_layout(sel=self.ui.automatic_layout_comboBox.currentText())
-
-                    # graph, buses = diagram_widget.diagram.build_graph()
-                    #
-                    # sel = self.ui.automatic_layout_comboBox.currentText()
-                    # pos_alg = self.layout_algorithms_dict[sel]
-                    #
-                    # # get the positions of a spring layout of the graph
-                    # if sel == 'random_layout':
-                    #     pos = pos_alg(graph)
-                    # elif sel == 'spring_layout':
-                    #     pos = pos_alg(graph, iterations=100, scale=10)
-                    # elif sel == 'graphviz_neato':
-                    #     pos = pos_alg(graph, prog='neato')
-                    # elif sel == 'graphviz_dot':
-                    #     pos = pos_alg(graph, prog='dot')
-                    # else:
-                    #     pos = pos_alg(graph, scale=10)
-                    #
-                    # # assign the positions to the graphical objects of the nodes
-                    # for i, bus in enumerate(buses):
-                    #     x = pos[i][0] * 500
-                    #     y = pos[i][1] * 500
-                    #     position = diagram_widget.diagram.query_point(bus)
-                    #
-                    #     if position:
-                    #         if position.graphic_object:
-                    #             position.graphic_object.setPos(QtCore.QPoint(x, y))
-                    #             position.x = x
-                    #             position.y = y
-                    #
-                    # # adjust the view
-                    # diagram_widget.center_nodes()
 
             else:
                 info_msg("The current diagram cannot be automatically layed out")
@@ -296,6 +269,8 @@ class DiagramsMain(CompiledArraysMain):
         if diagram is not None:
             if isinstance(diagram, BusBranchEditorWidget):
                 diagram.editor_graphics_view.zoom_in()
+            elif isinstance(diagram, NodeBreakerEditorWidget):
+                diagram.editor_graphics_view.zoom_in()
 
     def zoom_out(self):
         """
@@ -304,6 +279,8 @@ class DiagramsMain(CompiledArraysMain):
         diagram = self.get_selected_diagram_widget()
         if diagram is not None:
             if isinstance(diagram, BusBranchEditorWidget):
+                diagram.editor_graphics_view.zoom_out()
+            elif isinstance(diagram, NodeBreakerEditorWidget):
                 diagram.editor_graphics_view.zoom_out()
 
     def edit_time_interval(self):
@@ -717,6 +694,11 @@ class DiagramsMain(CompiledArraysMain):
                     self.grid_colour_function(plot_function=diagram.colour_results,
                                               current_study=current_study,
                                               current_step=current_step)
+                elif isinstance(diagram, NodeBreakerEditorWidget):
+                    pass  # this is not implemented yet
+                    # self.grid_colour_function(plot_function=diagram.colour_results,
+                    #                           current_study=current_study,
+                    #                           current_step=current_step)
 
     def set_diagrams_list_view(self) -> None:
         """
@@ -725,7 +707,7 @@ class DiagramsMain(CompiledArraysMain):
         mdl = gf.DiagramsModel(self.diagram_widgets_list)
         self.ui.diagramsListView.setModel(mdl)
 
-    def get_selected_diagram_widget(self) -> Union[None, BusBranchEditorWidget, GridMapWidget, BusViewerWidget]:
+    def get_selected_diagram_widget(self) -> ALL_EDITORS_NONE:
         """
         Get the currently selected diagram
         :return: None, BusBranchEditorWidget, GridMapWidget, BusViewerGUI
@@ -923,7 +905,12 @@ class DiagramsMain(CompiledArraysMain):
                 self.diagram_widgets_list.append(map_widget)
 
             elif isinstance(diagram, dev.NodeBreakerDiagram):
-                print("NodeBreakerDiagram not implemented yet :/")
+                diagram_widget = NodeBreakerEditorWidget(self.circuit,
+                                                         diagram=diagram,
+                                                         default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value())
+                diagram_widget.setStretchFactor(1, 10)
+                # diagram_widget.center_nodes()
+                self.diagram_widgets_list.append(diagram_widget)
 
             else:
                 raise Exception("Unknown diagram type")
@@ -966,15 +953,22 @@ class DiagramsMain(CompiledArraysMain):
 
         self.add_diagram(map_widget)
         self.set_diagrams_list_view()
-        self.set_diagram_widget(diagram=map_widget)
+        self.set_diagram_widget(widget=map_widget)
 
-    def add_substation_diagram(self):
+    def add_node_breaker_diagram(self):
         """
         Add substation diagram
         """
-        self.set_diagrams_list_view()
 
-    def add_diagram(self, diagram_widget: Union[BusBranchEditorWidget, GridMapWidget, BusViewerWidget]):
+        node_breaker_widget = NodeBreakerEditorWidget(circuit=self.circuit,
+                                                      diagram=None,
+                                                      default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value())
+
+        self.add_diagram(node_breaker_widget)
+        self.set_diagrams_list_view()
+        self.set_diagram_widget(widget=node_breaker_widget)
+
+    def add_diagram(self, diagram_widget: ALL_EDITORS):
         """
         Add diagram
         :param diagram_widget:
@@ -1032,22 +1026,22 @@ class DiagramsMain(CompiledArraysMain):
             # remove it from the gui
             widget_to_remove.setParent(None)
 
-    def set_diagram_widget(self, diagram: Union[BusBranchEditorWidget, GridMapWidget, BusViewerWidget]):
+    def set_diagram_widget(self, widget: ALL_EDITORS):
         """
         Set the current diagram in the container
-        :param diagram: BusBranchEditorWidget, GridMapWidget, BusViewerGUI
+        :param widget: BusBranchEditorWidget, GridMapWidget, BusViewerGUI
         """
         self.remove_all_diagram_widgets()
 
         # add the new diagram
-        self.ui.schematic_layout.addWidget(diagram)
+        self.ui.schematic_layout.addWidget(widget)
 
         # set the alignment
         self.ui.diagram_selection_splitter.setStretchFactor(0, 10)
         self.ui.diagram_selection_splitter.setStretchFactor(1, 2)
 
         # set the selected index
-        row = self.diagram_widgets_list.index(diagram)
+        row = self.diagram_widgets_list.index(widget)
         index = self.ui.diagramsListView.model().index(row, 0)
         self.ui.diagramsListView.setCurrentIndex(index)
 
@@ -1095,7 +1089,7 @@ class DiagramsMain(CompiledArraysMain):
                 # declare the allowed file types
                 files_types = "Scalable Vector Graphics (*.svg);;Portable Network Graphics (*.png)"
 
-                fname = os.path.join(self.project_directory, self.ui.grid_name_line_edit.text())
+                fname = str(os.path.join(self.project_directory, self.ui.grid_name_line_edit.text()))
 
                 # call dialog to select the file
                 filename, type_selected = QtWidgets.QFileDialog.getSaveFileName(self, 'Save file', fname, files_types)
@@ -1282,6 +1276,8 @@ class DiagramsMain(CompiledArraysMain):
             lst = diagram.get_selection_api_objects()
         elif isinstance(diagram, BusViewerWidget):
             lst = diagram.get_selection_api_objects()
+        elif isinstance(diagram, NodeBreakerEditorWidget):
+            lst = diagram.get_selection_api_objects()
         else:
             lst = list()
 
@@ -1421,6 +1417,9 @@ class DiagramsMain(CompiledArraysMain):
             elif isinstance(diagram, GridMapWidget):
                 pass
 
+            elif isinstance(diagram, NodeBreakerEditorWidget):
+                pass
+
     def delete_from_all_diagrams(self, elements: List[dev.EditableDevice]):
         """
         Delete elements from all editors
@@ -1436,7 +1435,8 @@ class DiagramsMain(CompiledArraysMain):
 
             elif isinstance(diagram_widget, GridMapWidget):
                 pass
-                # diagram_widget.delete_diagram_elements(elements)
+            elif isinstance(diagram_widget, NodeBreakerEditorWidget):
+                pass
 
     def search_diagram(self):
         """
