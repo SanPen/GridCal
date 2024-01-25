@@ -1,7 +1,7 @@
 import os
 from typing import Dict
 import pandas as pd
-from pytablewriter import RstSimpleTableWriter
+# from pytablewriter import RstSimpleTableWriter
 from GridCalEngine.IO.cim.cgmes_2_4_15.cgmes_circuit import CgmesCircuit
 from GridCalEngine.IO.raw.devices.psse_circuit import PsseCircuit
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
@@ -70,9 +70,14 @@ def get_gridcal_data_frames():
 
 def write_dataframes_to_excel(data_frames: Dict[str, pd.DataFrame], filename):
 
+    df_all = pd.DataFrame()
+    for key, df in data_frames.items():
+        # df['class'] = key
+        df.insert(0, 'class', key)
+        df_all = pd.concat([df_all, df], axis=0)
+
     with pd.ExcelWriter(filename) as w:
-        for key, df in data_frames.items():
-            df.to_excel(w, sheet_name=key)
+        df_all.to_excel(w, sheet_name='ALL_CLASSES')
 
 
 def write_dataframes_to_rst(data_frames: Dict[str, pd.DataFrame], filename, tilte):
@@ -151,15 +156,18 @@ if __name__ == '__main__':
     psse_info = get_psse_data_frames()
     roseta_info = get_gridcal_data_frames()
 
-    write_dataframes_to_excel(cgmes_info, 'cgmes_clases.xlsx')
-    write_dataframes_to_excel(psse_info, 'psse_clases.xlsx')
-    write_dataframes_to_excel(roseta_info, 'roseta_clases.xlsx')
+    write_dataframes_to_excel(cgmes_info,
+                              'cgmes_classes_all_in_one_sheet.xlsx')
+    write_dataframes_to_excel(psse_info,
+                              'psse_classes_all_in_one_sheet.xlsx')
+    write_dataframes_to_excel(roseta_info,
+                              'roseta_classes_all_in_one_sheet.xlsx')
 
     # write_dataframes_to_rst(cgmes_info, 'cgmes_clases.rst', "CGMES")
     # write_dataframes_to_rst(psse_info, 'psse_clases.rst', "PSSE")
     # write_dataframes_to_rst(roseta_info, 'roseta_clases.rst', "Roseta")
 
-    write_models_to_rst(os.path.join('rst_source', 'other_data_models.rst'))
+    # write_models_to_rst(os.path.join('rst_source', 'other_data_models.rst'))
 
     print("done")
 

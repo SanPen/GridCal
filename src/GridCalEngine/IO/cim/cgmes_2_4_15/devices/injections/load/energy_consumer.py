@@ -21,11 +21,10 @@ from GridCalEngine.IO.cim.cgmes_2_4_15.devices.injections.monopole import MonoPo
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 
 
-class EnergyConsumer(MonoPole, ConductingEquipment):
+class EnergyConsumer(MonoPole):
 
     def __init__(self, rdfid, tpe="EnergyConsumer"):
         MonoPole.__init__(self, rdfid, tpe)
-        ConductingEquipment.__init__(self, rdfid, tpe)
 
         self.pfixed: float = 0.0
         self.pfixedPct: float = 0.0
