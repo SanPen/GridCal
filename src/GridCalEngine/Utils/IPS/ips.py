@@ -42,7 +42,7 @@ def step_calculation(V: Vec, dV: Vec):
         if dV[i] < 0:
             alpha = min(alpha, -V[i] / dV[i])
 
-    return min(0.99995 * alpha, 1.0)
+    return min(0.9999995 * alpha, 1.0)
 
 
 @nb.njit(cache=True)
@@ -173,7 +173,7 @@ def interior_point_solver(x0: Vec,
                           func: Callable[[Vec, Vec, Vec, bool, Any], IpsFunctionReturn],
                           arg=(),
                           max_iter=100,
-                          tol=1e-7,
+                          tol=1e-6,
                           verbose: int = 0,
                           step_control = True) -> IpsSolution:
     """
@@ -257,7 +257,8 @@ def interior_point_solver(x0: Vec,
     converged = error <= gamma
 
     error_evolution = np.zeros(max_iter + 1)
-    error_evolution[0] = np.max([feascond, gradcond])
+    feascond_evolution = np.zeros(max_iter + 1)
+    error_evolution[0] = error
     while not converged and iter_counter < max_iter:
 
         # Evaluate the functions, gradients and hessians at the current iteration.
@@ -295,6 +296,7 @@ def interior_point_solver(x0: Vec,
 
             if feascond1 > feascond and gradcond1 > gradcond:
                 sc = 1
+
         if sc == 1:
             alpha = 1
             for j in range(20):
@@ -329,14 +331,17 @@ def interior_point_solver(x0: Vec,
         # error = calc_error(dx, dz, dmu, dlam)
         # error = np.max(np.abs(r))
 
+
         feascond = max(max(abs(ret.G)), max(ret.H)) / (1 + max(max(abs(x)), max(abs(z))))
         gradcond = max(abs(Lx)) / (1 + max(max(abs(lam)), max(abs(mu))))
         error = np.max([feascond, gradcond])
 
+        feascond_evolution[iter_counter] = feascond
+
         z_inv = diags(1.0 / z)
         mu_diag = diags(mu)
 
-        converged = feascond < tol and gradcond < tol
+        converged = feascond < 1e-6 and gradcond < 1e-6
 
         if verbose > 1:
             print(f'Iteration: {iter_counter}', "-" * 80)
@@ -344,6 +349,7 @@ def interior_point_solver(x0: Vec,
                 x_df = pd.DataFrame(data={'x': x, 'dx': dx})
                 eq_df = pd.DataFrame(data={'λ': lam, 'dλ': dlam})
                 ineq_df = pd.DataFrame(data={'mu': mu, 'z': z, 'dmu': dmu, 'dz': dz})
+
                 print("x:\n", x_df)
                 print("EQ:\n", eq_df)
                 print("INEQ:\n", ineq_df)
@@ -361,10 +367,11 @@ def interior_point_solver(x0: Vec,
         print(f'SOLUTION', "-" * 80)
         print("\tx:", x)
         print("\tλ:", lam)
-        print("\tF.obj:", ret.f)  # This is the old value of the function, has to be recalculated with the last iteration.
+        print("\tF.obj:", f)  # This is the old value of the function, has to be recalculated with the last iteration.
         print("\tErr:", error)
         print(f'\tIterations: {iter_counter}')
         print('\tTime elapsed (s): ', END - START)
+        print(f'Feas cond: ', max(feascond_evolution))
 
     return IpsSolution(x=x, error=error, gamma=gamma, lam=lam, structs=ret,
                        converged=converged, iterations=iter_counter, error_evolution=error_evolution)
