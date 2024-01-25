@@ -83,11 +83,11 @@ class IpsFunctionReturn:
     Represents the returning value of the interior point evaluation
     """
     f: float  # objective function value
-    G: Vec    # equalities increment vector
-    H: Vec    # innequalities increment vector
-    fx: Vec   # objective function Jacobian Vector
-    Gx: csc   # equalities Jacobian Matrix
-    Hx: csc   # innequalities Jacobian Matrix
+    G: Vec  # equalities increment vector
+    H: Vec  # innequalities increment vector
+    fx: Vec  # objective function Jacobian Vector
+    Gx: csc  # equalities Jacobian Matrix
+    Hx: csc  # innequalities Jacobian Matrix
     fxx: csc  # objective function Hessian Matrix
     Gxx: csc  # equalities Hessian Matrix
     Hxx: csc  # innequalities Hessian Matrix
@@ -175,7 +175,7 @@ def interior_point_solver(x0: Vec,
                           max_iter=100,
                           tol=1e-6,
                           verbose: int = 0,
-                          step_control = True) -> IpsSolution:
+                          step_control=True) -> IpsSolution:
     """
     Solve a non-linear problem of the form:
 
@@ -216,11 +216,10 @@ def interior_point_solver(x0: Vec,
     :param max_iter: Maximum number of iterations
     :param tol: Expected tolerance
     :param verbose: 0 to 3 (the larger, the more verbose)
+    :param step_control: Use step control to improve the solution process control
     :return: IpsSolution
     """
     START = timeit.default_timer()
-
-
 
     # Init iteration values
     error = 1e6

@@ -28,7 +28,7 @@ from GridCalEngine.enumerations import BranchImpedanceMode
 import GridCalEngine.Core.topology as tp
 
 from GridCalEngine.Core.topology import compile_types
-from GridCalEngine.Simulations.sparse_solve import get_sparse_type
+from GridCalEngine.Utils.NumericalMethods.sparse_solve import get_sparse_type
 import GridCalEngine.Core.Compilers.circuit_to_data as gc_compiler2
 import GridCalEngine.Core.admittance_matrices as ycalc
 from GridCalEngine.enumerations import TransformerControlType, ConverterControlType
@@ -817,6 +817,11 @@ class NumericalCircuit:
                         structure.active[idx] = int(not bool(cnt.value))
                     else:
                         structure.active[idx] = int(cnt.value)
+                elif cnt.prop == '%':
+                    if revert:
+                        structure.p[idx] /= float(cnt.value / 100.0)
+                    else:
+                        structure.p[idx] *= float(cnt.value / 100.0)
                 else:
                     print(f'Unknown contingency property {cnt.prop} at {cnt.name} {cnt.idtag}')
             else:

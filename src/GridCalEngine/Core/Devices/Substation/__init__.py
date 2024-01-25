@@ -18,3 +18,4 @@
 from GridCalEngine.Core.Devices.Substation.bus import Bus, BusMode
 from GridCalEngine.Core.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.Core.Devices.Substation.substation import Substation
+from GridCalEngine.Core.Devices.Substation.busbar import BusBar

@@ -200,7 +200,7 @@ class ExternalGridGraphicItem(InjectionTemplateGraphicItem):
         :param QGraphicsSceneMouseEvent:
         :return:
         """
-        mdl = ObjectsModel([self.api_object], self.api_object.editable_headers,
+        mdl = ObjectsModel([self.api_object], self.api_object.registered_properties,
                            parent=self.editor.object_editor_table, editable=True, transposed=True,
                            dictionary_of_lists={DeviceType.Technology.value: self.editor.circuit.technologies, })
         self.editor.object_editor_table.setModel(mdl)

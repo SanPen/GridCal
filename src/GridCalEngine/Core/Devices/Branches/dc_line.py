@@ -69,7 +69,7 @@ class DcLine(ParentBranch):
         :param rate: Branch rating (MW)
         :param active: is it active?
         :param tolerance: Tolerance specified for the branch impedance in %
-        :param cost: Cost of overload (€/MW)
+        :param cost: Cost of overload (e/MW)
         :param mttf: Mean time too failure
         :param mttr: Mean time to repair
         :param r_fault: Fault resistance
@@ -87,8 +87,8 @@ class DcLine(ParentBranch):
         :param contingency_enabled: enabled for contingencies (Legacy)
         :param monitor_loading: monitor the loading (used in OPF)
         :param contingency_factor_prof: profile of contingency ratings
-        :param capex: Cost of investment (€/MW)
-        :param opex: Cost of operation (€/MWh)
+        :param capex: Cost of investment (e/MW)
+        :param opex: Cost of operation (e/MWh)
         :param build_status: build status (now time)
         """
 
@@ -212,7 +212,7 @@ class DcLine(ParentBranch):
         :return:
         """
         data = list()
-        for name, properties in self.editable_headers.items():
+        for name, properties in self.registered_properties.items():
             obj = getattr(self, name)
 
             if properties.tpe == DeviceType.BusDevice:

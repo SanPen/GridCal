@@ -18,7 +18,7 @@
 import time
 import scipy
 import numpy as np
-from GridCalEngine.Simulations.sparse_solve import get_sparse_type, get_linear_solver
+from GridCalEngine.Utils.NumericalMethods.sparse_solve import get_sparse_type, get_linear_solver
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
 import GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions as cf
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults

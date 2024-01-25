@@ -18,7 +18,7 @@
 import time
 import scipy
 import numpy as np
-from GridCalEngine.Simulations.sparse_solve import get_sparse_type, get_linear_solver
+from GridCalEngine.Utils.NumericalMethods.sparse_solve import get_sparse_type, get_linear_solver
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
 import GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions as cf
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
@@ -238,7 +238,6 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
     end = time.time()
     elapsed = end - start
 
-    # return NumericPowerFlowResults(V, converged, norm_f, Scalc, None, None, None, None, None, None, iteration, elapsed)
     return NumericPowerFlowResults(V=V, converged=converged, norm_f=norm_f,
                                    Scalc=Scalc, ma=None, theta=None, Beq=None,
                                    Ybus=None, Yf=None, Yt=None,

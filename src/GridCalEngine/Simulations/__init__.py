@@ -23,7 +23,6 @@ from GridCalEngine.Simulations.ShortCircuitStudies import *
 from GridCalEngine.Simulations.StateEstimation import *
 from GridCalEngine.Simulations.OPF import *
 from GridCalEngine.Simulations.LinearFactors import *
-from GridCalEngine.Simulations.sparse_solve import *
 from GridCalEngine.Simulations.ContingencyAnalysis import *
 from GridCalEngine.Simulations.ATC import *
 from GridCalEngine.Simulations.Topology import *

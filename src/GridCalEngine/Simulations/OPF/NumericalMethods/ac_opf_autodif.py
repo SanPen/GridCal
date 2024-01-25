@@ -20,8 +20,8 @@ from scipy.sparse import csc_matrix as csc
 from scipy.sparse import lil_matrix
 import GridCalEngine.api as gce
 from GridCalEngine.basic_structures import Vec
-import GridCalEngine.Utils.IPS.autodiff as ad
-from GridCalEngine.Utils.IPS.ips import interior_point_solver, IpsFunctionReturn
+import GridCalEngine.Utils.NumericalMethods.autodiff as ad
+from GridCalEngine.Utils.NumericalMethods.ips import interior_point_solver, IpsFunctionReturn
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
 from typing import Callable, Tuple
 
