@@ -122,7 +122,7 @@ def eval_g(x, Ybus, Yf, Cg, Sd, slack) -> Vec:
 
 
 def eval_h(x, Yf, Yt, from_idx, to_idx, no_slack, Va_max, Va_min, Vm_max, Vm_min,
-           Pg_max, Pg_min, Qg_max, Qg_min, Cg, rates) -> Vec:
+           Pg_max, Pg_min, Qg_max, Qg_min, Cg, rates, il) -> Vec:
     """
 
     :param x:
@@ -141,6 +141,7 @@ def eval_h(x, Yf, Yt, from_idx, to_idx, no_slack, Va_max, Va_min, Vm_max, Vm_min
     :param Qg_min:
     :param Cg:
     :param rates:
+    :param il: relevant lines to check rating
     :return:
     """
     M, N = Yf.shape
@@ -149,14 +150,12 @@ def eval_h(x, Yf, Yt, from_idx, to_idx, no_slack, Va_max, Va_min, Vm_max, Vm_min
     vm, va, Pg, Qg = x2var(x, nVm=N, nVa=N, nPg=Ng, nQg=Ng)
 
     V = vm * np.exp(1j * va)
-    If = np.conj(Yf @ V)
-    Lf = If * If
-    Sf = V[from_idx] * If
-    St = V[to_idx] * np.conj(Yt @ V)
+    Sf = V[from_idx[il]] * np.conj(Yf[il, :] @ V)
+    St = V[to_idx[il]] * np.conj(Yt[il, :] @ V)
     Sf2 = np.conj(Sf) * Sf
     St2 = np.conj(St) * St
-    hval = np.r_[Sf2.real - (rates ** 2),  # rates "lower limit"
-                 St2.real - (rates ** 2),  # rates "upper limit"
+    hval = np.r_[Sf2.real - (rates[il] ** 2),  # rates "lower limit"
+                 St2.real - (rates[il] ** 2),  # rates "upper limit"
                  vm - Vm_max,  # voltage module upper limit
                  Vm_min - vm,  # voltage module lower limit
                  va[no_slack] - Va_max[no_slack],  # voltage angles upper limit
@@ -170,7 +169,7 @@ def eval_h(x, Yf, Yt, from_idx, to_idx, no_slack, Va_max, Va_min, Vm_max, Vm_min
     return hval, Sf, St
 
 
-def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, slack, no_slack, mu, lmbda,
+def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, slack, no_slack, mu, lmbda,
                            compute_jac: bool, compute_hess: bool, ):
     """
 
@@ -184,13 +183,15 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, slack, no
     :param Yt:
     :param Ybus:
     :param Sbase:
+    :param il:
     :param slack:
     :param no_slack:
     :param mu:
     :param lmbda:
     :return:
     """
-    M, N = Yf.shape
+    Mm, N = Yf.shape
+    M = len(il)
     Ng = Cg.shape[1]  # Check
     NV = len(x)
 
@@ -223,16 +224,16 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, slack, no
 
         #############
 
-        IfCJmat = np.conj(diags(Yf @ V))
-        ItCJmat = np.conj(diags(Yt @ V))
-        Sfmat = diags(diags(Cf @ V) @ np.conj(Yf @ V))
-        Stmat = diags(diags(Ct @ V) @ np.conj(Yt @ V))
+        IfCJmat = np.conj(diags(Yf[il, :] @ V))
+        ItCJmat = np.conj(diags(Yt[il, :] @ V))
+        Sfmat = diags(diags(Cf[il, :] @ V) @ np.conj(Yf[il, :] @ V))
+        Stmat = diags(diags(Ct[il, :] @ V) @ np.conj(Yt[il, :] @ V))
 
-        Sfvm = IfCJmat @ Cf @ E + diags(Cf @ V) @ np.conj(Yf) @ np.conj(E)
-        Stvm = ItCJmat @ Ct @ E + diags(Ct @ V) @ np.conj(Yt) @ np.conj(E)
+        Sfvm = (IfCJmat @ Cf[il, :] @ E + diags(Cf[il, :] @ V) @ np.conj(Yf[il, :]) @ np.conj(E))
+        Stvm = (ItCJmat @ Ct[il, :] @ E + diags(Ct[il, :] @ V) @ np.conj(Yt[il, :]) @ np.conj(E))
 
-        Sfva = 1j * (IfCJmat @ Cf @ Vmat - diags(Cf @ V) @ np.conj(Yf) @ np.conj(Vmat))
-        Stva = 1j * (ItCJmat @ Ct @ Vmat - diags(Ct @ V) @ np.conj(Yt) @ np.conj(Vmat))
+        Sfva = (1j * (IfCJmat @ Cf[il, :] @ Vmat - diags(Cf[il, :] @ V) @ np.conj(Yf[il, :]) @ np.conj(Vmat)))
+        Stva = (1j * (ItCJmat @ Ct[il, :] @ Vmat - diags(Ct[il, :] @ V) @ np.conj(Yt[il, :]) @ np.conj(Vmat)))
 
         SfX = sparse.hstack([Sfvm, Sfva, lil_matrix((M, 2 * Ng))])
         StX = sparse.hstack([Stvm, Stva, lil_matrix((M, 2 * Ng))])
@@ -417,8 +418,9 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, slack, no
 
         #########
 
-        mu_mat = diags(np.conj(Sfmat) @ mu[0: M])  # Check if we have to grab just the from branches
-        Af = np.conj(Yf).T @ mu_mat @ Cf
+        # mu_mat = diags(np.conj(Sfmat) @ mu[0: M])  # Check if we have to grab just the from branches
+        mu_mat = diags(Sfmat.conj() @ mu[0: M])
+        Af = np.conj(Yf[il, :]).T @ mu_mat @ Cf[il, :]
         Bf = np.conj(Vmat) @ Af @ Vmat
         Df = diags(Af @ V) @ np.conj(Vmat)
         Ef = diags(Af.T @ np.conj(V)) @ Vmat
@@ -434,8 +436,8 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, slack, no
         Hfvavm = 2 * (Sfvavm + Sfva.T @ mu_mat @ np.conj(Sfvm)).real
         Hfvmvm = 2 * (Sfvmvm + Sfvm.T @ mu_mat @ np.conj(Sfvm)).real
 
-        mu_mat = diags(np.conj(Stmat) @ mu[M: 2 * M])  # Check same
-        At = np.conj(Yt).T @ mu_mat @ Ct
+        mu_mat = diags(Stmat.conj() @ mu[M: 2 * M])  # Check same
+        At = np.conj(Yt[il, :]).T @ mu_mat @ Ct[il, :]
         Bt = np.conj(Vmat) @ At @ Vmat
         Dt = diags(At @ V) @ np.conj(Vmat)
         Et = diags(At.T @ np.conj(V)) @ Vmat
@@ -538,7 +540,7 @@ def compute_autodiff_structures(x, mu, lam, compute_jac: bool, compute_hess: boo
 def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: bool,
                                 Ybus, Yf, Cg, Cf, Ct, Sd, slack, no_slack, Yt, from_idx, to_idx,
                                 th_max, th_min, V_U, V_L, P_U, P_L, Q_U, Q_L,
-                                c0, c1, c2, Sbase, rates) -> IpsFunctionReturn:
+                                c0, c1, c2, Sbase, rates, il) -> IpsFunctionReturn:
     """
 
     :param x:
@@ -569,17 +571,17 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
     :param c2:
     :param Sbase:
     :param rates:
-    :param h:
+    :param il:
     :return:
     """
     f = eval_f(x=x, Cg=Cg, c0=c0, c1=c1, c2=c2, Sbase=Sbase)
     G, Scalc = eval_g(x=x, Ybus=Ybus, Yf=Yf, Cg=Cg, Sd=Sd, slack=slack)
     H, Sf, St = eval_h(x=x, Yf=Yf, Yt=Yt, from_idx=from_idx, to_idx=to_idx, no_slack=no_slack, Va_max=th_max,
                        Va_min=th_min, Vm_max=V_U, Vm_min=V_L, Pg_max=P_U, Pg_min=P_L, Qg_max=Q_U, Qg_min=Q_L, Cg=Cg,
-                       rates=rates)
+                       rates=rates, il=il)
 
     fx, Gx, Hx, fxx, Gxx, Hxx = jacobians_and_hessians(x=x, c1=c1, c2=c2, Cg=Cg, Cf=Cf, Ct=Ct, Yf=Yf, Yt=Yt,
-                                                       Ybus=Ybus, Sbase=Sbase, slack=slack, no_slack=no_slack,
+                                                       Ybus=Ybus, Sbase=Sbase, il=il, slack=slack, no_slack=no_slack,
                                                        mu=mu, lmbda=lmbda, compute_jac=compute_jac,
                                                        compute_hess=compute_hess)
 
@@ -592,7 +594,7 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
 def evaluate_power_flow_debug(x, mu, lmbda, compute_jac: bool, compute_hess: bool,
                               Ybus, Yf, Cg, Cf, Ct, Sd, slack, no_slack, Yt, from_idx, to_idx,
                               th_max, th_min, V_U, V_L, P_U, P_L, Q_U, Q_L,
-                              c0, c1, c2, Sbase, rates, h=1e-5) -> IpsFunctionReturn:
+                              c0, c1, c2, Sbase, rates, il, h=1e-5) -> IpsFunctionReturn:
     """
 
     :param x:
@@ -629,12 +631,13 @@ def evaluate_power_flow_debug(x, mu, lmbda, compute_jac: bool, compute_hess: boo
     mats_analytic = compute_analytic_structures(x, mu, lmbda, compute_jac, compute_hess,
                                                 Ybus, Yf, Cg, Cf, Ct, Sd, slack, no_slack, Yt, from_idx,
                                                 to_idx,
-                                                th_max, th_min, V_U, V_L, P_U, P_L, Q_U, Q_L, c0, c1, c2, Sbase, rates)
+                                                th_max, th_min, V_U, V_L, P_U, P_L, Q_U, Q_L, c0, c1, c2, Sbase, rates,
+                                                il)
 
     mats_finite = compute_autodiff_structures(x, mu, lmbda, compute_jac, compute_hess,
                                               Ybus, Yf, Cg, Sd, slack, no_slack, Yt, from_idx, to_idx,
                                               th_max, th_min, V_U, V_L, P_U, P_L, Q_U, Q_L, c0, c1, c2, Sbase, rates,
-                                              h=h)
+                                              il, h=h)
 
     errors = mats_finite.compare(mats_analytic, h=h)
 
@@ -762,6 +765,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     Qg_min = nc.generator_data.qmin / Sbase
     Vm_max = nc.bus_data.Vmax
     Vm_min = nc.bus_data.Vmin
+    il = np.flatnonzero((0 < nc.rates) & (nc.rates < 10000))  # get rates between (0, 10000 MVA)
+    nll = len(il)
     rates = nc.rates / Sbase
     Va_max = nc.bus_data.angle_max
     Va_min = nc.bus_data.angle_min
@@ -776,7 +781,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     NE = 2 * nbus + n_slack
 
     # Number of innequalities: Line ratings, max and min angle of buses, voltage module range and
-    NI = 2 * nbr + 2 * n_no_slack + 2 * nbus + 4 * ngen
+    # NI = 2 * nbr + 2 * n_no_slack + 2 * nbus + 4 * ngen
+    NI = 2 * nll + 2 * n_no_slack + 2 * nbus + 4 * ngen
 
     # run power flow to initialize
     pf_results = multi_island_pf_nc(nc=nc, options=pf_options)
@@ -815,7 +821,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                                        arg=(Ybus, Yf, Cg, Cf, Ct, Sd, slack, no_slack, Yt,
                                             from_idx, to_idx, Va_max, Va_min, Vm_max, Vm_min,
                                             Pg_max, Pg_min, Qg_max, Qg_min,
-                                            c0, c1, c2, Sbase, rates),
+                                            c0, c1, c2, Sbase, rates, il),
                                        verbose=pf_options.verbose,
                                        max_iter=pf_options.max_iter)
 
@@ -826,7 +832,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                                            func=compute_autodiff_structures,
                                            arg=(Ybus, Yf, Cg, Sd, slack, no_slack, Yt, from_idx, to_idx,
                                                 Va_max, Va_min, Vm_max, Vm_min, Pg_max, Pg_min, Qg_max, Qg_min,
-                                                c0, c1, c2, Sbase, rates, 1e-5),
+                                                c0, c1, c2, Sbase, rates, il, 1e-5),
                                            verbose=pf_options.verbose,
                                            max_iter=pf_options.max_iter)
         else:
@@ -836,7 +842,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                                            arg=(Ybus, Yf, Cg, Cf, Ct, Sd, slack, no_slack, Yt,
                                                 from_idx, to_idx, Va_max, Va_min, Vm_max, Vm_min,
                                                 Pg_max, Pg_min, Qg_max, Qg_min,
-                                                c0, c1, c2, Sbase, rates),
+                                                c0, c1, c2, Sbase, rates, il),
                                            verbose=pf_options.verbose,
                                            max_iter=pf_options.max_iter)
 
@@ -849,7 +855,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     S = result.structs.S
     Sf = result.structs.Sf
     St = result.structs.St
-    loading = np.abs(Sf) / (rates + 1e-9)
+    loading = np.abs(Sf) / (rates[il] + 1e-9)
     if pf_options.verbose > 0:
         df_bus = pd.DataFrame(data={'Vm (p.u.)': Vm, 'Va (rad)': Va,
                                     'dual price (€/MW)': lam_p, 'dual price (€/MVAr)': lam_q})
