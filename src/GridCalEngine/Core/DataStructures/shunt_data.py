@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -44,6 +44,10 @@ class ShuntData:
         self.b_min: Vec = np.zeros(nelm, dtype=float)
         self.b_max: Vec = np.zeros(nelm, dtype=float)
 
+        # reliabilty
+        self.mttf: Vec = np.zeros(nelm, dtype=float)
+        self.mttr: Vec = np.zeros(nelm, dtype=float)
+
         self.C_bus_elm: sp.lil_matrix = sp.lil_matrix((nbus, nelm), dtype=int)
 
         self.original_idx: IntVec = np.zeros(nelm, dtype=int)
@@ -68,6 +72,9 @@ class ShuntData:
         data.active = self.active[elm_idx]
         data.admittance = self.admittance[elm_idx]
 
+        data.mttf = self.mttf[elm_idx]
+        data.mttr = self.mttr[elm_idx]
+
         data.C_bus_elm = self.C_bus_elm[np.ix_(bus_idx, elm_idx)]
 
         data.original_idx = elm_idx
@@ -91,6 +98,9 @@ class ShuntData:
 
         data.active = self.active.copy()
         data.admittance = self.admittance.copy()
+
+        data.mttf = self.mttf.copy()
+        data.mttr = self.mttr.copy()
 
         data.C_bus_elm = self.C_bus_elm.copy()
 

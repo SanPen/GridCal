@@ -46,7 +46,7 @@ def test1():
     Check that Ybus was correctly decomposed
     :return: True if passed
     """
-    fname = os.path.join('..', '..', 'Grids_and_profiles', 'grids', 'IEEE 30 Bus with storage.xlsx')
+    fname = os.path.join('data', 'grids', 'IEEE 30 Bus with storage.xlsx')
     res = __check__(fname)
     return res
 
@@ -56,7 +56,7 @@ def test2():
     Check that Ybus was correctly decomposed
     :return: True if passed
     """
-    fname = os.path.join('..', '..', 'Grids_and_profiles', 'grids', 'Brazil11_loading05.gridcal')
+    fname = os.path.join('data', 'grids',  'Brazil11_loading05.gridcal')
     res = __check__(fname)
     return res
 
@@ -66,7 +66,7 @@ def test3():
     Check that Ybus was correctly decomposed
     :return: True if passed
     """
-    fname = os.path.join('..', '..', 'Grids_and_profiles', 'grids', "Iwamoto's 11 Bus.xlsx")
+    fname = os.path.join('data', 'grids', "Iwamoto's 11 Bus.xlsx")
     res = __check__(fname)
     return res
 

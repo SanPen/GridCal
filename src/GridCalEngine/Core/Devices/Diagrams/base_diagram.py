@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -15,6 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+import sys
 import uuid
 import networkx as nx
 from typing import Dict, Union, List, Tuple
@@ -23,6 +24,7 @@ from GridCalEngine.Core.Devices.Diagrams.map_location import MapLocation
 from GridCalEngine.Core.Devices.editable_device import EditableDevice
 from GridCalEngine.Core.Devices.Substation.bus import Bus
 from GridCalEngine.enumerations import DiagramType, DeviceType
+from GridCalEngine.basic_structures import Logger
 
 
 class PointsGroup:
@@ -83,28 +85,40 @@ class PointsGroup:
 
     def parse_data(self,
                    data: Dict[str, Dict[str, Union[int, float, List[Tuple[float, float]]]]],
-                   obj_dict: Dict[str, EditableDevice]):
+                   obj_dict: Dict[str, EditableDevice],
+                   logger: Logger,
+                   category: str = "") -> None:
         """
         Parse file data ito this class
         :param data: json dictionary
         :param obj_dict: dicrtionary of relevant objects (idtag, object)
+        :param logger: Logger
+        :param category: category
         """
         self.locations = dict()
 
         for idtag, location in data.items():
 
-            if 'x' in location:
-                self.locations[idtag] = GraphicLocation(x=location['x'],
-                                                        y=location['y'],
-                                                        w=location['w'],
-                                                        h=location['h'],
-                                                        r=location['r'],
-                                                        api_object=obj_dict.get(idtag, None))
-            if 'latitude' in location:
-                self.locations[idtag] = MapLocation(latitude=location['latitude'],
-                                                    longitude=location['longitude'],
-                                                    altitude=location['altitude'],
-                                                    api_object=obj_dict.get(idtag, None))
+            api_object = obj_dict.get(idtag, None)
+
+            if api_object is None:
+                # locations with no API object are not created
+                logger.add_error("Diagram location could not find API object",
+                                 device_class=category,
+                                 device=idtag,)
+            else:
+                if 'x' in location:
+                    self.locations[idtag] = GraphicLocation(x=location['x'],
+                                                            y=location['y'],
+                                                            w=location['w'],
+                                                            h=location['h'],
+                                                            r=location['r'],
+                                                            api_object=api_object)
+                if 'latitude' in location:
+                    self.locations[idtag] = MapLocation(latitude=location['latitude'],
+                                                        longitude=location['longitude'],
+                                                        altitude=location['altitude'],
+                                                        api_object=api_object)
 
 
 class BaseDiagram:
@@ -210,11 +224,13 @@ class BaseDiagram:
 
     def parse_data(self,
                    data: Dict[str, Dict[str, Dict[str, Union[int, float]]]],
-                   obj_dict: Dict[str, Dict[str, EditableDevice]]):
+                   obj_dict: Dict[str, Dict[str, EditableDevice]],
+                   logger: Logger):
         """
         Parse file data ito this class
         :param data: json dictionary
         :param obj_dict: dictionary of circuit objects by type to fincd the api objects back from file loading
+        :param logger: logger
         """
         self.data = dict()
 
@@ -225,7 +241,8 @@ class BaseDiagram:
         for category, loc_dict in data['data'].items():
 
             points_group = PointsGroup(name=category)
-            points_group.parse_data(data=loc_dict, obj_dict=obj_dict.get(category, dict()))
+            points_group.parse_data(data=loc_dict, obj_dict=obj_dict.get(category, dict()),
+                                    logger=logger, category=category)
             self.data[category] = points_group
 
     def build_graph(self) -> Tuple[nx.DiGraph, List[Bus]]:
@@ -235,41 +252,94 @@ class BaseDiagram:
         """
         graph = nx.DiGraph()
 
-        bus_dictionary = dict()
+        node_devices = list()  # buses + fluid nodes
 
+        # Add buses ----------------------------------------------------------------------------------------------------
+        n_bus = 0
+        graph_node_dictionary = dict()
         buses_groups = self.data.get(DeviceType.BusDevice.value, None)
-        buses = list()
         if buses_groups:
             for i, (idtag, location) in enumerate(buses_groups.locations.items()):
                 graph.add_node(i)
-                bus_dictionary[idtag] = i
-                buses.append(location.api_object)
+                graph_node_dictionary[idtag] = i
+                node_devices.append(location.api_object)
+                n_bus += 1
 
-            # branch_groups = dict()
-            tuples = list()
-            for dev_type in [DeviceType.LineDevice,
-                             DeviceType.DCLineDevice,
-                             DeviceType.HVDCLineDevice,
-                             DeviceType.Transformer2WDevice,
-                             DeviceType.VscDevice,
-                             DeviceType.UpfcDevice]:
+        # Add fluid ndes -----------------------------------------------------------------------------------------------
+        fluid_node_groups = self.data.get(DeviceType.FluidNodeDevice.value, None)
+        if fluid_node_groups:
+            for i, (idtag, location) in enumerate(fluid_node_groups.locations.items()):
+                graph.add_node(i)
+                graph_node_dictionary[idtag] = i + n_bus
 
-                groups = self.data.get(dev_type.value, None)
+                if location.api_object.bus is not None:
+                    # the electrical bus location is the same
+                    graph_node_dictionary[location.api_object.bus.idtag] = i + n_bus
 
-                if groups:
-                    for i, (idtag, location) in enumerate(groups.locations.items()):
-                        branch = location.api_object
-                        f = bus_dictionary[branch.bus_from.idtag]
-                        t = bus_dictionary[branch.bus_to.idtag]
+                node_devices.append(location.api_object)
 
-                        if hasattr(branch, 'X'):
-                            w = branch.X
-                        else:
-                            w = 1e-6
+        # Add the electrical branches ----------------------------------------------------------------------------------
+        tuples = list()
+        for dev_type in [DeviceType.LineDevice,
+                         DeviceType.DCLineDevice,
+                         DeviceType.HVDCLineDevice,
+                         DeviceType.Transformer2WDevice,
+                         DeviceType.VscDevice,
+                         DeviceType.UpfcDevice]:
 
-                        # self.graph.add_edge(f, t)
-                        tuples.append((f, t, w))
+            groups = self.data.get(dev_type.value, None)
 
-            graph.add_weighted_edges_from(tuples)
+            if groups:
+                for i, (idtag, location) in enumerate(groups.locations.items()):
+                    branch = location.api_object
+                    f = graph_node_dictionary[branch.bus_from.idtag]
+                    t = graph_node_dictionary[branch.bus_to.idtag]
 
-        return graph, buses
+                    if hasattr(branch, 'X'):
+                        w = branch.X
+                    else:
+                        w = 1e-6
+
+                    tuples.append((f, t, w))
+
+        # Add fluid branches -------------------------------------------------------------------------------------------
+        for dev_type in [DeviceType.FluidPathDevice]:
+
+            groups = self.data.get(dev_type.value, None)
+
+            if groups:
+                for i, (idtag, location) in enumerate(groups.locations.items()):
+                    branch = location.api_object
+                    f = graph_node_dictionary[branch.source.idtag]
+                    t = graph_node_dictionary[branch.target.idtag]
+
+                    w = 0.01
+
+                    tuples.append((f, t, w))
+
+        # add all the tuples
+        graph.add_weighted_edges_from(tuples)
+
+        return graph, node_devices
+
+    def get_boundaries(self):
+        """
+        Get the graphic representation boundaries
+        :return: min_x, max_x, min_y, max_y
+        """
+        min_x = sys.maxsize
+        min_y = sys.maxsize
+        max_x = -sys.maxsize
+        max_y = -sys.maxsize
+
+        # shrink selection only
+        for tpe, group in self.data.items():
+            for key, location in group.locations.items():
+                x = location.x
+                y = location.y
+                max_x = max(max_x, x)
+                min_x = min(min_x, x)
+                max_y = max(max_y, y)
+                min_y = min(min_y, y)
+
+        return min_x, max_x, min_y, max_y

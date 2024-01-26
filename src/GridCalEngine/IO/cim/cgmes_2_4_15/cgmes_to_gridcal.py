@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -574,6 +574,63 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                                  expected_value=2)
 
 
+def get_gcdev_shunts(cgmes_model: CgmesCircuit,
+                     gcdev_model: MultiCircuit,
+                     calc_node_dict: Dict[str, gcdev.Bus],
+                     cn_dict: Dict[str, gcdev.ConnectivityNode],
+                     device_to_terminal_dict: Dict[str, List[Terminal]],
+                     logger: DataLogger) -> None:
+    """
+    Convert the CGMES shunts to gcdev
+
+    :param cgmes_model: CgmesCircuit
+    :param gcdev_model: gcdevCircuit
+    :param calc_node_dict: Dict[str, gcdev.Bus]
+    :param cn_dict: Dict[str, gcdev.ConnectivityNode]
+    :param device_to_terminal_dict: Dict[str, Terminal]
+    :param logger:
+    """
+    # convert shunts
+    for device_list in [cgmes_model.LinearShuntCompensator_list]:
+        for cgmes_elm in device_list:
+            calc_nodes, cns = find_connections(cgmes_elm=cgmes_elm,
+                                               device_to_terminal_dict=device_to_terminal_dict,
+                                               calc_node_dict=calc_node_dict,
+                                               cn_dict=cn_dict,
+                                               logger=logger)
+
+            if len(calc_nodes) == 1:
+                calc_node = calc_nodes[0]
+                cn = cns[0]
+
+                gcdev_elm = gcdev.Shunt(
+                    name=cgmes_elm.rdfid,
+                    G=cgmes_elm.gPerSection,
+                    # B=self.B,
+                    # G_prof=self.G_prof,
+                    # B_prof=self.B_prof,
+                    # G0=self.G0,
+                    # B0=self.B0,
+                    # G0_prof=self.G0_prof,
+                    # B0_prof=self.B0_prof,
+                    # active=self.active,
+                    # active_prof=self.active_prof,
+                    # Bmax=self.Bmax,
+                    # Bmin=self.Bmin,
+                    # vset=self.Vset,
+                    # mttf=self.mttf,
+                    # mttr=self.mttr
+                )
+                gcdev_model.add_shunt(calc_node, gcdev_elm)
+            else:
+                logger.add_error(msg='Not exactly one terminal',
+                                 device=cgmes_elm.rdfid,
+                                 device_class=cgmes_elm.tpe,
+                                 device_property="number of associated terminals",
+                                 value=len(calc_nodes),
+                                 expected_value=1)
+
+
 def cgmes_to_gridcal(cgmes_model: CgmesCircuit, logger: DataLogger) -> MultiCircuit:
     """
     convert CGMES model to gcdev
@@ -598,7 +655,7 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit, logger: DataLogger) -> MultiCirc
         if not isinstance(e.TopologicalNode, str):
             v_dict[e.TopologicalNode.uuid] = (e.v, e.angle)
         else:
-            logger.add_error(msg='Missing refference',
+            logger.add_error(msg='Missing reference',
                              device=e.rdfid,
                              device_class=e.tpe,
                              device_property="TopologicalNode",
@@ -630,5 +687,7 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit, logger: DataLogger) -> MultiCirc
 
     get_gcdev_ac_lines(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger, Sbase)
     get_gcdev_ac_transformers(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger, Sbase)
+
+    get_gcdev_shunts(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger)
 
     return gc_model

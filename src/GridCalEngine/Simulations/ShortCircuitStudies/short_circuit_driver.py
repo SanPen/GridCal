@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -93,8 +93,12 @@ class ShortCircuitDriver(DriverTemplate):
                  pf_results: PowerFlowResults,
                  opf_results=None):
         """
-        PowerFlowDriver class constructor
-        @param grid: MultiCircuit Object
+        ShortCircuitDriver class constructor
+        :param grid: MultiCircuit Object
+        :param options: ShortCircuitOptions
+        :param pf_options: PowerFlowOptions
+        :param pf_results: PowerFlowResults
+        :param opf_results: OptimalPowerFlowResults
         """
         DriverTemplate.__init__(self, grid=grid)
 
@@ -204,15 +208,15 @@ class ShortCircuitDriver(DriverTemplate):
         # is dense, so no need to store it as sparse
         if calculation_inputs.Ybus.shape[0] > 1:
             if fault_type == FaultType.ph3:
-                return short_circuit_ph3(calculation_inputs,
-                                         Vpf[calculation_inputs.original_bus_idx],
-                                         Zf,
+                return short_circuit_ph3(calculation_inputs=calculation_inputs,
+                                         Vpf=Vpf[calculation_inputs.original_bus_idx],
+                                         Zf=Zf,
                                          bus_index=island_bus_index)
 
             elif fault_type in [FaultType.LG, FaultType.LL, FaultType.LLG]:
-                return short_circuit_unbalanced(calculation_inputs,
-                                                Vpf[calculation_inputs.original_bus_idx],
-                                                Zf,
+                return short_circuit_unbalanced(calculation_inputs=calculation_inputs,
+                                                Vpf=Vpf[calculation_inputs.original_bus_idx],
+                                                Zf=Zf,
                                                 bus_index=island_bus_index,
                                                 fault_type=fault_type)
 

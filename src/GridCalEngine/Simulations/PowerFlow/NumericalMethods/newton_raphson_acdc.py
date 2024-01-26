@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -29,7 +29,7 @@ from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions impor
                                                                                    compute_power, compute_zip_power)
 from GridCalEngine.basic_structures import CxVec
 from GridCalEngine.enumerations import ReactivePowerControlMode
-import GridCalEngine.Simulations.sparse_solve as gcsp
+import GridCalEngine.Utils.NumericalMethods.sparse_solve as gcsp
 
 
 def NR_LS_ACDC(nc: NumericalCircuit,

@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -17,6 +17,7 @@
 
 import io
 import numpy as np
+import pandas as pd
 from PySide6 import QtCore, QtWidgets
 from GridCalEngine.Simulations.results_table import ResultsTable
 
@@ -132,16 +133,22 @@ class ResultsModel(QtCore.QAbstractTableModel):
         if role == QtCore.Qt.ItemDataRole.DisplayRole:
             if orientation == QtCore.Qt.Orientation.Horizontal:
                 if len(self.table.cols_c) > section:
-                    return self.table.cols_c[section]
+                    val = self.table.cols_c[section]
+                else:
+                    return ""
 
             elif orientation == QtCore.Qt.Orientation.Vertical:
                 if self.table.index_c is None:
                     return section
                 else:
-                    if self.table.isDate:
-                        return self.table.index_c[section].strftime('%Y/%m/%d  %H:%M.%S')
-                    else:
-                        return str(self.table.index_c[section])
+                    val = self.table.index_c[section]
+            else:
+                return ""
+
+            if isinstance(val, pd.Timestamp):
+                return val.strftime('%Y/%m/%d  %H:%M:%S')
+            else:
+                return val
         return None
 
     def slice_cols(self, col_idx) -> "ResultsModel":
@@ -165,6 +172,12 @@ class ResultsModel(QtCore.QAbstractTableModel):
             return ResultsModel(mdl)
         else:
             return None
+
+    def transpose(self):
+        """
+        Transpose the results in-place
+        """
+        self.table.transpose()
 
     def search(self, txt):
         """

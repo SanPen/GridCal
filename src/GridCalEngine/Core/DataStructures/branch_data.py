@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -65,6 +65,10 @@ class BranchData:
 
         self.F: IntVec = np.zeros(self.nelm, dtype=int)  # indices of the "from" buses
         self.T: IntVec = np.zeros(self.nelm, dtype=int)  # indices of the "to" buses
+
+        # reliabilty
+        self.mttf: Vec = np.zeros(self.nelm, dtype=float)
+        self.mttr: Vec = np.zeros(self.nelm, dtype=float)
 
         # composite losses curve (a * x^2 + b * x + c)
         self.a: Vec = np.zeros(self.nelm, dtype=float)
@@ -140,6 +144,9 @@ class BranchData:
         data.names = self.names[elm_idx]
         data.idtag = self.idtag[elm_idx]
 
+        data.mttf = self.mttf[elm_idx]
+        data.mttr = self.mttr[elm_idx]
+
         data.R = self.R[elm_idx]
         data.X = self.X[elm_idx]
         data.G = self.G[elm_idx]
@@ -211,6 +218,9 @@ class BranchData:
 
         data.names = self.names.copy()
         data.idtag = self.idtag.copy()
+
+        data.mttf = self.mttf.copy()
+        data.mttr = self.mttr.copy()
 
         data.R = self.R.copy()
         data.X = self.X.copy()

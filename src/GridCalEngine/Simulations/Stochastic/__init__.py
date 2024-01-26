@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -18,3 +18,5 @@
 from GridCalEngine.Simulations.Stochastic.stochastic_power_flow_driver import StochasticPowerFlowDriver, StochasticPowerFlowResults, StochasticPowerFlowInput, StochasticPowerFlowType
 from GridCalEngine.Simulations.Stochastic.blackout_driver import Cascading, CascadingResults, CascadeType, CascadingReportElement
 from GridCalEngine.Simulations.Stochastic.reliability_driver import ReliabilityStudy
+from GridCalEngine.Simulations.Stochastic.reliability_iterable import ReliabilityIterable, get_transition_probabilities
+

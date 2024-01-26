@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -285,8 +285,8 @@ class TopologyReduction(DriverTemplate):
         @return:
         """
         self.tic()
-        self.progress_signal.emit(0.0)
-        self.progress_text.emit('Detecting which Branches to remove...')
+        self.report_progress(0.0)
+        self.report_text('Detecting which Branches to remove...')
 
         # sort the Branches in reverse order
         self.br_to_remove.sort(reverse=True)
@@ -301,9 +301,8 @@ class TopologyReduction(DriverTemplate):
                                                                                            removed_br_idx=br_idx)
 
             # display progress
-            self.progress_text.emit('Removed branch ' + str(br_idx) + ': ' + removed_branch.name)
-            progress = (i+1) / total * 100
-            self.progress_signal.emit(progress)
+            self.report_text('Removed branch ' + str(br_idx) + ': ' + removed_branch.name)
+            self.report_progress2(i, total)
 
         self.toc()
 
@@ -313,9 +312,7 @@ class TopologyReduction(DriverTemplate):
         :return:
         """
         self.__cancel__ = True
-        self.progress_signal.emit(0.0)
-        self.progress_text.emit('Cancelled')
-        self.done_signal.emit()
+        self.report_done("Cancelled!")
 
 
 class DeleteAndReduce(DriverTemplate):
@@ -346,8 +343,8 @@ class DeleteAndReduce(DriverTemplate):
         """
         self.tic()
         self._is_running = True
-        self.progress_signal.emit(0.0)
-        self.progress_text.emit('Detecting which Branches to remove...')
+        self.report_progress(0.0)
+        self.report_text('Detecting which Branches to remove...')
 
         # get the selected buses
         buses = [self.objects[idx.row()] for idx in self.sel_idx]
@@ -355,13 +352,11 @@ class DeleteAndReduce(DriverTemplate):
         # reduce
         self.buses_merged = reduce_buses(circuit=self.grid,
                                          buses_to_reduce=buses,
-                                         text_func=self.progress_text.emit,
-                                         prog_func=self.progress_signal.emit)
+                                         text_func=self.report_text,
+                                         prog_func=self.report_progress)
 
         # display progress
-        self.progress_text.emit('Done')
-        self.progress_signal.emit(0.0)
-        self.done_signal.emit()
+        self.report_done()
         self._is_running = False
         self.toc()
 
@@ -371,9 +366,7 @@ class DeleteAndReduce(DriverTemplate):
         :return:
         """
         self.__cancel__ = True
-        self.progress_signal.emit(0.0)
-        self.progress_text.emit('Cancelled')
-        self.done_signal.emit()
+        self.report_done()
 
     def isRunning(self):
         return self._is_running
@@ -439,19 +432,19 @@ class NodeGroupsDriver(DriverTemplate):
         @return:
         """
         self.tic()
-        self.progress_signal.emit(0.0)
+        self.report_progress(0.0)
 
         n = len(self.grid.buses)
 
         if self.use_ptdf:
-            self.progress_text.emit('Analyzing PTDF...')
+            self.report_text('Analyzing PTDF...')
 
             # the PTDF matrix will be scaled to 0, 1 to be able to train
             self.X_train = Normalizer().fit_transform(self.ptdf_results.PTDF.T)
 
             metric = 'euclidean'
         else:
-            self.progress_text.emit('Exploring Dijkstra distances...')
+            self.report_text('Exploring Dijkstra distances...')
             # explore
             g = self.build_weighted_graph()
             k = 0
@@ -459,7 +452,7 @@ class NodeGroupsDriver(DriverTemplate):
                 for j, d in distances_dict.items():
                     self.X_train[i, j] = d
 
-                self.progress_signal.emit((k+1) / n * 100.0)
+                self.report_progress2(k, n)
                 k += 1
             metric = 'precomputed'
 
@@ -469,7 +462,7 @@ class NodeGroupsDriver(DriverTemplate):
         max_distance = self.sigmas
 
         # construct groups
-        self.progress_text.emit('Building groups with DBSCAN...')
+        self.report_text('Building groups with DBSCAN...')
 
         # Compute DBSCAN
         model = DBSCAN(eps=max_distance,
@@ -490,9 +483,7 @@ class NodeGroupsDriver(DriverTemplate):
                 self.groups_by_index[group_idx].append(i)
 
         # display progress
-        self.progress_text.emit('Done')
-        self.progress_signal.emit(0.0)
-        self.done_signal.emit()
+        self.report_done()
         self.toc()
 
     def cancel(self):
@@ -501,7 +492,5 @@ class NodeGroupsDriver(DriverTemplate):
         :return:
         """
         self.__cancel__ = True
-        self.progress_signal.emit(0.0)
-        self.progress_text.emit('Cancelled')
-        self.done_signal.emit()
+        self.report_done("Cancelled!")
 

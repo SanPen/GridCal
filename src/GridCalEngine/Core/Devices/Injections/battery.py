@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -52,7 +52,7 @@ class Battery(Generator):
 
         **p_max** (float, 9999): Maximum dispatchable power in MW
 
-        **op_cost** (float, 1.0): Operational cost in Eur (or other currency) per MW
+        **op_cost** (float, 1.0): Operational cost in Eur (or other e) per MW
 
         **power_prof** (DataFrame, None): Pandas DataFrame with the active power
         profile in MW
@@ -371,7 +371,7 @@ class Battery(Generator):
                 'qmax': 'MVAr',
                 'pmin': 'MW',
                 'pmax': 'MW',
-                'cost': '€/MWh',
+                'cost': 'e/MWh',
                 'charge_efficiency': 'p.u.',
                 'discharge_efficiency': 'p.u.',
                 'min_soc': 'p.u.',

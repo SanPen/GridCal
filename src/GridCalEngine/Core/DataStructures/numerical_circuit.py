@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -14,12 +14,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
+from __future__ import annotations
 import numpy as np
 import numba as nb
 import pandas as pd
 import scipy.sparse as sp
-from typing import List, Tuple, Dict, Union
+from typing import List, Tuple, Dict, Union, TYPE_CHECKING
 
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
@@ -28,7 +28,7 @@ from GridCalEngine.enumerations import BranchImpedanceMode
 import GridCalEngine.Core.topology as tp
 
 from GridCalEngine.Core.topology import compile_types
-from GridCalEngine.Simulations.sparse_solve import get_sparse_type
+from GridCalEngine.Utils.NumericalMethods.sparse_solve import get_sparse_type
 import GridCalEngine.Core.Compilers.circuit_to_data as gc_compiler2
 import GridCalEngine.Core.admittance_matrices as ycalc
 from GridCalEngine.enumerations import TransformerControlType, ConverterControlType
@@ -38,9 +38,13 @@ from GridCalEngine.Core.Devices.Aggregation.area import Area
 from GridCalEngine.Core.Devices.Aggregation.investment import Investment
 from GridCalEngine.Core.Devices.Aggregation.contingency import Contingency
 
+if TYPE_CHECKING:  # Only imports the below statements during type checking
+    from GridCalEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults
+
 sparse_type = get_sparse_type()
 
-ALL_STRUCTS = Union[ds.BusData, ds.GeneratorData, ds.BatteryData, ds.LoadData, ds.ShuntData, ds.BranchData, ds.HvdcData]
+ALL_STRUCTS = Union[ds.BusData, ds.GeneratorData, ds.BatteryData, ds.LoadData, ds.ShuntData, ds.BranchData, ds.HvdcData,
+                    ds.FluidNodeData, ds.FluidTurbineData, ds.FluidPumpData, ds.FluidP2XData, ds.FluidPathData]
 
 
 @nb.njit(cache=True)
@@ -220,16 +224,16 @@ class NumericalCircuit:
         'pqpv',
         'tap_f',
         'tap_t',
-        'iPfsh',
-        'iQfma',
-        'iBeqz',
-        'iBeqv',
-        'iVtma',
-        'iQtma',
-        'iPfdp',
-        'iVscL',
-        'VfBeqbus',
-        'Vtmabus'
+        'k_pf_tau',
+        'k_qf_m',
+        'k_zero_beq',
+        'k_vf_beq',
+        'k_vt_m',
+        'k_qt_m',
+        'k_pf_dp',
+        'i_vsc',
+        'i_vf_beq',
+        'i_vt_m'
     ]
 
     def __init__(self,
@@ -240,6 +244,11 @@ class NumericalCircuit:
                  ngen: int,
                  nbatt: int,
                  nshunt: int,
+                 nfluidnode: int,
+                 nfluidturbine: int,
+                 nfluidpump: int,
+                 nfluidp2x: int,
+                 nfluidpath: int,
                  sbase: float,
                  t_idx: int = 0):
         """
@@ -263,6 +272,12 @@ class NumericalCircuit:
         self.nbatt: int = nbatt
         self.nshunt: int = nshunt
         self.nhvdc: int = nhvdc
+
+        self.nfluidnode: int = nfluidnode
+        self.nfluidturbine: int = nfluidturbine
+        self.nfluidpump: int = nfluidpump
+        self.nfluidp2x: int = nfluidp2x
+        self.nfluidpath: int = nfluidpath
 
         self.Sbase: float = sbase
 
@@ -299,7 +314,7 @@ class NumericalCircuit:
         self.i_vf_beq: IntVec = np.zeros(0, dtype=int)
 
         # (old Vtmabus) indices of the buses where Vt is controlled by ma
-        self.i_vt_m: IntVec = np.zeros(0, dtype=int)  
+        self.i_vt_m: IntVec = np.zeros(0, dtype=int)
 
         # --------------------------------------------------------------------------------------------------------------
         # Data structures
@@ -315,6 +330,12 @@ class NumericalCircuit:
         self.generator_data: ds.GeneratorData = ds.GeneratorData(nelm=ngen, nbus=nbus)
 
         self.shunt_data: ds.ShuntData = ds.ShuntData(nelm=nshunt, nbus=nbus)
+
+        self.fluid_node_data: ds.FluidNodeData = ds.FluidNodeData(nelm=nfluidnode)
+        self.fluid_turbine_data: ds.FluidTurbineData = ds.FluidTurbineData(nelm=nfluidturbine)
+        self.fluid_pump_data: ds.FluidPumpData = ds.FluidPumpData(nelm=nfluidpump)
+        self.fluid_p2x_data: ds.FluidP2XData = ds.FluidP2XData(nelm=nfluidp2x)
+        self.fluid_path_data: ds.FluidPathData = ds.FluidPathData(nelm=nfluidpath)
 
         # --------------------------------------------------------------------------------------------------------------
         # Internal variables filled on demand, to be ready to consume once computed
@@ -348,14 +369,14 @@ class NumericalCircuit:
         # Admittances for Linear
         self.Bbus_: Union[sp.csc_matrix, None] = None
         self.Bf_: Union[sp.csc_matrix, None] = None
-        self.Btheta_: Union[sp.csc_matrix, None] = None
+        self.Btau_: Union[sp.csc_matrix, None] = None
         self.Bpqpv_: Union[sp.csc_matrix, None] = None
         self.Bref_: Union[sp.csc_matrix, None] = None
 
         self.pq_: IntVec = None
         self.pv_: IntVec = None
         self.vd_: IntVec = None
-        self.pqpv_: IntVec = None
+        self.no_slack_: IntVec = None
         self.ac_: IntVec = None
         self.dc_: IntVec = None
 
@@ -398,14 +419,14 @@ class NumericalCircuit:
         # Admittances for Linear
         self.Bbus_: Union[sp.csc_matrix, None] = None
         self.Bf_: Union[sp.csc_matrix, None] = None
-        self.Btheta_: Union[sp.csc_matrix, None] = None
+        self.Btau_: Union[sp.csc_matrix, None] = None
         self.Bpqpv_: Union[sp.csc_matrix, None] = None
         self.Bref_: Union[sp.csc_matrix, None] = None
 
         self.pq_: IntVec = None
         self.pv_: IntVec = None
         self.vd_: IntVec = None
-        self.pqpv_: IntVec = None
+        self.no_slack_: IntVec = None
         self.ac_: IntVec = None
         self.dc_: IntVec = None
 
@@ -507,11 +528,9 @@ class NumericalCircuit:
         self.admittances_.Yf = Yf_
         self.admittances_.Yt = Yt_
 
-    def determine_control_indices(self):
+    def determine_control_indices(self) -> None:
         """
         This function fills in the lists of indices to control different magnitudes
-
-        :returns idx_sh, idx_qz, idx_vf, idx_vt, idx_qt, VfBeqbus, Vtmabus
 
         VSC Control modes:
 
@@ -550,19 +569,18 @@ class NumericalCircuit:
         Transformer 4|	1	-	1	-	-   |   Control the power flow and the voltage at the “from” side
         Transformer 5|	1	-	-	1	-   |   Control the power flow and the voltage at the “to” side
         ------------------------------------
-
         """
 
         # indices in the global branch scheme
-        iPfsh = list()  # indices of the Branches controlling Pf flow with theta sh
-        iQfma = list()  # indices of the Branches controlling Qf with ma
-        iBeqz = list()  # indices of the Branches when forcing the Qf flow to zero (aka "the zero condition")
-        iBeqv = list()  # indices of the Branches when controlling Vf with Beq
-        iVtma = list()  # indices of the Branches when controlling Vt with ma
-        iQtma = list()  # indices of the Branches controlling the Qt flow with ma
-        iPfdp = list()  # indices of the drop converters controlling the power flow with theta sh
-        iVscL = list()  # indices of the converters
-        iPfdp_va = list()
+        k_pf_tau_lst = list()  # indices of the Branches controlling Pf flow with theta sh
+        k_qf_m_lst = list()  # indices of the Branches controlling Qf with ma
+        k_zero_beq_lst = list()  # indices of the Branches when forcing the Qf flow to zero (aka "the zero condition")
+        k_vf_beq_lst = list()  # indices of the Branches when controlling Vf with Beq
+        k_vt_m_lst = list()  # indices of the Branches when controlling Vt with ma
+        k_qt_m_lst = list()  # indices of the Branches controlling the Qt flow with ma
+        k_pf_dp_lst = list()  # indices of the drop converters controlling the power flow with theta sh
+        i_vsc_lst = list()  # indices of the converters
+        iPfdp_va_lst = list()
 
         self.any_control = False
 
@@ -572,93 +590,93 @@ class NumericalCircuit:
                 pass
 
             elif tpe == TransformerControlType.Pt:
-                iPfsh.append(k)
+                k_pf_tau_lst.append(k)
                 self.any_control = True
 
             elif tpe == TransformerControlType.Qt:
-                iQtma.append(k)
+                k_qt_m_lst.append(k)
                 self.any_control = True
 
             elif tpe == TransformerControlType.PtQt:
-                iPfsh.append(k)
-                iQtma.append(k)
+                k_pf_tau_lst.append(k)
+                k_qt_m_lst.append(k)
                 self.any_control = True
 
             elif tpe == TransformerControlType.Vt:
-                iVtma.append(k)
+                k_vt_m_lst.append(k)
                 self.any_control = True
 
             elif tpe == TransformerControlType.PtVt:
-                iPfsh.append(k)
-                iVtma.append(k)
+                k_pf_tau_lst.append(k)
+                k_vt_m_lst.append(k)
                 self.any_control = True
 
             # VSC ------------------------------------------------------------------------------------------------------
             elif tpe == ConverterControlType.type_0_free:  # 1a:Free
-                iBeqz.append(k)
-                iVscL.append(k)
+                k_zero_beq_lst.append(k)
+                i_vsc_lst.append(k)
                 self.any_control = True
 
             elif tpe == ConverterControlType.type_I_1:  # 1:Vac
-                iVtma.append(k)
-                iBeqz.append(k)
-                iVscL.append(k)
+                k_vt_m_lst.append(k)
+                k_zero_beq_lst.append(k)
+                i_vsc_lst.append(k)
                 self.any_control = True
 
             elif tpe == ConverterControlType.type_I_2:  # 2:Pdc+Qac
 
-                iPfsh.append(k)
-                iQtma.append(k)
-                iBeqz.append(k)
+                k_pf_tau_lst.append(k)
+                k_qt_m_lst.append(k)
+                k_zero_beq_lst.append(k)
 
-                iVscL.append(k)
+                i_vsc_lst.append(k)
                 self.any_control = True
 
             elif tpe == ConverterControlType.type_I_3:  # 3:Pdc+Vac
-                iPfsh.append(k)
-                iVtma.append(k)
-                iBeqz.append(k)
+                k_pf_tau_lst.append(k)
+                k_vt_m_lst.append(k)
+                k_zero_beq_lst.append(k)
 
-                iVscL.append(k)
+                i_vsc_lst.append(k)
                 self.any_control = True
 
             elif tpe == ConverterControlType.type_II_4:  # 4:Vdc+Qac
-                iBeqv.append(k)
-                iQtma.append(k)
+                k_vf_beq_lst.append(k)
+                k_qt_m_lst.append(k)
 
-                iVscL.append(k)
+                i_vsc_lst.append(k)
                 self.any_control = True
 
             elif tpe == ConverterControlType.type_II_5:  # 5:Vdc+Vac
-                iBeqv.append(k)
-                iVtma.append(k)
+                k_vf_beq_lst.append(k)
+                k_vt_m_lst.append(k)
 
-                iVscL.append(k)
+                i_vsc_lst.append(k)
                 self.any_control = True
 
             elif tpe == ConverterControlType.type_III_6:  # 6:Droop+Qac
-                iPfdp.append(k)
-                iQtma.append(k)
+                k_pf_dp_lst.append(k)
+                k_qt_m_lst.append(k)
 
-                iVscL.append(k)
+                i_vsc_lst.append(k)
                 self.any_control = True
 
             elif tpe == ConverterControlType.type_III_7:  # 4a:Droop-slack
-                iPfdp.append(k)
-                iVtma.append(k)
+                k_pf_dp_lst.append(k)
+                k_vt_m_lst.append(k)
 
-                iVscL.append(k)
+                i_vsc_lst.append(k)
                 self.any_control = True
 
             elif tpe == ConverterControlType.type_IV_I:  # 8:Vdc
-                iBeqv.append(k)
-                iVscL.append(k)
+                k_vf_beq_lst.append(k)
+                i_vsc_lst.append(k)
 
                 self.any_control = True
 
             elif tpe == ConverterControlType.type_IV_II:  # 9:Pdc
-                iPfsh.append(k)
-                iBeqz.append(k)
+                k_pf_tau_lst.append(k)
+                k_zero_beq_lst.append(k)
 
                 self.any_control = True
 
@@ -676,21 +694,21 @@ class NumericalCircuit:
 
         # FUBM- Saves the "from" bus identifier for Vf controlled by Beq
         #  (Converters type II for Vdc control)
-        self.i_vf_beq = self.F[iBeqv]
+        self.i_vf_beq = self.F[k_vf_beq_lst]
 
         # FUBM- Saves the "to"   bus identifier for Vt controlled by ma
         #  (Converters and Transformers)
-        self.i_vt_m = self.T[iVtma]
+        self.i_vt_m = self.T[k_vt_m_lst]
 
-        self.k_pf_tau = np.array(iPfsh, dtype=int)
-        self.k_qf_m = np.array(iQfma, dtype=int)
-        self.k_zero_beq = np.array(iBeqz, dtype=int)
-        self.k_vf_beq = np.array(iBeqv, dtype=int)
-        self.k_vt_m = np.array(iVtma, dtype=int)
-        self.k_qt_m = np.array(iQtma, dtype=int)
-        self.k_pf_dp = np.array(iPfdp, dtype=int)
-        self.iPfdp_va = np.array(iPfdp_va, dtype=int)
-        self.i_vsc = np.array(iVscL, dtype=int)
+        self.k_pf_tau = np.array(k_pf_tau_lst, dtype=int)
+        self.k_qf_m = np.array(k_qf_m_lst, dtype=int)
+        self.k_zero_beq = np.array(k_zero_beq_lst, dtype=int)
+        self.k_vf_beq = np.array(k_vf_beq_lst, dtype=int)
+        self.k_vt_m = np.array(k_vt_m_lst, dtype=int)
+        self.k_qt_m = np.array(k_qt_m_lst, dtype=int)
+        self.k_pf_dp = np.array(k_pf_dp_lst, dtype=int)
+        self.iPfdp_va = np.array(iPfdp_va_lst, dtype=int)
+        self.i_vsc = np.array(i_vsc_lst, dtype=int)
 
     def copy(self) -> "NumericalCircuit":
         """
@@ -704,6 +722,11 @@ class NumericalCircuit:
                               ngen=self.ngen,
                               nbatt=self.nbatt,
                               nshunt=self.nshunt,
+                              nfluidnode=self.nfluidnode,
+                              nfluidturbine=self.nfluidturbine,
+                              nfluidpump=self.nfluidpump,
+                              nfluidp2x=self.nfluidp2x,
+                              nfluidpath=self.nfluidpath,
                               sbase=self.Sbase,
                               t_idx=self.t_idx)
 
@@ -714,13 +737,20 @@ class NumericalCircuit:
         nc.shunt_data = self.shunt_data.copy()
         nc.generator_data = self.generator_data.copy()
         nc.battery_data = self.battery_data.copy()
+        nc.fluid_node_data = self.fluid_node_data.copy()
+        nc.fluid_turbine_data = self.fluid_turbine_data.copy()
+        nc.fluid_pump_data = self.fluid_pump_data.copy()
+        nc.fluid_p2x_data = self.fluid_p2x_data.copy()
+        nc.fluid_path_data = self.fluid_path_data.copy()
         nc.consolidate_information()
 
         return nc
 
     def get_structures_list(self) -> List[Union[ds.BusData, ds.LoadData, ds.ShuntData,
-    ds.GeneratorData, ds.BatteryData,
-    ds.BranchData, ds.HvdcData]]:
+                                                ds.GeneratorData, ds.BatteryData,
+                                                ds.BranchData, ds.HvdcData,
+                                                ds.FluidNodeData, ds.FluidTurbineData, ds.FluidPumpData,
+                                                ds.FluidP2XData, ds.FluidPathData]]:
         """
         Get a list of the structures inside the NumericalCircuit
         :return:
@@ -731,7 +761,12 @@ class NumericalCircuit:
                 self.load_data,
                 self.shunt_data,
                 self.branch_data,
-                self.hvdc_data]
+                self.hvdc_data,
+                self.fluid_node_data,
+                self.fluid_turbine_data,
+                self.fluid_pump_data,
+                self.fluid_p2x_data,
+                self.fluid_path_data]
 
     def get_structs_idtag_dict(self) -> Dict[str, Tuple[ALL_STRUCTS, int]]:
         """
@@ -782,6 +817,11 @@ class NumericalCircuit:
                         structure.active[idx] = int(not bool(cnt.value))
                     else:
                         structure.active[idx] = int(cnt.value)
+                elif cnt.prop == '%':
+                    if revert:
+                        structure.p[idx] /= float(cnt.value / 100.0)
+                    else:
+                        structure.p[idx] *= float(cnt.value / 100.0)
                 else:
                     print(f'Unknown contingency property {cnt.prop} at {cnt.name} {cnt.idtag}')
             else:
@@ -1273,11 +1313,10 @@ class NumericalCircuit:
         :return:
         """
         if self.Bbus_ is None:
-            self.Bbus_, self.Bf_, self.Btheta_ = ycalc.compute_linear_admittances(
+            self.Bbus_, self.Bf_, self.Btau_ = ycalc.compute_linear_admittances(
                 nbr=self.nbr,
                 X=self.branch_data.X,
                 R=self.branch_data.R,
-                tap_modules=self.branch_data.tap_module,
                 active=self.branch_data.active,
                 Cf=self.Cf,
                 Ct=self.Ct,
@@ -1302,7 +1341,7 @@ class NumericalCircuit:
         return self.Bf_
 
     @property
-    def Btheta(self):
+    def Btau(self):
         """
 
         :return:
@@ -1310,7 +1349,7 @@ class NumericalCircuit:
         if self.Bf_ is None:
             _ = self.Bbus  # call the constructor of Bf
 
-        return self.Btheta_
+        return self.Btau_
 
     @property
     def Bpqpv(self):
@@ -1341,7 +1380,8 @@ class NumericalCircuit:
         :return:
         """
         if self.vd_ is None:
-            self.vd_, self.pq_, self.pv_, self.pqpv_ = compile_types(Pbus=self.Sbus.real, types=self.bus_data.bus_types)
+            self.vd_, self.pq_, self.pv_, self.no_slack_ = compile_types(Pbus=self.Sbus.real,
+                                                                         types=self.bus_data.bus_types)
 
         return self.vd_
 
@@ -1373,10 +1413,11 @@ class NumericalCircuit:
 
         :return:
         """
-        if self.pqpv_ is None:
+        # TODO: rename to "no_slack"
+        if self.no_slack_ is None:
             _ = self.vd  # call the constructor
 
-        return self.pqpv_
+        return self.no_slack_
 
     @property
     def structs_dict(self):
@@ -1389,7 +1430,7 @@ class NumericalCircuit:
 
         return self.structs_dict_
 
-    def compute_reactive_power_limits(self):
+    def compute_reactive_power_limits(self) -> Tuple[Vec, Vec]:
         """
         compute the reactive power limits in place
         :return: Qmax_bus, Qmin_bus in per unit
@@ -1776,73 +1817,73 @@ class NumericalCircuit:
                 index=self.branch_data.names,
             )
 
-        elif structure_type == 'iPfsh':
+        elif structure_type == 'k_pf_tau':
             df = pd.DataFrame(
                 data=self.k_pf_tau,
-                columns=['iPfsh'],
+                columns=['k_pf_tau'],
                 index=self.branch_data.names[self.k_pf_tau],
             )
 
-        elif structure_type == 'iQfma':
+        elif structure_type == 'k_qf_m':
             df = pd.DataFrame(
                 data=self.k_qf_m,
-                columns=['iQfma'],
+                columns=['k_qf_m'],
                 index=self.branch_data.names[self.k_qf_m],
             )
 
-        elif structure_type == 'iBeqz':
+        elif structure_type == 'k_zero_beq':
             df = pd.DataFrame(
                 data=self.k_zero_beq,
-                columns=['iBeqz'],
+                columns=['k_zero_beq'],
                 index=self.branch_data.names[self.k_zero_beq],
             )
 
-        elif structure_type == 'iBeqv':
+        elif structure_type == 'k_vf_beq':
             df = pd.DataFrame(
                 data=self.k_vf_beq,
-                columns=['iBeqv'],
+                columns=['k_vf_beq'],
                 index=self.branch_data.names[self.k_vf_beq],
             )
 
-        elif structure_type == 'iVtma':
+        elif structure_type == 'k_vt_m':
             df = pd.DataFrame(
                 data=self.k_vt_m,
-                columns=['iVtma'],
+                columns=['k_vt_m'],
                 index=self.branch_data.names[self.k_vt_m],
             )
 
-        elif structure_type == 'iQtma':
+        elif structure_type == 'k_qt_m':
             df = pd.DataFrame(
                 data=self.k_qt_m,
-                columns=['iQtma'],
+                columns=['k_qt_m'],
                 index=self.branch_data.names[self.k_qt_m],
             )
 
-        elif structure_type == 'iPfdp':
+        elif structure_type == 'k_pf_dp':
             df = pd.DataFrame(
                 data=self.k_pf_dp,
-                columns=['iPfdp'],
+                columns=['k_pf_dp'],
                 index=self.branch_data.names[self.k_pf_dp],
             )
 
-        elif structure_type == 'iVscL':
+        elif structure_type == 'i_vsc':
             df = pd.DataFrame(
                 data=self.i_vsc,
-                columns=['iVscL'],
+                columns=['i_vsc'],
                 index=self.branch_data.names[self.i_vsc],
             )
 
-        elif structure_type == 'VfBeqbus':
+        elif structure_type == 'i_vf_beq':
             df = pd.DataFrame(
                 data=self.i_vf_beq,
-                columns=['VfBeqbus'],
+                columns=['i_vf_beq'],
                 index=self.bus_data.names[self.i_vf_beq],
             )
 
-        elif structure_type == 'Vtmabus':
+        elif structure_type == 'i_vt_m':
             df = pd.DataFrame(
                 data=self.i_vt_m,
-                columns=['Vtmabus'],
+                columns=['i_vt_m'],
                 index=self.bus_data.names[self.i_vt_m],
             )
 
@@ -1880,6 +1921,11 @@ class NumericalCircuit:
             ngen=len(gen_idx),
             nbatt=len(batt_idx),
             nshunt=len(shunt_idx),
+            nfluidnode=0,
+            nfluidturbine=0,
+            nfluidpump=0,
+            nfluidp2x=0,
+            nfluidpath=0,
             sbase=self.Sbase,
             t_idx=self.t_idx,
         )
@@ -1929,7 +1975,7 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
                                  t_idx: Union[int, None] = None,
                                  apply_temperature=False,
                                  branch_tolerance_mode=BranchImpedanceMode.Specified,
-                                 opf_results: Union["OptimalPowerFlowResults", None] = None,
+                                 opf_results: Union[OptimalPowerFlowResults, None] = None,
                                  use_stored_guess=False,
                                  bus_dict: Union[Dict[Bus, int], None] = None,
                                  areas_dict: Union[Dict[Area, int], None] = None) -> NumericalCircuit:
@@ -1959,6 +2005,11 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
                           ngen=0,
                           nbatt=0,
                           nshunt=0,
+                          nfluidnode=0,
+                          nfluidturbine=0,
+                          nfluidpump=0,
+                          nfluidp2x=0,
+                          nfluidpath=0,
                           sbase=circuit.Sbase,
                           t_idx=t_idx)
 
@@ -1974,15 +2025,15 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
                                             areas_dict=areas_dict,
                                             use_stored_guess=use_stored_guess)
 
-    nc.generator_data = gc_compiler2.get_generator_data(circuit=circuit,
-                                                        bus_dict=bus_dict,
-                                                        bus_data=nc.bus_data,
-                                                        t_idx=t_idx,
-                                                        time_series=time_series,
-                                                        Vbus=nc.bus_data.Vbus,
-                                                        logger=logger,
-                                                        opf_results=opf_results,
-                                                        use_stored_guess=use_stored_guess)
+    nc.generator_data, gen_dict = gc_compiler2.get_generator_data(circuit=circuit,
+                                                                  bus_dict=bus_dict,
+                                                                  bus_data=nc.bus_data,
+                                                                  t_idx=t_idx,
+                                                                  time_series=time_series,
+                                                                  Vbus=nc.bus_data.Vbus,
+                                                                  logger=logger,
+                                                                  opf_results=opf_results,
+                                                                  use_stored_guess=use_stored_guess)
 
     nc.battery_data = gc_compiler2.get_battery_data(circuit=circuit,
                                                     bus_dict=bus_dict,
@@ -2028,6 +2079,30 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
                                               bus_dict=bus_dict,
                                               bus_types=nc.bus_data.bus_types,
                                               opf_results=opf_results)
+
+    if len(circuit.fluid_nodes) > 0:
+        nc.fluid_node_data, plant_dict = gc_compiler2.get_fluid_node_data(circuit=circuit,
+                                                                          t_idx=t_idx,
+                                                                          time_series=time_series)
+
+        nc.fluid_turbine_data = gc_compiler2.get_fluid_turbine_data(circuit=circuit,
+                                                                    plant_dict=plant_dict,
+                                                                    gen_dict=gen_dict,
+                                                                    t_idx=t_idx)
+
+        nc.fluid_pump_data = gc_compiler2.get_fluid_pump_data(circuit=circuit,
+                                                              plant_dict=plant_dict,
+                                                              gen_dict=gen_dict,
+                                                              t_idx=t_idx)
+
+        nc.fluid_p2x_data = gc_compiler2.get_fluid_p2x_data(circuit=circuit,
+                                                            plant_dict=plant_dict,
+                                                            gen_dict=gen_dict,
+                                                            t_idx=t_idx)
+
+        nc.fluid_path_data = gc_compiler2.get_fluid_path_data(circuit=circuit,
+                                                              plant_dict=plant_dict,
+                                                              t_idx=t_idx)
 
     nc.consolidate_information(use_stored_guess=use_stored_guess)
 

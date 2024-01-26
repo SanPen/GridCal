@@ -191,10 +191,10 @@ ConnectivityNode
     boundaryPoint              bool                             True           65536  EQ_BD                                      Identifies if a node is a BoundaryPoint. If boundaryPoint=true the ConnectivityNode or the TopologicalNode represents a BoundaryPoint                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
     fromEndIsoCode             str                              True               2  EQ_BD                                      The attribute is used for an exchange of the ISO code of the region to which the 'From' side of the Boundary point belongs to or it is connected to. The ISO code is two characters country code as defined by ISO 3166 (http://www.iso.org/iso/country_codes). The length of the string is 2 characters maximum.   The attribute is a required for the Boundary Model Authority Set where this attribute is used only for the TopologicalNode in the Boundary Topology profile and ConnectivityNode in the Boundary Equipment profile.                                                                                                                                                                                                                                                         
     fromEndName                str                              True              32  EQ_BD                                      The attribute is used for an exchange of a human readable name with length of the string 32 characters maximum. The attribute covers two cases:  if the Boundary point is placed on a tie-line the attribute is used for exchange of the geographical name of the substation to which the From side of the tie-line is connected to.  if the Boundary point is placed in a substation the attribute is used for exchange of the name of the element (e.g. PowerTransformer, ACLineSegment, Switch, etc) to which the From side of the Boundary point is connected to. The attribute is required for the Boundary Model Authority Set where it is used only for the TopologicalNode in the Boundary Topology profile and ConnectivityNode in the Boundary Equipment profile.                     
-    fromEndNameTso             str                              True              32  EQ_BD                                      The attribute is used for an exchange of the name of the TSO to which the â€œFromâ€ side of the Boundary point belongs to or it is connected to. The length of the string is 32 characters maximum.  The attribute is required for the Boundary Model Authority Set where it is used only for the TopologicalNode in the Boundary Topology profile and ConnectivityNode in the Boundary Equipment profile.                                                                                                                                                                                                                                                                                                                                                                                         
-    toEndIsoCode               str                              True               2  EQ_BD                                      The attribute is used for an exchange of the ISO code of the region to which the â€œToâ€ side of the Boundary point belongs to or it is connected to. The ISO code is two characters country code as defined by ISO 3166 (http://www.iso.org/iso/country_codes). The length of the string is 2 characters maximum. The attribute is a required for the Boundary Model Authority Set where this attribute is used only for the TopologicalNode in the Boundary Topology profile and ConnectivityNode in the Boundary Equipment profile.                                                                                                                                                                                                                                                             
-    toEndName                  str                              True              32  EQ_BD                                      The attribute is used for an exchange of a human readable name with length of the string 32 characters maximum. The attribute covers two cases:  if the Boundary point is placed on a tie-line the attribute is used for exchange of the geographical name of the substation to which the â€œToâ€ side of the tie-line is connected to. if the Boundary point is placed in a substation the attribute is used for exchange of the name of the element (e.g. PowerTransformer, ACLineSegment, Switch, etc) to which the â€œToâ€ side of the Boundary point is connected to. The attribute is required for the Boundary Model Authority Set where it is used only for the TopologicalNode in the Boundary Topology profile and ConnectivityNode in the Boundary Equipment profile.                      
-    toEndNameTso               str                              True              32  EQ_BD                                      The attribute is used for an exchange of the name of the TSO to which the â€œToâ€ side of the Boundary point belongs to or it is connected to. The length of the string is 32 characters maximum. The attribute is required for the Boundary Model Authority Set where it is used only for the TopologicalNode in the Boundary Topology profile and ConnectivityNode in the Boundary Equipment profile.                                                                                                                                                                                                                                                                                                                                                                                            
+    fromEndNameTso             str                              True              32  EQ_BD                                      The attribute is used for an exchange of the name of the TSO to which the “From” side of the Boundary point belongs to or it is connected to. The length of the string is 32 characters maximum.  The attribute is required for the Boundary Model Authority Set where it is used only for the TopologicalNode in the Boundary Topology profile and ConnectivityNode in the Boundary Equipment profile.                                                                                                                                                                                                                                                                                                                                                                                         
+    toEndIsoCode               str                              True               2  EQ_BD                                      The attribute is used for an exchange of the ISO code of the region to which the “To” side of the Boundary point belongs to or it is connected to. The ISO code is two characters country code as defined by ISO 3166 (http://www.iso.org/iso/country_codes). The length of the string is 2 characters maximum. The attribute is a required for the Boundary Model Authority Set where this attribute is used only for the TopologicalNode in the Boundary Topology profile and ConnectivityNode in the Boundary Equipment profile.                                                                                                                                                                                                                                                             
+    toEndName                  str                              True              32  EQ_BD                                      The attribute is used for an exchange of a human readable name with length of the string 32 characters maximum. The attribute covers two cases:  if the Boundary point is placed on a tie-line the attribute is used for exchange of the geographical name of the substation to which the “To” side of the tie-line is connected to. if the Boundary point is placed in a substation the attribute is used for exchange of the name of the element (e.g. PowerTransformer, ACLineSegment, Switch, etc) to which the “To” side of the Boundary point is connected to. The attribute is required for the Boundary Model Authority Set where it is used only for the TopologicalNode in the Boundary Topology profile and ConnectivityNode in the Boundary Equipment profile.                      
+    toEndNameTso               str                              True              32  EQ_BD                                      The attribute is used for an exchange of the name of the TSO to which the “To” side of the Boundary point belongs to or it is connected to. The length of the string is 32 characters maximum. The attribute is required for the Boundary Model Authority Set where it is used only for the TopologicalNode in the Boundary Topology profile and ConnectivityNode in the Boundary Equipment profile.                                                                                                                                                                                                                                                                                                                                                                                            
     TopologicalNode            TopologicalNode                  False          65536  TP_BD, TP                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               Out of the standard
     ConnectivityNodeContainer  ConnectivityNodeContainer        False          65536  EQ, EQ_BD                                  Container of this connectivity node                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
     =========================  =========================  ====  =========  =========  =========================================  ===========================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================  ===================
@@ -539,8 +539,8 @@ GeneratingUnit
     ratedGrossMinP                   float                        MW    False          65536  EQ                                         The gross rated minimum generation level which the unit can safely operate at while delivering power to the transmission grid.                                                                                                                                                                                                               
     ratedNetMaxP                     float                        MW    False          65536  EQ                                         The net rated maximum capacity determined by subtracting the auxiliary power used to operate the internal plant machinery from the rated gross maximum capacity.                                                                                                                                                                             
     shortPF                          float                              False          65536  EQ                                         Generating unit short term economic participation factor.                                                                                                                                                                                                                                                                                    
-    startupCost                      float                        â‚¬     False          65536  EQ                                         The initial startup cost incurred for each start of the GeneratingUnit.                                                                                                                                                                                                                                                                      
-    variableCost                     float                        â‚¬     False          65536  EQ                                         The variable cost component of production per unit of ActivePower.                                                                                                                                                                                                                                                                           
+    startupCost                      float                        €     False          65536  EQ                                         The initial startup cost incurred for each start of the GeneratingUnit.                                                                                                                                                                                                                                                                      
+    variableCost                     float                        €     False          65536  EQ                                         The variable cost component of production per unit of ActivePower.                                                                                                                                                                                                                                                                           
     totalEfficiency                  float                        %     False          65536  EQ                                         The efficiency of the unit in converting the fuel into electrical energy.                                                                                                                                                                                                                                                                    
     normalPF                         float                              False          65536  SSH                                        Generating unit economic participation factor..                                                                                                                                                                                                                                                                                              
     EquipmentContainer               IdentifiedObject                   False          65536  EQ                                                                                                                                                                                                                                                                                                                                                                                      
@@ -593,8 +593,8 @@ HydroGeneratingUnit
     ratedGrossMinP                   float                           MW    False          65536  EQ                                         The gross rated minimum generation level which the unit can safely operate at while delivering power to the transmission grid.                                                                                                                                                                                                               
     ratedNetMaxP                     float                           MW    False          65536  EQ                                         The net rated maximum capacity determined by subtracting the auxiliary power used to operate the internal plant machinery from the rated gross maximum capacity.                                                                                                                                                                             
     shortPF                          float                                 False          65536  EQ                                         Generating unit short term economic participation factor.                                                                                                                                                                                                                                                                                    
-    startupCost                      float                           â‚¬     False          65536  EQ                                         The initial startup cost incurred for each start of the GeneratingUnit.                                                                                                                                                                                                                                                                      
-    variableCost                     float                           â‚¬     False          65536  EQ                                         The variable cost component of production per unit of ActivePower.                                                                                                                                                                                                                                                                           
+    startupCost                      float                           €     False          65536  EQ                                         The initial startup cost incurred for each start of the GeneratingUnit.                                                                                                                                                                                                                                                                      
+    variableCost                     float                           €     False          65536  EQ                                         The variable cost component of production per unit of ActivePower.                                                                                                                                                                                                                                                                           
     totalEfficiency                  float                           %     False          65536  EQ                                         The efficiency of the unit in converting the fuel into electrical energy.                                                                                                                                                                                                                                                                    
     normalPF                         float                                 False          65536  SSH                                        Generating unit economic participation factor..                                                                                                                                                                                                                                                                                              
     EquipmentContainer               IdentifiedObject                      False          65536  EQ                                                                                                                                                                                                                                                                                                                                                                                      
@@ -927,8 +927,8 @@ NuclearGeneratingUnit
     ratedGrossMinP                   float                        MW    False          65536  EQ                                         The gross rated minimum generation level which the unit can safely operate at while delivering power to the transmission grid.                                                                                                                                                                                                               
     ratedNetMaxP                     float                        MW    False          65536  EQ                                         The net rated maximum capacity determined by subtracting the auxiliary power used to operate the internal plant machinery from the rated gross maximum capacity.                                                                                                                                                                             
     shortPF                          float                              False          65536  EQ                                         Generating unit short term economic participation factor.                                                                                                                                                                                                                                                                                    
-    startupCost                      float                        â‚¬     False          65536  EQ                                         The initial startup cost incurred for each start of the GeneratingUnit.                                                                                                                                                                                                                                                                      
-    variableCost                     float                        â‚¬     False          65536  EQ                                         The variable cost component of production per unit of ActivePower.                                                                                                                                                                                                                                                                           
+    startupCost                      float                        €     False          65536  EQ                                         The initial startup cost incurred for each start of the GeneratingUnit.                                                                                                                                                                                                                                                                      
+    variableCost                     float                        €     False          65536  EQ                                         The variable cost component of production per unit of ActivePower.                                                                                                                                                                                                                                                                           
     totalEfficiency                  float                        %     False          65536  EQ                                         The efficiency of the unit in converting the fuel into electrical energy.                                                                                                                                                                                                                                                                    
     normalPF                         float                              False          65536  SSH                                        Generating unit economic participation factor..                                                                                                                                                                                                                                                                                              
     EquipmentContainer               IdentifiedObject                   False          65536  EQ                                                                                                                                                                                                                                                                                                                                                                                      
@@ -1358,8 +1358,8 @@ SolarGeneratingUnit
     ratedGrossMinP                   float                        MW    False          65536  EQ                                         The gross rated minimum generation level which the unit can safely operate at while delivering power to the transmission grid.                                                                                                                                                                                                               
     ratedNetMaxP                     float                        MW    False          65536  EQ                                         The net rated maximum capacity determined by subtracting the auxiliary power used to operate the internal plant machinery from the rated gross maximum capacity.                                                                                                                                                                             
     shortPF                          float                              False          65536  EQ                                         Generating unit short term economic participation factor.                                                                                                                                                                                                                                                                                    
-    startupCost                      float                        â‚¬     False          65536  EQ                                         The initial startup cost incurred for each start of the GeneratingUnit.                                                                                                                                                                                                                                                                      
-    variableCost                     float                        â‚¬     False          65536  EQ                                         The variable cost component of production per unit of ActivePower.                                                                                                                                                                                                                                                                           
+    startupCost                      float                        €     False          65536  EQ                                         The initial startup cost incurred for each start of the GeneratingUnit.                                                                                                                                                                                                                                                                      
+    variableCost                     float                        €     False          65536  EQ                                         The variable cost component of production per unit of ActivePower.                                                                                                                                                                                                                                                                           
     totalEfficiency                  float                        %     False          65536  EQ                                         The efficiency of the unit in converting the fuel into electrical energy.                                                                                                                                                                                                                                                                    
     normalPF                         float                              False          65536  SSH                                        Generating unit economic participation factor..                                                                                                                                                                                                                                                                                              
     EquipmentContainer               IdentifiedObject                   False          65536  EQ                                                                                                                                                                                                                                                                                                                                                                                      
@@ -1655,8 +1655,8 @@ ThermalGeneratingUnit
     ratedGrossMinP                   float                        MW    False          65536  EQ                                         The gross rated minimum generation level which the unit can safely operate at while delivering power to the transmission grid.                                                                                                                                                                                                               
     ratedNetMaxP                     float                        MW    False          65536  EQ                                         The net rated maximum capacity determined by subtracting the auxiliary power used to operate the internal plant machinery from the rated gross maximum capacity.                                                                                                                                                                             
     shortPF                          float                              False          65536  EQ                                         Generating unit short term economic participation factor.                                                                                                                                                                                                                                                                                    
-    startupCost                      float                        â‚¬     False          65536  EQ                                         The initial startup cost incurred for each start of the GeneratingUnit.                                                                                                                                                                                                                                                                      
-    variableCost                     float                        â‚¬     False          65536  EQ                                         The variable cost component of production per unit of ActivePower.                                                                                                                                                                                                                                                                           
+    startupCost                      float                        €     False          65536  EQ                                         The initial startup cost incurred for each start of the GeneratingUnit.                                                                                                                                                                                                                                                                      
+    variableCost                     float                        €     False          65536  EQ                                         The variable cost component of production per unit of ActivePower.                                                                                                                                                                                                                                                                           
     totalEfficiency                  float                        %     False          65536  EQ                                         The efficiency of the unit in converting the fuel into electrical energy.                                                                                                                                                                                                                                                                    
     normalPF                         float                              False          65536  SSH                                        Generating unit economic participation factor..                                                                                                                                                                                                                                                                                              
     EquipmentContainer               IdentifiedObject                   False          65536  EQ                                                                                                                                                                                                                                                                                                                                                                                      
@@ -1719,10 +1719,10 @@ TopologicalNode
     boundaryPoint              bool                             False          65536  TP_BD                                      Identifies if a node is a BoundaryPoint. If boundaryPoint=true the ConnectivityNode or the TopologicalNode represents a BoundaryPoint                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
     fromEndIsoCode             str                              False              2  TP_BD                                      The attribute is used for an exchange of the ISO code of the region to which the 'From' side of the Boundary point belongs to or it is connected to. The ISO code is two characters country code as defined by ISO 3166 (http://www.iso.org/iso/country_codes). The length of the string is 2 characters maximum.   The attribute is a required for the Boundary Model Authority Set where this attribute is used only for the TopologicalNode in the Boundary Topology profile and ConnectivityNode in the Boundary Equipment profile.                                                                                                                                                                                                                                             
     fromEndName                str                              False             32  TP_BD                                      The attribute is used for an exchange of a human readable name with length of the string 32 characters maximum. The attribute covers two cases:  if the Boundary point is placed on a tie-line the attribute is used for exchange of the geographical name of the substation to which the From side of the tie-line is connected to.  if the Boundary point is placed in a substation the attribute is used for exchange of the name of the element (e.g. PowerTransformer, ACLineSegment, Switch, etc) to which the From side of the Boundary point is connected to. The attribute is required for the Boundary Model Authority Set where it is used only for the TopologicalNode in the Boundary Topology profile and ConnectivityNode in the Boundary Equipment profile.         
-    fromEndNameTso             str                              False             32  TP_BD                                      The attribute is used for an exchange of the name of the TSO to which the â€œFromâ€ side of the Boundary point belongs to or it is connected to. The length of the string is 32 characters maximum.  The attribute is required for the Boundary Model Authority Set where it is used only for the TopologicalNode in the Boundary Topology profile and ConnectivityNode in the Boundary Equipment profile.                                                                                                                                                                                                                                                                                                                                                                             
-    toEndIsoCode               str                              False              2  TP_BD                                      The attribute is used for an exchange of the ISO code of the region to which the â€œToâ€ side of the Boundary point belongs to or it is connected to. The ISO code is two characters country code as defined by ISO 3166 (http://www.iso.org/iso/country_codes). The length of the string is 2 characters maximum. The attribute is a required for the Boundary Model Authority Set where this attribute is used only for the TopologicalNode in the Boundary Topology profile and ConnectivityNode in the Boundary Equipment profile.                                                                                                                                                                                                                                                 
-    toEndName                  str                              False             32  TP_BD                                      The attribute is used for an exchange of a human readable name with length of the string 32 characters maximum. The attribute covers two cases:  if the Boundary point is placed on a tie-line the attribute is used for exchange of the geographical name of the substation to which the â€œToâ€ side of the tie-line is connected to. if the Boundary point is placed in a substation the attribute is used for exchange of the name of the element (e.g. PowerTransformer, ACLineSegment, Switch, etc) to which the â€œToâ€ side of the Boundary point is connected to. The attribute is required for the Boundary Model Authority Set where it is used only for the TopologicalNode in the Boundary Topology profile and ConnectivityNode in the Boundary Equipment profile.          
-    toEndNameTso               str                              False             32  TP_BD                                      The attribute is used for an exchange of the name of the TSO to which the â€œToâ€ side of the Boundary point belongs to or it is connected to. The length of the string is 32 characters maximum. The attribute is required for the Boundary Model Authority Set where it is used only for the TopologicalNode in the Boundary Topology profile and ConnectivityNode in the Boundary Equipment profile.                                                                                                                                                                                                                                                                                                                                                                                
+    fromEndNameTso             str                              False             32  TP_BD                                      The attribute is used for an exchange of the name of the TSO to which the “From” side of the Boundary point belongs to or it is connected to. The length of the string is 32 characters maximum.  The attribute is required for the Boundary Model Authority Set where it is used only for the TopologicalNode in the Boundary Topology profile and ConnectivityNode in the Boundary Equipment profile.                                                                                                                                                                                                                                                                                                                                                                             
+    toEndIsoCode               str                              False              2  TP_BD                                      The attribute is used for an exchange of the ISO code of the region to which the “To” side of the Boundary point belongs to or it is connected to. The ISO code is two characters country code as defined by ISO 3166 (http://www.iso.org/iso/country_codes). The length of the string is 2 characters maximum. The attribute is a required for the Boundary Model Authority Set where this attribute is used only for the TopologicalNode in the Boundary Topology profile and ConnectivityNode in the Boundary Equipment profile.                                                                                                                                                                                                                                                 
+    toEndName                  str                              False             32  TP_BD                                      The attribute is used for an exchange of a human readable name with length of the string 32 characters maximum. The attribute covers two cases:  if the Boundary point is placed on a tie-line the attribute is used for exchange of the geographical name of the substation to which the “To” side of the tie-line is connected to. if the Boundary point is placed in a substation the attribute is used for exchange of the name of the element (e.g. PowerTransformer, ACLineSegment, Switch, etc) to which the “To” side of the Boundary point is connected to. The attribute is required for the Boundary Model Authority Set where it is used only for the TopologicalNode in the Boundary Topology profile and ConnectivityNode in the Boundary Equipment profile.          
+    toEndNameTso               str                              False             32  TP_BD                                      The attribute is used for an exchange of the name of the TSO to which the “To” side of the Boundary point belongs to or it is connected to. The length of the string is 32 characters maximum. The attribute is required for the Boundary Model Authority Set where it is used only for the TopologicalNode in the Boundary Topology profile and ConnectivityNode in the Boundary Equipment profile.                                                                                                                                                                                                                                                                                                                                                                                
     ResourceOwner              str                              False          65536  TP_BD                                      ResourceOwner                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
     BaseVoltage                BaseVoltage                      True           65536  TP_BD, TP                                  The base voltage of the topological node.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
     ConnectivityNodeContainer  ConnectivityNodeContainer        False          65536  TP_BD, TP                                  Container of this connectivity node                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
@@ -1796,8 +1796,8 @@ WindGeneratingUnit
     ratedGrossMinP                   float                        MW    False          65536  EQ                                         The gross rated minimum generation level which the unit can safely operate at while delivering power to the transmission grid.                                                                                                                                                                                                               
     ratedNetMaxP                     float                        MW    False          65536  EQ                                         The net rated maximum capacity determined by subtracting the auxiliary power used to operate the internal plant machinery from the rated gross maximum capacity.                                                                                                                                                                             
     shortPF                          float                              False          65536  EQ                                         Generating unit short term economic participation factor.                                                                                                                                                                                                                                                                                    
-    startupCost                      float                        â‚¬     False          65536  EQ                                         The initial startup cost incurred for each start of the GeneratingUnit.                                                                                                                                                                                                                                                                      
-    variableCost                     float                        â‚¬     False          65536  EQ                                         The variable cost component of production per unit of ActivePower.                                                                                                                                                                                                                                                                           
+    startupCost                      float                        €     False          65536  EQ                                         The initial startup cost incurred for each start of the GeneratingUnit.                                                                                                                                                                                                                                                                      
+    variableCost                     float                        €     False          65536  EQ                                         The variable cost component of production per unit of ActivePower.                                                                                                                                                                                                                                                                           
     totalEfficiency                  float                        %     False          65536  EQ                                         The efficiency of the unit in converting the fuel into electrical energy.                                                                                                                                                                                                                                                                    
     normalPF                         float                              False          65536  SSH                                        Generating unit economic participation factor..                                                                                                                                                                                                                                                                                              
     EquipmentContainer               IdentifiedObject                   False          65536  EQ                                                                                                                                                                                                                                                                                                                                                                                      
@@ -2015,12 +2015,12 @@ RawInductionMachine
     ID             str                One or  two character ID                                                                                                                                                                                                                             
     STATUS         int                Status                                                                                                                                                                                                                                               
     SCODE          int                Machine standard code:  1:NEMA 2:IEC                                                                                                                                                                                                                 
-    DCODE          int                Machine design code. â€¢  0 - for Custom design with equivalent circuit reactances specified â€¢  1 - for NEMA Design A â€¢  2 - for NEMA Design B / IEC Design N â€¢  3 - for NEMA Design C / IEC Design H â€¢  4 - for NEMA Design D â€¢  5 - for NEMA Design E
+    DCODE          int                Machine design code. •  0 - for Custom design with equivalent circuit reactances specified •  1 - for NEMA Design A •  2 - for NEMA Design B / IEC Design N •  3 - for NEMA Design C / IEC Design H •  4 - for NEMA Design D •  5 - for NEMA Design E
     AREA           int                Area number                                                                                                                                                                                                                                          
     ZONE           int                Zone number                                                                                                                                                                                                                                          
     OWNER          int                Owner number                                                                                                                                                                                                                                         
-    TCODE          int                Type of mechanical load torque variation: â€¢  1 - Simple power law â€¢  2 - WECC model                                                                                                                                                                  
-    BCODE          int                Machine base power code: â€¢  1 - Mechanical power (MW) output of the machine â€¢  2 - Apparent electrical power (MVA) drawn by the machine                                                                                                              
+    TCODE          int                Type of mechanical load torque variation: •  1 - Simple power law •  2 - WECC model                                                                                                                                                                  
+    BCODE          int                Machine base power code: •  1 - Mechanical power (MW) output of the machine •  2 - Apparent electrical power (MVA) drawn by the machine                                                                                                              
     MBASE          float       MVA    Nominal power (see the manual for more funkyness).                                                                                                                                                                                                   
     RATEKV         float       kV     Rated voltage                                                                                                                                                                                                                                        
     PCODE          int                Scheduled power code                                                                                                                                                                                                                                 
@@ -2212,125 +2212,125 @@ RawTransformer
 
 .. table::
 
-    =============  ==========  =====  ================================================================================
-    property_name  class_type  units                                    descriptions                                  
-    =============  ==========  =====  ================================================================================
-    idtag          str                Element UUID                                                                    
-    I              int                Bus I number                                                                    
-    J              int                Bus J number                                                                    
-    K              int                Bus K number                                                                    
-    CKT            str                Circuit identifier                                                              
-    CW             int                Winding input mode (see manual)                                                 
-    CZ             int                Series Impedance input mode (see manual)                                        
-    CM             int                Magnetizing impedance input mode (see manual)                                   
-    MAG1           int                Magnetizing admittance 1 (see manual)                                           
-    MAG2           int                Magnetizing admittance 2 (see manual)                                           
-    NMETR          int                Non-metered end code (see manual)                                               
-    NAME           str                Name                                                                            
-    STAT           int                Status of the several windings (see manual)                                     
-    VECGRP         str                Vector group (has zero effect, information only)                                
-    ZCOD           int                Impedance code (see manual)                                                     
-    R1_2           float       p.u.   1->2 resistance or other stuff (see manual)                                     
-    X1_2           float       p.u.   1->2 reactance or other stuff (see manual)                                      
-    R2_3           float       p.u.   2->3 resistance or other stuff (see manual)                                     
-    X2_3           float       p.u.   2->3 reactance or other stuff (see manual)                                      
-    R3_1           float       p.u.   3->1 resistance or other stuff (see manual)                                     
-    X3_1           float       p.u.   3->1 reactance or other stuff (see manual)                                      
-    SBASE1_2       float       MVAr   1->2 base power                                                                 
-    SBASE2_3       float       MVAr   2->3 base power                                                                 
-    SBASE3_1       float       MVAr   3->1 base power                                                                 
-    VMSTAR         float       p.u.   The voltage magnitude at the center star point                                  
-    ANSTAR         float       deg    The bus voltage phase angle at the center star point.                           
-    WINDV1         float              Winding 1 off-nominal turns ratio or other stuff (see manual)                   
-    NOMV1          float       kV     Winding 1 voltage base in kV or other stuff (see manual)                        
-    ANG1           int         deg    Winding 1 phase shift angle in degrees.                                         
-    COD1           int                Winding 1 control mode.                                                         
-    CONT1          int                Control bus for the winding 1.                                                  
-    NODE1          int                A node number of bus CONT1.                                                     
-    RMA1           float              Winding 1 upper limit depending of COD1 and CW                                  
-    RMI1           float              Winding 1 lower limit depending of COD1 and CW                                  
-    VMA1           float              Winding 1 upper voltage limit depending of COD1.                                
-    VMI1           float              Winding 1 lower voltage limit depending of COD1.                                
-    NTP1           int                Winding 1 number of tap positions available (see manual)                        
-    TAB1           int                Winding 1  number  of  a  transformer  impedance  correction  table (see manual)
-    CR1            float       p.u.   Winding 1 load drop compensation resistance (see manual)                        
-    CX1            float       p.u.   Winding 1 load drop compensation reactance (see manual)                         
-    CNXA1          int                                                                                                
-    RATE1_1        float       MVA    Winding rating 1                                                                
-    RATE1_2        float       MVA    Winding rating 2                                                                
-    RATE1_3        float       MVA    Winding rating 3                                                                
-    RATE1_4        float       MVA    Winding rating 4                                                                
-    RATE1_5        float       MVA    Winding rating 5                                                                
-    RATE1_6        float       MVA    Winding rating 6                                                                
-    RATE1_7        float       MVA    Winding rating 7                                                                
-    RATE1_8        float       MVA    Winding rating 8                                                                
-    RATE1_9        float       MVA    Winding rating 9                                                                
-    RATE1_10       float       MVA    Winding rating 10                                                               
-    RATE1_11       float       MVA    Winding rating 11                                                               
-    RATE1_12       float       MVA    Winding rating 12                                                               
-    WINDV2         float              Winding 2 off-nominal turns ratio or other stuff (see manual)                   
-    NOMV2          float       kV     Winding 2 voltage base in kV or other stuff (see manual)                        
-    ANG2           int         deg    Winding 2 phase shift angle in degrees.                                         
-    COD2           int                Winding 2 control mode.                                                         
-    CONT2          int                Control bus for the winding 2.                                                  
-    NODE2          int                A node number of bus CONT1.                                                     
-    RMA2           float              Winding 2 upper limit depending of COD1 and CW                                  
-    RMI2           float              Winding 2 lower limit depending of COD1 and CW                                  
-    VMA2           float              Winding 2 upper voltage limit depending of COD1.                                
-    VMI2           float              Winding 2 lower voltage limit depending of COD1.                                
-    NTP2           int                Winding 2 number of tap positions available (see manual)                        
-    TAB2           int                Winding 2 number  of  a  transformer  impedance  correction  table (see manual) 
-    CR2            float       p.u.   Winding 2 load drop compensation resistance (see manual)                        
-    CX2            float       p.u.   Winding 1 load drop compensation reactance (see manual)                         
-    CNXA2          int                                                                                                
-    RATE2_1        float       MVA    Winding rating                                                                  
-    RATE2_2        float       MVA    Winding rating                                                                  
-    RATE2_3        float       MVA    Winding rating                                                                  
-    RATE2_4        float       MVA    Winding rating                                                                  
-    RATE2_5        float       MVA    Winding rating                                                                  
-    RATE2_6        float       MVA    Winding rating                                                                  
-    RATE2_7        float       MVA    Winding rating                                                                  
-    RATE2_8        float       MVA    Winding rating                                                                  
-    RATE2_9        float       MVA    Winding rating                                                                  
-    RATE2_10       float       MVA    Winding rating                                                                  
-    RATE2_11       float       MVA    Winding rating                                                                  
-    RATE2_12       float       MVA    Winding rating                                                                  
-    WINDV3         float              Winding 3 off-nominal turns ratio or other stuff (see manual)                   
-    NOMV3          float       kV     Winding 3 voltage base in kV or other stuff (see manual)                        
-    ANG3           int         deg    Winding 3 phase shift angle in degrees.                                         
-    COD3           int                Winding 3 control mode.                                                         
-    CONT3          int                Control bus for the winding 3                                                   
-    NODE3          int                A node number of bus CONT3.                                                     
-    RMA3           float              Winding 3 upper limit depending of COD1 and CW                                  
-    RMI3           float              Winding 3 lower limit depending of COD1 and CW                                  
-    VMA3           float              Winding 3 upper voltage limit depending of COD1.                                
-    VMI3           float              Winding 3 lower voltage limit depending of COD1.                                
-    NTP3           int                Winding 3 number of tap positions available (see manual)                        
-    TAB3           int                Winding 1  number  of  a  transformer  impedance  correction  table (see manual)
-    CR3            float       p.u.   Winding 3 load drop compensation resistance (see manual)                        
-    CX3            float       p.u.   Winding 3 load drop compensation reactance (see manual)                         
-    CNXA3          int                                                                                                
-    RATE3_1        float       MVA    Winding 3 rating 1                                                              
-    RATE3_2        float       MVA    Winding 3 rating 2                                                              
-    RATE3_3        float       MVA    Winding 3 rating 3                                                              
-    RATE3_4        float       MVA    Winding 3 rating 4                                                              
-    RATE3_5        float       MVA    Winding 3 rating 5                                                              
-    RATE3_6        float       MVA    Winding 3 rating 6                                                              
-    RATE3_7        float       MVA    Winding 3 rating 7                                                              
-    RATE3_8        float       MVA    Winding 3 rating 8                                                              
-    RATE3_9        float       MVA    Winding 3 rating 9                                                              
-    RATE3_10       float       MVA    Winding 3 rating 10                                                             
-    RATE3_11       float       MVA    Winding 3 rating 11                                                             
-    RATE3_12       float       MVA    Winding 3 rating 12                                                             
-    O1             int                Owner number 1                                                                  
-    F1             float              Ownership fraction 1                                                            
-    O2             int                Owner number 2                                                                  
-    F2             float              Ownership fraction 2                                                            
-    O3             int                Owner number 3                                                                  
-    F3             float              Ownership fraction 3                                                            
-    O4             int                Owner number 4                                                                  
-    F4             float              Ownership fraction 4                                                            
-    =============  ==========  =====  ================================================================================
+    =============  ==========  =====  ===================================================================
+    property_name  class_type  units                             descriptions                            
+    =============  ==========  =====  ===================================================================
+    idtag          str                Element UUID                                                       
+    I              int                Bus I number                                                       
+    J              int                Bus J number                                                       
+    K              int                Bus K number                                                       
+    CKT            str                Circuit identifier                                                 
+    CW             int                Winding input mode                                                 
+    CZ             int                Series Impedance input mode                                        
+    CM             int                Magnetizing impedance input mode                                   
+    MAG1           int                Magnetizing admittance 1                                           
+    MAG2           int                Magnetizing admittance 2                                           
+    NMETR          int                Non-metered end code                                               
+    NAME           str                Name                                                               
+    STAT           int                Status of the several windings                                     
+    VECGRP         str                Vector group (has zero effect, information only)                   
+    ZCOD           int                Impedance code                                                     
+    R1_2           float       p.u.   1->2 resistance or other stuff                                     
+    X1_2           float       p.u.   1->2 reactance or other stuff                                      
+    R2_3           float       p.u.   2->3 resistance or other stuff                                     
+    X2_3           float       p.u.   2->3 reactance or other stuff                                      
+    R3_1           float       p.u.   3->1 resistance or other stuff                                     
+    X3_1           float       p.u.   3->1 reactance or other stuff                                      
+    SBASE1_2       float       MVAr   1->2 base power                                                    
+    SBASE2_3       float       MVAr   2->3 base power                                                    
+    SBASE3_1       float       MVAr   3->1 base power                                                    
+    VMSTAR         float       p.u.   The voltage magnitude at the center star point                     
+    ANSTAR         float       deg    The bus voltage phase angle at the center star point.              
+    WINDV1         float              Winding 1 off-nominal turns ratio or other stuff                   
+    NOMV1          float       kV     Winding 1 voltage base in kV or other stuff                        
+    ANG1           int         deg    Winding 1 phase shift angle in degrees.                            
+    COD1           int                Winding 1 control mode.                                            
+    CONT1          int                Control bus for the winding 1.                                     
+    NODE1          int                A node number of bus CONT1.                                        
+    RMA1           float              Winding 1 upper limit depending of COD1 and CW                     
+    RMI1           float              Winding 1 lower limit depending of COD1 and CW                     
+    VMA1           float              Winding 1 upper voltage limit depending of COD1.                   
+    VMI1           float              Winding 1 lower voltage limit depending of COD1.                   
+    NTP1           int                Winding 1 number of tap positions available                        
+    TAB1           int                Winding 1  number  of  a  transformer  impedance  correction  table
+    CR1            float       p.u.   Winding 1 load drop compensation resistance                        
+    CX1            float       p.u.   Winding 1 load drop compensation reactance                         
+    CNXA1          int                                                                                   
+    RATE1_1        float       MVA    Winding rating 1                                                   
+    RATE1_2        float       MVA    Winding rating 2                                                   
+    RATE1_3        float       MVA    Winding rating 3                                                   
+    RATE1_4        float       MVA    Winding rating 4                                                   
+    RATE1_5        float       MVA    Winding rating 5                                                   
+    RATE1_6        float       MVA    Winding rating 6                                                   
+    RATE1_7        float       MVA    Winding rating 7                                                   
+    RATE1_8        float       MVA    Winding rating 8                                                   
+    RATE1_9        float       MVA    Winding rating 9                                                   
+    RATE1_10       float       MVA    Winding rating 10                                                  
+    RATE1_11       float       MVA    Winding rating 11                                                  
+    RATE1_12       float       MVA    Winding rating 12                                                  
+    WINDV2         float              Winding 2 off-nominal turns ratio or other stuff                   
+    NOMV2          float       kV     Winding 2 voltage base in kV or other stuff                        
+    ANG2           int         deg    Winding 2 phase shift angle in degrees.                            
+    COD2           int                Winding 2 control mode.                                            
+    CONT2          int                Control bus for the winding 2.                                     
+    NODE2          int                A node number of bus CONT1.                                        
+    RMA2           float              Winding 2 upper limit depending of COD1 and CW                     
+    RMI2           float              Winding 2 lower limit depending of COD1 and CW                     
+    VMA2           float              Winding 2 upper voltage limit depending of COD1.                   
+    VMI2           float              Winding 2 lower voltage limit depending of COD1.                   
+    NTP2           int                Winding 2 number of tap positions available                        
+    TAB2           int                Winding 2 number  of  a  transformer  impedance  correction  table 
+    CR2            float       p.u.   Winding 2 load drop compensation resistance                        
+    CX2            float       p.u.   Winding 1 load drop compensation reactance                         
+    CNXA2          int                                                                                   
+    RATE2_1        float       MVA    Winding rating                                                     
+    RATE2_2        float       MVA    Winding rating                                                     
+    RATE2_3        float       MVA    Winding rating                                                     
+    RATE2_4        float       MVA    Winding rating                                                     
+    RATE2_5        float       MVA    Winding rating                                                     
+    RATE2_6        float       MVA    Winding rating                                                     
+    RATE2_7        float       MVA    Winding rating                                                     
+    RATE2_8        float       MVA    Winding rating                                                     
+    RATE2_9        float       MVA    Winding rating                                                     
+    RATE2_10       float       MVA    Winding rating                                                     
+    RATE2_11       float       MVA    Winding rating                                                     
+    RATE2_12       float       MVA    Winding rating                                                     
+    WINDV3         float              Winding 3 off-nominal turns ratio or other stuff                   
+    NOMV3          float       kV     Winding 3 voltage base in kV or other stuff                        
+    ANG3           int         deg    Winding 3 phase shift angle in degrees.                            
+    COD3           int                Winding 3 control mode.                                            
+    CONT3          int                Control bus for the winding 3                                      
+    NODE3          int                A node number of bus CONT3.                                        
+    RMA3           float              Winding 3 upper limit depending of COD1 and CW                     
+    RMI3           float              Winding 3 lower limit depending of COD1 and CW                     
+    VMA3           float              Winding 3 upper voltage limit depending of COD1.                   
+    VMI3           float              Winding 3 lower voltage limit depending of COD1.                   
+    NTP3           int                Winding 3 number of tap positions available                        
+    TAB3           int                Winding 1 number of a transformer impedance correction table       
+    CR3            float       p.u.   Winding 3 load drop compensation resistance                        
+    CX3            float       p.u.   Winding 3 load drop compensation reactance                         
+    CNXA3          int                                                                                   
+    RATE3_1        float       MVA    Winding 3 rating 1                                                 
+    RATE3_2        float       MVA    Winding 3 rating 2                                                 
+    RATE3_3        float       MVA    Winding 3 rating 3                                                 
+    RATE3_4        float       MVA    Winding 3 rating 4                                                 
+    RATE3_5        float       MVA    Winding 3 rating 5                                                 
+    RATE3_6        float       MVA    Winding 3 rating 6                                                 
+    RATE3_7        float       MVA    Winding 3 rating 7                                                 
+    RATE3_8        float       MVA    Winding 3 rating 8                                                 
+    RATE3_9        float       MVA    Winding 3 rating 9                                                 
+    RATE3_10       float       MVA    Winding 3 rating 10                                                
+    RATE3_11       float       MVA    Winding 3 rating 11                                                
+    RATE3_12       float       MVA    Winding 3 rating 12                                                
+    O1             int                Owner number 1                                                     
+    F1             float              Ownership fraction 1                                               
+    O2             int                Owner number 2                                                     
+    F2             float              Ownership fraction 2                                               
+    O3             int                Owner number 3                                                     
+    F3             float              Ownership fraction 3                                               
+    O4             int                Owner number 4                                                     
+    F4             float              Ownership fraction 4                                               
+    =============  ==========  =====  ===================================================================
 
 
 RawTwoTerminalDCLine
@@ -2403,10 +2403,10 @@ RawVscDCLine
     =============  ==========  =====  ================================================================================================================================================================================================================================
     idtag          str                Element UUID                                                                                                                                                                                                                    
     NAME           str                Device name                                                                                                                                                                                                                     
-    MDC            int                Control mode: â€¢  0 - for out-of-service â€¢  1 - for in-service                                                                                                                                                                   
+    MDC            int                Control mode: •  0 - for out-of-service •  1 - for in-service                                                                                                                                                                   
     RDC            float       ohm    The dc line resistance                                                                                                                                                                                                          
     IBUS1          int                Converter bus number,                                                                                                                                                                                                           
-    TYPE1          int                Code for the type of converter dc control: â€¢  0 - for converter out-of-service â€¢  1 - for dc voltage control â€¢  2 -for MW control When both converters are in-service, exactly one converter of each VSC dc line must be TYPE 1.
+    TYPE1          int                Code for the type of converter dc control: •  0 - for converter out-of-service •  1 - for dc voltage control •  2 -for MW control When both converters are in-service, exactly one converter of each VSC dc line must be TYPE 1.
     MODE1          int                Converter ac control mode:1 -> AC voltage control 2 -> fixed AC power factor                                                                                                                                                    
     DCSET1         float       MW     Converter dc setpoint (see manual)                                                                                                                                                                                              
     ACSET1         float       p.u.   Converter ac setpoint. 1-> AC voltage, 2-> power factor                                                                                                                                                                         
@@ -2520,7 +2520,7 @@ Battery
     X0                        float              p.u.    False                 Total zero sequence reactance.                                                     
     R2                        float              p.u.    False                 Total negative sequence resistance.                                                
     X2                        float              p.u.    False                 Total negative sequence reactance.                                                 
-    Cost2                     float              e/MWhÂ²  False                 Generation quadratic cost. Used in OPF.                                            
+    Cost2                     float              e/MWh²  False                 Generation quadratic cost. Used in OPF.                                            
     Cost0                     float              e/h     False                 Generation constant cost. Used in OPF.                                             
     StartupCost               float              e/h     False                 Generation start-up cost. Used in OPF.                                             
     ShutdownCost              float              e/h     False                 Generation shut-down cost. Used in OPF.                                            
@@ -2560,19 +2560,19 @@ Branch
     monitor_loading     bool                      False                 Monitor this device loading for OPF, NTC or contingency studies.                                                                                                                                                                                 
     mttf                float              h      False                 Mean time to failure                                                                                                                                                                                                                             
     mttr                float              h      False                 Mean time to repair                                                                                                                                                                                                                              
-    Cost                float              â‚¬/MWh  False                 Cost of overloads. Used in OPF                                                                                                                                                                                                                   
+    Cost                float              €/MWh  False                 Cost of overloads. Used in OPF                                                                                                                                                                                                                   
     build_status        enum BuildStatus          False                 Branch build status. Used in expansion planning.                                                                                                                                                                                                 
-    capex               float              â‚¬/MW   False                 Cost of investment. Used in expansion planning.                                                                                                                                                                                                  
-    opex                float              â‚¬/MWh  False                 Cost of operation. Used in expansion planning.                                                                                                                                                                                                   
+    capex               float              €/MW   False                 Cost of investment. Used in expansion planning.                                                                                                                                                                                                  
+    opex                float              €/MWh  False                 Cost of operation. Used in expansion planning.                                                                                                                                                                                                   
     R                   float              p.u.   False                 Total positive sequence resistance.                                                                                                                                                                                                              
     X                   float              p.u.   False                 Total positive sequence reactance.                                                                                                                                                                                                               
     B                   float              p.u.   False                 Total positive sequence shunt susceptance.                                                                                                                                                                                                       
     G                   float              p.u.   False                 Total positive sequence shunt conductance.                                                                                                                                                                                                       
     tolerance           float              %      False                 Tolerance expected for the impedance values % is expected for transformers0% for lines.                                                                                                                                                          
     length              float              km     False                 Length of the line (not used for calculation)                                                                                                                                                                                                    
-    temp_base           float              ÂºC     False                 Base temperature at which R was measured.                                                                                                                                                                                                        
-    temp_oper           float              ÂºC     False                 Operation temperature to modify R.                                                                                                                                                                                                               
-    alpha               float              1/ÂºC   False                 Thermal coefficient to modify R,around a reference temperatureusing a linear approximation.For example:Copper @ 20ÂºC: 0.004041,Copper @ 75ÂºC: 0.00323,Annealed copper @ 20ÂºC: 0.00393,Aluminum @ 20ÂºC: 0.004308,Aluminum @ 75ÂºC: 0.00330         
+    temp_base           float              ºC     False                 Base temperature at which R was measured.                                                                                                                                                                                                        
+    temp_oper           float              ºC     False                 Operation temperature to modify R.                                                                                                                                                                                                               
+    alpha               float              1/ºC   False                 Thermal coefficient to modify R,around a reference temperatureusing a linear approximation.For example:Copper @ 20ºC: 0.004041,Copper @ 75ºC: 0.00323,Annealed copper @ 20ºC: 0.00393,Aluminum @ 20ºC: 0.004308,Aluminum @ 75ºC: 0.00330         
     tap_module          float                     False                 Tap changer module, it a value close to 1.0                                                                                                                                                                                                      
     angle               float              rad    False                 Angle shift of the tap changer.                                                                                                                                                                                                                  
     template            enum BranchType           False                                                                                                                                                                                                                                                                  
@@ -2590,38 +2590,38 @@ Bus
 
 .. table::
 
-    ===================  ==========  ======  =========  =========  ===============================================================================  =======
-           name          class_type   unit   mandatory  max_chars                                   descriptions                                    comment
-    ===================  ==========  ======  =========  =========  ===============================================================================  =======
-    idtag                str                 False                 Unique ID                                                                               
-    name                 str                 False                 Name of the bus                                                                         
-    code                 str                 False                 Some code to further identify the bus                                                   
-    active               bool                False                 Is the bus active? used to disable the bus.                                             
-    is_slack             bool                False                 Force the bus to be of slack type.                                                      
-    is_dc                bool                False                 Is this bus of DC type?.                                                                
-    is_tr_bus            bool                False                 Is this bus part of a composite transformer, such as  a 3-winding transformer?.         
-    Vnom                 float       kV      False                 Nominal line voltage of the bus.                                                        
-    Vm0                  float       p.u.    False                 Voltage module guess.                                                                   
-    Va0                  float       rad.    False                 Voltage angle guess.                                                                    
-    Vmin                 float       p.u.    False                 Lower range of allowed voltage module.                                                  
-    Vmax                 float       p.u.    False                 Higher range of allowed voltage module.                                                 
-    voltage_module_cost  float       â‚¬/unit  False                 Cost of over and under voltages                                                         
-    angle_min            float       rad.    False                 Lower range of allowed voltage angle.                                                   
-    angle_max            float       rad.    False                 Higher range of allowed voltage angle.                                                  
-    voltage_angle_cost   float       â‚¬/unit  False                 Cost of over and under angles                                                           
-    r_fault              float       p.u.    False                 Resistance of the fault.This is used for short circuit studies.                         
-    x_fault              float       p.u.    False                 Reactance of the fault.This is used for short circuit studies.                          
-    x                    float       px      False                 x position in pixels.                                                                   
-    y                    float       px      False                 y position in pixels.                                                                   
-    h                    float       px      False                 height of the bus in pixels.                                                            
-    w                    float       px      False                 Width of the bus in pixels.                                                             
-    country              Country             False                 Country of the bus                                                                      
-    area                 Area                False                 Area of the bus                                                                         
-    zone                 Zone                False                 Zone of the bus                                                                         
-    substation           Substation          False                 Substation of the bus.                                                                  
-    longitude            float       deg     False                 longitude of the bus.                                                                   
-    latitude             float       deg     False                 latitude of the bus.                                                                    
-    ===================  ==========  ======  =========  =========  ===============================================================================  =======
+    ===========  ==========  ======  =========  =========  ===============================================================================================  =======
+       name      class_type   unit   mandatory  max_chars                                           descriptions                                            comment
+    ===========  ==========  ======  =========  =========  ===============================================================================================  =======
+    idtag        str                 False                 Unique ID                                                                                               
+    name         str                 False                 Name of the bus                                                                                         
+    code         str                 False                 Some code to further identify the bus                                                                   
+    active       bool                False                 Is the bus active? used to disable the bus.                                                             
+    is_slack     bool                False                 Force the bus to be of slack type.                                                                      
+    is_dc        bool                False                 Is this bus of DC type?.                                                                                
+    is_internal  bool                False                 Is this bus part of a composite transformer, such as  a 3-winding transformer or a fluid node?.         
+    Vnom         float       kV      False                 Nominal line voltage of the bus.                                                                        
+    Vm0          float       p.u.    False                 Voltage module guess.                                                                                   
+    Va0          float       rad.    False                 Voltage angle guess.                                                                                    
+    Vmin         float       p.u.    False                 Lower range of allowed voltage module.                                                                  
+    Vmax         float       p.u.    False                 Higher range of allowed voltage module.                                                                 
+    Vm_cost      float       €/unit  False                 Cost of over and under voltages                                                                         
+    angle_min    float       rad.    False                 Lower range of allowed voltage angle.                                                                   
+    angle_max    float       rad.    False                 Higher range of allowed voltage angle.                                                                  
+    angle_cost   float       €/unit  False                 Cost of over and under angles                                                                           
+    r_fault      float       p.u.    False                 Resistance of the fault.This is used for short circuit studies.                                         
+    x_fault      float       p.u.    False                 Reactance of the fault.This is used for short circuit studies.                                          
+    x            float       px      False                 x position in pixels.                                                                                   
+    y            float       px      False                 y position in pixels.                                                                                   
+    h            float       px      False                 height of the bus in pixels.                                                                            
+    w            float       px      False                 Width of the bus in pixels.                                                                             
+    country      Country             False                 Country of the bus                                                                                      
+    area         Area                False                 Area of the bus                                                                                         
+    zone         Zone                False                 Zone of the bus                                                                                         
+    substation   Substation          False                 Substation of the bus.                                                                                  
+    longitude    float       deg     False                 longitude of the bus.                                                                                   
+    latitude     float       deg     False                 latitude of the bus.                                                                                    
+    ===========  ==========  ======  =========  =========  ===============================================================================================  =======
 
 
 Connectivity Node
@@ -2708,10 +2708,10 @@ DC line
     monitor_loading     bool                      False                 Monitor this device loading for OPF, NTC or contingency studies.                                                                    
     mttf                float              h      False                 Mean time to failure                                                                                                                
     mttr                float              h      False                 Mean time to repair                                                                                                                 
-    Cost                float              â‚¬/MWh  False                 Cost of overloads. Used in OPF                                                                                                      
+    Cost                float              €/MWh  False                 Cost of overloads. Used in OPF                                                                                                      
     build_status        enum BuildStatus          False                 Branch build status. Used in expansion planning.                                                                                    
-    capex               float              â‚¬/MW   False                 Cost of investment. Used in expansion planning.                                                                                     
-    opex                float              â‚¬/MWh  False                 Cost of operation. Used in expansion planning.                                                                                      
+    capex               float              €/MW   False                 Cost of investment. Used in expansion planning.                                                                                     
+    opex                float              €/MWh  False                 Cost of operation. Used in expansion planning.                                                                                      
     R                   float              p.u.   False                 Total positive sequence resistance.                                                                                                 
     length              float              km     False                 Length of the line (not used for calculation)                                                                                       
     r_fault             float              p.u.   False                 Resistance of the mid-line fault.Used in short circuit studies.                                                                     
@@ -2731,9 +2731,28 @@ Emission
     idtag  str               False                 Unique ID                                  
     name   str               False                 Name of the branch.                        
     code   str               False                 Secondary ID                               
-    cost   float       â‚¬/t   False                 Cost of emissions (currency / ton)         
+    cost   float       €/t   False                 Cost of emissions (currency / ton)         
     color  str               False                 Color to paint                             
     =====  ==========  ====  =========  =========  ==================================  =======
+
+
+Fluid P2X
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. table::
+
+    =============  ================  ======  =========  =========  ================================================  =======
+        name          class_type      unit   mandatory  max_chars                    descriptions                    comment
+    =============  ================  ======  =========  =========  ================================================  =======
+    idtag          str                       False                 Unique ID                                                
+    name           str                       False                 Name of the branch.                                      
+    code           str                       False                 Secondary ID                                             
+    efficiency     float             MWh/m3  False                 Power plant energy production per fluid unit             
+    max_flow_rate  float             m3/s    False                 maximum fluid flow                                       
+    plant          Fluid node                False                 Connection reservoir/node                                
+    generator      Generator                 False                 Electrical machine                                       
+    build_status   enum BuildStatus          False                 Branch build status. Used in expansion planning.         
+    =============  ================  ======  =========  =========  ================================================  =======
 
 
 Fluid Pump
@@ -2741,18 +2760,18 @@ Fluid Pump
 
 .. table::
 
-    =============  ==========  ======  =========  =========  ============================================  =======
-        name       class_type   unit   mandatory  max_chars                  descriptions                  comment
-    =============  ==========  ======  =========  =========  ============================================  =======
-    idtag          str                 False                 Unique ID                                            
-    name           str                 False                 Name of the branch.                                  
-    code           str                 False                 Secondary ID                                         
-    p_min          float       MW      False                 Minimum power                                        
-    p_max          float       MW      False                 Maximum power                                        
-    efficiency     float       MWh/m3  False                 Power plant energy production per fluid unit         
-    max_flow_rate  float       m3/h    False                 maximum fluid flow                                   
-    reservoir      FluidNode           False                 Connection node/reservoir                            
-    =============  ==========  ======  =========  =========  ============================================  =======
+    =============  ================  ======  =========  =========  ================================================  =======
+        name          class_type      unit   mandatory  max_chars                    descriptions                    comment
+    =============  ================  ======  =========  =========  ================================================  =======
+    idtag          str                       False                 Unique ID                                                
+    name           str                       False                 Name of the branch.                                      
+    code           str                       False                 Secondary ID                                             
+    efficiency     float             MWh/m3  False                 Power plant energy production per fluid unit             
+    max_flow_rate  float             m3/s    False                 maximum fluid flow                                       
+    plant          Fluid node                False                 Connection reservoir/node                                
+    generator      Generator                 False                 Electrical machine                                       
+    build_status   enum BuildStatus          False                 Branch build status. Used in expansion planning.         
+    =============  ================  ======  =========  =========  ================================================  =======
 
 
 Fluid Turbine
@@ -2760,18 +2779,18 @@ Fluid Turbine
 
 .. table::
 
-    =============  ==========  ======  =========  =========  ============================================  =======
-        name       class_type   unit   mandatory  max_chars                  descriptions                  comment
-    =============  ==========  ======  =========  =========  ============================================  =======
-    idtag          str                 False                 Unique ID                                            
-    name           str                 False                 Name of the branch.                                  
-    code           str                 False                 Secondary ID                                         
-    p_min          float       MW      False                 Minimum power                                        
-    p_max          float       MW      False                 Maximum power                                        
-    efficiency     float       MWh/m3  False                 Power plant energy production per fluid unit         
-    max_flow_rate  float       m3/h    False                 maximum fluid flow                                   
-    plant          FluidNode           False                 Connection reservoir/node                            
-    =============  ==========  ======  =========  =========  ============================================  =======
+    =============  ================  ======  =========  =========  ================================================  =======
+        name          class_type      unit   mandatory  max_chars                    descriptions                    comment
+    =============  ================  ======  =========  =========  ================================================  =======
+    idtag          str                       False                 Unique ID                                                
+    name           str                       False                 Name of the branch.                                      
+    code           str                       False                 Secondary ID                                             
+    efficiency     float             MWh/m3  False                 Power plant energy production per fluid unit             
+    max_flow_rate  float             m3/s    False                 maximum fluid flow                                       
+    plant          Fluid node                False                 Connection reservoir/node                                
+    generator      Generator                 False                 Electrical machine                                       
+    build_status   enum BuildStatus          False                 Branch build status. Used in expansion planning.         
+    =============  ================  ======  =========  =========  ================================================  =======
 
 
 Fluid node
@@ -2779,16 +2798,20 @@ Fluid node
 
 .. table::
 
-    =============  ==========  ====  =========  =========  =============================================  =======
-        name       class_type  unit  mandatory  max_chars                  descriptions                   comment
-    =============  ==========  ====  =========  =========  =============================================  =======
-    idtag          str               False                 Unique ID                                             
-    name           str               False                 Name of the branch.                                   
-    code           str               False                 Secondary ID                                          
-    min_level      float       m3    False                 Minimum amount of fluid at the node/reservoir         
-    max_level      float       m3    False                 Maximum amount of fluid at the node/reservoir         
-    initial_level  float       m3    False                 Initial level of the node/reservoir                   
-    =============  ==========  ====  =========  =========  =============================================  =======
+    =============  ================  ========  =========  =========  ================================================  =======
+        name          class_type       unit    mandatory  max_chars                    descriptions                    comment
+    =============  ================  ========  =========  =========  ================================================  =======
+    idtag          str                         False                 Unique ID                                                
+    name           str                         False                 Name of the branch.                                      
+    code           str                         False                 Secondary ID                                             
+    min_level      float             hm3       False                 Minimum amount of fluid at the node/reservoir            
+    max_level      float             hm3       False                 Maximum amount of fluid at the node/reservoir            
+    initial_level  float             hm3       False                 Initial level of the node/reservoir                      
+    bus            Bus                         False                 Electrical bus.                                          
+    build_status   enum BuildStatus            False                 Branch build status. Used in expansion planning.         
+    spillage_cost  float             €/(m3/s)  False                 Cost of nodal spillage                                   
+    inflow         float             m3/s      False                 Flow of fluid coming from the rain                       
+    =============  ================  ========  =========  =========  ================================================  =======
 
 
 Fluid path
@@ -2802,10 +2825,10 @@ Fluid path
     idtag     str               False                 Unique ID                   
     name      str               False                 Name of the branch.         
     code      str               False                 Secondary ID                
-    source    FluidNode         False                 Source node                 
-    target    FluidNode         False                 Target node                 
-    min_flow  float       m3/h  False                 Minimum power               
-    max_flow  float       m3/h  False                 Maximum power               
+    source    Fluid node        False                 Source node                 
+    target    Fluid node        False                 Target node                 
+    min_flow  float       m3/s  False                 Minimum flow                
+    max_flow  float       m3/s  False                 Maximum flow                
     ========  ==========  ====  =========  =========  ===================  =======
 
 
@@ -2820,7 +2843,7 @@ Fuel
     idtag  str               False                 Unique ID                             
     name   str               False                 Name of the branch.                   
     code   str               False                 Secondary ID                          
-    cost   float       â‚¬/t   False                 Cost of fuel (currency / ton)         
+    cost   float       €/t   False                 Cost of fuel (currency / ton)         
     color  str               False                 Color to paint                        
     =====  ==========  ====  =========  =========  =============================  =======
 
@@ -2862,7 +2885,7 @@ Generator
     X0                        float              p.u.    False                 Total zero sequence reactance.                                                     
     R2                        float              p.u.    False                 Total negative sequence resistance.                                                
     X2                        float              p.u.    False                 Total negative sequence reactance.                                                 
-    Cost2                     float              e/MWhÂ²  False                 Generation quadratic cost. Used in OPF.                                            
+    Cost2                     float              e/MWh²  False                 Generation quadratic cost. Used in OPF.                                            
     Cost0                     float              e/h     False                 Generation constant cost. Used in OPF.                                             
     StartupCost               float              e/h     False                 Generation start-up cost. Used in OPF.                                             
     ShutdownCost              float              e/h     False                 Generation shut-down cost. Used in OPF.                                            
@@ -2946,10 +2969,10 @@ HVDC Line
     monitor_loading     bool                          False                 Monitor this device loading for OPF, NTC or contingency studies.                                    
     mttf                float                 h       False                 Mean time to failure                                                                                
     mttr                float                 h       False                 Mean time to repair                                                                                 
-    Cost                float                 â‚¬/MWh   False                 Cost of overloads. Used in OPF                                                                      
+    Cost                float                 €/MWh   False                 Cost of overloads. Used in OPF                                                                      
     build_status        enum BuildStatus              False                 Branch build status. Used in expansion planning.                                                    
-    capex               float                 â‚¬/MW    False                 Cost of investment. Used in expansion planning.                                                     
-    opex                float                 â‚¬/MWh   False                 Cost of operation. Used in expansion planning.                                                      
+    capex               float                 €/MW    False                 Cost of investment. Used in expansion planning.                                                     
+    opex                float                 €/MWh   False                 Cost of operation. Used in expansion planning.                                                      
     dispatchable        bool                          False                 Is the line power optimizable?                                                                      
     control_mode        enum HvdcControlType  -       False                 Control type.                                                                                       
     Pset                float                 MW      False                 Set power flow.                                                                                     
@@ -2978,8 +3001,8 @@ Investment
     name          str                      False                 Name of the branch.                                                            
     code          str                      False                 Secondary ID                                                                   
     device_idtag  str                      False                 Unique ID                                                                      
-    CAPEX         float              Mâ‚¬    False                 Capital expenditures. This is the initial investment.                          
-    OPEX          float              Mâ‚¬    False                 Operation expenditures. Maintenance costs among other recurrent costs.         
+    CAPEX         float              M€    False                 Capital expenditures. This is the initial investment.                          
+    OPEX          float              M€    False                 Operation expenditures. Maintenance costs among other recurrent costs.         
     group         Investments Group        False                 Investment group                                                               
     comment       str                      False                 Comments                                                                       
     ============  =================  ====  =========  =========  ======================================================================  =======
@@ -3037,9 +3060,9 @@ Line
     B2                  float              p.u.   False                 Total negative sequence shunt susceptance.                                                                                                                                                                                                       
     tolerance           float              %      False                 Tolerance expected for the impedance values % is expected for transformers0% for lines.                                                                                                                                                          
     length              float              km     False                 Length of the line (not used for calculation)                                                                                                                                                                                                    
-    temp_base           float              ÂºC     False                 Base temperature at which R was measured.                                                                                                                                                                                                        
-    temp_oper           float              ÂºC     False                 Operation temperature to modify R.                                                                                                                                                                                                               
-    alpha               float              1/ÂºC   False                 Thermal coefficient to modify R,around a reference temperatureusing a linear approximation.For example:Copper @ 20ÂºC: 0.004041,Copper @ 75ÂºC: 0.00323,Annealed copper @ 20ÂºC: 0.00393,Aluminum @ 20ÂºC: 0.004308,Aluminum @ 75ÂºC: 0.00330         
+    temp_base           float              ºC     False                 Base temperature at which R was measured.                                                                                                                                                                                                        
+    temp_oper           float              ºC     False                 Operation temperature to modify R.                                                                                                                                                                                                               
+    alpha               float              1/ºC   False                 Thermal coefficient to modify R,around a reference temperatureusing a linear approximation.For example:Copper @ 20ºC: 0.004041,Copper @ 75ºC: 0.00323,Annealed copper @ 20ºC: 0.00393,Aluminum @ 20ºC: 0.004308,Aluminum @ 75ºC: 0.00330         
     r_fault             float              p.u.   False                 Resistance of the mid-line fault.Used in short circuit studies.                                                                                                                                                                                  
     x_fault             float              p.u.   False                 Reactance of the mid-line fault.Used in short circuit studies.                                                                                                                                                                                   
     fault_pos           float              p.u.   False                 Per-unit positioning of the fault:0 would be at the "from" side,1 would be at the "to" side,therefore 0.5 is at the middle.                                                                                                                      
@@ -3233,10 +3256,10 @@ Transformer
     monitor_loading     bool                                False                 Monitor this device loading for OPF, NTC or contingency studies.                                                                                                                                                                                 
     mttf                float                        h      False                 Mean time to failure                                                                                                                                                                                                                             
     mttr                float                        h      False                 Mean time to repair                                                                                                                                                                                                                              
-    Cost                float                        â‚¬/MWh  False                 Cost of overloads. Used in OPF                                                                                                                                                                                                                   
+    Cost                float                        €/MWh  False                 Cost of overloads. Used in OPF                                                                                                                                                                                                                   
     build_status        enum BuildStatus                    False                 Branch build status. Used in expansion planning.                                                                                                                                                                                                 
-    capex               float                        â‚¬/MW   False                 Cost of investment. Used in expansion planning.                                                                                                                                                                                                  
-    opex                float                        â‚¬/MWh  False                 Cost of operation. Used in expansion planning.                                                                                                                                                                                                   
+    capex               float                        €/MW   False                 Cost of investment. Used in expansion planning.                                                                                                                                                                                                  
+    opex                float                        €/MWh  False                 Cost of operation. Used in expansion planning.                                                                                                                                                                                                   
     HV                  float                        kV     False                 High voltage rating                                                                                                                                                                                                                              
     LV                  float                        kV     False                 Low voltage rating                                                                                                                                                                                                                               
     Sn                  float                        MVA    False                 Nominal power                                                                                                                                                                                                                                    
@@ -3267,9 +3290,9 @@ Transformer
     control_mode        enum TransformerControlType         False                 Control type of the transformer                                                                                                                                                                                                                  
     vset                float                        p.u.   False                 Objective voltage at the "to" side of the bus when regulating the tap.                                                                                                                                                                           
     Pset                float                        p.u.   False                 Objective power at the "from" side of when regulating the angle.                                                                                                                                                                                 
-    temp_base           float                        ÂºC     False                 Base temperature at which R was measured.                                                                                                                                                                                                        
-    temp_oper           float                        ÂºC     False                 Operation temperature to modify R.                                                                                                                                                                                                               
-    alpha               float                        1/ÂºC   False                 Thermal coefficient to modify R,around a reference temperatureusing a linear approximation.For example:Copper @ 20ÂºC: 0.004041,Copper @ 75ÂºC: 0.00323,Annealed copper @ 20ÂºC: 0.00393,Aluminum @ 20ÂºC: 0.004308,Aluminum @ 75ÂºC: 0.00330         
+    temp_base           float                        ºC     False                 Base temperature at which R was measured.                                                                                                                                                                                                        
+    temp_oper           float                        ºC     False                 Operation temperature to modify R.                                                                                                                                                                                                               
+    alpha               float                        1/ºC   False                 Thermal coefficient to modify R,around a reference temperatureusing a linear approximation.For example:Copper @ 20ºC: 0.004041,Copper @ 75ºC: 0.00323,Annealed copper @ 20ºC: 0.00393,Aluminum @ 20ºC: 0.004308,Aluminum @ 75ºC: 0.00330         
     template            Transformer type                    False                                                                                                                                                                                                                                                                  
     ==================  ===========================  =====  =========  =========  ========================================================================================================================================================================================================================================  =======
 
@@ -3352,10 +3375,10 @@ UPFC
     monitor_loading     bool                      False                 Monitor this device loading for OPF, NTC or contingency studies.         
     mttf                float              h      False                 Mean time to failure                                                     
     mttr                float              h      False                 Mean time to repair                                                      
-    Cost                float              â‚¬/MWh  False                 Cost of overloads. Used in OPF                                           
+    Cost                float              €/MWh  False                 Cost of overloads. Used in OPF                                           
     build_status        enum BuildStatus          False                 Branch build status. Used in expansion planning.                         
-    capex               float              â‚¬/MW   False                 Cost of investment. Used in expansion planning.                          
-    opex                float              â‚¬/MWh  False                 Cost of operation. Used in expansion planning.                           
+    capex               float              €/MW   False                 Cost of investment. Used in expansion planning.                          
+    opex                float              €/MWh  False                 Cost of operation. Used in expansion planning.                           
     Rs                  float              p.u.   False                 Series positive sequence resistance.                                     
     Xs                  float              p.u.   False                 Series positive sequence reactance.                                      
     Rsh                 float              p.u.   False                 Shunt positive sequence resistance.                                      
@@ -3417,10 +3440,10 @@ VSC
     monitor_loading     bool                                  False                 Monitor this device loading for OPF, NTC or contingency studies.         
     mttf                float                      h          False                 Mean time to failure                                                     
     mttr                float                      h          False                 Mean time to repair                                                      
-    Cost                float                      â‚¬/MWh      False                 Cost of overloads. Used in OPF                                           
+    Cost                float                      €/MWh      False                 Cost of overloads. Used in OPF                                           
     build_status        enum BuildStatus                      False                 Branch build status. Used in expansion planning.                         
-    capex               float                      â‚¬/MW       False                 Cost of investment. Used in expansion planning.                          
-    opex                float                      â‚¬/MWh      False                 Cost of operation. Used in expansion planning.                           
+    capex               float                      €/MW       False                 Cost of investment. Used in expansion planning.                          
+    opex                float                      €/MWh      False                 Cost of operation. Used in expansion planning.                           
     R                   float                      p.u.       False                 Resistive positive sequence losses.                                      
     X                   float                      p.u.       False                 Magnetic positive sequence losses.                                       
     R0                  float                      p.u.       False                 Resistive zero sequence losses.                                          
@@ -3471,10 +3494,10 @@ Winding
     monitor_loading     bool                                False                 Monitor this device loading for OPF, NTC or contingency studies.                                                                                                                                                                                 
     mttf                float                        h      False                 Mean time to failure                                                                                                                                                                                                                             
     mttr                float                        h      False                 Mean time to repair                                                                                                                                                                                                                              
-    Cost                float                        â‚¬/MWh  False                 Cost of overloads. Used in OPF                                                                                                                                                                                                                   
+    Cost                float                        €/MWh  False                 Cost of overloads. Used in OPF                                                                                                                                                                                                                   
     build_status        enum BuildStatus                    False                 Branch build status. Used in expansion planning.                                                                                                                                                                                                 
-    capex               float                        â‚¬/MW   False                 Cost of investment. Used in expansion planning.                                                                                                                                                                                                  
-    opex                float                        â‚¬/MWh  False                 Cost of operation. Used in expansion planning.                                                                                                                                                                                                   
+    capex               float                        €/MW   False                 Cost of investment. Used in expansion planning.                                                                                                                                                                                                  
+    opex                float                        €/MWh  False                 Cost of operation. Used in expansion planning.                                                                                                                                                                                                   
     HV                  float                        kV     False                 High voltage rating                                                                                                                                                                                                                              
     LV                  float                        kV     False                 Low voltage rating                                                                                                                                                                                                                               
     R                   float                        p.u.   False                 Total positive sequence resistance.                                                                                                                                                                                                              
@@ -3500,9 +3523,9 @@ Winding
     control_mode        enum TransformerControlType         False                 Control type of the transformer                                                                                                                                                                                                                  
     vset                float                        p.u.   False                 Objective voltage at the "to" side of the bus when regulating the tap.                                                                                                                                                                           
     Pset                float                        p.u.   False                 Objective power at the "from" side of when regulating the angle.                                                                                                                                                                                 
-    temp_base           float                        ÂºC     False                 Base temperature at which R was measured.                                                                                                                                                                                                        
-    temp_oper           float                        ÂºC     False                 Operation temperature to modify R.                                                                                                                                                                                                               
-    alpha               float                        1/ÂºC   False                 Thermal coefficient to modify R,around a reference temperatureusing a linear approximation.For example:Copper @ 20ÂºC: 0.004041,Copper @ 75ÂºC: 0.00323,Annealed copper @ 20ÂºC: 0.00393,Aluminum @ 20ÂºC: 0.004308,Aluminum @ 75ÂºC: 0.00330         
+    temp_base           float                        ºC     False                 Base temperature at which R was measured.                                                                                                                                                                                                        
+    temp_oper           float                        ºC     False                 Operation temperature to modify R.                                                                                                                                                                                                               
+    alpha               float                        1/ºC   False                 Thermal coefficient to modify R,around a reference temperatureusing a linear approximation.For example:Copper @ 20ºC: 0.004041,Copper @ 75ºC: 0.00323,Annealed copper @ 20ºC: 0.00393,Aluminum @ 20ºC: 0.004308,Aluminum @ 75ºC: 0.00330         
     template            Transformer type                    False                                                                                                                                                                                                                                                                  
     ==================  ===========================  =====  =========  =========  ========================================================================================================================================================================================================================================  =======
 

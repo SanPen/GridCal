@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -86,14 +86,13 @@ class PowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
         # compile dictionaries once for speed
         bus_dict = {bus: i for i, bus in enumerate(self.grid.buses)}
         areas_dict = {elm: i for i, elm in enumerate(self.grid.areas)}
-        self.progress_signal.emit(0.0)
+        self.report_progress(0.0)
         for it, t in enumerate(time_indices):
 
-            self.progress_text.emit('Time series at ' + str(self.grid.time_profile[t]) + '...')
+            self.report_text('Time series at ' + str(self.grid.time_profile[t]) + '...')
+            self.report_progress2(it, len(time_indices))
 
-            progress = ((it + 1) / len(time_indices)) * 100
-            self.progress_signal.emit(progress)
-
+            # TODO: pass the results by reference to be filled inside
             pf_res = pf_worker.multi_island_pf(multi_circuit=self.grid,
                                                t=t,
                                                options=self.options,
@@ -208,15 +207,15 @@ class PowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
             self.results = self.run_single_thread(time_indices=self.time_indices)
 
         elif self.engine == EngineType.Bentayga:
-            self.progress_text.emit('Running Bentayga... ')
+            self.report_text('Running Bentayga... ')
             self.results = self.run_bentayga()
 
         elif self.engine == EngineType.NewtonPA:
-            self.progress_text.emit('Running Newton power analytics... ')
+            self.report_text('Running Newton power analytics... ')
             self.results = self.run_newton_pa(time_indices=self.time_indices)
 
         elif self.engine == EngineType.PGM:
-            self.progress_text.emit('Running Power Grid Model... ')
+            self.report_text('Running Power Grid Model... ')
             self.results = pgm_pf(self.grid, self.options, logger=self.logger, time_series=True)
             self.results.area_names = [a.name for a in self.grid.areas]
 

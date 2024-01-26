@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -14,11 +14,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol, Unit
+from typing import Tuple
+from GridCalEngine.IO.base.units import Unit
 from GridCalEngine.IO.raw.devices.psse_object import RawObject
 from GridCalEngine.basic_structures import Logger
-from GridCalEngine.IO.raw.raw_functions import get_psse_transformer_impedances
-import GridCalEngine.Core.Devices as dev
 import numpy as np
 
 
@@ -189,38 +188,38 @@ class RawTransformer(RawObject):
         self.register_property(property_name='CW',
                                rawx_key='cw',
                                class_type=int,
-                               description='Winding input mode (see manual)',
+                               description='Winding input mode',
                                min_value=1,
                                max_value=3)
 
         self.register_property(property_name='CZ',
                                rawx_key='cz',
                                class_type=int,
-                               description='Series Impedance input mode (see manual)',
+                               description='Series Impedance input mode',
                                min_value=1,
                                max_value=3)
 
         self.register_property(property_name='CM',
                                rawx_key='cm',
                                class_type=int,
-                               description='Magnetizing impedance input mode (see manual)',
+                               description='Magnetizing impedance input mode',
                                min_value=1,
                                max_value=2)
 
         self.register_property(property_name='MAG1',
                                rawx_key='mag1',
                                class_type=int,
-                               description='Magnetizing admittance 1 (see manual)')
+                               description='Magnetizing admittance 1')
 
         self.register_property(property_name='MAG2',
                                rawx_key='mag2',
                                class_type=int,
-                               description='Magnetizing admittance 2 (see manual)')
+                               description='Magnetizing admittance 2')
 
         self.register_property(property_name='NMETR',
                                rawx_key='nmet',
                                class_type=int,
-                               description='Non-metered end code (see manual)',
+                               description='Non-metered end code',
                                min_value=1,
                                max_value=3)
 
@@ -233,7 +232,7 @@ class RawTransformer(RawObject):
         self.register_property(property_name='STAT',
                                rawx_key='stat',
                                class_type=int,
-                               description='Status of the several windings (see manual)',
+                               description='Status of the several windings',
                                min_value=0,
                                max_value=4)
 
@@ -246,44 +245,44 @@ class RawTransformer(RawObject):
         self.register_property(property_name='ZCOD',
                                rawx_key='zcod',
                                class_type=int,
-                               description='Impedance code (see manual)',
+                               description='Impedance code',
                                min_value=0,
                                max_value=1)
 
         self.register_property(property_name='R1_2',
                                rawx_key='r1_2',
                                class_type=float,
-                               description='1->2 resistance or other stuff (see manual)',
+                               description='1->2 resistance or other stuff',
                                unit=Unit.get_pu())
 
         self.register_property(property_name='X1_2',
                                rawx_key='x1_2',
                                class_type=float,
-                               description='1->2 reactance or other stuff (see manual)',
+                               description='1->2 reactance or other stuff',
                                unit=Unit.get_pu())
 
         self.register_property(property_name='R2_3',
                                rawx_key='r2_3',
                                class_type=float,
-                               description='2->3 resistance or other stuff (see manual)',
+                               description='2->3 resistance or other stuff',
                                unit=Unit.get_pu())
 
         self.register_property(property_name='X2_3',
                                rawx_key='x2_3',
                                class_type=float,
-                               description='2->3 reactance or other stuff (see manual)',
+                               description='2->3 reactance or other stuff',
                                unit=Unit.get_pu())
 
         self.register_property(property_name='R3_1',
                                rawx_key='r3_1',
                                class_type=float,
-                               description='3->1 resistance or other stuff (see manual)',
+                               description='3->1 resistance or other stuff',
                                unit=Unit.get_pu())
 
         self.register_property(property_name='X3_1',
                                rawx_key='x3_1',
                                class_type=float,
-                               description='3->1 reactance or other stuff (see manual)',
+                               description='3->1 reactance or other stuff',
                                unit=Unit.get_pu())
 
         self.register_property(property_name='SBASE1_2',
@@ -321,12 +320,12 @@ class RawTransformer(RawObject):
         self.register_property(property_name='WINDV1',
                                rawx_key='windv1',
                                class_type=float,
-                               description='Winding 1 off-nominal turns ratio or other stuff (see manual)')
+                               description='Winding 1 off-nominal turns ratio or other stuff')
 
         self.register_property(property_name='NOMV1',
                                rawx_key='nomv1',
                                class_type=float,
-                               description='Winding 1 voltage base in kV or other stuff (see manual)',
+                               description='Winding 1 voltage base in kV or other stuff',
                                unit=Unit.get_kv())
 
         self.register_property(property_name='ANG1',
@@ -377,27 +376,27 @@ class RawTransformer(RawObject):
         self.register_property(property_name='NTP1',
                                rawx_key='ntp1',
                                class_type=int,
-                               description='Winding 1 number of tap positions available (see manual)',
+                               description='Winding 1 number of tap positions available',
                                min_value=2,
                                max_value=9999)
 
         self.register_property(property_name='TAB1',
                                rawx_key='tab1',
                                class_type=int,
-                               description='Winding 1  number  of  a  transformer  impedance  correction  table (see manual)',
+                               description='Winding 1  number  of  a  transformer  impedance  correction  table',
                                min_value=0,
                                max_value=999999)
 
         self.register_property(property_name='CR1',
                                rawx_key='cr1',
                                class_type=float,
-                               description='Winding 1 load drop compensation resistance (see manual)',
+                               description='Winding 1 load drop compensation resistance',
                                unit=Unit.get_pu())
 
         self.register_property(property_name='CX1',
                                rawx_key='cx1',
                                class_type=float,
-                               description='Winding 1 load drop compensation reactance (see manual)',
+                               description='Winding 1 load drop compensation reactance',
                                unit=Unit.get_pu())
 
         self.register_property(property_name='CNXA1',
@@ -419,12 +418,12 @@ class RawTransformer(RawObject):
         self.register_property(property_name='WINDV2',
                                rawx_key='windv2',
                                class_type=float,
-                               description='Winding 2 off-nominal turns ratio or other stuff (see manual)')
+                               description='Winding 2 off-nominal turns ratio or other stuff')
 
         self.register_property(property_name='NOMV2',
                                rawx_key='nomv2',
                                class_type=float,
-                               description='Winding 2 voltage base in kV or other stuff (see manual)',
+                               description='Winding 2 voltage base in kV or other stuff',
                                unit=Unit.get_kv())
 
         self.register_property(property_name='ANG2',
@@ -473,24 +472,24 @@ class RawTransformer(RawObject):
         self.register_property(property_name='NTP2',
                                rawx_key='ntp2',
                                class_type=int,
-                               description='Winding 2 number of tap positions available (see manual)',
+                               description='Winding 2 number of tap positions available',
                                min_value=2,
                                max_value=9999)
         self.register_property(property_name='TAB2',
                                rawx_key='tab2',
                                class_type=int,
-                               description='Winding 2 number  of  a  transformer  impedance  correction  table (see manual)',
+                               description='Winding 2 number  of  a  transformer  impedance  correction  table',
                                min_value=0,
                                max_value=999999)
         self.register_property(property_name='CR2',
                                rawx_key='cr2',
                                class_type=float,
-                               description='Winding 2 load drop compensation resistance (see manual)',
+                               description='Winding 2 load drop compensation resistance',
                                unit=Unit.get_pu())
         self.register_property(property_name='CX2',
                                rawx_key='cx2',
                                class_type=float,
-                               description='Winding 1 load drop compensation reactance (see manual)',
+                               description='Winding 1 load drop compensation reactance',
                                unit=Unit.get_pu())
         self.register_property(property_name='CNXA2',
                                rawx_key='cnxa2',
@@ -511,12 +510,12 @@ class RawTransformer(RawObject):
         self.register_property(property_name='WINDV3',
                                rawx_key='windv3',
                                class_type=float,
-                               description='Winding 3 off-nominal turns ratio or other stuff (see manual)')
+                               description='Winding 3 off-nominal turns ratio or other stuff')
 
         self.register_property(property_name='NOMV3',
                                rawx_key='nomv3',
                                class_type=float,
-                               description='Winding 3 voltage base in kV or other stuff (see manual)',
+                               description='Winding 3 voltage base in kV or other stuff',
                                unit=Unit.get_kv())
 
         self.register_property(property_name='ANG3',
@@ -567,27 +566,27 @@ class RawTransformer(RawObject):
         self.register_property(property_name='NTP3',
                                rawx_key='ntp3',
                                class_type=int,
-                               description='Winding 3 number of tap positions available (see manual)',
+                               description='Winding 3 number of tap positions available',
                                min_value=2,
                                max_value=9999)
 
         self.register_property(property_name='TAB3',
                                rawx_key='tab3',
                                class_type=int,
-                               description='Winding 1  number  of  a  transformer  impedance  correction  table (see manual)',
+                               description='Winding 1 number of a transformer impedance correction table',
                                min_value=0,
                                max_value=999999)
 
         self.register_property(property_name='CR3',
                                rawx_key='cr3',
                                class_type=float,
-                               description='Winding 3 load drop compensation resistance (see manual)',
+                               description='Winding 3 load drop compensation resistance',
                                unit=Unit.get_pu())
 
         self.register_property(property_name='CX3',
                                rawx_key='cx3',
                                class_type=float,
-                               description='Winding 3 load drop compensation reactance (see manual)',
+                               description='Winding 3 load drop compensation reactance',
                                unit=Unit.get_pu())
 
         self.register_property(property_name='CNXA3',
@@ -648,11 +647,11 @@ class RawTransformer(RawObject):
 
                 self.R1_2, self.X1_2, self.SBASE1_2 = data[1]
 
-                self.WINDV1, self.NOMV1, self.ANG1, \
-                    self.RATE1_1, self.RATE1_2, self.RATE1_3, self.RATE1_4, self.RATE1_5, self.RATE1_6, \
-                    self.RATE1_7, self.RATE1_8, self.RATE1_9, self.RATE1_10, self.RATE1_11, self.RATE1_12, \
-                    self.COD1, self.CONT1, self.NODE1, self.RMA1, \
-                    self.RMI1, self.VMA1, self.VMI1, self.NTP1, self.TAB1, self.CR1, self.CX1, self.CNXA1 = data[2]
+                (self.WINDV1, self.NOMV1, self.ANG1,
+                 self.RATE1_1, self.RATE1_2, self.RATE1_3, self.RATE1_4, self.RATE1_5, self.RATE1_6,
+                 self.RATE1_7, self.RATE1_8, self.RATE1_9, self.RATE1_10, self.RATE1_11, self.RATE1_12,
+                 self.COD1, self.CONT1, self.NODE1, self.RMA1,
+                 self.RMI1, self.VMA1, self.VMI1, self.NTP1, self.TAB1, self.CR1, self.CX1, self.CNXA1) = data[2]
 
                 self.WINDV2, self.NOMV2 = data[3]
 
@@ -667,35 +666,35 @@ class RawTransformer(RawObject):
                 WINDV3,NOMV3,ANG3,RATA3,RATB3,RATC3,COD3,CONT3,RMA3,RMI3,VMA3,VMI3,NTP3,TAB3,CR3,CX3,CNXA3
                 '''
 
-                self.R1_2, self.X1_2, self.SBASE1_2, self.R2_3, self.X2_3, self.SBASE2_3, self.R3_1, self.X3_1, \
-                    self.SBASE3_1, self.VMSTAR, self.ANSTAR = data[1]
+                (self.R1_2, self.X1_2, self.SBASE1_2, self.R2_3, self.X2_3, self.SBASE2_3, self.R3_1, self.X3_1,
+                 self.SBASE3_1, self.VMSTAR, self.ANSTAR) = data[1]
 
-                self.WINDV1, self.NOMV1, self.ANG1, \
-                    self.RATE1_1, self.RATE1_2, self.RATE1_3, self.RATE1_4, self.RATE1_5, self.RATE1_6, \
-                    self.RATE1_7, self.RATE1_8, self.RATE1_9, self.RATE1_10, self.RATE1_11, self.RATE1_12, \
-                    self.COD1, self.CONT1, self.NODE1, \
-                    self.RMA1, self.RMI1, self.VMA1, self.VMI1, self.NTP1, self.TAB1, self.CR1, self.CX1, self.CNXA1 = \
-                    data[2]
+                (self.WINDV1, self.NOMV1, self.ANG1,
+                 self.RATE1_1, self.RATE1_2, self.RATE1_3, self.RATE1_4, self.RATE1_5, self.RATE1_6,
+                 self.RATE1_7, self.RATE1_8, self.RATE1_9, self.RATE1_10, self.RATE1_11, self.RATE1_12,
+                 self.COD1, self.CONT1, self.NODE1,
+                 self.RMA1, self.RMI1, self.VMA1, self.VMI1,
+                 self.NTP1, self.TAB1, self.CR1, self.CX1, self.CNXA1) = data[2]
 
-                self.WINDV2, self.NOMV2, self.ANG2, \
-                    self.RATE2_1, self.RATE2_2, self.RATE2_3, self.RATE2_4, self.RATE2_5, self.RATE2_6, \
-                    self.RATE2_7, self.RATE2_8, self.RATE2_9, self.RATE2_10, self.RATE2_11, self.RATE2_12, \
-                    self.COD2, self.CONT2, self.NODE2, \
-                    self.RMA2, self.RMI2, self.VMA2, self.VMI2, self.NTP2, self.TAB2, self.CR2, self.CX2, self.CNXA2 = \
-                    data[3]
+                (self.WINDV2, self.NOMV2, self.ANG2,
+                 self.RATE2_1, self.RATE2_2, self.RATE2_3, self.RATE2_4, self.RATE2_5, self.RATE2_6,
+                 self.RATE2_7, self.RATE2_8, self.RATE2_9, self.RATE2_10, self.RATE2_11, self.RATE2_12,
+                 self.COD2, self.CONT2, self.NODE2,
+                 self.RMA2, self.RMI2, self.VMA2, self.VMI2, self.NTP2, self.TAB2,
+                 self.CR2, self.CX2, self.CNXA2) = data[3]
 
-                self.WINDV3, self.NOMV3, self.ANG3, \
-                    self.RATE3_1, self.RATE3_2, self.RATE3_3, self.RATE3_4, self.RATE3_5, self.RATE3_6, \
-                    self.RATE3_7, self.RATE3_8, self.RATE3_9, self.RATE3_10, self.RATE3_11, self.RATE3_12, \
-                    self.COD3, self.CONT3, self.NODE3, \
-                    self.RMA3, self.RMI3, self.VMA3, self.VMI3, self.NTP3, self.TAB3, self.CR3, self.CX3, self.CNXA3 = \
-                    data[4]
+                (self.WINDV3, self.NOMV3, self.ANG3,
+                 self.RATE3_1, self.RATE3_2, self.RATE3_3, self.RATE3_4, self.RATE3_5, self.RATE3_6,
+                 self.RATE3_7, self.RATE3_8, self.RATE3_9, self.RATE3_10, self.RATE3_11, self.RATE3_12,
+                 self.COD3, self.CONT3, self.NODE3,
+                 self.RMA3, self.RMI3, self.VMA3, self.VMI3, self.NTP3, self.TAB3,
+                 self.CR3, self.CX3, self.CNXA3) = data[4]
 
         elif version == 33:
 
             # Line 1: for both types
-            self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
-                self.NAME, self.STAT, *var, self.VECGRP = data[0]
+            (self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR,
+             self.NAME, self.STAT, *var, self.VECGRP) = data[0]
 
             if len(data) == 4:
                 self.windings = 2
@@ -713,8 +712,9 @@ class RawTransformer(RawObject):
                 dta = np.zeros(17, dtype=object)
                 dta[0:n] = data[2]
 
-                self.WINDV1, self.NOMV1, self.ANG1, self.RATE1_1, self.RATE1_2, self.RATE1_3, self.COD1, self.CONT1, self.RMA1, \
-                    self.RMI1, self.VMA1, self.VMI1, self.NTP1, self.TAB1, self.CR1, self.CX1, self.CNXA1 = dta
+                (self.WINDV1, self.NOMV1, self.ANG1, self.RATE1_1, self.RATE1_2, self.RATE1_3,
+                 self.COD1, self.CONT1, self.RMA1,
+                 self.RMI1, self.VMA1, self.VMI1, self.NTP1, self.TAB1, self.CR1, self.CX1, self.CNXA1) = dta
 
                 self.WINDV2, self.NOMV2 = data[3]
 
@@ -729,20 +729,20 @@ class RawTransformer(RawObject):
                 WINDV3,NOMV3,ANG3,RATA3,RATB3,RATC3,COD3,CONT3,RMA3,RMI3,VMA3,VMI3,NTP3,TAB3,CR3,CX3,CNXA3
                 '''
 
-                self.R1_2, self.X1_2, self.SBASE1_2, self.R2_3, self.X2_3, self.SBASE2_3, self.R3_1, self.X3_1, \
-                    self.SBASE3_1, self.VMSTAR, self.ANSTAR = data[1]
+                (self.R1_2, self.X1_2, self.SBASE1_2, self.R2_3, self.X2_3, self.SBASE2_3, self.R3_1, self.X3_1,
+                 self.SBASE3_1, self.VMSTAR, self.ANSTAR) = data[1]
 
-                self.WINDV1, self.NOMV1, self.ANG1, self.RATE1_1, self.RATE1_2, self.RATE1_3, self.COD1, self.CONT1, \
-                    self.RMA1, self.RMI1, self.VMA1, self.VMI1, self.NTP1, self.TAB1, self.CR1, self.CX1, self.CNXA1 = \
-                    data[2]
+                (self.WINDV1, self.NOMV1, self.ANG1, self.RATE1_1, self.RATE1_2, self.RATE1_3, self.COD1, self.CONT1,
+                 self.RMA1, self.RMI1, self.VMA1, self.VMI1, self.NTP1,
+                 self.TAB1, self.CR1, self.CX1, self.CNXA1) = data[2]
 
-                self.WINDV2, self.NOMV2, self.ANG2, self.RATE2_1, self.RATE2_1, self.RATE2_3, self.COD2, self.CONT2, \
-                    self.RMA2, self.RMI2, self.VMA2, self.VMI2, self.NTP2, self.TAB2, self.CR2, self.CX2, self.CNXA2 = \
-                    data[3]
+                (self.WINDV2, self.NOMV2, self.ANG2, self.RATE2_1, self.RATE2_1, self.RATE2_3, self.COD2, self.CONT2,
+                 self.RMA2, self.RMI2, self.VMA2, self.VMI2, self.NTP2,
+                 self.TAB2, self.CR2, self.CX2, self.CNXA2) = data[3]
 
-                self.WINDV3, self.NOMV3, self.ANG3, self.RATE3_1, self.RATE3_2, self.RATE3_3, self.COD3, self.CONT3, \
-                    self.RMA3, self.RMI3, self.VMA3, self.VMI3, self.NTP3, self.TAB3, self.CR3, self.CX3, self.CNXA3 = \
-                    data[4]
+                (self.WINDV3, self.NOMV3, self.ANG3, self.RATE3_1, self.RATE3_2, self.RATE3_3, self.COD3, self.CONT3,
+                 self.RMA3, self.RMI3, self.VMA3, self.VMI3, self.NTP3,
+                 self.TAB3, self.CR3, self.CX3, self.CNXA3) = data[4]
 
         elif version == 32:
 
@@ -758,8 +758,8 @@ class RawTransformer(RawObject):
             '''
 
             # Line 1: for both types
-            self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
-                self.NAME, self.STAT, *var = data[0]
+            (self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR,
+             self.NAME, self.STAT, *var) = data[0]
 
             if len(data[1]) == 3:
                 # 2-windings
@@ -773,15 +773,16 @@ class RawTransformer(RawObject):
             else:
                 # 3-windings
                 self.windings = 3
-                self.R1_2, self.X1_2, self.SBASE1_2, self.R2_3, self.X2_3, self.SBASE2_3, self.R3_1, \
-                    self.X3_1, self.SBASE3_1, self.VMSTAR, self.ANSTAR = data[1]
+                (self.R1_2, self.X1_2, self.SBASE1_2, self.R2_3, self.X2_3, self.SBASE2_3, self.R3_1,
+                 self.X3_1, self.SBASE3_1, self.VMSTAR, self.ANSTAR) = data[1]
 
             # line 3: for both types
             n = len(data[2])
             dta = np.zeros(17, dtype=object)
             dta[0:n] = data[2]
-            self.WINDV1, self.NOMV1, self.ANG1, self.RATE1_1, self.RATE1_2, self.RATE1_3, self.COD1, self.CONT1, self.RMA1, \
-                self.RMI1, self.VMA1, self.VMI1, self.NTP1, self.TAB1, self.CR1, self.CX1, self.CNXA1 = dta
+            (self.WINDV1, self.NOMV1, self.ANG1, self.RATE1_1, self.RATE1_2, self.RATE1_3, self.COD1,
+             self.CONT1, self.RMA1, self.RMI1, self.VMA1, self.VMI1, self.NTP1, self.TAB1,
+             self.CR1, self.CX1, self.CNXA1) = dta
 
             # line 4
             if len(data[3]) == 2:
@@ -791,11 +792,11 @@ class RawTransformer(RawObject):
             else:
                 # 3 - windings
                 self.windings = 3
-                self.WINDV2, self.NOMV2, self.ANG2, self.RATE2_1, self.RATE2_2, self.RATE2_3, self.COD2, self.CONT2, \
-                    self.RMA2, self.RMI2, self.VMA2, self.VMI2, self.NTP2, self.TAB2, self.CR2, self.CX2, self.CNXA2, \
-                    self.WINDV3, self.NOMV3, self.ANG3, self.RATA3, self.RATB3, self.RATC3, self.COD3, self.CONT3, \
-                    self.RMA3, self.RMI3, self.VMA3, self.VMI3, self.NTP3, self.TAB3, \
-                    self.CR3, self.CX3, self.CNXA3 = data[3]
+                (self.WINDV2, self.NOMV2, self.ANG2, self.RATE2_1, self.RATE2_2, self.RATE2_3, self.COD2, self.CONT2,
+                 self.RMA2, self.RMI2, self.VMA2, self.VMI2, self.NTP2, self.TAB2, self.CR2, self.CX2, self.CNXA2,
+                 self.WINDV3, self.NOMV3, self.ANG3, self.RATA3, self.RATB3, self.RATC3, self.COD3, self.CONT3,
+                 self.RMA3, self.RMI3, self.VMA3, self.VMI3, self.NTP3, self.TAB3,
+                 self.CR3, self.CX3, self.CNXA3) = data[3]
 
         elif version == 30:
 
@@ -810,8 +811,8 @@ class RawTransformer(RawObject):
             WINDV3,NOMV3,ANG3, RATA3, BATB3, RATC3, COD3, CONT3, RMA3, RMI3,VMA3,VMI3,NTP3, TAB3, CR3, CX3
             """
 
-            self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
-                self.NAME, self.STAT, *var = data[0]
+            (self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR,
+             self.NAME, self.STAT, *var) = data[0]
 
             if len(data[1]) == 3:
                 # 2-windings
@@ -825,12 +826,13 @@ class RawTransformer(RawObject):
             else:
                 # 3-windings
                 self.windings = 3
-                self.R1_2, self.X1_2, self.SBASE1_2, self.R2_3, self.X2_3, self.SBASE2_3, self.R3_1, \
-                    self.X3_1, self.SBASE3_1, self.VMSTAR, self.ANSTAR = data[1]
+                (self.R1_2, self.X1_2, self.SBASE1_2, self.R2_3, self.X2_3, self.SBASE2_3, self.R3_1,
+                 self.X3_1, self.SBASE3_1, self.VMSTAR, self.ANSTAR) = data[1]
 
             # line 3: for both types
-            self.WINDV1, self.NOMV1, self.ANG1, self.RATE1_1, self.RATE1_2, self.RATE1_3, self.COD1, self.CONT1, self.RMA1, \
-                self.RMI1, self.VMA1, self.VMI1, self.NTP1, self.TAB1, self.CR1, self.CX1 = data[2]
+            (self.WINDV1, self.NOMV1, self.ANG1, self.RATE1_1, self.RATE1_2, self.RATE1_3, self.COD1,
+             self.CONT1, self.RMA1, self.RMI1, self.VMA1, self.VMI1, self.NTP1,
+             self.TAB1, self.CR1, self.CX1) = data[2]
 
             # line 4
             if len(data[3]) == 2:
@@ -840,11 +842,11 @@ class RawTransformer(RawObject):
             else:
                 # 3 - windings
                 self.windings = 3
-                self.WINDV2, self.NOMV2, self.ANG2, self.RATE2_1, self.RATE2_2, self.RATE2_3, self.COD2, self.CONT2, \
-                    self.RMA2, self.RMI2, self.VMA2, self.VMI2, self.NTP2, self.TAB2, self.CR2, self.CX2, \
-                    self.WINDV3, self.NOMV3, self.ANG3, self.RATA3, self.RATB3, self.RATC3, self.COD3, self.CONT3, \
-                    self.RMA3, self.RMI3, self.VMA3, self.VMI3, self.NTP3, self.TAB3, \
-                    self.CR3, self.CX3 = data[3]
+                (self.WINDV2, self.NOMV2, self.ANG2, self.RATE2_1, self.RATE2_2, self.RATE2_3, self.COD2, self.CONT2,
+                 self.RMA2, self.RMI2, self.VMA2, self.VMI2, self.NTP2, self.TAB2, self.CR2, self.CX2,
+                 self.WINDV3, self.NOMV3, self.ANG3, self.RATA3, self.RATB3, self.RATC3, self.COD3, self.CONT3,
+                 self.RMA3, self.RMI3, self.VMA3, self.VMI3, self.NTP3, self.TAB3,
+                 self.CR3, self.CX3) = data[3]
 
         elif version == 29:
 
@@ -868,8 +870,8 @@ class RawTransformer(RawObject):
       
             '''
 
-            self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
-                self.NAME, self.STAT, *var = data[0]
+            (self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR,
+             self.NAME, self.STAT, *var) = data[0]
 
             if len(data[1]) == 3:
 
@@ -884,8 +886,9 @@ class RawTransformer(RawObject):
                 self.windings = 2
                 self.R1_2, self.X1_2, self.SBASE1_2 = data[1]
 
-                self.WINDV1, self.NOMV1, self.ANG1, self.RATE1_1, self.RATE1_2, self.RATE1_3, self.COD1, self.CONT1, self.RMA1, \
-                    self.RMI1, self.VMA1, self.VMI1, self.NTP1, self.TAB1, self.CR1, self.CX1 = data[2]
+                (self.WINDV1, self.NOMV1, self.ANG1, self.RATE1_1, self.RATE1_2, self.RATE1_3, self.COD1,
+                 self.CONT1, self.RMA1,
+                 self.RMI1, self.VMA1, self.VMI1, self.NTP1, self.TAB1, self.CR1, self.CX1) = data[2]
 
                 self.WINDV2, self.NOMV2 = data[3]
 
@@ -905,12 +908,12 @@ class RawTransformer(RawObject):
                 # 3-windings
                 self.windings = 3
 
-                self.R1_2, self.X1_2, self.SBASE1_2, self.R2_3, self.X2_3, self.SBASE2_3, self.R3_1, \
-                    self.X3_1, self.SBASE3_1, self.VMSTAR, self.ANSTAR = data[1]
+                (self.R1_2, self.X1_2, self.SBASE1_2, self.R2_3, self.X2_3, self.SBASE2_3, self.R3_1,
+                 self.X3_1, self.SBASE3_1, self.VMSTAR, self.ANSTAR) = data[1]
 
-                self.WINDV1, self.NOMV1, self.ANG1, self.RATE1_1, self.RATE1_2, self.RATE1_3, self.COD1, \
-                    self.CONT1, self.RMA1, self.RMI1, self.VMA1, self.VMI1, self.NTP1, self.TAB1, \
-                    self.CR1, self.CX1 = data[2]
+                (self.WINDV1, self.NOMV1, self.ANG1, self.RATE1_1, self.RATE1_2, self.RATE1_3, self.COD1,
+                 self.CONT1, self.RMA1, self.RMI1, self.VMA1, self.VMI1, self.NTP1, self.TAB1,
+                 self.CR1, self.CX1) = data[2]
 
                 self.WINDV2, self.NOMV2, self.ANG2, self.RATE2_1, self.RATE2_2, self.RATE2_3 = data[3]
 
@@ -1057,13 +1060,16 @@ class RawTransformer(RawObject):
         else:
             raise Exception("unsupported number of windings")
 
-    def get_2w_pu_impedances(self, Sbase, v_bus_i, v_bus_j):
+    def get_2w_pu_impedances(self,
+                             Sbase: float,
+                             v_bus_i: float,
+                             v_bus_j: float) -> Tuple[float, float, float, float, float, float]:
         """
         Get the 2-winding impedances if this is a 2-winding transformer
         :param Sbase: system base power in MVA
         :param v_bus_i: Nominal voltage of the bus I in kV
         :param v_bus_j: Nominal voltage of the bus J in kV
-        :return:
+        :return: r, x, g, b, tap_module, tap_angle
         """
 
         assert self.windings == 2
@@ -1193,9 +1199,13 @@ class RawTransformer(RawObject):
             xsh = x_ohm / z_base_sys
 
             # convert shunt impedance to shunt admittance
-            ysh = 1 / (rsh + 1j * xsh)
-            g = ysh.real
-            b = ysh.imag
+            if rsh != 0.0 and xsh != 0.0:
+                ysh = 1 / (rsh + 1j * xsh)
+                g = ysh.real
+                b = ysh.imag
+            else:
+                g = 1e-20
+                b = 1e-20
         else:
             raise Exception("Invalid value of CM")
 

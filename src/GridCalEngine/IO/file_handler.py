@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -96,6 +96,7 @@ class FileOpen:
 
             self.cgmes_circuit = CgmesCircuit(text_func=text_func, progress_func=progress_func, logger=self.cgmes_logger)
             self.cgmes_circuit.parse_files(files=self.file_name)
+            # self.cgmes_circuit.to_excel(fname=r'C:\Users\BenceSzirbik\Downloads\excel.xlsx')
             self.circuit = cgmes_to_gridcal(cgmes_model=self.cgmes_circuit, logger=self.cgmes_logger)
 
         else:
@@ -227,6 +228,7 @@ class FileOpen:
                                                       progress_func=progress_func,
                                                       logger=self.cgmes_logger)
                     self.cgmes_circuit.parse_files(files=[self.file_name])
+                    # self.cgmes_circuit.to_excel(fname=r'C:\Users\BenceSzirbik\Downloads\excel.xlsx')
                     self.circuit = cgmes_to_gridcal(cgmes_model=self.cgmes_circuit, logger=self.cgmes_logger)
 
                 elif file_extension.lower() == '.hdf5':

@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -14,20 +14,24 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
 import numpy as np
-from typing import Union, List
+from typing import Union, List, TYPE_CHECKING
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.driver_template import DriverTemplate
-from GridCalEngine.Core.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE, bentayga_pf, \
-    translate_bentayga_pf_results
-from GridCalEngine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE, newton_pa_pf, \
-    translate_newton_pa_pf_results
+from GridCalEngine.Core.Compilers.circuit_to_bentayga import (BENTAYGA_AVAILABLE, bentayga_pf,
+                                                              translate_bentayga_pf_results)
+from GridCalEngine.Core.Compilers.circuit_to_newton_pa import (NEWTON_PA_AVAILABLE, newton_pa_pf,
+                                                               translate_newton_pa_pf_results)
 from GridCalEngine.Core.Compilers.circuit_to_pgm import PGM_AVAILABLE, pgm_pf
 from GridCalEngine.enumerations import EngineType
+
+if TYPE_CHECKING:  # Only imports the below statements during type checking
+    from GridCalEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults
 
 
 class PowerFlowDriver(DriverTemplate):
@@ -40,7 +44,7 @@ class PowerFlowDriver(DriverTemplate):
 
     def __init__(self, grid: MultiCircuit,
                  options: Union[PowerFlowOptions, None] = None,
-                 opf_results: Union["OptimalPowerFlowResults", None] = None,
+                 opf_results: Union[OptimalPowerFlowResults, None] = None,
                  engine: EngineType = EngineType.GridCal):
         """
         PowerFlowDriver class constructor
@@ -55,7 +59,7 @@ class PowerFlowDriver(DriverTemplate):
         # Options to use
         self.options: PowerFlowOptions = PowerFlowOptions() if options is None else options
 
-        self.opf_results: Union["OptimalPowerFlowResults", None] = opf_results
+        self.opf_results: Union[OptimalPowerFlowResults, None] = opf_results
 
         self.results = PowerFlowResults(n=0,
                                         m=0,

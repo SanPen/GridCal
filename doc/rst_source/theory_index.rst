@@ -44,6 +44,7 @@ Optimal power flow
     theory/opf/opf
     theory/opf/opf_dc_ts
     theory/opf/opf_ac_ts
+    theory/opf/hydro
 
 
 Short Circuit

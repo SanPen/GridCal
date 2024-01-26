@@ -908,8 +908,8 @@ class CgmesCircuit(BaseCircuit):
                 self.text_func('Saving {} to excel'.format(class_name))
 
             df = dfs[class_name]
-            df.to_excel(writer, sheet_name=class_name, index=False)
-        writer.save()
+            df.to_excel(writer, sheet_name=class_name, index=True)
+        writer._save()
 
     def detect_circular_references(self):
         """

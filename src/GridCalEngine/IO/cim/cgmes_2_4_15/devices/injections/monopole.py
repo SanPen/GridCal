@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -15,13 +15,13 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import GridCalEngine.IO.cim.cgmes_2_4_15.devices.topological_node
-from GridCalEngine.IO.cim.cgmes_2_4_15.devices.identified_object import IdentifiedObject
+from GridCalEngine.IO.cim.cgmes_2_4_15.devices import ConductingEquipment
 
 
-class MonoPole(IdentifiedObject):
+class MonoPole(ConductingEquipment):
 
     def __init__(self, rdfid, tpe):
-        IdentifiedObject.__init__(self, rdfid, tpe)
+        ConductingEquipment.__init__(self, rdfid, tpe)
 
     def get_topological_node(self):
         """

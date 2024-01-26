@@ -1,0 +1,249 @@
+\documentclass{article}
+
+\usepackage{amsmath}  % For mathematical symbols and environments
+\usepackage{amsfonts}  % For mathematical fonts
+\usepackage{amssymb}  % For additional mathematical symbols
+\usepackage{geometry}  % For setting page margins
+
+\usepackage{bm}
+\usepackage{indentfirst}
+\usepackage[english]{babel}
+
+\bibliographystyle{unsrtnat}
+\usepackage[numbers,sort&compress]{natbib}
+
+\geometry{a4paper, margin=1in}  % Adjust margins as needed
+
+\title{ACOPF solved through an IPM}
+\author{Santiago Peñate Vera \\ Carlos Alegre Aldeano \\ Josep Fanals i Batllori}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+The Optimal Power Flow (OPF) is regarded as a complicated mathematical problem of upmost importance for grid operators. While a grid could operate in very varied conditions, the goal is to pick an optimal operating point that minimizes a given objective function and at the same time respects a set of technical constraints.
+
+As an originally non-convex hard problem, the OPF can take many forms. For instance, an economical dispatch would be the simplest variation in which the power flows are dismissed; the DCOPF considers line flows but only solves for the voltage angles; whereas the ACOPF follows the purest formulation, which comes at a cost~\cite{chatzivasileiadis2018optimization}. Relaxations are commonly employed to convexify the problem~\cite{ergun2019optimal}, which makes it easier to obtain a satisfactory feasible solution. Nonetheless, in this document we abstain ourselves from any oversimplification that deviates from the original problem, and we build an Interior Point Method (IPM) to achieve maximum performance as well as avoiding third-party dependencies such as IPOPT.
+
+\section{ACOPF}
+This section provides the necessary details of the ACOPF formulation. In broad terms, the optimization problem reads: 
+\begin{equation}
+\begin{split}
+    \text{min} \quad & f(\bm{x}) \\
+    \text{s.t.} \quad & \bm{g}(\bm{x}) = \bm{0} \\
+     & \bm{h}(\bm{x}) \geq \bm{0}
+\end{split}
+\end{equation}
+where $\bm{x} \in \mathbb{R}^n$, being $n$ the number of decision variables, $f(x)$ is the function to be minimized which typically accounts for the generation cost, $\bm{g}(\bm{x})$ is a set of equality constraints coming from the application of Kirchhoff's law, and $\bm{h}(\bm{x})$ contains the technical restrictions to respect voltage and line flow limits. The bold notation is used to indicate multidimensional objects. In more detail, following the matrix notation:
+\begin{equation}
+    f(\bm{x}) = \bm{1}^T_{n_g} (\bm{a} + [\bm{b}]\bm{P_g} + \bm{P_g}^T [\bm{c}] \bm{P_g})
+\end{equation}
+where $\bm{1}$ is a column vector of ones, $n_g$ is the number of generators, $T$ stands for the transpose operator, $\bm{a}$ is a column vector of constant generation costs, $\bm{b}$ a column vector that weights the generation powers, $\bm{c}$ a column vector that quadratically weights the generation powers, $\bm{P_g}$ is the column vector of generation powers, and the brackets of the form $[\bm{v}]$ indicate the diagonalization of the vector $\bm{v}$. 
+
+It has been decided to formulate the ACOPF following the rectangular form of the power flow problem. The set of decision variables $\bm{x}$ can be further divided into:
+\begin{equation}
+    \bm{x} = [\bm{e}^T, \bm{f}^T, \bm{P_g}^T, \bm{Q_g}^T]^T
+\end{equation}
+that is, $\bm{x}$ groups the real part of the voltages $\bm{e}$, the imaginary part of the voltages $\bm{f}$, and the generation active and reactive powers $\bm{P_g}$ and $\bm{Q_g}$. 
+
+Then, the equality constraints are merely the power balances. In complex form, by adopting a similar notation as the one in~\cite{zimmerman2016matpower}, it yields: 
+\begin{equation}
+    \bm{S}_\text{bus} = [\bm{V}]\bm{Y}^*_\text{bus}\bm{V}^*
+    \label{eq:sbus}
+\end{equation}
+where $\bm{S}_\text{bus}$ is the complex power nodal injection, $\bm{V}$ a vector of complex voltages, $\bm{Y}_\text{bus}$ the admittance bus matrix, and the operation $v^*$ symbolizes the complex conjugate of $v$. To derive the powers in rectangular form, first we set:
+\begin{align}
+    \bm{V} &= \bm{e} + j\bm{f} \\
+    \bm{Y}_\text{bus} &= \bm{G}_\text{bus} + j\bm{B}_\text{bus}
+\end{align}
+where $j=\sqrt{-1}$, and $\bm{G}_\text{bus}$ and $\bm{B}_\text{bus}$ are the real and imaginary part of the bus admittance matrix. With this, the development of the nodal power equations are:
+\begin{equation}
+    \bm{S}_{b,\text{bus}} = ([\bm{e}]\bm{G}\bm{e} + [\bm{f}]\bm{G}\bm{f} - [\bm{e}]\bm{B}\bm{f} + [\bm{f}]\bm{B}\bm{e}) + j(-[\bm{e}]\bm{B}\bm{e} - [\bm{f}]\bm{B}\bm{f} - [\bm{e}]\bm{G}\bm{f} + [\bm{f}]\bm{G}\bm{e})
+\end{equation}
+where to simplify the notation, $\bm{G}$ and $\bm{B}$ symbolize $\bm{G}_\text{bus}$ and $\bm{B}_\text{bus}$ respectively.
+
+This bus power has to be equal to the one injected by the sum of generators and loads. The nodal power provided by generators is:
+\begin{equation}
+    \bm{S}_{g,\text{bus}} = (\bm{C}_{g,\text{bus}} \bm{P_g}) + j(\bm{C}_{g,\text{bus}} \bm{Q_g})
+\end{equation}
+
+If loads are to be modelled by following the ZIP model, the total power consumed at the buses is:
+\begin{equation}
+    \begin{split}
+    \bm{S}_{l,\text{bus}} & = (\bm{C}_{l,\text{bus}}\bm{P_l}) + j (\bm{C}_{l,\text{bus}}\bm{Q_l}) \\
+                          & + ([\bm{e}]\bm{C}_{l,\text{bus}} \bm{I_{rl}} + [\bm{f}]\bm{C}_{l,\text{bus}} \bm{I_{il}}) + j(-[\bm{e}]\bm{C}_{l,\text{bus}} \bm{I_{il}} + [\bm{f}]\bm{C}_{l,\text{bus}} \bm{I_{rl}}) \\
+                          & + ([\bm{C}_{l,\text{bus}} \bm{G_l}]([\bm{e}]\bm{e} + [\bm{f}]\bm{f})) -j([\bm{C}_{l,\text{bus}} \bm{B_l}]([\bm{e}]\bm{e} + [\bm{f}]\bm{f}))
+    \end{split}
+\end{equation}
+where $\bm{P_l}$ and $\bm{Q_l}$ are the active and reactive power demands, $\bm{I_{rl}}$ and $\bm{I_{il}}$ are the real and imaginary current demands, and $\bm{G_l}$ and $\bm{B_l}$ stand for the load real and imaginary parts of the admittances. As the load data are considered to be constant and independent from the decision variables, they can be compacted as:
+\begin{equation}
+    \begin{split}
+    \bm{S}_{l,\text{bus}} & = (\bm{P}_{l,\text{bus}}) + j (\bm{Q}_{l,\text{bus}}) \\
+                          & + ([\bm{e}]\bm{I}_{rl,\text{bus}} + [\bm{f}]\bm{I}_{il,\text{bus}}) + j(-[\bm{e}]\bm{I}_{il,\text{bus}} + [\bm{f}]\bm{I}_{rl,\text{bus}}) \\
+                          & + ([\bm{G}_{l,\text{bus}}]([\bm{e}]\bm{e} + [\bm{f}]\bm{f})) -j([\bm{B}_{l,\text{bus}}]([\bm{e}]\bm{e} + [\bm{f}]\bm{f}))
+    \end{split}
+\end{equation}
+
+The equality constraints can be formulated as:
+\begin{equation}
+    \bm{g(x)} = \bm{S}_{g,\text{bus}} - \bm{S}_{l,\text{bus}} - \bm{S}_{b,\text{bus}} = 0
+\end{equation}
+
+On the other hand, the following inequality constraints are considered:
+\begin{itemize}
+    \item Overvoltages: the bus voltages have to be below an upper bound $\bm{v_u}$.
+    \item Undervoltages: the bus voltages have to be above a lower bound $\bm{v_l}$.
+    \item Branch loading (from): the from branch apparent power cannot surpass a limit $\bm{s_{fu}}$. 
+    \item Branch loading (to): the to branch apparent power cannot surpass a limit $\bm{s_{tu}}$. 
+    \item Maximum active power: the generators' active power has to be below $\bm{p}_{g,\text{max}}$.
+    \item Minimum active power: the generators' active power has to be above $\bm{p}_{g,\text{min}}$.
+    \item Maximum reactive power: the generators' reactive power has to be below $\bm{q}_{g,\text{max}}$.
+    \item Minimum reactive power: the generators' reactive power has to be above $\bm{q}_{g,\text{min}}$.
+\end{itemize}
+Mathematically, they become:
+\begin{align}
+    - [\bm{e}]\bm{e} - [\bm{f}]\bm{f} + \bm{v_u}^2 & \geq 0 \\
+    [\bm{e}]\bm{e} + [\bm{f}]\bm{f} - \bm{v_l}^2 & \geq 0 \\
+    - [[\bm{C_f}(\bm{e} + j\bm{f})]\bm{Y_f}^* ([\bm{e} + j\bm{f}])^*] ([\bm{C_f}(\bm{e} + j\bm{f})]^* \bm{Y_f}(\bm{e} + j\bm{f})) + \bm{s_{fu}}^2 & \geq 0 \\
+    - [[\bm{C_t}(\bm{e} + j\bm{f})]\bm{Y_t}^* ([\bm{e} + j\bm{f}])^*] ([\bm{C_t}(\bm{e} + j\bm{f})]^* \bm{Y_t}(\bm{e} + j\bm{f})) + \bm{s_{tu}}^2 & \geq 0 \\
+    - \bm{P_g} + \bm{p}_{g,\text{max}} & \geq 0 \\
+    \bm{P_g} - \bm{p}_{g,\text{min}} & \geq 0 \\
+    - \bm{Q_g} + \bm{q}_{g,\text{max}} & \geq 0 \\
+    \bm{Q_g} - \bm{q}_{g,\text{min}} & \geq 0
+\end{align}
+
+\section{IPM}
+The interior-point method (IPM) is an optimization algorithm meant to solve convex optimization problems. The algorithm remains in the interior of the feasible region throughout the optimization process. It does not directly deal with the extreme points (vertices) of the feasible region. A common variation of the regular IPM is to introduce a barrier parameter that penalizes operating near the boundaries of the feasible region. The barrier parameter is progressively reduced after each iteration to diminish its influence. The formulation that follows is adopted from~\cite{nocedal1999numerical}, and particularized for the ACOPF.
+
+This way, the general structure of the problem becomes: 
+\begin{align}
+    \label{eq:block1}
+\nabla f(\bm{x}) - \bm{A_e}^T(\bm{x}) \bm{y} - \bm{A_i}^T(\bm{x}) \bm{z} &= \bm{0} \\
+[\bm{s}] \bm{z} - \mu \bm{1}_{n_i} &= \bm{0} \\
+\bm{g}(\bm{x}) &= \bm{0} \\
+\bm{h}(\bm{x}) - \bm{s} &= \bm{0}
+\label{eq:block2}
+\end{align}
+where $\nabla f(\bm{x})$ is the gradient of the objective function and takes the form $[\frac{\partial f}{\partial x_1}, \frac{\partial f}{\partial x_2}, ..., \frac{\partial f}{\partial x_n}]^T$, $\bm{A_e} (\bm{x})$ is a matrix concatenating the gradients of the equality constraints as $[\nabla g_1^T, \nabla g_2^T, ..., \nabla g_{n_e}^T]$ with $n_e$ the number of equality constraints, $\bm{A_i} (\bm{x})$ is a matrix concatenating the gradients of the inequality constraints as $[\nabla h_1^T, \nabla h_2^T, ..., \nabla h_{n_i}^T]$ with $n_i$ the number of inequality constraints, $\bm{y}$ and $\bm{z}$ are column vectors of Lagrange multipliers of lengths $n_e$ and $n_i$ respectively, $\bm{s}$ is a column vector of length $n_i$, and $\mu$ is the barrier parameter which is in fact an input of the problem.
+
+Then, the algorithm consists of performing several Newton-Raphson steps until the equations~\ref{eq:block1} to~\ref{eq:block2} are solved. The full structure looks as follows:
+\begin{equation}
+    - \begin{pmatrix}
+        \bm{\nabla^2_{xx}\mathcal{L}} & \bm{0} & -\bm{A_e}^T(\bm{x}) & -\bm{A_i}^T(\bm{x}) \\ 
+        \bm{0} & [\bm{z}] & \bm{0} & [\bm{s}] \\
+        \bm{A_e}(\bm{x}) & \bm{0} & \bm{0} & \bm{0} \\
+        \bm{A_i}(\bm{x}) & -\bm{I} & \bm{0} & \bm{0}
+    \end{pmatrix}
+    \begin{pmatrix}
+        \bm{\Delta x} \\
+        \bm{\Delta s} \\
+        \bm{\Delta y} \\
+        \bm{\Delta z}
+    \end{pmatrix} = 
+    \begin{pmatrix}
+        \nabla f(\bm{x}) - \bm{A_e}^T (\bm{x}) \bm{y} - \bm{A_i}^T (\bm{x}) \bm{z} \\
+[\bm{s}] \bm{z} - \mu \bm{1}_{n_i} \\
+\bm{g}(\bm{x}) \\
+\bm{h}(\bm{x}) - \bm{s}
+    \end{pmatrix}
+\end{equation}
+where $\bm{\Delta x}$ represents the variation of $\bm{x}$ (and similarly to $\bm{s}$, $\bm{y}$, $\bm{z}$), $\bm{I}$ is the identity matrix, and the term  $\bm{\nabla^2_{xx}\mathcal{L}}$ is the Hessian matrix, in other words corresponds to the derivative of~\eqref{eq:block1}.
+
+Both sets of equalities and inequalities have to be further developed. The next subsections unpack them.
+
+\subsection{Equalities}
+As the equalities refer to the power balances, there are two sets of equalities: one for active powers, and the other for reactive powers. They will have to be sliced according to the type of bus. For example, the active power equation balance applies to PQ and PV buses, whereas the reactive power equation balance applies to only PQ buses. In any case:
+
+\begin{itemize}
+    \item \underline{Equality 1 - Active power balance}
+\end{itemize}
+\begin{equation}
+    \begin{split}
+    \bm{g_1}(\bm{x}) &= \bm{C}_{g,\text{bus}} \bm{P_g} \\ 
+                     &- (\bm{P}_{l,\text{bus}} + [\bm{e}]\bm{I}_{rl,\text{bus}} + [\bm{f}]\bm{I}_{il,\text{bus}} + [\bm{G}_{l,\text{bus}}]([\bm{e}]\bm{e} + [\bm{f}]\bm{f})) \\
+                     &- ([\bm{e}]\bm{G}\bm{e} + [\bm{f}]\bm{G}\bm{f} - [\bm{e}]\bm{B}\bm{f} + [\bm{f}]\bm{B}\bm{e})
+    \end{split}
+\end{equation}
+
+\begin{itemize}
+    \item \underline{Equality 2 - Reactive power balance}
+\end{itemize}
+\begin{equation}
+    \begin{split}
+    \bm{g_2}(\bm{x}) &= \bm{C}_{g,\text{bus}} \bm{Q_g} \\
+                     &- (\bm{Q}_{l,\text{bus}} -[\bm{e}]\bm{I}_{il,\text{bus}} + [\bm{f}]\bm{I}_{rl,\text{bus}} + [\bm{B}_{l,\text{bus}}]([\bm{e}]\bm{e} + [\bm{f}]\bm{f})) \\
+                     &- (-[\bm{e}]\bm{B}\bm{e} - [\bm{f}]\bm{B}\bm{f} - [\bm{e}]\bm{G}\bm{f} + [\bm{f}]\bm{G}\bm{e})
+    \end{split}
+\end{equation}
+
+\subsection{Inequalities}
+The listed inequalities are the ones indicated above, accounting for overvoltages, undervoltages, from and to apparent power limits, and maximum and minimum active and reactive powers:
+\begin{itemize}
+    \item \underline{Inequality 1 - Overvoltages}
+\end{itemize}
+\begin{equation}
+    \bm{h_1}(\bm{x}) = - [\bm{e}]\bm{e} - [\bm{f}]\bm{f} + \bm{v_u}^2 \\
+\end{equation}
+
+\begin{itemize}
+    \item \underline{Inequality 2 - Undervoltages}
+\end{itemize}
+\begin{equation}
+   \bm{h_2}(\bm{x}) = [\bm{e}]\bm{e} + [\bm{f}]\bm{f} - \bm{v_l}^2
+\end{equation}
+
+\begin{itemize}
+    \item \underline{Inequality 3 - From apparent power}
+\end{itemize}
+\begin{equation}
+    \bm{h_3}(\bm{x}) = - [[\bm{C_f}(\bm{e} + j\bm{f})]\bm{Y_f}^* ([\bm{e} + j\bm{f}])^*] ([\bm{C_f}(\bm{e} + j\bm{f})]^* \bm{Y_f}(\bm{e} + j\bm{f})) + \bm{s_{fu}}
+\end{equation}
+
+\begin{itemize}
+    \item \underline{Inequality 4 - To apparent power}
+\end{itemize}
+\begin{equation}
+    \bm{h_4}(\bm{x}) = - [[\bm{C_t}(\bm{e} + j\bm{f})]\bm{Y_t}^* ([\bm{e} + j\bm{f}])^*] ([\bm{C_t}(\bm{e} + j\bm{f})]^* \bm{Y_t}(\bm{e} + j\bm{f})) + \bm{s_{tu}}
+\end{equation}
+
+\begin{itemize}
+    \item \underline{Inequality 5 - Maximum generation active power}
+\end{itemize}
+\begin{equation}
+    \bm{h_5}(\bm{x}) = - \bm{P_g} + \bm{p}_{g,\text{max}}
+\end{equation}
+
+\begin{itemize}
+    \item \underline{Inequality 6 - Minimum generation active power}
+\end{itemize}
+\begin{equation}
+    \bm{h_6}(\bm{x}) = \bm{P_g} - \bm{p}_{g,\text{min}}
+\end{equation}
+
+\begin{itemize}
+    \item \underline{Inequality 7 - Maximum generation reactive power}
+\end{itemize}
+\begin{equation}
+    \bm{h_7}(\bm{x}) = - \bm{Q_g} + \bm{q}_{g,\text{max}}
+\end{equation}
+
+\begin{itemize}
+    \item \underline{Inequality 8 - Minimum generation reactive power}
+\end{itemize}
+\begin{equation}
+    \bm{h_8}(\bm{x}) = \bm{Q_g} - \bm{q}_{g,\text{min}}
+\end{equation}
+
+
+
+\section{Conclusion}
+
+This document has formulated a generic ACOPF ready to be implemented. 
+
+% Bibliography
+\bibliography{references}  % Specify the name of your BibTeX file without the .bib extension
+
+\end{document}

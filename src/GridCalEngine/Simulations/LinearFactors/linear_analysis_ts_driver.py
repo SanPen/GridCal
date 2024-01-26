@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -77,7 +77,7 @@ class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         tm_ = time.time()
 
-        self.progress_text.emit('Computing TS linear analysis...')
+        self.report_text('Computing TS linear analysis...')
 
         self.__cancel__ = False
 
@@ -88,8 +88,8 @@ class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
         tpg = self.get_topologic_groups()
 
         for it, t in enumerate(tpg.keys()):
-            self.progress_text.emit('Processing topology group ' + str(self.grid.time_profile[t]))
-            self.progress_signal.emit((it + 1) / len(tpg.keys()) * 100)
+            self.report_text('Processing topology group ' + str(self.grid.time_profile[t]))
+            self.report_progress2(it, len(tpg.keys()))
 
             # time indices with same topology
             time_indices_ = tpg[t]

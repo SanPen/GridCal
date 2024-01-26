@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -33,8 +33,10 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
 
     def __init__(self, bus_names, branch_names, load_names, generator_names,
                  battery_names, hvdc_names, fuel_names, emission_names,
-                 n, m, nt, ngen=0, nbat=0, nload=0, nhvdc=0, time_array=None,
-                 bus_types=(), clustering_results=None):
+                 fluid_node_names, fluid_path_names, fluid_injection_names,
+                 n, m, nt, ngen=0, nbat=0, nload=0, nhvdc=0, n_fluid_node=0,
+                 n_fluid_path=0, n_fluid_injection=0,
+                 time_array=None, bus_types=(), clustering_results=None):
         """
         OPF Time Series results constructor
         :param bus_names:
@@ -45,6 +47,9 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
         :param hvdc_names:
         :param fuel_names:
         :param emission_names:
+        :param fluid_node_names:
+        :param fluid_path_names:
+        :param fluid_injection_names:
         :param n: number of buses
         :param m: number of Branches
         :param nt: number of time steps
@@ -52,6 +57,9 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
         :param nbat:
         :param nload:
         :param nhvdc:
+        :param n_fluid_node:
+        :param n_fluid_path:
+        :param n_fluid_injection:
         :param time_array: Time array (optional)
         :param bus_types:
         :param clustering_results:
@@ -87,10 +95,19 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                                     ResultTypes.HvdcResults: [ResultTypes.HvdcPowerFrom,
                                                                               ResultTypes.HvdcLoading],
 
+                                                    ResultTypes.FluidNodeResults: [ResultTypes.FluidCurrentLevel,
+                                                                                   ResultTypes.FluidFlowIn,
+                                                                                   ResultTypes.FluidFlowOut,
+                                                                                   ResultTypes.FluidP2XFlow,
+                                                                                   ResultTypes.FluidSpillage],
+
+                                                    ResultTypes.FluidPathResults: [ResultTypes.FluidFlowPath],
+
+                                                    ResultTypes.FluidInjectionResults: [ResultTypes.FluidFlowInjection],
+
                                                     ResultTypes.SystemResults: [ResultTypes.SystemFuel,
                                                                                 ResultTypes.SystemEmissions,
                                                                                 ResultTypes.SystemEnergyCost]
-
                                                     },
                                  time_array=time_array,
                                  clustering_results=clustering_results,
@@ -105,6 +122,9 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
         self.fuel_names = fuel_names
         self.emission_names = emission_names
         self.bus_types = bus_types
+        self.fluid_node_names = fluid_node_names
+        self.fluid_path_names = fluid_path_names
+        self.fluid_injection_names = fluid_injection_names
 
         nfuels = len(fuel_names)
         nemissions = len(emission_names)
@@ -142,6 +162,15 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
         self.battery_power = np.zeros((nt, nbat), dtype=float)
         self.battery_energy = np.zeros((nt, nbat), dtype=float)
 
+        self.fluid_node_current_level = np.zeros((nt, n_fluid_node), dtype=float)
+        self.fluid_node_flow_in = np.zeros((nt, n_fluid_node), dtype=float)
+        self.fluid_node_flow_out = np.zeros((nt, n_fluid_node), dtype=float)
+        self.fluid_node_p2x_flow = np.zeros((nt, n_fluid_node), dtype=float)
+        self.fluid_node_spillage = np.zeros((nt, n_fluid_node), dtype=float)
+
+        self.fluid_path_flow = np.zeros((nt, n_fluid_path), dtype=float)
+        self.fluid_injection_flow = np.zeros((nt, n_fluid_injection), dtype=float)
+
         self.converged = np.empty(nt, dtype=bool)
         self.system_fuel = np.empty((nt, nemissions), dtype=float)
         self.system_emissions = np.empty((nt, nfuels), dtype=float)
@@ -175,6 +204,15 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
 
         self.register(name='hvdc_Pf', tpe=Mat)
         self.register(name='hvdc_loading', tpe=Mat)
+
+        self.register(name='fluid_node_current_level', tpe=Mat)
+        self.register(name='fluid_node_flow_in', tpe=Mat)
+        self.register(name='fluid_node_flow_out', tpe=Mat)
+        self.register(name='fluid_node_p2x_flow', tpe=Mat)
+        self.register(name='fluid_node_spillage', tpe=Mat)
+
+        self.register(name='fluid_path_flow', tpe=Mat)
+        self.register(name='fluid_injection_flow', tpe=Mat)
 
         self.register(name='generator_power', tpe=Mat)
         self.register(name='generator_shedding', tpe=Mat)
@@ -320,6 +358,48 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
             labels = self.hvdc_names
             y = self.hvdc_loading * 100.0
             y_label = '(%)'
+            title = result_type.value[0]
+
+        elif result_type == ResultTypes.FluidCurrentLevel:
+            labels = self.fluid_node_names
+            y = self.fluid_node_current_level * 1e-6  # convert m3 to hm3
+            y_label = '(hm3)'
+            title = result_type.value[0]
+
+        elif result_type == ResultTypes.FluidFlowIn:
+            labels = self.fluid_node_names
+            y = self.fluid_node_flow_in
+            y_label = '(m3/s)'
+            title = result_type.value[0]
+
+        elif result_type == ResultTypes.FluidFlowOut:
+            labels = self.fluid_node_names
+            y = self.fluid_node_flow_out
+            y_label = '(m3/s)'
+            title = result_type.value[0]
+
+        elif result_type == ResultTypes.FluidP2XFlow:
+            labels = self.fluid_node_names
+            y = self.fluid_node_p2x_flow
+            y_label = '(m3/s)'
+            title = result_type.value[0]
+
+        elif result_type == ResultTypes.FluidSpillage:
+            labels = self.fluid_node_names
+            y = self.fluid_node_spillage
+            y_label = '(m3/s)'
+            title = result_type.value[0]
+
+        elif result_type == ResultTypes.FluidFlowPath:
+            labels = self.fluid_path_names
+            y = self.fluid_path_flow
+            y_label = '(m3/s)'
+            title = result_type.value[0]
+
+        elif result_type == ResultTypes.FluidFlowInjection:
+            labels = self.fluid_injection_names
+            y = self.fluid_injection_flow
+            y_label = '(m3/s)'
             title = result_type.value[0]
 
         elif result_type == ResultTypes.LoadShedding:

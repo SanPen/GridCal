@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -70,7 +70,12 @@ class RawInterArea(RawObject):
 
         if version >= 29:
             # I, ISW, PDES, PTOL, 'ARNAME'
-            self.I, self.ISW, self.PDES, self.PTOL, self.ARNAME = data[0]
+            if len(data[0]) == 5:
+                self.I, self.ISW, self.PDES, self.PTOL, self.ARNAME = data[0]
+            elif len(data[0]) == 4:
+                self.I, self.ISW, self.ARNAME, self.PDES = data[0]
+            else:
+                logger.add_warning(f'Unrecognized number of inter-area arguments {len(data[0])}', str(version))
 
             self.ARNAME = self.ARNAME.replace("'", "").strip()
         else:

@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -22,6 +22,8 @@ That means that solves the OPF problem for a complete time series at once
 import numpy as np
 from typing import List, Union, Tuple, Callable
 from scipy.sparse import csc_matrix
+
+import GridCalEngine.enumerations
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Core.Devices.Aggregation.area import Area
 from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit, compile_numerical_circuit_at
@@ -31,6 +33,11 @@ from GridCalEngine.Core.DataStructures.load_data import LoadData
 from GridCalEngine.Core.DataStructures.branch_data import BranchData
 from GridCalEngine.Core.DataStructures.hvdc_data import HvdcData
 from GridCalEngine.Core.DataStructures.bus_data import BusData
+from GridCalEngine.Core.DataStructures.fluid_node_data import FluidNodeData
+from GridCalEngine.Core.DataStructures.fluid_path_data import FluidPathData
+from GridCalEngine.Core.DataStructures.fluid_turbine_data import FluidTurbineData
+from GridCalEngine.Core.DataStructures.fluid_pump_data import FluidPumpData
+from GridCalEngine.Core.DataStructures.fluid_p2x_data import FluidP2XData
 from GridCalEngine.basic_structures import Logger, Vec, IntVec, DateVec, Mat
 from GridCalEngine.Utils.MIP.selected_interface import LpExp, LpVar, LpModel, lpDot, set_var_bounds, join
 from GridCalEngine.enumerations import TransformerControlType, HvdcControlType, ZonalGrouping, MIPSolvers
@@ -62,8 +69,8 @@ def get_contingency_flow_with_filter(multi_contingency: LinearMultiContingency,
 
     if len(multi_contingency.bus_indices):
         for i, c in enumerate(multi_contingency.bus_indices):
-            if abs(multi_contingency.ptdf_factors[m, i]) >= threshold:
-                res += multi_contingency.ptdf_factors[m, i] * multi_contingency.injections_factor[i] * injections[c]
+            if abs(multi_contingency.compensated_ptdf_factors[m, i]) >= threshold:
+                res += multi_contingency.compensated_ptdf_factors[m, i] * multi_contingency.injections_factor[i] * injections[c]
 
     return res
 
@@ -102,7 +109,7 @@ class BusVars:
                 data.branch_injections[t, i] = model.get_value(self.branch_injections[t, i]) * Sbase
                 data.shadow_prices[t, i] = model.get_dual_value(self.kirchhoff[t, i])
 
-        # format the arrays aproprietly
+        # format the arrays appropriately
         data.theta = data.theta.astype(float, copy=False)
         data.Pcalc = data.Pcalc.astype(float, copy=False)
         data.branch_injections = data.branch_injections.astype(float, copy=False)
@@ -139,7 +146,7 @@ class LoadVars:
             for i in range(n_elm):
                 data.shedding[t, i] = model.get_value(self.shedding[t, i]) * Sbase
 
-        # format the arrays aproprietly
+        # format the arrays appropriately
         data.shedding = data.shedding.astype(float, copy=False)
 
         return data
@@ -192,7 +199,7 @@ class GenerationVars:
                 # data.fuel[t, i] = model.get_value(self.fuel[t, i])
                 # data.emissions[t, i] = model.get_value(self.emissions[t, i])
 
-        # format the arrays aproprietly
+        # format the arrays appropriately
         data.p = data.p.astype(float, copy=False)
         data.shedding = data.shedding.astype(float, copy=False)
         data.producing = data.producing.astype(bool, copy=False)
@@ -219,7 +226,10 @@ class BatteryVars(GenerationVars):
         GenerationVars.__init__(self, nt=nt, n_elm=n_elm)
         self.e = np.zeros((nt, n_elm), dtype=object)
 
-    def get_values(self, Sbase: float, model: LpModel) -> "BatteryVars":
+    def get_values(self, Sbase: float, model: LpModel,
+                   gen_emissions_rates_matrix: csc_matrix = None,  # not needed but included for compatibiliy
+                   gen_fuel_rates_matrix: csc_matrix = None  # not needed but included for compatibiliy
+                   ) -> "BatteryVars":
         """
         Return an instance of this class where the arrays content are not LP vars but their value
         :return: GenerationVars
@@ -236,7 +246,7 @@ class BatteryVars(GenerationVars):
                 data.starting_up[t, i] = model.get_value(self.starting_up[t, i])
                 data.shutting_down[t, i] = model.get_value(self.shutting_down[t, i])
 
-            # format the arrays aproprietly
+            # format the arrays appropriately
             data.p = data.p.astype(float, copy=False)
             data.e = data.e.astype(float, copy=False)
             data.shedding = data.shedding.astype(float, copy=False)
@@ -296,7 +306,7 @@ class BranchVars:
                                              model.get_value(neg_slack),
                                              model.get_value(pos_slack))
 
-        # format the arrays aproprietly
+        # format the arrays appropriately
         data.flows = data.flows.astype(float, copy=False)
         data.flow_slacks_pos = data.flow_slacks_pos.astype(float, copy=False)
         data.flow_slacks_neg = data.flow_slacks_neg.astype(float, copy=False)
@@ -352,10 +362,144 @@ class HvdcVars:
             for i in range(n_elm):
                 data.flows[t, i] = model.get_value(self.flows[t, i]) * Sbase
 
-        # format the arrays aproprietly
+        # format the arrays appropriately
         data.flows = data.flows.astype(float, copy=False)
 
         data.loading = data.flows / (data.rates + 1e-20)
+
+        return data
+
+
+class FluidNodeVars:
+    """
+    Struct to store the vars of nodes of fluid type
+    """
+
+    def __init__(self, nt: int, n_elm: int):
+        """
+        FluidNodeVars structure
+        :param nt: Number of time steps
+        :param n_elm: Number of nodes
+        """
+
+        # the objects below are extracted from data
+        # self.min_level = np.zeros((nt, n_elm), dtype=float)  # m3
+        # self.max_level = np.zeros((nt, n_elm), dtype=float)  # m3
+        # self.initial_level = np.zeros((nt, n_elm), dtype=float)  # m3
+
+        self.p2x_flow = np.zeros((nt, n_elm), dtype=object)  # m3
+        self.current_level = np.zeros((nt, n_elm), dtype=object)  # m3
+        self.spillage = np.zeros((nt, n_elm), dtype=object)  # m3/s
+        self.flow_in = np.zeros((nt, n_elm), dtype=object)  # m3/s
+        self.flow_out = np.zeros((nt, n_elm), dtype=object)  # m3/s
+
+    def get_values(self, model: LpModel) -> "FluidNodeVars":
+        """
+        Return an instance of this class where the arrays content are not LP vars but their value
+        :param model: LP model from where we extract the values
+        :return: FluidNodeVars
+        """
+        nt, n_elm = self.p2x_flow.shape
+        data = FluidNodeVars(nt=nt, n_elm=n_elm)
+
+        for t in range(nt):
+            for i in range(n_elm):
+                data.p2x_flow[t, i] = model.get_value(self.p2x_flow[t, i])
+                data.current_level[t, i] = model.get_value(self.current_level[t, i])
+                data.spillage[t, i] = model.get_value(self.spillage[t, i])
+                data.flow_in[t, i] = model.get_value(self.flow_in[t, i])
+                data.flow_out[t, i] = model.get_value(self.flow_out[t, i])
+
+        # format the arrays appropriately
+        data.p2x_flow = data.p2x_flow.astype(float, copy=False)
+        data.current_level = data.current_level.astype(float, copy=False)
+        data.spillage = data.spillage.astype(float, copy=False)
+        data.flow_in = data.flow_in.astype(float, copy=False)
+        data.flow_out = data.flow_out.astype(float, copy=False)
+
+        # from the data object itself
+        # data.min_level = self.min_level
+        # data.max_level = self.max_level
+        # data.initial_level = self.initial_level
+
+        return data
+
+
+class FluidPathVars:
+    """
+    Struct to store the vars of paths of fluid type
+    """
+
+    def __init__(self, nt: int, n_elm: int):
+        """
+        FluidPathVars structure
+        :param nt: Number of time steps
+        :param n_elm: Number of paths (rivers)
+        """
+
+        # from the data object
+        # self.min_flow = np.zeros((nt, n_elm), dtype=float)  # m3/s
+        # self.max_flow = np.zeros((nt, n_elm), dtype=float)  # m3/s
+
+        self.flow = np.zeros((nt, n_elm), dtype=object)  # m3/s
+
+    def get_values(self, model: LpModel) -> "FluidPathVars":
+        """
+        Return an instance of this class where the arrays content are not LP vars but their value
+        :param model: LP model from where we extract the values
+        :return: FluidPathVars
+        """
+        nt, n_elm = self.flow.shape
+        data = FluidPathVars(nt=nt, n_elm=n_elm)
+
+        for t in range(nt):
+            for i in range(n_elm):
+                data.flow[t, i] = model.get_value(self.flow[t, i])
+
+        # format the arrays appropriately
+        data.flow = data.flow.astype(float, copy=False)
+
+        # data.min_flow = self.min_flow
+        # data.max_flow = self.max_flow
+
+        return data
+
+
+class FluidInjectionVars:
+    """
+    Struct to store the vars of injections of fluid type
+    """
+
+    def __init__(self, nt: int, n_elm: int):
+        """
+        FluidInjectionVars structure
+        :param nt: Number of time steps
+        :param n_elm: Number of elements moving fluid
+        """
+
+        # self.efficiency = np.zeros((nt, n_elm), dtype=float)  # m3
+        # self.max_flow_rate = np.zeros((nt, n_elm), dtype=float)  # m3/s
+        #
+        # self.p_max = np.zeros((nt, n_elm), dtype=float)  # MW
+        # self.p_min = np.zeros((nt, n_elm), dtype=float)  # MW
+        #
+        self.flow = np.zeros((nt, n_elm), dtype=object)  # m3/s
+
+    def get_values(self, model: LpModel) -> "FluidInjectionVars":
+        """
+        Return an instance of this class where the arrays content are not LP vars but their value
+        :param model: LP model from where we extract the values
+        :return: FluidInjectionVars
+        """
+        nt, n_elm = self.flow.shape
+        data = FluidInjectionVars(nt=nt, n_elm=n_elm)
+
+        for t in range(nt):
+            for i in range(n_elm):
+                data.flow[t, i] = model.get_value(self.flow[t, i])
+
+        # format the arrays appropriately
+        data.flow = data.flow.astype(float, copy=False)
 
         return data
 
@@ -398,7 +542,8 @@ class OpfVars:
     Structure to host the opf variables
     """
 
-    def __init__(self, nt: int, nbus: int, ng: int, nb: int, nl: int, nbr: int, n_hvdc: int):
+    def __init__(self, nt: int, nbus: int, ng: int, nb: int, nl: int, nbr: int, n_hvdc: int, n_fluid_node: int,
+                 n_fluid_path: int, n_fluid_inj: int):
         """
         Constructor
         :param nt: number of time steps
@@ -408,6 +553,9 @@ class OpfVars:
         :param nl: number of loads
         :param nbr: number of branches
         :param n_hvdc: number of HVDC
+        :param n_fluid_node: number of fluid nodes
+        :param n_fluid_path: number of fluid paths
+        :param n_fluid_inj: number of fluid injections
         """
         self.nt = nt
         self.nbus = nbus
@@ -416,6 +564,9 @@ class OpfVars:
         self.nl = nl
         self.nbr = nbr
         self.n_hvdc = n_hvdc
+        self.n_fluid_node = n_fluid_node
+        self.n_fluid_path = n_fluid_path
+        self.n_fluid_inj = n_fluid_inj
 
         self.acceptable_solution = False
 
@@ -425,6 +576,11 @@ class OpfVars:
         self.batt_vars = BatteryVars(nt=nt, n_elm=nb)
         self.branch_vars = BranchVars(nt=nt, n_elm=nbr)
         self.hvdc_vars = HvdcVars(nt=nt, n_elm=n_hvdc)
+
+        self.fluid_node_vars = FluidNodeVars(nt=nt, n_elm=n_fluid_node)
+        self.fluid_path_vars = FluidPathVars(nt=nt, n_elm=n_fluid_path)
+        self.fluid_inject_vars = FluidInjectionVars(nt=nt, n_elm=n_fluid_inj)
+
         self.sys_vars = SystemVars(nt=nt)
 
     def get_values(self, Sbase: float, model: LpModel, gen_emissions_rates_matrix, gen_fuel_rates_matrix) -> "OpfVars":
@@ -438,7 +594,10 @@ class OpfVars:
                        nb=self.nb,
                        nl=self.nl,
                        nbr=self.nbr,
-                       n_hvdc=self.n_hvdc)
+                       n_hvdc=self.n_hvdc,
+                       n_fluid_node=self.n_fluid_node,
+                       n_fluid_path=self.n_fluid_path,
+                       n_fluid_inj=self.n_fluid_inj)
         data.bus_vars = self.bus_vars.get_values(Sbase, model)
         data.load_vars = self.load_vars.get_values(Sbase, model)
         data.gen_vars = self.gen_vars.get_values(Sbase=Sbase,
@@ -448,6 +607,9 @@ class OpfVars:
         data.batt_vars = self.batt_vars.get_values(Sbase, model)
         data.branch_vars = self.branch_vars.get_values(Sbase, model)
         data.hvdc_vars = self.hvdc_vars.get_values(Sbase, model)
+        data.fluid_node_vars = self.fluid_node_vars.get_values(model)
+        data.fluid_path_vars = self.fluid_path_vars.get_values(model)
+        data.fluid_inject_vars = self.fluid_inject_vars.get_values(model)
         data.sys_vars = self.sys_vars
 
         data.acceptable_solution = self.acceptable_solution
@@ -1062,7 +1224,8 @@ def add_linear_node_balance(t_idx: int,
                             gen_vars: GenerationVars,
                             batt_vars: BatteryVars,
                             load_vars: LoadVars,
-                            prob: LpModel):
+                            prob: LpModel,
+                            logger: Logger):
     """
     Add the kirchoff nodal equality
     :param t_idx: time step
@@ -1089,18 +1252,185 @@ def add_linear_node_balance(t_idx: int,
     P_esp += lpDot(load_data.C_bus_elm.tocsc(),
                    load_vars.shedding[t_idx, :] - load_vars.p[t_idx, :])
 
-    # calculate the linear nodal inyection
+    # calculate the linear nodal injection
     bus_vars.Pcalc[t_idx, :] = lpDot(B, bus_vars.theta[t_idx, :])
 
     # add the equality restrictions
     for k in range(bus_data.nbus):
-        bus_vars.kirchhoff[t_idx, k] = prob.add_cst(
-            cst=bus_vars.Pcalc[t_idx, k] == P_esp[k],
-            name=join("kirchoff_", [t_idx, k], "_")
-        )
+        if isinstance(bus_vars.Pcalc[t_idx, k], (int, float)):
+            bus_vars.kirchhoff[t_idx, k] = prob.add_cst(
+                cst=bus_vars.theta[t_idx, k] == 0,
+                name=join("island_bus_", [t_idx, k], "_")
+            )
+            logger.add_warning("bus isolated",
+                               device=bus_data.names[k]+f'@t={t_idx}')
+        else:
+            bus_vars.kirchhoff[t_idx, k] = prob.add_cst(
+                cst=bus_vars.Pcalc[t_idx, k] == P_esp[k],
+                name=join("kirchoff_", [t_idx, k], "_")
+            )
 
     for i in vd:
         set_var_bounds(var=bus_vars.theta[t_idx, i], lb=0.0, ub=0.0)
+
+
+def add_hydro_formulation(t: Union[int, None],
+                          time_global_tidx: Union[int, None],
+                          time_array: DateVec,
+                          Sbase: float,
+                          node_vars: FluidNodeVars,
+                          path_vars: FluidPathVars,
+                          inj_vars: FluidInjectionVars,
+                          node_data: FluidNodeData,
+                          path_data: FluidPathData,
+                          turbine_data: FluidTurbineData,
+                          pump_data: FluidPumpData,
+                          p2x_data: FluidP2XData,
+                          generator_data: GeneratorData,
+                          generator_vars: GenerationVars,
+                          prob: LpModel,
+                          logger: Logger):
+    """
+    Formulate the branches
+    :param t: local time index
+    :param time_global_tidx: global time index
+    :param time_array: list of time indices
+    :param Sbase: base power of the system
+    :param node_vars: FluidNodeVars
+    :param path_vars: FluidPathVars
+    :param inj_vars: FluidInjectionVars
+    :param node_data: FluidNodeData
+    :param path_data: FluidPathData
+    :param turbine_data: FluidTurbineData
+    :param pump_data: FluidPumpData
+    :param p2x_data: FluidP2XData
+    :param generator_data: GeneratorData
+    :param generator_vars: GeneratorVars
+    :param prob: OR problem
+    :param logger: log of the LP
+    :return objective function
+    """
+
+    f_obj = 0.0
+
+    for m in range(node_data.nelm):
+        node_vars.spillage[t, m] = prob.add_var(lb=0.00,
+                                                ub=1e20,
+                                                name=join("NodeSpillage_", [t, m], "_"))
+
+        f_obj += node_data.spillage_cost[m] * node_vars.spillage[t, m]
+        # f_obj += node_vars.spillage[t, m]
+
+        node_vars.current_level[t, m] = prob.add_var(lb=node_data.min_level[m],
+                                                     ub=node_data.max_level[m],
+                                                     name=join("level_", [t, m], "_"))
+
+    for m in range(path_data.nelm):
+        path_vars.flow[t, m] = prob.add_var(lb=path_data.min_flow[m],
+                                            ub=path_data.max_flow[m],
+                                            name=join("hflow_", [t, m], "_"))
+
+    # Constraints
+    for m in range(path_data.nelm):
+        # inflow: fluid flow entering the target node in m3/s
+        # outflow: fluid flow leaving the source node in m3/s
+        # flow: amount of fluid flowing through the river in m3/s
+        node_vars.flow_in[t, path_data.target_idx[m]] += path_vars.flow[t, m]
+        node_vars.flow_out[t, path_data.source_idx[m]] += path_vars.flow[t, m]
+
+    for m in range(turbine_data.nelm):
+        gen_idx = turbine_data.generator_idx[m]
+        plant_idx = turbine_data.plant_idx[m]
+
+        # flow [m3/s] = pgen [pu] * max_flow [m3/s] / (Pgen_max [MW] / Sbase [MW] * eff)
+        coeff = turbine_data.max_flow_rate[m] / (generator_data.pmax[gen_idx] / Sbase * turbine_data.efficiency[m])
+        turbine_flow = (generator_vars.p[t, gen_idx] * coeff)
+        # node_vars.flow_out[t, plant_idx] = turbine_flow  # assume only 1 turbine connected
+
+        # if t > 0:
+        inj_vars.flow[t, m] = turbine_flow  # to retrieve the value later on
+
+        prob.add_cst(cst=(node_vars.flow_out[t, plant_idx] == turbine_flow),
+                     name=join("turbine_river_", [t, m], "_"))
+
+        if generator_data.pmin[gen_idx] < 0:
+            logger.add_error(msg='Turbine generator pmin < 0 is not possible',
+                             value=generator_data.pmin[gen_idx])
+
+        # f_obj += turbine_flow
+
+    for m in range(pump_data.nelm):
+        gen_idx = pump_data.generator_idx[m]
+        plant_idx = pump_data.plant_idx[m]
+
+        # flow [m3/s] = pcons [pu] * max_flow [m3/s] * eff / (Pcons_min [MW] / Sbase [MW])
+        # invert the efficiency compared to a turbine
+        # pmin instead of pmax because the sign should be inverted (consuming instead of generating)
+        coeff = pump_data.max_flow_rate[m] * pump_data.efficiency[m] / (abs(generator_data.pmin[gen_idx]) / Sbase)
+        pump_flow = (generator_vars.p[t, gen_idx] * coeff)
+        # node_vars.flow_in[t, plant_idx] = pump_flow  # assume only 1 pump connected
+
+        # if t > 0:
+        inj_vars.flow[t, m + turbine_data.nelm] = - pump_flow
+        prob.add_cst(cst=(node_vars.flow_in[t, plant_idx] == - pump_flow),
+                     name=join("pump_river_", [t, m], "_"))
+
+        if generator_data.pmax[gen_idx] > 0:
+            logger.add_error(msg='Pump generator pmax > 0 is not possible',
+                             value=generator_data.pmax[gen_idx])
+
+        # f_obj -= pump_flow
+
+    for m in range(p2x_data.nelm):
+        gen_idx = p2x_data.generator_idx[m]
+
+        # flow[m3/s] = pcons [pu] * max_flow [m3/s] * eff / (Pcons_max [MW] / Sbase [MW])
+        # invert the efficiency compared to a turbine
+        # pmin instead of pmax because the sign should be inverted (consuming instead of generating)
+        coeff = p2x_data.max_flow_rate[m] * p2x_data.efficiency[m] / (abs(generator_data.pmin[gen_idx]) / Sbase)
+        p2x_flow = (generator_vars.p[t, gen_idx] * coeff)
+
+        # if t > 0:
+        node_vars.p2x_flow[t, p2x_data.plant_idx[m]] -= p2x_flow
+        inj_vars.flow[t, m + turbine_data.nelm + pump_data.nelm] = - p2x_flow
+
+        if generator_data.pmax[gen_idx] > 0:
+            logger.add_error(msg='P2X generator pmax > 0 is not possible',
+                             value=generator_data.pmax[gen_idx])
+
+        # f_obj -= p2x_flow
+
+    if t is not None:
+        # constraints for the node level
+        for m in range(node_data.nelm):
+            if t == 0:
+                # Initialize level at the initial one (from snapshot), akin to dt=0
+                if len(time_array) > time_global_tidx + 1:
+                    dt = (time_array[time_global_tidx + 1] - time_array[time_global_tidx]).seconds
+                else:
+                    dt = 3600
+
+                prob.add_cst(cst=(node_vars.current_level[t, m] ==
+                                  node_data.initial_level[m]
+                                  + dt * node_data.inflow[m]
+                                  + dt * node_vars.flow_in[t, m]
+                                  + dt * node_vars.p2x_flow[t, m]
+                                  - dt * node_vars.spillage[t, m]
+                                  - dt * node_vars.flow_out[t, m]),
+                             name=join("nodal_balance_", [t, m], "_"))
+            else:
+                # Update the level according to the in and out flows as time passes
+                dt = (time_array[time_global_tidx] - time_array[time_global_tidx - 1]).seconds
+
+                prob.add_cst(cst=(node_vars.current_level[t, m] ==
+                                  node_vars.current_level[t - 1, m]
+                                  + dt * node_data.inflow[m]
+                                  + dt * node_vars.flow_in[t, m]
+                                  + dt * node_vars.p2x_flow[t, m]
+                                  - dt * node_vars.spillage[t, m]
+                                  - dt * node_vars.flow_out[t, m]),
+                             name=join("nodal_balance_", [t, m], "_"))
+    return f_obj
 
 
 def run_linear_opf_ts(grid: MultiCircuit,
@@ -1160,6 +1490,12 @@ def run_linear_opf_ts(grid: MultiCircuit,
     nb = grid.get_batteries_number()
     nl = grid.get_calculation_loads_number()
     n_hvdc = grid.get_hvdc_number()
+    n_fluid_node = grid.get_fluid_nodes_number()
+    n_fluid_path = grid.get_fluid_paths_number()
+    n_fluid_turbine = grid.get_fluid_turbines_number()
+    n_fluid_pump = grid.get_fluid_pumps_number()
+    n_fluid_p2x = grid.get_fluid_p2xs_number()
+    n_fluid_inj = grid.get_fluid_injection_number()
 
     # gather the fuels and emission rates matrices
     gen_emissions_rates_matrix = grid.get_emission_rates_sparse_matrix()
@@ -1173,7 +1509,8 @@ def run_linear_opf_ts(grid: MultiCircuit,
         inter_area_hvdc = list()
 
     # declare structures of LP vars
-    mip_vars = OpfVars(nt=nt, nbus=n, ng=ng, nb=nb, nl=nl, nbr=nbr, n_hvdc=n_hvdc)
+    mip_vars = OpfVars(nt=nt, nbus=n, ng=ng, nb=nb, nl=nl, nbr=nbr, n_hvdc=n_hvdc,
+                       n_fluid_node=n_fluid_node, n_fluid_path=n_fluid_path, n_fluid_inj=n_fluid_inj)
 
     # create the MIP problem object
     lp_model: LpModel = LpModel(solver_type)
@@ -1181,31 +1518,37 @@ def run_linear_opf_ts(grid: MultiCircuit,
     # objective function
     f_obj: Union[LpExp, float] = 0.0
 
-    for t_idx, t in enumerate(time_indices):  # use time_indices = [None] to simulate the snapshot
+    for local_t_idx, global_t_idx in enumerate(time_indices):  # use time_indices = [None] to simulate the snapshot
+
+        # time indices:
+        # imagine that the complete GridCal DB time goes from 0 to 1000
+        # but, for whatever reason, time_indices is [100..200]
+        # local_t_idx would go fro 0..100
+        # global_t_idx would go from 100..200
 
         # compile the circuit at the master time index ------------------------------------------------------------
         # note: There are very little chances of simplifying this step and experience shows
         #       it is not worth the effort, so compile every time step
         nc: NumericalCircuit = compile_numerical_circuit_at(circuit=grid,
-                                                            t_idx=t,  # yes, this is not a bug
+                                                            t_idx=global_t_idx,  # yes, this is not a bug
                                                             bus_dict=bus_dict,
                                                             areas_dict=areas_dict)
 
         # formulate the bus angles ---------------------------------------------------------------------------------
         for k in range(nc.bus_data.nbus):
-            mip_vars.bus_vars.theta[t_idx, k] = lp_model.add_var(lb=nc.bus_data.angle_min[k],
-                                                                 ub=nc.bus_data.angle_max[k],
-                                                                 name=join("th_", [t_idx, k], "_"))
+            mip_vars.bus_vars.theta[local_t_idx, k] = lp_model.add_var(lb=nc.bus_data.angle_min[k],
+                                                                       ub=nc.bus_data.angle_max[k],
+                                                                       name=join("th_", [local_t_idx, k], "_"))
 
         # formulate loads ------------------------------------------------------------------------------------------
-        f_obj += add_linear_load_formulation(t=t_idx,
+        f_obj += add_linear_load_formulation(t=local_t_idx,
                                              Sbase=nc.Sbase,
                                              load_data_t=nc.load_data,
                                              load_vars=mip_vars.load_vars,
                                              prob=lp_model)
 
         # formulate generation -------------------------------------------------------------------------------------
-        f_obj += add_linear_generation_formulation(t=t_idx,
+        f_obj += add_linear_generation_formulation(t=local_t_idx,
                                                    Sbase=nc.Sbase,
                                                    time_array=grid.time_profile,
                                                    gen_data_t=nc.generator_data,
@@ -1216,11 +1559,11 @@ def run_linear_opf_ts(grid: MultiCircuit,
                                                    skip_generation_limits=skip_generation_limits)
 
         # formulate batteries --------------------------------------------------------------------------------------
-        if t_idx == 0 and energy_0 is None:
+        if local_t_idx == 0 and energy_0 is None:
             # declare the initial energy of the batteries
             energy_0 = nc.battery_data.soc_0 * nc.battery_data.enom  # in MWh here
 
-        f_obj += add_linear_battery_formulation(t=t_idx,
+        f_obj += add_linear_battery_formulation(t=local_t_idx,
                                                 Sbase=nc.Sbase,
                                                 time_array=grid.time_profile,
                                                 batt_data_t=nc.battery_data,
@@ -1234,14 +1577,14 @@ def run_linear_opf_ts(grid: MultiCircuit,
         # add emissions ------------------------------------------------------------------------------------------------
         if gen_emissions_rates_matrix.shape[0] > 0:
             # amount of emissions per gas
-            emissions = lpDot(gen_emissions_rates_matrix, mip_vars.gen_vars.p[t_idx, :])
+            emissions = lpDot(gen_emissions_rates_matrix, mip_vars.gen_vars.p[local_t_idx, :])
 
             f_obj += lp_model.sum(emissions)
 
         # add fuels ----------------------------------------------------------------------------------------------------
         if gen_fuel_rates_matrix.shape[0] > 0:
             # amount of fuels
-            fuels_amount = lpDot(gen_fuel_rates_matrix, mip_vars.gen_vars.p[t_idx, :])
+            fuels_amount = lpDot(gen_fuel_rates_matrix, mip_vars.gen_vars.p[local_t_idx, :])
 
             f_obj += lp_model.sum(fuels_amount)
 
@@ -1250,7 +1593,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
         if zonal_grouping == ZonalGrouping.NoGrouping:
 
             # formulate hvdc -------------------------------------------------------------------------------------------
-            f_obj += add_linear_hvdc_formulation(t=t_idx,
+            f_obj += add_linear_hvdc_formulation(t=local_t_idx,
                                                  Sbase=nc.Sbase,
                                                  hvdc_data_t=nc.hvdc_data,
                                                  hvdc_vars=mip_vars.hvdc_vars,
@@ -1258,7 +1601,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
                                                  prob=lp_model)
 
             # formulate branches ---------------------------------------------------------------------------------------
-            f_obj += add_linear_branches_formulation(t=t_idx,
+            f_obj += add_linear_branches_formulation(t=local_t_idx,
                                                      Sbase=nc.Sbase,
                                                      branch_data_t=nc.branch_data,
                                                      branch_vars=mip_vars.branch_vars,
@@ -1267,7 +1610,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
                                                      inf=1e20)
 
             # formulate nodes ------------------------------------------------------------------------------------------
-            add_linear_node_balance(t_idx=t_idx,
+            add_linear_node_balance(t_idx=local_t_idx,
                                     Bbus=nc.Bbus,
                                     vd=nc.vd,
                                     bus_data=nc.bus_data,
@@ -1278,7 +1621,8 @@ def run_linear_opf_ts(grid: MultiCircuit,
                                     gen_vars=mip_vars.gen_vars,
                                     batt_vars=mip_vars.batt_vars,
                                     load_vars=mip_vars.load_vars,
-                                    prob=lp_model)
+                                    prob=lp_model,
+                                    logger=logger)
 
             # add branch contingencies ---------------------------------------------------------------------------------
             if consider_contingencies:
@@ -1291,10 +1635,10 @@ def run_linear_opf_ts(grid: MultiCircuit,
 
                 # Compute the more generalistic contingency structures
                 mctg = LinearMultiContingencies(grid=grid)
-                mctg.update(lodf=ls.LODF, ptdf=ls.PTDF, threshold=lodf_threshold)
+                mctg.compute(lodf=ls.LODF, ptdf=ls.PTDF, ptdf_threshold=lodf_threshold, lodf_threshold=lodf_threshold)
 
                 # formulate the contingencies
-                f_obj += add_linear_branches_contingencies_formulation(t_idx=t_idx,
+                f_obj += add_linear_branches_contingencies_formulation(t_idx=local_t_idx,
                                                                        Sbase=nc.Sbase,
                                                                        branch_data_t=nc.branch_data,
                                                                        branch_vars=mip_vars.branch_vars,
@@ -1308,20 +1652,40 @@ def run_linear_opf_ts(grid: MultiCircuit,
                 for branches_list in [inter_area_branches, inter_area_hvdc]:
                     for k, branch, sense in branches_list:
                         # we want to maximize, hence the minus sign
-                        f_obj += mip_vars.branch_vars.flows[t_idx, k] * (- sense)
+                        f_obj += mip_vars.branch_vars.flows[local_t_idx, k] * (- sense)
+
+            # add hydro side -------------------------------------------------------------------------------------------
+            if n_fluid_node > 0:
+                f_obj += add_hydro_formulation(t=local_t_idx,
+                                               time_global_tidx=global_t_idx,
+                                               time_array=grid.time_profile,
+                                               Sbase=nc.Sbase,
+                                               node_vars=mip_vars.fluid_node_vars,
+                                               path_vars=mip_vars.fluid_path_vars,
+                                               inj_vars=mip_vars.fluid_inject_vars,
+                                               node_data=nc.fluid_node_data,
+                                               path_data=nc.fluid_path_data,
+                                               turbine_data=nc.fluid_turbine_data,
+                                               pump_data=nc.fluid_pump_data,
+                                               p2x_data=nc.fluid_p2x_data,
+                                               generator_data=nc.generator_data,
+                                               generator_vars=mip_vars.gen_vars,
+                                               prob=lp_model,
+                                               logger=logger)
 
         elif zonal_grouping == ZonalGrouping.All:
             # this is the copper plate approach
             pass
 
         # production equals demand -------------------------------------------------------------------------------------
-        lp_model.add_cst(cst=(lp_model.sum(mip_vars.gen_vars.p[t_idx, :]) +
-                              lp_model.sum(mip_vars.batt_vars.p[t_idx, :]) >=
-                              mip_vars.load_vars.p[t_idx, :].sum() - mip_vars.load_vars.shedding[t_idx].sum()),
-                         name="satisfy_demand_at_{0}".format(t_idx))
+        lp_model.add_cst(cst=(lp_model.sum(mip_vars.gen_vars.p[local_t_idx, :]) +
+                              lp_model.sum(mip_vars.batt_vars.p[local_t_idx, :]) >=
+                              mip_vars.load_vars.p[local_t_idx, :].sum() - mip_vars.load_vars.shedding[
+                                  local_t_idx].sum()),
+                         name="satisfy_demand_at_{0}".format(local_t_idx))
 
         if progress_func is not None:
-            progress_func((t_idx + 1) / nt * 100.0)
+            progress_func((local_t_idx + 1) / nt * 100.0)
 
     # set the objective function
     lp_model.minimize(f_obj)
@@ -1335,11 +1699,13 @@ def run_linear_opf_ts(grid: MultiCircuit,
 
     if export_model_fname is not None:
         lp_model.save_model(file_name=export_model_fname)
+        logger.add_info("LP model saved as", value=export_model_fname)
         print('LP model saved as:', export_model_fname)
 
-    status = lp_model.solve()
+    status = lp_model.solve(robust=False)
 
     # gather the results
+    logger.add_info("Status", value=str(status))
     if status == LpModel.OPTIMAL:
         logger.add_info("Objective function", value=lp_model.fobj_value())
         mip_vars.acceptable_solution = True
@@ -1356,7 +1722,39 @@ def run_linear_opf_ts(grid: MultiCircuit,
                                  gen_emissions_rates_matrix=gen_emissions_rates_matrix,
                                  gen_fuel_rates_matrix=gen_fuel_rates_matrix)
 
+    # if vars_v.fluid_node_vars.spillage.sum() != 0:
+    # lp_file_name = "hydro_debug.lp"
+    # lp_model.save_model(file_name=lp_file_name)
+
+    # for t, global_t_idx in enumerate(time_indices):  # use time_indices = [None] to simulate the snapshot
+    #     nc: NumericalCircuit = compile_numerical_circuit_at(circuit=grid,
+    #                                                         t_idx=global_t_idx,  # yes, this is not a bug
+    #                                                         bus_dict=bus_dict,
+    #                                                         areas_dict=areas_dict)
+    #     for m in range(nc.fluid_node_data.nelm):
+    #         print(nc.fluid_node_data.names[m])
+    #
+    #         if t == 0:
+    #             print(f'Current level {m}: {vars_v.fluid_node_vars.current_level[t, m]}')
+    #             print(f'Initial level {m}: {nc.fluid_node_data.initial_level[m]}')
+    #             print(f'Inflow {m}: {nc.fluid_node_data.inflow[m]}')
+    #             print(f'Flow in {m}: {vars_v.fluid_node_vars.flow_in[t, m]}')
+    #             print(f'P2X flow {m}: {vars_v.fluid_node_vars.p2x_flow[t, m]}')
+    #             print(f'Spillage {m}: {vars_v.fluid_node_vars.spillage[t, m]}')
+    #             print(f'Flow out {m}: {vars_v.fluid_node_vars.flow_out[t, m]}')
+    #             print()
+    #         else:
+    #             print(f'Current level {m}: {vars_v.fluid_node_vars.current_level[t, m]}')
+    #             print(f'Initial level {m}: {vars_v.fluid_node_vars.current_level[t-1, m]}')
+    #             print(f'Inflow {m}: {nc.fluid_node_data.inflow[m]}')
+    #             print(f'Flow in {m}: {vars_v.fluid_node_vars.flow_in[t, m]}')
+    #             print(f'P2X flow {m}: {vars_v.fluid_node_vars.p2x_flow[t, m]}')
+    #             print(f'Spillage {m}: {vars_v.fluid_node_vars.spillage[t, m]}')
+    #             print(f'Flow out {m}: {vars_v.fluid_node_vars.flow_out[t, m]}')
+    #             print()
+
     # add the model logger to the main logger
     logger += lp_model.logger
 
+    # lp_model.save_model('hydro_opf.lp')
     return vars_v

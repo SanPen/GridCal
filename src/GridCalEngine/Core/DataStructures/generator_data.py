@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -47,6 +47,10 @@ class GeneratorData:
         self.qmin: Vec = np.zeros(nelm, dtype=float)
         self.qmax: Vec = np.zeros(nelm, dtype=float)
 
+        # reliabilty
+        self.mttf: Vec = np.zeros(nelm, dtype=float)
+        self.mttr: Vec = np.zeros(nelm, dtype=float)
+
         self.C_bus_elm: sp.lil_matrix = sp.lil_matrix((nbus, nelm), dtype=int)
 
         # r0, r1, r2, x0, x1, x2
@@ -64,6 +68,7 @@ class GeneratorData:
 
         self.cost_1: Vec = np.zeros(nelm, dtype=float)
         self.cost_0: Vec = np.zeros(nelm, dtype=float)
+        self.cost_2: Vec = np.zeros(nelm, dtype=float)
         self.startup_cost: Vec = np.zeros(nelm, dtype=float)
         self.availability: Vec = np.zeros(nelm, dtype=float)
         self.ramp_up: Vec = np.zeros(nelm, dtype=float)
@@ -98,6 +103,9 @@ class GeneratorData:
         data.qmin = self.qmin[elm_idx]
         data.qmax = self.qmax[elm_idx]
 
+        data.mttf = self.mttf[elm_idx]
+        data.mttr = self.mttr[elm_idx]
+
         data.C_bus_elm = self.C_bus_elm[np.ix_(bus_idx, elm_idx)]
 
         data.r0 = self.r0[elm_idx]
@@ -114,6 +122,7 @@ class GeneratorData:
 
         data.cost_0 = self.cost_0[elm_idx]
         data.cost_1 = self.cost_1[elm_idx]
+        data.cost_2 = self.cost_2[elm_idx]
         data.startup_cost = self.startup_cost[elm_idx]
         data.availability = self.availability[elm_idx]
         data.ramp_up = self.ramp_up[elm_idx]
@@ -147,6 +156,9 @@ class GeneratorData:
         data.qmin = self.qmin.copy()
         data.qmax = self.qmax.copy()
 
+        data.mttf = self.mttf.copy()
+        data.mttr = self.mttr.copy()
+
         data.C_bus_elm = self.C_bus_elm.copy()
 
         data.r0 = self.r0.copy()
@@ -163,6 +175,7 @@ class GeneratorData:
 
         data.cost_0 = self.cost_0.copy()
         data.cost_1 = self.cost_1.copy()
+        data.cost_2 = self.cost_2.copy()
         data.startup_cost = self.startup_cost.copy()
         data.availability = self.availability.copy()
         data.ramp_up = self.ramp_up.copy()
