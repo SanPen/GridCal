@@ -28,15 +28,8 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="improved docs structure">
-      <change afterPath="$PROJECT_DIR$/doc/cgmes_classes_all_in_one_sheet.xlsx" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="work in progress.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/auto_document_models.py" beforeDir="false" afterPath="$PROJECT_DIR$/doc/auto_document_models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes_2_4_15/cgmes_circuit.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes_2_4_15/cgmes_circuit.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes_2_4_15/cgmes_to_gridcal.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes_2_4_15/cgmes_to_gridcal.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes_2_4_15/devices/injections/load/energy_consumer.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes_2_4_15/devices/injections/load/energy_consumer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes_2_4_15/devices/injections/monopole.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes_2_4_15/devices/injections/monopole.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/file_handler.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/file_handler.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1270,7 +1263,8 @@
       <workItem from="1705915986885" duration="8342000" />
       <workItem from="1706085002124" duration="18766000" />
       <workItem from="1706185253917" duration="7983000" />
-      <workItem from="1706194037941" duration="1305000" />
+      <workItem from="1706194037941" duration="6171000" />
+      <workItem from="1706261438900" duration="3942000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1615,7 +1609,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="439" />
+    <option name="localTasksCounter" value="440" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1649,7 +1643,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Improved the LinearMultiContingencies update function which was likely missing operations" />
     <MESSAGE value="Added the roseta figures&#10;minor refactor" />
     <MESSAGE value="Fixed bug when setting the file label for when loading many CIM files&#10;&#10;Minor refactoring" />
     <MESSAGE value="5.0.3 - light refactoring of some functions" />
@@ -1674,7 +1667,8 @@
     <MESSAGE value="massive restructuring of enums and basic_structures" />
     <MESSAGE value="Improved about dialogue by displaying the optional libraries" />
     <MESSAGE value="improved docs structure" />
-    <option name="LAST_COMMIT_MESSAGE" value="improved docs structure" />
+    <MESSAGE value="work in progress." />
+    <option name="LAST_COMMIT_MESSAGE" value="work in progress." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2043,11 +2037,6 @@
           <option name="timeStamp" value="1179" />
         </line-breakpoint>
         <line-breakpoint suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/substation/bus_graphics.py</url>
-          <line>147</line>
-          <option name="timeStamp" value="1182" />
-        </line-breakpoint>
-        <line-breakpoint suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes_2_4_15/cgmes_circuit.py</url>
           <line>536</line>
           <option name="timeStamp" value="1190" />
@@ -2074,7 +2063,7 @@
         </line-breakpoint>
         <line-breakpoint suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/linear_opf_ts.py</url>
-          <line>201</line>
+          <line>208</line>
           <option name="timeStamp" value="1207" />
         </line-breakpoint>
         <line-breakpoint suspend="THREAD" type="python-line">
@@ -2089,7 +2078,7 @@
         </line-breakpoint>
         <line-breakpoint suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/tests/test_contingency.py</url>
-          <line>45</line>
+          <line>42</line>
           <option name="timeStamp" value="1214" />
         </line-breakpoint>
         <line-breakpoint suspend="THREAD" type="python-line">
