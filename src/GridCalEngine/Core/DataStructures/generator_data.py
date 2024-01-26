@@ -282,3 +282,10 @@ class GeneratorData:
         :return: array with the bus indices
         """
         return tp.get_csr_bus_indices(self.C_bus_elm.tocsr())
+
+    def get_dispatchable_indices(self) -> IntVec:
+        """
+        Get the indices of dispatchable generators
+        :return:
+        """
+        return np.where(self.dispatchable == 1)[0]

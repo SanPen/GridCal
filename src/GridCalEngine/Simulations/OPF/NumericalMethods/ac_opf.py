@@ -28,7 +28,7 @@ from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at, NumericalCircuit
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
-from typing import Callable, Tuple, Union
+from typing import Tuple, Union
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec
 
 
