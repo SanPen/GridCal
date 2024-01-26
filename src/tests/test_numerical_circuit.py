@@ -37,6 +37,28 @@ def test_numerical_cicuit():
     assert np.allclose(cont_analysis_driver1.results.Sf, power_flow.results.Sf)
 
 
+# def test_numerical_cicuit_spv():
+#     """
+#     Compare the PSSE PTDF and the GridCal PTDF for IEEE14, IEEE30, IEEE118 and REE networks
+#     """
+#     fname_cont = os.path.join('data', 'grids', 'IEEE14-gen120.gridcal')
+#
+#     main_circuit = FileOpen(fname_cont).open()
+#     nc = compile_numerical_circuit_at(main_circuit, t_idx=None)
+#
+#     # for cnt in main_circuit.contingencies:
+#     #
+#     #     nc.set_contingency_status(contingencies_list=[cnt])
+#
+#     cnt = main_circuit.contingencies[0]  # yo sé que la primera contingencia es cambiar el generador del bus 1 en 120%
+#
+#     p_antes = nc.generator_data.p[1]  # P del primer generador antes del cambio
+#     nc.set_contingency_status(contingencies_list=[cnt])
+#     p_despues = nc.generator_data.p[1]
+#
+#     assert p_antes * 1.20 == p_despues
+
+
 
 
 
