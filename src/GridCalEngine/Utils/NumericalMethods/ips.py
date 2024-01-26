@@ -406,12 +406,11 @@ def interior_point_solver(x0: Vec,
 
                     back_track_iter += 1
 
-                if back_track_cond:
-                    # update with an alpha value
-                    dx *= alpha
-                    dz *= alpha
-                    dlam *= alpha
-                    dmu *= alpha
+                # update with an alpha value, whatever it is
+                dx *= alpha
+                dz *= alpha
+                dlam *= alpha
+                dmu *= alpha
 
         # Compute the maximum step allowed
         alpha_p = step_calculation(z, dz)

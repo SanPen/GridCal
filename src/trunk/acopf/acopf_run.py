@@ -188,7 +188,8 @@ def case_gb():
     file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'GB Network.gridcal')
 
     grid = gce.FileOpen(file_path).open()
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, tolerance=1e-6, max_iter=100)
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1,
+                                      tolerance=1e-6, max_iter=100, trust=1.0)
     run_nonlinear_opf(grid=grid, pf_options=pf_options, plot_error=True)
 
 
