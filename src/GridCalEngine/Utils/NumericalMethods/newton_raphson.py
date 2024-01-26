@@ -61,7 +61,10 @@ def newton_raphson(func: Callable[[Vec, bool, ...], ConvexFunctionResult],
     error = ret.error
     converged = error < tol
     iteration = 0
-    error_evolution = np.zeros(max_iter)
+    error_evolution = np.zeros(max_iter + 1)
+
+    # save the error evolution
+    error_evolution[iteration] = error
 
     if converged:
         return ConvexMethodResult(x=x0,
@@ -104,11 +107,11 @@ def newton_raphson(func: Callable[[Vec, bool, ...], ConvexFunctionResult],
             while back_track_condition and l_iter < max_iter and mu > tol:
 
                 x2 = x - mu * dx
-                ret2 = func(x, False, *func_args)  # do not compute the Jacobian
+                ret2 = func(x2, False, *func_args)  # do not compute the Jacobian
                 error2 = compute_g_error(ret2.g)
 
                 # change mu for the next iteration
-                mu *= acceleration_parameter
+                mu *= 0.5  # acceleration_parameter
 
                 # keep back-tracking?
                 back_track_condition = error2 > error
@@ -116,7 +119,6 @@ def newton_raphson(func: Callable[[Vec, bool, ...], ConvexFunctionResult],
                 if not back_track_condition:
                     # accept the solution
                     x = x2
-                    error = error2
 
                 l_iter += 1
 
@@ -142,6 +144,9 @@ def newton_raphson(func: Callable[[Vec, bool, ...], ConvexFunctionResult],
 
             # update iteration counter
             iteration += 1
+
+            # save the error evolution
+            error_evolution[iteration] = error
 
     return ConvexMethodResult(x=x,
                               error=error,
