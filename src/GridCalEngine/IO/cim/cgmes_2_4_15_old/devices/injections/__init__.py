@@ -15,10 +15,10 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-# from GridCalEngine.IO.cim.cgmes_2_4_15.devices.injections.monopole import MonoPole
-# from GridCalEngine.IO.cim.cgmes_2_4_15.devices.injections.power_systems_resource import PowerSystemResource
-# from GridCalEngine.IO.cim.cgmes_2_4_15.devices.injections.regulating_control import RegulatingControl
-# from GridCalEngine.IO.cim.cgmes_2_4_15.devices.injections.regulating_cond_eq import RegulatingCondEq
-# import GridCalEngine.IO.cim.cgmes_2_4_15.devices.injections.generation as generation
-# import GridCalEngine.IO.cim.cgmes_2_4_15.devices.injections.load as load
-# import GridCalEngine.IO.cim.cgmes_2_4_15.devices.injections.shunt as shunt
+# from GridCalEngine.IO.cim.cgmes_2_4_15_old.devices.injections.monopole import MonoPole
+# from GridCalEngine.IO.cim.cgmes_2_4_15_old.devices.injections.power_systems_resource import PowerSystemResource
+# from GridCalEngine.IO.cim.cgmes_2_4_15_old.devices.injections.regulating_control import RegulatingControl
+# from GridCalEngine.IO.cim.cgmes_2_4_15_old.devices.injections.regulating_cond_eq import RegulatingCondEq
+# import GridCalEngine.IO.cim.cgmes_2_4_15_old.devices.injections.generation as generation
+# import GridCalEngine.IO.cim.cgmes_2_4_15_old.devices.injections.load as load
+# import GridCalEngine.IO.cim.cgmes_2_4_15_old.devices.injections.shunt as shunt

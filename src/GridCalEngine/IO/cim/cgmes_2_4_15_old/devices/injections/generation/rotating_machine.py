@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.cim.cgmes_2_4_15.cgmes_enums import cgmesProfile
 from GridCalEngine.IO.cim.cgmes_2_4_15.devices.injections.generation.generating_unit import GeneratingUnit
-# from GridCalEngine.IO.cim.cgmes_2_4_15.devices.injections.generation.hydro_pump import HydroPump
+# from GridCalEngine.IO.cim.cgmes_2_4_15_old.devices.injections.generation.hydro_pump import HydroPump
 import GridCalEngine.IO.cim.cgmes_2_4_15.devices.injections.generation.hydro_pump
 from GridCalEngine.IO.cim.cgmes_2_4_15.devices.injections.regulating_cond_eq import RegulatingCondEq
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
