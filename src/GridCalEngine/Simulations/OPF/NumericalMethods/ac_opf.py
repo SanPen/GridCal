@@ -32,24 +32,24 @@ from typing import Tuple, Union
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec
 
 
-def x2var(x: Vec, nVm: int, nVa: int, nPg: int, nQg: int) -> Tuple[Vec, Vec, Vec, Vec]:
+def x2var(x: Vec, nVa: int, nVm: int, nPg: int, nQg: int) -> Tuple[Vec, Vec, Vec, Vec]:
     """
     Convert the x solution vector to its composing variables
     :param x: solution vector
-    :param nVm: number of voltage module vars
     :param nVa: number of voltage angle vars
+    :param nVm: number of voltage module vars
     :param nPg: number of generator active power vars
     :param nQg: number of generator reactive power vars
-    :return: Vm, Va, Pg, Qg
+    :return: Va, Vm, Pg, Qg
     """
     a = 0
-    b = nVm
-
-    Vm = x[a: b]
-    a = b
-    b += nVa
+    b = nVa
 
     Va = x[a: b]
+    a = b
+    b += nVm
+
+    Vm = x[a: b]
     a = b
     b += nPg
 
@@ -59,19 +59,19 @@ def x2var(x: Vec, nVm: int, nVa: int, nPg: int, nQg: int) -> Tuple[Vec, Vec, Vec
 
     Qg = x[a: b]
 
-    return Vm, Va, Pg, Qg
+    return Va, Vm, Pg, Qg
 
 
-def var2x(Vm: Vec, Va: Vec, Pg: Vec, Qg: Vec) -> Vec:
+def var2x(Va: Vec, Vm: Vec, Pg: Vec, Qg: Vec) -> Vec:
     """
     Compose the x vector from its componenets
-    :param Vm: Voltage modules
     :param Va: Voltage angles
+    :param Vm: Voltage modules
     :param Pg: Generator active powers
     :param Qg: Generator reactive powers
     :return: [Vm, Va, Pg, Qg]
     """
-    return np.r_[Vm, Va, Pg, Qg]
+    return np.r_[Va, Vm, Pg, Qg]
 
 
 def eval_f(x: Vec, Cg, c0: Vec, c1: Vec, c2: Vec, ig: Vec, Sbase: float) -> Vec:
@@ -86,7 +86,7 @@ def eval_f(x: Vec, Cg, c0: Vec, c1: Vec, c2: Vec, ig: Vec, Sbase: float) -> Vec:
     :param Sbase:
     :return:
     """
-    N, Ngg = Cg.shape  # Check
+    N, _ = Cg.shape  # Check
     Ng = len(ig)
 
     _, _, Pg, Qg = x2var(x, nVm=N, nVa=N, nPg=Ng, nQg=Ng)
@@ -114,7 +114,7 @@ def eval_g(x, Ybus, Yf, Cg, Sd, ig, nig, Sg_undis, slack) -> Vec:
     # Ng = Cg.shape[1]  # Check
     Ng = len(ig)
 
-    vm, va, Pg_dis, Qg_dis = x2var(x, nVm=N, nVa=N, nPg=Ng, nQg=Ng)
+    va, vm, Pg_dis, Qg_dis = x2var(x, nVa=N, nVm=N, nPg=Ng, nQg=Ng)
 
     V = vm * np.exp(1j * va)
     S = V * np.conj(Ybus @ V)
@@ -156,7 +156,7 @@ def eval_h(x, Yf, Yt, from_idx, to_idx, no_slack, Va_max, Va_min, Vm_max, Vm_min
     # Ng = Cg.shape[1]  # Check
     Ng = len(ig)
 
-    vm, va, Pg, Qg = x2var(x, nVm=N, nVa=N, nPg=Ng, nQg=Ng)
+    va, vm, Pg, Qg = x2var(x, nVa=N, nVm=N, nPg=Ng, nQg=Ng)
 
     V = vm * np.exp(1j * va)
     Sf = V[from_idx[il]] * np.conj(Yf[il, :] @ V)
@@ -210,7 +210,7 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
     Ng = len(ig)
     NV = len(x)
 
-    vm, va, Pg, Qg = x2var(x, nVm=N, nVa=N, nPg=Ng, nQg=Ng)
+    va, vm, Pg, Qg = x2var(x, nVa=N, nVm=N, nPg=Ng, nQg=Ng)
     V = vm * np.exp(1j * va)
     Vmat = diags(V)
     vm_inv = diags(1 / vm)
@@ -232,9 +232,10 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
 
         GTH = lil_matrix((len(slack), len(x)), dtype=float)
         for i, ss in enumerate(slack):
-            GTH[i, N + ss] = 1.
+            # GTH[i, N + ss] = 1.
+            GTH[i, ss] = 1.
 
-        GS = sparse.hstack([GSvm, GSva, GSpg, GSqg])
+        GS = sparse.hstack([GSva, GSvm, GSpg, GSqg])
         Gx = sparse.vstack([GS.real, GS.imag, GTH]).T.tocsc()
 
         #############
@@ -250,8 +251,8 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
         Sfva = (1j * (IfCJmat @ Cf[il, :] @ Vmat - diags(Cf[il, :] @ V) @ np.conj(Yf[il, :]) @ np.conj(Vmat)))
         Stva = (1j * (ItCJmat @ Ct[il, :] @ Vmat - diags(Ct[il, :] @ V) @ np.conj(Yt[il, :]) @ np.conj(Vmat)))
 
-        SfX = sparse.hstack([Sfvm, Sfva, lil_matrix((M, 2 * Ng))])
-        StX = sparse.hstack([Stvm, Stva, lil_matrix((M, 2 * Ng))])
+        SfX = sparse.hstack([Sfva, Sfvm, lil_matrix((M, 2 * Ng))])
+        StX = sparse.hstack([Stva, Stvm, lil_matrix((M, 2 * Ng))])
 
         HSf = 2 * (Sfmat.real @ SfX.real + Sfmat.imag @ SfX.imag)
         HSt = 2 * (Stmat.real @ StX.real + Stmat.imag @ StX.imag)
@@ -277,10 +278,17 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
         Hqu[0: Ng] = 1
         Hql[0: Ng] = -1
 
-        Hvu = sparse.hstack([diags(Hvu), lil_matrix((N, N + 2 * Ng))])
-        Hvl = sparse.hstack([diags(Hvl), lil_matrix((N, N + 2 * Ng))])
-        Hvau = sparse.hstack([lil_matrix((N - len(slack), N)), Hvau_, lil_matrix((N - len(slack), 2 * Ng))])
-        Hval = sparse.hstack([lil_matrix((N - len(slack), N)), Hval_, lil_matrix((N - len(slack), 2 * Ng))])
+        # Hvu = sparse.hstack([diags(Hvu), lil_matrix((N, N + 2 * Ng))])
+        # Hvl = sparse.hstack([diags(Hvl), lil_matrix((N, N + 2 * Ng))])
+        # Hvau = sparse.hstack([lil_matrix((N - len(slack), N)), Hvau_, lil_matrix((N - len(slack), 2 * Ng))])
+        # Hval = sparse.hstack([lil_matrix((N - len(slack), N)), Hval_, lil_matrix((N - len(slack), 2 * Ng))])
+
+        Hvu = sparse.hstack([lil_matrix((N, N)), diags(Hvu), lil_matrix((N, 2 * Ng))])
+        Hvl = sparse.hstack([lil_matrix((N, N)), diags(Hvl), lil_matrix((N, 2 * Ng))])
+
+        Hvau = sparse.hstack([Hvau_, lil_matrix((N - len(slack), N + 2 * Ng))])
+        Hval = sparse.hstack([Hval_, lil_matrix((N - len(slack), N + 2 * Ng))])
+
         Hpu = sparse.hstack([lil_matrix((Ng, 2 * N)), diags(Hpu), lil_matrix((Ng, Ng))])
         Hpl = sparse.hstack([lil_matrix((Ng, 2 * N)), diags(Hpl), lil_matrix((Ng, Ng))])
         Hqu = sparse.hstack([lil_matrix((Ng, 2 * N + Ng)), diags(Hqu)])
@@ -427,8 +435,11 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
         Gvv_q = vm_inv @ (C_q + C_q.T) @ vm_inv
 
         # Add all
-        G1 = sparse.hstack([Gvv_p.real + Gvv_q.imag, Gva_p.real + Gva_q.imag, lil_matrix((N, 2 * Ng))])
-        G2 = sparse.hstack([Gav_p.real + Gav_q.imag, Gaa_p.real + Gaa_q.imag, lil_matrix((N, 2 * Ng))])
+        # G1 = sparse.hstack([Gvv_p.real + Gvv_q.imag, Gva_p.real + Gva_q.imag, lil_matrix((N, 2 * Ng))])
+        # G2 = sparse.hstack([Gav_p.real + Gav_q.imag, Gaa_p.real + Gaa_q.imag, lil_matrix((N, 2 * Ng))])
+
+        G1 = sparse.hstack([Gaa_p.real + Gaa_q.imag, Gav_p.real + Gav_q.imag, lil_matrix((N, 2 * Ng))])
+        G2 = sparse.hstack([Gva_p.real + Gva_q.imag, Gvv_p.real + Gvv_q.imag, lil_matrix((N, 2 * Ng))])
         Gxx = sparse.vstack([G1, G2, lil_matrix((2 * Ng, NV))]).tocsc()
 
         #########
@@ -470,6 +481,9 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
 
         H1 = sparse.hstack([Hfvmvm + Htvmvm, Hfvmva + Htvmva, lil_matrix((N, 2 * Ng))])
         H2 = sparse.hstack([Hfvavm + Htvavm, Hfvava + Htvava, lil_matrix((N, 2 * Ng))])
+
+        H1 = sparse.hstack([Hfvava + Htvava, Hfvavm + Htvavm, lil_matrix((N, 2 * Ng))])
+        H2 = sparse.hstack([Hfvmvm + Htvmvm, Hfvmva + Htvmva, lil_matrix((N, 2 * Ng))])
         Hxx = sparse.vstack([H1, H2, lil_matrix((2 * Ng, NV))]).tocsc()
     else:
         fxx = None
@@ -680,8 +694,8 @@ class NonlinearOPFResults:
     """
     Numerical non linear OPF results
     """
-    Vm: Vec = None
     Va: Vec = None
+    Vm: Vec = None
     S: CxVec = None
     Sf: CxVec = None
     St: CxVec = None
@@ -702,8 +716,8 @@ class NonlinearOPFResults:
         :param ng:
         :return:
         """
-        self.Vm: Vec = np.zeros(nbus)
         self.Va: Vec = np.zeros(nbus)
+        self.Vm: Vec = np.zeros(nbus)
         self.S: CxVec = np.zeros(nbus)
         self.Sf: CxVec = np.zeros(nbr)
         self.St: CxVec = np.zeros(nbr)
@@ -725,8 +739,8 @@ class NonlinearOPFResults:
         :param br_idx:
         :param gen_idx:
         """
-        self.Vm[bus_idx] = other.Vm
         self.Va[bus_idx] = other.Va
+        self.Vm[bus_idx] = other.Vm
         self.S[bus_idx] = other.S
         self.Sf[br_idx] = other.Sf
         self.St[br_idx] = other.St
@@ -828,12 +842,12 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
 
     p0gen = ((nc.generator_data.pmax + nc.generator_data.pmin) / (2 * nc.Sbase))[ig]
     q0gen = ((nc.generator_data.qmax + nc.generator_data.qmin) / (2 * nc.Sbase))[ig]
-    vm0 = np.ones(nbus)
     va0 = np.zeros(nbus)
+    vm0 = np.ones(nbus)
 
     # compose the initial values
-    x0 = var2x(Vm=vm0,
-               Va=va0,
+    x0 = var2x(Va=va0,
+               Vm=vm0,
                Pg=p0gen,
                Qg=q0gen)
 
@@ -883,7 +897,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                                            trust=pf_options.trust)
 
     # convert the solution to the problem variables
-    Vm, Va, Pg_dis, Qg_dis = x2var(result.x, nVm=nbus, nVa=nbus, nPg=ngg, nQg=ngg)
+    Va, Vm, Pg_dis, Qg_dis = x2var(result.x, nVa=nbus, nVm=nbus, nPg=ngg, nQg=ngg)
 
     Pg = np.zeros(len(ind_gens))
     Qg = np.zeros(len(ind_gens))
@@ -901,7 +915,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     St = result.structs.St
     loading = np.abs(Sf) / (rates + 1e-9)
     if pf_options.verbose > 0:
-        df_bus = pd.DataFrame(data={'Vm (p.u.)': Vm, 'Va (rad)': Va,
+        df_bus = pd.DataFrame(data={'Va (rad)': Va, 'Vm (p.u.)': Vm,
                                     'dual price (€/MW)': lam_p, 'dual price (€/MVAr)': lam_q})
         df_gen = pd.DataFrame(data={'P (MW)': Pg * nc.Sbase, 'Q (MVAr)': Qg * nc.Sbase})
 
@@ -913,7 +927,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     if plot_error:
         result.plot_error()
 
-    return NonlinearOPFResults(Vm=Vm, Va=Va, S=S, Sf=Sf, St=St, loading=loading,
+    return NonlinearOPFResults(Va=Va, Vm=Vm, S=S, Sf=Sf, St=St, loading=loading,
                                Pg=Pg, Qg=Qg, lam_p=lam_p, lam_q=lam_q,
                                error=result.error, converged=result.converged, iterations=result.iterations)
 

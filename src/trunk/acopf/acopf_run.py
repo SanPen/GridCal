@@ -230,6 +230,6 @@ if __name__ == '__main__':
     # two_grids_of_3bus()
     # case9()
     # case14()
-    case_gb()
+    # case_gb()
     # case_pegase89()
-    # case300()
+    case300()

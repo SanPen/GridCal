@@ -28,10 +28,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Get pegase89 working with large iter number">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Implement slicing also for gens">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/NumericalMethods/ac_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/NumericalMethods/ac_opf.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/NumericalMethods/ips.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/NumericalMethods/ips.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/trunk/acopf/acopf_run.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acopf/acopf_run.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -1678,7 +1677,7 @@
       <option name="project" value="LOCAL" />
       <updated>1693298903267</updated>
     </task>
-    <option name="localTasksCounter" value="534" />
+    <option name="localTasksCounter" value="535" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1718,7 +1717,7 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="devel" />
+                        <option value="205_ACOPF" />
                       </list>
                     </value>
                   </entry>
@@ -1731,7 +1730,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Added vcc transformer analysis rule" />
     <MESSAGE value="improved the analysis settings GUI" />
     <MESSAGE value="Improved layout and colouring for the BusViewerWidget" />
     <MESSAGE value="removed active from EditableDevice and moved it to ParentBranchTemplate and InjectionTemplate" />
@@ -1756,7 +1754,8 @@
     <MESSAGE value="Try different initialization" />
     <MESSAGE value="Implement line selection il but pegase89 still fails" />
     <MESSAGE value="Get pegase89 working with large iter number" />
-    <option name="LAST_COMMIT_MESSAGE" value="Get pegase89 working with large iter number" />
+    <MESSAGE value="Implement slicing also for gens" />
+    <option name="LAST_COMMIT_MESSAGE" value="Implement slicing also for gens" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
