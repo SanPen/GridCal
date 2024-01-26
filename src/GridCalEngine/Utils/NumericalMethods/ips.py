@@ -250,9 +250,9 @@ def interior_point_solver(x0: Vec,
     mu = gamma * (z_inv @ e)
     mu_diag = diags(mu)
     lam = sparse.linalg.lsqr(ret.Gx, -ret.fx - ret.Hx @ mu.T)[0]
+    #
 
     # PyPower init
-    # dummy init to get H
     # ret = func(x, None, None, False, False, *arg)
     # z0 = 1.0
     # z = z0 * np.ones(n_ineq)

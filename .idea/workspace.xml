@@ -28,8 +28,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Implement line selection il but pegase89 still fails">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Get pegase89 working with large iter number">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/NumericalMethods/ac_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/NumericalMethods/ac_opf.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/NumericalMethods/ips.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/NumericalMethods/ips.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/trunk/acopf/acopf_run.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acopf/acopf_run.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -206,7 +208,7 @@
       <recent name="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/Injections" />
     </key>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Python.acopf_run">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -1676,7 +1678,7 @@
       <option name="project" value="LOCAL" />
       <updated>1693298903267</updated>
     </task>
-    <option name="localTasksCounter" value="533" />
+    <option name="localTasksCounter" value="534" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1716,7 +1718,7 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="205_ACOPF" />
+                        <option value="devel" />
                       </list>
                     </value>
                   </entry>
@@ -1729,7 +1731,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Added Vnom in BusData" />
     <MESSAGE value="Added vcc transformer analysis rule" />
     <MESSAGE value="improved the analysis settings GUI" />
     <MESSAGE value="Improved layout and colouring for the BusViewerWidget" />
@@ -1754,7 +1755,8 @@
     <MESSAGE value="Add pegase89 grid" />
     <MESSAGE value="Try different initialization" />
     <MESSAGE value="Implement line selection il but pegase89 still fails" />
-    <option name="LAST_COMMIT_MESSAGE" value="Implement line selection il but pegase89 still fails" />
+    <MESSAGE value="Get pegase89 working with large iter number" />
+    <option name="LAST_COMMIT_MESSAGE" value="Get pegase89 working with large iter number" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
