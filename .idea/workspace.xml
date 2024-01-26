@@ -28,14 +28,8 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Implemented ACOPF islands handling">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="added sample numerical circuit test">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/Branches/transformer3w.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/Branches/transformer3w.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/LinearFactors/linear_analysis.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/LinearFactors/linear_analysis.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/NumericalMethods/ac_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/NumericalMethods/ac_opf.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/NumericalMethods/newton_raphson.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/NumericalMethods/newton_raphson.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/acopf/jacobian_gomez_exposito.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acopf/jacobian.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/pf/power_flow_research.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/pf/power_flow_research.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -63,7 +57,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="205_ACOPF" />
+        <entry key="$PROJECT_DIR$" value="190_analisis_flujo_lineal" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -161,36 +155,47 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "Git.Branch.Popup.ShowAllRemotes": "true",
-    "LaTeX.acdc_pf_technical_note.executor": "Run",
-    "MATLAB_INTERPRETER": "/usr/local/MATLAB/R2018a/bin/matlab",
-    "Notification.DisplayName-DoNotAsk-CythonWarning": "Python debugger native extension available",
-    "Notification.DoNotAsk-CythonWarning": "true",
-    "Python tests.Nosetests in tests.executor": "Run",
-    "Python tests.pytest in test_tutorials.py.executor": "Run",
-    "Python.ExecuteGridCal.executor": "Run",
-    "Python.acopf_run.executor": "Run",
-    "Python.power_flow_research.executor": "Debug",
-    "Python.srap_example.executor": "Run",
-    "Python.update_gui_file (1).executor": "Run",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "ignore.virus.scanning.warn.message": "true",
-    "last_opened_file_path": "C:/Users/a1003/Desktop/GridCal/Grids_and_profiles/grids",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "run.code.analysis.last.selected.profile": "aDefault",
-    "settings.editor.selected.configurable": "preferences.pluginManager",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;Git.Branch.Popup.ShowAllRemotes&quot;: &quot;true&quot;,
+    &quot;MATLAB_INTERPRETER&quot;: &quot;/usr/local/MATLAB/R2018a/bin/matlab&quot;,
+    &quot;Notification.DisplayName-DoNotAsk-CythonWarning&quot;: &quot;Python debugger native extension available&quot;,
+    &quot;Notification.DoNotAsk-CythonWarning&quot;: &quot;true&quot;,
+    &quot;Python tests.Nosetests for admittance_matrix_test.test3.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests for test_numerical_circuit.test_numerical_cicuit_spv.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.Nosetests for test_ptdf.test_mlodf_sanpen.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.Nosetests for tests.test_load_all_grids.test_all_grids.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.Nosetests for tests.test_nonlinear_contingency.test_non_linear_factors.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests for tests.test_ptdf.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests in admittance_matrix_test.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests in test_load_all_grids.py.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.Nosetests in test_ptdf.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests in tests.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest in test_tutorials.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python.ExecuteGridCal.executor&quot;: &quot;Run&quot;,
+    &quot;Python.acopf_run.executor&quot;: &quot;Run&quot;,
+    &quot;Python.pack_unpack.executor&quot;: &quot;Run&quot;,
+    &quot;Python.plexel_circuit.executor&quot;: &quot;Debug&quot;,
+    &quot;Python.power_flow_research.executor&quot;: &quot;Run&quot;,
+    &quot;Python.srap_example.executor&quot;: &quot;Run&quot;,
+    &quot;Python.update_gui_file (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python.update_gui_file.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/santi/Documentos/Git/GitHub/GridCal/src/tests/data/grids&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;run.code.analysis.last.selected.profile&quot;: &quot;aDefault&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="PyDebuggerOptionsProvider">
     <option name="mySaveCallSignatures" value="true" />
     <option name="mySupportGeventDebugging" value="true" />
@@ -198,11 +203,11 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="C:\Users\a1003\Desktop\GridCal\Grids_and_profiles\grids" />
-      <recent name="$PROJECT_DIR$/src/trunk" />
+      <recent name="$PROJECT_DIR$/src/tests/data/grids" />
       <recent name="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/Injections" />
       <recent name="$PROJECT_DIR$/src" />
       <recent name="$PROJECT_DIR$/src/GridCalEngine" />
+      <recent name="$PROJECT_DIR$/src/tests/data" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/src/GridCalEngine/Utils/NumericalMethods" />
@@ -212,32 +217,7 @@
       <recent name="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/Injections" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.power_flow_research">
-    <configuration default="true" type="BIBTEX_RUN_CONFIGURATION" factoryName="LaTeX configuration factory">
-      <texify-bibtex>
-        <compiler />
-        <compiler-path />
-        <compiler-arguments />
-        <envs />
-        <main-file />
-        <aux-dir />
-      </texify-bibtex>
-      <method v="2" />
-    </configuration>
-    <configuration name="acdc_pf_technical_note bibliography" type="BIBTEX_RUN_CONFIGURATION" factoryName="LaTeX configuration factory">
-      <texify-bibtex>
-        <compiler>BIBER</compiler>
-        <compiler-path />
-        <compiler-arguments />
-        <envs>
-          <env name="BIBINPUTS" value="$PROJECT_DIR$/src/trunk/acdc_pf/docs" />
-          <env name="BSTINPUTS" value="$PROJECT_DIR$/src/trunk/acdc_pf/docs:" />
-        </envs>
-        <main-file>$PROJECT_DIR$/src/trunk/acdc_pf/docs/acdc_pf_technical_note.tex</main-file>
-        <aux-dir>$PROJECT_DIR$/out</aux-dir>
-      </texify-bibtex>
-      <method v="2" />
-    </configuration>
+  <component name="RunManager" selected="Python tests.Nosetests for test_numerical_circuit.test_numerical_cicuit_spv">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -257,27 +237,6 @@
       <option name="CUSTOM_SETTINGS" value="false" />
       <option name="USE_OPTIONS" value="false" />
       <option name="OPTIONS" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="acdc_pf_technical_note" type="LATEX_RUN_CONFIGURATION" factoryName="LaTeX configuration factory" temporary="true">
-      <texify>
-        <compiler>PDFLATEX</compiler>
-        <compiler-path />
-        <sumatra-path />
-        <pdf-viewer>EVINCE</pdf-viewer>
-        <viewer-command />
-        <compiler-arguments />
-        <envs />
-        <main-file>$PROJECT_DIR$/src/trunk/acdc_pf/docs/acdc_pf_technical_note.tex</main-file>
-        <output-path>$PROJECT_DIR$/out</output-path>
-        <auxil-path>{projectDir}/auxil</auxil-path>
-        <compile-twice>false</compile-twice>
-        <output-format>PDF</output-format>
-        <latex-distribution>TEXLIVE</latex-distribution>
-        <has-been-run>true</has-been-run>
-        <bib-run-config>[BibTeX.acdc_pf_technical_note bibliography]</bib-run-config>
-        <makeindex-run-config>[]</makeindex-run-config>
-      </texify>
       <method v="2" />
     </configuration>
     <configuration default="true" type="MatlabApplication">
@@ -349,7 +308,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="power_flow_research" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="update_gui_file" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -358,12 +317,12 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/trunk/pf" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/GridCal/Gui/Main" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/trunk/pf/power_flow_research.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCal/Gui/Main/update_gui_file.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -433,6 +392,23 @@
       <option name="docutils_params" value="" />
       <option name="docutils_task" value="" />
       <option name="docutils_open_in_browser" value="false" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Nosetests for test_numerical_circuit.test_numerical_cicuit_spv" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
+      <module name="GridCal" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/tests" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="_new_regexPattern" value="&quot;&quot;" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;test_numerical_circuit.test_numerical_cicuit_spv&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
     <configuration name="Nosetests in admittance_matrix_test.py" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
@@ -525,20 +501,19 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="BibTeX.acdc_pf_technical_note bibliography" />
-      <item itemvalue="LaTeX.acdc_pf_technical_note" />
-      <item itemvalue="Python.power_flow_research" />
       <item itemvalue="Python.ExecuteGridCal" />
+      <item itemvalue="Python.update_gui_file" />
+      <item itemvalue="Python tests.Nosetests for test_numerical_circuit.test_numerical_cicuit_spv" />
       <item itemvalue="Python tests.Nosetests in admittance_matrix_test.py" />
       <item itemvalue="Python tests.Nosetests in tests" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.power_flow_research" />
-        <item itemvalue="LaTeX.acdc_pf_technical_note" />
+        <item itemvalue="Python tests.Nosetests for test_numerical_circuit.test_numerical_cicuit_spv" />
         <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python tests.Nosetests in tests" />
         <item itemvalue="Python tests.Nosetests in admittance_matrix_test.py" />
+        <item itemvalue="Python.update_gui_file" />
       </list>
     </recent_temporary>
   </component>
@@ -1372,10 +1347,9 @@
       <workItem from="1703057509971" duration="4635000" />
       <workItem from="1704891950343" duration="810000" />
       <workItem from="1705859646499" duration="3400000" />
-      <workItem from="1705945243262" duration="87000" />
-      <workItem from="1706004118272" duration="2606000" />
-      <workItem from="1706200651284" duration="675000" />
-      <workItem from="1706254200370" duration="5108000" />
+      <workItem from="1706015633534" duration="19687000" />
+      <workItem from="1706047350896" duration="421000" />
+      <workItem from="1706083669942" duration="1721000" />
     </task>
     <task id="LOCAL-00436" summary="GUI enhancements&#10;Fix bug in the OPF time steps">
       <created>1688544358055</created>
@@ -1720,7 +1694,7 @@
       <option name="project" value="LOCAL" />
       <updated>1693298903267</updated>
     </task>
-    <option name="localTasksCounter" value="530" />
+    <option name="localTasksCounter" value="544" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1755,6 +1729,17 @@
                   <entry key="Table.Space.CommitStatus.ColumnIdWidth" value="32" />
                 </map>
               </option>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="205_ACOPF" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
             </State>
           </value>
         </entry>
@@ -1762,32 +1747,32 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="minor bug fixes" />
-    <MESSAGE value="added get_bus_indices to the generator, load and shunt data structures" />
-    <MESSAGE value="Fixed issues when installing a fresh package" />
-    <MESSAGE value="Added Vnom in BusData" />
-    <MESSAGE value="Added vcc transformer analysis rule" />
-    <MESSAGE value="improved the analysis settings GUI" />
-    <MESSAGE value="Improved layout and colouring for the BusViewerWidget" />
-    <MESSAGE value="removed active from EditableDevice and moved it to ParentBranchTemplate and InjectionTemplate" />
-    <MESSAGE value="refactored raw strings (WIP)" />
-    <MESSAGE value="improved the GUI representation by taking the start and end sliders to a separated dialogue" />
-    <MESSAGE value="started the var registry in the results" />
-    <MESSAGE value="Fixed bugs with the new location of DeviceType&#10;&#10;Fixed bugs related to get_selected_buses()" />
-    <MESSAGE value="minimal improvement in fcn synthax" />
     <MESSAGE value="Wrote some more README.md" />
     <MESSAGE value="5.0.0a20" />
     <MESSAGE value="fixed opf formulation indexing in HVDC devices" />
     <MESSAGE value="minimal refactoring changes in reliability_study_run.py" />
     <MESSAGE value="fixed broken tests (newton equivalence and tutorials)" />
     <MESSAGE value="implemented results transposition" />
-    <MESSAGE value="minimal refactoring" />
     <MESSAGE value="Started creating numerical methods un utils" />
     <MESSAGE value="Added the vector_sum_srap function to speed up the SRAP" />
     <MESSAGE value="Small adaptation to the newtonpa contingency analysis" />
-    <MESSAGE value="Added substation reduction examples" />
-    <MESSAGE value="Try some experiments with the initialization" />
-    <option name="LAST_COMMIT_MESSAGE" value="Try some experiments with the initialization" />
+    <MESSAGE value="added auxiliary functions of the busbar and the connectivity node in the multi-circuit" />
+    <MESSAGE value="Fixed circular dependency" />
+    <MESSAGE value="Reverted fluid node graphics" />
+    <MESSAGE value="refactored pack-unpack" />
+    <MESSAGE value="Fixed nonlinear contingencies that were breaking because of the SRAP logic" />
+    <MESSAGE value="Fixed test_mlodf_sanpen, some investigation needed" />
+    <MESSAGE value="New and more maintainable pack-unpack algorithm" />
+    <MESSAGE value="new pack-unpack passing the tests" />
+    <MESSAGE value="rearranged the idtag setting and acceptance logic" />
+    <MESSAGE value="minimal refactoring" />
+    <MESSAGE value="refactored editable_headers to registered_properties" />
+    <MESSAGE value="removed text output" />
+    <MESSAGE value="added some plexel code" />
+    <MESSAGE value="improved search_property()" />
+    <MESSAGE value="stuff (not working...)" />
+    <MESSAGE value="added sample numerical circuit test" />
+    <option name="LAST_COMMIT_MESSAGE" value="added sample numerical circuit test" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2363,6 +2348,7 @@
     <SUITE FILE_PATH="coverage/GridCal$acopf_jax.coverage" NAME="acopf_jax Coverage Results" MODIFIED="1702417322364" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/examples/trunk/acopf" />
     <SUITE FILE_PATH="coverage/GridCal$state_estimation_run.coverage" NAME="state_estimation_run Coverage Results" MODIFIED="1696328917395" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/examples" />
     <SUITE FILE_PATH="coverage/GridCal$update.coverage" NAME="update Coverage Results" MODIFIED="1610117098642" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
+    <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_test_numerical_circuit_test_numerical_cicuit_spv.coverage" NAME="Nosetests for test_numerical_circuit.test_numerical_cicuit_spv Coverage Results" MODIFIED="1706261121760" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$qrangeslider2.coverage" NAME="qrangeslider2 Coverage Results" MODIFIED="1692602563519" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/Main" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_tests_test_opf_time_series_test_opf_ts.coverage" NAME="Nosetests for tests.test_opf_time_series.test_opf_ts Coverage Results" MODIFIED="1697191214514" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_api_py.coverage" NAME="Nosetests in test_api.py Coverage Results" MODIFIED="1598803532944" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
