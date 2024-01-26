@@ -91,7 +91,7 @@ class PowerFlowOptions:
                  q_steepness_factor=30,
                  distributed_slack=False,
                  ignore_single_node_islands=False,
-                 mu=1.0,
+                 trust=1.0,
                  backtracking_parameter=0.05,
                  use_stored_guess=False,
                  override_branch_controls=False,
@@ -131,7 +131,7 @@ class PowerFlowOptions:
 
         self.ignore_single_node_islands = ignore_single_node_islands
 
-        self.mu = mu
+        self.trust = trust
 
         self.backtracking_parameter = backtracking_parameter
 

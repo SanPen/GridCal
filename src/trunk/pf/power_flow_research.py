@@ -172,7 +172,7 @@ def run_pf(grid: gce.MultiCircuit, pf_options: gce.PowerFlowOptions):
                                              x0=x0,
                                              tol=pf_options.tolerance,
                                              max_iter=pf_options.max_iter,
-                                             mu0=pf_options.mu,
+                                             mu0=pf_options.trust,
                                              acceleration_parameter=0.05,
                                              verbose=pf_options.verbose,
                                              logger=logger)

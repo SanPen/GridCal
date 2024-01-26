@@ -536,7 +536,8 @@ def compute_autodiff_structures(x, mu, lam, compute_jac: bool, compute_hess: boo
 
     if compute_hess:
         fxx = ad.calc_autodiff_hessian_f_obj(func=eval_f, x=x, arg=(Cg, c0, c1, c2, ig, Sbase), h=h).tocsc()
-        Gxx = ad.calc_autodiff_hessian(func=eval_g, x=x, mult=lam, arg=(Ybus, Yf, Cg, Sd, ig, nig, Sg_undis, slack)).tocsc()
+        Gxx = ad.calc_autodiff_hessian(func=eval_g, x=x, mult=lam,
+                                       arg=(Ybus, Yf, Cg, Sd, ig, nig, Sg_undis, slack)).tocsc()
         Hxx = ad.calc_autodiff_hessian(func=eval_h, x=x, mult=mu, arg=(Yf, Yt, from_idx, to_idx, no_slack, Va_max,
                                                                        Va_min, Vm_max, Vm_min, Pg_max, Pg_min,
                                                                        Qg_max, Qg_min, Cg, rates)).tocsc()
@@ -852,7 +853,9 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                                             Pg_max, Pg_min, Qg_max, Qg_min,
                                             c0, c1, c2, Sbase, rates, il, ig, nig, Sg_undis),
                                        verbose=pf_options.verbose,
-                                       max_iter=pf_options.max_iter)
+                                       max_iter=pf_options.max_iter,
+                                       tol=pf_options.tolerance,
+                                       trust=pf_options.trust)
 
     else:
         if use_autodiff:
@@ -863,7 +866,9 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                                                 Va_max, Va_min, Vm_max, Vm_min, Pg_max, Pg_min, Qg_max, Qg_min,
                                                 c0, c1, c2, Sbase, rates, il, ig, nig, Sg_undis, 1e-5),
                                            verbose=pf_options.verbose,
-                                           max_iter=pf_options.max_iter)
+                                           max_iter=pf_options.max_iter,
+                                           tol=pf_options.tolerance,
+                                           trust=pf_options.trust)
         else:
             # run the solver with the analytic derivatives
             result = interior_point_solver(x0=x0, n_x=NV, n_eq=NE, n_ineq=NI,
@@ -873,7 +878,9 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                                                 Pg_max, Pg_min, Qg_max, Qg_min,
                                                 c0, c1, c2, Sbase, rates, il, ig, nig, Sg_undis),
                                            verbose=pf_options.verbose,
-                                           max_iter=pf_options.max_iter)
+                                           max_iter=pf_options.max_iter,
+                                           tol=pf_options.tolerance,
+                                           trust=pf_options.trust)
 
     # convert the solution to the problem variables
     Vm, Va, Pg_dis, Qg_dis = x2var(result.x, nVm=nbus, nVa=nbus, nPg=ngg, nQg=ngg)

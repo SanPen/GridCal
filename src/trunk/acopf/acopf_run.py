@@ -188,7 +188,7 @@ def case_gb():
     file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'GB Network.gridcal')
 
     grid = gce.FileOpen(file_path).open()
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1)
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, tolerance=1e-6, max_iter=100)
     run_nonlinear_opf(grid=grid, pf_options=pf_options, plot_error=True)
 
 
@@ -204,7 +204,7 @@ def case_pegase89():
     file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case89pegase.m')
 
     grid = gce.FileOpen(file_path).open()
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, max_iter=500)
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, max_iter=500, trust=1.0)
     run_nonlinear_opf(grid=grid, pf_options=pf_options, plot_error=True)
 
 
@@ -230,6 +230,6 @@ if __name__ == '__main__':
     # two_grids_of_3bus()
     # case9()
     # case14()
-    # case_gb()
-    case_pegase89()
+    case_gb()
+    # case_pegase89()
     # case300()
