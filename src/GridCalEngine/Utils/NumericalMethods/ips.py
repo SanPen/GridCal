@@ -230,25 +230,43 @@ def interior_point_solver(x0: Vec,
     e = np.ones(n_ineq)
 
     # Init multiplier values. Defaulted at 1.
-    lam = np.ones(n_eq)
+    # lam = np.ones(n_eq)
 
-    z0 = 1.0  # TODO check what about this
+    # z0 = 1.0  # TODO check what about this
+    # z = z0 * np.ones(n_ineq)
+    # mu = z.copy()
+    # z_inv = diags(1.0 / z)
+    # mu_diag = diags(mu)
+
+    # Our init
+    z0 = 1.0
     z = z0 * np.ones(n_ineq)
+    lam = np.ones(n_eq)
     mu = z.copy()
-    z_inv = diags(1.0 / z)
-    mu_diag = diags(mu)
-
-    # Try different init
     ret = func(x, mu, lam, True, False, *arg)
     z = - ret.H
     z = np.array([1e-2 if zz < 1e-2 else zz for zz in z])
-
     z_inv = diags(1.0 / z)
-
     mu = gamma * (z_inv @ e)
     mu_diag = diags(mu)
-
     lam = sparse.linalg.lsqr(ret.Gx, -ret.fx - ret.Hx @ mu.T)[0]
+    #
+
+    # PyPower init
+    # ret = func(x, None, None, False, False, *arg)
+    # z0 = 1.0
+    # z = z0 * np.ones(n_ineq)
+    # mu = z0 * np.ones(n_ineq)
+    # lam = np.zeros(n_eq)
+    # kk = np.flatnonzero(ret.H < -z0)
+    # z[kk] = -ret.H[kk]
+    # z_inv = diags(1.0 / z)
+    # kk = np.flatnonzero((gamma / z) > z0)
+    # mu[kk] = gamma / z[kk]
+    # mu_diag = diags(mu)
+    #
+
+    ret = func(x, mu, lam, True, False, *arg)
 
     Lx = ret.fx + ret.Gx @ lam + ret.Hx @ mu
     feascond = max(max(abs(ret.G)), max(ret.H)) / (1 + max(max(abs(x)), max(abs(z))))
@@ -325,11 +343,11 @@ def interior_point_solver(x0: Vec,
         lam += dlam * alpha_d
         mu += dmu * alpha_d
         gamma = max(0.1 * (mu @ z) / n_ineq, tol)  # Maximum tolerance requested.
+        # gamma = 0.1 * mu @ z / n_ineq
 
         # Compute the maximum error and the new gamma value
         # error = calc_error(dx, dz, dmu, dlam)
         # error = np.max(np.abs(r))
-
 
         feascond = max(max(abs(ret.G)), max(ret.H)) / (1 + max(max(abs(x)), max(abs(z))))
         gradcond = max(abs(Lx)) / (1 + max(max(abs(lam)), max(abs(mu))))
@@ -366,7 +384,7 @@ def interior_point_solver(x0: Vec,
         print(f'SOLUTION', "-" * 80)
         print("\tx:", x)
         print("\tλ:", lam)
-        print("\tF.obj:", f)  # This is the old value of the function, has to be recalculated with the last iteration.
+        print("\tF.obj:", ret.f * 1e4)
         print("\tErr:", error)
         print(f'\tIterations: {iter_counter}')
         print('\tTime elapsed (s): ', END - START)

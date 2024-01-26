@@ -176,9 +176,9 @@ def case14():
     run_nonlinear_opf(grid=grid, pf_options=pf_options, plot_error=True)
 
 
-def caseBig():
+def case_gb():
     """
-    IEEE14
+    GB
     """
     cwd = os.getcwd()
 
@@ -192,10 +192,44 @@ def caseBig():
     run_nonlinear_opf(grid=grid, pf_options=pf_options, plot_error=True)
 
 
+def case_pegase89():
+    """
+    Pegase89
+    """
+    cwd = os.getcwd()
+
+    # Go back two directories
+    new_directory = os.path.abspath(os.path.join(cwd, '..', '..', '..'))
+
+    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case89pegase.m')
+
+    grid = gce.FileOpen(file_path).open()
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, max_iter=500)
+    run_nonlinear_opf(grid=grid, pf_options=pf_options, plot_error=True)
+
+
+def case300():
+    """
+    case300.m
+    """
+    cwd = os.getcwd()
+
+    # Go back two directories
+    new_directory = os.path.abspath(os.path.join(cwd, '..', '..', '..'))
+
+    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case300.m')
+
+    grid = gce.FileOpen(file_path).open()
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, max_iter=50)
+    run_nonlinear_opf(grid=grid, pf_options=pf_options, plot_error=True)
+
+
 if __name__ == '__main__':
-    #example_3bus_acopf()
+    # example_3bus_acopf()
     # linn5bus_example()
     # two_grids_of_3bus()
     # case9()
-    case14()
-    # caseBig()
+    # case14()
+    # case_gb()
+    case_pegase89()
+    # case300()
