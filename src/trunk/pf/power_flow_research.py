@@ -1,4 +1,6 @@
 import os
+
+import matplotlib.pyplot as plt
 import numpy as np
 import GridCalEngine.api as gce
 
@@ -94,7 +96,7 @@ def compute_g(V, Ybus: CscMat, Sesp: CxVec, pq: IntVec, pvpq: IntVec, Sbase: flo
     """
 
     S = V * np.conj(Ybus @ V)
-    dS = (S - Sesp) / Sbase
+    dS = (S - Sesp)
 
     g = np.r_[dS.real[pvpq], dS.imag[pq]]
     return g
@@ -172,8 +174,7 @@ def run_pf(grid: gce.MultiCircuit, pf_options: gce.PowerFlowOptions):
                                              x0=x0,
                                              tol=pf_options.tolerance,
                                              max_iter=pf_options.max_iter,
-                                             mu0=pf_options.trust,
-                                             acceleration_parameter=0.05,
+                                             trust=pf_options.trust,
                                              verbose=pf_options.verbose,
                                              logger=logger)
 
@@ -182,6 +183,10 @@ def run_pf(grid: gce.MultiCircuit, pf_options: gce.PowerFlowOptions):
     Va[pvpq], Vm[pq] = x2var(x=ret.x, npvpq=npvpq)
 
     print("Err", ret.error)
+
+    ret.plot_error()
+
+    plt.show()
 
 
 if __name__ == '__main__':

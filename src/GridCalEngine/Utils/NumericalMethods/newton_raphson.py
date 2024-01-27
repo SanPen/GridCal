@@ -31,8 +31,7 @@ def newton_raphson(func: Callable[[Vec, bool, ...], ConvexFunctionResult],
                    x0: Vec,
                    tol: float = 1e-6,
                    max_iter: int = 10,
-                   mu0: float = 1.0,
-                   acceleration_parameter: float = 0.05,
+                   trust: float = 1.0,
                    verbose: int = 0,
                    logger: Logger = Logger()) -> ConvexMethodResult:
     """
@@ -47,8 +46,7 @@ def newton_raphson(func: Callable[[Vec, bool, ...], ConvexFunctionResult],
     :param x0: Array of initial solutions
     :param tol: Error tolerance
     :param max_iter: Maximum number of iterations
-    :param mu0: initial acceleration value
-    :param acceleration_parameter: parameter used to correct the "bad" iterations, should be between 1e-3 ~ 0.5
+    :param trust: initial acceleration value
     :param verbose:  Display console information
     :param logger: Logger instance
     :return: ConvexMethodResult
@@ -66,6 +64,9 @@ def newton_raphson(func: Callable[[Vec, bool, ...], ConvexFunctionResult],
     # save the error evolution
     error_evolution[iteration] = error
 
+    if verbose > 0:
+        print(f'It {iteration}, error {error}, converged {converged}, x {x}, dx not computed yet')
+
     if converged:
         return ConvexMethodResult(x=x0,
                                   error=error,
@@ -76,12 +77,12 @@ def newton_raphson(func: Callable[[Vec, bool, ...], ConvexFunctionResult],
 
     else:
 
-        while iteration < max_iter and not converged:
+        while not converged and iteration < max_iter:
 
             # compute update step
             try:
 
-                # J x Δx = Δg
+                # compute update step: J x Δx = Δg
                 dx = linear_solver(ret.Gx, ret.g)
 
                 if np.isnan(dx).any():
@@ -101,7 +102,7 @@ def newton_raphson(func: Callable[[Vec, bool, ...], ConvexFunctionResult],
                                           elapsed=time.time() - start,
                                           error_evolution=error_evolution)
 
-            mu = mu0
+            mu = trust
             back_track_condition = True
             l_iter = 0
             while back_track_condition and l_iter < max_iter and mu > tol:
@@ -137,7 +138,7 @@ def newton_raphson(func: Callable[[Vec, bool, ...], ConvexFunctionResult],
             ret = func(x, True, *func_args)
 
             # compute error
-            error = ret.error
+            error = compute_g_error(ret.g)
 
             # determine the convergence condition
             converged = error <= tol
@@ -147,6 +148,9 @@ def newton_raphson(func: Callable[[Vec, bool, ...], ConvexFunctionResult],
 
             # save the error evolution
             error_evolution[iteration] = error
+
+            if verbose > 0:
+                print(f'It {iteration}, error {error}, converged {converged}, x {x}, dx {dx}')
 
     return ConvexMethodResult(x=x,
                               error=error,
