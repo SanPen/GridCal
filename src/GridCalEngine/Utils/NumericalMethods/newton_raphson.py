@@ -14,10 +14,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from typing import Callable, Any, Tuple
 import time
 import numpy as np
-from GridCalEngine.basic_structures import Vec, CscMat
+from typing import Callable, Any
+from GridCalEngine.basic_structures import Vec
 from GridCalEngine.Utils.NumericalMethods.common import ConvexMethodResult, ConvexFunctionResult, compute_g_error
 from GridCalEngine.Utils.NumericalMethods.sparse_solve import get_linear_solver
 from GridCalEngine.basic_structures import Logger
@@ -26,8 +26,8 @@ from GridCalEngine.basic_structures import Logger
 linear_solver = get_linear_solver()
 
 
-def newton_raphson(func: Callable[[Vec, bool, ...], ConvexFunctionResult],
-                   func_args: Tuple[Any],
+def newton_raphson(func: Callable[[Vec, bool, Any], ConvexFunctionResult],
+                   func_args: Any,
                    x0: Vec,
                    tol: float = 1e-6,
                    max_iter: int = 10,
@@ -42,11 +42,14 @@ def newton_raphson(func: Callable[[Vec, bool, ...], ConvexFunctionResult],
             g(x) = 0
 
     :param func: function to optimize, it may or may not include the Jacobian matrix
-    :param func_args: Static arguments to call the evaluation function
+                the function must have x: Vec and calc_jacobian: bool as the first arguments
+                the function must return an instance of ConvexFunctionResult that contains
+                the function vector and optionally the derivative when calc_jacobian=True
+    :param func_args: Tuple of static arguments to call the evaluation function
     :param x0: Array of initial solutions
     :param tol: Error tolerance
     :param max_iter: Maximum number of iterations
-    :param trust: initial acceleration value
+    :param trust: trust amount in the derivative length correctness
     :param verbose:  Display console information
     :param logger: Logger instance
     :return: ConvexMethodResult
