@@ -855,7 +855,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                                        verbose=pf_options.verbose,
                                        max_iter=pf_options.max_iter,
                                        tol=pf_options.tolerance,
-                                       trust=pf_options.trust)
+                                       trust=pf_options.trust_radius)
 
     else:
         if use_autodiff:
@@ -868,7 +868,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                                            verbose=pf_options.verbose,
                                            max_iter=pf_options.max_iter,
                                            tol=pf_options.tolerance,
-                                           trust=pf_options.trust)
+                                           trust=pf_options.trust_radius)
         else:
             # run the solver with the analytic derivatives
             result = interior_point_solver(x0=x0, n_x=NV, n_eq=NE, n_ineq=NI,
@@ -880,7 +880,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                                            verbose=pf_options.verbose,
                                            max_iter=pf_options.max_iter,
                                            tol=pf_options.tolerance,
-                                           trust=pf_options.trust)
+                                           trust=pf_options.trust_radius)
 
     # convert the solution to the problem variables
     Vm, Va, Pg_dis, Qg_dis = x2var(result.x, nVm=nbus, nVa=nbus, nPg=ngg, nQg=ngg)

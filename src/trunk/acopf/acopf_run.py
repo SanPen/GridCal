@@ -189,7 +189,7 @@ def case_gb():
 
     grid = gce.FileOpen(file_path).open()
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1,
-                                      tolerance=1e-6, max_iter=100, trust=1.0)
+                                      tolerance=1e-6, max_iter=100, trust_radius=1.0)
     run_nonlinear_opf(grid=grid, pf_options=pf_options, plot_error=True)
 
 
@@ -205,7 +205,7 @@ def case_pegase89():
     file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case89pegase.m')
 
     grid = gce.FileOpen(file_path).open()
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, max_iter=500, trust=1.0)
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, max_iter=500, trust_radius=1.0)
     run_nonlinear_opf(grid=grid, pf_options=pf_options, plot_error=True)
 
 

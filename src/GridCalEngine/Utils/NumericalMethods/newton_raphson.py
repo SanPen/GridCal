@@ -18,7 +18,7 @@ import time
 import numpy as np
 from typing import Callable, Any
 from GridCalEngine.basic_structures import Vec
-from GridCalEngine.Utils.NumericalMethods.common import ConvexMethodResult, ConvexFunctionResult, compute_g_error
+from GridCalEngine.Utils.NumericalMethods.common import ConvexMethodResult, ConvexFunctionResult
 from GridCalEngine.Utils.NumericalMethods.sparse_solve import get_linear_solver
 from GridCalEngine.basic_structures import Logger
 
@@ -59,7 +59,7 @@ def newton_raphson(func: Callable[[Vec, bool, Any], ConvexFunctionResult],
     # evaluation of the initial point
     x = x0.copy()
     ret = func(x, True, *func_args)  # compute the Jacobian too
-    error = ret.error
+    error = ret.compute_f_error()
     converged = error < tol
     iteration = 0
     error_evolution = np.zeros(max_iter + 1)
@@ -86,10 +86,10 @@ def newton_raphson(func: Callable[[Vec, bool, Any], ConvexFunctionResult],
             try:
 
                 # compute update step: J x Δx = Δg
-                dx = linear_solver(ret.Gx, ret.g)
+                dx = linear_solver(ret.J, ret.f)
 
                 if np.isnan(dx).any():
-                    logger.add_error('NR Singular matrix @iter:'.format(iteration))
+                    logger.add_error(f"Newton-Raphson's Jacobian is singular @iter {iteration}:")
                     return ConvexMethodResult(x=x,
                                               error=error,
                                               converged=converged,
@@ -97,7 +97,7 @@ def newton_raphson(func: Callable[[Vec, bool, Any], ConvexFunctionResult],
                                               elapsed=time.time() - start,
                                               error_evolution=error_evolution)
             except RuntimeError:
-                logger.add_error('NR Singular matrix @iter:'.format(iteration))
+                logger.add_error(f"Newton-Raphson's Jacobian is singular @iter {iteration}:")
                 return ConvexMethodResult(x=x,
                                           error=error,
                                           converged=converged,
@@ -108,25 +108,24 @@ def newton_raphson(func: Callable[[Vec, bool, Any], ConvexFunctionResult],
             mu = trust
             back_track_condition = True
             l_iter = 0
-            while back_track_condition and l_iter < max_iter and mu > tol:
+            while back_track_condition and mu > tol:
 
                 x2 = x - mu * dx
                 ret2 = func(x2, False, *func_args)  # do not compute the Jacobian
-                error2 = compute_g_error(ret2.g)
+                error2 = ret2.compute_f_error()
 
                 # change mu for the next iteration
                 mu *= 0.5  # acceleration_parameter
 
                 # keep back-tracking?
                 back_track_condition = error2 > error
+                l_iter += 1
 
                 if not back_track_condition:
                     # accept the solution
                     x = x2
 
-                l_iter += 1
-
-            if l_iter > 1 and back_track_condition:
+            if back_track_condition:
                 # this means that not even the backtracking was able to correct
                 # the solution, so terminate
 
@@ -141,7 +140,7 @@ def newton_raphson(func: Callable[[Vec, bool, Any], ConvexFunctionResult],
             ret = func(x, True, *func_args)
 
             # compute error
-            error = compute_g_error(ret.g)
+            error = ret.compute_f_error()
 
             # determine the convergence condition
             converged = error <= tol

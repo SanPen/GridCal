@@ -24,6 +24,9 @@ import GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions as 
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
 from GridCalEngine.Utils.NumericalMethods.common import ConvexFunctionResult, ConvexMethodResult
 from GridCalEngine.Utils.NumericalMethods.newton_raphson import newton_raphson
+from GridCalEngine.Utils.NumericalMethods.powell import powell_dog_leg
+from GridCalEngine.Utils.NumericalMethods.levenberg_marquadt import levenberg_marquardt
+from GridCalEngine.enumerations import SolverType
 
 
 def linn5bus_example():
@@ -170,7 +173,7 @@ def pf_function(x: Vec,
     else:
         Gx = None
 
-    return ConvexFunctionResult(g=g, Gx=Gx)
+    return ConvexFunctionResult(f=g, J=Gx)
 
 
 def run_pf(grid: gce.MultiCircuit, pf_options: gce.PowerFlowOptions):
@@ -195,20 +198,43 @@ def run_pf(grid: gce.MultiCircuit, pf_options: gce.PowerFlowOptions):
 
     logger = gce.Logger()
 
-    ret: ConvexMethodResult = newton_raphson(func=pf_function,
-                                             func_args=(Va0, Vm0, Ybus, S0, Y0, I0, pq, pvpq),
-                                             x0=x0,
-                                             tol=pf_options.tolerance,
-                                             max_iter=pf_options.max_iter,
-                                             trust=pf_options.trust,
-                                             verbose=pf_options.verbose,
-                                             logger=logger)
+    if pf_options.solver_type == SolverType.NR:
+        ret: ConvexMethodResult = newton_raphson(func=pf_function,
+                                                 func_args=(Va0, Vm0, Ybus, S0, Y0, I0, pq, pvpq),
+                                                 x0=x0,
+                                                 tol=pf_options.tolerance,
+                                                 max_iter=pf_options.max_iter,
+                                                 trust=pf_options.trust_radius,
+                                                 verbose=pf_options.verbose,
+                                                 logger=logger)
+
+    elif pf_options.solver_type == SolverType.PowellDogLeg:
+        ret: ConvexMethodResult = powell_dog_leg(func=pf_function,
+                                                 func_args=(Va0, Vm0, Ybus, S0, Y0, I0, pq, pvpq),
+                                                 x0=x0,
+                                                 tol=pf_options.tolerance,
+                                                 max_iter=pf_options.max_iter,
+                                                 trust_region_radius=pf_options.trust_radius,
+                                                 verbose=pf_options.verbose,
+                                                 logger=logger)
+
+    elif pf_options.solver_type == SolverType.LM:
+        ret: ConvexMethodResult = levenberg_marquardt(func=pf_function,
+                                                      func_args=(Va0, Vm0, Ybus, S0, Y0, I0, pq, pvpq),
+                                                      x0=x0,
+                                                      tol=pf_options.tolerance,
+                                                      max_iter=pf_options.max_iter,
+                                                      verbose=pf_options.verbose,
+                                                      logger=logger)
+
+    else:
+        raise Exception(f"Solver not implemented {pf_options.solver_type.value}")
 
     Va = Va0.copy()
     Vm = Vm0.copy()
     Va[pvpq], Vm[pq] = x2var(x=ret.x, npvpq=npvpq)
 
-    print("Err", ret.error)
+    ret.print_info()
 
     ret.plot_error()
 
@@ -217,11 +243,20 @@ def run_pf(grid: gce.MultiCircuit, pf_options: gce.PowerFlowOptions):
 
 if __name__ == '__main__':
     import os
+
     # grid_ = linn5bus_example()
 
     # fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', '2869 Pegase.gridcal')
     # fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', '1951 Bus RTE.xlsx')
-    fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', "GB Network.gridcal")
+    # fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', "GB Network.gridcal")
+    # fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', "Iwamoto's 11 Bus.xlsx")
+    # fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', "case14.m")
+    fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', "Illinois 200 Bus.gridcal")
     grid_ = gce.open_file(fname)
-    pf_options_ = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=0)
+
+    pf_options_ = gce.PowerFlowOptions(solver_type=gce.SolverType.PowellDogLeg,
+                                       max_iter=50,
+                                       trust_radius=1.0,
+                                       tolerance=1e-6,
+                                       verbose=0)
     run_pf(grid=grid_, pf_options=pf_options_)

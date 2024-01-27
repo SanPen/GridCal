@@ -25,6 +25,7 @@ import timeit
 from matplotlib import pyplot as plt
 from GridCalEngine.basic_structures import Vec, CxVec
 from GridCalEngine.Utils.Sparse.csc import pack_3_by_4, diags
+from GridCalEngine.Utils.NumericalMethods.common import max_abs
 
 
 @nb.njit(cache=True)
@@ -75,22 +76,6 @@ def calc_error(dx, dz, dmu, dlmbda):
                 err = v
 
     return err
-
-
-@nb.njit(cache=True)
-def max_abs(x: Vec):
-    """
-    Compute max abs efficiently
-    :param x:
-    :return:
-    """
-    max_val = 0.0
-    for x_val in x:
-        x_abs = x_val if x_val > 0.0 else -x_val
-        if x_abs > max_val:
-            max_val = x_val
-
-    return max_val
 
 
 def cal_feascond(g: Vec, h: Vec, x: Vec, z: Vec):
