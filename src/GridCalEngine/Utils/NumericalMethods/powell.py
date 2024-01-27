@@ -147,7 +147,7 @@ def powell_dog_leg(func: Callable[[Vec, bool, Any], ConvexFunctionResult],
                                       error_evolution=error_evolution)
 
         # compute hdl (3.20)
-        hdl, val = compute_hdl(hgn=hgn, hsd=hsd, g=g, alpha=alpha, delta=delta, f_error=f_error)
+        hdl, L0_Lhdl = compute_hdl(hgn=hgn, hsd=hsd, g=g, alpha=alpha, delta=delta, f_error=f_error)
 
         tol2 = tol * (norm(x) + tol)
 
@@ -159,8 +159,8 @@ def powell_dog_leg(func: Callable[[Vec, bool, Any], ConvexFunctionResult],
             ret_new = func(x_new, False, *func_args)  # only f_new
             f_error_new = max_abs(ret_new.f)
 
-            if val > 0:
-                rho = (f_error - f_error_new) / val
+            if L0_Lhdl > 0:
+                rho = (f_error - f_error_new) / L0_Lhdl
             else:
                 rho = -1.0
 

@@ -61,7 +61,7 @@ def levenberg_marquardt(func: Callable[[Vec, bool, Any], ConvexFunctionResult],
     # evaluation of the initial point
     x = x0.copy()
     ret = func(x, True, *func_args)  # compute the Jacobian too
-    f_error = ret.compute_f_error()
+    f_error = 0.5 * (ret.f @ ret.f)
     converged = f_error < tol
     iteration = 0
     nu = 2.0
@@ -94,10 +94,10 @@ def levenberg_marquardt(func: Callable[[Vec, bool, Any], ConvexFunctionResult],
 
             # compute update step
             try:
-                H = (A + mu * Idn).tocsc()
-                hlm = linear_solver(H, -g)
+                H = (A + (mu * Idn)).tocsc()
+                h = linear_solver(H, -g)
 
-                if np.isnan(hlm).any():
+                if np.isnan(h).any():
                     logger.add_error(f"Levenberg-Marquardt's sys matrix is singular @iter {iteration}:")
                     return ConvexMethodResult(x=x,
                                               error=f_error,
@@ -114,23 +114,24 @@ def levenberg_marquardt(func: Callable[[Vec, bool, Any], ConvexFunctionResult],
                                           elapsed=time.time() - start,
                                           error_evolution=error_evolution)
 
-            x_new = x + hlm
-            ret_new = func(x_new, False, *func_args)  # only f_new
-            f_error_new = max_abs(ret_new.f)
+            x_new = x + h
+            h = x_new - x  # numerical correction
 
-            val = 0.5 * (hlm @ (mu * hlm - g))
+            dL = 0.5 * (h @ (mu * h - g))
 
-            if val > 0:
-                rho = (f_error - f_error_new) / val
-            else:
-                rho = -1.0
+            ret = func(x_new, True, *func_args)  # only f_new
 
-            if rho >= 0.0:
+            f_error_new = 0.5 * (ret.f @ ret.f)
+            dF = f_error - f_error_new
+
+            if (dL > 0) and (dF > 0):
                 x = x_new
-                ret = func(x, True, *func_args)  # compute the Jacobian too
-                g = ret.J.T @ ret.f
-                f_error = ret.compute_f_error()
+                f_error = f_error_new
+                Jt = ret.J.T
+                A = Jt @ ret.J
+                g = Jt @ ret.f
                 converged = f_error < tol  # or g_error < tol
+                rho = dF / dL
                 mu *= max(1.0/3.0, 1.0 - math.pow(2.0 * rho - 1.0, 3))
                 nu = 2.0
             else:
@@ -138,7 +139,7 @@ def levenberg_marquardt(func: Callable[[Vec, bool, Any], ConvexFunctionResult],
                 nu *= 2.0
 
             if verbose > 0:
-                print(f'It {iteration}, error {f_error}, converged {converged}, x {x}, dx {hlm}')
+                print(f'It {iteration}, error {f_error}, converged {converged}, x {x}, dx {h}')
 
             iteration += 1
 
