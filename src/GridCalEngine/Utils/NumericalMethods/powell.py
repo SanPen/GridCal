@@ -20,8 +20,7 @@ from typing import Callable, Any
 from GridCalEngine.basic_structures import Vec
 from GridCalEngine.Utils.NumericalMethods.sparse_solve import get_linear_solver
 from GridCalEngine.basic_structures import Logger
-from GridCalEngine.Utils.NumericalMethods.common import (ConvexMethodResult, ConvexFunctionResult,
-                                                         norm, max_abs, compute_L)
+from GridCalEngine.Utils.NumericalMethods.common import ConvexMethodResult, ConvexFunctionResult, norm, max_abs
 
 
 linear_solver = get_linear_solver()

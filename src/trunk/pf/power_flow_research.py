@@ -254,7 +254,7 @@ if __name__ == '__main__':
     # fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', "Illinois 200 Bus.gridcal")
     grid_ = gce.open_file(fname)
 
-    pf_options_ = gce.PowerFlowOptions(solver_type=gce.SolverType.LM,
+    pf_options_ = gce.PowerFlowOptions(solver_type=gce.SolverType.PowellDogLeg,
                                        max_iter=50,
                                        trust_radius=1.0,
                                        tolerance=1e-6,

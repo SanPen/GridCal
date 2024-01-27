@@ -22,8 +22,7 @@ from GridCalEngine.basic_structures import Vec
 from GridCalEngine.Utils.NumericalMethods.sparse_solve import get_linear_solver
 from GridCalEngine.Utils.Sparse.csc import diagc
 from GridCalEngine.basic_structures import Logger
-from GridCalEngine.Utils.NumericalMethods.common import (ConvexMethodResult, ConvexFunctionResult,
-                                                         norm, max_abs, compute_L)
+from GridCalEngine.Utils.NumericalMethods.common import ConvexMethodResult, ConvexFunctionResult
 
 linear_solver = get_linear_solver()
 
@@ -119,7 +118,7 @@ def levenberg_marquardt(func: Callable[[Vec, bool, Any], ConvexFunctionResult],
 
             dL = 0.5 * (h @ (mu * h - g))
 
-            ret = func(x_new, True, *func_args)  # only f_new
+            ret = func(x_new, False, *func_args)  # only f_new
 
             f_error_new = 0.5 * (ret.f @ ret.f)
             dF = f_error - f_error_new
@@ -127,6 +126,8 @@ def levenberg_marquardt(func: Callable[[Vec, bool, Any], ConvexFunctionResult],
             if (dL > 0) and (dF > 0):
                 x = x_new
                 f_error = f_error_new
+
+                ret = func(x_new, True, *func_args)  # compute f + jacobian
                 Jt = ret.J.T
                 A = Jt @ ret.J
                 g = Jt @ ret.f
