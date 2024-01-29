@@ -1,6 +1,7 @@
 import os
 import GridCalEngine.api as gce
-from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import run_nonlinear_opf
+from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
+from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import run_nonlinear_opf, ac_optimal_power_flow
 from GridCalEngine.IO.gridcal.excel_interface import save_excel
 
 def example_3bus_acopf():
@@ -142,7 +143,14 @@ def two_grids_of_3bus():
     # print('\tConv:\n', power_flow.results.get_branch_df())
 
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1)
-    run_nonlinear_opf(grid=grid, pf_options=pf_options, plot_error=True)
+    # run_nonlinear_opf(grid=grid, pf_options=pf_options, plot_error=True)
+    island = compile_numerical_circuit_at(circuit=grid, t_idx=None)
+
+    island_res = ac_optimal_power_flow(nc=island,
+                                       pf_options=pf_options,
+                                       debug=False,
+                                       use_autodiff=False,
+                                       plot_error=True)
 
 
 def case9():
@@ -217,11 +225,28 @@ def case300():
     # Go back two directories
     new_directory = os.path.abspath(os.path.join(cwd, '..', '..', '..'))
 
-    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case300.m')
+    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'Pegase 89 Bus.xlsx')
 
     grid = gce.FileOpen(file_path).open()
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, max_iter=50)
     run_nonlinear_opf(grid=grid, pf_options=pf_options, plot_error=True)
+
+
+def case6ww():
+    """
+    IEEE14
+    """
+    cwd = os.getcwd()
+
+    # Go back two directories
+    new_directory = os.path.abspath(os.path.join(cwd, '..', '..', '..'))
+
+    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case6ww.m')
+
+    grid = gce.FileOpen(file_path).open()
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1)
+    run_nonlinear_opf(grid=grid, pf_options=pf_options, plot_error=True)
+
 
 
 if __name__ == '__main__':
@@ -231,5 +256,6 @@ if __name__ == '__main__':
     # case9()
     # case14()
     # case_gb()
+    case6ww()
     # case_pegase89()
-    case300()
+    # case300()
