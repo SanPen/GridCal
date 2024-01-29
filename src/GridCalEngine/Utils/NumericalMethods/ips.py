@@ -235,7 +235,7 @@ def interior_point_solver(x0: Vec,
                           tol=1e-6,
                           trust=0.9,
                           verbose: int = 0,
-                          step_control=True) -> IpsSolution:
+                          step_control=False) -> IpsSolution:
     """
     Solve a non-linear problem of the form:
 
@@ -303,31 +303,31 @@ def interior_point_solver(x0: Vec,
     # mu_diag = diags(mu)
 
     # Our init
-    z0 = 1.0
-    z = z0 * np.ones(n_ineq)
-    lam = np.ones(n_eq)
-    mu = z.copy()
-    ret = func(x, mu, lam, True, False, *arg)
-    z = - ret.H
-    z = np.array([1e-2 if zz < 1e-2 else zz for zz in z])
-    z_inv = diags(1.0 / z)
-    mu = gamma * (z_inv @ e)
-    mu_diag = diags(mu)
-    lam = sparse.linalg.lsqr(ret.Gx, -ret.fx - ret.Hx @ mu.T)[0]
-
-    # PyPower init
-    # ret = func(x, None, None, False, False, *arg)
     # z0 = 1.0
     # z = z0 * np.ones(n_ineq)
-    # mu = z0 * np.ones(n_ineq)
-    # lam = np.zeros(n_eq)
-    # kk = np.flatnonzero(ret.H < -z0)
-    # z[kk] = -ret.H[kk]
+    # lam = np.ones(n_eq)
+    # mu = z.copy()
+    # ret = func(x, mu, lam, True, False, *arg)
+    # z = - ret.H
+    # z = np.array([1e-2 if zz < 1e-2 else zz for zz in z])
     # z_inv = diags(1.0 / z)
-    # kk = np.flatnonzero((gamma / z) > z0)
-    # mu[kk] = gamma / z[kk]
+    # mu = gamma * (z_inv @ e)
     # mu_diag = diags(mu)
-    #
+    # lam = sparse.linalg.lsqr(ret.Gx, -ret.fx - ret.Hx @ mu.T)[0]
+
+    # PyPower init
+    ret = func(x, None, None, False, False, *arg)
+    z0 = 1.0
+    z = z0 * np.ones(n_ineq)
+    mu = z0 * np.ones(n_ineq)
+    lam = np.zeros(n_eq)
+    kk = np.flatnonzero(ret.H < -z0)
+    z[kk] = -ret.H[kk]
+    z_inv = diags(1.0 / z)
+    kk = np.flatnonzero((gamma / z) > z0)
+    mu[kk] = gamma / z[kk]
+    mu_diag = diags(mu)
+
 
     ret = func(x, mu, lam, True, False, *arg)
 
@@ -422,7 +422,7 @@ def interior_point_solver(x0: Vec,
         z += dz * alpha_p
         lam += dlam * alpha_d
         mu += dmu * alpha_d
-        gamma = max(0.1 * (mu @ z) / n_ineq, tol)  # Maximum tolerance requested.
+        gamma = max(min(0.1 * (mu @ z) / n_ineq, 0.5*gamma), 1e-5)  # Maximum tolerance requested.
         # gamma = 0.1 * mu @ z / n_ineq
 
         # Compute the maximum error and the new gamma value

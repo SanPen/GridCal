@@ -89,7 +89,7 @@ def eval_f(x: Vec, Cg, c0: Vec, c1: Vec, c2: Vec, ig: Vec, Sbase: float) -> Vec:
     N, _ = Cg.shape  # Check
     Ng = len(ig)
 
-    _, _, Pg, Qg = x2var(x, nVm=N, nVa=N, nPg=Ng, nQg=Ng)
+    _, _, Pg, Qg = x2var(x, nVa=N, nVm=N, nPg=Ng, nQg=Ng)
 
     fval = np.sum((c0 + c1 * Pg * Sbase + c2 * np.power(Pg * Sbase, 2))) * 1e-4
 
@@ -479,11 +479,11 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
         Htvavm = 2 * (Stvavm + Stva.T @ mu_mat @ np.conj(Stvm)).real
         Htvmvm = 2 * (Stvmvm + Stvm.T @ mu_mat @ np.conj(Stvm)).real
 
-        H1 = sparse.hstack([Hfvmvm + Htvmvm, Hfvmva + Htvmva, lil_matrix((N, 2 * Ng))])
-        H2 = sparse.hstack([Hfvavm + Htvavm, Hfvava + Htvava, lil_matrix((N, 2 * Ng))])
+        #H1 = sparse.hstack([Hfvmvm + Htvmvm, Hfvavm + Htvmva, lil_matrix((N, 2 * Ng))])
+        #H2 = sparse.hstack([Hfvavm + Htvavm, Hfvava + Htvava, lil_matrix((N, 2 * Ng))])
 
         H1 = sparse.hstack([Hfvava + Htvava, Hfvavm + Htvavm, lil_matrix((N, 2 * Ng))])
-        H2 = sparse.hstack([Hfvmvm + Htvmvm, Hfvmva + Htvmva, lil_matrix((N, 2 * Ng))])
+        H2 = sparse.hstack([Hfvmva + Htvmva, Hfvmvm + Htvmvm, lil_matrix((N, 2 * Ng))])
         Hxx = sparse.vstack([H1, H2, lil_matrix((2 * Ng, NV))]).tocsc()
     else:
         fxx = None
@@ -833,17 +833,17 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
 
     # ignore power from Z and I of the load
     # s0gen = (pf_results.Sbus - nc.load_data.get_injections_per_bus()) / nc.Sbase
-    # p0gen = nc.generator_data.C_bus_elm.T @ np.real(s0gen)
-    # q0gen = nc.generator_data.C_bus_elm.T @ np.imag(s0gen)
-    # vm0 = np.abs(pf_results.voltage)
-    # va0 = np.angle(pf_results.voltage)
+    #p0gen = nc.generator_data.C_bus_elm.T @ np.real(s0gen)
+    #q0gen = nc.generator_data.C_bus_elm.T @ np.imag(s0gen)
+    #vm0 = np.abs(pf_results.voltage)
+    #va0 = np.angle(pf_results.voltage)
 
     # nc.Vbus  # dummy initialization
 
     p0gen = ((nc.generator_data.pmax + nc.generator_data.pmin) / (2 * nc.Sbase))[ig]
     q0gen = ((nc.generator_data.qmax + nc.generator_data.qmin) / (2 * nc.Sbase))[ig]
-    va0 = np.zeros(nbus)
-    vm0 = np.ones(nbus)
+    va0 = np.angle(nc.bus_data.Vbus)
+    vm0 = np.abs(nc.bus_data.Vbus)
 
     # compose the initial values
     x0 = var2x(Va=va0,

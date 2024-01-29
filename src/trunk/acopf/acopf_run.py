@@ -37,7 +37,7 @@ def example_3bus_acopf():
     # print('\tConv:\n', power_flow.results.get_bus_df())
     # print('\tConv:\n', power_flow.results.get_branch_df())
 
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1)
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=3)
     run_nonlinear_opf(grid=grid, pf_options=pf_options, plot_error=True)
 
 
@@ -225,7 +225,7 @@ def case300():
     # Go back two directories
     new_directory = os.path.abspath(os.path.join(cwd, '..', '..', '..'))
 
-    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'Pegase 89 Bus.xlsx')
+    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case300.m')
 
     grid = gce.FileOpen(file_path).open()
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, max_iter=50)
@@ -251,11 +251,11 @@ def case6ww():
 
 if __name__ == '__main__':
     # example_3bus_acopf()
-    # linn5bus_example()
+    #linn5bus_example()
     # two_grids_of_3bus()
     # case9()
     # case14()
     # case_gb()
     case6ww()
-    # case_pegase89()
-    # case300()
+    case_pegase89()
+    #case300()
