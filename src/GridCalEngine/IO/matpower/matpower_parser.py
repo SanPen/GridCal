@@ -1,6 +1,6 @@
 """
 GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -260,15 +260,15 @@ def parse_generators(circuit: MultiCircuit, data, bus_idx_dict, logger: Logger):
 
         for i in range(opf_table.shape[0]):
             curve_model = opf_table[i, 0]
-            startup_cost = opf_table[i, 1]
-            shutdown_cost = opf_table[i, 2]
+            gen_dict[i].StartupCost = opf_table[i, 1]
+            gen_dict[i].ShutdownCost = opf_table[i, 2]
             n_cost = opf_table[i, 3]
             points = opf_table[i, 4:]
             if curve_model == 2:
                 if len(points) > 1:
-                    gen_dict[i].Cost0 = points[0]
+                    gen_dict[i].Cost0 = points[2]
                     gen_dict[i].Cost = points[1]
-                    gen_dict[i].Cost2 = points[2]
+                    gen_dict[i].Cost2 = points[0]
             elif curve_model == 1:
                 # fit a quadratic curve
                 x = points[0::1]
@@ -365,6 +365,13 @@ def parse_branches_data(circuit: MultiCircuit, data, bus_idx_dict, logger: Logge
 
                 rate = max(table[i, [matpower_branches.RATE_A, matpower_branches.RATE_B, matpower_branches.RATE_C]])
 
+                if rate == 0.0:
+                    # in matpower rate=0 means not limited by rating
+                    rate = 10000
+                    monitor_loading = False
+                else:
+                    monitor_loading = True
+
                 branch = dev.VSC(bus_from=f,
                                  bus_to=t,
                                  code="{0}_{1}_1".format(f_idx, t_idx),
@@ -392,7 +399,8 @@ def parse_branches_data(circuit: MultiCircuit, data, bus_idx_dict, logger: Logge
                                  Vdc_set=Vdc_set if Vdc_set > 0 else 1.0,
                                  alpha1=table[i, matpower_branches.ALPHA1],
                                  alpha2=table[i, matpower_branches.ALPHA2],
-                                 alpha3=table[i, matpower_branches.ALPHA3])
+                                 alpha3=table[i, matpower_branches.ALPHA3],
+                                 monitor_loading=monitor_loading)
                 circuit.add_vsc(branch)
 
                 logger.add_info('Branch as converter', 'Branch {}'.format(str(i + 1)))
@@ -404,6 +412,15 @@ def parse_branches_data(circuit: MultiCircuit, data, bus_idx_dict, logger: Logge
                          table[i, matpower_branches.TAP] != 0) or
                         table[i, matpower_branches.SHIFT] != 0.0):
 
+                    rate = table[i, matpower_branches.RATE_A]
+
+                    if rate == 0.0:
+                        # in matpower rate=0 means not limited by rating
+                        rate = 10000
+                        monitor_loading = False
+                    else:
+                        monitor_loading = True
+
                     branch = dev.Transformer2W(bus_from=f,
                                                bus_to=t,
                                                code="{0}_{1}_1".format(f_idx, t_idx),
@@ -412,7 +429,8 @@ def parse_branches_data(circuit: MultiCircuit, data, bus_idx_dict, logger: Logge
                                                x=table[i, matpower_branches.BR_X],
                                                g=0,
                                                b=table[i, matpower_branches.BR_B],
-                                               rate=table[i, matpower_branches.RATE_A],
+                                               rate=rate,
+                                               monitor_loading=monitor_loading,
                                                tap_module=table[i, matpower_branches.TAP],
                                                tap_phase=table[i, matpower_branches.SHIFT],
                                                active=bool(table[i, matpower_branches.BR_STATUS]))
@@ -420,6 +438,15 @@ def parse_branches_data(circuit: MultiCircuit, data, bus_idx_dict, logger: Logge
                     logger.add_info('Branch as 2w transformer', 'Branch {}'.format(str(i + 1)))
 
                 else:
+                    rate = table[i, matpower_branches.RATE_A]
+
+                    if rate == 0.0:
+                        # in matpower rate=0 means not limited by rating
+                        rate = 10000
+                        monitor_loading = False
+                    else:
+                        monitor_loading = True
+
                     branch = dev.Line(bus_from=f,
                                       bus_to=t,
                                       code="{0}_{1}_1".format(f_idx, t_idx),
@@ -427,16 +454,26 @@ def parse_branches_data(circuit: MultiCircuit, data, bus_idx_dict, logger: Logge
                                       r=table[i, matpower_branches.BR_R],
                                       x=table[i, matpower_branches.BR_X],
                                       b=table[i, matpower_branches.BR_B],
-                                      rate=table[i, matpower_branches.RATE_A],
+                                      rate=rate,
+                                      monitor_loading=monitor_loading,
                                       active=bool(table[i, matpower_branches.BR_STATUS]))
                     circuit.add_line(branch, logger=logger)
                     logger.add_info('Branch as line', 'Branch {}'.format(str(i + 1)))
 
         else:
 
-            if f.Vnom != t.Vnom or \
-                    (table[i, matpower_branches.TAP] != 1.0 and table[i, matpower_branches.TAP] != 0) or \
-                    table[i, matpower_branches.SHIFT] != 0.0:
+            if (f.Vnom != t.Vnom or
+                    (table[i, matpower_branches.TAP] != 1.0 and table[i, matpower_branches.TAP] != 0) or
+                    table[i, matpower_branches.SHIFT] != 0.0):
+
+                rate = table[i, matpower_branches.RATE_A]
+
+                if rate == 0.0:
+                    # in matpower rate=0 means not limited by rating
+                    rate = 10000
+                    monitor_loading = False
+                else:
+                    monitor_loading = True
 
                 branch = dev.Transformer2W(bus_from=f,
                                            bus_to=t,
@@ -446,7 +483,8 @@ def parse_branches_data(circuit: MultiCircuit, data, bus_idx_dict, logger: Logge
                                            x=table[i, matpower_branches.BR_X],
                                            g=0,
                                            b=table[i, matpower_branches.BR_B],
-                                           rate=table[i, matpower_branches.RATE_A],
+                                           rate=rate,
+                                           monitor_loading=monitor_loading,
                                            tap_module=table[i, matpower_branches.TAP],
                                            tap_phase=table[i, matpower_branches.SHIFT],
                                            active=bool(table[i, matpower_branches.BR_STATUS]))
@@ -454,6 +492,16 @@ def parse_branches_data(circuit: MultiCircuit, data, bus_idx_dict, logger: Logge
                 logger.add_info('Branch as 2w transformer', 'Branch {}'.format(str(i + 1)))
 
             else:
+
+                rate = table[i, matpower_branches.RATE_A]
+
+                if rate == 0.0:
+                    # in matpower rate=0 means not limited by rating
+                    rate = 10000
+                    monitor_loading = False
+                else:
+                    monitor_loading = True
+
                 branch = dev.Line(bus_from=f,
                                   bus_to=t,
                                   code="{0}_{1}_1".format(f_idx, t_idx),
@@ -461,7 +509,8 @@ def parse_branches_data(circuit: MultiCircuit, data, bus_idx_dict, logger: Logge
                                   r=table[i, matpower_branches.BR_R],
                                   x=table[i, matpower_branches.BR_X],
                                   b=table[i, matpower_branches.BR_B],
-                                  rate=table[i, matpower_branches.RATE_A],
+                                  rate=rate,
+                                  monitor_loading=monitor_loading,
                                   active=bool(table[i, matpower_branches.BR_STATUS]))
                 circuit.add_line(branch, logger=logger)
                 logger.add_info('Branch as line', 'Branch {}'.format(str(i + 1)))
@@ -715,7 +764,7 @@ def get_buses(circuit: MultiCircuit) -> Tuple[List[Dict[str, float]], Dict[dev.B
 
 
 def get_generation(circuit: MultiCircuit, bus_dict: Dict[dev.Bus, int]) -> Tuple[List[Dict[str, float]],
-                                                                                 List[Dict[str, float]]]:
+List[Dict[str, float]]]:
     """
     Get generation and generation cost data
     :param circuit:

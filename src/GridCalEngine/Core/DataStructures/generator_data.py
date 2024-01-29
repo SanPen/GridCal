@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -68,6 +68,7 @@ class GeneratorData:
 
         self.cost_1: Vec = np.zeros(nelm, dtype=float)
         self.cost_0: Vec = np.zeros(nelm, dtype=float)
+        self.cost_2: Vec = np.zeros(nelm, dtype=float)
         self.startup_cost: Vec = np.zeros(nelm, dtype=float)
         self.availability: Vec = np.zeros(nelm, dtype=float)
         self.ramp_up: Vec = np.zeros(nelm, dtype=float)
@@ -121,6 +122,7 @@ class GeneratorData:
 
         data.cost_0 = self.cost_0[elm_idx]
         data.cost_1 = self.cost_1[elm_idx]
+        data.cost_2 = self.cost_2[elm_idx]
         data.startup_cost = self.startup_cost[elm_idx]
         data.availability = self.availability[elm_idx]
         data.ramp_up = self.ramp_up[elm_idx]
@@ -173,6 +175,7 @@ class GeneratorData:
 
         data.cost_0 = self.cost_0.copy()
         data.cost_1 = self.cost_1.copy()
+        data.cost_2 = self.cost_2.copy()
         data.startup_cost = self.startup_cost.copy()
         data.availability = self.availability.copy()
         data.ramp_up = self.ramp_up.copy()
@@ -279,3 +282,10 @@ class GeneratorData:
         :return: array with the bus indices
         """
         return tp.get_csr_bus_indices(self.C_bus_elm.tocsr())
+
+    def get_dispatchable_indices(self) -> IntVec:
+        """
+        Get the indices of dispatchable generators
+        :return:
+        """
+        return np.where(self.dispatchable == 1)[0]

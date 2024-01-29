@@ -59,7 +59,7 @@ def get_gridcal_data_frames():
         class_name = obj.device_type.value
 
         data = list()
-        for prop_name, prop in obj.editable_headers.items():
+        for prop_name, prop in obj.registered_properties.items():
 
             data.append(prop.get_dict())
 
@@ -151,15 +151,16 @@ if __name__ == '__main__':
     psse_info = get_psse_data_frames()
     roseta_info = get_gridcal_data_frames()
 
-    write_dataframes_to_excel(cgmes_info, 'cgmes_clases.xlsx')
-    write_dataframes_to_excel(psse_info, 'psse_clases.xlsx')
-    write_dataframes_to_excel(roseta_info, 'roseta_clases.xlsx')
+    # write_dataframes_to_excel(cgmes_info, 'cgmes_clases.xlsx')
+    # write_dataframes_to_excel(psse_info, 'psse_clases.xlsx')
+    # write_dataframes_to_excel(roseta_info, 'roseta_clases.xlsx')
 
     # write_dataframes_to_rst(cgmes_info, 'cgmes_clases.rst', "CGMES")
     # write_dataframes_to_rst(psse_info, 'psse_clases.rst', "PSSE")
     # write_dataframes_to_rst(roseta_info, 'roseta_clases.rst', "Roseta")
+    write_dataframes_to_rst(roseta_info, 'gridcal_classes.rst', "Roseta")
 
-    write_models_to_rst(os.path.join('rst_source', 'other_data_models.rst'))
+    # write_models_to_rst(os.path.join('rst_source', 'other_data_models.rst'))
 
     print("done")
 

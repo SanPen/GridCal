@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -78,9 +78,9 @@ class ParentBranch(EditableDevice):
         :param mttf: Mean time to failure
         :param mttr: Mean time to repair
         :param build_status: Branch build status. Used in expansion planning.
-        :param capex: Cost of investment. (€/MW)
-        :param opex: Cost of operation. (€/MWh)
-        :param Cost: Cost of overloads. Used in OPF (€/MWh)
+        :param capex: Cost of investment. (e/MW)
+        :param opex: Cost of operation. (e/MWh)
+        :param Cost: Cost of overloads. Used in OPF (e/MWh)
         :param Cost_prof: Cost of overload proile
         :param device_type: device_type (passed on)
         """
@@ -155,13 +155,13 @@ class ParentBranch(EditableDevice):
         self.register('mttf', units="h", tpe=float, definition="Mean time to failure")
         self.register('mttr', units="h", tpe=float, definition="Mean time to repair")
 
-        self.register('Cost', units="€/MWh", tpe=float,
+        self.register('Cost', units="e/MWh", tpe=float,
                       definition="Cost of overloads. Used in OPF", profile_name="Cost_prof")
 
         self.register('build_status', units="", tpe=BuildStatus,
                       definition="Branch build status. Used in expansion planning.")
-        self.register('capex', units="€/MW", tpe=float, definition="Cost of investment. Used in expansion planning.")
-        self.register('opex', units="€/MWh", tpe=float, definition="Cost of operation. Used in expansion planning.")
+        self.register('capex', units="e/MW", tpe=float, definition="Cost of investment. Used in expansion planning.")
+        self.register('opex', units="e/MWh", tpe=float, definition="Cost of operation. Used in expansion planning.")
 
     def get_max_bus_nominal_voltage(self):
         """

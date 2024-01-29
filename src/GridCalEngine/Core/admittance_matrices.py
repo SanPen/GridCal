@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -438,7 +438,7 @@ def compute_linear_admittances(nbr: int,
     Bf = b_tt * Cf - b_tt * Ct
     Bt = -b_tt * Cf + b_tt * Ct
     Bbus = Cf.T * Bf + Ct.T * Bt
-    Btau = (b_tt * (Cf + Ct)).T
+    Btau = Bf.T  # (b_tt * (Cf + Ct)).T
 
     """
     According to the KULeuven document "DC power flow in unit commitment models"

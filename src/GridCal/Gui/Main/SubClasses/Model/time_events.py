@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -385,7 +385,7 @@ class TimeEventsMain(ObjectsTableMain):
             ax = fig.add_subplot(111)
 
             k = obj_idx[0].column()
-            units_dict = {attr: pair.units for attr, pair in objects[k].editable_headers.items()}
+            units_dict = {attr: pair.units for attr, pair in objects[k].registered_properties.items()}
 
             unit = units_dict[magnitude]
             ax.set_ylabel(unit)

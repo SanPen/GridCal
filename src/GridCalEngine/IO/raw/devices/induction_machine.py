@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -109,17 +109,17 @@ class RawInductionMachine(RawObject):
         self.register_property(property_name='AREA',
                                rawx_key='area',
                                class_type=int,
-                               description='Area number',)
+                               description='Area number', )
 
         self.register_property(property_name='ZONE',
                                rawx_key='zone',
                                class_type=int,
-                               description='Zone number',)
+                               description='Zone number', )
 
         self.register_property(property_name='OWNER',
                                rawx_key='owner',
                                class_type=int,
-                               description='Owner number',)
+                               description='Owner number', )
 
         self.register_property(property_name='TCODE',
                                rawx_key='tcode',
@@ -288,19 +288,56 @@ class RawInductionMachine(RawObject):
         :param logger:
         """
 
-        if version > 30:
+        if version >= 34:
+            '''
+            I,'ID',ST,SC,DC,AREA,ZONE,OWNER,TC,BC,  MBASE, RATEKV,PC, PSET, 
+            H, A, B, D, E, RA, XA, XM, R1, X1, R2, X2, X3, E1, SE1, E2, SE2,   IA1,   IA2, XAMULT
+            '''
+            # 3010,"1 ", 1, 1, 2, 5, 4, 5, 1, 1, 1.000, 21.600,1, 1.0000, 1.000, 1.000, 1.000, 1.000, 1.000
+            if len(data) == 1:
+                (self.I, self.ID, self.STATUS, self.SCODE, self.DCODE, self.AREA, self.ZONE, self.OWNER,
+                 self.TCODE, self.BCODE, self.MBASE, self.RATEKV,
+                 self.PCODE, self.PSET, self.H, self.A, self.B, self.D, self.E) = data[0]
+
+            elif len(data) == 3:
+                (self.I, self.ID, self.STATUS, self.SCODE, self.DCODE, self.AREA, self.ZONE, self.OWNER,
+                 self.TCODE, self.BCODE, self.MBASE, self.RATEKV) = data[0]
+
+                (self.PCODE, self.PSET, self.H, self.A, self.B, self.D, self.E,
+                 self.RA, self.XA, self.XM, self.R1,
+                 self.X1, self.R2, self.X2, self.X3,
+                 self.E1, self.SE1, self.E2, self.SE2,
+                 self.IA1, self.IA2) = data[1]
+
+                self.XAMULT = data[2]
+            else:
+                logger.add_warning('Incorrect number of lines for Induction machine', str(len(data)))
+
+        elif 29 <= version <= 33:
             '''
             I,ID,STAT,SCODE,DCODE,AREA,ZONE,OWNER,TCODE,BCODE,MBASE,RATEKV,
             PCODE,PSET,H,A,B,D,E,RA,XA,XM,R1,X1,R2,X2,X3,E1,SE1,E2,SE2,IA1,IA2,
             XAMULT
             '''
-            self.I, self.ID, self.STATUS, self.SCODE, self.DCODE, self.AREA, self.ZONE, self.OWNER, \
-                self.TCODE, self.BCODE, self.MBASE, self.RATEKV = data[0]
 
-            self.PCODE, self.PSET, self.H, self.A, self.B, self.D, self.E, self.RA, self.XA, self.XM, self.R1, \
-                self.X1, self.R2, self.X2, self.X3, self.E1, self.SE1, self.E2, self.SE2, self.IA1, self.IA2 = data[1]
+            if len(data) == 1:
+                (self.I, self.ID, self.STATUS, self.SCODE, self.DCODE, self.AREA, self.ZONE, self.OWNER,
+                 self.TCODE, self.BCODE, self.MBASE, self.RATEKV,
+                 self.PCODE, self.PSET, self.H, self.A, self.B, self.D, self.E) = data[0]
 
-            self.XAMULT = data[2]
+            elif len(data) == 3:
+                (self.I, self.ID, self.STATUS, self.SCODE, self.DCODE, self.AREA, self.ZONE, self.OWNER,
+                 self.TCODE, self.BCODE, self.MBASE, self.RATEKV) = data[0]
+
+                (self.PCODE, self.PSET, self.H, self.A, self.B, self.D, self.E,
+                 self.RA, self.XA, self.XM, self.R1,
+                 self.X1, self.R2, self.X2, self.X3,
+                 self.E1, self.SE1, self.E2, self.SE2,
+                 self.IA1, self.IA2) = data[1]
+
+                self.XAMULT = data[2]
+            else:
+                logger.add_warning('Incorrect number of lines for Induction machine', str(len(data)))
         else:
             logger.add_warning('Induction machine not implemented for version', str(version))
 
@@ -314,10 +351,10 @@ class RawInductionMachine(RawObject):
             '''
             return self.format_raw_line([self.I, self.ID, self.STATUS, self.SCODE, self.DCODE, self.AREA, self.ZONE,
                                          self.OWNER, self.TCODE, self.BCODE, self.MBASE, self.RATEKV]) + "\n" + \
-                   self.format_raw_line([self.PCODE, self.PSET, self.H, self.A, self.B, self.D, self.E, self.RA,
-                                         self.XA, self.XM, self.R1, self.X1, self.R2, self.X2, self.X3, self.E1,
-                                         self.SE1, self.E2, self.SE2, self.IA1, self.IA2]) + "\n" + \
-                   self.format_raw_line([self.XAMULT])
+                self.format_raw_line([self.PCODE, self.PSET, self.H, self.A, self.B, self.D, self.E, self.RA,
+                                      self.XA, self.XM, self.R1, self.X1, self.R2, self.X2, self.X3, self.E1,
+                                      self.SE1, self.E2, self.SE2, self.IA1, self.IA2]) + "\n" + \
+                self.format_raw_line([self.XAMULT])
         else:
             raise Exception('Induction machine not implemented for version ' + str(version))
 

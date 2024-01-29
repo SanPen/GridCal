@@ -298,6 +298,9 @@ def read_raw(filename, text_func=None,  progress_func=None, logger = Logger()) -
     def is_3w(row):
         return row[0] in bus_set and row[1] in bus_set and row[2] in bus_set
 
+    def is_one_line_for_induction_machine(row):
+        return len(row) != 12
+
     for key, lines in sections_dict.items():
 
         if key in meta_data:
@@ -317,17 +320,21 @@ def read_raw(filename, text_func=None,  progress_func=None, logger = Logger()) -
 
                     lines_per_object2 = lines_per_object
 
-                    if version in versions and key == 'transformer':
-                        # as you know the PSS/e raw format is nuts, that is why for v29 (onwards probably)
-                        # the transformers may have 4 or 5 lines to define them
-                        # so, to be able to know, we look at the line "l" and check if the first arguments
-                        # are 2 or 3 buses
-                        if is_3w(lines[l_count]):
-                            # 3 - windings
-                            lines_per_object2 = 5
-                        else:
-                            # 2-windings
-                            lines_per_object2 = 4
+                    if version in versions:
+                        if key == 'transformer':
+                            # as you know the PSS/e raw format is nuts, that is why for v29 (onwards probably)
+                            # the transformers may have 4 or 5 lines to define them
+                            # so, to be able to know, we look at the line "l" and check if the first arguments
+                            # are 2 or 3 buses
+                            if is_3w(lines[l_count]):
+                                # 3 - windings
+                                lines_per_object2 = 5
+                            else:
+                                # 2-windings
+                                lines_per_object2 = 4
+                        elif key == 'induction machine':
+                            if is_one_line_for_induction_machine(lines[l_count]):
+                                lines_per_object2 = 1
 
                     data = list()
                     for k in range(lines_per_object2):

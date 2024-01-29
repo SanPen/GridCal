@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -1268,7 +1268,7 @@ def save_json_file_v3(file_path: str, circuit: MultiCircuit, simulation_drivers:
         # pack all the elements within the bus
         devices = elm.loads + elm.generators + elm.static_generators + elm.batteries + elm.shunts
         for device in devices:
-            key = elm.device_type.value
+            key = device.device_type.value
             add_to_dict(d=elements, d2=device.get_properties_dict(), key=key)
             add_to_dict(d=element_profiles, d2=convert_to_sparse(device.get_profiles_dict()), key=key)
             add_to_dict2(d=units_dict, d2=device.get_units_dict(), key=key)
