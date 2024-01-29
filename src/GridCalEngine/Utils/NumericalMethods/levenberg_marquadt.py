@@ -68,6 +68,7 @@ def levenberg_marquardt(func: Callable[[Vec, bool, Any], ConvexFunctionResult],
     converged = f_error < tol
     iteration = 0
     nu = 2.0
+    one_third = 1.0 / 3.0
 
     Jt = ret.J.T
     A = Jt @ ret.J
@@ -137,7 +138,7 @@ def levenberg_marquardt(func: Callable[[Vec, bool, Any], ConvexFunctionResult],
                 g = Jt @ ret.f
                 converged = f_error < tol  # or g_error < tol
                 rho = dF / dL
-                mu *= max(1.0/3.0, 1.0 - math.pow(2.0 * rho - 1.0, 3))
+                mu *= max(one_third, 1.0 - math.pow(2.0 * rho - 1.0, 3))
                 nu = 2.0
             else:
                 mu *= nu

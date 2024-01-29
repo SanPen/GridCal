@@ -67,6 +67,7 @@ def newton_raphson(func: Callable[[Vec, bool, Any], ConvexFunctionResult],
     converged = error < tol
     iteration = 0
     error_evolution = np.zeros(max_iter + 1)
+    trust0 = trust if trust <= 1.0 else 1.0  # trust radius in NR should not be greater than 1
 
     # save the error evolution
     error_evolution[iteration] = error
@@ -109,7 +110,7 @@ def newton_raphson(func: Callable[[Vec, bool, Any], ConvexFunctionResult],
                                           elapsed=time.time() - start,
                                           error_evolution=error_evolution)
 
-            mu = trust
+            mu = trust0
             back_track_condition = True
             l_iter = 0
             while back_track_condition and mu > tol:
