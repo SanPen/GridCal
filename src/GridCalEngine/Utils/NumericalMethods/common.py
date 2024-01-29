@@ -15,10 +15,24 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from dataclasses import dataclass
+from typing import Callable, List, Tuple
 import numpy as np
 import numba as nb
 from matplotlib import pyplot as plt
 from GridCalEngine.basic_structures import Vec, CscMat
+
+
+def check_function_and_args(func: Callable, args: Tuple, n_used_for_solver: int) -> bool:
+    """
+    Checks if the number of supplied arguments matches the function signature
+    :param func: Function pointer
+    :param args: tuple of arguments to be passed before the mandatory arguments used by the numerical method
+    :param n_used_for_solver: Number of mandatory arguments used by the numerical method
+    :return: ok?
+    """
+    n_args = func.__code__.co_argcount
+
+    return n_args == n_used_for_solver + len(args)
 
 
 @nb.njit(cache=True)

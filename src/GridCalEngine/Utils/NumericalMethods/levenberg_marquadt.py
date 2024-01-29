@@ -22,7 +22,8 @@ from GridCalEngine.basic_structures import Vec
 from GridCalEngine.Utils.NumericalMethods.sparse_solve import get_linear_solver
 from GridCalEngine.Utils.Sparse.csc import diagc
 from GridCalEngine.basic_structures import Logger
-from GridCalEngine.Utils.NumericalMethods.common import ConvexMethodResult, ConvexFunctionResult
+from GridCalEngine.Utils.NumericalMethods.common import (ConvexMethodResult, ConvexFunctionResult,
+                                                         check_function_and_args)
 
 linear_solver = get_linear_solver()
 
@@ -56,6 +57,9 @@ def levenberg_marquardt(func: Callable[[Vec, bool, Any], ConvexFunctionResult],
     :return: ConvexMethodResult
     """
     start = time.time()
+
+    if not check_function_and_args(func, func_args, 2):
+        raise Exception(f'Invalid function arguments, required {", ".join(func.__code__.co_varnames)}')
 
     # evaluation of the initial point
     x = x0.copy()

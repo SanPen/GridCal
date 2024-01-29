@@ -234,8 +234,11 @@ def run_pf(grid: gce.MultiCircuit, pf_options: gce.PowerFlowOptions):
     Vm = Vm0.copy()
     Va[pvpq], Vm[pq] = x2var(x=ret.x, npvpq=npvpq)
 
+    print("Info:")
     ret.print_info()
 
+    print("Logger:")
+    logger.print()
     ret.plot_error()
 
     plt.show()

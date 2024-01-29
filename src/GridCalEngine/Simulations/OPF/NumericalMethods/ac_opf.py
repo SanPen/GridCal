@@ -173,7 +173,7 @@ def eval_h(x, Yf, Yt, from_idx, to_idx, no_slack, Va_max, Va_min, Vm_max, Vm_min
                  Pg_min[ig] - Pg,  # generator P lower limits
                  Qg - Qg_max[ig],  # generator Q upper limits
                  Qg_min[ig] - Qg  # generation Q lower limits
-    ]
+                 ]
 
     Sftot = V[from_idx] * np.conj(Yf @ V)
     Sttot = V[to_idx] * np.conj(Yt @ V)

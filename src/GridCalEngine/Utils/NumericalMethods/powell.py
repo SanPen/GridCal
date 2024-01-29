@@ -20,8 +20,8 @@ from typing import Callable, Any
 from GridCalEngine.basic_structures import Vec
 from GridCalEngine.Utils.NumericalMethods.sparse_solve import get_linear_solver
 from GridCalEngine.basic_structures import Logger
-from GridCalEngine.Utils.NumericalMethods.common import ConvexMethodResult, ConvexFunctionResult, norm, max_abs
-
+from GridCalEngine.Utils.NumericalMethods.common import (ConvexMethodResult, ConvexFunctionResult, norm, max_abs,
+                                                         check_function_and_args)
 
 linear_solver = get_linear_solver()
 
@@ -40,9 +40,9 @@ def compute_beta(a: Vec, b: Vec, delta):
     norm2_ba = ba @ ba
     delta2_norm2a = (delta * delta - norm2_a)
     if c <= 0.0:
-        return (-c + np.sqrt(c*c + norm2_ba * delta2_norm2a)) / norm2_ba
+        return (-c + np.sqrt(c * c + norm2_ba * delta2_norm2a)) / norm2_ba
     else:
-        return delta2_norm2a / (c + np.sqrt(c*c + norm2_ba * delta2_norm2a))
+        return delta2_norm2a / (c + np.sqrt(c * c + norm2_ba * delta2_norm2a))
 
 
 def compute_hdl(hgn: Vec, hsd: Vec, g: Vec, alpha: float, delta: float, f_error: float) -> Vec:
@@ -100,6 +100,9 @@ def powell_dog_leg(func: Callable[[Vec, bool, Any], ConvexFunctionResult],
     :return: ConvexMethodResult
     """
     start = time.time()
+
+    if not check_function_and_args(func, func_args, 2):
+        raise Exception(f'Invalid function arguments, required {", ".join(func.__code__.co_varnames)}')
 
     # evaluation of the initial point
     x = x0.copy()
