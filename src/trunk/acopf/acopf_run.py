@@ -245,7 +245,7 @@ def case6ww():
     file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case6ww.m')
 
     grid = gce.FileOpen(file_path).open()
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1)
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=3)
     run_nonlinear_opf(grid=grid, pf_options=pf_options, plot_error=True)
 
 
@@ -258,5 +258,5 @@ if __name__ == '__main__':
     # case14()
     # case_gb()
     case6ww()
-    case_pegase89()
+    # case_pegase89()
     #case300()
