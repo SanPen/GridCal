@@ -154,6 +154,7 @@ class SolverType(Enum):
     DC = 'Linear DC'
     HELM = 'Holomorphic Embedding'
     ZBUS = 'Z-Gauss-Seidel'
+    PowellDogLeg = "Powell's Dog Leg"
     IWAMOTO = 'Iwamoto-Newton-Raphson'
     CONTINUATION_NR = 'Continuation-Newton-Raphson'
     HELMZ = 'HELM-Z'
