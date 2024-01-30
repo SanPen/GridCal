@@ -328,7 +328,6 @@ def interior_point_solver(x0: Vec,
     mu[kk] = gamma / z[kk]
     mu_diag = diags(mu)
 
-
     ret = func(x, mu, lam, True, False, *arg)
 
     Lx = ret.fx + ret.Gx @ lam + ret.Hx @ mu
