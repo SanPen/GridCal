@@ -528,26 +528,25 @@ class Membership:
 
 class PlexelList(list):
     """
-
+    List of Plexel object
     """
 
     def __init__(self, tpe, *args):
         list.__init__(self, *args)
         self.tpe = tpe
 
-    def get_df(self) -> Union[pd.DataFrame, None]:
+    def get_df(self) -> pd.DataFrame:
+        """
+        Get DataFrame of the table list
+        :return:
+        """
+        hdr = self.tpe.__headers__
+        data = list()
 
-        if len(self) > 0:
-            i0 = self[0]
-            hdr = i0.__headers__
-            data = list()
+        for item in self:
+            data.append(item.get_data())
 
-            for item in self:
-                data.append(item.get_data())
-
-            return pd.DataFrame(data, columns=hdr)
-        else:
-            return None
+        return pd.DataFrame(data, columns=hdr)
 
 
 class PlexelBase:
