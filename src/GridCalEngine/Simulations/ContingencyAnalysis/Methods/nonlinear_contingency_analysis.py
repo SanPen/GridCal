@@ -129,7 +129,8 @@ def nonlinear_contingency_analysis(grid: MultiCircuit,
                                srap_max_loading=options.srap_max_loading,
                                srap_max_power=options.srap_max_power,
                                multi_contingency=multi_contingency,
-                               PTDF=PTDF)
+                               PTDF=PTDF,
+                               srap_fixing_probability=results.srap_fixing_probability)
 
         # set the status
         numerical_circuit.set_contingency_status(contingencies, revert=True)
