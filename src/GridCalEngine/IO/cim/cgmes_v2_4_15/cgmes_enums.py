@@ -580,3 +580,15 @@ class PhaseCode(Enum):
     @classmethod
     def list(cls):
         return list(map(lambda c: c.value, cls))
+
+
+class DCPolarityKind:
+    pass
+
+
+class UnitMultiplier:
+    pass
+
+
+class UnitSymbol:
+    pass
