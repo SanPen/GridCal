@@ -2,6 +2,7 @@ from typing import List, Union
 from enum import Enum
 import pandas as pd
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
+import GridCalEngine.Core.Devices as dev
 
 
 class ClassEnum(Enum):
@@ -323,32 +324,37 @@ class CollectionEnum(Enum):
     BalancingTo = 'BalancingTo'
 
 
-class Object:
+class PlexelObject:
     """
-    Represents a
+    Represents an independent entity.
+    It can be anything within our model!
+    The only requirement is that it has to belong to a specific Class from ClassEnum
     """
 
     __headers__ = ["class", "GUID", "name", "category", "description"]
 
     def __init__(self,
                  cls: ClassEnum = ClassEnum.System,
-                 guid: str = "0",
+                 guid: str = "",
                  name: str = "",
-                 cat: "Object" = "",
+                 cat: "PlexelObject" = "",
                  desc: str = ""):
         """
-
-        :param cls:
+        Init PlexelObject
+        :param cls: Class of the Object
         :param guid:
-        :param name:
-        :param cat:
-        :param desc:
+        :param name: Name of the Object across the model
+        :param cat: The Category associated to the object
+        :param desc: Description of the Object
         """
         self.class_: ClassEnum = cls
         self.GUID: str = guid
         self.name: str = name
-        self.category: "Object" = cat
+        self.category: "PlexelObject" = cat
         self.description: str = desc
+
+    def get_key(self) -> str:
+        return self.name
 
     def get_data(self) -> List[str]:
         """
@@ -362,9 +368,13 @@ class Object:
                 self.description]
 
 
-class Category:
+class PlexelCategory:
     """
-    Category
+    PlexelCategory serves to rank objects within the same class,
+    allowing to customize the order in which they are displayed.
+    They are needed if we want to group objects as well.
+    For example, if we want to see the generators grouped by technology,
+    we need to first create the category and then reference it at the object level.
     """
     __headers__ = ["class", "category", "rank"]
 
@@ -373,7 +383,7 @@ class Category:
                  category_name: str = "",
                  rank: int = 1):
         """
-
+        Init PlexelCategory
         :param cls: Class of the category
         :param category_name: Name of the category
         :param rank: Rank of the category (must be sequential starting at 1...)
@@ -381,6 +391,9 @@ class Category:
         self.class_: ClassEnum = cls
         self.category: str = category_name
         self.rank: int = rank
+
+    def get_key(self) -> str:
+        return self.category
 
     def get_data(self) -> List[str]:
         """
@@ -392,9 +405,11 @@ class Category:
                 str(self.rank)]
 
 
-class Property:
+class PlexelProperty:
     """
-    Represents a property that can evolve (change later, use profiles, etc...)
+    Represents a property that can evolve (change later, use profiles, etc...).
+    The properties may vary from one Class to another.
+    It is crucial to define the Class along with the Collection.
     """
 
     __headers__ = ['parent_class',
@@ -434,6 +449,9 @@ class Property:
         self.scenario: str = ""
         self.memo: str = ""
 
+    def get_key(self) -> str:
+        return self.child_object + '_' + self.property_
+
     def get_data(self) -> List[str]:
         """
         Get the properties as a list of strings
@@ -458,7 +476,7 @@ class Property:
                 self.memo]
 
 
-class Attribute:
+class PlexelAttribute:
     """
     Represents a property that is filled only one time (akin to the snapshot values)
     """
@@ -482,6 +500,9 @@ class Attribute:
         self.attribute: str = attribute
         self.value: Union[str, float] = value
 
+    def get_key(self) -> str:
+        return self.name + '_' + self.attribute
+
     def get_data(self) -> List[str]:
         """
         Get the properties as a list of strings
@@ -493,18 +514,18 @@ class Attribute:
                 str(self.value)]
 
 
-class Membership:
+class PlexelMembership:
     """
     Represents the relationships between objects
     """
 
     __headers__ = ["parent_class", "child_class", "collection", "parent_object", "child_object"]
 
-    def __init__(self, parent_obj: Object, child_obj: Object, collection: CollectionEnum):
+    def __init__(self, parent_obj: PlexelObject, child_obj: PlexelObject, collection: CollectionEnum):
         """
-        Associate
-        :param parent_obj: Object
-        :param child_obj: Object
+        Associate a parent object with a child object
+        :param parent_obj: PlexelObject
+        :param child_obj: PlexelObject
         :param collection: property over which the objects are associated
         :return:
         """
@@ -513,6 +534,9 @@ class Membership:
         self.collection: CollectionEnum = collection
         self.parent_object: str = parent_obj.name
         self.child_object: str = child_obj.name
+
+    def get_key(self) -> str:
+        return self.parent_object + '_' + self.child_object + '_' + str(self.collection.value)
 
     def get_data(self) -> List[str]:
         """
@@ -526,37 +550,14 @@ class Membership:
                 self.child_object]
 
 
-class PlexelList(list):
-    """
-    List of Plexel object
-    """
-
-    def __init__(self, tpe, *args):
-        list.__init__(self, *args)
-        self.tpe = tpe
-
-    def get_df(self) -> pd.DataFrame:
-        """
-        Get DataFrame of the table list
-        :return:
-        """
-        hdr = self.tpe.__headers__
-        data = list()
-
-        for item in self:
-            data.append(item.get_data())
-
-        return pd.DataFrame(data, columns=hdr)
-
-
 class PlexelBase:
 
-    def __str__(self):
-        self.categories = PlexelList(Category)
-        self.memberships = PlexelList(Membership)
-        self.objects = PlexelList(Object)
-        self.attributes = PlexelList(Attribute)
-        self.properties = PlexelList(Property)
+    def __init__(self):
+        self.categories: List[PlexelCategory] = list()
+        self.memberships: List[PlexelMembership] = list()
+        self.objects: List[PlexelObject] = list()
+        self.attributes: List[PlexelAttribute] = list()
+        self.properties: List[PlexelProperty] = list()
 
     def add_category(self, child_class_id, category):
         pass
@@ -564,42 +565,43 @@ class PlexelBase:
     def add_membership(self):
         pass
 
-    def add_object(self, child_class_id, child_name, category='', ):
+    def add_property(self, collection_id, child_name, enum_id, prop_value,
+                     parent_name='System', date_from=None, date_to=None, variable=None,
+                     data_file=None, pattern=None, scenario=None, band_id=1, action=0,
+                     period=''):
+        pass
+
+    def add_object(self, child_class_id, child_name, category=None, description=''):
         """
         Add the object if it hasn't been added yet
         :param child_class_id: value from ClassEnum
         :param child_name: name of the object
-        :param category: Category name, it it does not exist, it is created
+        :param category: PlexelCategory name. If it does not exist, it is created
+        :param description:
         """
-
+        # TODO: add Object as a Category if not exists
         # create category if it does not exist
         self.add_category(child_class_id, category)
 
-    def add_property(self, collection_id, child_name, enum_id, prop_value,
-                     parent_name='System', date_from=None, date_to=None, variable=None,
-                     data_file=None, pattern=None, scenario=None, band_id=1, action=0,
-                     period=PeriodEnum.Interval):
-        pass
+        obj = PlexelObject(cls=child_class_id, name=child_name, desc=description)
+        self.objects.append(obj)
+
+    def add_zone(self, zone: dev.Zone):
+        # TODO: check if there are any missing fields
+        # add the zone as an object
+        self.add_object(child_class_id=ClassEnum.Zone, child_name=zone.name, description=zone.name)
 
     def convert(self, grid: MultiCircuit):
-        pass
-
-    def save(self, file_name: str):
         """
-        Save the plexel DB to an execl file
-        :param file_name: name of the file
-        :return: 
+        Convert GridCal MultiCircuit Model to plexel DB
+        :param grid: GridCal MultiCircuit object
+        :return:
         """
-        if not file_name.endswith('.xlsx'):
-            file_name += '.xlsx'
+        # Add zones
+        for z in grid.zones:
+            self.add_zone(z)
 
-        ptr = pd.ExcelWriter(file_name, engine='xlsxwriter')
-        self.categories.get_df().to_excel(ptr, sheet_name='categories')
-        self.memberships.get_df().to_excel(ptr, sheet_name='memberships')
-        self.objects.get_df().to_excel(ptr, sheet_name='objects')
-        self.attributes.get_df().to_excel(ptr, sheet_name='attributes')
-        self.properties.get_df().to_excel(ptr, sheet_name='properties')
-        ptr.close()
+        print('Convert done!')
 
 
 if __name__ == "__main__":
@@ -614,3 +616,5 @@ if __name__ == "__main__":
     my_plexel_circuit = PlexelBase()
 
     my_plexel_circuit.convert(my_grid)
+
+    print('Plexel circuit generated!')
