@@ -248,14 +248,13 @@ def case6ww():
     run_nonlinear_opf(grid=grid, pf_options=pf_options, plot_error=True)
 
 
-
 if __name__ == '__main__':
     # example_3bus_acopf()
-    #linn5bus_example()
+    # linn5bus_example()
     # two_grids_of_3bus()
     # case9()
     # case14()
     # case_gb()
     case6ww()
     # case_pegase89()
-    #case300()
+    # case300()

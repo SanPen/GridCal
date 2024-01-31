@@ -174,17 +174,16 @@ def eval_h(x, Yf, Yt, from_idx, to_idx, pq, no_slack, Va_max, Va_min, Vm_max, Vm
                  Qg_min[ig] - Qg  # generation Q lower limits
     ]
 
-    # hval = np.r_[Sf2.real - (rates[il] ** 2),  # rates "lower limit"
-    #              St2.real - (rates[il] ** 2),  # rates "upper limit"
-    #              vm - Vm_max,  # voltage module upper limit
-    #              Vm_min - vm,  # voltage module lower limit
-    #              va[no_slack] - Va_max[no_slack],  # voltage angles upper limit
-    #              Va_min[no_slack] - va[no_slack],  # voltage angles lower limit
-    #              Pg - Pg_max[ig],  # generator P upper limits
-    #              Pg_min[ig] - Pg,  # generator P lower limits
-    #              Qg - Qg_max[ig],  # generator Q upper limits
-    #              Qg_min[ig] - Qg  # generation Q lower limits
-    # ]
+
+    hval = np.r_[Sf2.real - (rates[il] ** 2),  # rates "lower limit"
+                 St2.real - (rates[il] ** 2),  # rates "upper limit"
+                 vm[pq] - Vm_max[pq],  # voltage module upper limit
+                 Pg - Pg_max[ig],  # generator P upper limits
+                 Qg - Qg_max[ig],  # generator Q upper limits
+                 Vm_min[pq] - vm[pq],  # voltage module lower limit
+                 Pg_min[ig] - Pg,  # generator P lower limits
+                 Qg_min[ig] - Qg  # generation Q lower limits
+    ]
 
     Sftot = V[from_idx] * np.conj(Yf @ V)
     Sttot = V[to_idx] * np.conj(Yt @ V)
@@ -309,7 +308,8 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
         Hqu = sparse.hstack([lil_matrix((Ng, 2 * N + Ng)), diags(Hqu)])
         Hql = sparse.hstack([lil_matrix((Ng, 2 * N + Ng)), diags(Hql)])
 
-        Hx = sparse.vstack([HSf, HSt, Hvu, Hvl, Hpu, Hpl, Hqu, Hql]).T.tocsc()
+        # Hx = sparse.vstack([HSf, HSt, Hvu, Hvl, Hpu, Hpl, Hqu, Hql]).T.tocsc()
+        Hx = sparse.vstack([HSf, HSt, Hvu, Hpu, Hqu, Hvl, Hpl, Hql]).T.tocsc()
         #Hx = sparse.vstack([HSf, HSt, Hvu, Hvl, Hvau, Hval, Hpu, Hpl, Hqu, Hql]).T.tocsc()
     else:
         fx = None
@@ -495,8 +495,8 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
         Htvavm = 2 * (Stvavm + Stva.T @ mu_mat @ np.conj(Stvm)).real
         Htvmvm = 2 * (Stvmvm + Stvm.T @ mu_mat @ np.conj(Stvm)).real
 
-        #H1 = sparse.hstack([Hfvmvm + Htvmvm, Hfvavm + Htvmva, lil_matrix((N, 2 * Ng))])
-        #H2 = sparse.hstack([Hfvavm + Htvavm, Hfvava + Htvava, lil_matrix((N, 2 * Ng))])
+        # H1 = sparse.hstack([Hfvmvm + Htvmvm, Hfvavm + Htvmva, lil_matrix((N, 2 * Ng))])
+        # H2 = sparse.hstack([Hfvavm + Htvavm, Hfvava + Htvava, lil_matrix((N, 2 * Ng))])
 
         H1 = sparse.hstack([Hfvava + Htvava, Hfvavm + Htvavm, lil_matrix((N, 2 * Ng))])
         H2 = sparse.hstack([Hfvmva + Htvmva, Hfvmvm + Htvmvm, lil_matrix((N, 2 * Ng))])
