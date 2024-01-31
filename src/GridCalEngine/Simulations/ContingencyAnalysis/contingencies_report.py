@@ -111,7 +111,8 @@ class ContingencyTableEntry:
                  post_contingency_loading: float,
                  solved_by_srap: bool = False,
                  srap_power: float = 0.0,
-                 srap_bus_indices: IntVec = None):
+                 srap_bus_indices: IntVec = None,
+                 srap_fixing_probability: Mat = None):
         """
         ContingencyTableEntry constructor
         :param time_index:
@@ -259,7 +260,8 @@ class ContingencyResultsReport:
                                              post_contingency_loading=post_contingency_loading,
                                              solved_by_srap=solved_by_srap,
                                              srap_power=srap_power,
-                                             srap_bus_indices=srap_bus_indices))
+                                             srap_bus_indices=srap_bus_indices,
+                                             srap_fixing_probability=srap_fixing_probability))
 
     def merge(self, other: "ContingencyResultsReport"):
         """
@@ -369,13 +371,15 @@ class ContingencyResultsReport:
                                               bus_indices=indices,
                                               sensitivities=sensitivities)
 
-                solved_by_srap, max_srap_power = buses_for_srap.is_solvable(
+                solved_by_srap, max_srap_power, srap_fixing_probability = buses_for_srap.is_solvable(
                     c_flow=contingency_flows[m].real,  # the real part because it must have the sign
                     rating=numerical_circuit.branch_data.rates[m],
                     srap_pmax_mw=srap_max_power,
                     available_power=available_power,
+                    branch_idx=m,
                     top_n=5,
                     srap_fixing_probability=srap_fixing_probability
+
                 )
 
                 # solved_by_srap, max_srap_power = calc_srap(m,
@@ -400,6 +404,7 @@ class ContingencyResultsReport:
                          post_contingency_loading=abs(contingency_loadings[m]) * 100.0,
                          solved_by_srap=solved_by_srap,
                          srap_power=max_srap_power,
+                         srap_fixing_probability=srap_fixing_probability,
                          srap_bus_indices=None)
 
             else:
