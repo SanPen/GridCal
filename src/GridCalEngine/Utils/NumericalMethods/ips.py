@@ -371,53 +371,83 @@ def interior_point_solver(x0: Vec,
         dz = - ret.H - z - ret.Hx.T @ dx
         dmu = - mu + z_inv @ (gamma * e - mu * dz)
 
-        # Step control
+        # # Step control
+        # if step_control:
+        #
+        #     x1 = x + dx
+        #     ret1 = func(x1, mu, lam, True, False, *arg)
+        #     Lx1 = ret1.fx + ret1.Hx @ mu + ret1.Gx @ lam
+        #
+        #     feascond1 = calc_feascond(g=ret1.G, h=ret1.H, x=x1, z=z)
+        #     gradcond1 = calc_gradcond(Lx=Lx1, lam=lam, mu=mu)
+        #
+        #     if feascond1 > feascond and gradcond1 > gradcond:
+        #
+        #         alpha = trust  # 1.0 for a 100%, 0.9 for 95% etc...
+        #         back_track_iter = 0
+        #         rho = rho_lower - 1.0  # any number outside the interval
+        #         back_track_cond = rho_lower < rho < rho_upper
+        #         L = ret.f + lam.T @ ret.G + mu.T @ (ret.H + z) - gamma * np.sum(np.log(z))
+        #
+        #         while not back_track_cond and (back_track_iter < max_backtrack_iters):
+        #
+        #             # compute new increments
+        #             dx1 = alpha * dx
+        #             dlam1 = alpha * dlam
+        #             dmu1 = alpha * dmu
+        #
+        #             # compute variables
+        #             x1 = x + dx1
+        #             lam1 = lam + dlam1
+        #             mu1 = mu + dmu1
+        #
+        #             ret1 = func(x1, mu1, lam1, True, False, *arg)
+        #
+        #             L1 = ret1.f + lam.T @ ret1.G + mu.T @ (ret1.H + z) - gamma * np.sum(np.log(z))
+        #             rho = (L1 - L) / (Lx.T @ dx1 + 0.5 * dx1.T @ Lxx @ dx1)
+        #
+        #             alpha = alpha / 2.0
+        #
+        #             back_track_cond = rho_lower < rho < rho_upper
+        #
+        #             back_track_iter += 1
+        #
+        #         if back_track_cond:
+        #             # update with an alpha value
+        #             dx *= alpha
+        #             dz *= alpha
+        #             dlam *= alpha
+        #             dmu *= alpha
+
+        # Step control as in PyPower
         if step_control:
+            L = ret.f + np.dot(lam, ret.G) + np.dot(mu, ret.H + z) - gamma * np.sum(np.log(z))
+            alpha = 1.0
+            for j in range(20):
+                dx1 = alpha * dx
+                dlam1 = alpha * lam
+                dmu1 = alpha * mu
 
-            x1 = x + dx
-            ret1 = func(x1, mu, lam, True, False, *arg)
-            Lx1 = ret1.fx + ret1.Hx @ mu + ret1.Gx @ lam
+                x1 = x + dx1
+                lam1 = lam + dlam1
+                mu1 = mu + dmu1
 
-            feascond1 = calc_feascond(g=ret1.G, h=ret1.H, x=x1, z=z)
-            gradcond1 = calc_gradcond(Lx=Lx1, lam=lam, mu=mu)
+                ret1 = func(x1, mu1, lam1, False, False, *arg)
 
-            if feascond1 > feascond and gradcond1 > gradcond:
+                L1 = ret1.f + lam.T @ ret1.G + mu.T @ (ret1.H + z) - gamma * np.sum(np.log(z))
+                rho = (L1 - L) / (Lx @ dx1 + 0.5 * dx1.T @ Lxx @ dx1)
 
-                alpha = trust  # 1.0 for a 100%, 0.9 for 95% etc...
-                back_track_iter = 0
-                rho = rho_lower - 1.0  # any number outside the interval
-                back_track_cond = rho_lower < rho < rho_upper
-                L = ret.f + lam.T @ ret.G + mu.T @ (ret.H + z) - gamma * np.sum(np.log(z))
-
-                while not back_track_cond and (back_track_iter < max_backtrack_iters):
-
-                    # compute new increments
-                    dx1 = alpha * dx
-                    dlam1 = alpha * dlam
-                    dmu1 = alpha * dmu
-
-                    # compute variables
-                    x1 = x + dx1
-                    lam1 = lam + dlam1
-                    mu1 = mu + dmu1
-
-                    ret1 = func(x1, mu1, lam1, True, False, *arg)
-
-                    L1 = ret1.f + lam.T @ ret1.G + mu.T @ (ret1.H + z) - gamma * np.sum(np.log(z))
-                    rho = (L1 - L) / (Lx.T @ dx1 + 0.5 * dx1.T @ Lxx @ dx1)
-
+                if rho_lower < rho < rho_upper:
+                    break
+                else:
                     alpha = alpha / 2.0
+                    ssc = 1
+                    print('Use step control!')
 
-                    back_track_cond = rho_lower < rho < rho_upper
-
-                    back_track_iter += 1
-
-                if back_track_cond:
-                    # update with an alpha value
-                    dx *= alpha
-                    dz *= alpha
-                    dlam *= alpha
-                    dmu *= alpha
+            dx = alpha * dx
+            dz = alpha * dz
+            dlam = alpha * dlam
+            dmu = alpha * dmu
 
         # Compute the maximum step allowed
         alpha_p = step_calculation(z, dz)
@@ -428,8 +458,8 @@ def interior_point_solver(x0: Vec,
         z += dz * alpha_p
         lam += dlam * alpha_d
         mu += dmu * alpha_d
-        gamma = max(min(0.1 * (mu @ z) / n_ineq, 0.5*gamma), 1e-5)  # Maximum tolerance requested.
-        # gamma = 0.1 * mu @ z / n_ineq
+        # gamma = max(min(0.1 * (mu @ z) / n_ineq, 0.5*gamma), 1e-5)  # Maximum tolerance requested.
+        gamma = 0.1 * mu @ z / n_ineq
 
         # Compute the maximum error and the new gamma value
         # error = calc_error(dx, dz, dmu, dlam)
