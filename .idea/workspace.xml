@@ -28,9 +28,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Original cases running, detected issue in Ybus for pegase89">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Tap angles were causing trouble...">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/NumericalMethods/ac_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/NumericalMethods/ac_opf.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/matpower/matpower_parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/matpower/matpower_parser.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/trunk/acopf/acopf_run.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acopf/acopf_run.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -175,7 +175,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "WebServerToolWindowFactoryState": "false",
     "ignore.virus.scanning.warn.message": "true",
-    "last_opened_file_path": "C:/Users/a1003/Desktop/GridCal",
+    "last_opened_file_path": "C:/Users/a1003/Desktop/PYPOWER",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -1677,7 +1677,7 @@
       <option name="project" value="LOCAL" />
       <updated>1693298903267</updated>
     </task>
-    <option name="localTasksCounter" value="540" />
+    <option name="localTasksCounter" value="541" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1730,7 +1730,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="started the var registry in the results" />
     <MESSAGE value="Fixed bugs with the new location of DeviceType&#10;&#10;Fixed bugs related to get_selected_buses()" />
     <MESSAGE value="minimal improvement in fcn synthax" />
     <MESSAGE value="Wrote some more README.md" />
@@ -1755,7 +1754,8 @@
     <MESSAGE value="Modify feascond and gradcond, but debug more iterations" />
     <MESSAGE value="case6 working well up to here" />
     <MESSAGE value="Original cases running, detected issue in Ybus for pegase89" />
-    <option name="LAST_COMMIT_MESSAGE" value="Original cases running, detected issue in Ybus for pegase89" />
+    <MESSAGE value="Tap angles were causing trouble..." />
+    <option name="LAST_COMMIT_MESSAGE" value="Tap angles were causing trouble..." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
