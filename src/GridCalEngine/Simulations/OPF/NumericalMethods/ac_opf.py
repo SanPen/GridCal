@@ -872,6 +872,11 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     Cf = nc.Cf
     Ct = nc.Ct
 
+    dfa = pd.DataFrame(Yf.A.real)
+    dfb = pd.DataFrame(Yf.A.imag)
+    dfa.to_excel('Yfa.xlsx')
+    dfb.to_excel('Yfb.xlsx')
+
     # Bus identification lists
     slack = nc.vd
     no_slack = nc.pqpv
