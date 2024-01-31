@@ -28,22 +28,29 @@ from GridCalEngine.Utils.Sparse.csc import pack_3_by_4, diags
 
 
 @nb.njit(cache=True)
-def step_calculation(V: Vec, dV: Vec):
+def step_calculation(V: Vec, dV: Vec, tau:float=0.99995):
     """
     This function calculates for each Lambda multiplier or its associated Slack variable
     the maximum allowed step in order to not violate the KKT condition Lambda > 0 and S > 0
     :param V: Array of multipliers or slack variables
     :param dV: Variation calculated in the Newton step
+    :param tau: Factor to be not exactly 1
     :return:
     """
-    alpha = 1.0
+    k = np.flatnonzero(dV < 0.0)
+    alpha = min([tau * min(V[k] / -dV[k]), 1])
 
-    for i in range(len(V)):
-        if dV[i] < 0:
-            alpha = min(alpha, -V[i] / dV[i])
+    #
+    # alpha = 1.0
+    #
+    # for i in range(len(V)):
+    #     if dV[i] < 0:
+    #         alpha = min(alpha, -V[i] / dV[i])
+    #
+    # # return min(0.9999995 * alpha, 1.0)
+    # return min(0.99995 * alpha, 1.0)
 
-    return min(0.9999995 * alpha, 1.0)
-
+    return alpha
 
 @nb.njit(cache=True)
 def split(sol: Vec, n: int):
@@ -93,7 +100,7 @@ def max_abs(x: Vec):
     return max_val
 
 
-def cal_feascond(g: Vec, h: Vec, x: Vec, z: Vec):
+def calc_feascond(g: Vec, h: Vec, x: Vec, z: Vec):
     """
     Calculate the feasible conditions
     :param g:
@@ -331,7 +338,7 @@ def interior_point_solver(x0: Vec,
     ret = func(x, mu, lam, True, False, *arg)
 
     Lx = ret.fx + ret.Gx @ lam + ret.Hx @ mu
-    feascond = cal_feascond(g=ret.G, h=ret.H, x=x, z=z)  # max(max(abs(ret.G)), max(ret.H)) / (1 + max(max(abs(x)), max(abs(z))))
+    feascond = calc_feascond(g=ret.G, h=ret.H, x=x, z=z)  # max(max(abs(ret.G)), max(ret.H)) / (1 + max(max(abs(x)), max(abs(z))))
     gradcond = calc_gradcond(Lx=Lx, lam=lam, mu=mu)  # max(abs(Lx)) / (1 + max(max(abs(lam)), max(abs(mu))))
     converged = error <= gamma
 
@@ -371,7 +378,7 @@ def interior_point_solver(x0: Vec,
             ret1 = func(x1, mu, lam, True, False, *arg)
             Lx1 = ret1.fx + ret1.Hx @ mu + ret1.Gx @ lam
 
-            feascond1 = cal_feascond(g=ret1.G, h=ret1.H, x=x1, z=z)
+            feascond1 = calc_feascond(g=ret1.G, h=ret1.H, x=x1, z=z)
             gradcond1 = calc_gradcond(Lx=Lx1, lam=lam, mu=mu)
 
             if feascond1 > feascond and gradcond1 > gradcond:
@@ -428,8 +435,20 @@ def interior_point_solver(x0: Vec,
         # error = calc_error(dx, dz, dmu, dlam)
         # error = np.max(np.abs(r))
 
-        feascond = cal_feascond(g=ret.G, h=ret.H, x=x, z=z)
-        gradcond = calc_gradcond(Lx=Lx, lam=lam, mu=mu)
+        # Update fobj, g, h
+        ret = func(x, mu, lam, True, False, *arg)
+
+        g_norm = np.linalg.norm(ret.G, np.Inf)
+        lam_norm = np.linalg.norm(lam, np.Inf)
+        mu_norm = np.linalg.norm(mu, np.Inf)
+        z_norm = np.linalg.norm(z, np.Inf)
+
+        Lx = ret.fx + ret.Hx @ mu + ret.Gx @ lam
+        feascond = max([g_norm, max(ret.H)]) / (1 + max([np.linalg.norm(x, np.Inf), z_norm]))
+        gradcond = np.linalg.norm(Lx, np.Inf) / (1 + max([lam_norm, mu_norm]))
+
+        # feascond = calc_feascond(g=ret.G, h=ret.H, x=x, z=z)
+        # gradcond = calc_gradcond(Lx=Lx, lam=lam, mu=mu)
         error = np.max([feascond, gradcond])
 
         z_inv = diags(1.0 / z)

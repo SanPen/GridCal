@@ -164,16 +164,15 @@ def eval_h(x, Yf, Yt, from_idx, to_idx, pq, no_slack, Va_max, Va_min, Vm_max, Vm
     Sf2 = np.conj(Sf) * Sf
     St2 = np.conj(St) * St
 
-    hval = np.r_[Sf2.real - (rates[il] ** 2),  # rates "lower limit"
-                 St2.real - (rates[il] ** 2),  # rates "upper limit"
-                 vm[pq] - Vm_max[pq],  # voltage module upper limit
-                 Vm_min[pq] - vm[pq],  # voltage module lower limit
-                 Pg - Pg_max[ig],  # generator P upper limits
-                 Pg_min[ig] - Pg,  # generator P lower limits
-                 Qg - Qg_max[ig],  # generator Q upper limits
-                 Qg_min[ig] - Qg  # generation Q lower limits
-    ]
-
+    # hval = np.r_[Sf2.real - (rates[il] ** 2),  # rates "lower limit"
+    #              St2.real - (rates[il] ** 2),  # rates "upper limit"
+    #              vm[pq] - Vm_max[pq],  # voltage module upper limit
+    #              Vm_min[pq] - vm[pq],  # voltage module lower limit
+    #              Pg - Pg_max[ig],  # generator P upper limits
+    #              Pg_min[ig] - Pg,  # generator P lower limits
+    #              Qg - Qg_max[ig],  # generator Q upper limits
+    #              Qg_min[ig] - Qg  # generation Q lower limits
+    # ]
 
     hval = np.r_[Sf2.real - (rates[il] ** 2),  # rates "lower limit"
                  St2.real - (rates[il] ** 2),  # rates "upper limit"
