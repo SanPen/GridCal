@@ -28,10 +28,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Change order H vector and Jacobian">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="case6 working well up to here">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/NumericalMethods/ac_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/NumericalMethods/ac_opf.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/NumericalMethods/ips.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/NumericalMethods/ips.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/trunk/acopf/acopf_run.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acopf/acopf_run.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1677,7 +1677,7 @@
       <option name="project" value="LOCAL" />
       <updated>1693298903267</updated>
     </task>
-    <option name="localTasksCounter" value="537" />
+    <option name="localTasksCounter" value="539" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1730,8 +1730,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="removed active from EditableDevice and moved it to ParentBranchTemplate and InjectionTemplate" />
-    <MESSAGE value="refactored raw strings (WIP)" />
     <MESSAGE value="improved the GUI representation by taking the start and end sliders to a separated dialogue" />
     <MESSAGE value="started the var registry in the results" />
     <MESSAGE value="Fixed bugs with the new location of DeviceType&#10;&#10;Fixed bugs related to get_selected_buses()" />
@@ -1755,7 +1753,9 @@
     <MESSAGE value="Implement slicing also for gens" />
     <MESSAGE value="Change order to get Va, Vm" />
     <MESSAGE value="Change order H vector and Jacobian" />
-    <option name="LAST_COMMIT_MESSAGE" value="Change order H vector and Jacobian" />
+    <MESSAGE value="Modify feascond and gradcond, but debug more iterations" />
+    <MESSAGE value="case6 working well up to here" />
+    <option name="LAST_COMMIT_MESSAGE" value="case6 working well up to here" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2245,8 +2245,13 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Utils/NumericalMethods/ips.py</url>
-          <line>453</line>
-          <option name="timeStamp" value="1307" />
+          <line>351</line>
+          <option name="timeStamp" value="1323" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/NumericalMethods/ac_opf.py</url>
+          <line>1007</line>
+          <option name="timeStamp" value="1328" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

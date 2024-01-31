@@ -18,6 +18,7 @@ import numpy as np
 import pandas as pd
 from scipy import sparse
 from scipy.sparse import csc_matrix as csc
+from scipy.sparse import csr_matrix as csr
 from dataclasses import dataclass
 from scipy.sparse import lil_matrix
 
@@ -122,7 +123,9 @@ def eval_g(x, Ybus, Yf, Cg, Sd, ig, nig, pv, Vm_max, Sg_undis, slack) -> Vec:
     # Sg = (Pg_dis + Pg_undis) + 1j * (Qg_dis + Qg_undis)
     # dS = S + Sd - (Cg @ Sg)
 
-    dS = S + Sd - (Cg[:, ig] @ (Pg_dis + 1j * Qg_dis)) - (Cg[:, nig] @ Sg_undis)
+    S_dispatch = Cg[:, ig] @ (Pg_dis + 1j * Qg_dis)
+    S_undispatch = Cg[:, nig] @ Sg_undis
+    dS = S + Sd - S_dispatch - S_undispatch
 
     gval = np.r_[dS.real, dS.imag, va[slack], vm[pv] - Vm_max[pv]]
 
@@ -159,8 +162,11 @@ def eval_h(x, Yf, Yt, from_idx, to_idx, pq, no_slack, Va_max, Va_min, Vm_max, Vm
     va, vm, Pg, Qg = x2var(x, nVa=N, nVm=N, nPg=Ng, nQg=Ng)
 
     V = vm * np.exp(1j * va)
+    # Sf = V[from_idx[il]] * np.conj(Yf[il, :] @ V)
+    # St = V[to_idx[il]] * np.conj(Yt[il, :] @ V)
     Sf = V[from_idx[il]] * np.conj(Yf[il, :] @ V)
     St = V[to_idx[il]] * np.conj(Yt[il, :] @ V)
+
     Sf2 = np.conj(Sf) * Sf
     St2 = np.conj(St) * St
 
@@ -184,14 +190,15 @@ def eval_h(x, Yf, Yt, from_idx, to_idx, pq, no_slack, Va_max, Va_min, Vm_max, Vm
                  Qg_min[ig] - Qg  # generation Q lower limits
     ]
 
-    Sftot = V[from_idx] * np.conj(Yf @ V)
-    Sttot = V[to_idx] * np.conj(Yt @ V)
+    # Sftot = V[from_idx[il]] * np.conj(Yf[il, :] @ V)
+    # Sttot = V[to_idx[il]] * np.conj(Yt[il, :] @ V)
 
-    return hval, Sftot, Sttot
+    # return hval, Sftot, Sttot
+    return hval, Sf, St
 
 
 def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, nig, slack, no_slack, pq, pv, mu, lmbda,
-                           compute_jac: bool, compute_hess: bool, ):
+                           from_idx, to_idx, compute_jac: bool, compute_hess: bool, ):
     """
 
     :param x:
@@ -252,7 +259,7 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
         Gx = sparse.vstack([GS.real, GS.imag, GTH, Gvm]).T.tocsc()
 
         #############
-
+        # Old flow derivatives
         IfCJmat = np.conj(diags(Yf[il, :] @ V))
         ItCJmat = np.conj(diags(Yt[il, :] @ V))
         Sfmat = diags(diags(Cf[il, :] @ V) @ np.conj(Yf[il, :] @ V))
@@ -269,6 +276,64 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
 
         HSf = 2 * (Sfmat.real @ SfX.real + Sfmat.imag @ SfX.imag)
         HSt = 2 * (Stmat.real @ StX.real + Stmat.imag @ StX.imag)
+
+        # New flow derivatives
+        # If = Yf[il, :] @ V
+        # It = Yt[il, :] @ V
+        #
+        # Vnorm = V / abs(V)
+        #
+        # nb = len(V)
+        # nl = len(il)
+        # v_b = np.arange(nb)
+        # v_i = np.arange(nl)
+        #
+        # from_idx = from_idx[il]
+        # to_idx = to_idx[il]
+        #
+        # diagVf = csr((V[from_idx], (v_i, v_i)))
+        # diagIf = csr((If, (v_i, v_i)))
+        # diagVt = csr((V[to_idx], (v_i, v_i)))
+        # diagIt = csr((It, (v_i, v_i)))
+        # diagV  = csr((V, (v_b, v_b)))
+        # diagVnorm = csr((Vnorm, (v_b, v_b)))
+        #
+        # shape = (nl, nb)
+        # # Partial derivative of S w.r.t voltage phase angle.
+        # dSf_dVa = 1j * (np.conj(diagIf) *
+        #                 csr((V[from_idx], (v_i, from_idx)), shape) - diagVf * np.conj(Yf[il, :] * diagV))
+        #
+        # dSt_dVa = 1j * (np.conj(diagIt) *
+        #                 csr((V[to_idx], (v_i, to_idx)), shape) - diagVt * np.conj(Yt[il, :] * diagV))
+        #
+        # # Partial derivative of S w.r.t. voltage amplitude.
+        # dSf_dVm = diagVf * np.conj(Yf[il, :] * diagVnorm) + np.conj(diagIf) * \
+        #           csr((Vnorm[from_idx], (v_i, from_idx)), shape)
+        #
+        # dSt_dVm = diagVt * np.conj(Yt[il, :] * diagVnorm) + np.conj(diagIt) * \
+        #           csr((Vnorm[to_idx], (v_i, to_idx)), shape)
+        #
+        # Sf = V[from_idx] * np.conj(If)
+        # St = V[to_idx] * np.conj(It)
+        #
+        # dAf_dPf = csr((2 * Sf.real, (v_i, v_i)))
+        # dAf_dQf = csr((2 * Sf.imag, (v_i, v_i)))
+        # dAt_dPt = csr((2 * St.real, (v_i, v_i)))
+        # dAt_dQt = csr((2 * St.imag, (v_i, v_i)))
+        #
+        # # Partial derivative of apparent power magnitude w.r.t voltage
+        # # phase angle.
+        # dAf_dVa = dAf_dPf * dSf_dVa.real + dAf_dQf * dSf_dVa.imag
+        # dAt_dVa = dAt_dPt * dSt_dVa.real + dAt_dQt * dSt_dVa.imag
+        # # Partial derivative of apparent power magnitude w.r.t. voltage
+        # # amplitude.
+        # dAf_dVm = dAf_dPf * dSf_dVm.real + dAf_dQf * dSf_dVm.imag
+        # dAt_dVm = dAt_dPt * dSt_dVm.real + dAt_dQt * dSt_dVm.imag
+        #
+        # HSf = sparse.hstack([dAf_dVa, dAf_dVm, lil_matrix((nl, 2 * Ng))])
+        # HSt = sparse.hstack([dAt_dVa, dAt_dVm, lil_matrix((nl, 2 * Ng))])
+
+        #############
 
         # Hvu = np.zeros(len(pq))
         # Hvl = np.zeros(len(pq))
@@ -633,7 +698,8 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
     fx, Gx, Hx, fxx, Gxx, Hxx = jacobians_and_hessians(x=x, c1=c1, c2=c2, Cg=Cg, Cf=Cf, Ct=Ct, Yf=Yf, Yt=Yt,
                                                        Ybus=Ybus, Sbase=Sbase, il=il, ig=ig, nig=nig, slack=slack,
                                                        no_slack=no_slack, pq=pq, pv=pv,
-                                                       mu=mu, lmbda=lmbda, compute_jac=compute_jac,
+                                                       mu=mu, lmbda=lmbda, from_idx=from_idx, to_idx=to_idx,
+                                                       compute_jac=compute_jac,
                                                        compute_hess=compute_hess)
 
     return IpsFunctionReturn(f=f, G=G, H=H,
@@ -809,8 +875,6 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     # Bus identification lists
     slack = nc.vd
     no_slack = nc.pqpv
-    from_idx = nc.F
-    to_idx = nc.T
 
     # Bus and line parameters
     Sd = - nc.load_data.get_injections_per_bus() / Sbase
@@ -836,6 +900,9 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     rates = nc.rates / Sbase
     Va_max = nc.bus_data.angle_max
     Va_min = nc.bus_data.angle_min
+
+    from_idx = nc.F
+    to_idx = nc.T
 
     nbr = nc.branch_data.nelm
     nbus = nc.bus_data.nbus
@@ -867,7 +934,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     p0gen = ((nc.generator_data.pmax + nc.generator_data.pmin) / (2 * nc.Sbase))[ig]
     q0gen = ((nc.generator_data.qmax + nc.generator_data.qmin) / (2 * nc.Sbase))[ig]
     va0 = np.angle(nc.bus_data.Vbus)
-    vm0 = np.abs(nc.bus_data.Vbus)
+    # vm0 = np.abs(nc.bus_data.Vbus)
+    vm0 = (Vm_max + Vm_min) / 2
 
     # compose the initial values
     x0 = var2x(Va=va0,
@@ -937,7 +1005,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     S = result.structs.S
     Sf = result.structs.Sf
     St = result.structs.St
-    loading = np.abs(Sf) / (rates + 1e-9)
+    loading = np.abs(Sf) / (rates[il] + 1e-9)
     if pf_options.verbose > 0:
         df_bus = pd.DataFrame(data={'Va (rad)': Va, 'Vm (p.u.)': Vm,
                                     'dual price (€/MW)': lam_p, 'dual price (€/MVAr)': lam_q})
