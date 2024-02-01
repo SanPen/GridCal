@@ -23,7 +23,7 @@ def test_srap():
     con_options.srap_max_power = 8
     con_drv = ContingencyAnalysisDriver(grid=grid,
                                         options=con_options,
-                                        engine=EngineType.NewtonPA)
+                                        engine=EngineType.GridCal)
 
     con_drv.run()
 
@@ -43,7 +43,7 @@ def test_srap():
     con_options.srap_max_power = 1
     con_drv = ContingencyAnalysisDriver(grid=grid,
                                         options=con_options,
-                                        engine=EngineType.NewtonPA)
+                                        engine=EngineType.GridCal)
 
     con_drv.run()
 
@@ -68,7 +68,7 @@ def test_srap():
     con_options.srap_max_power = 8
     con_drv = ContingencyAnalysisDriver(grid=grid,
                                         options=con_options,
-                                        engine=EngineType.NewtonPA)
+                                        engine=EngineType.GridCal)
 
     con_drv.run()
 
@@ -95,7 +95,7 @@ def test_srap():
     con_options.srap_max_power = 8
     con_drv = ContingencyAnalysisDriver(grid=grid,
                                         options=con_options,
-                                        engine=EngineType.NewtonPA)
+                                        engine=EngineType.GridCal)
 
     con_drv.run()
 
@@ -115,7 +115,7 @@ def test_srap():
     con_options.srap_max_power = 1
     con_drv = ContingencyAnalysisDriver(grid=grid,
                                         options=con_options,
-                                        engine=EngineType.NewtonPA)
+                                        engine=EngineType.GridCal)
 
     con_drv.run()
 
@@ -139,7 +139,7 @@ def test_srap():
     con_options.srap_max_power = 8
     con_drv = ContingencyAnalysisDriver(grid=grid,
                                         options=con_options,
-                                        engine=EngineType.NewtonPA)
+                                        engine=EngineType.GridCal)
 
     con_drv.run()
 
