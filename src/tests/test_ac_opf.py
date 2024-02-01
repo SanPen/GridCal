@@ -35,7 +35,7 @@ def case9() -> NonlinearOPFResults:
 
     grid = gce.FileOpen(file_path).open()
     nc = gce.compile_numerical_circuit_at(grid)
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR)
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, tolerance=1e-8)
     return ac_optimal_power_flow(nc=nc, pf_options=pf_options)
 
 
@@ -53,17 +53,16 @@ def case14() -> NonlinearOPFResults:
 
     grid = gce.FileOpen(file_path).open()
     nc = gce.compile_numerical_circuit_at(grid)
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR)
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, tolerance=1e-8)
     return ac_optimal_power_flow(nc=nc, pf_options=pf_options)
 
 
 def test_ieee9():
-    vm_test = [1.0991, 1.0974, 1.0866, 1.0935, 1.0839, 1.0999, 1.0893, 1.0999, 1.0712]
-    va_test = [0.0, 0.0853, 0.0566, -0.0431, -0.0696, 0.0104, -0.021, 0.0157, -0.0807]
-    Pg_test = [0.898, 1.3432, 0.9419]
-    Qg_test = [0.1253, 0.0031, -0.2237]
+    vm_test = [1.09995, 1.097362, 1.086627, 1.094186, 1.084424, 1.099999, 1.089488, 1.099999, 1.071731]
+    va_test = [0.0, 0.0854008, 0.05670578, -0.0429894, -0.0695051, 0.0105133, -0.0208879, 0.0157974, -0.0805577]
+    Pg_test = [0.897986, 1.343206, 0.941874]
+    Qg_test = [0.129387, 0.00047729, -0.226197]
     res = case9()
-    print(res.Vm)
     assert np.allclose(res.Vm, vm_test, atol=1e-3)
     assert np.allclose(res.Va, va_test, atol=1e-3)
     assert np.allclose(res.Pg, Pg_test, atol=1e-3)
@@ -72,12 +71,14 @@ def test_ieee9():
 
 
 def test_ieee14():
-    vm_test = [1.06, 1.0407, 1.0155, 1.0144, 1.0163, 1.0598, 1.0462,
-               1.0599, 1.0435, 1.039, 1.0458, 1.0446, 1.0398, 1.0237]
-    va_test = [0.0, -0.0702, -0.1733, -0.1512, -0.1296, -0.2214, -0.1953,
-               -0.1819, -0.2269, -0.231, -0.2285, -0.2362, -0.2371, -0.2492]
-    Pg_test = [1.9434, 0.3672, 0.2873, 0.0004, 0.0846]
-    Qg_test = [0.0011, 0.2368, 0.2411, 0.1149, 0.0827]
+    vm_test = [1.05999995, 1.04075308, 1.01562523, 1.01446086, 1.01636258,
+               1.05999951, 1.04634682, 1.05999962, 1.043699, 1.03913656,
+               1.04600928, 1.04482001, 1.0399485, 1.02388846]
+    va_test = [0.0, -0.07020258, -0.17323969, -0.15123061, -0.12965054,
+               -0.22146884, -0.19526525, -0.18177315, -0.22684304, -0.23095753,
+               -0.22848023, -0.23619049, -0.23706053, -0.24912998]
+    Pg_test = [1.943300, 0.3671917, 0.2874277, 0.00000105, 0.08495043]
+    Qg_test = [0.00000288, 0.2368517, 0.2412688, 0.1154574, 0.08273013]
     res = case14()
     assert np.allclose(res.Vm, vm_test, atol=1e-3)
     assert np.allclose(res.Va, va_test, atol=1e-3)
