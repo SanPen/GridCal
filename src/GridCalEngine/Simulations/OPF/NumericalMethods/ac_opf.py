@@ -848,6 +848,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                           pf_options: PowerFlowOptions,
                           debug: bool = False,
                           use_autodiff: bool = False,
+                          pf_init: bool = True,
                           plot_error: bool = False) -> NonlinearOPFResults:
     """
 
@@ -872,10 +873,10 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     Cf = nc.Cf
     Ct = nc.Ct
 
-    dfa = pd.DataFrame(Yf.A.real)
-    dfb = pd.DataFrame(Yf.A.imag)
-    dfa.to_excel('Yfa.xlsx')
-    dfb.to_excel('Yfb.xlsx')
+    #dfa = pd.DataFrame(Yf.A.real)
+    #dfb = pd.DataFrame(Yf.A.imag)
+    #dfa.to_excel('Yfa.xlsx')
+    #dfb.to_excel('Yfb.xlsx')
 
     # Bus identification lists
     slack = nc.vd
@@ -928,19 +929,20 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     pf_results = multi_island_pf_nc(nc=nc, options=pf_options)
 
     # ignore power from Z and I of the load
-    # s0gen = (pf_results.Sbus - nc.load_data.get_injections_per_bus()) / nc.Sbase
-    #p0gen = nc.generator_data.C_bus_elm.T @ np.real(s0gen)
-    #q0gen = nc.generator_data.C_bus_elm.T @ np.imag(s0gen)
-    #vm0 = np.abs(pf_results.voltage)
-    #va0 = np.angle(pf_results.voltage)
+
+    if pf_init:
+        s0gen = (pf_results.Sbus - nc.load_data.get_injections_per_bus()) / nc.Sbase
+        p0gen = nc.generator_data.C_bus_elm.T @ np.real(s0gen)
+        q0gen = nc.generator_data.C_bus_elm.T @ np.imag(s0gen)
+        vm0 = np.abs(pf_results.voltage)
+        va0 = np.angle(pf_results.voltage)
 
     # nc.Vbus  # dummy initialization
-
-    p0gen = ((nc.generator_data.pmax + nc.generator_data.pmin) / (2 * nc.Sbase))[ig]
-    q0gen = ((nc.generator_data.qmax + nc.generator_data.qmin) / (2 * nc.Sbase))[ig]
-    va0 = np.angle(nc.bus_data.Vbus)
-    # vm0 = np.abs(nc.bus_data.Vbus)
-    vm0 = (Vm_max + Vm_min) / 2
+    else:
+        p0gen = ((nc.generator_data.pmax + nc.generator_data.pmin) / (2 * nc.Sbase))[ig]
+        q0gen = ((nc.generator_data.qmax + nc.generator_data.qmin) / (2 * nc.Sbase))[ig]
+        va0 = np.angle(nc.bus_data.Vbus)
+        vm0 = (Vm_max + Vm_min) / 2
 
     # compose the initial values
     x0 = var2x(Va=va0,
