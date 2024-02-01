@@ -15,7 +15,6 @@ def createExampleGrid() -> MultiCircuit:
     # Add busbar representing physical nodes not the calculation ones
     bus_bar_dict = {}
     for i in range(5):
-        # TODO: Me genera confusión que esto se llame igual que el próximo Busbar que será el nudo de cálculo
         b = dev.BusBar(name='B{}'.format(i + 1))
         bus_bar_dict['B{}'.format(i + 1)] = b
         grid.bus_bars.append(b)
