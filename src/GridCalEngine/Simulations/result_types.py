@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -134,6 +134,9 @@ class ResultTypes(Enum):
 
     # contingency analysis
     ContingencyAnalysisReport = 'Contingencies report', DeviceType.NoDevice
+
+    # Srap
+    SrapFixingProbability = 'Srap fixing report', DeviceType.NoDevice
 
     # Hydro OPF
     FluidCurrentLevel = 'Reservoir fluid level', DeviceType.FluidNodeDevice

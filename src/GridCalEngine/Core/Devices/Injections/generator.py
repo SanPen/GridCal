@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -47,6 +47,8 @@ class Generator(InjectionTemplate):
                  Pmin: float = 0.0,
                  Pmax: float = 9999.0,
                  Cost: float = 1.0,
+                 Cost2: float = 0.0,
+                 Cost0: float = 0.0,
                  Sbase: float = 100,
                  enabled_dispatch=True,
                  mttf: float = 0.0,
@@ -193,8 +195,8 @@ class Generator(InjectionTemplate):
             self.q_curve.make_default_q_curve(self.Snom, self.qmin_set, self.qmax_set, n=1)
             self.custom_q_points = False
 
-        self.Cost2 = 0.0  # Cost of operation €/MW²
-        self.Cost0 = 0.0  # Cost of operation €/MW
+        self.Cost2 = Cost2  # Cost of operation e/MW²
+        self.Cost0 = Cost0  # Cost of operation e
 
         self.StartupCost = 0.0
         self.ShutdownCost = 0.0
@@ -251,8 +253,8 @@ class Generator(InjectionTemplate):
         self.register(key='X2', units='p.u.', tpe=float, definition='Total negative sequence reactance.')
         self.register(key='Cost2', units='e/MWh²', tpe=float, definition='Generation quadratic cost. Used in OPF.',
                       profile_name='Cost2_prof')
-        self.register(key='Cost', units='e/MWh', tpe=float, definition='Generation linear cost. Used in OPF.',
-                      profile_name='Cost_prof')
+        # self.register(key='Cost', units='e/MWh', tpe=float, definition='Generation linear cost. Used in OPF.',
+        #               profile_name='Cost_prof')
         self.register(key='Cost0', units='e/h', tpe=float, definition='Generation constant cost. Used in OPF.',
                       profile_name='Cost0_prof')
         self.register(key='StartupCost', units='e/h', tpe=float, definition='Generation start-up cost. Used in OPF.')
@@ -440,7 +442,7 @@ class Generator(InjectionTemplate):
                 'qmax': 'MVAr',
                 'pmin': 'MW',
                 'pmax': 'MW',
-                'cost': '€/MWh'}
+                'cost': 'e/MWh'}
 
     def plot_profiles(self, time=None, show_fig=True):
         """

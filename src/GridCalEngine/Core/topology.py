@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -288,10 +288,10 @@ def compile_types(Pbus: Vec, types: IntVec) -> Tuple[IntVec, IntVec, IntVec, Int
     else:
         pass  # no problem :)
 
-    pqpv = np.concatenate((pq, pv))
-    pqpv.sort()
+    no_slack = np.concatenate((pq, pv))
+    no_slack.sort()
 
-    return ref, pq, pv, pqpv
+    return ref, pq, pv, no_slack
 
 
 def get_csr_bus_indices(C: csr_matrix):

@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -77,8 +77,8 @@ class Line(ParentBranch):
         :param r2: negative-sequence resistence (p.u.)
         :param x2: negative-sequence reactance (p.u.)
         :param b2: negative-sequence susceptance (p.u.)
-        :param capex: Cost of investment (€/MW)
-        :param opex: Cost of operation (€/MWh)
+        :param capex: Cost of investment (e/MW)
+        :param opex: Cost of operation (e/MWh)
         :param build_status: build status (now time)
         """
 
@@ -165,13 +165,13 @@ class Line(ParentBranch):
                                  'linear approximation.For example:Copper @ 20ºC: 0.004041,Copper @ 75ºC: 0.00323,'
                                  'Annealed copper @ 20ºC: 0.00393,Aluminum @ 20ºC: 0.004308,Aluminum @ 75ºC: 0.00330')
 
-        self.register(key='Cost', units='e/MWh', tpe=float, definition='Cost of overloads. Used in OPF.',
-                      profile_name='Cost_prof')
-        self.register(key='capex', units='e/MW', tpe=float,
-                      definition='Cost of investment. Used in expansion planning.')
-        self.register(key='opex', units='e/MWh', tpe=float, definition='Cost of operation. Used in expansion planning.')
-        self.register(key='build_status', units='', tpe=BuildStatus,
-                      definition='Branch build status. Used in expansion planning.')
+        # self.register(key='Cost', units='e/MWh', tpe=float, definition='Cost of overloads. Used in OPF.',
+        #               profile_name='Cost_prof')
+        # self.register(key='capex', units='e/MW', tpe=float,
+        #               definition='Cost of investment. Used in expansion planning.')
+        # self.register(key='opex', units='e/MWh', tpe=float, definition='Cost of operation. Used in expansion planning.')
+        # self.register(key='build_status', units='', tpe=BuildStatus,
+        #               definition='Branch build status. Used in expansion planning.')
         self.register(key='r_fault', units='p.u.', tpe=float,
                       definition='Resistance of the mid-line fault.Used in short circuit studies.')
         self.register(key='x_fault', units='p.u.', tpe=float,
@@ -242,7 +242,7 @@ class Line(ParentBranch):
         :return:
         """
         data = list()
-        for name, properties in self.editable_headers.items():
+        for name, properties in self.registered_properties.items():
             obj = getattr(self, name)
 
             if properties.tpe == DeviceType.BusDevice:
@@ -252,7 +252,7 @@ class Line(ParentBranch):
                 if obj is None:
                     obj = ''
                 else:
-                    obj = str(obj)
+                    obj = obj.idtag
 
             elif properties.tpe not in [str, float, int, bool]:
                 obj = str(obj)

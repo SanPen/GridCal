@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -20,7 +20,7 @@ import time
 import scipy.sparse as sp
 import numpy as np
 
-from GridCalEngine.Simulations.sparse_solve import get_sparse_type, get_linear_solver
+from GridCalEngine.Utils.NumericalMethods.sparse_solve import get_sparse_type, get_linear_solver
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 import GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions as cf
 from GridCalEngine.basic_structures import CxVec, Vec, IntVec
@@ -67,7 +67,7 @@ def dcpf(Ybus: sp.csc_matrix, Bpqpv: sp.csc_matrix, Bref: sp.csc_matrix, Btau: s
         # Since we have removed the slack nodes, we must account their influence as Injections Bref * Va_ref
         # We also need to account for the effect of the phase shifters
         Pps = Btau @ tau
-        Pinj = Sbus[pvpq].real - (Bref @ Va_ref) * Vm[pvpq] - Pps[pvpq]
+        Pinj = Sbus[pvpq].real - (Bref @ Va_ref) * Vm[pvpq] + Pps[pvpq]
 
         # update angles for non-reference buses
         Va[pvpq] = linear_solver(Bpqpv, Pinj)

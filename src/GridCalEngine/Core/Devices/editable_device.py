@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -22,19 +22,56 @@ from GridCalEngine.enumerations import (DeviceType, TimeFrame, BuildStatus, Wind
                                         ConverterControlType)
 from GridCalEngine.basic_structures import Vec, IntVec, BoolVec
 
+# types that can be assigned to a GridCal property
+GCPROP_TYPES = Union[
+    Type[int],
+    Type[bool],
+    Type[float],
+    Type[str],
+    DeviceType,
+    Type[BuildStatus],
+    Type[WindingsConnection],
+    Type[TransformerControlType],
+    Type[ConverterControlType]
+]
+
+
+def parse_idtag(val: Union[str, None]) -> str:
+    """
+    idtag setter
+    :param val: any string or None
+    """
+    if val is None:
+        return uuid.uuid4().hex  # generate a proper UUIDv4 string
+    elif isinstance(val, str):
+        if len(val) == 32:
+            return val  # this is probably a proper UUID
+        elif len(val) == 0:
+            return uuid.uuid4().hex  # generate a proper UUIDv4 string
+        else:
+            candidate_val = val.replace('_', '').replace('-', '')
+            if len(candidate_val) == 32:
+                return candidate_val  # if the string passed can be a UUID, set it
+            else:
+                return val  # otherwise this is just a plain string, that we hope is valid...
+    else:
+        return str(val)
+
+
 class GCProp:
     """
     GridCal property
     """
+
     def __init__(self,
                  prop_name: str,
                  units: str,
-                 tpe: Union[Type[int], Type[bool], Type[float], Type[str], DeviceType, Type[BuildStatus]],
+                 tpe: GCPROP_TYPES,
                  definition: str,
                  profile_name: str = '',
                  display: bool = True,
                  editable: bool = True,
-                 old_names: List[str] = list()):
+                 old_names: List[str] = None):
         """
         GridCal property
         :param prop_name:
@@ -60,7 +97,14 @@ class GCProp:
 
         self.editable = editable
 
-        self.old_names = old_names
+        self.old_names = old_names if old_names is not None else list()
+
+    def has_profile(self) -> bool:
+        """
+        Check if this property has an associated profile
+        :return:
+        """
+        return self.profile_name != ''
 
     def get_class_name(self) -> str:
         """
@@ -92,6 +136,12 @@ class GCProp:
                 "descriptions": self.definition,
                 'comment': ''}
 
+    def __str__(self):
+        return self.name
+
+    def __repr__(self):
+        return "prop:" + self.name
+
 
 class EditableDevice:
     """
@@ -111,29 +161,75 @@ class EditableDevice:
         :param code: alternative code to identify this object in other databases (i.e. psse number tec...)
         """
 
-        if idtag is None or idtag == '':
-            self.idtag = uuid.uuid4().hex
-        else:
-            self.idtag = idtag.replace('_', '').replace('-', '')
+        self._idtag = parse_idtag(val=idtag)
 
-        self._name = name
+        self._name: str = name
 
-        self.code = code
+        self.code: str = code
 
         self.device_type: DeviceType = device_type
 
         # associated graphic object
         self._graphic_obj = None  # todo: this should disappear
 
-        self.editable_headers: Dict[str, GCProp] = dict()
+        # list of registered properties. This is supremelly useful when accessing via the Table and Tree models
+        self.property_list: List[GCProp] = list()
 
-        self.non_editable_attributes: List[str] = list()
+        self.registered_properties: Dict[str, GCProp] = dict()
+
+        self.non_editable_properties: List[str] = list()
 
         self.properties_with_profile: Dict[str, Optional[Any]] = dict()
 
         self.register(key='idtag', units='', tpe=str, definition='Unique ID', editable=False)
         self.register(key='name', units='', tpe=str, definition='Name of the branch.')
         self.register(key='code', units='', tpe=str, definition='Secondary ID')
+
+    def __str__(self) -> str:
+        """
+        Name of the object
+        :return: string
+        """
+        return self.name
+
+    def __repr__(self) -> str:
+        return self.idtag + '::' + self.name
+
+    def __hash__(self) -> int:
+        # alternatively, return hash(repr(self))
+        return int(self.idtag, 16)  # hex string to int
+
+    def __lt__(self, other) -> bool:
+        return self.__hash__() < other.__hash__()
+
+    def __eq__(self, other) -> bool:
+        if hasattr(other, 'idtag'):
+            return self.idtag == other.idtag
+        else:
+            return False
+
+    @property
+    def idtag(self) -> str:
+        """
+        idtag getter
+        :return: string, hopefully an UUIDv4
+        """
+        return self._idtag
+
+    @idtag.setter
+    def idtag(self, val: Union[str, None]):
+        """
+        idtag setter
+        :param val: any string or None
+        """
+        self._idtag = parse_idtag(val)
+
+    def flatten_idtag(self):
+        """
+        Remove useless undercore and
+        :return:
+        """
+        self._idtag = self._idtag.replace('_', '').replace('-', '')
 
     @property
     def type_name(self) -> str:
@@ -151,27 +247,21 @@ class EditableDevice:
         lenghts = [8, 4, 4, 4, 12]
         chunks = list()
         s = 0
-        for l in lenghts:
-            a = self.idtag[s:s + l]
+        for length_ in lenghts:
+            a = self.idtag[s:s + length_]
             chunks.append(a)
-            s += l
+            s += length_
         return "-".join(chunks)
 
     def register(self,
                  key: str,
                  units: str,
-                 tpe: Union[Type[int], Type[bool], Type[float], Type[str],
-                            DeviceType,
-                            Type[BuildStatus],
-                            Type[WindingsConnection],
-                            Type[TransformerControlType],
-                            Type[ConverterControlType]
-                            ],
+                 tpe: GCPROP_TYPES,
                  definition: str,
                  profile_name: str = '',
                  display: bool = True,
                  editable: bool = True,
-                 old_names: List[str] = list()):
+                 old_names: List[str] = None):
         """
         Register property
         The property must exist, and if provided, the profile_name property must exist too
@@ -186,21 +276,28 @@ class EditableDevice:
         """
         assert (hasattr(self, key))  # the property must exist, this avoids bugs when registering
 
-        self.editable_headers[key] = GCProp(prop_name=key,
-                                            units=units,
-                                            tpe=tpe,
-                                            definition=definition,
-                                            profile_name=profile_name,
-                                            display=display,
-                                            editable=editable,
-                                            old_names=old_names)
+        prop = GCProp(prop_name=key,
+                      units=units,
+                      tpe=tpe,
+                      definition=definition,
+                      profile_name=profile_name,
+                      display=display,
+                      editable=editable,
+                      old_names=old_names)
+
+        if key in self.registered_properties.keys():
+            raise Exception(f"Property {key} already registered!")
+
+        self.registered_properties[key] = prop
+
+        self.property_list.append(prop)
 
         if profile_name != '':
-            assert (hasattr(self, profile_name))  # the property must exist, this avoids bugs in registering
+            assert (hasattr(self, profile_name))  # the profile property must exist, this avoids bugs in registering
             self.properties_with_profile[key] = profile_name
 
         if not editable:
-            self.non_editable_attributes.append(key)
+            self.non_editable_properties.append(key)
 
     def get_property_name_replacements_dict(self) -> Dict[str, str]:
         """
@@ -209,7 +306,7 @@ class EditableDevice:
         :return: {old_name: new_name} dict
         """
         data = dict()
-        for key, prop in self.editable_headers.items():
+        for key, prop in self.registered_properties.items():
 
             for old_name in prop.old_names:
                 data[old_name] = prop.name
@@ -222,10 +319,12 @@ class EditableDevice:
         Get the associated graphical object (if any)
         :return: graphical object
         """
+        # todo: this should disappear
         return self._graphic_obj
 
     @graphic_obj.setter
     def graphic_obj(self, obj):
+        # todo: this should disappear
         self._graphic_obj = obj
 
     def generate_uuid(self):
@@ -233,29 +332,6 @@ class EditableDevice:
         Generate new UUID for the idtag property
         """
         self.idtag = uuid.uuid4().hex
-
-    def __str__(self) -> AnyStr:
-        """
-        Name of the object
-        :return: string
-        """
-        return self.name
-
-    def __repr__(self):
-        return self.idtag + '::' + self.name
-
-    def __hash__(self):
-        # alternatively, return hash(repr(self))
-        return int(self.idtag, 16)  # hex string to int
-
-    def __lt__(self, other):
-        return self.__hash__() < other.__hash__()
-
-    def __eq__(self, other):
-        if hasattr(other, 'idtag'):
-            return self.idtag == other.idtag
-        else:
-            return False
 
     @property
     def name(self) -> str:
@@ -275,7 +351,7 @@ class EditableDevice:
         """
 
         data = list()
-        for name, properties in self.editable_headers.items():
+        for name, properties in self.registered_properties.items():
             obj = getattr(self, name)
             if properties.tpe in [str, float, int, bool]:
                 data.append(obj)
@@ -294,7 +370,86 @@ class EditableDevice:
         """
         Return a list of headers
         """
-        return list(self.editable_headers.keys())
+        return list(self.registered_properties.keys())
+
+    def get_number_of_properties(self) -> int:
+        """
+        Return the number of registered properties
+        :return: int
+        """
+        return len(self.property_list)
+
+    def get_properties_containing_object(self, obj: "EditableDevice") -> Tuple[List[GCProp], List[int]]:
+        """
+        Return the list of properties that contain a certain object
+        :param obj:
+        :return: list of GCProp, list of indices
+        """
+        props = list()
+        indices = list()
+        for i, prop in enumerate(self.property_list):
+            if getattr(self, prop.name) == obj:
+                props.append(prop)
+                indices.append(i)
+
+        return props, indices
+
+    def get_property_value(self, prop: GCProp, t_idx: Union[None, int]) -> GCProp:
+        """
+        Return the stored object value from the property index
+        :param prop: GCProp
+        :param t_idx: Time index, None for Snapshot values
+        :return: Whatever value is there
+        """
+
+        if t_idx is None:
+            # pick the snapshot value whatever it is
+            return getattr(self, prop.name)
+        else:
+            if prop.has_profile():
+                # the property has a profile, return the value at t_idx
+                return getattr(self, prop.profile_name)[t_idx]
+            else:
+                # the property has no profile, just return it
+                return getattr(self, prop.name)
+
+    def get_property_by_idx(self, property_idx: int) -> GCProp:
+        """
+        Return the stored object value from the property index
+        :param property_idx: Property index
+        :return: GCProp
+        """
+        return self.property_list[property_idx]
+
+    def get_property_value_by_idx(self, property_idx: int, t_idx: Union[None, int]) -> Any:
+        """
+        Return the stored object value from the property index
+        :param property_idx: Property index
+        :param t_idx: Time index, None for Snapshot values
+        :return: Whatever value is there
+        """
+        prop = self.property_list[property_idx]
+        return self.get_property_value(prop=prop, t_idx=t_idx)
+
+    def set_property_value(self, prop: GCProp, value: Any, t_idx: Union[None, int]):
+        """
+        Return the stored object value from the property index
+        :param prop: GCProp
+        :param value: any value is there
+        :param t_idx: Time index, None for Snapshot values
+        :return: Whatever value is there
+        """
+
+        if t_idx is None:
+            # set the snapshot value whatever it is
+            setattr(self, prop.name, value)
+        else:
+            if prop.has_profile():
+                # the property has a profile, get it and set the t_idx value
+                getattr(self, prop.profile_name)[t_idx] = value
+            else:
+                # the property has no profile, just return it
+                setattr(self, prop.name, value)
 
     def create_profiles(self, index):
         """
@@ -339,7 +494,7 @@ class EditableDevice:
         """
         # get the value of the magnitude
         x = getattr(self, magnitude)
-        tpe = self.editable_headers[magnitude].tpe
+        tpe = self.registered_properties[magnitude].tpe
         if arr_in_pu:
             val = arr * x
         else:
@@ -482,4 +637,3 @@ class EditableDevice:
         g = random.randint(0, 128)
         b = random.randint(0, 128)
         return self.rgb2hex(r, g, b)
-

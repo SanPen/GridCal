@@ -10,7 +10,7 @@ main_circuit = FileOpen(fname).open()
 # main_circuit.buses[3].controlled_generators[0].enabled_dispatch = False
 
 # get the power flow options from the GUI
-solver = SolverType.DC_OPF
+solver = SolverType.LINEAR_OPF
 mip_solver = MIPSolvers.SCIP
 grouping = TimeGrouping.Daily
 pf_options = PowerFlowOptions()

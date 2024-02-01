@@ -23,6 +23,7 @@ pyarrow
 fastparquet
 darkdetect
 pyqtdarktheme
+# qdarktheme
 nptyping
 windpowerlib
 pvlib

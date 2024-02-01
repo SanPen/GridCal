@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -19,7 +19,7 @@ import time
 import scipy
 import numpy as np
 import scipy.sparse as sp
-from GridCalEngine.Simulations.sparse_solve import get_sparse_type, get_linear_solver
+from GridCalEngine.Utils.NumericalMethods.sparse_solve import get_sparse_type, get_linear_solver
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
 import GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions as cf
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
@@ -84,8 +84,8 @@ def levenberg_marquardt_pf(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_
         nn = 2 * npq + npv
         Idn = sp.diags(np.ones(nn))  # csc_matrix identity
         H: sp.csc_matrix = sp.csc_matrix((0, 0))
-        H1: sp.csc_matrix = sp.csc_matrix((0, 0))
-        H2: sp.csc_matrix = sp.csc_matrix((0, 0))
+        Ht: sp.csc_matrix = sp.csc_matrix((0, 0))
+        HtH: sp.csc_matrix = sp.csc_matrix((0, 0))
         Scalc = S0  # is updated later
 
         if verbose > 1:
@@ -108,10 +108,10 @@ def levenberg_marquardt_pf(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_
 
                 # system matrix
                 # H1 = H^t
-                H1 = H.transpose()  # .tocsr()
+                Ht = H.transpose()  # .tocsr()
 
                 # H2 = H1·H
-                H2 = H1.dot(H)
+                HtH = Ht @ H
 
             # evaluate the solution error F(x0)
             Sbus = cf.compute_zip_power(S0, I0, Y0, Vm)
@@ -120,14 +120,14 @@ def levenberg_marquardt_pf(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_
 
             # set first value of lmbda
             if iter_ == 0:
-                lbmda = 1e-3 * H2.diagonal().max()
+                lbmda = 1e-3 * HtH.diagonal().max()
 
             # compute system matrix A = H^T·H - lambda·I
-            A = (H2 + lbmda * Idn).tocsc()
+            A = (HtH + lbmda * Idn).tocsc()
 
             # right-hand side
             # H^t·dz
-            rhs = H1.dot(dz)
+            rhs = Ht.dot(dz)
 
             # Solve the increment
             dx = linear_solver(A, rhs)
