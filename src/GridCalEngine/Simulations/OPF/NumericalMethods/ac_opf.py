@@ -993,7 +993,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                                            verbose=pf_options.verbose,
                                            max_iter=pf_options.max_iter,
                                            tol=pf_options.tolerance,
-                                           trust=pf_options.trust)
+                                           trust=pf_options.trust_radius)
 
     # convert the solution to the problem variables
     Va, Vm, Pg_dis, Qg_dis = x2var(result.x, nVa=nbus, nVm=nbus, nPg=ngg, nQg=ngg)

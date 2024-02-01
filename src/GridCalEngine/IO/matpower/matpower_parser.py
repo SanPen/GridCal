@@ -382,7 +382,7 @@ def parse_branches_data(circuit: MultiCircuit, data, bus_idx_dict, logger: Logge
                                  tap_module=m,
                                  tap_module_max=table[i, matpower_branches.MA_MAX],
                                  tap_module_min=table[i, matpower_branches.MA_MIN],
-                                 tap_phase=table[i, matpower_branches.SHIFT] * np.pi / 180,
+                                 tap_phase=np.deg2rad(table[i, matpower_branches.SHIFT]),  # * np.pi / 180,
                                  tap_phase_max=np.deg2rad(table[i, matpower_branches.ANGMAX]),
                                  tap_phase_min=np.deg2rad(table[i, matpower_branches.ANGMIN]),
                                  G0sw=table[i, matpower_branches.GSW],
@@ -432,7 +432,7 @@ def parse_branches_data(circuit: MultiCircuit, data, bus_idx_dict, logger: Logge
                                                rate=rate,
                                                monitor_loading=monitor_loading,
                                                tap_module=table[i, matpower_branches.TAP],
-                                               tap_phase=table[i, matpower_branches.SHIFT] * np.pi / 180,
+                                               tap_phase=np.deg2rad(table[i, matpower_branches.SHIFT]),  # * np.pi / 180,
                                                active=bool(table[i, matpower_branches.BR_STATUS]))
                     circuit.add_transformer2w(branch)
                     logger.add_info('Branch as 2w transformer', 'Branch {}'.format(str(i + 1)))
@@ -486,7 +486,7 @@ def parse_branches_data(circuit: MultiCircuit, data, bus_idx_dict, logger: Logge
                                            rate=rate,
                                            monitor_loading=monitor_loading,
                                            tap_module=table[i, matpower_branches.TAP],
-                                           tap_phase=table[i, matpower_branches.SHIFT] * np.pi / 180,
+                                           tap_phase=np.deg2rad(table[i, matpower_branches.SHIFT]),  # * np.pi / 180,
                                            active=bool(table[i, matpower_branches.BR_STATUS]))
                 circuit.add_transformer2w(branch)
                 logger.add_info('Branch as 2w transformer', 'Branch {}'.format(str(i + 1)))

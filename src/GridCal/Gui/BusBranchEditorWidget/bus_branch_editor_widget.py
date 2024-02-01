@@ -67,6 +67,7 @@ from GridCal.Gui.BusBranchEditorWidget.Injections.generator_graphics import Gene
 from GridCal.Gui.BusBranchEditorWidget.generic_graphics import ACTIVE
 import GridCal.Gui.Visualization.visualization as viz
 import GridCal.Gui.Visualization.palettes as palettes
+from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCal.Gui.messages import info_msg
 from matplotlib import pyplot as plt
 
@@ -344,6 +345,21 @@ class BusBranchEditorWidget(QSplitter):
 
         if diagram is not None:
             self.draw()
+
+    def set_editor_model(self, api_object: EditableDevice, dictionary_of_lists: Dict[str, List[EditableDevice]] = {}):
+        """
+        Set an api object to appear in the editable table view of the editor
+        :param api_object: any EditableDevice
+        :param dictionary_of_lists: dictionary of lists of objects that may be referenced to
+        """
+        mdl = ObjectsModel(objects=[api_object],
+                           editable_headers=api_object.registered_properties,
+                           parent=self.object_editor_table,
+                           editable=True,
+                           transposed=True,
+                           dictionary_of_lists=dictionary_of_lists)
+
+        self.object_editor_table.setModel(mdl)
 
     def graphicsDragEnterEvent(self, event: QDragEnterEvent) -> None:
         """
