@@ -28,12 +28,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="improved search_property()">
-      <change afterPath="$PROJECT_DIR$/src/trunk/substation_reduction/topology_processor_bfs.py" afterDir="false" />
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Improved the delete bus bar function">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/Substation/busbar.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/Substation/busbar.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Core/topology.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Core/topology.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/substation_reduction/topology_processor.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/substation_reduction/topology_processor.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/trunk/substation_reduction/topology_processor_bfs.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/substation_reduction/topology_processor_bfs.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1704,7 +1701,7 @@
       <option name="project" value="LOCAL" />
       <updated>1693298903267</updated>
     </task>
-    <option name="localTasksCounter" value="543" />
+    <option name="localTasksCounter" value="545" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1757,8 +1754,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="minimal improvement in fcn synthax" />
-    <MESSAGE value="Wrote some more README.md" />
     <MESSAGE value="5.0.0a20" />
     <MESSAGE value="fixed opf formulation indexing in HVDC devices" />
     <MESSAGE value="minimal refactoring changes in reliability_study_run.py" />
@@ -1782,7 +1777,9 @@
     <MESSAGE value="added some plexel code" />
     <MESSAGE value="improved search_property()" />
     <MESSAGE value="stuff (not working...)" />
-    <option name="LAST_COMMIT_MESSAGE" value="stuff (not working...)" />
+    <MESSAGE value="Added topology processor based on the adjacency matrix concept" />
+    <MESSAGE value="Improved the delete bus bar function" />
+    <option name="LAST_COMMIT_MESSAGE" value="Improved the delete bus bar function" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
