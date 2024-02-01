@@ -167,13 +167,13 @@ class Line(ParentBranch):
                                  'linear approximation.For example:Copper @ 20ºC: 0.004041,Copper @ 75ºC: 0.00323,'
                                  'Annealed copper @ 20ºC: 0.00393,Aluminum @ 20ºC: 0.004308,Aluminum @ 75ºC: 0.00330')
 
-        self.register(key='Cost', units='e/MWh', tpe=float, definition='Cost of overloads. Used in OPF.',
-                      profile_name='Cost_prof')
-        self.register(key='capex', units='e/MW', tpe=float,
-                      definition='Cost of investment. Used in expansion planning.')
-        self.register(key='opex', units='e/MWh', tpe=float, definition='Cost of operation. Used in expansion planning.')
-        self.register(key='build_status', units='', tpe=BuildStatus,
-                      definition='Branch build status. Used in expansion planning.')
+        # self.register(key='Cost', units='e/MWh', tpe=float, definition='Cost of overloads. Used in OPF.',
+        #               profile_name='Cost_prof')
+        # self.register(key='capex', units='e/MW', tpe=float,
+        #               definition='Cost of investment. Used in expansion planning.')
+        # self.register(key='opex', units='e/MWh', tpe=float, definition='Cost of operation. Used in expansion planning.')
+        # self.register(key='build_status', units='', tpe=BuildStatus,
+        #               definition='Branch build status. Used in expansion planning.')
         self.register(key='r_fault', units='p.u.', tpe=float,
                       definition='Resistance of the mid-line fault.Used in short circuit studies.')
         self.register(key='x_fault', units='p.u.', tpe=float,

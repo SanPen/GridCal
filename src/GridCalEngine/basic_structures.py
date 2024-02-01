@@ -426,6 +426,12 @@ class Logger:
         """
         self.to_df().to_excel(fname)
 
+    def print(self):
+        """
+        Print the logs
+        """
+        print(self.to_df())
+
     def __str__(self):
 
         val = ''

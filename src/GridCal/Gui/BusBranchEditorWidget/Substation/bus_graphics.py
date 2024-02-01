@@ -628,14 +628,8 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
                                    DeviceType.SubstationDevice.value: self.editor.circuit.substations,
                                    DeviceType.CountryDevice.value: self.editor.circuit.countries}
 
-        mdl = ObjectsModel([self.api_object],
-                           self.api_object.registered_properties,
-                           parent=self.editor.object_editor_table,
-                           editable=True,
-                           transposed=True,
-                           dictionary_of_lists=dictionary_of_lists)
-
-        self.editor.object_editor_table.setModel(mdl)
+            self.editor.set_editor_model(api_object=self.api_object,
+                                         dictionary_of_lists=dictionary_of_lists)
 
     def mouseDoubleClickEvent(self, event):
         """

@@ -52,10 +52,10 @@ class Contingency(EditableDevice):
         self._prop = prop
         self._value = value
         self._group: ContingencyGroup = group
+        self._allowed_properties = ['active', '%']
 
-        self.register(key='idtag', units='', tpe=str, definition='Unique ID', editable=False)
         self.register(key='device_idtag', units='', tpe=str, definition='Unique ID', editable=False)
-        self.register(key='prop', units='', tpe=str, definition='Name of the object property to change')
+        self.register(key='prop', units='', tpe=str, definition='Name of the object property to change (active, %)')
         self.register(key='value', units='', tpe=float, definition='Property value')
         self.register(key='group', units='', tpe=DeviceType.ContingencyGroupDevice, definition='Contingency group')
 
@@ -77,8 +77,10 @@ class Contingency(EditableDevice):
 
     @prop.setter
     def prop(self, val: str):
-        if val in ['active']:
+        if val in self._allowed_properties:
             self._prop = val
+        else:
+            print(f"Not allowed property {val}, allowed: " + "".join(self._allowed_properties))
 
     @property
     def value(self) -> float:

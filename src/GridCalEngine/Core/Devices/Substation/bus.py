@@ -181,10 +181,10 @@ class Bus(EditableDevice):
         self.longitude = longitude
         self.latitude = latitude
 
-        self.register(key='name', units='', tpe=str, definition='Name of the bus', profile_name='')
-        self.register(key='idtag', units='', tpe=str, definition='Unique ID', profile_name='', editable=False)
-        self.register(key='code', units='', tpe=str, definition='Some code to further identify the bus',
-                      profile_name='')
+        # self.register(key='name', units='', tpe=str, definition='Name of the bus', profile_name='')
+        # self.register(key='idtag', units='', tpe=str, definition='Unique ID', profile_name='', editable=False)
+        # self.register(key='code', units='', tpe=str, definition='Some code to further identify the bus',
+        #               profile_name='')
         self.register(key='active', units='', tpe=bool, definition='Is the bus active? used to disable the bus.',
                       profile_name='active_prof')
         self.register(key='is_slack', units='', tpe=bool, definition='Force the bus to be of slack type.',

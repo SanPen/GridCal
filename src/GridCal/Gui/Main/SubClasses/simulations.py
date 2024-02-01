@@ -587,7 +587,7 @@ class SimulationsMain(TimeEventsMain):
                                    q_steepness_factor=q_steepness_factor,
                                    distributed_slack=distributed_slack,
                                    ignore_single_node_islands=ignore_single_node_islands,
-                                   mu=mu,
+                                   trust_radius=mu,
                                    use_stored_guess=use_stored_guess,
                                    override_branch_controls=override_branch_controls,
                                    generate_report=generate_report)
