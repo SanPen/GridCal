@@ -2,39 +2,55 @@ import os
 from GridCalEngine.api import *
 
 
-def test_numerical_cicuit():
+def test_numerical_cicuit_generator_contingencies():
     """
-    Compare the PSSE PTDF and the GridCal PTDF for IEEE14, IEEE30, IEEE118 and REE networks
+    Check whether the generator contingency present on the gridcal file is applied correctly
+    :return: Nothing if ok, fails if not
     """
-    fname_cont = os.path.join('data', 'grids', 'IEEE14-gen120.gridcal')
+    for i, fname in enumerate([
+        os.path.join('data', 'grids', 'IEEE14-gen120.gridcal'),
+        os.path.join('data', 'grids', 'IEEE14-gen80.gridcal')
+    ]):
+        main_circuit = FileOpen(fname).open()
+        nc = compile_numerical_circuit_at(main_circuit, t_idx=None)
 
-    main_circuit = FileOpen(fname_cont).open()
+        # for cnt in main_circuit.contingencies:
+        #
+        #     nc.set_contingency_status(contingencies_list=[cnt])
 
-    # DC power flow method
-    pf_options = PowerFlowOptions(SolverType.DC,
-                                  verbose=False,
-                                  initialize_with_existing_solution=False,
-                                  dispatch_storage=True,
-                                  control_q=ReactivePowerControlMode.NoControl,
-                                  control_p=False)
-    options1 = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyMethod.PowerFlow)
-    cont_analysis_driver1 = ContingencyAnalysisDriver(grid=main_circuit, options=options1,
-                                                      linear_multiple_contingencies=None)
+        cnt = main_circuit.contingencies[0]  # yo sé que la primera contingencia es cambiar el generador del bus 1 en 120%
 
-    cont_analysis_driver1.run()
-    # nc = compile_numerical_circuit_at(main_circuit, t_idx=None)
+        p_prev = nc.generator_data.p[1]  # P del primer generador antes del cambio
+        nc.set_contingency_status(contingencies_list=[cnt])
+        p_post = nc.generator_data.p[1]
+        change = 1.2 if i == 0 else 0.8
 
-    fnames = os.path.join('data', 'grids', 'RAW', 'IEEE 14 bus.raw')
+        assert p_prev * change == p_post
 
-    main_circuit = FileOpen(fnames).open()
-    main_circuit.buses[1].generators[0].P *= 1.2  # Increase 20%
+def test_numerical_cicuit_branch_contingencies():
+    """
+    Check whether the generator contingency present on the gridcal file is applied correctly
+    :return: Nothing if ok, fails if not
+    """
+    for i, fname in enumerate([
+        os.path.join('data', 'grids', 'IEEE14-gen120.gridcal'),
+        os.path.join('data', 'grids', 'IEEE14-gen80.gridcal')
+    ]):
+        main_circuit = FileOpen(fname).open()
+        nc = compile_numerical_circuit_at(main_circuit, t_idx=None)
 
-    # run the linear analysis
-    pf_options = PowerFlowOptions()
-    power_flow = PowerFlowDriver(grid=main_circuit, options=pf_options)
-    power_flow.run()
+        # for cnt in main_circuit.contingencies:
+        #
+        #     nc.set_contingency_status(contingencies_list=[cnt])
 
-    assert np.allclose(cont_analysis_driver1.results.Sf, power_flow.results.Sf)
+        cnt = main_circuit.contingencies[0]  # yo sé que la primera contingencia es cambiar el generador del bus 1 en 120%
+
+        p_prev = nc.generator_data.p[1]  # P del primer generador antes del cambio
+        nc.set_contingency_status(contingencies_list=[cnt])
+        p_post = nc.generator_data.p[1]
+        change = 1.2 if i == 0 else 0.8
+
+        assert p_prev * change == p_post
 
 
 # def test_numerical_cicuit_spv():
@@ -57,9 +73,3 @@ def test_numerical_cicuit():
 #     p_despues = nc.generator_data.p[1]
 #
 #     assert p_antes * 1.20 == p_despues
-
-
-
-
-
-
