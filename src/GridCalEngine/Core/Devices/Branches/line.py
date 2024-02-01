@@ -19,6 +19,7 @@ import numpy as np
 from typing import Union, Tuple
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Core.Devices.Substation.bus import Bus
+from GridCalEngine.Core.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.enumerations import BuildStatus
 from GridCalEngine.Core.Devices.Branches.templates.underground_line import UndergroundLineType
 from GridCalEngine.Core.Devices.Branches.templates.overhead_line_type import OverheadLineType
@@ -31,7 +32,8 @@ from GridCalEngine.Core.Devices.editable_device import DeviceType
 
 class Line(ParentBranch):
 
-    def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='Line', idtag=None, code='',
+    def __init__(self, bus_from: Bus = None, bus_to: Bus = None, cn_from: ConnectivityNode = None,
+                 cn_to: ConnectivityNode = None, name='Line', idtag=None, code='',
                  r=1e-20, x=1e-20, b=1e-20, rate=1.0, active=True, tolerance=0, cost=100.0,
                  mttf=0, mttr=0, r_fault=0.0, x_fault=0.0, fault_pos=0.5,
                  length=1, temp_base=20, temp_oper=20, alpha=0.00330,
@@ -88,8 +90,8 @@ class Line(ParentBranch):
                               code=code,
                               bus_from=bus_from,
                               bus_to=bus_to,
-                              cn_from=None,
-                              cn_to=None,
+                              cn_from=cn_from,
+                              cn_to=cn_to,
                               active=active,
                               active_prof=active_prof,
                               rate=rate,
