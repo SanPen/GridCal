@@ -337,7 +337,7 @@ class PlexelObject:
                  cls: ClassEnum = ClassEnum.System,
                  guid: str = "",
                  name: str = "",
-                 cat: "PlexelObject" = "",
+                 cat: "PlexelObject" = None,
                  desc: str = ""):
         """
         Init PlexelObject
@@ -364,7 +364,7 @@ class PlexelObject:
         return [self.class_.value,
                 self.GUID,
                 self.name,
-                self.category.name,
+                self.category.name if self.category is not None else '',
                 self.description]
 
 
@@ -550,12 +550,41 @@ class PlexelMembership:
                 self.child_object]
 
 
+class PlexelList:
+    """
+    List of Plexel object
+    """
+    def __init__(self, tpe, *args):
+        self.tpe = tpe
+        self._d = set()
+        self._elements = list()
+
+    def append(self, __object) -> None:
+        self._elements.append(__object)
+        self._d.add(__object.get_key())
+
+    def get_df(self) -> pd.DataFrame:
+        """
+        Get DataFrame of the table list
+        :return:
+        """
+        hdr = self.tpe.__headers__
+        data = list()
+        for item in self._elements:
+            data.append(item.get_data())
+        return pd.DataFrame(data, columns=hdr)
+
+
 class PlexelBase:
+    """
+    A Plexel object. It serves as a wrapper of the logic.
+    This class uses the rest of the classes defined above.
+    """
 
     def __init__(self):
         self.categories: List[PlexelCategory] = list()
         self.memberships: List[PlexelMembership] = list()
-        self.objects: List[PlexelObject] = list()
+        self.objects = PlexelList(PlexelObject)
         self.attributes: List[PlexelAttribute] = list()
         self.properties: List[PlexelProperty] = list()
 
@@ -591,17 +620,32 @@ class PlexelBase:
         # add the zone as an object
         self.add_object(child_class_id=ClassEnum.Zone, child_name=zone.name, description=zone.name)
 
-    def convert(self, grid: MultiCircuit):
+    def save(self, file_name: str):
         """
-        Convert GridCal MultiCircuit Model to plexel DB
-        :param grid: GridCal MultiCircuit object
+        Save the Plexel DB to an Excel file
+        :param file_name: name of the file
         :return:
         """
-        # Add zones
-        for z in grid.zones:
-            self.add_zone(z)
+        if not file_name.endswith('.xlsx'):
+            file_name += '.xlsx'
 
-        print('Convert done!')
+        with pd.ExcelWriter(file_name) as writer:
+            self.objects.get_df().to_excel(writer, index=False, sheet_name='objects')
+
+
+def convert_gridcal_to_plexel(grid: MultiCircuit) -> PlexelBase:
+    """
+    Convert GridCal MultiCircuit Model to plexel DB
+    :param grid: GridCal MultiCircuit object
+    :return: a PlexelBase object
+    """
+    plx = PlexelBase()
+    # Add zones
+    for z in grid.zones:
+        plx.add_zone(z)
+
+    print('Convert done!')
+    return plx
 
 
 if __name__ == "__main__":
@@ -610,11 +654,12 @@ if __name__ == "__main__":
 
     # fname = os.path.join("..", "..", "..", "Grids_and_profiles/grids/hydro_IEEE39_2.gridcal")
     fname = os.path.join("..", "..", "..", "Grids_and_profiles/grids/IEEE 14 bus.raw")
+    out_file = r"plexel_export.xlsx"
 
     my_grid = gce.open_file(fname)
 
-    my_plexel_circuit = PlexelBase()
-
-    my_plexel_circuit.convert(my_grid)
-
+    my_plexel_circuit = convert_gridcal_to_plexel(my_grid)
     print('Plexel circuit generated!')
+
+    my_plexel_circuit.save(file_name=out_file)
+    print('Plexel circuit saved as Excel in {f}'.format(f=out_file))
