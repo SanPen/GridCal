@@ -354,7 +354,7 @@ class PlexelObject:
         self.description: str = desc
 
     def get_key(self) -> str:
-        return self.name
+        return self.class_.value + '_' + self.name
 
     def get_data(self) -> List[str]:
         """
@@ -559,6 +559,12 @@ class PlexelList:
         self._d = set()
         self._elements = list()
 
+    def get_keys(self):
+        return self._d
+
+    def length(self):
+        return len(self.get_keys())
+
     def append(self, __object) -> None:
         self._elements.append(__object)
         self._d.add(__object.get_key())
@@ -583,7 +589,7 @@ class PlexelBase:
 
     def __init__(self):
         self.categories: List[PlexelCategory] = list()
-        self.memberships: List[PlexelMembership] = list()
+        self.memberships = PlexelList(PlexelMembership)
         self.objects = PlexelList(PlexelObject)
         self.attributes: List[PlexelAttribute] = list()
         self.properties: List[PlexelProperty] = list()
@@ -591,8 +597,9 @@ class PlexelBase:
     def add_category(self, child_class_id, category):
         pass
 
-    def add_membership(self):
-        pass
+    def add_membership(self, parent_obj, child_obj, collection):
+        memb = PlexelMembership(parent_obj=parent_obj, child_obj=child_obj, collection=collection)
+        self.memberships.append(memb)
 
     def add_property(self, collection_id, child_name, enum_id, prop_value,
                      parent_name='System', date_from=None, date_to=None, variable=None,
@@ -620,6 +627,40 @@ class PlexelBase:
         # add the zone as an object
         self.add_object(child_class_id=ClassEnum.Zone, child_name=zone.name, description=zone.name)
 
+    def add_region(self, region: dev.Area):
+        # TODO: check if there are any missing fields
+        # add the region as an object
+        self.add_object(child_class_id=ClassEnum.Region, child_name=region.name, description=region.name)
+
+    def add_node(self, node: dev.Bus, region: dev.Area, zone: dev.Zone):
+        # TODO: check if there are any missing fields
+        # create name following plexel format
+        node_name = node.code + '_' + node.name + '_' + str(int(node.Vnom))
+
+        # add the node as an object
+        node_obj = PlexelObject(cls=ClassEnum.Node, name=node_name)
+        self.objects.append(node_obj)
+
+        # add membership node <-> region
+        region_obj = PlexelObject(cls=ClassEnum.Region, name=node.area.name)
+        # is region in objects?
+        if self.objects.length() > 0:
+            if region_obj.get_key() not in self.objects.get_keys():
+                self.add_region(region)
+
+        node_region = PlexelMembership(node_obj, region_obj, CollectionEnum.Region)
+        self.memberships.append(node_region)
+
+        # add membership node <-> zone
+        zone_obj = PlexelObject(cls=ClassEnum.Zone, name=node.zone.name)
+        # is zone in objects?
+        if self.objects.length() > 0:
+            if zone_obj.get_key() not in self.objects.get_keys():
+                self.add_zone(zone)
+
+        node_zone = PlexelMembership(node_obj, zone_obj, CollectionEnum.Zone)
+        self.memberships.append(node_zone)
+
     def save(self, file_name: str):
         """
         Save the Plexel DB to an Excel file
@@ -630,7 +671,11 @@ class PlexelBase:
             file_name += '.xlsx'
 
         with pd.ExcelWriter(file_name) as writer:
-            self.objects.get_df().to_excel(writer, index=False, sheet_name='objects')
+            self.objects.get_df().to_excel(writer, index=False, sheet_name='Objects')
+            self.memberships.get_df().to_excel(writer, index=False, sheet_name='Memberships')
+            # self.categories.get_df().to_excel(ptr, sheet_name='categories')
+            # self.attributes.get_df().to_excel(ptr, sheet_name='attributes')
+            # self.properties.get_df().to_excel(ptr, sheet_name='properties')
 
 
 def convert_gridcal_to_plexel(grid: MultiCircuit) -> PlexelBase:
@@ -643,6 +688,14 @@ def convert_gridcal_to_plexel(grid: MultiCircuit) -> PlexelBase:
     # Add zones
     for z in grid.zones:
         plx.add_zone(z)
+
+    # Add gridcal areas as -> plexel regions
+    for a in grid.areas:
+        plx.add_region(a)
+
+    # Add gridcal buses as -> plexel nodes
+    for b in grid.buses:
+        plx.add_node(node=b, region=b.area, zone=b.zone)
 
     print('Convert done!')
     return plx
