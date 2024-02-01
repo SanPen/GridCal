@@ -442,14 +442,13 @@ def test_mlodf_sanpen():
         assert ok
 
 
-
 def test_ptdf_psse():
     """
     Compare the PSSE PTDF and the GridCal PTDF for IEEE14, IEEE30, IEEE118 and REE networks
     """
-    for fname  in [
+    for fname in [
         os.path.join('data', 'grids', 'IEEE14-gen120.gridcal'),
-        #os.path.join('data', 'grids', 'IEEE14-gen80.gridcal'),
+        # os.path.join('data', 'grids', 'IEEE14-gen80.gridcal'),
     ]:
         main_circuit = FileOpen(fname).open()
 
