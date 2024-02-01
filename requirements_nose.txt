@@ -57,7 +57,7 @@ pyzmq==22.0.3
 qtconsole==5.0.2
 QtPy==1.9.0
 requests==2.31.0
-scikit-learn==0.24.1
+scikit-learn==1.0.1
 scipy>=1.5
 shiboken2==5.15.2
 six==1.15.0
