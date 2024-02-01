@@ -442,14 +442,13 @@ def test_mlodf_sanpen():
         assert ok
 
 
-
 def test_ptdf_goodness():
     """
     Compare the PSSE PTDF and the GridCal PTDF for IEEE14, IEEE30, IEEE118 and REE networks
     """
-    for fname  in [
+    for fname in [
         os.path.join('data', 'grids', 'IEEE14-gen120.gridcal'),
-        #os.path.join('data', 'grids', 'IEEE14-gen80.gridcal'),
+        # os.path.join('data', 'grids', 'IEEE14-gen80.gridcal'),
         os.path.join('data', 'grids', 'IEEE30-gen80.gridcal'),
         os.path.join('data', 'grids', 'IEEE30-gen120.gridcal'),
         os.path.join('data', 'grids', 'IEEE118-gen80.gridcal'),
@@ -478,15 +477,16 @@ def test_ptdf_goodness():
 
         assert np.allclose(cont_analysis_driver1.results.Sf, cont_analysis_driver2.results.Sf)
 
+
 def test_lodf_goodness():
     """
     Compare the PSSE PTDF and the GridCal PTDF for IEEE14, IEEE30, IEEE118 and REE networks
     """
-    for fname  in [
+    for fname in [
         os.path.join('data', 'grids', 'IEEE14-13_14.gridcal'),
         os.path.join('data', 'grids', 'IEEE30-12_15.gridcal'),
         os.path.join('data', 'grids', 'IEEE118-38_65.gridcal'),
-        #os.path.join('data', 'grids', 'IEEE118-80_96.gridcal'),
+        # os.path.join('data', 'grids', 'IEEE118-80_96.gridcal'),
 
     ]:
         main_circuit = FileOpen(fname).open()
@@ -513,7 +513,6 @@ def test_lodf_goodness():
         cont_analysis_driver2.run()
 
     assert np.allclose(cont_analysis_driver1.results.Sf, cont_analysis_driver2.results.Sf)
-
 
 
 if __name__ == '__main__':
