@@ -81,7 +81,7 @@ def createExampleGrid() -> MultiCircuit:
     return grid
 
 
-class CandidatesInfo:
+class TopologyProcessorInfo:
     """
     CandidatesInfo
     """
@@ -183,13 +183,13 @@ class CandidatesInfo:
         return self.cn_to_final_bus[cn]
 
 
-def create_candidates(grid: MultiCircuit) -> CandidatesInfo:
+def create_topology_process_info(grid: MultiCircuit) -> TopologyProcessorInfo:
     """
     Create the candidate buses for reduction from a set of BusBars and ConnectivityNodes
     :param grid: MultiCircuit
     :return: CandidatesInfo
     """
-    info = CandidatesInfo()
+    info = TopologyProcessorInfo()
 
     # traverse bus bars
     for bus_bar in grid.get_bus_bars():
@@ -224,13 +224,13 @@ def create_candidates(grid: MultiCircuit) -> CandidatesInfo:
 
 def compute_connectivities(nbus_candidate: int,
                            all_branches: List[dev.ParentBranch],
-                           candidate_info: CandidatesInfo,
+                           process_info: TopologyProcessorInfo,
                            t_idx: Union[int, None] = None):
     """
     Compute the connectivity from and to matrices and the branches availabiility vector
     :param nbus_candidate: number of candidate buses
     :param all_branches: list of all branches
-    :param candidate_info: CandidatesInfo previously created
+    :param process_info: CandidatesInfo previously created
     :param t_idx: Time index
     :return: Cf, Ct, br_active
     """
@@ -245,11 +245,11 @@ def compute_connectivities(nbus_candidate: int,
     for i, elm in enumerate(all_branches):
 
         if elm.cn_from is not None:
-            f = candidate_info.get_candidate_pos_from_cn(elm.cn_from)
+            f = process_info.get_candidate_pos_from_cn(elm.cn_from)
             Cf[i, f] = 1
 
         if elm.cn_to is not None:
-            t = candidate_info.get_candidate_pos_from_cn(elm.cn_to)
+            t = process_info.get_candidate_pos_from_cn(elm.cn_to)
             Ct[i, t] = 1
 
         if elm.device_type == DeviceType.SwitchDevice:
@@ -262,6 +262,35 @@ def compute_connectivities(nbus_candidate: int,
     return Cf, Ct, br_active
 
 
+def apply_results_to_grid(grid: MultiCircuit,
+                          final_buses: List[dev.Bus],
+                          all_branches: List[dev.ParentBranch],
+                          process_info: TopologyProcessorInfo):
+    """
+    Apply the results of the topology processing
+    :param grid: MultiCircuit
+    :param final_buses: List of final bus objects resulting from the topology process
+    :param all_branches: List of all branches
+    :param process_info: TopologyProcessorInfo
+    :return: Nothig, the grid is processed in-place
+    """
+    # add any extra bus that may arise from the calculation
+    grid_buses_set = {b for b in grid.get_buses()}
+    for elm in final_buses:
+        if elm not in grid_buses_set:
+            grid.add_bus(elm)
+            print("Bus {} added to grid".format(elm))
+
+    # map the buses to the branches from their connectivity nodes
+    # todo: make bus_from and bus_to profiles
+    for i, elm in enumerate(all_branches):
+        if elm.cn_from is not None:
+            elm.bus_from = process_info.get_final_bus(elm.cn_from)
+
+        if elm.cn_to is not None:
+            elm.bus_to = process_info.get_final_bus(elm.cn_to)
+
+
 def topology_processor(grid: MultiCircuit, t_idx: Union[int, None] = None):
     """
     Topology processor finding the Buses that calculate a certain node-breaker topology
@@ -271,15 +300,18 @@ def topology_processor(grid: MultiCircuit, t_idx: Union[int, None] = None):
     :return: Results are processed into the grid object
     """
     # compose the candidate nodes (buses)
-    candidate_info = create_candidates(grid=grid)
-    nbus_candidate = candidate_info.candidate_number()
-    bus_active = candidate_info.get_candidate_active(t_idx=t_idx)
+    process_info = create_topology_process_info(grid=grid)
+    nbus_candidate = process_info.candidate_number()
+    bus_active = process_info.get_candidate_active(t_idx=t_idx)
 
     # get a list of all branches
     all_branches = grid.get_branches()
 
     # create the connectivity matrices
-    Cf, Ct, br_active = compute_connectivities(nbus_candidate, all_branches, candidate_info, t_idx)
+    Cf, Ct, br_active = compute_connectivities(nbus_candidate=nbus_candidate,
+                                               all_branches=all_branches,
+                                               process_info=process_info,
+                                               t_idx=t_idx)
 
     # compose the adjacency matrix from the connectivity information
     A = get_adjacency_matrix(C_branch_bus_f=Cf.tocsc(),
@@ -292,23 +324,13 @@ def topology_processor(grid: MultiCircuit, t_idx: Union[int, None] = None):
     islands = find_islands(adj=A, active=bus_active)
 
     # generate auxiliary structures that derive from the topology results
-    final_buses = candidate_info.apply_results(islands=islands)
+    final_buses = process_info.apply_results(islands=islands)
 
-    # add any extra bus that may arise from the calculation
-    grid_buses_set = {b for b in grid.get_buses()}
-    for elm in final_buses:
-        if elm not in grid_buses_set:
-            grid.add_bus(elm)
-            print("Bus {} added to grid".format(elm))
-
-    # map the buses to the branches from their connectivity nodes
-    # todo: make bus_from and bus_to profiles
-    for i, elm in enumerate(all_branches):
-        if elm.cn_from is not None:
-            elm.bus_from = candidate_info.get_final_bus(elm.cn_from)
-
-        if elm.cn_to is not None:
-            elm.bus_to = candidate_info.get_final_bus(elm.cn_to)
+    # apply the results to the grid object
+    apply_results_to_grid(grid=grid,
+                          final_buses=final_buses,
+                          all_branches=all_branches,
+                          process_info=process_info)
 
 
 if __name__ == '__main__':
