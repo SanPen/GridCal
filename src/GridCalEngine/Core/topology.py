@@ -147,6 +147,8 @@ def find_islands(adj: csc_matrix, active: IntVec) -> List[List[int]]:
     """
     Method to get the islands of a graph
     This is the non-recursive version
+    :param adj: adjacency
+    :param active: active state of the nodes
     :return: list of islands, where each element is a list of the node indices of the island
     """
     return find_islands_numba(node_number=adj.shape[0],

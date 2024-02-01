@@ -18,17 +18,21 @@
 from typing import Union
 from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceType
 from GridCalEngine.Core.Devices.Substation.substation import Substation
+from GridCalEngine.Core.Devices.Substation.bus import Bus
 
 
 class BusBar(EditableDevice):
 
     def __init__(self, name='BusBar', idtag: Union[None, str] = None, code: str = '',
-                 substation: Union[None, Substation] = None) -> None:
+                 substation: Union[None, Substation] = None,
+                 default_bus: Union[None, Bus] = None) -> None:
         """
         Constructor
         :param name: Name of the bus bar
         :param idtag: unique identifier of the device
         :param code: secondary identifyer
+        :param substation: Substation of this bus bar (optional)
+        :param default_bus: Default bus to use for topology processing (optional)
         """
         EditableDevice.__init__(self,
                                 name=name,
@@ -36,6 +40,12 @@ class BusBar(EditableDevice):
                                 idtag=idtag,
                                 device_type=DeviceType.BusBarDevice)
 
-        self.substation = substation
+        self.substation: Union[None, Substation] = substation
 
-        self.register("substation", "", DeviceType.SubstationDevice, "Substation of this bus bar")
+        self.default_bus: Union[None, Bus] = default_bus
+
+        self.register("substation", "", DeviceType.SubstationDevice,
+                      "Substation of this bus bar (optional)")
+
+        self.register("default_bus", "", DeviceType.BusDevice,
+                      "Default bus to use for topology processing (optional)")

@@ -3,6 +3,7 @@ import GridCalEngine.Core.Devices as dev
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from scipy.sparse import lil_matrix, csc_matrix
 
+
 def createExampleGrid():
     """
     Función para crear un Multicircuit a partir de la red del diagrama 1 de la documentación
@@ -13,8 +14,8 @@ def createExampleGrid():
     # Add busbar representing physical nodes not the calculation ones
     busbardict = {}
     for i in range(5):
-        #TODO: Me genera confusión que esto se llame igual que el próximo Busbar que será el nudo de cálculo
-        b = dev.BusBar(name='B{}'.format(i+1))
+        # TODO: Me genera confusión que esto se llame igual que el próximo Busbar que será el nudo de cálculo
+        b = dev.BusBar(name='B{}'.format(i + 1))
         busbardict['B{}'.format(i + 1)] = i
         grid.bus_bars.append(b)
 
@@ -23,9 +24,9 @@ def createExampleGrid():
              'T12': 'B3', 'T13': 'B4', 'T14': 'B4', 'T15': 'B4', 'T16': 'B5'}
     cndict = {}
     for i in range(16):
-        busbar = grid.bus_bars[busbardict[cnbus['T{}'.format(i+1)]]] if 'T{}'.format(i+1) in cnbus else None
-        t = dev.ConnectivityNode(name='T{}'.format(i+1), bus_bar=busbar)
-        cndict['T{}'.format(i+1)] = i
+        busbar = grid.bus_bars[busbardict[cnbus['T{}'.format(i + 1)]]] if 'T{}'.format(i + 1) in cnbus else None
+        t = dev.ConnectivityNode(name='T{}'.format(i + 1), bus_bar=busbar)
+        cndict['T{}'.format(i + 1)] = i
         grid.connectivity_nodes.append(t)
 
     # Add lines
@@ -40,7 +41,7 @@ def createExampleGrid():
     switchlist = {'SW1': ('T1', 'T2', 'closed'), 'SW2': ('T3', 'T6', 'closed'), 'SW3': ('T4', 'T7', 'closed'),
                   'SW4': ('T5', 'T8', 'closed'), 'SW5': ('T9', 'T12', 'closed'), 'SW6': ('T10', 'T13', 'closed'),
                   'SW7': ('T11', 'T14', 'closed')}
-    #TODO: chequear el estado de los switches
+    # TODO: chequear el estado de los switches
     for s in switchlist:
         cnfrom = grid.connectivity_nodes[cndict[switchlist[s][0]]] if switchlist[s][0] else None
         cnto = grid.connectivity_nodes[cndict[switchlist[s][1]]] if switchlist[s][1] else None
@@ -52,7 +53,6 @@ def createExampleGrid():
 
 
 def topology_proc(grid: MultiCircuit):
-
     nbus = len(grid.connectivity_nodes)
     nswitch = len(grid.switch_devices)
     cndict = {i.name: t for t, i in enumerate(grid.connectivity_nodes)}
@@ -60,7 +60,7 @@ def topology_proc(grid: MultiCircuit):
 
     # 1. Searching for calculation busbar
     n_calc_nodes = 0
-    obb = len(grid.bus_bars) # Amount of original busbar
+    obb = len(grid.bus_bars)  # Amount of original busbar
     busbarvisited = {}  # Dictionary to link original buses with new calculation nodes
     newbusbar = {}  # Calculation node position in grid.bus_bar
     for t in grid.connectivity_nodes:
@@ -80,15 +80,14 @@ def topology_proc(grid: MultiCircuit):
             grid.bus_bars.append(n)
             t.bus_bar = grid.bus_bars[newbusbar['N{}'.format(n_calc_nodes + 1)]]
             n_calc_nodes += 1
-    #TODO: ¿eliminamos los busbar originales?
-
+    # TODO: ¿eliminamos los busbar originales?
 
     # 2. Switch Adjacency Matrix
 
     M = lil_matrix((n_calc_nodes, nswitch), dtype=int)
     for t, s in enumerate(grid.switch_devices):
-        M[newbusbar[s.cn_from.bus_bar.name]-obb, t] = 1 if s.active else 0
-        M[newbusbar[s.cn_to.bus_bar.name]-obb, t] = 1 if s.active else 0
+        M[newbusbar[s.cn_from.bus_bar.name] - obb, t] = 1 if s.active else 0
+        M[newbusbar[s.cn_to.bus_bar.name] - obb, t] = 1 if s.active else 0
     C = M @ M.T
     C = C.tocsc()
 
@@ -96,7 +95,7 @@ def topology_proc(grid: MultiCircuit):
 
     reduced = np.zeros(n_calc_nodes, dtype=int)  # stores which buses are to merge with another bus
 
-    indptr = C.indptr.copy()    # Indprt from csc matrix
+    indptr = C.indptr.copy()  # Indprt from csc matrix
     indices = C.indices.copy()  # Indices from csc matrix
     for c in range(n_calc_nodes):  # Cover every column
         a = indptr[c]
@@ -125,8 +124,9 @@ def topology_proc(grid: MultiCircuit):
             j += 1
 
     return grid
-def test_topology_processor():
 
+
+def test_topology_processor():
     # Loading grid
     grid = createExampleGrid()
 
