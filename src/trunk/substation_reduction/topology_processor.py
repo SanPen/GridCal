@@ -40,7 +40,7 @@ def createExampleGrid():
     switchlist = {'SW1': ('T1', 'T2', 'closed'), 'SW2': ('T3', 'T6', 'closed'), 'SW3': ('T4', 'T7', 'closed'),
                   'SW4': ('T5', 'T8', 'closed'), 'SW5': ('T9', 'T12', 'closed'), 'SW6': ('T10', 'T13', 'closed'),
                   'SW7': ('T11', 'T14', 'closed')}
-    #TODO: chequear el estado de los switches
+
     for s in switchlist:
         cnfrom = grid.connectivity_nodes[cndict[switchlist[s][0]]] if switchlist[s][0] else None
         cnto = grid.connectivity_nodes[cndict[switchlist[s][1]]] if switchlist[s][1] else None
