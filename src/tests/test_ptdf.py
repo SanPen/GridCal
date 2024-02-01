@@ -202,20 +202,19 @@ def test_lodf_ieee14_psse():
 
 
 def test_ptdf_psse():
-    """
-    Compare the PSSE PTDF and the GridCal PTDF for IEEE14, IEEE30, IEEE118 and REE networks
-    """
     for fname, pssename, name in [
         (os.path.join('data', 'grids', 'RAW', 'IEEE 14 bus.raw'),
          os.path.join('data', 'results', 'comparison', 'IEEE 14 bus PTDF PSSe.csv'), 'IEEE14'),
         (os.path.join('data', 'grids', 'RAW', 'IEEE 30 bus.raw'),
          os.path.join('data', 'results', 'comparison', 'IEEE 30 bus PTDF PSSe.csv'), 'IEEE30'),
-        (os.path.join('data', 'grids', 'RAW', 'IEEE 118 Bus V2.raw'),
+        (os.path.join('data', 'grids', 'RAW', 'IEEE 118 Bus v2.raw'),
          os.path.join('data', 'results', 'comparison', 'IEEE 118 bus PTDF PSSe.csv'), 'IEEE118'),
         (os.path.join('data', 'grids', 'RAW', 'sensitive-raw', '15.Caso_2026.raw'),
          os.path.join('data', 'results', 'comparison', '15.Caso_2026 PTDF PSSe.csv'), 'REE'),
         (os.path.join('data', 'grids', 'RAW', 'ieee-14-bus_d_rename_ptdf.raw'),
-         os.path.join('data', 'results', 'comparison', 'ieee-14-bus_d_ptdf.csv'), 'IEEE14_D')
+         os.path.join('data', 'results', 'comparison', 'ieee-14-bus_d_ptdf.csv'), 'IEEE14_D'),
+        (os.path.join('data', 'grids', 'RAW', 'ACTIVSg2000_rename.raw'),
+         os.path.join('data', 'results', 'comparison', 'ACTIVSg2000_PTDF.csv'), 'TEXAS')
 
     ]:
 
@@ -273,6 +272,9 @@ def test_ptdf_psse():
             print(' ')
         else:
             print(fname, "does not exists...")
+    """
+    Compare the PSSE PTDF and the GridCal PTDF for IEEE14, IEEE30, IEEE118 and REE networks
+    """
 
 
 def test_lodf_psse():
@@ -289,7 +291,9 @@ def test_lodf_psse():
         (os.path.join('data', 'grids', 'RAW', 'sensitive-raw', '15.Caso_2026.raw'),
          os.path.join('data', 'results', 'comparison', '15.Caso_2026 LODF PSSe.csv'), 'REE'),
         (os.path.join('data', 'grids', 'RAW', 'ieee-14-bus_d_rename_lodf.raw'),
-         os.path.join('data', 'results', 'comparison', 'ieee-14-bus_d_branches_lodf.csv'), 'IEEE14_D')
+         os.path.join('data', 'results', 'comparison', 'ieee-14-bus_d_branches_lodf.csv'), 'IEEE14_D'),
+        (os.path.join('data', 'grids', 'RAW', 'ACTIVSg2000_rename.raw'),
+         os.path.join('data', 'results', 'comparison', 'ACTIVSg2000_branches_LODF.csv'), 'TEXAS')
 
     ]:
 
