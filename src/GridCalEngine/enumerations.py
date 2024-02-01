@@ -956,3 +956,18 @@ class LogSeverity(Enum):
             return LogSeverity[s]
         except KeyError:
             return s
+
+class SparseSolver(Enum):
+    """
+    Sparse solvers to use
+    """
+    ILU = 'ILU'
+    KLU = 'KLU'
+    SuperLU = 'SuperLU'
+    Pardiso = 'Pardiso'
+    GMRES = 'GMRES'
+    UMFPACK = 'UmfPack'
+    UMFPACKTriangular = 'UmfPackTriangular'
+
+    def __str__(self):
+        return self.value

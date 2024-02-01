@@ -25,6 +25,11 @@ import timeit
 from matplotlib import pyplot as plt
 from GridCalEngine.basic_structures import Vec, CxVec
 from GridCalEngine.Utils.Sparse.csc import pack_3_by_4, diags
+from GridCalEngine.Utils.NumericalMethods.sparse_solve import get_linear_solver
+from GridCalEngine.enumerations import SparseSolver
+
+
+linear_solver = get_linear_solver(SparseSolver.Pardiso)
 
 
 @nb.njit(cache=True)
@@ -368,7 +373,7 @@ def interior_point_solver(x0: Vec,
         r = - np.r_[N, ret.G]
 
         # Find the reduced problem residuals and split them
-        dx, dlam = split(sparse.linalg.spsolve(J, r), n_x)
+        dx, dlam = split(linear_solver(J, r), n_x)
 
         # Calculate the inequalities residuals using the reduced problem residuals
         dz = - ret.H - z - ret.Hx.T @ dx
