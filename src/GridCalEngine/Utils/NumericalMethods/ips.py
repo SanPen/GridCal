@@ -240,6 +240,7 @@ def interior_point_solver(x0: Vec,
                           arg=(),
                           max_iter=100,
                           tol=1e-6,
+                          pf_init=False,
                           trust=0.9,
                           verbose: int = 0,
                           step_control=False) -> IpsSolution:
@@ -310,30 +311,32 @@ def interior_point_solver(x0: Vec,
     # mu_diag = diags(mu)
 
     # Our init
-    # z0 = 1.0
-    # z = z0 * np.ones(n_ineq)
-    # lam = np.ones(n_eq)
-    # mu = z.copy()
-    # ret = func(x, mu, lam, True, False, *arg)
-    # z = - ret.H
-    # z = np.array([1e-2 if zz < 1e-2 else zz for zz in z])
-    # z_inv = diags(1.0 / z)
-    # mu = gamma * (z_inv @ e)
-    # mu_diag = diags(mu)
-    # lam = sparse.linalg.lsqr(ret.Gx, -ret.fx - ret.Hx @ mu.T)[0]
+    if pf_init:
+        z0 = 1.0
+        z = z0 * np.ones(n_ineq)
+        lam = np.ones(n_eq)
+        mu = z.copy()
+        ret = func(x, mu, lam, True, False, *arg)
+        z = - ret.H
+        z = np.array([1e-2 if zz < 1e-2 else zz for zz in z])
+        z_inv = diags(1.0 / z)
+        mu = gamma * (z_inv @ e)
+        mu_diag = diags(mu)
+        lam = sparse.linalg.lsqr(ret.Gx, -ret.fx - ret.Hx @ mu.T)[0]
 
     # PyPower init
-    ret = func(x, None, None, False, False, *arg)
-    z0 = 1.0
-    z = z0 * np.ones(n_ineq)
-    mu = z0 * np.ones(n_ineq)
-    lam = np.zeros(n_eq)
-    kk = np.flatnonzero(ret.H < -z0)
-    z[kk] = -ret.H[kk]
-    z_inv = diags(1.0 / z)
-    kk = np.flatnonzero((gamma / z) > z0)
-    mu[kk] = gamma / z[kk]
-    mu_diag = diags(mu)
+    else:
+        ret = func(x, None, None, False, False, *arg)
+        z0 = 1.0
+        z = z0 * np.ones(n_ineq)
+        mu = z0 * np.ones(n_ineq)
+        lam = np.zeros(n_eq)
+        kk = np.flatnonzero(ret.H < -z0)
+        z[kk] = -ret.H[kk]
+        z_inv = diags(1.0 / z)
+        kk = np.flatnonzero((gamma / z) > z0)
+        mu[kk] = gamma / z[kk]
+        mu_diag = diags(mu)
 
     ret = func(x, mu, lam, True, False, *arg)
 

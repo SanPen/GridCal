@@ -374,7 +374,7 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
 
         # Hx = sparse.vstack([HSf, HSt, Hvu, Hvl, Hpu, Hpl, Hqu, Hql]).T.tocsc()
         Hx = sparse.vstack([HSf, HSt, Hvu, Hpu, Hqu, Hvl, Hpl, Hql]).T.tocsc()
-        #Hx = sparse.vstack([HSf, HSt, Hvu, Hvl, Hvau, Hval, Hpu, Hpl, Hqu, Hql]).T.tocsc()
+        # Hx = sparse.vstack([HSf, HSt, Hvu, Hvl, Hvau, Hval, Hpu, Hpl, Hqu, Hql]).T.tocsc()
     else:
         fx = None
         Gx = None
@@ -873,10 +873,10 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     Cf = nc.Cf
     Ct = nc.Ct
 
-    #dfa = pd.DataFrame(Yf.A.real)
-    #dfb = pd.DataFrame(Yf.A.imag)
-    #dfa.to_excel('Yfa.xlsx')
-    #dfb.to_excel('Yfb.xlsx')
+    # dfa = pd.DataFrame(Yf.A.real)
+    # dfb = pd.DataFrame(Yf.A.imag)
+    # dfa.to_excel('Yfa.xlsx')
+    # dfb.to_excel('Yfb.xlsx')
 
     # Bus identification lists
     slack = nc.vd
@@ -922,8 +922,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     # Number of inequalities: Line ratings, max and min angle of buses, voltage module range and
     # NI = 2 * nbr + 2 * n_no_slack + 2 * nbus + 4 * ngen
 
-    NI = 2 * nll + 2 * npq + 4 * ngg  #Without angle constraints
-    #NI = 2 * nll + 2 * n_no_slack + 2 * nbus + 4 * ngg
+    NI = 2 * nll + 2 * npq + 4 * ngg  # Without angle constraints
+    # NI = 2 * nll + 2 * n_no_slack + 2 * nbus + 4 * ngg
 
     # run power flow to initialize
     pf_results = multi_island_pf_nc(nc=nc, options=pf_options)
@@ -998,6 +998,12 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     # convert the solution to the problem variables
     Va, Vm, Pg_dis, Qg_dis = x2var(result.x, nVa=nbus, nVm=nbus, nPg=ngg, nQg=ngg)
 
+    # Save Results DataFrame for tests
+    # pd.DataFrame(Va).transpose().to_csv('pegase89resth.csv')
+    # pd.DataFrame(Vm).transpose().to_csv('pegase89resV.csv')
+    # pd.DataFrame(Pg_dis).transpose().to_csv('pegase89resP.csv')
+    # pd.DataFrame(Qg_dis).transpose().to_csv('pegase89resQ.csv')
+
     Pg = np.zeros(len(ind_gens))
     Qg = np.zeros(len(ind_gens))
 
@@ -1036,6 +1042,7 @@ def run_nonlinear_opf(grid: MultiCircuit,
                       t_idx: Union[None, int] = None,
                       debug: bool = False,
                       use_autodiff: bool = False,
+                      pf_init=True,
                       plot_error: bool = False) -> NonlinearOPFResults:
     """
 
@@ -1063,6 +1070,7 @@ def run_nonlinear_opf(grid: MultiCircuit,
                                                pf_options=pf_options,
                                                debug=debug,
                                                use_autodiff=use_autodiff,
+                                               pf_init=pf_init,
                                                plot_error=plot_error)
 
             results.merge(other=island_res,
@@ -1077,4 +1085,5 @@ def run_nonlinear_opf(grid: MultiCircuit,
                                      pf_options=pf_options,
                                      debug=debug,
                                      use_autodiff=use_autodiff,
+                                     pf_init=pf_init,
                                      plot_error=plot_error)
