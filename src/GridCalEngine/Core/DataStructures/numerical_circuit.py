@@ -589,7 +589,7 @@ class NumericalCircuit:
             if tpe == TransformerControlType.fixed:
                 pass
 
-            elif tpe == TransformerControlType.Pt:
+            elif tpe == TransformerControlType.Pt:  # TODO: change name .Pt by .Pf
                 k_pf_tau_lst.append(k)
                 self.any_control = True
 

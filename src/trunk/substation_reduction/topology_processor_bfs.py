@@ -261,6 +261,9 @@ def apply_results_to_grid(grid: MultiCircuit,
         if elm.cn_to is not None:
             elm.bus_to = process_info.get_final_bus(elm.cn_to)
 
+    # TODO: get shunt devices as separated lists
+    print()
+
 
 def topology_processor(grid: MultiCircuit, t_idx: Union[int, None] = None):
     """
