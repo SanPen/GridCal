@@ -19,10 +19,10 @@ def createExampleGrid() -> MultiCircuit:
         bb = dev.BusBar(name='BB{}'.format(i + 1))
         bb.cn.name = 'T{}'.format(i + 1)
         bus_bar_dict['BB{}'.format(i + 1)] = bb
-        cn_dict[bb.cn.name] = bb.cn
-        grid.add_bus_bar(bb)
+        cn_dict[bb.cn.name] = bb.cn  # each busbar has an internal connectivity node
+        grid.add_bus_bar(bb)  # both the bar and the internal cn are added to the grid
 
-    for i in range(5, 11):  # cdreate the rest of terminals
+    for i in range(5, 11):  # create the rest of terminals
         term_name = f"T{i + 1}"
         cn = dev.ConnectivityNode(name=term_name)
         cn_dict[term_name] = cn
@@ -176,7 +176,7 @@ def create_topology_process_info(grid: MultiCircuit) -> TopologyProcessorInfo:
     # traverse connectivity nodes
     for cn in grid.get_connectivity_nodes():
 
-        if cn.default_bus is None:
+        if cn.default_bus is None:  # connectivity nodes can be linked to a previously existing Bus
             # create a new candidate
             candidate_bus = dev.Bus(f"Candidate from {cn.name}")
             info.add_new_candidate(candidate_bus)
