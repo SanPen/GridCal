@@ -89,57 +89,102 @@ In this model, the objective function to minimize corresponds to the sum of the 
 
 .. math::
 
-    min f(v, \theta, P_g, Q_g) = aaa c_2^T Pg^2 + c_1^T Pg + c_0
+    min f(v, \theta, P_g, Q_g) = c_2^T Pg^2 + c_1^T Pg + c_0
 
 where :math:`c_2` , :math:`c_1` and :math:`c_0` are the vectors with quadratic, linear and constant costs of the generators.
 
-2.3 Balance constraint
+2.3 Equality constraints
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-The flow balance has to be maintained at each node :math:`m` for each point in time :math:`t`. In general terms, it is expressed as:
+The equality constraints present in the model are the nodal power injection equations, which have to be accomplished. This set of equations ensure that the power exiting the node equals the power entering.
 
 .. math::
 
-    \quad level[t,m] = level[t-1,m] \\
-                       + dt * inflow[m] \\
-                       + dt * flow_in[t,m] \\
-                       + dt * flow_{p2x}[t,m] \\
-                       - dt * spill[t,m] \\
-                       - dt * flow_out[t,m]
+    G_{S}[t,m] = S^{bus} + S_d - C_g S_g\\
+    S^{bus} = [V]I_{bus}^* = [V]Y_{bus}^* V^*
 
-where :math:`dt` is the time step, :math:`inflow[m]` is known data of the entering fluid flow, :math:`flow_in[t,m]` is the sum of the input flows from the connected paths, :math:`flow_{p2x}[t,m]` is the input flow coming from the P2Xs, and :math:`flow_out[t,m]` is the sum of the output flows from the connected paths. In case the first time index is being simulated, :math:`level[t-1,m]` is simply replaced by :math:`initial_level[m]`, which is input information.
+There are additional equality balance for PV buses, those buses who have the same maximum and minimum voltage (which means, their voltage module is controlled) and one equality for the primary _slack_ bus, setting its angle as 0.
 
-The level of any given node has to be connected somehow to the contribution of injection devices. Hence, to consider turbines:
-
-.. math::
-
-    flow_out[t,m] += \sum_{i \in m}^{ni} p[t,g] * flow_max[i] / (p_max[g] * turb_eff[i])
-
-where :math:`i` is the turbine index, :math:`p[t,g]` is the generation power at time :math:`t` for generator index :math:`g`, :math:`flow_max` is the maximum turbine flow, :math:`p_max` the maximum generator power in per unit, and :math:`turb_eff` the turbine's efficiency.
-
-Similarly, for pumps:
-
-.. math::
-
-    flow_in[t,m] -= \sum_{i \in m}^{ni} p[t,g] * flow_max[i] * pump_eff[i] / abs(p_min[g])
-
-where :math:`i` is the pump index, :math:`p[t,g]` is the generation power at time :math:`t` for generator index :math:`g`, :math:`flow_max` is the maximum pump flow, :math:`p_min` the minimum generator power in per unit, and :math:`pump_eff` the pump's efficiency.
-
-In the case of P2Xs, it follows the same expression as in pumps:
-
-.. math::
-
-    flow_{p2x}[t,m] += \sum_{i \in m}^{ni} p[t,g] * flow_max[i] * p2x_eff[i] / abs(p_min[g])
-
-
-
-
-2.3 Output results
+2.4 Inequality constraints
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The inequalities correspond to the operational limits for the voltage and power variables, which are dependant on the bus or generator, and the maximum power allowed through a line. This last conditions has to hold on both ends of the line:
 
-The results of interest for each device type are shown below.
+.. math::
 
-Node 
+    H_{f} = S^{f^{*}} S^{f} - S_{max}^2\\
+    H_{t} = S^{t^{*}} S^{t} - S_{max}^2
+
+
+3. KKT conditions and Newton-Raphson method
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Once we have settled our grid model, we want to obtain the optimal solution of it, which will yield the lowest value possible for the objective function. Since we are facing a non-convex problem, there are multiple local optimal points for this problem. This has to be taken into account prior to make any statements about the solution. The point we obtain when solving these problem is a local optimal point, which can be potentially the global optimal point of the problem. More advanced methods will allow us to determine more accurately if there can be better operating points.
+A general optimization problem, such as the one we are facing were no simplifications can be made, can be solved by imposing the KKT conditions over the variables of it and solving the resulting system of equations with a numerical method. Here, we use the Newton-Raphson method, explained in this section.
+
+3.1 KKT conditions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+To formulate the problem using the KKT conditions, we will make use of associated multipliers and slack variables for our set of constraints. We can rewrite the optimization problem asa follows:
+
+
+.. math::
+    min f(x)\\
+    s.t.    g(x) = 0\\
+            h(x) + Z = 0
+where :math:`Z` is the slack variable associated to the inequality constraints used to transform them into an equality. Then, we introduce the multipliers :math:`\lambda` and :math:`\mu`, which are associated to the equality and inequality constraints respectively. We can now write the expressions of the KKT conditions for the optimization problem:
+
+
+.. math::
+    L = \nabla f(x) + \lambda^T \nabla g(x) + \mu^T \nabla h(x) = 0 \\
+    \mu Z - \gamma = 0  \\
+    g(x) = 0 \\
+    h(x) + Z = 0\\
+    \mu, Z \geq 0
+
+Note that the second condition makes use of the parameter :math:`\gamma`, which starts off at a non-zero value to improve convergence and is updated each iterative step tending to 0.
+The last condition will be ensured avoiding steps that reduce below 0 both :math:`\mu`and Z, and not through a direct expression.
+
+3.2 Newton-Raphson method
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+To solve the previous system of equations, we make use of the Newton-Raphson method. The method consists on updating the vector of unknowns based on the following generalized step:
+
+.. math::
+    y_{i+1}  = y_i + \delta y_i = y_i - f(y_i)/f'(y_i)
+
+In this optimization problem, we have a vector of unknowns composed by the following variables:
+
+.. math::
+    y = [x, \lambda, \mu, Z] \\
+    x = [\theta, v, P_g, Q_g]
+
+To find the optimization step :math:`\delta y_i`, we will solve the following matricial problem:
+
+.. math::
+    -J(y_i) \delta y_i = f(y_i)
+
+Where J(y_i) is the jacobian matrix of the system of equations described in the previous section, and f(y_i) is a vector with the value of these expressions.
+For this general optimization problem, we can reduce the size of this system using the same methodology used in MATPOWER's Interior Point Solver (MIPS), where the reduced system is the following:
+
+.. math::
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 .. table::
 
