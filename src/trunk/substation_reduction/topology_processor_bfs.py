@@ -2,7 +2,7 @@ from GridCalEngine.api import *
 import GridCalEngine.Core.Devices as dev
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Core.topology import find_islands, get_adjacency_matrix
-from scipy.sparse import lil_matrix, csc_matrix
+from scipy.sparse import lil_matrix
 
 
 def createExampleGrid() -> MultiCircuit:
@@ -141,6 +141,7 @@ class TopologyProcessorInfo:
         :return: list of final buses
         """
         final_buses = list()
+        print("Islands:")
         for island in islands:
             print(",".join([self.candidates[i].name for i in island]))
 
@@ -244,6 +245,7 @@ def apply_results_to_grid(grid: MultiCircuit,
     :return: Nothig, the grid is processed in-place
     """
     # add any extra bus that may arise from the calculation
+    print("Extra buses:")
     grid_buses_set = {b for b in grid.get_buses()}
     for elm in final_buses:
         if elm not in grid_buses_set:
