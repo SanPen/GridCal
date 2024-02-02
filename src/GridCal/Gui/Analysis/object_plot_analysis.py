@@ -631,10 +631,6 @@ def grid_analysis(circuit: MultiCircuit,
 
             for i, elm in enumerate(elements):
 
-                qmin, qmax = elm.get_reactive_power_limits()
-                Qmin += qmin
-                Qmax += qmax
-
                 if elm.Vnom <= 0.0:
                     logger.add(object_type=object_type.value,
                                element_name=elm.name,

@@ -715,7 +715,9 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
             # update the buses (the deleted one and the updated one)
             if removed_bus is not None:
                 # merge the removed bus with the remaining one
+                # TODO: Figure out how to merge two buses
                 updated_bus.graphic_obj.merge(removed_bus.graphic_obj)
+                # circuit.merge_buses(bus1=bus_t, bus2=bus_f)
 
                 # remove the updated bus children
                 for g in updated_bus.graphic_obj.shunt_children:

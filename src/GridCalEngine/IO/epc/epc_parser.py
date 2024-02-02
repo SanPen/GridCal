@@ -449,8 +449,7 @@ def parse_loads(data_lst: List[List], buses_dict: Dict[int, dev.Bus]):
                        P=P,
                        Q=Q,
                        active=True,)
-        bus_f.add_device(elm)
-
+        elm.bus = bus_f
         data.append(elm)
 
     return data
@@ -490,7 +489,7 @@ def parse_generators(data_lst: List[List], buses_dict: Dict[int, dev.Bus], bus_v
                             Snom=np.sqrt(Pmax*Pmax+Qmax*Qmax),
                             Sbase=Sbase,
                             active=True, )
-        bus_f.add_device(elm)
+        elm.bus = bus_f
 
         data.append(elm)
 

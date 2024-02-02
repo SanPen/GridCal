@@ -1401,7 +1401,8 @@ class SimulationsMain(TimeEventsMain):
                     end_idx = self.ui.vs_target_comboBox.currentIndex()
 
                     if len(sel_bus_idx) > 0:
-                        if sum([self.circuit.buses[i].get_device_number() for i in sel_bus_idx]) == 0:
+                        S = self.circuit.get_Sbus()
+                        if S[sel_bus_idx].sum() == 0:
                             warning_msg('You have selected a group of buses with no power injection.\n'
                                         'this will result in an infinite continuation, since the loading variation '
                                         'of buses with zero injection will be infinite.', 'Continuation Power Flow')

@@ -2927,6 +2927,7 @@ class BusBranchEditorWidget(QSplitter):
             if len(x) > 0:
 
                 # search available results
+                # TODO: Fix this
                 power_data = api_object.get_active_injection_profiles_dictionary()
                 voltage = dict()
 

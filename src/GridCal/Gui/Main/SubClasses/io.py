@@ -578,56 +578,6 @@ class IoMain(ConfigurationMain):
         # call the garbage collector to free memory
         self.collect_memory()
 
-    def import_plexos_node_load(self):
-        """
-        Open and parse Plexos load file
-        """
-        fname = self.select_csv_file('Open node load')
-
-        if fname:
-            df = pd.read_csv(fname, index_col=0)
-            logger = self.circuit.import_plexos_load_profiles(df=df)
-            self.update_date_dependent_combos()
-
-            if len(logger) > 0:
-                dlg = LogsDialogue('Plexos load import', logger)
-                dlg.exec_()
-
-    def import_plexos_generator_generation(self):
-        """
-        Open and parse Plexos generation file
-        """
-        fname = self.select_csv_file('Open generation')
-
-        if fname:
-            df = pd.read_csv(fname, index_col=0)
-            logger = self.circuit.import_plexos_generation_profiles(df=df)
-            self.update_date_dependent_combos()
-
-            if len(logger) > 0:
-                dlg = LogsDialogue('Plexos generation import', logger)
-                dlg.exec_()
-
-    def import_plexos_branch_rates(self):
-        """
-        Open and parse Plexos load file
-        """
-        fname = self.select_csv_file('Open branch rates')
-
-        if fname:
-            df = pd.read_csv(fname, index_col=0)
-
-            if self.circuit.get_time_number() != df.shape[0]:
-                error_msg('The data has a different number of rows than the existing profiles')
-            else:
-
-                logger = self.circuit.import_branch_rates_profiles(df=df)
-                self.update_date_dependent_combos()
-
-                if len(logger) > 0:
-                    dlg = LogsDialogue('Plexos branch rates import', logger)
-                    dlg.exec_()
-
     def grid_generator(self):
         """
         Open the grid generator window

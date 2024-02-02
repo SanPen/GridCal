@@ -152,7 +152,7 @@ def reduce_grid_brute(circuit: MultiCircuit, removed_br_idx):
             updated_branches.append(modified_branch)
 
         # merge buses
-        bus_t.merge(bus_f)
+        circuit.merge_buses(bus1=bus_t, bus2=bus_f)
         updated_bus = bus_t
 
         # delete bus
@@ -224,21 +224,21 @@ def reduce_buses(circuit: MultiCircuit, buses_to_reduce: List[Bus], text_func=No
 
                 # merge the bus with the selected one
                 print('Assigning', bus.name, 'to', selected.name)
-                selected.merge(bus)
+                circuit.merge_buses(bus1=selected, bus2=bus)
 
                 # remember the buses that keep the devices
                 buses_merged.append(selected)
 
                 # delete the bus from the circuit and the dictionary
-                circuit.delete_bus(bus)
+                circuit.delete_bus(bus, delete_associated=True)
                 bus_bus.__delitem__(bus)
             else:
                 # the bus is isolated, so delete it
-                circuit.delete_bus(bus)
+                circuit.delete_bus(bus, delete_associated=True)
 
         else:
             # the bus is isolated, so delete it
-            circuit.delete_bus(bus)
+            circuit.delete_bus(bus, delete_associated=True)
 
         if text_func is not None:
             text_func('Removing ' + bus.name + '...')

@@ -452,7 +452,6 @@ class Line(ParentBranch):
 
         middle_bus = self.bus_from.copy()
         middle_bus.name += ' split'
-        middle_bus.delete_children()
 
         # C(x, y) = (x1 + t * (x2 - x1), y1 + t * (y2 - y1))
         middle_bus.X = self.bus_from.x + (self.bus_to.x - self.bus_from.x) * position

@@ -743,6 +743,7 @@ class DeviceType(Enum):
     ShuntDevice = 'Shunt'
     UpfcDevice = 'UPFC'  # unified power flow controller
     ExternalGridDevice = 'External grid'
+    MeasurementDevice = 'Measurement grid'
     WireDevice = 'Wire'
     SequenceLineDevice = 'Sequence line'
     UnderGroundLineDevice = 'Underground line'
