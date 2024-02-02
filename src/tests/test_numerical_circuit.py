@@ -18,7 +18,8 @@ def test_numerical_cicuit_generator_contingencies():
         #
         #     nc.set_contingency_status(contingencies_list=[cnt])
 
-        cnt = main_circuit.contingencies[0]  # yo sé que la primera contingencia es cambiar el generador del bus 1 en 120%
+        # yo sé que la primera contingencia es cambiar el generador del bus 1 en 120%
+        cnt = main_circuit.contingencies[0]
 
         p_prev = nc.generator_data.p[1]  # P del primer generador antes del cambio
         nc.set_contingency_status(contingencies_list=[cnt])
@@ -26,6 +27,7 @@ def test_numerical_cicuit_generator_contingencies():
         change = 1.2 if i == 0 else 0.8
 
         assert p_prev * change == p_post
+
 
 def test_numerical_cicuit_branch_contingencies():
     """
@@ -43,7 +45,8 @@ def test_numerical_cicuit_branch_contingencies():
         #
         #     nc.set_contingency_status(contingencies_list=[cnt])
 
-        cnt = main_circuit.contingencies[0]  # yo sé que la primera contingencia es cambiar el generador del bus 1 en 120%
+        # yo sé que la primera contingencia es cambiar el generador del bus 1 en 120%
+        cnt = main_circuit.contingencies[0]
 
         p_prev = nc.generator_data.p[1]  # P del primer generador antes del cambio
         nc.set_contingency_status(contingencies_list=[cnt])

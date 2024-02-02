@@ -446,9 +446,14 @@ def test_mlodf_sanpen():
         assert ok
 
 
-def test_ptdf_goodness():
+def test_ptdf_generation_contingencies():
     """
     Compare the PSSE PTDF and the GridCal PTDF for IEEE14, IEEE30, IEEE118 and REE networks
+    In this test we check a number of grids where only generation variations
+    have been introduced via generation contingencies
+
+    The test consists in performing the contingencies with a Power flow driver (with linear power flow)
+    later with a PTDF driver and both should provide the same values
     """
     for fname in [
         os.path.join('data', 'grids', 'IEEE14-gen120.gridcal'),
@@ -479,12 +484,17 @@ def test_ptdf_goodness():
         cont_analysis_driver2 = ContingencyAnalysisDriver(grid=main_circuit, options=options2)
         cont_analysis_driver2.run()
 
-        assert np.allclose(cont_analysis_driver1.results.Sf, cont_analysis_driver2.results.Sf)
+        ok = np.allclose(cont_analysis_driver1.results.Sf, cont_analysis_driver2.results.Sf)
+        assert ok
 
 
-def test_lodf_goodness():
+def test_lodf_single_contingencies():
     """
     Compare the PSSE PTDF and the GridCal PTDF for IEEE14, IEEE30, IEEE118 and REE networks
+    In this test we check the single contingencies against the power flow driver
+
+    The test consists in performing the contingencies with a Power flow driver (with linear power flow)
+    later with a PTDF driver and both should provide the same values
     """
     for fname in [
         os.path.join('data', 'grids', 'IEEE14-13_14.gridcal'),
@@ -502,8 +512,12 @@ def test_lodf_goodness():
                                       dispatch_storage=True,
                                       control_q=ReactivePowerControlMode.NoControl,
                                       control_p=False)
-        options1 = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyMethod.PowerFlow)
-        cont_analysis_driver1 = ContingencyAnalysisDriver(grid=main_circuit, options=options1,
+
+        options1 = ContingencyAnalysisOptions(pf_options=pf_options,
+                                              engine=ContingencyMethod.PowerFlow)
+
+        cont_analysis_driver1 = ContingencyAnalysisDriver(grid=main_circuit,
+                                                          options=options1,
                                                           linear_multiple_contingencies=None)
         cont_analysis_driver1.run()
 
@@ -516,7 +530,8 @@ def test_lodf_goodness():
                                                           linear_multiple_contingencies=linear_multi_contingency)
         cont_analysis_driver2.run()
 
-    assert np.allclose(cont_analysis_driver1.results.Sf, cont_analysis_driver2.results.Sf)
+    ok = np.allclose(cont_analysis_driver1.results.Sf, cont_analysis_driver2.results.Sf)
+    assert ok
 
 
 if __name__ == '__main__':
