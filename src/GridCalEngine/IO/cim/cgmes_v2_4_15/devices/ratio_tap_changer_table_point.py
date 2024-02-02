@@ -16,7 +16,6 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.tap_changer_table_point import TapChangerTablePoint
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.ratio_tap_changer_table import RatioTapChangerTable
 from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile
 
 
@@ -24,6 +23,7 @@ class RatioTapChangerTablePoint(TapChangerTablePoint):
 	def __init__(self, rdfid='', tpe='RatioTapChangerTablePoint'):
 		TapChangerTablePoint.__init__(self, rdfid, tpe)
 
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.ratio_tap_changer_table import RatioTapChangerTable
 		self.RatioTapChangerTable: RatioTapChangerTable | None = None
 
 		self.register_property(

@@ -16,8 +16,6 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.load_group import LoadGroup
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.conform_load import ConformLoad
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.conform_load_schedule import ConformLoadSchedule
 from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile
 
 
@@ -25,8 +23,8 @@ class ConformLoadGroup(LoadGroup):
 	def __init__(self, rdfid='', tpe='ConformLoadGroup'):
 		LoadGroup.__init__(self, rdfid, tpe)
 
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.conform_load import ConformLoad
 		self.EnergyConsumers: ConformLoad | None = None
-		self.ConformLoadSchedules: ConformLoadSchedule | None = None
 
 		self.register_property(
 			name='EnergyConsumers',
@@ -34,13 +32,5 @@ class ConformLoadGroup(LoadGroup):
 			multiplier=UnitMultiplier.none,
 			unit=UnitSymbol.none,
 			description='''Conform loads assigned to this ConformLoadGroup.''',
-			profiles=[]
-		)
-		self.register_property(
-			name='ConformLoadSchedules',
-			class_type=ConformLoadSchedule,
-			multiplier=UnitMultiplier.none,
-			unit=UnitSymbol.none,
-			description='''The ConformLoadSchedules in the ConformLoadGroup.''',
 			profiles=[]
 		)

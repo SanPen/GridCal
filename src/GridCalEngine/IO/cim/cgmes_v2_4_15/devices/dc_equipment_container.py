@@ -16,8 +16,6 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.equipment_container import EquipmentContainer
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.dc_node import DCNode
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.dc_topological_node import DCTopologicalNode
 from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile
 
 
@@ -25,7 +23,9 @@ class DCEquipmentContainer(EquipmentContainer):
 	def __init__(self, rdfid='', tpe='DCEquipmentContainer'):
 		EquipmentContainer.__init__(self, rdfid, tpe)
 
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.dc_node import DCNode
 		self.DCNodes: DCNode | None = None
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.dc_topological_node import DCTopologicalNode
 		self.DCTopologicalNode: DCTopologicalNode | None = None
 
 		self.register_property(

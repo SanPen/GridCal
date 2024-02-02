@@ -16,9 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.identified_object import IdentifiedObject
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.acdc_terminal import ACDCTerminal
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.power_system_resource import PowerSystemResource
-from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile, UnitMultiplier, PhaseCode, UnitSymbol
+from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile, UnitSymbol, UnitMultiplier, PhaseCode
 
 
 class Measurement(IdentifiedObject):
@@ -29,7 +27,9 @@ class Measurement(IdentifiedObject):
 		self.phases: PhaseCode = None
 		self.unitSymbol: UnitSymbol = None
 		self.unitMultiplier: UnitMultiplier = None
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.acdc_terminal import ACDCTerminal
 		self.Terminal: ACDCTerminal | None = None
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.power_system_resource import PowerSystemResource
 		self.PowerSystemResource: PowerSystemResource | None = None
 
 		self.register_property(

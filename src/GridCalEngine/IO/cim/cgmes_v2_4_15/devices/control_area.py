@@ -16,19 +16,19 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.power_system_resource import PowerSystemResource
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.energy_area import EnergyArea
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.tie_flow import TieFlow
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.control_area_generating_unit import ControlAreaGeneratingUnit
-from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile, ControlAreaTypeKind
+from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile, UnitSymbol, ControlAreaTypeKind
 
 
 class ControlArea(PowerSystemResource):
 	def __init__(self, rdfid='', tpe='ControlArea'):
 		PowerSystemResource.__init__(self, rdfid, tpe)
 
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.energy_area import EnergyArea
 		self.EnergyArea: EnergyArea | None = None
 		self.type: ControlAreaTypeKind = None
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.tie_flow import TieFlow
 		self.TieFlow: TieFlow | None = None
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.control_area_generating_unit import ControlAreaGeneratingUnit
 		self.ControlAreaGeneratingUnit: ControlAreaGeneratingUnit | None = None
 		self.netInterchange: float = 0.0
 		self.pTolerance: float = 0.0

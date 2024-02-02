@@ -16,9 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.tap_changer import TapChanger
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.ratio_tap_changer_table import RatioTapChangerTable
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.transformer_end import TransformerEnd
-from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile, TransformerControlMode
+from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile, UnitSymbol, TransformerControlMode
 
 
 class RatioTapChanger(TapChanger):
@@ -27,7 +25,9 @@ class RatioTapChanger(TapChanger):
 
 		self.tculControlMode: TransformerControlMode = None
 		self.stepVoltageIncrement: float = 0.0
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.ratio_tap_changer_table import RatioTapChangerTable
 		self.RatioTapChangerTable: RatioTapChangerTable | None = None
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.transformer_end import TransformerEnd
 		self.TransformerEnd: TransformerEnd | None = None
 
 		self.register_property(

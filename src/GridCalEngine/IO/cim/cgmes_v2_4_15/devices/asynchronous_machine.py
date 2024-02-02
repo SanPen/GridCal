@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.rotating_machine import RotatingMachine
-from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile, AsynchronousMachineKind
+from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile, AsynchronousMachineKind, UnitSymbol
 
 
 class AsynchronousMachine(RotatingMachine):
@@ -61,7 +61,7 @@ class AsynchronousMachine(RotatingMachine):
 		self.register_property(
 			name='nominalFrequency',
 			class_type=float,
-			multiplier=UnitMultiplier.None,
+			multiplier=UnitMultiplier.none,
 			unit=UnitSymbol.Hz,
 			description='''Cycles per second.''',
 			profiles=[]

@@ -16,19 +16,16 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.identified_object import IdentifiedObject
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.measurement_value_quality import MeasurementValueQuality
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.measurement_value_source import MeasurementValueSource
-from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile
+from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile, UnitSymbol
 
 
 class MeasurementValue(IdentifiedObject):
 	def __init__(self, rdfid='', tpe='MeasurementValue'):
 		IdentifiedObject.__init__(self, rdfid, tpe)
 
+		import datetime
 		self.timeStamp: datetime.datetime | None = None
 		self.sensorAccuracy: float = 0.0
-		self.MeasurementValueQuality: MeasurementValueQuality | None = None
-		self.MeasurementValueSource: MeasurementValueSource | None = None
 
 		self.register_property(
 			name='timeStamp',
@@ -44,21 +41,5 @@ class MeasurementValue(IdentifiedObject):
 			multiplier=UnitMultiplier.none,
 			unit=UnitSymbol.none,
 			description='''Percentage on a defined base.   For example, specify as 100 to indicate at the defined base.''',
-			profiles=[]
-		)
-		self.register_property(
-			name='MeasurementValueQuality',
-			class_type=MeasurementValueQuality,
-			multiplier=UnitMultiplier.none,
-			unit=UnitSymbol.none,
-			description='''A MeasurementValue has a MeasurementValueQuality associated with it.''',
-			profiles=[]
-		)
-		self.register_property(
-			name='MeasurementValueSource',
-			class_type=MeasurementValueSource,
-			multiplier=UnitMultiplier.none,
-			unit=UnitSymbol.none,
-			description='''The MeasurementValues updated by the source.''',
 			profiles=[]
 		)

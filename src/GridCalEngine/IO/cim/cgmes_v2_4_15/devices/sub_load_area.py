@@ -16,8 +16,6 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.energy_area import EnergyArea
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.load_area import LoadArea
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.load_group import LoadGroup
 from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile
 
 
@@ -25,7 +23,9 @@ class SubLoadArea(EnergyArea):
 	def __init__(self, rdfid='', tpe='SubLoadArea'):
 		EnergyArea.__init__(self, rdfid, tpe)
 
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.load_area import LoadArea
 		self.LoadArea: LoadArea | None = None
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.load_group import LoadGroup
 		self.LoadGroups: LoadGroup | None = None
 
 		self.register_property(

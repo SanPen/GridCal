@@ -16,8 +16,6 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.power_system_resource import PowerSystemResource
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.equipment_container import EquipmentContainer
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.operational_limit_set import OperationalLimitSet
 from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile
 
 
@@ -26,7 +24,9 @@ class Equipment(PowerSystemResource):
 		PowerSystemResource.__init__(self, rdfid, tpe)
 
 		self.aggregate: bool = False
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.equipment_container import EquipmentContainer
 		self.EquipmentContainer: EquipmentContainer | None = None
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.operational_limit_set import OperationalLimitSet
 		self.OperationalLimitSet: OperationalLimitSet | None = None
 
 		self.register_property(

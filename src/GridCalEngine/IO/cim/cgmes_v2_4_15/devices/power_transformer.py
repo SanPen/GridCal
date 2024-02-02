@@ -16,8 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.conducting_equipment import ConductingEquipment
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.power_transformer_end import PowerTransformerEnd
-from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile
+from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile, UnitSymbol
 
 
 class PowerTransformer(ConductingEquipment):
@@ -30,6 +29,7 @@ class PowerTransformer(ConductingEquipment):
 		self.highSideMinOperatingU: float = 0.0
 		self.isPartOfGeneratorUnit: bool = False
 		self.operationalValuesConsidered: bool = False
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.power_transformer_end import PowerTransformerEnd
 		self.PowerTransformerEnd: PowerTransformerEnd | None = None
 
 		self.register_property(

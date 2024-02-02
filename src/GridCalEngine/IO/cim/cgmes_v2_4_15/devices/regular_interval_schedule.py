@@ -16,8 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.basic_interval_schedule import BasicIntervalSchedule
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.regular_time_point import RegularTimePoint
-from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile
+from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile, UnitSymbol
 
 
 class RegularIntervalSchedule(BasicIntervalSchedule):
@@ -25,8 +24,8 @@ class RegularIntervalSchedule(BasicIntervalSchedule):
 		BasicIntervalSchedule.__init__(self, rdfid, tpe)
 
 		self.timeStep: float = 0.0
+		import datetime
 		self.endTime: datetime.datetime | None = None
-		self.TimePoints: RegularTimePoint | None = None
 
 		self.register_property(
 			name='timeStep',
@@ -42,13 +41,5 @@ class RegularIntervalSchedule(BasicIntervalSchedule):
 			multiplier=UnitMultiplier.none,
 			unit=UnitSymbol.none,
 			description='''The time for the last time point.''',
-			profiles=[]
-		)
-		self.register_property(
-			name='TimePoints',
-			class_type=RegularTimePoint,
-			multiplier=UnitMultiplier.none,
-			unit=UnitSymbol.none,
-			description='''The regular interval time point data values that define this schedule.''',
 			profiles=[]
 		)

@@ -16,8 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.conducting_equipment import ConductingEquipment
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.switch_schedule import SwitchSchedule
-from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile
+from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile, UnitSymbol
 
 
 class Switch(ConductingEquipment):
@@ -27,7 +26,6 @@ class Switch(ConductingEquipment):
 		self.normalOpen: bool = False
 		self.ratedCurrent: float = 0.0
 		self.retained: bool = False
-		self.SwitchSchedules: SwitchSchedule | None = None
 		self.open: bool = False
 
 		self.register_property(
@@ -52,14 +50,6 @@ class Switch(ConductingEquipment):
 			multiplier=UnitMultiplier.none,
 			unit=UnitSymbol.none,
 			description='''Branch is retained in a bus branch model.  The flow through retained switches will normally be calculated in power flow.''',
-			profiles=[]
-		)
-		self.register_property(
-			name='SwitchSchedules',
-			class_type=SwitchSchedule,
-			multiplier=UnitMultiplier.none,
-			unit=UnitSymbol.none,
-			description='''A SwitchSchedule is associated with a Switch.''',
 			profiles=[]
 		)
 		self.register_property(

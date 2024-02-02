@@ -16,9 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.conducting_equipment import ConductingEquipment
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.acdc_converterdc_terminal import ACDCConverterDCTerminal
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.terminal import Terminal
-from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile
+from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile, UnitSymbol
 
 
 class ACDCConverter(ConductingEquipment):
@@ -34,7 +32,9 @@ class ACDCConverter(ConductingEquipment):
 		self.resistiveLoss: float = 0.0
 		self.switchingLoss: float = 0.0
 		self.valveU0: float = 0.0
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.acdc_converterdc_terminal import ACDCConverterDCTerminal
 		self.DCTerminals: ACDCConverterDCTerminal | None = None
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.terminal import Terminal
 		self.PccTerminal: Terminal | None = None
 		self.idc: float = 0.0
 		self.poleLossP: float = 0.0

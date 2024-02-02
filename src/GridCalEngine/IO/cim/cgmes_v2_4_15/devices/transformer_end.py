@@ -16,20 +16,20 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.identified_object import IdentifiedObject
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.base_voltage import BaseVoltage
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.terminal import Terminal
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.phase_tap_changer import PhaseTapChanger
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.ratio_tap_changer import RatioTapChanger
-from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile
+from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile, UnitSymbol
 
 
 class TransformerEnd(IdentifiedObject):
 	def __init__(self, rdfid='', tpe='TransformerEnd'):
 		IdentifiedObject.__init__(self, rdfid, tpe)
 
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.base_voltage import BaseVoltage
 		self.BaseVoltage: BaseVoltage | None = None
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.terminal import Terminal
 		self.Terminal: Terminal | None = None
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.phase_tap_changer import PhaseTapChanger
 		self.PhaseTapChanger: PhaseTapChanger | None = None
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.ratio_tap_changer import RatioTapChanger
 		self.RatioTapChanger: RatioTapChanger | None = None
 		self.rground: float = 0.0
 		self.endNumber: int = 0

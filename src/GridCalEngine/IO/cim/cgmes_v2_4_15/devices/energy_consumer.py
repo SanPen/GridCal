@@ -16,8 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.conducting_equipment import ConductingEquipment
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.load_response_characteristic import LoadResponseCharacteristic
-from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile
+from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile, UnitSymbol
 
 
 class EnergyConsumer(ConductingEquipment):
@@ -28,6 +27,7 @@ class EnergyConsumer(ConductingEquipment):
 		self.pfixedPct: float = 0.0
 		self.qfixed: float = 0.0
 		self.qfixedPct: float = 0.0
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.load_response_characteristic import LoadResponseCharacteristic
 		self.LoadResponse: LoadResponseCharacteristic | None = None
 		self.p: float = 0.0
 		self.q: float = 0.0

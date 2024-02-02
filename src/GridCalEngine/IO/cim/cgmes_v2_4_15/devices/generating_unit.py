@@ -16,10 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.equipment import Equipment
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.control_area_generating_unit import ControlAreaGeneratingUnit
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.rotating_machine import RotatingMachine
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.gross_to_net_active_power_curve import GrossToNetActivePowerCurve
-from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile, GeneratorControlSource
+from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile, UnitSymbol, Currency, GeneratorControlSource
 
 
 class GeneratingUnit(Equipment):
@@ -41,9 +38,10 @@ class GeneratingUnit(Equipment):
 		self.startupCost: float = 0.0
 		self.variableCost: float = 0.0
 		self.totalEfficiency: float = 0.0
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.control_area_generating_unit import ControlAreaGeneratingUnit
 		self.ControlAreaGeneratingUnit: ControlAreaGeneratingUnit | None = None
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.rotating_machine import RotatingMachine
 		self.RotatingMachine: RotatingMachine | None = None
-		self.GrossToNetActivePowerCurves: GrossToNetActivePowerCurve | None = None
 		self.normalPF: float = 0.0
 
 		self.register_property(
@@ -180,14 +178,6 @@ class GeneratingUnit(Equipment):
 			multiplier=UnitMultiplier.none,
 			unit=UnitSymbol.none,
 			description='''A synchronous machine may operate as a generator and as such becomes a member of a generating unit.''',
-			profiles=[]
-		)
-		self.register_property(
-			name='GrossToNetActivePowerCurves',
-			class_type=GrossToNetActivePowerCurve,
-			multiplier=UnitMultiplier.none,
-			unit=UnitSymbol.none,
-			description='''A generating unit may have a gross active power to net active power curve, describing the losses and auxiliary power requirements of the unit.''',
 			profiles=[]
 		)
 		self.register_property(

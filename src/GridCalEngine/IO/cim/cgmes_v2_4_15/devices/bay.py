@@ -16,7 +16,6 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.equipment_container import EquipmentContainer
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.voltage_level import VoltageLevel
 from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile
 
 
@@ -24,6 +23,7 @@ class Bay(EquipmentContainer):
 	def __init__(self, rdfid='', tpe='Bay'):
 		EquipmentContainer.__init__(self, rdfid, tpe)
 
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.voltage_level import VoltageLevel
 		self.VoltageLevel: VoltageLevel | None = None
 
 		self.register_property(

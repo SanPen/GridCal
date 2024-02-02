@@ -16,18 +16,18 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.equipment_container import EquipmentContainer
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.base_voltage import BaseVoltage
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.bay import Bay
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.substation import Substation
-from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile
+from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile, UnitSymbol
 
 
 class VoltageLevel(EquipmentContainer):
 	def __init__(self, rdfid='', tpe='VoltageLevel'):
 		EquipmentContainer.__init__(self, rdfid, tpe)
 
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.base_voltage import BaseVoltage
 		self.BaseVoltage: BaseVoltage | None = None
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.bay import Bay
 		self.Bays: Bay | None = None
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.substation import Substation
 		self.Substation: Substation | None = None
 		self.highVoltageLimit: float = 0.0
 		self.lowVoltageLimit: float = 0.0

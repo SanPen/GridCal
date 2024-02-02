@@ -16,16 +16,16 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.regulating_cond_eq import RegulatingCondEq
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.generating_unit import GeneratingUnit
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.hydro_pump import HydroPump
-from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile
+from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile, UnitSymbol
 
 
 class RotatingMachine(RegulatingCondEq):
 	def __init__(self, rdfid='', tpe='RotatingMachine'):
 		RegulatingCondEq.__init__(self, rdfid, tpe)
 
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.generating_unit import GeneratingUnit
 		self.GeneratingUnit: GeneratingUnit | None = None
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.hydro_pump import HydroPump
 		self.HydroPump: HydroPump | None = None
 		self.ratedPowerFactor: float = 0.0
 		self.ratedS: float = 0.0

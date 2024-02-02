@@ -16,7 +16,6 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.identified_object import IdentifiedObject
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.location import Location
 from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile
 
 
@@ -25,6 +24,7 @@ class CoordinateSystem(IdentifiedObject):
 		IdentifiedObject.__init__(self, rdfid, tpe)
 
 		self.crsUrn: str = ''
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.location import Location
 		self.Location: Location | None = None
 
 		self.register_property(

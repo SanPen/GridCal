@@ -49,7 +49,6 @@ from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.per_lengthdc_line_parameter impo
 from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.vs_capability_curve import VsCapabilityCurve
 from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.vs_converter import VsConverter
 from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.bus_name_marker import BusNameMarker
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.analog_control import AnalogControl
 from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.control import Control
 from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.limit import Limit
 from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.limit_set import LimitSet
@@ -420,7 +419,6 @@ class CgmesCircuit(BaseCircuit):
             'VsCapabilityCurve': VsCapabilityCurve,
             'VsConverter': VsConverter,
             'BusNameMarker': BusNameMarker,
-            'AnalogControl': AnalogControl,
             'Control': Control,
             'Limit': Limit,
             'LimitSet': LimitSet,
@@ -567,7 +565,6 @@ class CgmesCircuit(BaseCircuit):
         self.VsCapabilityCurve_list: List[VsCapabilityCurve] = list()
         self.VsConverter_list: List[VsConverter] = list()
         self.BusNameMarker_list: List[BusNameMarker] = list()
-        self.AnalogControl_list: List[AnalogControl] = list()
         self.Control_list: List[Control] = list()
         self.Limit_list: List[Limit] = list()
         self.LimitSet_list: List[LimitSet] = list()

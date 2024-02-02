@@ -16,8 +16,6 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.power_system_resource import PowerSystemResource
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.hydro_generating_unit import HydroGeneratingUnit
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.hydro_pump import HydroPump
 from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile, HydroPlantStorageKind
 
 
@@ -25,8 +23,10 @@ class HydroPowerPlant(PowerSystemResource):
 	def __init__(self, rdfid='', tpe='HydroPowerPlant'):
 		PowerSystemResource.__init__(self, rdfid, tpe)
 
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.hydro_generating_unit import HydroGeneratingUnit
 		self.HydroGeneratingUnits: HydroGeneratingUnit | None = None
 		self.hydroPlantStorageType: HydroPlantStorageKind = None
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.hydro_pump import HydroPump
 		self.HydroPumps: HydroPump | None = None
 
 		self.register_property(

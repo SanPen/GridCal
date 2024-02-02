@@ -16,9 +16,6 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.identified_object import IdentifiedObject
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.control import Control
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.measurement import Measurement
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.location import Location
 from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile
 
 
@@ -26,8 +23,11 @@ class PowerSystemResource(IdentifiedObject):
 	def __init__(self, rdfid='', tpe='PowerSystemResource'):
 		IdentifiedObject.__init__(self, rdfid, tpe)
 
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.control import Control
 		self.Controls: Control | None = None
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.measurement import Measurement
 		self.Measurements: Measurement | None = None
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.location import Location
 		self.Location: Location | None = None
 
 		self.register_property(

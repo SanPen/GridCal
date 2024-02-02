@@ -16,14 +16,14 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.acdc_converter import ACDCConverter
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.vs_capability_curve import VsCapabilityCurve
-from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile, VsPpccControlKind, VsQpccControlKind
+from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile, VsQpccControlKind, VsPpccControlKind, UnitSymbol
 
 
 class VsConverter(ACDCConverter):
 	def __init__(self, rdfid='', tpe='VsConverter'):
 		ACDCConverter.__init__(self, rdfid, tpe)
 
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.vs_capability_curve import VsCapabilityCurve
 		self.CapabilityCurve: VsCapabilityCurve | None = None
 		self.maxModulationIndex: float = 0.0
 		self.maxValveCurrent: float = 0.0

@@ -14,12 +14,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-import datetime
-
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.identified_object import IdentifiedObject
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.power_system_resource import PowerSystemResource
-from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile, UnitMultiplier, UnitSymbol
+from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile, UnitSymbol, UnitMultiplier
 
 
 class Control(IdentifiedObject):
@@ -28,9 +25,11 @@ class Control(IdentifiedObject):
 
 		self.controlType: str = ''
 		self.operationInProgress: bool = False
+		import datetime
 		self.timeStamp: datetime.datetime | None = None
 		self.unitMultiplier: UnitMultiplier = None
 		self.unitSymbol: UnitSymbol = None
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.power_system_resource import PowerSystemResource
 		self.PowerSystemResource: PowerSystemResource | None = None
 
 		self.register_property(

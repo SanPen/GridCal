@@ -16,7 +16,6 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.identified_object import IdentifiedObject
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.curve_data import CurveData
 from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile, UnitSymbol, CurveStyle
 
 
@@ -28,6 +27,7 @@ class Curve(IdentifiedObject):
 		self.xUnit: UnitSymbol = None
 		self.y1Unit: UnitSymbol = None
 		self.y2Unit: UnitSymbol = None
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.curve_data import CurveData
 		self.CurveDatas: CurveData | None = None
 
 		self.register_property(

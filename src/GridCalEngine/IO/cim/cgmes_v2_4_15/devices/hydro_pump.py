@@ -16,8 +16,6 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.equipment import Equipment
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.hydro_power_plant import HydroPowerPlant
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.rotating_machine import RotatingMachine
 from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile
 
 
@@ -25,7 +23,9 @@ class HydroPump(Equipment):
 	def __init__(self, rdfid='', tpe='HydroPump'):
 		Equipment.__init__(self, rdfid, tpe)
 
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.hydro_power_plant import HydroPowerPlant
 		self.HydroPowerPlant: HydroPowerPlant | None = None
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.rotating_machine import RotatingMachine
 		self.RotatingMachine: RotatingMachine | None = None
 
 		self.register_property(

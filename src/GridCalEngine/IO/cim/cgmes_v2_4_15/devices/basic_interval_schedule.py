@@ -23,6 +23,7 @@ class BasicIntervalSchedule(IdentifiedObject):
 	def __init__(self, rdfid='', tpe='BasicIntervalSchedule'):
 		IdentifiedObject.__init__(self, rdfid, tpe)
 
+		import datetime
 		self.startTime: datetime.datetime | None = None
 		self.value1Unit: UnitSymbol = None
 		self.value2Unit: UnitSymbol = None

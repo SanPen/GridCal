@@ -16,8 +16,6 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.identified_object import IdentifiedObject
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.reporting_group import ReportingGroup
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.acdc_terminal import ACDCTerminal
 from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile
 
 
@@ -26,7 +24,9 @@ class BusNameMarker(IdentifiedObject):
 		IdentifiedObject.__init__(self, rdfid, tpe)
 
 		self.priority: int = 0
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.reporting_group import ReportingGroup
 		self.ReportingGroup: ReportingGroup | None = None
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.acdc_terminal import ACDCTerminal
 		self.Terminal: ACDCTerminal | None = None
 
 		self.register_property(

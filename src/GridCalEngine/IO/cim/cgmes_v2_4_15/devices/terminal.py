@@ -16,16 +16,6 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.acdc_terminal import ACDCTerminal
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.acdc_converter import ACDCConverter
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.conducting_equipment import ConductingEquipment
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.connectivity_node import ConnectivityNode
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.mutual_coupling import MutualCoupling
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.mutual_coupling import MutualCoupling
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.regulating_control import RegulatingControl
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.tie_flow import TieFlow
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.transformer_end import TransformerEnd
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.sv_power_flow import SvPowerFlow
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.topological_node import TopologicalNode
 from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile, PhaseCode
 
 
@@ -33,16 +23,26 @@ class Terminal(ACDCTerminal):
 	def __init__(self, rdfid='', tpe='Terminal'):
 		ACDCTerminal.__init__(self, rdfid, tpe)
 
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.acdc_converter import ACDCConverter
 		self.ConverterDCSides: ACDCConverter | None = None
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.conducting_equipment import ConductingEquipment
 		self.ConductingEquipment: ConductingEquipment | None = None
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.connectivity_node import ConnectivityNode
 		self.ConnectivityNode: ConnectivityNode | None = None
 		self.phases: PhaseCode = None
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.mutual_coupling import MutualCoupling
 		self.HasFirstMutualCoupling: MutualCoupling | None = None
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.mutual_coupling import MutualCoupling
 		self.HasSecondMutualCoupling: MutualCoupling | None = None
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.regulating_control import RegulatingControl
 		self.RegulatingControl: RegulatingControl | None = None
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.tie_flow import TieFlow
 		self.TieFlow: TieFlow | None = None
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.transformer_end import TransformerEnd
 		self.TransformerEnd: TransformerEnd | None = None
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.sv_power_flow import SvPowerFlow
 		self.SvPowerFlow: SvPowerFlow | None = None
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.topological_node import TopologicalNode
 		self.TopologicalNode: TopologicalNode | None = None
 
 		self.register_property(

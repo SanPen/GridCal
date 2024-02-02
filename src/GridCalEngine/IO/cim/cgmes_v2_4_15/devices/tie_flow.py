@@ -16,8 +16,6 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.base import Base
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.terminal import Terminal
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.control_area import ControlArea
 from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile
 
 
@@ -25,7 +23,9 @@ class TieFlow(Base):
 	def __init__(self, rdfid, tpe, resources=list(), class_replacements=dict()):
 		Base.__init__(self, rdfid=rdfid, tpe=tpe, resources=resources, class_replacements=class_replacements)
 
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.terminal import Terminal
 		self.Terminal: Terminal | None = None
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.control_area import ControlArea
 		self.ControlArea: ControlArea | None = None
 		self.positiveFlowIn: bool = False
 

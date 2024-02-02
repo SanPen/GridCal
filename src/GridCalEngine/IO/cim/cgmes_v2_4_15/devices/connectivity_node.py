@@ -16,9 +16,6 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.identified_object import IdentifiedObject
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.terminal import Terminal
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.connectivity_node_container import ConnectivityNodeContainer
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.topological_node import TopologicalNode
 from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile
 
 
@@ -26,8 +23,11 @@ class ConnectivityNode(IdentifiedObject):
 	def __init__(self, rdfid='', tpe='ConnectivityNode'):
 		IdentifiedObject.__init__(self, rdfid, tpe)
 
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.terminal import Terminal
 		self.Terminals: Terminal | None = None
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.connectivity_node_container import ConnectivityNodeContainer
 		self.ConnectivityNodeContainer: ConnectivityNodeContainer | None = None
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.topological_node import TopologicalNode
 		self.TopologicalNode: TopologicalNode | None = None
 
 		self.register_property(

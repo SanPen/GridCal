@@ -16,14 +16,14 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.conducting_equipment import ConductingEquipment
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.energy_scheduling_type import EnergySchedulingType
-from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile
+from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile, UnitSymbol
 
 
 class EnergySource(ConductingEquipment):
 	def __init__(self, rdfid='', tpe='EnergySource'):
 		ConductingEquipment.__init__(self, rdfid, tpe)
 
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.energy_scheduling_type import EnergySchedulingType
 		self.EnergySchedulingType: EnergySchedulingType | None = None
 		self.nominalVoltage: float = 0.0
 		self.r: float = 0.0

@@ -16,14 +16,14 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.rotating_machine import RotatingMachine
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.reactive_capability_curve import ReactiveCapabilityCurve
-from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile, SynchronousMachineKind, ShortCircuitRotorKind, SynchronousMachineOperatingMode
+from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile, ShortCircuitRotorKind, UnitSymbol, SynchronousMachineKind, SynchronousMachineOperatingMode
 
 
 class SynchronousMachine(RotatingMachine):
 	def __init__(self, rdfid='', tpe='SynchronousMachine'):
 		RotatingMachine.__init__(self, rdfid, tpe)
 
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.reactive_capability_curve import ReactiveCapabilityCurve
 		self.InitialReactiveCapabilityCurve: ReactiveCapabilityCurve | None = None
 		self.earthing: bool = False
 		self.earthingStarPointR: float = 0.0

@@ -16,20 +16,18 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.power_system_resource import PowerSystemResource
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.terminal import Terminal
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.regulating_cond_eq import RegulatingCondEq
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.regulation_schedule import RegulationSchedule
-from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile, UnitMultiplier, RegulatingControlModeKind
+from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile, RegulatingControlModeKind, UnitMultiplier
 
 
 class RegulatingControl(PowerSystemResource):
 	def __init__(self, rdfid='', tpe='RegulatingControl'):
 		PowerSystemResource.__init__(self, rdfid, tpe)
 
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.terminal import Terminal
 		self.Terminal: Terminal | None = None
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.regulating_cond_eq import RegulatingCondEq
 		self.RegulatingCondEq: RegulatingCondEq | None = None
 		self.mode: RegulatingControlModeKind = None
-		self.RegulationSchedule: RegulationSchedule | None = None
 		self.discrete: bool = False
 		self.enabled: bool = False
 		self.targetDeadband: float = 0.0
@@ -58,14 +56,6 @@ class RegulatingControl(PowerSystemResource):
 			multiplier=UnitMultiplier.none,
 			unit=UnitSymbol.none,
 			description='''The regulating control mode presently available.  This specification allows for determining the kind of regulation without need for obtaining the units from a schedule.''',
-			profiles=[]
-		)
-		self.register_property(
-			name='RegulationSchedule',
-			class_type=RegulationSchedule,
-			multiplier=UnitMultiplier.none,
-			unit=UnitSymbol.none,
-			description='''Schedule for this Regulating regulating control.''',
 			profiles=[]
 		)
 		self.register_property(

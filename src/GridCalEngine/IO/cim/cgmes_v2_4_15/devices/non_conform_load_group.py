@@ -16,8 +16,6 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.load_group import LoadGroup
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.non_conform_load import NonConformLoad
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.non_conform_load_schedule import NonConformLoadSchedule
 from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile
 
 
@@ -25,8 +23,8 @@ class NonConformLoadGroup(LoadGroup):
 	def __init__(self, rdfid='', tpe='NonConformLoadGroup'):
 		LoadGroup.__init__(self, rdfid, tpe)
 
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.non_conform_load import NonConformLoad
 		self.EnergyConsumers: NonConformLoad | None = None
-		self.NonConformLoadSchedules: NonConformLoadSchedule | None = None
 
 		self.register_property(
 			name='EnergyConsumers',
@@ -34,13 +32,5 @@ class NonConformLoadGroup(LoadGroup):
 			multiplier=UnitMultiplier.none,
 			unit=UnitSymbol.none,
 			description='''Group of this ConformLoad.''',
-			profiles=[]
-		)
-		self.register_property(
-			name='NonConformLoadSchedules',
-			class_type=NonConformLoadSchedule,
-			multiplier=UnitMultiplier.none,
-			unit=UnitSymbol.none,
-			description='''The NonConformLoadSchedules in the NonConformLoadGroup.''',
 			profiles=[]
 		)

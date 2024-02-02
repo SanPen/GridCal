@@ -16,10 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.power_system_resource import PowerSystemResource
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.tap_changer_control import TapChangerControl
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.tap_schedule import TapSchedule
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.sv_tap_step import SvTapStep
-from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile
+from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile, UnitSymbol
 
 
 class TapChanger(PowerSystemResource):
@@ -32,8 +29,9 @@ class TapChanger(PowerSystemResource):
 		self.neutralStep: int = 0
 		self.neutralU: float = 0.0
 		self.normalStep: int = 0
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.tap_changer_control import TapChangerControl
 		self.TapChangerControl: TapChangerControl | None = None
-		self.TapSchedules: TapSchedule | None = None
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.sv_tap_step import SvTapStep
 		self.SvTapStep: SvTapStep | None = None
 		self.controlEnabled: bool = False
 		self.step: float = 0.0
@@ -95,14 +93,6 @@ The attribute shall be equal or greater than lowStep and equal or less than high
 			multiplier=UnitMultiplier.none,
 			unit=UnitSymbol.none,
 			description='''The tap changers that participates in this regulating tap control scheme.''',
-			profiles=[]
-		)
-		self.register_property(
-			name='TapSchedules',
-			class_type=TapSchedule,
-			multiplier=UnitMultiplier.none,
-			unit=UnitSymbol.none,
-			description='''A TapSchedule is associated with a TapChanger.''',
 			profiles=[]
 		)
 		self.register_property(

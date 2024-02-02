@@ -16,7 +16,6 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.control import Control
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.analog_value import AnalogValue
 from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile
 
 
@@ -26,7 +25,6 @@ class AnalogControl(Control):
 
 		self.maxValue: float = 0.0
 		self.minValue: float = 0.0
-		self.AnalogValue: AnalogValue | None = None
 
 		self.register_property(
 			name='maxValue',
@@ -42,13 +40,5 @@ class AnalogControl(Control):
 			multiplier=UnitMultiplier.none,
 			unit=UnitSymbol.none,
 			description='''A floating point number. The range is unspecified and not limited.''',
-			profiles=[]
-		)
-		self.register_property(
-			name='AnalogValue',
-			class_type=AnalogValue,
-			multiplier=UnitMultiplier.none,
-			unit=UnitSymbol.none,
-			description='''The Control variable associated with the MeasurementValue.''',
 			profiles=[]
 		)

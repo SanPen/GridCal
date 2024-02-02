@@ -16,7 +16,6 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.phase_tap_changer import PhaseTapChanger
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.phase_tap_changer_table import PhaseTapChangerTable
 from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile
 
 
@@ -24,6 +23,7 @@ class PhaseTapChangerTabular(PhaseTapChanger):
 	def __init__(self, rdfid='', tpe='PhaseTapChangerTabular'):
 		PhaseTapChanger.__init__(self, rdfid, tpe)
 
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.phase_tap_changer_table import PhaseTapChangerTable
 		self.PhaseTapChangerTable: PhaseTapChangerTable | None = None
 
 		self.register_property(

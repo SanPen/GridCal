@@ -16,7 +16,6 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.dc_base_terminal import DCBaseTerminal
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.acdc_converter import ACDCConverter
 from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile, DCPolarityKind
 
 
@@ -24,6 +23,7 @@ class ACDCConverterDCTerminal(DCBaseTerminal):
 	def __init__(self, rdfid='', tpe='ACDCConverterDCTerminal'):
 		DCBaseTerminal.__init__(self, rdfid, tpe)
 
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.acdc_converter import ACDCConverter
 		self.DCConductingEquipment: ACDCConverter | None = None
 		self.polarity: DCPolarityKind = None
 

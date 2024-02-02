@@ -16,8 +16,6 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.identified_object import IdentifiedObject
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.topological_node import TopologicalNode
-from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.topological_node import TopologicalNode
 from GridCalEngine.IO.cim.cgmes_v2_4_15.cgmes_enums import cgmesProfile
 
 
@@ -25,7 +23,9 @@ class TopologicalIsland(IdentifiedObject):
 	def __init__(self, rdfid='', tpe='TopologicalIsland'):
 		IdentifiedObject.__init__(self, rdfid, tpe)
 
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.topological_node import TopologicalNode
 		self.AngleRefTopologicalNode: TopologicalNode | None = None
+		from GridCalEngine.IO.cim.cgmes_v2_4_15.devices.topological_node import TopologicalNode
 		self.TopologicalNodes: TopologicalNode | None = None
 
 		self.register_property(
