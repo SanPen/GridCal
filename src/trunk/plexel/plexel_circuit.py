@@ -324,6 +324,37 @@ class CollectionEnum(Enum):
     BalancingTo = 'BalancingTo'
 
 
+class PropertyEnum(Enum):
+    # SystemNodesEnum
+    MustReport = 'Must Report'
+    IsSlackBus = 'Is Slack Bus'
+    AllowDumpEnergy = 'Allow Dump Energy'
+    AllowUnservedEnergy = 'Allow Unserved Energy'
+    FormulateLoad = 'Formulate Load'
+    MaxUnservedEnergy = 'Max Unserved Energy'
+    ReferenceLoad = 'Reference Load'
+    Voltage = 'Voltage'
+    Units = 'Units'
+    LoadParticipationFactor = 'Load Participation Factor'
+    Load = 'Load'
+    FixedLoad = 'Fixed Load'
+    FixedGeneration = 'Fixed Generation'
+    MaxNetInjection = 'Max Net Injection'
+    MaxNetOfftake = 'Max Net Offtake'
+    Rating = 'Rating'
+    DSPBidQuantity = 'DSP Bid Quantity'
+    DSPBidRatio = 'DSP Bid Ratio'
+    DSPBidPrice = 'DSP Bid Price'
+    Price = 'Price'
+    MaxMaintenance = 'Max Maintenance'
+    MaintenanceFactor = 'Maintenance Factor'
+    MinCapacityReserves = 'Min Capacity Reserves'
+    MinCapacityReserveMargin = 'Min Capacity Reserve Margin'
+    x = 'x'
+    y = 'y'
+    z = 'z'
+
+
 class PlexelObject:
     """
     Represents an independent entity.
@@ -430,16 +461,22 @@ class PlexelProperty:
                    'scenario',
                    'memo']
 
-    def __init__(self):
-        self.parent_class: str = ""
-        self.child_class: str = ""
-        self.collection: str = ""
-        self.parent_object: str = ""
-        self.child_object: str = ""
-        self.property_: str = ""
+    def __init__(self,
+                 parent_obj: PlexelObject,
+                 child_obj: PlexelObject,
+                 collection: CollectionEnum,
+                 property: PropertyEnum,
+                 value: Union[str, float]
+                 ):
+        self.parent_class: ClassEnum = parent_obj.class_
+        self.child_class: ClassEnum = child_obj.class_
+        self.collection: CollectionEnum = collection
+        self.parent_object: str = parent_obj.name
+        self.child_object: str = child_obj.name
+        self.property_: PropertyEnum = property
         self.unit: str = ""
         self.band_id: int = 1
-        self.value: Union[str, float] = ""
+        self.value: Union[str, float] = value
         self.date_from: str = ""
         self.date_to: str = ""
         self.pattern: str = ""
@@ -450,19 +487,19 @@ class PlexelProperty:
         self.memo: str = ""
 
     def get_key(self) -> str:
-        return self.child_object + '_' + self.property_
+        return self.child_object + '_' + str(self.property_)
 
     def get_data(self) -> List[str]:
         """
         Get the properties as a list of strings
         :return: List[str]
         """
-        return [self.parent_class,
-                self.child_class,
-                self.collection,
+        return [self.parent_class.value,
+                self.child_class.value,
+                self.collection.value,
                 self.parent_object,
                 self.child_object,
-                self.property_,
+                self.property_.value,
                 self.unit,
                 self.band_id,
                 str(self.value),
@@ -592,7 +629,7 @@ class PlexelBase:
         self.memberships = PlexelList(PlexelMembership)
         self.objects = PlexelList(PlexelObject)
         self.attributes: List[PlexelAttribute] = list()
-        self.properties: List[PlexelProperty] = list()
+        self.properties = PlexelList(PlexelProperty)
 
     def add_category(self, child_class_id, category):
         pass
@@ -661,6 +698,28 @@ class PlexelBase:
         node_zone = PlexelMembership(node_obj, zone_obj, CollectionEnum.Zone)
         self.memberships.append(node_zone)
 
+        # add node properties
+        node_props_enum = [
+            # TODO: convert slack value to Plexel expected format (1/-1)
+            [PropertyEnum.IsSlackBus, node.is_slack],
+            [PropertyEnum.AllowDumpEnergy, 0],
+            [PropertyEnum.Voltage, str(int(node.Vnom))],
+            # TODO: get_active_from_bus_profile()
+            [PropertyEnum.Units, '?'],
+            # TODO: get_load_from_bus()
+            [PropertyEnum.FixedLoad, '?'],
+        ]
+
+        # init System Object to be used as the Parent Object
+        sys_obj = PlexelObject(cls=ClassEnum.System, name='System')
+        for p in node_props_enum:
+            node_props = PlexelProperty(parent_obj=sys_obj,
+                                        child_obj=node_obj,
+                                        collection=CollectionEnum.Nodes,
+                                        property=p[0],
+                                        value=p[1])
+            self.properties.append(node_props)
+
     def save(self, file_name: str):
         """
         Save the Plexel DB to an Excel file
@@ -673,9 +732,9 @@ class PlexelBase:
         with pd.ExcelWriter(file_name) as writer:
             self.objects.get_df().to_excel(writer, index=False, sheet_name='Objects')
             self.memberships.get_df().to_excel(writer, index=False, sheet_name='Memberships')
+            self.properties.get_df().to_excel(writer, index=False, sheet_name='Properties')
             # self.categories.get_df().to_excel(ptr, sheet_name='categories')
             # self.attributes.get_df().to_excel(ptr, sheet_name='attributes')
-            # self.properties.get_df().to_excel(ptr, sheet_name='properties')
 
 
 def convert_gridcal_to_plexel(grid: MultiCircuit) -> PlexelBase:
