@@ -18,21 +18,21 @@
 from typing import Union
 from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceType
 from GridCalEngine.Core.Devices.Substation.substation import Substation
-from GridCalEngine.Core.Devices.Substation.bus import Bus
+from GridCalEngine.Core.Devices.Substation.connectivity_node import ConnectivityNode
 
 
 class BusBar(EditableDevice):
 
     def __init__(self, name='BusBar', idtag: Union[None, str] = None, code: str = '',
                  substation: Union[None, Substation] = None,
-                 default_bus: Union[None, Bus] = None) -> None:
+                 cn: Union[None, ConnectivityNode] = None) -> None:
         """
         Constructor
         :param name: Name of the bus bar
         :param idtag: unique identifier of the device
         :param code: secondary identifyer
         :param substation: Substation of this bus bar (optional)
-        :param default_bus: Default bus to use for topology processing (optional)
+        :param cn: internal Connectivity node, if none a new one is created
         """
         EditableDevice.__init__(self,
                                 name=name,
@@ -42,10 +42,26 @@ class BusBar(EditableDevice):
 
         self.substation: Union[None, Substation] = substation
 
-        self.default_bus: Union[None, Bus] = default_bus
+        self._cn: ConnectivityNode = cn if cn is not None else ConnectivityNode(name=name)
 
         self.register("substation", "", DeviceType.SubstationDevice,
                       "Substation of this bus bar (optional)")
 
-        self.register("default_bus", "", DeviceType.BusDevice,
-                      "Default bus to use for topology processing (optional)")
+        self.register("cn", "", DeviceType.ConnectivityNodeDevice,
+                      "Internal connectvity node")
+
+    @property
+    def cn(self) -> ConnectivityNode:
+        """
+        Connectivity node getter
+        :return: ConnectivityNode
+        """
+        return self._cn
+
+    @cn.setter
+    def cn(self, val: ConnectivityNode):
+        """
+        Connectivity node setter
+        :param val: ConnectivityNode
+        """
+        self._cn: ConnectivityNode = val

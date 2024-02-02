@@ -14,43 +14,26 @@ def createExampleGrid() -> MultiCircuit:
 
     # Add busbar representing physical nodes not the calculation ones
     bus_bar_dict = {}
-    for i in range(5):
-        b = dev.BusBar(name='B{}'.format(i + 1))
-        bus_bar_dict['B{}'.format(i + 1)] = b
-        grid.bus_bars.append(b)
-
-    # Add Connectivity Nodes representing physical connections
-    cn2bus_data = {
-        'T1': 'B1',
-        'T2': 'B2',
-        'T3': 'B1',
-        'T4': 'B2',
-        'T5': 'B2',
-        'T12': 'B3',
-        'T13': 'B4',
-        'T14': 'B4',
-        'T15': 'B4',
-        'T16': 'B5'
-    }
     cn_dict = {}
-    for i in range(16):
+    for i in range(5):
+        bb = dev.BusBar(name='BB{}'.format(i + 1))
+        bb.cn.name = 'T{}'.format(i + 1)
+        bus_bar_dict['BB{}'.format(i + 1)] = bb
+        cn_dict[bb.cn.name] = bb.cn
+        grid.add_bus_bar(bb)
+
+    for i in range(5, 11):  # cdreate the rest of terminals
         term_name = f"T{i + 1}"
         cn = dev.ConnectivityNode(name=term_name)
         cn_dict[term_name] = cn
         grid.add_connectivity_node(cn)
-
-    # set associations
-    for term_name, bus_bar_name in cn2bus_data.items():
-        bus_bar = bus_bar_dict[bus_bar_name]
-        cn = cn_dict[term_name]
-        cn.bus_bar = bus_bar
 
     # Add lines
     line_data = {
         'L1': ('T6', 'T9'),
         'L2': ('T7', 'T10'),
         'L3': ('T8', 'T11'),
-        'L4': ('T15', 'T16')
+        'L4': ('T4', 'T5')
     }
 
     for line_name, (term_from_name, term_to_name) in line_data.items():
@@ -62,12 +45,12 @@ def createExampleGrid() -> MultiCircuit:
     # Add switches
     switch_data = {
         'SW1': ('T1', 'T2', 'closed'),
-        'SW2': ('T3', 'T6', 'closed'),
-        'SW3': ('T4', 'T7', 'closed'),
-        'SW4': ('T5', 'T8', 'closed'),
-        'SW5': ('T9', 'T12', 'closed'),
-        'SW6': ('T10', 'T13', 'closed'),
-        'SW7': ('T11', 'T14', 'closed')
+        'SW2': ('T1', 'T6', 'closed'),
+        'SW3': ('T2', 'T7', 'closed'),
+        'SW4': ('T2', 'T8', 'closed'),
+        'SW5': ('T3', 'T9', 'closed'),
+        'SW6': ('T4', 'T10', 'closed'),
+        'SW7': ('T4', 'T11', 'closed')
     }
 
     for switch_name, (term_from_name, term_to_name, active_name) in switch_data.items():
@@ -97,7 +80,7 @@ class TopologyProcessorInfo:
         self.cn_to_candidate: dict[dev.ConnectivityNode, dev.Bus] = dict()
 
         # map of BusBars to candidate Buses
-        self.busbar_to_candidate: dict[dev.BusBar, dev.Bus] = dict()
+        # self.busbar_to_candidate: dict[dev.BusBar, dev.Bus] = dict()
 
         # integer position of the candidate bus matching a connectivity node
         self.candidate_to_int_dict = dict()
@@ -190,32 +173,19 @@ def create_topology_process_info(grid: MultiCircuit) -> TopologyProcessorInfo:
     """
     info = TopologyProcessorInfo()
 
-    # traverse bus bars
-    for bus_bar in grid.get_bus_bars():
-
-        if bus_bar.default_bus is None:
-            candidate_bus = dev.Bus(f"Candidate from {bus_bar.name}")
-            info.add_new_candidate(candidate_bus)
-        else:
-            candidate_bus = bus_bar.default_bus
-
-        # register
-        info.add_candidate(candidate_bus)
-        info.busbar_to_candidate[bus_bar] = candidate_bus
-
     # traverse connectivity nodes
     for cn in grid.get_connectivity_nodes():
 
-        if cn.bus_bar is not None:
-            # pick the candidate of the bus_bar
-            candidate_bus = info.busbar_to_candidate[cn.bus_bar]
-        else:
+        if cn.default_bus is None:
             # create a new candidate
             candidate_bus = dev.Bus(f"Candidate from {cn.name}")
             info.add_new_candidate(candidate_bus)
-            info.add_candidate(candidate_bus)
+        else:
+            # pick the default candidate
+            candidate_bus = cn.default_bus
 
         # register
+        info.add_candidate(candidate_bus)
         info.cn_to_candidate[cn] = candidate_bus
 
     return info

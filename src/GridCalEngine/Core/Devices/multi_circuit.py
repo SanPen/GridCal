@@ -2619,6 +2619,9 @@ class MultiCircuit:
         """
         self.bus_bars.append(obj)
 
+        # add the internal connectivity node
+        self.add_connectivity_node(obj.cn)
+
     def delete_bus_bar(self, obj: dev.BusBar):
         """
         Delete Substation
