@@ -42,13 +42,13 @@ def find_terms_connections(cgmes_terminal,
     if cgmes_terminal is not None:
         # get the rosetta calculation node if exists
         if cgmes_terminal.TopologicalNode is not None:
-            calc_node = calc_node_dict.get(cgmes_terminal.TopologicalNode.uuid, None)
+            calc_node = calc_node_dict.get(cgmes_terminal.TopologicalNode, None)
         else:
             calc_node = None
 
         # get the gcdev connectivity node if exists
         if cgmes_terminal.ConnectivityNode is not None:
-            cn = cn_dict.get(cgmes_terminal.ConnectivityNode.uuid, None)
+            cn = cn_dict.get(cgmes_terminal.ConnectivityNode, None)
         else:
             cn = None
     else:
