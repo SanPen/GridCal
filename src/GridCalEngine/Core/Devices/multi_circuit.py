@@ -67,7 +67,7 @@ def get_system_user() -> str:
     return str(mac) + ':' + user
 
 
-def get_fused_device_lst(elm_list, property_names: list):
+def get_fused_device_lst(elm_list: List[INJECTION_DEVICE_TYPES], property_names: list):
     """
     Fuse all the devices of a list by adding their selected properties
     :param elm_list: list of devices
@@ -77,7 +77,8 @@ def get_fused_device_lst(elm_list, property_names: list):
     if len(elm_list) > 1:
         # more than a single element, fuse the list
 
-        elm1 = elm_list[0]  # select the main generator
+        elm1 = elm_list[0]  # select the main device
+        deletable_elms = [elm_list[i] for i in range(1, len(elm_list))]
         act_final = elm1.active
         act_prof_final = elm1.active_prof
 
@@ -125,15 +126,15 @@ def get_fused_device_lst(elm_list, property_names: list):
         elm1.active = act_final
         elm1.active_prof = act_prof_final
 
-        return [elm1]
+        return [elm1], deletable_elms
 
     elif len(elm_list) == 1:
         # single element list, return it as it comes
-        return elm_list
+        return elm_list, list()
 
     else:
         # the list is empty
-        return list()
+        return list(), list()
 
 
 class MultiCircuit:
@@ -4001,15 +4002,82 @@ class MultiCircuit:
         # assign the new base
         self.Sbase = Sbase_new
 
+    def get_injection_devices_grouped_by_bus(self) -> Dict[dev.Bus, Dict[DeviceType, List[INJECTION_DEVICE_TYPES]]]:
+        """
+        Get the injection devices grouped by bus and by device type
+        :return: Dict[bus, Dict[DeviceType, List[Injection devs]]
+        """
+        groups: Dict[dev.Bus, Dict[DeviceType, List[INJECTION_DEVICE_TYPES]]] = dict()
+
+        for elm in self.get_injection_devices():
+
+            devices_by_type = groups.get(elm.bus, None)
+
+            if devices_by_type is None:
+                groups[elm.bus] = {elm.device_type: [elm]}
+            else:
+                lst = devices_by_type.get(elm.device_type, None)
+                if lst is None:
+                    devices_by_type[elm.device_type] = [elm]
+                else:
+                    devices_by_type[elm.device_type].append(elm)
+
+        return groups
+
     def fuse_devices(self):
         """
         Fuse all the different devices in a node to a single device per node
         :return:
         """
-        # TODO: figure this one out
-        pass
         # for bus in self.buses:
         #     bus.fuse_devices()
+
+        # self.generators = get_fused_device_lst(self.generators,
+        #                                             ['P', 'Pmin', 'Pmax',
+        #                                              'Qmin', 'Qmax', 'Snom', 'P_prof'])
+        # self.batteries = get_fused_device_lst(self.batteries,
+        #                                            ['P', 'Pmin', 'Pmax',
+        #                                             'Qmin', 'Qmax', 'Snom', 'Enom', 'P_prof'])
+        #
+        # self.loads = get_fused_device_lst(self.loads, ['P', 'Q', 'Ir', 'Ii', 'G', 'B',
+        #                                                     'P_prof', 'Q_prof'])
+        # self.static_generators = get_fused_device_lst(self.static_generators, ['P', 'Q',
+        #                                                                             'P_prof', 'Q_prof'])
+        #
+        # self.shunts = get_fused_device_lst(self.shunts, ['G', 'B', 'G_prof', 'B_prof'])
+        # self.external_grids = get_fused_device_lst(self.external_grids, [])
+
+        for bus, devices_by_type in self.get_injection_devices_grouped_by_bus().items():
+
+            for dev_tpe, injection_devs_list in devices_by_type.items():
+
+                if len(injection_devs_list) > 1:
+                    # there are more than one device of this type in the bus
+                    # we keep the first, we delete the others
+                    if dev_tpe == DeviceType.GeneratorDevice:
+                        _, to_delete = get_fused_device_lst(injection_devs_list,
+                                                            ['P', 'Pmin', 'Pmax',
+                                                             'Qmin', 'Qmax', 'Snom', 'P_prof'])
+                    elif dev_tpe == DeviceType.BatteryDevice:
+                        _, to_delete = get_fused_device_lst(injection_devs_list,
+                                                            ['P', 'Pmin', 'Pmax',
+                                                             'Qmin', 'Qmax', 'Snom', 'Enom', 'P_prof'])
+                    elif dev_tpe == DeviceType.LoadDevice:
+                        _, to_delete = get_fused_device_lst(injection_devs_list,
+                                                            ['P', 'Q', 'Ir', 'Ii', 'G', 'B',
+                                                             'P_prof', 'Q_prof'])
+                    elif dev_tpe == DeviceType.StaticGeneratorDevice:
+                        _, to_delete = get_fused_device_lst(injection_devs_list,['P', 'Q', 'P_prof', 'Q_prof'])
+
+                    elif dev_tpe == DeviceType.ShuntDevice:
+                        _, to_delete = get_fused_device_lst(injection_devs_list, ['G', 'B', 'G_prof', 'B_prof'])
+
+                    else:
+                        to_delete = list()
+
+                    # delete elements
+                    for elm in to_delete:
+                        self.delete_injection_device(obj=elm)
 
     def re_index_time(self, year=None, hours_per_step=1.0):
         """
