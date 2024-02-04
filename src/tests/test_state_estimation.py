@@ -2,16 +2,17 @@ from GridCalEngine.api import *
 
 np.set_printoptions(linewidth=10000)
 
+
 def test_3_node():
     m_circuit = MultiCircuit()
 
-    b1 = Bus('B1', is_slack=True)
-    b2 = Bus('B2')
-    b3 = Bus('B3')
+    b1 = Bus(name='B1', is_slack=True)
+    b2 = Bus(name='B2')
+    b3 = Bus(name='B3')
 
-    br1 = Line(b1, b2, 'Br1', r=0.01, x=0.03)
-    br2 = Line(b1, b3, 'Br2', r=0.02, x=0.05)
-    br3 = Line(b2, b3, 'Br3', r=0.03, x=0.08)
+    br1 = Line(bus_from=b1, bus_to=b2, name='Br1', r=0.01, x=0.03)
+    br2 = Line(bus_from=b1, bus_to=b3, name='Br2', r=0.02, x=0.05)
+    br3 = Line(bus_from=b2, bus_to=b3, name='Br3', r=0.03, x=0.08)
 
     # add measurements
     br1.measurements.append(Measurement(0.888, 0.008, MeasurementType.Pflow))

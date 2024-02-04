@@ -626,7 +626,7 @@ def grid_analysis(circuit: MultiCircuit,
                                                                      upper_limit=elm.Sn))
 
         elif object_type == DeviceType.BusDevice:
-            elements = circuit.buses
+            elements = circuit.get_buses()
             names = set()
 
             for i, elm in enumerate(elements):
@@ -956,7 +956,7 @@ def object_histogram_analysis(circuit: MultiCircuit, object_type: DeviceType, fi
         properties = ['Vnom']
         types = [float]
         log_scale = [False]
-        objects = circuit.buses
+        objects = circuit.get_buses()
 
     elif object_type == DeviceType.GeneratorDevice.value:
         properties = ['Vset', 'P', 'Qmin', 'Qmax']

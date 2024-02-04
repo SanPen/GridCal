@@ -612,7 +612,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         @return:
         """
         # get the index of this object
-        i = self.editor.circuit.buses.index(self.api_object)
+        i = self.editor.circuit.get_buses().index(self.api_object)
         self.editor.plot_bus(i, self.api_object)
 
     def mousePressEvent(self, event):

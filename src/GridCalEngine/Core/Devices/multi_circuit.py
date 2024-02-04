@@ -28,7 +28,7 @@ import networkx as nx
 from matplotlib import pyplot as plt
 from scipy.sparse import csc_matrix, lil_matrix
 
-from GridCalEngine.Core import EditableDevice, Switch, UPFC, VSC, Winding, Transformer2W, DcLine, Line
+from GridCalEngine.Core import EditableDevice
 from GridCalEngine.basic_structures import DateVec, IntVec, StrVec, Vec, Mat, CxVec, IntMat, CxMat
 from GridCalEngine.data_logger import DataLogger
 import GridCalEngine.Core.Devices as dev
@@ -43,6 +43,11 @@ BRANCH_TYPES = Union[dev.Line, dev.DcLine, dev.Transformer2W, dev.HvdcLine, dev.
 dev.UPFC, dev.Winding, dev.Switch]
 
 FLUID_TYPES = Union[dev.FluidNode, dev.FluidPath, dev.FluidP2x, dev.FluidTurbine, dev.FluidPump]
+
+ALL_DEV_TYPES = Union[INJECTION_DEVICE_TYPES, BRANCH_TYPES, FLUID_TYPES,
+dev.Transformer3W, dev.Bus, dev.ConnectivityNode, dev.BusBar, dev.OverheadLineType, dev.Wire, dev.Substation,
+dev.Area, dev.Zone, dev.TransformerType, dev.EmissionGas, dev.GeneratorEmission,
+dev.GeneratorFuel, dev.GeneratorTechnology]
 
 
 def get_system_user() -> str:
@@ -524,8 +529,7 @@ class MultiCircuit:
                 DeviceType.VscDevice,
                 DeviceType.UpfcDevice]
 
-    def get_branch_lists_wo_hvdc(self) -> List[Union[
-        List[dev.Line], List[dev.DcLine], List[dev.Transformer2W], List[dev.Winding], List[dev.VSC], List[dev.UPFC]]]:
+    def get_branch_lists_wo_hvdc(self) -> List[List[BRANCH_TYPES]]:
         """
         Get list of the branch lists
         :return: List[Union[List[dev.Line], List[dev.DcLine], List[dev.Transformer2W],
@@ -551,11 +555,7 @@ class MultiCircuit:
                 names.append(elm.name)
         return np.array(names)
 
-    def get_branch_lists(self) -> List[Union[List[dev.Line],
-    List[dev.DcLine],
-    List[dev.Transformer2W],
-    List[dev.Winding], List[dev.VSC], List[dev.UPFC],
-    List[dev.HvdcLine]]]:
+    def get_branch_lists(self) -> List[List[BRANCH_TYPES]]:
         """
         Get list of the branch lists
         :return: list of lists
@@ -759,6 +759,13 @@ class MultiCircuit:
         """
         return self.buses
 
+    def get_bus_at(self, i:int) -> dev.Bus:
+        """
+        List of buses
+        :return:
+        """
+        return self.buses[i]
+
     def get_bus_names(self) -> StrVec:
         """
         List of bus names
@@ -766,7 +773,7 @@ class MultiCircuit:
         """
         return np.array([e.name for e in self.buses])
 
-    def get_branches_wo_hvdc(self) -> list[Union[Switch, UPFC, VSC, Winding, Transformer2W, DcLine, Line]]:
+    def get_branches_wo_hvdc(self) -> list[BRANCH_TYPES]:
         """
         Return all the branch objects.
         :return: lines + transformers 2w + hvdc
@@ -1475,7 +1482,7 @@ class MultiCircuit:
         else:
             raise Exception('Element type not understood ' + str(device_type))
 
-    def delete_elements_by_type(self, obj: dev.EditableDevice):
+    def delete_elements_by_type(self, obj: ALL_DEV_TYPES):
         """
         Get set of elements and their parent nodes
         :param obj: device object to delete
@@ -1858,7 +1865,7 @@ class MultiCircuit:
 
         return d
 
-    def get_properties_dict(self):
+    def get_properties_dict(self) -> Dict[str, str]:
         """
         Returns a JSON dictionary of the :ref:`MultiCircuit<multicircuit>` instance
         with the following values: id, type, phases, name, Sbase, comments.
@@ -1879,14 +1886,15 @@ class MultiCircuit:
 
         return d
 
-    def get_units_dict(self):
+    @staticmethod
+    def get_units_dict() -> Dict[str, str]:
         """
         Dictionary of units
         used in json export v3
         """
         return {'time': 'Milliseconds since 1/1/1970 (Unix time in ms)'}
 
-    def get_profiles_dict(self):
+    def get_profiles_dict(self) -> Dict[str, List]:
         """
         Get the profiles dictionary
         mainly used in json export
@@ -2546,7 +2554,7 @@ class MultiCircuit:
         :param obj: Wire instance
         """
         if obj is not None:
-            if type(obj) == dev.Wire:
+            if isinstance(obj, dev.Wire):
                 self.wire_types.append(obj)
             else:
                 print('The template is not a wire!')
@@ -2569,7 +2577,7 @@ class MultiCircuit:
         :param obj: Tower instance
         """
         if obj is not None:
-            if type(obj) == dev.OverheadLineType:
+            if isinstance(obj, dev.OverheadLineType):
                 self.overhead_line_types.append(obj)
             else:
                 print('The template is not an overhead line!')
@@ -2609,7 +2617,7 @@ class MultiCircuit:
         :param obj: UndergroundLineType instance
         """
         if obj is not None:
-            if type(obj) == dev.UndergroundLineType:
+            if isinstance(obj, dev.UndergroundLineType):
                 self.underground_cable_types.append(obj)
             else:
                 print('The template is not an underground line!')
@@ -2628,7 +2636,7 @@ class MultiCircuit:
         :param obj: SequenceLineType instance
         """
         if obj is not None:
-            if type(obj) == dev.SequenceLineType:
+            if isinstance(obj, dev.SequenceLineType):
                 self.sequence_line_types.append(obj)
             else:
                 print('The template is not a sequence line!')
@@ -2648,7 +2656,7 @@ class MultiCircuit:
         :param obj: TransformerType instance
         """
         if obj is not None:
-            if type(obj) == dev.TransformerType:
+            if isinstance(obj, dev.TransformerType):
                 self.transformer_types.append(obj)
             else:
                 print('The template is not a transformer!')
@@ -2739,11 +2747,8 @@ class MultiCircuit:
         Delete Substation
         :param obj: Substation object
         """
-        for elm in self.substations:
-            try:
-                elm.connectivity_nodes.remove(obj)
-            except ValueError:
-                pass
+        for elm in self.bus_bars:
+            elm.connectivity_node = None
 
         self.connectivity_nodes.remove(obj)
 
@@ -2808,10 +2813,11 @@ class MultiCircuit:
 
         return d
 
-    def get_branches_wo_hvdc_dict(self) -> Dict[str, List[dev.Branch]]:
+    def get_branches_wo_hvdc_dict(self) -> Dict[str, int]:
         """
         Get dictionary of branches (excluding HVDC)
-        :return: Dict[str, List[Branch]]
+        the key is the idtag, the value is the branch position
+        :return: Dict[str, int]
         """
         return {e.idtag: ei for ei, e in enumerate(self.get_branches_wo_hvdc())}
 
@@ -3232,8 +3238,17 @@ class MultiCircuit:
         Returns a list of :ref:`Injection<Injection>` names.
         Sort by order: turbines, pumps, p2xs
         """
+        names = list()
+        for elm in self.turbines:
+            names.append(elm.name)
 
-        return self.get_fluid_turbines_names() + self.get_fluid_pumps_names() + self.get_fluid_p2xs_names()
+        for elm in self.pumps:
+            names.append(elm.name)
+
+        for elm in self.p2xs:
+            names.append(elm.name)
+
+        return np.array(names)
 
     def convert_line_to_hvdc(self, line: dev.Line) -> dev.HvdcLine:
         """
@@ -3475,7 +3490,7 @@ class MultiCircuit:
                 bat_names.append(elm.name)
                 gen_names.append(elm.name)
                 P_gen.append(elm.P_prof)
-                V_gen.append(elm.Vsetprof)
+                V_gen.append(elm.Vset_prof)
                 E_batt.append(elm.energy_array)
 
             # form DataFrames
@@ -4024,29 +4039,12 @@ class MultiCircuit:
 
         return groups
 
-    def fuse_devices(self):
+    def fuse_devices(self) -> List[INJECTION_DEVICE_TYPES]:
         """
         Fuse all the different devices in a node to a single device per node
         :return:
         """
-        # for bus in self.buses:
-        #     bus.fuse_devices()
-
-        # self.generators = get_fused_device_lst(self.generators,
-        #                                             ['P', 'Pmin', 'Pmax',
-        #                                              'Qmin', 'Qmax', 'Snom', 'P_prof'])
-        # self.batteries = get_fused_device_lst(self.batteries,
-        #                                            ['P', 'Pmin', 'Pmax',
-        #                                             'Qmin', 'Qmax', 'Snom', 'Enom', 'P_prof'])
-        #
-        # self.loads = get_fused_device_lst(self.loads, ['P', 'Q', 'Ir', 'Ii', 'G', 'B',
-        #                                                     'P_prof', 'Q_prof'])
-        # self.static_generators = get_fused_device_lst(self.static_generators, ['P', 'Q',
-        #                                                                             'P_prof', 'Q_prof'])
-        #
-        # self.shunts = get_fused_device_lst(self.shunts, ['G', 'B', 'G_prof', 'B_prof'])
-        # self.external_grids = get_fused_device_lst(self.external_grids, [])
-
+        list_of_deleted = list()
         for bus, devices_by_type in self.get_injection_devices_grouped_by_bus().items():
 
             for dev_tpe, injection_devs_list in devices_by_type.items():
@@ -4067,7 +4065,7 @@ class MultiCircuit:
                                                             ['P', 'Q', 'Ir', 'Ii', 'G', 'B',
                                                              'P_prof', 'Q_prof'])
                     elif dev_tpe == DeviceType.StaticGeneratorDevice:
-                        _, to_delete = get_fused_device_lst(injection_devs_list,['P', 'Q', 'P_prof', 'Q_prof'])
+                        _, to_delete = get_fused_device_lst(injection_devs_list, ['P', 'Q', 'P_prof', 'Q_prof'])
 
                     elif dev_tpe == DeviceType.ShuntDevice:
                         _, to_delete = get_fused_device_lst(injection_devs_list, ['G', 'B', 'G_prof', 'B_prof'])
@@ -4078,6 +4076,9 @@ class MultiCircuit:
                     # delete elements
                     for elm in to_delete:
                         self.delete_injection_device(obj=elm)
+                        list_of_deleted.append(elm)
+
+        return list_of_deleted
 
     def re_index_time(self, year=None, hours_per_step=1.0):
         """

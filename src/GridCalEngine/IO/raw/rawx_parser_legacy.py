@@ -249,30 +249,26 @@ def get_loads_block(circuit: MultiCircuit, fields, rev_bus_dict: Dict[Any, int])
     areas_dict = {elm: i+1 for i, elm in enumerate(circuit.get_areas())}
     zones_dict = {elm: i+1 for i, elm in enumerate(circuit.get_zones())}
 
-    i = 0
-    for k, bus in enumerate(circuit.get_buses()):
-        for k2, elm in enumerate(bus.loads):
+    for i, elm in enumerate(circuit.get_loads()):
 
-            block.set_at(i, "ibus", rev_bus_dict[elm.bus])
-            block.set_at(i,  "loadid", k2 + 1)
-            block.set_at(i,  "stat", int(elm.active))
-            block.set_at(i,  "area", areas_dict[elm.bus.area])
-            block.set_at(i,  "zone", zones_dict[elm.bus.zone])
-            block.set_at(i,  "pl", elm.P)
-            block.set_at(i,  "ql", elm.Q)
-            block.set_at(i,  "ip", elm.Ir)
-            block.set_at(i,  "iq", elm.Ii)
-            block.set_at(i,  "yp", elm.G)
-            block.set_at(i,  "yq", elm.B)
-            block.set_at(i,  "owner", 0)
-            block.set_at(i,  "scale", 0)  # scale yes/no
-            block.set_at(i,  "intrpt", 0)
-            block.set_at(i,  "dgenp", 0)
-            block.set_at(i,  "dgenq", 0)
-            block.set_at(i,  "dgenm", 0)
-            block.set_at(i,  "loadtype", 0)
-
-            i += 1
+        block.set_at(i, "ibus", rev_bus_dict[elm.bus])
+        block.set_at(i,  "loadid", i + 1)
+        block.set_at(i,  "stat", int(elm.active))
+        block.set_at(i,  "area", areas_dict[elm.bus.area])
+        block.set_at(i,  "zone", zones_dict[elm.bus.zone])
+        block.set_at(i,  "pl", elm.P)
+        block.set_at(i,  "ql", elm.Q)
+        block.set_at(i,  "ip", elm.Ir)
+        block.set_at(i,  "iq", elm.Ii)
+        block.set_at(i,  "yp", elm.G)
+        block.set_at(i,  "yq", elm.B)
+        block.set_at(i,  "owner", 0)
+        block.set_at(i,  "scale", 0)  # scale yes/no
+        block.set_at(i,  "intrpt", 0)
+        block.set_at(i,  "dgenp", 0)
+        block.set_at(i,  "dgenq", 0)
+        block.set_at(i,  "dgenm", 0)
+        block.set_at(i,  "loadtype", 0)
 
     return block
 

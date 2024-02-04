@@ -396,7 +396,7 @@ class BusBranchEditorWidget(QSplitter):
             y0 = point0.y()
 
             if bus_data == obj_type:
-                obj = Bus(name=f'Bus {len(self.circuit.buses)}',
+                obj = Bus(name=f'Bus {len(self.circuit.get_buses())}',
                           vnom=self.default_bus_voltage)
 
                 graphic_object = BusGraphicItem(editor=self,
@@ -942,7 +942,7 @@ class BusBranchEditorWidget(QSplitter):
 
         if points_group:
 
-            bus_dict: Dict[str: Tuple[int, Bus]] = {b.idtag: (i, b) for i, b in enumerate(self.circuit.buses)}
+            bus_dict: Dict[str: Tuple[int, Bus]] = {b.idtag: (i, b) for i, b in enumerate(self.circuit.get_buses())}
 
             for bus_idtag, point in points_group.locations.items():
                 if point.graphic_object.isSelected():
@@ -983,7 +983,7 @@ class BusBranchEditorWidget(QSplitter):
 
         if points_group:
 
-            bus_dict: Dict[str: Tuple[int, Bus]] = {b.idtag: (i, b) for i, b in enumerate(self.circuit.buses)}
+            bus_dict: Dict[str: Tuple[int, Bus]] = {b.idtag: (i, b) for i, b in enumerate(self.circuit.get_buses())}
 
             for bus_idtag, point in points_group.locations.items():
                 idx, bus = bus_dict[bus_idtag]
@@ -2351,7 +2351,7 @@ class BusBranchEditorWidget(QSplitter):
         if len(buses):
             lst = buses
         else:
-            lst = self.circuit.buses
+            lst = self.circuit.get_buses()
 
         if len(lst):
             # first pass
@@ -2846,12 +2846,12 @@ class BusBranchEditorWidget(QSplitter):
                 for i in idx:
 
                     # try to get the location from the cache
-                    loc_i = locations_cache.get(self.circuit.buses[i], None)
+                    loc_i = locations_cache.get(self.circuit.get_bus_at(i), None)
 
                     if loc_i is None:
                         # search and store
-                        loc_i = self.diagram.query_point(self.circuit.buses[i])
-                        locations_cache[self.circuit.buses[i]] = loc_i
+                        loc_i = self.diagram.query_point(self.circuit.get_bus_at(i))
+                        locations_cache[self.circuit.get_bus_at(i)] = loc_i
 
                     x_arr.append(loc_i.x)
                     y_arr.append(loc_i.y)
