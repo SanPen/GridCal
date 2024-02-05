@@ -913,6 +913,8 @@ class BusBranchEditorWidget(QSplitter):
 
         self.circuit.delete_elements_by_type(obj=device)
 
+        self.object_editor_table.setModel(None)
+
     def delete_diagram_elements(self, elements: List[EditableDevice]):
         """
         Delete device from the diagram registry

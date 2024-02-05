@@ -167,15 +167,15 @@ class StaticGeneratorGraphicItem(InjectionTemplateGraphicItem):
         self.glyph.setPen(QPen(self.color, self.width, self.style))
         self.label.setDefaultTextColor(self.color)
 
-    # def plot(self):
-    #     """
-    #     Plot API objects profiles
-    #     """
-    #     # time series object from the last simulation
-    #     ts = self.editor.circuit.time_profile
-    #
-    #     # plot the profiles
-    #     self.api_object.plot_profiles(time=ts)
+    def plot(self):
+        """
+        Plot API objects profiles
+        """
+        # time series object from the last simulation
+        ts = self.editor.circuit.time_profile
+
+        # plot the profiles
+        self.api_object.plot_profiles(time=ts)
 
     def mousePressEvent(self, QGraphicsSceneMouseEvent):
         """
