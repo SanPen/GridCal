@@ -46,7 +46,6 @@ def example_3bus_acopf():
     A, B, C, D, E, F = compute_analytic_admittances(nc)
 
     A_, B_, C_, D_, E_, F_ = compute_finitediff_admittances(nc)
-
     options = gce.PowerFlowOptions(gce.SolverType.NR, verbose=False)
     power_flow = gce.PowerFlowDriver(grid, options)
     power_flow.run()
@@ -58,46 +57,6 @@ def example_3bus_acopf():
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=3)
     run_nonlinear_opf(grid=grid, pf_options=pf_options, plot_error=True)
 
-
-
-def compute_analytic_admittances_old(nc):
-    tapm_lines = np.r_[nc.k_qf_m, nc.k_qt_m, nc.k_vt_m]
-    tapm = nc.branch_data.tap_module
-    tapt_lines = nc.k_pf_tau #Check k_pf_droop
-
-    F = nc.branch_data.F
-    T = nc.branch_data.T
-    Cf = nc.Cf
-    Ct = nc.Ct
-    Ybus = nc.Ybus
-    M, N = Cf.shape
-
-    dYfdm = []
-    dYtdm = []
-    dYbusdm = []
-
-    dYfdt = []
-    dYtdt = []
-    dYbusdt = []
-
-    for l, line in enumerate(tapm_lines):
-        i = F[line]
-        j = T[line]
-
-        dYfdm.append(csc(([2 * Ybus[i, i] / tapm[line], Ybus[i, j] / tapm[line]], ([line, line], [i, j])), shape=(M, N)))
-        dYtdm.append(csc(([Ybus[j, i] / tapm[line]], ([line],[i])), shape=(M, N)))
-        dYbusdm.append(Cf.T * dYfdm[l] + Ct.T * dYtdm[l])
-
-    for l, line in enumerate(tapt_lines):
-        line = tapt_lines[l]
-        i = F[line]
-        j = T[line]
-
-        dYfdt.append(csc(([-1j * Ybus[i, j]], ([line], [j])), shape=(M, N)))
-        dYtdt.append(csc(([1j * Ybus[j, i]], ([line], [i])), shape=(M, N)))
-        dYbusdt.append(Cf.T * dYfdt[l] + Ct.T * dYtdt[l])
-
-    return dYbusdm, dYfdm, dYtdm, dYbusdt, dYfdt, dYtdt
 
 def compute_analytic_admittances(nc):
     tapm_lines = np.r_[nc.k_qf_m, nc.k_qt_m, nc.k_vt_m]
@@ -209,6 +168,112 @@ def compute_finitediff_admittances(nc, tol=1e-6):
         nc.branch_data.tap_angle[l] -= tol
 
     return dYbusdm, dYfdm, dYtdm, dYbusdt, dYfdt, dYtdt
+
+
+
+def compute_analytic_admittances_2dev(nc):
+    tapm_lines = np.r_[nc.k_qf_m, nc.k_qt_m, nc.k_vt_m]
+    tapm = nc.branch_data.tap_module
+    tapt_lines = nc.k_pf_tau #Check k_pf_droop
+    tapt = nc.branch_data.tap_angle
+
+    F = nc.branch_data.F
+    T = nc.branch_data.T
+    Cf = nc.Cf
+    Ct = nc.Ct
+    ys = 1.0 / (nc.branch_data.R + 1.0j * nc.branch_data.X + 1e-20)
+
+    admittance = nc.compute_admittance()
+    Ybus = admittance.Ybus
+    M, N = Cf.shape
+
+    dYfdmdm = []
+    dYtdmdm = []
+    dYbusdmdm = []
+
+    dYfdmdt = []
+    dYtdmdt = []
+    dYbusdmdt = []
+
+    dYfdtdm = []
+    dYtdtdm = []
+    dYbusdtdm = []
+
+    dYfdtdt = []
+    dYtdtdt = []
+    dYbusdtdt = []
+
+    for l, line in enumerate(tapm_lines):
+        i = F[line]
+        j = T[line]
+        mp = tapm[line]
+        tau = tapt[line]
+        ylin = ys[line]
+
+        dYffdmdm = np.zeros(M, dtype=complex)
+        dYftdmdm = np.zeros(M, dtype=complex)
+        dYtfdmdm = np.zeros(M, dtype=complex)
+        dYttdmdm = np.zeros(M, dtype=complex)
+
+        dYffdmdm[line] = 6 * ylin / (mp * mp * mp * mp)
+        dYftdmdm[line] = -2 * ylin / (mp * mp * mp * np.exp(-1.0j * tau))
+        dYtfdmdm[line] = -2 * ylin / (mp * mp * mp * np.exp(1.0j * tau))
+        dYttdmdm[line] = 0
+
+        dYfdmdm.append(sp.diags(dYffdmdm) * Cf + sp.diags(dYftdmdm) * Ct)
+        dYtdmdm.append(sp.diags(dYtfdmdm) * Cf + sp.diags(dYttdmdm) * Ct)
+
+        dYbusdmdm.append(Cf.T * dYfdmdm[l] + Ct.T * dYtdmdm[l])
+
+        dYffdmdt = np.zeros(M, dtype=complex)
+        dYftdmdt = np.zeros(M, dtype=complex)
+        dYtfdmdt = np.zeros(M, dtype=complex)
+        dYttdmdt = np.zeros(M, dtype=complex)
+
+        dYffdmdt[line] = 0
+        dYftdmdt[line] = 1j * ylin / (mp * mp * np.exp(-1.0j * tau))
+        dYtfdmdt[line] = -1j * ylin / (mp * mp * np.exp(1.0j * tau))
+        dYttdmdt[line] = 0
+
+        dYfdmdt.append(sp.diags(dYffdmdt) * Cf + sp.diags(dYftdmdt) * Ct)
+        dYtdmdt.append(sp.diags(dYtfdmdt) * Cf + sp.diags(dYttdmdt) * Ct)
+
+        dYbusdmdt.append(Cf.T * dYfdmdt[l] + Ct.T * dYtdmdt[l])
+
+        dYfdtdm.append((sp.diags(dYffdmdt) * Cf + sp.diags(dYftdmdt) * Ct).T)
+        dYtdtdm.append((sp.diags(dYtfdmdt) * Cf + sp.diags(dYttdmdt) * Ct).T)
+
+        dYbusdtdm.append((Cf.T * dYfdmdt[l] + Ct.T * dYtdmdt[l]).T)
+
+    for l, line in enumerate(tapt_lines):
+        i = F[line]
+        j = T[line]
+        mp = tapm[line]
+        tau = tapt[line]
+        ylin = ys[line]
+
+        dYffdtdt = np.zeros(M, dtype=complex)
+        dYftdtdt = np.zeros(M, dtype=complex)
+        dYtfdtdt = np.zeros(M, dtype=complex)
+        dYttdtdt = np.zeros(M, dtype=complex)
+
+        dYffdtdt[line] = 0
+        dYftdtdt[line] = ylin / (mp * np.exp(-1.0j * tau))
+        dYtfdtdt[line] = ylin / (mp * np.exp(1.0j * tau))
+        dYttdtdt[line] = 0
+
+        dYfdtdt.append(sp.diags(dYffdtdt) * Cf + sp.diags(dYftdtdt) * Ct)
+        dYtdtdt.append(sp.diags(dYtfdtdt) * Cf + sp.diags(dYttdtdt) * Ct)
+
+        dYbusdtdt.append(Cf.T * dYfdtdt[l] + Ct.T * dYtdtdt[l])
+
+    dYfdtdm = dYfdmdt.T
+    dYtdtdm = dYtdmdt.T
+    dYbusdtdm = dYbusdmdt.T
+
+    return (dYbusdmdm, dYfdmdm, dYtdmdm, dYbusdmdt, dYfdmdt, dYtdmdt,
+            dYbusdtdm, dYfdtdm, dYtdtdm, dYbusdtdt, dYfdtdt, dYtdtdt)
+
 
 
 if __name__ == '__main__':
