@@ -122,20 +122,6 @@ class LoadGraphicItem(InjectionTemplateGraphicItem):
 
         menu.exec_(event.screenPos())
 
-    def remove(self, ask=True):
-        """
-        Remove this element
-        @return:
-        """
-        if ask:
-            ok = yes_no_question('Are you sure that you want to remove this load', 'Remove load')
-        else:
-            ok = True
-
-        if ok:
-            self.editor.removeItem(self.nexus)
-            self.editor.remove_element(device=self.api_object, graphic_object=self)
-
     def enable_disable_toggle(self):
         """
 

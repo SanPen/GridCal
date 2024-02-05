@@ -846,7 +846,7 @@ class MultiCircuit:
         Get a list of all devices that can inject or subtract power from a node
         :return: List of EditableDevice
         """
-        return self.get_loads_number() + self.get_external_grids_number() + self.static_generators_number()
+        return self.get_loads_number() + self.get_external_grids_number() + self.get_static_generators_number()
 
     def get_generation_like_devices(self) -> List[INJECTION_DEVICE_TYPES]:
         """
@@ -1136,7 +1136,7 @@ class MultiCircuit:
         """
         return self.static_generators
 
-    def static_generators_number(self) -> int:
+    def get_static_generators_number(self) -> int:
         """
         Return number of static generators
         :return:
@@ -1154,6 +1154,12 @@ class MultiCircuit:
         Returns a list of :ref:`Shunt<shunt>` objects in the grid.
         """
         return self.shunts
+
+    def get_shunts_number(self) -> int:
+        """
+        Get the number of shunts
+        """
+        return len(self.shunts)
 
     def get_shunt_names(self):
         """
@@ -2742,6 +2748,14 @@ class MultiCircuit:
 
         return api_obj
 
+    def delete_generator(self, obj: dev.Generator):
+        """
+        Delete a generator
+        :param obj:
+        :return:
+        """
+        self.generators.remove(obj)
+
     def add_static_generator(self, bus: dev.Bus, api_obj: Union[dev.StaticGenerator, None] = None):
         """
         Add a generator
@@ -4323,6 +4337,23 @@ class MultiCircuit:
                     devices_by_type[elm.device_type] = [elm]
                 else:
                     devices_by_type[elm.device_type].append(elm)
+
+        return groups
+
+    def get_batteries_by_bus(self) -> Dict[dev.Bus, dev.Battery]:
+        """
+        Get the injection devices grouped by bus and by device type
+        :return: Dict[bus, Dict[DeviceType, List[Injection devs]]
+        """
+        groups: Dict[dev.Bus, dev.Battery] = dict()
+
+        for elm in self.get_batteries():
+
+            lst = groups.get(elm.bus, None)
+            if lst is None:
+                groups[elm.bus] = [elm]
+            else:
+                lst.append(elm)
 
         return groups
 

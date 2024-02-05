@@ -410,7 +410,7 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
                 raise Exception(str(i) + ': Controlled generator bus is not in the buses list.\n' + str(ex))
 
             if obj.name == 'gen':
-                obj.name += str(len(bus.generators) + 1) + '@' + bus.name
+                obj.name += str(circuit.get_generators_number() + 1) + '@' + bus.name
 
             obj.bus = bus
             circuit.add_generator(bus=bus, api_obj=obj)
@@ -451,9 +451,8 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
                 raise Exception(str(i) + ': Battery bus is not in the buses list.\n' + str(ex))
 
             if obj.name == 'batt':
-                obj.name += str(len(bus.batteries) + 1) + '@' + bus.name
+                obj.name += str(circuit.get_batteries_number() + 1) + '@' + bus.name
 
-            obj.bus = bus
             circuit.add_battery(bus=bus, api_obj=obj)
             obj.ensure_profiles_exist(circuit.time_profile)
     else:
@@ -492,7 +491,7 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
                 raise Exception(str(i) + ': Static generator bus is not in the buses list.\n' + str(ex))
 
             if obj.name == 'StaticGen':
-                obj.name += str(len(bus.static_generators) + 1) + '@' + bus.name
+                obj.name += str(circuit.get_static_generators_number() + 1) + '@' + bus.name
 
             obj.bus = bus
             circuit.add_static_generator(bus=bus, api_obj=obj)
@@ -522,7 +521,7 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
                 raise Exception(str(i) + ': Shunt bus is not in the buses list.\n' + str(ex))
 
             if obj.name == 'shunt':
-                obj.name += str(len(bus.shunts) + 1) + '@' + bus.name
+                obj.name += str(circuit.get_shunts_number() + 1) + '@' + bus.name
 
             obj.bus = bus
             circuit.add_shunt(bus=bus, api_obj=obj)
@@ -830,7 +829,7 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
                 raise Exception(str(i) + ': Controlled generator bus is not in the buses list.\n' + str(ex))
 
             if obj.name == 'gen':
-                obj.name += str(len(bus.generators) + 1) + '@' + bus.name
+                obj.name += str(circuit.get_generators_number() + 1) + '@' + bus.name
 
             obj.bus = bus
             circuit.add_generator(bus=bus, api_obj=obj)
@@ -877,7 +876,7 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
                 raise Exception(str(i) + ': Battery bus is not in the buses list.\n' + str(ex))
 
             if obj.name == 'batt':
-                obj.name += str(len(bus.batteries) + 1) + '@' + bus.name
+                obj.name += str(circuit.get_batteries_number() + 1) + '@' + bus.name
 
             obj.bus = bus
             circuit.add_battery(bus=bus, api_obj=obj)
@@ -928,7 +927,7 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
                 raise Exception(str(i) + ': Static generator bus is not in the buses list.\n' + str(ex))
 
             if obj.name == 'StaticGen':
-                obj.name += str(len(bus.static_generators) + 1) + '@' + bus.name
+                obj.name += str(circuit.get_static_generators_number() + 1) + '@' + bus.name
 
             obj.bus = bus
             circuit.add_static_generator(bus=bus, api_obj=obj)
@@ -979,7 +978,7 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
                 raise Exception(str(i) + ': Shunt bus is not in the buses list.\n' + str(ex))
 
             if obj.name == 'shunt':
-                obj.name += str(len(bus.shunts) + 1) + '@' + bus.name
+                obj.name += str(circuit.get_shunts_number() + 1) + '@' + bus.name
 
             obj.bus = bus
             circuit.add_shunt(bus=bus, api_obj=obj)

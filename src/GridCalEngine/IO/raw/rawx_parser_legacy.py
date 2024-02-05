@@ -318,26 +318,23 @@ def get_fixed_shunts_block(circuit: MultiCircuit, fields, rev_bus_dict: Dict[Any
     block = CompressedJsonStruct(fields=fields)
 
     n = 0
-    for k, bus in enumerate(circuit.get_buses()):
-        for k2, elm in enumerate(bus.shunts):
-            if not elm.is_controlled:
-                n += 1
+    for k2, elm in enumerate(circuit.get_shunts()):
+        if not elm.is_controlled:
+            n += 1
 
     block.declare_n_entries(n)
 
     # "ibus", "shntid", "stat", "gl", "bl"
     i = 0
-    for k, bus in enumerate(circuit.get_buses()):
-        for k2, elm in enumerate(bus.shunts):
+    for k2, elm in enumerate(circuit.get_shunts()):
+        if not elm.is_controlled:
+            block.set_at(i, "ibus", rev_bus_dict[elm.bus])
+            block.set_at(i, "shntid", k2 + 1)
+            block.set_at(i, "stat", int(elm.active))
+            block.set_at(i, "gl", elm.G)
+            block.set_at(i, "bl", elm.B)
 
-            if not elm.is_controlled:
-                block.set_at(i, "ibus", rev_bus_dict[elm.bus])
-                block.set_at(i,  "shntid", k2 + 1)
-                block.set_at(i,  "stat", int(elm.active))
-                block.set_at(i,  "gl", elm.G)
-                block.set_at(i,  "bl", elm.B)
-
-                i += 1
+            i += 1
 
     return block
 
