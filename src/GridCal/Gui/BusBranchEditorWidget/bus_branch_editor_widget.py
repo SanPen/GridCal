@@ -32,6 +32,7 @@ from PySide6.QtWidgets import (QApplication, QGraphicsView, QListView, QTableVie
                                QGraphicsItem)
 from PySide6.QtSvg import QSvgGenerator
 
+from GridCalEngine.Core.Devices.types import ALL_DEV_TYPES
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Core.Devices.Substation import Bus
 from GridCalEngine.Core.Devices.editable_device import EditableDevice
@@ -346,7 +347,7 @@ class BusBranchEditorWidget(QSplitter):
         if diagram is not None:
             self.draw()
 
-    def set_editor_model(self, api_object: EditableDevice, dictionary_of_lists: Dict[str, List[EditableDevice]] = {}):
+    def set_editor_model(self, api_object: ALL_DEV_TYPES, dictionary_of_lists: Dict[str, List[ALL_DEV_TYPES]] = {}):
         """
         Set an api object to appear in the editable table view of the editor
         :param api_object: any EditableDevice
@@ -848,7 +849,7 @@ class BusBranchEditorWidget(QSplitter):
         """
         self.diagram.name = val
 
-    def update_diagram_element(self, device: EditableDevice,
+    def update_diagram_element(self, device: ALL_DEV_TYPES,
                                x: int = 0, y: int = 0, w: int = 0, h: int = 0, r: float = 0,
                                graphic_object: QGraphicsItem = None) -> None:
         """
@@ -886,7 +887,7 @@ class BusBranchEditorWidget(QSplitter):
 
         self.diagram_scene.removeItem(graphic_object)
 
-    def delete_diagram_element(self, device: EditableDevice) -> None:
+    def delete_diagram_element(self, device: ALL_DEV_TYPES) -> None:
         """
         Delete device from the diagram registry
         :param device: EditableDevice
@@ -899,7 +900,7 @@ class BusBranchEditorWidget(QSplitter):
             except:
                 pass
 
-    def remove_element(self, device: EditableDevice,
+    def remove_element(self, device: ALL_DEV_TYPES,
                        graphic_object: Union[QGraphicsItem, None] = None) -> None:
         """
         Remove device from the diagram and the database
@@ -2754,14 +2755,14 @@ class BusBranchEditorWidget(QSplitter):
                     else:
                         print("HVDC line {0} {1} has no graphic object!!".format(elm.name, elm.idtag))
 
-    def get_selected(self) -> List[Tuple[EditableDevice, QGraphicsItem]]:
+    def get_selected(self) -> List[Tuple[ALL_DEV_TYPES, QGraphicsItem]]:
         """
         Get selection
         :return: List of EditableDevice, QGraphicsItem
         """
         return [(elm.api_object, elm) for elm in self.diagram_scene.selectedItems()]
 
-    def get_selection_api_objects(self) -> List[EditableDevice]:
+    def get_selection_api_objects(self) -> List[ALL_DEV_TYPES]:
         """
         Get a list of the API objects from the selection
         :return: List[EditableDevice]

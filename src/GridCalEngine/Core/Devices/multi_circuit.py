@@ -32,22 +32,10 @@ from GridCalEngine.Core import EditableDevice
 from GridCalEngine.basic_structures import DateVec, IntVec, StrVec, Vec, Mat, CxVec, IntMat, CxMat
 from GridCalEngine.data_logger import DataLogger
 import GridCalEngine.Core.Devices as dev
+from GridCalEngine.Core.Devices.types import ALL_DEV_TYPES, BRANCH_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES
 from GridCalEngine.basic_structures import Logger
 import GridCalEngine.Core.topology as tp
 from GridCalEngine.enumerations import DeviceType
-
-INJECTION_DEVICE_TYPES = Union[dev.Generator, dev.Battery, dev.Load, dev.ExternalGrid,
-dev.StaticGenerator, dev.Shunt]
-
-BRANCH_TYPES = Union[dev.Line, dev.DcLine, dev.Transformer2W, dev.HvdcLine, dev.VSC,
-dev.UPFC, dev.Winding, dev.Switch]
-
-FLUID_TYPES = Union[dev.FluidNode, dev.FluidPath, dev.FluidP2x, dev.FluidTurbine, dev.FluidPump]
-
-ALL_DEV_TYPES = Union[INJECTION_DEVICE_TYPES, BRANCH_TYPES, FLUID_TYPES,
-dev.Transformer3W, dev.Bus, dev.ConnectivityNode, dev.BusBar, dev.OverheadLineType, dev.Wire, dev.Substation,
-dev.Area, dev.Zone, dev.TransformerType, dev.EmissionGas, dev.GeneratorEmission,
-dev.GeneratorFuel, dev.GeneratorTechnology]
 
 
 def get_system_user() -> str:

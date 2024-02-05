@@ -14,14 +14,23 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from GridCalEngine.Core.Devices.editable_device import EditableDevice
-from GridCalEngine.Core.Devices.measurement import (PiMeasurement, PfMeasurement, QiMeasurement, QfMeasurement,
-                                                    VmMeasurement, VmMeasurement, IfMeasurement, IfMeasurement)
-
+from typing import Union
 from GridCalEngine.Core.Devices.Aggregation import *
 from GridCalEngine.Core.Devices.Branches import *
 from GridCalEngine.Core.Devices.Injections import *
 from GridCalEngine.Core.Devices.Substation import *
 from GridCalEngine.Core.Devices.Associations import *
-from GridCalEngine.Core.Devices.Diagrams import *
 from GridCalEngine.Core.Devices.Fluid import *
+
+
+INJECTION_DEVICE_TYPES = Union[Generator, Battery, Load, ExternalGrid, StaticGenerator, Shunt]
+
+BRANCH_TYPES = Union[Line, DcLine, Transformer2W, HvdcLine, VSC, UPFC, Winding, Switch]
+
+FLUID_TYPES = Union[FluidNode, FluidPath, FluidP2x, FluidTurbine, FluidPump]
+
+SUBSTATION_TYPES = Union[Substation, Bus, ConnectivityNode, BusBar]
+
+ALL_DEV_TYPES = Union[INJECTION_DEVICE_TYPES, BRANCH_TYPES, FLUID_TYPES, SUBSTATION_TYPES,
+                      Transformer3W, OverheadLineType, Wire, Area, Zone, TransformerType,
+                      EmissionGas, GeneratorEmission, GeneratorFuel, GeneratorTechnology]

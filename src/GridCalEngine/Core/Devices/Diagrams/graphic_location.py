@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Union
 from GridCalEngine.Core.Devices.editable_device import EditableDevice
 
 
@@ -51,7 +51,7 @@ class GraphicLocation:
         self.api_object = api_object
         self.graphic_object = graphic_object  # filled by the widget if needed
 
-    def get_properties_dict(self) -> Dict[str, int]:
+    def get_properties_dict(self) -> Dict[str, Union[int, str]]:
         """
         get as a dictionary point
         :return:
