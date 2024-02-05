@@ -705,8 +705,8 @@ def psse_to_gridcal(psse_circuit: PsseCircuit,
     circuit = MultiCircuit(Sbase=psse_circuit.SBASE)
     circuit.comments = 'Converted from a PSS/e .raw file'
 
-    circuit.areas = [dev.Area(name=x.ARNAME) for x in psse_circuit.areas]
-    circuit.zones = [dev.Zone(name=x.ZONAME) for x in psse_circuit.zones]
+    circuit.areas = [dev.Area(name=x.ARNAME, code=str(x.I)) for x in psse_circuit.areas]
+    circuit.zones = [dev.Zone(name=x.ZONAME, code=str(x.I)) for x in psse_circuit.zones]
 
     area_dict = {val.I: elm for val, elm in zip(psse_circuit.areas, circuit.areas)}
     zones_dict = {val.I: elm for val, elm in zip(psse_circuit.zones, circuit.zones)}
