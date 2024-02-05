@@ -1173,17 +1173,15 @@ class NumericalCircuit:
             self.A_ = (self.Cf - self.Ct).tocsc()
 
         return self.A_
-
-    @property
-    def Ybus(self):
+    
+    def compute_admittance(self) -> ycalc.Admittance: 
         """
-        Admittance matrix
-        :return: CSC matrix
+        Get Admittance structures
+        :return: Admittance object
         """
 
         # compute admittances on demand
-        if self.admittances_ is None:
-            self.admittances_ = ycalc.compute_admittances(
+        return ycalc.compute_admittances(
                 R=self.branch_data.R,
                 X=self.branch_data.X,
                 G=self.branch_data.G,
@@ -1206,6 +1204,19 @@ class NumericalCircuit:
                 seq=1,
                 add_windings_phase=False
             )
+
+
+    @property
+    def Ybus(self):
+        """
+        Admittance matrix
+        :return: CSC matrix
+        """
+
+        # compute admittances on demand
+        if self.admittances_ is None:
+            self.admittances_ = self.compute_admittance()
+            
         return self.admittances_.Ybus
 
     @property
