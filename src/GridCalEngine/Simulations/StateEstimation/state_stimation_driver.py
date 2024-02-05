@@ -22,7 +22,7 @@ from GridCalEngine.Simulations.StateEstimation.state_estimation import solve_se_
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowResults, power_flow_post_process
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
-from GridCalEngine.Core.Devices.measurement import MeasurementType
+# from GridCalEngine.Core.Devices.measurement import MeasurementType
 from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.enumerations import SolverType
 
@@ -36,6 +36,10 @@ class StateEstimationInput:
         """
         State estimation inputs constructor
         """
+
+        # nz = n_pi + n_qi + n_vm + n_pf + n_qf + n_if
+        # self.magnitudes = np.zeros(nz)
+        # self.sigma = np.zeros(nz)
 
         # Node active power measurements vector of pointers
         self.p_inj = list()
@@ -73,23 +77,23 @@ class StateEstimationInput:
         # nodes without voltage module measurements
         self.vm_m_idx = list()
 
-    def clear(self):
-        """
-        Clear
-        """
-        self.p_inj.clear()
-        self.p_flow.clear()
-        self.q_inj.clear()
-        self.q_flow.clear()
-        self.i_flow.clear()
-        self.vm_m.clear()
-
-        self.p_inj_idx.clear()
-        self.p_flow_idx.clear()
-        self.q_inj_idx.clear()
-        self.q_flow_idx.clear()
-        self.i_flow_idx.clear()
-        self.vm_m_idx.clear()
+    # def clear(self):
+    #     """
+    #     Clear
+    #     """
+    #     self.p_inj.clear()
+    #     self.p_flow.clear()
+    #     self.q_inj.clear()
+    #     self.q_flow.clear()
+    #     self.i_flow.clear()
+    #     self.vm_m.clear()
+    #
+    #     self.p_inj_idx.clear()
+    #     self.p_flow_idx.clear()
+    #     self.q_inj_idx.clear()
+    #     self.q_flow_idx.clear()
+    #     self.i_flow_idx.clear()
+    #     self.vm_m_idx.clear()
 
     def consolidate(self) -> Tuple[Vec, Vec]:
         """
@@ -106,7 +110,7 @@ class StateEstimationInput:
         # go through the measurements in order and form the vectors
         k = 0
         for m in self.p_flow + self.p_inj + self.q_flow + self.q_inj + self.i_flow + self.vm_m:
-            magnitudes[k] = m.val
+            magnitudes[k] = m.value
             sigma[k] = m.sigma
             k += 1
 
@@ -155,50 +159,35 @@ class StateEstimation(DriverTemplate):
         """
         se_input = StateEstimationInput()
 
-        # collect the bus measurements
-        for i in bus_idx:
+        # bus measurements
+        bus_dict = circuit.get_bus_index_dict()
 
-            for m in circuit.buses[i].measurements:
+        for elm in circuit.get_pi_measurements():
+            se_input.p_inj_idx.append(bus_dict[elm.api_object])
+            se_input.p_inj.append(elm)
 
-                if m.measurement_type == MeasurementType.Pinj:
-                    se_input.p_inj_idx.append(i)
-                    se_input.p_inj.append(m)
+        for elm in circuit.get_qi_measurements():
+            se_input.q_inj_idx.append(bus_dict[elm.api_object])
+            se_input.q_inj.append(elm)
 
-                elif m.measurement_type == MeasurementType.Qinj:
-                    se_input.q_inj_idx.append(i)
-                    se_input.q_inj.append(m)
+        for elm in circuit.get_vm_measurements():
+            se_input.vm_m_idx.append(bus_dict[elm.api_object])
+            se_input.vm_m.append(elm)
 
-                elif m.measurement_type == MeasurementType.Vmag:
-                    se_input.vm_m_idx.append(i)
-                    se_input.vm_m.append(m)
+        # branch measurements
+        branch_dict = circuit.get_branches_wo_hvdc_index_dict()
 
-                else:
-                    raise Exception('The bus ' + str(circuit.buses[i]) + ' contains a measurement of type '
-                                    + str(m.measurement_type))
+        for elm in circuit.get_pf_measurements():
+            se_input.p_flow_idx.append(branch_dict[elm.api_object])
+            se_input.p_flow.append(elm)
 
-        # collect the branch measurements
-        branches = circuit.get_branches()
-        for i in branch_idx:
+        for elm in circuit.get_qf_measurements():
+            se_input.q_flow_idx.append(branch_dict[elm.api_object])
+            se_input.q_flow.append(elm)
 
-            # branch = circuit.Branches[i]
-
-            for m in branches[i].measurements:
-
-                if m.measurement_type == MeasurementType.Pflow:
-                    se_input.p_flow_idx.append(i)
-                    se_input.p_flow.append(m)
-
-                elif m.measurement_type == MeasurementType.Qflow:
-                    se_input.q_flow_idx.append(i)
-                    se_input.q_flow.append(m)
-
-                elif m.measurement_type == MeasurementType.Iflow:
-                    se_input.i_flow_idx.append(i)
-                    se_input.i_flow.append(m)
-
-                else:
-                    raise Exception('The branch ' + str(branches[i]) + ' contains a measurement of type '
-                                    + str(m.measurement_type))
+        for elm in circuit.get_if_measurements():
+            se_input.i_flow_idx.append(branch_dict[elm.api_object])
+            se_input.i_flow.append(elm)
 
         return se_input
 

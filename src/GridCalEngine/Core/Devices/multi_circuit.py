@@ -252,8 +252,13 @@ class MultiCircuit:
         # List of static generators attached tot this bus
         self.static_generators: List[dev.StaticGenerator] = list()
 
-        # List of measurements
-        self.measurements: List[dev.Measurement] = list()
+        # Lists of measurements
+        self.pi_measurements: List[dev.PiMeasurement] = list()
+        self.qi_measurements: List[dev.QiMeasurement] = list()
+        self.vm_measurements: List[dev.VmMeasurement] = list()
+        self.pf_measurements: List[dev.PfMeasurement] = list()
+        self.qf_measurements: List[dev.QfMeasurement] = list()
+        self.if_measurements: List[dev.IfMeasurement] = list()
 
         # List of overhead line objects
         self.overhead_line_types: List[dev.OverheadLineType] = list()
@@ -759,9 +764,10 @@ class MultiCircuit:
         """
         return self.buses
 
-    def get_bus_at(self, i:int) -> dev.Bus:
+    def get_bus_at(self, i: int) -> dev.Bus:
         """
         List of buses
+        :param i: index
         :return:
         """
         return self.buses[i]
@@ -794,6 +800,13 @@ class MultiCircuit:
         :return: lines + transformers 2w + hvdc
         """
         return self.get_branches_wo_hvdc() + self.hvdc_lines
+
+    def get_branches_wo_hvdc_index_dict(self) -> Dict[dev.Branch, int]:
+        """
+        Get the branch to index dictionary
+        :return:
+        """
+        return {b: i for i, b in enumerate(self.get_branches_wo_hvdc())}
 
     def get_injection_devices_lists(self) -> List[List[INJECTION_DEVICE_TYPES]]:
         """
@@ -1191,6 +1204,312 @@ class MultiCircuit:
         """
         return np.array([elm.Enom for elm in self.batteries])
 
+    # ----------------------------------------------------------------------------------------------------------------------
+    # pi_measurements
+    # ----------------------------------------------------------------------------------------------------------------------
+
+    def get_pi_measurements(self) -> List[dev.PiMeasurement]:
+        """
+        List of pi_measurements
+        :return: List[dev.PiMeasurement]
+        """
+        return self.pi_measurements
+
+    def get_pi_measurements_number(self) -> int:
+        """
+        Size of the list of pi_measurements
+        :return: size of pi_measurements
+        """
+        return len(self.pi_measurements)
+
+    def get_pi_measurement_at(self, i: int) -> dev.PiMeasurement:
+        """
+        Get pi_measurement at i
+        :param i: index
+        :return: PiMeasurement
+        """
+        return self.pi_measurements[i]
+
+    def get_pi_measurement_names(self) -> StrVec:
+        """
+        Array of pi_measurement names
+        :return: StrVec
+        """
+        return np.array([e.name for e in self.pi_measurements])
+
+    def add_pi_measurement(self, obj: dev.PiMeasurement):
+        """
+        Add a PiMeasurement object
+        :param obj: PiMeasurement instance
+        """
+
+        if self.time_profile is not None:
+            obj.create_profiles(self.time_profile)
+        self.pi_measurements.append(obj)
+
+    def delete_pi_measurement(self, obj: dev.PiMeasurement) -> None:
+        """
+        Add a PiMeasurement object
+        :param obj: PiMeasurement instance
+        """
+
+        self.pi_measurements.remove(obj)
+
+    # ----------------------------------------------------------------------------------------------------------------------
+    # qi_measurements
+    # ----------------------------------------------------------------------------------------------------------------------
+
+    def get_qi_measurements(self) -> List[dev.QiMeasurement]:
+        """
+        List of qi_measurements
+        :return: List[dev.QiMeasurement]
+        """
+        return self.qi_measurements
+
+    def get_qi_measurements_number(self) -> int:
+        """
+        Size of the list of qi_measurements
+        :return: size of qi_measurements
+        """
+        return len(self.qi_measurements)
+
+    def get_qi_measurement_at(self, i: int) -> dev.QiMeasurement:
+        """
+        Get qi_measurement at i
+        :param i: index
+        :return: QiMeasurement
+        """
+        return self.qi_measurements[i]
+
+    def get_qi_measurement_names(self) -> StrVec:
+        """
+        Array of qi_measurement names
+        :return: StrVec
+        """
+        return np.array([e.name for e in self.qi_measurements])
+
+    def add_qi_measurement(self, obj: dev.QiMeasurement):
+        """
+        Add a QiMeasurement object
+        :param obj: QiMeasurement instance
+        """
+
+        if self.time_profile is not None:
+            obj.create_profiles(self.time_profile)
+        self.qi_measurements.append(obj)
+
+    def delete_qi_measurement(self, obj: dev.QiMeasurement) -> None:
+        """
+        Add a QiMeasurement object
+        :param obj: QiMeasurement instance
+        """
+
+        self.qi_measurements.remove(obj)
+
+    # ----------------------------------------------------------------------------------------------------------------------
+    # vm_measurements
+    # ----------------------------------------------------------------------------------------------------------------------
+
+    def get_vm_measurements(self) -> List[dev.VmMeasurement]:
+        """
+        List of vm_measurements
+        :return: List[dev.VmMeasurement]
+        """
+        return self.vm_measurements
+
+    def get_vm_measurements_number(self) -> int:
+        """
+        Size of the list of vm_measurements
+        :return: size of vm_measurements
+        """
+        return len(self.vm_measurements)
+
+    def get_vm_measurement_at(self, i: int) -> dev.VmMeasurement:
+        """
+        Get vm_measurement at i
+        :param i: index
+        :return: VmMeasurement
+        """
+        return self.vm_measurements[i]
+
+    def get_vm_measurement_names(self) -> StrVec:
+        """
+        Array of vm_measurement names
+        :return: StrVec
+        """
+        return np.array([e.name for e in self.vm_measurements])
+
+    def add_vm_measurement(self, obj: dev.VmMeasurement):
+        """
+        Add a VmMeasurement object
+        :param obj: VmMeasurement instance
+        """
+
+        if self.time_profile is not None:
+            obj.create_profiles(self.time_profile)
+        self.vm_measurements.append(obj)
+
+    def delete_vm_measurement(self, obj: dev.VmMeasurement) -> None:
+        """
+        Add a VmMeasurement object
+        :param obj: VmMeasurement instance
+        """
+
+        self.vm_measurements.remove(obj)
+
+    # ----------------------------------------------------------------------------------------------------------------------
+    # pf_measurements
+    # ----------------------------------------------------------------------------------------------------------------------
+
+    def get_pf_measurements(self) -> List[dev.PfMeasurement]:
+        """
+        List of pf_measurements
+        :return: List[dev.PfMeasurement]
+        """
+        return self.pf_measurements
+
+    def get_pf_measurements_number(self) -> int:
+        """
+        Size of the list of pf_measurements
+        :return: size of pf_measurements
+        """
+        return len(self.pf_measurements)
+
+    def get_pf_measurement_at(self, i: int) -> dev.PfMeasurement:
+        """
+        Get pf_measurement at i
+        :param i: index
+        :return: PfMeasurement
+        """
+        return self.pf_measurements[i]
+
+    def get_pf_measurement_names(self) -> StrVec:
+        """
+        Array of pf_measurement names
+        :return: StrVec
+        """
+        return np.array([e.name for e in self.pf_measurements])
+
+    def add_pf_measurement(self, obj: dev.PfMeasurement):
+        """
+        Add a PfMeasurement object
+        :param obj: PfMeasurement instance
+        """
+
+        if self.time_profile is not None:
+            obj.create_profiles(self.time_profile)
+        self.pf_measurements.append(obj)
+
+    def delete_pf_measurement(self, obj: dev.PfMeasurement) -> None:
+        """
+        Add a PfMeasurement object
+        :param obj: PfMeasurement instance
+        """
+
+        self.pf_measurements.remove(obj)
+
+    # ----------------------------------------------------------------------------------------------------------------------
+    # qf_measurements
+    # ----------------------------------------------------------------------------------------------------------------------
+
+    def get_qf_measurements(self) -> List[dev.QfMeasurement]:
+        """
+        List of qf_measurements
+        :return: List[dev.QfMeasurement]
+        """
+        return self.qf_measurements
+
+    def get_qf_measurements_number(self) -> int:
+        """
+        Size of the list of qf_measurements
+        :return: size of qf_measurements
+        """
+        return len(self.qf_measurements)
+
+    def get_qf_measurement_at(self, i: int) -> dev.QfMeasurement:
+        """
+        Get qf_measurement at i
+        :param i: index
+        :return: QfMeasurement
+        """
+        return self.qf_measurements[i]
+
+    def get_qf_measurement_names(self) -> StrVec:
+        """
+        Array of qf_measurement names
+        :return: StrVec
+        """
+        return np.array([e.name for e in self.qf_measurements])
+
+    def add_qf_measurement(self, obj: dev.QfMeasurement):
+        """
+        Add a QfMeasurement object
+        :param obj: QfMeasurement instance
+        """
+
+        if self.time_profile is not None:
+            obj.create_profiles(self.time_profile)
+        self.qf_measurements.append(obj)
+
+    def delete_qf_measurement(self, obj: dev.QfMeasurement) -> None:
+        """
+        Add a QfMeasurement object
+        :param obj: QfMeasurement instance
+        """
+
+        self.qf_measurements.remove(obj)
+
+    # ----------------------------------------------------------------------------------------------------------------------
+    # if_measurements
+    # ----------------------------------------------------------------------------------------------------------------------
+
+    def get_if_measurements(self) -> List[dev.IfMeasurement]:
+        """
+        List of if_measurements
+        :return: List[dev.IfMeasurement]
+        """
+        return self.if_measurements
+
+    def get_if_measurements_number(self) -> int:
+        """
+        Size of the list of if_measurements
+        :return: size of if_measurements
+        """
+        return len(self.if_measurements)
+
+    def get_if_measurement_at(self, i: int) -> dev.IfMeasurement:
+        """
+        Get if_measurement at i
+        :param i: index
+        :return: IfMeasurement
+        """
+        return self.if_measurements[i]
+
+    def get_if_measurement_names(self) -> StrVec:
+        """
+        Array of if_measurement names
+        :return: StrVec
+        """
+        return np.array([e.name for e in self.if_measurements])
+
+    def add_if_measurement(self, obj: dev.IfMeasurement):
+        """
+        Add a IfMeasurement object
+        :param obj: IfMeasurement instance
+        """
+
+        if self.time_profile is not None:
+            obj.create_profiles(self.time_profile)
+        self.if_measurements.append(obj)
+
+    def delete_if_measurement(self, obj: dev.IfMeasurement) -> None:
+        """
+        Add a IfMeasurement object
+        :param obj: IfMeasurement instance
+        """
+
+        self.if_measurements.remove(obj)
+
     def get_elements_by_type(self, device_type: DeviceType):
         """
         Get set of elements and their parent nodes
@@ -1327,6 +1646,24 @@ class MultiCircuit:
         elif device_type == DeviceType.FluidP2XDevice:
             return self.get_fluid_p2xs()
 
+        elif device_type == DeviceType.PiMeasurementDevice:
+            return self.get_pi_measurements()
+
+        elif device_type == DeviceType.QiMeasurementDevice:
+            return self.get_qi_measurements()
+
+        elif device_type == DeviceType.PfMeasurementDevice:
+            return self.get_pf_measurements()
+
+        elif device_type == DeviceType.QfMeasurementDevice:
+            return self.get_qf_measurements()
+
+        elif device_type == DeviceType.VmMeasurementDevice:
+            return self.get_vm_measurements()
+
+        elif device_type == DeviceType.IfMeasurementDevice:
+            return self.get_if_measurements()
+
         else:
             raise Exception('Element type not understood ' + str(device_type))
 
@@ -1356,9 +1693,6 @@ class MultiCircuit:
 
         elif device_type == DeviceType.ExternalGridDevice:
             self.external_grids = devices
-
-        elif device_type == DeviceType.MeasurementDevice:
-            self.measurements = devices
 
         elif device_type == DeviceType.LineDevice:
             for d in devices:
@@ -1478,6 +1812,24 @@ class MultiCircuit:
         elif device_type == DeviceType.BranchDevice:
             for d in devices:
                 self.add_branch(d)  # each branch needs to be converted accordingly
+
+        elif device_type == DeviceType.PiMeasurementDevice:
+            self.pi_measurements = devices
+
+        elif device_type == DeviceType.QiMeasurementDevice:
+            self.qi_measurements = devices
+
+        elif device_type == DeviceType.PfMeasurementDevice:
+            self.pf_measurements = devices
+
+        elif device_type == DeviceType.QfMeasurementDevice:
+            self.qf_measurements = devices
+
+        elif device_type == DeviceType.VmMeasurementDevice:
+            self.vm_measurements = devices
+
+        elif device_type == DeviceType.IfMeasurementDevice:
+            self.if_measurements = devices
 
         else:
             raise Exception('Element type not understood ' + str(device_type))
@@ -1614,6 +1966,24 @@ class MultiCircuit:
         elif element_type == DeviceType.FluidPathDevice:
             return self.delete_fluid_path(obj)
 
+        elif element_type == DeviceType.PiMeasurementDevice:
+            return self.delete_pi_measurement(obj)
+
+        elif element_type == DeviceType.QiMeasurementDevice:
+            return self.delete_qi_measurement(obj)
+
+        elif element_type == DeviceType.PfMeasurementDevice:
+            return self.delete_pf_measurement(obj)
+
+        elif element_type == DeviceType.QfMeasurementDevice:
+            return self.delete_qf_measurement(obj)
+
+        elif element_type == DeviceType.VmMeasurementDevice:
+            return self.delete_vm_measurement(obj)
+
+        elif element_type == DeviceType.IfMeasurementDevice:
+            return self.delete_if_measurement(obj)
+
         else:
             raise Exception('Element type not understood ' + str(element_type))
 
@@ -1657,94 +2027,6 @@ class MultiCircuit:
         else:
             return {elm.idtag: elm for elm in self.get_elements_by_type(element_type)}
 
-    def get_node_elements_by_type2(self, element_type: DeviceType) -> List[dev.EditableDevice]:
-        """
-        Get set of elements and their parent nodes
-        :param element_type: DeviceTYpe instance
-        :return: List of elements, it raises an exception if the elements are unknown
-        """
-
-        if element_type == DeviceType.LoadDevice:
-            return self.get_loads()
-
-        elif element_type == DeviceType.StaticGeneratorDevice:
-            return self.get_static_generators()
-
-        elif element_type == DeviceType.GeneratorDevice:
-            return self.get_generators()
-
-        elif element_type == DeviceType.BatteryDevice:
-            return self.get_batteries()
-
-        elif element_type == DeviceType.ShuntDevice:
-            return self.get_shunts()
-
-        elif element_type == DeviceType.ExternalGridDevice:
-            return self.get_external_grids()
-
-        elif element_type == DeviceType.SubstationDevice:
-            return self.get_substations()
-
-        elif element_type == DeviceType.ConnectivityNodeDevice:
-            return self.get_connectivity_nodes()
-
-        elif element_type == DeviceType.BusBarDevice:
-            return self.get_bus_bars()
-
-        elif element_type == DeviceType.AreaDevice:
-            return self.get_areas()
-
-        elif element_type == DeviceType.ZoneDevice:
-            return self.get_zones()
-
-        elif element_type == DeviceType.CountryDevice:
-            return self.get_countries()
-
-        elif element_type == DeviceType.LineDevice:
-            return self.get_lines()
-
-        elif element_type == DeviceType.DCLineDevice:
-            return self.get_dc_lines()
-
-        elif element_type == DeviceType.Transformer2WDevice:
-            return self.get_transformers2w()
-
-        elif element_type == DeviceType.Transformer3WDevice:
-            return self.get_transformers3w()
-
-        elif element_type == DeviceType.UpfcDevice:
-            return self.get_upfc()
-
-        elif element_type == DeviceType.VscDevice:
-            return self.get_vsc()
-
-        elif element_type == DeviceType.HVDCLineDevice:
-            return self.get_hvdc()
-
-        elif element_type == DeviceType.SwitchDevice:
-            return self.get_switches()
-
-        elif element_type == DeviceType.WindingDevice:
-            return self.get_windings()
-
-        elif element_type == DeviceType.FluidNodeDevice:
-            return self.get_fluid_nodes()
-
-        elif element_type == DeviceType.FluidTurbineDevice:
-            return self.get_fluid_turbines()
-
-        elif element_type == DeviceType.FluidP2XDevice:
-            return self.get_fluid_p2xs()
-
-        elif element_type == DeviceType.FluidPumpDevice:
-            return self.get_fluid_pumps()
-
-        elif element_type == DeviceType.FluidPathDevice:
-            return self.get_fluid_paths()
-
-        else:
-            raise Exception('Element type not understood ' + str(element_type))
-
     def copy(self) -> "MultiCircuit":
         """
         Returns a deep (true) copy of this circuit.
@@ -1785,6 +2067,12 @@ class MultiCircuit:
                 'generators_emissions',
                 'fluid_nodes',
                 'fluid_paths',
+                'pi_measurements',
+                'qi_measurements',
+                'vm_measurements',
+                'pf_measurements',
+                'qf_measurements',
+                'if_measurements',
                 ]
 
         for pr in ppts:
@@ -2257,8 +2545,7 @@ class MultiCircuit:
             obj.create_profiles(self.time_profile)
         self.switch_devices.append(obj)
 
-    def add_branch(self, obj: Union[dev.Line, dev.DcLine, dev.Transformer2W, dev.HvdcLine, dev.VSC,
-    dev.UPFC, dev.Winding, dev.Switch, dev.Branch]) -> None:
+    def add_branch(self, obj: BRANCH_TYPES) -> None:
         """
         Add any branch object (it's type will be infered here)
         :param obj: any class inheriting from ParentBranch

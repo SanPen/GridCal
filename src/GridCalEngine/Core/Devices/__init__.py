@@ -16,7 +16,8 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 from GridCalEngine.Core.Devices.editable_device import EditableDevice
-from GridCalEngine.Core.Devices.measurement import Measurement, MeasurementType
+from GridCalEngine.Core.Devices.measurement import (PiMeasurement, PfMeasurement, QiMeasurement, QfMeasurement,
+                                                    VmMeasurement, VmMeasurement, IfMeasurement, IfMeasurement)
 
 from GridCalEngine.Core.Devices.Aggregation import *
 from GridCalEngine.Core.Devices.Branches import *
