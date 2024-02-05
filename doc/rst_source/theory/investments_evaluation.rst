@@ -250,8 +250,8 @@ Finally, the algorithm is tested in the presented grid.
 
     Figure 11: Results obtained for the updated algorithm.
 
-The results show a similar points distribution as Figure 5. This is not a coincidence, given that by applying the
+The results show a similar points distribution as Figure 4. This is not a coincidence, given that by applying the
 normalization, both the technical and economic criteria end up being a similar order of magnitude, which is the same
-case as the one shown in Figure 5.
+case as the one shown in Figure 4.
 
 It is worth mentioning that due to the fact that the objective function can now take negative values, the normalization used in the colors visualization can no longer be LogNorm() and has been changed to Normalize().
