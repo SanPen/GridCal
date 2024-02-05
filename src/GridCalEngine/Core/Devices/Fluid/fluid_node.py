@@ -19,6 +19,7 @@ from typing import Union
 from GridCalEngine.Core.Devices.editable_device import EditableDevice
 from GridCalEngine.Core.Devices.Substation.bus import Bus
 from GridCalEngine.enumerations import BuildStatus, DeviceType
+from GridCalEngine.Core.Devices.profile import Profile
 
 
 class FluidNode(EditableDevice):
@@ -32,8 +33,6 @@ class FluidNode(EditableDevice):
                  current_level: float = 0.0,
                  spillage_cost: float = 1000.0,
                  inflow: float = 0.0,
-                 spillage_cost_prof=None,
-                 inflow_prof=None,
                  bus: Union[None, Bus] = None,
                  build_status: BuildStatus = BuildStatus.Commissioned):
         """
@@ -46,7 +45,6 @@ class FluidNode(EditableDevice):
         :param current_level: Initial level of the node/reservoir [m3]
         :param spillage_cost: Spillage cost [e/(m3/s)]
         :param inflow: Inflow from the rain [m3/s]
-        :param inflow_prof: Profile for the inflow [m3/s]
         :param bus: electrical bus they are linked with
         :param build_status
         """
@@ -64,17 +62,8 @@ class FluidNode(EditableDevice):
         self._bus: Bus = bus
         self.build_status = build_status
 
-        self.inflow_prof = inflow_prof  # m3/s
-        self.spillage_cost_prof = spillage_cost_prof  # e/(m3/s)
-
-        # list of turbines
-        self.turbines = list()
-
-        # list of pumps
-        self.pumps = list()
-
-        # list of power to gas devices
-        self.p2xs = list()
+        self.inflow_prof = Profile()  # m3/s
+        self.spillage_cost_prof = Profile()  # e/(m3/s)
 
         self.register(key='min_level', units='hm3', tpe=float,
                       definition="Minimum amount of fluid at the node/reservoir")
@@ -118,15 +107,6 @@ class FluidNode(EditableDevice):
 
         fluid_node.inflow_prof = self.inflow_prof  # m3/s
         fluid_node.spillage_cost_prof = self.spillage_cost_prof  # e/(m3/s)
-
-        # list of turbines
-        fluid_node.turbines = self.turbines.copy()
-
-        # list of pumps
-        fluid_node.pumps = self.pumps.copy()
-
-        # list of power to gas devices
-        fluid_node.p2xs = self.p2xs.copy()
 
         return fluid_node
 
@@ -192,20 +172,3 @@ class FluidNode(EditableDevice):
         :return: int
         """
         return len(self.turbines) + len(self.pumps) + len(self.p2xs)
-
-    def create_profiles(self, index):
-        """
-        Format all profiles
-        """
-
-        # create the profiles of this very object
-        super().create_profiles(index)
-
-        for elm in self.turbines:
-            elm.create_profiles(index)
-
-        for elm in self.pumps:
-            elm.create_profiles(index)
-
-        for elm in self.p2xs:
-            elm.create_profiles(index)

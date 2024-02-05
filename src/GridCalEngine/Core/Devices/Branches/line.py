@@ -26,8 +26,8 @@ from GridCalEngine.Core.Devices.Branches.templates.overhead_line_type import Ove
 from GridCalEngine.Core.Devices.Branches.transformer import Transformer2W
 from GridCalEngine.Core.Devices.Branches.templates.parent_branch import ParentBranch
 from GridCalEngine.Core.Devices.Branches.templates.sequence_line_type import SequenceLineType
-from GridCalEngine.Core.Devices.Branches.templates.line_template import LineTemplate
 from GridCalEngine.Core.Devices.editable_device import DeviceType
+from GridCalEngine.Core.Devices.profile import Profile
 
 
 class Line(ParentBranch):
@@ -37,8 +37,7 @@ class Line(ParentBranch):
                  r=1e-20, x=1e-20, b=1e-20, rate=1.0, active=True, tolerance=0, cost=100.0,
                  mttf=0, mttr=0, r_fault=0.0, x_fault=0.0, fault_pos=0.5,
                  length=1, temp_base=20, temp_oper=20, alpha=0.00330,
-                 template=LineTemplate(), rate_prof=None, Cost_prof=None, active_prof=None, temp_oper_prof=None,
-                 contingency_factor=1.0, contingency_enabled=True, monitor_loading=True, contingency_factor_prof=None,
+                 template=None, contingency_factor=1.0, contingency_enabled=True, monitor_loading=True,
                  r0=1e-20, x0=1e-20, b0=1e-20, r2=1e-20, x2=1e-20, b2=1e-20,
                  capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned):
         """
@@ -65,14 +64,9 @@ class Line(ParentBranch):
         :param temp_oper: Operating temperature in °C
         :param alpha: Thermal constant of the material in °C
         :param template: Basic branch template
-        :param rate_prof: Rating profile
-        :param Cost_prof: Overload cost profile
-        :param active_prof: Active profile
-        :param temp_oper_prof: Operational temperature profile
         :param contingency_factor: Rating factor in case of contingency
         :param contingency_enabled: enabled for contingencies (Legacy)
         :param monitor_loading: monitor the loading (used in OPF)
-        :param contingency_factor_prof: profile of contingency ratings
         :param r0: zero-sequence resistence (p.u.)
         :param x0: zero-sequence reactance (p.u.)
         :param b0: zero-sequence susceptance (p.u.)
@@ -93,11 +87,8 @@ class Line(ParentBranch):
                               cn_from=cn_from,
                               cn_to=cn_to,
                               active=active,
-                              active_prof=active_prof,
                               rate=rate,
-                              rate_prof=rate_prof,
                               contingency_factor=contingency_factor,
-                              contingency_factor_prof=contingency_factor_prof,
                               contingency_enabled=contingency_enabled,
                               monitor_loading=monitor_loading,
                               mttf=mttf,
@@ -106,7 +97,6 @@ class Line(ParentBranch):
                               capex=capex,
                               opex=opex,
                               Cost=cost,
-                              Cost_prof=Cost_prof,
                               device_type=DeviceType.LineDevice)
 
         # line length in km
@@ -137,7 +127,7 @@ class Line(ParentBranch):
         self.temp_base = temp_base
         self.temp_oper = temp_oper
 
-        self.temp_oper_prof = temp_oper_prof
+        self.temp_oper_prof = Profile()
 
         # Conductor thermal constant (1/ºC)
         self.alpha = alpha
@@ -166,14 +156,6 @@ class Line(ParentBranch):
                       definition='Thermal coefficient to modify R,around a reference temperatureusing a '
                                  'linear approximation.For example:Copper @ 20ºC: 0.004041,Copper @ 75ºC: 0.00323,'
                                  'Annealed copper @ 20ºC: 0.00393,Aluminum @ 20ºC: 0.004308,Aluminum @ 75ºC: 0.00330')
-
-        # self.register(key='Cost', units='e/MWh', tpe=float, definition='Cost of overloads. Used in OPF.',
-        #               profile_name='Cost_prof')
-        # self.register(key='capex', units='e/MW', tpe=float,
-        #               definition='Cost of investment. Used in expansion planning.')
-        # self.register(key='opex', units='e/MWh', tpe=float, definition='Cost of operation. Used in expansion planning.')
-        # self.register(key='build_status', units='', tpe=BuildStatus,
-        #               definition='Branch build status. Used in expansion planning.')
         self.register(key='r_fault', units='p.u.', tpe=float,
                       definition='Resistance of the mid-line fault.Used in short circuit studies.')
         self.register(key='x_fault', units='p.u.', tpe=float,
@@ -247,19 +229,19 @@ class Line(ParentBranch):
         for name, properties in self.registered_properties.items():
             obj = getattr(self, name)
 
-            if properties.tpe == DeviceType.BusDevice:
-                obj = obj.idtag
+            if obj is None:
+                data.append("")
+            else:
 
-            elif properties.tpe == LineTemplate:
-                if obj is None:
-                    obj = ''
-                else:
+                if hasattr(obj, 'idtag'):
                     obj = obj.idtag
+                else:
+                    if properties.tpe not in [str, float, int, bool]:
+                        obj = str(obj)
+                    else:
+                        obj = str(obj)
 
-            elif properties.tpe not in [str, float, int, bool]:
-                obj = str(obj)
-
-            data.append(obj)
+                data.append(obj)
         return data
 
     def get_properties_dict(self, version=3):
@@ -421,19 +403,21 @@ class Line(ParentBranch):
         """
         V1 = min(self.bus_to.Vnom, self.bus_from.Vnom)
         V2 = max(self.bus_to.Vnom, self.bus_from.Vnom)
-        return Transformer2W(bus_from=self.bus_from,
-                             bus_to=self.bus_to,
-                             name=self.name,
-                             code=self.code,
-                             active=self.active,
-                             rate=self.rate,
-                             HV=V2,
-                             LV=V1,
-                             r=self.R,
-                             x=self.X,
-                             b=self.B,
-                             active_prof=self.active_prof,
-                             rate_prof=self.rate_prof)
+        elm = Transformer2W(bus_from=self.bus_from,
+                            bus_to=self.bus_to,
+                            name=self.name,
+                            code=self.code,
+                            active=self.active,
+                            rate=self.rate,
+                            HV=V2,
+                            LV=V1,
+                            r=self.R,
+                            x=self.X,
+                            b=self.B)
+        elm.active_prof = self.active_prof
+        elm.rate_prof = self.rate_prof
+        elm.temperature_prof = self.temp_oper_prof
+        return elm
 
     def split_line(self, position: float) -> Tuple["Line", "Line", Bus]:
         """
@@ -486,7 +470,8 @@ class Line(ParentBranch):
         """
         R = r_ohm * length
         X = x_ohm * length
-        B = (2 * np.pi * freq * c_nf * 1e-9) * length  # impedance = 1 / (2 * pi * f * c), susceptance = (2 * pi * f * c)
+        B = (
+                    2 * np.pi * freq * c_nf * 1e-9) * length  # impedance = 1 / (2 * pi * f * c), susceptance = (2 * pi * f * c)
 
         Vf = self.get_max_bus_nominal_voltage()
 

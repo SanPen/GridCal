@@ -27,18 +27,19 @@ from GridCalEngine.Core.Devices.Branches.transformer import TransformerControlTy
 from GridCalEngine.Core.Devices.Branches.templates.parent_branch import ParentBranch
 from GridCalEngine.Core.Devices.Branches.templates.transformer_type import TransformerType
 from GridCalEngine.Core.Devices.Branches.tap_changer import TapChanger
+from GridCalEngine.Core.Devices.profile import Profile
 
 
 class Winding(ParentBranch):
 
     def __init__(self, bus_from: Bus = None, bus_to: Bus = None, HV=None, LV=None,
                  name='Winding', idtag=None, code='', r=1e-20, x=1e-20, g=1e-20, b=1e-20, rate=1.0, tap_module=1.0,
-                 tap_module_max=1.2, tap_module_min=0.5, tap_phase=0.0, tap_phase_max=6.28, tap_phase_min=-6.28, active=True,
+                 tap_module_max=1.2, tap_module_min=0.5, tap_phase=0.0, tap_phase_max=6.28, tap_phase_min=-6.28,
+                 active=True,
                  tolerance=0, cost=100.0, mttf=0, mttr=0, vset=1.0, Pset=0, bus_to_regulated=False, temp_base=20,
                  temp_oper=20, alpha=0.00330, control_mode: TransformerControlType = TransformerControlType.fixed,
-                 template: TransformerType = None, rate_prof=None, Cost_prof=None, active_prof=None,
-                 temp_oper_prof=None, tap_module_prof=None, tap_phase_prof=None, contingency_factor=1.0,
-                 contingency_enabled=True, monitor_loading=True, contingency_factor_prof=None, r0=1e-20, x0=1e-20,
+                 template: TransformerType = None, contingency_factor=1.0,
+                 contingency_enabled=True, monitor_loading=True, r0=1e-20, x0=1e-20,
                  g0=1e-20, b0=1e-20, r2=1e-20, x2=1e-20, g2=1e-20, b2=1e-20,
                  conn: WindingsConnection = WindingsConnection.GG, capex=0, opex=0,
                  build_status: BuildStatus = BuildStatus.Commissioned):
@@ -75,16 +76,9 @@ class Winding(ParentBranch):
         :param alpha: Thermal constant of the material in °C
         :param control_mode: Control model
         :param template: Branch template
-        :param rate_prof: Rating profile
-        :param Cost_prof: Overload cost profile
-        :param active_prof: Active profile
-        :param temp_oper_prof: Operational temperature profile
-        :param tap_module_prof: profile of tap modeules
-        :param tap_phase_prof: profile of tap angles
         :param contingency_factor: Rating factor in case of contingency
         :param contingency_enabled: enabled for contingencies (Legacy)
         :param monitor_loading: monitor the loading (used in OPF)
-        :param contingency_factor_prof: profile of contingency ratings
         :param r0: zero-sequence resistence (p.u.)
         :param x0: zero-sequence reactance (p.u.)
         :param g0: zero-sequence conductance (p.u.)
@@ -107,11 +101,8 @@ class Winding(ParentBranch):
                               cn_from=None,
                               cn_to=None,
                               active=active,
-                              active_prof=active_prof,
                               rate=rate,
-                              rate_prof=rate_prof,
                               contingency_factor=contingency_factor,
-                              contingency_factor_prof=contingency_factor_prof,
                               contingency_enabled=contingency_enabled,
                               monitor_loading=monitor_loading,
                               mttf=mttf,
@@ -120,7 +111,6 @@ class Winding(ParentBranch):
                               capex=capex,
                               opex=opex,
                               Cost=cost,
-                              Cost_prof=Cost_prof,
                               device_type=DeviceType.WindingDevice)
 
         # set the high and low voltage values
@@ -156,7 +146,7 @@ class Winding(ParentBranch):
         self.temp_base = temp_base
         self.temp_oper = temp_oper
 
-        self.temp_oper_prof = temp_oper_prof
+        self.temp_oper_prof = Profile()
 
         # Conductor thermal constant (1/ºC)
         self.alpha = alpha
@@ -171,13 +161,13 @@ class Winding(ParentBranch):
         else:
             self.tap_module = self.tap_changer.get_tap()
 
-        self.tap_module_prof = tap_module_prof
+        self.tap_module_prof = Profile()
         self.tap_module_max = tap_module_max
         self.tap_module_min = tap_module_min
 
         # Tap angle
         self.tap_phase = tap_phase
-        self.tap_phase_prof = tap_phase_prof
+        self.tap_phase_prof = Profile()
         self.tap_phase_max = tap_phase_max
         self.tap_phase_min = tap_phase_min
 
@@ -213,7 +203,7 @@ class Winding(ParentBranch):
         self.register(key='conn', units='', tpe=WindingsConnection,
                       definition='Windings connection (from, to):G: grounded starS: ungrounded starD: delta')
         self.register(key='tolerance', units='%', tpe=float,
-                      definition='Tolerance expected for the impedance values7% is expected for transformers0% for lines.')
+                      definition='Tolerance expected for the impedance values.')
         self.register(key='tap_module', units='', tpe=float, definition='Tap changer module, it a value close to 1.0',
                       profile_name='tap_module_prof')
         self.register(key='tap_module_max', units='', tpe=float, definition='Tap changer module max value')
@@ -706,7 +696,8 @@ class Winding(ParentBranch):
         """
         Fix the inconsistencies
         :param logger:
-        :param maximum_difference: proportion to be under or above (i.e. Transformer HV=41.9, bus HV=45 41.9/45 = 0.93 -> 0.9 <= 0.93 <= 1.1, so its ok
+        :param maximum_difference: proportion to be under or above
+        (i.e. Transformer HV=41.9, bus HV=45 41.9/45 = 0.93 -> 0.9 <= 0.93 <= 1.1, so its ok
         :return:
         """
         errors = False

@@ -97,6 +97,11 @@ class UndergroundLineType(EditableDevice):
         return 1j * self.B
 
     def change_base(self, Sbase_old, Sbase_new):
+        """
+        change the per unit base
+        :param Sbase_old: old base in MVA
+        :param Sbase_new: new base in MVA
+        """
         b = Sbase_new / Sbase_old
 
         self.R *= b

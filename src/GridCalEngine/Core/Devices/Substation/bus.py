@@ -23,6 +23,7 @@ from GridCalEngine.enumerations import BusMode
 from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceType
 from GridCalEngine.Core.Devices.Aggregation import Area, Zone, Country
 from GridCalEngine.Core.Devices.Substation.substation import Substation
+from GridCalEngine.Core.Devices.profile import Profile
 
 
 class Bus(EditableDevice):
@@ -92,7 +93,7 @@ class Bus(EditableDevice):
                                 device_type=DeviceType.BusDevice)
 
         self.active = active
-        self.active_prof = None
+        self.active_prof = Profile()
 
         # Nominal voltage (kV)
         self.Vnom = vnom
@@ -301,7 +302,6 @@ class Bus(EditableDevice):
             pd.DataFrame(data=v, index=t, columns=['Voltage (p.u.)']).plot(ax=ax_voltage)
             pd.DataFrame(data=P_data, index=t).plot(ax=ax_load)
 
-
             ax_load.set_ylabel('Power [MW]', fontsize=11)
             ax_load.legend()
         else:
@@ -313,22 +313,6 @@ class Bus(EditableDevice):
 
         if show_fig:
             plt.show()
-
-    # def get_active_injection_profiles_dictionary(self):
-    #     """
-    #     Get the devices' profiles in a dictionary with the correct sign
-    #     :return:
-    #     """
-    #     dta = dict()
-    #     devices = self.generators + self.batteries + self.static_generators
-    #     if len(devices) > 0:
-    #         for elm in devices:
-    #             dta[elm.name] = elm.P_prof
-    #
-    #     for elm in self.loads:
-    #         dta[elm.name] = -elm.P_prof
-    #
-    #     return dta
 
     def get_properties_dict(self, version=3):
         """
@@ -392,15 +376,6 @@ class Bus(EditableDevice):
                 'lat': 'degrees',
                 'lon': 'degrees',
                 'alt': 'm'}
-
-    def set_state(self, t):
-        """
-        Set the profiles state of the objects in this bus to the value given in the profiles at the index t
-        :param t: index of the profile
-        :return: Nothing
-        """
-
-        self.set_profile_values(t)
 
     def get_fault_impedance(self):
         """

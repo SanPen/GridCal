@@ -59,7 +59,7 @@ class SparseArray:
             if val != default_value:
                 self._map[i] = val
 
-    def get_vactor(self) -> NumericVec:
+    def toarray(self) -> NumericVec:
         """
         Get numpy vector from this sparse structure
         :return: NumericVec

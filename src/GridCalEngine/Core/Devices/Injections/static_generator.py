@@ -17,11 +17,12 @@
 
 from GridCalEngine.enumerations import BuildStatus, DeviceType
 from GridCalEngine.Core.Devices.Injections.injection_template import LoadLikeTemplate
+from GridCalEngine.Core.Devices.profile import Profile
 
 
 class StaticGenerator(LoadLikeTemplate):
 
-    def __init__(self, name='StaticGen', idtag=None, code='', P=0.0, Q=0.0, P_prof=None, Q_prof=None, active=True,
+    def __init__(self, name='StaticGen', idtag=None, code='', P=0.0, Q=0.0, active=True,
                  mttf=0.0, mttr=0.0, Cost=1200.0,
                  capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned):
         """
@@ -31,8 +32,6 @@ class StaticGenerator(LoadLikeTemplate):
         :param code:
         :param P:
         :param Q:
-        :param P_prof:
-        :param Q_prof:
         :param active:
         :param mttf:
         :param mttr:
@@ -49,13 +48,9 @@ class StaticGenerator(LoadLikeTemplate):
                                   bus=None,
                                   cn=None,
                                   active=active,
-                                  active_prof=None,
                                   P=P,
-                                  P_prof=P_prof,
                                   Q=Q,
-                                  Q_prof=Q_prof,
                                   Cost=Cost,
-                                  Cost_prof=None,
                                   mttf=mttf,
                                   mttr=mttr,
                                   capex=capex,

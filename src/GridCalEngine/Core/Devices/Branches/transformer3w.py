@@ -19,6 +19,7 @@ from typing import Tuple
 from GridCalEngine.Core.Devices.Substation.bus import Bus
 from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceType
 from GridCalEngine.Core.Devices.Branches.winding import Winding
+from GridCalEngine.Core.Devices.profile import Profile
 
 
 def delta_to_star(z12: float, z23: float, z31: float) -> Tuple[float, float, float]:
@@ -83,7 +84,7 @@ class Transformer3W(EditableDevice):
         self._bus3 = bus3
 
         self.active = active
-        self.active_prof = None
+        self.active_prof = Profile()
 
         self._V1 = V1
         self._V2 = V2

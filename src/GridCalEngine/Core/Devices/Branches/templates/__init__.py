@@ -17,7 +17,6 @@
 
 
 from GridCalEngine.Core.Devices.Branches.templates.transformer_type import TransformerType
-from GridCalEngine.Core.Devices.Branches.templates.line_template import LineTemplate
 from GridCalEngine.Core.Devices.Branches.templates.overhead_line_type import OverheadLineType, WireInTower
 from GridCalEngine.Core.Devices.Branches.templates.parent_branch import ParentBranch
 from GridCalEngine.Core.Devices.Branches.templates.sequence_line_type import SequenceLineType

@@ -24,6 +24,7 @@ from GridCalEngine.Core.Devices.Substation.bus import Bus
 from GridCalEngine.Core.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.enumerations import BuildStatus, DeviceType
 from GridCalEngine.basic_structures import Vec, CxVec
+from GridCalEngine.Core.Devices.profile import Profile
 
 
 class InjectionTemplate(EditableDevice):
@@ -76,9 +77,7 @@ class InjectionTemplate(EditableDevice):
                  bus: Union[Bus, None],
                  cn: Union[ConnectivityNode, None],
                  active: bool,
-                 active_prof: Union[Vec, None],
                  Cost: float,
-                 Cost_prof: Union[Vec, None],
                  mttf: float,
                  mttr: float,
                  capex: float,
@@ -93,9 +92,7 @@ class InjectionTemplate(EditableDevice):
         :param bus:
         :param cn:
         :param active:
-        :param active_prof:
         :param Cost:
-        :param Cost_prof:
         :param mttf:
         :param mttr:
         :param capex:
@@ -115,7 +112,7 @@ class InjectionTemplate(EditableDevice):
         self.cn = cn
 
         self.active = active
-        self.active_prof = active_prof
+        self.active_prof = Profile()
 
         self.mttf = mttf
 
@@ -123,7 +120,7 @@ class InjectionTemplate(EditableDevice):
 
         self.Cost = Cost
 
-        self.Cost_prof = Cost_prof
+        self.Cost_prof = Profile()
 
         self.capex = capex
 
@@ -154,7 +151,7 @@ class InjectionTemplate(EditableDevice):
         return complex(0.0, 0.0)
 
     def get_Sprof(self) -> CxVec:
-        return np.zeros(len(self.active_prof), dtype=complex)
+        return np.zeros(self.active_prof.size(), dtype=complex)
 
 
 class LoadLikeTemplate(InjectionTemplate):
@@ -169,13 +166,9 @@ class LoadLikeTemplate(InjectionTemplate):
                  bus: Union[Bus, None],
                  cn: Union[ConnectivityNode, None],
                  active: bool,
-                 active_prof: Union[Vec, None],
                  P: float,
-                 P_prof,
                  Q: float,
-                 Q_prof,
                  Cost: float,
-                 Cost_prof: Union[Vec, None],
                  mttf: float,
                  mttr: float,
                  capex: float,
@@ -190,9 +183,7 @@ class LoadLikeTemplate(InjectionTemplate):
         :param bus:
         :param cn:
         :param active:
-        :param active_prof:
         :param Cost:
-        :param Cost_prof:
         :param mttf:
         :param mttr:
         :param capex:
@@ -208,9 +199,7 @@ class LoadLikeTemplate(InjectionTemplate):
                                    bus=bus,
                                    cn=cn,
                                    active=active,
-                                   active_prof=active_prof,
                                    Cost=Cost,
-                                   Cost_prof=Cost_prof,
                                    mttf=mttf,
                                    mttr=mttr,
                                    capex=capex,
@@ -219,10 +208,10 @@ class LoadLikeTemplate(InjectionTemplate):
                                    device_type=device_type)
 
         self.P = P
-        self.P_prof = P_prof
+        self.P_prof = Profile()
 
         self.Q = Q
-        self.Q_prof = Q_prof
+        self.Q_prof = Profile()
 
         self.register(key='P', units='MW', tpe=float, definition='Active power', profile_name='P_prof')
         self.register(key='Q', units='MVAr', tpe=float, definition='Reactive power', profile_name='Q_prof')
@@ -239,7 +228,7 @@ class LoadLikeTemplate(InjectionTemplate):
 
         :return:
         """
-        return self.P_prof + 1j * self.Q_prof
+        return self.P_prof.toarray() + 1j * self.Q_prof.toarray()
 
     def get_properties_dict(self, version=3):
         """
@@ -296,14 +285,14 @@ class LoadLikeTemplate(InjectionTemplate):
             ax_2 = fig.add_subplot(212, sharex=ax_1)
 
             # P
-            y = self.P_prof
+            y = self.P_prof.toarray()
             df = pd.DataFrame(data=y, index=time, columns=[self.name])
             ax_1.set_title('Active power', fontsize=14)
             ax_1.set_ylabel('MW', fontsize=11)
             df.plot(ax=ax_1)
 
             # Q
-            y = self.Q_prof
+            y = self.Q_prof.toarray()
             df = pd.DataFrame(data=y, index=time, columns=[self.name])
             ax_2.set_title('Reactive power', fontsize=14)
             ax_2.set_ylabel('MVAr', fontsize=11)
@@ -328,13 +317,10 @@ class GeneratorLikeTemplate(InjectionTemplate):
                  bus: Union[Bus, None],
                  cn: Union[ConnectivityNode, None],
                  active: bool,
-                 active_prof: Union[Vec, None],
                  P: float,
-                 P_prof,
                  Pmin: float,
                  Pmax: float,
                  Cost: float,
-                 Cost_prof: Union[Vec, None],
                  mttf: float,
                  mttr: float,
                  capex: float,
@@ -349,9 +335,7 @@ class GeneratorLikeTemplate(InjectionTemplate):
         :param bus:
         :param cn:
         :param active:
-        :param active_prof:
         :param Cost:
-        :param Cost_prof:
         :param mttf:
         :param mttr:
         :param capex:
@@ -367,9 +351,7 @@ class GeneratorLikeTemplate(InjectionTemplate):
                                    bus=bus,
                                    cn=cn,
                                    active=active,
-                                   active_prof=active_prof,
                                    Cost=Cost,
-                                   Cost_prof=Cost_prof,
                                    mttf=mttf,
                                    mttr=mttr,
                                    capex=capex,
@@ -378,7 +360,7 @@ class GeneratorLikeTemplate(InjectionTemplate):
                                    device_type=device_type)
 
         self.P = P
-        self.P_prof = P_prof
+        self.P_prof = Profile()
 
         # Minimum dispatched power in MW
         self.Pmin = Pmin
@@ -439,7 +421,7 @@ class GeneratorLikeTemplate(InjectionTemplate):
 
         :return:
         """
-        return self.P_prof.astype(complex)
+        return self.P_prof.toarray().astype(complex)
 
 
 class ShuntLikeTemplate(InjectionTemplate):
@@ -454,17 +436,11 @@ class ShuntLikeTemplate(InjectionTemplate):
                  bus: Union[Bus, None],
                  cn: Union[ConnectivityNode, None],
                  active: bool,
-                 active_prof: Union[Vec, None],
                  G: float,
-                 G_prof,
                  B: float,
-                 B_prof,
                  G0: float,
-                 G0_prof,
                  B0: float,
-                 B0_prof,
                  Cost: float,
-                 Cost_prof: Union[Vec, None],
                  mttf: float,
                  mttr: float,
                  capex: float,
@@ -479,9 +455,7 @@ class ShuntLikeTemplate(InjectionTemplate):
         :param bus:
         :param cn:
         :param active:
-        :param active_prof:
         :param Cost:
-        :param Cost_prof:
         :param mttf:
         :param mttr:
         :param capex:
@@ -497,9 +471,7 @@ class ShuntLikeTemplate(InjectionTemplate):
                                    bus=bus,
                                    cn=cn,
                                    active=active,
-                                   active_prof=active_prof,
                                    Cost=Cost,
-                                   Cost_prof=Cost_prof,
                                    mttf=mttf,
                                    mttr=mttr,
                                    capex=capex,
@@ -508,16 +480,16 @@ class ShuntLikeTemplate(InjectionTemplate):
                                    device_type=device_type)
 
         self.G = G
-        self.G_prof = G_prof
+        self.G_prof = Profile()
 
         self.B = B
-        self.B_prof = B_prof
+        self.B_prof = Profile()
 
         self.G0 = G0
-        self.G0_prof = G0_prof
+        self.G0_prof = Profile()
 
         self.B0 = B0
-        self.B0_prof = B0_prof
+        self.B0_prof = Profile()
 
         self.register(key='G', units='MW', tpe=float, definition='Active power', profile_name='G_prof')
         self.register(key='B', units='MVAr', tpe=float, definition='Reactive power', profile_name='B_prof')
@@ -581,14 +553,14 @@ class ShuntLikeTemplate(InjectionTemplate):
             ax_2 = fig.add_subplot(212, sharex=ax_1)
 
             # G
-            y = self.G_prof
+            y = self.G_prof.toarray()
             df = pd.DataFrame(data=y, index=time, columns=[self.name])
             ax_1.set_title('Conductance power', fontsize=14)
             ax_1.set_ylabel('MW', fontsize=11)
             df.plot(ax=ax_1)
 
             # B
-            y = self.B_prof
+            y = self.B_prof.toarray()
             df = pd.DataFrame(data=y, index=time, columns=[self.name])
             ax_2.set_title('Susceptance power', fontsize=14)
             ax_2.set_ylabel('MVAr', fontsize=11)

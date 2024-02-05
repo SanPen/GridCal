@@ -21,32 +21,6 @@ from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceTyp
 
 
 class TransformerType(EditableDevice):
-    """
-    Arguments:
-
-        **hv_nominal_voltage** (float, 0.0): Primary side nominal voltage in kV (tied to the Branch's `bus_from`)
-
-        **lv_nominal_voltage** (float, 0.0): Secondary side nominal voltage in kV (tied to the Branch's `bus_to`)
-
-        **nominal_power** (float, 0.0): Transformer nominal apparent power in MVA
-
-        **copper_losses** (float, 0.0): Copper losses in kW (also known as short circuit power)
-
-        **iron_losses** (float, 0.0): Iron losses in kW (also known as no-load power)
-
-        **no_load_current** (float, 0.0): No load current in %
-
-        **short_circuit_voltage** (float, 0.0): Short circuit voltage in %
-
-        **gr_hv1** (float, 0.5): Resistive contribution to the primary side in per unit (at the Branch's `bus_from`)
-
-        **gx_hv1** (float, 0.5): Reactive contribution to the primary side in per unit (at the Branch's `bus_from`)
-
-        **name** (str, "TransformerType"): Name of the type
-
-        **tpe** (BranchType, BranchType.Transformer): Device type enumeration
-
-    """
 
     def __init__(self,
                  hv_nominal_voltage=0.0,
@@ -58,7 +32,8 @@ class TransformerType(EditableDevice):
                  short_circuit_voltage=0.0,
                  gr_hv1=0.5,
                  gx_hv1=0.5,
-                 name='TransformerType', idtag=None):
+                 name='TransformerType',
+                 idtag=None):
         """
         Transformer template from the short circuit study
         :param hv_nominal_voltage: Nominal voltage of the high voltage side in kV

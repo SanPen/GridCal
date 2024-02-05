@@ -55,11 +55,8 @@ class Switch(ParentBranch):
                               cn_from=cn_from,
                               cn_to=cn_to,
                               active=active,
-                              active_prof=active_prof,
                               rate=rate,
-                              rate_prof=None,
                               contingency_factor=contingency_factor,
-                              contingency_factor_prof=None,
                               contingency_enabled=True,
                               monitor_loading=True,
                               mttf=0.0,
@@ -68,7 +65,6 @@ class Switch(ParentBranch):
                               capex=0,
                               opex=0,
                               Cost=0,
-                              Cost_prof=None,
                               device_type=DeviceType.SwitchDevice)
 
         # List of measurements
@@ -77,8 +73,6 @@ class Switch(ParentBranch):
         # total impedance and admittance in p.u.
         self.R = r
         self.X = x
-
-        self.active_prof = active_prof
 
         self.register(key='R', units='Ohm/km', tpe=float, definition='Positive-sequence resistance')
         self.register(key='X', units='Ohm/km', tpe=float, definition='Positive-sequence reactance')

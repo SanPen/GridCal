@@ -37,8 +37,8 @@ class VSC(ParentBranch):
                  control_mode: ConverterControlType = ConverterControlType.type_0_free,
                  Pfset=0.0, Qfset=0.0, Vac_set=1.0, Vdc_set=1.0,
                  alpha1=0.0001, alpha2=0.015, alpha3=0.2,
-                 mttf=0, mttr=0, cost=100, cost_prof=None, rate_prof=None, active_prof=None, contingency_factor=1.0,
-                 contingency_enabled=True, monitor_loading=True, contingency_factor_prof=None,
+                 mttf=0, mttr=0, cost=100, contingency_factor=1.0,
+                 contingency_enabled=True, monitor_loading=True,
                  r0=0.0001, x0=0.05, r2=0.0001, x2=0.05,
                  capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned):
         """
@@ -75,13 +75,9 @@ class VSC(ParentBranch):
         :param mttf:
         :param mttr:
         :param cost:
-        :param cost_prof:
-        :param rate_prof:
-        :param active_prof:
         :param contingency_factor:
         :param contingency_enabled:
         :param monitor_loading:
-        :param contingency_factor_prof:
         :param r0:
         :param x0:
         :param r2:
@@ -100,11 +96,8 @@ class VSC(ParentBranch):
                               cn_from=None,
                               cn_to=None,
                               active=active,
-                              active_prof=active_prof,
                               rate=rate,
-                              rate_prof=rate_prof,
                               contingency_factor=contingency_factor,
-                              contingency_factor_prof=contingency_factor_prof,
                               contingency_enabled=contingency_enabled,
                               monitor_loading=monitor_loading,
                               mttf=mttf,
@@ -113,7 +106,6 @@ class VSC(ParentBranch):
                               capex=capex,
                               opex=opex,
                               Cost=cost,
-                              Cost_prof=cost_prof,
                               device_type=DeviceType.VscDevice)
 
         # the VSC must only connect from an DC to a AC bus
@@ -273,13 +265,6 @@ class VSC(ParentBranch):
         Get json dictionary
         :return:
         """
-
-        if self.active_prof is not None:
-            active_prof = self.active_prof.tolist()
-            rate_prof = self.rate_prof.tolist()
-        else:
-            active_prof = list()
-            rate_prof = list()
 
         modes = {ConverterControlType.type_0_free: 0,
                  ConverterControlType.type_I_1: 1,

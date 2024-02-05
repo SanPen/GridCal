@@ -21,11 +21,12 @@ import numpy as np
 from typing import Tuple, Union
 from matplotlib import pyplot as plt
 
-from GridCalEngine.basic_structures import Logger, Vec, BoolVec
+from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Core.Devices.Substation.bus import Bus
 from GridCalEngine.Core.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.enumerations import BuildStatus
 from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceType
+from GridCalEngine.Core.Devices.profile import Profile
 
 
 class ParentBranch(EditableDevice):
@@ -43,11 +44,8 @@ class ParentBranch(EditableDevice):
                  cn_from: Union[ConnectivityNode, None],
                  cn_to: Union[ConnectivityNode, None],
                  active: bool,
-                 active_prof: BoolVec,
                  rate: float,
-                 rate_prof: Vec,
                  contingency_factor: float,
-                 contingency_factor_prof: Vec,
                  contingency_enabled: bool,
                  monitor_loading: bool,
                  mttf: float,
@@ -56,7 +54,6 @@ class ParentBranch(EditableDevice):
                  capex: float,
                  opex: float,
                  Cost: float,
-                 Cost_prof: Vec,
                  device_type: DeviceType):
         """
 
@@ -68,11 +65,8 @@ class ParentBranch(EditableDevice):
         :param cn_from: Name of the connectivity node at the "from" side
         :param cn_to: Name of the connectivity node at the "to" side
         :param active: Is active?
-        :param active_prof: Active profile
         :param rate: Branch rating (MVA)
-        :param rate_prof: profile of rates
         :param contingency_factor: Factor to multiply the rating in case of contingency
-        :param contingency_factor_prof: contingency factor profile
         :param contingency_enabled: Enabled contingency (Legacy, better use contingency objects)
         :param monitor_loading: Monitor loading (Legacy)
         :param mttf: Mean time to failure
@@ -81,7 +75,6 @@ class ParentBranch(EditableDevice):
         :param capex: Cost of investment. (e/MW)
         :param opex: Cost of operation. (e/MWh)
         :param Cost: Cost of overloads. Used in OPF (e/MWh)
-        :param Cost_prof: Cost of overload proile
         :param device_type: device_type (passed on)
         """
 
@@ -99,10 +92,7 @@ class ParentBranch(EditableDevice):
         self.cn_to = cn_to
 
         self.active = active
-        self.active_prof = active_prof
-
-        # List of measurements
-        self.measurements = list()
+        self.active_prof = Profile()
 
         self.contingency_enabled: bool = contingency_enabled
 
@@ -114,7 +104,7 @@ class ParentBranch(EditableDevice):
 
         self.Cost = Cost
 
-        self.Cost_prof = Cost_prof
+        self.Cost_prof = Profile()
 
         self.capex = capex
 
@@ -124,10 +114,10 @@ class ParentBranch(EditableDevice):
 
         # line rating in MVA
         self.rate = rate
-        self.rate_prof = rate_prof
+        self.rate_prof = Profile()
 
         self.contingency_factor = contingency_factor
-        self.contingency_factor_prof = contingency_factor_prof
+        self.contingency_factor_prof = Profile()
 
         # List of measurements
         self.measurements = list()

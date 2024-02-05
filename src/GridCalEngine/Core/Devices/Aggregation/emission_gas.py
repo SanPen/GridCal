@@ -18,7 +18,8 @@
 
 from typing import Union
 from GridCalEngine.basic_structures import Vec
-from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceType, GCProp
+from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceType
+from GridCalEngine.Core.Devices.profile import Profile
 
 
 class EmissionGas(EditableDevice):
@@ -28,7 +29,6 @@ class EmissionGas(EditableDevice):
                  code: str = '',
                  idtag: Union[str, None] = None,
                  cost: float = 0.0,
-                 cost_prof: Union[Vec, None] = None,
                  color: Union[str, None] = None):
         """
         Emission gas object
@@ -36,7 +36,6 @@ class EmissionGas(EditableDevice):
         :param code: secondary id
         :param idtag: UUID code
         :param cost: cost per tonn (e/t)
-        :param cost_prof: profile of costs
         :param color: hexadecimal color string (i.e. #AA00FF)
         """
         EditableDevice.__init__(self,
@@ -47,7 +46,7 @@ class EmissionGas(EditableDevice):
 
         self.cost = cost
 
-        self.cost_prof = cost_prof
+        self.cost_prof = Profile()
 
         self.color = color if color is not None else self.rnd_color()
 

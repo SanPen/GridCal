@@ -17,14 +17,15 @@
 from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.enumerations import BuildStatus
 from GridCalEngine.Core.Devices.Injections.injection_template import ShuntLikeTemplate
+from GridCalEngine.Core.Devices.profile import Profile
 
 
 class Shunt(ShuntLikeTemplate):
 
     def __init__(self, name='shunt', idtag=None, code='',
-                 G=0.0, B=0.0, G_prof=None, B_prof=None, active=True, active_prof=None,
+                 G=0.0, B=0.0, active=True,
                  controlled=False, Bmin=0.0, Bmax=0.0, vset=1.0, mttf=0.0, mttr=0.0,
-                 G0=0, B0=0, G0_prof=None, B0_prof=None,
+                 G0=0, B0=0,
                  capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned):
         """
 
@@ -33,10 +34,7 @@ class Shunt(ShuntLikeTemplate):
         :param code:
         :param G:
         :param B:
-        :param G_prof:
-        :param B_prof:
         :param active:
-        :param active_prof:
         :param controlled:
         :param Bmin:
         :param Bmax:
@@ -45,8 +43,6 @@ class Shunt(ShuntLikeTemplate):
         :param mttr:
         :param G0:
         :param B0:
-        :param G0_prof:
-        :param B0_prof:
         :param capex:
         :param opex:
         :param build_status:
@@ -59,17 +55,11 @@ class Shunt(ShuntLikeTemplate):
                                    bus=None,
                                    cn=None,
                                    active=active,
-                                   active_prof=active_prof,
                                    G=G,
-                                   G_prof=G_prof,
                                    B=B,
-                                   B_prof=B_prof,
                                    G0=G0,
-                                   G0_prof=G0_prof,
                                    B0=B0,
-                                   B0_prof=B0_prof,
                                    Cost=0.0,
-                                   Cost_prof=None,
                                    mttf=mttf,
                                    mttr=mttr,
                                    capex=capex,
@@ -89,29 +79,6 @@ class Shunt(ShuntLikeTemplate):
         self.register(key='Bmax', units='MVAr', tpe=float, definition='Reactive power max control value at V=1.0 p.u.')
         self.register(key='Vset', units='p.u.', tpe=float,
                       definition='Set voltage. This is used for controlled shunts.')
-
-    def copy(self):
-        """
-        Copy of this object
-        :return: a copy of this object
-        """
-        shu = Shunt(name=self.name,
-                    G=self.G,
-                    B=self.B,
-                    G_prof=self.G_prof,
-                    B_prof=self.B_prof,
-                    G0=self.G0,
-                    B0=self.B0,
-                    G0_prof=self.G0_prof,
-                    B0_prof=self.B0_prof,
-                    active=self.active,
-                    active_prof=self.active_prof,
-                    Bmax=self.Bmax,
-                    Bmin=self.Bmin,
-                    vset=self.Vset,
-                    mttf=self.mttf,
-                    mttr=self.mttr)
-        return shu
 
     def get_properties_dict(self, version=3):
         """

@@ -16,6 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from typing import Union
 from GridCalEngine.basic_structures import Vec
+from GridCalEngine.Core.Devices.profile import Profile
 from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceType
 
 
@@ -25,7 +26,6 @@ class Fuel(EditableDevice):
                  code='',
                  idtag: Union[str, None] = None,
                  cost: float = 0.0,
-                 cost_prof: Union[Vec, None] = None,
                  color: Union[str, None] = None):
         """
         Fuel
@@ -33,7 +33,6 @@ class Fuel(EditableDevice):
         :param code: secondary id
         :param idtag: UUID code
         :param cost: cost of the fuel per ton (e/t)
-        :param cost_prof: profile of costs
         :param color: hexadecimal color string (i.e. #AA00FF)
         """
         EditableDevice.__init__(self,
@@ -44,7 +43,7 @@ class Fuel(EditableDevice):
 
         self.cost = cost
 
-        self.cost_prof = cost_prof
+        self.cost_prof = Profile()
 
         self.color = color if color is not None else self.rnd_color()
 

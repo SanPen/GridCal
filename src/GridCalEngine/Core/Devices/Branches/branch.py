@@ -26,6 +26,7 @@ from GridCalEngine.Core.Devices.Branches.templates.parent_branch import ParentBr
 from GridCalEngine.Core.Devices.Branches.tap_changer import TapChanger
 from GridCalEngine.Core.Devices.Branches.transformer import Transformer2W
 from GridCalEngine.Core.Devices.Branches.line import Line
+from GridCalEngine.Core.Devices.profile import Profile
 
 from GridCalEngine.Core.Devices.editable_device import DeviceType
 
@@ -61,7 +62,6 @@ class BranchType(Enum):
     @classmethod
     def list(cls):
         return list(map(lambda c: c.value, cls))
-
 
 
 class BranchTemplate:
@@ -152,11 +152,8 @@ class Branch(ParentBranch):
                               cn_from=None,
                               cn_to=None,
                               active=active,
-                              active_prof=None,
                               rate=rate,
-                              rate_prof=None,
                               contingency_factor=1.0,
-                              contingency_factor_prof=None,
                               contingency_enabled=True,
                               monitor_loading=True,
                               mttf=mttf,
@@ -165,7 +162,6 @@ class Branch(ParentBranch):
                               capex=0.0,
                               opex=0.0,
                               Cost=cost,
-                              Cost_prof=None,
                               device_type=DeviceType.BranchDevice)
 
         # List of measurements
@@ -191,8 +187,7 @@ class Branch(ParentBranch):
         # Conductor base and operating temperatures in ºC
         self.temp_base = temp_base
         self.temp_oper = temp_oper
-
-        self.temp_oper_prof = None
+        self.temp_oper_prof = Profile()
 
         # Conductor thermal constant (1/ºC)
         self.alpha = alpha
@@ -213,7 +208,7 @@ class Branch(ParentBranch):
         # branch rating in MVA
         self.rate = rate
 
-        self.rate_prof = None
+        self.rate_prof = Profile()
 
         # branch type: Line, Transformer, etc...
         self.branch_type = branch_type

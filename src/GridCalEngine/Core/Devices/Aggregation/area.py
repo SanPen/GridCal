@@ -22,7 +22,8 @@ from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceTyp
 
 class GenericAreaGroup(EditableDevice):
 
-    def __init__(self, name='', code='', idtag: Union[str, None] = None, device_type=DeviceType.GenericArea, latitude=0.0, longitude=0.0):
+    def __init__(self, name='', code='', idtag: Union[str, None] = None,
+                 device_type=DeviceType.GenericArea, latitude=0.0, longitude=0.0):
         """
 
         :param name:

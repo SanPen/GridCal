@@ -1,4 +1,3 @@
-
 # GridCal
 # Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
@@ -16,7 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from typing import Union, Dict, Tuple
+from typing import Union, Dict, Tuple, List
 import numpy as np
 import numba as nb
 from GridCalEngine.basic_structures import Numeric, NumericVec, IntVec
@@ -105,12 +104,13 @@ def check_if_sparse(arr: Union[NumericVec], sparsity: float = 0.8) -> Tuple[bool
         # it is sparse
         return True, max_val
 
+
 class Profile:
     """
     Profile
     """
 
-    def __init__(self, arr: Union[None, NumericVec], sparsity: int = 0.8):
+    def __init__(self, arr: Union[None, NumericVec] = None, sparsity: int = 0.8):
 
         self._is_sparse: bool = False
 
@@ -119,6 +119,8 @@ class Profile:
         self._dense_array: Union[NumericVec, None] = None
 
         self._sparsity: float = sparsity
+
+        self._dtype = float  # float by default
 
         if arr is not None:
             self.set(arr=arr)
@@ -180,14 +182,17 @@ class Profile:
                 self._sparse_array.create(size=len(arr),
                                           default_value=base,
                                           data=data_map)
+                self._dtype = type(base)
             else:
                 self._is_sparse = False
                 self._dense_array = arr
+                self._dtype = arr.dtype
         else:
             self._is_sparse = False
             self._dense_array = arr
+            self._dtype = arr.dtype
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: int):
         """
         Get item
         :param key: index position
@@ -202,7 +207,7 @@ class Profile:
         else:
             raise TypeError("Key must be an integer")
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: int, value):
         """
         Set item
         :param key: item index
@@ -220,9 +225,50 @@ class Profile:
         else:
             raise TypeError("Key must be an integer")
 
+    def resize(self, n: int):
+        """
+        Resize the profile
+        :param n: new size
+        """
+        if isinstance(n, int):
+
+            if self._is_sparse:
+                self._sparse_array.resize(n)
+            else:
+                self._dense_array.resize(n)
+        else:
+            raise TypeError("The size must be an integer")
+
+    def resample(self, indices: IntVec):
+        """
+        Resample this profile in-place
+        :param indices: new indices
+        """
+        if self._is_sparse:
+            self._sparse_array.resample(indices=indices)
+        else:
+            self._dense_array = self._dense_array[indices]
+
     def size(self) -> int:
         """
         Get the size
         :return: integer
         """
         return self._sparse_array.size() if self._is_sparse else len(self._dense_array)
+
+    def toarray(self) -> NumericVec:
+        """
+        Get dense numpy array representation
+        :return: NumericVec
+        """
+        if self._is_sparse:
+            return self._sparse_array.toarray()
+        else:
+            return self._dense_array
+
+    def tolist(self) -> List[Union[int, float]]:
+        """
+        Get dense list representation
+        :return: List[Union[int, float]]
+        """
+        return self.toarray().tolist()

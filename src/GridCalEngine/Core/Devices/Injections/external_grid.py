@@ -18,12 +18,13 @@ import pandas as pd
 from matplotlib import pyplot as plt
 from GridCalEngine.enumerations import DeviceType, BuildStatus, ExternalGridMode
 from GridCalEngine.Core.Devices.Injections.injection_template import LoadLikeTemplate
+from GridCalEngine.Core.Devices.profile import Profile
 
 
 class ExternalGrid(LoadLikeTemplate):
 
     def __init__(self, name='External grid', idtag=None, code='', active=True, substituted_device_id: str = '',
-                 Vm=1.0, Va=0.0, Vm_prof=None, Va_prof=None, P=0.0, Q=0.0, P_prof=None, Q_prof=None,
+                 Vm=1.0, Va=0.0, P=0.0, Q=0.0,
                  mttf=0.0, mttr=0.0, mode: ExternalGridMode = ExternalGridMode.PQ,
                  capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned):
         """
@@ -36,12 +37,8 @@ class ExternalGrid(LoadLikeTemplate):
         :param substituted_device_id:
         :param Vm:
         :param Va:
-        :param Vm_prof:
-        :param Va_prof:
         :param P:
         :param Q:
-        :param P_prof:
-        :param Q_prof:
         :param mttf:
         :param mttr:
         :param mode:
@@ -57,13 +54,9 @@ class ExternalGrid(LoadLikeTemplate):
                                   bus=None,
                                   cn=None,
                                   active=active,
-                                  active_prof=None,
                                   P=P,
-                                  P_prof=P_prof,
                                   Q=Q,
-                                  Q_prof=Q_prof,
                                   Cost=0,
-                                  Cost_prof=None,
                                   mttf=mttf,
                                   mttr=mttr,
                                   capex=capex,
@@ -78,8 +71,8 @@ class ExternalGrid(LoadLikeTemplate):
         # Impedance in equivalent MVA
         self.Vm = Vm
         self.Va = Va
-        self.Vm_prof = Vm_prof
-        self.Va_prof = Va_prof
+        self.Vm_prof = Profile()
+        self.Va_prof = Profile()
 
         self.register(key='mode', units='', tpe=ExternalGridMode,
                       definition='Operation mode of the external grid (voltage or load)')
@@ -155,21 +148,23 @@ class ExternalGrid(LoadLikeTemplate):
             ax_2 = fig.add_subplot(212)
 
             if self.mode == ExternalGridMode.VD:
-                y1 = self.Vm_prof
+                y1 = self.Vm_prof.toarray()
                 title_1 = 'Voltage module'
                 units_1 = 'p.u'
 
-                y2 = self.Va_prof
+                y2 = self.Va_prof.toarray()
                 title_2 = 'Voltage angle'
                 units_2 = 'radians'
+
             elif self.mode == ExternalGridMode.PQ:
-                y1 = self.P_prof
+                y1 = self.P_prof.toarray()
                 title_1 = 'Active Power'
                 units_1 = 'MW'
 
-                y2 = self.Q_prof
+                y2 = self.Q_prof.toarray()
                 title_2 = 'Reactive power'
                 units_2 = 'MVAr'
+
             else:
                 raise Exception('Unrecognised external grid mode: ' + str(self.mode))
 

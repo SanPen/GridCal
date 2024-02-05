@@ -18,6 +18,7 @@ import pandas as pd
 from matplotlib import pyplot as plt
 from GridCalEngine.enumerations import DeviceType, BuildStatus
 from GridCalEngine.Core.Devices.Injections.injection_template import LoadLikeTemplate
+from GridCalEngine.Core.Devices.profile import Profile
 
 
 class Load(LoadLikeTemplate):
@@ -26,7 +27,6 @@ class Load(LoadLikeTemplate):
     """
 
     def __init__(self, name='Load', idtag=None, code='', G=0.0, B=0.0, Ir=0.0, Ii=0.0, P=0.0, Q=0.0, Cost=1200.0,
-                 G_prof=None, B_prof=None, Ir_prof=None, Ii_prof=None, P_prof=None, Q_prof=None,
                  active=True, mttf=0.0, mttr=0.0, capex=0, opex=0,
                  build_status: BuildStatus = BuildStatus.Commissioned):
         """
@@ -43,12 +43,6 @@ class Load(LoadLikeTemplate):
         :param P: Active power in MW
         :param Q: Reactive power in MVAr
         :param Cost: Cost of load shedding
-        :param G_prof: conductance profile in equivalent MW
-        :param B_prof: susceptance profile in equivalent MVAr
-        :param Ir_prof: real current profile in equivalent MW
-        :param Ii_prof: imaginary current profile in equivalent MVAr
-        :param P_prof: active power profile in equivalent MW
-        :param Q_prof: reactive power profile in equivalent MVAr
         :param active: Is the load active?
         :param mttf: Mean time to failure in hours
         :param mttr: Mean time to recovery in hours
@@ -60,13 +54,9 @@ class Load(LoadLikeTemplate):
                                   bus=None,
                                   cn=None,
                                   active=active,
-                                  active_prof=None,
                                   P=P,
-                                  P_prof=P_prof,
                                   Q=Q,
-                                  Q_prof=Q_prof,
                                   Cost=Cost,
-                                  Cost_prof=None,
                                   mttf=mttf,
                                   mttr=mttr,
                                   capex=capex,
@@ -79,10 +69,10 @@ class Load(LoadLikeTemplate):
         self.Ir = Ir
         self.Ii = Ii
 
-        self.G_prof = G_prof
-        self.B_prof = B_prof
-        self.Ir_prof = Ir_prof
-        self.Ii_prof = Ii_prof
+        self.G_prof = Profile()
+        self.B_prof = Profile()
+        self.Ir_prof = Profile()
+        self.Ii_prof = Profile()
 
         self.register(key='Ir', units='MW', tpe=float,
                       definition='Active power of the current component at V=1.0 p.u.', profile_name='Ir_prof')
@@ -92,44 +82,6 @@ class Load(LoadLikeTemplate):
                       definition='Active power of the impedance component at V=1.0 p.u.', profile_name='G_prof')
         self.register(key='B', units='MVAr', tpe=float,
                       definition='Reactive power of the impedance component at V=1.0 p.u.', profile_name='B_prof')
-
-    def copy(self):
-
-        load = Load()
-
-        load.name = self.name
-
-        load.active = self.active
-        load.active_prof = self.active_prof
-
-        # Impedance (MVA)
-        load.G = self.G
-        load.B = self.B
-
-        # Current (MVA)
-        load.Ir = self.Ir
-        load.Ii = self.Ii
-
-        # Power (MVA)
-        load.P = self.P
-        load.Q = self.Q
-
-        # Impedance (MVA)
-        load.G_prof = self.G_prof
-        load.B_prof = self.B_prof
-
-        # Current (MVA)
-        load.Ir_prof = self.Ir_prof
-        load.Ii_prof = self.Ii_prof
-
-        # Power (MVA)
-        load.P_prof = self.P_prof
-        load.Q_prof = self.Q_prof
-
-        load.mttf = self.mttf
-        load.mttr = self.mttr
-
-        return load
 
     def get_properties_dict(self, version=3):
         """
@@ -213,14 +165,14 @@ class Load(LoadLikeTemplate):
             ax_2 = fig.add_subplot(212, sharex=ax_1)
 
             # P
-            y = self.P_prof
+            y = self.P_prof.toarray()
             df = pd.DataFrame(data=y, index=time, columns=[self.name])
             ax_1.set_title('Active power', fontsize=14)
             ax_1.set_ylabel('MW', fontsize=11)
             df.plot(ax=ax_1)
 
             # Q
-            y = self.Q_prof
+            y = self.Q_prof.toarray()
             df = pd.DataFrame(data=y, index=time, columns=[self.name])
             ax_2.set_title('Reactive power', fontsize=14)
             ax_2.set_ylabel('MVAr', fontsize=11)

@@ -21,6 +21,8 @@ from typing import List, Dict, AnyStr, Any, Optional, Union, Type, Tuple
 from GridCalEngine.enumerations import (DeviceType, TimeFrame, BuildStatus, WindingsConnection, TransformerControlType,
                                         ConverterControlType)
 from GridCalEngine.basic_structures import Vec, IntVec, BoolVec
+from GridCalEngine.Core.Devices.profile import Profile
+
 
 # types that can be assigned to a GridCal property
 GCPROP_TYPES = Union[
@@ -294,7 +296,9 @@ class EditableDevice:
 
         if profile_name != '':
             assert (hasattr(self, profile_name))  # the profile property must exist, this avoids bugs in registering
+            assert (isinstance(getattr(self, profile_name), Profile))
             self.properties_with_profile[key] = profile_name
+
 
         if not editable:
             self.non_editable_properties.append(key)
@@ -493,12 +497,14 @@ class EditableDevice:
         :param arr_in_pu: is the array in per-unit?
         """
         # get the value of the magnitude
-        x = getattr(self, magnitude)
+        snapshot_value = getattr(self, magnitude)
         tpe = self.registered_properties[magnitude].tpe
+        val = Profile()
         if arr_in_pu:
-            val = arr * x
+            val.set(arr * snapshot_value)
         else:
-            val = np.ones(len(index), dtype=tpe) * x if arr is None else arr
+            val.create_sparse(size=len(index), default_value=snapshot_value)
+            val = np.ones(len(index), dtype=tpe) * snapshot_value if arr is None else arr
 
         # set the profile variable associated with the magnitude
         setattr(self, self.properties_with_profile[magnitude], val)
@@ -521,7 +527,7 @@ class EditableDevice:
                     # print(self.name, ': created profile for ' + prof_attr)
                     self.create_profile(magnitude=magnitude, index=index)
                 else:
-                    if profile.shape[0] != len(index):
+                    if profile.size() != len(index):
                         # the length of the profile is different from the length of the master profile
                         # print(self.name, ': created profile for ' + prof_attr)
                         self.create_profile(magnitude=magnitude, index=index)
@@ -537,7 +543,7 @@ class EditableDevice:
         Delete the object profiles (set all to None)
         """
         for magnitude in self.properties_with_profile.keys():
-            setattr(self, self.properties_with_profile[magnitude], None)
+            setattr(self, self.properties_with_profile[magnitude], Profile())
 
     def set_profile_values(self, t):
         """
@@ -545,10 +551,10 @@ class EditableDevice:
         :param t: time index (integer)
         """
         for magnitude in self.properties_with_profile.keys():
-            profile = getattr(self, self.properties_with_profile[magnitude])
+            profile: Profile = getattr(self, self.properties_with_profile[magnitude])
             setattr(self, magnitude, profile[t])
 
-    def get_profile(self, magnitude: str) -> Union[Vec, IntVec, BoolVec]:
+    def get_profile(self, magnitude: str) -> Union[Profile, None]:
         """
         Get the profile of a property name
         :param magnitude: name of the property
