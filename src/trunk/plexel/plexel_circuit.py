@@ -368,7 +368,7 @@ class PlexelObject:
                  cls: ClassEnum = ClassEnum.System,
                  guid: str = "",
                  name: str = "",
-                 cat: "PlexelObject" = None,
+                 cat: "PlexelCategory" = None,
                  desc: str = ""):
         """
         Init PlexelObject
@@ -381,7 +381,7 @@ class PlexelObject:
         self.class_: ClassEnum = cls
         self.GUID: str = guid
         self.name: str = name
-        self.category: "PlexelObject" = cat
+        self.category: "PlexelCategory" = cat
         self.description: str = desc
 
     def get_key(self) -> str:
@@ -395,7 +395,7 @@ class PlexelObject:
         return [self.class_.value,
                 self.GUID,
                 self.name,
-                self.category.name if self.category is not None else '',
+                self.category.category if self.category is not None else '',
                 self.description]
 
 
@@ -424,7 +424,7 @@ class PlexelCategory:
         self.rank: int = rank
 
     def get_key(self) -> str:
-        return self.category
+        return self.class_.value + '_' + self.category
 
     def get_data(self) -> List[str]:
         """
@@ -617,6 +617,17 @@ class PlexelList:
             data.append(item.get_data())
         return pd.DataFrame(data, columns=hdr)
 
+    def get_filtered_df(self, column, value):
+        """
+        Get DataFrame of the table list
+        Filtered by a specific column
+        :param column: the name of the column
+        :param value: the value to filter by
+        :return: a Dataframe
+        """
+        df = self.get_df()
+        return df[df[column] == value]
+
 
 class PlexelBase:
     """
@@ -625,14 +636,15 @@ class PlexelBase:
     """
 
     def __init__(self):
-        self.categories: List[PlexelCategory] = list()
+        self.categories = PlexelList(PlexelCategory)
         self.memberships = PlexelList(PlexelMembership)
         self.objects = PlexelList(PlexelObject)
         self.attributes: List[PlexelAttribute] = list()
         self.properties = PlexelList(PlexelProperty)
 
     def add_category(self, child_class_id, category):
-        pass
+        cat = PlexelCategory(cls=child_class_id, category_name=category)
+        self.categories.append(cat)
 
     def add_membership(self, parent_obj, child_obj, collection):
         memb = PlexelMembership(parent_obj=parent_obj, child_obj=child_obj, collection=collection)
@@ -652,30 +664,36 @@ class PlexelBase:
         :param category: PlexelCategory name. If it does not exist, it is created
         :param description:
         """
-        # TODO: add Object as a Category if not exists
-        # create category if it does not exist
-        self.add_category(child_class_id, category)
-
-        obj = PlexelObject(cls=child_class_id, name=child_name, desc=description)
+        obj = PlexelObject(cls=child_class_id, name=child_name, cat=category, desc=description)
         self.objects.append(obj)
 
     def add_zone(self, zone: dev.Zone):
-        # TODO: check if there are any missing fields
         # add the zone as an object
-        self.add_object(child_class_id=ClassEnum.Zone, child_name=zone.name, description=zone.name)
+        self.add_object(child_class_id=ClassEnum.Zone, child_name=zone.name, description=zone.code)
 
     def add_region(self, region: dev.Area):
-        # TODO: check if there are any missing fields
         # add the region as an object
-        self.add_object(child_class_id=ClassEnum.Region, child_name=region.name, description=region.name)
+        self.add_object(child_class_id=ClassEnum.Region, child_name=region.name)
 
     def add_node(self, node: dev.Bus, region: dev.Area, zone: dev.Zone):
         # TODO: check if there are any missing fields
         # create name following plexel format
         node_name = node.code + '_' + node.name + '_' + str(int(node.Vnom))
 
+        # group nodes by region (area)
+        cat_obj = PlexelCategory(cls=ClassEnum.Node, category_name=node.area.name)
+        # does category already exists?
+        if self.categories.length() == 0:
+            self.categories.append(cat_obj)
+        else:
+            if cat_obj.get_key() not in self.categories.get_keys():
+                node_cats = self.categories.get_filtered_df(column='class', value=ClassEnum.Node.value)
+                # add next ranking number available
+                cat_obj.rank = len(node_cats) + 1
+                self.categories.append(cat_obj)
+
         # add the node as an object
-        node_obj = PlexelObject(cls=ClassEnum.Node, name=node_name)
+        node_obj = PlexelObject(cls=ClassEnum.Node, name=node_name, cat=cat_obj)
         self.objects.append(node_obj)
 
         # add membership node <-> region
@@ -733,7 +751,7 @@ class PlexelBase:
             self.objects.get_df().to_excel(writer, index=False, sheet_name='Objects')
             self.memberships.get_df().to_excel(writer, index=False, sheet_name='Memberships')
             self.properties.get_df().to_excel(writer, index=False, sheet_name='Properties')
-            # self.categories.get_df().to_excel(ptr, sheet_name='categories')
+            self.categories.get_df().to_excel(writer, index=False, sheet_name='Categories')
             # self.attributes.get_df().to_excel(ptr, sheet_name='attributes')
 
 
@@ -745,15 +763,15 @@ def convert_gridcal_to_plexel(grid: MultiCircuit) -> PlexelBase:
     """
     plx = PlexelBase()
     # Add zones
-    for z in grid.zones:
+    for z in grid.get_zones():
         plx.add_zone(z)
 
     # Add gridcal areas as -> plexel regions
-    for a in grid.areas:
+    for a in grid.get_areas():
         plx.add_region(a)
 
     # Add gridcal buses as -> plexel nodes
-    for b in grid.buses:
+    for b in grid.get_buses():
         plx.add_node(node=b, region=b.area, zone=b.zone)
 
     print('Convert done!')
@@ -765,7 +783,8 @@ if __name__ == "__main__":
     import GridCalEngine.api as gce
 
     # fname = os.path.join("..", "..", "..", "Grids_and_profiles/grids/hydro_IEEE39_2.gridcal")
-    fname = os.path.join("..", "..", "..", "Grids_and_profiles/grids/IEEE 14 bus.raw")
+    # fname = os.path.join("..", "..", "..", "Grids_and_profiles/grids/IEEE 14 bus.raw")
+    fname = r'\\mornt4\DESRED\DPE-Planificacion\Plan_2025_2030\0_Datos_Escenario\Esquema_Electrico\Test 2_Red PEN\Propuesta_2026_v31_raw33.raw'
     out_file = r"plexel_export.xlsx"
 
     my_grid = gce.open_file(fname)
