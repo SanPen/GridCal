@@ -22,7 +22,6 @@ from GridCalEngine.Simulations.StateEstimation.state_estimation import solve_se_
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowResults, power_flow_post_process
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
-# from GridCalEngine.Core.Devices.measurement import MeasurementType
 from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.enumerations import SolverType
 
@@ -32,7 +31,7 @@ class StateEstimationInput:
     StateEstimationInput
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
         State estimation inputs constructor
         """
@@ -59,41 +58,23 @@ class StateEstimationInput:
         # Node voltage module measurements vector of pointers
         self.vm_m = list()
 
-        # nodes without power injection measurements
+        # nodes with power injection measurements
         self.p_inj_idx = list()
 
-        # Branches without power measurements
+        # Branches with power measurements
         self.p_flow_idx = list()
 
-        # nodes without reactive power injection measurements
+        # nodes with reactive power injection measurements
         self.q_inj_idx = list()
 
-        # Branches without reactive power measurements
+        # Branches with reactive power measurements
         self.q_flow_idx = list()
 
-        # Branches without current measurements
+        # Branches with current measurements
         self.i_flow_idx = list()
 
-        # nodes without voltage module measurements
+        # nodes with voltage module measurements
         self.vm_m_idx = list()
-
-    # def clear(self):
-    #     """
-    #     Clear
-    #     """
-    #     self.p_inj.clear()
-    #     self.p_flow.clear()
-    #     self.q_inj.clear()
-    #     self.q_flow.clear()
-    #     self.i_flow.clear()
-    #     self.vm_m.clear()
-    #
-    #     self.p_inj_idx.clear()
-    #     self.p_flow_idx.clear()
-    #     self.q_inj_idx.clear()
-    #     self.q_flow_idx.clear()
-    #     self.i_flow_idx.clear()
-    #     self.vm_m_idx.clear()
 
     def consolidate(self) -> Tuple[Vec, Vec]:
         """

@@ -21,7 +21,7 @@ from GridCalEngine.Core.Devices.Branches.templates.parent_branch import ParentBr
 from GridCalEngine.enumerations import DeviceType
 
 
-class Measurement(EditableDevice):
+class MeasurementTemplate(EditableDevice):
     """
     Measurement class
     """
@@ -54,97 +54,97 @@ class Measurement(EditableDevice):
         self.register("api_object", "", EditableDevice, "Value of the measurement")
 
 
-class PiMeasurement(Measurement):
+class PiMeasurement(MeasurementTemplate):
     """
     Measurement class
     """
 
     def __init__(self, value: float, uncertainty: float, api_obj: Bus, name="",
                  idtag: Union[str, None] = None):
-        Measurement.__init__(self,
-                             value=value,
-                             uncertainty=uncertainty,
-                             api_obj=api_obj,
-                             name=name,
-                             idtag=idtag,
-                             device_type=DeviceType.PiMeasurementDevice)
+        MeasurementTemplate.__init__(self,
+                                     value=value,
+                                     uncertainty=uncertainty,
+                                     api_obj=api_obj,
+                                     name=name,
+                                     idtag=idtag,
+                                     device_type=DeviceType.PiMeasurementDevice)
 
 
-class QiMeasurement(Measurement):
+class QiMeasurement(MeasurementTemplate):
     """
     Measurement class
     """
 
     def __init__(self, value: float, uncertainty: float, api_obj: Bus, name="",
                  idtag: Union[str, None] = None):
-        Measurement.__init__(self,
-                             value=value,
-                             uncertainty=uncertainty,
-                             api_obj=api_obj,
-                             name=name,
-                             idtag=idtag,
-                             device_type=DeviceType.QiMeasurementDevice)
+        MeasurementTemplate.__init__(self,
+                                     value=value,
+                                     uncertainty=uncertainty,
+                                     api_obj=api_obj,
+                                     name=name,
+                                     idtag=idtag,
+                                     device_type=DeviceType.QiMeasurementDevice)
 
 
-class VmMeasurement(Measurement):
+class VmMeasurement(MeasurementTemplate):
     """
     Measurement class
     """
 
     def __init__(self, value: float, uncertainty: float, api_obj: Bus, name="",
                  idtag: Union[str, None] = None):
-        Measurement.__init__(self,
-                             value=value,
-                             uncertainty=uncertainty,
-                             api_obj=api_obj,
-                             name=name,
-                             idtag=idtag,
-                             device_type=DeviceType.VmMeasurementDevice)
+        MeasurementTemplate.__init__(self,
+                                     value=value,
+                                     uncertainty=uncertainty,
+                                     api_obj=api_obj,
+                                     name=name,
+                                     idtag=idtag,
+                                     device_type=DeviceType.VmMeasurementDevice)
 
 
-class PfMeasurement(Measurement):
+class PfMeasurement(MeasurementTemplate):
     """
     Measurement class
     """
 
     def __init__(self, value: float, uncertainty: float, api_obj: ParentBranch, name="",
                  idtag: Union[str, None] = None):
-        Measurement.__init__(self,
-                             value=value,
-                             uncertainty=uncertainty,
-                             api_obj=api_obj,
-                             name=name,
-                             idtag=idtag,
-                             device_type=DeviceType.PfMeasurementDevice)
+        MeasurementTemplate.__init__(self,
+                                     value=value,
+                                     uncertainty=uncertainty,
+                                     api_obj=api_obj,
+                                     name=name,
+                                     idtag=idtag,
+                                     device_type=DeviceType.PfMeasurementDevice)
 
 
-class QfMeasurement(Measurement):
+class QfMeasurement(MeasurementTemplate):
     """
     Measurement class
     """
 
     def __init__(self, value: float, uncertainty: float, api_obj: ParentBranch, name="",
                  idtag: Union[str, None] = None):
-        Measurement.__init__(self,
-                             value=value,
-                             uncertainty=uncertainty,
-                             api_obj=api_obj,
-                             name=name,
-                             idtag=idtag,
-                             device_type=DeviceType.QfMeasurementDevice)
+        MeasurementTemplate.__init__(self,
+                                     value=value,
+                                     uncertainty=uncertainty,
+                                     api_obj=api_obj,
+                                     name=name,
+                                     idtag=idtag,
+                                     device_type=DeviceType.QfMeasurementDevice)
 
 
-class IfMeasurement(Measurement):
+class IfMeasurement(MeasurementTemplate):
     """
     Measurement class
     """
 
     def __init__(self, value: float, uncertainty: float, api_obj: ParentBranch, name="",
                  idtag: Union[str, None] = None):
-        Measurement.__init__(self,
-                             value=value,
-                             uncertainty=uncertainty,
-                             api_obj=api_obj,
-                             name=name,
-                             idtag=idtag,
-                             device_type=DeviceType.IfMeasurementDevice)
+        MeasurementTemplate.__init__(self,
+                                     value=value,
+                                     uncertainty=uncertainty,
+                                     api_obj=api_obj,
+                                     name=name,
+                                     idtag=idtag,
+                                     device_type=DeviceType.IfMeasurementDevice)
