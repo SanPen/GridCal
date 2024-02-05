@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from typing import Union, Dict
+from typing import Dict, Any
 import numpy as np
 from GridCalEngine.basic_structures import Numeric, NumericVec, IntVec
 
@@ -26,7 +26,7 @@ class SparseArray:
     SparseArray
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
 
         """
@@ -34,7 +34,7 @@ class SparseArray:
         self._size: int = 0
         self._map: Dict[int, Numeric] = dict()
 
-    def create(self, size: int, default_value: Numeric, data: Dict[int, Numeric] = dict()):
+    def create(self, size: int, default_value: Numeric, data: Dict[int, Numeric, None] = None):
         """
         Build sparse from definition
         :param size: size
@@ -43,7 +43,7 @@ class SparseArray:
         """
         self._default_value = default_value
         self._size = size
-        self._map = data
+        self._map = data if data is not None else dict()
 
     def create_from_array(self, array: NumericVec, default_value: Numeric):
         """
@@ -89,13 +89,13 @@ class SparseArray:
             else:
                 return val
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: int) -> Any:
         if isinstance(key, int):
-            return self.at(key)
+            return self.at(idx=key)
         else:
             raise TypeError("Key must be an integer")
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: int, value: float) -> None:
 
         if isinstance(key, int):
 

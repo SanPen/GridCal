@@ -1473,20 +1473,21 @@ class ProfilesModel(QtCore.QAbstractTableModel):
     """
     Class to populate a Qt table view with profiles from objects
     """
-    def __init__(self, multi_circuit, device_type: DeviceType, magnitude, format, parent, max_undo_states=100):
+    def __init__(self, multi_circuit, device_type: DeviceType, magnitude, data_format, parent, max_undo_states=100):
         """
 
-        Args:
-            multi_circuit: MultiCircuit instance
-            device_type: string with Load, StaticGenerator, etc...
-            magnitude: magnitude to display 'S', 'P', etc...
-            parent: Parent object: the QTableView object
+        :param multi_circuit: MultiCircuit instance
+        :param device_type: string with Load, StaticGenerator, etc...
+        :param magnitude: magnitude to display 'S', 'P', etc...
+        :param data_format:
+        :param parent: Parent object: the QTableView object
+        :param max_undo_states:
         """
         QtCore.QAbstractTableModel.__init__(self, parent)
 
         self.parent = parent
 
-        self.format = format
+        self.data_format = data_format
 
         self.circuit = multi_circuit
 
@@ -1498,11 +1499,7 @@ class ProfilesModel(QtCore.QAbstractTableModel):
 
         self.editable = True
 
-        self.r = len(self.circuit.time_profile)
-
         self.elements = self.circuit.get_elements_by_type(device_type)
-
-        self.c = len(self.elements)
 
         self.formatter = lambda x: "%.2f" % x
 
@@ -1510,29 +1507,29 @@ class ProfilesModel(QtCore.QAbstractTableModel):
         self.history = ObjectHistory(max_undo_states)
 
         # add the initial state
-        self.add_state(columns=range(self.columnCount()), action_name='initial')
+        # self.add_state(columns=range(self.columnCount()), action_name='initial')
 
         self.set_delegates()
 
-    def set_delegates(self):
+    def set_delegates(self) -> None:
         """
         Set the cell editor types depending on the attribute_types array
         :return:
         """
 
-        if self.format is bool:
+        if self.data_format is bool:
             delegate = ComboDelegate(self.parent, [True, False], ['True', 'False'])
             self.parent.setItemDelegate(delegate)
 
-        elif self.format is float:
+        elif self.data_format is float:
             delegate = FloatDelegate(self.parent)
             self.parent.setItemDelegate(delegate)
 
-        elif self.format is str:
+        elif self.data_format is str:
             delegate = TextDelegate(self.parent)
             self.parent.setItemDelegate(delegate)
 
-        elif self.format is complex:
+        elif self.data_format is complex:
             delegate = ComplexDelegate(self.parent)
             self.parent.setItemDelegate(delegate)
 
@@ -1549,7 +1546,7 @@ class ProfilesModel(QtCore.QAbstractTableModel):
 
         self.layoutChanged.emit()
 
-    def flags(self, index):
+    def flags(self, index: QtCore.QModelIndex) -> QtCore.Qt.ItemFlag:
         """
         Get the display mode
         :param index:
@@ -1561,23 +1558,23 @@ class ProfilesModel(QtCore.QAbstractTableModel):
         else:
             return QtCore.Qt.ItemFlag.ItemIsEnabled
 
-    def rowCount(self, parent=None):
+    def rowCount(self, parent: QtCore.QModelIndex = None) -> int:
         """
         Get number of rows
         :param parent:
         :return:
         """
-        return self.r
+        return len(self.circuit.time_profile)
 
-    def columnCount(self, parent=None):
+    def columnCount(self, parent: Union[None, QtCore.QModelIndex] = None) -> int:
         """
         Get number of columns
         :param parent:
         :return:
         """
-        return self.c
+        return len(self.elements)
 
-    def data(self, index, role=QtCore.Qt.ItemDataRole.DisplayRole):
+    def data(self, index: QtCore.QModelIndex, role: int = QtCore.Qt.ItemDataRole.DisplayRole) -> Union[str, None]:
         """
         Get the data to display
         :param index:
@@ -1586,13 +1583,18 @@ class ProfilesModel(QtCore.QAbstractTableModel):
         """
         if index.isValid():
             if role == QtCore.Qt.ItemDataRole.DisplayRole:
-                profile_property = self.elements[index.column()].properties_with_profile[self.magnitude]
-                array = getattr(self.elements[index.column()], profile_property)
-                return str(array[index.row()])
+                c = index.column()
+                r = index.row()
+                profile_attr_name = self.elements[c].properties_with_profile[self.magnitude]
+                profile = getattr(self.elements[c], profile_attr_name)
+                return str(profile[r])
 
         return None
 
-    def setData(self, index, value, role=QtCore.Qt.ItemDataRole.DisplayRole):
+    def setData(self,
+                index: QtCore.QModelIndex,
+                value: float,
+                role: QtCore.Qt.ItemDataRole = QtCore.Qt.ItemDataRole.DisplayRole) -> bool:
         """
         Set data by simple editor (whatever text)
         :param index:
@@ -1601,12 +1603,13 @@ class ProfilesModel(QtCore.QAbstractTableModel):
         :return:
         """
         c = index.column()
-        r = index.row()
         if c not in self.non_editable_indices:
-            profile_property = self.elements[c].properties_with_profile[self.magnitude]
-            getattr(self.elements[c], profile_property)[r] = value
+            r = index.row()
+            profile_attr_name = self.elements[index.column()].properties_with_profile[self.magnitude]
+            profile = getattr(self.elements[index.column()], profile_attr_name)
+            profile[r] = value
 
-            self.add_state(columns=[c], action_name='')
+            # self.add_state(columns=[c], action_name='')
         else:
             pass  # the column cannot be edited
 
@@ -1679,8 +1682,8 @@ class ProfilesModel(QtCore.QAbstractTableModel):
                         else:
                             print('Out of profile bounds')
 
-            if len(mod_cols) > 0:
-                self.add_state(mod_cols, 'paste')
+            # if len(mod_cols) > 0:
+            #     self.add_state(mod_cols, 'paste')
         else:
             # there are no elements
             pass

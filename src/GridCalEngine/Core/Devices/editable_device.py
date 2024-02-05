@@ -504,7 +504,6 @@ class EditableDevice:
             val.set(arr * snapshot_value)
         else:
             val.create_sparse(size=len(index), default_value=snapshot_value)
-            val = np.ones(len(index), dtype=tpe) * snapshot_value if arr is None else arr
 
         # set the profile variable associated with the magnitude
         setattr(self, self.properties_with_profile[magnitude], val)
@@ -530,7 +529,7 @@ class EditableDevice:
                     if profile.size() != len(index):
                         # the length of the profile is different from the length of the master profile
                         # print(self.name, ': created profile for ' + prof_attr)
-                        self.create_profile(magnitude=magnitude, index=index)
+                        profile.resize(n=len(index))
                     else:
                         # all ok
                         pass

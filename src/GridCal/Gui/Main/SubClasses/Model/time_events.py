@@ -94,8 +94,6 @@ class TimeEventsMain(ObjectsTableMain):
 
             self.display_profiles()
 
-            # self.set_up_profile_sliders()
-
             self.update_date_dependent_combos()
 
     def delete_profiles_structure(self):
@@ -292,7 +290,7 @@ class TimeEventsMain(ObjectsTableMain):
                     else:
                         raise Exception('Operation not supported: ' + str(operation))
 
-            model.add_state(mod_cols, 'linear combinations')
+            # model.add_state(mod_cols, 'linear combinations')
             model.update()
 
     def set_profile_as_linear_combination(self):
@@ -426,13 +424,12 @@ class TimeEventsMain(ObjectsTableMain):
                 mdl = gf.ProfilesModel(multi_circuit=self.circuit,
                                        device_type=dev_type,
                                        magnitude=magnitude,
-                                       format=mtype,
+                                       data_format=mtype,
                                        parent=self.ui.profiles_tableView)
             else:
                 mdl = None
 
             self.ui.profiles_tableView.setModel(mdl)
-
 
     def import_profiles_from_models(self):
         """

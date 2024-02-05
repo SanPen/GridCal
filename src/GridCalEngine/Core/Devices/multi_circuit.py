@@ -855,6 +855,17 @@ class MultiCircuit:
                 + self.get_fluid_turbines()
                 + self.get_fluid_p2xs())
 
+    def get_fluid_lists(self) -> List[List[FLUID_TYPES]]:
+        """
+        Get a list of all devices that can inject or subtract power from a node
+        :return: List of EditableDevice
+        """
+        return [self.get_fluid_nodes(),
+                self.get_fluid_paths(),
+                self.get_fluid_pumps(),
+                self.get_fluid_turbines(),
+                self.get_fluid_p2xs()]
+
     def get_contingency_devices(self) -> List[dev.EditableDevice]:
         """
         Get a list of devices susceptible to be included in contingencies
@@ -2304,13 +2315,10 @@ class MultiCircuit:
 
         self.format_profiles(index)
 
-    def format_profiles(self, index):
+    def format_profiles(self, index: pd.DatetimeIndex):
         """
         Format the pandas profiles in place using a time index.
-
-        Arguments:
-
-            **index**: Time profile
+        :param index: Time profile
         """
 
         self.time_profile = pd.to_datetime(index, dayfirst=True)
@@ -2318,15 +2326,17 @@ class MultiCircuit:
         for elm in self.buses:
             elm.create_profiles(index)
 
-        for branch_list in self.get_branch_lists():
-            for elm in branch_list:
+        for devs_list in self.get_injection_devices_lists():
+            for elm in devs_list:
                 elm.create_profiles(index)
 
-        for elm in self.fluid_nodes:
-            elm.create_profiles(index)
+        for devs_list in self.get_branch_lists():
+            for elm in devs_list:
+                elm.create_profiles(index)
 
-        for elm in self.fluid_paths:
-            elm.create_profiles(index)
+        for devs_list in self.get_fluid_lists():
+            for elm in devs_list:
+                elm.create_profiles(index)
 
     def set_time_profile(self, unix_data: IntVec):
         """
