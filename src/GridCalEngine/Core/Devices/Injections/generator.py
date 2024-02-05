@@ -253,8 +253,8 @@ class Generator(InjectionTemplate):
         self.register(key='X2', units='p.u.', tpe=float, definition='Total negative sequence reactance.')
         self.register(key='Cost2', units='e/MWh²', tpe=float, definition='Generation quadratic cost. Used in OPF.',
                       profile_name='Cost2_prof')
-        self.register(key='Cost', units='e/MWh', tpe=float, definition='Generation linear cost. Used in OPF.',
-                      profile_name='Cost_prof')
+        # self.register(key='Cost', units='e/MWh', tpe=float, definition='Generation linear cost. Used in OPF.',
+        #               profile_name='Cost_prof')
         self.register(key='Cost0', units='e/h', tpe=float, definition='Generation constant cost. Used in OPF.',
                       profile_name='Cost0_prof')
         self.register(key='StartupCost', units='e/h', tpe=float, definition='Generation start-up cost. Used in OPF.')

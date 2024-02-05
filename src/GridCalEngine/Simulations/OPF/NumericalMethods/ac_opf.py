@@ -18,6 +18,7 @@ import numpy as np
 import pandas as pd
 from scipy import sparse
 from scipy.sparse import csc_matrix as csc
+from scipy.sparse import csr_matrix as csr
 from dataclasses import dataclass
 from scipy.sparse import lil_matrix
 
@@ -96,7 +97,7 @@ def eval_f(x: Vec, Cg, c0: Vec, c1: Vec, c2: Vec, ig: Vec, Sbase: float) -> Vec:
     return fval
 
 
-def eval_g(x, Ybus, Yf, Cg, Sd, ig, nig, Sg_undis, slack) -> Vec:
+def eval_g(x, Ybus, Yf, Cg, Sd, ig, nig, pv, Vm_max, Sg_undis, slack) -> Vec:
     """
 
     :param x:
@@ -122,14 +123,16 @@ def eval_g(x, Ybus, Yf, Cg, Sd, ig, nig, Sg_undis, slack) -> Vec:
     # Sg = (Pg_dis + Pg_undis) + 1j * (Qg_dis + Qg_undis)
     # dS = S + Sd - (Cg @ Sg)
 
-    dS = S + Sd - (Cg[:, ig] @ (Pg_dis + 1j * Qg_dis)) - (Cg[:, nig] @ Sg_undis)
+    S_dispatch = Cg[:, ig] @ (Pg_dis + 1j * Qg_dis)
+    S_undispatch = Cg[:, nig] @ Sg_undis
+    dS = S + Sd - S_dispatch - S_undispatch
 
-    gval = np.r_[dS.real, dS.imag, va[slack]]
+    gval = np.r_[dS.real, dS.imag, va[slack], vm[pv] - Vm_max[pv]]
 
     return gval, S
 
 
-def eval_h(x, Yf, Yt, from_idx, to_idx, no_slack, Va_max, Va_min, Vm_max, Vm_min,
+def eval_h(x, Yf, Yt, from_idx, to_idx, pq, no_slack, Va_max, Va_min, Vm_max, Vm_min,
            Pg_max, Pg_min, Qg_max, Qg_min, Cg, rates, il, ig) -> Vec:
     """
 
@@ -159,30 +162,43 @@ def eval_h(x, Yf, Yt, from_idx, to_idx, no_slack, Va_max, Va_min, Vm_max, Vm_min
     va, vm, Pg, Qg = x2var(x, nVa=N, nVm=N, nPg=Ng, nQg=Ng)
 
     V = vm * np.exp(1j * va)
+    # Sf = V[from_idx[il]] * np.conj(Yf[il, :] @ V)
+    # St = V[to_idx[il]] * np.conj(Yt[il, :] @ V)
     Sf = V[from_idx[il]] * np.conj(Yf[il, :] @ V)
     St = V[to_idx[il]] * np.conj(Yt[il, :] @ V)
+
     Sf2 = np.conj(Sf) * Sf
     St2 = np.conj(St) * St
+
+    # hval = np.r_[Sf2.real - (rates[il] ** 2),  # rates "lower limit"
+    #              St2.real - (rates[il] ** 2),  # rates "upper limit"
+    #              vm[pq] - Vm_max[pq],  # voltage module upper limit
+    #              Vm_min[pq] - vm[pq],  # voltage module lower limit
+    #              Pg - Pg_max[ig],  # generator P upper limits
+    #              Pg_min[ig] - Pg,  # generator P lower limits
+    #              Qg - Qg_max[ig],  # generator Q upper limits
+    #              Qg_min[ig] - Qg  # generation Q lower limits
+    # ]
+
     hval = np.r_[Sf2.real - (rates[il] ** 2),  # rates "lower limit"
                  St2.real - (rates[il] ** 2),  # rates "upper limit"
-                 vm - Vm_max,  # voltage module upper limit
-                 Vm_min - vm,  # voltage module lower limit
-                 va[no_slack] - Va_max[no_slack],  # voltage angles upper limit
-                 Va_min[no_slack] - va[no_slack],  # voltage angles lower limit
+                 vm[pq] - Vm_max[pq],  # voltage module upper limit
                  Pg - Pg_max[ig],  # generator P upper limits
-                 Pg_min[ig] - Pg,  # generator P lower limits
                  Qg - Qg_max[ig],  # generator Q upper limits
+                 Vm_min[pq] - vm[pq],  # voltage module lower limit
+                 Pg_min[ig] - Pg,  # generator P lower limits
                  Qg_min[ig] - Qg  # generation Q lower limits
-                 ]
+    ]
 
-    Sftot = V[from_idx] * np.conj(Yf @ V)
-    Sttot = V[to_idx] * np.conj(Yt @ V)
+    # Sftot = V[from_idx[il]] * np.conj(Yf[il, :] @ V)
+    # Sttot = V[to_idx[il]] * np.conj(Yt[il, :] @ V)
 
-    return hval, Sftot, Sttot
+    # return hval, Sftot, Sttot
+    return hval, Sf, St
 
 
-def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, nig, slack, no_slack, mu, lmbda,
-                           compute_jac: bool, compute_hess: bool, ):
+def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, nig, slack, no_slack, pq, pv, mu, lmbda,
+                           from_idx, to_idx, compute_jac: bool, compute_hess: bool, ):
     """
 
     :param x:
@@ -235,11 +251,15 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
             # GTH[i, N + ss] = 1.
             GTH[i, ss] = 1.
 
+        Gvm = lil_matrix((len(pv), len(x)), dtype=float)
+        for i, ss in enumerate(pv):
+            Gvm[i, N + ss] = 1.
+
         GS = sparse.hstack([GSva, GSvm, GSpg, GSqg])
-        Gx = sparse.vstack([GS.real, GS.imag, GTH]).T.tocsc()
+        Gx = sparse.vstack([GS.real, GS.imag, GTH, Gvm]).T.tocsc()
 
         #############
-
+        # Old flow derivatives
         IfCJmat = np.conj(diags(Yf[il, :] @ V))
         ItCJmat = np.conj(diags(Yt[il, :] @ V))
         Sfmat = diags(diags(Cf[il, :] @ V) @ np.conj(Yf[il, :] @ V))
@@ -257,8 +277,66 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
         HSf = 2 * (Sfmat.real @ SfX.real + Sfmat.imag @ SfX.imag)
         HSt = 2 * (Stmat.real @ StX.real + Stmat.imag @ StX.imag)
 
-        Hvu = np.zeros(N)
-        Hvl = np.zeros(N)
+        # New flow derivatives
+        # If = Yf[il, :] @ V
+        # It = Yt[il, :] @ V
+        #
+        # Vnorm = V / abs(V)
+        #
+        # nb = len(V)
+        # nl = len(il)
+        # v_b = np.arange(nb)
+        # v_i = np.arange(nl)
+        #
+        # from_idx = from_idx[il]
+        # to_idx = to_idx[il]
+        #
+        # diagVf = csr((V[from_idx], (v_i, v_i)))
+        # diagIf = csr((If, (v_i, v_i)))
+        # diagVt = csr((V[to_idx], (v_i, v_i)))
+        # diagIt = csr((It, (v_i, v_i)))
+        # diagV  = csr((V, (v_b, v_b)))
+        # diagVnorm = csr((Vnorm, (v_b, v_b)))
+        #
+        # shape = (nl, nb)
+        # # Partial derivative of S w.r.t voltage phase angle.
+        # dSf_dVa = 1j * (np.conj(diagIf) *
+        #                 csr((V[from_idx], (v_i, from_idx)), shape) - diagVf * np.conj(Yf[il, :] * diagV))
+        #
+        # dSt_dVa = 1j * (np.conj(diagIt) *
+        #                 csr((V[to_idx], (v_i, to_idx)), shape) - diagVt * np.conj(Yt[il, :] * diagV))
+        #
+        # # Partial derivative of S w.r.t. voltage amplitude.
+        # dSf_dVm = diagVf * np.conj(Yf[il, :] * diagVnorm) + np.conj(diagIf) * \
+        #           csr((Vnorm[from_idx], (v_i, from_idx)), shape)
+        #
+        # dSt_dVm = diagVt * np.conj(Yt[il, :] * diagVnorm) + np.conj(diagIt) * \
+        #           csr((Vnorm[to_idx], (v_i, to_idx)), shape)
+        #
+        # Sf = V[from_idx] * np.conj(If)
+        # St = V[to_idx] * np.conj(It)
+        #
+        # dAf_dPf = csr((2 * Sf.real, (v_i, v_i)))
+        # dAf_dQf = csr((2 * Sf.imag, (v_i, v_i)))
+        # dAt_dPt = csr((2 * St.real, (v_i, v_i)))
+        # dAt_dQt = csr((2 * St.imag, (v_i, v_i)))
+        #
+        # # Partial derivative of apparent power magnitude w.r.t voltage
+        # # phase angle.
+        # dAf_dVa = dAf_dPf * dSf_dVa.real + dAf_dQf * dSf_dVa.imag
+        # dAt_dVa = dAt_dPt * dSt_dVa.real + dAt_dQt * dSt_dVa.imag
+        # # Partial derivative of apparent power magnitude w.r.t. voltage
+        # # amplitude.
+        # dAf_dVm = dAf_dPf * dSf_dVm.real + dAf_dQf * dSf_dVm.imag
+        # dAt_dVm = dAt_dPt * dSt_dVm.real + dAt_dQt * dSt_dVm.imag
+        #
+        # HSf = sparse.hstack([dAf_dVa, dAf_dVm, lil_matrix((nl, 2 * Ng))])
+        # HSt = sparse.hstack([dAt_dVa, dAt_dVm, lil_matrix((nl, 2 * Ng))])
+
+        #############
+
+        # Hvu = np.zeros(len(pq))
+        # Hvl = np.zeros(len(pq))
         # Hvau = np.zeros(N)
         # Hval = np.zeros(N)
         Hpu = np.zeros(Ng)
@@ -266,12 +344,12 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
         Hqu = np.zeros(Ng)
         Hql = np.zeros(Ng)
 
-        Hvu[0: N] = 1
-        Hvl[0: N] = -1
         # Hvau[no_slack] = 1
         # Hval[no_slack] = -1
         Hvau_ = csc(([1] * (N - len(slack)), (list(range(N - len(slack))), no_slack)))
         Hval_ = csc(([-1] * (N - len(slack)), (list(range(N - len(slack))), no_slack)))
+        Hvmu_ = csc(([1] * (N - len(pv)), (list(range(N - len(pv))), pq)))
+        Hvml_ = csc(([-1] * (N - len(pv)), (list(range(N - len(pv))), pq)))
 
         Hpu[0: N] = 1
         Hpl[0: Ng] = -1
@@ -283,8 +361,8 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
         # Hvau = sparse.hstack([lil_matrix((N - len(slack), N)), Hvau_, lil_matrix((N - len(slack), 2 * Ng))])
         # Hval = sparse.hstack([lil_matrix((N - len(slack), N)), Hval_, lil_matrix((N - len(slack), 2 * Ng))])
 
-        Hvu = sparse.hstack([lil_matrix((N, N)), diags(Hvu), lil_matrix((N, 2 * Ng))])
-        Hvl = sparse.hstack([lil_matrix((N, N)), diags(Hvl), lil_matrix((N, 2 * Ng))])
+        Hvu = sparse.hstack([lil_matrix((len(pq), N)), Hvmu_, lil_matrix((len(pq), 2 * Ng))])
+        Hvl = sparse.hstack([lil_matrix((len(pq), N)), Hvml_, lil_matrix((len(pq), 2 * Ng))])
 
         Hvau = sparse.hstack([Hvau_, lil_matrix((N - len(slack), N + 2 * Ng))])
         Hval = sparse.hstack([Hval_, lil_matrix((N - len(slack), N + 2 * Ng))])
@@ -294,7 +372,9 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
         Hqu = sparse.hstack([lil_matrix((Ng, 2 * N + Ng)), diags(Hqu)])
         Hql = sparse.hstack([lil_matrix((Ng, 2 * N + Ng)), diags(Hql)])
 
-        Hx = sparse.vstack([HSf, HSt, Hvu, Hvl, Hvau, Hval, Hpu, Hpl, Hqu, Hql]).T.tocsc()
+        # Hx = sparse.vstack([HSf, HSt, Hvu, Hvl, Hpu, Hpl, Hqu, Hql]).T.tocsc()
+        Hx = sparse.vstack([HSf, HSt, Hvu, Hpu, Hqu, Hvl, Hpl, Hql]).T.tocsc()
+        # Hx = sparse.vstack([HSf, HSt, Hvu, Hvl, Hvau, Hval, Hpu, Hpl, Hqu, Hql]).T.tocsc()
     else:
         fx = None
         Gx = None
@@ -479,8 +559,8 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
         Htvavm = 2 * (Stvavm + Stva.T @ mu_mat @ np.conj(Stvm)).real
         Htvmvm = 2 * (Stvmvm + Stvm.T @ mu_mat @ np.conj(Stvm)).real
 
-        #H1 = sparse.hstack([Hfvmvm + Htvmvm, Hfvavm + Htvmva, lil_matrix((N, 2 * Ng))])
-        #H2 = sparse.hstack([Hfvavm + Htvavm, Hfvava + Htvava, lil_matrix((N, 2 * Ng))])
+        # H1 = sparse.hstack([Hfvmvm + Htvmvm, Hfvavm + Htvmva, lil_matrix((N, 2 * Ng))])
+        # H2 = sparse.hstack([Hfvavm + Htvavm, Hfvava + Htvava, lil_matrix((N, 2 * Ng))])
 
         H1 = sparse.hstack([Hfvava + Htvava, Hfvavm + Htvavm, lil_matrix((N, 2 * Ng))])
         H2 = sparse.hstack([Hfvmva + Htvmva, Hfvmvm + Htvmvm, lil_matrix((N, 2 * Ng))])
@@ -494,7 +574,7 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
 
 
 def compute_autodiff_structures(x, mu, lam, compute_jac: bool, compute_hess: bool,
-                                Ybus, Yf, Cg, Sd, slack, no_slack, Yt, from_idx, to_idx,
+                                Ybus, Yf, Cg, Sd, slack, no_slack, Yt, from_idx, to_idx, pq, pv,
                                 Va_max, Va_min, Vm_max, Vm_min, Pg_max, Pg_min, Qg_max, Qg_min,
                                 c0, c1, c2, Sbase, rates, ig, nig, Sg_undis, h=1e-5) -> IpsFunctionReturn:
     """
@@ -571,7 +651,7 @@ def compute_autodiff_structures(x, mu, lam, compute_jac: bool, compute_hess: boo
 
 
 def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: bool,
-                                Ybus, Yf, Cg, Cf, Ct, Sd, slack, no_slack, Yt, from_idx, to_idx,
+                                Ybus, Yf, Cg, Cf, Ct, Sd, slack, no_slack, Yt, from_idx, to_idx, pq, pv,
                                 th_max, th_min, V_U, V_L, P_U, P_L, Q_U, Q_L,
                                 c0, c1, c2, Sbase, rates, il, ig, nig, Sg_undis) -> IpsFunctionReturn:
     """
@@ -609,15 +689,17 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
     :return:
     """
     f = eval_f(x=x, Cg=Cg, c0=c0, c1=c1, c2=c2, ig=ig, Sbase=Sbase)
-    G, Scalc = eval_g(x=x, Ybus=Ybus, Yf=Yf, Cg=Cg, Sd=Sd, ig=ig, nig=nig, Sg_undis=Sg_undis, slack=slack)
-    H, Sf, St = eval_h(x=x, Yf=Yf, Yt=Yt, from_idx=from_idx, to_idx=to_idx, no_slack=no_slack, Va_max=th_max,
+    G, Scalc = eval_g(x=x, Ybus=Ybus, Yf=Yf, Cg=Cg, Sd=Sd, ig=ig, nig=nig,
+                      pv=pv, Vm_max=V_U, Sg_undis=Sg_undis, slack=slack)
+    H, Sf, St = eval_h(x=x, Yf=Yf, Yt=Yt, from_idx=from_idx, to_idx=to_idx, pq=pq, no_slack=no_slack, Va_max=th_max,
                        Va_min=th_min, Vm_max=V_U, Vm_min=V_L, Pg_max=P_U, Pg_min=P_L, Qg_max=Q_U, Qg_min=Q_L, Cg=Cg,
                        rates=rates, il=il, ig=ig)
 
     fx, Gx, Hx, fxx, Gxx, Hxx = jacobians_and_hessians(x=x, c1=c1, c2=c2, Cg=Cg, Cf=Cf, Ct=Ct, Yf=Yf, Yt=Yt,
                                                        Ybus=Ybus, Sbase=Sbase, il=il, ig=ig, nig=nig, slack=slack,
-                                                       no_slack=no_slack,
-                                                       mu=mu, lmbda=lmbda, compute_jac=compute_jac,
+                                                       no_slack=no_slack, pq=pq, pv=pv,
+                                                       mu=mu, lmbda=lmbda, from_idx=from_idx, to_idx=to_idx,
+                                                       compute_jac=compute_jac,
                                                        compute_hess=compute_hess)
 
     return IpsFunctionReturn(f=f, G=G, H=H,
@@ -627,7 +709,7 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
 
 
 def evaluate_power_flow_debug(x, mu, lmbda, compute_jac: bool, compute_hess: bool,
-                              Ybus, Yf, Cg, Cf, Ct, Sd, slack, no_slack, Yt, from_idx, to_idx,
+                              Ybus, Yf, Cg, Cf, Ct, Sd, slack, no_slack, Yt, from_idx, to_idx, pq, pv,
                               th_max, th_min, V_U, V_L, P_U, P_L, Q_U, Q_L,
                               c0, c1, c2, Sbase, rates, il, ig, nig, Sg_undis, h=1e-5) -> IpsFunctionReturn:
     """
@@ -766,6 +848,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                           pf_options: PowerFlowOptions,
                           debug: bool = False,
                           use_autodiff: bool = False,
+                          pf_init: bool = True,
                           plot_error: bool = False) -> NonlinearOPFResults:
     """
 
@@ -790,11 +873,14 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     Cf = nc.Cf
     Ct = nc.Ct
 
+    # dfa = pd.DataFrame(Yf.A.real)
+    # dfb = pd.DataFrame(Yf.A.imag)
+    # dfa.to_excel('Yfa.xlsx')
+    # dfb.to_excel('Yfb.xlsx')
+
     # Bus identification lists
     slack = nc.vd
     no_slack = nc.pqpv
-    from_idx = nc.F
-    to_idx = nc.T
 
     # Bus and line parameters
     Sd = - nc.load_data.get_injections_per_bus() / Sbase
@@ -804,6 +890,12 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     Qg_min = nc.generator_data.qmin / Sbase
     Vm_max = nc.bus_data.Vmax
     Vm_min = nc.bus_data.Vmin
+
+    pv = np.flatnonzero(Vm_max == Vm_min)
+    pq = np.flatnonzero(Vm_max != Vm_min)
+    npv = len(pv)
+    npq = len(pq)
+
     il = nc.branch_data.get_monitor_enabled_indices()
     ig = nc.generator_data.get_dispatchable_indices()
     ind_gens = np.arange(len(Pg_max))
@@ -815,6 +907,9 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     Va_max = nc.bus_data.angle_max
     Va_min = nc.bus_data.angle_min
 
+    from_idx = nc.F
+    to_idx = nc.T
+
     nbr = nc.branch_data.nelm
     nbus = nc.bus_data.nbus
     ngen = nc.generator_data.nelm
@@ -822,28 +917,32 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     n_slack = len(slack)
 
     # Number of equalities: Nodal power balances, the voltage module of slack and pv buses and the slack reference
-    NE = 2 * nbus + n_slack
+    NE = 2 * nbus + n_slack + npv
 
     # Number of inequalities: Line ratings, max and min angle of buses, voltage module range and
     # NI = 2 * nbr + 2 * n_no_slack + 2 * nbus + 4 * ngen
-    NI = 2 * nll + 2 * n_no_slack + 2 * nbus + 4 * ngg
+
+    NI = 2 * nll + 2 * npq + 4 * ngg  # Without angle constraints
+    # NI = 2 * nll + 2 * n_no_slack + 2 * nbus + 4 * ngg
 
     # run power flow to initialize
     pf_results = multi_island_pf_nc(nc=nc, options=pf_options)
 
     # ignore power from Z and I of the load
-    # s0gen = (pf_results.Sbus - nc.load_data.get_injections_per_bus()) / nc.Sbase
-    #p0gen = nc.generator_data.C_bus_elm.T @ np.real(s0gen)
-    #q0gen = nc.generator_data.C_bus_elm.T @ np.imag(s0gen)
-    #vm0 = np.abs(pf_results.voltage)
-    #va0 = np.angle(pf_results.voltage)
+
+    if pf_init:
+        s0gen = (pf_results.Sbus - nc.load_data.get_injections_per_bus()) / nc.Sbase
+        p0gen = nc.generator_data.C_bus_elm.T @ np.real(s0gen)
+        q0gen = nc.generator_data.C_bus_elm.T @ np.imag(s0gen)
+        vm0 = np.abs(pf_results.voltage)
+        va0 = np.angle(pf_results.voltage)
 
     # nc.Vbus  # dummy initialization
-
-    p0gen = ((nc.generator_data.pmax + nc.generator_data.pmin) / (2 * nc.Sbase))[ig]
-    q0gen = ((nc.generator_data.qmax + nc.generator_data.qmin) / (2 * nc.Sbase))[ig]
-    va0 = np.angle(nc.bus_data.Vbus)
-    vm0 = np.abs(nc.bus_data.Vbus)
+    else:
+        p0gen = ((nc.generator_data.pmax + nc.generator_data.pmin) / (2 * nc.Sbase))[ig]
+        q0gen = ((nc.generator_data.qmax + nc.generator_data.qmin) / (2 * nc.Sbase))[ig]
+        va0 = np.angle(nc.bus_data.Vbus)
+        vm0 = (Vm_max + Vm_min) / 2
 
     # compose the initial values
     x0 = var2x(Va=va0,
@@ -863,32 +962,32 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         result = interior_point_solver(x0=x0, n_x=NV, n_eq=NE, n_ineq=NI,
                                        func=evaluate_power_flow_debug,
                                        arg=(Ybus, Yf, Cg, Cf, Ct, Sd, slack, no_slack, Yt,
-                                            from_idx, to_idx, Va_max, Va_min, Vm_max, Vm_min,
+                                            from_idx, to_idx, pq, pv, Va_max, Va_min, Vm_max, Vm_min,
                                             Pg_max, Pg_min, Qg_max, Qg_min,
                                             c0, c1, c2, Sbase, rates, il, ig, nig, Sg_undis),
                                        verbose=pf_options.verbose,
                                        max_iter=pf_options.max_iter,
                                        tol=pf_options.tolerance,
-                                       trust=pf_options.trust_radius)
+                                       trust=pf_options.trust)
 
     else:
         if use_autodiff:
             # run the solver with the autodiff derivatives
             result = interior_point_solver(x0=x0, n_x=NV, n_eq=NE, n_ineq=NI,
                                            func=compute_autodiff_structures,
-                                           arg=(Ybus, Yf, Cg, Sd, slack, no_slack, Yt, from_idx, to_idx,
+                                           arg=(Ybus, Yf, Cg, Sd, slack, no_slack, Yt, from_idx, to_idx, pq, pv,
                                                 Va_max, Va_min, Vm_max, Vm_min, Pg_max, Pg_min, Qg_max, Qg_min,
                                                 c0, c1, c2, Sbase, rates, il, ig, nig, Sg_undis, 1e-5),
                                            verbose=pf_options.verbose,
                                            max_iter=pf_options.max_iter,
                                            tol=pf_options.tolerance,
-                                           trust=pf_options.trust_radius)
+                                           trust=pf_options.trust)
         else:
             # run the solver with the analytic derivatives
             result = interior_point_solver(x0=x0, n_x=NV, n_eq=NE, n_ineq=NI,
                                            func=compute_analytic_structures,
                                            arg=(Ybus, Yf, Cg, Cf, Ct, Sd, slack, no_slack, Yt,
-                                                from_idx, to_idx, Va_max, Va_min, Vm_max, Vm_min,
+                                                from_idx, to_idx, pq, pv, Va_max, Va_min, Vm_max, Vm_min,
                                                 Pg_max, Pg_min, Qg_max, Qg_min,
                                                 c0, c1, c2, Sbase, rates, il, ig, nig, Sg_undis),
                                            verbose=pf_options.verbose,
@@ -898,6 +997,12 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
 
     # convert the solution to the problem variables
     Va, Vm, Pg_dis, Qg_dis = x2var(result.x, nVa=nbus, nVm=nbus, nPg=ngg, nQg=ngg)
+
+    # Save Results DataFrame for tests
+    # pd.DataFrame(Va).transpose().to_csv('pegase89resth.csv')
+    # pd.DataFrame(Vm).transpose().to_csv('pegase89resV.csv')
+    # pd.DataFrame(Pg_dis).transpose().to_csv('pegase89resP.csv')
+    # pd.DataFrame(Qg_dis).transpose().to_csv('pegase89resQ.csv')
 
     Pg = np.zeros(len(ind_gens))
     Qg = np.zeros(len(ind_gens))
@@ -913,7 +1018,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     S = result.structs.S
     Sf = result.structs.Sf
     St = result.structs.St
-    loading = np.abs(Sf) / (rates + 1e-9)
+    loading = np.abs(Sf) / (rates[il] + 1e-9)
     if pf_options.verbose > 0:
         df_bus = pd.DataFrame(data={'Va (rad)': Va, 'Vm (p.u.)': Vm,
                                     'dual price (€/MW)': lam_p, 'dual price (€/MVAr)': lam_q})
@@ -937,6 +1042,7 @@ def run_nonlinear_opf(grid: MultiCircuit,
                       t_idx: Union[None, int] = None,
                       debug: bool = False,
                       use_autodiff: bool = False,
+                      pf_init=True,
                       plot_error: bool = False) -> NonlinearOPFResults:
     """
 
@@ -964,6 +1070,7 @@ def run_nonlinear_opf(grid: MultiCircuit,
                                                pf_options=pf_options,
                                                debug=debug,
                                                use_autodiff=use_autodiff,
+                                               pf_init=pf_init,
                                                plot_error=plot_error)
 
             results.merge(other=island_res,
@@ -978,4 +1085,5 @@ def run_nonlinear_opf(grid: MultiCircuit,
                                      pf_options=pf_options,
                                      debug=debug,
                                      use_autodiff=use_autodiff,
+                                     pf_init=pf_init,
                                      plot_error=plot_error)

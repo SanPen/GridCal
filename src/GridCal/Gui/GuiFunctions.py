@@ -42,6 +42,7 @@ class TreeDelegate(QtWidgets.QItemDelegate):
     """
     
     """
+
     def __init__(self, parent, data=defaultdict()):
         """
         Constructor
