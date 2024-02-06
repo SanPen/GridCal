@@ -164,198 +164,86 @@ For this general optimization problem, we can reduce the size of this system usi
 
 .. math::
 
+    \begin{bmatrix}
+    \textbf{M} & \textbf{G_{X}^T} \\
+    \textbf{G_{X}} & \textbf{0} \\
+    \end{bmatrix}
+    \times
+    \begin{bmatrix}
+    \Delta X\\
+    \Delta \lambda \\
+    \end{bmatrix}
+    =
+    \begin{bmatrix}
+    - \textbf{N}\\
+    - \textbf{G(X)}\\
+    \end{bmatrix} \\
 
+    \textbf{M} = L_{XX} + H_{X}^T [Z]^{-1}[\mu]H_{X}\\
+    \textbf{N} = L_{X} + H_{X}^T [Z]^{-1}(\gamma \textbf(1_{n_i}) +[\mu]H(X))\\
+    L_{X} = f_X^T + G_X^T\lambda + H_X^T\mu\\
+    L_{X} = f_{XX} + G_{XX}(\gamma) + H_{XX}(\gamma)
 
+This system will be solved for every given step, and will yield the step distances for the variables (X) and the \lambda multiplier. To update the other two objects of the state vector of the complete system, we will use the following relations:
 
+.. math::
 
+    \Delta Z = -H(X) -Z - H_X \Delta X\\
+    \Delta \mu = -\mu + [Z]^{-1}(\gamma \textbf(1_{n_i}) - [\mu]\Delta Z)
 
+We could proceed to directly add the obtained displacements to the variables and multipliers, but there are two things to be considered. Firstly, we set a step control to ensure that the next step does not increase the error by more than a set margin. The next block of code includes all the logic behind this control:
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-.. table::
-
-    =============================  ================  ======  =================================================
-    name                           class_type        unit    descriptions                                      
-    =============================  ================  ======  =================================================
-    fluid_node_current_level       float             hm3     Node level                                         
-    fluid_node_flow_in             float             m3/s    Input flow from paths                                                                             
-    fluid_node_flow_out            float             m3/s    Output flow from paths                                       
-    fluid_node_p2x_flow            float             m3/s    Input flow from the P2Xs  
-    fluid_node_spillage            float             m3/s    Lost flow                           
-    =============================  ================  ======  =================================================
-
-
-Path 
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. table::
-
-    =============================  ================  ======  =================================================
-    name                           class_type        unit    descriptions                                      
-    =============================  ================  ======  =================================================
-    fluid_path_flow                     float         m3/s   Flow circulating through the path                                            
-    =============================  ================  ======  =================================================
-
-Injection (turbine, pump, P2X)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. table::
-
-    =============================  ================  ======  =================================================
-    name                           class_type        unit    descriptions                                      
-    =============================  ================  ======  =================================================
-    fluid_injection_flow                    float      m3/s   Flow injected by the device                                            
-    =============================  ================  ======  =================================================
-
-
-
-
-
-3. Practical example
---------------------
-This section covers a practical case to exemplify how to build a grid containing fluid type devices, run the time-series linear optimization, and explore the results. Everything will be shown through GridCal's scripting functionalities.
-
-
-Model initialization 
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. code-block:: python
 
-    grid = gce.MultiCircuit(name='hydro_grid')
+    # Step control as in PyPower
+        if step_control:
+            L = ret.f + np.dot(lam, ret.G) + np.dot(mu, ret.H + z) - gamma * np.sum(np.log(z))
+            alpha = 1.0
+            for j in range(20):
+                dx1 = alpha * dx
+                dlam1 = alpha * lam
+                dmu1 = alpha * mu
 
-    # let's create a master profile
-    date0 = dt.datetime(2023, 1, 1)
-    time_array = pd.DatetimeIndex([date0 + dt.timedelta(hours=i) for i in range(10)])
-    x = np.linspace(0, 10, len(time_array))
-    df_0 = pd.DataFrame(data=x, index=time_array)  # complex values
+                x1 = x + dx1
+                lam1 = lam + dlam1
+                mu1 = mu + dmu1
 
-    # set the grid master time profile
-    grid.time_profile = df_0.index
+                ret1 = func(x1, mu1, lam1, False, False, *arg)
+
+                L1 = ret1.f + lam.T @ ret1.G + mu.T @ (ret1.H + z) - gamma * np.sum(np.log(z))
+                rho = (L1 - L) / (Lx @ dx1 + 0.5 * dx1.T @ Lxx @ dx1)
+
+                if rho_lower < rho < rho_upper:
+                    break
+                else:
+                    alpha = alpha / 2.0
+                    ssc = 1
+                    print('Use step control!')
+
+            dx = alpha * dx
+            dz = alpha * dz
+            dlam = alpha * dlam
+            dmu = alpha * dmu
 
 
-Add fluid side
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. code-block:: python
+Then, as explained earlier, the conditions that :math:`\mu` and Z are always positive are enforced outside the algebraic system. This is done ensuring that the step length of a negative displacement is limited in case it ends below 0.
 
-    # Add some fluid nodes, with their electrical buses
-    fb1 = gce.Bus(name='fb1')
-    fb2 = gce.Bus(name='fb2')
-    fb3 = gce.Bus(name='fb3')
+ .. math::
 
-    grid.add_bus(fb1)
-    grid.add_bus(fb2)
-    grid.add_bus(fb3)
+    \alpha_p = min(\tau min_{\Delta Z_m < 0}((-Z_m / \Delta Z_m), 1)
+    \alpha_d = min(\tau min_{\Delta \mu_m < 0}((-\mu_m / \Delta \mu_m), 1)
 
-    f1 = gce.FluidNode(name='fluid_node_1',
-                       min_level=0.,
-                       max_level=100.,
-                       current_level=50.,
-                       spillage_cost=10.,
-                       inflow=0.,
-                       bus=fb1)
+Where :math:`\tau` is a parameter slightly below 1. Now, we are ready to update the values for the variables and multiplier, then update the :math:`\gamma` parameter, and finally start a new iteration if the convergence criteria is not met.
 
-    f2 = gce.FluidNode(name='fluid_node_2',
-                       spillage_cost=10.,
-                       bus=fb2)
+.. math::
 
-    f3 = gce.FluidNode(name='fluid_node_3',
-                       spillage_cost=10.,
-                       bus=fb3)
+    X = X + \alpha_p \Delta X\\
+    Z = Z + \alpha_p \Delta Z\\
+    \lambda = \lambda + \alpha_d \Delta \lambda\\
+    \mu = \mu + \alpha_d \Delta \mu\\
+    \gamma = \sigma \frac{Z^T \mu}{n_{ineq}}
 
-    f4 = gce.FluidNode(name='fluid_node_4',
-                       min_level=0,
-                       max_level=100,
-                       current_level=50,
-                       spillage_cost=10.,
-                       inflow=0.)
-
-    grid.add_fluid_node(f1)
-    grid.add_fluid_node(f2)
-    grid.add_fluid_node(f3)
-    grid.add_fluid_node(f4)
-
-    # Add the paths
-    p1 = gce.FluidPath(name='path_1',
-                       source=f1,
-                       target=f2,
-                       min_flow=-50.,
-                       max_flow=50.,)
-
-    p2 = gce.FluidPath(name='path_2',
-                       source=f2,
-                       target=f3,
-                       min_flow=-50.,
-                       max_flow=50.,)
-
-    p3 = gce.FluidPath(name='path_3',
-                       source=f3,
-                       target=f4,
-                       min_flow=-50.,
-                       max_flow=50.,)
-
-    grid.add_fluid_path(p1)
-    grid.add_fluid_path(p2)
-    grid.add_fluid_path(p3)
-
-    # Add electrical generators for each fluid machine
-    g1 = gce.Generator(name='turb_1_gen',
-                       Pmax=1000.0,
-                       Pmin=0.0,
-                       Cost=0.5)
-
-    g2 = gce.Generator(name='pump_1_gen',
-                       Pmax=0.0,
-                       Pmin=-1000.0,
-                       Cost=-0.5)
-
-    g3 = gce.Generator(name='p2x_1_gen',
-                       Pmax=0.0,
-                       Pmin=-1000.0,
-                       Cost=-0.5)
-
-    grid.add_generator(fb3, g1)
-    grid.add_generator(fb2, g2)
-    grid.add_generator(fb1, g3)
-
-    # Add a turbine
-    turb1 = gce.FluidTurbine(name='turbine_1',
-                             plant=f3,
-                             generator=g1,
-                             max_flow_rate=45.0,
-                             efficiency=0.95)
-
-    grid.add_fluid_turbine(f3, turb1)
-
-    # Add a pump
-    pump1 = gce.FluidPump(name='pump_1',
-                          reservoir=f2,
-                          generator=g2,
-                          max_flow_rate=49.0,
-                          efficiency=0.85)
-
-    grid.add_fluid_pump(f2, pump1)
-
-    # Add a p2x
-    p2x1 = gce.FluidP2x(name='p2x_1',
-                        plant=f1,
-                        generator=g3,
-                        max_flow_rate=49.0,
-                        efficiency=0.9)
-
-    grid.add_fluid_p2x(f1, p2x1)
+With \sigma set as a value between 0 and 1 (set by default at 0.1)
 
 
 Add remaining electrical side
