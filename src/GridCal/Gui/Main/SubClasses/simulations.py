@@ -587,7 +587,7 @@ class SimulationsMain(TimeEventsMain):
                                    q_steepness_factor=q_steepness_factor,
                                    distributed_slack=distributed_slack,
                                    ignore_single_node_islands=ignore_single_node_islands,
-                                   mu=mu,
+                                   trust_radius=mu,
                                    use_stored_guess=use_stored_guess,
                                    override_branch_controls=override_branch_controls,
                                    generate_report=generate_report)
@@ -1401,7 +1401,8 @@ class SimulationsMain(TimeEventsMain):
                     end_idx = self.ui.vs_target_comboBox.currentIndex()
 
                     if len(sel_bus_idx) > 0:
-                        if sum([self.circuit.buses[i].get_device_number() for i in sel_bus_idx]) == 0:
+                        S = self.circuit.get_Sbus()
+                        if S[sel_bus_idx].sum() == 0:
                             warning_msg('You have selected a group of buses with no power injection.\n'
                                         'this will result in an infinite continuation, since the loading variation '
                                         'of buses with zero injection will be infinite.', 'Continuation Power Flow')
@@ -2442,12 +2443,17 @@ class SimulationsMain(TimeEventsMain):
 
                         self.buses_for_storage = list()
                         colors = list()
+
+                        # get all batteries grouped by bus
+                        batt_by_bus = self.circuit.get_batteries_by_bus()
+
                         for i, freq in zip(idx, frequencies):
 
                             bus = self.circuit.buses[i]
+                            batts = batt_by_bus.get(bus, None)
 
                             # add a marker to the bus if there are no batteries in it
-                            if len(bus.batteries) == 0:
+                            if batts is None:
                                 self.buses_for_storage.append(bus)
                                 r, g, b, a = cmap(freq / fmax)
                                 color = QtGui.QColor(r * 255, g * 255, b * 255, a * 255)
@@ -2725,5 +2731,7 @@ class SimulationsMain(TimeEventsMain):
                              "Fuse devices")
 
         if ok:
-            self.circuit.fuse_devices()
-            self.redraw_current_diagram()
+            deleted_devices = self.circuit.fuse_devices()
+
+            for diagram_widget in self.diagram_widgets_list:
+                diagram_widget.delete_diagram_elements(elements=deleted_devices)

@@ -17,17 +17,18 @@
 import pandas as pd
 from matplotlib import pyplot as plt
 from GridCalEngine.enumerations import DeviceType, BuildStatus
-from GridCalEngine.Core.Devices.Injections.injection_template import InjectionTemplate
+from GridCalEngine.Core.Devices.Injections.injection_template import LoadLikeTemplate
 
 
-class Load(InjectionTemplate):
+class Load(LoadLikeTemplate):
     """
     Load
     """
 
     def __init__(self, name='Load', idtag=None, code='', G=0.0, B=0.0, Ir=0.0, Ii=0.0, P=0.0, Q=0.0, Cost=1200.0,
                  G_prof=None, B_prof=None, Ir_prof=None, Ii_prof=None, P_prof=None, Q_prof=None,
-                 active=True, mttf=0.0, mttr=0.0, capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned):
+                 active=True, mttf=0.0, mttr=0.0, capex=0, opex=0,
+                 build_status: BuildStatus = BuildStatus.Commissioned):
         """
         The load object implements the so-called ZIP model, in which the load can be
         represented by a combination of power (P), current(I), and impedance (Z).
@@ -52,38 +53,37 @@ class Load(InjectionTemplate):
         :param mttf: Mean time to failure in hours
         :param mttr: Mean time to recovery in hours
         """
-        InjectionTemplate.__init__(self,
-                                   name=name,
-                                   idtag=idtag,
-                                   code=code,
-                                   bus=None,
-                                   cn=None,
-                                   active=active,
-                                   active_prof=None,
-                                   Cost=Cost,
-                                   Cost_prof=None,
-                                   mttf=mttf,
-                                   mttr=mttr,
-                                   capex=capex,
-                                   opex=opex,
-                                   build_status=build_status,
-                                   device_type=DeviceType.LoadDevice)
-        self.P = P
-        self.Q = Q
+        LoadLikeTemplate.__init__(self,
+                                  name=name,
+                                  idtag=idtag,
+                                  code=code,
+                                  bus=None,
+                                  cn=None,
+                                  active=active,
+                                  active_prof=None,
+                                  P=P,
+                                  P_prof=P_prof,
+                                  Q=Q,
+                                  Q_prof=Q_prof,
+                                  Cost=Cost,
+                                  Cost_prof=None,
+                                  mttf=mttf,
+                                  mttr=mttr,
+                                  capex=capex,
+                                  opex=opex,
+                                  build_status=build_status,
+                                  device_type=DeviceType.LoadDevice)
+
         self.G = G
         self.B = B
         self.Ir = Ir
         self.Ii = Ii
 
-        self.P_prof = P_prof
-        self.Q_prof = Q_prof
         self.G_prof = G_prof
         self.B_prof = B_prof
         self.Ir_prof = Ir_prof
         self.Ii_prof = Ii_prof
 
-        self.register(key='P', units='MW', tpe=float, definition='Active power', profile_name='P_prof')
-        self.register(key='Q', units='MVAr', tpe=float, definition='Reactive power', profile_name='Q_prof')
         self.register(key='Ir', units='MW', tpe=float,
                       definition='Active power of the current component at V=1.0 p.u.', profile_name='Ir_prof')
         self.register(key='Ii', units='MVAr', tpe=float,

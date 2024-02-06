@@ -122,13 +122,13 @@ class InjectionTemplateGraphicItem(QGraphicsItemGroup):
         """
         if ask:
             ok = yes_no_question('Are you sure that you want to remove this ' + self.device_type_name + '?',
-                                 'Remove load')
+                                 'Remove ' + self.api_object.name)
         else:
             ok = True
 
         if ok:
             self.editor.remove_from_scene(self.nexus)
-            self.editor.remove_element(device=self, graphic_object=self.api_object)
+            self.editor.remove_element(device=self.api_object, graphic_object=self)
 
     def mousePressEvent(self, QGraphicsSceneMouseEvent):
         """
@@ -136,15 +136,10 @@ class InjectionTemplateGraphicItem(QGraphicsItemGroup):
         :param QGraphicsSceneMouseEvent:
         :return:
         """
-        mdl = ObjectsModel(objects=[self.api_object],
-                           editable_headers=self.api_object.registered_properties,
-                           parent=self.editor.object_editor_table,
-                           editable=True,
-                           transposed=True,
-                           dictionary_of_lists={
-                               DeviceType.GeneratorDevice.value: self.editor.circuit.get_generators(),
-                           })
-        self.editor.object_editor_table.setModel(mdl)
+        self.editor.set_editor_model(api_object=self.api_object,
+                                     dictionary_of_lists={
+                                         DeviceType.GeneratorDevice.value: self.editor.circuit.get_generators(),
+                                     })
 
     def change_bus(self):
         """

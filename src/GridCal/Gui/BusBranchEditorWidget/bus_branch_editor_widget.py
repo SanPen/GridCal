@@ -32,6 +32,7 @@ from PySide6.QtWidgets import (QApplication, QGraphicsView, QListView, QTableVie
                                QGraphicsItem)
 from PySide6.QtSvg import QSvgGenerator
 
+from GridCalEngine.Core.Devices.types import ALL_DEV_TYPES
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Core.Devices.Substation import Bus
 from GridCalEngine.Core.Devices.editable_device import EditableDevice
@@ -67,6 +68,7 @@ from GridCal.Gui.BusBranchEditorWidget.Injections.generator_graphics import Gene
 from GridCal.Gui.BusBranchEditorWidget.generic_graphics import ACTIVE
 import GridCal.Gui.Visualization.visualization as viz
 import GridCal.Gui.Visualization.palettes as palettes
+from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCal.Gui.messages import info_msg
 from matplotlib import pyplot as plt
 
@@ -345,6 +347,21 @@ class BusBranchEditorWidget(QSplitter):
         if diagram is not None:
             self.draw()
 
+    def set_editor_model(self, api_object: ALL_DEV_TYPES, dictionary_of_lists: Dict[str, List[ALL_DEV_TYPES]] = {}):
+        """
+        Set an api object to appear in the editable table view of the editor
+        :param api_object: any EditableDevice
+        :param dictionary_of_lists: dictionary of lists of objects that may be referenced to
+        """
+        mdl = ObjectsModel(objects=[api_object],
+                           editable_headers=api_object.registered_properties,
+                           parent=self.object_editor_table,
+                           editable=True,
+                           transposed=True,
+                           dictionary_of_lists=dictionary_of_lists)
+
+        self.object_editor_table.setModel(mdl)
+
     def graphicsDragEnterEvent(self, event: QDragEnterEvent) -> None:
         """
 
@@ -380,7 +397,7 @@ class BusBranchEditorWidget(QSplitter):
             y0 = point0.y()
 
             if bus_data == obj_type:
-                obj = Bus(name=f'Bus {len(self.circuit.buses)}',
+                obj = Bus(name=f'Bus {len(self.circuit.get_buses())}',
                           vnom=self.default_bus_voltage)
 
                 graphic_object = BusGraphicItem(editor=self,
@@ -832,7 +849,7 @@ class BusBranchEditorWidget(QSplitter):
         """
         self.diagram.name = val
 
-    def update_diagram_element(self, device: EditableDevice,
+    def update_diagram_element(self, device: ALL_DEV_TYPES,
                                x: int = 0, y: int = 0, w: int = 0, h: int = 0, r: float = 0,
                                graphic_object: QGraphicsItem = None) -> None:
         """
@@ -870,7 +887,7 @@ class BusBranchEditorWidget(QSplitter):
 
         self.diagram_scene.removeItem(graphic_object)
 
-    def delete_diagram_element(self, device: EditableDevice) -> None:
+    def delete_diagram_element(self, device: ALL_DEV_TYPES) -> None:
         """
         Delete device from the diagram registry
         :param device: EditableDevice
@@ -883,7 +900,7 @@ class BusBranchEditorWidget(QSplitter):
             except:
                 pass
 
-    def remove_element(self, device: EditableDevice,
+    def remove_element(self, device: ALL_DEV_TYPES,
                        graphic_object: Union[QGraphicsItem, None] = None) -> None:
         """
         Remove device from the diagram and the database
@@ -896,6 +913,8 @@ class BusBranchEditorWidget(QSplitter):
             self.remove_from_scene(graphic_object)
 
         self.circuit.delete_elements_by_type(obj=device)
+
+        self.object_editor_table.setModel(None)
 
     def delete_diagram_elements(self, elements: List[EditableDevice]):
         """
@@ -926,7 +945,7 @@ class BusBranchEditorWidget(QSplitter):
 
         if points_group:
 
-            bus_dict: Dict[str: Tuple[int, Bus]] = {b.idtag: (i, b) for i, b in enumerate(self.circuit.buses)}
+            bus_dict: Dict[str: Tuple[int, Bus]] = {b.idtag: (i, b) for i, b in enumerate(self.circuit.get_buses())}
 
             for bus_idtag, point in points_group.locations.items():
                 if point.graphic_object.isSelected():
@@ -967,7 +986,7 @@ class BusBranchEditorWidget(QSplitter):
 
         if points_group:
 
-            bus_dict: Dict[str: Tuple[int, Bus]] = {b.idtag: (i, b) for i, b in enumerate(self.circuit.buses)}
+            bus_dict: Dict[str: Tuple[int, Bus]] = {b.idtag: (i, b) for i, b in enumerate(self.circuit.get_buses())}
 
             for bus_idtag, point in points_group.locations.items():
                 idx, bus = bus_dict[bus_idtag]
@@ -2335,7 +2354,7 @@ class BusBranchEditorWidget(QSplitter):
         if len(buses):
             lst = buses
         else:
-            lst = self.circuit.buses
+            lst = self.circuit.get_buses()
 
         if len(lst):
             # first pass
@@ -2736,14 +2755,14 @@ class BusBranchEditorWidget(QSplitter):
                     else:
                         print("HVDC line {0} {1} has no graphic object!!".format(elm.name, elm.idtag))
 
-    def get_selected(self) -> List[Tuple[EditableDevice, QGraphicsItem]]:
+    def get_selected(self) -> List[Tuple[ALL_DEV_TYPES, QGraphicsItem]]:
         """
         Get selection
         :return: List of EditableDevice, QGraphicsItem
         """
         return [(elm.api_object, elm) for elm in self.diagram_scene.selectedItems()]
 
-    def get_selection_api_objects(self) -> List[EditableDevice]:
+    def get_selection_api_objects(self) -> List[ALL_DEV_TYPES]:
         """
         Get a list of the API objects from the selection
         :return: List[EditableDevice]
@@ -2830,12 +2849,12 @@ class BusBranchEditorWidget(QSplitter):
                 for i in idx:
 
                     # try to get the location from the cache
-                    loc_i = locations_cache.get(self.circuit.buses[i], None)
+                    loc_i = locations_cache.get(self.circuit.get_bus_at(i), None)
 
                     if loc_i is None:
                         # search and store
-                        loc_i = self.diagram.query_point(self.circuit.buses[i])
-                        locations_cache[self.circuit.buses[i]] = loc_i
+                        loc_i = self.diagram.query_point(self.circuit.get_bus_at(i))
+                        locations_cache[self.circuit.get_bus_at(i)] = loc_i
 
                     x_arr.append(loc_i.x)
                     y_arr.append(loc_i.y)
@@ -2911,6 +2930,7 @@ class BusBranchEditorWidget(QSplitter):
             if len(x) > 0:
 
                 # search available results
+                # TODO: Fix this
                 power_data = api_object.get_active_injection_profiles_dictionary()
                 voltage = dict()
 

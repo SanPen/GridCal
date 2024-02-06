@@ -154,6 +154,7 @@ class SolverType(Enum):
     DC = 'Linear DC'
     HELM = 'Holomorphic Embedding'
     ZBUS = 'Z-Gauss-Seidel'
+    PowellDogLeg = "Powell's Dog Leg"
     IWAMOTO = 'Iwamoto-Newton-Raphson'
     CONTINUATION_NR = 'Continuation-Newton-Raphson'
     HELMZ = 'HELM-Z'
@@ -742,6 +743,14 @@ class DeviceType(Enum):
     ShuntDevice = 'Shunt'
     UpfcDevice = 'UPFC'  # unified power flow controller
     ExternalGridDevice = 'External grid'
+
+    PiMeasurementDevice = 'Pi Measurement'
+    QiMeasurementDevice = 'Qi Measurement'
+    PfMeasurementDevice = 'Pf Measurement'
+    QfMeasurementDevice = 'Qf Measurement'
+    VmMeasurementDevice = 'Vm Measurement'
+    IfMeasurementDevice = 'If Measurement'
+
     WireDevice = 'Wire'
     SequenceLineDevice = 'Sequence line'
     UnderGroundLineDevice = 'Underground line'
@@ -892,6 +901,11 @@ class AvailableTransferMode(Enum):
 
     @staticmethod
     def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
         try:
             return AvailableTransferMode[s]
         except KeyError:
@@ -899,6 +913,10 @@ class AvailableTransferMode(Enum):
 
     @classmethod
     def list(cls):
+        """
+
+        :return:
+        """
         return list(map(lambda c: c.value, cls))
 
 
@@ -955,3 +973,49 @@ class LogSeverity(Enum):
             return LogSeverity[s]
         except KeyError:
             return s
+
+
+class SparseSolver(Enum):
+    """
+    Sparse solvers to use
+    """
+    ILU = 'ILU'
+    KLU = 'KLU'
+    SuperLU = 'SuperLU'
+    Pardiso = 'Pardiso'
+    GMRES = 'GMRES'
+    UMFPACK = 'UmfPack'
+    UMFPACKTriangular = 'UmfPackTriangular'
+
+    def __str__(self):
+        return self.value
+
+
+# class MeasurementType(Enum):
+#     """
+#     Enumeration of Measurement types
+#     """
+#     Pinj = "Active power injection",
+#     Qinj = "Reactive power injection",
+#     Vmag = "Voltage magnitude",
+#     Pflow = "Active power flow",
+#     Qflow = "Reactive power flow",
+#     Iflow = "Current module flow"
+#
+#     def __str__(self):
+#         return self.value
+#
+#     def __repr__(self):
+#         return str(self)
+#
+#     @staticmethod
+#     def argparse(s):
+#         """
+#
+#         :param s:
+#         :return:
+#         """
+#         try:
+#             return MeasurementType[s]
+#         except KeyError:
+#             return s

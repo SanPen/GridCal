@@ -5,6 +5,7 @@ from GridCalEngine.api import *
 def test_numerical_cicuit_generator_contingencies():
     """
     Check whether the generator contingency present on the gridcal file is applied correctly
+    This test compares the generator active power with the expected power when applying the contingency.
     :return: Nothing if ok, fails if not
     """
     for i, fname in enumerate([
@@ -18,7 +19,8 @@ def test_numerical_cicuit_generator_contingencies():
         #
         #     nc.set_contingency_status(contingencies_list=[cnt])
 
-        cnt = main_circuit.contingencies[0]  # yo sé que la primera contingencia es cambiar el generador del bus 1 en 120%
+        # yo sé que la primera contingencia es cambiar el generador del bus 1 en 120%
+        cnt = main_circuit.contingencies[0]
 
         p_prev = nc.generator_data.p[1]  # P del primer generador antes del cambio
         nc.set_contingency_status(contingencies_list=[cnt])
@@ -27,9 +29,11 @@ def test_numerical_cicuit_generator_contingencies():
 
         assert p_prev * change == p_post
 
+
 def test_numerical_cicuit_branch_contingencies():
     """
     Check whether the branch contingency present on the gridcal file is applied correctly
+    This test compares the number of contingencies with the number of deactivated branches.
     :return: Nothing if ok, fails if not
     """
     for i, fname in enumerate([
@@ -46,23 +50,23 @@ def test_numerical_cicuit_branch_contingencies():
         assert len(cnt_branch) == len(cnt)
 
 
-# def test_numerical_cicuit_spv():
-#     """
-#     Compare the PSSE PTDF and the GridCal PTDF for IEEE14, IEEE30, IEEE118 and REE networks
-#     """
-#     fname_cont = os.path.join('data', 'grids', 'IEEE14-gen120.gridcal')
-#
-#     main_circuit = FileOpen(fname_cont).open()
-#     nc = compile_numerical_circuit_at(main_circuit, t_idx=None)
-#
-#     # for cnt in main_circuit.contingencies:
-#     #
-#     #     nc.set_contingency_status(contingencies_list=[cnt])
-#
-#     cnt = main_circuit.contingencies[0]  # yo sé que la primera contingencia es cambiar el generador del bus 1 en 120%
-#
-#     p_antes = nc.generator_data.p[1]  # P del primer generador antes del cambio
-#     nc.set_contingency_status(contingencies_list=[cnt])
-#     p_despues = nc.generator_data.p[1]
-#
-#     assert p_antes * 1.20 == p_despues
+def test_numerical_cicuit_spv():
+    """
+    Check that the numerical circuit does apply a generator contingency correctly
+    """
+    fname_cont = os.path.join('data', 'grids', 'IEEE14-gen120.gridcal')
+
+    main_circuit = FileOpen(fname_cont).open()
+    nc = compile_numerical_circuit_at(main_circuit, t_idx=None)
+
+    # for cnt in main_circuit.contingencies:
+    #
+    #     nc.set_contingency_status(contingencies_list=[cnt])
+
+    cnt = main_circuit.contingencies[0]  # yo sé que la primera contingencia es cambiar el generador del bus 1 en 120%
+
+    p_antes = nc.generator_data.p[1]  # P del primer generador antes del cambio
+    nc.set_contingency_status(contingencies_list=[cnt])
+    p_despues = nc.generator_data.p[1]
+
+    assert p_antes * 1.20 == p_despues

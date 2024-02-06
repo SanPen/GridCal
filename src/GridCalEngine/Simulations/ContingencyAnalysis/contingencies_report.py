@@ -323,7 +323,8 @@ class ContingencyResultsReport:
                 srap_max_power: float = 1400.0,
                 multi_contingency: LinearMultiContingency = None,
                 PTDF: Mat = None,
-                available_power: Vec = None):
+                available_power: Vec = None,
+                srap_fixing_probability:Mat = None):
         """
         Analize contingency resuts and add them to the report
         :param t: time index
@@ -373,7 +374,8 @@ class ContingencyResultsReport:
                     rating=numerical_circuit.branch_data.rates[m],
                     srap_pmax_mw=srap_max_power,
                     available_power=available_power,
-                    top_n=5
+                    top_n=5,
+                    srap_fixing_probability=srap_fixing_probability
                 )
 
                 # solved_by_srap, max_srap_power = calc_srap(m,

@@ -251,9 +251,11 @@ def test_ptdf_psse():
             for i in nodes_id:
                 print('----Node ongoing: {}'.format(i))
                 if name == "IEEE118":
-                    if i == '69': continue  # Skipping slack (is zero)
+                    if i == '69':
+                        continue  # Skipping slack (is zero)
                 else:
-                    if i == '1': continue  # Skipping slack (is zero)
+                    if i == '1':
+                        continue  # Skipping slack (is zero)
 
                 if 'NUDO{}'.format(i) not in ptdf.columns:
                     print('El nudo {} no se ha calculado por PSSe')
@@ -446,20 +448,24 @@ def test_mlodf_sanpen():
         assert ok
 
 
-
-def test_ptdf_goodness():
+def test_ptdf_generation_contingencies():
     """
     Compare the PSSE PTDF and the GridCal PTDF for IEEE14, IEEE30, IEEE118 and REE networks
+    In this test we check a number of grids where only generation variations
+    have been introduced via generation contingencies
+
+    The test consists in performing the contingencies with a Power flow driver (with linear power flow)
+    later with a PTDF driver and both should provide the same values
     """
-    for fname  in [
+    for fname in [
         os.path.join('data', 'grids', 'IEEE14-gen120.gridcal'),
-        #os.path.join('data', 'grids', 'IEEE14-gen80.gridcal'),
-        #os.path.join('data', 'grids', 'IEEE30-gen80.gridcal'),
-        #os.path.join('data', 'grids', 'IEEE30-gen120.gridcal'),
-        #os.path.join('data', 'grids', 'IEEE118-gen80.gridcal'),
-        #os.path.join('data', 'grids', 'IEEE118-gen120.gridcal'),
-        #os.path.join('data', 'grids', 'IEEE118-gen80-rand.gridcal'),
-        #os.path.join('data', 'grids', 'IEEE118-gen120-one.gridcal'),
+        os.path.join('data', 'grids', 'IEEE14-gen80.gridcal'),
+        os.path.join('data', 'grids', 'IEEE30-gen80.gridcal'),
+        os.path.join('data', 'grids', 'IEEE30-gen120.gridcal'),
+        os.path.join('data', 'grids', 'IEEE118-gen80.gridcal'),
+        os.path.join('data', 'grids', 'IEEE118-gen120.gridcal'),
+        os.path.join('data', 'grids', 'IEEE118-gen80-one.gridcal'),
+        os.path.join('data', 'grids', 'IEEE118-gen120-one.gridcal'),
 
     ]:
         main_circuit = FileOpen(fname).open()
@@ -476,19 +482,25 @@ def test_ptdf_goodness():
                                                           linear_multiple_contingencies=None)
         cont_analysis_driver1.run()
 
-        #linear_analysis = LinearAnalysisDriver(grid=main_circuit)
-        #linear_analysis.run()
-        #linear_multi_contingency = LinearMultiContingencies(grid=main_circuit)
-        #linear_multi_contingency.compute(ptdf=linear_analysis.results.PTDF, lodf=linear_analysis.results.LODF)
+        # linear_analysis = LinearAnalysisDriver(grid=main_circuit)
+        # linear_analysis.run()
+        # linear_multi_contingency = LinearMultiContingencies(grid=main_circuit)
+        # linear_multi_contingency.compute(ptdf=linear_analysis.results.PTDF, lodf=linear_analysis.results.LODF)
         options2 = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyMethod.PTDF)
-        cont_analysis_driver2 = ContingencyAnalysisDriver(grid=main_circuit, options=options2 ) #, linear_multiple_contingencies=linear_multi_contingency)
+        cont_analysis_driver2 = ContingencyAnalysisDriver(grid=main_circuit, options=options2)  # , linear_multiple_contingencies=linear_multi_contingency)
         cont_analysis_driver2.run()
 
-        assert np.allclose(cont_analysis_driver1.results.Sf, cont_analysis_driver2.results.Sf, atol=1.5)
+        ok = np.allclose(cont_analysis_driver1.results.Sf, cont_analysis_driver2.results.Sf, atol=1.5)
+        assert ok
 
-def test_lodf_goodness():
+
+def test_lodf_single_contingencies():
     """
-    Compare the PSSE LODF and the GridCal LODF for IEEE14, IEEE30, IEEE118 and REE networks
+    Compare the PSSE PTDF and the GridCal PTDF for IEEE14, IEEE30, IEEE118 and REE networks
+    In this test we check the single contingencies against the power flow driver
+
+    The test consists in performing the contingencies with a Power flow driver (with linear power flow)
+    later with a PTDF driver and both should provide the same values
     """
     for fname in [
         os.path.join('data', 'grids', 'IEEE14-13_14.gridcal'),
@@ -506,8 +518,12 @@ def test_lodf_goodness():
                                       dispatch_storage=True,
                                       control_q=ReactivePowerControlMode.NoControl,
                                       control_p=False)
-        options1 = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyMethod.PowerFlow)
-        cont_analysis_driver1 = ContingencyAnalysisDriver(grid=main_circuit, options=options1,
+
+        options1 = ContingencyAnalysisOptions(pf_options=pf_options,
+                                              engine=ContingencyMethod.PowerFlow)
+
+        cont_analysis_driver1 = ContingencyAnalysisDriver(grid=main_circuit,
+                                                          options=options1,
                                                           linear_multiple_contingencies=None)
         cont_analysis_driver1.run()
 
@@ -516,11 +532,11 @@ def test_lodf_goodness():
         linear_multi_contingency = LinearMultiContingencies(grid=main_circuit)
         linear_multi_contingency.compute(ptdf=linear_analysis.results.PTDF, lodf=linear_analysis.results.LODF)
         options2 = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyMethod.PTDF)
-        cont_analysis_driver2 = ContingencyAnalysisDriver(grid=main_circuit, options=options2)#linear_multiple_contingencies=linear_multi_contingency)
+        cont_analysis_driver2 = ContingencyAnalysisDriver(grid=main_circuit, options=options2)  # linear_multiple_contingencies=linear_multi_contingency)
         cont_analysis_driver2.run()
 
-        assert np.allclose(cont_analysis_driver1.results.Sf, cont_analysis_driver2.results.Sf, atol=1.5)
-
+    ok = np.allclose(cont_analysis_driver1.results.Sf, cont_analysis_driver2.results.Sf, atol=1.5)
+    assert ok
 
 
 if __name__ == '__main__':

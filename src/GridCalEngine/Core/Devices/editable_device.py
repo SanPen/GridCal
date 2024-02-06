@@ -22,20 +22,56 @@ from GridCalEngine.enumerations import (DeviceType, TimeFrame, BuildStatus, Wind
                                         ConverterControlType)
 from GridCalEngine.basic_structures import Vec, IntVec, BoolVec
 
+# types that can be assigned to a GridCal property
+GCPROP_TYPES = Union[
+    Type[int],
+    Type[bool],
+    Type[float],
+    Type[str],
+    DeviceType,
+    Type[BuildStatus],
+    Type[WindingsConnection],
+    Type[TransformerControlType],
+    Type[ConverterControlType]
+]
+
+
+def parse_idtag(val: Union[str, None]) -> str:
+    """
+    idtag setter
+    :param val: any string or None
+    """
+    if val is None:
+        return uuid.uuid4().hex  # generate a proper UUIDv4 string
+    elif isinstance(val, str):
+        if len(val) == 32:
+            return val  # this is probably a proper UUID
+        elif len(val) == 0:
+            return uuid.uuid4().hex  # generate a proper UUIDv4 string
+        else:
+            candidate_val = val.replace('_', '').replace('-', '')
+            if len(candidate_val) == 32:
+                return candidate_val  # if the string passed can be a UUID, set it
+            else:
+                return val  # otherwise this is just a plain string, that we hope is valid...
+    else:
+        return str(val)
+
 
 class GCProp:
     """
     GridCal property
     """
+
     def __init__(self,
                  prop_name: str,
                  units: str,
-                 tpe: Union[Type[int], Type[bool], Type[float], Type[str], DeviceType, Type[BuildStatus]],
+                 tpe: GCPROP_TYPES,
                  definition: str,
                  profile_name: str = '',
                  display: bool = True,
                  editable: bool = True,
-                 old_names: List[str] = list()):
+                 old_names: List[str] = None):
         """
         GridCal property
         :param prop_name:
@@ -61,7 +97,7 @@ class GCProp:
 
         self.editable = editable
 
-        self.old_names = old_names
+        self.old_names = old_names if old_names is not None else list()
 
     def has_profile(self) -> bool:
         """
@@ -100,6 +136,12 @@ class GCProp:
                 "descriptions": self.definition,
                 'comment': ''}
 
+    def __str__(self):
+        return self.name
+
+    def __repr__(self):
+        return "prop:" + self.name
+
 
 class EditableDevice:
     """
@@ -119,8 +161,7 @@ class EditableDevice:
         :param code: alternative code to identify this object in other databases (i.e. psse number tec...)
         """
 
-        self._idtag = ''
-        self.idtag = idtag  # use the setter to assign _idtag
+        self._idtag = parse_idtag(val=idtag)
 
         self._name: str = name
 
@@ -130,6 +171,9 @@ class EditableDevice:
 
         # associated graphic object
         self._graphic_obj = None  # todo: this should disappear
+
+        # list of registered properties. This is supremelly useful when accessing via the Table and Tree models
+        self.property_list: List[GCProp] = list()
 
         self.registered_properties: Dict[str, GCProp] = dict()
 
@@ -178,21 +222,7 @@ class EditableDevice:
         idtag setter
         :param val: any string or None
         """
-        if val is None:
-            self._idtag = uuid.uuid4().hex  # generate a proper UUIDv4 string
-        elif isinstance(val, str):
-            if len(val) == 32:
-                self._idtag = val  # this is probably a proper UUID
-            elif len(val) == 0:
-                self._idtag = uuid.uuid4().hex  # generate a proper UUIDv4 string
-            else:
-                candidate_val = val.replace('_', '').replace('-', '')
-                if len(candidate_val) == 32:
-                    self._idtag = candidate_val  # if the string passed can be a UUID, set it
-                else:
-                    self._idtag = val  # otherwise this is just a plain string, that we hope is valid...
-        else:
-            self._idtag = str(val)  # any other thing passed as idtag, we convert it to string and hope for the best...
+        self._idtag = parse_idtag(val)
 
     def flatten_idtag(self):
         """
@@ -217,27 +247,21 @@ class EditableDevice:
         lenghts = [8, 4, 4, 4, 12]
         chunks = list()
         s = 0
-        for l in lenghts:
-            a = self.idtag[s:s + l]
+        for length_ in lenghts:
+            a = self.idtag[s:s + length_]
             chunks.append(a)
-            s += l
+            s += length_
         return "-".join(chunks)
 
     def register(self,
                  key: str,
                  units: str,
-                 tpe: Union[Type[int], Type[bool], Type[float], Type[str],
-                            DeviceType,
-                            Type[BuildStatus],
-                            Type[WindingsConnection],
-                            Type[TransformerControlType],
-                            Type[ConverterControlType]
-                            ],
+                 tpe: GCPROP_TYPES,
                  definition: str,
                  profile_name: str = '',
                  display: bool = True,
                  editable: bool = True,
-                 old_names: List[str] = list()):
+                 old_names: List[str] = None):
         """
         Register property
         The property must exist, and if provided, the profile_name property must exist too
@@ -252,14 +276,21 @@ class EditableDevice:
         """
         assert (hasattr(self, key))  # the property must exist, this avoids bugs when registering
 
-        self.registered_properties[key] = GCProp(prop_name=key,
-                                                 units=units,
-                                                 tpe=tpe,
-                                                 definition=definition,
-                                                 profile_name=profile_name,
-                                                 display=display,
-                                                 editable=editable,
-                                                 old_names=old_names)
+        prop = GCProp(prop_name=key,
+                      units=units,
+                      tpe=tpe,
+                      definition=definition,
+                      profile_name=profile_name,
+                      display=display,
+                      editable=editable,
+                      old_names=old_names)
+
+        if key in self.registered_properties.keys():
+            raise Exception(f"Property {key} already registered!")
+
+        self.registered_properties[key] = prop
+
+        self.property_list.append(prop)
 
         if profile_name != '':
             assert (hasattr(self, profile_name))  # the profile property must exist, this avoids bugs in registering
@@ -288,10 +319,12 @@ class EditableDevice:
         Get the associated graphical object (if any)
         :return: graphical object
         """
+        # todo: this should disappear
         return self._graphic_obj
 
     @graphic_obj.setter
     def graphic_obj(self, obj):
+        # todo: this should disappear
         self._graphic_obj = obj
 
     def generate_uuid(self):
@@ -338,6 +371,85 @@ class EditableDevice:
         Return a list of headers
         """
         return list(self.registered_properties.keys())
+
+    def get_number_of_properties(self) -> int:
+        """
+        Return the number of registered properties
+        :return: int
+        """
+        return len(self.property_list)
+
+    def get_properties_containing_object(self, obj: "EditableDevice") -> Tuple[List[GCProp], List[int]]:
+        """
+        Return the list of properties that contain a certain object
+        :param obj:
+        :return: list of GCProp, list of indices
+        """
+        props = list()
+        indices = list()
+        for i, prop in enumerate(self.property_list):
+            if getattr(self, prop.name) == obj:
+                props.append(prop)
+                indices.append(i)
+
+        return props, indices
+
+    def get_property_value(self, prop: GCProp, t_idx: Union[None, int]) -> GCProp:
+        """
+        Return the stored object value from the property index
+        :param prop: GCProp
+        :param t_idx: Time index, None for Snapshot values
+        :return: Whatever value is there
+        """
+
+        if t_idx is None:
+            # pick the snapshot value whatever it is
+            return getattr(self, prop.name)
+        else:
+            if prop.has_profile():
+                # the property has a profile, return the value at t_idx
+                return getattr(self, prop.profile_name)[t_idx]
+            else:
+                # the property has no profile, just return it
+                return getattr(self, prop.name)
+
+    def get_property_by_idx(self, property_idx: int) -> GCProp:
+        """
+        Return the stored object value from the property index
+        :param property_idx: Property index
+        :return: GCProp
+        """
+        return self.property_list[property_idx]
+
+    def get_property_value_by_idx(self, property_idx: int, t_idx: Union[None, int]) -> Any:
+        """
+        Return the stored object value from the property index
+        :param property_idx: Property index
+        :param t_idx: Time index, None for Snapshot values
+        :return: Whatever value is there
+        """
+        prop = self.property_list[property_idx]
+        return self.get_property_value(prop=prop, t_idx=t_idx)
+
+    def set_property_value(self, prop: GCProp, value: Any, t_idx: Union[None, int]):
+        """
+        Return the stored object value from the property index
+        :param prop: GCProp
+        :param value: any value is there
+        :param t_idx: Time index, None for Snapshot values
+        :return: Whatever value is there
+        """
+
+        if t_idx is None:
+            # set the snapshot value whatever it is
+            setattr(self, prop.name, value)
+        else:
+            if prop.has_profile():
+                # the property has a profile, get it and set the t_idx value
+                getattr(self, prop.profile_name)[t_idx] = value
+            else:
+                # the property has no profile, just return it
+                setattr(self, prop.name, value)
 
     def create_profiles(self, index):
         """
@@ -525,4 +637,3 @@ class EditableDevice:
         g = random.randint(0, 128)
         b = random.randint(0, 128)
         return self.rgb2hex(r, g, b)
-

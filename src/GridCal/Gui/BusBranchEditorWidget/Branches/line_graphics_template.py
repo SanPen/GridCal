@@ -477,13 +477,7 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         :return:
         """
         if self.api_object is not None:
-            mdl = ObjectsModel(objects=[self.api_object],
-                               editable_headers=self.api_object.registered_properties,
-                               parent=self.editor.object_editor_table,
-                               editable=True,
-                               transposed=True)
-
-            self.editor.object_editor_table.setModel(mdl)
+            self.editor.set_editor_model(api_object=self.api_object)
 
     def remove_widget(self):
         """
@@ -721,7 +715,9 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
             # update the buses (the deleted one and the updated one)
             if removed_bus is not None:
                 # merge the removed bus with the remaining one
+                # TODO: Figure out how to merge two buses
                 updated_bus.graphic_obj.merge(removed_bus.graphic_obj)
+                # circuit.merge_buses(bus1=bus_t, bus2=bus_f)
 
                 # remove the updated bus children
                 for g in updated_bus.graphic_obj.shunt_children:

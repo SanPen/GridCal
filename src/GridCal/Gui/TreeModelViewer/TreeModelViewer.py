@@ -68,7 +68,7 @@ class TreeModelViewerGUI(QMainWindow):
             self.LOCK(False)
 
     def filter_main_tree(self):
-        self.proxyModel.setFilterRegExp(self.ui.filterLineEdit.text())
+        self.proxyModel.setFilterRegularExpression(self.ui.filterLineEdit.text())
 
     def update_main_tree_on_click(self, index):
         # ix = self.proxyModel.mapToSource(index)

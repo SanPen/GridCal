@@ -44,13 +44,14 @@ from GridCalEngine.IO.raw.devices.psse_circuit import PsseCircuit
 def get_gridcal_bus(psse_bus: RawBus,
                     area_dict: Dict[int, dev.Area],
                     zone_dict: Dict[int, dev.Zone],
-                    logger: Logger) -> dev.Bus:
+                    logger: Logger) -> Tuple[dev.Bus, Union[dev.Shunt, None]]:
     """
 
     :return:
     """
 
     bustype = {1: dev.BusMode.PQ, 2: dev.BusMode.PV, 3: dev.BusMode.Slack, 4: dev.BusMode.PQ}
+    sh = None
 
     if psse_bus.version >= 33:
         # create bus
@@ -90,8 +91,6 @@ def get_gridcal_bus(psse_bus: RawBus,
                            G=psse_bus.GL, B=psse_bus.BL,
                            active=True)
 
-            bus.shunts.append(sh)
-
     else:
         logger.add_warning('Bus not implemented for version', str(psse_bus.version))
         # create bus (try v33)
@@ -124,7 +123,7 @@ def get_gridcal_bus(psse_bus: RawBus,
     if bus.name == '':
         bus.name = 'Bus ' + str(psse_bus.I)
 
-    return bus
+    return bus, sh
 
 
 def get_gridcal_load(psse_load: RawLoad, bus: dev.Bus, logger: Logger) -> dev.Load:
@@ -727,10 +726,10 @@ def psse_to_gridcal(psse_circuit: PsseCircuit,
             zones_dict[abs(psse_bus.ZONE)] = dev.Zone(name='Z' + str(abs(psse_bus.ZONE)))
             missing_zones = True
 
-        bus = get_gridcal_bus(psse_bus=psse_bus,
-                              area_dict=area_dict,
-                              zone_dict=zones_dict,
-                              logger=logger)
+        bus, bus_shunt = get_gridcal_bus(psse_bus=psse_bus,
+                                         area_dict=area_dict,
+                                         zone_dict=zones_dict,
+                                         logger=logger)
 
         # bus.ensure_area_objects(circuit)
 
@@ -739,6 +738,10 @@ def psse_to_gridcal(psse_circuit: PsseCircuit,
 
         circuit.add_bus(bus)
         psse_bus_dict[psse_bus.I] = bus
+
+        # legacy PSSe buses may have shunts declared within, so add them
+        if bus_shunt is not None:
+            circuit.add_shunt(bus=bus, api_obj=bus_shunt)
 
     if missing_areas:
         circuit.areas = [v for k, v in area_dict.items()]
