@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 import numpy as np
-from typing import Union, TYPE_CHECKING
+from typing import Union, TYPE_CHECKING, List, Dict
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, QPoint
 from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QPainter, QPainterPath, QFont
@@ -306,20 +306,28 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
         # Arrange line positions
         self.terminal.process_callbacks(self.pos() + self.terminal.pos())
 
-    def create_children_widgets(self):
+    def create_children_widgets(self, injections_by_tpe: Dict[DeviceType, List[EditableDevice]]):
         """
         Create the icons of the elements that are attached to the API bus object
         Returns:
             Nothing
         """
-        for elm in self.api_object.pumps:
-            self.add_pump(elm)
+        for tpe, dev_list in injections_by_tpe.items():
 
-        for elm in self.api_object.turbines:
-            self.add_turbine(elm)
+            if tpe == DeviceType.FluidPumpDevice:
+                for elm in dev_list:
+                    self.add_pump(elm)
 
-        for elm in self.api_object.p2xs:
-            self.add_p2x(elm)
+            elif tpe == DeviceType.FluidTurbineDevice:
+                for elm in dev_list:
+                    self.add_turbine(elm)
+
+            elif tpe == DeviceType.FluidP2XDevice:
+                for elm in dev_list:
+                    self.add_p2x(elm)
+
+            else:
+                raise Exception("Unknown device type:" + str(tpe))
 
         self.arrange_children()
 

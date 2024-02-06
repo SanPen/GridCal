@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 import numpy as np
-from typing import Union, TYPE_CHECKING
+from typing import Union, TYPE_CHECKING, List, Dict
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, QPoint, QRectF, QRect
 from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor
@@ -302,26 +302,36 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         # Arrange line positions
         self.terminal.process_callbacks(self.pos() + self.terminal.pos())
 
-    def create_children_widgets(self):
+    def create_children_widgets(self, injections_by_tpe: Dict[DeviceType, List[EditableDevice]]):
         """
         Create the icons of the elements that are attached to the API bus object
         Returns:
             Nothing
         """
-        for elm in self.api_object.loads:
-            self.add_load(elm)
 
-        for elm in self.api_object.static_generators:
-            self.add_static_generator(elm)
+        for tpe, dev_list in injections_by_tpe.items():
 
-        for elm in self.api_object.generators:
-            self.add_generator(elm)
+            if tpe == DeviceType.LoadDevice:
+                for elm in dev_list:
+                    self.add_load(elm)
 
-        for elm in self.api_object.shunts:
-            self.add_shunt(elm)
+            elif tpe == DeviceType.StaticGeneratorDevice:
+                for elm in dev_list:
+                    self.add_static_generator(elm)
 
-        for elm in self.api_object.batteries:
-            self.add_battery(elm)
+            elif tpe == DeviceType.GeneratorDevice:
+                for elm in dev_list:
+                    self.add_generator(elm)
+
+            elif tpe == DeviceType.ShuntDevice:
+                for elm in dev_list:
+                    self.add_shunt(elm)
+
+            elif tpe == DeviceType.BatteryDevice:
+                for elm in dev_list:
+                    self.add_battery(elm)
+            else:
+                raise Exception("Unknown device type:" + str(tpe))
 
         self.arrange_children()
 

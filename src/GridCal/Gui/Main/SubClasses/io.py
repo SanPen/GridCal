@@ -425,6 +425,8 @@ class IoMain(ConfigurationMain):
                     # add to schematic
                     if diagram_widget is not None:
                         if isinstance(diagram_widget, BusBranchEditorWidget):
+                            injections_by_bus = self.circuit.get_injection_devices_grouped_by_bus()
+                            injections_by_fluid_node = self.circuit.get_injection_devices_grouped_by_fluid_node()
                             diagram_widget.add_elements_to_schematic(buses=new_circuit.buses,
                                                                      lines=new_circuit.lines,
                                                                      dc_lines=new_circuit.dc_lines,
@@ -435,6 +437,8 @@ class IoMain(ConfigurationMain):
                                                                      upfc_devices=new_circuit.upfc_devices,
                                                                      fluid_nodes=new_circuit.fluid_nodes,
                                                                      fluid_paths=new_circuit.fluid_paths,
+                                                                     injections_by_bus=injections_by_bus,
+                                                                     injections_by_fluid_node=injections_by_fluid_node,
                                                                      explode_factor=1.0,
                                                                      prog_func=None,
                                                                      text_func=None)

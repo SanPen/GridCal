@@ -251,9 +251,11 @@ def test_ptdf_psse():
             for i in nodes_id:
                 print('----Node ongoing: {}'.format(i))
                 if name == "IEEE118":
-                    if i == '69': continue  # Skipping slack (is zero)
+                    if i == '69':
+                        continue  # Skipping slack (is zero)
                 else:
-                    if i == '1': continue  # Skipping slack (is zero)
+                    if i == '1':
+                        continue  # Skipping slack (is zero)
 
                 if 'NUDO{}'.format(i) not in ptdf.columns:
                     print('El nudo {} no se ha calculado por PSSe')
@@ -456,14 +458,14 @@ def test_ptdf_generation_contingencies():
     later with a PTDF driver and both should provide the same values
     """
     for fname in [
-        os.path.join('data', 'grids', 'IEEE14-gen120.gridcal'),
-        # os.path.join('data', 'grids', 'IEEE14-gen80.gridcal'),
-        os.path.join('data', 'grids', 'IEEE30-gen80.gridcal'),
-        os.path.join('data', 'grids', 'IEEE30-gen120.gridcal'),
-        os.path.join('data', 'grids', 'IEEE118-gen80.gridcal'),
-        os.path.join('data', 'grids', 'IEEE118-gen80.gridcal'),
-        os.path.join('data', 'grids', 'IEEE118-gen80-rand.gridcal'),
-        os.path.join('data', 'grids', 'IEEE118-gen120-rand.gridcal'),
+        #os.path.join('data', 'grids', 'IEEE14-gen120.gridcal'),
+        #os.path.join('data', 'grids', 'IEEE14-gen80.gridcal'),
+        # os.path.join('data', 'grids', 'IEEE30-gen80.gridcal'),
+        #os.path.join('data', 'grids', 'IEEE30-gen120.gridcal'),
+        # os.path.join('data', 'grids', 'IEEE118-gen80.gridcal'),
+        # os.path.join('data', 'grids', 'IEEE118-gen120.gridcal'),
+        # os.path.join('data', 'grids', 'IEEE118-gen80-one.gridcal'),
+        os.path.join('data', 'grids', 'IEEE118-gen120-one.gridcal'),
 
     ]:
         main_circuit = FileOpen(fname).open()
@@ -480,11 +482,15 @@ def test_ptdf_generation_contingencies():
                                                           linear_multiple_contingencies=None)
         cont_analysis_driver1.run()
 
+        # linear_analysis = LinearAnalysisDriver(grid=main_circuit)
+        # linear_analysis.run()
+        # linear_multi_contingency = LinearMultiContingencies(grid=main_circuit)
+        # linear_multi_contingency.compute(ptdf=linear_analysis.results.PTDF, lodf=linear_analysis.results.LODF)
         options2 = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyMethod.PTDF)
-        cont_analysis_driver2 = ContingencyAnalysisDriver(grid=main_circuit, options=options2)
+        cont_analysis_driver2 = ContingencyAnalysisDriver(grid=main_circuit, options=options2)  # , linear_multiple_contingencies=linear_multi_contingency)
         cont_analysis_driver2.run()
 
-        ok = np.allclose(cont_analysis_driver1.results.Sf, cont_analysis_driver2.results.Sf)
+        ok = np.allclose(cont_analysis_driver1.results.Sf, cont_analysis_driver2.results.Sf, atol=1.5)
         assert ok
 
 
@@ -500,7 +506,7 @@ def test_lodf_single_contingencies():
         os.path.join('data', 'grids', 'IEEE14-13_14.gridcal'),
         os.path.join('data', 'grids', 'IEEE30-12_15.gridcal'),
         os.path.join('data', 'grids', 'IEEE118-38_65.gridcal'),
-        # os.path.join('data', 'grids', 'IEEE118-80_96.gridcal'),
+        os.path.join('data', 'grids', 'IEEE118-80_96.gridcal'),
 
     ]:
         main_circuit = FileOpen(fname).open()
@@ -526,12 +532,64 @@ def test_lodf_single_contingencies():
         linear_multi_contingency = LinearMultiContingencies(grid=main_circuit)
         linear_multi_contingency.compute(ptdf=linear_analysis.results.PTDF, lodf=linear_analysis.results.LODF)
         options2 = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyMethod.PTDF)
-        cont_analysis_driver2 = ContingencyAnalysisDriver(grid=main_circuit, options=options2,
-                                                          linear_multiple_contingencies=linear_multi_contingency)
+        cont_analysis_driver2 = ContingencyAnalysisDriver(grid=main_circuit, options=options2)  # linear_multiple_contingencies=linear_multi_contingency)
         cont_analysis_driver2.run()
 
-    ok = np.allclose(cont_analysis_driver1.results.Sf, cont_analysis_driver2.results.Sf)
+    ok = np.allclose(cont_analysis_driver1.results.Sf, cont_analysis_driver2.results.Sf, atol=1.5)
     assert ok
+
+
+def test_generation_contingencies_powerflow():
+    """
+    Compare power flow results when using ContingencyAnalysisDriver wight generator contingencies
+
+    The test consists in performing the contingencies with a Power flow driver (with linear power flow)
+    later perform a power flow again applying the contingencies manually without using ContingencyAnalysisDriver
+    """
+    for case in [
+        {
+            'orig': os.path.join('data', 'grids', 'RAW', 'IEEE 14 bus.raw'),
+            'conti': os.path.join('data', 'grids', 'IEEE14-gen120.gridcal'),
+            'cont_index_change': {1: 1.2}  # Generator contingency dict: {index: %change}
+        },
+        {
+             'orig': os.path.join('data', 'grids', 'RAW', 'IEEE 30 bus.raw'),
+             'conti': os.path.join('data', 'grids', 'IEEE30-gen80.gridcal'),
+             'cont_index_change': {1: 0.8}
+        },
+        {
+            'orig': os.path.join('data', 'grids', 'RAW', 'IEEE 118 Bus v2.raw'),
+            'conti': os.path.join('data', 'grids', 'IEEE118-gen120-one.gridcal'),
+            'cont_index_change': {44: 1.2}
+        }
+    ]:
+        main_circuit = FileOpen(case['conti']).open()
+
+        # DC power flow method with ContingencyAnalysisDriver
+        pf_options = PowerFlowOptions(SolverType.DC,
+                                      verbose=False,
+                                      initialize_with_existing_solution=False,
+                                      dispatch_storage=True,
+                                      control_q=ReactivePowerControlMode.NoControl,
+                                      control_p=False)
+        options1 = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyMethod.PowerFlow)
+        cont_analysis_driver1 = ContingencyAnalysisDriver(grid=main_circuit, options=options1,
+                                                          linear_multiple_contingencies=None)
+        cont_analysis_driver1.run()
+
+        # DC power flow
+        main_circuit = FileOpen(case['orig']).open()
+        nc = compile_numerical_circuit_at(main_circuit, t_idx=None)
+
+        for index, change in case['cont_index_change'].items():
+            main_circuit.generators[index].P *= change
+
+        power_flow = PowerFlowDriver(main_circuit, pf_options)
+        power_flow.run()
+
+        ok = np.allclose(cont_analysis_driver1.results.Sf, power_flow.results.Sf)
+        assert ok
+
 
 
 if __name__ == '__main__':

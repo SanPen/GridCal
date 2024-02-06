@@ -73,6 +73,14 @@ class HvdcData:
         self.C_hvdc_bus_t: sp.lil_matrix = sp.lil_matrix((nelm, nbus),
                                                          dtype=int)  # this ons is just for splitting islands
 
+    def size(self) -> int:
+        """
+        Get size of the structure
+        :return:
+        """
+
+        return self.nelm
+
     def copy(self) -> "HvdcData":
         """
         Make a deep copy of this structure

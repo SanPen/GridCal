@@ -131,6 +131,14 @@ class BranchData:
 
         self.original_idx: IntVec = np.zeros(nelm, dtype=int)
 
+    def size(self) -> int:
+        """
+        Get size of the structure
+        :return:
+        """
+
+        return self.nelm
+
     def slice(self, elm_idx: IntVec, bus_idx: IntVec) -> "BranchData":
         """
         Slice branch data by given indices
