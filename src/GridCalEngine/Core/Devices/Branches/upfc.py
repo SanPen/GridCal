@@ -23,7 +23,6 @@ from GridCalEngine.Core.Devices.Substation.bus import Bus
 from GridCalEngine.enumerations import BuildStatus
 from GridCalEngine.Core.Devices.Branches.templates.parent_branch import ParentBranch
 from GridCalEngine.Core.Devices.editable_device import DeviceType
-from GridCalEngine.Core.Devices.profile import Profile
 
 
 class UPFC(ParentBranch):
@@ -90,9 +89,6 @@ class UPFC(ParentBranch):
                               opex=opex,
                               Cost=cost,
                               device_type=DeviceType.UpfcDevice)
-
-        # List of measurements
-        self.measurements = list()
 
         # total impedance and admittance in p.u.
         self.Rs = rs

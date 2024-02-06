@@ -112,7 +112,7 @@ class InjectionTemplate(EditableDevice):
         self.cn = cn
 
         self.active = active
-        self.active_prof = Profile(default_value=active)
+        self._active_prof = Profile(default_value=active)
 
         self.mttf = mttf
 
@@ -120,7 +120,7 @@ class InjectionTemplate(EditableDevice):
 
         self.Cost = Cost
 
-        self.Cost_prof = Profile(default_value=Cost)
+        self._Cost_prof = Profile(default_value=Cost)
 
         self.capex = capex
 
@@ -146,6 +146,32 @@ class InjectionTemplate(EditableDevice):
 
         self.register(key='Cost', units='e/MWh', tpe=float, definition='Cost of not served energy. Used in OPF.',
                       profile_name='Cost_prof')
+
+    @property
+    def active_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._active_prof
+
+    @active_prof.setter
+    def active_prof(self, val: Profile):
+        assert isinstance(val, Profile)
+        self._active_prof = val
+
+    @property
+    def Cost_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._Cost_prof
+
+    @Cost_prof.setter
+    def Cost_prof(self, val: Profile):
+        assert isinstance(val, Profile)
+        self._Cost_prof = val
 
     def get_S(self) -> complex:
         return complex(0.0, 0.0)
@@ -208,13 +234,39 @@ class LoadLikeTemplate(InjectionTemplate):
                                    device_type=device_type)
 
         self.P = P
-        self.P_prof = Profile(default_value=P)
+        self._P_prof = Profile(default_value=P)
 
         self.Q = Q
-        self.Q_prof = Profile(default_value=Q)
+        self._Q_prof = Profile(default_value=Q)
 
         self.register(key='P', units='MW', tpe=float, definition='Active power', profile_name='P_prof')
         self.register(key='Q', units='MVAr', tpe=float, definition='Reactive power', profile_name='Q_prof')
+
+    @property
+    def P_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._P_prof
+
+    @P_prof.setter
+    def P_prof(self, val: Profile):
+        assert isinstance(val, Profile)
+        self._P_prof = val
+
+    @property
+    def Q_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._Q_prof
+
+    @Q_prof.setter
+    def Q_prof(self, val: Profile):
+        assert isinstance(val, Profile)
+        self._Q_prof = val
 
     def get_S(self) -> complex:
         """
@@ -360,7 +412,7 @@ class GeneratorLikeTemplate(InjectionTemplate):
                                    device_type=device_type)
 
         self.P = P
-        self.P_prof = Profile(default_value=P)
+        self._P_prof = Profile(default_value=P)
 
         # Minimum dispatched power in MW
         self.Pmin = Pmin
@@ -371,6 +423,19 @@ class GeneratorLikeTemplate(InjectionTemplate):
         self.register(key='P', units='MW', tpe=float, definition='Active power', profile_name='P_prof')
         self.register(key='Pmin', units='MW', tpe=float, definition='Minimum active power. Used in OPF.')
         self.register(key='Pmax', units='MW', tpe=float, definition='Maximum active power. Used in OPF.')
+
+    @property
+    def P_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._P_prof
+
+    @P_prof.setter
+    def P_prof(self, val: Profile):
+        assert isinstance(val, Profile)
+        self._P_prof = val
 
     def get_properties_dict(self, version=3):
         """
@@ -480,23 +545,77 @@ class ShuntLikeTemplate(InjectionTemplate):
                                    device_type=device_type)
 
         self.G = G
-        self.G_prof = Profile(default_value=G)
+        self._G_prof = Profile(default_value=G)
 
         self.B = B
-        self.B_prof = Profile(default_value=B)
+        self._B_prof = Profile(default_value=B)
 
         self.G0 = G0
-        self.G0_prof = Profile(default_value=G0)
+        self._G0_prof = Profile(default_value=G0)
 
         self.B0 = B0
-        self.B0_prof = Profile(default_value=B0)
+        self._B0_prof = Profile(default_value=B0)
 
         self.register(key='G', units='MW', tpe=float, definition='Active power', profile_name='G_prof')
         self.register(key='B', units='MVAr', tpe=float, definition='Reactive power', profile_name='B_prof')
         self.register(key='G0', units='MW', tpe=float,
-                      definition='Zero sequence active power of the impedance component at V=1.0 p.u.')
+                      definition='Zero sequence active power of the impedance component at V=1.0 p.u.',
+                      profile_name='G0_prof')
         self.register(key='B0', units='MVAr', tpe=float,
-                      definition='Zero sequence reactive power of the impedance component at V=1.0 p.u.')
+                      definition='Zero sequence reactive power of the impedance component at V=1.0 p.u.',
+                      profile_name='B0_prof')
+
+    @property
+    def G_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._G_prof
+
+    @G_prof.setter
+    def G_prof(self, val: Profile):
+        assert isinstance(val, Profile)
+        self._G_prof = val
+
+    @property
+    def B_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._B_prof
+
+    @B_prof.setter
+    def B_prof(self, val: Profile):
+        assert isinstance(val, Profile)
+        self._B_prof = val
+
+    @property
+    def G0_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._G0_prof
+
+    @G_prof.setter
+    def G0_prof(self, val: Profile):
+        assert isinstance(val, Profile)
+        self._G0_prof = val
+
+    @property
+    def B0_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._B0_prof
+
+    @B_prof.setter
+    def B0_prof(self, val: Profile):
+        assert isinstance(val, Profile)
+        self._B0_prof = val
 
     def get_properties_dict(self, version=3):
         """

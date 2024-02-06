@@ -17,7 +17,6 @@
 
 from GridCalEngine.enumerations import BuildStatus, DeviceType
 from GridCalEngine.Core.Devices.Injections.injection_template import LoadLikeTemplate
-from GridCalEngine.Core.Devices.profile import Profile
 
 
 class StaticGenerator(LoadLikeTemplate):

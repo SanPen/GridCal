@@ -92,7 +92,7 @@ class ParentBranch(EditableDevice):
         self.cn_to = cn_to
 
         self.active = active
-        self.active_prof = Profile(default_value=active)
+        self._active_prof = Profile(default_value=active)
 
         self.contingency_enabled: bool = contingency_enabled
 
@@ -104,7 +104,7 @@ class ParentBranch(EditableDevice):
 
         self.Cost = Cost
 
-        self.Cost_prof = Profile(default_value=Cost)
+        self._Cost_prof = Profile(default_value=Cost)
 
         self.capex = capex
 
@@ -114,10 +114,10 @@ class ParentBranch(EditableDevice):
 
         # line rating in MVA
         self.rate = rate
-        self.rate_prof = Profile(default_value=rate)
+        self._rate_prof = Profile(default_value=rate)
 
         self.contingency_factor = contingency_factor
-        self.contingency_factor_prof = Profile(default_value=contingency_factor)
+        self._contingency_factor_prof = Profile(default_value=contingency_factor)
 
         # List of measurements
         self.measurements = list()
@@ -152,6 +152,58 @@ class ParentBranch(EditableDevice):
                       definition="Branch build status. Used in expansion planning.")
         self.register('capex', units="e/MW", tpe=float, definition="Cost of investment. Used in expansion planning.")
         self.register('opex', units="e/MWh", tpe=float, definition="Cost of operation. Used in expansion planning.")
+
+    @property
+    def active_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._active_prof
+
+    @active_prof.setter
+    def active_prof(self, val: Profile):
+        assert isinstance(val, Profile)
+        self._active_prof = val
+
+    @property
+    def rate_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._rate_prof
+
+    @rate_prof.setter
+    def rate_prof(self, val: Profile):
+        assert isinstance(val, Profile)
+        self._rate_prof = val
+
+    @property
+    def contingency_factor_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._contingency_factor_prof
+
+    @contingency_factor_prof.setter
+    def contingency_factor_prof(self, val: Profile):
+        assert isinstance(val, Profile)
+        self._contingency_factor_prof = val
+
+    @property
+    def Cost_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._Cost_prof
+
+    @Cost_prof.setter
+    def Cost_prof(self, val: Profile):
+        assert isinstance(val, Profile)
+        self._Cost_prof = val
 
     def get_max_bus_nominal_voltage(self):
         """

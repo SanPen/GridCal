@@ -69,10 +69,10 @@ class Load(LoadLikeTemplate):
         self.Ir = Ir
         self.Ii = Ii
 
-        self.G_prof = Profile(default_value=G)
-        self.B_prof = Profile(default_value=B)
-        self.Ir_prof = Profile(default_value=Ir)
-        self.Ii_prof = Profile(default_value=Ii)
+        self._G_prof = Profile(default_value=G)
+        self._B_prof = Profile(default_value=B)
+        self._Ir_prof = Profile(default_value=Ir)
+        self._Ii_prof = Profile(default_value=Ii)
 
         self.register(key='Ir', units='MW', tpe=float,
                       definition='Active power of the current component at V=1.0 p.u.', profile_name='Ir_prof')
@@ -82,6 +82,58 @@ class Load(LoadLikeTemplate):
                       definition='Active power of the impedance component at V=1.0 p.u.', profile_name='G_prof')
         self.register(key='B', units='MVAr', tpe=float,
                       definition='Reactive power of the impedance component at V=1.0 p.u.', profile_name='B_prof')
+
+    @property
+    def Ir_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._Ir_prof
+
+    @Ir_prof.setter
+    def Ir_prof(self, val: Profile):
+        assert isinstance(val, Profile)
+        self._Ir_prof = val
+
+    @property
+    def Ii_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._Ii_prof
+
+    @Ii_prof.setter
+    def Ii_prof(self, val: Profile):
+        assert isinstance(val, Profile)
+        self._Ii_prof = val
+
+    @property
+    def G_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._G_prof
+
+    @G_prof.setter
+    def G_prof(self, val: Profile):
+        assert isinstance(val, Profile)
+        self._G_prof = val
+
+    @property
+    def B_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._B_prof
+
+    @B_prof.setter
+    def B_prof(self, val: Profile):
+        assert isinstance(val, Profile)
+        self._B_prof = val
 
     def get_properties_dict(self, version=3):
         """

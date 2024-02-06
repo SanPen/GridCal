@@ -84,7 +84,7 @@ class Transformer3W(EditableDevice):
         self._bus3 = bus3
 
         self.active = active
-        self.active_prof = Profile(default_value=active)
+        self._active_prof = Profile(default_value=active)
 
         self._V1 = V1
         self._V2 = V2
@@ -135,6 +135,19 @@ class Transformer3W(EditableDevice):
         self.register(key='rate31', units='MVA', tpe=float, definition='Rating measured from 3->1')
         self.register(key='x', units='px', tpe=float, definition='x position')
         self.register(key='y', units='px', tpe=float, definition='y position')
+
+    @property
+    def active_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._active_prof
+
+    @active_prof.setter
+    def active_prof(self, val: Profile):
+        assert isinstance(val, Profile)
+        self._active_prof = val
 
     def all_connected(self):
         """

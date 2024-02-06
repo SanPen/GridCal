@@ -126,7 +126,7 @@ class Line(ParentBranch):
         # Conductor base and operating temperatures in ºC
         self.temp_base = temp_base
         self.temp_oper = temp_oper
-        self.temp_oper_prof = Profile(default_value=temp_oper)
+        self._temp_oper_prof = Profile(default_value=temp_oper)
 
         # Conductor thermal constant (1/ºC)
         self.alpha = alpha
@@ -165,6 +165,19 @@ class Line(ParentBranch):
                                  '1 would be at the "to" side,'
                                  'therefore 0.5 is at the middle.')
         self.register(key='template', units='', tpe=DeviceType.SequenceLineDevice, definition='')
+
+    @property
+    def temp_oper_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._temp_oper_prof
+
+    @temp_oper_prof.setter
+    def temp_oper_prof(self, val: Profile):
+        assert isinstance(val, Profile)
+        self._temp_oper_prof = val
 
     @property
     def R_corrected(self):

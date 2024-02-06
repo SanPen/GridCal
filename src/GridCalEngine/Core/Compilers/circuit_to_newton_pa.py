@@ -324,7 +324,8 @@ def add_npa_buses(circuit: MultiCircuit,
                                   area=area_dict.get(bus.area, None))
 
         if time_series and n_time > 1:
-            elm.active = bus.active_prof.astype(BINT) if time_indices is None else bus.active_prof.astype(BINT)[time_indices]
+            elm.active = bus.active_prof.astype(BINT) if time_indices is None else bus.active_prof.astype(BINT)[
+                time_indices]
         else:
             elm.active = np.ones(n_time, dtype=BINT) * int(bus.active)
 
@@ -641,7 +642,8 @@ def add_npa_line(circuit: MultiCircuit,
             lne.rates = elm.rate_prof.toarray() if time_indices is None else elm.rate_prof.toarray()[time_indices]
             contingency_rates = elm.rate_prof.toarray() * elm.contingency_factor
             lne.contingency_rates = contingency_rates if time_indices is None else contingency_rates[time_indices]
-            lne.overload_cost = elm.Cost_prof.toarray() if time_indices is None else elm.Cost_prof.toarray()[time_indices]
+            lne.overload_cost = elm.Cost_prof.toarray() if time_indices is None else elm.Cost_prof.toarray()[
+                time_indices]
         else:
             lne.setAllOverloadCost(elm.Cost)
 
@@ -701,8 +703,10 @@ def add_transformer_data(circuit: MultiCircuit,
             tr2.active = active_prof if time_indices is None else active_prof[time_indices]
             tr2.rates = elm.rate_prof.toarray() if time_indices is None else elm.rate_prof.toarray()[time_indices]
             tr2.contingency_rates = contingency_rates if time_indices is None else contingency_rates[time_indices]
-            tr2.tap = elm.tap_module_prof.toarray() if time_indices is None else elm.tap_module_prof.toarray()[time_indices]
-            tr2.phase = elm.tap_phase_prof.toarray() if time_indices is None else elm.tap_phase_prof.toarray()[time_indices]
+            tr2.tap = elm.tap_module_prof.toarray() if time_indices is None else elm.tap_module_prof.toarray()[
+                time_indices]
+            tr2.phase = elm.tap_phase_prof.toarray() if time_indices is None else elm.tap_phase_prof.toarray()[
+                time_indices]
             tr2.overload_cost = elm.Cost_prof.toarray()
         else:
             tr2.setAllOverloadCost(elm.Cost)
@@ -948,7 +952,8 @@ def add_hvdc_data(circuit: MultiCircuit,
             contingency_rates = elm.rate_prof.toarray() * elm.contingency_factor
             hvdc.contingency_rates = contingency_rates if time_indices is None else contingency_rates[time_indices]
 
-            hvdc.angle_droop = elm.angle_droop_prof.toarray() if time_indices is None else elm.angle_droop_prof.toarray()[time_indices]
+            hvdc.angle_droop = elm.angle_droop_prof.toarray() if time_indices is None else \
+            elm.angle_droop_prof.toarray()[time_indices]
             hvdc.overload_cost = elm.overload_cost_prof.toarray()
         else:
             hvdc.contingency_rates = elm.rate * elm.contingency_factor
@@ -1180,6 +1185,7 @@ def get_newton_pa_linear_options(opt: LinearAnalysisOptions) -> "npa.LinearAnaly
                                      verbose=False,
                                      ptdf_threshold=opt.ptdf_threshold,
                                      lodf_threshold=opt.lodf_threshold)
+
 
 def get_newton_pa_nonlinear_opf_options(pf_opt: PowerFlowOptions,
                                         opf_opt: OptimalPowerFlowOptions) -> "npa.NonlinearOpfOptions":

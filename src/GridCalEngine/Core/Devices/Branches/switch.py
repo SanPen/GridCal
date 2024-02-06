@@ -15,7 +15,6 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-
 from GridCalEngine.Core.Devices.Substation.bus import Bus
 from GridCalEngine.Core.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.enumerations import BuildStatus
@@ -66,9 +65,6 @@ class Switch(ParentBranch):
                               opex=0,
                               Cost=0,
                               device_type=DeviceType.SwitchDevice)
-
-        # List of measurements
-        self.measurements = list()
 
         # total impedance and admittance in p.u.
         self.R = r

@@ -140,7 +140,7 @@ class Generator(GeneratorLikeTemplate):
         self.Pf = power_factor
 
         # voltage set profile for this load in p.u.
-        self.Pf_prof = Profile(default_value=power_factor)
+        self._Pf_prof = Profile(default_value=power_factor)
 
         # If this generator is voltage controlled it produces a PV node, otherwise the node remains as PQ
         self.is_controlled = is_controlled
@@ -152,7 +152,7 @@ class Generator(GeneratorLikeTemplate):
         self.Vset = vset
 
         # voltage set profile for this load in p.u.
-        self.Vset_prof = Profile(default_value=vset)
+        self._Vset_prof = Profile(default_value=vset)
 
         self.use_reactive_power_curve = use_reactive_power_curve
 
@@ -182,8 +182,8 @@ class Generator(GeneratorLikeTemplate):
         self.RampUp = 1e20
         self.RampDown = 1e20
 
-        self.Cost2_prof = Profile(default_value=Cost2)
-        self.Cost0_prof = Profile(default_value=Cost0)
+        self._Cost2_prof = Profile(default_value=Cost2)
+        self._Cost0_prof = Profile(default_value=Cost0)
 
         # Dynamic vars
         # self.Ra = Ra
@@ -244,6 +244,58 @@ class Generator(GeneratorLikeTemplate):
                       definition='Maximum amount of generation decrease per hour.')
 
         self.register(key='enabled_dispatch', units='', tpe=bool, definition='Enabled for dispatch? Used in OPF.')
+
+    @property
+    def Pf_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._Pf_prof
+
+    @Pf_prof.setter
+    def Pf_prof(self, val: Profile):
+        assert isinstance(val, Profile)
+        self._Pf_prof = val
+
+    @property
+    def Vset_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._Vset_prof
+
+    @Vset_prof.setter
+    def Vset_prof(self, val: Profile):
+        assert isinstance(val, Profile)
+        self._Vset_prof = val
+
+    @property
+    def Cost2_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._Cost2_prof
+
+    @Cost2_prof.setter
+    def Cost2_prof(self, val: Profile):
+        assert isinstance(val, Profile)
+        self._Cost2_prof = val
+
+    @property
+    def Cost0_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._Cost0_prof
+
+    @Cost0_prof.setter
+    def Cost0_prof(self, val: Profile):
+        assert isinstance(val, Profile)
+        self._Cost0_prof = val
 
     def get_properties_dict(self, version=3):
         """

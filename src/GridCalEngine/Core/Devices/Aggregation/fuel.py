@@ -43,13 +43,26 @@ class Fuel(EditableDevice):
 
         self.cost = cost
 
-        self.cost_prof = Profile(default_value=cost)
+        self._cost_prof = Profile(default_value=cost)
 
         self.color = color if color is not None else self.rnd_color()
 
         self.register(key='cost', units='e/t', tpe=float, definition='Cost of fuel (e / ton)',
                       profile_name='cost_prof')
         self.register(key='color', units='', tpe=str, definition='Color to paint')
+
+    @property
+    def cost_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._cost_prof
+
+    @cost_prof.setter
+    def cost_prof(self, val: Profile):
+        assert isinstance(val, Profile)
+        self._cost_prof = val
 
     def get_properties_dict(self, version=3):
         data = {'id': self.idtag,

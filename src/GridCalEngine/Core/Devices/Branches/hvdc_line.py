@@ -220,7 +220,7 @@ class HvdcLine(ParentBranch):
                                                                     self.min_firing_angle_t,
                                                                     self.max_firing_angle_t)
 
-        self.overload_cost_prof = Profile(default_value=overload_cost)
+        self._overload_cost_prof = Profile(default_value=overload_cost)
 
         self.capex = capex
 
@@ -230,11 +230,11 @@ class HvdcLine(ParentBranch):
 
         self.control_mode = control_mode
 
-        self.Pset_prof: Vec = Profile(default_value=Pset)
-        self.active_prof: IntVec = Profile(default_value=active)
-        self.Vset_f_prof: Vec = Profile(default_value=Vset_f)
-        self.Vset_t_prof: Vec = Profile(default_value=Vset_t)
-        self.angle_droop_prof: Vec = Profile(default_value=angle_droop)
+        self._Pset_prof: Vec = Profile(default_value=Pset)
+        self._active_prof: IntVec = Profile(default_value=active)
+        self._Vset_f_prof: Vec = Profile(default_value=Vset_f)
+        self._Vset_t_prof: Vec = Profile(default_value=Vset_t)
+        self._angle_droop_prof: Vec = Profile(default_value=angle_droop)
 
         self.n_lines = n_lines
 
@@ -262,6 +262,110 @@ class HvdcLine(ParentBranch):
                       definition='maximum firing angle at the "to" side.')
 
         self.register(key='length', units='km', tpe=float, definition='Length of the branch (not used for calculation)')
+
+    @property
+    def active_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._active_prof
+
+    @active_prof.setter
+    def active_prof(self, val: Profile):
+        assert isinstance(val, Profile)
+        self._active_prof = val
+
+    @property
+    def rate_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._rate_prof
+
+    @rate_prof.setter
+    def rate_prof(self, val: Profile):
+        assert isinstance(val, Profile)
+        self._rate_prof = val
+
+    @property
+    def contingency_factor_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._contingency_factor_prof
+
+    @contingency_factor_prof.setter
+    def contingency_factor_prof(self, val: Profile):
+        assert isinstance(val, Profile)
+        self._contingency_factor_prof = val
+
+    @property
+    def Cost_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._Cost_prof
+
+    @Cost_prof.setter
+    def Cost_prof(self, val: Profile):
+        assert isinstance(val, Profile)
+        self._Cost_prof = val
+
+    @property
+    def Pset_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._Pset_prof
+
+    @Pset_prof.setter
+    def Pset_prof(self, val: Profile):
+        assert isinstance(val, Profile)
+        self._Pset_prof = val
+
+    @property
+    def angle_droop_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._angle_droop_prof
+
+    @angle_droop_prof.setter
+    def angle_droop_prof(self, val: Profile):
+        assert isinstance(val, Profile)
+        self._angle_droop_prof = val
+
+    @property
+    def Vset_f_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._Vset_f_prof
+
+    @Vset_f_prof.setter
+    def Vset_f_prof(self, val: Profile):
+        assert isinstance(val, Profile)
+        self._Vset_f_prof = val
+
+    @property
+    def Vset_t_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._Vset_t_prof
+
+    @Vset_t_prof.setter
+    def Vset_t_prof(self, val: Profile):
+        assert isinstance(val, Profile)
+        self._Vset_t_prof = val
 
     def get_from_and_to_power(self, theta_f, theta_t, Sbase, in_pu=False):
         """

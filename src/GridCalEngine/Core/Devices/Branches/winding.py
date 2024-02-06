@@ -145,7 +145,7 @@ class Winding(ParentBranch):
         # Conductor base and operating temperatures in ºC
         self.temp_base = temp_base
         self.temp_oper = temp_oper
-        self.temp_oper_prof = Profile(default_value=temp_oper)
+        self._temp_oper_prof = Profile(default_value=temp_oper)
 
         # Conductor thermal constant (1/ºC)
         self.alpha = alpha
@@ -160,13 +160,13 @@ class Winding(ParentBranch):
         else:
             self.tap_module = self.tap_changer.get_tap()
 
-        self.tap_module_prof = Profile(default_value=tap_module)
+        self._tap_module_prof = Profile(default_value=tap_module)
         self.tap_module_max = tap_module_max
         self.tap_module_min = tap_module_min
 
         # Tap angle
         self.tap_phase = tap_phase
-        self.tap_phase_prof = Profile(default_value=tap_phase)
+        self._tap_phase_prof = Profile(default_value=tap_phase)
         self.tap_phase_max = tap_phase_max
         self.tap_phase_min = tap_phase_min
 
@@ -226,6 +226,46 @@ class Winding(ParentBranch):
                                  'approximation.For example:Copper @ 20ºC: 0.004041,Copper @ 75ºC: 0.00323,'
                                  'Annealed copper @ 20ºC: 0.00393,Aluminum @ 20ºC: 0.004308,Aluminum @ 75ºC: 0.00330')
         self.register(key='template', units='', tpe=DeviceType.TransformerTypeDevice, definition='', editable=False)
+
+    @property
+    def tap_module_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._tap_module_prof
+
+    @tap_module_prof.setter
+    def tap_module_prof(self, val: Profile):
+        assert isinstance(val, Profile)
+        self._tap_module_prof = val
+
+    @property
+    def tap_phase_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._tap_phase_prof
+
+    @tap_phase_prof.setter
+    def tap_phase_prof(self, val: Profile):
+        assert isinstance(val, Profile)
+        self._tap_phase_prof = val
+
+    @property
+    def temp_oper_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._temp_oper_prof
+
+    @temp_oper_prof.setter
+    def temp_oper_prof(self, val: Profile):
+        assert isinstance(val, Profile)
+        self._temp_oper_prof = val
+
 
     def set_hv_and_lv(self, HV: float, LV: float):
         """

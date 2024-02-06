@@ -71,8 +71,8 @@ class ExternalGrid(LoadLikeTemplate):
         # Impedance in equivalent MVA
         self.Vm = Vm
         self.Va = Va
-        self.Vm_prof = Profile(default_value=Vm)
-        self.Va_prof = Profile(default_value=Va)
+        self._Vm_prof = Profile(default_value=Vm)
+        self._Va_prof = Profile(default_value=Va)
 
         self.register(key='mode', units='', tpe=ExternalGridMode,
                       definition='Operation mode of the external grid (voltage or load)')
@@ -80,6 +80,32 @@ class ExternalGrid(LoadLikeTemplate):
                       definition='idtag of the device that was substituted by this external grid equivalent')
         self.register(key='Vm', units='p.u.', tpe=float, definition='Active power', profile_name='Vm_prof')
         self.register(key='Va', units='radians', tpe=float, definition='Reactive power', profile_name='Va_prof')
+
+    @property
+    def Vm_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._Vm_prof
+
+    @Vm_prof.setter
+    def Vm_prof(self, val: Profile):
+        assert isinstance(val, Profile)
+        self._Vm_prof = val
+
+    @property
+    def Va_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._Va_prof
+
+    @Va_prof.setter
+    def Va_prof(self, val: Profile):
+        assert isinstance(val, Profile)
+        self._Va_prof = val
 
     def get_properties_dict(self, version=3):
         """

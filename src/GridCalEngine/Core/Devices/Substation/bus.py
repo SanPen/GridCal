@@ -93,7 +93,7 @@ class Bus(EditableDevice):
                                 device_type=DeviceType.BusDevice)
 
         self.active = active
-        self.active_prof = Profile(default_value=active)
+        self._active_prof = Profile(default_value=active)
 
         # Nominal voltage (kV)
         self.Vnom = vnom
@@ -136,27 +136,6 @@ class Bus(EditableDevice):
 
         self.substation: Substation = substation
 
-        # # List of load s attached to this bus
-        # self.loads = list()
-        #
-        # # List of Controlled generators attached to this bus
-        # self.generators = list()
-        #
-        # # List of External Grids
-        # self.external_grids = list()
-        #
-        # # List of shunt s attached to this bus
-        # self.shunts = list()
-        #
-        # # List of batteries attached to this bus
-        # self.batteries = list()
-        #
-        # # List of static generators attached tot this bus
-        # self.static_generators = list()
-        #
-        # # List of measurements
-        # self.measurements = list()
-
         # Bus type
         self.type = BusMode.PQ
 
@@ -181,10 +160,6 @@ class Bus(EditableDevice):
         self.longitude = longitude
         self.latitude = latitude
 
-        # self.register(key='name', units='', tpe=str, definition='Name of the bus', profile_name='')
-        # self.register(key='idtag', units='', tpe=str, definition='Unique ID', profile_name='', editable=False)
-        # self.register(key='code', units='', tpe=str, definition='Some code to further identify the bus',
-        #               profile_name='')
         self.register(key='active', units='', tpe=bool, definition='Is the bus active? used to disable the bus.',
                       profile_name='active_prof')
         self.register(key='is_slack', units='', tpe=bool, definition='Force the bus to be of slack type.',
@@ -231,12 +206,17 @@ class Bus(EditableDevice):
         self.register(key='latitude', units='deg', tpe=float, definition='latitude of the bus.', profile_name='')
 
     @property
-    def name(self):
-        return self._name
+    def active_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._active_prof
 
-    @name.setter
-    def name(self, val: str):
-        self._name = val
+    @active_prof.setter
+    def active_prof(self, val: Profile):
+        assert isinstance(val, Profile)
+        self._active_prof = val
 
     def determine_bus_type(self) -> BusMode:
         """

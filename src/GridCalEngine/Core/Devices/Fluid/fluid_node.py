@@ -62,8 +62,8 @@ class FluidNode(EditableDevice):
         self._bus: Bus = bus
         self.build_status = build_status
 
-        self.inflow_prof = Profile(default_value=inflow)  # m3/s
-        self.spillage_cost_prof = Profile(default_value=spillage_cost)  # e/(m3/s)
+        self._inflow_prof = Profile(default_value=inflow)  # m3/s
+        self._spillage_cost_prof = Profile(default_value=spillage_cost)  # e/(m3/s)
 
         self.register(key='min_level', units='hm3', tpe=float,
                       definition="Minimum amount of fluid at the node/reservoir")
@@ -87,6 +87,32 @@ class FluidNode(EditableDevice):
         self.register(key='inflow', units='m3/s', tpe=float,
                       definition='Flow of fluid coming from the rain',
                       profile_name='inflow_prof')
+
+    @property
+    def spillage_cost_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._spillage_cost_prof
+
+    @spillage_cost_prof.setter
+    def spillage_cost_prof(self, val: Profile):
+        assert isinstance(val, Profile)
+        self._spillage_cost_prof = val
+
+    @property
+    def inflow_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._inflow_prof
+
+    @inflow_prof.setter
+    def inflow_prof(self, val: Profile):
+        assert isinstance(val, Profile)
+        self._inflow_prof = val
 
     def copy(self):
         """
