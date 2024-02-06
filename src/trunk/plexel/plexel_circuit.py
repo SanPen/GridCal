@@ -675,10 +675,13 @@ class PlexelBase:
         # add the region as an object
         self.add_object(child_class_id=ClassEnum.Region, child_name=region.name)
 
+    def generate_node_name(self, node: dev.Bus) -> str:
+        return node.code + '_' + node.name + '_' + str(int(node.Vnom))
+
     def add_node(self, node: dev.Bus, region: dev.Area, zone: dev.Zone):
         # TODO: check if there are any missing fields
         # create name following plexel format
-        node_name = node.code + '_' + node.name + '_' + str(int(node.Vnom))
+        node_name = self.generate_node_name(node)
 
         # group nodes by region (area)
         cat_obj = PlexelCategory(cls=ClassEnum.Node, category_name=node.area.name)
@@ -738,7 +741,7 @@ class PlexelBase:
                                         value=p[1])
             self.properties.append(node_props)
 
-    def add_generator(self, generator: dev.Generator, node: dev.Bus):
+    def add_generator(self, generator: dev.Generator, node: dev.Bus = None):
         # create name following plexel format
         # TODO: is this really necessary?
         #  Or should we keep the standard name?
@@ -764,7 +767,20 @@ class PlexelBase:
         gen_obj = PlexelObject(cls=ClassEnum.Generator, name=gen_name, cat=cat_obj)
         self.objects.append(gen_obj)
 
-        # TODO: memberships node <-> generator
+        # add membership node <-> generator
+        if node is not None:
+            node_obj = PlexelObject(cls=ClassEnum.Node, name=self.generate_node_name(node))
+            # is node in objects?
+            if self.objects.length() > 0:
+                if node_obj.get_key() not in self.objects.get_keys():
+                    # It should exist already!
+                    print('Warning: Node {n} not found in model, but referred at Generator {g}!'.format(n=node_obj.name,
+                                                                                                        g=gen_obj.name))
+
+            generator_node = PlexelMembership(gen_obj, node_obj, CollectionEnum.Nodes)
+            self.memberships.append(generator_node)
+
+        # TODO: add generator properties
 
     def save(self, file_name: str):
         """
