@@ -85,7 +85,7 @@ class TerminalItem(QGraphicsRectItem):
 
         self.process_callbacks(self.parent.pos() + self.pos())
 
-    def process_callbacks(self, value):
+    def process_callbacks(self, value, scale: float = 1.0):
         """
 
         :param value:
@@ -97,6 +97,12 @@ class TerminalItem(QGraphicsRectItem):
         dx = w / (n + 1)
         for i, call_back in enumerate(self.posCallbacks):
             call_back(value + QPointF((i + 1) * dx, h2))
+
+        for connection in self.hosting_connections:
+            w = connection.pen_width
+            style = connection.pen_style
+            color = connection.pen_color
+            connection.set_pen(QPen(color, w, style), scale)
 
     def itemChange(self, change, value):
         """
