@@ -109,10 +109,10 @@ class ContingencyTableEntry:
                  post_contingency_flow: complex,
                  contingency_rating: float,
                  post_contingency_loading: float,
+                 srap_fixing_probability: Mat,
                  solved_by_srap: bool = False,
                  srap_power: float = 0.0,
-                 srap_bus_indices: IntVec = None,
-                 srap_fixing_probability: Mat = None):
+                 srap_bus_indices: IntVec = None):
         """
         ContingencyTableEntry constructor
         :param time_index:
@@ -225,6 +225,7 @@ class ContingencyResultsReport:
             post_contingency_flow: complex,
             contingency_rating: float,
             post_contingency_loading: float,
+            srap_fixing_probability: Mat =[],
             solved_by_srap: bool = False,
             srap_power: float = 0.0,
             srap_bus_indices: IntVec = None):
@@ -258,10 +259,10 @@ class ContingencyResultsReport:
                                              post_contingency_flow=post_contingency_flow,
                                              contingency_rating=contingency_rating,
                                              post_contingency_loading=post_contingency_loading,
+                                             srap_fixing_probability=srap_fixing_probability,
                                              solved_by_srap=solved_by_srap,
                                              srap_power=srap_power,
-                                             srap_bus_indices=srap_bus_indices,
-                                             srap_fixing_probability=srap_fixing_probability))
+                                             srap_bus_indices=srap_bus_indices))
 
     def merge(self, other: "ContingencyResultsReport"):
         """
@@ -402,9 +403,9 @@ class ContingencyResultsReport:
                          post_contingency_flow=c_flow,
                          contingency_rating=numerical_circuit.branch_data.contingency_rates[m],
                          post_contingency_loading=abs(contingency_loadings[m]) * 100.0,
+                         srap_fixing_probability=srap_fixing_probability,
                          solved_by_srap=solved_by_srap,
                          srap_power=max_srap_power,
-                         srap_fixing_probability=srap_fixing_probability,
                          srap_bus_indices=None)
 
             else:

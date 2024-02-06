@@ -98,15 +98,15 @@ def vector_sum_srap(p_available3: Vec, sensitivities3: Vec, srap_pmax_mw: float)
             # p_available_red[i] = srap_pmax_mw - suma
             max_srap_power += (srap_pmax_mw - suma) * sensitivities3[i]
             p_used[i] = srap_pmax_mw - suma
-            p_used_unit = p_used/p_available3
+            #p_used_unit = p_used/p_available3
             # salir del bucle
             # break
-            return max_srap_power, p_used_unit
+            return max_srap_power, p_used
 
     # max_srap_power = np.sum(p_available_red * sensitivities3)
-    p_used_unit = p_used / p_available3
+    #p_used_unit = p_used / p_available3
 
-    return max_srap_power, p_used_unit
+    return max_srap_power, p_used
 
 
 class BusesForSrap:
@@ -168,8 +168,8 @@ class BusesForSrap:
                 # fp = np.cumsum(p_available3 * sensitivities3)
                 # max_srap_power = np.interp(srap_pmax_mw, xp, fp)
                 # print(max_srap_power)
-                max_srap_power , p_used_unit  = vector_sum_srap(p_available3, sensitivities3, srap_pmax_mw) #33333333
-
+                max_srap_power, p_used = vector_sum_srap(p_available3, sensitivities3, srap_pmax_mw) #33333333
+                srap_fixing_probability[branch_idx, srap_gen_used3] += p_used #44444444444444444
 
                 # print(max_srap_power)
 
@@ -178,6 +178,7 @@ class BusesForSrap:
             else:
                 solved = False
                 max_srap_power = 0.0
+                srap_fixing_probability = [] #55555555555555555555
         else:
 
             # negative flow, ov is negative
@@ -189,20 +190,22 @@ class BusesForSrap:
             if len(negative_idx):
                 p_available2 = p_available[negative_idx]
                 sensitivities2 = self.sensitivities[negative_idx]
+                srap_gen_used2 = srap_gen_used[negative_idx]  # 11111111111111111
 
                 # sort lower to greater, more negative first
                 idx = np.argsort(sensitivities2)
                 idx2 = idx[:top_n]
                 p_available3 = p_available2[idx2]
                 sensitivities3 = sensitivities2[idx2]
+                srap_gen_used3 = srap_gen_used2[idx2]  # 222222222222222
 
                 # interpolate the srap limit, to get the minimum srap power
                 # xp = np.cumsum(p_available3)
                 # fp = np.cumsum(p_available3 * sensitivities3)
                 # max_srap_power = np.interp(srap_pmax_mw, xp, fp)
                 # print(max_srap_power)
-                max_srap_power = vector_sum_srap(p_available3, sensitivities3, srap_pmax_mw)
-
+                max_srap_power, p_used = vector_sum_srap(p_available3, sensitivities3, srap_pmax_mw) #333333333333
+                srap_fixing_probability[branch_idx, srap_gen_used3] += p_used #44444444444444444
                 # print(max_srap_power)
 
                 # if the value is grater than the overload we cannot solve
@@ -210,7 +213,8 @@ class BusesForSrap:
             else:
                 solved = False
                 max_srap_power = 0.0
+                srap_fixing_probability = [] #555555555555
 
-        srap_fixing_probability[branch_idx,srap_gen_used3] = p_used_unit
+
 
         return solved, max_srap_power, srap_fixing_probability
