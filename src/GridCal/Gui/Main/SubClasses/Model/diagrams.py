@@ -1141,7 +1141,7 @@ class DiagramsMain(CompiledArraysMain):
 
     def set_big_bus_marker_colours(self,
                                    buses: List[dev.Bus],
-                                   colors: List[QtGui.QColor],
+                                   colors: List[type(QtGui.QColor)],
                                    tool_tips: Union[None, List[str]] = None):
         """
         Set a big marker at the selected buses with the matching colours

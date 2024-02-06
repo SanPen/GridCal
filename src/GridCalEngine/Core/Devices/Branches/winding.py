@@ -145,8 +145,7 @@ class Winding(ParentBranch):
         # Conductor base and operating temperatures in ºC
         self.temp_base = temp_base
         self.temp_oper = temp_oper
-
-        self.temp_oper_prof = Profile()
+        self.temp_oper_prof = Profile(default_value=temp_oper)
 
         # Conductor thermal constant (1/ºC)
         self.alpha = alpha
@@ -161,13 +160,13 @@ class Winding(ParentBranch):
         else:
             self.tap_module = self.tap_changer.get_tap()
 
-        self.tap_module_prof = Profile()
+        self.tap_module_prof = Profile(default_value=tap_module)
         self.tap_module_max = tap_module_max
         self.tap_module_min = tap_module_min
 
         # Tap angle
         self.tap_phase = tap_phase
-        self.tap_phase_prof = Profile()
+        self.tap_phase_prof = Profile(default_value=tap_phase)
         self.tap_phase_max = tap_phase_max
         self.tap_phase_min = tap_phase_min
 

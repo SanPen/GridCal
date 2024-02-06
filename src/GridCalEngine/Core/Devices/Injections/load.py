@@ -69,10 +69,10 @@ class Load(LoadLikeTemplate):
         self.Ir = Ir
         self.Ii = Ii
 
-        self.G_prof = Profile()
-        self.B_prof = Profile()
-        self.Ir_prof = Profile()
-        self.Ii_prof = Profile()
+        self.G_prof = Profile(default_value=G)
+        self.B_prof = Profile(default_value=B)
+        self.Ir_prof = Profile(default_value=Ir)
+        self.Ii_prof = Profile(default_value=Ii)
 
         self.register(key='Ir', units='MW', tpe=float,
                       definition='Active power of the current component at V=1.0 p.u.', profile_name='Ir_prof')

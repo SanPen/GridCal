@@ -125,7 +125,6 @@ class FileOpen:
                         else:
                             self.logger.add("Error while reading the file :(")
                             return None
-
                     else:
                         self.logger.add('The file could not be processed')
 

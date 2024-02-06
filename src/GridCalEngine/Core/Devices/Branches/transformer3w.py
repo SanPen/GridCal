@@ -84,7 +84,7 @@ class Transformer3W(EditableDevice):
         self._bus3 = bus3
 
         self.active = active
-        self.active_prof = Profile()
+        self.active_prof = Profile(default_value=active)
 
         self._V1 = V1
         self._V2 = V2

@@ -46,7 +46,7 @@ class EmissionGas(EditableDevice):
 
         self.cost = cost
 
-        self.cost_prof = Profile()
+        self.cost_prof = Profile(default_value=cost)
 
         self.color = color if color is not None else self.rnd_color()
 

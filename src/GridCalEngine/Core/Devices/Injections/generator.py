@@ -140,7 +140,7 @@ class Generator(GeneratorLikeTemplate):
         self.Pf = power_factor
 
         # voltage set profile for this load in p.u.
-        self.Pf_prof = Profile()
+        self.Pf_prof = Profile(default_value=power_factor)
 
         # If this generator is voltage controlled it produces a PV node, otherwise the node remains as PQ
         self.is_controlled = is_controlled
@@ -152,7 +152,7 @@ class Generator(GeneratorLikeTemplate):
         self.Vset = vset
 
         # voltage set profile for this load in p.u.
-        self.Vset_prof = Profile()
+        self.Vset_prof = Profile(default_value=vset)
 
         self.use_reactive_power_curve = use_reactive_power_curve
 
@@ -182,8 +182,8 @@ class Generator(GeneratorLikeTemplate):
         self.RampUp = 1e20
         self.RampDown = 1e20
 
-        self.Cost2_prof = Profile()
-        self.Cost0_prof = Profile()
+        self.Cost2_prof = Profile(default_value=Cost2)
+        self.Cost0_prof = Profile(default_value=Cost0)
 
         # Dynamic vars
         # self.Ra = Ra

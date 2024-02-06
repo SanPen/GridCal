@@ -175,17 +175,18 @@ def create_data_frames(circuit: MultiCircuit):
 
                         elm.ensure_profiles_exist(T)
 
-                        for profile_property in object_sample.properties_with_profile.values():
+                        for property_name, profile_property in object_sample.properties_with_profile.items():
 
                             # get the array
-                            arr = getattr(elm, profile_property)
+                            profile = elm.get_profile(magnitude=property_name)
 
                             if profile_property not in profiles.keys():
                                 # create the profile
-                                profiles[profile_property] = np.zeros((nt, len(lists_of_objects)), dtype=arr.dtype)
+                                profiles[profile_property] = np.zeros(shape=(nt, len(lists_of_objects)),
+                                                                      dtype=profile.dtype)
 
                             # copy the object profile to the array of profiles
-                            profiles[profile_property][:, k] = arr
+                            profiles[profile_property][:, k] = profile.toarray()
 
             # convert the objects' list to an array
             dta = np.array(obj)
@@ -298,30 +299,31 @@ def valid_value(val) -> bool:
     return True
 
 
-def parse_df(df: pd.DataFrame,
-             template_elm: dev.EditableDevice,
-             elements_dict_by_type,
-             time_profile,
-             object_type_key: str,
-             data: Dict[str, Union[float, str, pd.DataFrame]],
-             logger: Logger) -> Tuple[List[dev.EditableDevice], Dict[str, dev.EditableDevice]]:
+def parse_object_type(main_df: pd.DataFrame,
+                      template_elm: dev.EditableDevice,
+                      elements_dict_by_type: Dict[DeviceType, Dict[str, dev.EditableDevice]],
+                      time_profile: pd.DatetimeIndex,
+                      object_type_key: str,
+                      data: Dict[str, Union[float, str, pd.DataFrame]],
+                      logger: Logger) -> Tuple[List[dev.EditableDevice], Dict[str, dev.EditableDevice]]:
     """
-    
-    :param df: 
-    :param template_elm: 
-    :param elements_dict_by_type: 
-    :param time_profile: 
-    :param object_type_key: 
-    :param data: 
-    :param logger: 
-    :return: 
+    Convert a DataFrame to a list of GridCal devices
+    :param main_df: DataFrame to convert
+    :param template_elm: Element to use as template for conversion
+    :param elements_dict_by_type: Dictionary of devices grouped by type used to look for referenced objects
+                                    elements_dict_by_type[DeviceType][idtag] -> device
+    :param time_profile: Master time profile
+    :param object_type_key: Object type naming to find the profile
+    :param data: Complete data collection to find the profiles
+    :param logger: Logger instance
+    :return: devices, devices_dict
     """
     # dictionary to be filled with this type of objects
     devices_dict: Dict[str, dev.EditableDevice] = dict()
     devices: List[dev.EditableDevice] = list()
 
     # parse each object of the dataframe
-    for i, row in df.iterrows():
+    for i, row in main_df.iterrows():
 
         # create device
         idtag = row.get('idtag', None)
@@ -349,7 +351,7 @@ def parse_df(df: pd.DataFrame,
                             if gc_prop.tpe == DeviceType.GeneratorQCurve:
                                 val = dev.GeneratorQCurve()
                                 val.parse(property_value)
-                                setattr(elm, property_name, val)
+                                elm.set_snapshot_value(property_name, val)
 
                             else:
                                 # we must look for the refference in elements_dict
@@ -360,7 +362,7 @@ def parse_df(df: pd.DataFrame,
                                     ref_elm = collection.get(ref_idtag, None)
 
                                     if ref_elm is not None:
-                                        setattr(elm, property_name, ref_elm)
+                                        elm.set_snapshot_value(property_name, ref_elm)
                                     else:
                                         logger.add_error("Could not locate refference",
                                                          device=row.get('idtag', 'not provided'),
@@ -376,25 +378,25 @@ def parse_df(df: pd.DataFrame,
 
                         elif gc_prop.tpe == str:
                             # set the value directly
-                            setattr(elm, property_name, property_value)
+                            elm.set_snapshot_value(property_name, str(property_value))
 
                         elif gc_prop.tpe == float:
                             # set the value directly
-                            setattr(elm, property_name, float(property_value))
+                            elm.set_snapshot_value(property_name, float(property_value))
 
                         elif gc_prop.tpe == int:
                             # set the value directly
-                            setattr(elm, property_name, int(property_value))
+                            elm.set_snapshot_value(property_name, int(property_value))
 
                         elif gc_prop.tpe == bool:
                             # set the value directly
-                            setattr(elm, property_name, bool(property_value))
+                            elm.set_snapshot_value(property_name, bool(property_value))
 
                         elif isinstance(gc_prop.tpe, EnumType):
 
                             try:
                                 val = gc_prop.tpe(property_value)
-                                setattr(elm, property_name, val)
+                                elm.set_snapshot_value(property_name, val)
                             except ValueError:
                                 logger.add_error(f'Cannot cast value to {gc_prop.tpe}',
                                                  device=elm.name,
@@ -417,8 +419,7 @@ def parse_df(df: pd.DataFrame,
                         dfp = data.get(profile_key, None)
 
                         if dfp is not None:
-                            profile = dfp.values[:, i].astype(gc_prop.tpe)
-                            setattr(elm, gc_prop.profile_name, profile)
+                            elm.set_profile(gc_prop, arr=dfp.values[:, i].astype(gc_prop.tpe))
 
                         else:
                             logger.add_info('No profile for the property', value=gc_prop.name)
@@ -497,13 +498,13 @@ def data_frames_to_circuit(data: Dict[str, Union[str, float, Dict, pd.DataFrame]
             # fill in the objects
             if df.shape[0] > 0:
 
-                devices, devices_dict = parse_df(df=df,
-                                                 template_elm=template_elm,
-                                                 elements_dict_by_type=elements_dict_by_type,
-                                                 time_profile=circuit.time_profile,
-                                                 object_type_key=object_type_key,
-                                                 data=data,
-                                                 logger=logger)
+                devices, devices_dict = parse_object_type(main_df=df,
+                                                          template_elm=template_elm,
+                                                          elements_dict_by_type=elements_dict_by_type,
+                                                          time_profile=circuit.time_profile,
+                                                          object_type_key=object_type_key,
+                                                          data=data,
+                                                          logger=logger)
 
                 # set the dictionary per type for later
                 elements_dict_by_type[template_elm.device_type] = devices_dict

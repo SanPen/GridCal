@@ -92,7 +92,7 @@ class ParentBranch(EditableDevice):
         self.cn_to = cn_to
 
         self.active = active
-        self.active_prof = Profile()
+        self.active_prof = Profile(default_value=active)
 
         self.contingency_enabled: bool = contingency_enabled
 
@@ -104,7 +104,7 @@ class ParentBranch(EditableDevice):
 
         self.Cost = Cost
 
-        self.Cost_prof = Profile()
+        self.Cost_prof = Profile(default_value=Cost)
 
         self.capex = capex
 
@@ -114,10 +114,10 @@ class ParentBranch(EditableDevice):
 
         # line rating in MVA
         self.rate = rate
-        self.rate_prof = Profile()
+        self.rate_prof = Profile(default_value=rate)
 
         self.contingency_factor = contingency_factor
-        self.contingency_factor_prof = Profile()
+        self.contingency_factor_prof = Profile(default_value=contingency_factor)
 
         # List of measurements
         self.measurements = list()

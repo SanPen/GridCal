@@ -110,7 +110,7 @@ class Profile:
     Profile
     """
 
-    def __init__(self, arr: Union[None, NumericVec] = None, sparsity: int = 0.8):
+    def __init__(self, default_value, arr: Union[None, NumericVec] = None, sparsity: int = 0.8):
 
         self._is_sparse: bool = False
 
@@ -120,9 +120,11 @@ class Profile:
 
         self._sparsity_threshold: float = sparsity
 
-        self._dtype = float  # float by default
+        self._dtype = type(default_value)  # float by default
 
         self._initialized: bool = False
+
+        self.default_value = default_value
 
         if arr is not None:
             self.set(arr=arr)
@@ -149,6 +151,14 @@ class Profile:
         """
         if self._sparse_array is not None:
             return self._sparse_array.get_map()
+
+    @property
+    def dtype(self) -> type:
+        """
+        Get the declared type
+        :return: type
+        """
+        return self._dtype
 
     @property
     def is_sparse(self) -> bool:
@@ -278,11 +288,14 @@ class Profile:
         :param n: new size
         """
         if isinstance(n, int):
-
-            if self._is_sparse:
-                self._sparse_array.resize(n)
+            if self._initialized:
+                if self._is_sparse:
+                    self._sparse_array.resize(n)
+                else:
+                    self._dense_array.resize(n)
             else:
-                self._dense_array.resize(n)
+                self._initialized = True
+                self.create_sparse(n, self.default_value)
         else:
             raise TypeError("The size must be an integer")
 
@@ -301,7 +314,10 @@ class Profile:
         Get the size
         :return: integer
         """
-        return self._sparse_array.size() if self._is_sparse else len(self._dense_array)
+        if self._initialized:
+            return self._sparse_array.size() if self._is_sparse else len(self._dense_array)
+        else:
+            return 0
 
     def toarray(self) -> NumericVec:
         """

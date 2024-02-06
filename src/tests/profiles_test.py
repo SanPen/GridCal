@@ -135,7 +135,7 @@ def test_profile1():
     for i in range(10, 30):
         x[i] = math.sin(i)
 
-    profile = Profile(arr=x)
+    profile = Profile(default_value=0.0, arr=x)
 
     assert profile.is_sparse
 
@@ -159,7 +159,7 @@ def test_profile2():
     x = np.full(n, 15)
     x[20] = 30
 
-    profile = Profile(arr=x)
+    profile = Profile(default_value=15, arr=x)
 
     assert profile.is_sparse
 

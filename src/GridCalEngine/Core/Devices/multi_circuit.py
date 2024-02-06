@@ -279,7 +279,7 @@ class MultiCircuit:
         self.logger: Logger = Logger()
 
         # master time profile
-        self.time_profile: DateVec = None
+        self.time_profile: Union[pd.DatetimeIndex, None] = None
 
         # contingencies
         self.contingencies: List[dev.Contingency] = list()

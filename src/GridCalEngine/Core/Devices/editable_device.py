@@ -299,7 +299,6 @@ class EditableDevice:
             assert (isinstance(getattr(self, profile_name), Profile))
             self.properties_with_profile[key] = profile_name
 
-
         if not editable:
             self.non_editable_properties.append(key)
 
@@ -435,6 +434,20 @@ class EditableDevice:
         prop = self.property_list[property_idx]
         return self.get_property_value(prop=prop, t_idx=t_idx)
 
+    def set_profile(self, prop: GCProp, arr: Union[Profile, np.ndarray]) -> None:
+        """
+        Set the profile from eithr an array or an actual profile object
+        :param prop: GCProp instance
+        :param arr: Profile object or numpy array object
+        """
+        if isinstance(arr, np.ndarray):
+            profile: Profile = getattr(self, prop.profile_name)
+            profile.set(arr)
+        elif isinstance(arr, Profile):
+            setattr(self, prop.profile_name, arr)
+        else:
+            raise Exception("profile type not supported")
+
     def set_property_value(self, prop: GCProp, value: Any, t_idx: Union[None, int]):
         """
         Return the stored object value from the property index
@@ -454,6 +467,15 @@ class EditableDevice:
             else:
                 # the property has no profile, just return it
                 setattr(self, prop.name, value)
+
+    def set_snapshot_value(self, property_name, value: Any) -> None:
+        """
+        Set the value of a snapshot property
+        :param property_name: name of the property
+        :param value: Any
+        """
+        # set the snapshot value whatever it is
+        setattr(self, property_name, value)
 
     def create_profiles(self, index):
         """
@@ -498,8 +520,7 @@ class EditableDevice:
         """
         # get the value of the magnitude
         snapshot_value = getattr(self, magnitude)
-        tpe = self.registered_properties[magnitude].tpe
-        val = Profile()
+        val = Profile(default_value=snapshot_value)
         if arr_in_pu:
             val.set(arr * snapshot_value)
         else:
@@ -542,7 +563,7 @@ class EditableDevice:
         Delete the object profiles (set all to None)
         """
         for magnitude in self.properties_with_profile.keys():
-            setattr(self, self.properties_with_profile[magnitude], Profile())
+            self.get_profile(magnitude=magnitude).resize(0)
 
     def set_profile_values(self, t):
         """

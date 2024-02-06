@@ -112,7 +112,7 @@ class InjectionTemplate(EditableDevice):
         self.cn = cn
 
         self.active = active
-        self.active_prof = Profile()
+        self.active_prof = Profile(default_value=active)
 
         self.mttf = mttf
 
@@ -120,7 +120,7 @@ class InjectionTemplate(EditableDevice):
 
         self.Cost = Cost
 
-        self.Cost_prof = Profile()
+        self.Cost_prof = Profile(default_value=Cost)
 
         self.capex = capex
 
@@ -208,10 +208,10 @@ class LoadLikeTemplate(InjectionTemplate):
                                    device_type=device_type)
 
         self.P = P
-        self.P_prof = Profile()
+        self.P_prof = Profile(default_value=P)
 
         self.Q = Q
-        self.Q_prof = Profile()
+        self.Q_prof = Profile(default_value=Q)
 
         self.register(key='P', units='MW', tpe=float, definition='Active power', profile_name='P_prof')
         self.register(key='Q', units='MVAr', tpe=float, definition='Reactive power', profile_name='Q_prof')
@@ -360,7 +360,7 @@ class GeneratorLikeTemplate(InjectionTemplate):
                                    device_type=device_type)
 
         self.P = P
-        self.P_prof = Profile()
+        self.P_prof = Profile(default_value=P)
 
         # Minimum dispatched power in MW
         self.Pmin = Pmin
@@ -480,16 +480,16 @@ class ShuntLikeTemplate(InjectionTemplate):
                                    device_type=device_type)
 
         self.G = G
-        self.G_prof = Profile()
+        self.G_prof = Profile(default_value=G)
 
         self.B = B
-        self.B_prof = Profile()
+        self.B_prof = Profile(default_value=B)
 
         self.G0 = G0
-        self.G0_prof = Profile()
+        self.G0_prof = Profile(default_value=G0)
 
         self.B0 = B0
-        self.B0_prof = Profile()
+        self.B0_prof = Profile(default_value=B0)
 
         self.register(key='G', units='MW', tpe=float, definition='Active power', profile_name='G_prof')
         self.register(key='B', units='MVAr', tpe=float, definition='Reactive power', profile_name='B_prof')
