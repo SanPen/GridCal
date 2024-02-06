@@ -19,13 +19,13 @@ from typing import Dict, List, Tuple
 import GridCalEngine.IO.cim.cgmes.cgmes_enums as cgmes_enums
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 import GridCalEngine.Core.Devices as gcdev
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15 import CgmesCircuit
+from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
 from GridCalEngine.data_logger import DataLogger
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15 import IdentifiedObject
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15 import Terminal
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15 import ACLineSegment
+from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.identified_object import IdentifiedObject
+from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.terminal import Terminal
+from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.ac_line_segment import ACLineSegment
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.power_transformer_end import PowerTransformerEnd
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15 import ConductingEquipment
+from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.conducting_equipment import ConductingEquipment
 
 
 def find_terms_connections(cgmes_terminal,
@@ -679,8 +679,8 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit, logger: DataLogger) -> MultiCirc
                              value=e.ConductingEquipment,
                              expected_value='object')
 
-    calc_node_dict = get_gcdev_calculation_nodes(cgmes_model, gc_model, v_dict, logger)
-    cn_dict = get_gcdev_connectivity_nodes(cgmes_model, gc_model)
+    # calc_node_dict = get_gcdev_calculation_nodes(cgmes_model, gc_model, v_dict, logger)
+    # cn_dict = get_gcdev_connectivity_nodes(cgmes_model, gc_model)
     # get_gcdev_loads(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger)
     # get_gcdev_external_grids(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger)
     # get_gcdev_generators(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger)

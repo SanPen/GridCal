@@ -16,6 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from enum import Enum
 
+
 class cgmesProfile(Enum):
     EQ_BD = 'EQ_BD'  # EquipmentBoundary
     TP_BD = 'TP_BD'  # TopologyBoundary
@@ -44,65 +45,29 @@ class cgmesProfile(Enum):
     def list(cls):
         return list(map(lambda c: c.value, cls))
 
-class UnitSymbol(Enum):
-    VA = 'VA'
-    W = 'W'
-    VAr = 'VAr'
-    VAh = 'VAh'
-    Wh = 'Wh'
-    VArh = 'VArh'
-    V = 'V'
-    ohm = 'ohm'
-    A = 'A'
-    F = 'F'
-    H = 'H'
-    degC = 'degC'
-    s = 's'
-    min = 'min'
-    h = 'h'
-    deg = 'deg'
-    rad = 'rad'
-    J = 'J'
-    N = 'N'
-    S = 'S'
-    none = 'none'
-    Hz = 'Hz'
-    g = 'g'
-    Pa = 'Pa'
-    m = 'm'
-    m2 = 'm2'
-    m3 = 'm3'
-
-    def __str__(self):
-        return 'UnitSymbol.' + str(self.value)
-
-    def __repr__(self):
-        return str(self)
-
-    @staticmethod
-    def argparse(s):
-        try:
-            return UnitSymbol[s]
-        except KeyError:
-            return s
-
-    @classmethod
-    def list(cls):
-        return list(map(lambda c: c.value, cls))
-        
 
 class UnitMultiplier(Enum):
+    y = 'y'
+    z = 'z'
+    a = 'a'
+    f = 'f'
     p = 'p'
     n = 'n'
     micro = 'micro'
     m = 'm'
     c = 'c'
     d = 'd'
+    none = 'none'
+    da = 'da'
+    h = 'h'
     k = 'k'
     M = 'M'
     G = 'G'
     T = 'T'
-    none = 'none'
+    P = 'P'
+    E = 'E'
+    Z = 'Z'
+    Y = 'Y'
 
     def __str__(self):
         return 'UnitMultiplier.' + str(self.value)
@@ -120,7 +85,168 @@ class UnitMultiplier(Enum):
     @classmethod
     def list(cls):
         return list(map(lambda c: c.value, cls))
-        
+
+
+class UnitSymbol(Enum):
+    none = 'none'
+    m = 'm'
+    kg = 'kg'
+    s = 's'
+    A = 'A'
+    K = 'K'
+    mol = 'mol'
+    cd = 'cd'
+    deg = 'deg'
+    rad = 'rad'
+    sr = 'sr'
+    Gy = 'Gy'
+    Bq = 'Bq'
+    degC = 'degC'
+    Sv = 'Sv'
+    F = 'F'
+    C = 'C'
+    S = 'S'
+    H = 'H'
+    V = 'V'
+    ohm = 'ohm'
+    J = 'J'
+    N = 'N'
+    Hz = 'Hz'
+    lx = 'lx'
+    lm = 'lm'
+    Wb = 'Wb'
+    T = 'T'
+    W = 'W'
+    Pa = 'Pa'
+    m2 = 'm2'
+    m3 = 'm3'
+    mPers = 'mPers'
+    mPers2 = 'mPers2'
+    m3Pers = 'm3Pers'
+    mPerm3 = 'mPerm3'
+    kgm = 'kgm'
+    kgPerm3 = 'kgPerm3'
+    m2Pers = 'm2Pers'
+    WPermK = 'WPermK'
+    JPerK = 'JPerK'
+    ppm = 'ppm'
+    rotPers = 'rotPers'
+    radPers = 'radPers'
+    WPerm2 = 'WPerm2'
+    JPerm2 = 'JPerm2'
+    SPerm = 'SPerm'
+    KPers = 'KPers'
+    PaPers = 'PaPers'
+    JPerkgK = 'JPerkgK'
+    VA = 'VA'
+    VAr = 'VAr'
+    cosPhi = 'cosPhi'
+    Vs = 'Vs'
+    V2 = 'V2'
+    As = 'As'
+    A2 = 'A2'
+    A2s = 'A2s'
+    VAh = 'VAh'
+    Wh = 'Wh'
+    VArh = 'VArh'
+    VPerHz = 'VPerHz'
+    HzPers = 'HzPers'
+    character = 'character'
+    charPers = 'charPers'
+    kgm2 = 'kgm2'
+    dB = 'dB'
+    WPers = 'WPers'
+    lPers = 'lPers'
+    dBm = 'dBm'
+    h = 'h'
+    min = 'min'
+    Q = 'Q'
+    Qh = 'Qh'
+    ohmm = 'ohmm'
+    APerm = 'APerm'
+    V2h = 'V2h'
+    A2h = 'A2h'
+    Ah = 'Ah'
+    count = 'count'
+    ft3 = 'ft3'
+    m3Perh = 'm3Perh'
+    gal = 'gal'
+    Btu = 'Btu'
+    l = 'l'
+    lPerh = 'lPerh'
+    lPerl = 'lPerl'
+    gPerg = 'gPerg'
+    molPerm3 = 'molPerm3'
+    molPermol = 'molPermol'
+    molPerkg = 'molPerkg'
+    sPers = 'sPers'
+    HzPerHz = 'HzPerHz'
+    VPerV = 'VPerV'
+    APerA = 'APerA'
+    VPerVA = 'VPerVA'
+    rev = 'rev'
+    kat = 'kat'
+    JPerkg = 'JPerkg'
+    m3Uncompensated = 'm3Uncompensated'
+    m3Compensated = 'm3Compensated'
+    WPerW = 'WPerW'
+    therm = 'therm'
+    onePerm = 'onePerm'
+    m3Perkg = 'm3Perkg'
+    Pas = 'Pas'
+    Nm = 'Nm'
+    NPerm = 'NPerm'
+    radPers2 = 'radPers2'
+    JPerm3 = 'JPerm3'
+    VPerm = 'VPerm'
+    CPerm3 = 'CPerm3'
+    CPerm2 = 'CPerm2'
+    FPerm = 'FPerm'
+    HPerm = 'HPerm'
+    JPermol = 'JPermol'
+    JPermolK = 'JPermolK'
+    CPerkg = 'CPerkg'
+    GyPers = 'GyPers'
+    WPersr = 'WPersr'
+    WPerm2sr = 'WPerm2sr'
+    katPerm3 = 'katPerm3'
+    d = 'd'
+    anglemin = 'anglemin'
+    anglesec = 'anglesec'
+    ha = 'ha'
+    tonne = 'tonne'
+    bar = 'bar'
+    mmHg = 'mmHg'
+    M = 'M'
+    kn = 'kn'
+    Mx = 'Mx'
+    G = 'G'
+    Oe = 'Oe'
+    Vh = 'Vh'
+    WPerA = 'WPerA'
+    onePerHz = 'onePerHz'
+    VPerVAr = 'VPerVAr'
+    ohmPerm = 'ohmPerm'
+    kgPerJ = 'kgPerJ'
+    JPers = 'JPers'
+
+    def __str__(self):
+        return 'UnitSymbol.' + str(self.value)
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        try:
+            return UnitSymbol[s]
+        except KeyError:
+            return s
+
+    @classmethod
+    def list(cls):
+        return list(map(lambda c: c.value, cls))
+
 
 class DCPolarityKind(Enum):
     positive = 'positive'
@@ -143,7 +269,52 @@ class DCPolarityKind(Enum):
     @classmethod
     def list(cls):
         return list(map(lambda c: c.value, cls))
-        
+
+
+class ControlAreaTypeKind(Enum):
+    AGC = 'AGC'
+    Forecast = 'Forecast'
+    Interchange = 'Interchange'
+
+    def __str__(self):
+        return 'ControlAreaTypeKind.' + str(self.value)
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        try:
+            return ControlAreaTypeKind[s]
+        except KeyError:
+            return s
+
+    @classmethod
+    def list(cls):
+        return list(map(lambda c: c.value, cls))
+
+
+class CurveStyle(Enum):
+    constantYValue = 'constantYValue'
+    straightLineYValues = 'straightLineYValues'
+
+    def __str__(self):
+        return 'CurveStyle.' + str(self.value)
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        try:
+            return CurveStyle[s]
+        except KeyError:
+            return s
+
+    @classmethod
+    def list(cls):
+        return list(map(lambda c: c.value, cls))
+
 
 class DCConverterOperatingModeKind(Enum):
     bipolar = 'bipolar'
@@ -166,94 +337,7 @@ class DCConverterOperatingModeKind(Enum):
     @classmethod
     def list(cls):
         return list(map(lambda c: c.value, cls))
-        
 
-class PhaseCode(Enum):
-    ABCN = 'ABCN'
-    ABC = 'ABC'
-    ABN = 'ABN'
-    ACN = 'ACN'
-    BCN = 'BCN'
-    AB = 'AB'
-    AC = 'AC'
-    BC = 'BC'
-    AN = 'AN'
-    BN = 'BN'
-    CN = 'CN'
-    A = 'A'
-    B = 'B'
-    C = 'C'
-    N = 'N'
-    s1N = 's1N'
-    s2N = 's2N'
-    s12N = 's12N'
-    s1 = 's1'
-    s2 = 's2'
-    s12 = 's12'
-
-    def __str__(self):
-        return 'PhaseCode.' + str(self.value)
-
-    def __repr__(self):
-        return str(self)
-
-    @staticmethod
-    def argparse(s):
-        try:
-            return PhaseCode[s]
-        except KeyError:
-            return s
-
-    @classmethod
-    def list(cls):
-        return list(map(lambda c: c.value, cls))
-        
-
-class Source(Enum):
-    PROCESS = 'PROCESS'
-    DEFAULTED = 'DEFAULTED'
-    SUBSTITUTED = 'SUBSTITUTED'
-
-    def __str__(self):
-        return 'Source.' + str(self.value)
-
-    def __repr__(self):
-        return str(self)
-
-    @staticmethod
-    def argparse(s):
-        try:
-            return Source[s]
-        except KeyError:
-            return s
-
-    @classmethod
-    def list(cls):
-        return list(map(lambda c: c.value, cls))
-        
-
-class Validity(Enum):
-    GOOD = 'GOOD'
-    QUESTIONABLE = 'QUESTIONABLE'
-    INVALID = 'INVALID'
-
-    def __str__(self):
-        return 'Validity.' + str(self.value)
-
-    def __repr__(self):
-        return str(self)
-
-    @staticmethod
-    def argparse(s):
-        try:
-            return Validity[s]
-        except KeyError:
-            return s
-
-    @classmethod
-    def list(cls):
-        return list(map(lambda c: c.value, cls))
-        
 
 class FuelType(Enum):
     coal = 'coal'
@@ -262,6 +346,10 @@ class FuelType(Enum):
     lignite = 'lignite'
     hardCoal = 'hardCoal'
     oilShale = 'oilShale'
+    brownCoalLignite = 'brownCoalLignite'
+    coalDerivedGas = 'coalDerivedGas'
+    peat = 'peat'
+    other = 'other'
 
     def __str__(self):
         return 'FuelType.' + str(self.value)
@@ -279,7 +367,7 @@ class FuelType(Enum):
     @classmethod
     def list(cls):
         return list(map(lambda c: c.value, cls))
-        
+
 
 class GeneratorControlSource(Enum):
     unavailable = 'unavailable'
@@ -303,23 +391,170 @@ class GeneratorControlSource(Enum):
     @classmethod
     def list(cls):
         return list(map(lambda c: c.value, cls))
-        
+
 
 class Currency(Enum):
-    USD = 'USD'
-    EUR = 'EUR'
+    AED = 'AED'
+    AFN = 'AFN'
+    ALL = 'ALL'
+    AMD = 'AMD'
+    ANG = 'ANG'
+    AOA = 'AOA'
+    ARS = 'ARS'
     AUD = 'AUD'
+    AWG = 'AWG'
+    AZN = 'AZN'
+    BAM = 'BAM'
+    BBD = 'BBD'
+    BDT = 'BDT'
+    BGN = 'BGN'
+    BHD = 'BHD'
+    BIF = 'BIF'
+    BMD = 'BMD'
+    BND = 'BND'
+    BOB = 'BOB'
+    BOV = 'BOV'
+    BRL = 'BRL'
+    BSD = 'BSD'
+    BTN = 'BTN'
+    BWP = 'BWP'
+    BYR = 'BYR'
+    BZD = 'BZD'
     CAD = 'CAD'
+    CDF = 'CDF'
     CHF = 'CHF'
+    CLF = 'CLF'
+    CLP = 'CLP'
     CNY = 'CNY'
+    COP = 'COP'
+    COU = 'COU'
+    CRC = 'CRC'
+    CUC = 'CUC'
+    CUP = 'CUP'
+    CVE = 'CVE'
+    CZK = 'CZK'
+    DJF = 'DJF'
     DKK = 'DKK'
+    DOP = 'DOP'
+    DZD = 'DZD'
+    EEK = 'EEK'
+    EGP = 'EGP'
+    ERN = 'ERN'
+    ETB = 'ETB'
+    EUR = 'EUR'
+    FJD = 'FJD'
+    FKP = 'FKP'
     GBP = 'GBP'
-    JPY = 'JPY'
-    NOK = 'NOK'
-    RUR = 'RUR'
-    SEK = 'SEK'
+    GEL = 'GEL'
+    GHS = 'GHS'
+    GIP = 'GIP'
+    GMD = 'GMD'
+    GNF = 'GNF'
+    GTQ = 'GTQ'
+    GYD = 'GYD'
+    HKD = 'HKD'
+    HNL = 'HNL'
+    HRK = 'HRK'
+    HTG = 'HTG'
+    HUF = 'HUF'
+    IDR = 'IDR'
+    ILS = 'ILS'
     INR = 'INR'
-    other = 'other'
+    IQD = 'IQD'
+    IRR = 'IRR'
+    ISK = 'ISK'
+    JMD = 'JMD'
+    JOD = 'JOD'
+    JPY = 'JPY'
+    KES = 'KES'
+    KGS = 'KGS'
+    KHR = 'KHR'
+    KMF = 'KMF'
+    KPW = 'KPW'
+    KRW = 'KRW'
+    KWD = 'KWD'
+    KYD = 'KYD'
+    KZT = 'KZT'
+    LAK = 'LAK'
+    LBP = 'LBP'
+    LKR = 'LKR'
+    LRD = 'LRD'
+    LSL = 'LSL'
+    LTL = 'LTL'
+    LVL = 'LVL'
+    LYD = 'LYD'
+    MAD = 'MAD'
+    MDL = 'MDL'
+    MGA = 'MGA'
+    MKD = 'MKD'
+    MMK = 'MMK'
+    MNT = 'MNT'
+    MOP = 'MOP'
+    MRO = 'MRO'
+    MUR = 'MUR'
+    MVR = 'MVR'
+    MWK = 'MWK'
+    MXN = 'MXN'
+    MYR = 'MYR'
+    MZN = 'MZN'
+    NAD = 'NAD'
+    NGN = 'NGN'
+    NIO = 'NIO'
+    NOK = 'NOK'
+    NPR = 'NPR'
+    NZD = 'NZD'
+    OMR = 'OMR'
+    PAB = 'PAB'
+    PEN = 'PEN'
+    PGK = 'PGK'
+    PHP = 'PHP'
+    PKR = 'PKR'
+    PLN = 'PLN'
+    PYG = 'PYG'
+    QAR = 'QAR'
+    RON = 'RON'
+    RSD = 'RSD'
+    RUB = 'RUB'
+    RWF = 'RWF'
+    SAR = 'SAR'
+    SBD = 'SBD'
+    SCR = 'SCR'
+    SDG = 'SDG'
+    SEK = 'SEK'
+    SGD = 'SGD'
+    SHP = 'SHP'
+    SLL = 'SLL'
+    SOS = 'SOS'
+    SRD = 'SRD'
+    STD = 'STD'
+    SYP = 'SYP'
+    SZL = 'SZL'
+    THB = 'THB'
+    TJS = 'TJS'
+    TMT = 'TMT'
+    TND = 'TND'
+    TOP = 'TOP'
+    TRY = 'TRY'
+    TTD = 'TTD'
+    TWD = 'TWD'
+    TZS = 'TZS'
+    UAH = 'UAH'
+    UGX = 'UGX'
+    USD = 'USD'
+    UYU = 'UYU'
+    UZS = 'UZS'
+    VEF = 'VEF'
+    VND = 'VND'
+    VUV = 'VUV'
+    WST = 'WST'
+    XAF = 'XAF'
+    XCD = 'XCD'
+    XOF = 'XOF'
+    XPF = 'XPF'
+    YER = 'YER'
+    ZAR = 'ZAR'
+    ZMK = 'ZMK'
+    ZWL = 'ZWL'
 
     def __str__(self):
         return 'Currency.' + str(self.value)
@@ -337,7 +572,7 @@ class Currency(Enum):
     @classmethod
     def list(cls):
         return list(map(lambda c: c.value, cls))
-        
+
 
 class HydroEnergyConversionKind(Enum):
     generator = 'generator'
@@ -359,7 +594,30 @@ class HydroEnergyConversionKind(Enum):
     @classmethod
     def list(cls):
         return list(map(lambda c: c.value, cls))
-        
+
+
+class HydroTurbineKind(Enum):
+    francis = 'francis'
+    pelton = 'pelton'
+    kaplan = 'kaplan'
+
+    def __str__(self):
+        return 'HydroTurbineKind.' + str(self.value)
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        try:
+            return HydroTurbineKind[s]
+        except KeyError:
+            return s
+
+    @classmethod
+    def list(cls):
+        return list(map(lambda c: c.value, cls))
+
 
 class HydroPlantStorageKind(Enum):
     runOfRiver = 'runOfRiver'
@@ -382,71 +640,7 @@ class HydroPlantStorageKind(Enum):
     @classmethod
     def list(cls):
         return list(map(lambda c: c.value, cls))
-        
 
-class WindGenUnitKind(Enum):
-    offshore = 'offshore'
-    onshore = 'onshore'
-
-    def __str__(self):
-        return 'WindGenUnitKind.' + str(self.value)
-
-    def __repr__(self):
-        return str(self)
-
-    @staticmethod
-    def argparse(s):
-        try:
-            return WindGenUnitKind[s]
-        except KeyError:
-            return s
-
-    @classmethod
-    def list(cls):
-        return list(map(lambda c: c.value, cls))
-        
-
-class CurveStyle(Enum):
-    constantYValue = 'constantYValue'
-    straightLineYValues = 'straightLineYValues'
-
-    def __str__(self):
-        return 'CurveStyle.' + str(self.value)
-
-    def __repr__(self):
-        return str(self)
-
-    @staticmethod
-    def argparse(s):
-        try:
-            return CurveStyle[s]
-        except KeyError:
-            return s
-
-    @classmethod
-    def list(cls):
-        return list(map(lambda c: c.value, cls))
-        
-
-class LimitTypeKind(Enum):
-
-    def __str__(self):
-        return 'LimitTypeKind.' + str(self.value)
-
-    def __repr__(self):
-        return str(self)
-
-    @staticmethod
-    def argparse(s):
-        try:
-            return LimitTypeKind[s]
-        except KeyError:
-            return s
-
-    @classmethod
-    def list(cls):
-        return list(map(lambda c: c.value, cls))
-        
 
 class OperationalLimitDirectionKind(Enum):
     high = 'high'
@@ -469,15 +663,12 @@ class OperationalLimitDirectionKind(Enum):
     @classmethod
     def list(cls):
         return list(map(lambda c: c.value, cls))
-        
 
-class PetersenCoilModeKind(Enum):
-    fixed = 'fixed'
-    manual = 'manual'
-    automaticPositioning = 'automaticPositioning'
+
+class LimitKind(Enum):
 
     def __str__(self):
-        return 'PetersenCoilModeKind.' + str(self.value)
+        return 'LimitKind.' + str(self.value)
 
     def __repr__(self):
         return str(self)
@@ -485,14 +676,14 @@ class PetersenCoilModeKind(Enum):
     @staticmethod
     def argparse(s):
         try:
-            return PetersenCoilModeKind[s]
+            return LimitKind[s]
         except KeyError:
             return s
 
     @classmethod
     def list(cls):
         return list(map(lambda c: c.value, cls))
-        
+
 
 class WindingConnection(Enum):
     D = 'D'
@@ -519,29 +710,7 @@ class WindingConnection(Enum):
     @classmethod
     def list(cls):
         return list(map(lambda c: c.value, cls))
-        
 
-class TransformerControlMode(Enum):
-    volt = 'volt'
-    reactive = 'reactive'
-
-    def __str__(self):
-        return 'TransformerControlMode.' + str(self.value)
-
-    def __repr__(self):
-        return str(self)
-
-    @staticmethod
-    def argparse(s):
-        try:
-            return TransformerControlMode[s]
-        except KeyError:
-            return s
-
-    @classmethod
-    def list(cls):
-        return list(map(lambda c: c.value, cls))
-        
 
 class RegulatingControlModeKind(Enum):
     voltage = 'voltage'
@@ -569,31 +738,7 @@ class RegulatingControlModeKind(Enum):
     @classmethod
     def list(cls):
         return list(map(lambda c: c.value, cls))
-        
 
-class ShortCircuitRotorKind(Enum):
-    salientPole1 = 'salientPole1'
-    salientPole2 = 'salientPole2'
-    turboSeries1 = 'turboSeries1'
-    turboSeries2 = 'turboSeries2'
-
-    def __str__(self):
-        return 'ShortCircuitRotorKind.' + str(self.value)
-
-    def __repr__(self):
-        return str(self)
-
-    @staticmethod
-    def argparse(s):
-        try:
-            return ShortCircuitRotorKind[s]
-        except KeyError:
-            return s
-
-    @classmethod
-    def list(cls):
-        return list(map(lambda c: c.value, cls))
-        
 
 class SVCControlMode(Enum):
     reactivePower = 'reactivePower'
@@ -615,7 +760,7 @@ class SVCControlMode(Enum):
     @classmethod
     def list(cls):
         return list(map(lambda c: c.value, cls))
-        
+
 
 class SynchronousMachineKind(Enum):
     generator = 'generator'
@@ -642,15 +787,38 @@ class SynchronousMachineKind(Enum):
     @classmethod
     def list(cls):
         return list(map(lambda c: c.value, cls))
-        
 
-class ControlAreaTypeKind(Enum):
-    AGC = 'AGC'
-    Forecast = 'Forecast'
-    Interchange = 'Interchange'
+
+class PhaseCode(Enum):
+    ABCN = 'ABCN'
+    ABC = 'ABC'
+    ABN = 'ABN'
+    ACN = 'ACN'
+    BCN = 'BCN'
+    AB = 'AB'
+    AC = 'AC'
+    BC = 'BC'
+    AN = 'AN'
+    BN = 'BN'
+    CN = 'CN'
+    A = 'A'
+    B = 'B'
+    C = 'C'
+    N = 'N'
+    s1N = 's1N'
+    s2N = 's2N'
+    s12N = 's12N'
+    s1 = 's1'
+    s2 = 's2'
+    s12 = 's12'
+    none = 'none'
+    X = 'X'
+    XY = 'XY'
+    XN = 'XN'
+    XYN = 'XYN'
 
     def __str__(self):
-        return 'ControlAreaTypeKind.' + str(self.value)
+        return 'PhaseCode.' + str(self.value)
 
     def __repr__(self):
         return str(self)
@@ -658,14 +826,83 @@ class ControlAreaTypeKind(Enum):
     @staticmethod
     def argparse(s):
         try:
-            return ControlAreaTypeKind[s]
+            return PhaseCode[s]
         except KeyError:
             return s
 
     @classmethod
     def list(cls):
         return list(map(lambda c: c.value, cls))
-        
+
+
+class WindGenUnitKind(Enum):
+    offshore = 'offshore'
+    onshore = 'onshore'
+
+    def __str__(self):
+        return 'WindGenUnitKind.' + str(self.value)
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        try:
+            return WindGenUnitKind[s]
+        except KeyError:
+            return s
+
+    @classmethod
+    def list(cls):
+        return list(map(lambda c: c.value, cls))
+
+
+class AsynchronousMachineKind(Enum):
+    generator = 'generator'
+    motor = 'motor'
+
+    def __str__(self):
+        return 'AsynchronousMachineKind.' + str(self.value)
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        try:
+            return AsynchronousMachineKind[s]
+        except KeyError:
+            return s
+
+    @classmethod
+    def list(cls):
+        return list(map(lambda c: c.value, cls))
+
+
+class BatteryStateKind(Enum):
+    discharging = 'discharging'
+    full = 'full'
+    waiting = 'waiting'
+    charging = 'charging'
+    empty = 'empty'
+
+    def __str__(self):
+        return 'BatteryStateKind.' + str(self.value)
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        try:
+            return BatteryStateKind[s]
+        except KeyError:
+            return s
+
+    @classmethod
+    def list(cls):
+        return list(map(lambda c: c.value, cls))
+
 
 class CsOperatingModeKind(Enum):
     inverter = 'inverter'
@@ -687,7 +924,7 @@ class CsOperatingModeKind(Enum):
     @classmethod
     def list(cls):
         return list(map(lambda c: c.value, cls))
-        
+
 
 class CsPpccControlKind(Enum):
     activePower = 'activePower'
@@ -710,77 +947,7 @@ class CsPpccControlKind(Enum):
     @classmethod
     def list(cls):
         return list(map(lambda c: c.value, cls))
-        
 
-class VsPpccControlKind(Enum):
-    pPcc = 'pPcc'
-    udc = 'udc'
-    pPccAndUdcDroop = 'pPccAndUdcDroop'
-    pPccAndUdcDroopWithCompensation = 'pPccAndUdcDroopWithCompensation'
-    pPccAndUdcDroopPilot = 'pPccAndUdcDroopPilot'
-
-    def __str__(self):
-        return 'VsPpccControlKind.' + str(self.value)
-
-    def __repr__(self):
-        return str(self)
-
-    @staticmethod
-    def argparse(s):
-        try:
-            return VsPpccControlKind[s]
-        except KeyError:
-            return s
-
-    @classmethod
-    def list(cls):
-        return list(map(lambda c: c.value, cls))
-        
-
-class VsQpccControlKind(Enum):
-    reactivePcc = 'reactivePcc'
-    voltagePcc = 'voltagePcc'
-    powerFactorPcc = 'powerFactorPcc'
-
-    def __str__(self):
-        return 'VsQpccControlKind.' + str(self.value)
-
-    def __repr__(self):
-        return str(self)
-
-    @staticmethod
-    def argparse(s):
-        try:
-            return VsQpccControlKind[s]
-        except KeyError:
-            return s
-
-    @classmethod
-    def list(cls):
-        return list(map(lambda c: c.value, cls))
-        
-
-class AsynchronousMachineKind(Enum):
-    generator = 'generator'
-    motor = 'motor'
-
-    def __str__(self):
-        return 'AsynchronousMachineKind.' + str(self.value)
-
-    def __repr__(self):
-        return str(self)
-
-    @staticmethod
-    def argparse(s):
-        try:
-            return AsynchronousMachineKind[s]
-        except KeyError:
-            return s
-
-    @classmethod
-    def list(cls):
-        return list(map(lambda c: c.value, cls))
-        
 
 class SynchronousMachineOperatingMode(Enum):
     generator = 'generator'
@@ -803,5 +970,209 @@ class SynchronousMachineOperatingMode(Enum):
     @classmethod
     def list(cls):
         return list(map(lambda c: c.value, cls))
-        
 
+
+class VsPpccControlKind(Enum):
+    pPcc = 'pPcc'
+    udc = 'udc'
+    pPccAndUdcDroop = 'pPccAndUdcDroop'
+    pPccAndUdcDroopWithCompensation = 'pPccAndUdcDroopWithCompensation'
+    pPccAndUdcDroopPilot = 'pPccAndUdcDroopPilot'
+    phasePcc = 'phasePcc'
+
+    def __str__(self):
+        return 'VsPpccControlKind.' + str(self.value)
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        try:
+            return VsPpccControlKind[s]
+        except KeyError:
+            return s
+
+    @classmethod
+    def list(cls):
+        return list(map(lambda c: c.value, cls))
+
+
+class VsQpccControlKind(Enum):
+    reactivePcc = 'reactivePcc'
+    voltagePcc = 'voltagePcc'
+    powerFactorPcc = 'powerFactorPcc'
+    pulseWidthModulation = 'pulseWidthModulation'
+
+    def __str__(self):
+        return 'VsQpccControlKind.' + str(self.value)
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        try:
+            return VsQpccControlKind[s]
+        except KeyError:
+            return s
+
+    @classmethod
+    def list(cls):
+        return list(map(lambda c: c.value, cls))
+
+    class DCPolarityKind(Enum):
+        positive = 'positive'
+        middle = 'middle'
+        negative = 'negative'
+
+        def __str__(self):
+            return 'DCPolarityKind.' + str(self.value)
+
+        def __repr__(self):
+            return str(self)
+
+        @staticmethod
+        def argparse(s):
+            try:
+                return DCPolarityKind[s]
+            except KeyError:
+                return s
+
+        @classmethod
+        def list(cls):
+            return list(map(lambda c: c.value, cls))
+
+
+class Source(Enum):
+    PROCESS = 'PROCESS'
+    DEFAULTED = 'DEFAULTED'
+    SUBSTITUTED = 'SUBSTITUTED'
+
+    def __str__(self):
+        return 'Source.' + str(self.value)
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        try:
+            return Source[s]
+        except KeyError:
+            return s
+
+    @classmethod
+    def list(cls):
+        return list(map(lambda c: c.value, cls))
+
+
+class Validity(Enum):
+    GOOD = 'GOOD'
+    QUESTIONABLE = 'QUESTIONABLE'
+    INVALID = 'INVALID'
+
+    def __str__(self):
+        return 'Validity.' + str(self.value)
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        try:
+            return Validity[s]
+        except KeyError:
+            return s
+
+    @classmethod
+    def list(cls):
+        return list(map(lambda c: c.value, cls))
+
+
+class LimitTypeKind(Enum):
+    def __str__(self):
+        return 'LimitTypeKind.' + str(self.value)
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        try:
+            return LimitTypeKind[s]
+        except KeyError:
+            return s
+
+    @classmethod
+    def list(cls):
+        return list(map(lambda c: c.value, cls))
+
+
+class PetersenCoilModeKind(Enum):
+    fixed = 'fixed'
+    manual = 'manual'
+    automaticPositioning = 'automaticPositioning'
+
+    def __str__(self):
+        return 'PetersenCoilModeKind.' + str(self.value)
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        try:
+            return PetersenCoilModeKind[s]
+        except KeyError:
+            return s
+
+    @classmethod
+    def list(cls):
+        return list(map(lambda c: c.value, cls))
+
+
+class TransformerControlMode(Enum):
+    volt = 'volt'
+    reactive = 'reactive'
+
+    def __str__(self):
+        return 'TransformerControlMode.' + str(self.value)
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        try:
+            return TransformerControlMode[s]
+        except KeyError:
+            return s
+
+    @classmethod
+    def list(cls):
+        return list(map(lambda c: c.value, cls))
+
+
+class ShortCircuitRotorKind(Enum):
+    salientPole1 = 'salientPole1'
+    salientPole2 = 'salientPole2'
+    turboSeries1 = 'turboSeries1'
+    turboSeries2 = 'turboSeries2'
+
+    def __str__(self):
+        return 'ShortCircuitRotorKind.' + str(self.value)
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        try:
+            return ShortCircuitRotorKind[s]
+        except KeyError:
+            return s
+
+    @classmethod
+    def list(cls):
+        return list(map(lambda c: c.value, cls))

@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.power_electronics_unit import PowerElectronicsUnit
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile, DCPolarityKind, BatteryStateKind, AsynchronousMachineKind, UnitSymbol
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile, UnitSymbol, BatteryStateKind
 
 
 class BatteryUnit(PowerElectronicsUnit):

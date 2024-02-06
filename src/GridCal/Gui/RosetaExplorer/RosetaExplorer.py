@@ -13,8 +13,8 @@ from GridCal.Gui.messages import *
 from GridCal.Gui.RosetaExplorer.MainWindow import *
 from GridCal.Gui.TreeModelViewer.TreeModelViewer import TreeModelViewerGUI
 
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15 import CgmesCircuit
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15 import cgmesProfile
+from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
 from GridCalEngine.IO.raw.devices.psse_circuit import PsseCircuit
 from GridCalEngine.IO.cim.db.db_handler import DbHandler
 from GridCalEngine.data_logger import DataLogger

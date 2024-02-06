@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes.base import Base
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile, SynchronousMachineKind, GeneratorControlSource, WindingConnection, VsQpccControlKind, ControlAreaTypeKind, SVCControlMode, BatteryStateKind, DCPolarityKind, FuelType, AsynchronousMachineKind, PhaseCode, Currency, HydroPlantStorageKind, HydroTurbineKind, CurveStyle, OperationalLimitDirectionKind, LimitKind, UnitSymbol, CsPpccControlKind, CsOperatingModeKind, HydroEnergyConversionKind, SynchronousMachineOperatingMode, DCConverterOperatingModeKind, WindGenUnitKind, UnitMultiplier, VsPpccControlKind, RegulatingControlModeKind
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
 
 
 class SvStatus(Base):

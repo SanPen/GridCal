@@ -17,7 +17,7 @@
 from typing import Dict, List
 from uuid import uuid4
 from GridCalEngine.IO.cim.cgmes.cgmes_poperty import CgmesProperty
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15 import cgmesProfile
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.data_logger import DataLogger
 

@@ -4,7 +4,7 @@ from pprint import pprint
 
 # Select which CGMES version you want to import
 # CGMESv2.4.15: 2, GCMESv3: 3
-version = 2
+version = 3
 rdf_graph = Graph()  # 1st define the graph
 if version == 2:
     # CGMESv2_4_15

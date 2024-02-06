@@ -39,8 +39,10 @@ def write_py_for_class(cgmes_version, cgmes_class):
     later with multiplier, unit, description, profiles for property staff
     :return:
     """
-    enum_name_list = {}
+    global class_enum_list
     global cgmes_folder
+
+    class_enum_list = set()
     name = cgmes_class.name
     if len(cgmes_class.inheritance_list) != 0:
         parent = cgmes_class.inheritance_list[0]
@@ -79,7 +81,7 @@ def write_py_for_class(cgmes_version, cgmes_class):
 
     # Enumeration import
     import_text += f"from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile"
-    for enum_name in enum_name_list:
+    for enum_name in class_enum_list:
         import_text += f", {enum_name}"
     import_text += "\n"
     import_text += "\n\n"
@@ -136,6 +138,7 @@ def get_reg_prop_code(attributes):
                 if attribute["range"] != "None":
                     unit = attribute["range"] + "." + attribute["unit"]
                     enum_name_list.update({attribute["range"]})
+                    class_enum_list.update({attribute["range"]})
         elif "range" in attribute:  # Association
             assoc_range = attribute["range"]
             class_type = assoc_range
@@ -197,6 +200,7 @@ def get_attribute_code(attributes):
             enum_range_list = attribute["enum_range_list"]
             enum_name = enum_range_list[0].split("#")[1]
             enum_name_list.update({enum_name})
+            class_enum_list.update({enum_name})
             default_value = enum_range_list[0].split("#")[1] + " = None"
             code += f"\t\tself.{attr_name}: {default_value}\n"
     return code

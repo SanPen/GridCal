@@ -38,7 +38,7 @@ from GridCalEngine.IO.raw.gridcal_to_raw import gridcal_to_raw
 from GridCalEngine.IO.epc.epc_parser import PowerWorldParser
 # from GridCalEngine.IO.cim.cim16.cim_parser import CIMImport
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
-from GridCalEngine.IO.cim.cgmes import cgmes_to_gridcal
+from GridCalEngine.IO.cim.cgmes.cgmes_to_gridcal import cgmes_to_gridcal
 from GridCalEngine.IO.gridcal.zip_interface import save_data_frames_to_zip, get_frames_from_zip
 from GridCalEngine.IO.gridcal.sqlite_interface import save_data_frames_to_sqlite, open_data_frames_from_sqlite
 from GridCalEngine.IO.gridcal.h5_interface import save_h5, open_h5

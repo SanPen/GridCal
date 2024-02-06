@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes.base import Base
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile, DCPolarityKind, ControlAreaTypeKind, CsOperatingModeKind, AsynchronousMachineKind, CsPpccControlKind, FuelType, DCConverterOperatingModeKind, HydroTurbineKind, BatteryStateKind, GeneratorControlSource, HydroPlantStorageKind, HydroEnergyConversionKind, CurveStyle, Currency, UnitSymbol
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
 
 
 class IdentifiedObject(Base):
