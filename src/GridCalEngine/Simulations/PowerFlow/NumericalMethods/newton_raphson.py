@@ -129,19 +129,6 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
                     logger.add_debug('Vm:\n', Vm)
                     logger.add_debug('Va:\n', Va)
 
-                    # if verbose == 2:
-                    #     with open('GridCal_nr_data_it_{0}.json'.format(iteration), 'w') as file_ptr:
-                    #         J2 = J.tocsc()
-                    #         data = {"Ji": J2.indices.tolist(),
-                    #                 "Jp": J2.indptr.tolist(),
-                    #                 "Jx": J2.data.tolist(),
-                    #                 "Jm": J2.shape[0],
-                    #                 "Jn": J2.shape[1],
-                    #                 "f": f.tolist(),
-                    #                 "Va": Va.tolist(),
-                    #                 "Vm": Vm.tolist()}
-                    #         json.dump(data, file_ptr)
-
             # reassign the solution vector
             dVa[pvpq] = dx[:npvpq]
             dVm[pq] = dx[npvpq:]
@@ -177,7 +164,7 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
                     V = V2
                     norm_f = norm_f_new
 
-                if verbose:
+                if verbose > 1:
                     if l_iter == 0:
                         logger.add_debug('error', norm_f_new)
                     else:

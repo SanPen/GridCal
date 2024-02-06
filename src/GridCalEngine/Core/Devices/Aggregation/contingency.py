@@ -54,7 +54,6 @@ class Contingency(EditableDevice):
         self._group: ContingencyGroup = group
         self._allowed_properties = ['active', '%']
 
-        self.register(key='idtag', units='', tpe=str, definition='Unique ID', editable=False)
         self.register(key='device_idtag', units='', tpe=str, definition='Unique ID', editable=False)
         self.register(key='prop', units='', tpe=str, definition='Name of the object property to change (active, %)')
         self.register(key='value', units='', tpe=float, definition='Property value')

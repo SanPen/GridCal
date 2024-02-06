@@ -21,21 +21,7 @@ from typing import Union
 from collections.abc import Callable
 from scipy.sparse import csr_matrix, csc_matrix
 from GridCalEngine.basic_structures import Vec, Mat
-
-
-class SparseSolver(Enum):
-    """
-    Sparse solvers to use
-    """
-    ILU = 'ILU'
-    KLU = 'KLU'
-    SuperLU = 'SuperLU'
-    Pardiso = 'Pardiso'
-    GMRES = 'GMRES'
-    UMFPACK = 'UmfPack'
-
-    def __str__(self):
-        return self.value
+from GridCalEngine.enumerations import SparseSolver
 
 
 # list of available linear algebra frameworks
@@ -54,11 +40,12 @@ except ImportError:
 
 
 try:
-    from scipy.sparse.linalg import spsolve as scipy_spsolve, splu, spilu, gmres
+    from scipy.sparse.linalg import spsolve as scipy_spsolve, splu, spilu, gmres, spsolve_triangular
     available_sparse_solvers.append(SparseSolver.UMFPACK)  # default linsolve solver
     available_sparse_solvers.append(SparseSolver.ILU)
     available_sparse_solvers.append(SparseSolver.SuperLU)
     available_sparse_solvers.append(SparseSolver.GMRES)
+    available_sparse_solvers.append(SparseSolver.UMFPACKTriangular)
 except ImportError:
     pass
     # print(SparseSolver.BLAS_LAPACK.value + ' failed')
@@ -152,24 +139,32 @@ def get_linear_solver(solver_type: SparseSolver = preferred_type) -> Callable[[c
     :param solver_type: SparseSolver option
     :return: function pointer f(A, b)
     """
-    if solver_type == SparseSolver.UMFPACK:
-        return scipy_spsolve
+    if solver_type in available_sparse_solvers:
 
-    elif solver_type == SparseSolver.KLU:
-        return klu_linsolve
+        if solver_type == SparseSolver.UMFPACK:
+            return scipy_spsolve
 
-    elif solver_type == SparseSolver.SuperLU:
-        return super_lu_linsolver
+        elif solver_type == SparseSolver.UMFPACKTriangular:
+            return spsolve_triangular
 
-    elif solver_type == SparseSolver.Pardiso:
-        return pardiso_spsolve
+        elif solver_type == SparseSolver.KLU:
+            return klu_linsolve
 
-    elif solver_type == SparseSolver.ILU:
-        return ilu_linsolver
+        elif solver_type == SparseSolver.SuperLU:
+            return super_lu_linsolver
 
-    elif solver_type == SparseSolver.GMRES:
-        return gmres_linsolve
+        elif solver_type == SparseSolver.Pardiso:
+            return pardiso_spsolve
+
+        elif solver_type == SparseSolver.ILU:
+            return ilu_linsolver
+
+        elif solver_type == SparseSolver.GMRES:
+            return gmres_linsolve
+
+        else:
+            raise Exception('Unrecognized LU solver')
 
     else:
-        raise Exception('Unrecognized LU solver')
+        return scipy_spsolve
 

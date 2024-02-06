@@ -120,7 +120,8 @@ def linear_contingency_analysis(grid: MultiCircuit,
                                srap_max_power=options.srap_max_power,
                                multi_contingency=multi_contingency,
                                PTDF=linear_analysis.PTDF,
-                               available_power=available_power)
+                               available_power=available_power,
+                               srap_fixing_probability=results.srap_fixing_probability)
 
         # report progress
         if t is None:

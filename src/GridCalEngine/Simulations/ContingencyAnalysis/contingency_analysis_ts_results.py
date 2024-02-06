@@ -61,7 +61,8 @@ class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
                 # ResultTypes.MaxOverloads,
                 ResultTypes.WorstContingencyFlows,
                 ResultTypes.WorstContingencyLoading,
-                ResultTypes.ContingencyAnalysisReport
+                ResultTypes.ContingencyAnalysisReport,
+                ResultTypes.SrapFixingProbability
             ],
             time_array=time_array,
             clustering_results=clustering_results,
@@ -81,6 +82,7 @@ class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
         self.overload_count: IntMat = np.zeros(nbr, dtype=int)
         self.relative_frequency: Vec = np.zeros(nbr)
         self.max_overload: Vec = np.zeros(nbr)
+        self.srap_fixing_probability = np.zeros((nbr, n), dtype=float)
         self.report: ContingencyResultsReport = ContingencyResultsReport()
 
         self.register(name='branch_names', tpe=StrVec)
@@ -94,7 +96,9 @@ class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
         self.register(name='overload_count', tpe=IntMat)
         self.register(name='relative_frequency', tpe=Vec)
         self.register(name='max_overload', tpe=Vec)
+        self.register(name='srap_fixing_probability', tpe=Mat)
         self.register(name='report', tpe=ContingencyResultsReport)
+
 
     @property
     def nbus(self) -> int:
@@ -181,6 +185,13 @@ class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
             title = 'Worst contingency loading '
             labels = self.branch_names
             index = pd.to_datetime(self.time_array)
+
+        elif result_type == ResultTypes.SrapFixingProbability:
+            data = self.srap_fixing_probability
+            y_label = ''
+            title = result_type.value[0]
+            labels = self.bus_names
+            index = self.branch_names
 
         elif result_type == ResultTypes.ContingencyAnalysisReport:
             data = self.report.get_data()

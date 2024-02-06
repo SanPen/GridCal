@@ -533,3 +533,13 @@ def diags(array: np.ndarray) -> csc_matrix:
         return csc_matrix(csc_numba.csc_diagonal_from_complex_array(array), shape=(m, m))
     else:
         return csc_matrix(csc_numba.csc_diagonal_from_array(array), shape=(m, m))
+
+
+def diagc(n, value) -> csc_matrix:
+    """
+    Create constant value diagonal matrix
+    :param n: size
+    :param value: value
+    :return:
+    """
+    return csc_matrix(csc_numba.csc_diagonal_from_number(n, value), shape=(n, n))

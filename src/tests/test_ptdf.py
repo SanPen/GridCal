@@ -202,20 +202,19 @@ def test_lodf_ieee14_psse():
 
 
 def test_ptdf_psse():
-    """
-    Compare the PSSE PTDF and the GridCal PTDF for IEEE14, IEEE30, IEEE118 and REE networks
-    """
     for fname, pssename, name in [
         (os.path.join('data', 'grids', 'RAW', 'IEEE 14 bus.raw'),
          os.path.join('data', 'results', 'comparison', 'IEEE 14 bus PTDF PSSe.csv'), 'IEEE14'),
         (os.path.join('data', 'grids', 'RAW', 'IEEE 30 bus.raw'),
          os.path.join('data', 'results', 'comparison', 'IEEE 30 bus PTDF PSSe.csv'), 'IEEE30'),
-        (os.path.join('data', 'grids', 'RAW', 'IEEE 118 Bus V2.raw'),
+        (os.path.join('data', 'grids', 'RAW', 'IEEE 118 Bus v2.raw'),
          os.path.join('data', 'results', 'comparison', 'IEEE 118 bus PTDF PSSe.csv'), 'IEEE118'),
         (os.path.join('data', 'grids', 'RAW', 'sensitive-raw', '15.Caso_2026.raw'),
          os.path.join('data', 'results', 'comparison', '15.Caso_2026 PTDF PSSe.csv'), 'REE'),
         (os.path.join('data', 'grids', 'RAW', 'ieee-14-bus_d_rename_ptdf.raw'),
-         os.path.join('data', 'results', 'comparison', 'ieee-14-bus_d_ptdf.csv'), 'IEEE14_D')
+         os.path.join('data', 'results', 'comparison', 'ieee-14-bus_d_ptdf.csv'), 'IEEE14_D'),
+        (os.path.join('data', 'grids', 'RAW', 'ACTIVSg2000_rename.raw'),
+         os.path.join('data', 'results', 'comparison', 'ACTIVSg2000_PTDF.csv'), 'TEXAS')
 
     ]:
 
@@ -273,6 +272,9 @@ def test_ptdf_psse():
             print(' ')
         else:
             print(fname, "does not exists...")
+    """
+    Compare the PSSE PTDF and the GridCal PTDF for IEEE14, IEEE30, IEEE118 and REE networks
+    """
 
 
 def test_lodf_psse():
@@ -284,12 +286,14 @@ def test_lodf_psse():
          os.path.join('data', 'results', 'comparison', 'IEEE 14 bus LODF PSSe.csv'), 'IEEE14'),
         (os.path.join('data', 'grids', 'RAW', 'IEEE 30 bus.raw'),
          os.path.join('data', 'results', 'comparison', 'IEEE 30 bus LODF PSSe.csv'), 'IEEE30'),
-        (os.path.join('data', 'grids', 'RAW', 'IEEE 118 Bus V2.raw'),
+        (os.path.join('data', 'grids', 'RAW', 'IEEE 118 Bus v2.raw'),
          os.path.join('data', 'results', 'comparison', 'IEEE 118 bus LODF PSSe.csv'), 'IEEE118'),
         (os.path.join('data', 'grids', 'RAW', 'sensitive-raw', '15.Caso_2026.raw'),
          os.path.join('data', 'results', 'comparison', '15.Caso_2026 LODF PSSe.csv'), 'REE'),
         (os.path.join('data', 'grids', 'RAW', 'ieee-14-bus_d_rename_lodf.raw'),
-         os.path.join('data', 'results', 'comparison', 'ieee-14-bus_d_branches_lodf.csv'), 'IEEE14_D')
+         os.path.join('data', 'results', 'comparison', 'ieee-14-bus_d_branches_lodf.csv'), 'IEEE14_D'),
+        (os.path.join('data', 'grids', 'RAW', 'ACTIVSg2000_rename.raw'),
+         os.path.join('data', 'results', 'comparison', 'ACTIVSg2000_branches_LODF.csv'), 'TEXAS')
 
     ]:
 
@@ -442,14 +446,25 @@ def test_mlodf_sanpen():
         assert ok
 
 
-
-def test_ptdf_psse():
+def test_ptdf_generation_contingencies():
     """
     Compare the PSSE PTDF and the GridCal PTDF for IEEE14, IEEE30, IEEE118 and REE networks
+    In this test we check a number of grids where only generation variations
+    have been introduced via generation contingencies
+
+    The test consists in performing the contingencies with a Power flow driver (with linear power flow)
+    later with a PTDF driver and both should provide the same values
     """
-    for fname  in [
+    for fname in [
         os.path.join('data', 'grids', 'IEEE14-gen120.gridcal'),
-        #os.path.join('data', 'grids', 'IEEE14-gen80.gridcal'),
+        # os.path.join('data', 'grids', 'IEEE14-gen80.gridcal'),
+        os.path.join('data', 'grids', 'IEEE30-gen80.gridcal'),
+        os.path.join('data', 'grids', 'IEEE30-gen120.gridcal'),
+        os.path.join('data', 'grids', 'IEEE118-gen80.gridcal'),
+        os.path.join('data', 'grids', 'IEEE118-gen80.gridcal'),
+        os.path.join('data', 'grids', 'IEEE118-gen80-rand.gridcal'),
+        os.path.join('data', 'grids', 'IEEE118-gen120-rand.gridcal'),
+
     ]:
         main_circuit = FileOpen(fname).open()
 
@@ -469,7 +484,54 @@ def test_ptdf_psse():
         cont_analysis_driver2 = ContingencyAnalysisDriver(grid=main_circuit, options=options2)
         cont_analysis_driver2.run()
 
-        assert np.allclose(cont_analysis_driver1.results.Sf, cont_analysis_driver2.results.Sf)
+        ok = np.allclose(cont_analysis_driver1.results.Sf, cont_analysis_driver2.results.Sf)
+        assert ok
+
+
+def test_lodf_single_contingencies():
+    """
+    Compare the PSSE PTDF and the GridCal PTDF for IEEE14, IEEE30, IEEE118 and REE networks
+    In this test we check the single contingencies against the power flow driver
+
+    The test consists in performing the contingencies with a Power flow driver (with linear power flow)
+    later with a PTDF driver and both should provide the same values
+    """
+    for fname in [
+        os.path.join('data', 'grids', 'IEEE14-13_14.gridcal'),
+        os.path.join('data', 'grids', 'IEEE30-12_15.gridcal'),
+        os.path.join('data', 'grids', 'IEEE118-38_65.gridcal'),
+        # os.path.join('data', 'grids', 'IEEE118-80_96.gridcal'),
+
+    ]:
+        main_circuit = FileOpen(fname).open()
+
+        # DC power flow method
+        pf_options = PowerFlowOptions(SolverType.DC,
+                                      verbose=False,
+                                      initialize_with_existing_solution=False,
+                                      dispatch_storage=True,
+                                      control_q=ReactivePowerControlMode.NoControl,
+                                      control_p=False)
+
+        options1 = ContingencyAnalysisOptions(pf_options=pf_options,
+                                              engine=ContingencyMethod.PowerFlow)
+
+        cont_analysis_driver1 = ContingencyAnalysisDriver(grid=main_circuit,
+                                                          options=options1,
+                                                          linear_multiple_contingencies=None)
+        cont_analysis_driver1.run()
+
+        linear_analysis = LinearAnalysisDriver(grid=main_circuit)
+        linear_analysis.run()
+        linear_multi_contingency = LinearMultiContingencies(grid=main_circuit)
+        linear_multi_contingency.compute(ptdf=linear_analysis.results.PTDF, lodf=linear_analysis.results.LODF)
+        options2 = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyMethod.PTDF)
+        cont_analysis_driver2 = ContingencyAnalysisDriver(grid=main_circuit, options=options2,
+                                                          linear_multiple_contingencies=linear_multi_contingency)
+        cont_analysis_driver2.run()
+
+    ok = np.allclose(cont_analysis_driver1.results.Sf, cont_analysis_driver2.results.Sf)
+    assert ok
 
 
 if __name__ == '__main__':
