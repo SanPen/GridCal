@@ -29,28 +29,21 @@ def test_numerical_cicuit_generator_contingencies():
 
 def test_numerical_cicuit_branch_contingencies():
     """
-    Check whether the generator contingency present on the gridcal file is applied correctly
+    Check whether the branch contingency present on the gridcal file is applied correctly
     :return: Nothing if ok, fails if not
     """
     for i, fname in enumerate([
-        os.path.join('data', 'grids', 'IEEE14-gen120.gridcal'),
-        os.path.join('data', 'grids', 'IEEE14-gen80.gridcal')
+        os.path.join('data', 'grids', 'IEEE14-13_14.gridcal'),
+        os.path.join('data', 'grids', 'IEEE14-2_4_1-3_4_1.gridcal')
     ]):
         main_circuit = FileOpen(fname).open()
         nc = compile_numerical_circuit_at(main_circuit, t_idx=None)
 
-        # for cnt in main_circuit.contingencies:
-        #
-        #     nc.set_contingency_status(contingencies_list=[cnt])
+        cnt = main_circuit.contingencies
+        nc.set_contingency_status(contingencies_list=cnt)
+        cnt_branch = np.where(nc.branch_data.active == 0)[0]  # deactivated branches
 
-        cnt = main_circuit.contingencies[0]  # yo sé que la primera contingencia es cambiar el generador del bus 1 en 120%
-
-        p_prev = nc.generator_data.p[1]  # P del primer generador antes del cambio
-        nc.set_contingency_status(contingencies_list=[cnt])
-        p_post = nc.generator_data.p[1]
-        change = 1.2 if i == 0 else 0.8
-
-        assert p_prev * change == p_post
+        assert len(cnt_branch) == len(cnt)
 
 
 # def test_numerical_cicuit_spv():
