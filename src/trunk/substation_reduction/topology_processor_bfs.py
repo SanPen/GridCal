@@ -336,3 +336,4 @@ if __name__ == '__main__':
 
     grid_ = createExampleGrid()
     topology_processor(grid=grid_)
+    print()
