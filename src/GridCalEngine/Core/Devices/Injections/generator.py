@@ -254,9 +254,13 @@ class Generator(GeneratorLikeTemplate):
         return self._Pf_prof
 
     @Pf_prof.setter
-    def Pf_prof(self, val: Profile):
-        assert isinstance(val, Profile)
-        self._Pf_prof = val
+    def Pf_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._Pf_prof = val
+        elif isinstance(val, np.ndarray):
+            self._Pf_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a Pf_prof')
 
     @property
     def Vset_prof(self) -> Profile:
@@ -267,9 +271,13 @@ class Generator(GeneratorLikeTemplate):
         return self._Vset_prof
 
     @Vset_prof.setter
-    def Vset_prof(self, val: Profile):
-        assert isinstance(val, Profile)
-        self._Vset_prof = val
+    def Vset_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._Vset_prof = val
+        elif isinstance(val, np.ndarray):
+            self._Vset_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a Vset_prof')
 
     @property
     def Cost2_prof(self) -> Profile:
@@ -280,9 +288,13 @@ class Generator(GeneratorLikeTemplate):
         return self._Cost2_prof
 
     @Cost2_prof.setter
-    def Cost2_prof(self, val: Profile):
-        assert isinstance(val, Profile)
-        self._Cost2_prof = val
+    def Cost2_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._Cost2_prof = val
+        elif isinstance(val, np.ndarray):
+            self._Cost2_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a Cost2_prof')
 
     @property
     def Cost0_prof(self) -> Profile:
@@ -293,9 +305,13 @@ class Generator(GeneratorLikeTemplate):
         return self._Cost0_prof
 
     @Cost0_prof.setter
-    def Cost0_prof(self, val: Profile):
-        assert isinstance(val, Profile)
-        self._Cost0_prof = val
+    def Cost0_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._Cost0_prof = val
+        elif isinstance(val, np.ndarray):
+            self._Cost0_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a Cost0_prof')
 
     def get_properties_dict(self, version=3):
         """

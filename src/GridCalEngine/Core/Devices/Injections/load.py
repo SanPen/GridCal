@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from typing import Union
+import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 from GridCalEngine.enumerations import DeviceType, BuildStatus
@@ -92,9 +94,13 @@ class Load(LoadLikeTemplate):
         return self._Ir_prof
 
     @Ir_prof.setter
-    def Ir_prof(self, val: Profile):
-        assert isinstance(val, Profile)
-        self._Ir_prof = val
+    def Ir_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._Ir_prof = val
+        elif isinstance(val, np.ndarray):
+            self._Ir_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a Ir_prof')
 
     @property
     def Ii_prof(self) -> Profile:
@@ -105,9 +111,13 @@ class Load(LoadLikeTemplate):
         return self._Ii_prof
 
     @Ii_prof.setter
-    def Ii_prof(self, val: Profile):
-        assert isinstance(val, Profile)
-        self._Ii_prof = val
+    def Ii_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._Ii_prof = val
+        elif isinstance(val, np.ndarray):
+            self._Ii_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a Ii_prof')
 
     @property
     def G_prof(self) -> Profile:
@@ -118,9 +128,13 @@ class Load(LoadLikeTemplate):
         return self._G_prof
 
     @G_prof.setter
-    def G_prof(self, val: Profile):
-        assert isinstance(val, Profile)
-        self._G_prof = val
+    def G_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._G_prof = val
+        elif isinstance(val, np.ndarray):
+            self._G_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a G_prof')
 
     @property
     def B_prof(self) -> Profile:
@@ -131,9 +145,13 @@ class Load(LoadLikeTemplate):
         return self._B_prof
 
     @B_prof.setter
-    def B_prof(self, val: Profile):
-        assert isinstance(val, Profile)
-        self._B_prof = val
+    def B_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._B_prof = val
+        elif isinstance(val, np.ndarray):
+            self._B_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a B_prof')
 
     def get_properties_dict(self, version=3):
         """

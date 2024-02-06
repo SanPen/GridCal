@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from typing import Union
+import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 from GridCalEngine.enumerations import DeviceType, BuildStatus, ExternalGridMode
@@ -90,9 +92,13 @@ class ExternalGrid(LoadLikeTemplate):
         return self._Vm_prof
 
     @Vm_prof.setter
-    def Vm_prof(self, val: Profile):
-        assert isinstance(val, Profile)
-        self._Vm_prof = val
+    def Vm_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._Vm_prof = val
+        elif isinstance(val, np.ndarray):
+            self._Vm_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a Vm_prof')
 
     @property
     def Va_prof(self) -> Profile:
@@ -103,9 +109,13 @@ class ExternalGrid(LoadLikeTemplate):
         return self._Va_prof
 
     @Va_prof.setter
-    def Va_prof(self, val: Profile):
-        assert isinstance(val, Profile)
-        self._Va_prof = val
+    def Va_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._Va_prof = val
+        elif isinstance(val, np.ndarray):
+            self._Va_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a Va_prof')
 
     def get_properties_dict(self, version=3):
         """

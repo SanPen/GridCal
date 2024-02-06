@@ -156,9 +156,13 @@ class InjectionTemplate(EditableDevice):
         return self._active_prof
 
     @active_prof.setter
-    def active_prof(self, val: Profile):
-        assert isinstance(val, Profile)
-        self._active_prof = val
+    def active_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._active_prof = val
+        elif isinstance(val, np.ndarray):
+            self._active_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a active_prof')
 
     @property
     def Cost_prof(self) -> Profile:
@@ -169,9 +173,13 @@ class InjectionTemplate(EditableDevice):
         return self._Cost_prof
 
     @Cost_prof.setter
-    def Cost_prof(self, val: Profile):
-        assert isinstance(val, Profile)
-        self._Cost_prof = val
+    def Cost_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._Cost_prof = val
+        elif isinstance(val, np.ndarray):
+            self._Cost_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a Cost_prof')
 
     def get_S(self) -> complex:
         return complex(0.0, 0.0)
@@ -251,9 +259,13 @@ class LoadLikeTemplate(InjectionTemplate):
         return self._P_prof
 
     @P_prof.setter
-    def P_prof(self, val: Profile):
-        assert isinstance(val, Profile)
-        self._P_prof = val
+    def P_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._P_prof = val
+        elif isinstance(val, np.ndarray):
+            self._P_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a pofile')
 
     @property
     def Q_prof(self) -> Profile:
@@ -264,9 +276,13 @@ class LoadLikeTemplate(InjectionTemplate):
         return self._Q_prof
 
     @Q_prof.setter
-    def Q_prof(self, val: Profile):
-        assert isinstance(val, Profile)
-        self._Q_prof = val
+    def Q_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._Q_prof = val
+        elif isinstance(val, np.ndarray):
+            self._Q_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a Q_prof')
 
     def get_S(self) -> complex:
         """
@@ -433,9 +449,13 @@ class GeneratorLikeTemplate(InjectionTemplate):
         return self._P_prof
 
     @P_prof.setter
-    def P_prof(self, val: Profile):
-        assert isinstance(val, Profile)
-        self._P_prof = val
+    def P_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._P_prof = val
+        elif isinstance(val, np.ndarray):
+            self._P_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a P_prof')
 
     def get_properties_dict(self, version=3):
         """
@@ -574,9 +594,13 @@ class ShuntLikeTemplate(InjectionTemplate):
         return self._G_prof
 
     @G_prof.setter
-    def G_prof(self, val: Profile):
-        assert isinstance(val, Profile)
-        self._G_prof = val
+    def G_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._G_prof = val
+        elif isinstance(val, np.ndarray):
+            self._G_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a G_prof')
 
     @property
     def B_prof(self) -> Profile:
@@ -587,9 +611,13 @@ class ShuntLikeTemplate(InjectionTemplate):
         return self._B_prof
 
     @B_prof.setter
-    def B_prof(self, val: Profile):
-        assert isinstance(val, Profile)
-        self._B_prof = val
+    def B_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._B_prof = val
+        elif isinstance(val, np.ndarray):
+            self._B_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a B_prof')
 
     @property
     def G0_prof(self) -> Profile:
@@ -600,9 +628,13 @@ class ShuntLikeTemplate(InjectionTemplate):
         return self._G0_prof
 
     @G_prof.setter
-    def G0_prof(self, val: Profile):
-        assert isinstance(val, Profile)
-        self._G0_prof = val
+    def G_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._G_prof = val
+        elif isinstance(val, np.ndarray):
+            self._G_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a G_prof')
 
     @property
     def B0_prof(self) -> Profile:
@@ -613,9 +645,13 @@ class ShuntLikeTemplate(InjectionTemplate):
         return self._B0_prof
 
     @B_prof.setter
-    def B0_prof(self, val: Profile):
-        assert isinstance(val, Profile)
-        self._B0_prof = val
+    def B_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._B_prof = val
+        elif isinstance(val, np.ndarray):
+            self._B_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a B_prof')
 
     def get_properties_dict(self, version=3):
         """

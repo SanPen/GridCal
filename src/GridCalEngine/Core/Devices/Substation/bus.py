@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from typing import Tuple
+from typing import Tuple, Union
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
@@ -214,9 +214,13 @@ class Bus(EditableDevice):
         return self._active_prof
 
     @active_prof.setter
-    def active_prof(self, val: Profile):
-        assert isinstance(val, Profile)
-        self._active_prof = val
+    def active_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._active_prof = val
+        elif isinstance(val, np.ndarray):
+            self._active_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a active_prof')
 
     def determine_bus_type(self) -> BusMode:
         """

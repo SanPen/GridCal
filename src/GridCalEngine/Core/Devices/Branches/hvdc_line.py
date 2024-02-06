@@ -18,7 +18,7 @@
 
 import pandas as pd
 import numpy as np
-from typing import Tuple
+from typing import Tuple, Union
 from matplotlib import pyplot as plt
 
 from GridCalEngine.Core.Devices.Substation.bus import Bus
@@ -220,8 +220,6 @@ class HvdcLine(ParentBranch):
                                                                     self.min_firing_angle_t,
                                                                     self.max_firing_angle_t)
 
-        self._overload_cost_prof = Profile(default_value=overload_cost)
-
         self.capex = capex
 
         self.opex = opex
@@ -272,9 +270,13 @@ class HvdcLine(ParentBranch):
         return self._active_prof
 
     @active_prof.setter
-    def active_prof(self, val: Profile):
-        assert isinstance(val, Profile)
-        self._active_prof = val
+    def active_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._active_prof = val
+        elif isinstance(val, np.ndarray):
+            self._active_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a active_prof')
 
     @property
     def rate_prof(self) -> Profile:
@@ -285,9 +287,13 @@ class HvdcLine(ParentBranch):
         return self._rate_prof
 
     @rate_prof.setter
-    def rate_prof(self, val: Profile):
-        assert isinstance(val, Profile)
-        self._rate_prof = val
+    def rate_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._rate_prof = val
+        elif isinstance(val, np.ndarray):
+            self._rate_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a rate_prof')
 
     @property
     def contingency_factor_prof(self) -> Profile:
@@ -298,9 +304,13 @@ class HvdcLine(ParentBranch):
         return self._contingency_factor_prof
 
     @contingency_factor_prof.setter
-    def contingency_factor_prof(self, val: Profile):
-        assert isinstance(val, Profile)
-        self._contingency_factor_prof = val
+    def contingency_factor_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._contingency_factor_prof = val
+        elif isinstance(val, np.ndarray):
+            self._contingency_factor_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a contingency_factor_prof')
 
     @property
     def Cost_prof(self) -> Profile:
@@ -311,9 +321,13 @@ class HvdcLine(ParentBranch):
         return self._Cost_prof
 
     @Cost_prof.setter
-    def Cost_prof(self, val: Profile):
-        assert isinstance(val, Profile)
-        self._Cost_prof = val
+    def Cost_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._Cost_prof = val
+        elif isinstance(val, np.ndarray):
+            self._Cost_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a Cost_prof')
 
     @property
     def Pset_prof(self) -> Profile:
@@ -324,9 +338,13 @@ class HvdcLine(ParentBranch):
         return self._Pset_prof
 
     @Pset_prof.setter
-    def Pset_prof(self, val: Profile):
-        assert isinstance(val, Profile)
-        self._Pset_prof = val
+    def Pset_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._Pset_prof = val
+        elif isinstance(val, np.ndarray):
+            self._Pset_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a Pset_prof')
 
     @property
     def angle_droop_prof(self) -> Profile:
@@ -337,9 +355,13 @@ class HvdcLine(ParentBranch):
         return self._angle_droop_prof
 
     @angle_droop_prof.setter
-    def angle_droop_prof(self, val: Profile):
-        assert isinstance(val, Profile)
-        self._angle_droop_prof = val
+    def angle_droop_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._angle_droop_prof = val
+        elif isinstance(val, np.ndarray):
+            self._angle_droop_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a angle_droop_prof')
 
     @property
     def Vset_f_prof(self) -> Profile:
@@ -350,9 +372,13 @@ class HvdcLine(ParentBranch):
         return self._Vset_f_prof
 
     @Vset_f_prof.setter
-    def Vset_f_prof(self, val: Profile):
-        assert isinstance(val, Profile)
-        self._Vset_f_prof = val
+    def Vset_f_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._Vset_f_prof = val
+        elif isinstance(val, np.ndarray):
+            self._Vset_f_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a Vset_f_prof')
 
     @property
     def Vset_t_prof(self) -> Profile:
@@ -363,9 +389,13 @@ class HvdcLine(ParentBranch):
         return self._Vset_t_prof
 
     @Vset_t_prof.setter
-    def Vset_t_prof(self, val: Profile):
-        assert isinstance(val, Profile)
-        self._Vset_t_prof = val
+    def Vset_t_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._Vset_t_prof = val
+        elif isinstance(val, np.ndarray):
+            self._Vset_t_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a Vset_t_prof')
 
     def get_from_and_to_power(self, theta_f, theta_t, Sbase, in_pu=False):
         """
@@ -517,7 +547,7 @@ class HvdcLine(ParentBranch):
             pset_prof = self.Pset_prof.tolist()
             vset_prof_f = self.Vset_f_prof.tolist()
             vset_prof_t = self.Vset_t_prof.tolist()
-            cost_prof = self.overload_cost_prof.tolist()
+            cost_prof = self.Cost_prof.tolist()
         else:
             active_prof = list()
             rate_prof = list()

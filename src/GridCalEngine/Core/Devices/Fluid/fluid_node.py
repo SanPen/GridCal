@@ -16,6 +16,8 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 from typing import Union
+import numpy as np
+
 from GridCalEngine.Core.Devices.editable_device import EditableDevice
 from GridCalEngine.Core.Devices.Substation.bus import Bus
 from GridCalEngine.enumerations import BuildStatus, DeviceType
@@ -97,9 +99,13 @@ class FluidNode(EditableDevice):
         return self._spillage_cost_prof
 
     @spillage_cost_prof.setter
-    def spillage_cost_prof(self, val: Profile):
-        assert isinstance(val, Profile)
-        self._spillage_cost_prof = val
+    def spillage_cost_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._spillage_cost_prof = val
+        elif isinstance(val, np.ndarray):
+            self._spillage_cost_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a spillage_cost_prof')
 
     @property
     def inflow_prof(self) -> Profile:
@@ -110,9 +116,13 @@ class FluidNode(EditableDevice):
         return self._inflow_prof
 
     @inflow_prof.setter
-    def inflow_prof(self, val: Profile):
-        assert isinstance(val, Profile)
-        self._inflow_prof = val
+    def inflow_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._inflow_prof = val
+        elif isinstance(val, np.ndarray):
+            self._inflow_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a inflow_prof')
 
     def copy(self):
         """

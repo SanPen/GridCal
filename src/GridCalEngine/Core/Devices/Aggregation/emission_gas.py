@@ -17,7 +17,7 @@
 
 
 from typing import Union
-from GridCalEngine.basic_structures import Vec
+import numpy as np
 from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceType
 from GridCalEngine.Core.Devices.profile import Profile
 
@@ -63,9 +63,13 @@ class EmissionGas(EditableDevice):
         return self._cost_prof
 
     @cost_prof.setter
-    def cost_prof(self, val: Profile):
-        assert isinstance(val, Profile)
-        self._cost_prof = val
+    def cost_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._cost_prof = val
+        elif isinstance(val, np.ndarray):
+            self._cost_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a cost_prof')
 
     def get_properties_dict(self, version=3):
 

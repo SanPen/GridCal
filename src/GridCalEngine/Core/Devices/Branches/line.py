@@ -175,9 +175,13 @@ class Line(ParentBranch):
         return self._temp_oper_prof
 
     @temp_oper_prof.setter
-    def temp_oper_prof(self, val: Profile):
-        assert isinstance(val, Profile)
-        self._temp_oper_prof = val
+    def temp_oper_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._temp_oper_prof = val
+        elif isinstance(val, np.ndarray):
+            self._temp_oper_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a temp_oper_prof')
 
     @property
     def R_corrected(self):

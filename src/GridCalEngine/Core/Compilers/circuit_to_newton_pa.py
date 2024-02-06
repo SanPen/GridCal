@@ -954,7 +954,7 @@ def add_hvdc_data(circuit: MultiCircuit,
 
             hvdc.angle_droop = elm.angle_droop_prof.toarray() if time_indices is None else \
             elm.angle_droop_prof.toarray()[time_indices]
-            hvdc.overload_cost = elm.overload_cost_prof.toarray()
+            hvdc.overload_cost = elm.Cost_prof.toarray()
         else:
             hvdc.contingency_rates = elm.rate * elm.contingency_factor
             hvdc.angle_droop = elm.angle_droop

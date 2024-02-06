@@ -162,9 +162,13 @@ class ParentBranch(EditableDevice):
         return self._active_prof
 
     @active_prof.setter
-    def active_prof(self, val: Profile):
-        assert isinstance(val, Profile)
-        self._active_prof = val
+    def active_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._active_prof = val
+        elif isinstance(val, np.ndarray):
+            self._active_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a active_prof')
 
     @property
     def rate_prof(self) -> Profile:
@@ -175,9 +179,13 @@ class ParentBranch(EditableDevice):
         return self._rate_prof
 
     @rate_prof.setter
-    def rate_prof(self, val: Profile):
-        assert isinstance(val, Profile)
-        self._rate_prof = val
+    def rate_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._rate_prof = val
+        elif isinstance(val, np.ndarray):
+            self._rate_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a rate_prof')
 
     @property
     def contingency_factor_prof(self) -> Profile:
@@ -188,9 +196,13 @@ class ParentBranch(EditableDevice):
         return self._contingency_factor_prof
 
     @contingency_factor_prof.setter
-    def contingency_factor_prof(self, val: Profile):
-        assert isinstance(val, Profile)
-        self._contingency_factor_prof = val
+    def contingency_factor_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._contingency_factor_prof = val
+        elif isinstance(val, np.ndarray):
+            self._contingency_factor_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a contingency_factor_prof')
 
     @property
     def Cost_prof(self) -> Profile:
@@ -201,9 +213,13 @@ class ParentBranch(EditableDevice):
         return self._Cost_prof
 
     @Cost_prof.setter
-    def Cost_prof(self, val: Profile):
-        assert isinstance(val, Profile)
-        self._Cost_prof = val
+    def Cost_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._Cost_prof = val
+        elif isinstance(val, np.ndarray):
+            self._Cost_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a Cost_prof')
 
     def get_max_bus_nominal_voltage(self):
         """

@@ -13,9 +13,13 @@ def {profile_name}(self) -> Profile:
 def create_setter(profile_name):
     return f'''
 @{profile_name}.setter
-def {profile_name}(self, val: Profile):
-    assert isinstance(val, Profile)
-    self._{profile_name} = val    
+def {profile_name}(self, val: Union[Profile, np.ndarray]):
+    if isinstance(val, Profile):
+        self._{profile_name} = val
+    elif isinstance(val, np.ndarray):
+        self._{profile_name}.set(arr=val)
+    else:
+        raise Exception(str(type(val)) + 'not supported to be set into a {profile_name}')
     '''
 
 
