@@ -738,6 +738,34 @@ class PlexelBase:
                                         value=p[1])
             self.properties.append(node_props)
 
+    def add_generator(self, generator: dev.Generator, node: dev.Bus):
+        # create name following plexel format
+        # TODO: is this really necessary?
+        #  Or should we keep the standard name?
+        gen_name = 'GEN_' + generator.name
+
+        # group generators by technology
+        gen_tech = generator.technology.name if generator.technology is not None else ''
+
+        cat_obj = None
+        if gen_tech != '':
+            cat_obj = PlexelCategory(cls=ClassEnum.Generator, category_name=gen_tech)
+            # does category already exists?
+            if self.categories.length() == 0:
+                self.categories.append(cat_obj)
+            else:
+                if cat_obj.get_key() not in self.categories.get_keys():
+                    gen_cats = self.categories.get_filtered_df(column='class', value=ClassEnum.Generator.value)
+                    # add next ranking number available
+                    cat_obj.rank = len(gen_cats) + 1
+                    self.categories.append(cat_obj)
+
+        # add the generator as an object
+        gen_obj = PlexelObject(cls=ClassEnum.Generator, name=gen_name, cat=cat_obj)
+        self.objects.append(gen_obj)
+
+        # TODO: memberships node <-> generator
+
     def save(self, file_name: str):
         """
         Save the Plexel DB to an Excel file
@@ -774,8 +802,46 @@ def convert_gridcal_to_plexel(grid: MultiCircuit) -> PlexelBase:
     for b in grid.get_buses():
         plx.add_node(node=b, region=b.area, zone=b.zone)
 
+    # Add gridcal generators as -> plexel generators
+    # TODO: to complete!
+    for g in grid.get_generators():
+        plx.add_generator(generator=g, node=g.bus)
+
     print('Convert done!')
     return plx
+
+
+def use_idgen_as_technology(grid: MultiCircuit):
+    """
+    At RE, the field ``ID`` for each Generator is a 2-digit code
+    that represents the Technology of the machine.
+    Example: '1Q' ->
+    - 1: Unit #1 connected to the bus
+    - Q: The technology code. In this case, Nuclear
+    This method iterates through all generators and fills the
+    generator technology of a GridCal MultiCircuit with the info from the generator ID
+    :param grid: GridCal MultiCircuit object
+    :return:
+    """
+    for b in grid.buses:
+        for g in b.generators:
+            # extract gen_id from the gen_code
+            gen_id = g.code.split('_')[-1]
+
+            # gen_id should be a 2-digit code.
+            # if only 1 digit, we assume it is the unit number and therefore, the technology is unknown!
+            if len(gen_id) > 1:
+                # grab the tech id from the gen_id
+                tech_id = gen_id[-1]
+                tech_obj = dev.Technology(name=tech_id, code=tech_id)
+                # check if the technology already exists within the model (code should be unique)
+                if tech_id not in [c.code for c in grid.technologies]:
+                    grid.technologies.append(tech_obj)
+
+                # link the technology to the generator
+                g.technology = tech_obj
+            else:
+                print('Error: Generator {g} - Bus {b} : Technology code not found'.format(g=g.name, b=b.name))
 
 
 if __name__ == "__main__":
@@ -788,6 +854,10 @@ if __name__ == "__main__":
     out_file = r"plexel_export.xlsx"
 
     my_grid = gce.open_file(fname)
+
+    # === RE specifics ===
+    # 1: Adding technologies from generator IDs
+    use_idgen_as_technology(my_grid)
 
     my_plexel_circuit = convert_gridcal_to_plexel(my_grid)
     print('Plexel circuit generated!')
