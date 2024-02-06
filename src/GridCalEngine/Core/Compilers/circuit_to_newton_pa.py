@@ -324,8 +324,7 @@ def add_npa_buses(circuit: MultiCircuit,
                                   area=area_dict.get(bus.area, None))
 
         if time_series and n_time > 1:
-            elm.active = bus.active_prof.astype(BINT) if time_indices is None else bus.active_prof.astype(BINT)[
-                time_indices]
+            elm.active = bus.active_prof.astype(BINT) if time_indices is None else bus.active_prof.astype(BINT)[time_indices]
         else:
             elm.active = np.ones(n_time, dtype=BINT) * int(bus.active)
 
@@ -369,13 +368,13 @@ def add_npa_loads(circuit: MultiCircuit,
                 time_indices]
 
             if opf_results is None:
-                P = elm.P_prof
+                P = elm.P_prof.toarray()
             else:
-                P = elm.P_prof - opf_results.load_shedding[:, k]
+                P = elm.P_prof.toarray() - opf_results.load_shedding[:, k]
 
             load.P = P if time_indices is None else P[time_indices]
-            load.Q = elm.Q_prof if time_indices is None else elm.Q_prof[time_indices]
-            load.cost_1 = elm.Cost_prof if time_indices is None else elm.Cost_prof[time_indices]
+            load.Q = elm.Q_prof.toarray() if time_indices is None else elm.Q_prof.toarray()[time_indices]
+            load.cost_1 = elm.Cost_prof.toarray() if time_indices is None else elm.Cost_prof.toarray()[time_indices]
         else:
             load.active = np.ones(n_time, dtype=BINT) * int(elm.active)
             load.setAllCost1(elm.Cost)
@@ -411,9 +410,9 @@ def add_npa_static_generators(circuit: MultiCircuit, npa_circuit: "npa.HybridCir
         if time_series:
             pe_inj.active = elm.active_prof.astype(BINT) if time_indices is None else elm.active_prof.astype(BINT)[
                 time_indices]
-            pe_inj.P = elm.P_prof if time_indices is None else elm.P_prof[time_indices]
-            pe_inj.Q = elm.Q_prof if time_indices is None else elm.Q_prof[time_indices]
-            pe_inj.cost_1 = elm.Cost_prof if time_indices is None else elm.Cost_prof[time_indices]
+            pe_inj.P = elm.P_prof.toarray() if time_indices is None else elm.P_prof.toarray()[time_indices]
+            pe_inj.Q = elm.Q_prof.toarray() if time_indices is None else elm.Q_prof.toarray()[time_indices]
+            pe_inj.cost_1 = elm.Cost_prof.toarray() if time_indices is None else elm.Cost_prof.toarray()[time_indices]
         else:
             pe_inj.active = np.ones(n_time, dtype=BINT) * int(elm.active)
             pe_inj.setAllCost1(elm.Cost)
@@ -450,8 +449,8 @@ def add_npa_shunts(circuit: MultiCircuit,
         if time_series:
             sh.active = elm.active_prof.astype(BINT) if time_indices is None else elm.active_prof.astype(BINT)[
                 time_indices]
-            sh.G = elm.G_prof if time_indices is None else elm.G_prof[time_indices]
-            sh.B = elm.B_prof if time_indices is None else elm.B_prof[time_indices]
+            sh.G = elm.G_prof.toarray() if time_indices is None else elm.G_prof.toarray()[time_indices]
+            sh.B = elm.B_prof.toarray() if time_indices is None else elm.B_prof.toarray()[time_indices]
         else:
             sh.active = np.ones(n_time, dtype=BINT) * int(elm.active)
 
@@ -501,16 +500,16 @@ def add_npa_generators(circuit: MultiCircuit,
                 time_indices]
 
             if opf_results is None:
-                P = elm.P_prof
+                P = elm.P_prof.toarray()
             else:
                 P = opf_results.generator_power[:, k] - opf_results.generator_shedding[:, k]
 
             gen.P = P if time_indices is None else P[time_indices]
 
-            gen.Vset = elm.Vset_prof if time_indices is None else elm.Vset_prof[time_indices]
-            gen.cost_0 = elm.Cost0_prof if time_indices is None else elm.Cost0_prof[time_indices]
-            gen.cost_1 = elm.Cost_prof if time_indices is None else elm.Cost_prof[time_indices]
-            gen.cost_2 = elm.Cost2_prof if time_indices is None else elm.Cost2_prof[time_indices]
+            gen.Vset = elm.Vset_prof.toarray() if time_indices is None else elm.Vset_prof.toarray()[time_indices]
+            gen.cost_0 = elm.Cost0_prof.toarray() if time_indices is None else elm.Cost0_prof.toarray()[time_indices]
+            gen.cost_1 = elm.Cost_prof.toarray() if time_indices is None else elm.Cost_prof.toarray()[time_indices]
+            gen.cost_2 = elm.Cost2_prof.toarray() if time_indices is None else elm.Cost2_prof.toarray()[time_indices]
         else:
             gen.active = np.ones(n_time, dtype=BINT) * int(elm.active)
 
@@ -576,17 +575,17 @@ def add_battery_data(circuit: MultiCircuit,
                 time_indices]
 
             if opf_results is None:
-                P = elm.P_prof
+                P = elm.P_prof.toarray()
             else:
                 P = opf_results.generator_power[:, k] - opf_results.generator_shedding[:, k]
 
             gen.P = P if time_indices is None else P[time_indices]
 
             # gen.P = elm.P_prof if time_indices is None else elm.P_prof[time_indices]
-            gen.Vset = elm.Vset_prof if time_indices is None else elm.Vset_prof[time_indices]
-            gen.cost_0 = elm.Cost0_prof if time_indices is None else elm.Cost0_prof[time_indices]
-            gen.cost_1 = elm.Cost_prof if time_indices is None else elm.Cost_prof[time_indices]
-            gen.cost_2 = elm.Cost2_prof if time_indices is None else elm.Cost2_prof[time_indices]
+            gen.Vset = elm.Vset_prof.toarray() if time_indices is None else elm.Vset_prof.toarray()[time_indices]
+            gen.cost_0 = elm.Cost0_prof.toarray() if time_indices is None else elm.Cost0_prof.toarray()[time_indices]
+            gen.cost_1 = elm.Cost_prof.toarray() if time_indices is None else elm.Cost_prof.toarray()[time_indices]
+            gen.cost_2 = elm.Cost2_prof.toarray() if time_indices is None else elm.Cost2_prof.toarray()[time_indices]
         else:
             gen.active = np.ones(n_time, dtype=BINT) * int(elm.active)
 
@@ -639,10 +638,10 @@ def add_npa_line(circuit: MultiCircuit,
         if time_series:
             lne.active = elm.active_prof.astype(BINT) if time_indices is None else elm.active_prof.astype(BINT)[
                 time_indices]
-            lne.rates = elm.rate_prof if time_indices is None else elm.rate_prof[time_indices]
-            contingency_rates = elm.rate_prof * elm.contingency_factor
+            lne.rates = elm.rate_prof.toarray() if time_indices is None else elm.rate_prof.toarray()[time_indices]
+            contingency_rates = elm.rate_prof.toarray() * elm.contingency_factor
             lne.contingency_rates = contingency_rates if time_indices is None else contingency_rates[time_indices]
-            lne.overload_cost = elm.Cost_prof if time_indices is None else elm.Cost_prof[time_indices]
+            lne.overload_cost = elm.Cost_prof.toarray() if time_indices is None else elm.Cost_prof.toarray()[time_indices]
         else:
             lne.setAllOverloadCost(elm.Cost)
 
@@ -696,15 +695,15 @@ def add_transformer_data(circuit: MultiCircuit,
                                     tap=elm.tap_module,
                                     phase=elm.tap_phase)
         if time_series:
-            contingency_rates = elm.rate_prof * elm.contingency_factor
+            contingency_rates = elm.rate_prof.toarray() * elm.contingency_factor
             active_prof = elm.active_prof.astype(BINT)
 
             tr2.active = active_prof if time_indices is None else active_prof[time_indices]
-            tr2.rates = elm.rate_prof if time_indices is None else elm.rate_prof[time_indices]
+            tr2.rates = elm.rate_prof.toarray() if time_indices is None else elm.rate_prof.toarray()[time_indices]
             tr2.contingency_rates = contingency_rates if time_indices is None else contingency_rates[time_indices]
-            tr2.tap = elm.tap_module_prof if time_indices is None else elm.tap_module_prof[time_indices]
-            tr2.phase = elm.tap_phase_prof if time_indices is None else elm.tap_phase_prof[time_indices]
-            tr2.overload_cost = elm.Cost_prof
+            tr2.tap = elm.tap_module_prof.toarray() if time_indices is None else elm.tap_module_prof.toarray()[time_indices]
+            tr2.phase = elm.tap_phase_prof.toarray() if time_indices is None else elm.tap_phase_prof.toarray()[time_indices]
+            tr2.overload_cost = elm.Cost_prof.toarray()
         else:
             tr2.setAllOverloadCost(elm.Cost)
 
@@ -836,10 +835,10 @@ def add_vsc_data(circuit: MultiCircuit,
         if time_series:
             vsc.active = elm.active_prof.astype(BINT) if time_indices is None else elm.active_prof.astype(BINT)[
                 time_indices]
-            vsc.rates = elm.rate_prof if time_indices is None else elm.rate_prof[time_indices]
-            contingency_rates = elm.rate_prof * elm.contingency_factor
+            vsc.rates = elm.rate_prof.toarray() if time_indices is None else elm.rate_prof.toarray()[time_indices]
+            contingency_rates = elm.rate_prof.toarray() * elm.contingency_factor
             vsc.contingency_rates = contingency_rates if time_indices is None else contingency_rates[time_indices]
-            vsc.overload_cost = elm.Cost_prof
+            vsc.overload_cost = elm.Cost_prof.toarray()
         else:
             vsc.setAllRates(elm.rate)
             vsc.setAllOverloadCost(elm.Cost)
@@ -880,11 +879,11 @@ def add_dc_line_data(circuit: MultiCircuit,
         if time_series:
             lne.active = elm.active_prof.astype(BINT) if time_indices is None else elm.active_prof.astype(BINT)[
                 time_indices]
-            lne.rates = elm.rate_prof if time_indices is None else elm.rate_prof[time_indices]
+            lne.rates = elm.rate_prof.toarray() if time_indices is None else elm.rate_prof.toarray()[time_indices]
 
-            contingency_rates = elm.rate_prof * elm.contingency_factor
+            contingency_rates = elm.rate_prof.toarray() * elm.contingency_factor
             lne.contingency_rates = contingency_rates if time_indices is None else contingency_rates[time_indices]
-            lne.overload_cost = elm.Cost_prof
+            lne.overload_cost = elm.Cost_prof.toarray()
         else:
             lne.setAllOverloadCost(elm.Cost)
 
@@ -942,15 +941,15 @@ def add_hvdc_data(circuit: MultiCircuit,
         if time_series:
             hvdc.active = elm.active_prof.astype(BINT) if time_indices is None else elm.active_prof.astype(BINT)[
                 time_indices]
-            hvdc.rates = elm.rate_prof if time_indices is None else elm.rate_prof[time_indices]
-            hvdc.Vf = elm.Vset_f_prof if time_indices is None else elm.Vset_f_prof[time_indices]
-            hvdc.Vt = elm.Vset_t_prof if time_indices is None else elm.Vset_t_prof[time_indices]
+            hvdc.rates = elm.rate_prof.toarray() if time_indices is None else elm.rate_prof.toarray()[time_indices]
+            hvdc.Vf = elm.Vset_f_prof.toarray() if time_indices is None else elm.Vset_f_prof.toarray()[time_indices]
+            hvdc.Vt = elm.Vset_t_prof.toarray() if time_indices is None else elm.Vset_t_prof.toarray()[time_indices]
 
-            contingency_rates = elm.rate_prof * elm.contingency_factor
+            contingency_rates = elm.rate_prof.toarray() * elm.contingency_factor
             hvdc.contingency_rates = contingency_rates if time_indices is None else contingency_rates[time_indices]
 
-            hvdc.angle_droop = elm.angle_droop_prof if time_indices is None else elm.angle_droop_prof[time_indices]
-            hvdc.overload_cost = elm.overload_cost_prof
+            hvdc.angle_droop = elm.angle_droop_prof.toarray() if time_indices is None else elm.angle_droop_prof.toarray()[time_indices]
+            hvdc.overload_cost = elm.overload_cost_prof.toarray()
         else:
             hvdc.contingency_rates = elm.rate * elm.contingency_factor
             hvdc.angle_droop = elm.angle_droop

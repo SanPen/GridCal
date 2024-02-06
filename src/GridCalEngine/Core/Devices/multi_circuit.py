@@ -94,7 +94,7 @@ def get_fused_device_lst(elm_list: List[INJECTION_DEVICE_TYPES], property_names:
             else:
                 if act_prof_final is not None:
                     # it is a profile property
-                    val = getattr(elm1, prop) * elm1.active_prof
+                    val = getattr(elm1, prop).toarray() * elm1.active_prof.toarray()
                 else:
                     val = None
 
@@ -107,17 +107,17 @@ def get_fused_device_lst(elm_list: List[INJECTION_DEVICE_TYPES], property_names:
                 else:
                     if act_prof_final is not None:
                         # it is a profile property
-                        val += getattr(elm2, prop) * elm2.active_prof
+                        val += elm2.get_profile(prop).toarray() * elm2.active_prof.toarray()
 
             # set the final property value
             if 'prof' not in prop:
-                setattr(elm1, prop, val)
+                elm1.set_snapshot_value(prop, val)
             else:
-                setattr(elm1, prop, val)
+                elm1.set_profile(prop, val)
 
         # set the final active status
         elm1.active = act_final
-        elm1.active_prof = act_prof_final
+        elm1.active_prof.set(act_prof_final)
 
         return [elm1], deletable_elms
 
@@ -415,11 +415,9 @@ class MultiCircuit:
         """
         # sanity check
         if len(self.buses) > 0:
-            if self.buses[0].active_prof is None:
-
-                if self.time_profile is not None:
+            if self.time_profile is not None:
+                if self.buses[0].active_prof.size() != self.get_time_number():
                     warnings.warn('The grid has a time signature but the objects do not!')
-                return False
 
         return self.time_profile is not None
 
@@ -660,7 +658,7 @@ class MultiCircuit:
         """
         active = np.empty((self.get_time_number(), self.get_branch_number_wo_hvdc()), dtype=int)
         for i, b in enumerate(self.get_branches_wo_hvdc()):
-            active[:, i] = b.active_prof
+            active[:, i] = b.active_prof.toarray()
         return active
 
     def get_topologic_group_dict(self) -> Dict[int, List[int]]:
@@ -4468,7 +4466,7 @@ class MultiCircuit:
         if P=0, active = False else active=True
         """
         for g in self.get_generators():
-            g.active_prof = g.P_prof.astype(bool)
+            g.active_prof.set(g.P_prof.toarray().astype(bool))
 
     def set_batteries_active_profile_from_their_active_power(self):
         """
@@ -4476,7 +4474,7 @@ class MultiCircuit:
         if P=0, active = False else active=True
         """
         for g in self.get_batteries():
-            g.active_prof = g.P_prof.astype(bool)
+            g.active_prof.set(g.P_prof.toarray().astype(bool))
 
     def set_loads_active_profile_from_their_active_power(self):
         """
@@ -4484,7 +4482,7 @@ class MultiCircuit:
         if P=0, active = False else active=True
         """
         for ld in self.get_loads():
-            ld.active_prof = ld.P_prof.astype(bool)
+            ld.active_prof.set(ld.P_prof.toarray().astype(bool))
 
     def set_contingencies(self, contingencies: List[dev.Contingency]):
         """
@@ -4647,7 +4645,7 @@ class MultiCircuit:
         val = np.zeros((self.get_time_number(), self.get_branch_number_wo_hvdc()))
 
         for i, branch in enumerate(self.get_branches_wo_hvdc()):
-            val[:, i] = branch.rate_prof * branch.contingency_factor_prof
+            val[:, i] = branch.rate_prof.toarray() * branch.contingency_factor_prof.toarray()
 
         return val
 
@@ -4659,7 +4657,7 @@ class MultiCircuit:
         val = np.zeros(self.get_branch_number_wo_hvdc())
 
         for i, branch in enumerate(self.get_branches_wo_hvdc()):
-            val[i] = branch.rate_prof * branch.contingency_factor
+            val[i] = branch.rate_prof.toarray() * branch.contingency_factor.toarray()
 
         return val
 

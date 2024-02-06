@@ -245,14 +245,10 @@ class Profile:
         :param key: index position
         :return: value at "key"
         """
-        if isinstance(key, int):
-
-            if self._is_sparse:
-                return self._sparse_array[key]
-            else:
-                return self._dense_array[key]
+        if self._is_sparse:
+            return self._sparse_array[key]
         else:
-            raise TypeError("Key must be an integer")
+            return self._dense_array[key]
 
     def __setitem__(self, key: int, value):
         """
@@ -335,3 +331,11 @@ class Profile:
         :return: List[Union[int, float]]
         """
         return self.toarray().tolist()
+
+    def astype(self, tpe):
+        """
+        get the dense array as type specified by tpe
+        :param tpe: type
+        :return: array
+        """
+        return self.toarray().astype(tpe)

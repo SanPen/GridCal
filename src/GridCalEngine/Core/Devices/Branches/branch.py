@@ -488,29 +488,32 @@ class Branch(ParentBranch):
         Get the equivalent line object
         :return:
         """
-        return Line(bus_from=self.bus_from,
-                    bus_to=self.bus_to,
-                    name=self.name,
-                    r=self.R,
-                    x=self.X,
-                    b=self.B,
-                    rate=self.rate,
-                    active=self.active,
-                    tolerance=self.tolerance,
-                    cost=self.Cost,
-                    mttf=self.mttf,
-                    mttr=self.mttr,
-                    r_fault=self.r_fault,
-                    x_fault=self.x_fault,
-                    fault_pos=self.fault_pos,
-                    length=self.length,
-                    temp_base=self.temp_base,
-                    temp_oper=self.temp_oper,
-                    alpha=self.alpha,
-                    rate_prof=self.rate_prof,
-                    Cost_prof=self.Cost_prof,
-                    active_prof=self.active_prof,
-                    temp_oper_prof=self.temp_oper_prof)
+        elm = Line(bus_from=self.bus_from,
+                   bus_to=self.bus_to,
+                   name=self.name,
+                   r=self.R,
+                   x=self.X,
+                   b=self.B,
+                   rate=self.rate,
+                   active=self.active,
+                   tolerance=self.tolerance,
+                   cost=self.Cost,
+                   mttf=self.mttf,
+                   mttr=self.mttr,
+                   r_fault=self.r_fault,
+                   x_fault=self.x_fault,
+                   fault_pos=self.fault_pos,
+                   length=self.length,
+                   temp_base=self.temp_base,
+                   temp_oper=self.temp_oper,
+                   alpha=self.alpha)
+
+        elm.rate_prof = self.rate_prof
+        elm.Cost_prof = self.Cost_prof
+        elm.active_prof = self.active_prof
+        elm.temp_oper_prof = self.temp_oper_prof
+
+        return elm
 
 
 def convert_branch(branch: Branch):

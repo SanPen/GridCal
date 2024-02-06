@@ -116,10 +116,7 @@ class SparseArray:
                 return val
 
     def __getitem__(self, key: int) -> Any:
-        if isinstance(key, int):
-            return self.at(idx=key)
-        else:
-            raise TypeError("Key must be an integer")
+        return self.at(idx=key)
 
     def __setitem__(self, key: int, value: float) -> None:
 
