@@ -40,6 +40,14 @@ class FluidNodeData:
         self.inflow = np.zeros(nelm, dtype=float)
         self.spillage_cost = np.zeros(nelm, dtype=float)
 
+    def size(self) -> int:
+        """
+        Get size of the structure
+        :return:
+        """
+
+        return self.nelm
+
     def copy(self) -> "FluidNodeData":
         """
         Get deep copy of this structure
