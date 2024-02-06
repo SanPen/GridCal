@@ -109,7 +109,6 @@ class ContingencyTableEntry:
                  post_contingency_flow: complex,
                  contingency_rating: float,
                  post_contingency_loading: float,
-                 srap_fixing_probability: Mat,
                  solved_by_srap: bool = False,
                  srap_power: float = 0.0,
                  srap_bus_indices: IntVec = None):
@@ -225,7 +224,7 @@ class ContingencyResultsReport:
             post_contingency_flow: complex,
             contingency_rating: float,
             post_contingency_loading: float,
-            srap_fixing_probability: Mat =[],
+            srap_fixing_probability: Mat = [],
             solved_by_srap: bool = False,
             srap_power: float = 0.0,
             srap_bus_indices: IntVec = None):
@@ -259,7 +258,6 @@ class ContingencyResultsReport:
                                              post_contingency_flow=post_contingency_flow,
                                              contingency_rating=contingency_rating,
                                              post_contingency_loading=post_contingency_loading,
-                                             srap_fixing_probability=srap_fixing_probability,
                                              solved_by_srap=solved_by_srap,
                                              srap_power=srap_power,
                                              srap_bus_indices=srap_bus_indices))
@@ -327,7 +325,7 @@ class ContingencyResultsReport:
                 multi_contingency: LinearMultiContingency = None,
                 PTDF: Mat = None,
                 available_power: Vec = None,
-                srap_fixing_probability:Mat = None):
+                srap_fixing_probability: Mat = None):
         """
         Analize contingency resuts and add them to the report
         :param t: time index
@@ -372,15 +370,14 @@ class ContingencyResultsReport:
                                               bus_indices=indices,
                                               sensitivities=sensitivities)
 
-                solved_by_srap, max_srap_power, srap_fixing_probability = buses_for_srap.is_solvable(
+                solved_by_srap, max_srap_power = buses_for_srap.is_solvable(
                     c_flow=contingency_flows[m].real,  # the real part because it must have the sign
                     rating=numerical_circuit.branch_data.rates[m],
                     srap_pmax_mw=srap_max_power,
                     available_power=available_power,
                     branch_idx=m,
-                    top_n=5,
+                    top_n=5,  # todo: add it to options
                     srap_fixing_probability=srap_fixing_probability
-
                 )
 
                 # solved_by_srap, max_srap_power = calc_srap(m,
@@ -403,7 +400,6 @@ class ContingencyResultsReport:
                          post_contingency_flow=c_flow,
                          contingency_rating=numerical_circuit.branch_data.contingency_rates[m],
                          post_contingency_loading=abs(contingency_loadings[m]) * 100.0,
-                         srap_fixing_probability=srap_fixing_probability,
                          solved_by_srap=solved_by_srap,
                          srap_power=max_srap_power,
                          srap_bus_indices=None)
