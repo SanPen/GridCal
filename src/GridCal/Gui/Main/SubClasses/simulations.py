@@ -104,6 +104,11 @@ class SimulationsMain(TimeEventsMain):
         self.lp_solvers_dict[SolverType.SIMPLE_OPF.value] = SolverType.SIMPLE_OPF
         self.ui.lpf_solver_comboBox.setModel(gf.get_list_model(list(self.lp_solvers_dict.keys())))
 
+        # ips solvers dictionary
+        self.ips_solvers_dict = OrderedDict()
+        self.ips_solvers_dict[SolverType.NR.value] = SolverType.NR
+        self.ui.ips_method_comboBox.setModel(gf.get_list_model(list(self.ips_solvers_dict.keys())))
+
         # the MIP combobox models assigning is done in modify_ui_options_according_to_the_engine
         self.mip_solvers_dict = OrderedDict()
         self.mip_solvers_dict[MIPSolvers.CBC.value] = MIPSolvers.CBC
@@ -157,9 +162,12 @@ class SimulationsMain(TimeEventsMain):
 
         # investment evaluation methods
         self.investment_evaluation_method_dict = OrderedDict()
-        self.investment_evaluation_method_dict[InvestmentEvaluationMethod.Independent.value] = InvestmentEvaluationMethod.Independent
-        self.investment_evaluation_method_dict[InvestmentEvaluationMethod.Hyperopt.value] = InvestmentEvaluationMethod.Hyperopt
-        self.investment_evaluation_method_dict[InvestmentEvaluationMethod.MVRSM.value] = InvestmentEvaluationMethod.MVRSM
+        self.investment_evaluation_method_dict[
+            InvestmentEvaluationMethod.Independent.value] = InvestmentEvaluationMethod.Independent
+        self.investment_evaluation_method_dict[
+            InvestmentEvaluationMethod.Hyperopt.value] = InvestmentEvaluationMethod.Hyperopt
+        self.investment_evaluation_method_dict[
+            InvestmentEvaluationMethod.MVRSM.value] = InvestmentEvaluationMethod.MVRSM
         lst = list(self.investment_evaluation_method_dict.keys())
         self.ui.investment_evaluation_method_ComboBox.setModel(gf.get_list_model(lst))
 
@@ -258,10 +266,6 @@ class SimulationsMain(TimeEventsMain):
 
         if eng == EngineType.NewtonPA:
             self.ui.opfUnitCommitmentCheckBox.setVisible(True)
-            self.ui.maxVoltageModuleStepSpinBox.setVisible(True)
-            self.ui.maxVoltageAngleStepSpinBox.setVisible(True)
-            self.ui.maxVoltageModuleStepLabel.setVisible(True)
-            self.ui.maxVoltageAngleStepLabel.setVisible(True)
 
             # add the AC_OPF option
             self.lp_solvers_dict = OrderedDict()
@@ -289,10 +293,6 @@ class SimulationsMain(TimeEventsMain):
 
         elif eng == EngineType.GridCal:
             self.ui.opfUnitCommitmentCheckBox.setVisible(True)
-            self.ui.maxVoltageModuleStepSpinBox.setVisible(False)
-            self.ui.maxVoltageAngleStepSpinBox.setVisible(False)
-            self.ui.maxVoltageModuleStepLabel.setVisible(False)
-            self.ui.maxVoltageAngleStepLabel.setVisible(False)
 
             # no AC opf option
             self.lp_solvers_dict = OrderedDict()
@@ -322,10 +322,10 @@ class SimulationsMain(TimeEventsMain):
 
         elif eng == EngineType.Bentayga:
             self.ui.opfUnitCommitmentCheckBox.setVisible(False)
-            self.ui.maxVoltageModuleStepSpinBox.setVisible(False)
-            self.ui.maxVoltageAngleStepSpinBox.setVisible(False)
-            self.ui.maxVoltageModuleStepLabel.setVisible(False)
-            self.ui.maxVoltageAngleStepLabel.setVisible(False)
+            # self.ui.maxVoltageModuleStepSpinBox.setVisible(False)
+            # self.ui.maxVoltageAngleStepSpinBox.setVisible(False)
+            # self.ui.maxVoltageModuleStepLabel.setVisible(False)
+            # self.ui.maxVoltageAngleStepLabel.setVisible(False)
 
             # no AC opf option
             self.lp_solvers_dict = OrderedDict()
@@ -350,10 +350,10 @@ class SimulationsMain(TimeEventsMain):
 
         elif eng == EngineType.PGM:
             self.ui.opfUnitCommitmentCheckBox.setVisible(False)
-            self.ui.maxVoltageModuleStepSpinBox.setVisible(False)
-            self.ui.maxVoltageAngleStepSpinBox.setVisible(False)
-            self.ui.maxVoltageModuleStepLabel.setVisible(False)
-            self.ui.maxVoltageAngleStepLabel.setVisible(False)
+            # self.ui.maxVoltageModuleStepSpinBox.setVisible(False)
+            # self.ui.maxVoltageAngleStepSpinBox.setVisible(False)
+            # self.ui.maxVoltageModuleStepLabel.setVisible(False)
+            # self.ui.maxVoltageAngleStepLabel.setVisible(False)
 
             # no AC opf option
             self.lp_solvers_dict = OrderedDict()
@@ -1746,6 +1746,13 @@ class SimulationsMain(TimeEventsMain):
             areas_from = None
             areas_to = None
 
+        ips_method = self.ips_solvers_dict[self.ui.ips_method_comboBox.currentText()]
+        ips_tolerance = self.ui.ips_tolerance_spinBox.value()
+        ips_iterations = self.ui.ips_iterations_spinBox.value()
+        ips_trust_radius = self.ui.ips_trust_radius_doubleSpinBox.value()
+        ips_init_with_pf = self.ui.ips_initialize_with_pf_checkBox.isChecked()
+        pf_results = self.session.get_driver_results(SimulationTypes.PowerFlow_run)
+
         options = sim.OptimalPowerFlowOptions(solver=solver,
                                               time_grouping=time_grouping,
                                               zonal_grouping=zonal_grouping,
@@ -1761,10 +1768,13 @@ class SimulationsMain(TimeEventsMain):
                                               areas_to=areas_to,
                                               unit_commitment=unit_commitment,
                                               export_model_fname=export_model_fname,
-                                              generate_report=generate_report)
-
-        options.max_vm = self.ui.maxVoltageModuleStepSpinBox.value()
-        options.max_va = self.ui.maxVoltageAngleStepSpinBox.value()
+                                              generate_report=generate_report,
+                                              ips_method=ips_method,
+                                              ips_tolerance=ips_tolerance,
+                                              ips_iterations=ips_iterations,
+                                              ips_trust_radius=ips_trust_radius,
+                                              ips_init_with_pf=ips_init_with_pf,
+                                              pf_results=pf_results)
 
         return options
 
@@ -2515,8 +2525,8 @@ class SimulationsMain(TimeEventsMain):
                         self.circuit.investments_groups)
 
                     options = sim.InvestmentsEvaluationOptions(solver=method,
-                                                            max_eval=max_eval,
-                                                            pf_options=self.get_selected_power_flow_options())
+                                                               max_eval=max_eval,
+                                                               pf_options=self.get_selected_power_flow_options())
                     drv = sim.InvestmentsEvaluationDriver(grid=self.circuit,
                                                           options=options)
 

@@ -58,8 +58,6 @@ class ObjectsTableMain(DiagramsMain):
         self.ui.filter_pushButton.clicked.connect(self.smart_search)
         self.ui.catalogue_edit_pushButton.clicked.connect(self.edit_from_catalogue)
         self.ui.copyObjectsTableButton.clicked.connect(self.copy_objects_data)
-        self.ui.undo_pushButton.clicked.connect(self.undo)
-        self.ui.redo_pushButton.clicked.connect(self.redo)
         self.ui.delete_selected_objects_pushButton.clicked.connect(self.delete_selected_objects)
         self.ui.add_object_pushButton.clicked.connect(self.add_objects)
         self.ui.highlight_selection_buses_pushButton.clicked.connect(self.highlight_selection_buses)
@@ -690,27 +688,6 @@ class ObjectsTableMain(DiagramsMain):
         else:
             info_msg('Select a data structure')
 
-    def undo(self):
-        """
-        Undo table changes
-        """
-
-        model = self.ui.profiles_tableView.model()
-        if model is not None:
-            model.undo()
-        else:
-            pass
-
-    def redo(self):
-        """
-        redo table changes
-        """
-        model = self.ui.profiles_tableView.model()
-        if model is not None:
-            model.redo()
-        else:
-            pass
-
     def smart_search(self):
         """
         Filter
@@ -855,29 +832,6 @@ class ObjectsTableMain(DiagramsMain):
         else:
             # nothing to search
             pass
-
-    def correct_branch_monitoring(self, max_loading=1.0):
-        """
-        The NTC optimization and other algorithms will not work if we have overloaded Branches in DC monitored
-        We can try to not monitor those to try to get it working
-        """
-        res = self.session.power_flow
-
-        if res is None:
-            self.console_msg('No power flow results.\n')
-        else:
-            branches = self.circuit.get_branches_wo_hvdc()
-            for elm, loading in zip(branches, res.loading):
-                if loading >= max_loading:
-                    elm.monitor_loading = False
-                    self.console_msg('Disabled loading monitoring for {0}, loading: {1}'.format(elm.name, loading))
-
-    def snapshot_balance(self):
-        """
-        Snapshot balance report
-        """
-        df = self.circuit.snapshot_balance()
-        self.console_msg('\n' + str(df))
 
     def delete_inconsistencies(self):
         """
