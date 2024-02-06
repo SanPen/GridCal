@@ -28,11 +28,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Generated CGMES classes added enums are missing">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="cgmes_enum.py generated with standard items">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes_v2_4_15/cgmes_enums.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes_v2_4_15/cgmes_enums.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes_v2_4_15/cgmes_to_gridcal.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes_v2_4_15/cgmes_to_gridcal.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes_v2_4_15/devices/topological_node.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes_v2_4_15/devices/topological_node.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -110,26 +109,26 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "Git.Branch.Popup.ShowAllRemotes": "true",
-    "MATLAB_INTERPRETER": "/usr/local/MATLAB/R2018a/bin/matlab",
-    "Python.ExecuteGridCal.executor": "Debug",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "199__finalize__cgmes__import",
-    "last_opened_file_path": "C:/WorkProjects/PycharmProjects/GridCal/src/GridCalEngine/IO/cim/cgmes_v2_4_15/devices",
-    "node.js.detected.package.eslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "run.code.analysis.last.selected.profile": "aDefault",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;Git.Branch.Popup.ShowAllRemotes&quot;: &quot;true&quot;,
+    &quot;MATLAB_INTERPRETER&quot;: &quot;/usr/local/MATLAB/R2018a/bin/matlab&quot;,
+    &quot;Python.ExecuteGridCal.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;199__finalize__cgmes__import&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/WorkProjects/PycharmProjects/GridCal/src/GridCalEngine/IO/cim/cgmes_v2_4_15&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;run.code.analysis.last.selected.profile&quot;: &quot;aDefault&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="PyDebuggerOptionsProvider">
     <option name="mySaveCallSignatures" value="true" />
     <option name="mySupportGeventDebugging" value="true" />
@@ -137,8 +136,8 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="C:\WorkProjects\PycharmProjects\GridCal\src\GridCalEngine\IO\cim\cgmes_v2_4_15\devices" />
       <recent name="C:\WorkProjects\PycharmProjects\GridCal\src\GridCalEngine\IO\cim\cgmes_v2_4_15" />
+      <recent name="C:\WorkProjects\PycharmProjects\GridCal\src\GridCalEngine\IO\cim\cgmes_v2_4_15\devices" />
       <recent name="C:\WorkProjects\PycharmProjects\GridCal\src\GridCalEngine\IO\cim" />
       <recent name="$PROJECT_DIR$/doc/rst_source/figures" />
       <recent name="$PROJECT_DIR$/examples" />
@@ -1623,7 +1622,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="443" />
+    <option name="localTasksCounter" value="444" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1657,7 +1656,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="5.0.3 - light refactoring of some functions" />
     <MESSAGE value="some changes to make it work in python 3.9" />
     <MESSAGE value="updated the README.md and the docs" />
     <MESSAGE value="created setup entry point" />
@@ -1682,7 +1680,8 @@
     <MESSAGE value="ws" />
     <MESSAGE value="Generated CGMES classes added(not working)" />
     <MESSAGE value="Generated CGMES classes added enums are missing" />
-    <option name="LAST_COMMIT_MESSAGE" value="Generated CGMES classes added enums are missing" />
+    <MESSAGE value="cgmes_enum.py generated with standard items" />
+    <option name="LAST_COMMIT_MESSAGE" value="cgmes_enum.py generated with standard items" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2054,11 +2053,6 @@
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/newton_raphson.py</url>
           <line>142</line>
           <option name="timeStamp" value="1181" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/file_handler.py</url>
-          <line>99</line>
-          <option name="timeStamp" value="1182" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/file_handler.py</url>
