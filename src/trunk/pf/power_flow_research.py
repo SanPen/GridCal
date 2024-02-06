@@ -113,7 +113,7 @@ def compute_gx(V, Ybus, pvpq, pq):
 
 
 def pf_function(x: Vec, compute_jac: bool,
-                Vm0: Vec, Va0: Vec, Ybus: CscMat, Sesp: CxVec,
+                Va0: Vec, Vm0: Vec, Ybus: CscMat, Sesp: CxVec,
                 pq: IntVec, pvpq: IntVec, Sbase: float) -> ConvexFunctionResult:
     """
 
