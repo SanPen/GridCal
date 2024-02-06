@@ -628,6 +628,10 @@ class MultiCircuit:
         else:
             return 0
 
+    def get_time_array(self):
+
+        return self.time_profile
+
     def get_all_time_indices(self) -> IntVec:
         """
         Get array with all the time steps

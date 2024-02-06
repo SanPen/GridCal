@@ -118,12 +118,37 @@ class Profile:
 
         self._dense_array: Union[NumericVec, None] = None
 
-        self._sparsity: float = sparsity
+        self._sparsity_threshold: float = sparsity
 
         self._dtype = float  # float by default
 
+        self._initialized: bool = False
+
         if arr is not None:
             self.set(arr=arr)
+
+    def info(self):
+        """
+        Return dictionary with information about the profile object and its content
+        :return:
+        """
+        return {
+            "me": hex(id(self)),
+            "initialized": self._initialized,
+            "is_sparse": self._is_sparse,
+            "sparsity_threshold": self._sparsity_threshold,
+            "dense_array": {"me": hex(id(self._dense_array)),
+                            "size": len(self._dense_array)} if self._dense_array is not None else "None",
+            "sparse_array": self._sparse_array.info() if self._sparse_array is not None else "None",
+        }
+
+    def get_sparse_map(self) -> Dict[int, Numeric]:
+        """
+        Return the dictionary hosting the sparse data if this profile is sparse
+        :return: Dict[int, Numeric]
+        """
+        if self._sparse_array is not None:
+            return self._sparse_array.get_map()
 
     @property
     def is_sparse(self) -> bool:
@@ -132,6 +157,14 @@ class Profile:
         :return: bool
         """
         return self._is_sparse
+
+    @property
+    def is_initialized(self) -> bool:
+        """
+        is the profile initialized?
+        :return: bool
+        """
+        return self._initialized
 
     def create_sparse(self, size: int, default_value: Numeric):
         """
@@ -142,6 +175,7 @@ class Profile:
         self._is_sparse = True
         self._sparse_array = SparseArray()
         self._sparse_array.create(size=size, default_value=default_value)
+        self._initialized = True
 
     def create_dense(self, size: int, default_value: Numeric):
         """
@@ -152,6 +186,7 @@ class Profile:
         self._is_sparse = False
         self._dense_array = np.full(size, default_value)
         self._sparse_array = None
+        self._initialized = True
 
     def set(self, arr: NumericVec):
         """
@@ -162,7 +197,7 @@ class Profile:
         if len(arr) > 0:
             u, counts = np.unique(arr, return_counts=True)
             f = len(u) / len(arr)  # sparsity factor
-            if f < self._sparsity:
+            if f < self._sparsity_threshold:
                 ind = np.argmax(counts)
                 base = u[ind]  # this is the most frequent value
                 if isinstance(base, np.bool_):
@@ -191,6 +226,8 @@ class Profile:
             self._is_sparse = False
             self._dense_array = arr
             self._dtype = arr.dtype
+
+        self._initialized = True
 
     def __getitem__(self, key: int):
         """
@@ -224,6 +261,16 @@ class Profile:
 
         else:
             raise TypeError("Key must be an integer")
+
+    def convert_sparse_to_dense(self) -> None:
+        """
+        Convert this profile to sparse
+        :return: Nothing
+        """
+        if self._is_sparse:
+            self._dense_array = self._sparse_array.toarray()
+            self._sparse_array = None
+            self._is_sparse = False
 
     def resize(self, n: int):
         """

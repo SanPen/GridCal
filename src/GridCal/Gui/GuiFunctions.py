@@ -170,7 +170,10 @@ class ComboDelegate(QtWidgets.QItemDelegate):
         except ValueError:
             pass
 
-    def setModelData(self, editor, model, index):
+    def setModelData(self,
+                     editor: QtWidgets.QWidget,
+                     model: QtCore.QAbstractItemModel,
+                     index: QtCore.QModelIndex):
         """
 
         :param editor:
@@ -1473,10 +1476,17 @@ class ProfilesModel(QtCore.QAbstractTableModel):
     """
     Class to populate a Qt table view with profiles from objects
     """
-    def __init__(self, multi_circuit, device_type: DeviceType, magnitude, data_format, parent, max_undo_states=100):
+    def __init__(self,
+                 time_array: pd.DatetimeIndex,
+                 elements: List[EditableDevice],
+                 device_type: DeviceType,
+                 magnitude: str,
+                 data_format,
+                 parent,
+                 max_undo_states=100):
         """
 
-        :param multi_circuit: MultiCircuit instance
+        :param time_array: array of time
         :param device_type: string with Load, StaticGenerator, etc...
         :param magnitude: magnitude to display 'S', 'P', etc...
         :param data_format:
@@ -1489,7 +1499,7 @@ class ProfilesModel(QtCore.QAbstractTableModel):
 
         self.data_format = data_format
 
-        self.circuit = multi_circuit
+        self.time_array = time_array
 
         self.device_type = device_type
 
@@ -1499,7 +1509,7 @@ class ProfilesModel(QtCore.QAbstractTableModel):
 
         self.editable = True
 
-        self.elements = self.circuit.get_elements_by_type(device_type)
+        self.elements = elements
 
         self.formatter = lambda x: "%.2f" % x
 
@@ -1564,7 +1574,7 @@ class ProfilesModel(QtCore.QAbstractTableModel):
         :param parent:
         :return:
         """
-        return len(self.circuit.time_profile)
+        return len(self.time_array)
 
     def columnCount(self, parent: Union[None, QtCore.QModelIndex] = None) -> int:
         """
@@ -1630,10 +1640,10 @@ class ProfilesModel(QtCore.QAbstractTableModel):
             if orientation == QtCore.Qt.Orientation.Horizontal:
                 return str(self.elements[section].name)
             elif orientation == QtCore.Qt.Orientation.Vertical:
-                if self.circuit.time_profile is None:
+                if self.time_array is None:
                     return str(section)
                 else:
-                    return pd.to_datetime(self.circuit.time_profile[section]).strftime('%d-%m-%Y %H:%M')
+                    return pd.to_datetime(self.time_array[section]).strftime('%d-%m-%Y %H:%M')
 
         return None
 
@@ -1645,7 +1655,7 @@ class ProfilesModel(QtCore.QAbstractTableModel):
             col_idx:
         """
         n = len(self.elements)
-        nt = len(self.circuit.time_profile)
+        nt = len(self.time_array)
 
         if n > 0:
             profile_property = self.elements[0].properties_with_profile[self.magnitude]
@@ -1709,7 +1719,7 @@ class ProfilesModel(QtCore.QAbstractTableModel):
             data = '\t' + '\t'.join(names) + '\n'
 
             # data
-            for t, date in enumerate(self.circuit.time_profile):
+            for t, date in enumerate(self.time_array):
                 data += str(date) + '\t' + '\t'.join(values[t, :]) + '\n'
 
             # copy to clipboard
@@ -1721,7 +1731,7 @@ class ProfilesModel(QtCore.QAbstractTableModel):
             # there are no elements
             pass
 
-    def add_state(self, columns, action_name=''):
+    def add_state(self, columns: List[int], action_name: str = ''):
         """
         Compile data of an action and store the data in the undo history
         :param columns: list of column indices changed

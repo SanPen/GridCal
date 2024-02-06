@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from typing import Dict, Any
+from typing import Dict, Any, Union
 import numpy as np
 from GridCalEngine.basic_structures import Numeric, NumericVec, IntVec
 
@@ -34,7 +34,33 @@ class SparseArray:
         self._size: int = 0
         self._map: Dict[int, Numeric] = dict()
 
-    def create(self, size: int, default_value: Numeric, data: Dict[int, Numeric, None] = None):
+    def info(self):
+        """
+        Return dictionary with information about the profile object and its content
+        :return:
+        """
+        return {
+            "me": hex(id(self)),
+            "default_value": self._default_value,
+            "size": self._size,
+            "map": hex(id(self._map)),
+        }
+
+    def get_map(self) -> Dict[int, Numeric]:
+        """
+        Return the dictionary hosting the sparse data
+        :return: Dict[int, Numeric]
+        """
+        return self._map
+
+    def get_sparsity(self) -> float:
+        """
+        Get the sparsity of this profile
+        :return: Sparsity metric
+        """
+        return float(len(self._map)) / float(self._size)
+
+    def create(self, size: int, default_value: Numeric, data: Union[Dict[int, Numeric], None] = None):
         """
         Build sparse from definition
         :param size: size
@@ -107,6 +133,23 @@ class SparseArray:
         else:
             raise TypeError("Key must be an integer")
 
+    def __eq__(self, other: "SparseArray") -> bool:
+        """
+        Equality operator
+        :param other: SparseArray
+        :return: bool
+        """
+        if self._default_value != other._default_value:
+            return False
+
+        if self._size != other._size:
+            return False
+
+        if self._map != other._map:
+            return False
+
+        return True
+
     def size(self) -> int:
         """
         Get the size
@@ -167,19 +210,3 @@ class SparseArray:
 
         self._map = new_map
 
-    def __eq__(self, other: "SparseArray") -> bool:
-        """
-        Equality operator
-        :param other: SparseArray
-        :return: bool
-        """
-        if self._default_value != other._default_value:
-            return False
-
-        if self._size != other._size:
-            return False
-
-        if self._map != other._map:
-            return False
-
-        return True

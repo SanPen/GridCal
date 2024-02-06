@@ -421,7 +421,8 @@ class TimeEventsMain(ObjectsTableMain):
                 magnitude = magnitudes[idx]
                 mtype = mag_types[idx]
 
-                mdl = gf.ProfilesModel(multi_circuit=self.circuit,
+                mdl = gf.ProfilesModel(time_array=self.circuit.get_time_array(),
+                                       elements=self.circuit.get_elements_by_type(dev_type),
                                        device_type=dev_type,
                                        magnitude=magnitude,
                                        data_format=mtype,
