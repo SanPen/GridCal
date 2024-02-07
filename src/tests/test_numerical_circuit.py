@@ -1,4 +1,21 @@
+# GridCal
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 3 of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import os
+import scipy.sparse as sp
 from GridCalEngine.api import *
 
 
@@ -70,3 +87,37 @@ def test_numerical_cicuit_spv():
     p_despues = nc.generator_data.p[1]
 
     assert p_antes * 1.20 == p_despues
+
+
+def test_bus_indexing_remap():
+    def get_bus_indices(C_branch_bus: sp.csc_matrix):
+        """
+
+        :param C_branch_bus:
+        :return:
+        """
+        assert (isinstance(C_branch_bus, sp.csc_matrix))
+        F = np.zeros(C_branch_bus.shape[0], dtype=int)
+
+        for j in range(C_branch_bus.shape[1]):
+            for l in range(C_branch_bus.indptr[j], C_branch_bus.indptr[j + 1]):
+                i = C_branch_bus.indices[l]  # row index
+                F[i] = j
+
+        return F
+
+    fname_cont = os.path.join('data', 'grids', 'IEEE14 - multi-island hvdc.gridcal')
+
+    main_circuit = FileOpen(fname_cont).open()
+    nc = compile_numerical_circuit_at(main_circuit, t_idx=None)
+
+    islands = nc.split_into_islands()
+
+    for island in islands:
+
+        # old way of finding the F and T arrays of an island
+        F = get_bus_indices(island.branch_data.C_branch_bus_f.tocsc())
+        T = get_bus_indices(island.branch_data.C_branch_bus_t.tocsc())
+
+        assert np.allclose(F, island.branch_data.F)
+        assert np.allclose(T, island.branch_data.T)
