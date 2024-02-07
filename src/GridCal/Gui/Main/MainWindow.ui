@@ -5570,6 +5570,29 @@ p, li { white-space: pre-wrap; }
                  </property>
                 </widget>
                </item>
+               <item row="11" column="0">
+                <widget class="QLabel" name="label_132">
+                 <property name="toolTip">
+                  <string>Maximum number of generation nodes to participate in the SRAP</string>
+                 </property>
+                 <property name="text">
+                  <string>SRAP top N</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="11" column="1">
+                <widget class="QSpinBox" name="srap_top_n_SpinBox">
+                 <property name="minimum">
+                  <number>1</number>
+                 </property>
+                 <property name="maximum">
+                  <number>9999999</number>
+                 </property>
+                 <property name="value">
+                  <number>10</number>
+                 </property>
+                </widget>
+               </item>
               </layout>
              </widget>
             </item>

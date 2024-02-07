@@ -179,8 +179,6 @@ class ConfigurationMain(ResultsMain):
                 "zone_grouping": self.ui.opfZonalGroupByComboBox,
                 "mip_solver": self.ui.mip_solver_comboBox,
                 "contingency_tolerance": self.ui.opfContingencyToleranceSpinBox,
-                # "max_module_step": self.ui.maxVoltageModuleStepSpinBox,
-                # "max_angle_step": self.ui.maxVoltageAngleStepSpinBox,
                 "skip_generation_limits": self.ui.skipOpfGenerationLimitsCheckBox,
                 "consider_contingencies": self.ui.considerContingenciesOpfCheckBox,
                 "maximize_area_exchange": self.ui.opfMaximizeExcahngeCheckBox,
@@ -235,7 +233,8 @@ class ConfigurationMain(ResultsMain):
                 "contingencies_engine": self.ui.contingencyEngineComboBox,
                 "use_srap": self.ui.use_srap_checkBox,
                 "srap_loading_limit": self.ui.srap_loading_limit_doubleSpinBox,
-                "srap_max_power": self.ui.srap_limit_doubleSpinBox
+                "srap_max_power": self.ui.srap_limit_doubleSpinBox,
+                "srap_top_n": self.ui.srap_top_n_SpinBox,
             },
             "file": {
                 "store_results_in_file": self.ui.saveResultsCheckBox

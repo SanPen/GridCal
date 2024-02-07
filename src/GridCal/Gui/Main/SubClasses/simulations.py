@@ -322,10 +322,6 @@ class SimulationsMain(TimeEventsMain):
 
         elif eng == EngineType.Bentayga:
             self.ui.opfUnitCommitmentCheckBox.setVisible(False)
-            # self.ui.maxVoltageModuleStepSpinBox.setVisible(False)
-            # self.ui.maxVoltageAngleStepSpinBox.setVisible(False)
-            # self.ui.maxVoltageModuleStepLabel.setVisible(False)
-            # self.ui.maxVoltageAngleStepLabel.setVisible(False)
 
             # no AC opf option
             self.lp_solvers_dict = OrderedDict()
@@ -350,10 +346,6 @@ class SimulationsMain(TimeEventsMain):
 
         elif eng == EngineType.PGM:
             self.ui.opfUnitCommitmentCheckBox.setVisible(False)
-            # self.ui.maxVoltageModuleStepSpinBox.setVisible(False)
-            # self.ui.maxVoltageAngleStepSpinBox.setVisible(False)
-            # self.ui.maxVoltageModuleStepLabel.setVisible(False)
-            # self.ui.maxVoltageAngleStepLabel.setVisible(False)
 
             # no AC opf option
             self.lp_solvers_dict = OrderedDict()
@@ -969,6 +961,7 @@ class SimulationsMain(TimeEventsMain):
             use_srap=self.ui.use_srap_checkBox.isChecked(),
             srap_max_loading=self.ui.srap_loading_limit_doubleSpinBox.value(),
             srap_max_power=self.ui.srap_limit_doubleSpinBox.value(),
+            srap_top_n=self.ui.srap_top_n_SpinBox.value(),
             engine=self.contingency_engines_dict[self.ui.contingencyEngineComboBox.currentText()]
         )
 
