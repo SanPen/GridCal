@@ -263,6 +263,7 @@ class NumericalCircuit:
         :param sbase:  Base power (MVA)
         :param t_idx:  Time index
         """
+
         self.nbus: int = nbus
         self.nbr: int = nbr
         self.t_idx: int = t_idx
@@ -303,6 +304,15 @@ class NumericalCircuit:
 
         # (old iPfdp) indices of the drop-Vm converters controlling the power flow with theta sh
         self.k_pf_dp: IntVec = np.zeros(0, dtype=int)
+
+        # (old iPfdp) indices of the drop-Vm converters controlling the power flow with theta sh
+        self.k_m_modif: IntVec = np.zeros(0, dtype=int)
+
+        # (old iPfdp) indices of the drop-Vm converters controlling the power flow with theta sh
+        self.k_tau_modif: IntVec = np.zeros(0, dtype=int)
+
+        # (old iPfdp) indices of the drop-Vm converters controlling the power flow with theta sh
+        self.k_mtau_modif: IntVec = np.zeros(0, dtype=int)
 
         # (old iPfdp_va) indices of the drop-Va converters controlling the power flow with theta sh
         self.iPfdp_va: IntVec = np.zeros(0, dtype=int)
@@ -579,6 +589,9 @@ class NumericalCircuit:
         k_vt_m_lst = list()  # indices of the Branches when controlling Vt with ma
         k_qt_m_lst = list()  # indices of the Branches controlling the Qt flow with ma
         k_pf_dp_lst = list()  # indices of the drop converters controlling the power flow with theta sh
+        k_m_modif_lst = list()
+        k_tau_modif_lst = list()
+        k_mtau_modif_lst = list()
         i_vsc_lst = list()  # indices of the converters
         iPfdp_va_lst = list()
 
@@ -591,24 +604,29 @@ class NumericalCircuit:
 
             elif tpe == TransformerControlType.Pt:  # TODO: change name .Pt by .Pf
                 k_pf_tau_lst.append(k)
+                k_tau_modif_lst.append(k)
                 self.any_control = True
 
             elif tpe == TransformerControlType.Qt:
                 k_qt_m_lst.append(k)
+                k_m_modif_lst.append(k)
                 self.any_control = True
 
             elif tpe == TransformerControlType.PtQt:
                 k_pf_tau_lst.append(k)
                 k_qt_m_lst.append(k)
+                k_mtau_modif_lst.append(k)
                 self.any_control = True
 
             elif tpe == TransformerControlType.Vt:
                 k_vt_m_lst.append(k)
+                k_m_modif_lst.append(k)
                 self.any_control = True
 
             elif tpe == TransformerControlType.PtVt:
                 k_pf_tau_lst.append(k)
                 k_vt_m_lst.append(k)
+                k_mtau_modif_lst.append(k)
                 self.any_control = True
 
             # VSC ------------------------------------------------------------------------------------------------------
@@ -707,6 +725,10 @@ class NumericalCircuit:
         self.k_vt_m = np.array(k_vt_m_lst, dtype=int)
         self.k_qt_m = np.array(k_qt_m_lst, dtype=int)
         self.k_pf_dp = np.array(k_pf_dp_lst, dtype=int)
+        self.k_m_modif = np.array(k_m_modif_lst, dtype=int)
+        self.k_tau_modif = np.array(k_tau_modif_lst, dtype=int)
+        self.k_mtau_modif = np.array(k_mtau_modif_lst, dtype=int)
+
         self.iPfdp_va = np.array(iPfdp_va_lst, dtype=int)
         self.i_vsc = np.array(i_vsc_lst, dtype=int)
 
