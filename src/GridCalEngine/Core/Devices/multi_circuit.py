@@ -3858,12 +3858,14 @@ class MultiCircuit:
 
         bus_dict = {bus: i for i, bus in enumerate(self.buses)}
 
+        k = 0
         for branch_list in self.get_branch_lists():
-            for k, br in enumerate(branch_list):
+            for br in branch_list:
                 i = bus_dict[br.bus_from]  # store the row indices
                 j = bus_dict[br.bus_to]  # store the row indices
                 Cf[k, i] = 1
                 Ct[k, j] = 1
+                k += 1
 
         C = csc_matrix(Cf + Ct)
         Cf = csc_matrix(Cf)

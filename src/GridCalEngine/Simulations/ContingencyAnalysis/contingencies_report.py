@@ -224,6 +224,7 @@ class ContingencyResultsReport:
             post_contingency_flow: complex,
             contingency_rating: float,
             post_contingency_loading: float,
+            srap_fixing_probability: Mat = [],
             solved_by_srap: bool = False,
             srap_power: float = 0.0,
             srap_bus_indices: IntVec = None):
@@ -324,7 +325,7 @@ class ContingencyResultsReport:
                 multi_contingency: LinearMultiContingency = None,
                 PTDF: Mat = None,
                 available_power: Vec = None,
-                srap_fixing_probability:Mat = None):
+                srap_fixing_probability: Mat = None):
         """
         Analize contingency resuts and add them to the report
         :param t: time index
@@ -374,7 +375,8 @@ class ContingencyResultsReport:
                     rating=numerical_circuit.branch_data.rates[m],
                     srap_pmax_mw=srap_max_power,
                     available_power=available_power,
-                    top_n=5,
+                    branch_idx=m,
+                    top_n=5,  # todo: add it to options
                     srap_fixing_probability=srap_fixing_probability
                 )
 
