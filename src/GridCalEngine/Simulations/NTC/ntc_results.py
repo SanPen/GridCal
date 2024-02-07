@@ -1021,7 +1021,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             self.alpha_n1 = None
 
     def get_controlled_shifters_as_pt(self):
-        shifter_idx = np.where(self.branch_control_modes == TransformerControlType.Pt)
+        shifter_idx = np.where(self.branch_control_modes == TransformerControlType.Pf)
         shifter_names = self.branch_names[shifter_idx]
 
         return shifter_idx, shifter_names

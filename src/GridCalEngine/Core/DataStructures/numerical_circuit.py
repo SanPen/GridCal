@@ -306,13 +306,22 @@ class NumericalCircuit:
         self.k_pf_dp: IntVec = np.zeros(0, dtype=int)
 
         # indices of the transformers with controlled tap module
-        self.k_m_modif: IntVec = np.zeros(0, dtype=int)
+        self.k_m: IntVec = np.zeros(0, dtype=int)
 
         # indices of the transformers with controlled tap angle
-        self.k_tau_modif: IntVec = np.zeros(0, dtype=int)
+        self.k_tau: IntVec = np.zeros(0, dtype=int)
 
         # indices of the transformers with controlled tap angle and module
-        self.k_mtau_modif: IntVec = np.zeros(0, dtype=int)
+        self.k_mtau: IntVec = np.zeros(0, dtype=int)
+
+        # indices of the buses with controlled tap module
+        self.i_m: IntVec = np.zeros(0, dtype=int)
+
+        # indices of the buses with controlled tap angle
+        self.i_tau: IntVec = np.zeros(0, dtype=int)
+
+        # indices of the buses with controlled tap angle and module
+        self.i_mtau: IntVec = np.zeros(0, dtype=int)
 
         # (old iPfdp_va) indices of the drop-Va converters controlling the power flow with theta sh
         self.iPfdp_va: IntVec = np.zeros(0, dtype=int)
@@ -592,6 +601,9 @@ class NumericalCircuit:
         k_m_modif_lst = list() # indices of the transformers with controlled tap module
         k_tau_modif_lst = list() # indices of the transformers with controlled tap angle
         k_mtau_modif_lst = list() # indices of the transformers with controlled tap angle and module
+        i_m_modif_lst = list()  # indices of the controlled buses with tap module
+        i_tau_modif_lst = list()  # indices of the controlled buses with tap angle
+        i_mtau_modif_lst = list()  # indices of the controlled buses with tap module and angle
         i_vsc_lst = list()  # indices of the converters
         iPfdp_va_lst = list()
 
@@ -602,31 +614,38 @@ class NumericalCircuit:
             if tpe == TransformerControlType.fixed:
                 pass
 
-            elif tpe == TransformerControlType.Pt:  # TODO: change name .Pt by .Pf
+            elif tpe == TransformerControlType.Pf:  # TODO: change name .Pt by .Pf
                 k_pf_tau_lst.append(k)
                 k_tau_modif_lst.append(k)
+                i_tau_modif_lst.append(self.F[k]) #TODO: identify which index is the controlled one
                 self.any_control = True
 
             elif tpe == TransformerControlType.Qt:
                 k_qt_m_lst.append(k)
                 k_m_modif_lst.append(k)
+                i_m_modif_lst.append(self.T[k])
                 self.any_control = True
 
             elif tpe == TransformerControlType.PtQt:
                 k_pf_tau_lst.append(k)
                 k_qt_m_lst.append(k)
                 k_mtau_modif_lst.append(k)
+                i_tau_modif_lst.append(self.F[k])
+                i_m_modif_lst.append(self.T[k])
                 self.any_control = True
 
             elif tpe == TransformerControlType.Vt:
                 k_vt_m_lst.append(k)
                 k_m_modif_lst.append(k)
+                i_m_modif_lst.append(self.T[k])
                 self.any_control = True
 
             elif tpe == TransformerControlType.PtVt:
                 k_pf_tau_lst.append(k)
                 k_vt_m_lst.append(k)
                 k_mtau_modif_lst.append(k)
+                i_tau_modif_lst.append(self.F[k])
+                i_m_modif_lst.append(self.T[k])
                 self.any_control = True
 
             # VSC ------------------------------------------------------------------------------------------------------
@@ -725,10 +744,12 @@ class NumericalCircuit:
         self.k_vt_m = np.array(k_vt_m_lst, dtype=int)
         self.k_qt_m = np.array(k_qt_m_lst, dtype=int)
         self.k_pf_dp = np.array(k_pf_dp_lst, dtype=int)
-        self.k_m_modif = np.array(k_m_modif_lst, dtype=int)
-        self.k_tau_modif = np.array(k_tau_modif_lst, dtype=int)
-        self.k_mtau_modif = np.array(k_mtau_modif_lst, dtype=int)
-
+        self.k_m = np.array(k_m_modif_lst, dtype=int)
+        self.k_tau = np.array(k_tau_modif_lst, dtype=int)
+        self.k_mtau = np.array(k_mtau_modif_lst, dtype=int)
+        self.i_m = np.array(i_m_modif_lst, dtype=int)
+        self.i_tau = np.array(i_tau_modif_lst, dtype=int)
+        self.i_mtau = np.array(i_mtau_modif_lst, dtype=int)
         self.iPfdp_va = np.array(iPfdp_va_lst, dtype=int)
         self.i_vsc = np.array(i_vsc_lst, dtype=int)
 
