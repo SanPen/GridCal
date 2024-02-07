@@ -3028,9 +3028,9 @@ class BusBranchEditorWidget(QSplitter):
                             #     loading_data[key.value] = np.sort(np.abs(atc_perc * 100.0))
 
                             elif key == SimulationTypes.ContingencyAnalysisTS_run:
-                                power_data[key.value] = driver.results.worst_flows.real[:, i]
+                                power_data[key.value] = driver.results.max_flows.real[:, i]
                                 loading_data[key.value] = np.sort(
-                                    np.abs(driver.results.worst_loading.real[:, i] * 100.0))
+                                    np.abs(driver.results.max_loading.real[:, i] * 100.0))
 
                             elif key == SimulationTypes.OPFTimeSeries_run:
                                 power_data[key.value] = driver.results.Sf.real[:, i]

@@ -1,6 +1,33 @@
 AC - Optimal Power Flow using an Interior Point Solver
 ==========================================================
 
+Hessian matrix
+^^^^^^^^^^^^^^^^^^^
+
+.. math::
+
+    k_m = k_m^{Q_f} \quad \cup \quad  k_m^{Q_t} \quad  \cup \quad  k_m^{V_t}
+
+.. math::
+
+    k_\tau = k_\tau^{P_f}
+
+
+.. math::
+
+    \begin{bmatrix}
+     & (pv \cup pq) & (pq) & (ng) & (ng) & (k_\tau) & (k_m) \\
+    (pv \cup pq) & G_{va, va} & G_{va, vm} & 0 & 0 & G_{va, \tau} & G_{va, m}\\
+    (pq) & G_{vm, va} & G_{vm, vm} & 0 & 0 & G_{vm, \tau} & G_{vm, m}\\
+    (ng) & 0 & 0 & 0 & 0 & 0 & 0 \\
+    (ng) & 0 & 0 & 0 & 0 & 0 & 0 \\
+    (k_\tau) & G_{\tau, va} & G_{\tau, vm} & 0 & 0 & G_{\tau, \tau} & G_{\tau, m}\\
+    (k_m) & G_{m, va} & G_{m, vm} & 0 & 0 & G_{m, \tau} & G_{m, m}\\
+    \end{bmatrix}  $$
+
+
+
+
 Planning the generation for a given power network is typically done using DC - Optimal Power Flow, a method that relies on approximating the power flow as a linear problem to speed up the process in exchange of precision.
 There are works that seek to solve the full non-linear problem, being one of the most relevant the MATPOWER software. The work described in this technical note integrates the Matpower Interior Point Solver in the GridCal environment using Python with the goal of adding new electrical modelling functionalities (such as including transformer operating point optimization or relaxation of the constraints to have a faster case study methodology).
 
@@ -403,3 +430,4 @@ Results
 +----------------------+----------+----------+----------+
 | 2023-01-01 09:00:00  | 0.284211 | 0.284211 | 0.284211 |
 +----------------------+----------+----------+----------+
+
