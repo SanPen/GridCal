@@ -305,13 +305,13 @@ class NumericalCircuit:
         # (old iPfdp) indices of the drop-Vm converters controlling the power flow with theta sh
         self.k_pf_dp: IntVec = np.zeros(0, dtype=int)
 
-        # (old iPfdp) indices of the drop-Vm converters controlling the power flow with theta sh
+        # indices of the transformers with controlled tap module
         self.k_m_modif: IntVec = np.zeros(0, dtype=int)
 
-        # (old iPfdp) indices of the drop-Vm converters controlling the power flow with theta sh
+        # indices of the transformers with controlled tap angle
         self.k_tau_modif: IntVec = np.zeros(0, dtype=int)
 
-        # (old iPfdp) indices of the drop-Vm converters controlling the power flow with theta sh
+        # indices of the transformers with controlled tap angle and module
         self.k_mtau_modif: IntVec = np.zeros(0, dtype=int)
 
         # (old iPfdp_va) indices of the drop-Va converters controlling the power flow with theta sh
@@ -589,9 +589,9 @@ class NumericalCircuit:
         k_vt_m_lst = list()  # indices of the Branches when controlling Vt with ma
         k_qt_m_lst = list()  # indices of the Branches controlling the Qt flow with ma
         k_pf_dp_lst = list()  # indices of the drop converters controlling the power flow with theta sh
-        k_m_modif_lst = list()
-        k_tau_modif_lst = list()
-        k_mtau_modif_lst = list()
+        k_m_modif_lst = list() # indices of the transformers with controlled tap module
+        k_tau_modif_lst = list() # indices of the transformers with controlled tap angle
+        k_mtau_modif_lst = list() # indices of the transformers with controlled tap angle and module
         i_vsc_lst = list()  # indices of the converters
         iPfdp_va_lst = list()
 
