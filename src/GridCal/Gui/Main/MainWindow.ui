@@ -5571,7 +5571,7 @@ p, li { white-space: pre-wrap; }
                 </widget>
                </item>
                <item row="11" column="0">
-                <widget class="QLabel" name="label_132">
+                <widget class="QLabel" name="label_1322">
                  <property name="toolTip">
                   <string>Maximum number of generation nodes to participate in the SRAP</string>
                  </property>

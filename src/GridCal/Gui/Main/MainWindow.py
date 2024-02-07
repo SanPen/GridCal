@@ -2933,6 +2933,19 @@ class Ui_mainWindow(object):
 
         self.gridLayout_28.addWidget(self.srap_loading_limit_doubleSpinBox, 9, 1, 1, 1)
 
+        self.label_1322 = QLabel(self.frame_76)
+        self.label_1322.setObjectName(u"label_1322")
+
+        self.gridLayout_28.addWidget(self.label_1322, 11, 0, 1, 1)
+
+        self.srap_top_n_SpinBox = QSpinBox(self.frame_76)
+        self.srap_top_n_SpinBox.setObjectName(u"srap_top_n_SpinBox")
+        self.srap_top_n_SpinBox.setMinimum(1)
+        self.srap_top_n_SpinBox.setMaximum(9999999)
+        self.srap_top_n_SpinBox.setValue(10)
+
+        self.gridLayout_28.addWidget(self.srap_top_n_SpinBox, 11, 1, 1, 1)
+
 
         self.horizontalLayout_42.addWidget(self.frame_76)
 
@@ -5167,6 +5180,10 @@ class Ui_mainWindow(object):
         self.srap_loading_limit_doubleSpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"Maximum loading under wich SRAP mechanism is considered.", None))
 #endif // QT_CONFIG(tooltip)
         self.srap_loading_limit_doubleSpinBox.setSuffix(QCoreApplication.translate("mainWindow", u" %", None))
+#if QT_CONFIG(tooltip)
+        self.label_1322.setToolTip(QCoreApplication.translate("mainWindow", u"Maximum number of generation nodes to participate in the SRAP", None))
+#endif // QT_CONFIG(tooltip)
+        self.label_1322.setText(QCoreApplication.translate("mainWindow", u"SRAP top N", None))
         self.settings_tabWidget.setTabText(self.settings_tabWidget.indexOf(self.tab_11), QCoreApplication.translate("mainWindow", u"Con", None))
         self.label_95.setText(QCoreApplication.translate("mainWindow", u"Area transfer configuration", None))
         self.label_92.setText("")

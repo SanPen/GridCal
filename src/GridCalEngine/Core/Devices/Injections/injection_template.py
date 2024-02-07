@@ -23,7 +23,7 @@ from GridCalEngine.Core.Devices.editable_device import EditableDevice
 from GridCalEngine.Core.Devices.Substation.bus import Bus
 from GridCalEngine.Core.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.enumerations import BuildStatus, DeviceType
-from GridCalEngine.basic_structures import Vec, CxVec
+from GridCalEngine.basic_structures import CxVec
 from GridCalEngine.Core.Devices.profile import Profile
 
 
@@ -627,12 +627,12 @@ class ShuntLikeTemplate(InjectionTemplate):
         """
         return self._G0_prof
 
-    @G_prof.setter
-    def G_prof(self, val: Union[Profile, np.ndarray]):
+    @G0_prof.setter
+    def G0_prof(self, val: Union[Profile, np.ndarray]):
         if isinstance(val, Profile):
-            self._G_prof = val
+            self._G0_prof = val
         elif isinstance(val, np.ndarray):
-            self._G_prof.set(arr=val)
+            self._G0_prof.set(arr=val)
         else:
             raise Exception(str(type(val)) + 'not supported to be set into a G_prof')
 
@@ -644,12 +644,12 @@ class ShuntLikeTemplate(InjectionTemplate):
         """
         return self._B0_prof
 
-    @B_prof.setter
-    def B_prof(self, val: Union[Profile, np.ndarray]):
+    @B0_prof.setter
+    def B0_prof(self, val: Union[Profile, np.ndarray]):
         if isinstance(val, Profile):
-            self._B_prof = val
+            self._B0_prof = val
         elif isinstance(val, np.ndarray):
-            self._B_prof.set(arr=val)
+            self._B0_prof.set(arr=val)
         else:
             raise Exception(str(type(val)) + 'not supported to be set into a B_prof')
 
