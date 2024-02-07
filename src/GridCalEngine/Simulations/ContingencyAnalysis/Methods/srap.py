@@ -129,7 +129,7 @@ class BusesForSrap:
         self.sensitivities = sensitivities
 
     def is_solvable(self, c_flow: float, rating: float, srap_pmax_mw: float,
-                    available_power: Vec, srap_fixing_probability: Mat, branch_idx: int,
+                    available_power: Vec, srap_used_power: Mat, branch_idx: int,
                     top_n: int = 1000) -> Tuple[bool, float]:
 
         """
@@ -138,7 +138,7 @@ class BusesForSrap:
         :param rating: Branch rating (MVA)
         :param srap_pmax_mw: SRAP limit in MW
         :param available_power: Array of available power per bus
-        :param srap_fixing_probability: Matrix including power used in SRAP (nbranch,nbus)
+        :param srap_used_power: Matrix including power used in SRAP (nbranch,nbus)
         :param branch_idx: overloaded branch
         :param top_n: maximum number of nodes affecting the oveload
         :return: min(srap_limit, sum(p_available))
@@ -158,31 +158,27 @@ class BusesForSrap:
             if len(positive_idx):
                 p_available2 = p_available[positive_idx]
                 sensitivities2 = self.sensitivities[positive_idx]
-                srap_gen_used2 = srap_gen_used[positive_idx]  # 11111111111111111
+                srap_gen_used2 = srap_gen_used[positive_idx]
 
                 # sort greater to lower, more positive first
                 idx = np.argsort(-sensitivities2)
                 idx2 = idx[:top_n]
                 p_available3 = p_available2[idx2]
                 sensitivities3 = sensitivities2[idx2]
-                srap_gen_used3 = srap_gen_used2[idx2]  # 222222222222222
+                srap_gen_used3 = srap_gen_used2[idx2]
 
                 # interpolate the srap limit, to get the maximum srap power
-                # xp = np.cumsum(p_available3)
-                # fp = np.cumsum(p_available3 * sensitivities3)
-                # max_srap_power = np.interp(srap_pmax_mw, xp, fp)
-                # print(max_srap_power)
-                max_srap_power, p_used = vector_sum_srap(p_available3, sensitivities3, srap_pmax_mw)  # 33333333
-                srap_fixing_probability[branch_idx, srap_gen_used3] += p_used  # 44444444444444444
-
-                # print(max_srap_power)
+                max_srap_power, p_used = vector_sum_srap(p_available3, sensitivities3, srap_pmax_mw)
 
                 # if the max srap power is less than the overload we cannot solve
                 solved = max_srap_power >= overload
+
+                if solved:
+                    srap_used_power[branch_idx, srap_gen_used3] += p_used
+
             else:
                 solved = False
                 max_srap_power = 0.0
-                srap_fixing_probability = []  # 55555555555555555555
         else:
 
             # negative flow, ov is negative
@@ -194,29 +190,25 @@ class BusesForSrap:
             if len(negative_idx):
                 p_available2 = p_available[negative_idx]
                 sensitivities2 = self.sensitivities[negative_idx]
-                srap_gen_used2 = srap_gen_used[negative_idx]  # 11111111111111111
+                srap_gen_used2 = srap_gen_used[negative_idx]
 
                 # sort lower to greater, more negative first
                 idx = np.argsort(sensitivities2)
                 idx2 = idx[:top_n]
                 p_available3 = p_available2[idx2]
                 sensitivities3 = sensitivities2[idx2]
-                srap_gen_used3 = srap_gen_used2[idx2]  # 222222222222222
+                srap_gen_used3 = srap_gen_used2[idx2]
 
                 # interpolate the srap limit, to get the minimum srap power
-                # xp = np.cumsum(p_available3)
-                # fp = np.cumsum(p_available3 * sensitivities3)
-                # max_srap_power = np.interp(srap_pmax_mw, xp, fp)
-                # print(max_srap_power)
-                max_srap_power, p_used = vector_sum_srap(p_available3, sensitivities3, srap_pmax_mw)  # 333333333333
-                srap_fixing_probability[branch_idx, srap_gen_used3] += p_used  # 44444444444444444
-                # print(max_srap_power)
+                max_srap_power, p_used = vector_sum_srap(p_available3, sensitivities3, srap_pmax_mw)
 
                 # if the value is grater than the overload we cannot solve
                 solved = max_srap_power <= overload
+
+                if solved:
+                    srap_used_power[branch_idx, srap_gen_used3] += p_used
             else:
                 solved = False
                 max_srap_power = 0.0
-                srap_fixing_probability = []  # 555555555555
 
         return solved, max_srap_power

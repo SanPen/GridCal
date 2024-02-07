@@ -139,7 +139,7 @@ class ResultTypes(Enum):
     ContingencyAnalysisReport = 'Contingencies report', DeviceType.NoDevice
 
     # Srap
-    SrapFixingProbability = 'Srap fixing report', DeviceType.NoDevice
+    SrapUsedPower = 'Srap used power', DeviceType.NoDevice
 
     # Hydro OPF
     FluidCurrentLevel = 'Reservoir fluid level', DeviceType.FluidNodeDevice

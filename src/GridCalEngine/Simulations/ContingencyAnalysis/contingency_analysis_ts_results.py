@@ -63,7 +63,7 @@ class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
                     ResultTypes.ContingencyOverloadSum,
                     ResultTypes.MeanContingencyOverLoading,
                     ResultTypes.StdDevContingencyOverLoading,
-                    ResultTypes.SrapFixingProbability,
+                    ResultTypes.SrapUsedPower,
                 ],
                 ResultTypes.ReportsResults: [
                     ResultTypes.ContingencyAnalysisReport,
@@ -103,7 +103,7 @@ class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
 
         self.std_dev_overload: Mat = np.zeros((self.nt, nbr))
 
-        self.srap_fixing_probability = np.zeros((nbr, n), dtype=float)
+        self.srap_used_power = np.zeros((nbr, n), dtype=float)
 
         self.report: ContingencyResultsReport = ContingencyResultsReport()
 
@@ -118,7 +118,7 @@ class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
         self.register(name='sum_overload', tpe=Mat)
         self.register(name='mean_overload', tpe=Mat)
         self.register(name='std_dev_overload', tpe=Mat)
-        self.register(name='srap_fixing_probability', tpe=Mat)
+        self.register(name='srap_used_power', tpe=Mat)
         self.register(name='report', tpe=ContingencyResultsReport)
 
     @property
@@ -207,8 +207,8 @@ class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
             labels = self.branch_names
             index = pd.to_datetime(self.time_array)
 
-        elif result_type == ResultTypes.SrapFixingProbability:
-            data = self.srap_fixing_probability
+        elif result_type == ResultTypes.SrapUsedPower:
+            data = self.srap_used_power
             y_label = ''
             title = result_type.value[0]
             labels = self.bus_names
