@@ -214,27 +214,23 @@ def apply_results_to_grid(t_idx: Union[None, int],
     :return: Nothig, the grid is processed in-place
     """
     # add any extra bus that may arise from the calculation
-    print("Extra buses:")
     grid_buses_set = {b for b in grid.get_buses()}
     for bus_device in final_buses:
         if bus_device not in grid_buses_set:
             grid.add_bus(bus_device)
             logger.add_info("Bus added to grid", device=bus_device.name)
-            # print("Bus {} added to grid".format(elm))
 
     # map the buses to the branches from their connectivity nodes
-    # todo: make profiles of the bus_from and bus_to
     for i, elm in enumerate(all_branches):
         if elm.cn_from is not None:
-            elm.bus_from = process_info.get_final_bus(elm.cn_from)
+            elm.set_bus_from_at(t_idx=t_idx, val=process_info.get_final_bus(elm.cn_from))
 
         if elm.cn_to is not None:
-            elm.bus_to = process_info.get_final_bus(elm.cn_to)
+            elm.set_bus_to_at(t_idx=t_idx, val=process_info.get_final_bus(elm.cn_to))
 
-    # TODO: Make profiles of the bus
     for dev_lst in grid.get_injection_devices_lists():
         for elm in dev_lst:
-            elm.bus = process_info.get_final_bus(elm.cn_to)
+            elm.set_bus_at(t_idx=t_idx, val=process_info.get_final_bus(elm.cn_to))
 
 
 def topology_processor(grid: MultiCircuit, t_idx: Union[int, None], logger: Logger):

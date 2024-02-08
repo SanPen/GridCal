@@ -201,6 +201,18 @@ class BranchParent(EditableDevice):
         else:
             return self._bus_from_prof[t_idx]
 
+    def set_bus_from_at(self, t_idx: Union[None, int], val: Bus):
+        """
+        Returns the bus from at a particular point in time
+        :param t_idx: time index (None for snapshot, int for profile values)
+        :param val: Bus object to set
+        :return: Bus device
+        """
+        if t_idx is None:
+            self.bus_from = val
+        else:
+            self._bus_from_prof[t_idx] = val
+
     def get_bus_to_at(self, t_idx: Union[None, int]) -> Bus:
         """
         Returns the bus_to at a particular point in time
@@ -211,6 +223,18 @@ class BranchParent(EditableDevice):
             return self.bus_to
         else:
             return self._bus_to_prof[t_idx]
+
+    def set_bus_to_at(self, t_idx: Union[None, int], val: Bus):
+        """
+        Returns the bus to at a particular point in time
+        :param t_idx: time index (None for snapshot, int for profile values)
+        :param val: Bus object to set
+        :return: Bus device
+        """
+        if t_idx is None:
+            self.bus_to = val
+        else:
+            self._bus_to_prof[t_idx] = val
 
     @property
     def active_prof(self) -> Profile:
