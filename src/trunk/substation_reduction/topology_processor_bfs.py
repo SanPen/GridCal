@@ -79,7 +79,7 @@ def createExampleGridTest1() -> MultiCircuit:
         cn_dict[bb.cn.name] = bb.cn  # each busbar has an internal connectivity node
         grid.add_bus_bar(bb)  # both the bar and the internal cn are added to the grid
 
-    for i in range(4, 11):  # create the rest of terminals
+    for i in range(4, 7):  # create the rest of terminals
         term_name = f"T{i + 1}"
         cn = dev.ConnectivityNode(name=term_name)
         cn_dict[term_name] = cn
@@ -87,9 +87,9 @@ def createExampleGridTest1() -> MultiCircuit:
 
     # Add lines
     line_data = {
-        'L1': ('T6', 'T7'),
-        'L2': ('T8', 'T10'),
-        'L3': ('T5', 'T9')
+        'L1': ('T6', 'T2'),
+        'L2': ('T2', 'T3'),
+        'L3': ('T5', 'T3')
     }
 
     for line_name, (term_from_name, term_to_name) in line_data.items():
@@ -100,11 +100,80 @@ def createExampleGridTest1() -> MultiCircuit:
 
     # Add switches
     switch_data = {
-        'SW1': ('T1', 'T5', 'closed'),
+        'SW1': ('T1', 'T5', 'open'),
         'SW2': ('T4', 'T5', 'closed'),
-        'SW3': ('T1', 'T6', 'closed'),
+        'SW3': ('T1', 'T6', 'open'),
         'SW4': ('T4', 'T6', 'closed'),
-        'SW5': ('T1', 'T11', 'closed')
+        'SW5': ('T1', 'T7', 'closed')
+    }
+
+    for switch_name, (term_from_name, term_to_name, active_name) in switch_data.items():
+        cn_from = cn_dict[term_from_name]
+        cn_to = cn_dict[term_to_name]
+        active = active_name == 'closed'
+        s = dev.Switch(name=switch_name, cn_from=cn_from, cn_to=cn_to, active=active)
+        grid.switch_devices.append(s)
+
+    return grid
+
+def createExampleGridTest2() -> MultiCircuit:
+    """
+    This function creates a Multicircuit example from Grid Test 2 in documentation to test topology processor
+    """
+
+    grid = MultiCircuit()
+
+    # Add busbar representing physical nodes not the calculation ones
+    bus_bar_dict = {}
+    cn_dict = {}
+    for i in range(5):
+        bb = dev.BusBar(name='BB{}'.format(i + 1))
+        bb.cn.name = 'T{}'.format(i + 1)
+        bus_bar_dict['BB{}'.format(i + 1)] = bb
+        cn_dict[bb.cn.name] = bb.cn  # each busbar has an internal connectivity node
+        grid.add_bus_bar(bb)  # both the bar and the internal cn are added to the grid
+
+    for i in range(5, 11):  # create the rest of terminals
+        term_name = f"T{i + 1}"
+        cn = dev.ConnectivityNode(name=term_name)
+        cn_dict[term_name] = cn
+        grid.add_connectivity_node(cn)
+
+    # Add lines
+    line_data = {
+        'L1': ('T6', 'T2'),
+        'L2': ('T7', 'T3'),
+        'L3': ('T2', 'T3')
+    }
+
+    for line_name, (term_from_name, term_to_name) in line_data.items():
+        cn_from = cn_dict[term_from_name]
+        cn_to = cn_dict[term_to_name]
+        li = dev.Line(name=line_name, cn_from=cn_from, cn_to=cn_to)
+        grid.lines.append(li)
+
+    # Add transformers
+    transformer_data = {
+        'TR1': ('T9', 'T10')
+    }
+
+    for tr_name, (term_from_name, term_to_name) in transformer_data.items():
+        cn_from = cn_dict[term_from_name]
+        cn_to = cn_dict[term_to_name]
+        tr = dev.Transformer2W(name=tr_name, cn_from=cn_from, cn_to=cn_to)
+        grid.transformers2w.append(tr)
+
+    # Add switches
+    switch_data = {
+        'SW1': ('T1', 'T6', 'closed'),
+        'SW2': ('T6', 'T5', 'closed'),
+        'SW3': ('T1', 'T7', 'closed'),
+        'SW4': ('T7', 'T5', 'closed'),
+        'SW5': ('T1', 'T5', 'closed'),
+        'SW6': ('T8', 'T5', 'closed'),
+        'SW7': ('T8', 'T9', 'closed'),
+        'SW8': ('T10', 'T4', 'closed'),
+        'SW9': ('T1', 'T11', 'closed')
     }
 
     for switch_name, (term_from_name, term_to_name, active_name) in switch_data.items():
@@ -349,7 +418,7 @@ def topology_processor(grid: MultiCircuit, t_idx: Union[int, None] = None):
 
     # generate auxiliary structures that derive from the topology results
     final_buses = process_info.apply_results(islands=islands)
-
+    # TODO: ¿No estaría bien asignar a cada connectivity node el bus final al que está asociado para invertirlo?
     # apply the results to the grid object
     apply_results_to_grid(grid=grid,
                           final_buses=final_buses,
@@ -360,6 +429,7 @@ def topology_processor(grid: MultiCircuit, t_idx: Union[int, None] = None):
 if __name__ == '__main__':
 
     #grid_ = createExampleGridDiagram1()
-    grid_ = createExampleGridTest1()
+    #grid_ = createExampleGridTest1()
+    grid_ = createExampleGridTest2()
     topology_processor(grid=grid_)
     print()
