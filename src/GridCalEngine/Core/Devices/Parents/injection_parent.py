@@ -165,6 +165,17 @@ class InjectionParent(EditableDevice):
         else:
             raise Exception(str(type(val)) + 'not supported to be set into a bus_prof')
 
+    def get_bus_at(self, t_idx: Union[None, int]) -> Bus:
+        """
+        Returns the bus at a particular point in time
+        :param t_idx: time index (None for snapshot, int for profile values)
+        :return: Bus device
+        """
+        if t_idx is None:
+            return self.bus
+        else:
+            return self._bus_prof[t_idx]
+
     @property
     def active_prof(self) -> Profile:
         """

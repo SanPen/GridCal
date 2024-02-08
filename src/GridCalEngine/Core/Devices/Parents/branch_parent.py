@@ -86,7 +86,10 @@ class BranchParent(EditableDevice):
 
         # connectivity
         self.bus_from = bus_from
+        self._bus_from_prof = Profile(default_value=bus_from)
+
         self.bus_to = bus_to
+        self._bus_to_prof = Profile(default_value=bus_to)
 
         self.cn_from = cn_from
         self.cn_to = cn_to
@@ -152,6 +155,62 @@ class BranchParent(EditableDevice):
                       definition="Branch build status. Used in expansion planning.")
         self.register('capex', units="e/MW", tpe=float, definition="Cost of investment. Used in expansion planning.")
         self.register('opex', units="e/MWh", tpe=float, definition="Cost of operation. Used in expansion planning.")
+
+    @property
+    def bus_from_prof(self) -> Profile:
+        """
+        Bus profile
+        :return: Profile
+        """
+        return self._bus_from_prof
+
+    @bus_from_prof.setter
+    def bus_from_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._bus_from_prof = val
+        elif isinstance(val, np.ndarray):
+            self._bus_from_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a bus_from_prof')
+
+    @property
+    def bus_to_prof(self) -> Profile:
+        """
+        Bus profile
+        :return: Profile
+        """
+        return self._bus_to_prof
+
+    @bus_to_prof.setter
+    def bus_to_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._bus_to_prof = val
+        elif isinstance(val, np.ndarray):
+            self._bus_to_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a bus_to_prof')
+
+    def get_bus_from_at(self, t_idx: Union[None, int]) -> Bus:
+        """
+        Returns the bus_from at a particular point in time
+        :param t_idx: time index (None for snapshot, int for profile values)
+        :return: Bus device
+        """
+        if t_idx is None:
+            return self.bus_from
+        else:
+            return self._bus_from_prof[t_idx]
+
+    def get_bus_to_at(self, t_idx: Union[None, int]) -> Bus:
+        """
+        Returns the bus_to at a particular point in time
+        :param t_idx: time index (None for snapshot, int for profile values)
+        :return: Bus device
+        """
+        if t_idx is None:
+            return self.bus_to
+        else:
+            return self._bus_to_prof[t_idx]
 
     @property
     def active_prof(self) -> Profile:
