@@ -22,7 +22,7 @@ from enum import EnumMeta as EnumType
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 import GridCalEngine.Core.Devices as dev
-from GridCalEngine.Core.Devices.editable_device import GCProp
+from GridCalEngine.Core.Devices.Parents.editable_device import GCProp
 from GridCalEngine.enumerations import DiagramType, DeviceType
 
 

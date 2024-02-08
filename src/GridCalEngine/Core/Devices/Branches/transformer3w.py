@@ -18,7 +18,7 @@
 from typing import Tuple, Union
 import numpy as np
 from GridCalEngine.Core.Devices.Substation.bus import Bus
-from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceType
+from GridCalEngine.Core.Devices.Parents.editable_device import EditableDevice, DeviceType
 from GridCalEngine.Core.Devices.Branches.winding import Winding
 from GridCalEngine.Core.Devices.profile import Profile
 

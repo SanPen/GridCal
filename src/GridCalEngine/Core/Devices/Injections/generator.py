@@ -22,12 +22,12 @@ from matplotlib import pyplot as plt
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.enumerations import DeviceType, BuildStatus
 from GridCalEngine.Core.Devices.Aggregation.technology import Technology
-from GridCalEngine.Core.Devices.Templates.generator_like_tamplate import GeneratorLikeTemplate
+from GridCalEngine.Core.Devices.Parents.generator_parent import GeneratorParent
 from GridCalEngine.Core.Devices.Injections.generator_q_curve import GeneratorQCurve
 from GridCalEngine.Core.Devices.profile import Profile
 
 
-class Generator(GeneratorLikeTemplate):
+class Generator(GeneratorParent):
 
     def __init__(self,
                  name='gen',
@@ -95,23 +95,23 @@ class Generator(GeneratorLikeTemplate):
         :param opex:
         :param build_status:
         """
-        GeneratorLikeTemplate.__init__(self,
-                                       name=name,
-                                       idtag=idtag,
-                                       code=code,
-                                       bus=None,
-                                       cn=None,
-                                       active=active,
-                                       P=P,
-                                       Pmin=Pmin,
-                                       Pmax=Pmax,
-                                       Cost=Cost,
-                                       mttf=mttf,
-                                       mttr=mttr,
-                                       capex=capex,
-                                       opex=opex,
-                                       build_status=build_status,
-                                       device_type=DeviceType.GeneratorDevice)
+        GeneratorParent.__init__(self,
+                                 name=name,
+                                 idtag=idtag,
+                                 code=code,
+                                 bus=None,
+                                 cn=None,
+                                 active=active,
+                                 P=P,
+                                 Pmin=Pmin,
+                                 Pmax=Pmax,
+                                 Cost=Cost,
+                                 mttf=mttf,
+                                 mttr=mttr,
+                                 capex=capex,
+                                 opex=opex,
+                                 build_status=build_status,
+                                 device_type=DeviceType.GeneratorDevice)
 
         self.technology = technology
 

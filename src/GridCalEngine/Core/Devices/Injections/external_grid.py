@@ -19,11 +19,11 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 from GridCalEngine.enumerations import DeviceType, BuildStatus, ExternalGridMode
-from GridCalEngine.Core.Devices.Templates.load_like_tamplate import LoadLikeTemplate
+from GridCalEngine.Core.Devices.Parents.load_parent import LoadParent
 from GridCalEngine.Core.Devices.profile import Profile
 
 
-class ExternalGrid(LoadLikeTemplate):
+class ExternalGrid(LoadParent):
 
     def __init__(self, name='External grid', idtag=None, code='', active=True, substituted_device_id: str = '',
                  Vm=1.0, Va=0.0, P=0.0, Q=0.0,
@@ -49,22 +49,22 @@ class ExternalGrid(LoadLikeTemplate):
         :param build_status:
         """
 
-        LoadLikeTemplate.__init__(self,
-                                  name=name,
-                                  idtag=idtag,
-                                  code=code,
-                                  bus=None,
-                                  cn=None,
-                                  active=active,
-                                  P=P,
-                                  Q=Q,
-                                  Cost=0,
-                                  mttf=mttf,
-                                  mttr=mttr,
-                                  capex=capex,
-                                  opex=opex,
-                                  build_status=build_status,
-                                  device_type=DeviceType.ExternalGridDevice)
+        LoadParent.__init__(self,
+                            name=name,
+                            idtag=idtag,
+                            code=code,
+                            bus=None,
+                            cn=None,
+                            active=active,
+                            P=P,
+                            Q=Q,
+                            Cost=0,
+                            mttf=mttf,
+                            mttr=mttr,
+                            capex=capex,
+                            opex=opex,
+                            build_status=build_status,
+                            device_type=DeviceType.ExternalGridDevice)
 
         self.mode = mode
 

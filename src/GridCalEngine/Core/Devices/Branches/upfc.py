@@ -21,11 +21,11 @@ from matplotlib import pyplot as plt
 
 from GridCalEngine.Core.Devices.Substation.bus import Bus
 from GridCalEngine.enumerations import BuildStatus
-from GridCalEngine.Core.Devices.Templates.branch_template import BranchTemplate
-from GridCalEngine.Core.Devices.editable_device import DeviceType
+from GridCalEngine.Core.Devices.Parents.branch_parent import BranchParent
+from GridCalEngine.Core.Devices.Parents.editable_device import DeviceType
 
 
-class UPFC(BranchTemplate):
+class UPFC(BranchParent):
 
     def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='UPFC', code='', idtag=None, active=True,
                  rs=0.0, xs=0.00001, rp=0.0, xp=0.0, vp=1.0, Pset=0.0, Qset=0.0, rate=9999,
@@ -69,26 +69,26 @@ class UPFC(BranchTemplate):
         :param build_status:
         """
 
-        BranchTemplate.__init__(self,
-                                name=name,
-                                idtag=idtag,
-                                code=code,
-                                bus_from=bus_from,
-                                bus_to=bus_to,
-                                cn_from=None,
-                                cn_to=None,
-                                active=active,
-                                rate=rate,
-                                contingency_factor=contingency_factor,
-                                contingency_enabled=contingency_enabled,
-                                monitor_loading=monitor_loading,
-                                mttf=mttf,
-                                mttr=mttr,
-                                build_status=build_status,
-                                capex=capex,
-                                opex=opex,
-                                Cost=cost,
-                                device_type=DeviceType.UpfcDevice)
+        BranchParent.__init__(self,
+                              name=name,
+                              idtag=idtag,
+                              code=code,
+                              bus_from=bus_from,
+                              bus_to=bus_to,
+                              cn_from=None,
+                              cn_to=None,
+                              active=active,
+                              rate=rate,
+                              contingency_factor=contingency_factor,
+                              contingency_enabled=contingency_enabled,
+                              monitor_loading=monitor_loading,
+                              mttf=mttf,
+                              mttr=mttr,
+                              build_status=build_status,
+                              capex=capex,
+                              opex=opex,
+                              Cost=cost,
+                              device_type=DeviceType.UpfcDevice)
 
         # total impedance and admittance in p.u.
         self.Rs = rs

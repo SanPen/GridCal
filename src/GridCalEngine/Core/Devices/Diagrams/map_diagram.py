@@ -14,12 +14,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from typing import Dict, Union, List, Tuple
-from GridCalEngine.Core.Devices.Diagrams.base_diagram import BaseDiagram, PointsGroup
+from typing import Dict, Union
+from GridCalEngine.Core.Devices.Diagrams.base_diagram import BaseDiagram
 from GridCalEngine.Core.Devices.Diagrams.graphic_location import GraphicLocation
 from GridCalEngine.Core.Devices.Diagrams.map_location import MapLocation
-from GridCalEngine.Core.Devices.editable_device import EditableDevice
-from GridCalEngine.enumerations import DiagramType, DeviceType
+from GridCalEngine.Core.Devices.Parents.editable_device import EditableDevice
+from GridCalEngine.enumerations import DiagramType
 from GridCalEngine.basic_structures import Logger
 
 

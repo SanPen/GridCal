@@ -15,7 +15,6 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-import uuid
 from typing import Union
 import pandas as pd
 import numpy as np
@@ -23,13 +22,13 @@ from matplotlib import pyplot as plt
 from enum import Enum
 from GridCalEngine.Core.Devices.Substation.bus import Bus
 from GridCalEngine.enumerations import BuildStatus
-from GridCalEngine.Core.Devices.Templates.branch_template import BranchTemplate
+from GridCalEngine.Core.Devices.Parents.branch_parent import BranchParent
 from GridCalEngine.Core.Devices.Branches.tap_changer import TapChanger
 from GridCalEngine.Core.Devices.Branches.transformer import Transformer2W
 from GridCalEngine.Core.Devices.Branches.line import Line
 from GridCalEngine.Core.Devices.profile import Profile
 
-from GridCalEngine.Core.Devices.editable_device import DeviceType
+from GridCalEngine.Core.Devices.Parents.editable_device import DeviceType
 
 # Global sqrt of 3 (bad practice?)
 SQRT3 = np.sqrt(3.0)
@@ -73,10 +72,10 @@ class BranchType(Enum):
         return list(map(lambda c: c.value, cls))
 
 
-class Branch(BranchTemplate):
+class Branch(BranchParent):
 
-    def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='Branch', idtag=None, r=1e-20, x=1e-20, g=1e-20,
-                 b=1e-20,
+    def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='Branch', idtag=None,
+                 r=1e-20, x=1e-20, g=1e-20, b=1e-20,
                  rate=1.0, tap=1.0, shift_angle=0, active=True, tolerance=0, cost=0.0,
                  mttf=0, mttr=0, r_fault=0.0, x_fault=0.0, fault_pos=0.5,
                  branch_type: BranchType = BranchType.Line, length=1, vset=1.0,
@@ -118,26 +117,26 @@ class Branch(BranchTemplate):
         :param bus_to_regulated:  Is the `bus_to` voltage regulated by this branch?
         :param template: Basic branch template
         """
-        BranchTemplate.__init__(self,
-                                name=name,
-                                idtag=idtag,
-                                code="",
-                                bus_from=bus_from,
-                                bus_to=bus_to,
-                                cn_from=None,
-                                cn_to=None,
-                                active=active,
-                                rate=rate,
-                                contingency_factor=1.0,
-                                contingency_enabled=True,
-                                monitor_loading=True,
-                                mttf=mttf,
-                                mttr=mttr,
-                                build_status=BuildStatus.Commissioned,
-                                capex=0.0,
-                                opex=0.0,
-                                Cost=cost,
-                                device_type=DeviceType.BranchDevice)
+        BranchParent.__init__(self,
+                              name=name,
+                              idtag=idtag,
+                              code="",
+                              bus_from=bus_from,
+                              bus_to=bus_to,
+                              cn_from=None,
+                              cn_to=None,
+                              active=active,
+                              rate=rate,
+                              contingency_factor=1.0,
+                              contingency_enabled=True,
+                              monitor_loading=True,
+                              mttf=mttf,
+                              mttr=mttr,
+                              build_status=BuildStatus.Commissioned,
+                              capex=0.0,
+                              opex=0.0,
+                              Cost=cost,
+                              device_type=DeviceType.BranchDevice)
 
         # List of measurements
         self.measurements = list()

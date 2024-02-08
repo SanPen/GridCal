@@ -23,10 +23,10 @@ from GridCalEngine.Core.Devices.Substation.bus import Bus
 from GridCalEngine.Core.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.enumerations import BuildStatus, DeviceType
 from GridCalEngine.Core.Devices.profile import Profile
-from GridCalEngine.Core.Devices.Templates.injection_template import InjectionTemplate
+from GridCalEngine.Core.Devices.Parents.injection_parent import InjectionParent
 
 
-class ShuntLikeTemplate(InjectionTemplate):
+class ShuntParent(InjectionParent):
     """
     Template for objects that behave like shunts
     """
@@ -70,20 +70,20 @@ class ShuntLikeTemplate(InjectionTemplate):
         :param device_type: DeviceType
         """
 
-        InjectionTemplate.__init__(self,
-                                   name=name,
-                                   idtag=idtag,
-                                   code=code,
-                                   bus=bus,
-                                   cn=cn,
-                                   active=active,
-                                   Cost=Cost,
-                                   mttf=mttf,
-                                   mttr=mttr,
-                                   capex=capex,
-                                   opex=opex,
-                                   build_status=build_status,
-                                   device_type=device_type)
+        InjectionParent.__init__(self,
+                                 name=name,
+                                 idtag=idtag,
+                                 code=code,
+                                 bus=bus,
+                                 cn=cn,
+                                 active=active,
+                                 Cost=Cost,
+                                 mttf=mttf,
+                                 mttr=mttr,
+                                 capex=capex,
+                                 opex=opex,
+                                 build_status=build_status,
+                                 device_type=device_type)
 
         self.G = G
         self._G_prof = Profile(default_value=G)

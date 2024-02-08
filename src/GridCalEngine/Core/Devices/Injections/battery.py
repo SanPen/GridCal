@@ -16,10 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from warnings import warn
-import pandas as pd
-import numpy as np
-from GridCalEngine.Core.Devices.editable_device import DeviceType
+from GridCalEngine.Core.Devices.Parents.editable_device import DeviceType
 from GridCalEngine.Core.Devices.Injections.generator import Generator, BuildStatus
 
 

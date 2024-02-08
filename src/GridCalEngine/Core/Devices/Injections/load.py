@@ -19,11 +19,11 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 from GridCalEngine.enumerations import DeviceType, BuildStatus
-from GridCalEngine.Core.Devices.Templates.load_like_tamplate import LoadLikeTemplate
+from GridCalEngine.Core.Devices.Parents.load_parent import LoadParent
 from GridCalEngine.Core.Devices.profile import Profile
 
 
-class Load(LoadLikeTemplate):
+class Load(LoadParent):
     """
     Load
     """
@@ -49,22 +49,22 @@ class Load(LoadLikeTemplate):
         :param mttf: Mean time to failure in hours
         :param mttr: Mean time to recovery in hours
         """
-        LoadLikeTemplate.__init__(self,
-                                  name=name,
-                                  idtag=idtag,
-                                  code=code,
-                                  bus=None,
-                                  cn=None,
-                                  active=active,
-                                  P=P,
-                                  Q=Q,
-                                  Cost=Cost,
-                                  mttf=mttf,
-                                  mttr=mttr,
-                                  capex=capex,
-                                  opex=opex,
-                                  build_status=build_status,
-                                  device_type=DeviceType.LoadDevice)
+        LoadParent.__init__(self,
+                            name=name,
+                            idtag=idtag,
+                            code=code,
+                            bus=None,
+                            cn=None,
+                            active=active,
+                            P=P,
+                            Q=Q,
+                            Cost=Cost,
+                            mttf=mttf,
+                            mttr=mttr,
+                            capex=capex,
+                            opex=opex,
+                            build_status=build_status,
+                            device_type=DeviceType.LoadDevice)
 
         self.G = G
         self.B = B

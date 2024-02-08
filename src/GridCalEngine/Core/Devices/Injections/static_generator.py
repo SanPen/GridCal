@@ -16,10 +16,10 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 from GridCalEngine.enumerations import BuildStatus, DeviceType
-from GridCalEngine.Core.Devices.Templates.load_like_tamplate import LoadLikeTemplate
+from GridCalEngine.Core.Devices.Parents.load_parent import LoadParent
 
 
-class StaticGenerator(LoadLikeTemplate):
+class StaticGenerator(LoadParent):
 
     def __init__(self, name='StaticGen', idtag=None, code='', P=0.0, Q=0.0, active=True,
                  mttf=0.0, mttr=0.0, Cost=1200.0,
@@ -40,21 +40,21 @@ class StaticGenerator(LoadLikeTemplate):
         :param build_status:
         """
 
-        LoadLikeTemplate.__init__(self,
-                                  name=name,
-                                  idtag=idtag,
-                                  code=code,
-                                  bus=None,
-                                  cn=None,
-                                  active=active,
-                                  P=P,
-                                  Q=Q,
-                                  Cost=Cost,
-                                  mttf=mttf,
-                                  mttr=mttr,
-                                  capex=capex,
-                                  opex=opex,
-                                  build_status=build_status,
-                                  device_type=DeviceType.StaticGeneratorDevice)
+        LoadParent.__init__(self,
+                            name=name,
+                            idtag=idtag,
+                            code=code,
+                            bus=None,
+                            cn=None,
+                            active=active,
+                            P=P,
+                            Q=Q,
+                            Cost=Cost,
+                            mttf=mttf,
+                            mttr=mttr,
+                            capex=capex,
+                            opex=opex,
+                            build_status=build_status,
+                            device_type=DeviceType.StaticGeneratorDevice)
 
 

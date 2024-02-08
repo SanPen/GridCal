@@ -16,10 +16,10 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.enumerations import BuildStatus
-from GridCalEngine.Core.Devices.Templates.shunt_like_template import ShuntLikeTemplate
+from GridCalEngine.Core.Devices.Parents.shunt_parent import ShuntParent
 
 
-class Shunt(ShuntLikeTemplate):
+class Shunt(ShuntParent):
 
     def __init__(self, name='shunt', idtag=None, code='',
                  G=0.0, B=0.0, active=True,
@@ -47,24 +47,24 @@ class Shunt(ShuntLikeTemplate):
         :param build_status:
         """
 
-        ShuntLikeTemplate.__init__(self,
-                                   name=name,
-                                   idtag=idtag,
-                                   code=code,
-                                   bus=None,
-                                   cn=None,
-                                   active=active,
-                                   G=G,
-                                   B=B,
-                                   G0=G0,
-                                   B0=B0,
-                                   Cost=0.0,
-                                   mttf=mttf,
-                                   mttr=mttr,
-                                   capex=capex,
-                                   opex=opex,
-                                   build_status=build_status,
-                                   device_type=DeviceType.ShuntDevice)
+        ShuntParent.__init__(self,
+                             name=name,
+                             idtag=idtag,
+                             code=code,
+                             bus=None,
+                             cn=None,
+                             active=active,
+                             G=G,
+                             B=B,
+                             G0=G0,
+                             B0=B0,
+                             Cost=0.0,
+                             mttf=mttf,
+                             mttr=mttr,
+                             capex=capex,
+                             opex=opex,
+                             build_status=build_status,
+                             device_type=DeviceType.ShuntDevice)
 
         self.is_controlled = controlled
 

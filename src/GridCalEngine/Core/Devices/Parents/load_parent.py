@@ -24,10 +24,10 @@ from GridCalEngine.Core.Devices.Substation.connectivity_node import Connectivity
 from GridCalEngine.enumerations import BuildStatus, DeviceType
 from GridCalEngine.basic_structures import CxVec
 from GridCalEngine.Core.Devices.profile import Profile
-from GridCalEngine.Core.Devices.Templates.injection_template import InjectionTemplate
+from GridCalEngine.Core.Devices.Parents.injection_parent import InjectionParent
 
 
-class LoadLikeTemplate(InjectionTemplate):
+class LoadParent(InjectionParent):
     """
     Template for objects that behave like loads
     """
@@ -67,20 +67,20 @@ class LoadLikeTemplate(InjectionTemplate):
         :param device_type: DeviceType
         """
 
-        InjectionTemplate.__init__(self,
-                                   name=name,
-                                   idtag=idtag,
-                                   code=code,
-                                   bus=bus,
-                                   cn=cn,
-                                   active=active,
-                                   Cost=Cost,
-                                   mttf=mttf,
-                                   mttr=mttr,
-                                   capex=capex,
-                                   opex=opex,
-                                   build_status=build_status,
-                                   device_type=device_type)
+        InjectionParent.__init__(self,
+                                 name=name,
+                                 idtag=idtag,
+                                 code=code,
+                                 bus=bus,
+                                 cn=cn,
+                                 active=active,
+                                 Cost=Cost,
+                                 mttf=mttf,
+                                 mttr=mttr,
+                                 capex=capex,
+                                 opex=opex,
+                                 build_status=build_status,
+                                 device_type=device_type)
 
         self.P = P
         self._P_prof = Profile(default_value=P)

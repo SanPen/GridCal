@@ -17,7 +17,7 @@
 
 
 from typing import Union
-from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceType
+from GridCalEngine.Core.Devices.Parents.editable_device import EditableDevice, DeviceType
 
 
 class GenericAreaGroup(EditableDevice):

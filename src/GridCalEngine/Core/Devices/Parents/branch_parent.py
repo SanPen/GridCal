@@ -25,11 +25,11 @@ from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Core.Devices.Substation.bus import Bus
 from GridCalEngine.Core.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.enumerations import BuildStatus
-from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceType
+from GridCalEngine.Core.Devices.Parents.editable_device import EditableDevice, DeviceType
 from GridCalEngine.Core.Devices.profile import Profile
 
 
-class BranchTemplate(EditableDevice):
+class BranchParent(EditableDevice):
     """
     This class serves to represent the basic branch
     All other branches inherit from this one

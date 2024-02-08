@@ -17,9 +17,7 @@
 
 from typing import Union
 import numpy as np
-import pandas as pd
-from matplotlib import pyplot as plt
-from GridCalEngine.Core.Devices.editable_device import EditableDevice
+from GridCalEngine.Core.Devices.Parents.editable_device import EditableDevice
 from GridCalEngine.Core.Devices.Substation.bus import Bus
 from GridCalEngine.Core.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.enumerations import BuildStatus, DeviceType
@@ -27,7 +25,7 @@ from GridCalEngine.basic_structures import CxVec
 from GridCalEngine.Core.Devices.profile import Profile
 
 
-class InjectionTemplate(EditableDevice):
+class InjectionParent(EditableDevice):
     """
     The load object implements the so-called ZIP model, in which the load can be
     represented by a combination of power (P), current(I), and impedance (Z).

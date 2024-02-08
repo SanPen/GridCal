@@ -16,10 +16,9 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 from typing import Union
-from GridCalEngine.Core.Devices.editable_device import EditableDevice
-from GridCalEngine.enumerations import BuildStatus, DeviceType
+from GridCalEngine.Core.Devices.Parents.editable_device import EditableDevice
+from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Core.Devices.Fluid.fluid_node import FluidNode
-from GridCalEngine.basic_structures import Vec
 
 
 class FluidPath(EditableDevice):
