@@ -23,7 +23,7 @@ from matplotlib import pyplot as plt
 
 from GridCalEngine.Core.Devices.Substation.bus import Bus
 from GridCalEngine.enumerations import DeviceType, BuildStatus
-from GridCalEngine.Core.Devices.Branches.templates.parent_branch import ParentBranch
+from GridCalEngine.Core.Devices.Templates.branch_template import BranchTemplate
 from GridCalEngine.enumerations import HvdcControlType
 from GridCalEngine.basic_structures import Vec, IntVec
 from GridCalEngine.Core.Devices.profile import Profile
@@ -129,7 +129,7 @@ def getFromAndToPowerAt(Pset, theta_f, theta_t, Vnf, Vnt, v_set_f, v_set_t, Sbas
     return Pf, Pt, loss
 
 
-class HvdcLine(ParentBranch):
+class HvdcLine(BranchTemplate):
     """
     HvdcLine
     """
@@ -162,26 +162,26 @@ class HvdcLine(ParentBranch):
         :param length: line length in km
         """
 
-        ParentBranch.__init__(self,
-                              name=name,
-                              idtag=idtag,
-                              code=code,
-                              bus_from=bus_from,
-                              bus_to=bus_to,
-                              cn_from=None,
-                              cn_to=None,
-                              active=active,
-                              rate=rate,
-                              contingency_factor=contingency_factor,
-                              contingency_enabled=True,
-                              monitor_loading=True,
-                              mttf=mttf,
-                              mttr=mttr,
-                              build_status=build_status,
-                              capex=capex,
-                              opex=opex,
-                              Cost=overload_cost,
-                              device_type=DeviceType.HVDCLineDevice)
+        BranchTemplate.__init__(self,
+                                name=name,
+                                idtag=idtag,
+                                code=code,
+                                bus_from=bus_from,
+                                bus_to=bus_to,
+                                cn_from=None,
+                                cn_to=None,
+                                active=active,
+                                rate=rate,
+                                contingency_factor=contingency_factor,
+                                contingency_enabled=True,
+                                monitor_loading=True,
+                                mttf=mttf,
+                                mttr=mttr,
+                                build_status=build_status,
+                                capex=capex,
+                                opex=opex,
+                                Cost=overload_cost,
+                                device_type=DeviceType.HVDCLineDevice)
 
         # List of measurements
         self.measurements = list()

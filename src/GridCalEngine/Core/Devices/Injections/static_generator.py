@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 from GridCalEngine.enumerations import BuildStatus, DeviceType
-from GridCalEngine.Core.Devices.Injections.injection_template import LoadLikeTemplate
+from GridCalEngine.Core.Devices.Templates.load_like_tamplate import LoadLikeTemplate
 
 
 class StaticGenerator(LoadLikeTemplate):

@@ -29,7 +29,7 @@ from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceTyp
 from GridCalEngine.Core.Devices.profile import Profile
 
 
-class ParentBranch(EditableDevice):
+class BranchTemplate(EditableDevice):
     """
     This class serves to represent the basic branch
     All other branches inherit from this one

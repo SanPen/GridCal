@@ -24,14 +24,14 @@ from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Core.Devices.Substation.bus import Bus
 from GridCalEngine.Core.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.enumerations import TransformerControlType, WindingsConnection, BuildStatus
-from GridCalEngine.Core.Devices.Branches.templates.parent_branch import ParentBranch
-from GridCalEngine.Core.Devices.Branches.templates.transformer_type import TransformerType
+from GridCalEngine.Core.Devices.Templates.branch_template import BranchTemplate
+from GridCalEngine.Core.Devices.Branches.transformer_type import TransformerType
 from GridCalEngine.Core.Devices.Branches.tap_changer import TapChanger
 from GridCalEngine.Core.Devices.editable_device import DeviceType
 from GridCalEngine.Core.Devices.profile import Profile
 
 
-class Transformer2W(ParentBranch):
+class Transformer2W(BranchTemplate):
 
     def __init__(self,
                  bus_from: Bus = None,
@@ -116,26 +116,26 @@ class Transformer2W(ParentBranch):
         :param build_status: build status (now time)
         """
 
-        ParentBranch.__init__(self,
-                              name=name,
-                              idtag=idtag,
-                              code=code,
-                              bus_from=bus_from,
-                              bus_to=bus_to,
-                              cn_from=cn_from,
-                              cn_to=cn_to,
-                              active=active,
-                              rate=rate,
-                              contingency_factor=contingency_factor,
-                              contingency_enabled=contingency_enabled,
-                              monitor_loading=monitor_loading,
-                              mttf=mttf,
-                              mttr=mttr,
-                              build_status=build_status,
-                              capex=capex,
-                              opex=opex,
-                              Cost=cost,
-                              device_type=DeviceType.Transformer2WDevice)
+        BranchTemplate.__init__(self,
+                                name=name,
+                                idtag=idtag,
+                                code=code,
+                                bus_from=bus_from,
+                                bus_to=bus_to,
+                                cn_from=cn_from,
+                                cn_to=cn_to,
+                                active=active,
+                                rate=rate,
+                                contingency_factor=contingency_factor,
+                                contingency_enabled=contingency_enabled,
+                                monitor_loading=monitor_loading,
+                                mttf=mttf,
+                                mttr=mttr,
+                                build_status=build_status,
+                                capex=capex,
+                                opex=opex,
+                                Cost=cost,
+                                device_type=DeviceType.Transformer2WDevice)
 
         # set the high and low voltage values
         self.HV = 0

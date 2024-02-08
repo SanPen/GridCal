@@ -23,7 +23,7 @@ from matplotlib import pyplot as plt
 from enum import Enum
 from GridCalEngine.Core.Devices.Substation.bus import Bus
 from GridCalEngine.enumerations import BuildStatus
-from GridCalEngine.Core.Devices.Branches.templates.parent_branch import ParentBranch
+from GridCalEngine.Core.Devices.Templates.branch_template import BranchTemplate
 from GridCalEngine.Core.Devices.Branches.tap_changer import TapChanger
 from GridCalEngine.Core.Devices.Branches.transformer import Transformer2W
 from GridCalEngine.Core.Devices.Branches.line import Line
@@ -33,6 +33,14 @@ from GridCalEngine.Core.Devices.editable_device import DeviceType
 
 # Global sqrt of 3 (bad practice?)
 SQRT3 = np.sqrt(3.0)
+
+
+"""
+NOTE: This device is legacy and unsupported
+      It only exists because older GridCal versions used it
+      Now when this devices is used it is immediatelly converted 
+      to either a line or transformer
+"""
 
 
 class BranchType(Enum):
@@ -65,41 +73,7 @@ class BranchType(Enum):
         return list(map(lambda c: c.value, cls))
 
 
-class BranchTemplate:
-    """
-    This is the template for a branch
-    This class only exists for legacy reasons
-    """
-
-    def __init__(self, name='BranchTemplate', tpe=BranchType.Branch) -> None:
-        self.idtag = uuid.uuid4().hex
-
-        self.name = name
-
-        self.tpe = tpe
-
-        self.device_type = DeviceType.BranchTypeDevice
-
-        self.edit_headers = []
-        self.units = []
-        self.non_editable_indices = []
-        self.edit_types = {}
-
-    def __str__(self):
-        return self.name
-
-    def get_save_data(self):
-        """
-
-        :return:
-        """
-        dta = list()
-        for p in self.edit_headers:
-            dta.append(getattr(self, p))
-        return dta
-
-
-class Branch(ParentBranch):
+class Branch(BranchTemplate):
 
     def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='Branch', idtag=None, r=1e-20, x=1e-20, g=1e-20,
                  b=1e-20,
@@ -107,7 +81,7 @@ class Branch(ParentBranch):
                  mttf=0, mttr=0, r_fault=0.0, x_fault=0.0, fault_pos=0.5,
                  branch_type: BranchType = BranchType.Line, length=1, vset=1.0,
                  temp_base=20, temp_oper=20, alpha=0.00330,
-                 bus_to_regulated=False, template=BranchTemplate(), ):
+                 bus_to_regulated=False, template=None, ):
         """
         This class exists for legacy reasons, use the Line or Transformer2w classes instead! *
         The **Branch** class represents the connections between nodes (i.e.
@@ -144,26 +118,26 @@ class Branch(ParentBranch):
         :param bus_to_regulated:  Is the `bus_to` voltage regulated by this branch?
         :param template: Basic branch template
         """
-        ParentBranch.__init__(self,
-                              name=name,
-                              idtag=idtag,
-                              code="",
-                              bus_from=bus_from,
-                              bus_to=bus_to,
-                              cn_from=None,
-                              cn_to=None,
-                              active=active,
-                              rate=rate,
-                              contingency_factor=1.0,
-                              contingency_enabled=True,
-                              monitor_loading=True,
-                              mttf=mttf,
-                              mttr=mttr,
-                              build_status=BuildStatus.Commissioned,
-                              capex=0.0,
-                              opex=0.0,
-                              Cost=cost,
-                              device_type=DeviceType.BranchDevice)
+        BranchTemplate.__init__(self,
+                                name=name,
+                                idtag=idtag,
+                                code="",
+                                bus_from=bus_from,
+                                bus_to=bus_to,
+                                cn_from=None,
+                                cn_to=None,
+                                active=active,
+                                rate=rate,
+                                contingency_factor=1.0,
+                                contingency_enabled=True,
+                                monitor_loading=True,
+                                mttf=mttf,
+                                mttr=mttr,
+                                build_status=BuildStatus.Commissioned,
+                                capex=0.0,
+                                opex=0.0,
+                                Cost=cost,
+                                device_type=DeviceType.BranchDevice)
 
         # List of measurements
         self.measurements = list()
@@ -393,12 +367,6 @@ class Branch(ParentBranch):
 
             if properties.tpe == BranchType:
                 obj = self.branch_type.value
-
-            elif properties.tpe == BranchTemplate:
-                if obj is None:
-                    obj = ''
-                else:
-                    obj = str(obj)
 
             elif properties.tpe not in [str, float, int, bool]:
                 obj = str(obj)

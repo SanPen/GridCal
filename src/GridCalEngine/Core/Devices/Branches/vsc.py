@@ -22,11 +22,11 @@ from typing import List, Tuple
 
 from GridCalEngine.Core.Devices.Substation.bus import Bus
 from GridCalEngine.enumerations import ConverterControlType, BuildStatus
-from GridCalEngine.Core.Devices.Branches.templates.parent_branch import ParentBranch
+from GridCalEngine.Core.Devices.Templates.branch_template import BranchTemplate
 from GridCalEngine.Core.Devices.editable_device import DeviceType
 
 
-class VSC(ParentBranch):
+class VSC(BranchTemplate):
 
     def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='VSC', idtag=None, code='', active=True,
                  r=0.0001, x=0.05,
@@ -87,26 +87,26 @@ class VSC(ParentBranch):
         :param build_status:
         """
 
-        ParentBranch.__init__(self,
-                              name=name,
-                              idtag=idtag,
-                              code=code,
-                              bus_from=bus_from,
-                              bus_to=bus_to,
-                              cn_from=None,
-                              cn_to=None,
-                              active=active,
-                              rate=rate,
-                              contingency_factor=contingency_factor,
-                              contingency_enabled=contingency_enabled,
-                              monitor_loading=monitor_loading,
-                              mttf=mttf,
-                              mttr=mttr,
-                              build_status=build_status,
-                              capex=capex,
-                              opex=opex,
-                              Cost=cost,
-                              device_type=DeviceType.VscDevice)
+        BranchTemplate.__init__(self,
+                                name=name,
+                                idtag=idtag,
+                                code=code,
+                                bus_from=bus_from,
+                                bus_to=bus_to,
+                                cn_from=None,
+                                cn_to=None,
+                                active=active,
+                                rate=rate,
+                                contingency_factor=contingency_factor,
+                                contingency_enabled=contingency_enabled,
+                                monitor_loading=monitor_loading,
+                                mttf=mttf,
+                                mttr=mttr,
+                                build_status=build_status,
+                                capex=capex,
+                                opex=opex,
+                                Cost=cost,
+                                device_type=DeviceType.VscDevice)
 
         # the VSC must only connect from an DC to a AC bus
         # this connectivity sense is done to keep track with the articles that set it

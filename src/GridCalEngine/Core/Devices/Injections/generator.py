@@ -22,7 +22,7 @@ from matplotlib import pyplot as plt
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.enumerations import DeviceType, BuildStatus
 from GridCalEngine.Core.Devices.Aggregation.technology import Technology
-from GridCalEngine.Core.Devices.Injections.injection_template import GeneratorLikeTemplate
+from GridCalEngine.Core.Devices.Templates.generator_like_tamplate import GeneratorLikeTemplate
 from GridCalEngine.Core.Devices.Injections.generator_q_curve import GeneratorQCurve
 from GridCalEngine.Core.Devices.profile import Profile
 

@@ -19,7 +19,7 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 from GridCalEngine.enumerations import DeviceType, BuildStatus
-from GridCalEngine.Core.Devices.Injections.injection_template import LoadLikeTemplate
+from GridCalEngine.Core.Devices.Templates.load_like_tamplate import LoadLikeTemplate
 from GridCalEngine.Core.Devices.profile import Profile
 
 

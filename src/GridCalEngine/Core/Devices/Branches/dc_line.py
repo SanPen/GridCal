@@ -21,12 +21,12 @@ from typing import Union
 from matplotlib import pyplot as plt
 import numpy as np
 from GridCalEngine.Core.Devices.Substation.bus import Bus
-from GridCalEngine.Core.Devices.Branches.templates.parent_branch import ParentBranch
+from GridCalEngine.Core.Devices.Templates.branch_template import BranchTemplate
 from GridCalEngine.Core.Devices.profile import Profile
 from GridCalEngine.enumerations import DeviceType, BuildStatus
 
 
-class DcLine(ParentBranch):
+class DcLine(BranchTemplate):
     def __init__(self,
                  bus_from: Union[Bus, None] = None,
                  bus_to: Union[Bus, None] = None,
@@ -82,26 +82,26 @@ class DcLine(ParentBranch):
         :param build_status: build status (now time)
         """
 
-        ParentBranch.__init__(self,
-                              name=name,
-                              idtag=idtag,
-                              code=code,
-                              bus_from=bus_from,
-                              bus_to=bus_to,
-                              cn_from=None,
-                              cn_to=None,
-                              active=active,
-                              rate=rate,
-                              contingency_factor=contingency_factor,
-                              contingency_enabled=contingency_enabled,
-                              monitor_loading=monitor_loading,
-                              mttf=mttf,
-                              mttr=mttr,
-                              build_status=build_status,
-                              capex=capex,
-                              opex=opex,
-                              Cost=cost,
-                              device_type=DeviceType.DCLineDevice)
+        BranchTemplate.__init__(self,
+                                name=name,
+                                idtag=idtag,
+                                code=code,
+                                bus_from=bus_from,
+                                bus_to=bus_to,
+                                cn_from=None,
+                                cn_to=None,
+                                active=active,
+                                rate=rate,
+                                contingency_factor=contingency_factor,
+                                contingency_enabled=contingency_enabled,
+                                monitor_loading=monitor_loading,
+                                mttf=mttf,
+                                mttr=mttr,
+                                build_status=build_status,
+                                capex=capex,
+                                opex=opex,
+                                Cost=cost,
+                                device_type=DeviceType.DCLineDevice)
 
         # List of measurements
         self.measurements = list()

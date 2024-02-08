@@ -21,16 +21,16 @@ from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Core.Devices.Substation.bus import Bus
 from GridCalEngine.Core.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.enumerations import BuildStatus
-from GridCalEngine.Core.Devices.Branches.templates.underground_line import UndergroundLineType
-from GridCalEngine.Core.Devices.Branches.templates.overhead_line_type import OverheadLineType
+from GridCalEngine.Core.Devices.Branches.underground_line_type import UndergroundLineType
+from GridCalEngine.Core.Devices.Branches.overhead_line_type import OverheadLineType
+from GridCalEngine.Core.Devices.Templates.branch_template import BranchTemplate
+from GridCalEngine.Core.Devices.Branches.sequence_line_type import SequenceLineType
 from GridCalEngine.Core.Devices.Branches.transformer import Transformer2W
-from GridCalEngine.Core.Devices.Branches.templates.parent_branch import ParentBranch
-from GridCalEngine.Core.Devices.Branches.templates.sequence_line_type import SequenceLineType
 from GridCalEngine.Core.Devices.editable_device import DeviceType
 from GridCalEngine.Core.Devices.profile import Profile
 
 
-class Line(ParentBranch):
+class Line(BranchTemplate):
 
     def __init__(self, bus_from: Bus = None, bus_to: Bus = None, cn_from: ConnectivityNode = None,
                  cn_to: ConnectivityNode = None, name='Line', idtag=None, code='',
@@ -78,26 +78,26 @@ class Line(ParentBranch):
         :param build_status: build status (now time)
         """
 
-        ParentBranch.__init__(self,
-                              name=name,
-                              idtag=idtag,
-                              code=code,
-                              bus_from=bus_from,
-                              bus_to=bus_to,
-                              cn_from=cn_from,
-                              cn_to=cn_to,
-                              active=active,
-                              rate=rate,
-                              contingency_factor=contingency_factor,
-                              contingency_enabled=contingency_enabled,
-                              monitor_loading=monitor_loading,
-                              mttf=mttf,
-                              mttr=mttr,
-                              build_status=build_status,
-                              capex=capex,
-                              opex=opex,
-                              Cost=cost,
-                              device_type=DeviceType.LineDevice)
+        BranchTemplate.__init__(self,
+                                name=name,
+                                idtag=idtag,
+                                code=code,
+                                bus_from=bus_from,
+                                bus_to=bus_to,
+                                cn_from=cn_from,
+                                cn_to=cn_to,
+                                active=active,
+                                rate=rate,
+                                contingency_factor=contingency_factor,
+                                contingency_enabled=contingency_enabled,
+                                monitor_loading=monitor_loading,
+                                mttf=mttf,
+                                mttr=mttr,
+                                build_status=build_status,
+                                capex=capex,
+                                opex=opex,
+                                Cost=cost,
+                                device_type=DeviceType.LineDevice)
 
         # line length in km
         self.length = length

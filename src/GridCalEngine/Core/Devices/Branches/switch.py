@@ -18,11 +18,11 @@
 from GridCalEngine.Core.Devices.Substation.bus import Bus
 from GridCalEngine.Core.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.enumerations import BuildStatus
-from GridCalEngine.Core.Devices.Branches.templates.parent_branch import ParentBranch
+from GridCalEngine.Core.Devices.Templates.branch_template import BranchTemplate
 from GridCalEngine.Core.Devices.editable_device import DeviceType
 
 
-class Switch(ParentBranch):
+class Switch(BranchTemplate):
     """
     The **Switch** class represents the connections between nodes (i.e.
     :ref:`buses<bus>`) in **GridCal**. A Switch is an devices that cuts or allows the flow.
@@ -45,26 +45,26 @@ class Switch(ParentBranch):
         :param active_prof: Active profile
         :param contingency_factor: Rating factor in case of contingency
         """
-        ParentBranch.__init__(self,
-                              name=name,
-                              idtag=idtag,
-                              code=code,
-                              bus_from=bus_from,
-                              bus_to=bus_to,
-                              cn_from=cn_from,
-                              cn_to=cn_to,
-                              active=active,
-                              rate=rate,
-                              contingency_factor=contingency_factor,
-                              contingency_enabled=True,
-                              monitor_loading=True,
-                              mttf=0.0,
-                              mttr=0.0,
-                              build_status=BuildStatus.Commissioned,
-                              capex=0,
-                              opex=0,
-                              Cost=0,
-                              device_type=DeviceType.SwitchDevice)
+        BranchTemplate.__init__(self,
+                                name=name,
+                                idtag=idtag,
+                                code=code,
+                                bus_from=bus_from,
+                                bus_to=bus_to,
+                                cn_from=cn_from,
+                                cn_to=cn_to,
+                                active=active,
+                                rate=rate,
+                                contingency_factor=contingency_factor,
+                                contingency_enabled=True,
+                                monitor_loading=True,
+                                mttf=0.0,
+                                mttr=0.0,
+                                build_status=BuildStatus.Commissioned,
+                                capex=0,
+                                opex=0,
+                                Cost=0,
+                                device_type=DeviceType.SwitchDevice)
 
         # total impedance and admittance in p.u.
         self.R = r

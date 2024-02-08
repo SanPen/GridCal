@@ -23,7 +23,7 @@ from warnings import warn
 from enum import EnumMeta
 from collections import defaultdict
 
-from GridCalEngine.Core.Devices import BranchTemplate, Bus, ContingencyGroup
+from GridCalEngine.Core.Devices import Bus, ContingencyGroup
 from GridCalEngine.Core.Devices.editable_device import GCProp, EditableDevice
 from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Simulations.result_types import ResultTypes
@@ -727,7 +727,7 @@ class ObjectsModel(QtCore.QAbstractTableModel):
                 delegate = ComboDelegate(self.parent, [True, False], ['True', 'False'])
                 F(i, delegate)
 
-            elif tpe is BranchTemplate or tpe is str:
+            elif tpe is str:
 
                 if 'color' in self.attributes[i]:
                     delegate = ColorPickerDelegate(self.parent)
@@ -735,9 +735,6 @@ class ObjectsModel(QtCore.QAbstractTableModel):
                     delegate = TextDelegate(self.parent)
 
                 F(i, delegate)
-
-            elif tpe is BranchTemplate:
-                F(i, None)
 
             elif tpe is float:
                 delegate = FloatDelegate(self.parent)

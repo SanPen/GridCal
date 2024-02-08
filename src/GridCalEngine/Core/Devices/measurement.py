@@ -17,7 +17,7 @@
 from typing import Union
 from GridCalEngine.Core.Devices.editable_device import EditableDevice
 from GridCalEngine.Core.Devices.Substation.bus import Bus
-from GridCalEngine.Core.Devices.Branches.templates.parent_branch import ParentBranch
+from GridCalEngine.Core.Devices.Templates.branch_template import BranchTemplate
 from GridCalEngine.enumerations import DeviceType
 
 
@@ -107,7 +107,7 @@ class PfMeasurement(MeasurementTemplate):
     Measurement class
     """
 
-    def __init__(self, value: float, uncertainty: float, api_obj: ParentBranch, name="",
+    def __init__(self, value: float, uncertainty: float, api_obj: BranchTemplate, name="",
                  idtag: Union[str, None] = None):
         MeasurementTemplate.__init__(self,
                                      value=value,
@@ -123,7 +123,7 @@ class QfMeasurement(MeasurementTemplate):
     Measurement class
     """
 
-    def __init__(self, value: float, uncertainty: float, api_obj: ParentBranch, name="",
+    def __init__(self, value: float, uncertainty: float, api_obj: BranchTemplate, name="",
                  idtag: Union[str, None] = None):
         MeasurementTemplate.__init__(self,
                                      value=value,
@@ -139,7 +139,7 @@ class IfMeasurement(MeasurementTemplate):
     Measurement class
     """
 
-    def __init__(self, value: float, uncertainty: float, api_obj: ParentBranch, name="",
+    def __init__(self, value: float, uncertainty: float, api_obj: BranchTemplate, name="",
                  idtag: Union[str, None] = None):
         MeasurementTemplate.__init__(self,
                                      value=value,

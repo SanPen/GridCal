@@ -16,8 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.enumerations import BuildStatus
-from GridCalEngine.Core.Devices.Injections.injection_template import ShuntLikeTemplate
-from GridCalEngine.Core.Devices.profile import Profile
+from GridCalEngine.Core.Devices.Templates.shunt_like_template import ShuntLikeTemplate
 
 
 class Shunt(ShuntLikeTemplate):
