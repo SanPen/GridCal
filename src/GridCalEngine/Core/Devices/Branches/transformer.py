@@ -22,6 +22,7 @@ from matplotlib import pyplot as plt
 
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Core.Devices.Substation.bus import Bus
+from GridCalEngine.Core.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.enumerations import TransformerControlType, WindingsConnection, BuildStatus
 from GridCalEngine.Core.Devices.Branches.templates.parent_branch import ParentBranch
 from GridCalEngine.Core.Devices.Branches.templates.transformer_type import TransformerType
@@ -35,6 +36,8 @@ class Transformer2W(ParentBranch):
                  bus_from: Bus = None,
                  bus_to: Bus = None,
                  name='Branch', idtag=None, code='',
+                 cn_from: ConnectivityNode = None,
+                 cn_to: ConnectivityNode = None,
                  HV=None, LV=None,
                  nominal_power=0.001,
                  copper_losses=0.0,
@@ -127,8 +130,8 @@ class Transformer2W(ParentBranch):
                               code=code,
                               bus_from=bus_from,
                               bus_to=bus_to,
-                              cn_from=None,
-                              cn_to=None,
+                              cn_from=cn_from,
+                              cn_to=cn_to,
                               active=active,
                               active_prof=active_prof,
                               rate=rate,

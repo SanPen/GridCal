@@ -95,7 +95,7 @@ def topology_proc(grid: MultiCircuit):
 
     reduced = np.zeros(n_calc_nodes, dtype=int)  # stores which buses are to merge with another bus
 
-    indptr = C.indptr.copy()  # Indprt from csc matrix
+    indptr = C.indptr.copy()  # Indptr from csc matrix
     indices = C.indices.copy()  # Indices from csc matrix
     for c in range(n_calc_nodes):  # Cover every column
         a = indptr[c]
