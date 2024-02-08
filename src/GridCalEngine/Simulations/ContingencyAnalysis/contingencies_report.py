@@ -224,6 +224,7 @@ class ContingencyResultsReport:
             post_contingency_flow: complex,
             contingency_rating: float,
             post_contingency_loading: float,
+            srap_fixing_probability: Mat = [],
             solved_by_srap: bool = False,
             srap_power: float = 0.0,
             srap_bus_indices: IntVec = None):
@@ -324,7 +325,8 @@ class ContingencyResultsReport:
                 multi_contingency: LinearMultiContingency = None,
                 PTDF: Mat = None,
                 available_power: Vec = None,
-                srap_fixing_probability:Mat = None):
+                srap_used_power: Mat = None,
+                top_n: int = 5):
         """
         Analize contingency resuts and add them to the report
         :param t: time index
@@ -341,8 +343,10 @@ class ContingencyResultsReport:
         :param srap_max_loading: Rate multiplier under which we can use SRAP conditions
         :param srap_max_power: Max amount of power to lower using SRAP conditions
         :param multi_contingency: list of buses for SRAP conditions
-        :param PTDF
-        :param available_power
+        :param PTDF: PTDF for SRAP conditions
+        :param available_power: Array of power avaiable for SRAP
+        :param srap_used_power: (branch, nbus) matrix to stre SRAP usage
+        :param top_n: maximum number of nodes affecting the oveload
         """
         for m in mon_idx:  # for each monitored branch ...
 
@@ -374,17 +378,10 @@ class ContingencyResultsReport:
                     rating=numerical_circuit.branch_data.rates[m],
                     srap_pmax_mw=srap_max_power,
                     available_power=available_power,
-                    top_n=5,
-                    srap_fixing_probability=srap_fixing_probability
+                    branch_idx=m,
+                    top_n=top_n,
+                    srap_used_power=srap_used_power
                 )
-
-                # solved_by_srap, max_srap_power = calc_srap(m,
-                #                                            multi_contingency,
-                #                                            PTDF,
-                #                                            contingency_flows,
-                #                                            numerical_circuit,
-                #                                            srap_max_power,
-                #                                            available_power)
 
                 self.add(time_index=t if t is not None else 0,
                          base_name=numerical_circuit.branch_data.names[m],

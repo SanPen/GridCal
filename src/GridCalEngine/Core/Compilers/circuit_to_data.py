@@ -55,6 +55,7 @@ def get_bus_data(circuit: MultiCircuit,
         bus_data.Vmin[i] = bus.Vmin
         bus_data.Vmax[i] = bus.Vmax
         bus_data.Vnom[i] = bus.Vnom
+        # TODO: Check that the devices are are changing the guess
         bus_data.Vbus[i] = bus.get_voltage_guess(None, use_stored_guess=use_stored_guess)
 
         bus_data.angle_min[i] = bus.angle_min
@@ -102,7 +103,7 @@ def get_load_data(circuit: MultiCircuit,
     :return:
     """
 
-    data = ds.LoadData(nelm=circuit.get_calculation_loads_number(), nbus=len(circuit.buses))
+    data = ds.LoadData(nelm=circuit.get_load_like_device_number(), nbus=len(circuit.buses))
 
     ii = 0
     for elm in circuit.get_loads():

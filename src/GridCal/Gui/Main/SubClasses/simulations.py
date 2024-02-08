@@ -258,10 +258,6 @@ class SimulationsMain(TimeEventsMain):
 
         if eng == EngineType.NewtonPA:
             self.ui.opfUnitCommitmentCheckBox.setVisible(True)
-            self.ui.maxVoltageModuleStepSpinBox.setVisible(True)
-            self.ui.maxVoltageAngleStepSpinBox.setVisible(True)
-            self.ui.maxVoltageModuleStepLabel.setVisible(True)
-            self.ui.maxVoltageAngleStepLabel.setVisible(True)
 
             # add the AC_OPF option
             self.lp_solvers_dict = OrderedDict()
@@ -289,10 +285,6 @@ class SimulationsMain(TimeEventsMain):
 
         elif eng == EngineType.GridCal:
             self.ui.opfUnitCommitmentCheckBox.setVisible(True)
-            self.ui.maxVoltageModuleStepSpinBox.setVisible(False)
-            self.ui.maxVoltageAngleStepSpinBox.setVisible(False)
-            self.ui.maxVoltageModuleStepLabel.setVisible(False)
-            self.ui.maxVoltageAngleStepLabel.setVisible(False)
 
             # no AC opf option
             self.lp_solvers_dict = OrderedDict()
@@ -322,10 +314,6 @@ class SimulationsMain(TimeEventsMain):
 
         elif eng == EngineType.Bentayga:
             self.ui.opfUnitCommitmentCheckBox.setVisible(False)
-            self.ui.maxVoltageModuleStepSpinBox.setVisible(False)
-            self.ui.maxVoltageAngleStepSpinBox.setVisible(False)
-            self.ui.maxVoltageModuleStepLabel.setVisible(False)
-            self.ui.maxVoltageAngleStepLabel.setVisible(False)
 
             # no AC opf option
             self.lp_solvers_dict = OrderedDict()
@@ -969,6 +957,7 @@ class SimulationsMain(TimeEventsMain):
             use_srap=self.ui.use_srap_checkBox.isChecked(),
             srap_max_loading=self.ui.srap_loading_limit_doubleSpinBox.value(),
             srap_max_power=self.ui.srap_limit_doubleSpinBox.value(),
+            srap_top_n=self.ui.srap_top_n_SpinBox.value(),
             engine=self.contingency_engines_dict[self.ui.contingencyEngineComboBox.currentText()]
         )
 
@@ -1401,7 +1390,8 @@ class SimulationsMain(TimeEventsMain):
                     end_idx = self.ui.vs_target_comboBox.currentIndex()
 
                     if len(sel_bus_idx) > 0:
-                        if sum([self.circuit.buses[i].get_device_number() for i in sel_bus_idx]) == 0:
+                        S = self.circuit.get_Sbus()
+                        if S[sel_bus_idx].sum() == 0:
                             warning_msg('You have selected a group of buses with no power injection.\n'
                                         'this will result in an infinite continuation, since the loading variation '
                                         'of buses with zero injection will be infinite.', 'Continuation Power Flow')
@@ -1761,9 +1751,6 @@ class SimulationsMain(TimeEventsMain):
                                               unit_commitment=unit_commitment,
                                               export_model_fname=export_model_fname,
                                               generate_report=generate_report)
-
-        options.max_vm = self.ui.maxVoltageModuleStepSpinBox.value()
-        options.max_va = self.ui.maxVoltageAngleStepSpinBox.value()
 
         return options
 
@@ -2442,12 +2429,17 @@ class SimulationsMain(TimeEventsMain):
 
                         self.buses_for_storage = list()
                         colors = list()
+
+                        # get all batteries grouped by bus
+                        batt_by_bus = self.circuit.get_batteries_by_bus()
+
                         for i, freq in zip(idx, frequencies):
 
                             bus = self.circuit.buses[i]
+                            batts = batt_by_bus.get(bus, None)
 
                             # add a marker to the bus if there are no batteries in it
-                            if len(bus.batteries) == 0:
+                            if batts is None:
                                 self.buses_for_storage.append(bus)
                                 r, g, b, a = cmap(freq / fmax)
                                 color = QtGui.QColor(r * 255, g * 255, b * 255, a * 255)
@@ -2725,5 +2717,7 @@ class SimulationsMain(TimeEventsMain):
                              "Fuse devices")
 
         if ok:
-            self.circuit.fuse_devices()
-            self.redraw_current_diagram()
+            deleted_devices = self.circuit.fuse_devices()
+
+            for diagram_widget in self.diagram_widgets_list:
+                diagram_widget.delete_diagram_elements(elements=deleted_devices)

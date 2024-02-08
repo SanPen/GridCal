@@ -55,6 +55,8 @@ class InjectionTemplateGraphicItem(QGraphicsItemGroup):
         self.w = w
         self.h = h
 
+        self.scale = 1.0
+
         self.parent = parent
 
         self.api_object = api_obj
@@ -122,13 +124,13 @@ class InjectionTemplateGraphicItem(QGraphicsItemGroup):
         """
         if ask:
             ok = yes_no_question('Are you sure that you want to remove this ' + self.device_type_name + '?',
-                                 'Remove load')
+                                 'Remove ' + self.api_object.name)
         else:
             ok = True
 
         if ok:
             self.editor.remove_from_scene(self.nexus)
-            self.editor.remove_element(device=self, graphic_object=self.api_object)
+            self.editor.remove_element(device=self.api_object, graphic_object=self)
 
     def mousePressEvent(self, QGraphicsSceneMouseEvent):
         """
@@ -173,3 +175,6 @@ class InjectionTemplateGraphicItem(QGraphicsItemGroup):
         else:
             warning_msg("you have to select the origin and destination buses!",
                         title='Change bus')
+
+    def rescale(self, scale: float = 1.0):
+        self.scale = scale

@@ -1488,7 +1488,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
     nbr = grid.get_branch_number_wo_hvdc()
     ng = grid.get_generators_number()
     nb = grid.get_batteries_number()
-    nl = grid.get_calculation_loads_number()
+    nl = grid.get_load_like_device_number()
     n_hvdc = grid.get_hvdc_number()
     n_fluid_node = grid.get_fluid_nodes_number()
     n_fluid_path = grid.get_fluid_paths_number()

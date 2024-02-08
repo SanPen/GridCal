@@ -52,6 +52,14 @@ class LoadData:
 
         self.original_idx = np.zeros(nelm, dtype=int)
 
+    def size(self) -> int:
+        """
+        Get size of the structure
+        :return:
+        """
+
+        return self.nelm
+
     def slice(self, elm_idx: IntVec, bus_idx: IntVec) -> "LoadData":
         """
         Slice load data by given indices
@@ -150,6 +158,15 @@ class LoadData:
         :return:
         """
         return - self.C_bus_elm * self.get_linear_effective_load()
+
+    def get_array_per_bus(self, arr: Vec) -> Vec:
+        """
+        Get generator array per bus
+        :param arr:
+        :return:
+        """
+        assert len(arr) == self.nelm
+        return self.C_bus_elm @ arr
 
     def get_current_injections_per_bus(self) -> CxVec:
         """
