@@ -51,7 +51,7 @@ def get_pu_values_power_transformer(power_transformer: PowerTransformer, System_
         R0, X0, G0, B0 = 0, 0, 0, 0
         if len(windings) == 2:
             for winding in windings:
-                r, x, g, b, r0, x0, g0, b0 = winding.get_pu_values(System_Sbase)
+                r, x, g, b, r0, x0, g0, b0 = get_pu_values_power_transformer_end(winding, System_Sbase)
                 R += r
                 X += x
                 G += g
