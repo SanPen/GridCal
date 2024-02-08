@@ -440,8 +440,8 @@ def topology_processor(grid: MultiCircuit, t_idx: Union[int, None], logger: Logg
 
 
 if __name__ == '__main__':
-    #grid_ = createExampleGridDiagram1()
-    #grid_ = createExampleGridTest1()
+    # grid_ = createExampleGridDiagram1()
+    # grid_ = createExampleGridTest1()
     grid_ = createExampleGridTest2()
     logger_ = Logger()
     topology_processor(grid=grid_, t_idx=None, logger=logger_)

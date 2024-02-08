@@ -30,7 +30,7 @@ import GridCalEngine.Core.Topology.topology as tp
 from GridCalEngine.Core.Topology.topology import compile_types
 from GridCalEngine.Utils.NumericalMethods.sparse_solve import get_sparse_type
 import GridCalEngine.Core.Compilers.circuit_to_data as gc_compiler2
-import GridCalEngine.Core.admittance_matrices as ycalc
+import GridCalEngine.Core.Topology.admittance_matrices as ycalc
 from GridCalEngine.enumerations import TransformerControlType, ConverterControlType
 import GridCalEngine.Core.DataStructures as ds
 from GridCalEngine.Core.Devices.Substation.bus import Bus
