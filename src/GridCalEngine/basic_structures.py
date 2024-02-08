@@ -286,7 +286,7 @@ class Logger:
     Logger class
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
 
         self.entries: List[LogEntry] = list()
 
@@ -477,6 +477,39 @@ class Logger:
         """
         return len(self.entries)
 
+    def count_type(self, severity: LogSeverity):
+        """
+        Count the number of entries of a certain severity
+        :param severity: LogSeverity
+        :return: number of occurences
+        """
+        c = 0
+        for entry in self.entries:
+            if entry.severity == severity:
+                c += 1
+
+        return c
+
+    def info_count(self):
+        """
+        Count the number of information occurences
+        :return:
+        """
+        return self.count_type(LogSeverity.Information)
+
+    def warning_count(self):
+        """
+        Count number of warnings
+        :return:
+        """
+        return self.count_type(LogSeverity.Warning)
+
+    def error_count(self):
+        """
+        Count number of errors
+        :return:
+        """
+        return self.count_type(LogSeverity.Error)
 
 class ConvergenceReport:
     """

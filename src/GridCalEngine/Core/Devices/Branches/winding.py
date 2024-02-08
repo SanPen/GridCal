@@ -555,7 +555,7 @@ class Winding(ParentBranch):
         '''
         control_modes = {TransformerControlType.fixed: 0,
                          TransformerControlType.Vt: 1,
-                         TransformerControlType.Pt: 2,
+                         TransformerControlType.Pf: 2,
                          TransformerControlType.PtVt: 3,
                          TransformerControlType.Qt: 4,
                          TransformerControlType.PtQt: 5}

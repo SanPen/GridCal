@@ -208,6 +208,7 @@ class SimulationsMain(TimeEventsMain):
         self.ui.actionFuse_devices.triggered.connect(self.fuse_devices)
         self.ui.actionInvestments_evaluation.triggered.connect(self.run_investments_evaluation)
         self.ui.delete_and_reduce_pushButton.clicked.connect(self.delete_and_reduce_selected_objects)
+        self.ui.actionProcess_topology.triggered.connect(self.run_topology_processor)
 
         # combobox change
         self.ui.engineComboBox.currentTextChanged.connect(self.modify_ui_options_according_to_the_engine)
@@ -653,7 +654,7 @@ class SimulationsMain(TimeEventsMain):
         Run a power flow simulation
         :return:
         """
-        if len(self.circuit.buses) > 0:
+        if self.circuit.get_bus_number():
 
             if not self.session.is_this_running(sim.SimulationTypes.PowerFlow_run):
 
@@ -2738,3 +2739,43 @@ class SimulationsMain(TimeEventsMain):
 
             for diagram_widget in self.diagram_widgets_list:
                 diagram_widget.delete_diagram_elements(elements=deleted_devices)
+
+    def run_topology_processor(self):
+        """
+        Run the topology processor on the grid completelly
+        """
+        if self.circuit.get_bus_number():
+
+            if not self.session.is_this_running(sim.SimulationTypes.PowerFlow_run):
+
+                self.LOCK()
+
+                self.add_simulation(sim.SimulationTypes.TopologyProcessor_run)
+
+                self.ui.progress_label.setText('Running topology processing...')
+                QtGui.QGuiApplication.processEvents()
+                # set power flow object instance
+                drv = sim.TopologyProcessorDriver(self.circuit,
+                                                  time_indices=[None] + list(self.circuit.get_all_time_indices()))
+
+                self.session.run(drv,
+                                 post_func=self.post_topology_processor,
+                                 prog_func=self.ui.progressBar.setValue,
+                                 text_func=self.ui.progress_label.setText)
+
+            else:
+                warning_msg('Another simulation of the same type is running...')
+        else:
+            pass
+
+    def post_topology_processor(self):
+        """
+        Actions after the topology processor is done
+        """
+
+        self.remove_simulation(sim.SimulationTypes.TopologyProcessor_run)
+        # self.update_available_results()
+        # self.colour_diagrams()
+
+        if not self.session.is_anything_running():
+            self.UNLOCK()

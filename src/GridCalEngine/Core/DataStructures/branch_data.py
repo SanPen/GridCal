@@ -17,7 +17,7 @@
 import numpy as np
 import pandas as pd
 import scipy.sparse as sp
-import GridCalEngine.Core.topology as tp
+import GridCalEngine.Core.Topology.topology as tp
 from GridCalEngine.enumerations import WindingsConnection, TransformerControlType
 from GridCalEngine.basic_structures import Vec, IntVec, StrVec, ObjVec
 from typing import List, Tuple
