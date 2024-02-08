@@ -458,13 +458,11 @@ def test_ptdf_generation_contingencies():
     later with a PTDF driver and both should provide the same values
     """
     for fname in [
-        #os.path.join('data', 'grids', 'IEEE14-gen120.gridcal'),
-        #os.path.join('data', 'grids', 'IEEE14-gen80.gridcal'),
-        # os.path.join('data', 'grids', 'IEEE30-gen80.gridcal'),
-        #os.path.join('data', 'grids', 'IEEE30-gen120.gridcal'),
-        # os.path.join('data', 'grids', 'IEEE118-gen80.gridcal'),
-        # os.path.join('data', 'grids', 'IEEE118-gen120.gridcal'),
-        # os.path.join('data', 'grids', 'IEEE118-gen80-one.gridcal'),
+        os.path.join('data', 'grids', 'IEEE14-gen120.gridcal'),
+        os.path.join('data', 'grids', 'IEEE14-gen80.gridcal'),
+        os.path.join('data', 'grids', 'IEEE30-gen80.gridcal'),
+        os.path.join('data', 'grids', 'IEEE30-gen120.gridcal'),
+        os.path.join('data', 'grids', 'IEEE118-gen80-one.gridcal'),
         os.path.join('data', 'grids', 'IEEE118-gen120-one.gridcal'),
 
     ]:
@@ -490,7 +488,7 @@ def test_ptdf_generation_contingencies():
         cont_analysis_driver2 = ContingencyAnalysisDriver(grid=main_circuit, options=options2)  # , linear_multiple_contingencies=linear_multi_contingency)
         cont_analysis_driver2.run()
 
-        ok = np.allclose(cont_analysis_driver1.results.Sf, cont_analysis_driver2.results.Sf, atol=1.5)
+        ok = np.allclose(cont_analysis_driver1.results.Sf, cont_analysis_driver2.results.Sf, atol=1e-1)
         assert ok
 
 
