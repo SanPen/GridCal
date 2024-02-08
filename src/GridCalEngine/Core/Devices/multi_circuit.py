@@ -34,7 +34,7 @@ from GridCalEngine.data_logger import DataLogger
 import GridCalEngine.Core.Devices as dev
 from GridCalEngine.Core.Devices.types import ALL_DEV_TYPES, BRANCH_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES
 from GridCalEngine.basic_structures import Logger
-import GridCalEngine.Core.topology as tp
+import GridCalEngine.Core.Topology.topology as tp
 from GridCalEngine.enumerations import DeviceType
 
 

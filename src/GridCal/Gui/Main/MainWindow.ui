@@ -8814,6 +8814,7 @@ QProgressBar::chunk{
     <addaction name="actionDetect_transformers"/>
     <addaction name="actionFind_node_groups"/>
     <addaction name="actionGrid_Reduction"/>
+    <addaction name="actionProcess_topology"/>
     <addaction name="actionFuse_devices"/>
     <addaction name="actionre_index_time"/>
     <addaction name="separator"/>
@@ -9887,6 +9888,15 @@ QProgressBar::chunk{
    </property>
    <property name="text">
     <string>Search</string>
+   </property>
+  </action>
+  <action name="actionProcess_topology">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/schematic.svg</normaloff>:/Icons/icons/schematic.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Process topology</string>
    </property>
   </action>
  </widget>

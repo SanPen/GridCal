@@ -25,9 +25,9 @@ from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.basic_structures import Vec, IntVec, CxVec
 from GridCalEngine.enumerations import BranchImpedanceMode
-import GridCalEngine.Core.topology as tp
+import GridCalEngine.Core.Topology.topology as tp
 
-from GridCalEngine.Core.topology import compile_types
+from GridCalEngine.Core.Topology.topology import compile_types
 from GridCalEngine.Utils.NumericalMethods.sparse_solve import get_sparse_type
 import GridCalEngine.Core.Compilers.circuit_to_data as gc_compiler2
 import GridCalEngine.Core.admittance_matrices as ycalc

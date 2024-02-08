@@ -1,66 +1,28 @@
-from GridCalEngine.api import *
+# GridCal
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 3 of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+from typing import List, Union
+import numpy as np
 import GridCalEngine.Core.Devices as dev
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Core.Topology.topology import find_islands, get_adjacency_matrix
+from GridCalEngine.basic_structures import IntVec, Logger
+from GridCalEngine.enumerations import DeviceType
 from scipy.sparse import lil_matrix
-
-
-def createExampleGrid() -> MultiCircuit:
-    """
-    Función para crear un Multicircuit a partir de la red del diagrama 1 de la documentación
-    """
-
-    grid = MultiCircuit()
-
-    # Add busbar representing physical nodes not the calculation ones
-    bus_bar_dict = {}
-    cn_dict = {}
-    for i in range(5):
-        bb = dev.BusBar(name='BB{}'.format(i + 1))
-        bb.cn.name = 'T{}'.format(i + 1)
-        bus_bar_dict['BB{}'.format(i + 1)] = bb
-        cn_dict[bb.cn.name] = bb.cn  # each busbar has an internal connectivity node
-        grid.add_bus_bar(bb)  # both the bar and the internal cn are added to the grid
-
-    for i in range(5, 11):  # create the rest of terminals
-        term_name = f"T{i + 1}"
-        cn = dev.ConnectivityNode(name=term_name)
-        cn_dict[term_name] = cn
-        grid.add_connectivity_node(cn)
-
-    # Add lines
-    line_data = {
-        'L1': ('T6', 'T9'),
-        'L2': ('T7', 'T10'),
-        'L3': ('T8', 'T11'),
-        'L4': ('T4', 'T5')
-    }
-
-    for line_name, (term_from_name, term_to_name) in line_data.items():
-        cn_from = cn_dict[term_from_name]
-        cn_to = cn_dict[term_to_name]
-        li = dev.Line(name=line_name, cn_from=cn_from, cn_to=cn_to)
-        grid.lines.append(li)
-
-    # Add switches
-    switch_data = {
-        'SW1': ('T1', 'T2', 'closed'),
-        'SW2': ('T1', 'T6', 'closed'),
-        'SW3': ('T2', 'T7', 'closed'),
-        'SW4': ('T2', 'T8', 'closed'),
-        'SW5': ('T3', 'T9', 'closed'),
-        'SW6': ('T4', 'T10', 'closed'),
-        'SW7': ('T4', 'T11', 'closed')
-    }
-
-    for switch_name, (term_from_name, term_to_name, active_name) in switch_data.items():
-        cn_from = cn_dict[term_from_name]
-        cn_to = cn_dict[term_to_name]
-        active = active_name == 'closed'
-        s = dev.Switch(name=switch_name, cn_from=cn_from, cn_to=cn_to, active=active)
-        grid.switch_devices.append(s)
-
-    return grid
 
 
 class TopologyProcessorInfo:
@@ -316,9 +278,3 @@ def topology_processor(grid: MultiCircuit, t_idx: Union[int, None], logger: Logg
                           process_info=process_info,
                           logger=logger)
 
-
-if __name__ == '__main__':
-    grid_ = createExampleGrid()
-    logger_ = Logger()
-    topology_processor(grid=grid_, t_idx=None, logger=logger_)
-    logger_.print()

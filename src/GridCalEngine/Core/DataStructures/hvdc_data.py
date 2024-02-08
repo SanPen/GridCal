@@ -17,7 +17,7 @@
 import numpy as np
 from typing import List, Tuple
 import scipy.sparse as sp
-import GridCalEngine.Core.topology as tp
+import GridCalEngine.Core.Topology.topology as tp
 from GridCalEngine.enumerations import HvdcControlType
 from GridCalEngine.basic_structures import Vec, IntVec, BoolVec, StrVec
 
