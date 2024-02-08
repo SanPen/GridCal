@@ -17,12 +17,14 @@
 
 from typing import List, Union
 import numpy as np
+from scipy.sparse import lil_matrix
 import GridCalEngine.Core.Devices as dev
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Core.Topology.topology import find_islands, get_adjacency_matrix
 from GridCalEngine.basic_structures import IntVec, Logger
 from GridCalEngine.enumerations import DeviceType
-from scipy.sparse import lil_matrix
+from GridCalEngine.Simulations.driver_types import SimulationTypes
+from GridCalEngine.Simulations.driver_template import TimeSeriesDriverTemplate
 
 
 class TopologyProcessorInfo:
@@ -278,3 +280,50 @@ def topology_processor(grid: MultiCircuit, t_idx: Union[int, None], logger: Logg
                           process_info=process_info,
                           logger=logger)
 
+
+class TopologyProcessorDriver(TimeSeriesDriverTemplate):
+    """
+    TopologyProcessorDriver
+    """
+
+    name = 'Node groups'
+    tpe = SimulationTypes.NodeGrouping_run
+
+    def __init__(self, grid: MultiCircuit, time_indices: List[IntVec, List] = [None]):
+        """
+        Electric distance clustering
+        :param grid: MultiCircuit instance
+        :param time_indices: array of time indices to simulate
+        """
+        TimeSeriesDriverTemplate.__init__(self,
+                                          grid=grid,
+                                          time_indices=time_indices,
+                                          clustering_results=None)
+
+    def run(self):
+        """
+        Run the monte carlo simulation
+        @return:
+        """
+        self.tic()
+        self.report_progress(0.0)
+        nt = len(self.time_indices)
+
+        for it, t in enumerate(self.time_indices):
+            topology_processor(grid=self.grid,
+                               t_idx=t,
+                               logger=self.logger)
+
+            self.report_progress2(it, nt)
+
+        # display progress
+        self.report_done()
+        self.toc()
+
+    def cancel(self):
+        """
+        Cancel the simulation
+        :return:
+        """
+        self.__cancel__ = True
+        self.report_done("Cancelled!")

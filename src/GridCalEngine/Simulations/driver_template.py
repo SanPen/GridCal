@@ -63,7 +63,7 @@ class DriverTemplate:
         self.progress_text = DummySignal(str)
         self.done_signal = DummySignal()
 
-        self.grid = grid
+        self.grid: MultiCircuit = grid
 
         self.results = None
 

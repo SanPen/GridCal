@@ -24,7 +24,7 @@ from PySide6.QtWidgets import QMenu, QGraphicsSceneMouseEvent
 from GridCalEngine.Core.Devices.Substation import Bus
 from GridCal.Gui.BusBranchEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, FONT_SCALE, EMERGENCY
 from GridCal.Gui.GuiFunctions import ObjectsModel
-from GridCalEngine.Simulations.Topology.topology_driver import reduce_buses
+from GridCalEngine.Simulations.Topology.topology_reduction_driver import reduce_buses
 from GridCal.Gui.BusBranchEditorWidget.terminal_item import TerminalItem, HandleItem
 from GridCal.Gui.BusBranchEditorWidget.Injections.load_graphics import LoadGraphicItem
 from GridCal.Gui.BusBranchEditorWidget.Injections.generator_graphics import GeneratorGraphicItem
