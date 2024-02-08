@@ -546,7 +546,7 @@ class TransformerControlType(Enum):
     Transformer control types
     """
     fixed = '0:Fixed'
-    Pt = '1:Pt'
+    Pf = '1:Pf'
     Qt = '2:Qt'
     PtQt = '3:Pt+Qt'
     Vt = '4:Vt'

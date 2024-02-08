@@ -669,7 +669,7 @@ def add_transformer_data(circuit: MultiCircuit,
 
     ctrl_dict = {
         TransformerControlType.fixed: npa.BranchControlModes.Fixed,
-        TransformerControlType.Pt: npa.BranchControlModes.BranchPt,
+        TransformerControlType.Pf: npa.BranchControlModes.BranchPt,
         TransformerControlType.Qt: npa.BranchControlModes.BranchQt,
         TransformerControlType.PtQt: npa.BranchControlModes.BranchPt,
         TransformerControlType.Vt: npa.BranchControlModes.BranchVt,
@@ -741,7 +741,7 @@ def add_transformer3w_data(circuit: MultiCircuit,
 
     ctrl_dict = {
         TransformerControlType.fixed: npa.BranchControlModes.Fixed,
-        TransformerControlType.Pt: npa.BranchControlModes.BranchPt,
+        TransformerControlType.Pf: npa.BranchControlModes.BranchPt,
         TransformerControlType.Qt: npa.BranchControlModes.BranchQt,
         TransformerControlType.PtQt: npa.BranchControlModes.BranchPt,
         TransformerControlType.Vt: npa.BranchControlModes.BranchVt,
