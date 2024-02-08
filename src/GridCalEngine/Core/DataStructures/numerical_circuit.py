@@ -629,6 +629,8 @@ class NumericalCircuit:
             elif tpe == TransformerControlType.PtQt:
                 k_pf_tau_lst.append(k)
                 k_qt_m_lst.append(k)
+                k_m_modif_lst.append(k)
+                k_tau_modif_lst.append(k)
                 k_mtau_modif_lst.append(k)
                 i_tau_modif_lst.append(self.F[k])
                 i_m_modif_lst.append(self.T[k])
@@ -643,6 +645,8 @@ class NumericalCircuit:
             elif tpe == TransformerControlType.PtVt:
                 k_pf_tau_lst.append(k)
                 k_vt_m_lst.append(k)
+                k_m_modif_lst.append(k)
+                k_tau_modif_lst.append(k)
                 k_mtau_modif_lst.append(k)
                 i_tau_modif_lst.append(self.F[k])
                 i_m_modif_lst.append(self.T[k])
