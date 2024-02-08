@@ -18,7 +18,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 import numpy as np
 from PySide6.QtCore import Qt, QAbstractTableModel, QModelIndex, QPointF
-from PySide6.QtGui import QPen, QIcon, QPixmap
+from PySide6.QtGui import QPen, QIcon, QPixmap, QFont
 from PySide6.QtWidgets import (QMenu, QGraphicsTextItem, QDialog, QTableView, QVBoxLayout, QHBoxLayout,
                                QPushButton, QSplitter, QFrame, QSpacerItem, QSizePolicy)
 from GridCalEngine.Core.Devices.Injections.generator import Generator
@@ -548,3 +548,23 @@ class GeneratorGraphicItem(InjectionTemplateGraphicItem):
                         raise Exception("Wrong length from the solar photovoltaic wizard")
         else:
             info_msg("You need to have time profiles for this function")
+
+    def rescale(self, scale: float = 1.0):
+        super().rescale(scale)
+        pen = QPen(self.color, self.width / scale, self.style)
+
+        self.glyph.setRect(0, 0, self.h / scale, self.w / scale)
+        self.glyph.setPen(pen)
+
+        font = QFont()
+        scaleFt = 12 / scale
+        if scaleFt < 1:
+            scaleFt = 1
+        font.setPointSize(scaleFt)  # Set the desired font size here
+
+        # Set the font for the QGraphicsTextItem
+
+        self.label.setFont(font)
+        self.label.setPos((self.h / scale) / 4, (self.w / scale) / 5)
+        # self.setRect(self.h / scale, self.w / scale)
+        self.setPos(0, (100 / scale))

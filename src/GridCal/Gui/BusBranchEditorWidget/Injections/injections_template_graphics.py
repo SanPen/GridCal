@@ -55,6 +55,8 @@ class InjectionTemplateGraphicItem(QGraphicsItemGroup):
         self.w = w
         self.h = h
 
+        self.scale = 1.0
+
         self.parent = parent
 
         self.api_object = api_obj
@@ -173,3 +175,6 @@ class InjectionTemplateGraphicItem(QGraphicsItemGroup):
         else:
             warning_msg("you have to select the origin and destination buses!",
                         title='Change bus')
+
+    def rescale(self, scale: float = 1.0):
+        self.scale = scale

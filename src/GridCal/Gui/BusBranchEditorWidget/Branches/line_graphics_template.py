@@ -389,8 +389,12 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         else:
             self.symbol = None
 
-        self.width = width
+        self.scale = 1.0;
+        self.pen_style = Qt.SolidLine
+        self.pen_color = Qt.black
         self.pen_width = width
+        self.width = width
+
         self.color = ACTIVE['color']
         self.style = ACTIVE['style']
 
@@ -625,12 +629,20 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
                 if self.symbol is not None:
                     self.symbol.redraw()
 
-    def set_pen(self, pen):
+    def set_pen(self, pen, scale: float = 1.0):
         """
         Set pen to all objects
         Args:
             pen:
         """
+
+        self.pen_style = pen.style()
+        self.pen_color = pen.color()
+        self.pen_width = pen.width()
+        self.scale = scale;
+
+        pen.setWidth(self.pen_width / scale)
+
         self.setPen(pen)
 
         if self.symbol:

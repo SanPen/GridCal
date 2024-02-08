@@ -3539,6 +3539,13 @@ class MultiCircuit:
 
         return np.array(names)
 
+    def get_fluid_injections(self) -> List[FLUID_TYPES]:
+        """
+        Returns a list of :ref:`Injection<Injection>` names.
+        Sort by order: turbines, pumps, p2xs
+        """
+        return self.turbines + self.pumps + self.p2xs
+
     def convert_line_to_hvdc(self, line: dev.Line) -> dev.HvdcLine:
         """
         Convert a line to HVDC, this is the GUI way to create HVDC objects
@@ -3839,12 +3846,14 @@ class MultiCircuit:
 
         bus_dict = {bus: i for i, bus in enumerate(self.buses)}
 
+        k = 0
         for branch_list in self.get_branch_lists():
-            for k, br in enumerate(branch_list):
+            for br in branch_list:
                 i = bus_dict[br.bus_from]  # store the row indices
                 j = bus_dict[br.bus_to]  # store the row indices
                 Cf[k, i] = 1
                 Ct[k, j] = 1
+                k += 1
 
         C = csc_matrix(Cf + Ct)
         Cf = csc_matrix(Cf)
@@ -4319,6 +4328,28 @@ class MultiCircuit:
 
             if devices_by_type is None:
                 groups[elm.bus] = {elm.device_type: [elm]}
+            else:
+                lst = devices_by_type.get(elm.device_type, None)
+                if lst is None:
+                    devices_by_type[elm.device_type] = [elm]
+                else:
+                    devices_by_type[elm.device_type].append(elm)
+
+        return groups
+
+    def get_injection_devices_grouped_by_fluid_node(self) -> Dict[dev.FluidNode, Dict[DeviceType, List[FLUID_TYPES]]]:
+        """
+        Get the injection devices grouped by bus and by device type
+        :return: Dict[bus, Dict[DeviceType, List[Injection devs]]
+        """
+        groups: Dict[dev.FluidNode, Dict[DeviceType, List[FLUID_TYPES]]] = dict()
+
+        for elm in self.get_fluid_injections():
+
+            devices_by_type = groups.get(elm.plant, None)
+
+            if devices_by_type is None:
+                groups[elm.plant] = {elm.device_type: [elm]}
             else:
                 lst = devices_by_type.get(elm.device_type, None)
                 if lst is None:

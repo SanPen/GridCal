@@ -32,7 +32,7 @@ from PySide6.QtWidgets import (QApplication, QGraphicsView, QListView, QTableVie
                                QGraphicsItem)
 from PySide6.QtSvg import QSvgGenerator
 
-from GridCalEngine.Core.Devices.types import ALL_DEV_TYPES
+from GridCalEngine.Core.Devices.types import ALL_DEV_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Core.Devices.Substation import Bus
 from GridCalEngine.Core.Devices.editable_device import EditableDevice
@@ -559,6 +559,9 @@ class BusBranchEditorWidget(QSplitter):
         Draw diagram
         :return:
         """
+        inj_dev_by_bus = self.circuit.get_injection_devices_grouped_by_bus()
+        inj_dev_by_fluid_node = self.circuit.get_injection_devices_grouped_by_fluid_node()
+
         # add buses first
         bus_dict: Dict[str, BusGraphicItem] = dict()
         fluid_node_dict: Dict[str, FluidNodeGraphicItem] = dict()
@@ -576,7 +579,7 @@ class BusBranchEditorWidget(QSplitter):
                     self.add_to_scene(graphic_object=graphic_object)
 
                     # create the bus children
-                    graphic_object.create_children_widgets()
+                    graphic_object.create_children_widgets(injections_by_tpe=inj_dev_by_bus.get(location.api_object, dict()))
 
                     graphic_object.change_size(h=location.h,
                                                w=location.w)
@@ -636,7 +639,7 @@ class BusBranchEditorWidget(QSplitter):
                     self.add_to_scene(graphic_object=graphic_object)
 
                     # create the bus children
-                    graphic_object.create_children_widgets()
+                    graphic_object.create_children_widgets(injections_by_tpe=inj_dev_by_fluid_node.get(location.api_object, dict()))
 
                     graphic_object.change_size(h=location.h,
                                                w=location.w)
@@ -1743,10 +1746,12 @@ class BusBranchEditorWidget(QSplitter):
         else:
             raise Exception('Extension ' + str(extension) + ' not supported :(')
 
-    def add_api_bus(self, bus: Bus, explode_factor: float = 1.0):
+    def add_api_bus(self, bus: Bus, injections_by_tpe: Dict[DeviceType, List[EditableDevice]],
+                    explode_factor: float = 1.0):
         """
         Add API bus to the diagram
         :param bus: Bus instance
+        :param injections_by_tpe: dictionary with the device type as key and the list of devices at the bus as values
         :param explode_factor: explode factor
         """
         x = int(bus.x * explode_factor)
@@ -1756,7 +1761,7 @@ class BusBranchEditorWidget(QSplitter):
         graphic_object = self.create_bus_graphics(bus=bus, x=x, y=y, w=bus.w, h=bus.h)
 
         # create the bus children
-        graphic_object.create_children_widgets()
+        graphic_object.create_children_widgets(injections_by_tpe=injections_by_tpe)
 
         # arrange the children
         graphic_object.arrange_children()
@@ -1994,10 +1999,13 @@ class BusBranchEditorWidget(QSplitter):
 
         return tr3_graphic_object
 
-    def add_api_fluid_node(self, node: FluidNode, explode_factor: float = 1.0):
+    def add_api_fluid_node(self, node: FluidNode,
+                           injections_by_tpe: Dict[DeviceType, List[EditableDevice]],
+                           explode_factor: float = 1.0):
         """
         Add API bus to the diagram
         :param node: FluidNode instance
+        :param injections_by_tpe
         :param explode_factor: explode factor
         """
         x = 0
@@ -2007,7 +2015,7 @@ class BusBranchEditorWidget(QSplitter):
         graphic_object = self.create_fluid_node_graphics(node=node, x=x, y=y, w=80, h=40)
 
         # create the bus children
-        graphic_object.create_children_widgets()
+        graphic_object.create_children_widgets(injections_by_tpe=injections_by_tpe)
 
         # arrange the children
         graphic_object.arrange_children()
@@ -2198,6 +2206,8 @@ class BusBranchEditorWidget(QSplitter):
                                   upfc_devices: List[UPFC],
                                   fluid_nodes: List[FluidNode],
                                   fluid_paths: List[FluidPath],
+                                  injections_by_bus: Dict[Bus, Dict[DeviceType, List[INJECTION_DEVICE_TYPES]]],
+                                  injections_by_fluid_node: Dict[FluidNode, Dict[DeviceType, List[FLUID_TYPES]]],
                                   explode_factor=1.0,
                                   prog_func: Union[Callable, None] = None,
                                   text_func: Union[Callable, None] = None):
@@ -2230,7 +2240,9 @@ class BusBranchEditorWidget(QSplitter):
                 if prog_func is not None:
                     prog_func((i + 1) / nn * 100.0)
 
-                self.add_api_bus(bus, explode_factor)
+                self.add_api_bus(bus=bus,
+                                 injections_by_tpe=injections_by_bus.get(bus, dict()),
+                                 explode_factor=explode_factor)
 
         # --------------------------------------------------------------------------------------------------------------
         if text_func is not None:
@@ -2242,7 +2254,9 @@ class BusBranchEditorWidget(QSplitter):
             if prog_func is not None:
                 prog_func((i + 1) / nn * 100.0)
 
-            self.add_api_fluid_node(elm)
+            self.add_api_fluid_node(node=elm,
+                                    injections_by_tpe=injections_by_fluid_node.get(elm, dict()),
+                                    explode_factor=1.0)
 
         # --------------------------------------------------------------------------------------------------------------
         if text_func is not None:
@@ -3014,9 +3028,9 @@ class BusBranchEditorWidget(QSplitter):
                             #     loading_data[key.value] = np.sort(np.abs(atc_perc * 100.0))
 
                             elif key == SimulationTypes.ContingencyAnalysisTS_run:
-                                power_data[key.value] = driver.results.worst_flows.real[:, i]
+                                power_data[key.value] = driver.results.max_flows.real[:, i]
                                 loading_data[key.value] = np.sort(
-                                    np.abs(driver.results.worst_loading.real[:, i] * 100.0))
+                                    np.abs(driver.results.max_loading.real[:, i] * 100.0))
 
                             elif key == SimulationTypes.OPFTimeSeries_run:
                                 power_data[key.value] = driver.results.Sf.real[:, i]

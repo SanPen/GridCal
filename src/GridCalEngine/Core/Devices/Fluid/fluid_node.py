@@ -67,15 +67,6 @@ class FluidNode(EditableDevice):
         self.inflow_prof = inflow_prof  # m3/s
         self.spillage_cost_prof = spillage_cost_prof  # e/(m3/s)
 
-        # list of turbines
-        self.turbines = list()
-
-        # list of pumps
-        self.pumps = list()
-
-        # list of power to gas devices
-        self.p2xs = list()
-
         self.register(key='min_level', units='hm3', tpe=float,
                       definition="Minimum amount of fluid at the node/reservoir")
 
@@ -119,15 +110,6 @@ class FluidNode(EditableDevice):
         fluid_node.inflow_prof = self.inflow_prof  # m3/s
         fluid_node.spillage_cost_prof = self.spillage_cost_prof  # e/(m3/s)
 
-        # list of turbines
-        fluid_node.turbines = self.turbines.copy()
-
-        # list of pumps
-        fluid_node.pumps = self.pumps.copy()
-
-        # list of power to gas devices
-        fluid_node.p2xs = self.p2xs.copy()
-
         return fluid_node
 
     @property
@@ -147,65 +129,3 @@ class FluidNode(EditableDevice):
         if isinstance(val, Bus):
             self._bus = val
             self._bus.is_internal = True
-
-    def add_turbine(self, elm):
-        """
-        Add turbine
-        :param elm: FluidTurbine
-        """
-        self.turbines.append(elm)
-
-    def add_pump(self, elm):
-        """
-        Add pump device
-        :param elm: FluidPump device
-        """
-        self.pumps.append(elm)
-
-    def add_p2x(self, elm):
-        """
-        Add power to gas
-        :param elm: FluidP2x device
-        """
-        self.p2xs.append(elm)
-
-    def add_device(self, device) -> None:
-        """
-        Add device to the bus in the corresponding list
-        :param device: FluidTurbine, FluidPump or FluidP2X
-        """
-        if device.device_type == DeviceType.FluidTurbineDevice:
-            self.add_turbine(device)
-
-        elif device.device_type == DeviceType.FluidPumpDevice:
-            self.add_pump(device)
-
-        elif device.device_type == DeviceType.FluidP2XDevice:
-            self.add_p2x(device)
-
-        else:
-            raise Exception('Fluid Device type not understood:' + str(device.device_type))
-
-    def get_device_number(self) -> int:
-        """
-        Get number of injection devices
-        :return: int
-        """
-        return len(self.turbines) + len(self.pumps) + len(self.p2xs)
-
-    def create_profiles(self, index):
-        """
-        Format all profiles
-        """
-
-        # create the profiles of this very object
-        super().create_profiles(index)
-
-        for elm in self.turbines:
-            elm.create_profiles(index)
-
-        for elm in self.pumps:
-            elm.create_profiles(index)
-
-        for elm in self.p2xs:
-            elm.create_profiles(index)
