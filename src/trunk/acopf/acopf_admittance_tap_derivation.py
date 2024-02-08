@@ -53,7 +53,6 @@ def example_3bus_acopf():
     options = gce.PowerFlowOptions(gce.SolverType.NR, verbose=False)
     power_flow = gce.PowerFlowDriver(grid, options)
     power_flow.run()
-
     # print('\n\n', grid.name)
     # print('\tConv:\n', power_flow.results.get_bus_df())
     # print('\tConv:\n', power_flow.results.get_branch_df())
@@ -63,8 +62,8 @@ def example_3bus_acopf():
 
 
 def compute_analytic_admittances(nc):
-    k_m = np.r_[nc.k_m, nc.k_mtau]  # TODO: Decide if we have to concatenate here or in NumericalCircuit definition
-    k_tau = np.r_[nc.k_tau, nc.k_mtau]
+    k_m = nc.k_m
+    k_tau = nc.k_tau
     k_mtau = nc.k_mtau
 
     tapm = nc.branch_data.tap_module
@@ -116,8 +115,8 @@ def compute_analytic_admittances(nc):
 
 def compute_finitediff_admittances(nc, tol=1e-6):
 
-    k_m = np.r_[nc.k_m, nc.k_mtau]
-    k_tau = np.r_[nc.k_tau, nc.k_mtau]
+    k_m = nc.k_m
+    k_tau = nc.k_tau
 
     Ybus0 = nc.Ybus
     Yf0 = nc.Yf
@@ -147,8 +146,8 @@ def compute_finitediff_admittances(nc, tol=1e-6):
 
 def compute_analytic_admittances_2dev(nc):
 
-    k_m = np.r_[nc.k_m, nc.k_mtau]
-    k_tau = np.r_[nc.k_tau, nc.k_mtau]
+    k_m = nc.k_m
+    k_tau = nc.k_tau
     k_mtau = nc.k_mtau
 
     tapm = nc.branch_data.tap_module
@@ -163,32 +162,29 @@ def compute_analytic_admittances_2dev(nc):
     tau = tapt[k_m]
     ylin = ys[k_m]
 
-    Cf_m = nc.Cf[:, :]
-    Ct_m = nc.Ct[:, :]
-
-    dYffdmdm = np.zeros(len(tapm))
-    dYftdmdm = np.zeros(len(tapm))
-    dYtfdmdm = np.zeros(len(tapm))
-    dYttdmdm = np.zeros(len(tapm))
+    dYffdmdm = np.zeros(len(tapm), dtype=complex)
+    dYftdmdm = np.zeros(len(tapm), dtype=complex)
+    dYtfdmdm = np.zeros(len(tapm), dtype=complex)
+    dYttdmdm = np.zeros(len(tapm), dtype=complex)
 
     dYffdmdm[k_m] = 6 * ylin / (mp * mp * mp * mp)
     dYftdmdm[k_m] = -2 * ylin / (mp * mp * mp * np.exp(-1.0j * tau))
     dYtfdmdm[k_m] = -2 * ylin / (mp * mp * mp * np.exp(1.0j * tau))
 
-    dYfdmdm = (sp.diags(dYffdmdm) * Cf_m + sp.diags(dYftdmdm) * Ct_m)
-    dYtdmdm = (sp.diags(dYtfdmdm) * Cf_m + sp.diags(dYttdmdm) * Ct_m)
+    dYfdmdm = (sp.diags(dYffdmdm) * Cf + sp.diags(dYftdmdm) * Ct)
+    dYtdmdm = (sp.diags(dYtfdmdm) * Cf + sp.diags(dYttdmdm) * Ct)
 
-    dYbusdmdm = (Cf_m.T * dYfdmdm + Ct_m.T * dYtdmdm)
+    dYbusdmdm = (Cf.T * dYfdmdm + Ct.T * dYtdmdm)
 
     # Second partial derivative with respect to tap angle
     mp = tapm[k_tau]
     tau = tapt[k_tau]
     ylin = ys[k_tau]
 
-    dYffdtdt = np.zeros(len(tapm))
-    dYftdtdt = np.zeros(len(tapm))
-    dYtfdtdt = np.zeros(len(tapm))
-    dYttdtdt = np.zeros(len(tapm))
+    dYffdtdt = np.zeros(len(tapm), dtype=complex)
+    dYftdtdt = np.zeros(len(tapm), dtype=complex)
+    dYtfdtdt = np.zeros(len(tapm), dtype=complex)
+    dYttdtdt = np.zeros(len(tapm), dtype=complex)
 
     dYftdtdt[k_tau] = ylin / (mp * np.exp(-1.0j * tau))
     dYtfdtdt[k_tau] = ylin / (mp * np.exp(1.0j * tau))
@@ -203,10 +199,10 @@ def compute_analytic_admittances_2dev(nc):
     tau = tapt[k_mtau]
     ylin = ys[k_mtau]
 
-    dYffdmdt = np.zeros(len(tapm))
-    dYftdmdt = np.zeros(len(tapm))
-    dYtfdmdt = np.zeros(len(tapm))
-    dYttdmdt = np.zeros(len(tapm))
+    dYffdmdt = np.zeros(len(tapm), dtype=complex)
+    dYftdmdt = np.zeros(len(tapm), dtype=complex)
+    dYtfdmdt = np.zeros(len(tapm), dtype=complex)
+    dYttdmdt = np.zeros(len(tapm), dtype=complex)
 
     dYftdmdt[k_mtau] = 1j * ylin / (mp * mp * np.exp(-1.0j * tau))
     dYtfdmdt[k_mtau] = -1j * ylin / (mp * mp * np.exp(1.0j * tau))
@@ -226,12 +222,8 @@ def compute_analytic_admittances_2dev(nc):
 
 def compute_finitediff_admittances_2dev(nc, tol=1e-6):
 
-    k_m = np.r_[nc.k_m, nc.k_mtau]
-    k_tau = np.r_[nc.k_tau, nc.k_mtau]
-
-    Ybus0 = nc.Ybus
-    Yf0 = nc.Yf
-    Yt0 = nc.Yt
+    k_m = nc.k_m
+    k_tau = nc.k_tau
 
     dYb0dm, dYf0dm, dYt0dm, dYb0dt, dYf0dt, dYt0dt = compute_finitediff_admittances(nc)
 
