@@ -5,9 +5,9 @@ from GridCalEngine.Core.topology import find_islands, get_adjacency_matrix
 from scipy.sparse import lil_matrix
 
 
-def createExampleGrid() -> MultiCircuit:
+def createExampleGridDiagram1() -> MultiCircuit:
     """
-    Función para crear un Multicircuit a partir de la red del diagrama 1 de la documentación
+    This function creates a Multicircuit example from SE Diagram 1 in documentation to test topology processor
     """
 
     grid = MultiCircuit()
@@ -62,6 +62,59 @@ def createExampleGrid() -> MultiCircuit:
 
     return grid
 
+def createExampleGridTest1() -> MultiCircuit:
+    """
+    This function creates a Multicircuit example from Grid Test 1 in documentation to test topology processor
+    """
+
+    grid = MultiCircuit()
+
+    # Add busbar representing physical nodes not the calculation ones
+    bus_bar_dict = {}
+    cn_dict = {}
+    for i in range(4):
+        bb = dev.BusBar(name='BB{}'.format(i + 1))
+        bb.cn.name = 'T{}'.format(i + 1)
+        bus_bar_dict['BB{}'.format(i + 1)] = bb
+        cn_dict[bb.cn.name] = bb.cn  # each busbar has an internal connectivity node
+        grid.add_bus_bar(bb)  # both the bar and the internal cn are added to the grid
+
+    for i in range(4, 11):  # create the rest of terminals
+        term_name = f"T{i + 1}"
+        cn = dev.ConnectivityNode(name=term_name)
+        cn_dict[term_name] = cn
+        grid.add_connectivity_node(cn)
+
+    # Add lines
+    line_data = {
+        'L1': ('T6', 'T7'),
+        'L2': ('T8', 'T10'),
+        'L3': ('T5', 'T9')
+    }
+
+    for line_name, (term_from_name, term_to_name) in line_data.items():
+        cn_from = cn_dict[term_from_name]
+        cn_to = cn_dict[term_to_name]
+        li = dev.Line(name=line_name, cn_from=cn_from, cn_to=cn_to)
+        grid.lines.append(li)
+
+    # Add switches
+    switch_data = {
+        'SW1': ('T1', 'T5', 'closed'),
+        'SW2': ('T4', 'T5', 'closed'),
+        'SW3': ('T1', 'T6', 'closed'),
+        'SW4': ('T4', 'T6', 'closed'),
+        'SW5': ('T1', 'T11', 'closed')
+    }
+
+    for switch_name, (term_from_name, term_to_name, active_name) in switch_data.items():
+        cn_from = cn_dict[term_from_name]
+        cn_to = cn_dict[term_to_name]
+        active = active_name == 'closed'
+        s = dev.Switch(name=switch_name, cn_from=cn_from, cn_to=cn_to, active=active)
+        grid.switch_devices.append(s)
+
+    return grid
 
 class TopologyProcessorInfo:
     """
@@ -302,10 +355,11 @@ def topology_processor(grid: MultiCircuit, t_idx: Union[int, None] = None):
                           final_buses=final_buses,
                           all_branches=all_branches,
                           process_info=process_info)
-
+    print()
 
 if __name__ == '__main__':
 
-    grid_ = createExampleGrid()
+    #grid_ = createExampleGridDiagram1()
+    grid_ = createExampleGridTest1()
     topology_processor(grid=grid_)
     print()
