@@ -74,36 +74,37 @@ def compute_analytic_admittances(nc):
     tau = tapt[k_m]
     ylin = ys[k_m]
 
-    Cf_m = Cf[k_m, :]
-    Ct_m = Ct[k_m, :]
+    dYffdm = np.zeros(len(tapm), dtype=complex)
+    dYftdm = np.zeros(len(tapm), dtype=complex)
+    dYtfdm = np.zeros(len(tapm), dtype=complex)
+    dYttdm = np.zeros(len(tapm), dtype=complex)
 
-    dYffdm = -2 * ylin / (mp * mp * mp)
-    dYftdm = ylin / (mp * mp * np.exp(-1.0j * tau))
-    dYtfdm = ylin / (mp * mp * np.exp(1.0j * tau))
-    dYttdm = np.zeros(len(k_m))
+    dYffdm[k_m] = -2 * ylin / (mp * mp * mp)
+    dYftdm[k_m] = ylin / (mp * mp * np.exp(-1.0j * tau))
+    dYtfdm[k_m] = ylin / (mp * mp * np.exp(1.0j * tau))
 
-    dYfdm = Cf_m.T * (sp.diags(dYffdm) * Cf_m + sp.diags(dYftdm) * Ct_m)  # TODO: Check, unsure about the Cf_m.T, but seems necesary to get the same dimensions.
-    dYtdm = Ct_m.T * (sp.diags(dYtfdm) * Cf_m + sp.diags(dYttdm) * Ct_m)  # TODO: Same
+    dYfdm = sp.diags(dYffdm) * Cf + sp.diags(dYftdm) * Ct
+    dYtdm = sp.diags(dYtfdm) * Cf + sp.diags(dYttdm) * Ct
 
-    dYbusdm = dYfdm + dYtdm  # Cf_m.T and Ct_m.T included earlier
+    dYbusdm = Cf.T * dYfdm + Ct.T * dYtdm  # Cf_m.T and Ct_m.T included earlier
 
     # First partial derivative with respect to tap angle
     mp = tapm[k_tau]
     tau = tapt[k_tau]
     ylin = ys[k_tau]
 
-    Cf_tau = Cf[k_tau, :]
-    Ct_tau = Ct[k_tau, :]
+    dYffdt = np.zeros(len(tapm), dtype=complex)
+    dYftdt = np.zeros(len(tapm), dtype=complex)
+    dYtfdt = np.zeros(len(tapm), dtype=complex)
+    dYttdt = np.zeros(len(tapm), dtype=complex)
 
-    dYffdt = np.zeros(len(k_tau))
-    dYftdt = -1j * ylin / (mp * np.exp(-1.0j * tau))
-    dYtfdt = 1j * ylin / (mp * np.exp(1.0j * tau))
-    dYttdt = np.zeros(len(k_tau))
+    dYftdt[k_tau] = -1j * ylin / (mp * np.exp(-1.0j * tau))
+    dYtfdt[k_tau] = 1j * ylin / (mp * np.exp(1.0j * tau))
 
-    dYfdt = Cf_tau.T * (sp.diags(dYffdt) * Cf_tau + sp.diags(dYftdt) * Ct_tau)  # TODO: Incorrect order
-    dYtdt = Ct_tau.T * (sp.diags(dYtfdt) * Cf_tau + sp.diags(dYttdt) * Ct_tau)  # TODO: Incorrect order
+    dYfdt = sp.diags(dYffdt) * Cf + sp.diags(dYftdt) * Ct
+    dYtdt = sp.diags(dYtfdt) * Cf + sp.diags(dYttdt) * Ct
 
-    dYbusdt = dYfdt + dYtdt  # TODO: Check same as in module derivatives.
+    dYbusdt = Cf.T * dYfdt + Ct.T * dYtdt
 
     return dYbusdm, dYfdm, dYtdm, dYbusdt, dYfdt, dYtdt
 
