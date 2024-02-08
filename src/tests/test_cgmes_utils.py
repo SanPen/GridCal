@@ -20,7 +20,7 @@ def test_get_windings_no_windings_returns_no_element():
     power_transformer = PowerTransformer("a","b")
     assert len(get_windings(power_transformer)) == 0
 
-def test_get_windings_no_windings_returns_no_element():
+def test_get_windings_add_windings_returns_correct_element():
     # Create a PowerTransformer instance with no references to PowerTransformerEnd
     power_transformer = PowerTransformer("a","b")
     power_transformer.references_to_me["PowerTransformerEnd"] = [1]
