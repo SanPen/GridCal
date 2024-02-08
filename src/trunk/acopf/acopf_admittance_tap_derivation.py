@@ -53,7 +53,6 @@ def example_3bus_acopf():
     options = gce.PowerFlowOptions(gce.SolverType.NR, verbose=False)
     power_flow = gce.PowerFlowDriver(grid, options)
     power_flow.run()
-
     # print('\n\n', grid.name)
     # print('\tConv:\n', power_flow.results.get_bus_df())
     # print('\tConv:\n', power_flow.results.get_branch_df())
@@ -166,10 +165,10 @@ def compute_analytic_admittances_2dev(nc):
     Cf_m = nc.Cf[:, :]
     Ct_m = nc.Ct[:, :]
 
-    dYffdmdm = np.zeros(len(tapm))
-    dYftdmdm = np.zeros(len(tapm))
-    dYtfdmdm = np.zeros(len(tapm))
-    dYttdmdm = np.zeros(len(tapm))
+    dYffdmdm = np.zeros(len(tapm), dtype=complex)
+    dYftdmdm = np.zeros(len(tapm), dtype=complex)
+    dYtfdmdm = np.zeros(len(tapm), dtype=complex)
+    dYttdmdm = np.zeros(len(tapm), dtype=complex)
 
     dYffdmdm[k_m] = 6 * ylin / (mp * mp * mp * mp)
     dYftdmdm[k_m] = -2 * ylin / (mp * mp * mp * np.exp(-1.0j * tau))
@@ -185,10 +184,10 @@ def compute_analytic_admittances_2dev(nc):
     tau = tapt[k_tau]
     ylin = ys[k_tau]
 
-    dYffdtdt = np.zeros(len(tapm))
-    dYftdtdt = np.zeros(len(tapm))
-    dYtfdtdt = np.zeros(len(tapm))
-    dYttdtdt = np.zeros(len(tapm))
+    dYffdtdt = np.zeros(len(tapm), dtype=complex)
+    dYftdtdt = np.zeros(len(tapm), dtype=complex)
+    dYtfdtdt = np.zeros(len(tapm), dtype=complex)
+    dYttdtdt = np.zeros(len(tapm), dtype=complex)
 
     dYftdtdt[k_tau] = ylin / (mp * np.exp(-1.0j * tau))
     dYtfdtdt[k_tau] = ylin / (mp * np.exp(1.0j * tau))
@@ -203,10 +202,10 @@ def compute_analytic_admittances_2dev(nc):
     tau = tapt[k_mtau]
     ylin = ys[k_mtau]
 
-    dYffdmdt = np.zeros(len(tapm))
-    dYftdmdt = np.zeros(len(tapm))
-    dYtfdmdt = np.zeros(len(tapm))
-    dYttdmdt = np.zeros(len(tapm))
+    dYffdmdt = np.zeros(len(tapm), dtype=complex)
+    dYftdmdt = np.zeros(len(tapm), dtype=complex)
+    dYtfdmdt = np.zeros(len(tapm), dtype=complex)
+    dYttdmdt = np.zeros(len(tapm), dtype=complex)
 
     dYftdmdt[k_mtau] = 1j * ylin / (mp * mp * np.exp(-1.0j * tau))
     dYtfdmdt[k_mtau] = -1j * ylin / (mp * mp * np.exp(1.0j * tau))
@@ -228,10 +227,6 @@ def compute_finitediff_admittances_2dev(nc, tol=1e-6):
 
     k_m = np.r_[nc.k_m, nc.k_mtau]
     k_tau = np.r_[nc.k_tau, nc.k_mtau]
-
-    Ybus0 = nc.Ybus
-    Yf0 = nc.Yf
-    Yt0 = nc.Yt
 
     dYb0dm, dYf0dm, dYt0dm, dYb0dt, dYf0dt, dYt0dt = compute_finitediff_admittances(nc)
 
