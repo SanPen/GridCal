@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from typing import List, Union
+from typing import List, Union, Any
 import numpy as np
 from scipy.sparse import lil_matrix
 import GridCalEngine.Core.Devices as dev
@@ -286,10 +286,10 @@ class TopologyProcessorDriver(TimeSeriesDriverTemplate):
     TopologyProcessorDriver
     """
 
-    name = 'Node groups'
-    tpe = SimulationTypes.NodeGrouping_run
+    name = 'Topology processor'
+    tpe = SimulationTypes.TopologyProcessor_run
 
-    def __init__(self, grid: MultiCircuit, time_indices: List[IntVec, List] = [None]):
+    def __init__(self, grid: MultiCircuit, time_indices: Union[IntVec, List[Union[None, Any]]] = [None]):
         """
         Electric distance clustering
         :param grid: MultiCircuit instance
@@ -302,7 +302,7 @@ class TopologyProcessorDriver(TimeSeriesDriverTemplate):
 
     def run(self):
         """
-        Run the monte carlo simulation
+        Run the topology processing in-place
         @return:
         """
         self.tic()

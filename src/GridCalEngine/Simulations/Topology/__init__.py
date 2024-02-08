@@ -17,3 +17,4 @@
 
 from GridCalEngine.Simulations.Topology.topology_reduction_driver import TopologyReduction, TopologyReductionOptions, DeleteAndReduce
 from GridCalEngine.Simulations.Topology.node_groups_driver import NodeGroupsDriver
+from GridCalEngine.Simulations.Topology.topology_processor_driver import TopologyProcessorDriver
