@@ -62,6 +62,7 @@ def createExampleGridDiagram1() -> MultiCircuit:
 
     return grid
 
+
 def createExampleGridTest1() -> MultiCircuit:
     """
     This function creates a Multicircuit example from Grid Test 1 in documentation to test topology processor
@@ -115,6 +116,7 @@ def createExampleGridTest1() -> MultiCircuit:
         grid.switch_devices.append(s)
 
     return grid
+
 
 def createExampleGridTest2() -> MultiCircuit:
     """
@@ -184,6 +186,7 @@ def createExampleGridTest2() -> MultiCircuit:
         grid.switch_devices.append(s)
 
     return grid
+
 
 class TopologyProcessorInfo:
     """
