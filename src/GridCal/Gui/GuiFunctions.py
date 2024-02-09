@@ -29,7 +29,7 @@ from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Simulations.result_types import ResultTypes
 from GridCalEngine.basic_structures import IntVec
 from GridCalEngine.data_logger import DataLogger
-from GridCalEngine.IO.cim.cgmes_2_4_15.cgmes_circuit import CgmesCircuit, IdentifiedObject
+from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit, IdentifiedObject
 import GridCal
 
 
