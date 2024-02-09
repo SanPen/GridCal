@@ -151,7 +151,7 @@ def get_voltage_ac_line_segment(ac_line_segment: ACLineSegment, logger: DataLogg
             return None
 
 
-def get_pu_values(ac_line_segment: ACLineSegment, logger: DataLogger, Sbase: float = 100.0):
+def get_pu_values_ac_line_segment(ac_line_segment: ACLineSegment, logger: DataLogger, Sbase: float = 100.0):
     """
     Get the per-unit values of the equivalent PI model
     :param Sbase: Sbase in MVA
