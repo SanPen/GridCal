@@ -1,8 +1,23 @@
 from typing import List, Union
 from enum import Enum
+import numpy as np
 import pandas as pd
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 import GridCalEngine.Core.Devices as dev
+
+
+def bool_converter(value: bool, if_true=1, if_false=0) -> int:
+    """
+    Convert a Boolean value into an integer
+    :param value: a bool value
+    :param if_true: value to be returned if true
+    :param if_false: value to be returned if false
+    :return: an integer
+    """
+    if value:
+        return if_true
+    else:
+        return if_false
 
 
 class ClassEnum(Enum):
@@ -721,14 +736,11 @@ class PlexelBase:
 
         # add node properties
         node_props_enum = [
-            # TODO: convert slack value to Plexel expected format (1/-1)
-            [PropertyEnum.IsSlackBus, node.is_slack],
+            [PropertyEnum.IsSlackBus, bool_converter(node.is_slack, -1, 0)],
             [PropertyEnum.AllowDumpEnergy, 0],
             [PropertyEnum.Voltage, str(int(node.Vnom))],
-            # TODO: get_active_from_bus_profile()
-            [PropertyEnum.Units, '?'],
-            # TODO: get_load_from_bus()
-            [PropertyEnum.FixedLoad, '?'],
+            [PropertyEnum.Units, bool_converter(node.active, 1, 0)],
+            [PropertyEnum.FixedLoad, self.get_load_from_bus(node)],
         ]
 
         # init System Object to be used as the Parent Object
@@ -740,6 +752,11 @@ class PlexelBase:
                                         property=p[0],
                                         value=p[1])
             self.properties.append(node_props)
+
+    def get_load_from_bus(self, node: dev.Bus):
+        load_lst = [lo.P for lo in node.loads]
+        load = np.sum(load_lst)
+        return load
 
     def add_generator(self, generator: dev.Generator, node: dev.Bus = None):
         # create name following plexel format
