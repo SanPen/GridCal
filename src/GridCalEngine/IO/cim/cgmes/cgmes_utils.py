@@ -22,6 +22,7 @@ def get_windings_number(power_transformer: PowerTransformer):
     Get the number of windings
     :return: # number of associated windings
     """
+    # todo: No reference for this method
     try:
         return len(power_transformer.references_to_me['PowerTransformerEnd'])
     except KeyError:
@@ -73,6 +74,7 @@ def get_voltages(power_transformer: PowerTransformer):
 
     :return:
     """
+    # todo: No reference for this method
     return [get_voltage_power_transformer_end(x) for x in
             get_windings(power_transformer)]  # TODO logger?
 
