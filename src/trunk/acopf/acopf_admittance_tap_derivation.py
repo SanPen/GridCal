@@ -113,7 +113,7 @@ def compute_analytic_admittances(nc):
     return dYbusdm, dYfdm, dYtdm, dYbusdt, dYfdt, dYtdt
 
 
-def compute_finitediff_admittances(nc, tol=1e-6):
+def compute_finitediff_admittances(nc, tol=1e-5):
 
     k_m = nc.k_m
     k_tau = nc.k_tau
@@ -220,7 +220,7 @@ def compute_analytic_admittances_2dev(nc):
             dYbusdtdm, dYfdtdm, dYtdtdm, dYbusdtdt, dYfdtdt, dYtdtdt)
 
 
-def compute_finitediff_admittances_2dev(nc, tol=1e-6):
+def compute_finitediff_admittances_2dev(nc, tol=1e-5):
 
     k_m = nc.k_m
     k_tau = nc.k_tau
