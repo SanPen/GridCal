@@ -68,12 +68,12 @@ def get_pu_values_power_transformer(power_transformer: PowerTransformer, System_
     return R, X, G, B, R0, X0, G0, B0
 
 
-def get_voltages(power_transformer: PowerTransformer, logger: DataLogger):
+def get_voltages(power_transformer: PowerTransformer):
     """
 
     :return:
     """
-    return [get_voltage_power_transformer_end(x, logger=logger) for x in
+    return [get_voltage_power_transformer_end(x) for x in
             get_windings(power_transformer)]  # TODO logger?
 
 
