@@ -142,12 +142,11 @@ def make_acptdf(Ybus: sp.csc_matrix,
 
 def make_ptdf(Bpqpv: sp.csc_matrix,
               Bf: sp.csc_matrix,
-              Btheta: Vec,
               pqpv: IntVec,
               distribute_slack: bool = True) -> Mat:
     """
     Build the PTDF matrix
-    :param Bbus: DC-linear susceptance matrix
+    :param Bpqpv: DC-linear susceptance matrix already sliced
     :param Bf: Bus-branch "from" susceptance matrix
     :param pqpv: array of sorted pq and pv node indices
     :param distribute_slack: distribute the slack?
@@ -689,7 +688,6 @@ class LinearAnalysis:
                         # compute the PTDF of the island
                         ptdf_island = make_ptdf(Bpqpv=island.Bpqpv,
                                                 Bf=island.Bf,
-                                                Btheta=island.Btau,
                                                 pqpv=island.pqpv,
                                                 distribute_slack=self.distributed_slack)
 
@@ -717,7 +715,6 @@ class LinearAnalysis:
             # there is only 1 island, compute the PTDF
             self.PTDF = make_ptdf(Bpqpv=islands[0].Bpqpv,
                                   Bf=islands[0].Bf,
-                                  Btheta=islands[0].Btau,
                                   pqpv=islands[0].pqpv,
                                   distribute_slack=self.distributed_slack)
 
