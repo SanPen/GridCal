@@ -1,0 +1,588 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rdf:RDF
+xmlns:cim="http://iec.ch/TC57/CIM100#"
+xmlns:cims="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#"
+xmlns:dc="http://purl.org/dc/elements/1.1/"
+xmlns:dcat="http://www.w3.org/ns/dcat#"
+xmlns:dct="http://purl.org/dc/terms/"
+xmlns:eu="http://iec.ch/TC57/CIM100-European#"
+xmlns:owl="http://www.w3.org/2002/07/owl#"
+xmlns:prof="http://iec.ch/TC57/ns/CIM/prof-cim#"
+xmlns:profcim="http://iec.ch/TC57/ns/CIM/prof-cim#"
+xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+xmlns:sh="http://www.w3.org/ns/shacl#"
+xmlns:skos="http://www.w3.org/2004/02/skos/core#"
+xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+xmlns:gl="http://iec.ch/TC57/ns/CIM/GeographicalLocation-EU#"
+xml:base ="http://iec.ch/TC57/CIM100"
+>
+<!-- 
+ <Copyright >
+	<Notice>
+				COPYRIGHT (c) IEC 2021
+				This version of  RDFS is part of the IEC 61970-600 ed2-GeographicalLocationProfile
+				 where full legal notices are provided.
+	In case of any differences between the here - below code and the IEC published content,the here - below definition supersedes the IEC publication; 
+	it may contain updates. See history files (if it exists).
+	The whole document shall be taken into account in order  to have a full description of this code component.
+				See www.iec.ch/CCv1 for copyright details
+				</Notice>
+				<Notice>
+				RDFS for 61970-600 ed2-GeographicalLocationProfile version=3.0.0 released 2021-01-27T12:31:33Z as Draft
+				</Notice>
+				<License uri ="www.iec.ch/CCv1 " kind ="Draft" > IEC License </License>
+			</Copyright>
+ -->
+<!--  ********** Header **************** -->
+<!-- RDFS header -->
+<rdf:Description rdf:about = "http://iec.ch/TC57/ns/CIM/GeographicalLocation-EU#Ontology">
+	<dcat:keyword>GL</dcat:keyword>
+	<owl:incompatibleWith rdf:resource="http://entsoe.eu/2009/profile1"/>
+	<dcat:landingPage>https://webstore.iec.ch/</dcat:landingPage>
+	<owl:priorVersion rdf:resource="http://entsoe.eu/CIM/GeographicalLocation/2/1"/>
+	<dcat:theme xml:lang ="en">vocabulary</dcat:theme>
+	<owl:versionIRI rdf:resource="http://iec.ch/TC57/ns/CIM/GeographicalLocation-EU/3.0"/>
+	<dct:conformsTo>urn:iso:std:iec:61970-600-2:ed-1</dct:conformsTo>
+	<dct:conformsTo>urn:iso:std:iec:61970-301:ed-7:amd1</dct:conformsTo>
+	<dct:conformsTo>file://iec61970cim17v40_iec61968cim13v13a_iec62325cim03v17a.eap</dct:conformsTo>
+	<dct:conformsTo>urn:iso:std:iec:61970-401:draft:ed-1</dct:conformsTo>
+	<dct:conformsTo>urn:iso:std:iec:61970-501:draft:ed-2</dct:conformsTo>
+	<owl:versionInfo xml:lang ="en">3.0.0</owl:versionInfo>
+	<dct:creator xml:lang ="en">IEC TC57 WG13</dct:creator>
+	<dct:description xml:lang ="en">This vocabulary is describing the geographical location profile from IEC 61970-600-2.</dct:description>
+	<dct:identifier>urn:uuid:862c1230-be19-4a01-bd6f-1a6c03d213ff</dct:identifier>
+	<dct:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">2021-01-27T12:31:41Z</dct:issued>
+	<dct:language>en-GB</dct:language>
+	<dct:license xml:lang ="en">https://creativecommons.org/licenses/by/4.0/</dct:license>
+	<dct:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#date">2020-10-12</dct:modified>
+	<dct:publisher xml:lang ="en">IEC</dct:publisher>
+	<dct:rights xml:lang ="en">
+			&lt;Copyright &gt;
+				 &lt;Notice&gt;
+				COPYRIGHT (c) IEC 2021
+				This version of  RDFS is part of the IEC 61970-600 ed2-GeographicalLocationProfile
+				 where full legal notices are provided.
+	In case of any differences between the here - below code and the IEC published content,the here - below definition supersedes the IEC publication; 
+	it may contain updates. See history files (if it exists).
+	The whole document shall be taken into account in order  to have a full description of this code component.
+				See www.iec.ch/CCv1 for copyright details
+				&lt;/Notice&gt;
+				&lt;Notice&gt;
+				RDFS for 61970-600 ed2-GeographicalLocationProfile version=3.0.0 released 2021-01-27T12:31:41Z as Draft
+				&lt;/Notice&gt;
+				&lt;License uri =&quot;www.iec.ch/CCv1 &quot; kind =&quot;Draft&quot; &gt; IEC License &lt;/License&gt;
+			&lt;/Copyright&gt;
+	</dct:rights>
+	<dct:rightsHolder xml:lang ="en">IEC</dct:rightsHolder>
+	<dct:title xml:lang ="en">Geographical Location Vocabulary</dct:title>
+<rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Ontology"/>
+</rdf:Description >
+<!-- ******************************** -->
+	 <rdf:Description rdf:about="http://iec.ch/TC57/ns/CIM/GeographicalLocation-EU#Package_GeographicalLocationProfile">
+	<rdfs:label xml:lang="en">GeographicalLocationProfile</rdfs:label>
+	<rdf:type rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#ClassCategory"/>
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">This is the  geographical location profile as in 61968-13.</rdfs:comment>
+</rdf:Description>
+	 <rdf:Description rdf:about="#IdentifiedObject">
+	<rdfs:label xml:lang="en">IdentifiedObject</rdfs:label>
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">This is a root class to provide common identification for all classes needing identification and naming attributes.</rdfs:comment>
+	<cims:belongsToCategory rdf:resource="http://iec.ch/TC57/ns/CIM/GeographicalLocation-EU#Package_GeographicalLocationProfile"/>
+	<rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#IdentifiedObject.mRID">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">mRID</rdfs:label>
+	<rdfs:domain rdf:resource="#IdentifiedObject"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:1..1" />
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Master resource identifier issued by a model authority. The mRID is unique within an exchange context. Global uniqueness is easily achieved by using a UUID, as specified in RFC 4122, for the mRID. The use of UUID is strongly recommended.
+For CIMXML data files in RDF syntax conforming to IEC 61970-552, the mRID is mapped to rdf:ID or rdf:about attributes that identify CIM object elements.</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#String">
+	<rdfs:label xml:lang="en">String</rdfs:label>
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">A string consisting of a sequence of characters. The character encoding is UTF-8. The string length is unspecified and unlimited.</rdfs:comment>
+<cims:stereotype>Primitive</cims:stereotype>
+	<cims:belongsToCategory rdf:resource="http://iec.ch/TC57/ns/CIM/GeographicalLocation-EU#Package_GeographicalLocationProfile"/>
+	<rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#IdentifiedObject.name">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">name</rdfs:label>
+	<rdfs:domain rdf:resource="#IdentifiedObject"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..1" />
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">The name is any free human readable and possibly non unique text naming the object.</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#ServiceLocation">
+	<rdfs:label xml:lang="en">ServiceLocation</rdfs:label>
+	<rdfs:subClassOf rdf:resource="#WorkLocation"/>
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">A real estate location, commonly referred to as premises.</rdfs:comment>
+	<cims:belongsToCategory rdf:resource="http://iec.ch/TC57/ns/CIM/GeographicalLocation-EU#Package_GeographicalLocationProfile"/>
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#concrete"/>
+	<rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#WorkLocation">
+	<rdfs:label xml:lang="en">WorkLocation</rdfs:label>
+	<rdfs:subClassOf rdf:resource="#Location"/>
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Information about a particular location for various forms of work.</rdfs:comment>
+	<cims:belongsToCategory rdf:resource="http://iec.ch/TC57/ns/CIM/GeographicalLocation-EU#Package_GeographicalLocationProfile"/>
+	<rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#CoordinateSystem">
+	<rdfs:label xml:lang="en">CoordinateSystem</rdfs:label>
+	<rdfs:subClassOf rdf:resource="#IdentifiedObject"/>
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Coordinate reference system.</rdfs:comment>
+	<cims:belongsToCategory rdf:resource="http://iec.ch/TC57/ns/CIM/GeographicalLocation-EU#Package_GeographicalLocationProfile"/>
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#concrete"/>
+	<rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#CoordinateSystem.crsUrn">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">crsUrn</rdfs:label>
+	<rdfs:domain rdf:resource="#CoordinateSystem"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:1..1" />
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">A Uniform Resource Name (URN) for the coordinate reference system (crs) used to define &apos;Location.PositionPoints&apos;.
+An example would be the European Petroleum Survey Group (EPSG) code for a coordinate reference system, defined in URN under the Open Geospatial Consortium (OGC) namespace as: urn:ogc:def:crs:EPSG::XXXX, where XXXX is an EPSG code (a full list of codes can be found at the EPSG Registry web site http://www.epsg-registry.org/). To define the coordinate system as being WGS84 (latitude, longitude) using an EPSG OGC, this attribute would be urn:ogc:def:crs:EPSG::4236.
+A profile should limit this code to a set of allowed URNs agreed to by all sending and receiving parties.</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#Location.CoordinateSystem">
+	<rdfs:label xml:lang="en">CoordinateSystem</rdfs:label>
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Coordinate system used to describe position points of this location.</rdfs:comment>
+	<rdfs:domain rdf:resource="#Location"/>
+	<rdfs:range rdf:resource="#CoordinateSystem"/>
+	<cims:inverseRoleName rdf:resource="#CoordinateSystem.Locations"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:1"/>
+	<cims:AssociationUsed>Yes</cims:AssociationUsed>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#CoordinateSystem.Locations">
+	<rdfs:label xml:lang="en">Locations</rdfs:label>
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">All locations described with position points in this coordinate system.</rdfs:comment>
+	<rdfs:domain rdf:resource="#CoordinateSystem"/>
+	<rdfs:range rdf:resource="#Location"/>
+	<cims:inverseRoleName rdf:resource="#Location.CoordinateSystem"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..n"/>
+	<cims:AssociationUsed>No</cims:AssociationUsed>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#Location">
+	<rdfs:label xml:lang="en">Location</rdfs:label>
+	<rdfs:subClassOf rdf:resource="#IdentifiedObject"/>
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">The place, scene, or point of something where someone or something has been, is, and/or will be at a given moment in time. It can be defined with one or more position points (coordinates) in a given coordinate system.</rdfs:comment>
+	<cims:belongsToCategory rdf:resource="http://iec.ch/TC57/ns/CIM/GeographicalLocation-EU#Package_GeographicalLocationProfile"/>
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#concrete"/>
+	<rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#Location.mainAddress">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">mainAddress</rdfs:label>
+	<rdfs:domain rdf:resource="#Location"/>
+	<cims:dataType rdf:resource="#StreetAddress"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..1" />
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Main address of the location.</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#StreetAddress">
+	<rdfs:label xml:lang="en">StreetAddress</rdfs:label>
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">General purpose street and postal address information.</rdfs:comment>
+<cims:stereotype>Compound</cims:stereotype>
+	<cims:belongsToCategory rdf:resource="http://iec.ch/TC57/ns/CIM/GeographicalLocation-EU#Package_GeographicalLocationProfile"/>
+	<rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#StreetAddress.streetDetail">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">streetDetail</rdfs:label>
+	<rdfs:domain rdf:resource="#StreetAddress"/>
+	<cims:dataType rdf:resource="#StreetDetail"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..1" />
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Street detail.</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#StreetDetail">
+	<rdfs:label xml:lang="en">StreetDetail</rdfs:label>
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Street details, in the context of address.</rdfs:comment>
+<cims:stereotype>Compound</cims:stereotype>
+	<cims:belongsToCategory rdf:resource="http://iec.ch/TC57/ns/CIM/GeographicalLocation-EU#Package_GeographicalLocationProfile"/>
+	<rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#StreetDetail.number">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">number</rdfs:label>
+	<rdfs:domain rdf:resource="#StreetDetail"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..1" />
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Designator of the specific location on the street.</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#StreetDetail.name">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">name</rdfs:label>
+	<rdfs:domain rdf:resource="#StreetDetail"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..1" />
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Name of the street.</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#StreetDetail.suffix">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">suffix</rdfs:label>
+	<rdfs:domain rdf:resource="#StreetDetail"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..1" />
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Suffix to the street name. For example: North, South, East, West.</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#StreetDetail.prefix">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">prefix</rdfs:label>
+	<rdfs:domain rdf:resource="#StreetDetail"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..1" />
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Prefix to the street name. For example: North, South, East, West.</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#StreetDetail.type">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">type</rdfs:label>
+	<rdfs:domain rdf:resource="#StreetDetail"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..1" />
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Type of street. Examples include: street, circle, boulevard, avenue, road, drive, etc.</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#StreetDetail.code">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">code</rdfs:label>
+	<rdfs:domain rdf:resource="#StreetDetail"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..1" />
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">(if applicable) Utilities often make use of external reference systems, such as those of the town-planner&apos;s department or surveyor general&apos;s mapping system, that allocate global reference codes to streets.</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#StreetDetail.buildingName">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">buildingName</rdfs:label>
+	<rdfs:domain rdf:resource="#StreetDetail"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..1" />
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">(if applicable) In certain cases the physical location of the place of interest does not have a direct point of entry from the street, but may be located inside a larger structure such as a building, complex, office block, apartment, etc.</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#StreetDetail.suiteNumber">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">suiteNumber</rdfs:label>
+	<rdfs:domain rdf:resource="#StreetDetail"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..1" />
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Number of the apartment or suite.</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#StreetDetail.addressGeneral">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">addressGeneral</rdfs:label>
+	<rdfs:domain rdf:resource="#StreetDetail"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..1" />
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">First line of a free form address or some additional address information (for example a mail stop).</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#StreetDetail.addressGeneral2">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">addressGeneral2</rdfs:label>
+	<rdfs:domain rdf:resource="#StreetDetail"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..1" />
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">(if applicable) Second line of a free form address.</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#StreetDetail.addressGeneral3">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">addressGeneral3</rdfs:label>
+	<rdfs:domain rdf:resource="#StreetDetail"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..1" />
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">(if applicable) Third line of a free form address.</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#StreetDetail.withinTownLimits">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">withinTownLimits</rdfs:label>
+	<rdfs:domain rdf:resource="#StreetDetail"/>
+	<cims:dataType rdf:resource="#Boolean"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..1" />
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">True if this street is within the legal geographical boundaries of the specified town (default).</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#Boolean">
+	<rdfs:label xml:lang="en">Boolean</rdfs:label>
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">A type with the value space &quot;true&quot; and &quot;false&quot;.</rdfs:comment>
+<cims:stereotype>Primitive</cims:stereotype>
+	<cims:belongsToCategory rdf:resource="http://iec.ch/TC57/ns/CIM/GeographicalLocation-EU#Package_GeographicalLocationProfile"/>
+	<rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#StreetDetail.floorIdentification">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">floorIdentification</rdfs:label>
+	<rdfs:domain rdf:resource="#StreetDetail"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..1" />
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">The identification by name or number, expressed as text, of the floor in the building as part of this address.</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#StreetAddress.townDetail">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">townDetail</rdfs:label>
+	<rdfs:domain rdf:resource="#StreetAddress"/>
+	<cims:dataType rdf:resource="#TownDetail"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..1" />
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Town detail.</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#TownDetail">
+	<rdfs:label xml:lang="en">TownDetail</rdfs:label>
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Town details, in the context of address.</rdfs:comment>
+<cims:stereotype>Compound</cims:stereotype>
+	<cims:belongsToCategory rdf:resource="http://iec.ch/TC57/ns/CIM/GeographicalLocation-EU#Package_GeographicalLocationProfile"/>
+	<rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#TownDetail.code">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">code</rdfs:label>
+	<rdfs:domain rdf:resource="#TownDetail"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..1" />
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Town code.</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#TownDetail.section">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">section</rdfs:label>
+	<rdfs:domain rdf:resource="#TownDetail"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..1" />
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Town section. For example, it is common for there to be 36 sections per township.</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#TownDetail.name">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">name</rdfs:label>
+	<rdfs:domain rdf:resource="#TownDetail"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..1" />
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Town name.</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#TownDetail.stateOrProvince">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">stateOrProvince</rdfs:label>
+	<rdfs:domain rdf:resource="#TownDetail"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..1" />
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Name of the state or province.</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#TownDetail.country">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">country</rdfs:label>
+	<rdfs:domain rdf:resource="#TownDetail"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..1" />
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Name of the country.</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#StreetAddress.status">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">status</rdfs:label>
+	<rdfs:domain rdf:resource="#StreetAddress"/>
+	<cims:dataType rdf:resource="#Status"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..1" />
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Status of this address.</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#Status">
+	<rdfs:label xml:lang="en">Status</rdfs:label>
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Current status information relevant to an entity.</rdfs:comment>
+<cims:stereotype>Compound</cims:stereotype>
+	<cims:belongsToCategory rdf:resource="http://iec.ch/TC57/ns/CIM/GeographicalLocation-EU#Package_GeographicalLocationProfile"/>
+	<rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#Status.value">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">value</rdfs:label>
+	<rdfs:domain rdf:resource="#Status"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..1" />
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Status value at &apos;dateTime&apos;; prior status changes may have been kept in instances of activity records associated with the object to which this status applies.</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#Status.dateTime">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">dateTime</rdfs:label>
+	<rdfs:domain rdf:resource="#Status"/>
+	<cims:dataType rdf:resource="#DateTime"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..1" />
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Date and time for which status &apos;value&apos; applies.</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#DateTime">
+	<rdfs:label xml:lang="en">DateTime</rdfs:label>
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Date and time as &quot;yyyy-mm-ddThh:mm:ss.sss&quot;, which conforms with ISO 8601. UTC time zone is specified as &quot;yyyy-mm-ddThh:mm:ss.sssZ&quot;. A local timezone relative UTC is specified as &quot;yyyy-mm-ddThh:mm:ss.sss-hh:mm&quot;. The second component (shown here as &quot;ss.sss&quot;) could have any number of digits in its fractional part to allow any kind of precision beyond seconds.</rdfs:comment>
+<cims:stereotype>Primitive</cims:stereotype>
+	<cims:belongsToCategory rdf:resource="http://iec.ch/TC57/ns/CIM/GeographicalLocation-EU#Package_GeographicalLocationProfile"/>
+	<rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#Status.remark">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">remark</rdfs:label>
+	<rdfs:domain rdf:resource="#Status"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..1" />
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Pertinent information regarding the current &apos;value&apos;, as free form text.</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#Status.reason">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">reason</rdfs:label>
+	<rdfs:domain rdf:resource="#Status"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..1" />
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Reason code or explanation for why an object went to the current status &apos;value&apos;.</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#StreetAddress.postalCode">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">postalCode</rdfs:label>
+	<rdfs:domain rdf:resource="#StreetAddress"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..1" />
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Postal code for the address.</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#StreetAddress.poBox">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">poBox</rdfs:label>
+	<rdfs:domain rdf:resource="#StreetAddress"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..1" />
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Post office box.</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#StreetAddress.language">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">language</rdfs:label>
+	<rdfs:domain rdf:resource="#StreetAddress"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..1" />
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">The language in which the address is specified, using ISO 639-1 two digit language code.</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#Location.PowerSystemResources">
+	<rdfs:label xml:lang="en">PowerSystemResources</rdfs:label>
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">All power system resources at this location.</rdfs:comment>
+	<rdfs:domain rdf:resource="#Location"/>
+	<rdfs:range rdf:resource="#PowerSystemResource"/>
+	<cims:inverseRoleName rdf:resource="#PowerSystemResource.Location"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:1"/>
+	<cims:AssociationUsed>Yes</cims:AssociationUsed>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#PowerSystemResource.Location">
+	<rdfs:label xml:lang="en">Location</rdfs:label>
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Location of this power system resource.</rdfs:comment>
+	<rdfs:domain rdf:resource="#PowerSystemResource"/>
+	<rdfs:range rdf:resource="#Location"/>
+	<cims:inverseRoleName rdf:resource="#Location.PowerSystemResources"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..1"/>
+	<cims:AssociationUsed>No</cims:AssociationUsed>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#Location.PositionPoints">
+	<rdfs:label xml:lang="en">PositionPoints</rdfs:label>
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Sequence of position points describing this location, expressed in coordinate system &apos;Location.CoordinateSystem&apos;.</rdfs:comment>
+	<rdfs:domain rdf:resource="#Location"/>
+	<rdfs:range rdf:resource="#PositionPoint"/>
+	<cims:inverseRoleName rdf:resource="#PositionPoint.Location"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..n"/>
+	<cims:AssociationUsed>No</cims:AssociationUsed>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#PositionPoint.Location">
+	<rdfs:label xml:lang="en">Location</rdfs:label>
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Location described by this position point.</rdfs:comment>
+	<rdfs:domain rdf:resource="#PositionPoint"/>
+	<rdfs:range rdf:resource="#Location"/>
+	<cims:inverseRoleName rdf:resource="#Location.PositionPoints"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:1"/>
+	<cims:AssociationUsed>Yes</cims:AssociationUsed>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#PositionPoint">
+	<rdfs:label xml:lang="en">PositionPoint</rdfs:label>
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Set of spatial coordinates that determine a point, defined in the coordinate system specified in &apos;Location.CoordinateSystem&apos;. Use a single position point instance to describe a point-oriented location. Use a sequence of position points to describe a line-oriented object (physical location of non-point oriented objects like cables or lines), or area of an object (like a substation or a geographical zone - in this case, have first and last position point with the same values).</rdfs:comment>
+	<cims:belongsToCategory rdf:resource="http://iec.ch/TC57/ns/CIM/GeographicalLocation-EU#Package_GeographicalLocationProfile"/>
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#concrete"/>
+	<rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#PositionPoint.sequenceNumber">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">sequenceNumber</rdfs:label>
+	<rdfs:domain rdf:resource="#PositionPoint"/>
+	<cims:dataType rdf:resource="#Integer"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..1" />
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Zero-relative sequence number of this point within a series of points.</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#Integer">
+	<rdfs:label xml:lang="en">Integer</rdfs:label>
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">An integer number. The range is unspecified and not limited.</rdfs:comment>
+<cims:stereotype>Primitive</cims:stereotype>
+	<cims:belongsToCategory rdf:resource="http://iec.ch/TC57/ns/CIM/GeographicalLocation-EU#Package_GeographicalLocationProfile"/>
+	<rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#PositionPoint.xPosition">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">xPosition</rdfs:label>
+	<rdfs:domain rdf:resource="#PositionPoint"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:1..1" />
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">X axis position.</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#PositionPoint.yPosition">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">yPosition</rdfs:label>
+	<rdfs:domain rdf:resource="#PositionPoint"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:1..1" />
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Y axis position.</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#PositionPoint.zPosition">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">zPosition</rdfs:label>
+	<rdfs:domain rdf:resource="#PositionPoint"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..1" />
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">(if applicable) Z axis position.</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#PowerSystemResource">
+	<rdfs:label xml:lang="en">PowerSystemResource</rdfs:label>
+	<rdfs:subClassOf rdf:resource="#IdentifiedObject"/>
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">A power system resource (PSR) can be an item of equipment such as a switch, an equipment container containing many individual items of equipment such as a substation, or an organisational entity such as sub-control area. Power system resources can have measurements associated.</rdfs:comment>
+	<cims:belongsToCategory rdf:resource="http://iec.ch/TC57/ns/CIM/GeographicalLocation-EU#Package_GeographicalLocationProfile"/>
+	<rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#Date">
+	<rdfs:label xml:lang="en">Date</rdfs:label>
+	<rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Date as &quot;yyyy-mm-dd&quot;, which conforms with ISO 8601. UTC time zone is specified as &quot;yyyy-mm-ddZ&quot;. A local timezone relative UTC is specified as &quot;yyyy-mm-dd(+/-)hh:mm&quot;.</rdfs:comment>
+<cims:stereotype>Primitive</cims:stereotype>
+	<cims:belongsToCategory rdf:resource="http://iec.ch/TC57/ns/CIM/GeographicalLocation-EU#Package_GeographicalLocationProfile"/>
+	<rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+	 </rdf:Description>
+</rdf:RDF>
