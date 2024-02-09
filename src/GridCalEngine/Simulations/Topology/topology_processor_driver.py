@@ -286,11 +286,11 @@ class TopologyProcessorDriver(TimeSeriesDriverTemplate):
     name = 'Topology processor'
     tpe = SimulationTypes.TopologyProcessor_run
 
-    def __init__(self, grid: MultiCircuit, time_indices: Union[IntVec, List[Union[None, Any]]] = [None]):
+    def __init__(self, grid: MultiCircuit, time_indices: Union[IntVec, List[Union[None, Any]]]):
         """
         Electric distance clustering
         :param grid: MultiCircuit instance
-        :param time_indices: array of time indices to simulate
+        :param time_indices: array of time indices to simulate, use [None] to process the snapshot
         """
         TimeSeriesDriverTemplate.__init__(self,
                                           grid=grid,

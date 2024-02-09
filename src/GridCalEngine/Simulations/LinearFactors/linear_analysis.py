@@ -588,14 +588,20 @@ class LinearMultiContingencies:
             if len(contingency_indices.branch_contingency_indices) > 1:
 
                 # Compute M matrix [n, n] (lodf relating the outaged lines to each other)
-                M = create_M_numba(lodf=lodf, branch_contingency_indices=contingency_indices.branch_contingency_indices)
+                M = create_M_numba(lodf=lodf,
+                                   branch_contingency_indices=contingency_indices.branch_contingency_indices)
                 L = lodf[:, contingency_indices.branch_contingency_indices]
+
+                # TODO: check if we need compensated_ptdf_factors here
 
                 # Compute LODF for the multiple failure MLODF[k, βδ]
                 mlodf_factors = dense_to_csc(mat=L @ np.linalg.inv(M),
                                              threshold=lodf_threshold)
 
             elif len(contingency_indices.branch_contingency_indices) == 1:
+
+                # TODO: check if we need compensated_ptdf_factors here
+
                 # append values
                 mlodf_factors = dense_to_csc(mat=lodf[:, contingency_indices.branch_contingency_indices],
                                              threshold=lodf_threshold)
@@ -618,7 +624,7 @@ class LinearMultiContingencies:
                     # must compute             MLODF[k, βδ] x PTDF[βδ, i] + PTDF[k, i]
                     compensated_ptdf_factors = mlodf_factors @ ptdf_bd_i + ptdf_k_i
                 else:
-                    compensated_ptdf_factors = ptdf_k_i  #TODO Comprobar con Jesús
+                    compensated_ptdf_factors = ptdf_k_i  # TODO Comprobar con Jesús
             else:
                 compensated_ptdf_factors = sp.csc_matrix(([], [], [0]), shape=(lodf.shape[0], 0))
 
