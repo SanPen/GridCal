@@ -264,7 +264,7 @@ def get_topological_nodes_dipole(identified_object: IdentifiedObject) -> Tuple["
         return None, None
 
 
-def get_buses(identified_object: IdentifiedObject) -> Tuple["BusbarSection", "BusbarSection"]:
+def get_buses_dipole(identified_object: IdentifiedObject) -> Tuple["BusbarSection", "BusbarSection"]:
     """
     Get the associated bus
     :return: (BusbarSection, BusbarSection) or (None, None)
@@ -275,7 +275,7 @@ def get_buses(identified_object: IdentifiedObject) -> Tuple["BusbarSection", "Bu
     return b1, b2
 
 
-def get_nodes(identified_object: IdentifiedObject) -> Tuple["TopologicalNode", "TopologicalNode"]:
+def get_nodes_dipole(identified_object: IdentifiedObject) -> Tuple["TopologicalNode", "TopologicalNode"]:
     """
     Get the TopologyNodes of this branch
     :return: two TopologyNodes or nothing
@@ -297,7 +297,7 @@ def get_nodes(identified_object: IdentifiedObject) -> Tuple["TopologicalNode", "
 # endregion
 
 # region MonoPole(ConductingEquipment)
-def get_topological_node(conducting_equipment: ConductingEquipment):
+def get_topological_node_monopole(conducting_equipment: ConductingEquipment):
     """
     Get the TopologyNodes of this branch
     :return: two TopologyNodes or nothing
@@ -315,16 +315,16 @@ def get_topological_node(conducting_equipment: ConductingEquipment):
         return None
 
 
-def get_bus(conducting_equipment: ConductingEquipment):
+def get_bus_monopole(conducting_equipment: ConductingEquipment):
     """
     Get the associated bus
     :return:
     """
-    tp = get_topological_node(conducting_equipment)
+    tp = get_topological_node_monopole(conducting_equipment)
     if tp is None:
         return None
     else:
-        return get_bus(tp)
+        return get_bus_monopole(tp)
 
 
 def get_dict(conducting_equipment: ConductingEquipment):
@@ -332,8 +332,8 @@ def get_dict(conducting_equipment: ConductingEquipment):
     Get dictionary with the data
     :return: Dictionary
     """
-    tp = get_topological_node(conducting_equipment)
-    bus = get_bus(tp) if tp is not None else None
+    tp = get_topological_node_monopole(conducting_equipment)
+    bus = get_bus_monopole(tp) if tp is not None else None
 
     d = super().get_dict()  # TODO check it
     d['TopologicalNode'] = '' if tp is None else tp.uuid
