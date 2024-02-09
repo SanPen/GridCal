@@ -81,7 +81,7 @@ def case_5bus():
     grid.add_bus(bus1)
 
     # add a generator to the bus 1
-    gen1 = gce.Generator('Slack Generator', vset=1.0, Pmin=0, Pmax=1000,
+    gen1 = gce.Generator('Slack Generator', vset=1.05, Pmin=0, Pmax=1000,
                          Qmin=-1000, Qmax=1000, Cost=15, Cost2=0.0)
 
     grid.add_generator(bus1, gen1)
@@ -111,19 +111,19 @@ def case_5bus():
     grid.add_line(gce.Line(bus1, bus3, 'line 1-3', r=0.05, x=0.11, b=0.02, rate=1000))
     grid.add_line(gce.Line(bus1, bus5, 'line 1-5', r=0.03, x=0.08, b=0.02, rate=1000))
 
-    tr1 = gce.Transformer2W(bus1, bus2, 'Trafo1', control_mode=TransformerControlType.Pf,
+    tr1 = gce.Transformer2W(bus1, bus2, 'Trafo1', control_mode=TransformerControlType.fixed,
                             tap_module=1.1, tap_phase=0.02, r=0.05, x=0.11, b=0.02)
     grid.add_transformer2w(tr1)
-    tr2 = gce.Transformer2W(bus2, bus3, 'Trafo2', control_mode=TransformerControlType.PtQt,
+    tr2 = gce.Transformer2W(bus2, bus3, 'Trafo2', control_mode=TransformerControlType.fixed,
                             tap_module=0.98, tap_phase=-0.02, r=0.04, x=0.09, b=0.02)
     grid.add_transformer2w(tr2)
-    tr3 = gce.Transformer2W(bus2, bus5, 'Trafo3', control_mode=TransformerControlType.Vt,
+    tr3 = gce.Transformer2W(bus2, bus5, 'Trafo3', control_mode=TransformerControlType.fixed,
                             tap_module=1.02, tap_phase=-0.04, r=0.04, x=0.09, b=0.02)
     grid.add_transformer2w(tr3)
-    tr4 = gce.Transformer2W(bus3, bus4, 'Trafo4', control_mode=TransformerControlType.PtQt,
+    tr4 = gce.Transformer2W(bus3, bus4, 'Trafo4', control_mode=TransformerControlType.Pf,
                             tap_module=1.05, tap_phase=0.04, r=0.06, x=0.13, b=0.03)
     grid.add_transformer2w(tr4)
-    tr5 = gce.Transformer2W(bus4, bus5, 'Trafo5', control_mode=TransformerControlType.Vt,
+    tr5 = gce.Transformer2W(bus4, bus5, 'Trafo5', control_mode=TransformerControlType.fixed,
                             tap_module=0.97, tap_phase=-0.01, r=0.04, x=0.09, b=0.02)
     grid.add_transformer2w(tr5)
 
@@ -167,9 +167,13 @@ def case14() -> NonlinearOPFResults:
     file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case14.m')
 
     grid = gce.FileOpen(file_path).open()
+    for l in grid.get_transformers2w():
+
+        l.control_mode = TransformerControlType.PtQt
+
     nc = gce.compile_numerical_circuit_at(grid)
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, tolerance=1e-8)
-    return ac_optimal_power_flow(nc=nc, pf_options=pf_options)
+
+    return nc
 
 
 def case_pegase89() -> NonlinearOPFResults:
@@ -183,6 +187,12 @@ def case_pegase89() -> NonlinearOPFResults:
     file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case89pegase.m')
 
     grid = gce.FileOpen(file_path).open()
+    grid.get_transformers2w()[3].control_mode = TransformerControlType.PtQt
+    grid.get_transformers2w()[7].control_mode = TransformerControlType.PtQt
+    grid.get_transformers2w()[18].control_mode = TransformerControlType.Vt
+    grid.get_transformers2w()[21].control_mode = TransformerControlType.PtQt
+    grid.get_transformers2w()[36].control_mode = TransformerControlType.Pf
+
     nc = gce.compile_numerical_circuit_at(grid)
 
     return nc
@@ -198,24 +208,24 @@ def test_case_3bus():
     G, H, I, J, K, L, M, N, O, P, Q, R = compute_analytic_admittances_2dev(nc)
     G_, H_, I_, J_, K_, L_, M_, N_, O_, P_, Q_, R_ = compute_finitediff_admittances_2dev(nc)
 
-    assert np.allclose(A.toarray(), A_.toarray(), atol=1e-0)
-    assert np.allclose(B.toarray(), B_.toarray(), atol=1e-0)
-    assert np.allclose(C.toarray(), C_.toarray(), atol=1e-0)
-    assert np.allclose(D.toarray(), D_.toarray(), atol=1e-0)
-    assert np.allclose(E.toarray(), E_.toarray(), atol=1e-0)
-    assert np.allclose(F.toarray(), F_.toarray(), atol=1e-0)
-    assert np.allclose(G.toarray(), G_.toarray(), atol=1e-0)
-    assert np.allclose(H.toarray(), H_.toarray(), atol=1e-0)
-    assert np.allclose(I.toarray(), I_.toarray(), atol=1e-0)
-    assert np.allclose(J.toarray(), J_.toarray(), atol=1e-0)
-    assert np.allclose(K.toarray(), K_.toarray(), atol=1e-0)
-    assert np.allclose(L.toarray(), L_.toarray(), atol=1e-0)
-    assert np.allclose(M.toarray(), M_.toarray(), atol=1e-0)
-    assert np.allclose(N.toarray(), N_.toarray(), atol=1e-0)
-    assert np.allclose(O.toarray(), O_.toarray(), atol=1e-0)
-    assert np.allclose(P.toarray(), P_.toarray(), atol=1e-0)
-    assert np.allclose(Q.toarray(), Q_.toarray(), atol=1e-0)
-    assert np.allclose(R.toarray(), R_.toarray(), atol=1e-0)
+    assert np.allclose(A.toarray(), A_.toarray(), atol=1e-1)
+    assert np.allclose(B.toarray(), B_.toarray(), atol=1e-1)
+    assert np.allclose(C.toarray(), C_.toarray(), atol=1e-1)
+    assert np.allclose(D.toarray(), D_.toarray(), atol=1e-1)
+    assert np.allclose(E.toarray(), E_.toarray(), atol=1e-1)
+    assert np.allclose(F.toarray(), F_.toarray(), atol=1e-1)
+    assert np.allclose(G.toarray(), G_.toarray(), atol=1e-1)
+    assert np.allclose(H.toarray(), H_.toarray(), atol=1e-1)
+    assert np.allclose(I.toarray(), I_.toarray(), atol=1e-1)
+    assert np.allclose(J.toarray(), J_.toarray(), atol=1e-1)
+    assert np.allclose(K.toarray(), K_.toarray(), atol=1e-1)
+    assert np.allclose(L.toarray(), L_.toarray(), atol=1e-1)
+    assert np.allclose(M.toarray(), M_.toarray(), atol=1e-1)
+    assert np.allclose(N.toarray(), N_.toarray(), atol=1e-1)
+    assert np.allclose(O.toarray(), O_.toarray(), atol=1e-1)
+    assert np.allclose(P.toarray(), P_.toarray(), atol=1e-1)
+    assert np.allclose(Q.toarray(), Q_.toarray(), atol=1e-1)
+    assert np.allclose(R.toarray(), R_.toarray(), atol=1e-1)
 
 
 def test_case_5bus():
@@ -228,24 +238,24 @@ def test_case_5bus():
     G, H, I, J, K, L, M, N, O, P, Q, R = compute_analytic_admittances_2dev(nc)
     G_, H_, I_, J_, K_, L_, M_, N_, O_, P_, Q_, R_ = compute_finitediff_admittances_2dev(nc)
 
-    assert np.allclose(A.toarray(), A_.toarray(), atol=1e-0)
-    assert np.allclose(B.toarray(), B_.toarray(), atol=1e-0)
-    assert np.allclose(C.toarray(), C_.toarray(), atol=1e-0)
-    assert np.allclose(D.toarray(), D_.toarray(), atol=1e-0)
-    assert np.allclose(E.toarray(), E_.toarray(), atol=1e-0)
-    assert np.allclose(F.toarray(), F_.toarray(), atol=1e-0)
-    assert np.allclose(G.toarray(), G_.toarray(), atol=1e-0)
-    assert np.allclose(H.toarray(), H_.toarray(), atol=1e-0)
-    assert np.allclose(I.toarray(), I_.toarray(), atol=1e-0)
-    assert np.allclose(J.toarray(), J_.toarray(), atol=1e-0)
-    assert np.allclose(K.toarray(), K_.toarray(), atol=1e-0)
-    assert np.allclose(L.toarray(), L_.toarray(), atol=1e-0)
-    assert np.allclose(M.toarray(), M_.toarray(), atol=1e-0)
-    assert np.allclose(N.toarray(), N_.toarray(), atol=1e-0)
-    assert np.allclose(O.toarray(), O_.toarray(), atol=1e-0)
-    assert np.allclose(P.toarray(), P_.toarray(), atol=1e-0)
-    assert np.allclose(Q.toarray(), Q_.toarray(), atol=1e-0)
-    assert np.allclose(R.toarray(), R_.toarray(), atol=1e-0)
+    assert np.allclose(A.toarray(), A_.toarray(), atol=1e-1)
+    assert np.allclose(B.toarray(), B_.toarray(), atol=1e-1)
+    assert np.allclose(C.toarray(), C_.toarray(), atol=1e-1)
+    assert np.allclose(D.toarray(), D_.toarray(), atol=1e-1)
+    assert np.allclose(E.toarray(), E_.toarray(), atol=1e-1)
+    assert np.allclose(F.toarray(), F_.toarray(), atol=1e-1)
+    assert np.allclose(G.toarray(), G_.toarray(), atol=1e-1)
+    assert np.allclose(H.toarray(), H_.toarray(), atol=1e-1)
+    assert np.allclose(I.toarray(), I_.toarray(), atol=1e-1)
+    assert np.allclose(J.toarray(), J_.toarray(), atol=1e-1)
+    assert np.allclose(K.toarray(), K_.toarray(), atol=1e-1)
+    assert np.allclose(L.toarray(), L_.toarray(), atol=1e-1)
+    assert np.allclose(M.toarray(), M_.toarray(), atol=1e-1)
+    assert np.allclose(N.toarray(), N_.toarray(), atol=1e-1)
+    assert np.allclose(O.toarray(), O_.toarray(), atol=1e-1)
+    assert np.allclose(P.toarray(), P_.toarray(), atol=1e-1)
+    assert np.allclose(Q.toarray(), Q_.toarray(), atol=1e-1)
+    assert np.allclose(R.toarray(), R_.toarray(), atol=1e-1)
 
 
 def test_pegase89():
@@ -258,26 +268,54 @@ def test_pegase89():
     G, H, I, J, K, L, M, N, O, P, Q, R = compute_analytic_admittances_2dev(nc)
     G_, H_, I_, J_, K_, L_, M_, N_, O_, P_, Q_, R_ = compute_finitediff_admittances_2dev(nc)
 
-    assert np.allclose(A.toarray(), A_.toarray(), atol=1e-0)
-    assert np.allclose(B.toarray(), B_.toarray(), atol=1e-0)
-    assert np.allclose(C.toarray(), C_.toarray(), atol=1e-0)
-    assert np.allclose(D.toarray(), D_.toarray(), atol=1e-0)
-    assert np.allclose(E.toarray(), E_.toarray(), atol=1e-0)
-    assert np.allclose(F.toarray(), F_.toarray(), atol=1e-0)
-    assert np.allclose(G.toarray(), G_.toarray(), atol=1e-0)
-    assert np.allclose(H.toarray(), H_.toarray(), atol=1e-0)
-    assert np.allclose(I.toarray(), I_.toarray(), atol=1e-0)
-    assert np.allclose(J.toarray(), J_.toarray(), atol=1e-0)
-    assert np.allclose(K.toarray(), K_.toarray(), atol=1e-0)
-    assert np.allclose(L.toarray(), L_.toarray(), atol=1e-0)
-    assert np.allclose(M.toarray(), M_.toarray(), atol=1e-0)
-    assert np.allclose(N.toarray(), N_.toarray(), atol=1e-0)
-    assert np.allclose(O.toarray(), Q_.toarray(), atol=1e-0)
-    assert np.allclose(P.toarray(), P_.toarray(), atol=1e-0)
-    assert np.allclose(Q.toarray(), Q_.toarray(), atol=1e-0)
-    assert np.allclose(R.toarray(), R_.toarray(), atol=1e-0)
+    assert np.allclose(A.toarray(), A_.toarray(), atol=1e-1)
+    assert np.allclose(B.toarray(), B_.toarray(), atol=1e-1)
+    assert np.allclose(C.toarray(), C_.toarray(), atol=1e-1)
+    assert np.allclose(D.toarray(), D_.toarray(), atol=1e-1)
+    assert np.allclose(E.toarray(), E_.toarray(), atol=1e-1)
+    assert np.allclose(F.toarray(), F_.toarray(), atol=1e-1)
+    assert np.allclose(G.toarray(), G_.toarray(), atol=1e-1)
+    assert np.allclose(H.toarray(), H_.toarray(), atol=1e-1)
+    assert np.allclose(I.toarray(), I_.toarray(), atol=1e-1)
+    assert np.allclose(J.toarray(), J_.toarray(), atol=1e-1)
+    assert np.allclose(K.toarray(), K_.toarray(), atol=1e-1)
+    assert np.allclose(L.toarray(), L_.toarray(), atol=1e-1)
+    assert np.allclose(M.toarray(), M_.toarray(), atol=1e-1)
+    assert np.allclose(N.toarray(), N_.toarray(), atol=1e-1)
+    assert np.allclose(O.toarray(), O_.toarray(), atol=1e-1)
+    assert np.allclose(P.toarray(), P_.toarray(), atol=1e-1)
+    assert np.allclose(Q.toarray(), Q_.toarray(), atol=1e-1)
+    assert np.allclose(R.toarray(), R_.toarray(), atol=1e-1)
 
 
+def test_case14():
+
+    nc = case14()
+
+    A, B, C, D, E, F = compute_analytic_admittances(nc)
+    A_, B_, C_, D_, E_, F_ = compute_finitediff_admittances(nc)
+
+    G, H, I, J, K, L, M, N, O, P, Q, R = compute_analytic_admittances_2dev(nc)
+    G_, H_, I_, J_, K_, L_, M_, N_, O_, P_, Q_, R_ = compute_finitediff_admittances_2dev(nc)
+
+    assert np.allclose(A.toarray(), A_.toarray(), atol=1e-1)
+    assert np.allclose(B.toarray(), B_.toarray(), atol=1e-1)
+    assert np.allclose(C.toarray(), C_.toarray(), atol=1e-1)
+    assert np.allclose(D.toarray(), D_.toarray(), atol=1e-1)
+    assert np.allclose(E.toarray(), E_.toarray(), atol=1e-1)
+    assert np.allclose(F.toarray(), F_.toarray(), atol=1e-1)
+    assert np.allclose(G.toarray(), G_.toarray(), atol=1e-1)
+    assert np.allclose(H.toarray(), H_.toarray(), atol=1e-1)
+    assert np.allclose(I.toarray(), I_.toarray(), atol=1e-1)
+    assert np.allclose(J.toarray(), J_.toarray(), atol=1e-1)
+    assert np.allclose(K.toarray(), K_.toarray(), atol=1e-1)
+    assert np.allclose(L.toarray(), L_.toarray(), atol=1e-1)
+    assert np.allclose(M.toarray(), M_.toarray(), atol=1e-1)
+    assert np.allclose(N.toarray(), N_.toarray(), atol=1e-1)
+    assert np.allclose(O.toarray(), O_.toarray(), atol=1e-1)
+    assert np.allclose(P.toarray(), P_.toarray(), atol=1e-1)
+    assert np.allclose(Q.toarray(), Q_.toarray(), atol=1e-1)
+    assert np.allclose(R.toarray(), R_.toarray(), atol=1e-1)
 # pass
 
 
