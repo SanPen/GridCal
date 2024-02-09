@@ -1,5 +1,8 @@
 import pytest
-from GridCalEngine.IO.cim.cgmes.cgmes_utils import get_windings_number, get_windings, get_voltages, get_rate
+from GridCalEngine.IO.cim.cgmes.cgmes_utils import get_windings_number, get_windings, get_voltages, get_rate, \
+    get_voltage_power_transformer_end, get_pu_values_power_transformer_end, get_voltage_ac_line_segment
+from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.ac_line_segment import ACLineSegment
+from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.base_voltage import BaseVoltage
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.power_transformer import PowerTransformer
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.power_transformer_end import PowerTransformerEnd
 
@@ -95,3 +98,63 @@ def test_get_rate():
     power_transformer.references_to_me["PowerTransformerEnd"] = [power_transformer_end]
     result = get_rate(power_transformer)
     assert 2 == result
+
+
+@pytest.fixture
+def transformer_end_with_ratedU():
+    pte = PowerTransformerEnd()
+    pte.ratedU = 110
+    pte.BaseVoltage = None
+    return pte
+
+@pytest.fixture
+def transformer_end_with_BaseVoltage():
+    pte = PowerTransformerEnd()
+    pte.ratedU = 0
+    pte.BaseVoltage = BaseVoltage()
+    pte.BaseVoltage.nominalVoltage = 220
+    return pte
+
+
+@pytest.fixture
+def transformer_end_without_voltage():
+    pte = PowerTransformerEnd()
+    pte.ratedU = 0
+    pte.BaseVoltage = None
+    return pte
+
+
+def test_get_voltage_power_transformer_end_has_ratedU_value_returns_value(transformer_end_with_ratedU):
+    assert get_voltage_power_transformer_end(transformer_end_with_ratedU) == 110
+
+
+def test_get_voltage_power_transformer_end_has_BaseVoltage_value_returns_value(transformer_end_with_BaseVoltage):
+    assert get_voltage_power_transformer_end(transformer_end_with_BaseVoltage) == 220
+
+
+def test_get_voltage_power_transformer_end_has_no_voltage_returns_None(transformer_end_without_voltage):
+    assert get_voltage_power_transformer_end(transformer_end_without_voltage) == None
+
+def test_get_pu_values_power_transformer_end_no_ratedS_and_ratedU_returns_Zero():
+    pte = PowerTransformerEnd()
+    (R, X, G, B, R0, X0, G0, B0) = get_pu_values_power_transformer_end(pte)
+    assert R == 0
+    assert X == 0
+    assert G == 0
+    assert B == 0
+    assert R0 == 0
+    assert X0 == 0
+    assert G0 == 0
+    assert B0 == 0
+
+
+def test_get_voltage_ac_line_segment_basevoltage_exists_returns_nominal_voltage():
+    acl = ACLineSegment()
+    acl.BaseVoltage = BaseVoltage()
+    acl.BaseVoltage.nominalVoltage = 220
+    assert get_voltage_ac_line_segment(acl, None) == 220
+
+def test_get_voltage_ac_line_segment_basevoltage_None_Terminal_None_returns_None():
+    acl = ACLineSegment()
+    assert get_voltage_ac_line_segment(acl, None) == None
+

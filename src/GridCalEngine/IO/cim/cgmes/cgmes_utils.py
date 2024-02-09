@@ -144,7 +144,7 @@ def get_voltage_ac_line_segment(ac_line_segment: ACLineSegment, logger: DataLogg
             if len(tps) > 0:
                 tp = tps[0]
 
-                return tp.get_voltage(logger=logger)
+                return get_voltage_terminal(tp, logger=logger)
             else:
                 return None
         else:
