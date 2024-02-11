@@ -241,7 +241,6 @@ def get_topological_node_bus_bar(busbar_section: BusbarSection):
     except KeyError:
         return list()
 
-
 # endregion
 
 # region Dipole (IdentifiedObject)

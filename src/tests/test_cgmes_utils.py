@@ -61,6 +61,18 @@ def test_get_pu_values_power_transformer_no_winding():
     assert G0 == 0
     assert B0 == 0
 
+def test_get_pu_values_power_transformer_wrong_keys_returns_zeros():
+    power_transformer = PowerTransformer()
+    power_transformer.references_to_me["aaaa"] = []
+    (R, X, G, B, R0, X0, G0, B0) = get_pu_values_power_transformer(power_transformer, 100.0)
+    assert R == 0
+    assert X == 0
+    assert G == 0
+    assert B == 0
+    assert R0 == 0
+    assert X0 == 0
+    assert G0 == 0
+    assert B0 == 0
 
 def test_get_pu_values_power_transformer_two_windings():
     power_transformer = PowerTransformer()
@@ -252,11 +264,25 @@ def test_get_topological_nodes_bus_bar_setup_terminals_return_topologicalnodelis
     assert len(result) == 1  # TODO
 
 
+def test_get_topological_nodes_bus_bar_setup_missing_key_returns_empty_list():
+    bbs = BusbarSection()
+    bbs.references_to_me["aaa"] = [Terminal()]
+    result = get_topological_nodes_bus_bar(bbs)
+    assert result == []
+
+
 def test_get_topological_node_bus_bar_setup_terminals_return_first_topologicalnode():
     bbs = BusbarSection()
     bbs.references_to_me["Terminal"] = [Terminal()]
     result = get_topological_node_bus_bar(bbs)
     assert result is not None  # TODO
+
+
+def test_get_topological_node_bus_bar_setup_terminals_with_wrong_key_returns_empty_array():
+    bbs = BusbarSection()
+    bbs.references_to_me["aaaa"] = [Terminal()]
+    result = get_topological_node_bus_bar(bbs)
+    assert result == []
 
 
 def test_get_topological_nodes_dipole_with_valid_terminals():
@@ -271,7 +297,7 @@ def test_get_topological_nodes_dipole_with_valid_terminals():
     assert isinstance(node2, TopologicalNode)
 
 
-def test_get_topological_nodes_dipole_with_valid_terminals2():
+def test_get_topological_nodes_dipole_with_invalid_keys_returns_none():
     t1 = Terminal()
     t2 = Terminal()
     t1.TopologicalNode = TopologicalNode()
@@ -281,6 +307,7 @@ def test_get_topological_nodes_dipole_with_valid_terminals2():
     node1, node2 = get_topological_nodes_dipole(i)
     assert node1 is None
     assert node2 is None
+
 
 def test_get_topological_nodes_dipole_with_only_one_terminal_returns_None():
     t1 = Terminal()
