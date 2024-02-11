@@ -2,10 +2,12 @@ import pytest
 from GridCalEngine.IO.cim.cgmes.cgmes_utils import get_windings_number, get_windings, get_voltages, get_rate, \
     get_voltage_power_transformer_end, get_pu_values_power_transformer_end, get_voltage_ac_line_segment, \
     get_pu_values_ac_line_segment, get_rate_ac_line_segment, get_voltage_terminal, get_topological_nodes_bus_bar, \
-    get_topological_node_bus_bar, get_topological_nodes_dipole
+    get_topological_node_bus_bar, get_topological_nodes_dipole, get_buses_dipole, get_nodes_dipole, \
+    get_topological_node_monopole
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.ac_line_segment import ACLineSegment
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.base_voltage import BaseVoltage
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.busbar_section import BusbarSection
+from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.conducting_equipment import ConductingEquipment
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.identified_object import IdentifiedObject
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.power_transformer import PowerTransformer
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.power_transformer_end import PowerTransformerEnd
@@ -317,3 +319,64 @@ def test_get_topological_nodes_dipole_with_only_one_terminal_returns_None():
     node1, node2 = get_topological_nodes_dipole(i)
     assert node1 is None
     assert node2 is None
+
+def test_get_buses_dipole_setup_identified_object_returns_correct_values():
+    i = IdentifiedObject("a", "b")
+    t1 = Terminal()
+    t2 = Terminal()
+    t3 = BusbarSection()
+    t4 = BusbarSection()
+    t1.TopologicalNode = TopologicalNode()
+    t1.TopologicalNode.references_to_me["Terminal"] = [t3]
+    t2.TopologicalNode = TopologicalNode()
+    t2.TopologicalNode.references_to_me["Terminal"] = [t4]
+    i.references_to_me["Terminal"] = [t1, t2]
+    b1, b2 = get_buses_dipole(i)
+    assert b1 is not None
+    assert b2 is not None
+
+def test_get_nodes_dipole_setup_identified_object_returns_correct_values():
+    i = IdentifiedObject("a", "b")
+    t1 = Terminal()
+    t2 = Terminal()
+    i.references_to_me["Terminal"] = [t1, t2]
+    t1.TopologicalNode = TopologicalNode()
+    t2.TopologicalNode = TopologicalNode()
+    n1, n2 = get_nodes_dipole(i)
+    assert n1 is not None
+    assert n2 is not None
+
+def test_get_nodes_dipole_not_terminals_returns_none():
+    i = IdentifiedObject("a", "b")
+    t1 = Terminal()
+    t2 = Terminal()
+    i.references_to_me["aaa"] = [t1, t2]
+    t1.TopologicalNode = TopologicalNode()
+    t2.TopologicalNode = TopologicalNode()
+    n1, n2 = get_nodes_dipole(i)
+    assert n1 is None
+    assert n2 is None
+
+def test_get_topological_node_monopole_correct_data_returns_topolificalnode():
+    ce = ConductingEquipment()
+    t1 = Terminal()
+    t1.TopologicalNode = TopologicalNode()
+    ce.references_to_me["Terminal"] = [t1]
+    res = get_topological_node_monopole(ce)
+    assert res is not None
+
+def test_get_topological_node_monopole_more_terminals_returns_none():
+    ce = ConductingEquipment()
+    t1 = Terminal()
+    t1.TopologicalNode = TopologicalNode()
+    ce.references_to_me["Terminal"] = [t1, t1]
+    res = get_topological_node_monopole(ce)
+    assert res is None
+
+def test_get_topological_node_monopole_no_terminals_returns_none_with_keyerror():
+    ce = ConductingEquipment()
+    t1 = Terminal()
+    t1.TopologicalNode = TopologicalNode()
+    ce.references_to_me["aaaa"] = [t1, t1]
+    res = get_topological_node_monopole(ce)
+    assert res is None

@@ -377,7 +377,7 @@ def get_bus_topological_node(topological_node: TopologicalNode):
     try:
         terms = topological_node.references_to_me['Terminal']
         for term in terms:
-            if isinstance(ConductingEquipment, BusbarSection):
+            if isinstance(ConductingEquipment, BusbarSection): #TODO check the old code
                 return ConductingEquipment
 
     except KeyError:
