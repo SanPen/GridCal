@@ -16,11 +16,11 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import json
-from typing import List, Union, Any
+from typing import List, Union, Any, Dict
 from warnings import warn
 import numpy as np
 import numba as nb
-from GridCalEngine.basic_structures import Logger
+from GridCalEngine.basic_structures import Logger, Vec
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.IO.gridcal.contingency_parser import get_contingencies_dict, parse_contingencies
 import GridCalEngine.Core.Devices as dev
@@ -63,7 +63,7 @@ def get_most_frequent(arr):
     return values[ind]
 
 
-def compress_array(arr, min_sparsity=0.2):
+def compress_array(arr: Vec, min_sparsity: float = 0.2) -> Dict[str, Any]:
     """
     Compress array
     :param arr: list of np.ndarray
@@ -218,7 +218,7 @@ def parse_json_data(data) -> MultiCircuit:
                                P=element["P"],
                                Q=element["Q"],
                                active=element['active'])
-                bus.loads.append(elm)
+                circuit.add_load(bus=bus, api_obj=elm)
 
             elif element["type"] == "controlled_gen":
 
@@ -238,7 +238,7 @@ def parse_json_data(data) -> MultiCircuit:
                                     Pmin=0.0,
                                     Pmax=element['Snom'],
                                     Cost=1.0)
-                bus.generators.append(elm)
+                circuit.add_generator(bus=bus, api_obj=elm)
 
             elif element["type"] == "static_gen":
 
@@ -249,7 +249,7 @@ def parse_json_data(data) -> MultiCircuit:
                 elm = dev.StaticGenerator(name=element['name'],
                                           P=element['P'], Q=element['Q'],
                                           active=element['active'])
-                bus.static_generators.append(elm)
+                circuit.add_generator(bus=bus, api_obj=elm)
 
             elif element["type"] == "battery":
 
@@ -267,7 +267,7 @@ def parse_json_data(data) -> MultiCircuit:
                                   P_prof=None,
                                   vset_prof=None,
                                   active=element['active'])
-                bus.batteries.append(elm)
+                circuit.add_battery(bus=bus, api_obj=elm)
 
             elif element["type"] == "shunt":
 
@@ -278,7 +278,7 @@ def parse_json_data(data) -> MultiCircuit:
                 elm = dev.Shunt(name=element['name'],
                                 G=element["g"], B=element["b"],
                                 active=element['active'])
-                bus.shunts.append(elm)
+                circuit.add_shunt(bus=bus, api_obj=elm)
 
             elif element["type"] == "branch":
 
@@ -309,7 +309,14 @@ def parse_json_data(data) -> MultiCircuit:
     return circuit
 
 
-def set_object_properties(elm, prop: list, entry: dict):
+def set_object_properties(elm, prop: List[str], entry: Dict[str, Any]):
+    """
+    Set the properties of an object
+    :param elm: object to be set
+    :param prop: list of properties
+    :param entry:
+    :return:
+    """
     for jprop, gcprop in prop:
         if jprop in entry.keys():
             setattr(elm, gcprop, entry[jprop])
@@ -351,12 +358,12 @@ def parse_json_data_v3(data: dict, logger: Logger):
                                   code=str(jentry['code']),
                                   name=str(jentry['name']))
 
-                circuit.countries.append(elm)
+                circuit.add_country(elm)
                 country_dict[elm.idtag] = elm
 
         else:
             elm = dev.Country(idtag=None, code='Default', name='Default')
-            circuit.countries.append(elm)
+            circuit.add_country(elm)
 
         # Areas
         areas_dict = dict()
@@ -366,11 +373,11 @@ def parse_json_data_v3(data: dict, logger: Logger):
                 elm = dev.Area(idtag=str(jentry['id']),
                                code=str(jentry['code']),
                                name=str(jentry['name']))
-                circuit.areas.append(elm)
+                circuit.add_area(elm)
                 areas_dict[elm.idtag] = elm
         else:
             elm = dev.Area(idtag=None, code='Default', name='Default')
-            circuit.areas.append(elm)
+            circuit.add_area(elm)
 
         # Zones
         zones_dict = dict()
@@ -380,11 +387,11 @@ def parse_json_data_v3(data: dict, logger: Logger):
                 elm = dev.Zone(idtag=str(jentry['id']),
                                code=str(jentry['code']),
                                name=str(jentry['name']))
-                circuit.zones.append(elm)
+                circuit.add_zone(elm)
                 zones_dict[elm.idtag] = elm
         else:
             elm = dev.Zone(idtag=None, code='Default', name='Default')
-            circuit.zones.append(elm)
+            circuit.add_zone(elm)
 
         # Substations
         substations_dict = dict()
@@ -394,11 +401,11 @@ def parse_json_data_v3(data: dict, logger: Logger):
                 elm = dev.Substation(idtag=str(jentry['id']),
                                      code=str(jentry['code']),
                                      name=str(jentry['name']))
-                circuit.substations.append(elm)
+                circuit.add_substation(elm)
                 substations_dict[elm.idtag] = elm
         else:
             elm = dev.Substation(idtag=None, code='Default', name='Default')
-            circuit.substations.append(elm)
+            circuit.add_substation(elm)
 
         # buses
         bus_dict = dict()
@@ -976,11 +983,11 @@ def parse_json_data_v2(data: dict, logger: Logger):
                 elm = dev.Country(idtag=str(jentry['id']),
                                   code=str(jentry['code']),
                                   name=str(jentry['name']))
-                circuit.countries.append(elm)
+                circuit.add_country(elm)
                 country_dict[elm.idtag] = elm
         else:
             elm = dev.Country(idtag=None, code='Default', name='Default')
-            circuit.countries.append(elm)
+            circuit.add_country(elm)
 
         # Areas
         areas_dict = dict()
@@ -990,11 +997,11 @@ def parse_json_data_v2(data: dict, logger: Logger):
                 elm = dev.Area(idtag=str(jentry['id']),
                                code=str(jentry['code']),
                                name=str(jentry['name']))
-                circuit.areas.append(elm)
+                circuit.add_area(elm)
                 areas_dict[elm.idtag] = elm
         else:
             elm = dev.Area(idtag=None, code='Default', name='Default')
-            circuit.areas.append(elm)
+            circuit.add_area(elm)
 
         # Zones
         zones_dict = dict()
@@ -1004,11 +1011,11 @@ def parse_json_data_v2(data: dict, logger: Logger):
                 elm = dev.Zone(idtag=str(jentry['id']),
                                code=str(jentry['code']),
                                name=str(jentry['name']))
-                circuit.zones.append(elm)
+                circuit.add_zone(elm)
                 zones_dict[elm.idtag] = elm
         else:
             elm = dev.Zone(idtag=None, code='Default', name='Default')
-            circuit.zones.append(elm)
+            circuit.add_zone(elm)
 
         # Substations
         substations_dict = dict()
@@ -1018,11 +1025,11 @@ def parse_json_data_v2(data: dict, logger: Logger):
                 elm = dev.Substation(idtag=str(jentry['id']),
                                      code=str(jentry['code']),
                                      name=str(jentry['name']))
-                circuit.substations.append(elm)
+                circuit.add_substation(elm)
                 substations_dict[elm.idtag] = elm
         else:
             elm = dev.Substation(idtag=None, code='Default', name='Default')
-            circuit.substations.append(elm)
+            circuit.add_substation(elm)
 
         # buses
         bus_dict = dict()

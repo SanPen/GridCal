@@ -99,6 +99,8 @@ def get_reliability_scenario(nc: NumericalCircuit, horizon=10000):
     """
     all_events = list()
 
+    # TODO: Add MTTF and MTTR to data devices
+
     # Branches
     all_events += get_reliability_events(horizon,
                                          nc.branch_data.mttf,

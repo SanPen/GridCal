@@ -882,7 +882,7 @@ def plx_to_gridcal(mdl: PlxModel, plexos_results_folder, time_indices=None, text
                             Q_prof=load_profile * 0.8,)
 
                 load.ensure_profiles_exist(circuit.time_profile)
-                bus.add_device(load)
+                circuit.add_load(bus, load)
 
         if text_func is not None:
             text_func("Creating GridCal model: Buses")
@@ -907,7 +907,7 @@ def plx_to_gridcal(mdl: PlxModel, plexos_results_folder, time_indices=None, text
 
             bus = bus_dict[elm.node.name]
             gen.ensure_profiles_exist(circuit.time_profile)
-            bus.add_device(gen)
+            circuit.add_generator(bus, gen)
 
         if text_func is not None:
             text_func("Creating GridCal model: Buses")

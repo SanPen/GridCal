@@ -669,7 +669,7 @@ def add_transformer_data(circuit: MultiCircuit,
 
     ctrl_dict = {
         TransformerControlType.fixed: npa.BranchControlModes.Fixed,
-        TransformerControlType.Pt: npa.BranchControlModes.BranchPt,
+        TransformerControlType.Pf: npa.BranchControlModes.BranchPt,
         TransformerControlType.Qt: npa.BranchControlModes.BranchQt,
         TransformerControlType.PtQt: npa.BranchControlModes.BranchPt,
         TransformerControlType.Vt: npa.BranchControlModes.BranchVt,
@@ -741,7 +741,7 @@ def add_transformer3w_data(circuit: MultiCircuit,
 
     ctrl_dict = {
         TransformerControlType.fixed: npa.BranchControlModes.Fixed,
-        TransformerControlType.Pt: npa.BranchControlModes.BranchPt,
+        TransformerControlType.Pf: npa.BranchControlModes.BranchPt,
         TransformerControlType.Qt: npa.BranchControlModes.BranchQt,
         TransformerControlType.PtQt: npa.BranchControlModes.BranchPt,
         TransformerControlType.Vt: npa.BranchControlModes.BranchVt,
@@ -1166,7 +1166,7 @@ def get_newton_pa_pf_options(opt: PowerFlowOptions) -> "npa.PowerFlowOptions":
                                 control_q_mode=q_control_dict[opt.control_Q],
                                 distributed_slack=opt.distributed_slack,
                                 correction_parameter=0.5,
-                                mu0=opt.mu)
+                                mu0=opt.trust_radius)
 
 
 def get_newton_pa_linear_options(opt: LinearAnalysisOptions) -> "npa.LinearAnalysisOptions":
@@ -1203,7 +1203,7 @@ def get_newton_pa_nonlinear_opf_options(pf_opt: PowerFlowOptions,
 
     return npa.NonlinearOpfOptions(tolerance=pf_opt.tolerance,
                                    max_iter=pf_opt.max_iter,
-                                   mu0=pf_opt.mu,
+                                   mu0=pf_opt.trust_radius,
                                    control_q_mode=q_control_dict[pf_opt.control_Q],
                                    flow_control=True,
                                    voltage_control=True,

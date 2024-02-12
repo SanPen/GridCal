@@ -95,7 +95,8 @@ def linear_contingency_analysis(grid: MultiCircuit,
     for ic, multi_contingency in enumerate(linear_multiple_contingencies.multi_contingencies):
 
         if multi_contingency.has_injection_contingencies():
-            injections = numerical_circuit.generator_data.get_injections().real
+            cnt = grid.contingencies
+            injections = numerical_circuit.set_linear_contingency_status(contingencies_list=cnt)
         else:
             injections = None
 
@@ -120,7 +121,9 @@ def linear_contingency_analysis(grid: MultiCircuit,
                                srap_max_power=options.srap_max_power,
                                multi_contingency=multi_contingency,
                                PTDF=linear_analysis.PTDF,
-                               available_power=available_power)
+                               available_power=available_power,
+                               srap_used_power=results.srap_used_power,
+                               top_n=options.srap_top_n)
 
         # report progress
         if t is None:
