@@ -397,7 +397,16 @@ class EditableDevice:
 
         return props, indices
 
-    def get_property_value(self, prop: GCProp, t_idx: Union[None, int]) -> GCProp:
+    def get_snapshot_value(self, prop: GCProp) -> Any:
+        """
+        Return the stored object value from the property index
+        :param prop: GCProp
+        :return: Whatever value is there
+        """
+
+        return getattr(self, prop.name)
+
+    def get_property_value(self, prop: GCProp, t_idx: Union[None, int]) -> Any:
         """
         Return the stored object value from the property index
         :param prop: GCProp
@@ -468,11 +477,12 @@ class EditableDevice:
                 # the property has no profile, just return it
                 setattr(self, prop.name, value)
 
-    def set_snapshot_value(self, property_name, value: Any) -> None:
+    def set_snapshot_value(self, property_name, value: Any, try_fill_profile: bool = False) -> None:
         """
         Set the value of a snapshot property
         :param property_name: name of the property
         :param value: Any
+        :param try_fill_profile:
         """
         # set the snapshot value whatever it is
         setattr(self, property_name, value)
@@ -522,6 +532,7 @@ class EditableDevice:
         snapshot_value = getattr(self, magnitude)
         val = Profile(default_value=snapshot_value)
         if arr_in_pu:
+            arr = isinstance(arr, np.ndarray)  # you must provide the array as a numpy array if arr_in_pu
             val.set(arr * snapshot_value)
         else:
             val.create_sparse(size=len(index), default_value=snapshot_value)
@@ -535,14 +546,14 @@ class EditableDevice:
         Those properties must be initialized as well
         :param index: Time series index (timestamps)
         """
-        for magnitude in self.properties_with_profile.keys():
+        for magnitude, prof_attr in self.properties_with_profile.items():
 
             if index is not None:
-                prof_attr = self.properties_with_profile[magnitude]
+                # prof_attr = self.properties_with_profile[magnitude]
 
                 profile = getattr(self, prof_attr)
 
-                if profile is None:
+                if not profile.is_initialized:
                     # there is no profile, create a new one with the default values
                     # print(self.name, ': created profile for ' + prof_attr)
                     self.create_profile(magnitude=magnitude, index=index)
@@ -588,6 +599,14 @@ class EditableDevice:
             return None
         else:
             return getattr(self, profile_name)
+
+    def get_profile_by_prop(self, prop: GCProp) -> Union[Profile, None]:
+        """
+        Get the profile of a property name
+        :param prop: GCProp
+        :return: Profile object
+        """
+        return getattr(self, prop.profile_name)
 
     def get_properties_dict(self, version=3):
         """

@@ -421,6 +421,16 @@ class MultiCircuit:
 
         return self.time_profile is not None
 
+    def get_unix_time(self):
+        """
+        Get the unix time representation of the time
+        :return:
+        """
+        if self.has_time_series:
+            return self.time_profile.values.astype(np.int64) // 10 ** 9
+        else:
+            return np.zeros(0, dtype=np.int64)
+
     def get_objects_with_profiles_list(self) -> List[dev.EditableDevice]:
         """
         get objects_with_profiles in the form of list

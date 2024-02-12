@@ -21,27 +21,32 @@ import numpy as np
 import chardet
 import pandas as pd
 import zipfile
-from typing import List, Dict, Any, Union
+from typing import List, Dict, Any, Union, Callable
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.IO.gridcal.generic_io_functions import parse_config_df
 import GridCalEngine.Core.Devices as dev
 
 
-def save_data_frames_to_zip(dfs: Dict[str, pd.DataFrame],
-                            filename_zip: str,
-                            sessions: List[Any],
-                            diagrams: List[Union[dev.MapDiagram, dev.BusBranchDiagram, dev.NodeBreakerDiagram]],
-                            json_files: Dict[str, dict],
-                            text_func=None, progress_func=None,):
+def save_gridcal_data_to_zip(dfs: Dict[str, pd.DataFrame],
+                             filename_zip: str,
+                             model_data: Dict[str, Dict[str, str]],
+                             sessions: List[Any],
+                             diagrams: List[Union[dev.MapDiagram, dev.BusBranchDiagram, dev.NodeBreakerDiagram]],
+                             json_files: Dict[str, dict],
+                             text_func=None,
+                             progress_func=None,
+                             logger = Logger()):
     """
     Save a list of DataFrames to a zip file without saving to disk the csv files
     :param dfs: dictionary of pandas dataFrames {name: DataFrame}
     :param filename_zip: file name where to save all
+    :param model_data: dictionary of json data opposed to the dataframes collection
     :param sessions: SimulationSession instance
     :param diagrams: List of Diagram objects
     :param json_files: List of configuration json files to save Dict[file_name, dictionary to save]
     :param text_func: pointer to function that prints the names
     :param progress_func: pointer to function that prints the progress 0~100
+    :param logger: Logger object
     """
 
     n = len(dfs)
@@ -52,7 +57,21 @@ def save_data_frames_to_zip(dfs: Dict[str, pd.DataFrame],
         # save the config files
         for name, value in json_files.items():
             filename = name + ".json"
-            f_zip_ptr.writestr(filename, json.dumps(value))  # save the buffer to the zip file
+            f_zip_ptr.writestr(filename, json.dumps(value))
+
+        # save the GridCal object as json data
+        for object_type_name, object_data in model_data.items():
+            filename = "model_data/" + object_type_name + ".model"
+            try:
+                f_zip_ptr.writestr(filename, json.dumps(object_data, indent=4))
+            except TypeError as e:
+                logger.add_error(msg=e)
+                print()
+
+        # save diagrams
+        for diagram in diagrams:
+            filename = "diagrams/" + diagram.idtag + ".diagram"
+            f_zip_ptr.writestr(filename, json.dumps(diagram.get_properties_dict(), indent=4))
 
         # for each DataFrame and name...
         i = 0
@@ -128,16 +147,11 @@ def save_data_frames_to_zip(dfs: Dict[str, pd.DataFrame],
 
                             i += 1
 
-        # save diagrams
-        for diagram in diagrams:
-            filename = "diagrams/" + diagram.idtag + ".diagram"
-            f_zip_ptr.writestr(filename, json.dumps(diagram.get_properties_dict(), indent=4))  # save the buffer to the zip file
-
     if n_failed:
         print('Failed to pickle several profiles, but saved them as csv.\nFor improved speed install Pandas >= 1.2')
 
 
-def read_data_frame_from_zip(file_pointer, extension, index_col=None, logger=Logger()):
+def read_data_frame_from_zip(file_pointer, extension: str, index_col=None, logger=Logger()):
     """
     read DataFrame
     :param file_pointer: Pointer to the file within the zip file
@@ -177,12 +191,17 @@ def read_data_frame_from_zip(file_pointer, extension, index_col=None, logger=Log
                 return None
 
     except EOFError:
+        logger.add_error("EOF error", device=file_pointer.name)
         return None
     except zipfile.BadZipFile:
+        logger.add_error("Bad zip file error", device=file_pointer.name)
         return None
 
 
-def get_frames_from_zip(file_name_zip, text_func=None, progress_func=None, logger=Logger()):
+def get_frames_from_zip(file_name_zip: str,
+                        text_func: Union[None, Callable[[str], None]] = None,
+                        progress_func: Union[None, Callable[[float], None]] = None,
+                        logger=Logger()):
     """
     Open the csv files from a zip file
     :param file_name_zip: name of the zip file
@@ -201,7 +220,8 @@ def get_frames_from_zip(file_name_zip, text_func=None, progress_func=None, logge
     names = zip_file_pointer.namelist()
 
     n = len(names)
-    data = {'diagrams': list()}
+    data = {'diagrams': list(),
+            'model_data': list()}
     json_files = dict()
 
     # for each file in the zip file...
@@ -219,23 +239,57 @@ def get_frames_from_zip(file_name_zip, text_func=None, progress_func=None, logge
         # create a buffer to read the file
         file_pointer = zip_file_pointer.open(file_name)
 
-        if name.lower() == "config":
-            df = read_data_frame_from_zip(file_pointer, extension, index_col=0, logger=logger)
-            data = parse_config_df(df, data)
+        try:
+            if name.lower() == "config":
+                df = pd.read_csv(file_pointer, index_col=0)
+                data = parse_config_df(df, data)
 
-        elif extension == '.json':
-            json_files[name] = json.load(file_pointer)
+            elif extension == '.json':
+                json_files[name] = json.load(file_pointer)
 
-        elif extension == '.diagram':
-            data['diagrams'].append(json.load(file_pointer))
+            elif extension == '.diagram':
+                data['diagrams'].append(json.load(file_pointer))
 
-        else:
-            # make pandas read the file
-            df = read_data_frame_from_zip(file_pointer, extension, logger=logger)
+            elif extension == '.model':
+                data['model_data'].append(json.load(file_pointer))
 
-            # append the DataFrame to the list
-            if df is not None:
+            elif extension == '.csv':
+                df = pd.read_csv(file_pointer, index_col=None)
                 data[name] = df
+
+            elif extension == '.npy':
+                try:
+                    df = np.load(file_pointer)
+                except ValueError:
+                    df = np.load(file_pointer, allow_pickle=True)
+                data[name] = df
+
+            elif extension == '.pkl':
+                try:
+                    df = pd.read_pickle(file_pointer)
+                    data[name] = df
+                except ValueError as e:
+                    logger.add_error(str(e), device=file_pointer.name)
+                except AttributeError as e:
+                    logger.add_error(str(e) + ' Upgrading pandas might help.', device=file_pointer.name)
+
+            elif extension == '.parquet':
+                try:
+                    df = pd.read_parquet(file_pointer)
+                    data[name] = df
+                except ValueError as e:
+                    logger.add_error(str(e), device=file_pointer.name)
+                except AttributeError as e:
+                    logger.add_error(str(e) + ' Upgrading pandas might help.', device=file_pointer.name)
+
+            else:
+                logger.add_info("Unsupported file type inside .gridcal", value=file_name)
+
+        except EOFError:
+            logger.add_error("EOF error", device=file_pointer.name)
+
+        except zipfile.BadZipFile:
+            logger.add_error("Bad zip file error", device=file_pointer.name)
 
     return data, json_files
 

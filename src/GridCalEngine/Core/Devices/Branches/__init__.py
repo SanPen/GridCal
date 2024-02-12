@@ -29,6 +29,6 @@ from GridCalEngine.Core.Devices.Branches.winding import Winding
 from GridCalEngine.Core.Devices.Branches.wire import Wire
 from GridCalEngine.Core.Devices.Branches.tap_changer import TapChanger
 from GridCalEngine.Core.Devices.Branches.transformer_type import TransformerType
-from GridCalEngine.Core.Devices.Branches.overhead_line_type import OverheadLineType
+from GridCalEngine.Core.Devices.Branches.overhead_line_type import OverheadLineType, WireInTower
 from GridCalEngine.Core.Devices.Branches.sequence_line_type import SequenceLineType
 from GridCalEngine.Core.Devices.Branches.underground_line_type import UndergroundLineType

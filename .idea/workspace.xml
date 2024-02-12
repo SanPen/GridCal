@@ -28,9 +28,21 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Fixed imports">
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Some more refactoring">
+      <change afterPath="$PROJECT_DIR$/src/trunk/io/io_call.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/substation_reduction/topology_processor_bfs.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/substation_reduction/topology_processor_bfs.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/sqlite_interface.py" beforeDir="false" afterPath="$PROJECT_DIR$/examples/sqlite_interface.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/Branches/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/Branches/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/Parents/editable_device.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/Parents/editable_device.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/multi_circuit.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/multi_circuit.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/profile.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/profile.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/sparse_array.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/sparse_array.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_to_gridcal.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_to_gridcal.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/file_handler.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/file_handler.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/excel_interface.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/excel_interface.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/h5_interface.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/h5_interface.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/pack_unpack.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/pack_unpack.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/zip_interface.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/zip_interface.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -58,7 +70,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="194_topology_processor" />
+        <entry key="$PROJECT_DIR$" value="204_investments_evaluation" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -156,57 +168,61 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
-    &quot;Git.Branch.Popup.ShowAllRemotes&quot;: &quot;true&quot;,
-    &quot;MATLAB_INTERPRETER&quot;: &quot;/usr/local/MATLAB/R2018a/bin/matlab&quot;,
-    &quot;Notification.DisplayName-DoNotAsk-CythonWarning&quot;: &quot;Python debugger native extension available&quot;,
-    &quot;Notification.DoNotAsk-CythonWarning&quot;: &quot;true&quot;,
-    &quot;Python tests.Nosetests for admittance_matrix_test.test3.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Nosetests for test_numerical_circuit.test_bus_indexing_remap.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Nosetests for test_ptdf.test_mlodf_sanpen.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.Nosetests for tests.test_ac_opf.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Nosetests for tests.test_hydro.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.Nosetests for tests.test_load_all_grids.test_all_grids.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.Nosetests for tests.test_nonlinear_contingency.test_non_linear_factors.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Nosetests for tests.test_ptdf.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Nosetests in admittance_matrix_test.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Nosetests in test_load_all_grids.py.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.Nosetests in test_numerical_circuit.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Nosetests in test_ptdf.py.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.Nosetests in test_state_estimation.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Nosetests in tests.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest in test_tutorials.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python.ExecuteGridCal.executor&quot;: &quot;Run&quot;,
-    &quot;Python.acopf_run.executor&quot;: &quot;Run&quot;,
-    &quot;Python.failure.executor&quot;: &quot;Debug&quot;,
-    &quot;Python.generate_profile_gatters_and_setters.executor&quot;: &quot;Run&quot;,
-    &quot;Python.new_circuit_objects.executor&quot;: &quot;Run&quot;,
-    &quot;Python.node_groups_run.executor&quot;: &quot;Run&quot;,
-    &quot;Python.pack_unpack.executor&quot;: &quot;Run&quot;,
-    &quot;Python.plexel_circuit.executor&quot;: &quot;Debug&quot;,
-    &quot;Python.power_flow_research.executor&quot;: &quot;Run&quot;,
-    &quot;Python.processor.executor&quot;: &quot;Run&quot;,
-    &quot;Python.srap_example.executor&quot;: &quot;Run&quot;,
-    &quot;Python.topology_processor_bfs.executor&quot;: &quot;Run&quot;,
-    &quot;Python.update_gui_file (1).executor&quot;: &quot;Run&quot;,
-    &quot;Python.update_gui_file.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/santi/Documentos/Git/GitHub/GridCal/src/tests/data/grids&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;run.code.analysis.last.selected.profile&quot;: &quot;aDefault&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "Git.Branch.Popup.ShowAllRemotes": "true",
+    "MATLAB_INTERPRETER": "/usr/local/MATLAB/R2018a/bin/matlab",
+    "Notification.DisplayName-DoNotAsk-CythonWarning": "Python debugger native extension available",
+    "Notification.DoNotAsk-CythonWarning": "true",
+    "Python tests.Nosetests for admittance_matrix_test.test3.executor": "Run",
+    "Python tests.Nosetests for test_numerical_circuit.test_bus_indexing_remap.executor": "Run",
+    "Python tests.Nosetests for test_ptdf.test_mlodf_sanpen.executor": "Debug",
+    "Python tests.Nosetests for tests.test_ac_opf.executor": "Run",
+    "Python tests.Nosetests for tests.test_hydro.executor": "Debug",
+    "Python tests.Nosetests for tests.test_load_all_grids.test_all_grids.executor": "Debug",
+    "Python tests.Nosetests for tests.test_nonlinear_contingency.test_non_linear_factors.executor": "Run",
+    "Python tests.Nosetests for tests.test_ptdf.executor": "Run",
+    "Python tests.Nosetests in admittance_matrix_test.py.executor": "Run",
+    "Python tests.Nosetests in test_load_all_grids.py.executor": "Debug",
+    "Python tests.Nosetests in test_numerical_circuit.py.executor": "Run",
+    "Python tests.Nosetests in test_ptdf.py.executor": "Debug",
+    "Python tests.Nosetests in test_state_estimation.py.executor": "Run",
+    "Python tests.Nosetests in tests.executor": "Run",
+    "Python tests.pytest in test_tutorials.py.executor": "Run",
+    "Python.ExecuteGridCal.executor": "Run",
+    "Python.MVRSM_mo.executor": "Run",
+    "Python.acopf_run.executor": "Run",
+    "Python.demo_mvrsm.executor": "Run",
+    "Python.failure.executor": "Debug",
+    "Python.generate_profile_gatters_and_setters.executor": "Run",
+    "Python.io_call.executor": "Run",
+    "Python.multi_dim_demo.executor": "Run",
+    "Python.new_circuit_objects.executor": "Run",
+    "Python.node_groups_run.executor": "Run",
+    "Python.pack_unpack.executor": "Run",
+    "Python.plexel_circuit.executor": "Debug",
+    "Python.power_flow_research.executor": "Run",
+    "Python.processor.executor": "Run",
+    "Python.srap_example.executor": "Run",
+    "Python.topology_processor_bfs.executor": "Run",
+    "Python.update_gui_file (1).executor": "Run",
+    "Python.update_gui_file.executor": "Run",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "ignore.virus.scanning.warn.message": "true",
+    "last_opened_file_path": "/home/santi/Documentos/Git/GitHub/GridCal/src/GridCalEngine/Simulations/InvestmentsEvaluation",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "run.code.analysis.last.selected.profile": "aDefault",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="PyDebuggerOptionsProvider">
     <option name="mySaveCallSignatures" value="true" />
     <option name="mySupportGeventDebugging" value="true" />
@@ -214,11 +230,11 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation" />
+      <recent name="$PROJECT_DIR$/src/trunk/MVRSM" />
+      <recent name="$PROJECT_DIR$/src/trunk" />
       <recent name="$PROJECT_DIR$/src/tests/data/grids" />
       <recent name="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/Injections" />
-      <recent name="$PROJECT_DIR$/src" />
-      <recent name="$PROJECT_DIR$/src/GridCalEngine" />
-      <recent name="$PROJECT_DIR$/src/tests/data" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/src/GridCalEngine/Simulations/Topology" />
@@ -228,7 +244,7 @@
       <recent name="$PROJECT_DIR$/src/GridCal" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.ExecuteGridCal">
+  <component name="RunManager" selected="Python.io_call">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -319,7 +335,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="node_groups_run" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="io_call" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -328,12 +344,12 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/examples" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/trunk/io" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/examples/node_groups_run.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/trunk/io/io_call.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -530,7 +546,7 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python.node_groups_run" />
+      <item itemvalue="Python.io_call" />
       <item itemvalue="Python.topology_processor_bfs" />
       <item itemvalue="Python.topology_processor_driver" />
       <item itemvalue="Python.update_gui_file" />
@@ -538,11 +554,11 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.io_call" />
         <item itemvalue="Python.ExecuteGridCal" />
-        <item itemvalue="Python.node_groups_run" />
+        <item itemvalue="Python.update_gui_file" />
         <item itemvalue="Python.topology_processor_driver" />
         <item itemvalue="Python.topology_processor_bfs" />
-        <item itemvalue="Python.update_gui_file" />
       </list>
     </recent_temporary>
   </component>
@@ -1387,6 +1403,8 @@
       <workItem from="1707320157016" duration="224000" />
       <workItem from="1707320385911" duration="2329000" />
       <workItem from="1707381589655" duration="5171000" />
+      <workItem from="1707725722896" duration="7756000" />
+      <workItem from="1707745089691" duration="14438000" />
     </task>
     <task id="LOCAL-00436" summary="GUI enhancements&#10;Fix bug in the OPF time steps">
       <created>1688544358055</created>
@@ -1731,7 +1749,7 @@
       <option name="project" value="LOCAL" />
       <updated>1693298903267</updated>
     </task>
-    <option name="localTasksCounter" value="566" />
+    <option name="localTasksCounter" value="569" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1771,7 +1789,7 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="194_topology_processor" />
+                        <option value="199_finalize_cgmes_import" />
                       </list>
                     </value>
                   </entry>
@@ -1784,10 +1802,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="added some plexel code" />
-    <MESSAGE value="improved search_property()" />
-    <MESSAGE value="stuff (not working...)" />
-    <MESSAGE value="Added topology processor based on the adjacency matrix concept" />
     <MESSAGE value="Improved the delete bus bar function" />
     <MESSAGE value="Improved the topology processor documentation" />
     <MESSAGE value="Simplified the way busbars and connectivity nodes are related" />
@@ -1809,7 +1823,11 @@
     <MESSAGE value="minimal refactor" />
     <MESSAGE value="Created the Topology pkg into GridCalEngine.Core" />
     <MESSAGE value="Fixed imports" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed imports" />
+    <MESSAGE value="minor refactoring in test_opf_time_series.py" />
+    <MESSAGE value="Removed Btau since it is useless" />
+    <MESSAGE value="Worked with Laurens in making MVRSM multiobjective" />
+    <MESSAGE value="Some more refactoring" />
+    <option name="LAST_COMMIT_MESSAGE" value="Some more refactoring" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2211,7 +2229,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/NumericalMethods/ac_opf.py</url>
-          <line>768</line>
+          <line>237</line>
           <option name="timeStamp" value="1397" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -2256,7 +2274,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Core/Devices/Parents/editable_device.py</url>
-          <line>448</line>
+          <line>457</line>
           <option name="timeStamp" value="1463" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -2283,6 +2301,42 @@
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/contingency_analysis_ts_driver.py</url>
           <line>129</line>
           <option name="timeStamp" value="1469" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Core/Devices/multi_circuit.py</url>
+          <line>1684</line>
+          <option name="timeStamp" value="1480" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/zip_interface.py</url>
+          <line>68</line>
+          <option name="timeStamp" value="1482" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/pack_unpack.py</url>
+          <line>366</line>
+          <option name="timeStamp" value="1483" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <condition expression="default_value is None" language="Python" />
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Core/Devices/profile.py</url>
+          <line>199</line>
+          <option name="timeStamp" value="1487" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/zip_interface.py</url>
+          <line>150</line>
+          <option name="timeStamp" value="1488" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/zip_interface.py</url>
+          <line>99</line>
+          <option name="timeStamp" value="1489" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/pack_unpack.py</url>
+          <line>402</line>
+          <option name="timeStamp" value="1491" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -2427,7 +2481,7 @@
     <SUITE FILE_PATH="coverage/GridCal$flatpak_pip_generator.coverage" NAME="flatpak-pip-generator Coverage Results" MODIFIED="1694345245258" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_tutorials_py.coverage" NAME="Nosetests in test_tutorials.py Coverage Results" MODIFIED="1602941091349" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$PTDF_by_node_groups.coverage" NAME="PTDF_by_node_groups Coverage Results" MODIFIED="1619774485543" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PTDF" />
-    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1707465742013" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
+    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1707733219915" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
     <SUITE FILE_PATH="coverage/GridCal$raw_to_cgmes_mapping.coverage" NAME="raw_to_cgmes_mapping Coverage Results" MODIFIED="1693562939167" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$ConsoleLogController.coverage" NAME="ConsoleLogController Coverage Results" MODIFIED="1663862178388" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/Main" />
     <SUITE FILE_PATH="coverage/GridCal$ntc_opf.coverage" NAME="ntc_opf Coverage Results" MODIFIED="1630509729235" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF" />
@@ -2480,6 +2534,7 @@
     <SUITE FILE_PATH="coverage/GridCal$download_stats.coverage" NAME="download_stats Coverage Results" MODIFIED="1609500287850" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_test_ptdf_test_lodf_ieee14_definition.coverage" NAME="Nosetests for test_ptdf.test_lodf_ieee14_definition Coverage Results" MODIFIED="1701814974059" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$opf_pf_verification_example.coverage" NAME="opf+pf verification example Coverage Results" MODIFIED="1696857463367" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/examples" />
+    <SUITE FILE_PATH="coverage/GridCal$multi_dim_demo.coverage" NAME="multi_dim_demo Coverage Results" MODIFIED="1707726287589" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/trunk/MVRSM" />
     <SUITE FILE_PATH="coverage/GridCal$failure.coverage" NAME="failure Coverage Results" MODIFIED="1707240197848" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/venv.3.11/lib/python3.11/site-packages/nose" />
     <SUITE FILE_PATH="coverage/GridCal$defining_a_grid_from_scratch_without_profiles.coverage" NAME="defining_a_grid_from_scratch_without_profiles Coverage Results" MODIFIED="1616960198337" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/Tutorials" />
     <SUITE FILE_PATH="coverage/GridCal$mips.coverage" NAME="mips Coverage Results" MODIFIED="1703000592691" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
@@ -2512,6 +2567,7 @@
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_test_numerical_circuit_test_bus_indexing_remap.coverage" NAME="Nosetests for test_numerical_circuit.test_bus_indexing_remap Coverage Results" MODIFIED="1707314056583" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$branch_power_4.coverage" NAME="branch_power_4 Coverage Results" MODIFIED="1659531779008" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/derivatives_and_jacobian" />
     <SUITE FILE_PATH="coverage/GridCal$fubm_example.coverage" NAME="fubm_example Coverage Results" MODIFIED="1699631757375" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/examples/trunk" />
+    <SUITE FILE_PATH="coverage/GridCal$io_call.coverage" NAME="io_call Coverage Results" MODIFIED="1707766372826" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/trunk/io" />
     <SUITE FILE_PATH="coverage/GridCal$gui.coverage" NAME="gui Coverage Results" MODIFIED="1649779929647" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/AboutDialogue" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_tests_admittance_matrix_test_test1.coverage" NAME="Nosetests for tests.admittance_matrix_test.test1 Coverage Results" MODIFIED="1700841710651" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$admittance_variations.coverage" NAME="admittance_variations Coverage Results" MODIFIED="1603050030453" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/admittance" />
@@ -2523,6 +2579,7 @@
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_unbalanced_faults_py.coverage" NAME="Nosetests in test_unbalanced_faults.py Coverage Results" MODIFIED="1661172842063" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_test_ptdf_test_mlodf_sanpen.coverage" NAME="Nosetests for test_ptdf.test_mlodf_sanpen Coverage Results" MODIFIED="1706266201035" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_tests_admittance_matrix_test.coverage" NAME="Nosetests for tests.admittance_matrix_test Coverage Results" MODIFIED="1602926351044" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
+    <SUITE FILE_PATH="coverage/GridCal$MVRSM_mo.coverage" NAME="MVRSM_mo Coverage Results" MODIFIED="1707735080331" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/trunk/MVRSM" />
     <SUITE FILE_PATH="coverage/GridCal$PTDF_ku_leuven.coverage" NAME="PTDF_ku_leuven Coverage Results" MODIFIED="1642342521661" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PTDF" />
     <SUITE FILE_PATH="coverage/GridCal$srap_example.coverage" NAME="srap_example Coverage Results" MODIFIED="1705943998416" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/trunk/srap" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_ACPTDF_research2_py.coverage" NAME="Nosetests in ACPTDF_research2.py Coverage Results" MODIFIED="1601969138193" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PTDF" />
@@ -2578,6 +2635,7 @@
     <SUITE FILE_PATH="coverage/GridCal$map_test_2.coverage" NAME="map_test_2 Coverage Results" MODIFIED="1655834800485" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/map" />
     <SUITE FILE_PATH="coverage/GridCal$branch_power.coverage" NAME="branch_power Coverage Results" MODIFIED="1659016478801" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/derivatives" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_state_estimation_py.coverage" NAME="Nosetests in test_state_estimation.py Coverage Results" MODIFIED="1707129397925" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
+    <SUITE FILE_PATH="coverage/GridCal$demo_mvrsm.coverage" NAME="demo_mvrsm Coverage Results" MODIFIED="1707726283113" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/trunk/MVRSM" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_admittance_matrix_test_test3.coverage" NAME="Nosetests for admittance_matrix_test.test3 Coverage Results" MODIFIED="1706045531246" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_tests_test_short_circuit.coverage" NAME="Nosetests for tests.test_short_circuit Coverage Results" MODIFIED="1648735680536" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$ntc_opf_v6.coverage" NAME="ntc_opf_v6 Coverage Results" MODIFIED="1630405700769" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/or_tools" />

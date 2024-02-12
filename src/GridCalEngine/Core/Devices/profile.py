@@ -110,9 +110,10 @@ class Profile:
     Profile
     """
 
-    def __init__(self, default_value, arr: Union[None, NumericVec] = None, sparsity: int = 0.8):
+    def __init__(self, default_value, arr: Union[None, NumericVec] = None, sparsity: int = 0.8,
+                 is_sparse: bool = False):
 
-        self._is_sparse: bool = False
+        self._is_sparse: bool = is_sparse
 
         self._sparse_array: Union[SparseArray, None] = None
 
@@ -286,12 +287,12 @@ class Profile:
         if isinstance(n, int):
             if self._initialized:
                 if self._is_sparse:
-                    self._sparse_array.resize(n)
+                    self._sparse_array.resize(n=n)
                 else:
                     self._dense_array.resize(n)
             else:
                 self._initialized = True
-                self.create_sparse(n, self.default_value)
+                self.create_sparse(size=n, default_value=self.default_value)
         else:
             raise TypeError("The size must be an integer")
 
@@ -304,6 +305,17 @@ class Profile:
             self._sparse_array.resample(indices=indices)
         else:
             self._dense_array = self._dense_array[indices]
+
+    def fill(self, value):
+        """
+        Fill this profile with the same value
+        :param value: any value
+        """
+        self.default_value = value
+        self._is_sparse = True
+        self._sparse_array.fill(value)
+        self._dense_array = None
+        self._dtype = type(value)
 
     def size(self) -> int:
         """

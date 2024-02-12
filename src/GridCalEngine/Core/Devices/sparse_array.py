@@ -85,6 +85,26 @@ class SparseArray:
             if val != default_value:
                 self._map[i] = val
 
+    def create_from_dict(self, default_value: Numeric, size: int, map: Dict[int, Numeric]):
+        """
+        Create this array from dict data
+        :param default_value:
+        :param size:
+        :param map:
+        :return:
+        """
+        self._default_value = default_value
+        self._size = size
+        self._map = map
+
+    def fill(self, value):
+        """
+        Fill the sparse array with the same value
+        :param value: any value
+        """
+        self._default_value = value
+        self._map = dict()
+
     def toarray(self) -> NumericVec:
         """
         Get numpy vector from this sparse structure
