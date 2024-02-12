@@ -241,6 +241,7 @@ def get_topological_node_bus_bar(busbar_section: BusbarSection):
     except KeyError:
         return list()
 
+
 # endregion
 
 # region Dipole (IdentifiedObject)
@@ -323,7 +324,7 @@ def get_bus_monopole(conducting_equipment: ConductingEquipment):
     if tp is None:
         return None
     else:
-        return get_bus_monopole(tp)
+        return get_bus_monopole(tp)  # TODO recursive call
 
 
 def get_dict(conducting_equipment: ConductingEquipment):
@@ -377,7 +378,7 @@ def get_bus_topological_node(topological_node: TopologicalNode):
     try:
         terms = topological_node.references_to_me['Terminal']
         for term in terms:
-            if isinstance(ConductingEquipment, BusbarSection): #TODO check the old code
+            if isinstance(ConductingEquipment, BusbarSection):  # TODO check the old code
                 return ConductingEquipment
 
     except KeyError:
