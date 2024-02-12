@@ -28,10 +28,11 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="cgmes_enum.py generated with standard items">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Import and enum fixes">
+      <change afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/export_docs/CGMES_2_4_EQ_SSH_TP_SV_ConcreteClassesAllProperties.xlsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes_v2_4_15/cgmes_enums.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes_v2_4_15/cgmes_enums.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes_v2_4_15/cgmes_to_gridcal.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes_v2_4_15/cgmes_to_gridcal.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_circuit.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_circuit.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_to_gridcal.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_to_gridcal.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -109,26 +110,28 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
-    &quot;Git.Branch.Popup.ShowAllRemotes&quot;: &quot;true&quot;,
-    &quot;MATLAB_INTERPRETER&quot;: &quot;/usr/local/MATLAB/R2018a/bin/matlab&quot;,
-    &quot;Python.ExecuteGridCal.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;199__finalize__cgmes__import&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/WorkProjects/PycharmProjects/GridCal/src/GridCalEngine/IO/cim/cgmes_v2_4_15&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;run.code.analysis.last.selected.profile&quot;: &quot;aDefault&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "Git.Branch.Popup.ShowAllRemotes": "true",
+    "MATLAB_INTERPRETER": "/usr/local/MATLAB/R2018a/bin/matlab",
+    "Python.ExecuteGridCal.executor": "Run",
+    "Python.cgmes_rdfs_graph.executor": "Run",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "git-widget-placeholder": "199__finalize__cgmes__import",
+    "last_opened_file_path": "C:/WorkProjects/PycharmProjects/GridCal/src/GridCalEngine/IO/cim/cgmes",
+    "node.js.detected.package.eslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "run.code.analysis.last.selected.profile": "aDefault",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
+    "two.files.diff.last.used.file": "C:/WorkProjects/PycharmProjects/GridCal/src/trunk/cgmes_py_generator/cgmes_v2_4_15/cgmes_enums.py",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="PyDebuggerOptionsProvider">
     <option name="mySaveCallSignatures" value="true" />
     <option name="mySupportGeventDebugging" value="true" />
@@ -136,18 +139,18 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="C:\WorkProjects\PycharmProjects\GridCal\src\GridCalEngine\IO\cim\cgmes_v2_4_15" />
-      <recent name="C:\WorkProjects\PycharmProjects\GridCal\src\GridCalEngine\IO\cim\cgmes_v2_4_15\devices" />
-      <recent name="C:\WorkProjects\PycharmProjects\GridCal\src\GridCalEngine\IO\cim" />
-      <recent name="$PROJECT_DIR$/doc/rst_source/figures" />
-      <recent name="$PROJECT_DIR$/examples" />
+      <recent name="C:\WorkProjects\PycharmProjects\GridCal\src\GridCalEngine\IO\cim\cgmes" />
+      <recent name="C:\WorkProjects\PycharmProjects\GridCal\doc" />
+      <recent name="C:\WorkProjects\PycharmProjects\GridCal\src\GridCalEngine\IO\cim\cgmes\cgmes_v2_4_15\devices" />
+      <recent name="C:\WorkProjects\PycharmProjects\GridCal\src\GridCalEngine\IO\cim\cgmes\cgmes_v2_4_15" />
+      <recent name="C:\WorkProjects\PycharmProjects\GridCal\src\GridCalEngine\IO\cim\cgmes\cgmes_v3_0_0" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\WorkProjects\PycharmProjects\GridCal\src\GridCalEngine\IO\cim\cgmes\export_docs" />
+      <recent name="C:\WorkProjects\PycharmProjects\GridCal\src\GridCalEngine\IO\cim\cgmes" />
       <recent name="C:\WorkProjects\PycharmProjects\GridCal\src\GridCalEngine\IO\cim\cgmes_v2_4_15\devices" />
       <recent name="C:\Git\Github\GridCal\src\research\short_circuit" />
       <recent name="$PROJECT_DIR$/src/research/derivatives_and_jacobian" />
-      <recent name="$PROJECT_DIR$/src/GridCalGui" />
-      <recent name="$PROJECT_DIR$/src" />
     </key>
   </component>
   <component name="RunManager" selected="Python.ExecuteGridCal">
@@ -431,7 +434,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="auto_document_models" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="cgmes_rdfs_graph" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -440,12 +443,12 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/doc" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/trunk/cgmes_py_generator" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/doc/auto_document_models.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/trunk/cgmes_py_generator/cgmes_rdfs_graph.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -610,8 +613,8 @@
       <method v="2" />
     </configuration>
     <list>
+      <item itemvalue="Python.cgmes_rdfs_graph" />
       <item itemvalue="Python.ExecuteGridCal" />
-      <item itemvalue="Python.auto_document_models" />
       <item itemvalue="Python tests.Nosetests for tests.admittance_matrix_test.test1" />
       <item itemvalue="Python tests.Nosetests for tests.test_opf.test_opf" />
       <item itemvalue="Python tests.Nosetests in tests" />
@@ -619,10 +622,10 @@
     <recent_temporary>
       <list>
         <item itemvalue="Python.ExecuteGridCal" />
+        <item itemvalue="Python.cgmes_rdfs_graph" />
         <item itemvalue="Python tests.Nosetests in tests" />
         <item itemvalue="Python tests.Nosetests for tests.test_opf.test_opf" />
         <item itemvalue="Python tests.Nosetests for tests.admittance_matrix_test.test1" />
-        <item itemvalue="Python.auto_document_models" />
       </list>
     </recent_temporary>
   </component>
@@ -1622,7 +1625,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="444" />
+    <option name="localTasksCounter" value="446" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1656,8 +1659,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="some changes to make it work in python 3.9" />
-    <MESSAGE value="updated the README.md and the docs" />
     <MESSAGE value="created setup entry point" />
     <MESSAGE value="improved docs" />
     <MESSAGE value="added investment grid test" />
@@ -1681,7 +1682,9 @@
     <MESSAGE value="Generated CGMES classes added(not working)" />
     <MESSAGE value="Generated CGMES classes added enums are missing" />
     <MESSAGE value="cgmes_enum.py generated with standard items" />
-    <option name="LAST_COMMIT_MESSAGE" value="cgmes_enum.py generated with standard items" />
+    <MESSAGE value="Added CGMESv3 and new folder structure, CGMES class generator added" />
+    <MESSAGE value="Import and enum fixes" />
+    <option name="LAST_COMMIT_MESSAGE" value="Import and enum fixes" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2053,11 +2056,6 @@
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/newton_raphson.py</url>
           <line>142</line>
           <option name="timeStamp" value="1181" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/file_handler.py</url>
-          <line>231</line>
-          <option name="timeStamp" value="1183" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

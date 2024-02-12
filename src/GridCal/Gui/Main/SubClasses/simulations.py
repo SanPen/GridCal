@@ -30,9 +30,9 @@ import GridCalEngine.grid_analysis as grid_analysis
 import GridCal.Gui.GuiFunctions as gf
 import GridCal.Gui.Visualization.visualization as viz
 from GridCal.Gui.BusBranchEditorWidget import BusBranchEditorWidget
-from GridCalEngine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE, get_newton_mip_solvers_list
+from GridCalEngine.Core.Compilers.circuit_to_newton_pa import get_newton_mip_solvers_list
 from GridCalEngine.Simulations.driver_types import SimulationTypes
-from GridCal.Gui.GeneralDialogues import LogsDialogue, ElementsDialogue
+from GridCal.Gui.GeneralDialogues import ElementsDialogue
 from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_msg
 from GridCal.Gui.Main.SubClasses.Model.time_events import TimeEventsMain
 from GridCal.Gui.SigmaAnalysis.sigma_analysis_dialogue import SigmaAnalysisGUI
@@ -200,6 +200,7 @@ class SimulationsMain(TimeEventsMain):
         self.ui.actionFuse_devices.triggered.connect(self.fuse_devices)
         self.ui.actionInvestments_evaluation.triggered.connect(self.run_investments_evaluation)
         self.ui.delete_and_reduce_pushButton.clicked.connect(self.delete_and_reduce_selected_objects)
+        self.ui.actionProcess_topology.triggered.connect(self.run_topology_processor)
 
         # combobox change
         self.ui.engineComboBox.currentTextChanged.connect(self.modify_ui_options_according_to_the_engine)
@@ -258,10 +259,6 @@ class SimulationsMain(TimeEventsMain):
 
         if eng == EngineType.NewtonPA:
             self.ui.opfUnitCommitmentCheckBox.setVisible(True)
-            self.ui.maxVoltageModuleStepSpinBox.setVisible(True)
-            self.ui.maxVoltageAngleStepSpinBox.setVisible(True)
-            self.ui.maxVoltageModuleStepLabel.setVisible(True)
-            self.ui.maxVoltageAngleStepLabel.setVisible(True)
 
             # add the AC_OPF option
             self.lp_solvers_dict = OrderedDict()
@@ -289,10 +286,6 @@ class SimulationsMain(TimeEventsMain):
 
         elif eng == EngineType.GridCal:
             self.ui.opfUnitCommitmentCheckBox.setVisible(True)
-            self.ui.maxVoltageModuleStepSpinBox.setVisible(False)
-            self.ui.maxVoltageAngleStepSpinBox.setVisible(False)
-            self.ui.maxVoltageModuleStepLabel.setVisible(False)
-            self.ui.maxVoltageAngleStepLabel.setVisible(False)
 
             # no AC opf option
             self.lp_solvers_dict = OrderedDict()
@@ -322,10 +315,6 @@ class SimulationsMain(TimeEventsMain):
 
         elif eng == EngineType.Bentayga:
             self.ui.opfUnitCommitmentCheckBox.setVisible(False)
-            self.ui.maxVoltageModuleStepSpinBox.setVisible(False)
-            self.ui.maxVoltageAngleStepSpinBox.setVisible(False)
-            self.ui.maxVoltageModuleStepLabel.setVisible(False)
-            self.ui.maxVoltageAngleStepLabel.setVisible(False)
 
             # no AC opf option
             self.lp_solvers_dict = OrderedDict()
@@ -587,7 +576,7 @@ class SimulationsMain(TimeEventsMain):
                                    q_steepness_factor=q_steepness_factor,
                                    distributed_slack=distributed_slack,
                                    ignore_single_node_islands=ignore_single_node_islands,
-                                   mu=mu,
+                                   trust_radius=mu,
                                    use_stored_guess=use_stored_guess,
                                    override_branch_controls=override_branch_controls,
                                    generate_report=generate_report)
@@ -661,7 +650,7 @@ class SimulationsMain(TimeEventsMain):
         Run a power flow simulation
         :return:
         """
-        if len(self.circuit.buses) > 0:
+        if self.circuit.get_bus_number():
 
             if not self.session.is_this_running(sim.SimulationTypes.PowerFlow_run):
 
@@ -969,6 +958,7 @@ class SimulationsMain(TimeEventsMain):
             use_srap=self.ui.use_srap_checkBox.isChecked(),
             srap_max_loading=self.ui.srap_loading_limit_doubleSpinBox.value(),
             srap_max_power=self.ui.srap_limit_doubleSpinBox.value(),
+            srap_top_n=self.ui.srap_top_n_SpinBox.value(),
             engine=self.contingency_engines_dict[self.ui.contingencyEngineComboBox.currentText()]
         )
 
@@ -1401,7 +1391,8 @@ class SimulationsMain(TimeEventsMain):
                     end_idx = self.ui.vs_target_comboBox.currentIndex()
 
                     if len(sel_bus_idx) > 0:
-                        if sum([self.circuit.buses[i].get_device_number() for i in sel_bus_idx]) == 0:
+                        S = self.circuit.get_Sbus()
+                        if S[sel_bus_idx].sum() == 0:
                             warning_msg('You have selected a group of buses with no power injection.\n'
                                         'this will result in an infinite continuation, since the loading variation '
                                         'of buses with zero injection will be infinite.', 'Continuation Power Flow')
@@ -1761,9 +1752,6 @@ class SimulationsMain(TimeEventsMain):
                                               unit_commitment=unit_commitment,
                                               export_model_fname=export_model_fname,
                                               generate_report=generate_report)
-
-        options.max_vm = self.ui.maxVoltageModuleStepSpinBox.value()
-        options.max_va = self.ui.maxVoltageAngleStepSpinBox.value()
 
         return options
 
@@ -2442,12 +2430,17 @@ class SimulationsMain(TimeEventsMain):
 
                         self.buses_for_storage = list()
                         colors = list()
+
+                        # get all batteries grouped by bus
+                        batt_by_bus = self.circuit.get_batteries_by_bus()
+
                         for i, freq in zip(idx, frequencies):
 
                             bus = self.circuit.buses[i]
+                            batts = batt_by_bus.get(bus, None)
 
                             # add a marker to the bus if there are no batteries in it
-                            if len(bus.batteries) == 0:
+                            if batts is None:
                                 self.buses_for_storage.append(bus)
                                 r, g, b, a = cmap(freq / fmax)
                                 color = QtGui.QColor(r * 255, g * 255, b * 255, a * 255)
@@ -2725,5 +2718,47 @@ class SimulationsMain(TimeEventsMain):
                              "Fuse devices")
 
         if ok:
-            self.circuit.fuse_devices()
-            self.redraw_current_diagram()
+            deleted_devices = self.circuit.fuse_devices()
+
+            for diagram_widget in self.diagram_widgets_list:
+                diagram_widget.delete_diagram_elements(elements=deleted_devices)
+
+    def run_topology_processor(self):
+        """
+        Run the topology processor on the grid completelly
+        """
+        if self.circuit.get_bus_number():
+
+            if not self.session.is_this_running(sim.SimulationTypes.PowerFlow_run):
+
+                self.LOCK()
+
+                self.add_simulation(sim.SimulationTypes.TopologyProcessor_run)
+
+                self.ui.progress_label.setText('Running topology processing...')
+                QtGui.QGuiApplication.processEvents()
+                # set power flow object instance
+                drv = sim.TopologyProcessorDriver(self.circuit,
+                                                  time_indices=[None] + list(self.circuit.get_all_time_indices()))
+
+                self.session.run(drv,
+                                 post_func=self.post_topology_processor,
+                                 prog_func=self.ui.progressBar.setValue,
+                                 text_func=self.ui.progress_label.setText)
+
+            else:
+                warning_msg('Another simulation of the same type is running...')
+        else:
+            pass
+
+    def post_topology_processor(self):
+        """
+        Actions after the topology processor is done
+        """
+
+        self.remove_simulation(sim.SimulationTypes.TopologyProcessor_run)
+        # self.update_available_results()
+        # self.colour_diagrams()
+
+        if not self.session.is_anything_running():
+            self.UNLOCK()

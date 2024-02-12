@@ -17,16 +17,16 @@
 
 import numpy as np
 import pandas as pd
-from typing import Union, Tuple
+from typing import Union
 from matplotlib import pyplot as plt
-from GridCalEngine.basic_structures import Logger, Vec, Mat
+from GridCalEngine.basic_structures import Logger, Vec
 from GridCalEngine.enumerations import DeviceType, BuildStatus
 from GridCalEngine.Core.Devices.Aggregation.technology import Technology
-from GridCalEngine.Core.Devices.Injections.injection_template import InjectionTemplate
+from GridCalEngine.Core.Devices.Injections.injection_template import GeneratorLikeTemplate
 from GridCalEngine.Core.Devices.Injections.generator_q_curve import GeneratorQCurve
 
 
-class Generator(InjectionTemplate):
+class Generator(GeneratorLikeTemplate):
 
     def __init__(self,
                  name='gen',
@@ -108,22 +108,26 @@ class Generator(InjectionTemplate):
         :param Cost2_prof:
         :param Cost0_prof:
         """
-        InjectionTemplate.__init__(self,
-                                   name=name,
-                                   idtag=idtag,
-                                   code=code,
-                                   bus=None,
-                                   cn=None,
-                                   active=active,
-                                   active_prof=active_prof,
-                                   Cost=Cost,
-                                   Cost_prof=Cost_prof,
-                                   mttf=mttf,
-                                   mttr=mttr,
-                                   capex=capex,
-                                   opex=opex,
-                                   build_status=build_status,
-                                   device_type=DeviceType.GeneratorDevice)
+        GeneratorLikeTemplate.__init__(self,
+                                       name=name,
+                                       idtag=idtag,
+                                       code=code,
+                                       bus=None,
+                                       cn=None,
+                                       active=active,
+                                       active_prof=active_prof,
+                                       P=P,
+                                       P_prof=P_prof,
+                                       Pmin=Pmin,
+                                       Pmax=Pmax,
+                                       Cost=Cost,
+                                       Cost_prof=Cost_prof,
+                                       mttf=mttf,
+                                       mttr=mttr,
+                                       capex=capex,
+                                       opex=opex,
+                                       build_status=build_status,
+                                       device_type=DeviceType.GeneratorDevice)
 
         self.technology = technology
 
@@ -159,17 +163,6 @@ class Generator(InjectionTemplate):
 
         # Nominal power in MVA (also the machine base)
         self._Snom = Snom
-
-        # Minimum dispatched power in MW
-        self.Pmin = Pmin
-
-        # Maximum dispatched power in MW
-        self.Pmax = Pmax
-
-        self.P = P
-
-        # power profile for this load in MW
-        self.P_prof = P_prof
 
         # Voltage module set point (p.u.)
         self.Vset = vset
@@ -229,7 +222,7 @@ class Generator(InjectionTemplate):
         self.Sbase = Sbase
 
         self.register(key='is_controlled', units='', tpe=bool, definition='Is this generator voltage-controlled?')
-        self.register(key='P', units='MW', tpe=float, definition='Active power', profile_name='P_prof')
+
         self.register(key='Pf', units='', tpe=float,
                       definition='Power factor (cos(fi)). This is used for non-controlled generators.',
                       profile_name='Pf_prof')
@@ -243,8 +236,7 @@ class Generator(InjectionTemplate):
         self.register(key='q_curve', units='MVAr', tpe=DeviceType.GeneratorQCurve,
                       definition='Capability curve data (double click on the generator to edit)',
                       editable=False, display=False)
-        self.register(key='Pmin', units='MW', tpe=float, definition='Minimum active power. Used in OPF.')
-        self.register(key='Pmax', units='MW', tpe=float, definition='Maximum active power. Used in OPF.')
+
         self.register(key='R1', units='p.u.', tpe=float, definition='Total positive sequence resistance.')
         self.register(key='X1', units='p.u.', tpe=float, definition='Total positive sequence reactance.')
         self.register(key='R0', units='p.u.', tpe=float, definition='Total zero sequence resistance.')
@@ -253,8 +245,7 @@ class Generator(InjectionTemplate):
         self.register(key='X2', units='p.u.', tpe=float, definition='Total negative sequence reactance.')
         self.register(key='Cost2', units='e/MWh²', tpe=float, definition='Generation quadratic cost. Used in OPF.',
                       profile_name='Cost2_prof')
-        self.register(key='Cost', units='e/MWh', tpe=float, definition='Generation linear cost. Used in OPF.',
-                      profile_name='Cost_prof')
+
         self.register(key='Cost0', units='e/h', tpe=float, definition='Generation constant cost. Used in OPF.',
                       profile_name='Cost0_prof')
         self.register(key='StartupCost', units='e/h', tpe=float, definition='Generation start-up cost. Used in OPF.')

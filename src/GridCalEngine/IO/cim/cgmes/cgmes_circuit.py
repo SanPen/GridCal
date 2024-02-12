@@ -50,7 +50,6 @@ from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.per_lengthdc_line_paramete
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.vs_capability_curve import VsCapabilityCurve
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.vs_converter import VsConverter
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.bus_name_marker import BusNameMarker
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.analog_control import AnalogControl
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.control import Control
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.limit import Limit
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.limit_set import LimitSet
@@ -1170,3 +1169,90 @@ class CgmesCircuit(BaseCircuit):
         :return: Dict[float, BaseVoltage]
         """
         return {e.nominalVoltage: e for e in self.elements_by_type_boundary['BaseVoltage']}
+
+    def export_to_xml(self):
+        import polars as pl
+        from rdflib import Graph, RDFS, RDF
+        import rdflib
+        import os
+
+        current_directory = os.path.dirname(__file__)
+        relative_path_to_excel = "export_docs/CGMES_2_4_EQ_SSH_TP_SV_ConcreteClassesAllProperties.xlsx"
+        absolute_path_to_excel = os.path.join(current_directory, relative_path_to_excel)
+
+        profiles_info = pl.read_excel(
+            source=absolute_path_to_excel,
+            sheet_name="Profiles")
+        eq_graph = Graph()
+        ssh_graph = Graph()
+        tp_graph = Graph()
+        sv_graph = Graph()
+
+        for class_name in self.classes:
+            objects = self.get_objects_list(elm_type=class_name)
+
+            filt_class = profiles_info.filter(pl.col("ClassSimpleName") == class_name)
+
+            for obj in objects:
+                for attr_name, attr_value in obj.__dict__.items():
+                    # print(f"{attr_name}: {attr_value}")
+                    try:
+                        filt_property = filt_class.filter(pl.col("Property-AttributeAssociationSimple") == attr_name)
+                        profile = filt_property[0, 8].__str__()
+                        if hasattr(attr_value, "rdfid"):
+                            # print("It's an assoc: " + attr_value.rdfid)
+
+                            if profile == "EQ":
+                                eq_graph.add((rdflib.URIRef(attr_value.rdfid), RDF.type,
+                                              rdflib.URIRef(filt_property[0, 2].__str__())))
+                                eq_graph.add((rdflib.URIRef(attr_value.rdfid), rdflib.URIRef(filt_property[0, 3].__str__()),
+                                              rdflib.URIRef(attr_value.rdfid)))
+                            elif profile == "SSH":
+                                ssh_graph.add((rdflib.URIRef(attr_value.rdfid), RDF.type,
+                                               rdflib.URIRef(filt_property[0, 2].__str__())))
+                                ssh_graph.add(
+                                    (rdflib.URIRef(attr_value.rdfid), rdflib.URIRef(filt_property[0, 3].__str__()),
+                                     rdflib.URIRef(attr_value.rdfid)))
+                            elif profile == "TP":
+                                tp_graph.add((rdflib.URIRef(attr_value.rdfid), RDF.type,
+                                              rdflib.URIRef(filt_property[0, 2].__str__())))
+                                tp_graph.add((rdflib.URIRef(attr_value.rdfid), rdflib.URIRef(filt_property[0, 3].__str__()),
+                                              rdflib.URIRef(attr_value.rdfid)))
+                            elif profile == "SV":
+                                sv_graph.add((rdflib.URIRef(attr_value.rdfid), RDF.type,
+                                              rdflib.URIRef(filt_property[0, 2].__str__())))
+                                sv_graph.add((rdflib.URIRef(attr_value.rdfid), rdflib.URIRef(filt_property[0, 3].__str__()),
+                                              rdflib.URIRef(attr_value.rdfid)))
+                        else:
+                            # print(f"It's an attribute:  {attr_value}")
+                            if profile == "EQ":
+                                eq_graph.add((rdflib.URIRef(obj.rdfid), RDF.type,
+                                              rdflib.URIRef(filt_property[0, 2].__str__())))
+                                eq_graph.add((rdflib.URIRef(obj.rdfid), rdflib.URIRef(filt_property[0, 3].__str__()),
+                                              rdflib.Literal(attr_value)))
+                            elif profile == "SSH":
+                                ssh_graph.add((rdflib.URIRef(obj.rdfid), RDF.type,
+                                               rdflib.URIRef(filt_property[0, 2].__str__())))
+                                ssh_graph.add(
+                                    (rdflib.URIRef(obj.rdfid), rdflib.URIRef(filt_property[0, 3].__str__()),
+                                     rdflib.Literal(attr_value)))
+                            elif profile == "TP":
+                                tp_graph.add((rdflib.URIRef(obj.rdfid), RDF.type,
+                                              rdflib.URIRef(filt_property[0, 2].__str__())))
+                                tp_graph.add((rdflib.URIRef(obj.rdfid), rdflib.URIRef(filt_property[0, 3].__str__()),
+                                              rdflib.Literal(attr_value)))
+                            elif profile == "SV":
+                                sv_graph.add((rdflib.URIRef(obj.rdfid), RDF.type,
+                                              rdflib.URIRef(filt_property[0, 2].__str__())))
+                                sv_graph.add((rdflib.URIRef(obj.rdfid), rdflib.URIRef(filt_property[0, 3].__str__()),
+                                              rdflib.Literal(attr_value)))
+                    except Exception:
+                        continue
+
+            relative_path_to_files = "export_docs/"
+            absolute_path_to_files = os.path.join(current_directory, relative_path_to_files)
+
+            eq_graph.serialize(destination=absolute_path_to_files+"eq.xml", format="xml")
+            ssh_graph.serialize(destination=absolute_path_to_files+"ssh.xml", format="xml")
+            tp_graph.serialize(destination=absolute_path_to_files+"tp.xml", format="xml")
+            sv_graph.serialize(destination=absolute_path_to_files+"sv.xml", format="xml")

@@ -17,6 +17,7 @@
 
 
 from GridCalEngine.Core.Devices.Substation.bus import Bus
+from GridCalEngine.Core.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.enumerations import BuildStatus
 from GridCalEngine.Core.Devices.Branches.templates.parent_branch import ParentBranch
 from GridCalEngine.Core.Devices.editable_device import DeviceType
@@ -28,8 +29,9 @@ class Switch(ParentBranch):
     :ref:`buses<bus>`) in **GridCal**. A Switch is an devices that cuts or allows the flow.
     """
 
-    def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='Switch', idtag=None, code='',
-                 r=1e-20, x=1e-20, rate=1.0, active=True, active_prof=None, contingency_factor=1.0):
+    def __init__(self, bus_from: Bus = None, bus_to: Bus = None, cn_from: ConnectivityNode = None,
+                 cn_to: ConnectivityNode = None, name='Switch', idtag=None, code='', r=1e-20, x=1e-20, rate=1.0,
+                 active=True, active_prof=None, contingency_factor=1.0):
         """
         Switch device
         :param bus_from: Bus from
@@ -50,8 +52,8 @@ class Switch(ParentBranch):
                               code=code,
                               bus_from=bus_from,
                               bus_to=bus_to,
-                              cn_from=None,
-                              cn_to=None,
+                              cn_from=cn_from,
+                              cn_to=cn_to,
                               active=active,
                               active_prof=active_prof,
                               rate=rate,

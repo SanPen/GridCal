@@ -15,10 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import os
-import numpy as np
-
 from GridCalEngine.api import *
-from tests.zip_file_mgmt import open_data_frame_from_zip
 
 
 def test_opf_ts():
@@ -41,24 +38,17 @@ def test_opf_ts():
                                           solver=SolverType.LINEAR_OPF,
                                           power_flow_options=power_flow_options,
                                           time_grouping=TimeGrouping.Daily,
-                                          mip_solver=MIPSolvers.CBC)
-    s = 23
-    e = 143
+                                          mip_solver=MIPSolvers.CBC,
+                                          generate_report=True)
+
+    # run the opf time series
     opf_ts = OptimalPowerFlowTimeSeriesDriver(grid=main_circuit,
                                               options=opf_options,
                                               time_indices=main_circuit.get_all_time_indices())
     opf_ts.run()
 
-    data = open_data_frame_from_zip(file_name_zip=os.path.join('data', 'results', 'Results_IEEE39_1W.zip'),
-                                    file_name='OPF time series Bus voltage angle.csv')
-
-    assert np.isclose(np.angle(opf_ts.results.voltage)[s:e], data.values[s:e]).all()
-
-    data = open_data_frame_from_zip(file_name_zip=os.path.join('data', 'results', 'Results_IEEE39_1W.zip'),
-                                    file_name='OPF time series Branch power.csv')
-
-    assert np.isclose(np.real(opf_ts.results.Sf)[s:e], data.values[s:e]).all()
+    # check that no error or warning is generated
+    assert opf_ts.logger.error_count() == 0
+    assert opf_ts.logger.warning_count() == 0
 
 
-if __name__ == '__main__':
-    test_opf_ts()

@@ -17,7 +17,7 @@
 import numpy as np
 import pandas as pd
 import scipy.sparse as sp
-import GridCalEngine.Core.topology as tp
+import GridCalEngine.Core.Topology.topology as tp
 from GridCalEngine.enumerations import WindingsConnection
 from GridCalEngine.basic_structures import Vec, IntVec, StrVec, ObjVec
 from typing import List, Tuple
@@ -130,6 +130,14 @@ class BranchData:
         self.overload_cost: Vec = np.zeros(nelm, dtype=float)
 
         self.original_idx: IntVec = np.zeros(nelm, dtype=int)
+
+    def size(self) -> int:
+        """
+        Get size of the structure
+        :return:
+        """
+
+        return self.nelm
 
     def slice(self, elm_idx: IntVec, bus_idx: IntVec) -> "BranchData":
         """

@@ -589,6 +589,59 @@ class InputNumberDialogue(QtWidgets.QDialog):
         self.value = self.input_box.value()
         self.accept()
 
+class InputSearchDialogue(QtWidgets.QDialog):
+    """
+    New InputNumberDialogue window
+    """
+
+    def __init__(self, deafault_value: str, title='Search', prompt='', h=80, w=240):
+        """
+        :default_value:
+        :param title:
+        :param prompt:
+        :param h:
+        :param w:
+        """
+
+        self.searchText = ""
+        QtWidgets.QDialog.__init__(self)
+        self.setObjectName("self")
+        self.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.NoContextMenu)
+        self.main_layout = QtWidgets.QVBoxLayout(self)
+
+        self.is_accepted: bool = False
+
+        self.label1 = QtWidgets.QLabel()
+        self.label1.setText(prompt)
+
+        # min voltage
+        self.input_box = QtWidgets.QLineEdit()
+
+
+        # search button
+        self.accept_btn = QtWidgets.QPushButton()
+        self.accept_btn.setText('Search')
+        self.accept_btn.clicked.connect(self.search_click)
+
+        # add all to the GUI
+        self.main_layout.addWidget(self.label1)
+        self.main_layout.addWidget(self.input_box)
+        self.main_layout.addWidget(self.accept_btn)
+
+        self.setLayout(self.main_layout)
+
+        self.setWindowTitle(title)
+
+        self.resize(w, h)
+
+    def search_click(self):
+        """
+        Serach and close
+        """
+        self.is_accepted = True
+
+        self.searchText = self.input_box.text()
+        self.accept()
 
 class InputSearchDialogue(QtWidgets.QDialog):
     """

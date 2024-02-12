@@ -140,6 +140,7 @@ class LinearAnalysisDriver(DriverTemplate):
             lin_mat = newton_pa_linear_matrices(circuit=self.grid, distributed_slack=self.options.distribute_slack)
             self.results.PTDF = lin_mat.PTDF
             self.results.LODF = lin_mat.LODF
+            # TODO: figure this out
             self.results.Sbus = self.grid.get_Pbus()
             rates = self.grid.get_branch_rates_wo_hvdc()
             self.results.Sf = np.dot(lin_mat.PTDF, self.results.Sbus)
