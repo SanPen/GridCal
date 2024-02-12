@@ -22,6 +22,7 @@ def get_windings_number(power_transformer: PowerTransformer):
     Get the number of windings
     :return: # number of associated windings
     """
+    # todo: No reference for this method
     try:
         return len(power_transformer.references_to_me['PowerTransformerEnd'])
     except KeyError:
@@ -73,6 +74,7 @@ def get_voltages(power_transformer: PowerTransformer):
 
     :return:
     """
+    # todo: is it unnecessary? Referenced only in cimparser
     return [get_voltage_power_transformer_end(x) for x in
             get_windings(power_transformer)]  # TODO logger?
 
@@ -222,6 +224,7 @@ def get_topological_nodes_bus_bar(busbar_section: BusbarSection):
     Get the associated TopologicalNode instances
     :return: list of TopologicalNode instances
     """
+    # todo: referenced only from cim16
     try:
         terms = busbar_section.references_to_me['Terminal']
         return [TopologicalNode for term in terms]
@@ -234,12 +237,14 @@ def get_topological_node_bus_bar(busbar_section: BusbarSection):
     Get the first TopologicalNode found
     :return: first TopologicalNode found
     """
+    # todo: referenced only from cim16
     try:
         terms = busbar_section.references_to_me['Terminal']
         for term in terms:
             return TopologicalNode
     except KeyError:
         return list()
+
 
 # endregion
 
@@ -249,6 +254,7 @@ def get_topological_nodes_dipole(identified_object: IdentifiedObject) -> Tuple["
     Get the TopologyNodes of this branch
     :return: (TopologyNodes, TopologyNodes) or (None, None)
     """
+    # todo
     try:
         terminals = list(identified_object.references_to_me['Terminal'])
 
@@ -268,6 +274,7 @@ def get_buses_dipole(identified_object: IdentifiedObject) -> Tuple["BusbarSectio
     Get the associated bus
     :return: (BusbarSection, BusbarSection) or (None, None)
     """
+    # todo: not referenced
     t1, t2 = get_topological_nodes_dipole(identified_object)
     b1 = get_bus_topological_node(t1) if t1 is not None else None
     b2 = get_bus_topological_node(t1) if t2 is not None else None
@@ -279,6 +286,7 @@ def get_nodes_dipole(identified_object: IdentifiedObject) -> Tuple["TopologicalN
     Get the TopologyNodes of this branch
     :return: two TopologyNodes or nothing
     """
+    # todo: not referenced
     try:
         terminals = list(identified_object.references_to_me['Terminal'])
 
@@ -323,7 +331,7 @@ def get_bus_monopole(conducting_equipment: ConductingEquipment):
     if tp is None:
         return None
     else:
-        return get_bus_monopole(tp)
+        return get_bus_topological_node(tp)  # todo: is it ok?
 
 
 def get_dict(conducting_equipment: ConductingEquipment):
@@ -331,10 +339,10 @@ def get_dict(conducting_equipment: ConductingEquipment):
     Get dictionary with the data
     :return: Dictionary
     """
-    tp = get_topological_node_monopole(conducting_equipment)
-    bus = get_bus_monopole(tp) if tp is not None else None
+    tp = get_topological_node_monopole(conducting_equipment)    
+    bus = get_bus_topological_node(tp) if tp is not None else None  # todo: is it ok?
 
-    d = super().get_dict()  # TODO check it
+    d = conducting_equipment.get_dict()  # todo: check it
     d['TopologicalNode'] = '' if tp is None else tp.uuid
     d['BusbarSection'] = '' if bus is None else bus.uuid
     return d
@@ -344,6 +352,7 @@ def get_dict(conducting_equipment: ConductingEquipment):
 
 # region NonConformLoad(EnergyConsumer)
 def get_pq(energy_consumer: EnergyConsumer):
+    # todo: referenced only from cim16
     return energy_consumer.p, energy_consumer.q
 
 
@@ -377,7 +386,7 @@ def get_bus_topological_node(topological_node: TopologicalNode):
     try:
         terms = topological_node.references_to_me['Terminal']
         for term in terms:
-            if isinstance(ConductingEquipment, BusbarSection): #TODO check the old code
+            if isinstance(ConductingEquipment, BusbarSection):  # TODO check the old code
                 return ConductingEquipment
 
     except KeyError:
@@ -392,6 +401,7 @@ def get_nodes(switch: Switch):
     Get the TopologyNodes of this branch
     :return: two TopologyNodes or nothing
     """
+    # todo: not referenced
     try:
         terminals = list(switch.references_to_me['Terminal'])
 
@@ -408,8 +418,17 @@ def get_nodes(switch: Switch):
 
 # endregion
 
+def check(logger: DataLogger):
+    """
+    Check specific OCL rules
+    :param logger: Logger instance
+    :return: true is ok false otherwise
+    """
+    return True
+
+
 # region LoadResponseCharacteristic(IdentifiedObject)
-def check(load_response_characteristic: LoadResponseCharacteristic, logger: DataLogger):
+def check_load_response_characteristic(load_response_characteristic: LoadResponseCharacteristic, logger: DataLogger):
     """
     Check OCL rules
     :param logger:

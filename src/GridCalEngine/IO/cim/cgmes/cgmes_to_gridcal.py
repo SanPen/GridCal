@@ -20,6 +20,8 @@ import GridCalEngine.IO.cim.cgmes.cgmes_enums as cgmes_enums
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 import GridCalEngine.Core.Devices as gcdev
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
+from GridCalEngine.IO.cim.cgmes.cgmes_utils import get_nominal_voltage, get_pu_values_power_transformer, get_pu_values, \
+    get_rate
 from GridCalEngine.data_logger import DataLogger
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.identified_object import IdentifiedObject
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.terminal import Terminal
@@ -111,7 +113,8 @@ def get_gcdev_calculation_nodes(cgmes_model: CgmesCircuit,
     for cgmes_elm in cgmes_model.TopologicalNode_list:
 
         voltage = v_dict.get(cgmes_elm.uuid, None)
-        nominal_voltage = cgmes_elm.get_nominal_voltage(logger=logger)
+        nominal_voltage = get_nominal_voltage(topological_node=cgmes_elm, logger=logger)
+
         if voltage is not None and nominal_voltage is not None:
             vm = voltage[0] / nominal_voltage
             va = np.deg2rad(voltage[1])
@@ -451,7 +454,7 @@ def get_gcdev_ac_lines(cgmes_model: CgmesCircuit,
                 cn_t = cns[1]
 
                 # get per unit vlaues
-                r, x, g, b, r0, x0, g0, b0 = cgmes_elm.get_pu_values(logger, Sbase)
+                r, x, g, b, r0, x0, g0, b0 = get_pu_values(ac_line_segment=cgmes_elm, logger=logger, Sbase=Sbase)
 
                 current_rate = rates_dict.get(cgmes_elm.uuid, None)  # A
                 if current_rate:
@@ -532,7 +535,7 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                     LV = min(v1, v2)
                     # get per unit vlaues
 
-                    r, x, g, b, r0, x0, g0, b0 = cgmes_elm.get_pu_values(Sbase)
+                    r, x, g, b, r0, x0, g0, b0 = get_pu_values_power_transformer(cgmes_elm, Sbase)
 
                     gcdev_elm = gcdev.Transformer2W(idtag=cgmes_elm.uuid,
                                                     code=cgmes_elm.description,
@@ -554,7 +557,7 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                                                     b0=b0,
                                                     tap_module=1.0,
                                                     tap_phase=0.0,
-                                                    rate=cgmes_elm.get_rate())
+                                                    rate=get_rate(cgmes_elm))
 
                     gcdev_model.add_transformer2w(gcdev_elm)
                 else:
@@ -679,16 +682,16 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit, logger: DataLogger) -> MultiCirc
                              value=e.ConductingEquipment,
                              expected_value='object')
 
-    # calc_node_dict = get_gcdev_calculation_nodes(cgmes_model, gc_model, v_dict, logger)
-    # cn_dict = get_gcdev_connectivity_nodes(cgmes_model, gc_model)
-    # get_gcdev_loads(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger)
-    # get_gcdev_external_grids(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger)
-    # get_gcdev_generators(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger)
-    #
-    # get_gcdev_ac_lines(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger, Sbase)
-    # get_gcdev_ac_transformers(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger, Sbase)
-    #
-    # get_gcdev_shunts(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger)
+    calc_node_dict = get_gcdev_calculation_nodes(cgmes_model, gc_model, v_dict, logger)
+    cn_dict = get_gcdev_connectivity_nodes(cgmes_model, gc_model)
+    get_gcdev_loads(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger)
+    get_gcdev_external_grids(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger)
+    get_gcdev_generators(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger)
+
+    get_gcdev_ac_lines(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger, Sbase)
+    get_gcdev_ac_transformers(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger, Sbase)
+
+    get_gcdev_shunts(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger)
     # for class_name in cgmes_model.classes:
     #     objects = cgmes_model.get_objects_list(elm_type=class_name)
     #     for obj in objects:

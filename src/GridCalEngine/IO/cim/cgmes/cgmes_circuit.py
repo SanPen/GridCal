@@ -20,6 +20,7 @@ from collections.abc import Callable
 from typing import Dict, List, Union
 from enum import Enum, EnumMeta
 
+from GridCalEngine.IO.cim.cgmes.cgmes_utils import check_load_response_characteristic, check
 from GridCalEngine.data_logger import DataLogger
 from GridCalEngine.IO.cim.cgmes.cgmes_poperty import CgmesProperty
 from GridCalEngine.IO.base.base_circuit import BaseCircuit
@@ -313,7 +314,12 @@ def find_references(elements_by_type: Dict[str, List[IdentifiedObject]],
                         pass
 
             # check the object rules
-            element.check(logger=logger)
+            # todo: is it Ok?
+            if isinstance(element, LoadResponseCharacteristic):
+                check_load_response_characteristic(load_response_characteristic=element, logger=logger)
+            else:
+                check(logger=logger)
+
 
     # modify the elements_by_type here adding the elements from the boundary set
     # all_elements_dict was modified in the previous loop
