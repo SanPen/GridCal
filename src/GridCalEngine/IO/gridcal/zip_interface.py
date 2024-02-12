@@ -221,7 +221,7 @@ def get_frames_from_zip(file_name_zip: str,
 
     n = len(names)
     data = {'diagrams': list(),
-            'model_data': list()}
+            'model_data': dict()}
     json_files = dict()
 
     # for each file in the zip file...
@@ -251,7 +251,8 @@ def get_frames_from_zip(file_name_zip: str,
                 data['diagrams'].append(json.load(file_pointer))
 
             elif extension == '.model':
-                data['model_data'].append(json.load(file_pointer))
+                folder, object_name = name.split("/")
+                data['model_data'][object_name] = json.load(file_pointer)
 
             elif extension == '.csv':
                 df = pd.read_csv(file_pointer, index_col=None)

@@ -421,7 +421,7 @@ class MultiCircuit:
 
         return self.time_profile is not None
 
-    def get_unix_time(self):
+    def get_unix_time(self) -> IntVec:
         """
         Get the unix time representation of the time
         :return:
@@ -430,6 +430,13 @@ class MultiCircuit:
             return self.time_profile.values.astype(np.int64) // 10 ** 9
         else:
             return np.zeros(0, dtype=np.int64)
+
+    def set_unix_time(self, arr: IntVec):
+        """
+        Set the time with a unix time
+        :param arr: UNIX time iterable
+        """
+        self.time_profile = pd.to_datetime(arr, unit='s')
 
     def get_objects_with_profiles_list(self) -> List[dev.EditableDevice]:
         """
