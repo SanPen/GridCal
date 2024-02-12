@@ -34,6 +34,7 @@ class ContingencyAnalysisOptions:
                  use_srap: bool = False,
                  srap_max_loading: float = 1.4,
                  srap_max_power: float = 1400.0,
+                 srap_top_n: int = 5,
                  engine=ContingencyMethod.PowerFlow):
         """
         ContingencyAnalysisOptions
@@ -62,3 +63,5 @@ class ContingencyAnalysisOptions:
         self.srap_max_loading: float = srap_max_loading
 
         self.srap_max_power: float = srap_max_power
+
+        self.srap_top_n = srap_top_n

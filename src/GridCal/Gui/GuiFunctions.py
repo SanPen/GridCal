@@ -42,6 +42,7 @@ class TreeDelegate(QtWidgets.QItemDelegate):
     """
     
     """
+
     def __init__(self, parent, data=defaultdict()):
         """
         Constructor
@@ -871,6 +872,9 @@ class ObjectsModel(QtCore.QAbstractTableModel):
         :param role:
         :return:
         """
+        if len(self.objects) == 0:
+            return None
+
         if index.isValid():
             if role == QtCore.Qt.ItemDataRole.DisplayRole:
                 return str(self.data_with_type(index))
@@ -888,6 +892,8 @@ class ObjectsModel(QtCore.QAbstractTableModel):
         :param role:
         :return:
         """
+        if len(self.objects) == 0:
+            return True
 
         if self.transposed:
             obj_idx = index.column()
@@ -940,6 +946,9 @@ class ObjectsModel(QtCore.QAbstractTableModel):
         :param role:
         :return:
         """
+        if len(self.objects) == 0:
+            return None
+
         if role == QtCore.Qt.ItemDataRole.DisplayRole:
 
             if self.transposed:

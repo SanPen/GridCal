@@ -130,21 +130,6 @@ class ExternalGridGraphicItem(InjectionTemplateGraphicItem):
 
         menu.exec_(event.screenPos())
 
-    def remove(self, ask=True):
-        """
-        Remove this element
-        @return:
-        """
-        if ask:
-            ok = yes_no_question('Are you sure that you want to remove this external grid', 'Remove external grid')
-        else:
-            ok = True
-
-        if ok:
-            self.editor.remove_from_scene(self.nexus)
-            self.editor.remove_from_scene(self)
-            self.api_object.bus.batteries.remove(self.api_object)
-
     def enable_disable_toggle(self):
         """
 
@@ -200,8 +185,6 @@ class ExternalGridGraphicItem(InjectionTemplateGraphicItem):
         :param QGraphicsSceneMouseEvent:
         :return:
         """
-        mdl = ObjectsModel([self.api_object], self.api_object.registered_properties,
-                           parent=self.editor.object_editor_table, editable=True, transposed=True,
-                           dictionary_of_lists={DeviceType.Technology.value: self.editor.circuit.technologies, })
-        self.editor.object_editor_table.setModel(mdl)
+        self.editor.set_editor_model(api_object=self.api_object,
+                                     dictionary_of_lists={DeviceType.Technology.value: self.editor.circuit.technologies, })
 

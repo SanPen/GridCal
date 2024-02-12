@@ -16,9 +16,14 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 from typing import Union
+import numpy as np
+import pandas as pd
+from matplotlib import pyplot as plt
 from GridCalEngine.Core.Devices.editable_device import EditableDevice
+from GridCalEngine.Core.Devices.Substation.bus import Bus
+from GridCalEngine.Core.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.enumerations import BuildStatus, DeviceType
-from GridCalEngine.basic_structures import Vec
+from GridCalEngine.basic_structures import Vec, CxVec
 
 
 class InjectionTemplate(EditableDevice):
@@ -68,8 +73,8 @@ class InjectionTemplate(EditableDevice):
                  name: str,
                  idtag: Union[str, None],
                  code: str,
-                 bus: Union["Bus", None],
-                 cn: Union["ConnectivityNode", None],
+                 bus: Union[Bus, None],
+                 cn: Union[ConnectivityNode, None],
                  active: bool,
                  active_prof: Union[Vec, None],
                  Cost: float,
@@ -145,6 +150,97 @@ class InjectionTemplate(EditableDevice):
         self.register(key='Cost', units='e/MWh', tpe=float, definition='Cost of not served energy. Used in OPF.',
                       profile_name='Cost_prof')
 
+    def get_S(self) -> complex:
+        return complex(0.0, 0.0)
+
+    def get_Sprof(self) -> CxVec:
+        return np.zeros(len(self.active_prof), dtype=complex)
+
+
+class LoadLikeTemplate(InjectionTemplate):
+    """
+    Template for objects that behave like loads
+    """
+
+    def __init__(self,
+                 name: str,
+                 idtag: Union[str, None],
+                 code: str,
+                 bus: Union[Bus, None],
+                 cn: Union[ConnectivityNode, None],
+                 active: bool,
+                 active_prof: Union[Vec, None],
+                 P: float,
+                 P_prof,
+                 Q: float,
+                 Q_prof,
+                 Cost: float,
+                 Cost_prof: Union[Vec, None],
+                 mttf: float,
+                 mttr: float,
+                 capex: float,
+                 opex: float,
+                 build_status: BuildStatus,
+                 device_type: DeviceType):
+        """
+
+        :param name:
+        :param idtag:
+        :param code:
+        :param bus:
+        :param cn:
+        :param active:
+        :param active_prof:
+        :param Cost:
+        :param Cost_prof:
+        :param mttf:
+        :param mttr:
+        :param capex:
+        :param opex:
+        :param build_status:
+        :param device_type:
+        """
+
+        InjectionTemplate.__init__(self,
+                                   name=name,
+                                   idtag=idtag,
+                                   code=code,
+                                   bus=bus,
+                                   cn=cn,
+                                   active=active,
+                                   active_prof=active_prof,
+                                   Cost=Cost,
+                                   Cost_prof=Cost_prof,
+                                   mttf=mttf,
+                                   mttr=mttr,
+                                   capex=capex,
+                                   opex=opex,
+                                   build_status=build_status,
+                                   device_type=device_type)
+
+        self.P = P
+        self.P_prof = P_prof
+
+        self.Q = Q
+        self.Q_prof = Q_prof
+
+        self.register(key='P', units='MW', tpe=float, definition='Active power', profile_name='P_prof')
+        self.register(key='Q', units='MVAr', tpe=float, definition='Reactive power', profile_name='Q_prof')
+
+    def get_S(self) -> complex:
+        """
+
+        :return:
+        """
+        return complex(self.P, self.Q)
+
+    def get_Sprof(self) -> CxVec:
+        """
+
+        :return:
+        """
+        return self.P_prof + 1j * self.Q_prof
+
     def get_properties_dict(self, version=3):
         """
         Get json dictionary
@@ -186,14 +282,320 @@ class InjectionTemplate(EditableDevice):
                 'p': P_prof,
                 'q': Q_prof}
 
-    def get_units_dict(self, version=3):
+    def plot_profiles(self, time=None, show_fig=True):
         """
-        Get units of the values
+        Plot the time series results of this object
+        :param time: array of time values
+        :param show_fig: Show the figure?
         """
-        return {'g': 'MVAr at V=1 p.u.',
-                'b': 'MVAr at V=1 p.u.',
-                'ir': 'MVAr at V=1 p.u.',
-                'ii': 'MVAr at V=1 p.u.',
-                'p': 'MW',
-                'q': 'MVAr'}
 
+        if time is not None:
+            fig = plt.figure(figsize=(12, 8))
+
+            ax_1 = fig.add_subplot(211)
+            ax_2 = fig.add_subplot(212, sharex=ax_1)
+
+            # P
+            y = self.P_prof
+            df = pd.DataFrame(data=y, index=time, columns=[self.name])
+            ax_1.set_title('Active power', fontsize=14)
+            ax_1.set_ylabel('MW', fontsize=11)
+            df.plot(ax=ax_1)
+
+            # Q
+            y = self.Q_prof
+            df = pd.DataFrame(data=y, index=time, columns=[self.name])
+            ax_2.set_title('Reactive power', fontsize=14)
+            ax_2.set_ylabel('MVAr', fontsize=11)
+            df.plot(ax=ax_2)
+
+            plt.legend()
+            fig.suptitle(self.name, fontsize=20)
+
+            if show_fig:
+                plt.show()
+
+
+class GeneratorLikeTemplate(InjectionTemplate):
+    """
+    Template for objects that behave like generators
+    """
+
+    def __init__(self,
+                 name: str,
+                 idtag: Union[str, None],
+                 code: str,
+                 bus: Union[Bus, None],
+                 cn: Union[ConnectivityNode, None],
+                 active: bool,
+                 active_prof: Union[Vec, None],
+                 P: float,
+                 P_prof,
+                 Pmin: float,
+                 Pmax: float,
+                 Cost: float,
+                 Cost_prof: Union[Vec, None],
+                 mttf: float,
+                 mttr: float,
+                 capex: float,
+                 opex: float,
+                 build_status: BuildStatus,
+                 device_type: DeviceType):
+        """
+
+        :param name:
+        :param idtag:
+        :param code:
+        :param bus:
+        :param cn:
+        :param active:
+        :param active_prof:
+        :param Cost:
+        :param Cost_prof:
+        :param mttf:
+        :param mttr:
+        :param capex:
+        :param opex:
+        :param build_status:
+        :param device_type:
+        """
+
+        InjectionTemplate.__init__(self,
+                                   name=name,
+                                   idtag=idtag,
+                                   code=code,
+                                   bus=bus,
+                                   cn=cn,
+                                   active=active,
+                                   active_prof=active_prof,
+                                   Cost=Cost,
+                                   Cost_prof=Cost_prof,
+                                   mttf=mttf,
+                                   mttr=mttr,
+                                   capex=capex,
+                                   opex=opex,
+                                   build_status=build_status,
+                                   device_type=device_type)
+
+        self.P = P
+        self.P_prof = P_prof
+
+        # Minimum dispatched power in MW
+        self.Pmin = Pmin
+
+        # Maximum dispatched power in MW
+        self.Pmax = Pmax
+
+        self.register(key='P', units='MW', tpe=float, definition='Active power', profile_name='P_prof')
+        self.register(key='Pmin', units='MW', tpe=float, definition='Minimum active power. Used in OPF.')
+        self.register(key='Pmax', units='MW', tpe=float, definition='Maximum active power. Used in OPF.')
+
+    def get_properties_dict(self, version=3):
+        """
+        Get json dictionary
+        :return:
+        """
+        if version in [2, 3]:
+            return {'id': self.idtag,
+                    'type': 'load',
+                    'phases': 'ps',
+                    'name': self.name,
+                    'name_code': self.code,
+                    'bus': self.bus.idtag,
+                    'active': bool(self.active),
+                    'p': self.P,
+                    'shedding_cost': self.Cost
+                    }
+        else:
+            return dict()
+
+    def get_profiles_dict(self, version=3):
+        """
+
+        :return:
+        """
+
+        if self.active_prof is not None:
+            active_profile = self.active_prof.tolist()
+            P_prof = self.P_prof.tolist()
+
+        else:
+            active_profile = list()
+            P_prof = list()
+
+        return {'id': self.idtag,
+                'active': active_profile,
+                'p': P_prof}
+
+    def get_S(self) -> complex:
+        """
+
+        :return:
+        """
+        return complex(self.P, 0.0)
+
+    def get_Sprof(self) -> CxVec:
+        """
+
+        :return:
+        """
+        return self.P_prof.astype(complex)
+
+
+class ShuntLikeTemplate(InjectionTemplate):
+    """
+    Template for objects that behave like shunts
+    """
+
+    def __init__(self,
+                 name: str,
+                 idtag: Union[str, None],
+                 code: str,
+                 bus: Union[Bus, None],
+                 cn: Union[ConnectivityNode, None],
+                 active: bool,
+                 active_prof: Union[Vec, None],
+                 G: float,
+                 G_prof,
+                 B: float,
+                 B_prof,
+                 G0: float,
+                 G0_prof,
+                 B0: float,
+                 B0_prof,
+                 Cost: float,
+                 Cost_prof: Union[Vec, None],
+                 mttf: float,
+                 mttr: float,
+                 capex: float,
+                 opex: float,
+                 build_status: BuildStatus,
+                 device_type: DeviceType):
+        """
+
+        :param name:
+        :param idtag:
+        :param code:
+        :param bus:
+        :param cn:
+        :param active:
+        :param active_prof:
+        :param Cost:
+        :param Cost_prof:
+        :param mttf:
+        :param mttr:
+        :param capex:
+        :param opex:
+        :param build_status:
+        :param device_type:
+        """
+
+        InjectionTemplate.__init__(self,
+                                   name=name,
+                                   idtag=idtag,
+                                   code=code,
+                                   bus=bus,
+                                   cn=cn,
+                                   active=active,
+                                   active_prof=active_prof,
+                                   Cost=Cost,
+                                   Cost_prof=Cost_prof,
+                                   mttf=mttf,
+                                   mttr=mttr,
+                                   capex=capex,
+                                   opex=opex,
+                                   build_status=build_status,
+                                   device_type=device_type)
+
+        self.G = G
+        self.G_prof = G_prof
+
+        self.B = B
+        self.B_prof = B_prof
+
+        self.G0 = G0
+        self.G0_prof = G0_prof
+
+        self.B0 = B0
+        self.B0_prof = B0_prof
+
+        self.register(key='G', units='MW', tpe=float, definition='Active power', profile_name='G_prof')
+        self.register(key='B', units='MVAr', tpe=float, definition='Reactive power', profile_name='B_prof')
+        self.register(key='G0', units='MW', tpe=float,
+                      definition='Zero sequence active power of the impedance component at V=1.0 p.u.')
+        self.register(key='B0', units='MVAr', tpe=float,
+                      definition='Zero sequence reactive power of the impedance component at V=1.0 p.u.')
+
+    def get_properties_dict(self, version=3):
+        """
+        Get json dictionary
+        :return:
+        """
+        if version in [2, 3]:
+            return {'id': self.idtag,
+                    'type': 'load',
+                    'phases': 'ps',
+                    'name': self.name,
+                    'name_code': self.code,
+                    'bus': self.bus.idtag,
+                    'active': bool(self.active),
+                    'g': self.G,
+                    'b': self.B,
+                    'shedding_cost': self.Cost
+                    }
+        else:
+            return dict()
+
+    def get_profiles_dict(self, version=3):
+        """
+
+        :return:
+        """
+
+        if self.active_prof is not None:
+            active_profile = self.active_prof.tolist()
+            G_prof = self.G_prof.tolist()
+            B_prof = self.B_prof.tolist()
+
+        else:
+            active_profile = list()
+            G_prof = list()
+            B_prof = list()
+
+        return {'id': self.idtag,
+                'active': active_profile,
+                'g': G_prof,
+                'b': B_prof}
+
+    def plot_profiles(self, time=None, show_fig=True):
+        """
+        Plot the time series results of this object
+        :param time: array of time values
+        :param show_fig: Show the figure?
+        """
+
+        if time is not None:
+            fig = plt.figure(figsize=(12, 8))
+
+            ax_1 = fig.add_subplot(211)
+            ax_2 = fig.add_subplot(212, sharex=ax_1)
+
+            # G
+            y = self.G_prof
+            df = pd.DataFrame(data=y, index=time, columns=[self.name])
+            ax_1.set_title('Conductance power', fontsize=14)
+            ax_1.set_ylabel('MW', fontsize=11)
+            df.plot(ax=ax_1)
+
+            # B
+            y = self.B_prof
+            df = pd.DataFrame(data=y, index=time, columns=[self.name])
+            ax_2.set_title('Susceptance power', fontsize=14)
+            ax_2.set_ylabel('MVAr', fontsize=11)
+            df.plot(ax=ax_2)
+
+            plt.legend()
+            fig.suptitle(self.name, fontsize=20)
+
+            if show_fig:
+                plt.show()

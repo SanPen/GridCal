@@ -17,7 +17,7 @@ def rename(val: str) -> str:
 
 def create_class(name: str, attributes: List[str]):
 
-    attributes = "".join([f"\t{rename(a)} = None\n" for a in attributes])
+    attributes = "".join([f"\t{rename(a)} = '{rename(a)}'\n" for a in attributes])
 
     res = ("@dataclass\n"
            f"class {name}:\n"

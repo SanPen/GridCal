@@ -25,12 +25,12 @@ from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.basic_structures import Vec, IntVec, CxVec
 from GridCalEngine.enumerations import BranchImpedanceMode
-import GridCalEngine.Core.topology as tp
+import GridCalEngine.Core.Topology.topology as tp
 
-from GridCalEngine.Core.topology import compile_types
+from GridCalEngine.Core.Topology.topology import compile_types
 from GridCalEngine.Utils.NumericalMethods.sparse_solve import get_sparse_type
 import GridCalEngine.Core.Compilers.circuit_to_data as gc_compiler2
-import GridCalEngine.Core.admittance_matrices as ycalc
+import GridCalEngine.Core.Topology.admittance_matrices as ycalc
 from GridCalEngine.enumerations import TransformerControlType, ConverterControlType
 import GridCalEngine.Core.DataStructures as ds
 from GridCalEngine.Core.Devices.Substation.bus import Bus
@@ -263,6 +263,7 @@ class NumericalCircuit:
         :param sbase:  Base power (MVA)
         :param t_idx:  Time index
         """
+
         self.nbus: int = nbus
         self.nbr: int = nbr
         self.t_idx: int = t_idx
@@ -303,6 +304,24 @@ class NumericalCircuit:
 
         # (old iPfdp) indices of the drop-Vm converters controlling the power flow with theta sh
         self.k_pf_dp: IntVec = np.zeros(0, dtype=int)
+
+        # indices of the transformers with controlled tap module
+        self.k_m: IntVec = np.zeros(0, dtype=int)
+
+        # indices of the transformers with controlled tap angle
+        self.k_tau: IntVec = np.zeros(0, dtype=int)
+
+        # indices of the transformers with controlled tap angle and module
+        self.k_mtau: IntVec = np.zeros(0, dtype=int)
+
+        # indices of the buses with controlled tap module
+        self.i_m: IntVec = np.zeros(0, dtype=int)
+
+        # indices of the buses with controlled tap angle
+        self.i_tau: IntVec = np.zeros(0, dtype=int)
+
+        # indices of the buses with controlled tap angle and module
+        self.i_mtau: IntVec = np.zeros(0, dtype=int)
 
         # (old iPfdp_va) indices of the drop-Va converters controlling the power flow with theta sh
         self.iPfdp_va: IntVec = np.zeros(0, dtype=int)
@@ -579,6 +598,12 @@ class NumericalCircuit:
         k_vt_m_lst = list()  # indices of the Branches when controlling Vt with ma
         k_qt_m_lst = list()  # indices of the Branches controlling the Qt flow with ma
         k_pf_dp_lst = list()  # indices of the drop converters controlling the power flow with theta sh
+        k_m_modif_lst = list() # indices of the transformers with controlled tap module
+        k_tau_modif_lst = list() # indices of the transformers with controlled tap angle
+        k_mtau_modif_lst = list() # indices of the transformers with controlled tap angle and module
+        i_m_modif_lst = list()  # indices of the controlled buses with tap module
+        i_tau_modif_lst = list()  # indices of the controlled buses with tap angle
+        i_mtau_modif_lst = list()  # indices of the controlled buses with tap module and angle
         i_vsc_lst = list()  # indices of the converters
         iPfdp_va_lst = list()
 
@@ -589,26 +614,42 @@ class NumericalCircuit:
             if tpe == TransformerControlType.fixed:
                 pass
 
-            elif tpe == TransformerControlType.Pt:
+            elif tpe == TransformerControlType.Pf:  # TODO: change name .Pt by .Pf
                 k_pf_tau_lst.append(k)
+                k_tau_modif_lst.append(k)
+                i_tau_modif_lst.append(self.F[k]) #TODO: identify which index is the controlled one
                 self.any_control = True
 
             elif tpe == TransformerControlType.Qt:
                 k_qt_m_lst.append(k)
+                k_m_modif_lst.append(k)
+                i_m_modif_lst.append(self.T[k])
                 self.any_control = True
 
             elif tpe == TransformerControlType.PtQt:
                 k_pf_tau_lst.append(k)
                 k_qt_m_lst.append(k)
+                k_m_modif_lst.append(k)
+                k_tau_modif_lst.append(k)
+                k_mtau_modif_lst.append(k)
+                i_tau_modif_lst.append(self.F[k])
+                i_m_modif_lst.append(self.T[k])
                 self.any_control = True
 
             elif tpe == TransformerControlType.Vt:
                 k_vt_m_lst.append(k)
+                k_m_modif_lst.append(k)
+                i_m_modif_lst.append(self.T[k])
                 self.any_control = True
 
             elif tpe == TransformerControlType.PtVt:
                 k_pf_tau_lst.append(k)
                 k_vt_m_lst.append(k)
+                k_m_modif_lst.append(k)
+                k_tau_modif_lst.append(k)
+                k_mtau_modif_lst.append(k)
+                i_tau_modif_lst.append(self.F[k])
+                i_m_modif_lst.append(self.T[k])
                 self.any_control = True
 
             # VSC ------------------------------------------------------------------------------------------------------
@@ -707,6 +748,12 @@ class NumericalCircuit:
         self.k_vt_m = np.array(k_vt_m_lst, dtype=int)
         self.k_qt_m = np.array(k_qt_m_lst, dtype=int)
         self.k_pf_dp = np.array(k_pf_dp_lst, dtype=int)
+        self.k_m = np.array(k_m_modif_lst, dtype=int)
+        self.k_tau = np.array(k_tau_modif_lst, dtype=int)
+        self.k_mtau = np.array(k_mtau_modif_lst, dtype=int)
+        self.i_m = np.array(i_m_modif_lst, dtype=int)
+        self.i_tau = np.array(i_tau_modif_lst, dtype=int)
+        self.i_mtau = np.array(i_mtau_modif_lst, dtype=int)
         self.iPfdp_va = np.array(iPfdp_va_lst, dtype=int)
         self.i_vsc = np.array(i_vsc_lst, dtype=int)
 
@@ -826,6 +873,43 @@ class NumericalCircuit:
                     print(f'Unknown contingency property {cnt.prop} at {cnt.name} {cnt.idtag}')
             else:
                 print(f'contingency device not found {cnt.name} {cnt.idtag}')
+
+    def set_linear_contingency_status(self, contingencies_list: List[Contingency], revert: bool = False):
+        """
+        Set the status of a list of contingencies
+        :param contingencies_list: list of contingencies
+        :param revert: if false, the contingencies are applied, else they are reversed
+        """
+        injections = np.zeros(self.nbus)
+        # apply the contingencies
+        for cnt in contingencies_list:
+
+            # search the investment device
+            structure, idx = self.structs_dict.get(cnt.device_idtag, (None, 0))
+
+            if structure is not None:
+                if cnt.prop == 'active':
+                    if revert:
+                        structure.active[idx] = int(not bool(cnt.value))
+                    else:
+                        structure.active[idx] = int(cnt.value)
+                elif cnt.prop == '%':
+                    # TODO Cambiar el acceso a P por una función (o función que incremente- decremente porcentaje)
+                    assert not isinstance(structure, ds.HvdcData) # TODO Arreglar esto
+                    dev_injections = np.zeros(structure.size())
+                    dev_injections[idx] -= structure.p[idx]
+                    if revert:
+                        structure.p[idx] /= float(cnt.value / 100.0)
+                    else:
+                        structure.p[idx] *= float(cnt.value / 100.0)
+                    dev_injections[idx] += structure.p[idx]
+                    injections += structure.get_array_per_bus(dev_injections)
+                else:
+                    print(f'Unknown contingency property {cnt.prop} at {cnt.name} {cnt.idtag}')
+            else:
+                print(f'contingency device not found {cnt.name} {cnt.idtag}')
+
+        return injections
 
     @property
     def original_bus_idx(self):
@@ -1173,17 +1257,15 @@ class NumericalCircuit:
             self.A_ = (self.Cf - self.Ct).tocsc()
 
         return self.A_
-
-    @property
-    def Ybus(self):
+    
+    def compute_admittance(self) -> ycalc.Admittance: 
         """
-        Admittance matrix
-        :return: CSC matrix
+        Get Admittance structures
+        :return: Admittance object
         """
 
         # compute admittances on demand
-        if self.admittances_ is None:
-            self.admittances_ = ycalc.compute_admittances(
+        return ycalc.compute_admittances(
                 R=self.branch_data.R,
                 X=self.branch_data.X,
                 G=self.branch_data.G,
@@ -1206,6 +1288,19 @@ class NumericalCircuit:
                 seq=1,
                 add_windings_phase=False
             )
+
+
+    @property
+    def Ybus(self):
+        """
+        Admittance matrix
+        :return: CSC matrix
+        """
+
+        # compute admittances on demand
+        if self.admittances_ is None:
+            self.admittances_ = self.compute_admittance()
+            
         return self.admittances_.Ybus
 
     @property
