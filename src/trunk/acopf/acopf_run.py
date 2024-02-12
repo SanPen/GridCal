@@ -214,6 +214,10 @@ def case_pegase89():
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, tolerance=1e-8)
     run_nonlinear_opf(grid=grid, pf_options=pf_options, plot_error=True)
 
+    grid.get_bus_branch_connectivity_matrix()
+    nc = compile_numerical_circuit_at(grid)
+    print('')
+
 
 def case300():
     """
