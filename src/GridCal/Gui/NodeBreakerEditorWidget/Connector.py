@@ -167,8 +167,8 @@ class ConnectionItem:
                 angles = np.deg2rad(angles_deg)
                 x = 0
                 y = 0
-                xt = rx * np.cos(angles) + rx
-                yt = ry * np.sin(angles) + ry
+                xt = rx * 1.2 * np.cos(angles) + rx
+                yt = ry * 1.2 * np.sin(angles) + ry
 
                 for i, plug in enumerate(self.PlugList):
                     plug.setPos(xt[i], yt[i])

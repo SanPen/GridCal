@@ -65,7 +65,8 @@ class RectangleConnectorGraphicItem(QGraphicsRectItem):
         self.offset = 10
         self.h = 70
         self.w = 180
-        self.setRect(0.0, 0.0, self.w, self.h)
+        self.margin = 5
+        self.setRect(-self.margin, -self.margin, self.w + self.margin * 2, self.h + self.margin * 2)
         self.FONT_SCALE = 1.9
         self.api_object: Transformer3W = elm
         self.editor = editor

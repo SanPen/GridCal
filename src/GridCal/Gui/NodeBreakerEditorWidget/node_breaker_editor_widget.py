@@ -239,9 +239,21 @@ class NodeBreakerDiagramScene(QGraphicsScene):
             self.parent_.startPos = None
             self.parent_.editor_graphics_view.setDragMode(QGraphicsView.DragMode.RubberBandDrag)
 
+        self.deselectAllItems()
+
         # call mouseReleaseEvent on "me" (continue with the rest of the actions)
         super(NodeBreakerDiagramScene, self).mouseReleaseEvent(event)
 
+    def deselectAllItems(self):
+
+        num = 0
+        for item in self.items():
+            if (item.isSelected()):
+                num = num + 1
+
+        if (num < 2):
+            for item in self.items():
+                item.setSelected(False)
 
 class NodeBreakerEditorWidget(QSplitter):
     """
@@ -341,31 +353,45 @@ class NodeBreakerEditorWidget(QSplitter):
         self.displacement = QPoint()
         self.startPos = None
 
-        # obj1 = Bus(name=f'BUS_BAR {len(self.circuit.buses)}',
-        #           vnom=self.default_bus_voltage)
-        #
-        # self.testBus1 = BusGraphicItem(editor=self,
-        #                                 bus=obj1,
-        #                                 x=340,
-        #                                 y=340,
-        #                                 h=20,
-        #                                 w=20)
-        #
-        # self.plug1 = Plug(self.diagram_scene, self.testBus1, None)
-        #
-        # obj2 = Bus(name=f'BUS_BAR {len(self.circuit.buses)}',
-        #           vnom=self.default_bus_voltage)
-        #
-        # self.testBus2 = BusGraphicItem(editor=self,
-        #                                 bus=obj2,
-        #                                 x=70,
-        #                                 y=70,
-        #                                 h=20,
-        #                                 w=20)
-        #
-        # self.plug2 = Plug(self.diagram_scene, self.testBus2, None)
-        #
-        # self.test = Connector(self.diagram_scene, self.plug1, self.plug2)
+        self.PreviewSketch = False
+
+        obj1 = Bus(name=f'BUS_BAR {len(self.circuit.buses)}',
+                  vnom=self.default_bus_voltage)
+
+        Bus1 = BusGraphicItem(editor=self,
+                                        bus = obj1,
+                                        x=340,
+                                        y=340,
+                                        h=20,
+                                        w=20)
+
+        self.previewPlug1 = Plug(self.diagram_scene, Bus1, None)
+
+        obj2 = Bus(name=f'BUS_BAR {len(self.circuit.buses)}',
+                  vnom=self.default_bus_voltage)
+
+        Bus2 = BusGraphicItem(editor=self,
+                                        bus = obj2,
+                                        x=70,
+                                        y=70,
+                                        h=20,
+                                        w=20)
+
+        self.previewPlug2 = Plug(self.diagram_scene, Bus2, None)
+
+        self.previewLine = Connector(self.diagram_scene, self.previewPlug1, self.previewPlug2)
+
+        self.DisablePreview()
+
+    def DisablePreview(self):
+        self.previewPlug1.setVisible(False)
+        self.previewPlug2.setVisible(False)
+        self.previewLine.setVisible(False)
+
+    def EnablePreview(self):
+        self.previewPlug1.setVisible(True)
+        self.previewPlug2.setVisible(True)
+        self.previewLine.setVisible(True)
 
     def graphicsDragEnterEvent(self, event: QDragEnterEvent) -> None:
         """
@@ -994,6 +1020,13 @@ class NodeBreakerEditorWidget(QSplitter):
         """
 
         pos = event.scenePos()
+        if (self.PreviewSketch):
+            if (self.PlugManager.FirstConnector != None):
+                pl1ps = self.PlugManager.FirstConnector.scenePos()
+                self.previewPlug1.setPos(pl1ps.x(), pl1ps.y())
+                pl2ps = event.scenePos()
+                self.previewPlug2.setPos(pl2ps.x(), pl2ps.y())
+            self.previewLine.update()
 
 
     def scene_mouse_press_event(self, event: QGraphicsSceneMouseEvent) -> None:
@@ -1003,8 +1036,19 @@ class NodeBreakerEditorWidget(QSplitter):
         :return:
         """
 
+
         mousePos = event.scenePos()
         self.PlugManager.SetFirstConnector(mousePos.x(), mousePos.y())
+        if (self.PlugManager.FirstConnector != None):
+            if (not self.PlugManager.FirstConnector.Container.isSelected()):
+                self.editor_graphics_view.setDragMode(QGraphicsView.DragMode.NoDrag)
+                self.EnablePreview()
+                self.PreviewSketch = True;
+                pl1ps = self.PlugManager.FirstConnector.scenePos()
+                self.previewPlug1.setPos(pl1ps.x(), pl1ps.y())
+                pl2ps = event.scenePos()
+                self.previewPlug2.setPos(pl2ps.x(), pl2ps.y())
+                self.previewLine.update()
 
         # Mouse pan
         if event.button() == Qt.MouseButton.RightButton:
@@ -1028,6 +1072,9 @@ class NodeBreakerEditorWidget(QSplitter):
         mousePos = event.scenePos()
         self.PlugManager.SetSecondConnector(mousePos.x(), mousePos.y())
         self.PlugManager.CreateConnection(self.diagram_scene)
+        self.editor_graphics_view.setDragMode(QGraphicsView.DragMode.RubberBandDrag)
+        self.DisablePreview()
+        self.PreviewSketch = False;
         pass
 
     def set_limits(self, min_x: int, max_x: Union[float, int], min_y: Union[float, int], max_y: int,
