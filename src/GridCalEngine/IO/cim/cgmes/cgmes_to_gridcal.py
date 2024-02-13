@@ -454,9 +454,7 @@ def get_gcdev_ac_lines(cgmes_model: CgmesCircuit,
                 cn_t = cns[1]
 
                 # get per unit vlaues
-                r, x, g, b, r0, x0, g0, b0 = get_pu_values_ac_line_segment(ac_line_segment=cgmes_elm,
-                                                                           logger=logger,
-                                                                           Sbase=Sbase)
+                r, x, g, b, r0, x0, g0, b0 = get_pu_values_ac_line_segment(ac_line_segment=cgmes_elm, logger=logger, Sbase=Sbase)
 
                 current_rate = rates_dict.get(cgmes_elm.uuid, None)  # A
                 if current_rate:
