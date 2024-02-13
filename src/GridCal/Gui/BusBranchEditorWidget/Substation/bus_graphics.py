@@ -170,7 +170,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
             event: QGraphicsSceneMouseEvent inherited
         """
         super().mouseMoveEvent(event)
-
+        self.c
         self.editor.update_diagram_element(device=self.api_object,
                                            x=self.pos().x(),
                                            y=self.pos().y(),

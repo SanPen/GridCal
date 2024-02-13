@@ -19,8 +19,10 @@ import numpy as np
 from typing import List, TYPE_CHECKING
 from PySide6.QtCore import Qt, QPoint, QPointF
 from PySide6.QtGui import QPen, QCursor, QColor, QIcon, QPixmap
-from PySide6.QtWidgets import QGraphicsItem, QGraphicsEllipseItem, QGraphicsRectItem, QMenu, QGraphicsSceneMouseEvent
+from PySide6.QtWidgets import QGraphicsItem, QGraphicsEllipseItem, QGraphicsRectItem, QMenu, QGraphicsSceneMouseEvent, \
+    QGraphicsTextItem
 
+from GridCal.Gui.NodeBreakerEditorWidget.Connector import ConnectionItem
 from GridCalEngine.Core.Devices.Branches.transformer3w import Transformer3W
 from GridCal.Gui.NodeBreakerEditorWidget.generic_graphics import ACTIVE, DEACTIVATED
 from GridCal.Gui.GuiFunctions import ObjectsModel
@@ -32,7 +34,7 @@ if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.NodeBreakerEditorWidget.node_breaker_editor_widget import NodeBreakerEditorWidget
 
 
-class Transformer3WGraphicItem(QGraphicsRectItem):
+class RectangleConnectorGraphicItem(QGraphicsRectItem):
     """
       Represents a block in the diagram
       Has an x and y and width and height
@@ -57,14 +59,14 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
         :param index:
         """
         QGraphicsRectItem.__init__(self, parent=parent)
-        self.n_windings = 3
+        self.n_windings = 0
         self.min_w = 180.0
         self.min_h = 20.0
         self.offset = 10
         self.h = 70
-        self.w = 80
+        self.w = 180
         self.setRect(0.0, 0.0, self.w, self.h)
-
+        self.FONT_SCALE = 1.9
         self.api_object: Transformer3W = elm
         self.editor = editor
 
@@ -94,43 +96,54 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
             self.setPos(pos)
 
         # windings
-        diameter = self.w * 0.5
-        r = diameter / 2
-        angle_0 = -90
-        d_angle = 360 / self.n_windings
-        angles_deg = [angle_0 + d_angle * i for i in range(self.n_windings)]
-        angles = np.deg2rad(angles_deg)
-        x = r * np.cos(angles) + self.w / 4
-        y = r * np.sin(angles) + self.w / 4
-        xt = diameter * np.cos(angles) + diameter
-        yt = diameter * np.sin(angles) + diameter
+        rx = self.w / 2
+        ry = self.h / 2
+        angle_0 = 0
 
-        self.winding_circles: List[QGraphicsEllipseItem] = list()
+        pen = QPen(self.color, self.pen_width, self.style)
+        
         self.terminals: List[TerminalItem] = list()
         self.connection_lines: List[WindingGraphicItem | None] = list()
 
-        pen = QPen(self.color, self.pen_width, self.style)
+        if(self.n_windings > 0):
+            d_angle = 360 / self.n_windings
+            angles_deg = [angle_0 + d_angle * i for i in range(self.n_windings)]
+            angles = np.deg2rad(angles_deg)
+            x = 0
+            y = 0
+            xt = rx * np.cos(angles) + rx
+            yt = ry * np.sin(angles) + ry
 
-        for i in range(self.n_windings):
-            # create objects
-            winding_circle = QGraphicsEllipseItem(parent=self)
-            winding_circle.setRect(0.0, 0.0, diameter, diameter)
-            winding_circle.setPos(x[i], y[i])
 
-            terminal = TerminalItem("t", parent=self, editor=self.editor)
-            terminal.setPos(xt[i], yt[i])
-            terminal.setRotation(angles_deg[i])
+            for i in range(self.n_windings):
+                terminal = TerminalItem("t", parent=self, editor=self.editor)
+                terminal.setPos(xt[i], yt[i])
+                terminal.setRotation(angles_deg[i])
 
-            # set objects style
-            winding_circle.setPen(pen)
-            terminal.setPen(pen)
+                # set objects style
 
-            self.winding_circles.append(winding_circle)
-            self.terminals.append(terminal)
-            self.connection_lines.append(None)
+                terminal.setPen(pen)
+
+                self.terminals.append(terminal)
+                self.connection_lines.append(None)
+
+        # create objects
+        self.rectangle = QGraphicsRectItem(parent=self)
+        self.rectangle.setRect(0.0, 0.0, self.w, self.h)
+        self.rectangle.setPos(0, 0)
+        self.rectangle.setPen(pen)
+
+        # Label:
+        self.label = QGraphicsTextItem("RECTANGLE", self)
+        self.label.setDefaultTextColor(ACTIVE['text'])
+        self.label.setScale(self.FONT_SCALE)
+        self.label.setPos(20, 10)
+
+        # Connection
+        self.Connection = ConnectionItem(editor.diagram_scene, editor.PlugManager, self, 3)
+        self.Connection.CreatePlugs(2)
 
         # set the graphical objects appropriately
-        # self.api_object.winding1.graphic_obj = self.winding_circles[0]
 
         self.big_marker = None
 
@@ -153,8 +166,8 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
             self.style = ACTIVE['style']
 
         pen = QPen(self.color, self.pen_width, self.style)
+        self.rectangle.setPen(pen)
         for i in range(self.n_windings):
-            self.winding_circles[i].setPen(pen)
             self.terminals[i].setPen(pen)
             self.connection_lines[i].recolour_mode()
 
@@ -163,10 +176,9 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
         Set
         :return:
         """
+
         if self.api_object is not None:
-            self.winding_circles[0].setToolTip("Winding 1: {0} kV".format(self.api_object.V1))
-            self.winding_circles[1].setToolTip("Winding 2: {0} kV".format(self.api_object.V2))
-            self.winding_circles[2].setToolTip("Winding 3: {0} kV".format(self.api_object.V3))
+            self.rectangle.setToolTip("Winding 1: {0} kV".format(self.api_object.V1))
         pass
 
     def set_label(self, val: str):
@@ -195,6 +207,7 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
                                            graphic_object=self)
 
         self.update_conn()
+        self.Connection.Update()
 
     def mousePressEvent(self, event: QGraphicsSceneMouseEvent):
         """
@@ -384,8 +397,7 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
         Set the voltage colour
         :param brush: QColor object
         """
-        for w in self.winding_circles:
-            w.setPen(QPen(brush, self.pen_width, self.style))
+        self.rectangle.setPen(QPen(brush, self.pen_width, self.style))
 
     def set_winding_color(self, i, color: QColor):
         """
@@ -393,7 +405,6 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
         :param i: winding index 0-2
         :param color: QColor
         """
-        self.winding_circles[i].setPen(QPen(color, self.pen_width, self.style))
         self.terminals[i].setPen(QPen(color, self.pen_width, self.style))
 
     def delete_all_connections(self):

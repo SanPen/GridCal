@@ -21,6 +21,8 @@ from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, QPoint, QRectF, QRect
 from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor
 from PySide6.QtWidgets import QMenu, QGraphicsSceneMouseEvent
+
+from GridCal.Gui.NodeBreakerEditorWidget.Connector import ConnectionItem
 from GridCalEngine.Core.Devices.Substation import Bus
 from GridCal.Gui.NodeBreakerEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, FONT_SCALE, EMERGENCY
 from GridCal.Gui.GuiFunctions import ObjectsModel
@@ -68,9 +70,16 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
 
         self.min_w = 20.0
         self.min_h = 20.0
+        self.max_w = 20.0
+        self.max_h = 1e+10
+
+        # Connection
+        self.Connection = ConnectionItem(editor.diagram_scene, editor.PlugManager, self, 2)
+        self.Connection.CreatePlugs(5)
+
         self.offset = 10
         self.h = h if h >= self.min_h else self.min_h
-        self.w = w if w >= self.min_w else self.min_w
+        self.w = self.min_w
 
         self.api_object = bus
 
@@ -100,12 +109,18 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
             self.style = ACTIVE['style']
 
         # Label:
-        self.label = QtWidgets.QGraphicsTextItem(bus.name, self)
+        if(bus != None):
+            self.label = QtWidgets.QGraphicsTextItem(bus.name, self)
+            self.name = bus.name
+        else:
+            self.label = QtWidgets.QGraphicsTextItem("bus.name missing", self)
+            self.name = "bus.name missing"
         self.label.setDefaultTextColor(ACTIVE['text'])
         self.label.setScale(FONT_SCALE)
+        self.label.setPos(self.min_w, self.min_h)
 
         # square
-        self.tile = QtWidgets.QGraphicsRectItem(0, 0, self.min_h, self.min_h, self)
+        self.tile = QtWidgets.QGraphicsRectItem(0, 0, self.min_w, self.min_h, self)
         self.tile.setOpacity(0.7)
 
         # connection terminals the block
@@ -114,10 +129,13 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
 
         # Create corner for resize:
         self.sizer = HandleItem(self.terminal)
-        self.sizer.setPos(self.w, self.h)
+        self.sizer.setPos(self.w, 300)
         self.sizer.posChangeCallbacks.append(self.change_size)  # Connect the callback
         self.sizer.setFlag(self.GraphicsItemFlag.ItemIsMovable)
         self.adapt()
+
+        self.w = self.min_w
+        self.h = 300
 
         self.big_marker = None
 
@@ -127,6 +145,8 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         self.setBrush(Qt.transparent)
         self.setFlags(self.GraphicsItemFlag.ItemIsSelectable | self.GraphicsItemFlag.ItemIsMovable)
         self.setCursor(QCursor(Qt.PointingHandCursor))
+
+
 
         # Update size:
         self.change_size(self.w, self.h)
@@ -178,6 +198,8 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
                                            h=self.h,
                                            r=self.rotation(),
                                            graphic_object=self)
+
+        self.Connection.Update()
 
     def add_big_marker(self, color=Qt.red, tool_tip_text=""):
         """
@@ -258,7 +280,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         # center label:
         rect = self.label.boundingRect()
         lw, lh = rect.width(), rect.height()
-        lx = (w - lw) / 2
+        lx = w
         ly = (h - lh) / 2 - lh * (FONT_SCALE - 1)
         self.label.setPos(lx, ly)
 
@@ -266,7 +288,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         y0 = self.offset
         x0 = 0
         self.terminal.setPos(x0, y0)
-        self.terminal.setRect(0, 0, 10, h)
+        self.terminal.setRect(0, 0, self.min_w, h)
 
         # Set text
         if self.api_object is not None:
@@ -282,6 +304,8 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
                                            h=h,
                                            r=self.rotation(),
                                            graphic_object=self)
+
+        self.Connection.UpdatePlugs()
 
         return w, h
 
@@ -649,8 +673,11 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         Set the bus width according to the label text
         """
         # Todo: fix the resizing on double click
+
+        if(self.api_object != None):
+            self.name = self.api_object.name
         h = self.terminal.boundingRect().height()
-        w = len(self.api_object.name) * 8 + 10
+        w = len(self.name) * 8 + 10
         self.change_size(w=w, h=h)
         self.sizer.setPos(w, self.h)
 

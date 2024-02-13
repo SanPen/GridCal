@@ -32,6 +32,7 @@ from PySide6.QtWidgets import (QApplication, QGraphicsView, QListView, QTableVie
                                QGraphicsItem)
 from PySide6.QtSvg import QSvgGenerator
 
+from GridCal.Gui.NodeBreakerEditorWidget.Connector import Connector, Plug, ConnectionManager
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Core.Devices.Substation import Bus
 from GridCalEngine.Core.Devices.editable_device import EditableDevice
@@ -62,7 +63,7 @@ from GridCal.Gui.NodeBreakerEditorWidget.Branches.transformer2w_graphics import 
 from GridCal.Gui.NodeBreakerEditorWidget.Branches.hvdc_graphics import HvdcGraphicItem
 from GridCal.Gui.NodeBreakerEditorWidget.Branches.vsc_graphics import VscGraphicItem
 from GridCal.Gui.NodeBreakerEditorWidget.Branches.upfc_graphics import UpfcGraphicItem
-from GridCal.Gui.NodeBreakerEditorWidget.Branches.transformer3w_graphics import Transformer3WGraphicItem
+from GridCal.Gui.NodeBreakerEditorWidget.Branches.Rectangle_Connector import RectangleConnectorGraphicItem
 from GridCal.Gui.NodeBreakerEditorWidget.Injections.generator_graphics import GeneratorGraphicItem
 from GridCal.Gui.NodeBreakerEditorWidget.generic_graphics import ACTIVE
 import GridCal.Gui.Visualization.visualization as viz
@@ -107,7 +108,7 @@ class NodeBreakerLibraryModel(QStandardItemModel):
         # add bus to the drag&drop
         bus_icon = QIcon()
         bus_icon.addPixmap(QPixmap(":/Icons/icons/bus_icon.svg"))
-        self.bus_name = "Bus"
+        self.bus_name = "BUS_BAR"
         item = QStandardItem(bus_icon, self.bus_name)
         item.setToolTip("Drag & drop this into the schematic")
         self.appendRow(item)
@@ -115,7 +116,7 @@ class NodeBreakerLibraryModel(QStandardItemModel):
         # add transformer3w to the drag&drop
         t3w_icon = QIcon()
         t3w_icon.addPixmap(QPixmap(":/Icons/icons/transformer3w.svg"))
-        self.transformer3w_name = "3W-Transformer"
+        self.transformer3w_name = "RECTANGLE"
         item = QStandardItem(t3w_icon, self.transformer3w_name)
         item.setToolTip("Drag & drop this into the schematic")
         self.appendRow(item)
@@ -262,6 +263,9 @@ class NodeBreakerEditorWidget(QSplitter):
 
         QSplitter.__init__(self)
 
+        # connection
+        self.PlugManager = ConnectionManager()
+
         # store a reference to the multi circuit instance
         self.circuit: MultiCircuit = circuit
 
@@ -338,6 +342,32 @@ class NodeBreakerEditorWidget(QSplitter):
         self.displacement = QPoint()
         self.startPos = None
 
+        # obj1 = Bus(name=f'BUS_BAR {len(self.circuit.buses)}',
+        #           vnom=self.default_bus_voltage)
+        #
+        # self.testBus1 = BusGraphicItem(editor=self,
+        #                                 bus=obj1,
+        #                                 x=340,
+        #                                 y=340,
+        #                                 h=20,
+        #                                 w=20)
+        #
+        # self.plug1 = Plug(self.diagram_scene, self.testBus1, None)
+        #
+        # obj2 = Bus(name=f'BUS_BAR {len(self.circuit.buses)}',
+        #           vnom=self.default_bus_voltage)
+        #
+        # self.testBus2 = BusGraphicItem(editor=self,
+        #                                 bus=obj2,
+        #                                 x=70,
+        #                                 y=70,
+        #                                 h=20,
+        #                                 w=20)
+        #
+        # self.plug2 = Plug(self.diagram_scene, self.testBus2, None)
+        #
+        # self.test = Connector(self.diagram_scene, self.plug1, self.plug2)
+
     def graphicsDragEnterEvent(self, event: QDragEnterEvent) -> None:
         """
 
@@ -372,7 +402,7 @@ class NodeBreakerEditorWidget(QSplitter):
             y0 = point0.y()
 
             if bus_data == obj_type:
-                obj = Bus(name=f'Bus {len(self.circuit.buses)}',
+                obj = Bus(name=f'BUS_BAR {len(self.circuit.buses)}',
                           vnom=self.default_bus_voltage)
 
                 graphic_object = BusGraphicItem(editor=self,
@@ -481,7 +511,7 @@ class NodeBreakerEditorWidget(QSplitter):
                                         w=w)
         return graphic_object
 
-    def create_transformer_3w_graphics(self, elm: Transformer3W, x: int, y: int) -> Transformer3WGraphicItem:
+    def create_transformer_3w_graphics(self, elm: Transformer3W, x: int, y: int) -> RectangleConnectorGraphicItem:
         """
         Add Transformer3W to the graphics
         :param elm: Transformer3W
@@ -489,7 +519,7 @@ class NodeBreakerEditorWidget(QSplitter):
         :param y: y coordinate
         :return: Transformer3WGraphicItem
         """
-        graphic_object = Transformer3WGraphicItem(editor=self, elm=elm)
+        graphic_object = RectangleConnectorGraphicItem(editor=self, elm=elm)
         graphic_object.setPos(QPoint(x, y))
         return graphic_object
 
@@ -526,6 +556,7 @@ class NodeBreakerEditorWidget(QSplitter):
         # add buses first
         bus_dict: Dict[str, BusGraphicItem] = dict()
         fluid_node_dict: Dict[str, FluidNodeGraphicItem] = dict()
+        Connector.draw()
         for category, points_group in self.diagram.data.items():
 
             if category == DeviceType.BusDevice.value:
@@ -972,6 +1003,10 @@ class NodeBreakerEditorWidget(QSplitter):
         :param event:
         :return:
         """
+
+        mousePos = event.scenePos()
+        self.PlugManager.SetFirstConnector(mousePos.x(), mousePos.y())
+
         # Mouse pan
         if event.button() == Qt.MouseButton.RightButton:
             viewport_rect = self.editor_graphics_view.viewport().rect()
@@ -991,7 +1026,9 @@ class NodeBreakerEditorWidget(QSplitter):
         @param event:
         @return:
         """
-
+        mousePos = event.scenePos()
+        self.PlugManager.SetSecondConnector(mousePos.x(), mousePos.y())
+        self.PlugManager.CreateConnection(self.diagram_scene)
         pass
 
     def set_limits(self, min_x: int, max_x: Union[float, int], min_y: Union[float, int], max_y: int,

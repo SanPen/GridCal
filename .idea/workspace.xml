@@ -29,8 +29,33 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Removed the distributed_slack property in the ContingencyAnalysisOptions because it was not used&#10;Corrected the SRAP loading condition&#10;General refactor">
+      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/NodeBreakerEditorWidget/Connector.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/trunk/qt_related/add_asynchonously.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/trunk/qt_related/add_asynchronously_2.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/trunk/qt_related/adding_graphics.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/trunk/qt_related/desktop.ini" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/trunk/qt_related/line_arrow.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/trunk/qt_related/line_arrow_2.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/trunk/qt_related/more_complex_tree_view.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/trunk/qt_related/node_branch_drawing.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/trunk/qt_related/pandas_table_view.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/trunk/qt_related/pyside_enums.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/trunk/qt_related/rich_table_view.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/trunk/qt_related/round_cap.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/trunk/qt_related/se_editor.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/trunk/qt_related/source_code_editor.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/trunk/qt_related/table_filter.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/trunk/qt_related/table_model.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/trunk/qt_related/table_model2.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/trunk/qt_related/table_model3.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/trunk/qt_related/tree_data.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/trunk/qt_related/tree_view_example.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/BusBranchEditorWidget/Substation/bus_graphics.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/BusBranchEditorWidget/Substation/bus_graphics.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/NodeBreakerEditorWidget/Branches/line_graphics_template.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/NodeBreakerEditorWidget/Branches/line_graphics_template.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/NodeBreakerEditorWidget/Branches/transformer3w_graphics.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/NodeBreakerEditorWidget/Branches/Rectangle_Connector.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/NodeBreakerEditorWidget/Substation/bus_graphics.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/NodeBreakerEditorWidget/Substation/bus_graphics.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/NodeBreakerEditorWidget/node_breaker_editor_widget.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/NodeBreakerEditorWidget/node_breaker_editor_widget.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -138,7 +163,7 @@
     &quot;Shell Script.make.sh.executor&quot;: &quot;Run&quot;,
     &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
     &quot;git-widget-placeholder&quot;: &quot;205__ACOPF&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/santi/Documentos/Git/GitHub/GridCal/doc/rst_source/theory/linear&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/SIROCO/GridCal/src/trunk/qt_related&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
@@ -155,24 +180,23 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\SIROCO\GridCal\src\trunk\qt_related" />
+      <recent name="D:\SIROCO\GridCal\src\GridCal\Gui\NodeBreakerEditorWidget\Substation" />
       <recent name="$PROJECT_DIR$/doc/rst_source/theory/linear" />
       <recent name="$PROJECT_DIR$/examples/trunk/acdc_pf/docs" />
       <recent name="$PROJECT_DIR$/examples/trunk/acdc_pf" />
-      <recent name="C:\Users\a1003\Desktop\GridCal\examples" />
-      <recent name="$PROJECT_DIR$/doc/rst_source/figures" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\SIROCO\GridCal\src\GridCal\Gui\NodeBreakerEditorWidget" />
       <recent name="$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/Methods" />
       <recent name="$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis" />
       <recent name="$PROJECT_DIR$/doc/rst_source/figures/opf" />
       <recent name="$PROJECT_DIR$/doc/rst_source/theory/linear" />
-      <recent name="$PROJECT_DIR$/examples/trunk/acdc_pf/docs" />
     </key>
   </component>
   <component name="RunManager" selected="Python.ExecuteGridCal">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
-      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -193,7 +217,6 @@
     </configuration>
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
-      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -232,7 +255,6 @@
     </configuration>
     <configuration default="true" type="PyBehaveRunConfigurationType" factoryName="Behave">
       <module name="GridCalEngine" />
-      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
@@ -246,7 +268,6 @@
     </configuration>
     <configuration default="true" type="PyBehaveRunConfigurationType" factoryName="Behave">
       <module name="GridCalEngine" />
-      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
@@ -260,7 +281,6 @@
     </configuration>
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
       <module name="GridCalEngine" />
-      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -283,7 +303,6 @@
     </configuration>
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
       <module name="GridCalEngine" />
-      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -306,7 +325,6 @@
     </configuration>
     <configuration default="true" type="Python.FlaskServer">
       <module name="GridCalEngine" />
-      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
@@ -320,7 +338,6 @@
     </configuration>
     <configuration default="true" type="Python.FlaskServer">
       <module name="GridCalEngine" />
-      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
@@ -334,7 +351,6 @@
     </configuration>
     <configuration default="true" type="Tox" factoryName="Tox">
       <module name="GridCalEngine" />
-      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
@@ -347,7 +363,6 @@
     </configuration>
     <configuration default="true" type="Tox" factoryName="Tox">
       <module name="GridCalEngine" />
-      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
@@ -360,7 +375,6 @@
     </configuration>
     <configuration default="true" type="docs" factoryName="Docutils task">
       <module name="GridCalEngine" />
-      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
@@ -378,7 +392,6 @@
     </configuration>
     <configuration default="true" type="docs" factoryName="Docutils task">
       <module name="GridCalEngine" />
-      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
@@ -396,7 +409,6 @@
     </configuration>
     <configuration default="true" type="docs" factoryName="Sphinx task">
       <module name="GridCalEngine" />
-      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
@@ -414,7 +426,6 @@
     </configuration>
     <configuration default="true" type="docs" factoryName="Sphinx task">
       <module name="GridCalEngine" />
-      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
@@ -432,7 +443,6 @@
     </configuration>
     <configuration default="true" type="tests" factoryName="Doctests">
       <module name="GridCalEngine" />
-      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
@@ -452,7 +462,6 @@
     </configuration>
     <configuration default="true" type="tests" factoryName="Doctests">
       <module name="GridCalEngine" />
-      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
@@ -472,7 +481,6 @@
     </configuration>
     <configuration default="true" type="tests" factoryName="Nosetests">
       <module name="GridCalEngine" />
-      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
@@ -489,7 +497,6 @@
     </configuration>
     <configuration default="true" type="tests" factoryName="Nosetests">
       <module name="GridCalEngine" />
-      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
@@ -506,7 +513,6 @@
     </configuration>
     <configuration default="true" type="tests" factoryName="py.test">
       <module name="GridCalEngine" />
-      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
@@ -524,7 +530,6 @@
     </configuration>
     <configuration default="true" type="tests" factoryName="py.test">
       <module name="GridCalEngine" />
-      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
@@ -558,9 +563,6 @@
       <option name="CUSTOM_SETTINGS" value="false" />
       <option name="USE_OPTIONS" value="false" />
       <option name="OPTIONS" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="index.html" type="JavascriptDebugType" temporary="true" nameIsGenerated="true" uri="http://localhost:63342/GridCal/doc/build/html/index.html" useBuiltInWebServerPort="true">
       <method v="2" />
     </configuration>
     <configuration default="true" type="PyBehaveRunConfigurationType" factoryName="Behave">
@@ -642,7 +644,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="make" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="line_arrow" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -650,12 +652,34 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/doc" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/trunk/qt_related" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/doc/make.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/trunk/qt_related/line_arrow.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="line_arrow_2" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="GridCal" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/trunk/qt_related" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/trunk/qt_related/line_arrow_2.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -859,9 +883,9 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="JavaScript Debug.index.html" />
       <item itemvalue="Python.mips" />
-      <item itemvalue="Python.make" />
+      <item itemvalue="Python.line_arrow" />
+      <item itemvalue="Python.line_arrow_2" />
       <item itemvalue="Python.srap_example" />
       <item itemvalue="Python.ExecuteGridCal" />
       <item itemvalue="Python tests.Nosetests in tests" />
@@ -869,10 +893,10 @@
     <recent_temporary>
       <list>
         <item itemvalue="Python.ExecuteGridCal" />
+        <item itemvalue="Python.line_arrow_2" />
+        <item itemvalue="Python.line_arrow" />
         <item itemvalue="Python.srap_example" />
         <item itemvalue="Python tests.Nosetests in tests" />
-        <item itemvalue="Python.make" />
-        <item itemvalue="JavaScript Debug.index.html" />
       </list>
     </recent_temporary>
   </component>
@@ -1530,6 +1554,19 @@
       <workItem from="1705478162991" duration="16256000" />
       <workItem from="1705569557456" duration="13206000" />
       <workItem from="1705590497990" duration="5364000" />
+      <workItem from="1705991478871" duration="13904000" />
+      <workItem from="1706086655336" duration="6246000" />
+      <workItem from="1706107318854" duration="700000" />
+      <workItem from="1706170591942" duration="1534000" />
+      <workItem from="1706505481498" duration="17803000" />
+      <workItem from="1706598309290" duration="14651000" />
+      <workItem from="1706627728527" duration="37000" />
+      <workItem from="1706685499726" duration="12642000" />
+      <workItem from="1707067664088" duration="8295000" />
+      <workItem from="1707135504342" duration="603000" />
+      <workItem from="1707222837119" duration="8894000" />
+      <workItem from="1707300329890" duration="1491000" />
+      <workItem from="1707458496725" duration="694000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -2584,6 +2621,7 @@
     <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal__1_.coverage" NAME="ExecuteGridCal (1) Coverage Results" MODIFIED="1694588250603" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
     <SUITE FILE_PATH="coverage/GridCal$object_plot_analysis.coverage" NAME="object_plot_analysis Coverage Results" MODIFIED="1689665184050" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/Analysis" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_tests_test_power_flow_test_ieee_grids.coverage" NAME="Nosetests for tests.test_power_flow.test_ieee_grids Coverage Results" MODIFIED="1602926441076" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
+    <SUITE FILE_PATH="coverage/GridCal$line_arrow_2.coverage" NAME="line_arrow_2 Coverage Results" MODIFIED="1707241035685" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/trunk/qt_related" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_monte_carlo_py.coverage" NAME="Nosetests in test_monte_carlo.py Coverage Results" MODIFIED="1617046279834" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_tests.coverage" NAME="Nosetests in tests Coverage Results" MODIFIED="1701101608746" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$transformer_example.coverage" NAME="transformer_example Coverage Results" MODIFIED="1619382581078" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/per_unit" />
@@ -2626,7 +2664,7 @@
     <SUITE FILE_PATH="coverage/GridCal$ntc_opf.coverage" NAME="ntc_opf Coverage Results" MODIFIED="1630509729235" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_tests_test_short_circuit.coverage" NAME="Nosetests for tests.test_short_circuit Coverage Results" MODIFIED="1648735680536" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_tutorials_py.coverage" NAME="Nosetests in test_tutorials.py Coverage Results" MODIFIED="1602941091349" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
-    <SUITE FILE_PATH="coverage/GridCal$line_arrow.coverage" NAME="line_arrow Coverage Results" MODIFIED="1640989833222" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/qt_related" />
+    <SUITE FILE_PATH="coverage/GridCal$line_arrow.coverage" NAME="line_arrow Coverage Results" MODIFIED="1707237502674" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/trunk/qt_related" />
     <SUITE FILE_PATH="coverage/GridCal$raw_parser.coverage" NAME="raw_parser Coverage Results" MODIFIED="1619379740833" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/IO" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_transformer_regulator_py.coverage" NAME="Nosetests in test_transformer_regulator.py Coverage Results" MODIFIED="1609501457225" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$fluids_try.coverage" NAME="fluids_try Coverage Results" MODIFIED="1701359636964" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/examples" />
@@ -2690,7 +2728,7 @@
     <SUITE FILE_PATH="coverage/GridCal$circuit_to_newton_pa.coverage" NAME="circuit_to_newton_pa Coverage Results" MODIFIED="1678466972615" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/Core/Compilers" />
     <SUITE FILE_PATH="coverage/GridCal$conf.coverage" NAME="conf Coverage Results" MODIFIED="1694004852527" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/doc" />
     <SUITE FILE_PATH="coverage/GridCal$newton_current.coverage" NAME="newton_current Coverage Results" MODIFIED="1597481272992" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/power_flow" />
-    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1705921100427" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
+    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1707300334712" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_tests_test_ptdf.coverage" NAME="Nosetests for tests.test_ptdf Coverage Results" MODIFIED="1704291895608" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$1d_example.coverage" NAME="1d_metropolis_algorithm_example Coverage Results" MODIFIED="1660055113109" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/MCMC" />
     <SUITE FILE_PATH="coverage/GridCal$contingency_planner_dialogue.coverage" NAME="contingency_planner_dialogue Coverage Results" MODIFIED="1687935669832" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/ContingencyPlanner" />

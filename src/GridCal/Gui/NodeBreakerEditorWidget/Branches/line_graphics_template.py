@@ -835,8 +835,8 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
 
         if self.fromPort:
             if 'Transformer3WGraphicItem' not in sys.modules:
-                from GridCal.Gui.NodeBreakerEditorWidget.Branches.transformer3w_graphics import Transformer3WGraphicItem
-            return isinstance(self.fromPort.parent, Transformer3WGraphicItem)
+                from GridCal.Gui.NodeBreakerEditorWidget.Branches.Rectangle_Connector import RectangleConnectorGraphicItem
+            return isinstance(self.fromPort.parent, RectangleConnectorGraphicItem)
         else:
             return False
 
@@ -844,8 +844,8 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
 
         if self.toPort:
             if 'Transformer3WGraphicItem' not in sys.modules:
-                from GridCal.Gui.NodeBreakerEditorWidget.Branches.transformer3w_graphics import Transformer3WGraphicItem
-            return isinstance(self.toPort.parent, Transformer3WGraphicItem)
+                from GridCal.Gui.NodeBreakerEditorWidget.Branches.Rectangle_Connector import RectangleConnectorGraphicItem
+            return isinstance(self.toPort.parent, RectangleConnectorGraphicItem)
         else:
             return False
 
