@@ -76,6 +76,14 @@ class BusData:
 
         return data
 
+    def size(self) -> int:
+        """
+        Get size of the structure
+        :return:
+        """
+
+        return self.nbus
+
     def copy(self) -> "BusData":
         """
         Deep copy of this structure

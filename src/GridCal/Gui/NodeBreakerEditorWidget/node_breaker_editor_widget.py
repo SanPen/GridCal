@@ -35,15 +35,14 @@ from PySide6.QtSvg import QSvgGenerator
 from GridCal.Gui.NodeBreakerEditorWidget.Connector import Connector, Plug, ConnectionManager
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Core.Devices.Substation import Bus
-from GridCalEngine.Core.Devices.editable_device import EditableDevice
+from GridCalEngine.Core.Devices.Parents.editable_device import EditableDevice
 from GridCalEngine.Core.Devices.Branches.line import Line
 from GridCalEngine.Core.Devices.Branches.dc_line import DcLine
 from GridCalEngine.Core.Devices.Branches.transformer import Transformer2W
 from GridCalEngine.Core.Devices.Branches.vsc import VSC
 from GridCalEngine.Core.Devices.Branches.upfc import UPFC
 from GridCalEngine.Core.Devices.Branches.hvdc_line import HvdcLine
-from GridCalEngine.Core.Devices.Branches.transformer3w import Transformer3W, Winding
-from GridCalEngine.Core.Devices.Injections.generator import Generator
+from GridCalEngine.Core.Devices.Branches.transformer3w import Transformer3W
 from GridCalEngine.Core.Devices.Fluid import FluidNode, FluidPath
 from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Simulations.driver_types import SimulationTypes
@@ -938,7 +937,7 @@ class NodeBreakerEditorWidget(QSplitter):
 
         if points_group:
 
-            bus_dict: Dict[str: Tuple[int, Bus]] = {b.idtag: (i, b) for i, b in enumerate(self.circuit.buses)}
+            bus_dict: Dict[str: Tuple[int, Bus]] = {b.idtag: (i, b) for i, b in enumerate(self.circuit.get_buses())}
 
             for bus_idtag, point in points_group.locations.items():
                 if point.graphic_object.isSelected():
@@ -979,7 +978,7 @@ class NodeBreakerEditorWidget(QSplitter):
 
         if points_group:
 
-            bus_dict: Dict[str: Tuple[int, Bus]] = {b.idtag: (i, b) for i, b in enumerate(self.circuit.buses)}
+            bus_dict: Dict[str: Tuple[int, Bus]] = {b.idtag: (i, b) for i, b in enumerate(self.circuit.get_buses())}
 
             for bus_idtag, point in points_group.locations.items():
                 idx, bus = bus_dict[bus_idtag]

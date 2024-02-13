@@ -22,6 +22,7 @@ from typing import List, AnyStr, Dict
 import numpy as np
 
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.basic_structures import Logger
 import GridCalEngine.Core.Devices as dev
 
@@ -449,8 +450,7 @@ def parse_loads(data_lst: List[List], buses_dict: Dict[int, dev.Bus]):
                        P=P,
                        Q=Q,
                        active=True,)
-        bus_f.add_device(elm)
-
+        elm.bus = bus_f
         data.append(elm)
 
     return data
@@ -490,7 +490,7 @@ def parse_generators(data_lst: List[List], buses_dict: Dict[int, dev.Bus], bus_v
                             Snom=np.sqrt(Pmax*Pmax+Qmax*Qmax),
                             Sbase=Sbase,
                             active=True, )
-        bus_f.add_device(elm)
+        elm.bus = bus_f
 
         data.append(elm)
 
@@ -632,7 +632,7 @@ class PowerWorldParser:
         buses_dict, bus_volt = parse_buses(data_dict['bus data']['data'], substations_dict, area_dict, zone_dict)
 
         # create devices
-        grid.buses = list(buses_dict.values())
+        grid.set_elements_by_type(device_type=DeviceType.BusDevice, devices=list(buses_dict.values()))
 
         if 'branch data' in data_dict.keys():
             grid.lines = parse_branches(data_dict['branch data']['data'], buses_dict)
@@ -649,7 +649,8 @@ class PowerWorldParser:
         if 'dc bus data' in data_dict.keys():
             # augments buses_dict and bus_volt
             dc_buses_dict, dc_bus_volt = parse_dc_buses(data_dict['dc bus data']['data'])
-            grid.buses += list(dc_buses_dict.values())
+            for elm in dc_buses_dict.values():
+                grid.add_bus(elm)
 
             if 'dc line data' in data_dict.keys():
                 grid.dc_lines = parse_dc_lines(data_dict['dc line data']['data'], dc_buses_dict)

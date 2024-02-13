@@ -729,6 +729,28 @@ def csc_diagonal_from_complex_array(array):
 
 
 @nb.njit(cache=True)
+def csc_diagonal_from_number(m: int, value: float):
+    """
+
+    :param m:
+    :param value:
+    :return:
+    """
+    indptr = np.zeros(m + 1, dtype=np.int32)
+    indices = np.zeros(m, dtype=np.int32)
+    data = np.zeros(m)
+
+    for i in range(m):
+        indptr[i] = i
+        indices[i] = i
+        data[i] = value
+
+    indptr[m] = m
+
+    return data, indices, indptr
+
+
+@nb.njit(cache=True)
 def csc_stack_4_by_4_ff(am, an, Ai, Ap, Ax,
                         bm, bn, Bi, Bp, Bx,
                         cm, cn, Ci, Cp, Cx,
@@ -1196,7 +1218,7 @@ def dense_to_csc_numba(mat: Mat, threshold: float) -> Tuple[Vec, IntVec, IntVec]
 @nb.njit(cache=True)
 def get_sparse_array_numba(arr: Vec, threshold: float) -> Tuple[Vec, IntVec]:
     """
-    Extract the sparse matrix from a dense matrix where abs values are below a threshold
+    Extract the sparse array from a dense array where abs values are below a threshold
     :param arr: dense matrix
     :param threshold: threshold
     :return: data, indices

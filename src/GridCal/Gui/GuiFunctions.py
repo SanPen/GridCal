@@ -23,13 +23,13 @@ from warnings import warn
 from enum import EnumMeta
 from collections import defaultdict
 
-from GridCalEngine.Core.Devices import BranchTemplate, Bus, ContingencyGroup
-from GridCalEngine.Core.Devices.editable_device import GCProp, EditableDevice
+from GridCalEngine.Core.Devices import Bus, ContingencyGroup
+from GridCalEngine.Core.Devices.Parents.editable_device import GCProp, EditableDevice
 from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Simulations.result_types import ResultTypes
 from GridCalEngine.basic_structures import IntVec
 from GridCalEngine.data_logger import DataLogger
-from GridCalEngine.IO.cim.cgmes_2_4_15.cgmes_circuit import CgmesCircuit, IdentifiedObject
+from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit, IdentifiedObject
 import GridCal
 
 
@@ -42,6 +42,7 @@ class TreeDelegate(QtWidgets.QItemDelegate):
     """
     
     """
+
     def __init__(self, parent, data=defaultdict()):
         """
         Constructor
@@ -169,7 +170,10 @@ class ComboDelegate(QtWidgets.QItemDelegate):
         except ValueError:
             pass
 
-    def setModelData(self, editor, model, index):
+    def setModelData(self,
+                     editor: QtWidgets.QWidget,
+                     model: QtCore.QAbstractItemModel,
+                     index: QtCore.QModelIndex):
         """
 
         :param editor:
@@ -723,7 +727,7 @@ class ObjectsModel(QtCore.QAbstractTableModel):
                 delegate = ComboDelegate(self.parent, [True, False], ['True', 'False'])
                 F(i, delegate)
 
-            elif tpe is BranchTemplate or tpe is str:
+            elif tpe is str:
 
                 if 'color' in self.attributes[i]:
                     delegate = ColorPickerDelegate(self.parent)
@@ -731,9 +735,6 @@ class ObjectsModel(QtCore.QAbstractTableModel):
                     delegate = TextDelegate(self.parent)
 
                 F(i, delegate)
-
-            elif tpe is BranchTemplate:
-                F(i, None)
 
             elif tpe is float:
                 delegate = FloatDelegate(self.parent)
@@ -871,6 +872,9 @@ class ObjectsModel(QtCore.QAbstractTableModel):
         :param role:
         :return:
         """
+        if len(self.objects) == 0:
+            return None
+
         if index.isValid():
             if role == QtCore.Qt.ItemDataRole.DisplayRole:
                 return str(self.data_with_type(index))
@@ -888,6 +892,8 @@ class ObjectsModel(QtCore.QAbstractTableModel):
         :param role:
         :return:
         """
+        if len(self.objects) == 0:
+            return True
 
         if self.transposed:
             obj_idx = index.column()
@@ -940,6 +946,9 @@ class ObjectsModel(QtCore.QAbstractTableModel):
         :param role:
         :return:
         """
+        if len(self.objects) == 0:
+            return None
+
         if role == QtCore.Qt.ItemDataRole.DisplayRole:
 
             if self.transposed:
@@ -1464,22 +1473,30 @@ class ProfilesModel(QtCore.QAbstractTableModel):
     """
     Class to populate a Qt table view with profiles from objects
     """
-    def __init__(self, multi_circuit, device_type: DeviceType, magnitude, format, parent, max_undo_states=100):
+    def __init__(self,
+                 time_array: pd.DatetimeIndex,
+                 elements: List[EditableDevice],
+                 device_type: DeviceType,
+                 magnitude: str,
+                 data_format,
+                 parent,
+                 max_undo_states=100):
         """
 
-        Args:
-            multi_circuit: MultiCircuit instance
-            device_type: string with Load, StaticGenerator, etc...
-            magnitude: magnitude to display 'S', 'P', etc...
-            parent: Parent object: the QTableView object
+        :param time_array: array of time
+        :param device_type: string with Load, StaticGenerator, etc...
+        :param magnitude: magnitude to display 'S', 'P', etc...
+        :param data_format:
+        :param parent: Parent object: the QTableView object
+        :param max_undo_states:
         """
         QtCore.QAbstractTableModel.__init__(self, parent)
 
         self.parent = parent
 
-        self.format = format
+        self.data_format = data_format
 
-        self.circuit = multi_circuit
+        self.time_array = time_array
 
         self.device_type = device_type
 
@@ -1489,11 +1506,7 @@ class ProfilesModel(QtCore.QAbstractTableModel):
 
         self.editable = True
 
-        self.r = len(self.circuit.time_profile)
-
-        self.elements = self.circuit.get_elements_by_type(device_type)
-
-        self.c = len(self.elements)
+        self.elements = elements
 
         self.formatter = lambda x: "%.2f" % x
 
@@ -1501,29 +1514,29 @@ class ProfilesModel(QtCore.QAbstractTableModel):
         self.history = ObjectHistory(max_undo_states)
 
         # add the initial state
-        self.add_state(columns=range(self.columnCount()), action_name='initial')
+        # self.add_state(columns=range(self.columnCount()), action_name='initial')
 
         self.set_delegates()
 
-    def set_delegates(self):
+    def set_delegates(self) -> None:
         """
         Set the cell editor types depending on the attribute_types array
         :return:
         """
 
-        if self.format is bool:
+        if self.data_format is bool:
             delegate = ComboDelegate(self.parent, [True, False], ['True', 'False'])
             self.parent.setItemDelegate(delegate)
 
-        elif self.format is float:
+        elif self.data_format is float:
             delegate = FloatDelegate(self.parent)
             self.parent.setItemDelegate(delegate)
 
-        elif self.format is str:
+        elif self.data_format is str:
             delegate = TextDelegate(self.parent)
             self.parent.setItemDelegate(delegate)
 
-        elif self.format is complex:
+        elif self.data_format is complex:
             delegate = ComplexDelegate(self.parent)
             self.parent.setItemDelegate(delegate)
 
@@ -1540,7 +1553,7 @@ class ProfilesModel(QtCore.QAbstractTableModel):
 
         self.layoutChanged.emit()
 
-    def flags(self, index):
+    def flags(self, index: QtCore.QModelIndex) -> QtCore.Qt.ItemFlag:
         """
         Get the display mode
         :param index:
@@ -1552,23 +1565,23 @@ class ProfilesModel(QtCore.QAbstractTableModel):
         else:
             return QtCore.Qt.ItemFlag.ItemIsEnabled
 
-    def rowCount(self, parent=None):
+    def rowCount(self, parent: QtCore.QModelIndex = None) -> int:
         """
         Get number of rows
         :param parent:
         :return:
         """
-        return self.r
+        return len(self.time_array)
 
-    def columnCount(self, parent=None):
+    def columnCount(self, parent: Union[None, QtCore.QModelIndex] = None) -> int:
         """
         Get number of columns
         :param parent:
         :return:
         """
-        return self.c
+        return len(self.elements)
 
-    def data(self, index, role=QtCore.Qt.ItemDataRole.DisplayRole):
+    def data(self, index: QtCore.QModelIndex, role: int = QtCore.Qt.ItemDataRole.DisplayRole) -> Union[str, None]:
         """
         Get the data to display
         :param index:
@@ -1577,13 +1590,18 @@ class ProfilesModel(QtCore.QAbstractTableModel):
         """
         if index.isValid():
             if role == QtCore.Qt.ItemDataRole.DisplayRole:
-                profile_property = self.elements[index.column()].properties_with_profile[self.magnitude]
-                array = getattr(self.elements[index.column()], profile_property)
-                return str(array[index.row()])
+                c = index.column()
+                r = index.row()
+                profile_attr_name = self.elements[c].properties_with_profile[self.magnitude]
+                profile = getattr(self.elements[c], profile_attr_name)
+                return str(profile[r])
 
         return None
 
-    def setData(self, index, value, role=QtCore.Qt.ItemDataRole.DisplayRole):
+    def setData(self,
+                index: QtCore.QModelIndex,
+                value: float,
+                role: QtCore.Qt.ItemDataRole = QtCore.Qt.ItemDataRole.DisplayRole) -> bool:
         """
         Set data by simple editor (whatever text)
         :param index:
@@ -1592,12 +1610,13 @@ class ProfilesModel(QtCore.QAbstractTableModel):
         :return:
         """
         c = index.column()
-        r = index.row()
         if c not in self.non_editable_indices:
-            profile_property = self.elements[c].properties_with_profile[self.magnitude]
-            getattr(self.elements[c], profile_property)[r] = value
+            r = index.row()
+            profile_attr_name = self.elements[index.column()].properties_with_profile[self.magnitude]
+            profile = getattr(self.elements[index.column()], profile_attr_name)
+            profile[r] = value
 
-            self.add_state(columns=[c], action_name='')
+            # self.add_state(columns=[c], action_name='')
         else:
             pass  # the column cannot be edited
 
@@ -1618,10 +1637,10 @@ class ProfilesModel(QtCore.QAbstractTableModel):
             if orientation == QtCore.Qt.Orientation.Horizontal:
                 return str(self.elements[section].name)
             elif orientation == QtCore.Qt.Orientation.Vertical:
-                if self.circuit.time_profile is None:
+                if self.time_array is None:
                     return str(section)
                 else:
-                    return pd.to_datetime(self.circuit.time_profile[section]).strftime('%d-%m-%Y %H:%M')
+                    return pd.to_datetime(self.time_array[section]).strftime('%d-%m-%Y %H:%M')
 
         return None
 
@@ -1633,7 +1652,7 @@ class ProfilesModel(QtCore.QAbstractTableModel):
             col_idx:
         """
         n = len(self.elements)
-        nt = len(self.circuit.time_profile)
+        nt = len(self.time_array)
 
         if n > 0:
             profile_property = self.elements[0].properties_with_profile[self.magnitude]
@@ -1670,8 +1689,8 @@ class ProfilesModel(QtCore.QAbstractTableModel):
                         else:
                             print('Out of profile bounds')
 
-            if len(mod_cols) > 0:
-                self.add_state(mod_cols, 'paste')
+            # if len(mod_cols) > 0:
+            #     self.add_state(mod_cols, 'paste')
         else:
             # there are no elements
             pass
@@ -1697,7 +1716,7 @@ class ProfilesModel(QtCore.QAbstractTableModel):
             data = '\t' + '\t'.join(names) + '\n'
 
             # data
-            for t, date in enumerate(self.circuit.time_profile):
+            for t, date in enumerate(self.time_array):
                 data += str(date) + '\t' + '\t'.join(values[t, :]) + '\n'
 
             # copy to clipboard
@@ -1709,7 +1728,7 @@ class ProfilesModel(QtCore.QAbstractTableModel):
             # there are no elements
             pass
 
-    def add_state(self, columns, action_name=''):
+    def add_state(self, columns: List[int], action_name: str = ''):
         """
         Compile data of an action and store the data in the undo history
         :param columns: list of column indices changed

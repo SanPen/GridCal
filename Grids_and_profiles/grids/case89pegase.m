@@ -29,7 +29,7 @@ function mpc = case89pegase
 %
 %   1. Line flow limits are 20 MVA (at 1 p.u. voltage) greater than the
 %   current flow limits found in PEGASE data.
-%  
+%
 %   2. PEGASE data contains asymmetric shunt conductance and susceptance in
 %   the PI transmission line model of branches. Thus total line charging
 %   susceptance of branches is set to 0 p.u. and the nodal representation

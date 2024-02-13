@@ -229,7 +229,7 @@ def solve(circuit: NumericalCircuit,
                                            tolerance=options.tolerance,
                                            max_iter=options.max_iter,
                                            acceleration_parameter=options.backtracking_parameter,
-                                           mu_0=options.mu,
+                                           mu_0=options.trust_radius,
                                            control_q=options.control_Q)
             else:
                 # Solve NR with the AC algorithm
@@ -244,7 +244,7 @@ def solve(circuit: NumericalCircuit,
                                       Qmax=Qmax,
                                       tol=options.tolerance,
                                       max_it=options.max_iter,
-                                      mu_0=options.mu,
+                                      mu_0=options.trust_radius,
                                       acceleration_parameter=options.backtracking_parameter,
                                       control_q=options.control_Q,
                                       verbose=options.verbose,

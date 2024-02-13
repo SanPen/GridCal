@@ -142,12 +142,11 @@ def make_acptdf(Ybus: sp.csc_matrix,
 
 def make_ptdf(Bpqpv: sp.csc_matrix,
               Bf: sp.csc_matrix,
-              Btheta: Vec,
               pqpv: IntVec,
               distribute_slack: bool = True) -> Mat:
     """
     Build the PTDF matrix
-    :param Bbus: DC-linear susceptance matrix
+    :param Bpqpv: DC-linear susceptance matrix already sliced
     :param Bf: Bus-branch "from" susceptance matrix
     :param pqpv: array of sorted pq and pv node indices
     :param distribute_slack: distribute the slack?
@@ -392,11 +391,12 @@ class LinearMultiContingency:
         """
         return len(self.bus_indices) > 0
 
-    def get_contingency_flows(self, base_flow: Vec, injections: Vec) -> Vec:
+    def get_contingency_flows(self, base_flow: Vec, injections: Vec, tau: Vec = None) -> Vec:
         """
         Get contingency flows
         :param base_flow: Base branch flows (nbranch)
         :param injections: Bus injections increments (nbus)
+        :param tau: Phase shifter angles (rad)
         :return: New flows (nbranch)
         """
 
@@ -407,9 +407,10 @@ class LinearMultiContingency:
             flow += self.mlodf_factors @ base_flow[self.branch_indices]
 
         if len(self.bus_indices):
-            injection_delta = self.injections_factor * injections[self.bus_indices]
+            injection_delta = injections[self.bus_indices]
 
             # (MLODF[k, βδ] x PTDF[βδ, i] + PTDF[k, i]) x ΔP[i]
+            # flow += self.compensated_ptdf_factors @ (injection_delta - Btau @ tau)
             flow += self.compensated_ptdf_factors @ injection_delta
 
         return flow
@@ -586,14 +587,20 @@ class LinearMultiContingencies:
             if len(contingency_indices.branch_contingency_indices) > 1:
 
                 # Compute M matrix [n, n] (lodf relating the outaged lines to each other)
-                M = create_M_numba(lodf=lodf, branch_contingency_indices=contingency_indices.branch_contingency_indices)
+                M = create_M_numba(lodf=lodf,
+                                   branch_contingency_indices=contingency_indices.branch_contingency_indices)
                 L = lodf[:, contingency_indices.branch_contingency_indices]
+
+                # TODO: check if we need compensated_ptdf_factors here
 
                 # Compute LODF for the multiple failure MLODF[k, βδ]
                 mlodf_factors = dense_to_csc(mat=L @ np.linalg.inv(M),
                                              threshold=lodf_threshold)
 
             elif len(contingency_indices.branch_contingency_indices) == 1:
+
+                # TODO: check if we need compensated_ptdf_factors here
+
                 # append values
                 mlodf_factors = dense_to_csc(mat=lodf[:, contingency_indices.branch_contingency_indices],
                                              threshold=lodf_threshold)
@@ -616,7 +623,7 @@ class LinearMultiContingencies:
                     # must compute             MLODF[k, βδ] x PTDF[βδ, i] + PTDF[k, i]
                     compensated_ptdf_factors = mlodf_factors @ ptdf_bd_i + ptdf_k_i
                 else:
-                    compensated_ptdf_factors = ptdf_k_i  #TODO Comprobar con Jesús
+                    compensated_ptdf_factors = ptdf_k_i  # TODO Comprobar con Jesús
             else:
                 compensated_ptdf_factors = sp.csc_matrix(([], [], [0]), shape=(lodf.shape[0], 0))
 
@@ -677,11 +684,10 @@ class LinearAnalysis:
                 # no slacks will make it impossible to compute the PTDF analytically
                 if len(island.vd) == 1:
                     if len(island.pqpv) > 0:
-
+                        # island.Btau
                         # compute the PTDF of the island
                         ptdf_island = make_ptdf(Bpqpv=island.Bpqpv,
                                                 Bf=island.Bf,
-                                                Btheta=island.Btau,
                                                 pqpv=island.pqpv,
                                                 distribute_slack=self.distributed_slack)
 
@@ -709,7 +715,6 @@ class LinearAnalysis:
             # there is only 1 island, compute the PTDF
             self.PTDF = make_ptdf(Bpqpv=islands[0].Bpqpv,
                                   Bf=islands[0].Bf,
-                                  Btheta=islands[0].Btau,
                                   pqpv=islands[0].pqpv,
                                   distribute_slack=self.distributed_slack)
 

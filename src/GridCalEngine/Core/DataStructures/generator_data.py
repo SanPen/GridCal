@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
 import scipy.sparse as sp
-import GridCalEngine.Core.topology as tp
+import GridCalEngine.Core.Topology.topology as tp
 from GridCalEngine.basic_structures import CxVec, Vec, IntVec, BoolVec, StrVec
 
 
@@ -134,6 +134,14 @@ class GeneratorData:
 
         return data
 
+    def size(self) -> int:
+        """
+        Get size of the structure
+        :return:
+        """
+
+        return self.nelm
+
     def copy(self):
         """
         Get a deep copy of this object
@@ -229,12 +237,21 @@ class GeneratorData:
         """
         return self.p * self.active
 
+    def get_array_per_bus(self, arr: Vec) -> Vec:
+        """
+        Get generator array per bus
+        :param arr:
+        :return:
+        """
+        assert len(arr) == self.nelm
+        return self.C_bus_elm @ arr
+
     def get_injections_per_bus(self) -> CxVec:
         """
         Get generator Injections per bus
         :return:
         """
-        return self.C_bus_elm * (self.get_injections() * self.active)
+        return self.C_bus_elm @ (self.get_injections() * self.active)
 
     def get_voltages_per_bus(self) -> CxVec:
         """
@@ -246,7 +263,7 @@ class GeneratorData:
         # the division by n_per_bus achieves the averaging of the voltage control
         # value if more than 1 battery is present per bus
         # return self.C_bus_gen * (self.generator_v * self.generator_active) / n_per_bus
-        return np.ndarray((self.C_bus_elm * self.v) / n_per_bus)
+        return np.ndarray((self.C_bus_elm @ self.v) / n_per_bus)
 
     def get_installed_power_per_bus(self) -> Vec:
         """
@@ -282,3 +299,10 @@ class GeneratorData:
         :return: array with the bus indices
         """
         return tp.get_csr_bus_indices(self.C_bus_elm.tocsr())
+
+    def get_dispatchable_indices(self) -> IntVec:
+        """
+        Get the indices of dispatchable generators
+        :return:
+        """
+        return np.where(self.dispatchable == 1)[0]

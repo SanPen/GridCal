@@ -17,24 +17,28 @@
 
 import pandas as pd
 import numpy as np
-from typing import List, Tuple
+from typing import List, Tuple, Union
 from matplotlib import pyplot as plt
 
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Core.Devices.Substation.bus import Bus
+from GridCalEngine.Core.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.enumerations import TransformerControlType, WindingsConnection, BuildStatus
-from GridCalEngine.Core.Devices.Branches.templates.parent_branch import ParentBranch
-from GridCalEngine.Core.Devices.Branches.templates.transformer_type import TransformerType
+from GridCalEngine.Core.Devices.Parents.branch_parent import BranchParent
+from GridCalEngine.Core.Devices.Branches.transformer_type import TransformerType
 from GridCalEngine.Core.Devices.Branches.tap_changer import TapChanger
-from GridCalEngine.Core.Devices.editable_device import DeviceType
+from GridCalEngine.Core.Devices.Parents.editable_device import DeviceType
+from GridCalEngine.Core.Devices.profile import Profile
 
 
-class Transformer2W(ParentBranch):
+class Transformer2W(BranchParent):
 
     def __init__(self,
                  bus_from: Bus = None,
                  bus_to: Bus = None,
                  name='Branch', idtag=None, code='',
+                 cn_from: ConnectivityNode = None,
+                 cn_to: ConnectivityNode = None,
                  HV=None, LV=None,
                  nominal_power=0.001,
                  copper_losses=0.0,
@@ -51,10 +55,8 @@ class Transformer2W(ParentBranch):
                  temp_base=20, temp_oper=20, alpha=0.00330,
                  control_mode: TransformerControlType = TransformerControlType.fixed,
                  template: TransformerType = None,
-                 rate_prof=None, Cost_prof=None, active_prof=None, temp_oper_prof=None,
-                 tap_module_prof=None, tap_phase_prof=None,
                  contingency_factor=1.0,
-                 contingency_enabled=True, monitor_loading=True, contingency_factor_prof=None,
+                 contingency_enabled=True, monitor_loading=True,
                  r0=1e-20, x0=1e-20, g0=1e-20, b0=1e-20,
                  r2=1e-20, x2=1e-20, g2=1e-20, b2=1e-20,
                  conn: WindingsConnection = WindingsConnection.GG,
@@ -97,16 +99,9 @@ class Transformer2W(ParentBranch):
         :param alpha: Thermal constant of the material in °C
         :param control_mode: Control model
         :param template: Branch template
-        :param rate_prof: Rating profile
-        :param Cost_prof: Overload cost profile
-        :param active_prof: Active profile
-        :param temp_oper_prof: Operational temperature profile
-        :param tap_module_prof: profile of tap modeules
-        :param tap_phase_prof: profile of tap angles
         :param contingency_factor: Rating factor in case of contingency
         :param contingency_enabled: enabled for contingencies (Legacy)
         :param monitor_loading: monitor the loading (used in OPF)
-        :param contingency_factor_prof: profile of contingency ratings
         :param r0: zero-sequence resistence (p.u.)
         :param x0: zero-sequence reactance (p.u.)
         :param g0: zero-sequence conductance (p.u.)
@@ -121,20 +116,17 @@ class Transformer2W(ParentBranch):
         :param build_status: build status (now time)
         """
 
-        ParentBranch.__init__(self,
+        BranchParent.__init__(self,
                               name=name,
                               idtag=idtag,
                               code=code,
                               bus_from=bus_from,
                               bus_to=bus_to,
-                              cn_from=None,
-                              cn_to=None,
+                              cn_from=cn_from,
+                              cn_to=cn_to,
                               active=active,
-                              active_prof=active_prof,
                               rate=rate,
-                              rate_prof=rate_prof,
                               contingency_factor=contingency_factor,
-                              contingency_factor_prof=contingency_factor_prof,
                               contingency_enabled=contingency_enabled,
                               monitor_loading=monitor_loading,
                               mttf=mttf,
@@ -143,7 +135,6 @@ class Transformer2W(ParentBranch):
                               capex=capex,
                               opex=opex,
                               Cost=cost,
-                              Cost_prof=Cost_prof,
                               device_type=DeviceType.Transformer2WDevice)
 
         # set the high and low voltage values
@@ -188,8 +179,7 @@ class Transformer2W(ParentBranch):
         # Conductor base and operating temperatures in ºC
         self.temp_base = temp_base
         self.temp_oper = temp_oper
-
-        self.temp_oper_prof = temp_oper_prof
+        self._temp_oper_prof = Profile(default_value=temp_oper)
 
         # Conductor thermal constant (1/ºC)
         self.alpha = alpha
@@ -204,11 +194,11 @@ class Transformer2W(ParentBranch):
         else:
             self.tap_module = self.tap_changer.get_tap()
 
-        self.tap_module_prof = tap_module_prof
+        self._tap_module_prof = Profile(default_value=tap_module)
 
         # Tap angle
         self.tap_phase = tap_phase
-        self.tap_phase_prof = tap_phase_prof
+        self._tap_phase_prof = Profile(default_value=tap_phase)
 
         self.tap_module_max = tap_module_max
         self.tap_module_min = tap_module_min
@@ -280,6 +270,57 @@ class Transformer2W(ParentBranch):
                                  'approximation.For example:Copper @ 20ºC: 0.004041,Copper @ 75ºC: 0.00323,'
                                  'Annealed copper @ 20ºC: 0.00393,Aluminum @ 20ºC: 0.004308,Aluminum @ 75ºC: 0.00330')
         self.register(key='template', units='', tpe=DeviceType.TransformerTypeDevice, definition='', editable=False)
+
+    @property
+    def tap_module_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._tap_module_prof
+
+    @tap_module_prof.setter
+    def tap_module_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._tap_module_prof = val
+        elif isinstance(val, np.ndarray):
+            self._tap_module_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a tap_module_prof')
+
+    @property
+    def tap_phase_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._tap_phase_prof
+
+    @tap_phase_prof.setter
+    def tap_phase_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._tap_phase_prof = val
+        elif isinstance(val, np.ndarray):
+            self._tap_phase_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a tap_phase_prof')
+
+    @property
+    def temp_oper_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._temp_oper_prof
+
+    @temp_oper_prof.setter
+    def temp_oper_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._temp_oper_prof = val
+        elif isinstance(val, np.ndarray):
+            self._temp_oper_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a temp_oper_prof')
 
     def set_hv_and_lv(self, HV: float, LV: float):
         """
@@ -577,7 +618,7 @@ class Transformer2W(ParentBranch):
         '''
         control_modes = {TransformerControlType.fixed: 0,
                          TransformerControlType.Vt: 1,
-                         TransformerControlType.Pt: 2,
+                         TransformerControlType.Pf: 2,
                          TransformerControlType.PtVt: 3,
                          TransformerControlType.Qt: 4,
                          TransformerControlType.PtQt: 5}

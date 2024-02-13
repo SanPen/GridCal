@@ -90,7 +90,7 @@ class MainGUI(ScriptingMain):
         :param event:
         :return:
         """
-        if len(self.circuit.buses) > 0:
+        if self.circuit.get_bus_number() > 0:
             quit_msg = "Are you sure that you want to exit GridCal?"
             reply = QtWidgets.QMessageBox.question(self, 'Close', quit_msg,
                                                    QtWidgets.QMessageBox.StandardButton.Yes,

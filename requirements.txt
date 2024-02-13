@@ -7,8 +7,6 @@ xlrd>=1.1.0
 ortools>=9.8.0
 matplotlib>=2.1.1
 qtconsole>=4.3.1
-pyDOE>=0.3.8
-pySOT>=0.2.1
 openpyxl>=2.4.9
 chardet>=3.0.4
 scikit-learn>=0.18
@@ -30,4 +28,3 @@ pvlib
 hyperopt
 requests
 pytest >= 7.2.0
-highspy >= 1.5.3

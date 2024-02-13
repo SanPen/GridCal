@@ -15,18 +15,21 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+from typing import Tuple, Union
+import numpy as np
 from GridCalEngine.Core.Devices.Substation.bus import Bus
-from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceType, GCProp
+from GridCalEngine.Core.Devices.Parents.editable_device import EditableDevice, DeviceType
 from GridCalEngine.Core.Devices.Branches.winding import Winding
+from GridCalEngine.Core.Devices.profile import Profile
 
 
-def delta_to_star(z12, z23, z31):
+def delta_to_star(z12: float, z23: float, z31: float) -> Tuple[float, float, float]:
     """
     Perform the delta->star transformation
-    :param z12:
-    :param z23:
-    :param z31:
-    :return:
+    :param z12: 1 to 2 delta value
+    :param z23: 2 to 3 delta value
+    :param z31: 3 to 1 delta value
+    :return: 0->1, 0->2, 0->3 star values
     """
     zt = z12 + z23 + z31
     if zt > 0:
@@ -40,12 +43,36 @@ def delta_to_star(z12, z23, z31):
 
 class Transformer3W(EditableDevice):
 
-    def __init__(self, bus1: Bus = None, bus2: Bus = None, bus3: Bus = None,
-                 V1=10.0, V2=10.0, V3=10.0,
-                 name='Branch', idtag=None, code='', active=True,
+    def __init__(self, idtag=None, code='', name='Branch',
+                 bus1: Bus = None, bus2: Bus = None, bus3: Bus = None,
+                 V1=10.0, V2=10.0, V3=10.0, active=True,
                  r12=0.0, r23=0.0, r31=0.0, x12=0.0, x23=0.0, x31=0.0,
                  rate12=0.0, rate23=0.0, rate31=0.0,
                  x=0.0, y=0.0):
+        """
+        Constructor
+        :param idtag: Unique identifier
+        :param code: Secondary identifier
+        :param name: name of the transformer
+        :param bus1: Bus 1
+        :param bus2: Bus 2
+        :param bus3: Bus 3
+        :param V1: Nominal voltage at 1 (kV)
+        :param V2: Nominal voltage at 2 (kV)
+        :param V3: Nominal voltage at 3 (kV)
+        :param active: Is active?
+        :param r12: 1->2 resistance (p.u.)
+        :param r23: 2->3 resistance (p.u.)
+        :param r31: 3->1 resistance (p.u.)
+        :param x12: 1->2 reactance (p.u.)
+        :param x23: 2->3 reactance (p.u.)
+        :param x31: 3->1 reactance (p.u.)
+        :param rate12: 1->2 rating (MVA)
+        :param rate23: 2->3 rating (MVA)
+        :param rate31: 3->1 rating (MVA)
+        :param x: graphical x position (px)
+        :param y: graphical y position (px)
+        """
         EditableDevice.__init__(self,
                                 name=name,
                                 idtag=idtag,
@@ -53,13 +80,12 @@ class Transformer3W(EditableDevice):
                                 device_type=DeviceType.Transformer3WDevice)
 
         self.bus0 = Bus(name=name + '_bus', vnom=1.0, xpos=x, ypos=y, is_internal=True)
-
         self._bus1 = bus1
         self._bus2 = bus2
         self._bus3 = bus3
 
         self.active = active
-        self.active_prof = None
+        self._active_prof = Profile(default_value=active)
 
         self._V1 = V1
         self._V2 = V2
@@ -111,23 +137,34 @@ class Transformer3W(EditableDevice):
         self.register(key='x', units='px', tpe=float, definition='x position')
         self.register(key='y', units='px', tpe=float, definition='y position')
 
+    @property
+    def active_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._active_prof
+
+    @active_prof.setter
+    def active_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._active_prof = val
+        elif isinstance(val, np.ndarray):
+            self._active_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a active_prof')
+
     def all_connected(self):
         """
         Check that all three windings are connected to something
         """
         return (self.bus1 is not None) and (self.bus2 is not None) and (self.bus3 is not None)
 
-    # @property
-    # def graphic_obj(self):
-    #     return self._graphic_obj
-    #
-    # @graphic_obj.setter
-    # def graphic_obj(self, obj):
-    #     self._graphic_obj = obj
-    #     self.bus0.graphic_obj = obj
-
     @property
-    def bus1(self):
+    def bus1(self) -> Bus:
+        """
+        Bus 1
+        """
         return self._bus1
 
     @bus1.setter
@@ -137,7 +174,10 @@ class Transformer3W(EditableDevice):
         self.winding1.set_hv_and_lv(self.winding1.HV, self.winding1.LV)
 
     @property
-    def bus2(self):
+    def bus2(self) -> Bus:
+        """
+        Bus 2
+        """
         return self._bus2
 
     @bus2.setter
@@ -147,7 +187,10 @@ class Transformer3W(EditableDevice):
         self.winding2.set_hv_and_lv(self.winding2.HV, self.winding2.LV)
 
     @property
-    def bus3(self):
+    def bus3(self) -> Bus:
+        """
+        Bus 3
+        """
         return self._bus3
 
     @bus3.setter
@@ -157,7 +200,10 @@ class Transformer3W(EditableDevice):
         self.winding3.set_hv_and_lv(self.winding3.HV, self.winding3.LV)
 
     @property
-    def V1(self):
+    def V1(self) -> float:
+        """
+        Nominal voltage 1 in kV
+        """
         return self._V1
 
     @V1.setter
@@ -167,6 +213,9 @@ class Transformer3W(EditableDevice):
 
     @property
     def V2(self):
+        """
+        Nominal voltage 2 in kV
+        """
         return self._V2
 
     @V2.setter
@@ -176,6 +225,9 @@ class Transformer3W(EditableDevice):
 
     @property
     def V3(self):
+        """
+        Nominal voltage 3 in kV
+        """
         return self._V3
 
     @V3.setter
@@ -183,7 +235,7 @@ class Transformer3W(EditableDevice):
         self._V3 = val
         self.winding3.HV = val
 
-    def compute_delta_to_star(self):
+    def compute_delta_to_star(self) -> None:
         """
         Perform the delta -> star transformation
         and apply it to the windings
@@ -207,6 +259,9 @@ class Transformer3W(EditableDevice):
 
     @property
     def r12(self):
+        """
+        1->2 measured resistance in p.u.
+        """
         return self._r12
 
     @r12.setter
@@ -216,6 +271,9 @@ class Transformer3W(EditableDevice):
 
     @property
     def r23(self):
+        """
+        2->3 measured resistance in p.u.
+        """
         return self._r23
 
     @r23.setter
@@ -225,6 +283,9 @@ class Transformer3W(EditableDevice):
 
     @property
     def r31(self):
+        """
+        3->1 measured resistance in p.u.
+        """
         return self._r31
 
     @r31.setter
@@ -234,6 +295,9 @@ class Transformer3W(EditableDevice):
 
     @property
     def x12(self):
+        """
+        1->2 measured reactance in p.u.
+        """
         return self._x12
 
     @x12.setter
@@ -243,6 +307,9 @@ class Transformer3W(EditableDevice):
 
     @property
     def x23(self):
+        """
+        2->3 measured reactance in p.u.
+        """
         return self._x23
 
     @x23.setter
@@ -252,6 +319,9 @@ class Transformer3W(EditableDevice):
 
     @property
     def x31(self):
+        """
+        3->1 measured reactance in p.u.
+        """
         return self._x31
 
     @x31.setter
@@ -261,6 +331,9 @@ class Transformer3W(EditableDevice):
 
     @property
     def rate12(self):
+        """
+        1->2 measured rate in MVA
+        """
         return self._rate12
 
     @rate12.setter
@@ -270,6 +343,9 @@ class Transformer3W(EditableDevice):
 
     @property
     def rate23(self):
+        """
+        2->3 measured rate in MVA
+        """
         return self._rate23
 
     @rate23.setter
@@ -279,6 +355,9 @@ class Transformer3W(EditableDevice):
 
     @property
     def rate31(self):
+        """
+        3->1 measured rate in MVA
+        """
         return self._rate31
 
     @rate31.setter
@@ -286,8 +365,12 @@ class Transformer3W(EditableDevice):
         self._rate31 = val
         self.compute_delta_to_star()
 
-    def get_winding(self, i: int):
-
+    def get_winding(self, i: int) -> Winding:
+        """
+        Get winding from an integer
+        :param i: winding index
+        :return: Winding at i
+        """
         if i == 0:
             return self.winding1
         elif i == 1:

@@ -21,7 +21,7 @@ from GridCalEngine.Simulations.result_types import ResultTypes
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.Simulations.ContingencyAnalysis.contingencies_report import ContingencyResultsReport
-from GridCalEngine.basic_structures import IntVec, StrVec, CxMat
+from GridCalEngine.basic_structures import IntVec, StrVec, CxMat, Mat
 from GridCalEngine.enumerations import StudyResultsType
 
 
@@ -49,7 +49,9 @@ class ContingencyAnalysisResults(ResultsTemplate):
                 ResultTypes.BusActivePower,
                 ResultTypes.BranchActivePowerFrom,
                 ResultTypes.BranchLoading,
-                ResultTypes.ContingencyAnalysisReport
+                ResultTypes.ContingencyAnalysisReport,
+                ResultTypes.SrapUsedPower
+
             ],
             time_array=None,
             clustering_results=None,
@@ -65,6 +67,7 @@ class ContingencyAnalysisResults(ResultsTemplate):
         self.Sbus: CxMat = np.zeros((ncon, nbus), dtype=complex)
         self.Sf: CxMat = np.zeros((ncon, nbr), dtype=complex)
         self.loading: CxMat = np.zeros((ncon, nbr), dtype=complex)
+        self.srap_used_power = np.zeros((nbr, nbus), dtype=float)
 
         self.report: ContingencyResultsReport = ContingencyResultsReport()
 
@@ -77,6 +80,7 @@ class ContingencyAnalysisResults(ResultsTemplate):
         self.register(name='Sbus', tpe=CxMat)
         self.register(name='Sf', tpe=CxMat)
         self.register(name='loading', tpe=CxMat)
+        self.register(name='srap_used_power', tpe=Mat)
 
         self.register(name='report', tpe=ContingencyResultsReport)
 
@@ -150,6 +154,13 @@ class ContingencyAnalysisResults(ResultsTemplate):
             title = 'Branch loading '
             labels = self.branch_names
             # index = self.branch_names
+
+        elif result_type == ResultTypes.SrapUsedPower:
+            data = self.srap_used_power
+            y_label = ''
+            title = result_type.value[0]
+            labels = self.bus_names
+            index = self.branch_names
 
         elif result_type == ResultTypes.ContingencyAnalysisReport:
             data = self.report.get_data()

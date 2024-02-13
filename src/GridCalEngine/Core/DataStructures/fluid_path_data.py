@@ -38,6 +38,14 @@ class FluidPathData:
         self.min_flow = np.zeros(nelm, dtype=float)
         self.max_flow = np.zeros(nelm, dtype=float)
 
+    def size(self) -> int:
+        """
+        Get size of the structure
+        :return:
+        """
+
+        return self.nelm
+
     def copy(self) -> "FluidPathData":
         """
         Get deep copy of this structure

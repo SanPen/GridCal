@@ -16,10 +16,9 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 from typing import Union
-from GridCalEngine.Core.Devices.editable_device import EditableDevice
-from GridCalEngine.enumerations import BuildStatus, DeviceType
+from GridCalEngine.Core.Devices.Parents.editable_device import EditableDevice
+from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Core.Devices.Fluid.fluid_node import FluidNode
-from GridCalEngine.basic_structures import Vec
 
 
 class FluidPath(EditableDevice):
@@ -53,8 +52,6 @@ class FluidPath(EditableDevice):
         self.min_flow = min_flow
         self.max_flow = max_flow
 
-        self.flow = 0.0  # m3/s -> LpVar
-
         self.register(key='source', units="", tpe=DeviceType.FluidNodeDevice, definition="Source node")
         self.register(key='target', units="", tpe=DeviceType.FluidNodeDevice, definition="Target node")
         self.register(key='min_flow', units="m3/s", tpe=float, definition="Minimum flow")
@@ -73,7 +70,5 @@ class FluidPath(EditableDevice):
         fluid_path.target = self.target
         fluid_path.min_flow = self.min_flow
         fluid_path.max_flow = self.max_flow
-
-        fluid_path.flow = self.flow
 
         return fluid_path
