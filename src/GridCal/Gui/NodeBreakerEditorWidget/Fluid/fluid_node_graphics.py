@@ -32,7 +32,7 @@ from GridCal.Gui.NodeBreakerEditorWidget.Fluid.fluid_pump_graphics import FluidP
 from GridCal.Gui.NodeBreakerEditorWidget.Fluid.fluid_p2x_graphics import FluidP2xGraphicItem
 from GridCal.Gui.messages import yes_no_question
 from GridCalEngine.enumerations import DeviceType, FaultType
-from GridCalEngine.Core.Devices.editable_device import EditableDevice
+from GridCalEngine.Core.Devices.Parents.editable_device import EditableDevice
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.NodeBreakerEditorWidget.node_breaker_editor_widget import NodeBreakerEditorWidget

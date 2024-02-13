@@ -38,7 +38,7 @@ from GridCalEngine.Core.Devices.Branches.dc_line import DcLine
 from GridCalEngine.Core.Devices.Branches.hvdc_line import HvdcLine
 from GridCalEngine.Core.Devices.Fluid.fluid_node import FluidNode
 from GridCalEngine.Core.Devices.Fluid.fluid_path import FluidPath
-from GridCalEngine.Simulations.Topology.topology_driver import reduce_grid_brute
+from GridCalEngine.Simulations.Topology.topology_reduction_driver import reduce_grid_brute
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.NodeBreakerEditorWidget.node_breaker_editor_widget import NodeBreakerEditorWidget
