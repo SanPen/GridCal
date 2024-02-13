@@ -46,7 +46,7 @@ class SparseArray:
             "map": hex(id(self._map)),
         }
 
-    def get_map(self) -> Dict[int, Numeric]:
+    def get_map(self):
         """
         Return the dictionary hosting the sparse data
         :return: Dict[int, Numeric]

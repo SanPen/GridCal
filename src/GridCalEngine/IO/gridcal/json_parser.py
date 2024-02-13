@@ -23,6 +23,7 @@ import numba as nb
 from GridCalEngine.basic_structures import Logger, Vec
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.IO.gridcal.contingency_parser import get_contingencies_dict, parse_contingencies
+from GridCalEngine.IO.gridcal.generic_io_functions import CustomJSONizer
 import GridCalEngine.Core.Devices as dev
 from GridCalEngine.enumerations import DeviceType, ConverterControlType, HvdcControlType, BuildStatus
 from GridCalEngine.Core.Devices.profile import compress_array_numba
@@ -1217,13 +1218,7 @@ def parse_json(file_name) -> MultiCircuit:
     return parse_json_data(data)
 
 
-class CustomJSONizer(json.JSONEncoder):
-    def default(self, obj):
-        # this solves the error:
-        # TypeError: Object of type bool_ is not JSON serializable
-        return super().encode(bool(obj)) \
-            if isinstance(obj, np.bool_) \
-            else super().default(obj)
+
 
 
 def save_json_file_v3(file_path: str, circuit: MultiCircuit, simulation_drivers: Union[None, List[Any]]=None):

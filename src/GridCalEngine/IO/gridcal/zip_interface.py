@@ -15,6 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import json
+import bson
 from io import StringIO, TextIOWrapper, BytesIO
 import os
 import numpy as np
@@ -23,7 +24,7 @@ import pandas as pd
 import zipfile
 from typing import List, Dict, Any, Union, Callable
 from GridCalEngine.basic_structures import Logger
-from GridCalEngine.IO.gridcal.generic_io_functions import parse_config_df
+from GridCalEngine.IO.gridcal.generic_io_functions import parse_config_df, CustomJSONizer
 import GridCalEngine.Core.Devices as dev
 
 
@@ -63,10 +64,10 @@ def save_gridcal_data_to_zip(dfs: Dict[str, pd.DataFrame],
         for object_type_name, object_data in model_data.items():
             filename = "model_data/" + object_type_name + ".model"
             try:
-                f_zip_ptr.writestr(filename, json.dumps(object_data, indent=4))
+                f_zip_ptr.writestr(filename, json.dumps(object_data, indent=4, cls=CustomJSONizer))
             except TypeError as e:
-                logger.add_error(msg=e)
-                print()
+                logger.add_error(msg=e, device_class=object_type_name)
+                print(object_type_name, str(e))
 
         # save diagrams
         for diagram in diagrams:

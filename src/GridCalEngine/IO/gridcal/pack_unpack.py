@@ -382,7 +382,9 @@ def gather_model_as_jsons(circuit: MultiCircuit) -> Dict[str, Dict[str, str]]:
         data[object_type_name] = object_json
 
     # time
-    data['time'] = circuit.get_unix_time().tolist()
+    unix_time = circuit.get_unix_time()
+    data['time'] = {'unix': unix_time.tolist(),
+                    'prob': np.ones(len(unix_time))}
 
     return data
 
@@ -848,15 +850,16 @@ def parse_gridcal_data(data: Dict[str, Union[str, float, Dict, pd.DataFrame, Dic
     # ------------------------------------------------------------------------------------------------------------------
     # New way of parsing information from .model files.
     # These files are just .json stored in the model_data inside the zip file
-    if 'model_data' in data.keys():
-
-        model_data = data['model_data']
+    model_data = data.get('model_data', None)
+    if model_data is not None:
 
         if len(model_data) > 0:
 
-            if 'time' in model_data.keys():
-                circuit.set_unix_time(arr=model_data['time'])
+            tdata = model_data.get('time', None)
+            if tdata is not None:
+                circuit.set_unix_time(arr=tdata['unix'])
             else:
+                logger.add_error(msg=f'The file must have time data regardless of the profiles existance')
                 circuit.time_profile = None
 
             # for each element type...
@@ -879,6 +882,8 @@ def parse_gridcal_data(data: Dict[str, Union[str, float, Dict, pd.DataFrame, Dic
                     circuit.set_elements_by_type(device_type=template_elm.device_type,
                                                  devices=devices,
                                                  logger=logger)
+                else:
+                    logger.add_warning(msg=f'No data for {object_type_key}')
 
     # fill in wires into towers ----------------------------------------------------------------------------------------
     if 'tower_wires' in data.keys():

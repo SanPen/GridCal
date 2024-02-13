@@ -16,6 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 from typing import Union, Dict, Tuple, List
+from collections import Counter
 import numpy as np
 import numba as nb
 from GridCalEngine.basic_structures import Numeric, NumericVec, IntVec
@@ -23,35 +24,20 @@ from GridCalEngine.Core.Devices.sparse_array import SparseArray
 
 
 @nb.njit()
-def compress_array_numba(value, base):
+def compress_array_numba(arr, base):
     """
-
-    :param value:
-    :param base:
-    :return:
+    Compress Array
+    :param arr: array to compress
+    :param base: base value to have the compressed array
+    :return: list of values different from base, list of indices of those values
     """
-    data = list()
+    data = list()  # keep them as lists since I may want to compress arrays of objects
     indptr = list()
-    for i, x in enumerate(value):
+    for i, x in enumerate(arr):
         if x != base:
             data.append(x)
             indptr.append(i)
     return data, indptr
-
-
-@nb.njit()
-def compress_array_numba_map(value, base) -> Dict[int, Numeric]:
-    """
-
-    :param value:
-    :param base:
-    :return:
-    """
-    data = dict()
-    for i, x in enumerate(value):
-        if x != base:
-            data[i] = x
-    return data
 
 
 def check_if_sparse(arr: Union[NumericVec], sparsity: float = 0.8) -> Tuple[bool, Union[float, int]]:
@@ -206,20 +192,29 @@ class Profile:
         :return:
         """
         if len(arr) > 0:
-            u, counts = np.unique(arr, return_counts=True)
-            f = len(u) / len(arr)  # sparsity factor
-            if f < self._sparsity_threshold:
-                ind = np.argmax(counts)
-                base = u[ind]  # this is the most frequent value
+
+            # Count occurrences of each element in the array
+            counts = Counter(arr)
+
+            # Find the most frequent element
+            most_common_element, most_common_count = counts.most_common(1)[0]
+
+            # compute the sparsity factor
+            sparsity_factor = most_common_count / len(arr)
+
+            # if the sparsity is sufficient...
+            if sparsity_factor > self._sparsity_threshold:
+                base = most_common_element  # this is the most frequent value
                 if isinstance(base, np.bool_):
                     base = bool(base)
 
                 self._is_sparse = True
                 self._sparse_array = SparseArray()
 
-                if len(u) > 1:
+                if most_common_count > 1:
                     if isinstance(arr, np.ndarray):
-                        data_map = compress_array_numba_map(arr, base)
+                        data, indptr = compress_array_numba(arr, base)
+                        data_map = {i: x for i, x in zip(indptr, data)}  # this is to use a native python dict
                     else:
                         raise Exception('Unknown profile type' + str(type(arr)))
                 else:
