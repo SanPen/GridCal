@@ -20,7 +20,7 @@ import GridCalEngine.IO.cim.cgmes.cgmes_enums as cgmes_enums
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 import GridCalEngine.Core.Devices as gcdev
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
-from GridCalEngine.IO.cim.cgmes.cgmes_utils import get_nominal_voltage, get_pu_values_power_transformer, get_pu_values, \
+from GridCalEngine.IO.cim.cgmes.cgmes_utils import get_nominal_voltage, get_pu_values_power_transformer, get_pu_values_ac_line_segment, \
     get_rate
 from GridCalEngine.data_logger import DataLogger
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.identified_object import IdentifiedObject
@@ -454,7 +454,7 @@ def get_gcdev_ac_lines(cgmes_model: CgmesCircuit,
                 cn_t = cns[1]
 
                 # get per unit vlaues
-                r, x, g, b, r0, x0, g0, b0 = get_pu_values(ac_line_segment=cgmes_elm, logger=logger, Sbase=Sbase)
+                r, x, g, b, r0, x0, g0, b0 = get_pu_values_ac_line_segment(ac_line_segment=cgmes_elm, logger=logger, Sbase=Sbase)
 
                 current_rate = rates_dict.get(cgmes_elm.uuid, None)  # A
                 if current_rate:

@@ -350,7 +350,7 @@ def get_dict(conducting_equipment: ConductingEquipment):
 
 # endregion
 
-# region NonConformLoad(EnergyConsumer)
+# region ConformLoad, NonConformLoad(EnergyConsumer)
 def get_pq(energy_consumer: EnergyConsumer):
     # todo: referenced only from cim16
     return energy_consumer.p, energy_consumer.q
@@ -431,6 +431,7 @@ def check(logger: DataLogger):
 def check_load_response_characteristic(load_response_characteristic: LoadResponseCharacteristic, logger: DataLogger):
     """
     Check OCL rules
+    :param load_response_characteristic:
     :param logger:
     :return:
     """
