@@ -20,6 +20,7 @@ import numpy as np
 import pandas as pd
 from typing import List, Dict, Union, Tuple
 from collections.abc import Callable
+from warnings import warn
 import networkx as nx
 import pyproj
 
@@ -984,7 +985,7 @@ class BusBranchEditorWidget(QSplitter):
         Get all the buses
         :return: tuple(bus index, bus_api_object, bus_graphic_object)
         """
-        lst: List[Tuple[int, Bus, BusGraphicItem]] = list()
+        lst: List[Tuple[int, Bus, Union[BusGraphicItem, None]]] = list()
         points_group = self.diagram.data.get(DeviceType.BusDevice.value, None)
 
         if points_group:
@@ -1395,10 +1396,10 @@ class BusBranchEditorWidget(QSplitter):
                             self.remove_from_scene(self.started_branch)
 
                         else:
-                            print('unknown connection')
+                            warn('unknown connection')
 
-                    # remove from the hosted connections
-                    item.remove_connection(started_branch=self.started_branch)
+            # remove from the hosted connections
+            self.remove_from_scene(self.started_branch)
 
         # release this pointer
         self.started_branch = None
