@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -15,9 +15,10 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from GridCalEngine.enumerations import ContingencyEngine
+from GridCalEngine.enumerations import ContingencyMethod
 from GridCalEngine.basic_structures import Vec
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions, SolverType
+from GridCalEngine.Simulations.LinearFactors.linear_analysis_options import LinearAnalysisOptions
 
 
 class ContingencyAnalysisOptions:
@@ -26,33 +27,41 @@ class ContingencyAnalysisOptions:
     """
 
     def __init__(self,
-                 distributed_slack: bool = True,
-                 correct_values: bool = True,
                  use_provided_flows: bool = False,
                  Pf: Vec = None,
-                 pf_results=None,
-                 engine=ContingencyEngine.PowerFlow,
-                 pf_options=PowerFlowOptions(SolverType.DC)):
+                 pf_options=PowerFlowOptions(SolverType.DC),
+                 lin_options=LinearAnalysisOptions(),
+                 use_srap: bool = False,
+                 srap_max_loading: float = 1.4,
+                 srap_max_power: float = 1400.0,
+                 srap_top_n: int = 5,
+                 engine=ContingencyMethod.PowerFlow):
         """
-
-        :param distributed_slack:
-        :param correct_values:
-        :param use_provided_flows:
-        :param Pf:
-        :param pf_results:
-        :param engine:
-        :param pf_options:
+        ContingencyAnalysisOptions
+        :param use_provided_flows: Use the provided flows?
+        :param Pf: Power flows (at the from bus)
+        :param pf_options: PowerFlowOptions
+        :param lin_options: LinearAnalysisOptions
+        :param use_srap: use the SRAP check?
+        :param srap_max_loading: maximum SRAP loading in p.u.
+        :param srap_max_power: maximum SRAP usage (limit) in MW
+        :param engine: ContingencyEngine to use (PowerFlow, PTDF, ...)
         """
-        self.distributed_slack = distributed_slack
-
-        self.correct_values = correct_values
 
         self.use_provided_flows = use_provided_flows
 
         self.Pf: Vec = Pf
 
-        self.pf_results = pf_results
-
-        self.engine = engine
+        self.contingency_method = engine
 
         self.pf_options = pf_options
+
+        self.lin_options = lin_options
+
+        self.use_srap: bool = use_srap
+
+        self.srap_max_loading: float = srap_max_loading
+
+        self.srap_max_power: float = srap_max_power
+
+        self.srap_top_n = srap_top_n

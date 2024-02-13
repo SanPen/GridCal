@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -15,14 +15,16 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+import sys
 import uuid
 import networkx as nx
 from typing import Dict, Union, List, Tuple
 from GridCalEngine.Core.Devices.Diagrams.graphic_location import GraphicLocation
 from GridCalEngine.Core.Devices.Diagrams.map_location import MapLocation
-from GridCalEngine.Core.Devices.editable_device import EditableDevice
 from GridCalEngine.Core.Devices.Substation.bus import Bus
 from GridCalEngine.enumerations import DiagramType, DeviceType
+from GridCalEngine.basic_structures import Logger
+from GridCalEngine.Core.Devices.types import ALL_DEV_TYPES
 
 
 class PointsGroup:
@@ -40,7 +42,7 @@ class PointsGroup:
         # device_type: {device uuid: {x, y, h, w, r}}
         self.locations: Dict[str, Union[GraphicLocation, MapLocation]] = dict()
 
-    def set_point(self, device: EditableDevice, location: Union[GraphicLocation, MapLocation]):
+    def set_point(self, device: ALL_DEV_TYPES, location: Union[GraphicLocation, MapLocation]):
         """
 
         :param device:
@@ -49,7 +51,7 @@ class PointsGroup:
         """
         self.locations[device.idtag] = location
 
-    def delete_device(self, device: EditableDevice) -> Union[object, None]:
+    def delete_device(self, device: ALL_DEV_TYPES) -> Union[object, None]:
         """
         Delete location
         :param device:
@@ -64,7 +66,7 @@ class PointsGroup:
         else:
             return None
 
-    def query_point(self, device: EditableDevice) -> Union[GraphicLocation, MapLocation, None]:
+    def query_point(self, device: ALL_DEV_TYPES) -> Union[GraphicLocation, MapLocation, None]:
         """
 
         :param device:
@@ -83,28 +85,40 @@ class PointsGroup:
 
     def parse_data(self,
                    data: Dict[str, Dict[str, Union[int, float, List[Tuple[float, float]]]]],
-                   obj_dict: Dict[str, EditableDevice]):
+                   obj_dict: Dict[str, ALL_DEV_TYPES],
+                   logger: Logger,
+                   category: str = "") -> None:
         """
         Parse file data ito this class
         :param data: json dictionary
         :param obj_dict: dicrtionary of relevant objects (idtag, object)
+        :param logger: Logger
+        :param category: category
         """
         self.locations = dict()
 
         for idtag, location in data.items():
 
-            if 'x' in location:
-                self.locations[idtag] = GraphicLocation(x=location['x'],
-                                                        y=location['y'],
-                                                        w=location['w'],
-                                                        h=location['h'],
-                                                        r=location['r'],
-                                                        api_object=obj_dict.get(idtag, None))
-            if 'latitude' in location:
-                self.locations[idtag] = MapLocation(latitude=location['latitude'],
-                                                    longitude=location['longitude'],
-                                                    altitude=location['altitude'],
-                                                    api_object=obj_dict.get(idtag, None))
+            api_object = obj_dict.get(idtag, None)
+
+            if api_object is None:
+                # locations with no API object are not created
+                logger.add_error("Diagram location could not find API object",
+                                 device_class=category,
+                                 device=idtag,)
+            else:
+                if 'x' in location:
+                    self.locations[idtag] = GraphicLocation(x=location['x'],
+                                                            y=location['y'],
+                                                            w=location['w'],
+                                                            h=location['h'],
+                                                            r=location['r'],
+                                                            api_object=api_object)
+                if 'latitude' in location:
+                    self.locations[idtag] = MapLocation(latitude=location['latitude'],
+                                                        longitude=location['longitude'],
+                                                        altitude=location['altitude'],
+                                                        api_object=api_object)
 
 
 class BaseDiagram:
@@ -129,7 +143,7 @@ class BaseDiagram:
 
         self.diagram_type = diagram_type
 
-    def set_point(self, device: EditableDevice, location: Union[GraphicLocation, MapLocation]):
+    def set_point(self, device: ALL_DEV_TYPES, location: Union[GraphicLocation, MapLocation]):
         """
 
         :param device:
@@ -151,7 +165,7 @@ class BaseDiagram:
             # the category does exists, add point
             d.set_point(device, location)  # the category, exists, just add
 
-    def delete_device(self, device: EditableDevice) -> Union[object, None]:
+    def delete_device(self, device: ALL_DEV_TYPES) -> Union[object, None]:
         """
 
         :param device:
@@ -170,7 +184,7 @@ class BaseDiagram:
         else:
             return None
 
-    def query_point(self, device: EditableDevice) -> Union[GraphicLocation, MapLocation, None]:
+    def query_point(self, device: ALL_DEV_TYPES) -> Union[GraphicLocation, MapLocation, None]:
         """
 
         :param device:
@@ -210,11 +224,13 @@ class BaseDiagram:
 
     def parse_data(self,
                    data: Dict[str, Dict[str, Dict[str, Union[int, float]]]],
-                   obj_dict: Dict[str, Dict[str, EditableDevice]]):
+                   obj_dict: Dict[str, Dict[str, ALL_DEV_TYPES]],
+                   logger: Logger):
         """
         Parse file data ito this class
         :param data: json dictionary
         :param obj_dict: dictionary of circuit objects by type to fincd the api objects back from file loading
+        :param logger: logger
         """
         self.data = dict()
 
@@ -225,7 +241,8 @@ class BaseDiagram:
         for category, loc_dict in data['data'].items():
 
             points_group = PointsGroup(name=category)
-            points_group.parse_data(data=loc_dict, obj_dict=obj_dict.get(category, dict()))
+            points_group.parse_data(data=loc_dict, obj_dict=obj_dict.get(category, dict()),
+                                    logger=logger, category=category)
             self.data[category] = points_group
 
     def build_graph(self) -> Tuple[nx.DiGraph, List[Bus]]:
@@ -304,3 +321,25 @@ class BaseDiagram:
         graph.add_weighted_edges_from(tuples)
 
         return graph, node_devices
+
+    def get_boundaries(self):
+        """
+        Get the graphic representation boundaries
+        :return: min_x, max_x, min_y, max_y
+        """
+        min_x = sys.maxsize
+        min_y = sys.maxsize
+        max_x = -sys.maxsize
+        max_y = -sys.maxsize
+
+        # shrink selection only
+        for tpe, group in self.data.items():
+            for key, location in group.locations.items():
+                x = location.x
+                y = location.y
+                max_x = max(max_x, x)
+                min_x = min(min_x, x)
+                max_y = max(max_y, y)
+                min_y = min(min_y, y)
+
+        return min_x, max_x, min_y, max_y

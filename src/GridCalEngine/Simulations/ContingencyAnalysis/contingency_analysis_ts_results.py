@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -23,8 +23,9 @@ from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Simulations.ContingencyAnalysis.contingencies_report import ContingencyResultsReport
-from GridCalEngine.basic_structures import DateVec, IntVec, Vec, StrVec, Mat, IntMat
+from GridCalEngine.basic_structures import DateVec, IntVec, StrVec, Mat
 from GridCalEngine.enumerations import StudyResultsType
+from GridCalEngine.Simulations.Clustering.clustering_results import ClusteringResults
 
 
 class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
@@ -38,7 +39,7 @@ class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
                  branch_names: StrVec,
                  bus_types: IntVec,
                  con_names: StrVec,
-                 clustering_results: Union["ClusteringResults", None]):
+                 clustering_results: Union[ClusteringResults, None]):
         """
         ContingencyAnalysisTimeSeriesResults
         :param n: number of nodes
@@ -55,32 +56,55 @@ class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
         ResultsTemplate.__init__(
             self,
             name='N-1 time series',
-            available_results=[
-                # ResultTypes.ContingencyFrequency,
-                # ResultTypes.ContingencyRelativeFrequency,
-                # ResultTypes.MaxOverloads,
-                ResultTypes.WorstContingencyFlows,
-                ResultTypes.WorstContingencyLoading,
-                ResultTypes.ContingencyAnalysisReport
-            ],
+            available_results={
+                ResultTypes.StatisticResults: [
+                    ResultTypes.MaxContingencyFlows,
+                    ResultTypes.MaxContingencyLoading,
+                    ResultTypes.ContingencyOverloadSum,
+                    ResultTypes.MeanContingencyOverLoading,
+                    ResultTypes.StdDevContingencyOverLoading,
+                    ResultTypes.SrapUsedPower,
+                ],
+                ResultTypes.ReportsResults: [
+                    ResultTypes.ContingencyAnalysisReport,
+                ]
+            },
             time_array=time_array,
             clustering_results=clustering_results,
             study_results_type=StudyResultsType.ContingencyAnalysisTimeSeries
         )
 
-        nt = len(time_array)
+        self.nt = len(time_array)
 
         self.branch_names: StrVec = branch_names
         self.bus_names: StrVec = bus_names
         self.con_names: StrVec = con_names
         self.bus_types: IntVec = bus_types
 
-        self.S: Mat = np.zeros((nt, n))
-        self.worst_flows: Mat = np.zeros((nt, nbr))
-        self.worst_loading: Mat = np.zeros((nt, nbr))
-        self.overload_count: IntMat = np.zeros(nbr, dtype=int)
-        self.relative_frequency: Vec = np.zeros(nbr)
-        self.max_overload: Vec = np.zeros(nbr)
+        """
+        Tabla de sobrecargas máximas (tiempo, rama)
+        Tabla de desviación típica (tiempo, rama)
+        Tabla de frecuencia de sobrecarga (tiempo, rama)
+        Tabla de índices de la máxima sobrecarga (tiempo, rama)
+        Tabla de suma de sobrecarga (tiempo, rama)
+        """
+
+        self.S: Mat = np.zeros((self.nt, n))
+
+        self.max_flows: Mat = np.zeros((self.nt, nbr))
+
+        self.max_loading: Mat = np.zeros((self.nt, nbr))
+
+        self.overload_count: Mat = np.zeros((self.nt, nbr))
+
+        self.sum_overload: Mat = np.zeros((self.nt, nbr))
+
+        self.mean_overload: Mat = np.zeros((self.nt, nbr))
+
+        self.std_dev_overload: Mat = np.zeros((self.nt, nbr))
+
+        self.srap_used_power = np.zeros((nbr, n), dtype=float)
+
         self.report: ContingencyResultsReport = ContingencyResultsReport()
 
         self.register(name='branch_names', tpe=StrVec)
@@ -89,11 +113,12 @@ class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
         self.register(name='con_names', tpe=StrVec)
 
         self.register(name='S', tpe=Mat)
-        self.register(name='worst_flows', tpe=Mat)
-        self.register(name='worst_loading', tpe=Mat)
-        self.register(name='overload_count', tpe=IntMat)
-        self.register(name='relative_frequency', tpe=Vec)
-        self.register(name='max_overload', tpe=Vec)
+        self.register(name='max_flows', tpe=Mat)
+        self.register(name='max_loading', tpe=Mat)
+        self.register(name='sum_overload', tpe=Mat)
+        self.register(name='mean_overload', tpe=Mat)
+        self.register(name='std_dev_overload', tpe=Mat)
+        self.register(name='srap_used_power', tpe=Mat)
         self.register(name='report', tpe=ContingencyResultsReport)
 
     @property
@@ -124,7 +149,7 @@ class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
         :return:
         """
         rates = nc.Rates.T
-        self.worst_loading = self.worst_flows / (rates + 1e-9)
+        self.max_loading = self.max_flows / (rates + 1e-9)
 
     def get_results_dict(self):
         """
@@ -132,11 +157,11 @@ class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
         :return: dictionary of 2D numpy arrays (probably of complex numbers)
         """
         data = {
-            'overload_count': self.overload_count.tolist(),
-            'relative_frequency': self.relative_frequency.tolist(),
-            'max_overload': self.max_overload.tolist(),
-            'worst_flows': self.worst_flows.tolist(),
-            'worst_loading': self.worst_loading.tolist(),
+            # 'overload_count': self.overload_count.tolist(),
+            # 'relative_frequency': self.relative_frequency.tolist(),
+            # 'max_overload': self.max_overload.tolist(),
+            'worst_flows': self.max_flows.tolist(),
+            'worst_loading': self.max_loading.tolist(),
         }
         return data
 
@@ -147,40 +172,47 @@ class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
         :return:
         """
 
-        # if result_type == ResultTypes.ContingencyFrequency:
-        #     data = self.overload_count
-        #     y_label = '(#)'
-        #     title = 'Contingency count '
-        #     labels = self.branch_names
-        #     index = ['']
-        #
-        # elif result_type == ResultTypes.ContingencyRelativeFrequency:
-        #     data = self.relative_frequency
-        #     y_label = '(p.u.)'
-        #     title = 'Contingency relative frequency '
-        #     index = np.arange(0, len(data))
-        #     labels = self.branch_names
-        #
-        # elif result_type == ResultTypes.MaxOverloads:
-        #     data = self.max_overload
-        #     y_label = '(#)'
-        #     title = 'Maximum overloads '
-        #     labels = self.branch_names
-        #     index = np.arange(0, len(data))
-
-        if result_type == ResultTypes.WorstContingencyFlows:
-            data = self.worst_flows
+        if result_type == ResultTypes.MaxContingencyFlows:
+            data = self.max_flows
             y_label = '(MW)'
             title = 'Worst contingency Sf '
             labels = self.branch_names
             index = pd.to_datetime(self.time_array)
 
-        elif result_type == ResultTypes.WorstContingencyLoading:
-            data = self.worst_loading * 100.0
+        elif result_type == ResultTypes.MaxContingencyLoading:
+            data = self.max_loading * 100.0
             y_label = '(%)'
             title = 'Worst contingency loading '
             labels = self.branch_names
             index = pd.to_datetime(self.time_array)
+
+        elif result_type == ResultTypes.ContingencyOverloadSum:
+            data = self.sum_overload
+            y_label = '(MW)'
+            title = result_type.value[0]
+            labels = self.branch_names
+            index = pd.to_datetime(self.time_array)
+
+        elif result_type == ResultTypes.MeanContingencyOverLoading:
+            data = self.mean_overload * 100.0
+            y_label = '(%)'
+            title = result_type.value[0]
+            labels = self.branch_names
+            index = pd.to_datetime(self.time_array)
+
+        elif result_type == ResultTypes.StdDevContingencyOverLoading:
+            data = self.std_dev_overload * 100.0
+            y_label = '(%)'
+            title = result_type.value[0]
+            labels = self.branch_names
+            index = pd.to_datetime(self.time_array)
+
+        elif result_type == ResultTypes.SrapUsedPower:
+            data = self.srap_used_power
+            y_label = ''
+            title = result_type.value[0]
+            labels = self.bus_names
+            index = self.branch_names
 
         elif result_type == ResultTypes.ContingencyAnalysisReport:
             data = self.report.get_data()

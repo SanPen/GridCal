@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -98,6 +98,8 @@ def get_reliability_scenario(nc: NumericalCircuit, horizon=10000):
     (time in hours, DataType, element index, activation state (True/False))
     """
     all_events = list()
+
+    # TODO: Add MTTF and MTTR to data devices
 
     # Branches
     all_events += get_reliability_events(horizon,

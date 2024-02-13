@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -16,143 +16,112 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import json
-from typing import List, Union, Any
+from typing import List, Union, Any, Dict
 from warnings import warn
 import numpy as np
-import numba as nb
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.IO.gridcal.contingency_parser import get_contingencies_dict, parse_contingencies
+from GridCalEngine.IO.gridcal.generic_io_functions import CustomJSONizer
 import GridCalEngine.Core.Devices as dev
+from GridCalEngine.Core.Devices.profile import Profile
 from GridCalEngine.enumerations import DeviceType, ConverterControlType, HvdcControlType, BuildStatus
-from GridCalEngine.Core.Devices.profile import compress_array_numba
 
 
-def add_to_dict(d, d2, key):
+def add_to_dict(main_dict: Dict[str, List[Any]], data_to_append: Dict[Any, Any], key: str):
     """
-
-    :param d:
-    :param d2:
-    :param key:
+    Append d2 into a list of d at the key
+    :param main_dict: Dictionary to append to
+    :param data_to_append: Secondary dictionary to append
+    :param key: key where to append the dictionary
     """
-    if key in d.keys():
-        d[key].append(d2)
+    lst = main_dict.get(key, None)
+    if lst is None:
+        main_dict[key] = [data_to_append]  # create list at the entry
     else:
-        d[key] = [d2]
+        lst.append(data_to_append)  # increase list
 
 
-def add_to_dict2(d, d2, key):
+def add_to_dict2(main_dict: Dict[str, Any], data: Dict[Any, Any], key: str):
     """
-
-    :param d:
-    :param d2:
-    :param key:
+    Add data to the main dictionary at the given key if it does not exists already
+    :param main_dict:Dictionary to append to
+    :param data: Some dictionary
+    :param key: key to store
     """
-    if key not in d.keys():
-        d[key] = d2
+    if key not in main_dict.keys():
+        main_dict[key] = data
 
 
-def get_most_frequent(arr):
+def profile_to_json(profile: Profile) -> Dict[str, Any]:
     """
-
-    :param arr:
+    Convert a Profile to a json dictionary
+    :param profile:
     :return:
     """
-    values, counts = np.unique(arr, return_counts=True)
-    ind = np.argmax(counts)
-    return values[ind]
-
-
-def compress_array(arr, min_sparsity=0.2):
-    """
-    Compress array
-    :param arr: list of np.ndarray
-    :param min_sparsity: minimum sparsity of the array to consider it sparse
-    :return: dictionary with at least type and data entries.
-            if sparse: {'type': 'sparse',
-                        'base': base,
-                        'size': len(arr),
-                        'data': data,
-                        'indptr': indptr}
-
-            if dense: {'type': 'dense',
-                       'data': arr}
-    """
-    if isinstance(arr, list) or isinstance(arr, np.ndarray):
-        if len(arr) > 0:
-            u, counts = np.unique(arr, return_counts=True)
-            f = len(u) / len(arr)  # sparsity factor
-            if f < min_sparsity:
-                ind = np.argmax(counts)
-                base = u[ind]  # this is the most frequent value
-                if isinstance(base, np.bool_):
-                    base = bool(base)
-                data = list()
-                indptr = list()
-                if len(u) > 1:
-                    if isinstance(arr, list):
-                        data, indptr = compress_array_numba(nb.typed.List(arr), base)
-                    elif isinstance(arr, np.ndarray):
-                        data, indptr = compress_array_numba(arr, base)
-                    else:
-                        raise Exception('Unknown profile type' + str(type(arr)))
-
-                return {'type': 'sparse',
-                        'base': base,
-                        'size': len(arr),
-                        'data': data,
-                        'indptr': indptr}
-            else:
-                return {'type': 'dense',
-                        'data': arr}
-        else:
-            return {'type': 'dense',
-                    'data': arr}
+    if profile.is_sparse:
+        indptr, data = profile.get_sparse_representation()
+        return {'type': 'sparse',
+                'base': profile.default_value,
+                'size': profile.size(),
+                'data': data,
+                'indptr': indptr}
     else:
-        raise Exception('Unknown profile type' + str(type(arr)))
+        arr = profile.tolist()
+        return {'type': 'dense',
+                'data': arr}
 
 
-def decompress_array(d):
+def json_to_profile(d: Dict[str, Any]) -> Profile:
     """
-    decompress array (in profile form or list form)
-    :param d: dictionary containing a profile or a simple list of values
-    :return: numpy array
+    Convert a json
+    :param d:
+    :return:
     """
     if isinstance(d, dict):
         if 'type' in d.keys():
             if d['type'] == 'sparse':
-                n = d['size']
-                val = np.full(n, d['base'], dtype=type(d['base']))
-                for i, x in zip(d['indptr'], d['data']):
-                    val[i] = x
-                return val
+                profile = Profile(default_value=d['base'], is_sparse=True)
+                profile.create_sparse(size=d['size'], default_value=d['base'])
+                profile.set_sparse_representation(indptr=d['indptr'], data=d['data'])
+                return profile
 
             elif d['type'] == 'dense':
                 val = np.array(d['data'])
-                return val
+                profile = Profile(default_value=val[0])
+                profile.set(arr=val)
+                return profile
             else:
                 raise Exception('Unknown profile type' + str(d['type']))
 
         else:
             raise Exception("The passed dictionary is not a profile definition")
     elif isinstance(d, list):
-        return np.array(d)
+        if len(d) > 0:
+            profile = Profile(default_value=d[0])
+            profile.set(arr=np.array(d))
+            return profile
     else:
         raise Exception("The passed value is not a list or dictionary definition")
 
 
-def convert_to_sparse(d: dict, min_sparsity=0.2):
+def get_profiles_dict(elm: dev.EditableDevice) -> Dict[str, Any]:
     """
-    Convert a dictionary of profiles to a dictionary of sparse or dense profiles
-    :param d: dictionary of profiles i.e. {"p": [1.2, 3.2, ...], "q": [0.3, 1.1, ...]}
-    :param min_sparsity: minimum sparsity of the array to consider it sparse
-    :return: dictionary of profiles but the profiles are objects that indicate if the profile is sparse or dense
-    """
-    for key, value in d.items():
-        if isinstance(value, list) or isinstance(value, np.ndarray):
-            d[key] = compress_array(value, min_sparsity)
 
-    return d
+    :return:
+    """
+
+    """
+    Example:
+    {'id': self.idtag,
+    'active': active_prof,
+    'rate': rate_prof}
+    """
+    data = {'id': elm.idtag}
+    for property_name, profile_name in elm.properties_with_profile.items():
+        data[property_name] = profile_to_json(elm.get_profile(magnitude=property_name))
+
+    return data
 
 
 def parse_json_data(data) -> MultiCircuit:
@@ -218,7 +187,7 @@ def parse_json_data(data) -> MultiCircuit:
                                P=element["P"],
                                Q=element["Q"],
                                active=element['active'])
-                bus.loads.append(elm)
+                circuit.add_load(bus=bus, api_obj=elm)
 
             elif element["type"] == "controlled_gen":
 
@@ -232,13 +201,11 @@ def parse_json_data(data) -> MultiCircuit:
                                     Qmin=element['qmin'],
                                     Qmax=element['qmax'],
                                     Snom=element['Snom'],
-                                    P_prof=None,
-                                    vset_prof=None,
                                     active=element['active'],
                                     Pmin=0.0,
                                     Pmax=element['Snom'],
                                     Cost=1.0)
-                bus.generators.append(elm)
+                circuit.add_generator(bus=bus, api_obj=elm)
 
             elif element["type"] == "static_gen":
 
@@ -249,7 +216,7 @@ def parse_json_data(data) -> MultiCircuit:
                 elm = dev.StaticGenerator(name=element['name'],
                                           P=element['P'], Q=element['Q'],
                                           active=element['active'])
-                bus.static_generators.append(elm)
+                circuit.add_generator(bus=bus, api_obj=elm)
 
             elif element["type"] == "battery":
 
@@ -264,10 +231,8 @@ def parse_json_data(data) -> MultiCircuit:
                                   Qmax=element['qmax'],
                                   Snom=element['Snom'],
                                   Enom=element['Enom'],
-                                  P_prof=None,
-                                  vset_prof=None,
                                   active=element['active'])
-                bus.batteries.append(elm)
+                circuit.add_battery(bus=bus, api_obj=elm)
 
             elif element["type"] == "shunt":
 
@@ -278,7 +243,7 @@ def parse_json_data(data) -> MultiCircuit:
                 elm = dev.Shunt(name=element['name'],
                                 G=element["g"], B=element["b"],
                                 active=element['active'])
-                bus.shunts.append(elm)
+                circuit.add_shunt(bus=bus, api_obj=elm)
 
             elif element["type"] == "branch":
 
@@ -309,7 +274,14 @@ def parse_json_data(data) -> MultiCircuit:
     return circuit
 
 
-def set_object_properties(elm, prop: list, entry: dict):
+def set_object_properties(elm, prop: List[str], entry: Dict[str, Any]):
+    """
+    Set the properties of an object
+    :param elm: object to be set
+    :param prop: list of properties
+    :param entry:
+    :return:
+    """
     for jprop, gcprop in prop:
         if jprop in entry.keys():
             setattr(elm, gcprop, entry[jprop])
@@ -351,12 +323,12 @@ def parse_json_data_v3(data: dict, logger: Logger):
                                   code=str(jentry['code']),
                                   name=str(jentry['name']))
 
-                circuit.countries.append(elm)
+                circuit.add_country(elm)
                 country_dict[elm.idtag] = elm
 
         else:
             elm = dev.Country(idtag=None, code='Default', name='Default')
-            circuit.countries.append(elm)
+            circuit.add_country(elm)
 
         # Areas
         areas_dict = dict()
@@ -366,11 +338,11 @@ def parse_json_data_v3(data: dict, logger: Logger):
                 elm = dev.Area(idtag=str(jentry['id']),
                                code=str(jentry['code']),
                                name=str(jentry['name']))
-                circuit.areas.append(elm)
+                circuit.add_area(elm)
                 areas_dict[elm.idtag] = elm
         else:
             elm = dev.Area(idtag=None, code='Default', name='Default')
-            circuit.areas.append(elm)
+            circuit.add_area(elm)
 
         # Zones
         zones_dict = dict()
@@ -380,11 +352,11 @@ def parse_json_data_v3(data: dict, logger: Logger):
                 elm = dev.Zone(idtag=str(jentry['id']),
                                code=str(jentry['code']),
                                name=str(jentry['name']))
-                circuit.zones.append(elm)
+                circuit.add_zone(elm)
                 zones_dict[elm.idtag] = elm
         else:
             elm = dev.Zone(idtag=None, code='Default', name='Default')
-            circuit.zones.append(elm)
+            circuit.add_zone(elm)
 
         # Substations
         substations_dict = dict()
@@ -394,11 +366,11 @@ def parse_json_data_v3(data: dict, logger: Logger):
                 elm = dev.Substation(idtag=str(jentry['id']),
                                      code=str(jentry['code']),
                                      name=str(jentry['name']))
-                circuit.substations.append(elm)
+                circuit.add_substation(elm)
                 substations_dict[elm.idtag] = elm
         else:
             elm = dev.Substation(idtag=None, code='Default', name='Default')
-            circuit.substations.append(elm)
+            circuit.add_substation(elm)
 
         # buses
         bus_dict = dict()
@@ -463,7 +435,7 @@ def parse_json_data_v3(data: dict, logger: Logger):
                 bus_dict[jentry['id']] = bus
 
                 if has_profiles:
-                    bus.active_prof = decompress_array(device_profiles_dict[bus.idtag]['active'])
+                    bus.active_prof = json_to_profile(device_profiles_dict[bus.idtag]['active'])
 
                 circuit.add_bus(bus)
 
@@ -495,10 +467,10 @@ def parse_json_data_v3(data: dict, logger: Logger):
 
                 if has_profiles:
                     profile_entry = device_profiles_dict[elm.idtag]
-                    elm.active_prof = decompress_array(profile_entry['active'])
-                    elm.P_prof = decompress_array(profile_entry['p'])
-                    elm.Vset_prof = decompress_array(profile_entry['v'])
-                    elm.Pf_prof = decompress_array(profile_entry['pf'])
+                    elm.active_prof = json_to_profile(profile_entry['active'])
+                    elm.P_prof = json_to_profile(profile_entry['p'])
+                    elm.Vset_prof = json_to_profile(profile_entry['v'])
+                    elm.Pf_prof = json_to_profile(profile_entry['pf'])
 
                 elm.bus = bus_dict[jentry['bus']]
                 circuit.add_generator(elm.bus, elm)
@@ -531,10 +503,10 @@ def parse_json_data_v3(data: dict, logger: Logger):
 
                 if has_profiles:
                     profile_entry = device_profiles_dict[elm.idtag]
-                    elm.active_prof = decompress_array(profile_entry['active'])
-                    elm.P_prof = decompress_array(profile_entry['p'])
-                    elm.Vset_prof = decompress_array(profile_entry['v'])
-                    elm.Pf_prof = decompress_array(profile_entry['pf'])
+                    elm.active_prof = json_to_profile(profile_entry['active'])
+                    elm.P_prof = json_to_profile(profile_entry['p'])
+                    elm.Vset_prof = json_to_profile(profile_entry['v'])
+                    elm.Pf_prof = json_to_profile(profile_entry['pf'])
 
                 elm.bus = bus_dict[jentry['bus']]
                 circuit.add_battery(elm.bus, elm)
@@ -562,13 +534,13 @@ def parse_json_data_v3(data: dict, logger: Logger):
 
                 if has_profiles:
                     profile_entry = device_profiles_dict[elm.idtag]
-                    elm.active_prof = decompress_array(profile_entry['active'])
-                    elm.P_prof = decompress_array(profile_entry['p'])
-                    elm.Q_prof = decompress_array(profile_entry['q'])
-                    elm.Ir_prof = decompress_array(profile_entry['ir'])
-                    elm.Ii_prof = decompress_array(profile_entry['ii'])
-                    elm.G_prof = decompress_array(profile_entry['g'])
-                    elm.B_prof = decompress_array(profile_entry['b'])
+                    elm.active_prof = json_to_profile(profile_entry['active'])
+                    elm.P_prof = json_to_profile(profile_entry['p'])
+                    elm.Q_prof = json_to_profile(profile_entry['q'])
+                    elm.Ir_prof = json_to_profile(profile_entry['ir'])
+                    elm.Ii_prof = json_to_profile(profile_entry['ii'])
+                    elm.G_prof = json_to_profile(profile_entry['g'])
+                    elm.B_prof = json_to_profile(profile_entry['b'])
 
                 elm.bus = bus_dict[jentry['bus']]
                 circuit.add_load(elm.bus, elm)
@@ -610,9 +582,9 @@ def parse_json_data_v3(data: dict, logger: Logger):
 
                 if has_profiles:
                     profile_entry = device_profiles_dict[elm.idtag]
-                    elm.active_prof = decompress_array(profile_entry['active'])
-                    elm.G_prof = decompress_array(profile_entry['g'])
-                    elm.B_prof = decompress_array(profile_entry['b'])
+                    elm.active_prof = json_to_profile(profile_entry['active'])
+                    elm.G_prof = json_to_profile(profile_entry['g'])
+                    elm.B_prof = json_to_profile(profile_entry['b'])
 
                 elm.bus = bus_dict[jentry['bus']]
                 circuit.add_shunt(elm.bus, elm)
@@ -677,8 +649,8 @@ def parse_json_data_v3(data: dict, logger: Logger):
 
                 if has_profiles:
                     profile_entry = device_profiles_dict[elm.idtag]
-                    elm.active_prof = decompress_array(profile_entry['active'])
-                    elm.rate_prof = decompress_array(profile_entry['rate'])
+                    elm.active_prof = json_to_profile(profile_entry['active'])
+                    elm.rate_prof = json_to_profile(profile_entry['rate'])
 
                 circuit.add_line(elm, logger=logger)
 
@@ -707,8 +679,8 @@ def parse_json_data_v3(data: dict, logger: Logger):
 
                 if has_profiles:
                     profile_entry = device_profiles_dict[elm.idtag]
-                    elm.active_prof = decompress_array(profile_entry['active'])
-                    elm.rate_prof = decompress_array(profile_entry['rate'])
+                    elm.active_prof = json_to_profile(profile_entry['active'])
+                    elm.rate_prof = json_to_profile(profile_entry['rate'])
 
                 circuit.add_dc_line(elm)
 
@@ -777,8 +749,8 @@ def parse_json_data_v3(data: dict, logger: Logger):
 
                 if has_profiles:
                     profile_entry = device_profiles_dict[elm.idtag]
-                    elm.active_prof = decompress_array(profile_entry['active'])
-                    elm.rate_prof = decompress_array(profile_entry['rate'])
+                    elm.active_prof = json_to_profile(profile_entry['active'])
+                    elm.rate_prof = json_to_profile(profile_entry['rate'])
 
                 circuit.add_transformer2w(elm)
 
@@ -876,8 +848,8 @@ def parse_json_data_v3(data: dict, logger: Logger):
 
                 if has_profiles:
                     profile_entry = device_profiles_dict[elm.idtag]
-                    elm.active_prof = decompress_array(profile_entry['active'])
-                    elm.rate_prof = decompress_array(profile_entry['rate'])
+                    elm.active_prof = json_to_profile(profile_entry['active'])
+                    elm.rate_prof = json_to_profile(profile_entry['rate'])
 
                 circuit.add_vsc(elm)
 
@@ -924,12 +896,12 @@ def parse_json_data_v3(data: dict, logger: Logger):
 
                 if has_profiles:
                     profile_entry = device_profiles_dict[elm.idtag]
-                    elm.active_prof = decompress_array(profile_entry['active'])
-                    elm.rate_prof = decompress_array(profile_entry['rate'])
-                    elm.Pset_prof = decompress_array(profile_entry['Pset'])
-                    elm.Vset_f_prof = decompress_array(profile_entry['vset_from'])
-                    elm.Vset_t_prof = decompress_array(profile_entry['vset_to'])
-                    elm.overload_cost_prof = decompress_array(profile_entry['overload_cost'])
+                    elm.active_prof = json_to_profile(profile_entry['active'])
+                    elm.rate_prof = json_to_profile(profile_entry['rate'])
+                    elm.Pset_prof = json_to_profile(profile_entry['Pset'])
+                    elm.Vset_f_prof = json_to_profile(profile_entry['vset_from'])
+                    elm.Vset_t_prof = json_to_profile(profile_entry['vset_to'])
+                    elm.overload_cost_prof = json_to_profile(profile_entry['overload_cost'])
 
                 circuit.add_hvdc(elm)
 
@@ -976,11 +948,11 @@ def parse_json_data_v2(data: dict, logger: Logger):
                 elm = dev.Country(idtag=str(jentry['id']),
                                   code=str(jentry['code']),
                                   name=str(jentry['name']))
-                circuit.countries.append(elm)
+                circuit.add_country(elm)
                 country_dict[elm.idtag] = elm
         else:
             elm = dev.Country(idtag=None, code='Default', name='Default')
-            circuit.countries.append(elm)
+            circuit.add_country(elm)
 
         # Areas
         areas_dict = dict()
@@ -990,11 +962,11 @@ def parse_json_data_v2(data: dict, logger: Logger):
                 elm = dev.Area(idtag=str(jentry['id']),
                                code=str(jentry['code']),
                                name=str(jentry['name']))
-                circuit.areas.append(elm)
+                circuit.add_area(elm)
                 areas_dict[elm.idtag] = elm
         else:
             elm = dev.Area(idtag=None, code='Default', name='Default')
-            circuit.areas.append(elm)
+            circuit.add_area(elm)
 
         # Zones
         zones_dict = dict()
@@ -1004,11 +976,11 @@ def parse_json_data_v2(data: dict, logger: Logger):
                 elm = dev.Zone(idtag=str(jentry['id']),
                                code=str(jentry['code']),
                                name=str(jentry['name']))
-                circuit.zones.append(elm)
+                circuit.add_zone(elm)
                 zones_dict[elm.idtag] = elm
         else:
             elm = dev.Zone(idtag=None, code='Default', name='Default')
-            circuit.zones.append(elm)
+            circuit.add_zone(elm)
 
         # Substations
         substations_dict = dict()
@@ -1018,11 +990,11 @@ def parse_json_data_v2(data: dict, logger: Logger):
                 elm = dev.Substation(idtag=str(jentry['id']),
                                      code=str(jentry['code']),
                                      name=str(jentry['name']))
-                circuit.substations.append(elm)
+                circuit.add_substation(elm)
                 substations_dict[elm.idtag] = elm
         else:
             elm = dev.Substation(idtag=None, code='Default', name='Default')
-            circuit.substations.append(elm)
+            circuit.add_substation(elm)
 
         # buses
         bus_dict = dict()
@@ -1210,16 +1182,7 @@ def parse_json(file_name) -> MultiCircuit:
     return parse_json_data(data)
 
 
-class CustomJSONizer(json.JSONEncoder):
-    def default(self, obj):
-        # this solves the error:
-        # TypeError: Object of type bool_ is not JSON serializable
-        return super().encode(bool(obj)) \
-            if isinstance(obj, np.bool_) \
-            else super().default(obj)
-
-
-def save_json_file_v3(file_path: str, circuit: MultiCircuit, simulation_drivers: Union[None, List[Any]]=None):
+def save_json_file_v3(file_path: str, circuit: MultiCircuit, simulation_drivers: Union[None, List[Any]] = None):
     """
     Save JSON file
     :param file_path: file path 
@@ -1231,56 +1194,37 @@ def save_json_file_v3(file_path: str, circuit: MultiCircuit, simulation_drivers:
     units_dict = dict()
     logger = Logger()
 
-
-
     # add the circuit
     elements[DeviceType.CircuitDevice.value] = circuit.get_properties_dict()
     units_dict[DeviceType.CircuitDevice.value] = circuit.get_units_dict()
     element_profiles[DeviceType.CircuitDevice.value] = circuit.get_profiles_dict()
 
-    # add the areas
-    for cls in [circuit.substations,
-                circuit.zones,
-                circuit.areas,
-                circuit.countries,
-                circuit.technologies,
-                circuit.contingency_groups,
-                circuit.contingencies,
-                circuit.investments_groups,
-                circuit.investments]:
+    # idelly, these list go in dependency order
+    all_lists = [circuit.substations,
+                 circuit.zones,
+                 circuit.areas,
+                 circuit.countries,
+                 circuit.technologies,
+                 circuit.contingency_groups,
+                 circuit.contingencies,
+                 circuit.investments_groups,
+                 circuit.investments,
+                 circuit.buses,
+                 circuit.connectivity_nodes]
+    all_lists += circuit.get_injection_devices_lists()
+    all_lists += circuit.get_branch_lists()
 
-        for elm in cls:
+    # add the devices
+    for device_list in all_lists:
+        for elm in device_list:
             # pack the bus data into a dictionary
             key = elm.device_type.value
-            add_to_dict(d=elements, d2=elm.get_properties_dict(), key=key)
-            add_to_dict(d=element_profiles, d2=convert_to_sparse(elm.get_profiles_dict()), key=key)
-            add_to_dict2(d=units_dict, d2=elm.get_units_dict(), key=key)
-
-    # add the buses
-    for elm in circuit.buses:
-
-        # pack the bus data into a dictionary
-        key = elm.device_type.value
-        add_to_dict(d=elements, d2=elm.get_properties_dict(), key=key)
-        add_to_dict(d=element_profiles, d2=convert_to_sparse(elm.get_profiles_dict()), key=key)
-        add_to_dict2(d=units_dict, d2=elm.get_units_dict(), key=key)
-
-        # pack all the elements within the bus
-        devices = elm.loads + elm.generators + elm.static_generators + elm.batteries + elm.shunts
-        for device in devices:
-            key = elm.device_type.value
-            add_to_dict(d=elements, d2=device.get_properties_dict(), key=key)
-            add_to_dict(d=element_profiles, d2=convert_to_sparse(device.get_profiles_dict()), key=key)
-            add_to_dict2(d=units_dict, d2=device.get_units_dict(), key=key)
-
-    # Branches
-    for branch_list in circuit.get_branch_lists():
-        for elm in branch_list:
-            # pack the branch data into a dictionary
-            key = elm.device_type.value
-            add_to_dict(d=elements, d2=elm.get_properties_dict(), key=key)
-            add_to_dict(d=element_profiles, d2=convert_to_sparse(elm.get_profiles_dict()), key=key)
-            add_to_dict2(d=units_dict, d2=elm.get_units_dict(), key=key)
+            add_to_dict(main_dict=elements,
+                        data_to_append=elm.get_properties_dict(),
+                        key=key)
+            add_to_dict(main_dict=element_profiles,
+                        data_to_append=get_profiles_dict(elm),
+                        key=key)
 
     # results
     results = dict()
@@ -1331,7 +1275,7 @@ def save_json_file_v3(file_path: str, circuit: MultiCircuit, simulation_drivers:
                                               'branch': branch_data}
 
     data = {'version': '3',
-            'review': '2',
+            'review': '3',
             'software': 'GridCal',
             'units': units_dict,
             'devices': elements,

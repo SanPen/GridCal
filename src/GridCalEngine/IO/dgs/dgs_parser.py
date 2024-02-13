@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -682,21 +682,6 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
         if external['bustp'].values[i] == b'SL':
             # create the slack entry on buses
             bus_obj.is_slack = True
-
-            # BUSES[bus1, bd.BUS_TYPE] = 3
-            # BUSES[bus1, bd.VA] = va
-            # BUSES[bus1, bd.VM] = vm
-            #
-            # # create the slack entry on generators (add the slack generator)
-            # gen_ = gen_line.copy()
-            # gen_[gd.GEN_BUS] = bus1
-            # gen_[gd.MBASE] = baseMVA
-            # gen_[gd.VG] = vm
-            # gen_[gd.GEN_STATUS] = 1
-            # gen_[gd.PG] += external['pgini'].values[i]
-            #
-            # GEN.append(gen_)
-            # GEN_NAMES.append(external['loc_name'][i])
 
         elif external['bustp'].values[i] == b'PV':
 

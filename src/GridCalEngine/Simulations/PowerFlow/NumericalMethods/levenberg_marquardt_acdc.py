@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -21,7 +21,7 @@ import numpy as np
 import scipy.sparse as sp
 from scipy.sparse.linalg import spsolve
 
-from GridCalEngine.Core.admittance_matrices import compile_y_acdc
+from GridCalEngine.Core.Topology.admittance_matrices import compile_y_acdc
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 import GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions as cf
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.acdc_jacobian import fubm_jacobian, AcDcSolSlicer

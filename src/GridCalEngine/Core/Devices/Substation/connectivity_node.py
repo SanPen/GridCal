@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -15,19 +15,22 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-
-from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceType
+from typing import Union
+from GridCalEngine.Core.Devices.Parents.editable_device import EditableDevice, DeviceType
+from GridCalEngine.Core.Devices.Substation.bus import Bus
 
 
 class ConnectivityNode(EditableDevice):
 
-    def __init__(self, name='Substation', idtag=None, code='', x=0.0, y=0.0, dc=False, bus_bar = None):
+    def __init__(self, name='CN', idtag=None, code='', dc: bool = False,
+                 default_bus: Union[None, Bus] = None):
         """
-
-        :param name:
-        :param idtag:
-        :param x:
-        :param y:
+        Constructor
+        :param name: Name of the connectivity node
+        :param idtag: unique identifier
+        :param code: secondary identifyier
+        :param dc: is this a DC connectivity node?
+        :param default_bus: Default bus to use for topology processing (optional)
         """
         EditableDevice.__init__(self,
                                 name=name,
@@ -37,5 +40,10 @@ class ConnectivityNode(EditableDevice):
 
         self.dc = dc
 
-        self.bus_bar = bus_bar
+        self.default_bus: Union[None, Bus] = default_bus
+
+        self.register("dc", "", bool, "is this a DC connectivity node?")
+
+        self.register("default_bus", "", DeviceType.BusDevice,
+                      "Default bus to use for topology processing (optional)")
 

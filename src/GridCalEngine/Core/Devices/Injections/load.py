@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -14,20 +14,23 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from typing import Union
+import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 from GridCalEngine.enumerations import DeviceType, BuildStatus
-from GridCalEngine.Core.Devices.Injections.injection_template import InjectionTemplate
+from GridCalEngine.Core.Devices.Parents.load_parent import LoadParent
+from GridCalEngine.Core.Devices.profile import Profile
 
 
-class Load(InjectionTemplate):
+class Load(LoadParent):
     """
     Load
     """
 
     def __init__(self, name='Load', idtag=None, code='', G=0.0, B=0.0, Ir=0.0, Ii=0.0, P=0.0, Q=0.0, Cost=1200.0,
-                 G_prof=None, B_prof=None, Ir_prof=None, Ii_prof=None, P_prof=None, Q_prof=None,
-                 active=True, mttf=0.0, mttr=0.0, capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned):
+                 active=True, mttf=0.0, mttr=0.0, capex=0, opex=0,
+                 build_status: BuildStatus = BuildStatus.Commissioned):
         """
         The load object implements the so-called ZIP model, in which the load can be
         represented by a combination of power (P), current(I), and impedance (Z).
@@ -42,48 +45,37 @@ class Load(InjectionTemplate):
         :param P: Active power in MW
         :param Q: Reactive power in MVAr
         :param Cost: Cost of load shedding
-        :param G_prof: conductance profile in equivalent MW
-        :param B_prof: susceptance profile in equivalent MVAr
-        :param Ir_prof: real current profile in equivalent MW
-        :param Ii_prof: imaginary current profile in equivalent MVAr
-        :param P_prof: active power profile in equivalent MW
-        :param Q_prof: reactive power profile in equivalent MVAr
         :param active: Is the load active?
         :param mttf: Mean time to failure in hours
         :param mttr: Mean time to recovery in hours
         """
-        InjectionTemplate.__init__(self,
-                                   name=name,
-                                   idtag=idtag,
-                                   code=code,
-                                   bus=None,
-                                   cn=None,
-                                   active=active,
-                                   active_prof=None,
-                                   Cost=Cost,
-                                   Cost_prof=None,
-                                   mttf=mttf,
-                                   mttr=mttr,
-                                   capex=capex,
-                                   opex=opex,
-                                   build_status=build_status,
-                                   device_type=DeviceType.LoadDevice)
-        self.P = P
-        self.Q = Q
+        LoadParent.__init__(self,
+                            name=name,
+                            idtag=idtag,
+                            code=code,
+                            bus=None,
+                            cn=None,
+                            active=active,
+                            P=P,
+                            Q=Q,
+                            Cost=Cost,
+                            mttf=mttf,
+                            mttr=mttr,
+                            capex=capex,
+                            opex=opex,
+                            build_status=build_status,
+                            device_type=DeviceType.LoadDevice)
+
         self.G = G
         self.B = B
         self.Ir = Ir
         self.Ii = Ii
 
-        self.P_prof = P_prof
-        self.Q_prof = Q_prof
-        self.G_prof = G_prof
-        self.B_prof = B_prof
-        self.Ir_prof = Ir_prof
-        self.Ii_prof = Ii_prof
+        self._G_prof = Profile(default_value=G)
+        self._B_prof = Profile(default_value=B)
+        self._Ir_prof = Profile(default_value=Ir)
+        self._Ii_prof = Profile(default_value=Ii)
 
-        self.register(key='P', units='MW', tpe=float, definition='Active power', profile_name='P_prof')
-        self.register(key='Q', units='MVAr', tpe=float, definition='Reactive power', profile_name='Q_prof')
         self.register(key='Ir', units='MW', tpe=float,
                       definition='Active power of the current component at V=1.0 p.u.', profile_name='Ir_prof')
         self.register(key='Ii', units='MVAr', tpe=float,
@@ -93,43 +85,73 @@ class Load(InjectionTemplate):
         self.register(key='B', units='MVAr', tpe=float,
                       definition='Reactive power of the impedance component at V=1.0 p.u.', profile_name='B_prof')
 
-    def copy(self):
+    @property
+    def Ir_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._Ir_prof
 
-        load = Load()
+    @Ir_prof.setter
+    def Ir_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._Ir_prof = val
+        elif isinstance(val, np.ndarray):
+            self._Ir_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a Ir_prof')
 
-        load.name = self.name
+    @property
+    def Ii_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._Ii_prof
 
-        load.active = self.active
-        load.active_prof = self.active_prof
+    @Ii_prof.setter
+    def Ii_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._Ii_prof = val
+        elif isinstance(val, np.ndarray):
+            self._Ii_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a Ii_prof')
 
-        # Impedance (MVA)
-        load.G = self.G
-        load.B = self.B
+    @property
+    def G_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._G_prof
 
-        # Current (MVA)
-        load.Ir = self.Ir
-        load.Ii = self.Ii
+    @G_prof.setter
+    def G_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._G_prof = val
+        elif isinstance(val, np.ndarray):
+            self._G_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a G_prof')
 
-        # Power (MVA)
-        load.P = self.P
-        load.Q = self.Q
+    @property
+    def B_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._B_prof
 
-        # Impedance (MVA)
-        load.G_prof = self.G_prof
-        load.B_prof = self.B_prof
-
-        # Current (MVA)
-        load.Ir_prof = self.Ir_prof
-        load.Ii_prof = self.Ii_prof
-
-        # Power (MVA)
-        load.P_prof = self.P_prof
-        load.Q_prof = self.Q_prof
-
-        load.mttf = self.mttf
-        load.mttr = self.mttr
-
-        return load
+    @B_prof.setter
+    def B_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._B_prof = val
+        elif isinstance(val, np.ndarray):
+            self._B_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a B_prof')
 
     def get_properties_dict(self, version=3):
         """
@@ -213,14 +235,14 @@ class Load(InjectionTemplate):
             ax_2 = fig.add_subplot(212, sharex=ax_1)
 
             # P
-            y = self.P_prof
+            y = self.P_prof.toarray()
             df = pd.DataFrame(data=y, index=time, columns=[self.name])
             ax_1.set_title('Active power', fontsize=14)
             ax_1.set_ylabel('MW', fontsize=11)
             df.plot(ax=ax_1)
 
             # Q
-            y = self.Q_prof
+            y = self.Q_prof.toarray()
             df = pd.DataFrame(data=y, index=time, columns=[self.name])
             ax_2.set_title('Reactive power', fontsize=14)
             ax_2.set_ylabel('MVAr', fontsize=11)

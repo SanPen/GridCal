@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -15,22 +15,31 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-import uuid
+from typing import Union
 import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
 from enum import Enum
 from GridCalEngine.Core.Devices.Substation.bus import Bus
 from GridCalEngine.enumerations import BuildStatus
-from GridCalEngine.Core.Devices.Branches.templates.parent_branch import ParentBranch
+from GridCalEngine.Core.Devices.Parents.branch_parent import BranchParent
 from GridCalEngine.Core.Devices.Branches.tap_changer import TapChanger
 from GridCalEngine.Core.Devices.Branches.transformer import Transformer2W
 from GridCalEngine.Core.Devices.Branches.line import Line
+from GridCalEngine.Core.Devices.profile import Profile
 
-from GridCalEngine.Core.Devices.editable_device import DeviceType
+from GridCalEngine.Core.Devices.Parents.editable_device import DeviceType
 
 # Global sqrt of 3 (bad practice?)
 SQRT3 = np.sqrt(3.0)
+
+
+"""
+NOTE: This device is legacy and unsupported
+      It only exists because older GridCal versions used it
+      Now when this devices is used it is immediatelly converted 
+      to either a line or transformer
+"""
 
 
 class BranchType(Enum):
@@ -63,50 +72,15 @@ class BranchType(Enum):
         return list(map(lambda c: c.value, cls))
 
 
+class Branch(BranchParent):
 
-class BranchTemplate:
-    """
-    This is the template for a branch
-    This class only exists for legacy reasons
-    """
-
-    def __init__(self, name='BranchTemplate', tpe=BranchType.Branch) -> None:
-        self.idtag = uuid.uuid4().hex
-
-        self.name = name
-
-        self.tpe = tpe
-
-        self.device_type = DeviceType.BranchTypeDevice
-
-        self.edit_headers = []
-        self.units = []
-        self.non_editable_indices = []
-        self.edit_types = {}
-
-    def __str__(self):
-        return self.name
-
-    def get_save_data(self):
-        """
-
-        :return:
-        """
-        dta = list()
-        for p in self.edit_headers:
-            dta.append(getattr(self, p))
-        return dta
-
-
-class Branch(ParentBranch):
-
-    def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='Branch', idtag=None, r=1e-20, x=1e-20, g=1e-20,
-                 b=1e-20,
+    def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='Branch', idtag=None,
+                 r=1e-20, x=1e-20, g=1e-20, b=1e-20,
                  rate=1.0, tap=1.0, shift_angle=0, active=True, tolerance=0, cost=0.0,
                  mttf=0, mttr=0, r_fault=0.0, x_fault=0.0, fault_pos=0.5,
                  branch_type: BranchType = BranchType.Line, length=1, vset=1.0,
                  temp_base=20, temp_oper=20, alpha=0.00330,
-                 bus_to_regulated=False, template=BranchTemplate(), ):
+                 bus_to_regulated=False, template=None, ):
         """
         This class exists for legacy reasons, use the Line or Transformer2w classes instead! *
         The **Branch** class represents the connections between nodes (i.e.
@@ -143,7 +117,7 @@ class Branch(ParentBranch):
         :param bus_to_regulated:  Is the `bus_to` voltage regulated by this branch?
         :param template: Basic branch template
         """
-        ParentBranch.__init__(self,
+        BranchParent.__init__(self,
                               name=name,
                               idtag=idtag,
                               code="",
@@ -152,11 +126,8 @@ class Branch(ParentBranch):
                               cn_from=None,
                               cn_to=None,
                               active=active,
-                              active_prof=None,
                               rate=rate,
-                              rate_prof=None,
                               contingency_factor=1.0,
-                              contingency_factor_prof=None,
                               contingency_enabled=True,
                               monitor_loading=True,
                               mttf=mttf,
@@ -165,7 +136,6 @@ class Branch(ParentBranch):
                               capex=0.0,
                               opex=0.0,
                               Cost=cost,
-                              Cost_prof=None,
                               device_type=DeviceType.BranchDevice)
 
         # List of measurements
@@ -191,8 +161,7 @@ class Branch(ParentBranch):
         # Conductor base and operating temperatures in ºC
         self.temp_base = temp_base
         self.temp_oper = temp_oper
-
-        self.temp_oper_prof = None
+        self._temp_oper_prof = Profile(default_value=temp_oper)
 
         # Conductor thermal constant (1/ºC)
         self.alpha = alpha
@@ -212,8 +181,7 @@ class Branch(ParentBranch):
 
         # branch rating in MVA
         self.rate = rate
-
-        self.rate_prof = None
+        self._rate_prof = Profile(default_value=rate)
 
         # branch type: Line, Transformer, etc...
         self.branch_type = branch_type
@@ -259,6 +227,40 @@ class Branch(ParentBranch):
         self.register(key='fault_pos', units='p.u.', tpe=float,
                       definition='proportion of the fault location measured from the "from" bus.')
         self.register(key='branch_type', units='p.u.', tpe=BranchType, definition='Fault resistance.')
+
+    @property
+    def rate_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._rate_prof
+
+    @rate_prof.setter
+    def rate_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._rate_prof = val
+        elif isinstance(val, np.ndarray):
+            self._rate_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a rate_prof')
+
+    @property
+    def temp_oper_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._temp_oper_prof
+
+    @temp_oper_prof.setter
+    def temp_oper_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._temp_oper_prof = val
+        elif isinstance(val, np.ndarray):
+            self._temp_oper_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a temp_oper_prof')
 
     @property
     def R_corrected(self):
@@ -319,7 +321,7 @@ class Branch(ParentBranch):
 
         b.measurements = self.measurements
 
-        b.active_prof = self.active_prof.copy()
+        b.active_prof = self.active_prof
 
         return b
 
@@ -359,17 +361,11 @@ class Branch(ParentBranch):
         :return:
         """
         data = list()
-        for name, properties in self.editable_headers.items():
+        for name, properties in self.registered_properties.items():
             obj = getattr(self, name)
 
             if properties.tpe == BranchType:
                 obj = self.branch_type.value
-
-            elif properties.tpe == BranchTemplate:
-                if obj is None:
-                    obj = ''
-                else:
-                    obj = str(obj)
 
             elif properties.tpe not in [str, float, int, bool]:
                 obj = str(obj)
@@ -463,59 +459,64 @@ class Branch(ParentBranch):
         """
         V1 = min(self.bus_to.Vnom, self.bus_from.Vnom)
         V2 = max(self.bus_to.Vnom, self.bus_from.Vnom)
-        return Transformer2W(bus_from=self.bus_from,
-                             bus_to=self.bus_to,
-                             name=self.name,
-                             r=self.R,
-                             x=self.X,
-                             b=self.B,
-                             rate=self.rate,
-                             active=self.active,
-                             tolerance=self.tolerance,
-                             cost=self.Cost,
-                             mttf=self.mttf,
-                             mttr=self.mttr,
-                             tap_module=self.tap_module,
-                             tap_phase=self.angle,
-                             vset=self.vset,
-                             bus_to_regulated=self.bus_to_regulated,
-                             temp_base=self.temp_base,
-                             temp_oper=self.temp_oper,
-                             alpha=self.alpha,
-                             template=self.template,
-                             rate_prof=self.rate_prof,
-                             Cost_prof=self.Cost_prof,
-                             active_prof=self.active_prof,
-                             temp_oper_prof=self.temp_oper_prof)
+        elm = Transformer2W(bus_from=self.bus_from,
+                            bus_to=self.bus_to,
+                            name=self.name,
+                            r=self.R,
+                            x=self.X,
+                            b=self.B,
+                            rate=self.rate,
+                            active=self.active,
+                            tolerance=self.tolerance,
+                            HV=V2, LV=V1,
+                            cost=self.Cost,
+                            mttf=self.mttf,
+                            mttr=self.mttr,
+                            tap_module=self.tap_module,
+                            tap_phase=self.angle,
+                            vset=self.vset,
+                            bus_to_regulated=self.bus_to_regulated,
+                            temp_base=self.temp_base,
+                            temp_oper=self.temp_oper,
+                            alpha=self.alpha,
+                            template=self.template)
+        elm.rate_prof = self.rate_prof
+        elm.Cost_prof = self.Cost_prof
+        elm.active_prof = self.active_prof
+        elm.temp_oper_prof = self.temp_oper_prof
+        return elm
 
     def get_equivalent_line(self) -> Line:
         """
         Get the equivalent line object
         :return:
         """
-        return Line(bus_from=self.bus_from,
-                    bus_to=self.bus_to,
-                    name=self.name,
-                    r=self.R,
-                    x=self.X,
-                    b=self.B,
-                    rate=self.rate,
-                    active=self.active,
-                    tolerance=self.tolerance,
-                    cost=self.Cost,
-                    mttf=self.mttf,
-                    mttr=self.mttr,
-                    r_fault=self.r_fault,
-                    x_fault=self.x_fault,
-                    fault_pos=self.fault_pos,
-                    length=self.length,
-                    temp_base=self.temp_base,
-                    temp_oper=self.temp_oper,
-                    alpha=self.alpha,
-                    rate_prof=self.rate_prof,
-                    Cost_prof=self.Cost_prof,
-                    active_prof=self.active_prof,
-                    temp_oper_prof=self.temp_oper_prof)
+        elm = Line(bus_from=self.bus_from,
+                   bus_to=self.bus_to,
+                   name=self.name,
+                   r=self.R,
+                   x=self.X,
+                   b=self.B,
+                   rate=self.rate,
+                   active=self.active,
+                   tolerance=self.tolerance,
+                   cost=self.Cost,
+                   mttf=self.mttf,
+                   mttr=self.mttr,
+                   r_fault=self.r_fault,
+                   x_fault=self.x_fault,
+                   fault_pos=self.fault_pos,
+                   length=self.length,
+                   temp_base=self.temp_base,
+                   temp_oper=self.temp_oper,
+                   alpha=self.alpha)
+
+        elm.rate_prof = self.rate_prof
+        elm.Cost_prof = self.Cost_prof
+        elm.active_prof = self.active_prof
+        elm.temp_oper_prof = self.temp_oper_prof
+
+        return elm
 
 
 def convert_branch(branch: Branch):
@@ -526,55 +527,62 @@ def convert_branch(branch: Branch):
     """
     if branch.branch_type == BranchType.Line:
 
-        return Line(bus_from=branch.bus_from,
-                    bus_to=branch.bus_to,
-                    name=branch.name,
-                    r=branch.R,
-                    x=branch.X,
-                    b=branch.B,
-                    rate=branch.rate,
-                    active=branch.active,
-                    tolerance=branch.tolerance,
-                    cost=branch.Cost,
-                    mttf=branch.mttf,
-                    mttr=branch.mttr,
-                    r_fault=branch.r_fault,
-                    x_fault=branch.x_fault,
-                    fault_pos=branch.fault_pos,
-                    length=branch.length,
-                    temp_base=branch.temp_base,
-                    temp_oper=branch.temp_oper,
-                    alpha=branch.alpha,
-                    rate_prof=branch.rate_prof,
-                    Cost_prof=branch.Cost_prof,
-                    active_prof=branch.active_prof,
-                    temp_oper_prof=branch.temp_oper_prof)
+        elm = Line(bus_from=branch.bus_from,
+                   bus_to=branch.bus_to,
+                   name=branch.name,
+                   r=branch.R,
+                   x=branch.X,
+                   b=branch.B,
+                   rate=branch.rate,
+                   active=branch.active,
+                   tolerance=branch.tolerance,
+                   cost=branch.Cost,
+                   mttf=branch.mttf,
+                   mttr=branch.mttr,
+                   r_fault=branch.r_fault,
+                   x_fault=branch.x_fault,
+                   fault_pos=branch.fault_pos,
+                   length=branch.length,
+                   temp_base=branch.temp_base,
+                   temp_oper=branch.temp_oper,
+                   alpha=branch.alpha)
+
+        elm.rate_prof = branch.rate_prof
+        elm.Cost_prof = branch.Cost_prof
+        elm.active_prof = branch.active_prof
+        elm.temp_oper_prof = branch.temp_oper_prof
+
+        return elm
 
     elif branch.branch_type == BranchType.Transformer:
 
-        return Transformer2W(bus_from=branch.bus_from,
-                             bus_to=branch.bus_to,
-                             name=branch.name,
-                             r=branch.R,
-                             x=branch.X,
-                             b=branch.B,
-                             rate=branch.rate,
-                             active=branch.active,
-                             tolerance=branch.tolerance,
-                             cost=branch.Cost,
-                             mttf=branch.mttf,
-                             mttr=branch.mttr,
-                             tap_module=branch.tap_module,
-                             tap_phase=branch.angle,
-                             vset=branch.vset,
-                             bus_to_regulated=branch.bus_to_regulated,
-                             temp_base=branch.temp_base,
-                             temp_oper=branch.temp_oper,
-                             alpha=branch.alpha,
-                             template=branch.template,
-                             rate_prof=branch.rate_prof,
-                             Cost_prof=branch.Cost_prof,
-                             active_prof=branch.active_prof,
-                             temp_oper_prof=branch.temp_oper_prof)
+        elm = Transformer2W(bus_from=branch.bus_from,
+                            bus_to=branch.bus_to,
+                            name=branch.name,
+                            r=branch.R,
+                            x=branch.X,
+                            b=branch.B,
+                            rate=branch.rate,
+                            active=branch.active,
+                            tolerance=branch.tolerance,
+                            cost=branch.Cost,
+                            mttf=branch.mttf,
+                            mttr=branch.mttr,
+                            tap_module=branch.tap_module,
+                            tap_phase=branch.angle,
+                            vset=branch.vset,
+                            bus_to_regulated=branch.bus_to_regulated,
+                            temp_base=branch.temp_base,
+                            temp_oper=branch.temp_oper,
+                            alpha=branch.alpha,
+                            template=branch.template)
+
+        elm.rate_prof = branch.rate_prof
+        elm.Cost_prof = branch.Cost_prof
+        elm.active_prof = branch.active_prof
+        elm.temp_oper_prof = branch.temp_oper_prof
+
+        return elm
+
     else:
         return branch

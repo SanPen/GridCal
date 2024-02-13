@@ -5,3 +5,4 @@ GridCal
    :maxdepth: 4
 
    GridCal
+   GridCalEngine

@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -118,7 +118,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
             self.report_progress(0.0)
             self.report_text('Formulating problem...')
 
-        if self.options.solver == SolverType.DC_OPF:
+        if self.options.solver == SolverType.LINEAR_OPF:
 
             # DC optimal power flow
             opf_vars = run_linear_opf_ts(grid=self.grid,
@@ -178,7 +178,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
             self.results.converged = np.array([opf_vars.acceptable_solution] * opf_vars.nt)
 
 
-        elif self.options.solver == SolverType.Simple_OPF:
+        elif self.options.solver == SolverType.SIMPLE_OPF:
 
             # AC optimal power flow
             Pl, Pg = run_simple_dispatch_ts(grid=self.grid,
@@ -286,7 +286,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
 
             i += 1
 
-    def add_report(self):
+    def add_report(self, eps: float = 1e-6) -> None:
         """
         Add a report of the results (in-place)
         """
@@ -301,21 +301,29 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
             t_name = str(self.results.time_array[t])
 
             for gen_name, gen_shedding in zip(self.results.generator_names, self.results.generator_shedding[t, :]):
-                if gen_shedding > 0:
+                if gen_shedding > eps:
                     self.logger.add_warning("Generation shedding {}".format(t_name),
                                             device=gen_name,
                                             value=gen_shedding,
                                             expected_value=0.0)
 
             for load_name, load_shedding in zip(self.results.load_names, self.results.load_shedding[t, :]):
-                if load_shedding > 0:
+                if load_shedding > eps:
                     self.logger.add_warning("Load shedding {}".format(t_name),
                                             device=load_name,
                                             value=load_shedding,
                                             expected_value=0.0)
 
+            for fluid_node_name, fluid_node_spillage in zip(self.results.fluid_node_names,
+                                                            self.results.fluid_node_spillage[t, :]):
+                if fluid_node_spillage > eps:
+                    self.logger.add_warning("Fluid node spillage {}".format(t_name),
+                                            device=fluid_node_name,
+                                            value=fluid_node_spillage,
+                                            expected_value=0.0)
+
             for name, val in zip(self.results.branch_names, self.results.loading[t, :]):
-                if val > 1:
+                if val > (1.0 + eps):
                     self.logger.add_warning("Overload {}".format(t_name),
                                             device=name,
                                             value=val * 100,
@@ -367,7 +375,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                 else:
                     ti = self.time_indices
 
-            if self.options.solver == SolverType.DC_OPF:
+            if self.options.solver == SolverType.LINEAR_OPF:
                 self.report_text('Running Linear OPF with Newton...')
 
                 npa_res = newton_pa_linear_opf(circuit=self.grid,
@@ -400,7 +408,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                 self.results.fluid_path_flow[ti, :] = npa_res.fluid_path_vars.flow
                 self.results.fluid_injection_flow[ti, :] = npa_res.fluid_inject_vars.flow
 
-            if self.options.solver == SolverType.AC_OPF:
+            if self.options.solver == SolverType.NONLINEAR_OPF:
                 self.report_text('Running Non-Linear OPF with Newton...')
 
                 # pack the results

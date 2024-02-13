@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -18,7 +18,7 @@
 import time
 import scipy
 import numpy as np
-from GridCalEngine.Simulations.sparse_solve import get_sparse_type, get_linear_solver
+from GridCalEngine.Utils.NumericalMethods.sparse_solve import get_sparse_type, get_linear_solver
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
 import GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions as cf
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
@@ -129,19 +129,6 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
                     logger.add_debug('Vm:\n', Vm)
                     logger.add_debug('Va:\n', Va)
 
-                    # if verbose == 2:
-                    #     with open('GridCal_nr_data_it_{0}.json'.format(iteration), 'w') as file_ptr:
-                    #         J2 = J.tocsc()
-                    #         data = {"Ji": J2.indices.tolist(),
-                    #                 "Jp": J2.indptr.tolist(),
-                    #                 "Jx": J2.data.tolist(),
-                    #                 "Jm": J2.shape[0],
-                    #                 "Jn": J2.shape[1],
-                    #                 "f": f.tolist(),
-                    #                 "Va": Va.tolist(),
-                    #                 "Vm": Vm.tolist()}
-                    #         json.dump(data, file_ptr)
-
             # reassign the solution vector
             dVa[pvpq] = dx[:npvpq]
             dVm[pq] = dx[npvpq:]
@@ -177,7 +164,7 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
                     V = V2
                     norm_f = norm_f_new
 
-                if verbose:
+                if verbose > 1:
                     if l_iter == 0:
                         logger.add_debug('error', norm_f_new)
                     else:
@@ -238,7 +225,6 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
     end = time.time()
     elapsed = end - start
 
-    # return NumericPowerFlowResults(V, converged, norm_f, Scalc, None, None, None, None, None, None, iteration, elapsed)
     return NumericPowerFlowResults(V=V, converged=converged, norm_f=norm_f,
                                    Scalc=Scalc, ma=None, theta=None, Beq=None,
                                    Ybus=None, Yf=None, Yt=None,

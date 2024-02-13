@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -147,6 +147,10 @@ class PSSeGrid:
             # psse_bus.bus.ensure_area_objects(circuit)
             circuit.add_bus(psse_bus.bus)
 
+            # in legacy PSSe buses there are sunts...so add them
+            if psse_bus.shunt is not None:
+                circuit.add_shunt(bus=psse_bus.bus, api_obj=psse_bus.shunt)
+
         for area in self.areas:
             if area.ISW not in slack_buses:
                 logger.add_error('The area slack bus is not marked as slack', str(area.ISW))
@@ -258,6 +262,9 @@ class PSSeBus(PSSeObject):
     def __init__(self):
         PSSeObject.__init__(self)
 
+        self.bus: Union[dev.Bus, None] = None
+        self.shunt: Union[dev.Shunt, None] = None
+
         self.I = 1
         self.NAME = ""
         self.BASKV = 1
@@ -318,11 +325,9 @@ class PSSeBus(PSSeObject):
                                active=True, area=self.AREA, zone=self.ZONE, Vm0=self.VM, Va0=np.deg2rad(self.VA))
 
             if self.GL > 0 or self.BL > 0:
-                sh = dev.Shunt(name='Shunt_' + str(self.I),
-                               G=self.GL, B=self.BL,
-                               active=True)
-
-                self.bus.shunts.append(sh)
+                self.shunt = dev.Shunt(name='Shunt_' + str(self.I),
+                                       G=self.GL, B=self.BL,
+                                       active=True)
 
         else:
             logger.add_warning('Bus not implemented for version', str(version))

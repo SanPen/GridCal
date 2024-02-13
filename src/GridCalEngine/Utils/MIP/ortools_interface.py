@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -125,14 +125,13 @@ class LpModel:
         :param name: name of the constraint (optional)
         :return: Constraint object
         """
-
-        try:
-            return self.model.add(ct=cst, name=name)
-        except AttributeError:
-            self.logger.add_warning("Kirchoff 0=0", name, comment='Cannot enforce Pcalc zero=Pset zero')
+        if isinstance(cst, bool):
             return 0
+        else:
+            return self.model.add(ct=cst, name=name)
 
-    def sum(self, cst: Union[LpExp, Iterable]) -> LpExp:
+    @staticmethod
+    def sum(cst: Union[LpExp, Iterable]) -> LpExp:
         """
         Add sum of the constraints to the model
         :param cst: constraint object (or general expression)

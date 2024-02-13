@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -213,7 +213,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
         bus_dict = grid.get_bus_index_dict()
 
         self.area_names = [a.name for a in grid.get_areas()]
-        self.bus_area_indices = np.array([area_dict[b.area] for b in grid.buses])
+        self.bus_area_indices = np.array([area_dict[b.area] for b in grid.get_buses()])
 
         branches = grid.get_branches_wo_hvdc()
         self.F = np.zeros(len(branches), dtype=int)

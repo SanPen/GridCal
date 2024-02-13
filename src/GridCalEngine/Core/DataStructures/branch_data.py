@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -17,27 +17,10 @@
 import numpy as np
 import pandas as pd
 import scipy.sparse as sp
-import GridCalEngine.Core.topology as tp
-from GridCalEngine.enumerations import WindingsConnection
+import GridCalEngine.Core.Topology.topology as tp
+from GridCalEngine.enumerations import WindingsConnection, TransformerControlType
 from GridCalEngine.basic_structures import Vec, IntVec, StrVec, ObjVec
 from typing import List, Tuple
-
-
-def get_bus_indices(C_branch_bus: sp.csc_matrix):
-    """
-
-    :param C_branch_bus: 
-    :return: 
-    """
-    assert (isinstance(C_branch_bus, sp.csc_matrix))
-    F = np.zeros(C_branch_bus.shape[0], dtype=int)
-
-    for j in range(C_branch_bus.shape[1]):
-        for l in range(C_branch_bus.indptr[j], C_branch_bus.indptr[j + 1]):
-            i = C_branch_bus.indices[l]  # row index
-            F[i] = j
-
-    return F
 
 
 class BranchData:
@@ -65,6 +48,9 @@ class BranchData:
 
         self.F: IntVec = np.zeros(self.nelm, dtype=int)  # indices of the "from" buses
         self.T: IntVec = np.zeros(self.nelm, dtype=int)  # indices of the "to" buses
+
+        self.ctrl_bus1: IntVec = np.zeros(self.nelm, dtype=int)  # indices of the control buses1
+        self.ctrl_bus2: IntVec = np.zeros(self.nelm, dtype=int)  # indices of the control buses2
 
         # reliabilty
         self.mttf: Vec = np.zeros(self.nelm, dtype=float)
@@ -130,6 +116,14 @@ class BranchData:
         self.overload_cost: Vec = np.zeros(nelm, dtype=float)
 
         self.original_idx: IntVec = np.zeros(nelm, dtype=int)
+
+    def size(self) -> int:
+        """
+        Get size of the structure
+        :return:
+        """
+
+        return self.nelm
 
     def slice(self, elm_idx: IntVec, bus_idx: IntVec) -> "BranchData":
         """
@@ -199,8 +193,18 @@ class BranchData:
         data.C_branch_bus_f = self.C_branch_bus_f[np.ix_(elm_idx, bus_idx)]
         data.C_branch_bus_t = self.C_branch_bus_t[np.ix_(elm_idx, bus_idx)]
 
-        data.F = get_bus_indices(data.C_branch_bus_f.tocsc())
-        data.T = get_bus_indices(data.C_branch_bus_t.tocsc())
+        # first slice, then remap
+        data.F = self.F[elm_idx]
+        data.T = self.T[elm_idx]
+        data.ctrl_bus1 = self.ctrl_bus1[elm_idx]
+        data.ctrl_bus2 = self.ctrl_bus2[elm_idx]
+        bus_map = {o: i for i, o in enumerate(bus_idx)}
+        for k in range(data.nelm):
+            if data.control_mode[k] != TransformerControlType.fixed:
+                data.ctrl_bus1[k] = bus_map[data.ctrl_bus1[k]]
+                data.ctrl_bus2[k] = bus_map[data.ctrl_bus2[k]]
+            data.F[k] = bus_map[data.F[k]]
+            data.T[k] = bus_map[data.T[k]]
 
         data.overload_cost = self.overload_cost[elm_idx]
 
@@ -274,8 +278,8 @@ class BranchData:
         data.C_branch_bus_f = self.C_branch_bus_f.copy()
         data.C_branch_bus_t = self.C_branch_bus_t.copy()
 
-        data.F = get_bus_indices(data.C_branch_bus_f.tocsc())
-        data.T = get_bus_indices(data.C_branch_bus_t.tocsc())
+        data.F = self.F.copy()
+        data.T = self.T.copy()
 
         data.overload_cost = self.overload_cost.copy()
 

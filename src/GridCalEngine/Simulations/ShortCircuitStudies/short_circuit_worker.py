@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -21,7 +21,7 @@ import scipy.sparse as sp
 from scipy.sparse.linalg import inv
 from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Simulations.ShortCircuitStudies.short_circuit import short_circuit_3p, short_circuit_unbalance
-from GridCalEngine.Core.admittance_matrices import compute_admittances
+from GridCalEngine.Core.Topology.admittance_matrices import compute_admittances
 from GridCalEngine.Simulations.ShortCircuitStudies.short_circuit_results import ShortCircuitResults
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import polar_to_rect
 from GridCalEngine.enumerations import FaultType

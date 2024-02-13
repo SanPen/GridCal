@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -55,6 +55,7 @@ def get_bus_data(circuit: MultiCircuit,
         bus_data.Vmin[i] = bus.Vmin
         bus_data.Vmax[i] = bus.Vmax
         bus_data.Vnom[i] = bus.Vnom
+        # TODO: Check that the devices are are changing the guess
         bus_data.Vbus[i] = bus.get_voltage_guess(None, use_stored_guess=use_stored_guess)
 
         bus_data.angle_min[i] = bus.angle_min
@@ -102,7 +103,7 @@ def get_load_data(circuit: MultiCircuit,
     :return:
     """
 
-    data = ds.LoadData(nelm=circuit.get_calculation_loads_number(), nbus=len(circuit.buses))
+    data = ds.LoadData(nelm=circuit.get_load_like_device_number(), nbus=len(circuit.buses))
 
     ii = 0
     for elm in circuit.get_loads():
@@ -347,6 +348,7 @@ def get_generator_data(circuit: MultiCircuit,
 
             data.cost_0[k] = elm.Cost0_prof[t_idx]
             data.cost_1[k] = elm.Cost_prof[t_idx]
+            data.cost_2[k] = elm.Cost2_prof[t_idx]
 
             if elm.active_prof[t_idx] and elm.is_controlled:
 
@@ -371,6 +373,7 @@ def get_generator_data(circuit: MultiCircuit,
 
             data.cost_0[k] = elm.Cost0
             data.cost_1[k] = elm.Cost
+            data.cost_2[k] = elm.Cost2
 
             if elm.active and elm.is_controlled:
                 if bus_data.bus_types[i] != 3:  # if it is not Slack
@@ -474,6 +477,7 @@ def get_battery_data(circuit: MultiCircuit,
 
             data.cost_0[k] = elm.Cost0_prof[t_idx]
             data.cost_1[k] = elm.Cost_prof[t_idx]
+            data.cost_2[k] = elm.Cost2_prof[t_idx]
 
             if elm.active_prof[t_idx] and elm.is_controlled:
                 if bus_data.bus_types[i] != 3:  # if it is not Slack
@@ -497,6 +501,7 @@ def get_battery_data(circuit: MultiCircuit,
 
             data.cost_0[k] = elm.Cost0
             data.cost_1[k] = elm.Cost
+            data.cost_2[k] = elm.Cost2
 
             if elm.active and elm.is_controlled:
                 if bus_data.bus_types[i] != 3:  # if it is not Slack
@@ -609,6 +614,8 @@ def get_branch_data(circuit: MultiCircuit,
 
         data.virtual_tap_f[i], data.virtual_tap_t[i] = elm.get_virtual_taps()
 
+        data.control_mode[i] = TransformerControlType.fixed
+
         ii += 1
 
     # DC-lines
@@ -643,6 +650,8 @@ def get_branch_data(circuit: MultiCircuit,
 
         data.contingency_enabled[ii] = int(elm.contingency_enabled)
         data.monitor_loading[ii] = int(elm.monitor_loading)
+
+        data.control_mode[ii] = TransformerControlType.fixed
 
         data.virtual_tap_f[ii], data.virtual_tap_t[ii] = elm.get_virtual_taps()
 
@@ -746,9 +755,6 @@ def get_branch_data(circuit: MultiCircuit,
 
         if elm.bus_from is not None and elm.bus_to is not None:
             # generic stuff
-            f = bus_dict[elm.bus_from]
-            t = bus_dict[elm.bus_to]
-
             data.names[ii] = elm.name
             data.idtag[ii] = elm.idtag
 
@@ -766,6 +772,8 @@ def get_branch_data(circuit: MultiCircuit,
                 data.contingency_rates[ii] = elm.rate * elm.contingency_factor
                 data.overload_cost[ii] = elm.Cost
 
+            f = bus_dict[elm.bus_from]
+            t = bus_dict[elm.bus_to]
             data.C_branch_bus_f[ii, f] = 1
             data.C_branch_bus_t[ii, t] = 1
             data.F[ii] = f
@@ -976,6 +984,8 @@ def get_branch_data(circuit: MultiCircuit,
         data.contingency_enabled[ii] = int(elm.contingency_enabled)
         data.monitor_loading[ii] = int(elm.monitor_loading)
 
+        data.control_mode[ii] = TransformerControlType.fixed
+
         ii += 1
 
     return data
@@ -1044,7 +1054,7 @@ def get_hvdc_data(circuit: MultiCircuit,
             data.r[i] = elm.r
 
             if opf_results is not None:
-                # if we are taking the valñues from the OPF, do not allow the free mode
+                # if we are taking the values from the OPF, do not allow the free mode
                 data.control_mode[i] = HvdcControlType.type_1_Pset
                 data.Pset[i] = opf_results.hvdc_Pf[i]
             else:
@@ -1102,8 +1112,10 @@ def get_fluid_node_data(circuit: MultiCircuit,
 
         if time_series:
             data.inflow[k] = elm.inflow_prof[t_idx]
+            data.spillage_cost[k] = elm.spillage_cost_prof[t_idx]
         else:
             data.inflow[k] = elm.inflow
+            data.spillage_cost[k] = elm.spillage_cost
 
     return data, plant_dict
 

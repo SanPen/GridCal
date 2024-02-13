@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -666,7 +666,7 @@ def add_linear_branches_formulation(t_idx: int,
                 bk = 1.0 / branch_data_t.X[m]
 
             # compute the flow
-            if branch_data_t.control_mode[m] == TransformerControlType.Pt:
+            if branch_data_t.control_mode[m] == TransformerControlType.Pf:
 
                 # add angle
                 branch_vars.tap_angles[t_idx, m] = prob.add_var(
@@ -1022,7 +1022,7 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
     nbr = grid.get_branch_number_wo_hvdc()
     ng = grid.get_generators_number()
     nb = grid.get_batteries_number()
-    nl = grid.get_calculation_loads_number()
+    nl = grid.get_load_like_device_number()
     n_hvdc = grid.get_hvdc_number()
 
     lp_model: LpModel = LpModel(solver_type)
@@ -1136,7 +1136,7 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
 
                 # Compute the more generalistic contingency structures
                 mctg = LinearMultiContingencies(grid=grid)
-                mctg.update(lodf=ls.LODF, ptdf=ls.PTDF, threshold=lodf_threshold)
+                mctg.compute(lodf=ls.LODF, ptdf=ls.PTDF, ptdf_threshold=lodf_threshold, lodf_threshold=lodf_threshold)
 
                 # formulate the contingencies
                 f_obj += add_linear_branches_contingencies_formulation(

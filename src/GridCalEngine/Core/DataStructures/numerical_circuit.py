@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -25,12 +25,12 @@ from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.basic_structures import Vec, IntVec, CxVec
 from GridCalEngine.enumerations import BranchImpedanceMode
-import GridCalEngine.Core.topology as tp
+import GridCalEngine.Core.Topology.topology as tp
 
-from GridCalEngine.Core.topology import compile_types
-from GridCalEngine.Simulations.sparse_solve import get_sparse_type
+from GridCalEngine.Core.Topology.topology import compile_types
+from GridCalEngine.Utils.NumericalMethods.sparse_solve import get_sparse_type
 import GridCalEngine.Core.Compilers.circuit_to_data as gc_compiler2
-import GridCalEngine.Core.admittance_matrices as ycalc
+import GridCalEngine.Core.Topology.admittance_matrices as ycalc
 from GridCalEngine.enumerations import TransformerControlType, ConverterControlType
 import GridCalEngine.Core.DataStructures as ds
 from GridCalEngine.Core.Devices.Substation.bus import Bus
@@ -224,16 +224,16 @@ class NumericalCircuit:
         'pqpv',
         'tap_f',
         'tap_t',
-        'iPfsh',
-        'iQfma',
-        'iBeqz',
-        'iBeqv',
-        'iVtma',
-        'iQtma',
-        'iPfdp',
-        'iVscL',
-        'VfBeqbus',
-        'Vtmabus'
+        'k_pf_tau',
+        'k_qf_m',
+        'k_zero_beq',
+        'k_vf_beq',
+        'k_vt_m',
+        'k_qt_m',
+        'k_pf_dp',
+        'i_vsc',
+        'i_vf_beq',
+        'i_vt_m'
     ]
 
     def __init__(self,
@@ -263,6 +263,7 @@ class NumericalCircuit:
         :param sbase:  Base power (MVA)
         :param t_idx:  Time index
         """
+
         self.nbus: int = nbus
         self.nbr: int = nbr
         self.t_idx: int = t_idx
@@ -303,6 +304,24 @@ class NumericalCircuit:
 
         # (old iPfdp) indices of the drop-Vm converters controlling the power flow with theta sh
         self.k_pf_dp: IntVec = np.zeros(0, dtype=int)
+
+        # indices of the transformers with controlled tap module
+        self.k_m: IntVec = np.zeros(0, dtype=int)
+
+        # indices of the transformers with controlled tap angle
+        self.k_tau: IntVec = np.zeros(0, dtype=int)
+
+        # indices of the transformers with controlled tap angle and module
+        self.k_mtau: IntVec = np.zeros(0, dtype=int)
+
+        # indices of the buses with controlled tap module
+        self.i_m: IntVec = np.zeros(0, dtype=int)
+
+        # indices of the buses with controlled tap angle
+        self.i_tau: IntVec = np.zeros(0, dtype=int)
+
+        # indices of the buses with controlled tap angle and module
+        self.i_mtau: IntVec = np.zeros(0, dtype=int)
 
         # (old iPfdp_va) indices of the drop-Va converters controlling the power flow with theta sh
         self.iPfdp_va: IntVec = np.zeros(0, dtype=int)
@@ -376,7 +395,7 @@ class NumericalCircuit:
         self.pq_: IntVec = None
         self.pv_: IntVec = None
         self.vd_: IntVec = None
-        self.pqpv_: IntVec = None
+        self.no_slack_: IntVec = None
         self.ac_: IntVec = None
         self.dc_: IntVec = None
 
@@ -426,7 +445,7 @@ class NumericalCircuit:
         self.pq_: IntVec = None
         self.pv_: IntVec = None
         self.vd_: IntVec = None
-        self.pqpv_: IntVec = None
+        self.no_slack_: IntVec = None
         self.ac_: IntVec = None
         self.dc_: IntVec = None
 
@@ -528,11 +547,9 @@ class NumericalCircuit:
         self.admittances_.Yf = Yf_
         self.admittances_.Yt = Yt_
 
-    def determine_control_indices(self):
+    def determine_control_indices(self) -> None:
         """
         This function fills in the lists of indices to control different magnitudes
-
-        :returns idx_sh, idx_qz, idx_vf, idx_vt, idx_qt, VfBeqbus, Vtmabus
 
         VSC Control modes:
 
@@ -571,19 +588,24 @@ class NumericalCircuit:
         Transformer 4|	1	-	1	-	-   |   Control the power flow and the voltage at the “from” side
         Transformer 5|	1	-	-	1	-   |   Control the power flow and the voltage at the “to” side
         ------------------------------------
-
         """
 
         # indices in the global branch scheme
-        iPfsh = list()  # indices of the Branches controlling Pf flow with theta sh
-        iQfma = list()  # indices of the Branches controlling Qf with ma
-        iBeqz = list()  # indices of the Branches when forcing the Qf flow to zero (aka "the zero condition")
-        iBeqv = list()  # indices of the Branches when controlling Vf with Beq
-        iVtma = list()  # indices of the Branches when controlling Vt with ma
-        iQtma = list()  # indices of the Branches controlling the Qt flow with ma
-        iPfdp = list()  # indices of the drop converters controlling the power flow with theta sh
-        iVscL = list()  # indices of the converters
-        iPfdp_va = list()
+        k_pf_tau_lst = list()  # indices of the Branches controlling Pf flow with theta sh
+        k_qf_m_lst = list()  # indices of the Branches controlling Qf with ma
+        k_zero_beq_lst = list()  # indices of the Branches when forcing the Qf flow to zero (aka "the zero condition")
+        k_vf_beq_lst = list()  # indices of the Branches when controlling Vf with Beq
+        k_vt_m_lst = list()  # indices of the Branches when controlling Vt with ma
+        k_qt_m_lst = list()  # indices of the Branches controlling the Qt flow with ma
+        k_pf_dp_lst = list()  # indices of the drop converters controlling the power flow with theta sh
+        k_m_modif_lst = list() # indices of the transformers with controlled tap module
+        k_tau_modif_lst = list() # indices of the transformers with controlled tap angle
+        k_mtau_modif_lst = list() # indices of the transformers with controlled tap angle and module
+        i_m_modif_lst = list()  # indices of the controlled buses with tap module
+        i_tau_modif_lst = list()  # indices of the controlled buses with tap angle
+        i_mtau_modif_lst = list()  # indices of the controlled buses with tap module and angle
+        i_vsc_lst = list()  # indices of the converters
+        iPfdp_va_lst = list()
 
         self.any_control = False
 
@@ -592,94 +614,110 @@ class NumericalCircuit:
             if tpe == TransformerControlType.fixed:
                 pass
 
-            elif tpe == TransformerControlType.Pt:
-                iPfsh.append(k)
+            elif tpe == TransformerControlType.Pf:  # TODO: change name .Pt by .Pf
+                k_pf_tau_lst.append(k)
+                k_tau_modif_lst.append(k)
+                i_tau_modif_lst.append(self.F[k]) #TODO: identify which index is the controlled one
                 self.any_control = True
 
             elif tpe == TransformerControlType.Qt:
-                iQtma.append(k)
+                k_qt_m_lst.append(k)
+                k_m_modif_lst.append(k)
+                i_m_modif_lst.append(self.T[k])
                 self.any_control = True
 
             elif tpe == TransformerControlType.PtQt:
-                iPfsh.append(k)
-                iQtma.append(k)
+                k_pf_tau_lst.append(k)
+                k_qt_m_lst.append(k)
+                k_m_modif_lst.append(k)
+                k_tau_modif_lst.append(k)
+                k_mtau_modif_lst.append(k)
+                i_tau_modif_lst.append(self.F[k])
+                i_m_modif_lst.append(self.T[k])
                 self.any_control = True
 
             elif tpe == TransformerControlType.Vt:
-                iVtma.append(k)
+                k_vt_m_lst.append(k)
+                k_m_modif_lst.append(k)
+                i_m_modif_lst.append(self.T[k])
                 self.any_control = True
 
             elif tpe == TransformerControlType.PtVt:
-                iPfsh.append(k)
-                iVtma.append(k)
+                k_pf_tau_lst.append(k)
+                k_vt_m_lst.append(k)
+                k_m_modif_lst.append(k)
+                k_tau_modif_lst.append(k)
+                k_mtau_modif_lst.append(k)
+                i_tau_modif_lst.append(self.F[k])
+                i_m_modif_lst.append(self.T[k])
                 self.any_control = True
 
             # VSC ------------------------------------------------------------------------------------------------------
             elif tpe == ConverterControlType.type_0_free:  # 1a:Free
-                iBeqz.append(k)
-                iVscL.append(k)
+                k_zero_beq_lst.append(k)
+                i_vsc_lst.append(k)
                 self.any_control = True
 
             elif tpe == ConverterControlType.type_I_1:  # 1:Vac
-                iVtma.append(k)
-                iBeqz.append(k)
-                iVscL.append(k)
+                k_vt_m_lst.append(k)
+                k_zero_beq_lst.append(k)
+                i_vsc_lst.append(k)
                 self.any_control = True
 
             elif tpe == ConverterControlType.type_I_2:  # 2:Pdc+Qac
 
-                iPfsh.append(k)
-                iQtma.append(k)
-                iBeqz.append(k)
+                k_pf_tau_lst.append(k)
+                k_qt_m_lst.append(k)
+                k_zero_beq_lst.append(k)
 
-                iVscL.append(k)
+                i_vsc_lst.append(k)
                 self.any_control = True
 
             elif tpe == ConverterControlType.type_I_3:  # 3:Pdc+Vac
-                iPfsh.append(k)
-                iVtma.append(k)
-                iBeqz.append(k)
+                k_pf_tau_lst.append(k)
+                k_vt_m_lst.append(k)
+                k_zero_beq_lst.append(k)
 
-                iVscL.append(k)
+                i_vsc_lst.append(k)
                 self.any_control = True
 
             elif tpe == ConverterControlType.type_II_4:  # 4:Vdc+Qac
-                iBeqv.append(k)
-                iQtma.append(k)
+                k_vf_beq_lst.append(k)
+                k_qt_m_lst.append(k)
 
-                iVscL.append(k)
+                i_vsc_lst.append(k)
                 self.any_control = True
 
             elif tpe == ConverterControlType.type_II_5:  # 5:Vdc+Vac
-                iBeqv.append(k)
-                iVtma.append(k)
+                k_vf_beq_lst.append(k)
+                k_vt_m_lst.append(k)
 
-                iVscL.append(k)
+                i_vsc_lst.append(k)
                 self.any_control = True
 
             elif tpe == ConverterControlType.type_III_6:  # 6:Droop+Qac
-                iPfdp.append(k)
-                iQtma.append(k)
+                k_pf_dp_lst.append(k)
+                k_qt_m_lst.append(k)
 
-                iVscL.append(k)
+                i_vsc_lst.append(k)
                 self.any_control = True
 
             elif tpe == ConverterControlType.type_III_7:  # 4a:Droop-slack
-                iPfdp.append(k)
-                iVtma.append(k)
+                k_pf_dp_lst.append(k)
+                k_vt_m_lst.append(k)
 
-                iVscL.append(k)
+                i_vsc_lst.append(k)
                 self.any_control = True
 
             elif tpe == ConverterControlType.type_IV_I:  # 8:Vdc
-                iBeqv.append(k)
-                iVscL.append(k)
+                k_vf_beq_lst.append(k)
+                i_vsc_lst.append(k)
 
                 self.any_control = True
 
             elif tpe == ConverterControlType.type_IV_II:  # 9:Pdc
-                iPfsh.append(k)
-                iBeqz.append(k)
+                k_pf_tau_lst.append(k)
+                k_zero_beq_lst.append(k)
 
                 self.any_control = True
 
@@ -697,21 +735,27 @@ class NumericalCircuit:
 
         # FUBM- Saves the "from" bus identifier for Vf controlled by Beq
         #  (Converters type II for Vdc control)
-        self.i_vf_beq = self.F[iBeqv]
+        self.i_vf_beq = self.F[k_vf_beq_lst]
 
         # FUBM- Saves the "to"   bus identifier for Vt controlled by ma
         #  (Converters and Transformers)
-        self.i_vt_m = self.T[iVtma]
+        self.i_vt_m = self.T[k_vt_m_lst]
 
-        self.k_pf_tau = np.array(iPfsh, dtype=int)
-        self.k_qf_m = np.array(iQfma, dtype=int)
-        self.k_zero_beq = np.array(iBeqz, dtype=int)
-        self.k_vf_beq = np.array(iBeqv, dtype=int)
-        self.k_vt_m = np.array(iVtma, dtype=int)
-        self.k_qt_m = np.array(iQtma, dtype=int)
-        self.k_pf_dp = np.array(iPfdp, dtype=int)
-        self.iPfdp_va = np.array(iPfdp_va, dtype=int)
-        self.i_vsc = np.array(iVscL, dtype=int)
+        self.k_pf_tau = np.array(k_pf_tau_lst, dtype=int)
+        self.k_qf_m = np.array(k_qf_m_lst, dtype=int)
+        self.k_zero_beq = np.array(k_zero_beq_lst, dtype=int)
+        self.k_vf_beq = np.array(k_vf_beq_lst, dtype=int)
+        self.k_vt_m = np.array(k_vt_m_lst, dtype=int)
+        self.k_qt_m = np.array(k_qt_m_lst, dtype=int)
+        self.k_pf_dp = np.array(k_pf_dp_lst, dtype=int)
+        self.k_m = np.array(k_m_modif_lst, dtype=int)
+        self.k_tau = np.array(k_tau_modif_lst, dtype=int)
+        self.k_mtau = np.array(k_mtau_modif_lst, dtype=int)
+        self.i_m = np.array(i_m_modif_lst, dtype=int)
+        self.i_tau = np.array(i_tau_modif_lst, dtype=int)
+        self.i_mtau = np.array(i_mtau_modif_lst, dtype=int)
+        self.iPfdp_va = np.array(iPfdp_va_lst, dtype=int)
+        self.i_vsc = np.array(i_vsc_lst, dtype=int)
 
     def copy(self) -> "NumericalCircuit":
         """
@@ -750,9 +794,10 @@ class NumericalCircuit:
         return nc
 
     def get_structures_list(self) -> List[Union[ds.BusData, ds.LoadData, ds.ShuntData,
-    ds.GeneratorData, ds.BatteryData,
-    ds.BranchData, ds.HvdcData, ds.FluidNodeData, ds.FluidTurbineData, ds.FluidPumpData,
-    ds.FluidP2XData, ds.FluidPathData]]:
+                                                ds.GeneratorData, ds.BatteryData,
+                                                ds.BranchData, ds.HvdcData,
+                                                ds.FluidNodeData, ds.FluidTurbineData, ds.FluidPumpData,
+                                                ds.FluidP2XData, ds.FluidPathData]]:
         """
         Get a list of the structures inside the NumericalCircuit
         :return:
@@ -819,10 +864,52 @@ class NumericalCircuit:
                         structure.active[idx] = int(not bool(cnt.value))
                     else:
                         structure.active[idx] = int(cnt.value)
+                elif cnt.prop == '%':
+                    if revert:
+                        structure.p[idx] /= float(cnt.value / 100.0)
+                    else:
+                        structure.p[idx] *= float(cnt.value / 100.0)
                 else:
                     print(f'Unknown contingency property {cnt.prop} at {cnt.name} {cnt.idtag}')
             else:
                 print(f'contingency device not found {cnt.name} {cnt.idtag}')
+
+    def set_linear_contingency_status(self, contingencies_list: List[Contingency], revert: bool = False):
+        """
+        Set the status of a list of contingencies
+        :param contingencies_list: list of contingencies
+        :param revert: if false, the contingencies are applied, else they are reversed
+        """
+        injections = np.zeros(self.nbus)
+        # apply the contingencies
+        for cnt in contingencies_list:
+
+            # search the investment device
+            structure, idx = self.structs_dict.get(cnt.device_idtag, (None, 0))
+
+            if structure is not None:
+                if cnt.prop == 'active':
+                    if revert:
+                        structure.active[idx] = int(not bool(cnt.value))
+                    else:
+                        structure.active[idx] = int(cnt.value)
+                elif cnt.prop == '%':
+                    # TODO Cambiar el acceso a P por una función (o función que incremente- decremente porcentaje)
+                    assert not isinstance(structure, ds.HvdcData) # TODO Arreglar esto
+                    dev_injections = np.zeros(structure.size())
+                    dev_injections[idx] -= structure.p[idx]
+                    if revert:
+                        structure.p[idx] /= float(cnt.value / 100.0)
+                    else:
+                        structure.p[idx] *= float(cnt.value / 100.0)
+                    dev_injections[idx] += structure.p[idx]
+                    injections += structure.get_array_per_bus(dev_injections)
+                else:
+                    print(f'Unknown contingency property {cnt.prop} at {cnt.name} {cnt.idtag}')
+            else:
+                print(f'contingency device not found {cnt.name} {cnt.idtag}')
+
+        return injections
 
     @property
     def original_bus_idx(self):
@@ -1170,17 +1257,15 @@ class NumericalCircuit:
             self.A_ = (self.Cf - self.Ct).tocsc()
 
         return self.A_
-
-    @property
-    def Ybus(self):
+    
+    def compute_admittance(self) -> ycalc.Admittance: 
         """
-        Admittance matrix
-        :return: CSC matrix
+        Get Admittance structures
+        :return: Admittance object
         """
 
         # compute admittances on demand
-        if self.admittances_ is None:
-            self.admittances_ = ycalc.compute_admittances(
+        return ycalc.compute_admittances(
                 R=self.branch_data.R,
                 X=self.branch_data.X,
                 G=self.branch_data.G,
@@ -1203,6 +1288,19 @@ class NumericalCircuit:
                 seq=1,
                 add_windings_phase=False
             )
+
+
+    @property
+    def Ybus(self):
+        """
+        Admittance matrix
+        :return: CSC matrix
+        """
+
+        # compute admittances on demand
+        if self.admittances_ is None:
+            self.admittances_ = self.compute_admittance()
+            
         return self.admittances_.Ybus
 
     @property
@@ -1377,7 +1475,8 @@ class NumericalCircuit:
         :return:
         """
         if self.vd_ is None:
-            self.vd_, self.pq_, self.pv_, self.pqpv_ = compile_types(Pbus=self.Sbus.real, types=self.bus_data.bus_types)
+            self.vd_, self.pq_, self.pv_, self.no_slack_ = compile_types(Pbus=self.Sbus.real,
+                                                                         types=self.bus_data.bus_types)
 
         return self.vd_
 
@@ -1409,10 +1508,11 @@ class NumericalCircuit:
 
         :return:
         """
-        if self.pqpv_ is None:
+        # TODO: rename to "no_slack"
+        if self.no_slack_ is None:
             _ = self.vd  # call the constructor
 
-        return self.pqpv_
+        return self.no_slack_
 
     @property
     def structs_dict(self):
@@ -1425,7 +1525,7 @@ class NumericalCircuit:
 
         return self.structs_dict_
 
-    def compute_reactive_power_limits(self):
+    def compute_reactive_power_limits(self) -> Tuple[Vec, Vec]:
         """
         compute the reactive power limits in place
         :return: Qmax_bus, Qmin_bus in per unit
@@ -1812,73 +1912,73 @@ class NumericalCircuit:
                 index=self.branch_data.names,
             )
 
-        elif structure_type == 'iPfsh':
+        elif structure_type == 'k_pf_tau':
             df = pd.DataFrame(
                 data=self.k_pf_tau,
-                columns=['iPfsh'],
+                columns=['k_pf_tau'],
                 index=self.branch_data.names[self.k_pf_tau],
             )
 
-        elif structure_type == 'iQfma':
+        elif structure_type == 'k_qf_m':
             df = pd.DataFrame(
                 data=self.k_qf_m,
-                columns=['iQfma'],
+                columns=['k_qf_m'],
                 index=self.branch_data.names[self.k_qf_m],
             )
 
-        elif structure_type == 'iBeqz':
+        elif structure_type == 'k_zero_beq':
             df = pd.DataFrame(
                 data=self.k_zero_beq,
-                columns=['iBeqz'],
+                columns=['k_zero_beq'],
                 index=self.branch_data.names[self.k_zero_beq],
             )
 
-        elif structure_type == 'iBeqv':
+        elif structure_type == 'k_vf_beq':
             df = pd.DataFrame(
                 data=self.k_vf_beq,
-                columns=['iBeqv'],
+                columns=['k_vf_beq'],
                 index=self.branch_data.names[self.k_vf_beq],
             )
 
-        elif structure_type == 'iVtma':
+        elif structure_type == 'k_vt_m':
             df = pd.DataFrame(
                 data=self.k_vt_m,
-                columns=['iVtma'],
+                columns=['k_vt_m'],
                 index=self.branch_data.names[self.k_vt_m],
             )
 
-        elif structure_type == 'iQtma':
+        elif structure_type == 'k_qt_m':
             df = pd.DataFrame(
                 data=self.k_qt_m,
-                columns=['iQtma'],
+                columns=['k_qt_m'],
                 index=self.branch_data.names[self.k_qt_m],
             )
 
-        elif structure_type == 'iPfdp':
+        elif structure_type == 'k_pf_dp':
             df = pd.DataFrame(
                 data=self.k_pf_dp,
-                columns=['iPfdp'],
+                columns=['k_pf_dp'],
                 index=self.branch_data.names[self.k_pf_dp],
             )
 
-        elif structure_type == 'iVscL':
+        elif structure_type == 'i_vsc':
             df = pd.DataFrame(
                 data=self.i_vsc,
-                columns=['iVscL'],
+                columns=['i_vsc'],
                 index=self.branch_data.names[self.i_vsc],
             )
 
-        elif structure_type == 'VfBeqbus':
+        elif structure_type == 'i_vf_beq':
             df = pd.DataFrame(
                 data=self.i_vf_beq,
-                columns=['VfBeqbus'],
+                columns=['i_vf_beq'],
                 index=self.bus_data.names[self.i_vf_beq],
             )
 
-        elif structure_type == 'Vtmabus':
+        elif structure_type == 'i_vt_m':
             df = pd.DataFrame(
                 data=self.i_vt_m,
-                columns=['Vtmabus'],
+                columns=['i_vt_m'],
                 index=self.bus_data.names[self.i_vt_m],
             )
 
@@ -2008,9 +2108,6 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
                           sbase=circuit.Sbase,
                           t_idx=t_idx)
 
-    # TODO: check how to assign the internal variables of numerical circuit that refer to the number of devices
-    # nbus...
-
     if bus_dict is None:
         bus_dict = {bus: i for i, bus in enumerate(circuit.buses)}
 
@@ -2080,7 +2177,8 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
 
     if len(circuit.fluid_nodes) > 0:
         nc.fluid_node_data, plant_dict = gc_compiler2.get_fluid_node_data(circuit=circuit,
-                                                                          t_idx=t_idx)
+                                                                          t_idx=t_idx,
+                                                                          time_series=time_series)
 
         nc.fluid_turbine_data = gc_compiler2.get_fluid_turbine_data(circuit=circuit,
                                                                     plant_dict=plant_dict,

@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -20,7 +20,7 @@ import time
 import numpy as np
 
 from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit
-from GridCalEngine.Core.admittance_matrices import compile_y_acdc
+from GridCalEngine.Core.Topology.admittance_matrices import compile_y_acdc
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_inside_method
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.acdc_jacobian import fubm_jacobian, AcDcSolSlicer
@@ -29,7 +29,7 @@ from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions impor
                                                                                    compute_power, compute_zip_power)
 from GridCalEngine.basic_structures import CxVec
 from GridCalEngine.enumerations import ReactivePowerControlMode
-import GridCalEngine.Simulations.sparse_solve as gcsp
+import GridCalEngine.Utils.NumericalMethods.sparse_solve as gcsp
 
 
 def NR_LS_ACDC(nc: NumericalCircuit,

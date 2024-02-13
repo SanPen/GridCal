@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -18,7 +18,7 @@
 from typing import Union
 from PySide6 import QtCore
 from GridCalEngine.Core.Devices.Branches.wire import Wire
-from GridCalEngine.Core.Devices.Branches.templates.overhead_line_type import OverheadLineType, WireInTower
+from GridCalEngine.Core.Devices.Branches.overhead_line_type import OverheadLineType, WireInTower
 
 """
 Equations source:

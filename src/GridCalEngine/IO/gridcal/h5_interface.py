@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import pandas as pd
 from GridCalEngine.basic_structures import Logger
-from GridCalEngine.IO.gridcal.pack_unpack import create_data_frames, data_frames_to_circuit
+from GridCalEngine.IO.gridcal.pack_unpack import gather_model_as_data_frames, parse_gridcal_data
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 
 
@@ -32,7 +32,7 @@ def save_h5(circuit: MultiCircuit, file_path, compression_opts=5, text_func=None
     """
     logger = Logger()
 
-    dfs = create_data_frames(circuit=circuit)
+    dfs = gather_model_as_data_frames(circuit=circuit)
 
     n = len(dfs)
     i = 0
@@ -78,7 +78,7 @@ def open_h5(file_path, text_func=None, prog_func=None, logger: Logger = Logger()
 
     store.close()
 
-    circuit = data_frames_to_circuit(dfs, logger=logger)
+    circuit = parse_gridcal_data(dfs, logger=logger)
 
     return circuit
 

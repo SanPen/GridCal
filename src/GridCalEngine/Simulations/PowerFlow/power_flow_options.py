@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -91,7 +91,7 @@ class PowerFlowOptions:
                  q_steepness_factor=30,
                  distributed_slack=False,
                  ignore_single_node_islands=False,
-                 mu=1.0,
+                 trust_radius=1.0,
                  backtracking_parameter=0.05,
                  use_stored_guess=False,
                  override_branch_controls=False,
@@ -131,7 +131,7 @@ class PowerFlowOptions:
 
         self.ignore_single_node_islands = ignore_single_node_islands
 
-        self.mu = mu
+        self.trust_radius = trust_radius
 
         self.backtracking_parameter = backtracking_parameter
 

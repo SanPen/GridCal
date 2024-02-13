@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from GridCalEngine.Core.Devices.Branches.branch import Branch, BranchTemplate, BranchType
+from GridCalEngine.Core.Devices.Branches.branch import Branch, BranchType
 from GridCalEngine.Core.Devices.Branches.dc_line import DcLine
 from GridCalEngine.Core.Devices.Branches.line import Line
 from GridCalEngine.Core.Devices.Branches.hvdc_line import HvdcLine
@@ -28,5 +28,7 @@ from GridCalEngine.Core.Devices.Branches.vsc import VSC
 from GridCalEngine.Core.Devices.Branches.winding import Winding
 from GridCalEngine.Core.Devices.Branches.wire import Wire
 from GridCalEngine.Core.Devices.Branches.tap_changer import TapChanger
-
-from GridCalEngine.Core.Devices.Branches.templates import *
+from GridCalEngine.Core.Devices.Branches.transformer_type import TransformerType
+from GridCalEngine.Core.Devices.Branches.overhead_line_type import OverheadLineType, WireInTower
+from GridCalEngine.Core.Devices.Branches.sequence_line_type import SequenceLineType
+from GridCalEngine.Core.Devices.Branches.underground_line_type import UndergroundLineType

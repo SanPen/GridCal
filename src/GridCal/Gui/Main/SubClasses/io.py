@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -25,16 +25,18 @@ import GridCalEngine.Core as core
 import GridCal.Gui.GuiFunctions as gf
 import GridCal.Gui.Session.export_results_driver as exprtdrv
 import GridCal.Gui.Session.file_handler as filedrv
-from GridCalEngine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE
-from GridCalEngine.Core.Compilers.circuit_to_pgm import PGM_AVAILABLE
-from GridCalEngine.IO.gridcal.contingency_parser import import_contingencies_from_json, export_contingencies_json_file
 from GridCal.Gui.CoordinatesInput.coordinates_dialogue import CoordinatesInputGUI
 from GridCal.Gui.GeneralDialogues import LogsDialogue, CustomQuestionDialogue
-from GridCal.Gui.GridEditorWidget import BusBranchEditorWidget
+from GridCal.Gui.BusBranchEditorWidget import BusBranchEditorWidget
 from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_msg
 from GridCal.Gui.GridGenerator.grid_generator_dialogue import GridGeneratorGUI
 from GridCal.Gui.RosetaExplorer.RosetaExplorer import RosetaExplorerGUI
 from GridCal.Gui.Main.SubClasses.Settings.configuration import ConfigurationMain
+
+from GridCalEngine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE
+from GridCalEngine.Core.Compilers.circuit_to_pgm import PGM_AVAILABLE
+from GridCalEngine.IO.gridcal.contingency_parser import import_contingencies_from_json, export_contingencies_json_file
+from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
 
 
 class IoMain(ConfigurationMain):
@@ -115,7 +117,7 @@ class IoMain(ConfigurationMain):
                     else:
                         error_msg('The file type ' + file_extension.lower() + ' is not accepted :(')
 
-                if len(self.circuit.buses) > 0:
+                if self.circuit.get_bus_number() > 0:
                     quit_msg = "Are you sure that you want to quit the current grid and open a new one?" \
                                "\n If the process is cancelled the grid will remain."
                     reply = QtWidgets.QMessageBox.question(self, 'Message', quit_msg,
@@ -176,7 +178,7 @@ class IoMain(ConfigurationMain):
         Create new grid
         :return:
         """
-        if len(self.circuit.buses) > 0:
+        if self.circuit.get_bus_number() > 0:
             quit_msg = "Are you sure that you want to quit the current grid and create a new one?"
             reply = QtWidgets.QMessageBox.question(self, 'Message', quit_msg,
                                                    QtWidgets.QMessageBox.StandardButton.Yes,
@@ -191,7 +193,7 @@ class IoMain(ConfigurationMain):
         @return:
         """
         if ('file_save' not in self.stuff_running_now) and ('file_open' not in self.stuff_running_now):
-            if len(self.circuit.buses) > 0:
+            if self.circuit.get_bus_number() > 0:
                 quit_msg = "Are you sure that you want to quit the current grid and open a new one?" \
                            "\n If the process is cancelled the grid will remain."
                 reply = QtWidgets.QMessageBox.question(self, 'Message', quit_msg,
@@ -307,7 +309,7 @@ class IoMain(ConfigurationMain):
                     self.create_circuit_stored_diagrams()
 
                 else:
-                    if len(self.circuit.buses) > 1500:
+                    if self.circuit.get_bus_number() > 1500:
                         quit_msg = "The grid is quite large, hence the schematic might be slow.\n" \
                                    "Do you want to enable the schematic?\n" \
                                    "(you can always enable the drawing later)"
@@ -398,7 +400,7 @@ class IoMain(ConfigurationMain):
 
             if self.open_file_thread_object.valid:
 
-                if len(self.circuit.buses) == 0:
+                if self.circuit.get_bus_number() == 0:
                     # load the circuit
                     self.stuff_running_now.append('file_open')
                     self.post_open_file()
@@ -423,6 +425,8 @@ class IoMain(ConfigurationMain):
                     # add to schematic
                     if diagram_widget is not None:
                         if isinstance(diagram_widget, BusBranchEditorWidget):
+                            injections_by_bus = self.circuit.get_injection_devices_grouped_by_bus()
+                            injections_by_fluid_node = self.circuit.get_injection_devices_grouped_by_fluid_node()
                             diagram_widget.add_elements_to_schematic(buses=new_circuit.buses,
                                                                      lines=new_circuit.lines,
                                                                      dc_lines=new_circuit.dc_lines,
@@ -433,6 +437,8 @@ class IoMain(ConfigurationMain):
                                                                      upfc_devices=new_circuit.upfc_devices,
                                                                      fluid_nodes=new_circuit.fluid_nodes,
                                                                      fluid_paths=new_circuit.fluid_paths,
+                                                                     injections_by_bus=injections_by_bus,
+                                                                     injections_by_fluid_node=injections_by_fluid_node,
                                                                      explode_factor=1.0,
                                                                      prog_func=None,
                                                                      text_func=None)
@@ -576,56 +582,6 @@ class IoMain(ConfigurationMain):
         # call the garbage collector to free memory
         self.collect_memory()
 
-    def import_plexos_node_load(self):
-        """
-        Open and parse Plexos load file
-        """
-        fname = self.select_csv_file('Open node load')
-
-        if fname:
-            df = pd.read_csv(fname, index_col=0)
-            logger = self.circuit.import_plexos_load_profiles(df=df)
-            self.update_date_dependent_combos()
-
-            if len(logger) > 0:
-                dlg = LogsDialogue('Plexos load import', logger)
-                dlg.exec_()
-
-    def import_plexos_generator_generation(self):
-        """
-        Open and parse Plexos generation file
-        """
-        fname = self.select_csv_file('Open generation')
-
-        if fname:
-            df = pd.read_csv(fname, index_col=0)
-            logger = self.circuit.import_plexos_generation_profiles(df=df)
-            self.update_date_dependent_combos()
-
-            if len(logger) > 0:
-                dlg = LogsDialogue('Plexos generation import', logger)
-                dlg.exec_()
-
-    def import_plexos_branch_rates(self):
-        """
-        Open and parse Plexos load file
-        """
-        fname = self.select_csv_file('Open branch rates')
-
-        if fname:
-            df = pd.read_csv(fname, index_col=0)
-
-            if self.circuit.get_time_number() != df.shape[0]:
-                error_msg('The data has a different number of rows than the existing profiles')
-            else:
-
-                logger = self.circuit.import_branch_rates_profiles(df=df)
-                self.update_date_dependent_combos()
-
-                if len(logger) > 0:
-                    dlg = LogsDialogue('Plexos branch rates import', logger)
-                    dlg.exec_()
-
     def grid_generator(self):
         """
         Open the grid generator window
@@ -636,9 +592,10 @@ class IoMain(ConfigurationMain):
 
         if self.grid_generator_dialogue.applied:
 
-            if len(self.circuit.buses) > 0:
+            if self.circuit.get_bus_number() > 0:
                 reply = QtWidgets.QMessageBox.question(self, 'Message',
-                                                       'Are you sure that you want to delete the current grid and replace it?',
+                                                       'Are you sure that you want to delete '
+                                                       'the current grid and replace it?',
                                                        QtWidgets.QMessageBox.StandardButton.Yes,
                                                        QtWidgets.QMessageBox.StandardButton.No)
 
@@ -654,12 +611,12 @@ class IoMain(ConfigurationMain):
             diagram = self.get_selected_diagram_widget()
             if diagram is not None:
                 if isinstance(diagram, BusBranchEditorWidget):
-                    diagram.name.setText("Random grid " + str(len(self.circuit.buses)) + ' buses')
+                    diagram.name.setText(f"Random grid {self.circuit.get_bus_number()} buses")
 
             # set base magnitudes
             self.ui.sbase_doubleSpinBox.setValue(self.circuit.Sbase)
             self.ui.fbase_doubleSpinBox.setValue(self.circuit.fBase)
-            self.ui.model_version_label.setText('Model v. ' + str(self.circuit.model_version))
+            self.ui.model_version_label.setText(f"Model v. {self.circuit.model_version}")
 
             # set circuit comments
             self.ui.comments_textEdit.setText("Grid generated randomly using the RPGM algorithm.")
@@ -676,7 +633,7 @@ class IoMain(ConfigurationMain):
 
         :return:
         """
-        self.coordinates_window = CoordinatesInputGUI(self, self.circuit.buses)
+        self.coordinates_window = CoordinatesInputGUI(self, self.circuit.get_buses())
         self.coordinates_window.exec_()
         self.set_xy_from_lat_lon()
 
@@ -767,7 +724,7 @@ class IoMain(ConfigurationMain):
             if not filename.endswith('.xlsx'):
                 filename += '.xlsx'
 
-            numerical_circuit = core.compile_numerical_circuit_at(circuit=self.circuit)
+            numerical_circuit = compile_numerical_circuit_at(circuit=self.circuit)
             calculation_inputs = numerical_circuit.split_into_islands()
 
             with pd.ExcelWriter(filename) as writer:  # pylint: disable=abstract-class-instantiated

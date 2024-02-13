@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -38,6 +38,14 @@ class FluidTurbineData:
 
         self.plant_idx = np.empty(nelm, dtype=int)
         self.generator_idx = np.empty(nelm, dtype=int)
+
+    def size(self) -> int:
+        """
+        Get size of the structure
+        :return:
+        """
+
+        return self.nelm
 
     def copy(self) -> "FluidTurbineData":
         """

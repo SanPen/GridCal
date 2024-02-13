@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -75,24 +75,21 @@ class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
         :return:
         """
 
-        tm_ = time.time()
+        self.tic()
 
         self.report_text('Computing TS linear analysis...')
 
         self.__cancel__ = False
 
         # Compute bus Injections
-        Pbus = self.grid.get_Pbus_prof()
+        # Pbus = self.grid.get_Pbus_prof()
 
         # Compute different topologies to consider
-        tpg = self.get_topologic_groups()
+        # tpg = self.get_topologic_groups()
 
-        for it, t in enumerate(tpg.keys()):
-            self.report_text('Processing topology group ' + str(self.grid.time_profile[t]))
-            self.report_progress2(it, len(tpg.keys()))
-
-            # time indices with same topology
-            time_indices_ = tpg[t]
+        for it, t in enumerate(self.time_indices):
+            self.report_text('Contingency at ' + str(self.grid.time_profile[t]))
+            self.report_progress2(it, len(self.time_indices))
 
             nc = compile_numerical_circuit_at(circuit=self.grid,
                                               t_idx=t,
@@ -106,12 +103,13 @@ class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
 
             driver_.run()
 
-            Sf = driver_.get_flows(Sbus=Pbus[time_indices_, :])
+            # Sf = driver_.get_flows(Sbus=Pbus[time_indices_, :])
 
-            self.results.Sf[time_indices_, :] = Sf
+            self.results.S[it, :] = nc.Sbus
+            self.results.Sf[it, :] = driver_.get_flows(Sbus=nc.Sbus)
 
         rates = self.grid.get_branch_rates_wo_hvdc()
         self.results.loading = self.results.Sf / (rates + 1e-9)
-        self.results.S = Pbus[self.time_indices, :]
+        # self.results.S = Pbus[self.time_indices, :]
 
-        self.elapsed = time.time() - tm_
+        self.toc()

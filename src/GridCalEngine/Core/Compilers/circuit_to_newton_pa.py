@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -22,10 +22,11 @@ from typing import List, Dict, Union, TYPE_CHECKING
 from GridCalEngine.basic_structures import IntVec, Vec
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.enumerations import (TransformerControlType, HvdcControlType, SolverType, TimeGrouping,
-                                        ReactivePowerControlMode, ZonalGrouping, MIPSolvers, ContingencyEngine)
+                                        ReactivePowerControlMode, ZonalGrouping, MIPSolvers, ContingencyMethod)
 import GridCalEngine.Core.Devices as dev
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
+
 from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit
 
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
@@ -34,10 +35,11 @@ from GridCalEngine.basic_structures import ConvergenceReport
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCalEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults
     from GridCalEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
+    from GridCalEngine.Simulations.LinearFactors.linear_analysis_options import LinearAnalysisOptions
     from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_options import ContingencyAnalysisOptions
     from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_results import ContingencyAnalysisResults
 
-NEWTON_PA_RECOMMENDED_VERSION = "2.1.14"
+NEWTON_PA_RECOMMENDED_VERSION = "2.2.0"
 NEWTON_PA_VERSION = ''
 NEWTON_PA_AVAILABLE = False
 try:
@@ -77,6 +79,7 @@ try:
                           f"instead of {NEWTON_PA_VERSION}")
 
 except ImportError as e:
+    npa = None
     NEWTON_PA_AVAILABLE = False
     NEWTON_PA_VERSION = ''
 
@@ -366,13 +369,13 @@ def add_npa_loads(circuit: MultiCircuit,
                 time_indices]
 
             if opf_results is None:
-                P = elm.P_prof
+                P = elm.P_prof.toarray()
             else:
-                P = elm.P_prof - opf_results.load_shedding[:, k]
+                P = elm.P_prof.toarray() - opf_results.load_shedding[:, k]
 
             load.P = P if time_indices is None else P[time_indices]
-            load.Q = elm.Q_prof if time_indices is None else elm.Q_prof[time_indices]
-            load.cost_1 = elm.Cost_prof if time_indices is None else elm.Cost_prof[time_indices]
+            load.Q = elm.Q_prof.toarray() if time_indices is None else elm.Q_prof.toarray()[time_indices]
+            load.cost_1 = elm.Cost_prof.toarray() if time_indices is None else elm.Cost_prof.toarray()[time_indices]
         else:
             load.active = np.ones(n_time, dtype=BINT) * int(elm.active)
             load.setAllCost1(elm.Cost)
@@ -408,9 +411,9 @@ def add_npa_static_generators(circuit: MultiCircuit, npa_circuit: "npa.HybridCir
         if time_series:
             pe_inj.active = elm.active_prof.astype(BINT) if time_indices is None else elm.active_prof.astype(BINT)[
                 time_indices]
-            pe_inj.P = elm.P_prof if time_indices is None else elm.P_prof[time_indices]
-            pe_inj.Q = elm.Q_prof if time_indices is None else elm.Q_prof[time_indices]
-            pe_inj.cost_1 = elm.Cost_prof if time_indices is None else elm.Cost_prof[time_indices]
+            pe_inj.P = elm.P_prof.toarray() if time_indices is None else elm.P_prof.toarray()[time_indices]
+            pe_inj.Q = elm.Q_prof.toarray() if time_indices is None else elm.Q_prof.toarray()[time_indices]
+            pe_inj.cost_1 = elm.Cost_prof.toarray() if time_indices is None else elm.Cost_prof.toarray()[time_indices]
         else:
             pe_inj.active = np.ones(n_time, dtype=BINT) * int(elm.active)
             pe_inj.setAllCost1(elm.Cost)
@@ -447,8 +450,8 @@ def add_npa_shunts(circuit: MultiCircuit,
         if time_series:
             sh.active = elm.active_prof.astype(BINT) if time_indices is None else elm.active_prof.astype(BINT)[
                 time_indices]
-            sh.G = elm.G_prof if time_indices is None else elm.G_prof[time_indices]
-            sh.B = elm.B_prof if time_indices is None else elm.B_prof[time_indices]
+            sh.G = elm.G_prof.toarray() if time_indices is None else elm.G_prof.toarray()[time_indices]
+            sh.B = elm.B_prof.toarray() if time_indices is None else elm.B_prof.toarray()[time_indices]
         else:
             sh.active = np.ones(n_time, dtype=BINT) * int(elm.active)
 
@@ -498,16 +501,16 @@ def add_npa_generators(circuit: MultiCircuit,
                 time_indices]
 
             if opf_results is None:
-                P = elm.P_prof
+                P = elm.P_prof.toarray()
             else:
                 P = opf_results.generator_power[:, k] - opf_results.generator_shedding[:, k]
 
             gen.P = P if time_indices is None else P[time_indices]
 
-            gen.Vset = elm.Vset_prof if time_indices is None else elm.Vset_prof[time_indices]
-            gen.cost_0 = elm.Cost0_prof if time_indices is None else elm.Cost0_prof[time_indices]
-            gen.cost_1 = elm.Cost_prof if time_indices is None else elm.Cost_prof[time_indices]
-            gen.cost_2 = elm.Cost2_prof if time_indices is None else elm.Cost2_prof[time_indices]
+            gen.Vset = elm.Vset_prof.toarray() if time_indices is None else elm.Vset_prof.toarray()[time_indices]
+            gen.cost_0 = elm.Cost0_prof.toarray() if time_indices is None else elm.Cost0_prof.toarray()[time_indices]
+            gen.cost_1 = elm.Cost_prof.toarray() if time_indices is None else elm.Cost_prof.toarray()[time_indices]
+            gen.cost_2 = elm.Cost2_prof.toarray() if time_indices is None else elm.Cost2_prof.toarray()[time_indices]
         else:
             gen.active = np.ones(n_time, dtype=BINT) * int(elm.active)
 
@@ -573,17 +576,17 @@ def add_battery_data(circuit: MultiCircuit,
                 time_indices]
 
             if opf_results is None:
-                P = elm.P_prof
+                P = elm.P_prof.toarray()
             else:
                 P = opf_results.generator_power[:, k] - opf_results.generator_shedding[:, k]
 
             gen.P = P if time_indices is None else P[time_indices]
 
             # gen.P = elm.P_prof if time_indices is None else elm.P_prof[time_indices]
-            gen.Vset = elm.Vset_prof if time_indices is None else elm.Vset_prof[time_indices]
-            gen.cost_0 = elm.Cost0_prof if time_indices is None else elm.Cost0_prof[time_indices]
-            gen.cost_1 = elm.Cost_prof if time_indices is None else elm.Cost_prof[time_indices]
-            gen.cost_2 = elm.Cost2_prof if time_indices is None else elm.Cost2_prof[time_indices]
+            gen.Vset = elm.Vset_prof.toarray() if time_indices is None else elm.Vset_prof.toarray()[time_indices]
+            gen.cost_0 = elm.Cost0_prof.toarray() if time_indices is None else elm.Cost0_prof.toarray()[time_indices]
+            gen.cost_1 = elm.Cost_prof.toarray() if time_indices is None else elm.Cost_prof.toarray()[time_indices]
+            gen.cost_2 = elm.Cost2_prof.toarray() if time_indices is None else elm.Cost2_prof.toarray()[time_indices]
         else:
             gen.active = np.ones(n_time, dtype=BINT) * int(elm.active)
 
@@ -636,10 +639,11 @@ def add_npa_line(circuit: MultiCircuit,
         if time_series:
             lne.active = elm.active_prof.astype(BINT) if time_indices is None else elm.active_prof.astype(BINT)[
                 time_indices]
-            lne.rates = elm.rate_prof if time_indices is None else elm.rate_prof[time_indices]
-            contingency_rates = elm.rate_prof * elm.contingency_factor
+            lne.rates = elm.rate_prof.toarray() if time_indices is None else elm.rate_prof.toarray()[time_indices]
+            contingency_rates = elm.rate_prof.toarray() * elm.contingency_factor
             lne.contingency_rates = contingency_rates if time_indices is None else contingency_rates[time_indices]
-            lne.overload_cost = elm.Cost_prof if time_indices is None else elm.Cost_prof[time_indices]
+            lne.overload_cost = elm.Cost_prof.toarray() if time_indices is None else elm.Cost_prof.toarray()[
+                time_indices]
         else:
             lne.setAllOverloadCost(elm.Cost)
 
@@ -666,7 +670,7 @@ def add_transformer_data(circuit: MultiCircuit,
 
     ctrl_dict = {
         TransformerControlType.fixed: npa.BranchControlModes.Fixed,
-        TransformerControlType.Pt: npa.BranchControlModes.BranchPt,
+        TransformerControlType.Pf: npa.BranchControlModes.BranchPt,
         TransformerControlType.Qt: npa.BranchControlModes.BranchQt,
         TransformerControlType.PtQt: npa.BranchControlModes.BranchPt,
         TransformerControlType.Vt: npa.BranchControlModes.BranchVt,
@@ -693,15 +697,17 @@ def add_transformer_data(circuit: MultiCircuit,
                                     tap=elm.tap_module,
                                     phase=elm.tap_phase)
         if time_series:
-            contingency_rates = elm.rate_prof * elm.contingency_factor
+            contingency_rates = elm.rate_prof.toarray() * elm.contingency_factor
             active_prof = elm.active_prof.astype(BINT)
 
             tr2.active = active_prof if time_indices is None else active_prof[time_indices]
-            tr2.rates = elm.rate_prof if time_indices is None else elm.rate_prof[time_indices]
+            tr2.rates = elm.rate_prof.toarray() if time_indices is None else elm.rate_prof.toarray()[time_indices]
             tr2.contingency_rates = contingency_rates if time_indices is None else contingency_rates[time_indices]
-            tr2.tap = elm.tap_module_prof if time_indices is None else elm.tap_module_prof[time_indices]
-            tr2.phase = elm.tap_phase_prof if time_indices is None else elm.tap_phase_prof[time_indices]
-            tr2.overload_cost = elm.Cost_prof
+            tr2.tap = elm.tap_module_prof.toarray() if time_indices is None else elm.tap_module_prof.toarray()[
+                time_indices]
+            tr2.phase = elm.tap_phase_prof.toarray() if time_indices is None else elm.tap_phase_prof.toarray()[
+                time_indices]
+            tr2.overload_cost = elm.Cost_prof.toarray()
         else:
             tr2.setAllOverloadCost(elm.Cost)
 
@@ -738,7 +744,7 @@ def add_transformer3w_data(circuit: MultiCircuit,
 
     ctrl_dict = {
         TransformerControlType.fixed: npa.BranchControlModes.Fixed,
-        TransformerControlType.Pt: npa.BranchControlModes.BranchPt,
+        TransformerControlType.Pf: npa.BranchControlModes.BranchPt,
         TransformerControlType.Qt: npa.BranchControlModes.BranchQt,
         TransformerControlType.PtQt: npa.BranchControlModes.BranchPt,
         TransformerControlType.Vt: npa.BranchControlModes.BranchVt,
@@ -764,12 +770,16 @@ def add_transformer3w_data(circuit: MultiCircuit,
                                 contingency_rate23=elm.rate23,
                                 contingency_rate31=elm.rate31, )
 
+        # this is because the central node is in the buses list already from GridCal
+        tr3.central_node = bus_dict[elm.bus0.idtag]
+
         if time_series:
             pass
         else:
             pass
 
-        npa_circuit.addTransformers3w(tr3)
+        # because the central bus was added already, do not add it here
+        npa_circuit.addTransformers3w(tr3, add_central_node=False)
 
 
 def add_vsc_data(circuit: MultiCircuit,
@@ -829,10 +839,10 @@ def add_vsc_data(circuit: MultiCircuit,
         if time_series:
             vsc.active = elm.active_prof.astype(BINT) if time_indices is None else elm.active_prof.astype(BINT)[
                 time_indices]
-            vsc.rates = elm.rate_prof if time_indices is None else elm.rate_prof[time_indices]
-            contingency_rates = elm.rate_prof * elm.contingency_factor
+            vsc.rates = elm.rate_prof.toarray() if time_indices is None else elm.rate_prof.toarray()[time_indices]
+            contingency_rates = elm.rate_prof.toarray() * elm.contingency_factor
             vsc.contingency_rates = contingency_rates if time_indices is None else contingency_rates[time_indices]
-            vsc.overload_cost = elm.Cost_prof
+            vsc.overload_cost = elm.Cost_prof.toarray()
         else:
             vsc.setAllRates(elm.rate)
             vsc.setAllOverloadCost(elm.Cost)
@@ -873,11 +883,11 @@ def add_dc_line_data(circuit: MultiCircuit,
         if time_series:
             lne.active = elm.active_prof.astype(BINT) if time_indices is None else elm.active_prof.astype(BINT)[
                 time_indices]
-            lne.rates = elm.rate_prof if time_indices is None else elm.rate_prof[time_indices]
+            lne.rates = elm.rate_prof.toarray() if time_indices is None else elm.rate_prof.toarray()[time_indices]
 
-            contingency_rates = elm.rate_prof * elm.contingency_factor
+            contingency_rates = elm.rate_prof.toarray() * elm.contingency_factor
             lne.contingency_rates = contingency_rates if time_indices is None else contingency_rates[time_indices]
-            lne.overload_cost = elm.Cost_prof
+            lne.overload_cost = elm.Cost_prof.toarray()
         else:
             lne.setAllOverloadCost(elm.Cost)
 
@@ -935,15 +945,16 @@ def add_hvdc_data(circuit: MultiCircuit,
         if time_series:
             hvdc.active = elm.active_prof.astype(BINT) if time_indices is None else elm.active_prof.astype(BINT)[
                 time_indices]
-            hvdc.rates = elm.rate_prof if time_indices is None else elm.rate_prof[time_indices]
-            hvdc.Vf = elm.Vset_f_prof if time_indices is None else elm.Vset_f_prof[time_indices]
-            hvdc.Vt = elm.Vset_t_prof if time_indices is None else elm.Vset_t_prof[time_indices]
+            hvdc.rates = elm.rate_prof.toarray() if time_indices is None else elm.rate_prof.toarray()[time_indices]
+            hvdc.Vf = elm.Vset_f_prof.toarray() if time_indices is None else elm.Vset_f_prof.toarray()[time_indices]
+            hvdc.Vt = elm.Vset_t_prof.toarray() if time_indices is None else elm.Vset_t_prof.toarray()[time_indices]
 
-            contingency_rates = elm.rate_prof * elm.contingency_factor
+            contingency_rates = elm.rate_prof.toarray() * elm.contingency_factor
             hvdc.contingency_rates = contingency_rates if time_indices is None else contingency_rates[time_indices]
 
-            hvdc.angle_droop = elm.angle_droop_prof if time_indices is None else elm.angle_droop_prof[time_indices]
-            hvdc.overload_cost = elm.overload_cost_prof
+            hvdc.angle_droop = elm.angle_droop_prof.toarray() if time_indices is None else \
+            elm.angle_droop_prof.toarray()[time_indices]
+            hvdc.overload_cost = elm.Cost_prof.toarray()
         else:
             hvdc.contingency_rates = elm.rate * elm.contingency_factor
             hvdc.angle_droop = elm.angle_droop
@@ -1159,7 +1170,21 @@ def get_newton_pa_pf_options(opt: PowerFlowOptions) -> "npa.PowerFlowOptions":
                                 control_q_mode=q_control_dict[opt.control_Q],
                                 distributed_slack=opt.distributed_slack,
                                 correction_parameter=0.5,
-                                mu0=opt.mu)
+                                mu0=opt.trust_radius)
+
+
+def get_newton_pa_linear_options(opt: LinearAnalysisOptions) -> "npa.LinearAnalysisOptions":
+    """
+    Translate GridCal power flow options to Newton power flow options
+    :param opt:
+    :return:
+    """
+    from GridCalEngine.Simulations.LinearFactors.linear_analysis_options import LinearAnalysisOptions
+    return npa.LinearAnalysisOptions(distribute_slack=opt.distribute_slack,
+                                     correct_values=opt.correct_values,
+                                     verbose=False,
+                                     ptdf_threshold=opt.ptdf_threshold,
+                                     lodf_threshold=opt.lodf_threshold)
 
 
 def get_newton_pa_nonlinear_opf_options(pf_opt: PowerFlowOptions,
@@ -1183,7 +1208,7 @@ def get_newton_pa_nonlinear_opf_options(pf_opt: PowerFlowOptions,
 
     return npa.NonlinearOpfOptions(tolerance=pf_opt.tolerance,
                                    max_iter=pf_opt.max_iter,
-                                   mu0=pf_opt.mu,
+                                   mu0=pf_opt.trust_radius,
                                    control_q_mode=q_control_dict[pf_opt.control_Q],
                                    flow_control=True,
                                    voltage_control=True,
@@ -1283,14 +1308,12 @@ def newton_pa_pf(circuit: MultiCircuit,
 
 
 def newton_pa_contingencies(circuit: MultiCircuit,
-                            pf_opt: PowerFlowOptions,
                             con_opt: ContingencyAnalysisOptions,
                             time_series: bool = False,
                             time_indices: Union[IntVec, None] = None) -> "npa.ContingencyAnalysisResults":
     """
     Newton power flow
     :param circuit: MultiCircuit instance
-    :param pf_opt: Power Flow Options
     :param con_opt: ContingencyAnalysisOptions
     :param time_series: Compile with GridCal time series?
     :param time_indices: Array of time indices
@@ -1299,9 +1322,10 @@ def newton_pa_contingencies(circuit: MultiCircuit,
     npa_circuit, _ = to_newton_pa(circuit,
                                   use_time_series=time_series,
                                   time_indices=None,
-                                  override_branch_controls=pf_opt.override_branch_controls)
+                                  override_branch_controls=con_opt.pf_options.override_branch_controls)
 
-    pf_options = get_newton_pa_pf_options(pf_opt)
+    pf_options = get_newton_pa_pf_options(con_opt.pf_options)
+    lin_opt = get_newton_pa_linear_options(con_opt.lin_options)
 
     if time_series:
         # it is already sliced to the relevant time indices
@@ -1312,11 +1336,11 @@ def newton_pa_contingencies(circuit: MultiCircuit,
         n_threads = 0  # max threads
     else:
         time_indices = [0]
-        n_threads = 1
+        n_threads = 0
 
-    if con_opt.engine == ContingencyEngine.PTDF:
+    if con_opt.contingency_method == ContingencyMethod.PTDF:
         mode = npa.ContingencyAnalysisMode.Linear
-    elif con_opt.engine == ContingencyEngine.PowerFlow:
+    elif con_opt.contingency_method == ContingencyMethod.PowerFlow:
         mode = npa.ContingencyAnalysisMode.Full
     else:
         mode = npa.ContingencyAnalysisMode.Full
@@ -1325,10 +1349,34 @@ def newton_pa_contingencies(circuit: MultiCircuit,
     # print('time_indices')
     # print(time_indices)
 
+    """
+    lin_options: newtonpa.LinearAnalysisOptions = <newtonpa.LinearAnalysisOptions object at 0x7fe5efdddf30>, 
+    pf_options: newtonpa.PowerFlowOptions = <newtonpa.PowerFlowOptions object at 0x7fe5efdb9ab0>, 
+    mode: newtonpa.ContingencyAnalysisMode = <ContingencyAnalysisMode.Full: 0>, 
+    using_srap: bool = False, 
+    srap_max_loading: float = 1.4, 
+    srap_max_power: float = 1400.0)
+    
+    lin_opt=<newtonpa.LinearAnalysisOptions object at 0x7fe4d5ec0370>, 
+    pf_options=<newtonpa.PowerFlowOptions object at 0x7fe4d5ec0570>, 
+    mode=<ContingencyAnalysisMode.Linear: 1>, 
+    using_srap=True, 
+    srap_max_loading=1.4, 
+    srap_max_power=1400.0
+    """
+
+    options = npa.ContingencyAnalysisOptions(
+        lin_options=lin_opt,
+        pf_options=pf_options,
+        mode=mode,
+        using_srap=con_opt.use_srap,
+        srap_max_loading=con_opt.srap_max_loading,
+        srap_max_power=con_opt.srap_max_power
+    )
+
     con_res = npa.runContingencyAnalysis(circuit=npa_circuit,
-                                         pf_options=pf_options,
+                                         options=options,
                                          time_indices=time_indices,
-                                         mode=mode,
                                          n_threads=n_threads)
 
     return con_res

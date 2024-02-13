@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
 import scipy.sparse as sp
-import GridCalEngine.Core.topology as tp
+import GridCalEngine.Core.Topology.topology as tp
 from GridCalEngine.basic_structures import CxVec, Vec, IntVec, BoolVec, StrVec
 
 
@@ -68,6 +68,7 @@ class GeneratorData:
 
         self.cost_1: Vec = np.zeros(nelm, dtype=float)
         self.cost_0: Vec = np.zeros(nelm, dtype=float)
+        self.cost_2: Vec = np.zeros(nelm, dtype=float)
         self.startup_cost: Vec = np.zeros(nelm, dtype=float)
         self.availability: Vec = np.zeros(nelm, dtype=float)
         self.ramp_up: Vec = np.zeros(nelm, dtype=float)
@@ -121,6 +122,7 @@ class GeneratorData:
 
         data.cost_0 = self.cost_0[elm_idx]
         data.cost_1 = self.cost_1[elm_idx]
+        data.cost_2 = self.cost_2[elm_idx]
         data.startup_cost = self.startup_cost[elm_idx]
         data.availability = self.availability[elm_idx]
         data.ramp_up = self.ramp_up[elm_idx]
@@ -131,6 +133,14 @@ class GeneratorData:
         data.original_idx = elm_idx
 
         return data
+
+    def size(self) -> int:
+        """
+        Get size of the structure
+        :return:
+        """
+
+        return self.nelm
 
     def copy(self):
         """
@@ -173,6 +183,7 @@ class GeneratorData:
 
         data.cost_0 = self.cost_0.copy()
         data.cost_1 = self.cost_1.copy()
+        data.cost_2 = self.cost_2.copy()
         data.startup_cost = self.startup_cost.copy()
         data.availability = self.availability.copy()
         data.ramp_up = self.ramp_up.copy()
@@ -226,12 +237,21 @@ class GeneratorData:
         """
         return self.p * self.active
 
+    def get_array_per_bus(self, arr: Vec) -> Vec:
+        """
+        Get generator array per bus
+        :param arr:
+        :return:
+        """
+        assert len(arr) == self.nelm
+        return self.C_bus_elm @ arr
+
     def get_injections_per_bus(self) -> CxVec:
         """
         Get generator Injections per bus
         :return:
         """
-        return self.C_bus_elm * (self.get_injections() * self.active)
+        return self.C_bus_elm @ (self.get_injections() * self.active)
 
     def get_voltages_per_bus(self) -> CxVec:
         """
@@ -243,7 +263,7 @@ class GeneratorData:
         # the division by n_per_bus achieves the averaging of the voltage control
         # value if more than 1 battery is present per bus
         # return self.C_bus_gen * (self.generator_v * self.generator_active) / n_per_bus
-        return np.ndarray((self.C_bus_elm * self.v) / n_per_bus)
+        return np.ndarray((self.C_bus_elm @ self.v) / n_per_bus)
 
     def get_installed_power_per_bus(self) -> Vec:
         """
@@ -279,3 +299,10 @@ class GeneratorData:
         :return: array with the bus indices
         """
         return tp.get_csr_bus_indices(self.C_bus_elm.tocsr())
+
+    def get_dispatchable_indices(self) -> IntVec:
+        """
+        Get the indices of dispatchable generators
+        :return:
+        """
+        return np.where(self.dispatchable == 1)[0]

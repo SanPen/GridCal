@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 from typing import Union
-from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceType
+from GridCalEngine.Core.Devices.Parents.editable_device import EditableDevice, DeviceType
 from GridCalEngine.Core.Devices.Aggregation.investments_group import InvestmentsGroup
 
 
@@ -59,9 +59,9 @@ class Investment(EditableDevice):
         self.comment = comment
 
         self.register(key='device_idtag', units='', tpe=str, definition='Unique ID')
-        self.register(key='CAPEX', units='M€', tpe=float,
+        self.register(key='CAPEX', units='Me', tpe=float,
                       definition='Capital expenditures. This is the initial investment.')
-        self.register(key='OPEX', units='M€', tpe=float,
+        self.register(key='OPEX', units='Me', tpe=float,
                       definition='Operation expenditures. Maintenance costs among other recurrent costs.')
         self.register(key='group', units='', tpe=DeviceType.InvestmentsGroupDevice, definition='Investment group')
         self.register(key='comment', units='', tpe=str, definition='Comments')

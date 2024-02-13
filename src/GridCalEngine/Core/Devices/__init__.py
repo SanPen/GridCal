@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -14,9 +14,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
-from GridCalEngine.Core.Devices.editable_device import EditableDevice
-from GridCalEngine.Core.Devices.measurement import Measurement, MeasurementType
+from GridCalEngine.Core.Devices.Parents.editable_device import EditableDevice
+from GridCalEngine.Core.Devices.measurement import (PiMeasurement, PfMeasurement, QiMeasurement, QfMeasurement,
+                                                    VmMeasurement, VmMeasurement, IfMeasurement, IfMeasurement)
 
 from GridCalEngine.Core.Devices.Aggregation import *
 from GridCalEngine.Core.Devices.Branches import *

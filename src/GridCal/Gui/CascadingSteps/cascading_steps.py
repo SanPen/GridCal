@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -60,7 +60,7 @@ class CascadingStepsGUI(QtWidgets.QDialog):
         """
         Run cascade step
         """
-        if len(self.gridcal_main.circuit.buses) > 0:
+        if len(self.gridcal_main.circuit.get_buses()) > 0:
 
             self.gridcal_main.LOCK()
             if self.gridcal_main.session.exists(sim.SimulationTypes.Cascade_run):
@@ -84,7 +84,7 @@ class CascadingStepsGUI(QtWidgets.QDialog):
         """
         Run a cascading to blackout simulation
         """
-        if len(self.gridcal_main.circuit.buses) > 0:
+        if len(self.gridcal_main.circuit.get_buses()) > 0:
 
             if not self.gridcal_main.session.is_this_running(sim.SimulationTypes.Cascade_run):
 

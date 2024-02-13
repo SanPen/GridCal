@@ -41,10 +41,10 @@ class FluidNode:
         self.initial_level = current_level  # m3
 
         self.level = None  # m3 -> LpVar
-        self.spillage = None  # m3/h -> LpVar
+        self.spillage = None  # m3/s -> LpVar
 
-        self.inflow = 0.0  # m3/h -> LpExpression
-        self.outflow = 0.0  # m3/h -> LpExpression
+        self.inflow = 0.0  # m3/s -> LpExpression
+        self.outflow = 0.0  # m3/s -> LpExpression
 
     def __str__(self):
         return self.name
@@ -85,14 +85,14 @@ class Turbine:
         :param p_min: Minimum power when active (MW)
         :param p_max: Maximum power when active (MW)
         :param efficiency: Power plant energy production per fluid unit (MWh/m3)
-        :param max_flow_rate: maximum water flow (m3/h)
+        :param max_flow_rate: maximum water flow (m3/s)
         :param plant: Pointer to the plant where the turbine is hosted
         """
         self.name = name
         self.p_min = p_min  # MW
         self.p_max = p_max  # MW
         self.efficiency = efficiency  # MWh/m3
-        self.max_flow_rate = max_flow_rate  # m3/h
+        self.max_flow_rate = max_flow_rate  # m3/s
         self.plant: FluidNode = plant
 
         self.power_output = None  # LP var -> MW
@@ -114,14 +114,14 @@ class Pump:
         :param p_min: Minimum power when active (MW)
         :param p_max: Maximum power when active (MW)
         :param efficiency: Power plant energy production per fluid unit (MWh/m3)
-        :param max_flow_rate: maximum water flow (m3/h)
+        :param max_flow_rate: maximum water flow (m3/s)
         :param reservoir: Pointer to the node where the pump is hosted
         """
         self.name = name
         self.p_min = p_min  # MW
         self.p_max = p_max  # MW
         self.efficiency = efficiency  # MWh/m3
-        self.max_flow_rate = max_flow_rate  # m3/h
+        self.max_flow_rate = max_flow_rate  # m3/s
         self.plant: FluidNode = reservoir
 
         self.power_input = None  # LP var -> MW
@@ -143,7 +143,7 @@ class Power2X:
         :param p_min: Minimum power when active (MW)
         :param p_max: Maximum power when active (MW)
         :param efficiency: Power plant energy production per fluid unit (MWh/m3)
-        :param max_flow_rate: Maximum water flow (m3/h)
+        :param max_flow_rate: Maximum water flow (m3/s)
         :param node: Pointer to the node where the unit is hosted
         """
         self.name = name
@@ -175,14 +175,14 @@ class FluidPath:
         :param name: Name of the fluid transporter
         :param source: Source of fluid
         :param target: target for the fluid
-        :param min_flow: minimum flow (m3/h)
-        :param max_flow: maximum flow (m3/h)
+        :param min_flow: minimum flow (m3/s)
+        :param max_flow: maximum flow (m3/s)
         """
         self.name = name
         self.source = source
         self.target = target
         self.min_flow = min_flow
-        self.max_flow = max_flow  # m3/h
+        self.max_flow = max_flow  # m3/s
 
         self.flow = None  # LP var -> m3
 
@@ -272,8 +272,8 @@ def hydro_dispatch_transport(fluid_nodes: List[FluidNode],
         turbine_flow = 0.0  # m3
         for turbine in turbines_at_the_plant:
             # add the generator output to the plant output in terms of water
-            #    m3/h                      MW                  MWh/m3  # efficiency should be dividing!?
-            turbine_flow += turbine.power_output / turbine.efficiency
+            #    m3/s                      MW                  MWh/m3  # efficiency should be dividing!?
+            turbine_flow += turbine.power_output / turbine.efficiency / 3600
 
             # add the electric power to the total generation
             total_power_balance += turbine.power_output
@@ -283,8 +283,8 @@ def hydro_dispatch_transport(fluid_nodes: List[FluidNode],
         pump_flow = 0.0  # m3
         for pump in pumps_at_the_plant:
             # add the pump output to the plant output in terms of water
-            #    m3/h               MW                  MWh/m3
-            pump_flow += pump.power_input / pump.efficiency
+            #    m3/s               MW                  MWh/m3
+            pump_flow += pump.power_input / pump.efficiency / 3600
 
             # subtract the electric power of the pump
             total_power_balance -= pump.power_input
@@ -293,8 +293,8 @@ def hydro_dispatch_transport(fluid_nodes: List[FluidNode],
         power2x_flow = 0.0
         for power2x in power2xs_at_the_plant:
             # add the power2x output to the plant output in terms of flow (if same flow)
-            #    m3/h                    MW                  MWh/m3
-            power2x_flow += power2x.power_input / power2x.efficiency
+            #    m3/s                    MW                  MWh/m3
+            power2x_flow += power2x.power_input / power2x.efficiency / 3600
 
             # add the electric power of the power2x (for all of them, generator convention)
             total_power_balance -= power2x.power_input
@@ -357,12 +357,12 @@ def hydro_dispatch_transport(fluid_nodes: List[FluidNode],
                 print(f'Plant, {node.name}:{power2x.name} : Power = {solver.get_value(power2x.power_input)} MW')
 
             print(f'Reservoir {node.name}: Level = {solver.get_value(node.level)} m3')
-            print(f'Spillage {node.name}: {solver.get_value(node.spillage)} m3/h')
+            print(f'Spillage {node.name}: {solver.get_value(node.spillage)} m3/s')
             print()
 
         print()
         for river in flow_transporters:
-            print(f'River {river.name}: Flow = {solver.get_value(river.flow)} m3/h')
+            print(f'River {river.name}: Flow = {solver.get_value(river.flow)} m3/s')
 
         print()
         print(f'Total Power Generated: {solver.get_value(total_power_balance)}')
@@ -424,8 +424,8 @@ def plot_hydro_dispatch(solver: LpModel,
 
         label = (f"{node.name}\n"
                  f"p:{power} MW \n"
-                 f"f:{flow} m3/h\n"
-                 f"s:{spill} m3/h\n"
+                 f"f:{flow} m3/s\n"
+                 f"s:{spill} m3/s\n"
                  f"l:{level}/{node.max_level} m3")
 
         G.add_node(node.name, label=label)
@@ -433,7 +433,7 @@ def plot_hydro_dispatch(solver: LpModel,
     for river in rivers:
         flow = '{:.1f}'.format(solver.get_value(river.flow))
         G.add_edge(river.source.name, river.target.name,
-                   label=f"{river.name}\n{flow} m3/h")
+                   label=f"{river.name}\n{flow} m3/s")
 
     pos = nx.spectral_layout(G)
     labels = nx.get_edge_attributes(G, 'label')

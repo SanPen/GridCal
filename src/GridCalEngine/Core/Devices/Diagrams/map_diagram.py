@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -14,12 +14,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from typing import Dict, Union, List, Tuple
-from GridCalEngine.Core.Devices.Diagrams.base_diagram import BaseDiagram, PointsGroup
+from typing import Dict, Union
+from GridCalEngine.Core.Devices.Diagrams.base_diagram import BaseDiagram
 from GridCalEngine.Core.Devices.Diagrams.graphic_location import GraphicLocation
 from GridCalEngine.Core.Devices.Diagrams.map_location import MapLocation
-from GridCalEngine.Core.Devices.editable_device import EditableDevice
-from GridCalEngine.enumerations import DiagramType, DeviceType
+from GridCalEngine.Core.Devices.Parents.editable_device import EditableDevice
+from GridCalEngine.enumerations import DiagramType
+from GridCalEngine.basic_structures import Logger
 
 
 class MapDiagram(BaseDiagram):
@@ -61,13 +62,15 @@ class MapDiagram(BaseDiagram):
 
     def parse_data(self,
                    data: Dict[str, Dict[str, Dict[str, Union[int, float]]]],
-                   obj_dict: Dict[str, Dict[str, EditableDevice]]):
+                   obj_dict: Dict[str, Dict[str, EditableDevice]],
+                   logger: Logger):
         """
         Parse file data ito this class
         :param data: json dictionary
         :param obj_dict: dictionary of circuit objects by type to fincd the api objects back from file loading
+        :param logger: logger object
         """
-        super().parse_data(data=data, obj_dict=obj_dict)
+        super().parse_data(data=data, obj_dict=obj_dict, logger=logger)
 
         self.tile_source = data.get('tile_source', '')
         self.start_level = data.get('start_level', 11)

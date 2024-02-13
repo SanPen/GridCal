@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -14,29 +14,137 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
-from enum import Enum
-
-
-class MeasurementType(Enum):
-    Pinj = "Active power injection",
-    Qinj = "Reactive power injection",
-    Vmag = "Voltage magnitude",
-    Pflow = "Active power flow",
-    Qflow = "Reactive power flow",
-    Iflow = "Current module flow"
+from typing import Union
+from GridCalEngine.Core.Devices.Parents.editable_device import EditableDevice
+from GridCalEngine.Core.Devices.Substation.bus import Bus
+from GridCalEngine.Core.Devices.Parents.branch_parent import BranchParent
+from GridCalEngine.enumerations import DeviceType
 
 
-class Measurement:
+class MeasurementTemplate(EditableDevice):
+    """
+    Measurement class
+    """
 
-    def __init__(self, value, uncertainty, mtype: MeasurementType, idtag=None):
+    def __init__(self, value: float,
+                 uncertainty: float,
+                 api_obj: EditableDevice,
+                 name: str,
+                 idtag: Union[str, None],
+                 device_type: DeviceType):
         """
         Constructor
         :param value: value
         :param uncertainty: uncertainty (standard deviation)
-        :param mtype: type of measurement
+        :param api_obj:
+        :param name:
+        :param idtag:
         """
-        self.val = value
+        EditableDevice.__init__(self,
+                                name=name,
+                                idtag=idtag,
+                                code="",
+                                device_type=device_type)
+        self.value = value
         self.sigma = uncertainty
-        self.measurement_type = mtype
-        self.idtag = idtag
+        self.api_object: EditableDevice = api_obj
+
+        self.register("value", "", float, "Value of the measurement")
+        self.register("sigma", "", float, "Uncertainty of the measurement")
+        self.register("api_object", "", EditableDevice, "Value of the measurement")
+
+
+class PiMeasurement(MeasurementTemplate):
+    """
+    Measurement class
+    """
+
+    def __init__(self, value: float, uncertainty: float, api_obj: Bus, name="",
+                 idtag: Union[str, None] = None):
+        MeasurementTemplate.__init__(self,
+                                     value=value,
+                                     uncertainty=uncertainty,
+                                     api_obj=api_obj,
+                                     name=name,
+                                     idtag=idtag,
+                                     device_type=DeviceType.PiMeasurementDevice)
+
+
+class QiMeasurement(MeasurementTemplate):
+    """
+    Measurement class
+    """
+
+    def __init__(self, value: float, uncertainty: float, api_obj: Bus, name="",
+                 idtag: Union[str, None] = None):
+        MeasurementTemplate.__init__(self,
+                                     value=value,
+                                     uncertainty=uncertainty,
+                                     api_obj=api_obj,
+                                     name=name,
+                                     idtag=idtag,
+                                     device_type=DeviceType.QiMeasurementDevice)
+
+
+class VmMeasurement(MeasurementTemplate):
+    """
+    Measurement class
+    """
+
+    def __init__(self, value: float, uncertainty: float, api_obj: Bus, name="",
+                 idtag: Union[str, None] = None):
+        MeasurementTemplate.__init__(self,
+                                     value=value,
+                                     uncertainty=uncertainty,
+                                     api_obj=api_obj,
+                                     name=name,
+                                     idtag=idtag,
+                                     device_type=DeviceType.VmMeasurementDevice)
+
+
+class PfMeasurement(MeasurementTemplate):
+    """
+    Measurement class
+    """
+
+    def __init__(self, value: float, uncertainty: float, api_obj: BranchParent, name="",
+                 idtag: Union[str, None] = None):
+        MeasurementTemplate.__init__(self,
+                                     value=value,
+                                     uncertainty=uncertainty,
+                                     api_obj=api_obj,
+                                     name=name,
+                                     idtag=idtag,
+                                     device_type=DeviceType.PfMeasurementDevice)
+
+
+class QfMeasurement(MeasurementTemplate):
+    """
+    Measurement class
+    """
+
+    def __init__(self, value: float, uncertainty: float, api_obj: BranchParent, name="",
+                 idtag: Union[str, None] = None):
+        MeasurementTemplate.__init__(self,
+                                     value=value,
+                                     uncertainty=uncertainty,
+                                     api_obj=api_obj,
+                                     name=name,
+                                     idtag=idtag,
+                                     device_type=DeviceType.QfMeasurementDevice)
+
+
+class IfMeasurement(MeasurementTemplate):
+    """
+    Measurement class
+    """
+
+    def __init__(self, value: float, uncertainty: float, api_obj: BranchParent, name="",
+                 idtag: Union[str, None] = None):
+        MeasurementTemplate.__init__(self,
+                                     value=value,
+                                     uncertainty=uncertainty,
+                                     api_obj=api_obj,
+                                     name=name,
+                                     idtag=idtag,
+                                     device_type=DeviceType.IfMeasurementDevice)

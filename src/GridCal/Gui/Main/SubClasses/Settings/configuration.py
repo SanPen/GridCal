@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -22,8 +22,8 @@ from PySide6 import QtWidgets
 
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCal.Gui.Main.SubClasses.Results.results import ResultsMain
-from GridCal.Gui.GridEditorWidget import BusBranchEditorWidget
-from GridCal.Gui.GridEditorWidget.generic_graphics import set_dark_mode, set_light_mode
+from GridCal.Gui.BusBranchEditorWidget import BusBranchEditorWidget
+from GridCal.Gui.BusBranchEditorWidget.generic_graphics import set_dark_mode, set_light_mode
 
 
 class ConfigurationMain(ResultsMain):
@@ -143,7 +143,9 @@ class ConfigurationMain(ResultsMain):
                 "transfer_sensitivity_threshold": self.ui.atcThresholdSpinBox,
                 "transfer_method": self.ui.transferMethodComboBox,
                 "Loading_threshold_to_report": self.ui.ntcReportLoadingThresholdSpinBox,
-                "consider_contingencies": self.ui.n1ConsiderationCheckBox
+                "consider_contingencies": self.ui.n1ConsiderationCheckBox,
+                "ptdf_threshold": self.ui.ptdf_threshold_doubleSpinBox,
+                "lodf_threshold": self.ui.lodf_threshold_doubleSpinBox
             },
             "stochastic": {
                 "method": self.ui.stochastic_pf_method_comboBox,
@@ -177,13 +179,17 @@ class ConfigurationMain(ResultsMain):
                 "zone_grouping": self.ui.opfZonalGroupByComboBox,
                 "mip_solver": self.ui.mip_solver_comboBox,
                 "contingency_tolerance": self.ui.opfContingencyToleranceSpinBox,
-                "max_module_step": self.ui.maxVoltageModuleStepSpinBox,
-                "max_angle_step": self.ui.maxVoltageAngleStepSpinBox,
                 "skip_generation_limits": self.ui.skipOpfGenerationLimitsCheckBox,
                 "consider_contingencies": self.ui.considerContingenciesOpfCheckBox,
                 "maximize_area_exchange": self.ui.opfMaximizeExcahngeCheckBox,
                 "unit_commitment": self.ui.opfUnitCommitmentCheckBox,
                 "add_opf_report": self.ui.addOptimalPowerFlowReportCheckBox,
+                "save_mip": self.ui.save_mip_checkBox,
+                "ips_method": self.ui.ips_method_comboBox,
+                "ips_tolerance": self.ui.ips_tolerance_spinBox,
+                "ips_iterations": self.ui.ips_iterations_spinBox,
+                "ips_trust_radius": self.ui.ips_trust_radius_doubleSpinBox,
+                "ips_init_with_pf": self.ui.ips_initialize_with_pf_checkBox,
             },
             "continuation_power_flow": {
                 "max_iterations": self.ui.vs_max_iterations_spinBox,
@@ -224,7 +230,11 @@ class ConfigurationMain(ResultsMain):
                 "engine": self.ui.engineComboBox
             },
             "contingencies": {
-                "contingencies_engine": self.ui.contingencyEngineComboBox
+                "contingencies_engine": self.ui.contingencyEngineComboBox,
+                "use_srap": self.ui.use_srap_checkBox,
+                "srap_loading_limit": self.ui.srap_loading_limit_doubleSpinBox,
+                "srap_max_power": self.ui.srap_limit_doubleSpinBox,
+                "srap_top_n": self.ui.srap_top_n_SpinBox,
             },
             "file": {
                 "store_results_in_file": self.ui.saveResultsCheckBox
@@ -237,7 +247,7 @@ class ConfigurationMain(ResultsMain):
         :return:
         """
 
-        def struct_to_data(data_: Dict[str, Dict[str, Union[float, int, str, bool, Dict]]],
+        def struct_to_data(data_: Dict[str, Union[float, int, str, bool, Dict[str, Union[float, int, str, bool, Dict]]]],
                            struct_: Dict[str, Dict[str, any]]):
             """
             Recursive function to get the config dictionary from the GUI values

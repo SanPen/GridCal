@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -15,4 +15,6 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from GridCalEngine.Simulations.Topology.topology_driver import TopologyReduction, TopologyReductionOptions, NodeGroupsDriver, DeleteAndReduce
+from GridCalEngine.Simulations.Topology.topology_reduction_driver import TopologyReduction, TopologyReductionOptions, DeleteAndReduce
+from GridCalEngine.Simulations.Topology.node_groups_driver import NodeGroupsDriver
+from GridCalEngine.Simulations.Topology.topology_processor_driver import TopologyProcessorDriver

@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -58,8 +58,6 @@ class ObjectsTableMain(DiagramsMain):
         self.ui.filter_pushButton.clicked.connect(self.smart_search)
         self.ui.catalogue_edit_pushButton.clicked.connect(self.edit_from_catalogue)
         self.ui.copyObjectsTableButton.clicked.connect(self.copy_objects_data)
-        self.ui.undo_pushButton.clicked.connect(self.undo)
-        self.ui.redo_pushButton.clicked.connect(self.redo)
         self.ui.delete_selected_objects_pushButton.clicked.connect(self.delete_selected_objects)
         self.ui.add_object_pushButton.clicked.connect(self.add_objects)
         self.ui.highlight_selection_buses_pushButton.clicked.connect(self.highlight_selection_buses)
@@ -142,6 +140,14 @@ class ObjectsTableMain(DiagramsMain):
 
         elif elm_type == DeviceType.SubstationDevice:
             elm = dev.Substation()
+
+        elif elm_type == DeviceType.ConnectivityNodeDevice:
+            elm = dev.ConnectivityNode()
+            dictionary_of_lists = {DeviceType.BusBarDevice.value: self.circuit.get_bus_bars(), }
+
+        elif elm_type == DeviceType.BusBarDevice:
+            elm = dev.BusBar()
+            dictionary_of_lists = {DeviceType.SubstationDevice.value: self.circuit.get_substations(), }
 
         elif elm_type == DeviceType.ZoneDevice:
             elm = dev.Zone()
@@ -235,7 +241,7 @@ class ObjectsTableMain(DiagramsMain):
             raise Exception('elm_type not understood: ' + elm_type.value)
 
         mdl = gf.ObjectsModel(objects=elements,
-                              editable_headers=elm.editable_headers,
+                              editable_headers=elm.registered_properties,
                               parent=self.ui.dataStructureTableView,
                               editable=True,
                               dictionary_of_lists=dictionary_of_lists)
@@ -280,7 +286,7 @@ class ObjectsTableMain(DiagramsMain):
 
             elm_type = self.ui.dataStructuresTreeView.selectedIndexes()[0].data(role=QtCore.Qt.ItemDataRole.DisplayRole)
 
-            elements = self.circuit.get_elements_by_type(element_type=DeviceType(elm_type))
+            elements = self.circuit.get_elements_by_type(device_type=DeviceType(elm_type))
 
             mdl = self.create_objects_model(elements=elements,
                                             elm_type=DeviceType(elm_type))
@@ -573,7 +579,7 @@ class ObjectsTableMain(DiagramsMain):
 
                 elm = objects[0]
                 attr = self.ui.property_comboBox.currentText()
-                tpe = elm.editable_headers[attr].tpe
+                tpe = elm.registered_properties[attr].tpe
 
                 if tpe in [float, int]:
 
@@ -653,7 +659,7 @@ class ObjectsTableMain(DiagramsMain):
                     p_idx = index.column()
                     elm = objects[i]
                     attr = model.attributes[p_idx]
-                    prof_attr = elm.editable_headers[attr].profile_name
+                    prof_attr = elm.registered_properties[attr].profile_name
 
                     if prof_attr != '':
                         if hasattr(elm, prof_attr):
@@ -682,27 +688,6 @@ class ObjectsTableMain(DiagramsMain):
         else:
             info_msg('Select a data structure')
 
-    def undo(self):
-        """
-        Undo table changes
-        """
-
-        model = self.ui.profiles_tableView.model()
-        if model is not None:
-            model.undo()
-        else:
-            pass
-
-    def redo(self):
-        """
-        redo table changes
-        """
-        model = self.ui.profiles_tableView.model()
-        if model is not None:
-            model.redo()
-        else:
-            pass
-
     def smart_search(self):
         """
         Filter
@@ -713,7 +698,7 @@ class ObjectsTableMain(DiagramsMain):
             attr = self.ui.property_comboBox.currentText()
 
             elm = self.type_objects_list[0]
-            tpe = elm.editable_headers[attr].tpe
+            tpe = elm.registered_properties[attr].tpe
 
             filtered_objects = list()
 
@@ -847,29 +832,6 @@ class ObjectsTableMain(DiagramsMain):
         else:
             # nothing to search
             pass
-
-    def correct_branch_monitoring(self, max_loading=1.0):
-        """
-        The NTC optimization and other algorithms will not work if we have overloaded Branches in DC monitored
-        We can try to not monitor those to try to get it working
-        """
-        res = self.session.power_flow
-
-        if res is None:
-            self.console_msg('No power flow results.\n')
-        else:
-            branches = self.circuit.get_branches_wo_hvdc()
-            for elm, loading in zip(branches, res.loading):
-                if loading >= max_loading:
-                    elm.monitor_loading = False
-                    self.console_msg('Disabled loading monitoring for {0}, loading: {1}'.format(elm.name, loading))
-
-    def snapshot_balance(self):
-        """
-        Snapshot balance report
-        """
-        df = self.circuit.snapshot_balance()
-        self.console_msg('\n' + str(df))
 
     def delete_inconsistencies(self):
         """

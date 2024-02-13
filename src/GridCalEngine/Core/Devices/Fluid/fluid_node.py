@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -16,9 +16,12 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 from typing import Union
-from GridCalEngine.Core.Devices.editable_device import EditableDevice
+import numpy as np
+
+from GridCalEngine.Core.Devices.Parents.editable_device import EditableDevice
 from GridCalEngine.Core.Devices.Substation.bus import Bus
 from GridCalEngine.enumerations import BuildStatus, DeviceType
+from GridCalEngine.Core.Devices.profile import Profile
 
 
 class FluidNode(EditableDevice):
@@ -30,9 +33,8 @@ class FluidNode(EditableDevice):
                  min_level: float = 0.0,
                  max_level: float = 0.0,
                  current_level: float = 0.0,
-                 spillage: float = 0.0,
+                 spillage_cost: float = 1000.0,
                  inflow: float = 0.0,
-                 inflow_prof=None,
                  bus: Union[None, Bus] = None,
                  build_status: BuildStatus = BuildStatus.Commissioned):
         """
@@ -43,9 +45,8 @@ class FluidNode(EditableDevice):
         :param min_level: Minimum amount of fluid at the node/reservoir [m3]
         :param max_level: Maximum amount of fluid at the node/reservoir [m3]
         :param current_level: Initial level of the node/reservoir [m3]
-        :param spillage: Spillage value [m3/h]
-        :param inflow: Inflow from the rain [m3/h]
-        :param inflow_prof: Profile for the inflow [m3/h]
+        :param spillage_cost: Spillage cost [e/(m3/s)]
+        :param inflow: Inflow from the rain [m3/s]
         :param bus: electrical bus they are linked with
         :param build_status
         """
@@ -58,21 +59,13 @@ class FluidNode(EditableDevice):
         self.min_level = min_level  # hm3
         self.max_level = max_level  # hm3
         self.initial_level = current_level  # hm3
-        # self.spillage = spillage  # m3/h
-        self.inflow = inflow  # m3/h
+        self.spillage_cost = spillage_cost  # m3/s
+        self.inflow = inflow  # m3/s
         self._bus: Bus = bus
         self.build_status = build_status
 
-        self.inflow_prof = inflow_prof  # m3/h
-
-        # list of turbines
-        self.turbines = list()
-
-        # list of pumps
-        self.pumps = list()
-
-        # list of power to gas devices
-        self.p2xs = list()
+        self._inflow_prof = Profile(default_value=inflow)  # m3/s
+        self._spillage_cost_prof = Profile(default_value=spillage_cost)  # e/(m3/s)
 
         self.register(key='min_level', units='hm3', tpe=float,
                       definition="Minimum amount of fluid at the node/reservoir")
@@ -89,13 +82,69 @@ class FluidNode(EditableDevice):
         self.register(key='build_status', units='', tpe=BuildStatus,
                       definition='Branch build status. Used in expansion planning.')
 
-        # self.register(key='spillage', units='m3/h', tpe=float,
-        #               definition='Flow of fluid lost at the node')
+        self.register(key='spillage_cost', units='e/(m3/s)', tpe=float,
+                      definition='Cost of nodal spillage',
+                      profile_name='spillage_cost_prof')
 
-        self.register(key='inflow', units='m3/h', tpe=float,
+        self.register(key='inflow', units='m3/s', tpe=float,
                       definition='Flow of fluid coming from the rain',
                       profile_name='inflow_prof')
 
+    @property
+    def spillage_cost_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._spillage_cost_prof
+
+    @spillage_cost_prof.setter
+    def spillage_cost_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._spillage_cost_prof = val
+        elif isinstance(val, np.ndarray):
+            self._spillage_cost_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a spillage_cost_prof')
+
+    @property
+    def inflow_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._inflow_prof
+
+    @inflow_prof.setter
+    def inflow_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._inflow_prof = val
+        elif isinstance(val, np.ndarray):
+            self._inflow_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a inflow_prof')
+
+    def copy(self):
+        """
+        Make a deep copy of this object
+        :return: Copy of this object
+        """
+
+        # make a new instance (separated object in memory)
+        fluid_node = FluidNode()
+
+        fluid_node.min_level = self.min_level  # hm3
+        fluid_node.max_level = self.max_level  # hm3
+        fluid_node.initial_level = self.initial_level  # hm3
+        fluid_node.spillage_cost = self.spillage_cost  # m3/s
+        fluid_node.inflow = self.inflow  # m3/s
+        fluid_node._bus = self._bus
+        fluid_node.build_status = self.build_status
+
+        fluid_node.inflow_prof = self.inflow_prof  # m3/s
+        fluid_node.spillage_cost_prof = self.spillage_cost_prof  # e/(m3/s)
+
+        return fluid_node
 
     @property
     def bus(self) -> Bus:
@@ -114,48 +163,3 @@ class FluidNode(EditableDevice):
         if isinstance(val, Bus):
             self._bus = val
             self._bus.is_internal = True
-
-    def add_turbine(self, elm):
-        """
-        Add turbine
-        :param elm: FluidTurbine
-        """
-        self.turbines.append(elm)
-
-    def add_pump(self, elm):
-        """
-        Add pump device
-        :param elm: FluidPump device
-        """
-        self.pumps.append(elm)
-
-    def add_p2x(self, elm):
-        """
-        Add power to gas
-        :param elm: FluidP2x device
-        """
-        self.p2xs.append(elm)
-
-    def add_device(self, device) -> None:
-        """
-        Add device to the bus in the corresponding list
-        :param device: FluidTurbine, FluidPump or FluidP2X
-        """
-        if device.device_type == DeviceType.FluidTurbineDevice:
-            self.add_turbine(device)
-
-        elif device.device_type == DeviceType.FluidPumpDevice:
-            self.add_pump(device)
-
-        elif device.device_type == DeviceType.FluidP2XDevice:
-            self.add_p2x(device)
-
-        else:
-            raise Exception('Fluid Device type not understood:' + str(device.device_type))
-
-    def get_device_number(self) -> int:
-        """
-        Get number of injection devices
-        :return: int
-        """
-        return len(self.turbines) + len(self.pumps) + len(self.p2xs)

@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -14,13 +14,17 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
-from typing import Dict
+import math
+from typing import Dict, Union, List, Tuple, Any
 import pandas as pd
 import numpy as np
+from enum import EnumMeta as EnumType
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 import GridCalEngine.Core.Devices as dev
+from GridCalEngine.Core.Devices.Parents.editable_device import GCProp
+from GridCalEngine.Core.Devices.profile import Profile
+from GridCalEngine.Core.Devices.sparse_array import SparseArray
 from GridCalEngine.enumerations import DiagramType, DeviceType
 
 
@@ -47,6 +51,8 @@ def get_objects_dictionary() -> Dict[str, dev.EditableDevice]:
                     'emission': dev.EmissionGas(),
 
                     'bus': dev.Bus(),
+
+                    'bus_bar': dev.BusBar(),
 
                     'connectivity node': dev.ConnectivityNode(),
 
@@ -101,10 +107,11 @@ def get_objects_dictionary() -> Dict[str, dev.EditableDevice]:
     return object_types
 
 
-def create_data_frames(circuit: MultiCircuit):
+def gather_model_as_data_frames(circuit: MultiCircuit, legacy: bool = False) -> Dict[str, pd.DataFrame]:
     """
     Pack the circuit information into tables (DataFrames)
     :param circuit: MultiCircuit instance
+    :param legacy: Generate the legacy object DataFrames
     :return: dictionary of DataFrames
     """
     dfs = dict()
@@ -112,7 +119,7 @@ def create_data_frames(circuit: MultiCircuit):
     # configuration ################################################################################################
     obj = list()
     obj.append(['BaseMVA', circuit.Sbase])
-    obj.append(['Version', 4])
+    obj.append(['Version', 5])
     obj.append(['Name', str(circuit.name)])
     obj.append(['Comments', str(circuit.comments)])
 
@@ -148,113 +155,619 @@ def create_data_frames(circuit: MultiCircuit):
     ########################################################################################################
     # generic object iteration
     ########################################################################################################
-    for object_type_name, object_sample in object_types.items():
+    if legacy:
+        for object_type_name, object_sample in object_types.items():
 
-        headers = object_sample.editable_headers.keys()
+            headers = object_sample.registered_properties.keys()
 
-        lists_of_objects = circuit.get_elements_by_type(object_sample.device_type)
+            lists_of_objects = circuit.get_elements_by_type(object_sample.device_type)
 
-        obj = list()
-        profiles = dict()
-        object_idtags = list()
-        if len(lists_of_objects) > 0:
+            obj = list()
+            profiles = dict()
+            object_idtags = list()
+            if len(lists_of_objects) > 0:
 
-            for k, elm in enumerate(lists_of_objects):
+                for k, elm in enumerate(lists_of_objects):
 
-                # get the object normal information
-                obj.append(elm.get_save_data())
-                object_idtags.append(elm.idtag)
+                    # get the object normal information
+                    obj.append(elm.get_save_data())
+                    object_idtags.append(elm.idtag)
 
-                if T is not None:
-                    nt = len(T)
-                    if nt > 0:
+                    if T is not None:
+                        nt = len(T)
+                        if nt > 0:
 
-                        elm.ensure_profiles_exist(T)
+                            elm.ensure_profiles_exist(T)
 
-                        for profile_property in object_sample.properties_with_profile.values():
+                            for property_name, profile_property in object_sample.properties_with_profile.items():
 
-                            # get the array
-                            arr = getattr(elm, profile_property)
+                                # get the array
+                                profile = elm.get_profile(magnitude=property_name)
 
-                            if profile_property not in profiles.keys():
-                                # create the profile
-                                profiles[profile_property] = np.zeros((nt, len(lists_of_objects)), dtype=arr.dtype)
+                                if profile_property not in profiles.keys():
+                                    # create the profile
+                                    profiles[profile_property] = np.zeros(shape=(nt, len(lists_of_objects)),
+                                                                          dtype=profile.dtype)
 
-                            # copy the object profile to the array of profiles
-                            profiles[profile_property][:, k] = arr
+                                # copy the object profile to the array of profiles
+                                profiles[profile_property][:, k] = profile.toarray()
 
-            # convert the objects' list to an array
-            dta = np.array(obj)
-        else:
-            # declare an empty array
-            dta = np.zeros((0, len(headers)))
+                # convert the objects' list to an array
+                dta = np.array(obj)
+            else:
+                # declare an empty array
+                dta = np.zeros((0, len(headers)))
 
-        # declare the DataFrames for the normal data
-        dfs[object_type_name] = pd.DataFrame(data=dta, columns=list(headers))
+            # declare the DataFrames for the normal data
+            dfs[object_type_name] = pd.DataFrame(data=dta, columns=list(headers))
 
-        # create the profiles' DataFrames
-        for prop, data in profiles.items():
-            dfs[object_type_name + '_' + prop] = pd.DataFrame(data=data, columns=object_idtags, index=T)
+            # create the profiles' DataFrames
+            for prop, data in profiles.items():
+                dfs[object_type_name + '_' + prop] = pd.DataFrame(data=data, columns=object_idtags, index=T)
 
-    # towers and wires -------------------------------------------------------------------------------------------------
-    # because each tower contains a reference to a number of wires, these relations need to be stored as well
-    associations = list()
-    for tower in circuit.overhead_line_types:
-        for wire in tower.wires_in_tower:
-            associations.append([tower.name, wire.name, wire.xpos, wire.ypos, wire.phase])
+        # towers and wires -------------------------------------------------------------------------------------------------
+        # because each tower contains a reference to a number of wires, these relations need to be stored as well
+        associations = list()
+        for tower in circuit.overhead_line_types:
+            for wire in tower.wires_in_tower:
+                associations.append([tower.name, wire.name, wire.xpos, wire.ypos, wire.phase])
 
-    dfs['tower_wires'] = pd.DataFrame(data=associations, columns=['tower_name', 'wire_name', 'xpos', 'ypos', 'phase'])
+        dfs['tower_wires'] = pd.DataFrame(data=associations,
+                                          columns=['tower_name', 'wire_name', 'xpos', 'ypos', 'phase'])
 
-    # Time -------------------------------------------------------------------------------------------------------------
+        # Time -------------------------------------------------------------------------------------------------------------
 
-    if circuit.time_profile is not None:
-        if isinstance(circuit.time_profile, pd.DatetimeIndex):
-            time_df = pd.DataFrame(data=circuit.time_profile.values, columns=['Time'])
-        else:
-            time_df = pd.DataFrame(data=circuit.time_profile, columns=['Time'])
-        dfs['time'] = time_df
+        if circuit.time_profile is not None:
+            if isinstance(circuit.time_profile, pd.DatetimeIndex):
+                time_df = pd.DataFrame(data=circuit.time_profile.values, columns=['Time'])
+            else:
+                time_df = pd.DataFrame(data=circuit.time_profile, columns=['Time'])
+            dfs['time'] = time_df
 
     return dfs
 
 
-def serach_property(template_elm, old_props_dict, file_object_property: str, logger: Logger):
+def profile_todict(profile: Profile) -> Dict[str, str]:
     """
-
-    :param template_elm:
-    :param old_props_dict:
-    :param file_object_property:
-    :param logger:
+    Get a dictionary representation of the profile
     :return:
     """
+    if profile.is_sparse:
+        return {
+            'is_sparse': profile.is_sparse,
+            'size': profile.size(),
+            'default': profile.default_value,
+            'sparse_data': {
+                'map': profile._sparse_array.get_map()
+            }
+        }
+    else:
+        return {
+            'is_sparse': profile.is_sparse,
+            'size': profile.size(),
+            'default': profile.default_value,
+            'dense_data': list(profile._dense_array),
+        }
+
+
+def profile_todict_idtag(profile: Profile) -> Dict[str, str]:
+    """
+    Get a dictionary representation of the profile
+    :return:
+    """
+    if profile.is_sparse:
+        return {
+            'is_sparse': profile.is_sparse,
+            'size': profile.size(),
+            'default': profile.default_value.idtag,
+            'sparse_data': {
+                'map': {key: val.idtag for key, val in profile._sparse_array.get_map().items()}
+            }
+        }
+    else:
+        return {
+            'is_sparse': profile.is_sparse,
+            'size': profile.size(),
+            'default': profile.default_value.idtag,
+            'dense_data': [e.idtag for e in profile._dense_array],
+        }
+
+
+def profile_todict_str(profile: Profile) -> Dict[str, str]:
+    """
+    Get a dictionary representation of the profile
+    :return:
+    """
+    if profile.is_sparse:
+        return {
+            'is_sparse': profile.is_sparse,
+            'size': profile.size(),
+            'default': str(profile.default_value),
+            'sparse_data': {
+                'map': {key: str(val) for key, val in profile._sparse_array.get_map().items()}
+            }
+        }
+    else:
+        return {
+            'is_sparse': profile.is_sparse,
+            'size': profile.size(),
+            'default': str(profile.default_value),
+            'dense_data': [str(e) for e in profile._dense_array],
+        }
+
+
+def get_profile_from_dict(data: Dict[str, Union[str, Dict[str, str]]]) -> Profile:
+    """
+    Create a profile from json dict data
+    :param data: Json dict data
+    """
+    profile = Profile(default_value=data['default'], is_sparse=bool(data['is_sparse']))
+
+    if profile.is_sparse:
+        sp_data = data['sparse_data']
+        profile._sparse_array = SparseArray()
+        profile._sparse_array.create_from_dict(default_value=data['default'],
+                                               size=data['size'],
+                                               map=sp_data['map'])
+    else:
+        profile._dense_array = np.array(data['dense_data'])
+
+    return profile
+
+
+def gridcal_object_to_json(elm: dev.EditableDevice) -> Dict[str, str]:
+    """
+
+    :param elm:
+    :return:
+    """
+
+    data = dict()
+    for name, prop in elm.registered_properties.items():
+        obj = elm.get_snapshot_value(prop=prop)
+
+        if prop.tpe in [str, float, int, bool]:
+            data[name] = obj
+
+            if prop.has_profile():
+                data[name + '_prof'] = profile_todict(elm.get_profile_by_prop(prop=prop))
+
+        elif prop.tpe == DeviceType.GeneratorQCurve:
+            data[name] = obj.str()
+
+        else:
+            # if the object is not of a primary type, get the idtag instead
+            if hasattr(obj, 'idtag'):
+                data[name] = obj.idtag
+
+                if prop.has_profile():
+                    data[name + '_prof'] = profile_todict_idtag(elm.get_profile_by_prop(prop=prop))
+
+            else:
+                # some data types might not have the idtag, ten just use the str method
+                data[name] = str(obj)
+
+                if prop.has_profile():
+                    data[name + '_prof'] = profile_todict_str(elm.get_profile_by_prop(prop=prop))
+
+    return data
+
+
+def gather_model_as_jsons(circuit: MultiCircuit) -> Dict[str, Dict[str, str]]:
+    """
+
+    :param circuit:
+    :return:
+    """
+    data: Dict[str, Dict[str, str]] = dict()
+
+    # declare objects to iterate  name: [sample object, list of objects, headers]
+    object_types = get_objects_dictionary()
+
+    del object_types['branch']
+
+    # generic object iteration
+    for object_type_name, object_sample in object_types.items():
+
+        object_json = list()
+
+        lists_of_objects = circuit.get_elements_by_type(object_sample.device_type)
+
+        if len(lists_of_objects) > 0:
+
+            for k, elm in enumerate(lists_of_objects):
+                obj_data = gridcal_object_to_json(elm)
+                object_json.append(obj_data)
+
+        data[object_type_name] = object_json
+
+    # time
+    unix_time = circuit.get_unix_time()
+    data['time'] = {'unix': unix_time.tolist(),
+                    'prob': np.ones(len(unix_time))}
+
+    return data
+
+
+def search_property(template_elm: dev.EditableDevice,
+                    old_props_dict: Dict[str, str],
+                    property_to_search: str,
+                    logger: Logger) -> Union[GCProp, None]:
+    """
+    Search for a property name in the template object registered properties and their old names
+    :param template_elm: Device to loo into
+    :param old_props_dict: Dictionary matching the old names with their current counterpart
+    :param property_to_search: property name to search
+    :param logger: Logger
+    :return: GCProp or None if not found
+    """
     # search the property in the object headers
-    gc_prop = template_elm.editable_headers.get(file_object_property, None)
+    gc_prop = template_elm.registered_properties.get(property_to_search, None)
 
     if gc_prop is None:
         # the property is not in the headers, search in the the old list
-        current_prop_name = old_props_dict.get(file_object_property, None)
+        current_prop_name = old_props_dict.get(property_to_search, None)
 
         if current_prop_name:
 
             logger.add_info('The file property was updated in the data model',
                             device=str(template_elm.device_type),
-                            value=file_object_property)
+                            value=property_to_search)
 
-            gc_prop = template_elm.editable_headers.get(current_prop_name, None)
+            gc_prop = template_elm.registered_properties.get(current_prop_name, None)
             return gc_prop
         else:
             # the property does not exists in the registries, this is a bug
             logger.add_error('the property does not exists in the registries',
                              device=str(template_elm.device_type),
-                             value=file_object_property)
+                             value=property_to_search)
             return None
     else:
         return gc_prop
 
 
-def data_frames_to_circuit(data: Dict, logger: Logger = Logger()):
+def look_for_property(elm: dev.EditableDevice, property_name) -> Union[GCProp, None]:
+    """
+
+    :param elm:
+    :param property_name:
+    :return:
+    """
+    device_property_definition: GCProp = elm.registered_properties.get(property_name, None)
+
+    if device_property_definition:
+        # the property of the file exists directly
+        return device_property_definition
+    else:
+        # the property does not exists directly, look in the older properties
+        for name, prop in elm.registered_properties.items():
+            if property_name in prop.old_names:
+                return prop
+
+        return None  # if we reach here, it wasn't found
+
+
+def valid_value(val) -> bool:
+    """
+
+    :param val:
+    :return:
+    """
+    if isinstance(val, str):
+        if val == 'nan':
+            return False
+        if val == '':
+            return False
+    if isinstance(val, float):
+        if math.isnan(val):
+            return False
+        if math.isinf(val):
+            return False
+    return True
+
+
+def parse_object_type_from_dataframe(main_df: pd.DataFrame,
+                                     template_elm: dev.EditableDevice,
+                                     elements_dict_by_type: Dict[DeviceType, Dict[str, dev.EditableDevice]],
+                                     time_profile: pd.DatetimeIndex,
+                                     object_type_key: str,
+                                     data: Dict[str, Union[float, str, pd.DataFrame]],
+                                     logger: Logger) -> Tuple[List[dev.EditableDevice], Dict[str, dev.EditableDevice]]:
+    """
+    Convert a DataFrame to a list of GridCal devices
+    :param main_df: DataFrame to convert
+    :param template_elm: Element to use as template for conversion
+    :param elements_dict_by_type: Dictionary of devices grouped by type used to look for referenced objects
+                                    elements_dict_by_type[DeviceType][idtag] -> device
+    :param time_profile: Master time profile
+    :param object_type_key: Object type naming to find the profile
+    :param data: Complete data collection to find the profiles
+    :param logger: Logger instance
+    :return: devices, devices_dict
+    """
+    # dictionary to be filled with this type of objects
+    devices_dict: Dict[str, dev.EditableDevice] = dict()
+    devices: List[dev.EditableDevice] = list()
+
+    # parse each object of the dataframe
+    for i, row in main_df.iterrows():
+
+        # create device
+        idtag = row.get('idtag', None)
+        elm = type(template_elm)(idtag=idtag)
+
+        # ensure the profiles existence
+        if time_profile is not None:
+            elm.ensure_profiles_exist(index=time_profile)
+
+        # parse each property of the row
+        for property_name_, property_value in row.items():
+
+            property_name = str(property_name_)
+
+            if property_name != 'idtag':  # idtag was set already
+                gc_prop: GCProp = look_for_property(elm=elm, property_name=property_name)
+                if gc_prop is not None:
+
+                    if valid_value(property_value):
+
+                        # the property of the file exists, parse it
+
+                        if isinstance(gc_prop.tpe, DeviceType):
+
+                            if gc_prop.tpe == DeviceType.GeneratorQCurve:
+                                val = dev.GeneratorQCurve()
+                                val.parse(property_value)
+                                elm.set_snapshot_value(gc_prop.name, val)
+
+                                if gc_prop.has_profile():
+                                    elm.get_profile(magnitude=gc_prop.name).fill(val)
+
+                            else:
+                                # we must look for the refference in elements_dict
+                                collection = elements_dict_by_type.get(gc_prop.tpe, None)
+
+                                if collection is not None:
+                                    ref_idtag = str(property_value)
+                                    ref_elm = collection.get(ref_idtag, None)
+
+                                    if ref_elm is not None:
+                                        elm.set_snapshot_value(gc_prop.name, ref_elm)
+
+                                        if gc_prop.has_profile():
+                                            elm.get_profile(magnitude=gc_prop.name).fill(ref_elm)
+
+                                    else:
+                                        logger.add_error("Could not locate refference",
+                                                         device=row.get('idtag', 'not provided'),
+                                                         device_class=template_elm.device_type.value,
+                                                         device_property=gc_prop.name,
+                                                         value=ref_idtag)
+                                else:
+                                    logger.add_error("No device of the refferenced type",
+                                                     device=row.get('idtag', 'not provided'),
+                                                     device_class=template_elm.device_type.value,
+                                                     device_property=gc_prop.name,
+                                                     value=property_value)
+
+                        elif gc_prop.tpe == str:
+                            # set the value directly
+                            elm.set_snapshot_value(gc_prop.name, str(property_value))
+
+                            if gc_prop.has_profile():
+                                elm.get_profile(magnitude=gc_prop.name).fill(str(property_value))
+
+                        elif gc_prop.tpe == float:
+                            # set the value directly
+                            elm.set_snapshot_value(gc_prop.name, float(property_value))
+
+                            if gc_prop.has_profile():
+                                elm.get_profile(magnitude=gc_prop.name).fill(float(property_value))
+
+                        elif gc_prop.tpe == int:
+                            # set the value directly
+                            elm.set_snapshot_value(gc_prop.name, int(property_value))
+
+                            if gc_prop.has_profile():
+                                elm.get_profile(magnitude=gc_prop.name).fill(int(property_value))
+
+                        elif gc_prop.tpe == bool:
+                            # set the value directly
+                            elm.set_snapshot_value(gc_prop.name, bool(property_value))
+
+                            if gc_prop.has_profile():
+                                elm.get_profile(magnitude=gc_prop.name).fill(bool(property_value))
+
+                        elif isinstance(gc_prop.tpe, EnumType):
+
+                            try:
+                                val = gc_prop.tpe(property_value)
+                                elm.set_snapshot_value(gc_prop.name, val)
+
+                                if gc_prop.has_profile():
+                                    elm.get_profile(magnitude=gc_prop.name).fill(val)
+
+                            except ValueError:
+                                logger.add_error(f'Cannot cast value to {gc_prop.tpe}',
+                                                 device=elm.name,
+                                                 value=property_value)
+
+                        else:
+                            raise Exception(f'Unsupported property type: {gc_prop.tpe}')
+
+                    else:
+                        # invalid property value
+                        pass
+
+                    # search the profiles in the data and assign them
+                    if gc_prop.has_profile() and time_profile is not None:
+
+                        # build the profile property file-name to get it from the data
+                        profile_key = object_type_key + '_' + gc_prop.profile_name
+
+                        # get the profile DataFrame
+                        dfp = data.get(profile_key, None)
+
+                        if dfp is not None:
+                            elm.set_profile(gc_prop, arr=dfp.values[:, i].astype(gc_prop.tpe))
+
+                        else:
+                            logger.add_info('No profile for the property', value=gc_prop.name)
+
+                else:
+                    # the property does not exists, neither in the old names
+                    logger.add_error("File property could not be found",
+                                     device=row.get('idtag', 'not provided'),
+                                     device_class=template_elm.device_type.value,
+                                     device_property=property_name)
+
+        # save the element in the dictionary for later
+        devices_dict[elm.idtag] = elm
+        devices.append(elm)
+
+    return devices, devices_dict
+
+
+def parse_object_type_from_json(template_elm: dev.EditableDevice,
+                                data_list: List[Dict[str, Dict[str, str]]],
+                                elements_dict_by_type: Dict[DeviceType, Dict[str, dev.EditableDevice]],
+                                time_profile: pd.DatetimeIndex,
+                                logger: Logger):
+    """
+
+    :param template_elm:
+    :param data_list:
+    :param elements_dict_by_type:
+    :param logger:
+    :return:
+    """
+    # dictionary to be filled with this type of objects
+    devices_dict: Dict[str, dev.EditableDevice] = dict()
+    devices: List[dev.EditableDevice] = list()
+
+    for json_entry in data_list:
+        idtag = json_entry['idtag']
+        elm = type(template_elm)(idtag=idtag)
+
+        # ensure the profiles existence
+        if time_profile is not None:
+            elm.ensure_profiles_exist(index=time_profile)
+
+        for property_name_, property_value in json_entry.items():
+            property_name = str(property_name_)
+
+            if property_name != 'idtag':  # idtag was set already
+                gc_prop: GCProp = look_for_property(elm=elm, property_name=property_name)
+
+                if gc_prop is not None:
+
+                    if valid_value(property_value):
+
+                        if isinstance(gc_prop.tpe, DeviceType):
+
+                            if gc_prop.tpe == DeviceType.GeneratorQCurve:
+                                val = dev.GeneratorQCurve()
+                                val.parse(property_value)
+                                elm.set_snapshot_value(gc_prop.name, val)
+
+                                if gc_prop.has_profile():
+                                    elm.get_profile(magnitude=gc_prop.name).fill(val)
+
+                            else:
+                                # we must look for the refference in elements_dict
+                                collection = elements_dict_by_type.get(gc_prop.tpe, None)
+
+                                if collection is not None:
+                                    ref_idtag = str(property_value)
+                                    ref_elm = collection.get(ref_idtag, None)
+
+                                    if ref_elm is not None:
+                                        elm.set_snapshot_value(gc_prop.name, ref_elm)
+
+                                        if gc_prop.has_profile():
+                                            elm.get_profile(magnitude=gc_prop.name).fill(ref_elm)
+
+                                    else:
+                                        logger.add_error("Could not locate refference",
+                                                         device=elm.idtag,
+                                                         device_class=template_elm.device_type.value,
+                                                         device_property=gc_prop.name,
+                                                         value=ref_idtag)
+                                else:
+                                    logger.add_error("No device of the refferenced type",
+                                                     device=elm.idtag,
+                                                     device_class=template_elm.device_type.value,
+                                                     device_property=gc_prop.name,
+                                                     value=property_value)
+
+                        elif gc_prop.tpe == str:
+                            # set the value directly
+                            elm.set_snapshot_value(gc_prop.name, str(property_value))
+
+                            if gc_prop.has_profile():
+                                elm.get_profile(magnitude=gc_prop.name).fill(str(property_value))
+
+                        elif gc_prop.tpe == float:
+                            # set the value directly
+                            elm.set_snapshot_value(gc_prop.name, float(property_value))
+
+                            if gc_prop.has_profile():
+                                elm.get_profile(magnitude=gc_prop.name).fill(float(property_value))
+
+                        elif gc_prop.tpe == int:
+                            # set the value directly
+                            elm.set_snapshot_value(gc_prop.name, int(property_value))
+
+                            if gc_prop.has_profile():
+                                elm.get_profile(magnitude=gc_prop.name).fill(int(property_value))
+
+                        elif gc_prop.tpe == bool:
+                            # set the value directly
+                            elm.set_snapshot_value(gc_prop.name, bool(property_value))
+
+                            if gc_prop.has_profile():
+                                elm.get_profile(magnitude=gc_prop.name).fill(bool(property_value))
+
+                        elif isinstance(gc_prop.tpe, EnumType):
+
+                            try:
+                                val = gc_prop.tpe(property_value)
+                                elm.set_snapshot_value(gc_prop.name, val)
+
+                                if gc_prop.has_profile():
+                                    elm.get_profile(magnitude=gc_prop.name).fill(val)
+
+                            except ValueError:
+                                logger.add_error(f'Cannot cast value to {gc_prop.tpe}',
+                                                 device=elm.name,
+                                                 value=property_value)
+
+                        else:
+                            raise Exception(f'Unsupported property type: {gc_prop.tpe}')
+
+                    else:
+                        # invalid property value
+                        pass
+                else:
+                    # property not found
+                    pass
+
+            else:
+                # the property is idtag
+                pass
+
+        # save the element in the dictionary for later
+        devices_dict[elm.idtag] = elm
+        devices.append(elm)
+
+    return devices, devices_dict
+
+
+def parse_gridcal_data(data: Dict[str, Union[str, float, Dict, pd.DataFrame, Dict[str, Any]]],
+                       logger: Logger = Logger()) -> MultiCircuit:
     """
     Interpret data dictionary
-    :param data: dictionary of data frames
+    :param data: dictionary of data frames and other information
     :param logger: Logger to register events
     :return: MultiCircuit instance
     """
@@ -296,11 +809,10 @@ def data_frames_to_circuit(data: Dict, logger: Logger = Logger()):
         circuit.time_profile = None
 
     # dictionary of dictionaries by element type
-    # elements_dict[DataType][element_name] = actual object
-    elements_dict = dict()
-    elements_dict_by_name = dict()
+    elements_dict_by_type = dict()
 
     # ------------------------------------------------------------------------------------------------------------------
+    # Legacy DataFrame processing
     # for each element type...
     for object_type_key, template_elm in data_model_object_types.items():
 
@@ -309,324 +821,69 @@ def data_frames_to_circuit(data: Dict, logger: Logger = Logger()):
 
         if df is not None:
 
-            # create the objects ...
-            devices = list()
-            devices_dict = dict()
-            if 'idtag' in df.columns.values:
-                for i in range(df.shape[0]):
-                    elm = type(template_elm)()
-                    idtag = df['idtag'].values[i]
-
-                    # create the buses dictionary, this works because the bus is the first key in "object_types"
-                    devices_dict[idtag] = elm
-
-                    # add the device to the elements
-                    devices.append(elm)
-            else:
-                for i in range(df.shape[0]):
-                    elm = type(template_elm)()
-                    idtag = df['name'].values[i]
-
-                    # create the buses dictionary, this works because the bus is the first key in "object_types"
-                    devices_dict[idtag] = elm
-
-                    # add the device to the elements
-                    devices.append(elm)
-
-            elements_dict[template_elm.device_type] = devices_dict
-
-            # get the old properties dictionary (just in case)
-            old_props_dict = template_elm.get_property_name_replacements_dict()
-
             # fill in the objects
             if df.shape[0] > 0:
 
-                for file_object_property in df.columns.values:
-                    # for each property in the file ...
+                devices, devices_dict = parse_object_type_from_dataframe(main_df=df,
+                                                                         template_elm=template_elm,
+                                                                         elements_dict_by_type=elements_dict_by_type,
+                                                                         time_profile=circuit.time_profile,
+                                                                         object_type_key=object_type_key,
+                                                                         data=data,
+                                                                         logger=logger)
 
-                    # search for the file property in the object registry
-                    gc_prop = serach_property(template_elm=template_elm,
-                                              old_props_dict=old_props_dict,
-                                              file_object_property=file_object_property,
-                                              logger=logger)
+                # set the dictionary per type for later
+                elements_dict_by_type[template_elm.device_type] = devices_dict
 
-                    if gc_prop:
-                        # if the property was found ...
-
-                        # get the type converter
-                        # dtype = gc_prop.tpe
-
-                        # for each object, set the property
-                        for i in range(df.shape[0]):
-
-                            property_value = df[file_object_property].values[i]
-
-                            # convert and assign the data
-                            if gc_prop.tpe is None:
-                                setattr(devices[i], gc_prop.name, property_value)
-
-                            elif gc_prop.tpe in [DeviceType.SubstationDevice,
-                                                 DeviceType.AreaDevice,
-                                                 DeviceType.ZoneDevice,
-                                                 DeviceType.CountryDevice,
-                                                 DeviceType.Technology,
-                                                 DeviceType.ContingencyGroupDevice,
-                                                 DeviceType.InvestmentsGroupDevice,
-                                                 DeviceType.FuelDevice,
-                                                 DeviceType.EmissionGasDevice,
-                                                 DeviceType.GeneratorDevice]:
-
-                                """
-                                This piece is to assign the objects matching the Area, Substation, Zone and Country
-                                The cases may be:
-                                a) there is a matching id tag -> ok, assign it
-                                b) the value is a string -> create the relevant object, 
-                                                            make sure it is not repeated by name
-                                                            inset the object in its matching object dictionary
-                                """
-
-                                # search for the Substation, Area, Zone or Country matching object and assign the object
-                                # this is the stored string (either idtag or name...)
-                                val = str(property_value)
-
-                                if gc_prop.tpe not in elements_dict.keys():
-                                    elements_dict[gc_prop.tpe] = dict()
-
-                                if gc_prop.tpe not in elements_dict_by_name.keys():
-                                    elements_dict_by_name[gc_prop.tpe] = dict()
-
-                                # get the grouping
-                                grouping = elements_dict[gc_prop.tpe].get(val, None)
-
-                                if grouping is None:
-                                    # create the grouping
-
-                                    if val in elements_dict_by_name[gc_prop.tpe].keys():
-                                        grouping = elements_dict_by_name[gc_prop.tpe][val]
-
-                                    else:
-                                        grouping = type(data_model_object_types[gc_prop.tpe.value.lower()])(name=val)
-                                        elements_dict[gc_prop.tpe][grouping.idtag] = grouping
-
-                                        # store also by name
-                                        elements_dict_by_name[gc_prop.tpe][grouping.name] = grouping
-
-                                # set the object
-                                setattr(devices[i], gc_prop.name, grouping)
-
-                            elif gc_prop.tpe == DeviceType.BusDevice:
-
-                                # check if the bus is in the dictionary...
-                                if property_value in elements_dict[DeviceType.BusDevice].keys():
-
-                                    parent_bus: dev.Bus = elements_dict[DeviceType.BusDevice][property_value]
-                                    setattr(devices[i], gc_prop.name, parent_bus)
-
-                                    # add the device to the bus
-                                    if template_elm.device_type in [DeviceType.LoadDevice,
-                                                                    DeviceType.GeneratorDevice,
-                                                                    DeviceType.BatteryDevice,
-                                                                    DeviceType.StaticGeneratorDevice,
-                                                                    DeviceType.ShuntDevice,
-                                                                    DeviceType.ExternalGridDevice]:
-                                        parent_bus.add_device(devices[i])
-
-                                else:
-                                    logger.add_error('Bus not found', str(property_value))
-
-                            elif gc_prop.tpe == DeviceType.FluidNodeDevice:
-
-                                # check if the bus is in the dictionary...
-                                if property_value in elements_dict[DeviceType.FluidNodeDevice].keys():
-
-                                    parent_bus: dev.FluidNode = elements_dict[DeviceType.FluidNodeDevice][property_value]
-                                    setattr(devices[i], gc_prop.name, parent_bus)
-
-                                    # add the device to the bus
-                                    if template_elm.device_type in [DeviceType.FluidTurbineDevice,
-                                                                    DeviceType.FluidPumpDevice,
-                                                                    DeviceType.FluidP2XDevice]:
-                                        parent_bus.add_device(devices[i])
-
-                                else:
-                                    logger.add_error('Fluid node not found', str(property_value))
-
-                            elif gc_prop.tpe == DeviceType.ConnectivityNodeDevice:
-
-                                # check if the bus is in the dictionary...
-                                if property_value in elements_dict[DeviceType.ConnectivityNodeDevice].keys():
-
-                                    if property_value != 'nan' and property_value != '':
-                                        parent_bus: dev.FluidNode = elements_dict[DeviceType.ConnectivityNodeDevice][property_value]
-                                        setattr(devices[i], gc_prop.name, parent_bus)
-
-                                else:
-                                    logger.add_error('Fluid node not found', str(property_value))
-
-                            elif gc_prop.tpe in [DeviceType.TransformerTypeDevice,  # template types mostly
-                                                 DeviceType.SequenceLineDevice,
-                                                 DeviceType.OverheadLineTypeDevice,
-                                                 DeviceType.WindingDevice]:
-
-                                if str(property_value) != 'nan':
-                                    found_reference = elements_dict[gc_prop.tpe].get(property_value, None)
-
-                                    if found_reference:
-
-                                        # set the refference
-                                        setattr(devices[i], gc_prop.name, found_reference)
-
-                                    else:
-                                        logger.add_error(gc_prop.tpe.value + ' type not found', str(property_value))
-
-                            elif gc_prop.tpe == bool:
-                                # regular types (int, str, float, etc...)
-                                if property_value == 'False':
-                                    setattr(devices[i], gc_prop.name, False)
-                                elif property_value == 'True':
-                                    setattr(devices[i], gc_prop.name, True)
-                                else:
-                                    setattr(devices[i], gc_prop.name, bool(property_value))
-
-                            elif gc_prop.tpe == str:
-                                val = gc_prop.tpe(property_value).replace('nan', '')
-                                setattr(devices[i], gc_prop.name, val)
-
-                            elif gc_prop.tpe == DeviceType.GeneratorQCurve:
-                                val = dev.GeneratorQCurve()
-                                val.parse(property_value)
-                                setattr(devices[i], gc_prop.name, val)
-
-                            else:
-                                # regular types (int, str, float, etc...)
-                                try:
-                                    val = gc_prop.tpe(property_value)
-                                    setattr(devices[i], gc_prop.name, val)
-                                except ValueError:
-                                    logger.add_error('Cannot cast value to ' + str(gc_prop.tpe),
-                                                     device=devices[i].name,
-                                                     value=property_value)
-
-                        # search the profiles in the data and assign them
-                        if gc_prop.name in template_elm.properties_with_profile.keys():
-
-                            # get the profile property
-                            prop_prof = template_elm.properties_with_profile[gc_prop.name]
-
-                            # build the profile property file-name to get it from the data
-                            profile_name = object_type_key + '_' + prop_prof
-
-                            if profile_name in data.keys():
-
-                                # get the profile DataFrame
-                                dfp = data[profile_name]
-
-                                # for each object, set the profile
-                                for i in range(dfp.shape[1]):
-                                    profile = dfp.values[:, i]
-                                    setattr(devices[i], prop_prof, profile.astype(gc_prop.tpe))
-
-                            else:
-                                logger.add_info('No profile for the property', value=gc_prop.name)
+                # add the devices to the circuit
+                circuit.set_elements_by_type(device_type=template_elm.device_type,
+                                             devices=devices,
+                                             logger=logger)
 
             else:
                 # no objects of this type
                 pass
-
-            # ensure profiles existence
-            if circuit.time_profile is not None:
-                for i in range(df.shape[0]):
-                    devices[i].ensure_profiles_exist(circuit.time_profile)
-
-            # add the objects to the circuit (buses, Branches ot template types)
-            if template_elm.device_type == DeviceType.BusDevice:
-                circuit.buses = devices
-
-            elif template_elm.device_type == DeviceType.BranchDevice:
-                for d in devices:
-                    circuit.add_branch(d)  # each branch needs to be converted accordingly
-
-            elif template_elm.device_type == DeviceType.LineDevice:
-                for d in devices:
-                    circuit.add_line(d, logger=logger)  # this is done to detect those lines that should be transformers
-
-            elif template_elm.device_type == DeviceType.DCLineDevice:
-                circuit.dc_lines = devices
-
-            elif template_elm.device_type == DeviceType.Transformer2WDevice:
-                circuit.transformers2w = devices
-
-            elif template_elm.device_type == DeviceType.WindingDevice:
-                circuit.windings = devices
-
-            elif template_elm.device_type == DeviceType.Transformer3WDevice:
-                circuit.transformers3w = devices
-
-            elif template_elm.device_type == DeviceType.HVDCLineDevice:
-                circuit.hvdc_lines = devices
-
-            elif template_elm.device_type == DeviceType.UpfcDevice:
-                circuit.upfc_devices = devices
-
-            elif template_elm.device_type == DeviceType.VscDevice:
-                for elm in devices:
-                    elm.correct_buses_connection()
-                circuit.vsc_devices = devices
-
-            elif template_elm.device_type == DeviceType.OverheadLineTypeDevice:
-                circuit.overhead_line_types = devices
-
-            elif template_elm.device_type == DeviceType.TransformerTypeDevice:
-                circuit.transformer_types = devices
-
-            elif template_elm.device_type == DeviceType.UnderGroundLineDevice:
-                circuit.underground_cable_types = devices
-
-            elif template_elm.device_type == DeviceType.SequenceLineDevice:
-                circuit.sequence_line_types = devices
-
-            elif template_elm.device_type == DeviceType.WireDevice:
-                circuit.wire_types = devices
-
-            elif template_elm.device_type == DeviceType.Technology:
-                circuit.technologies = devices
-
-            elif template_elm.device_type == DeviceType.ContingencyGroupDevice:
-                circuit.contingency_groups = devices
-
-            elif template_elm.device_type == DeviceType.ContingencyDevice:
-                circuit.contingencies = devices
-
-            elif template_elm.device_type == DeviceType.InvestmentsGroupDevice:
-                circuit.investments_groups = devices
-
-            elif template_elm.device_type == DeviceType.InvestmentDevice:
-                circuit.investments = devices
-
-            elif template_elm.device_type == DeviceType.FuelDevice:
-                circuit.fuels = devices
-
-            elif template_elm.device_type == DeviceType.EmissionGasDevice:
-                circuit.emission_gases = devices
-
-            elif template_elm.device_type == DeviceType.GeneratorTechnologyAssociation:
-                circuit.generators_technologies = devices
-
-            elif template_elm.device_type == DeviceType.GeneratorFuelAssociation:
-                circuit.generators_fuels = devices
-
-            elif template_elm.device_type == DeviceType.GeneratorEmissionAssociation:
-                circuit.generators_emissions = devices
-
-            elif template_elm.device_type == DeviceType.FluidNodeDevice:
-                circuit.fluid_nodes = devices
-
-            elif template_elm.device_type == DeviceType.FluidPathDevice:
-                circuit.fluid_paths = devices
-
         else:
             # the file does not contain information for the data type (not a problem...)
             pass
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # New way of parsing information from .model files.
+    # These files are just .json stored in the model_data inside the zip file
+    model_data = data.get('model_data', None)
+    if model_data is not None:
+
+        if len(model_data) > 0:
+
+            tdata = model_data.get('time', None)
+            if tdata is not None:
+                circuit.set_unix_time(arr=tdata['unix'])
+            else:
+                logger.add_error(msg=f'The file must have time data regardless of the profiles existance')
+                circuit.time_profile = None
+
+            # for each element type...
+            for object_type_key, template_elm in data_model_object_types.items():
+
+                # query the device type into the data set
+                data_list = model_data.get(object_type_key, None)
+
+                if data_list is not None:
+                    devices, devices_dict = parse_object_type_from_json(template_elm=template_elm,
+                                                                        data_list=data_list,
+                                                                        elements_dict_by_type=elements_dict_by_type,
+                                                                        time_profile=circuit.time_profile,
+                                                                        logger=logger)
+
+                    # set the dictionary per type for later
+                    elements_dict_by_type[template_elm.device_type] = devices_dict
+
+                    # add the devices to the circuit
+                    circuit.set_elements_by_type(device_type=template_elm.device_type,
+                                                 devices=devices,
+                                                 logger=logger)
+                else:
+                    logger.add_warning(msg=f'No data for {object_type_key}')
 
     # fill in wires into towers ----------------------------------------------------------------------------------------
     if 'tower_wires' in data.keys():
@@ -636,10 +893,10 @@ def data_frames_to_circuit(data: Dict, logger: Logger = Logger()):
             tower_name = df['tower_name'].values[i]
             wire_name = df['wire_name'].values[i]
 
-            if (tower_name in elements_dict[DeviceType.OverheadLineTypeDevice].keys()) and \
-                    (wire_name in elements_dict[DeviceType.WireDevice].keys()):
-                tower: dev.OverheadLineType = elements_dict[DeviceType.OverheadLineTypeDevice][tower_name]
-                wire: dev.Wire = elements_dict[DeviceType.WireDevice][wire_name]
+            if ((tower_name in elements_dict_by_type[DeviceType.OverheadLineTypeDevice].keys()) and
+                    (wire_name in elements_dict_by_type[DeviceType.WireDevice].keys())):
+                tower: dev.OverheadLineType = elements_dict_by_type[DeviceType.OverheadLineTypeDevice][tower_name]
+                wire: dev.Wire = elements_dict_by_type[DeviceType.WireDevice][wire_name]
                 xpos = df['xpos'].values[i]
                 ypos = df['ypos'].values[i]
                 phase = df['phase'].values[i]
@@ -657,35 +914,19 @@ def data_frames_to_circuit(data: Dict, logger: Logger = Logger()):
 
                 if diagram_dict['type'] == DiagramType.BusBranch.value:
                     diagram = dev.BusBranchDiagram()
-                    diagram.parse_data(data=diagram_dict, obj_dict=obj_dict)
+                    diagram.parse_data(data=diagram_dict, obj_dict=obj_dict, logger=logger)
                     circuit.add_diagram(diagram)
 
                 elif diagram_dict['type'] == DiagramType.NodeBreaker.value:
                     diagram = dev.NodeBreakerDiagram()
-                    diagram.parse_data(data=diagram_dict, obj_dict=obj_dict)
+                    diagram.parse_data(data=diagram_dict, obj_dict=obj_dict, logger=logger)
                     circuit.add_diagram(diagram)
 
                 elif diagram_dict['type'] == DiagramType.SubstationLineMap.value:
                     diagram = dev.MapDiagram()
-                    diagram.parse_data(data=diagram_dict, obj_dict=obj_dict)
+                    diagram.parse_data(data=diagram_dict, obj_dict=obj_dict, logger=logger)
                     circuit.add_diagram(diagram)
                 else:
                     print('unrecognized diagram', diagram_dict['type'])
-
-    # Other actions ----------------------------------------------------------------------------------------------------
-    # logger += circuit.apply_all_branch_types()
-
-    # Add the groups ---------------------------------------------------------------------------------------------------
-    if DeviceType.SubstationDevice in elements_dict.keys():
-        circuit.substations = list(elements_dict[DeviceType.SubstationDevice].values())
-
-    if DeviceType.AreaDevice in elements_dict.keys():
-        circuit.areas = list(elements_dict[DeviceType.AreaDevice].values())
-
-    if DeviceType.ZoneDevice in elements_dict.keys():
-        circuit.zones = list(elements_dict[DeviceType.ZoneDevice].values())
-
-    if DeviceType.CountryDevice in elements_dict.keys():
-        circuit.countries = list(elements_dict[DeviceType.CountryDevice].values())
 
     return circuit

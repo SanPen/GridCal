@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -14,9 +14,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+import datetime
 from collections import OrderedDict
 from typing import List, Tuple, Dict, Union
-
+import os
 import numpy as np
 # GUI importswa
 from PySide6 import QtGui, QtWidgets
@@ -28,17 +29,18 @@ import GridCalEngine.Simulations as sim
 import GridCalEngine.grid_analysis as grid_analysis
 import GridCal.Gui.GuiFunctions as gf
 import GridCal.Gui.Visualization.visualization as viz
-from GridCal.Gui.GridEditorWidget import BusBranchEditorWidget
-from GridCalEngine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE, get_newton_mip_solvers_list
+from GridCal.Gui.BusBranchEditorWidget import BusBranchEditorWidget
+from GridCalEngine.Core.Compilers.circuit_to_newton_pa import get_newton_mip_solvers_list
 from GridCalEngine.Simulations.driver_types import SimulationTypes
-from GridCal.Gui.GeneralDialogues import LogsDialogue, ElementsDialogue
+from GridCal.Gui.GeneralDialogues import ElementsDialogue
 from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_msg
 from GridCal.Gui.Main.SubClasses.Model.time_events import TimeEventsMain
 from GridCal.Gui.SigmaAnalysis.sigma_analysis_dialogue import SigmaAnalysisGUI
 from GridCalEngine.Utils.MIP.selected_interface import get_available_mip_solvers
+from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCalEngine.enumerations import (DeviceType, AvailableTransferMode, GenerationNtcFormulation, SolverType,
                                         ReactivePowerControlMode, TapsControlMode, MIPSolvers, TimeGrouping,
-                                        ZonalGrouping, ContingencyEngine, InvestmentEvaluationMethod, EngineType,
+                                        ZonalGrouping, ContingencyMethod, InvestmentEvaluationMethod, EngineType,
                                         BranchImpedanceMode)
 
 
@@ -97,11 +99,15 @@ class SimulationsMain(TimeEventsMain):
 
         # opf solvers dictionary
         self.lp_solvers_dict = OrderedDict()
-        self.lp_solvers_dict[SolverType.DC_OPF.value] = SolverType.DC_OPF
-        if NEWTON_PA_AVAILABLE:
-            self.lp_solvers_dict[SolverType.AC_OPF.value] = SolverType.AC_OPF
-        self.lp_solvers_dict[SolverType.Simple_OPF.value] = SolverType.Simple_OPF
+        self.lp_solvers_dict[SolverType.LINEAR_OPF.value] = SolverType.LINEAR_OPF
+        self.lp_solvers_dict[SolverType.NONLINEAR_OPF.value] = SolverType.NONLINEAR_OPF
+        self.lp_solvers_dict[SolverType.SIMPLE_OPF.value] = SolverType.SIMPLE_OPF
         self.ui.lpf_solver_comboBox.setModel(gf.get_list_model(list(self.lp_solvers_dict.keys())))
+
+        # ips solvers dictionary
+        self.ips_solvers_dict = OrderedDict()
+        self.ips_solvers_dict[SolverType.NR.value] = SolverType.NR
+        self.ui.ips_method_comboBox.setModel(gf.get_list_model(list(self.ips_solvers_dict.keys())))
 
         # the MIP combobox models assigning is done in modify_ui_options_according_to_the_engine
         self.mip_solvers_dict = OrderedDict()
@@ -140,9 +146,9 @@ class SimulationsMain(TimeEventsMain):
 
         # reactive power controls
         self.contingency_engines_dict = OrderedDict()
-        self.contingency_engines_dict[ContingencyEngine.PowerFlow.value] = ContingencyEngine.PowerFlow
-        self.contingency_engines_dict[ContingencyEngine.PTDF.value] = ContingencyEngine.PTDF
-        self.contingency_engines_dict[ContingencyEngine.HELM.value] = ContingencyEngine.HELM
+        self.contingency_engines_dict[ContingencyMethod.PowerFlow.value] = ContingencyMethod.PowerFlow
+        self.contingency_engines_dict[ContingencyMethod.PTDF.value] = ContingencyMethod.PTDF
+        self.contingency_engines_dict[ContingencyMethod.HELM.value] = ContingencyMethod.HELM
         self.ui.contingencyEngineComboBox.setModel(gf.get_list_model(list(self.contingency_engines_dict.keys())))
 
         # list of stochastic power flow methods
@@ -156,9 +162,12 @@ class SimulationsMain(TimeEventsMain):
 
         # investment evaluation methods
         self.investment_evaluation_method_dict = OrderedDict()
-        self.investment_evaluation_method_dict[InvestmentEvaluationMethod.Independent.value] = InvestmentEvaluationMethod.Independent
-        self.investment_evaluation_method_dict[InvestmentEvaluationMethod.Hyperopt.value] = InvestmentEvaluationMethod.Hyperopt
-        self.investment_evaluation_method_dict[InvestmentEvaluationMethod.MVRSM.value] = InvestmentEvaluationMethod.MVRSM
+        self.investment_evaluation_method_dict[
+            InvestmentEvaluationMethod.Independent.value] = InvestmentEvaluationMethod.Independent
+        self.investment_evaluation_method_dict[
+            InvestmentEvaluationMethod.Hyperopt.value] = InvestmentEvaluationMethod.Hyperopt
+        self.investment_evaluation_method_dict[
+            InvestmentEvaluationMethod.MVRSM.value] = InvestmentEvaluationMethod.MVRSM
         lst = list(self.investment_evaluation_method_dict.keys())
         self.ui.investment_evaluation_method_ComboBox.setModel(gf.get_list_model(lst))
 
@@ -199,6 +208,7 @@ class SimulationsMain(TimeEventsMain):
         self.ui.actionFuse_devices.triggered.connect(self.fuse_devices)
         self.ui.actionInvestments_evaluation.triggered.connect(self.run_investments_evaluation)
         self.ui.delete_and_reduce_pushButton.clicked.connect(self.delete_and_reduce_selected_objects)
+        self.ui.actionProcess_topology.triggered.connect(self.run_topology_processor)
 
         # combobox change
         self.ui.engineComboBox.currentTextChanged.connect(self.modify_ui_options_according_to_the_engine)
@@ -218,7 +228,7 @@ class SimulationsMain(TimeEventsMain):
         # # set the threads so that the diagram scene objects can plot them
         for diagram in self.diagram_widgets_list:
             if isinstance(diagram, BusBranchEditorWidget):
-                diagram.diagramScene.set_results_to_plot(all_threads)
+                diagram.set_results_to_plot(all_threads)
 
         return all_threads
 
@@ -257,16 +267,12 @@ class SimulationsMain(TimeEventsMain):
 
         if eng == EngineType.NewtonPA:
             self.ui.opfUnitCommitmentCheckBox.setVisible(True)
-            self.ui.maxVoltageModuleStepSpinBox.setVisible(True)
-            self.ui.maxVoltageAngleStepSpinBox.setVisible(True)
-            self.ui.maxVoltageModuleStepLabel.setVisible(True)
-            self.ui.maxVoltageAngleStepLabel.setVisible(True)
 
             # add the AC_OPF option
             self.lp_solvers_dict = OrderedDict()
-            self.lp_solvers_dict[SolverType.DC_OPF.value] = SolverType.DC_OPF
-            self.lp_solvers_dict[SolverType.AC_OPF.value] = SolverType.AC_OPF
-            self.lp_solvers_dict[SolverType.Simple_OPF.value] = SolverType.Simple_OPF
+            self.lp_solvers_dict[SolverType.LINEAR_OPF.value] = SolverType.LINEAR_OPF
+            self.lp_solvers_dict[SolverType.NONLINEAR_OPF.value] = SolverType.NONLINEAR_OPF
+            self.lp_solvers_dict[SolverType.SIMPLE_OPF.value] = SolverType.SIMPLE_OPF
             self.ui.lpf_solver_comboBox.setModel(gf.get_list_model(list(self.lp_solvers_dict.keys())))
 
             # Power Flow Methods
@@ -288,15 +294,12 @@ class SimulationsMain(TimeEventsMain):
 
         elif eng == EngineType.GridCal:
             self.ui.opfUnitCommitmentCheckBox.setVisible(True)
-            self.ui.maxVoltageModuleStepSpinBox.setVisible(False)
-            self.ui.maxVoltageAngleStepSpinBox.setVisible(False)
-            self.ui.maxVoltageModuleStepLabel.setVisible(False)
-            self.ui.maxVoltageAngleStepLabel.setVisible(False)
 
             # no AC opf option
             self.lp_solvers_dict = OrderedDict()
-            self.lp_solvers_dict[SolverType.DC_OPF.value] = SolverType.DC_OPF
-            self.lp_solvers_dict[SolverType.Simple_OPF.value] = SolverType.Simple_OPF
+            self.lp_solvers_dict[SolverType.LINEAR_OPF.value] = SolverType.LINEAR_OPF
+            self.lp_solvers_dict[SolverType.NONLINEAR_OPF.value] = SolverType.NONLINEAR_OPF
+            self.lp_solvers_dict[SolverType.SIMPLE_OPF.value] = SolverType.SIMPLE_OPF
             self.ui.lpf_solver_comboBox.setModel(gf.get_list_model(list(self.lp_solvers_dict.keys())))
 
             # Power Flow Methods
@@ -320,15 +323,11 @@ class SimulationsMain(TimeEventsMain):
 
         elif eng == EngineType.Bentayga:
             self.ui.opfUnitCommitmentCheckBox.setVisible(False)
-            self.ui.maxVoltageModuleStepSpinBox.setVisible(False)
-            self.ui.maxVoltageAngleStepSpinBox.setVisible(False)
-            self.ui.maxVoltageModuleStepLabel.setVisible(False)
-            self.ui.maxVoltageAngleStepLabel.setVisible(False)
 
             # no AC opf option
             self.lp_solvers_dict = OrderedDict()
-            self.lp_solvers_dict[SolverType.DC_OPF.value] = SolverType.DC_OPF
-            self.lp_solvers_dict[SolverType.Simple_OPF.value] = SolverType.Simple_OPF
+            self.lp_solvers_dict[SolverType.LINEAR_OPF.value] = SolverType.LINEAR_OPF
+            self.lp_solvers_dict[SolverType.SIMPLE_OPF.value] = SolverType.SIMPLE_OPF
             self.ui.lpf_solver_comboBox.setModel(gf.get_list_model(list(self.lp_solvers_dict.keys())))
 
             # Power Flow Methods
@@ -348,15 +347,11 @@ class SimulationsMain(TimeEventsMain):
 
         elif eng == EngineType.PGM:
             self.ui.opfUnitCommitmentCheckBox.setVisible(False)
-            self.ui.maxVoltageModuleStepSpinBox.setVisible(False)
-            self.ui.maxVoltageAngleStepSpinBox.setVisible(False)
-            self.ui.maxVoltageModuleStepLabel.setVisible(False)
-            self.ui.maxVoltageAngleStepLabel.setVisible(False)
 
             # no AC opf option
             self.lp_solvers_dict = OrderedDict()
-            self.lp_solvers_dict[SolverType.DC_OPF.value] = SolverType.DC_OPF
-            self.lp_solvers_dict[SolverType.Simple_OPF.value] = SolverType.Simple_OPF
+            self.lp_solvers_dict[SolverType.LINEAR_OPF.value] = SolverType.LINEAR_OPF
+            self.lp_solvers_dict[SolverType.SIMPLE_OPF.value] = SolverType.SIMPLE_OPF
             self.ui.lpf_solver_comboBox.setModel(gf.get_list_model(list(self.lp_solvers_dict.keys())))
 
             # Power Flow Methods
@@ -585,7 +580,7 @@ class SimulationsMain(TimeEventsMain):
                                    q_steepness_factor=q_steepness_factor,
                                    distributed_slack=distributed_slack,
                                    ignore_single_node_islands=ignore_single_node_islands,
-                                   mu=mu,
+                                   trust_radius=mu,
                                    use_stored_guess=use_stored_guess,
                                    override_branch_controls=override_branch_controls,
                                    generate_report=generate_report)
@@ -659,7 +654,7 @@ class SimulationsMain(TimeEventsMain):
         Run a power flow simulation
         :return:
         """
-        if len(self.circuit.buses) > 0:
+        if self.circuit.get_bus_number():
 
             if not self.session.is_this_running(sim.SimulationTypes.PowerFlow_run):
 
@@ -822,6 +817,20 @@ class SimulationsMain(TimeEventsMain):
         if not self.session.is_anything_running():
             self.UNLOCK()
 
+    def get_linear_options(self) -> sim.LinearAnalysisOptions:
+        """
+        Get the LinearAnalysisOptions defined by the GUI
+        :return: LinearAnalysisOptions
+        """
+        options = sim.LinearAnalysisOptions(
+            distribute_slack=self.ui.ptdf_distributed_slack_checkBox.isChecked(),
+            correct_values=self.ui.ptdf_correct_nonsense_values_checkBox.isChecked(),
+            ptdf_threshold=self.ui.ptdf_threshold_doubleSpinBox.value(),
+            lodf_threshold=self.ui.lodf_threshold_doubleSpinBox.value()
+        )
+
+        return options
+
     def run_linear_analysis(self):
         """
         Run a Power Transfer Distribution Factors analysis
@@ -834,15 +843,11 @@ class SimulationsMain(TimeEventsMain):
 
                 self.LOCK()
 
-                options = sim.LinearAnalysisOptions(
-                    distribute_slack=self.ui.ptdf_distributed_slack_checkBox.isChecked(),
-                    correct_values=self.ui.ptdf_correct_nonsense_values_checkBox.isChecked())
-
                 opf_results = self.get_opf_results(use_opf=self.ui.actionOpf_to_Power_flow.isChecked())
 
                 engine = self.get_preferred_engine()
                 drv = sim.LinearAnalysisDriver(grid=self.circuit,
-                                               options=options,
+                                               options=self.get_linear_options(),
                                                engine=engine,
                                                opf_results=opf_results)
 
@@ -891,14 +896,12 @@ class SimulationsMain(TimeEventsMain):
                     self.add_simulation(sim.SimulationTypes.LinearAnalysis_TS_run)
                     self.LOCK()
 
-                    options = sim.LinearAnalysisOptions(distribute_slack=self.ui.distributed_slack_checkBox.isChecked())
-
                     opf_time_series_results = self.get_opf_ts_results(
                         use_opf=self.ui.actionOpf_to_Power_flow.isChecked()
                     )
 
                     drv = sim.LinearAnalysisTimeSeriesDriver(grid=self.circuit,
-                                                             options=options,
+                                                             options=self.get_linear_options(),
                                                              time_indices=self.get_time_indices(),
                                                              clustering_results=self.get_clustering_results(),
                                                              opf_time_series_results=opf_time_series_results)
@@ -944,6 +947,27 @@ class SimulationsMain(TimeEventsMain):
         if not self.session.is_anything_running():
             self.UNLOCK()
 
+    def get_contingency_options(self) -> sim.ContingencyAnalysisOptions:
+        """
+
+        :return:
+        """
+        pf_options = self.get_selected_power_flow_options()
+
+        options = sim.ContingencyAnalysisOptions(
+            use_provided_flows=False,
+            Pf=None,
+            pf_options=pf_options,
+            lin_options=self.get_linear_options(),
+            use_srap=self.ui.use_srap_checkBox.isChecked(),
+            srap_max_loading=self.ui.srap_loading_limit_doubleSpinBox.value(),
+            srap_max_power=self.ui.srap_limit_doubleSpinBox.value(),
+            srap_top_n=self.ui.srap_top_n_SpinBox.value(),
+            engine=self.contingency_engines_dict[self.ui.contingencyEngineComboBox.currentText()]
+        )
+
+        return options
+
     def run_contingency_analysis(self):
         """
         Run a Power Transfer Distribution Factors analysis
@@ -959,20 +983,10 @@ class SimulationsMain(TimeEventsMain):
 
                     self.LOCK()
 
-                    pf_options = self.get_selected_power_flow_options()
-
-                    options = sim.ContingencyAnalysisOptions(
-                        distributed_slack=self.ui.distributed_slack_checkBox.isChecked(),
-                        use_provided_flows=False,
-                        Pf=None,
-                        pf_options=pf_options,
-                        engine=self.contingency_engines_dict[self.ui.contingencyEngineComboBox.currentText()]
-                    )
-
                     linear_multiple_contingencies = sim.LinearMultiContingencies(grid=self.circuit)
 
                     drv = sim.ContingencyAnalysisDriver(grid=self.circuit,
-                                                        options=options,
+                                                        options=self.get_contingency_options(),
                                                         linear_multiple_contingencies=linear_multiple_contingencies,
                                                         engine=self.get_preferred_engine())
 
@@ -1029,18 +1043,8 @@ class SimulationsMain(TimeEventsMain):
 
                         self.LOCK()
 
-                        pf_options = self.get_selected_power_flow_options()
-
-                        options = sim.ContingencyAnalysisOptions(
-                            distributed_slack=self.ui.distributed_slack_checkBox.isChecked(),
-                            use_provided_flows=False,
-                            Pf=None,
-                            pf_options=pf_options,
-                            engine=self.contingency_engines_dict[self.ui.contingencyEngineComboBox.currentText()]
-                        )
-
                         drv = sim.ContingencyAnalysisTimeSeries(grid=self.circuit,
-                                                                options=options,
+                                                                options=self.get_contingency_options(),
                                                                 time_indices=self.get_time_indices(),
                                                                 clustering_results=self.get_clustering_results(),
                                                                 engine=self.get_preferred_engine())
@@ -1391,7 +1395,8 @@ class SimulationsMain(TimeEventsMain):
                     end_idx = self.ui.vs_target_comboBox.currentIndex()
 
                     if len(sel_bus_idx) > 0:
-                        if sum([self.circuit.buses[i].get_device_number() for i in sel_bus_idx]) == 0:
+                        S = self.circuit.get_Sbus()
+                        if S[sel_bus_idx].sum() == 0:
                             warning_msg('You have selected a group of buses with no power injection.\n'
                                         'this will result in an infinite continuation, since the loading variation '
                                         'of buses with zero injection will be infinite.', 'Continuation Power Flow')
@@ -1679,6 +1684,18 @@ class SimulationsMain(TimeEventsMain):
         if not self.session.is_anything_running():
             self.UNLOCK()
 
+    @staticmethod
+    def opf_file_path() -> str:
+        """
+        get the OPF files folder path
+        :return: str
+        """
+        d = os.path.join(get_create_gridcal_folder(), 'mip_files')
+
+        if not os.path.exists(d):
+            os.makedirs(d)
+        return d
+
     def get_opf_options(self) -> Union[None, sim.OptimalPowerFlowOptions]:
         """
         Get the GUI OPF options
@@ -1695,6 +1712,13 @@ class SimulationsMain(TimeEventsMain):
         maximize_flows = self.ui.opfMaximizeExcahngeCheckBox.isChecked()
         unit_commitment = self.ui.opfUnitCommitmentCheckBox.isChecked()
         generate_report = self.ui.addOptimalPowerFlowReportCheckBox.isChecked()
+
+        if self.ui.save_mip_checkBox.isChecked():
+            folder = self.opf_file_path()
+            fname = f'mip_{self.circuit.name}_{datetime.datetime.now()}.lp'
+            export_model_fname = os.path.join(folder, fname)
+        else:
+            export_model_fname = None
 
         # available transfer capacity inter areas
         if maximize_flows:
@@ -1716,6 +1740,13 @@ class SimulationsMain(TimeEventsMain):
             areas_from = None
             areas_to = None
 
+        ips_method = self.ips_solvers_dict[self.ui.ips_method_comboBox.currentText()]
+        ips_tolerance = self.ui.ips_tolerance_spinBox.value()
+        ips_iterations = self.ui.ips_iterations_spinBox.value()
+        ips_trust_radius = self.ui.ips_trust_radius_doubleSpinBox.value()
+        ips_init_with_pf = self.ui.ips_initialize_with_pf_checkBox.isChecked()
+        pf_results = self.session.get_driver_results(SimulationTypes.PowerFlow_run)
+
         options = sim.OptimalPowerFlowOptions(solver=solver,
                                               time_grouping=time_grouping,
                                               zonal_grouping=zonal_grouping,
@@ -1730,10 +1761,14 @@ class SimulationsMain(TimeEventsMain):
                                               areas_from=areas_from,
                                               areas_to=areas_to,
                                               unit_commitment=unit_commitment,
-                                              generate_report=generate_report)
-
-        options.max_vm = self.ui.maxVoltageModuleStepSpinBox.value()
-        options.max_va = self.ui.maxVoltageAngleStepSpinBox.value()
+                                              export_model_fname=export_model_fname,
+                                              generate_report=generate_report,
+                                              ips_method=ips_method,
+                                              ips_tolerance=ips_tolerance,
+                                              ips_iterations=ips_iterations,
+                                              ips_trust_radius=ips_trust_radius,
+                                              ips_init_with_pf=ips_init_with_pf,
+                                              pf_results=pf_results)
 
         return options
 
@@ -1747,24 +1782,20 @@ class SimulationsMain(TimeEventsMain):
 
                 self.remove_simulation(sim.SimulationTypes.OPF_run)
 
-                options = self.get_opf_options()
+                self.ui.progress_label.setText('Running optimal power flow...')
+                QtGui.QGuiApplication.processEvents()
 
-                if options is not None:
-                    self.ui.progress_label.setText('Running optimal power flow...')
-                    QtGui.QGuiApplication.processEvents()
-                    pf_options = self.get_selected_power_flow_options()
+                self.LOCK()
 
-                    self.LOCK()
+                # set power flow object instance
+                drv = sim.OptimalPowerFlowDriver(grid=self.circuit,
+                                                 options=self.get_opf_options(),
+                                                 engine=self.get_preferred_engine())
 
-                    # set power flow object instance
-                    drv = sim.OptimalPowerFlowDriver(grid=self.circuit,
-                                                     options=options,
-                                                     engine=self.get_preferred_engine())
-
-                    self.session.run(drv,
-                                     post_func=self.post_opf,
-                                     prog_func=self.ui.progressBar.setValue,
-                                     text_func=self.ui.progress_label.setText)
+                self.session.run(drv,
+                                 post_func=self.post_opf,
+                                 prog_func=self.ui.progressBar.setValue,
+                                 text_func=self.ui.progress_label.setText)
 
             else:
                 warning_msg('Another OPF is being run...')
@@ -2416,12 +2447,17 @@ class SimulationsMain(TimeEventsMain):
 
                         self.buses_for_storage = list()
                         colors = list()
+
+                        # get all batteries grouped by bus
+                        batt_by_bus = self.circuit.get_batteries_by_bus()
+
                         for i, freq in zip(idx, frequencies):
 
                             bus = self.circuit.buses[i]
+                            batts = batt_by_bus.get(bus, None)
 
                             # add a marker to the bus if there are no batteries in it
-                            if len(bus.batteries) == 0:
+                            if batts is None:
                                 self.buses_for_storage.append(bus)
                                 r, g, b, a = cmap(freq / fmax)
                                 color = QtGui.QColor(r * 255, g * 255, b * 255, a * 255)
@@ -2483,8 +2519,8 @@ class SimulationsMain(TimeEventsMain):
                         self.circuit.investments_groups)
 
                     options = sim.InvestmentsEvaluationOptions(solver=method,
-                                                            max_eval=max_eval,
-                                                            pf_options=self.get_selected_power_flow_options())
+                                                               max_eval=max_eval,
+                                                               pf_options=self.get_selected_power_flow_options())
                     drv = sim.InvestmentsEvaluationDriver(grid=self.circuit,
                                                           options=options)
 
@@ -2699,5 +2735,47 @@ class SimulationsMain(TimeEventsMain):
                              "Fuse devices")
 
         if ok:
-            self.circuit.fuse_devices()
-            self.redraw_current_diagram()
+            deleted_devices = self.circuit.fuse_devices()
+
+            for diagram_widget in self.diagram_widgets_list:
+                diagram_widget.delete_diagram_elements(elements=deleted_devices)
+
+    def run_topology_processor(self):
+        """
+        Run the topology processor on the grid completelly
+        """
+        if self.circuit.get_bus_number():
+
+            if not self.session.is_this_running(sim.SimulationTypes.PowerFlow_run):
+
+                self.LOCK()
+
+                self.add_simulation(sim.SimulationTypes.TopologyProcessor_run)
+
+                self.ui.progress_label.setText('Running topology processing...')
+                QtGui.QGuiApplication.processEvents()
+                # set power flow object instance
+                drv = sim.TopologyProcessorDriver(self.circuit,
+                                                  time_indices=[None] + list(self.circuit.get_all_time_indices()))
+
+                self.session.run(drv,
+                                 post_func=self.post_topology_processor,
+                                 prog_func=self.ui.progressBar.setValue,
+                                 text_func=self.ui.progress_label.setText)
+
+            else:
+                warning_msg('Another simulation of the same type is running...')
+        else:
+            pass
+
+    def post_topology_processor(self):
+        """
+        Actions after the topology processor is done
+        """
+
+        self.remove_simulation(sim.SimulationTypes.TopologyProcessor_run)
+        # self.update_available_results()
+        # self.colour_diagrams()
+
+        if not self.session.is_anything_running():
+            self.UNLOCK()

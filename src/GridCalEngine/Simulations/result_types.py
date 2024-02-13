@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -104,11 +104,9 @@ class ResultTypes(Enum):
     SystemEmissions = 'System emissions', DeviceType.NoDevice
     SystemEnergyCost = 'System energy cost', DeviceType.NoDevice
 
-
     # NTC TS
     OpfNtcTsContingencyReport = 'Contingency flow report', DeviceType.NoDevice
     OpfNtcTsBaseReport = 'Base flow report', DeviceType.NoDevice
-
 
     # Short-circuit
     BusShortCircuitActivePower = 'Short circuit active power', DeviceType.BusDevice
@@ -123,8 +121,13 @@ class ResultTypes(Enum):
     MaxOverloads = 'Maximum contingency flow', DeviceType.BranchDevice
     ContingencyFlows = 'Contingency flow', DeviceType.BranchDevice
     ContingencyLoading = 'Contingency loading', DeviceType.BranchDevice
-    WorstContingencyFlows = 'Worst contingency Sf', DeviceType.BranchDevice
-    WorstContingencyLoading = 'Worst contingency loading', DeviceType.BranchDevice
+    MaxContingencyFlows = 'Max contingency flow', DeviceType.BranchDevice
+    MaxContingencyLoading = 'Max contingency loading', DeviceType.BranchDevice
+
+    ContingencyOverloadSum = 'Contingency overload sum', DeviceType.BranchDevice
+    MeanContingencyOverLoading = 'Mean contingency overloading', DeviceType.BranchDevice
+    StdDevContingencyOverLoading = 'Std-dev contingency overloading', DeviceType.BranchDevice
+
     ContingencyFrequency = 'Contingency frequency', DeviceType.BranchDevice
     ContingencyRelativeFrequency = 'Contingency relative frequency', DeviceType.BranchDevice
 
@@ -134,6 +137,9 @@ class ResultTypes(Enum):
 
     # contingency analysis
     ContingencyAnalysisReport = 'Contingencies report', DeviceType.NoDevice
+
+    # Srap
+    SrapUsedPower = 'Srap used power', DeviceType.NoDevice
 
     # Hydro OPF
     FluidCurrentLevel = 'Reservoir fluid level', DeviceType.FluidNodeDevice
@@ -259,6 +265,7 @@ class ResultTypes(Enum):
     GeneratorResults = 'Generators', DeviceType.GeneratorDevice
     LoadResults = 'Loads', DeviceType.LoadDevice
     BatteryResults = 'Batteries', DeviceType.BatteryDevice
+    StatisticResults = 'Statistics', DeviceType.NoDevice
 
     # fluid
     FluidNodeResults = 'Fluid nodes', DeviceType.FluidNodeDevice

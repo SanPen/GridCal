@@ -31,6 +31,7 @@ Optimal power flow
     opf/opf
     opf/opf_dc_ts
     opf/opf_ac_ts
+    opf/hydro
 
 
 Short Circuit
@@ -48,7 +49,8 @@ PTDF (Power Transmission Distribution Factors)
 .. toctree::
     :maxdepth: 3
 
-    ptdf
+    linear/ptdf
+    linear/srap
 
 
 Investments Evaluation

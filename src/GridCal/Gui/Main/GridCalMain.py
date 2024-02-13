@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -90,7 +90,7 @@ class MainGUI(ScriptingMain):
         :param event:
         :return:
         """
-        if len(self.circuit.buses) > 0:
+        if self.circuit.get_bus_number() > 0:
             quit_msg = "Are you sure that you want to exit GridCal?"
             reply = QtWidgets.QMessageBox.question(self, 'Close', quit_msg,
                                                    QtWidgets.QMessageBox.StandardButton.Yes,

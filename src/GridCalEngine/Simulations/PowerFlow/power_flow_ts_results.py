@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2023 Santiago Peñate Vera
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -28,6 +28,7 @@ from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.basic_structures import DateVec, IntVec, StrVec, CxMat, Mat
 from GridCalEngine.enumerations import StudyResultsType
+from GridCalEngine.Simulations.Clustering.clustering_results import ClusteringResults
 
 
 class PowerFlowTimeSeriesResults(ResultsTemplate):
@@ -42,7 +43,7 @@ class PowerFlowTimeSeriesResults(ResultsTemplate):
                  time_array: np.ndarray,
                  bus_types: np.ndarray,
                  area_names: Union[np.ndarray, None] = None,
-                 clustering_results=None):
+                 clustering_results: Union[ClusteringResults, None] = None):
         """
 
         :param n:
