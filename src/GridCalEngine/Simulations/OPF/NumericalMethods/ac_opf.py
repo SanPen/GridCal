@@ -16,64 +16,85 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
 import pandas as pd
+from scipy import sparse
 from scipy.sparse import csc_matrix as csc
+from dataclasses import dataclass
 from scipy.sparse import lil_matrix
-import GridCalEngine.api as gce
-from GridCalEngine.basic_structures import Vec
-from GridCalEngine.Utils.MIPS.mips import solver
+
+from GridCalEngine.Utils.Sparse.csc import diags
+from GridCalEngine.Utils.NumericalMethods.ips import interior_point_solver, IpsFunctionReturn
+import GridCalEngine.Utils.NumericalMethods.autodiff as ad
+from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at, NumericalCircuit
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
-from typing import Callable, Tuple
+from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
+from typing import Callable, Tuple, Union
+from GridCalEngine.basic_structures import Vec, CxVec
 
 
-def x2var(x, n_vm, n_va, n_P, n_Q):
+def x2var(x: Vec, nVm: int, nVa: int, nPg: int, nQg: int) -> Tuple[Vec, Vec, Vec, Vec]:
+    """
+    Convert the x solution vector to its composing variables
+    :param x: solution vector
+    :param nVm: number of voltage module vars
+    :param nVa: number of voltage angle vars
+    :param nPg: number of generator active power vars
+    :param nQg: number of generator reactive power vars
+    :return: Vm, Va, Pg, Qg
+    """
     a = 0
-    b = n_vm
+    b = nVm
 
-    vm = x[a: b]
+    Vm = x[a: b]
     a = b
-    b += n_va
+    b += nVa
 
-    th = x[a: b]
+    Va = x[a: b]
     a = b
-    b += n_P
+    b += nPg
 
     Pg = x[a: b]
     a = b
-    b += n_Q
+    b += nQg
 
     Qg = x[a: b]
 
-    return vm, th, Pg, Qg
+    return Vm, Va, Pg, Qg
 
 
-def var2x(vm, va, Pg, Qg):
-    return np.r_[vm, va, Pg, Qg]
+def var2x(Vm: Vec, Va: Vec, Pg: Vec, Qg: Vec) -> Vec:
+    """
+    Compose the x vector from its componenets
+    :param Vm: Voltage modules
+    :param Va: Voltage angles
+    :param Pg: Generator active powers
+    :param Qg: Generator reactive powers
+    :return: [Vm, Va, Pg, Qg]
+    """
+    return np.r_[Vm, Va, Pg, Qg]
 
 
-def eval_f(x, Yf, Cg, c0, c1, c2, Sbase, no_slack) -> Vec:
+def eval_f(x: Vec, Cg, c0: Vec, c1: Vec, c2: Vec, Sbase: float) -> Vec:
     """
 
     :param x:
-    :param Yf:
     :param Cg:
+    :param c0:
     :param c1:
     :param c2:
-    :param no_slack:
+    :param Sbase:
     :return:
     """
-    M, N = Yf.shape
-    Ng = Cg.shape[1]  # Check
+    N, Ng = Cg.shape  # Check
 
-    _, _, Pg, Qg = x2var(x, n_vm=N, n_va=N, n_P=Ng, n_Q=Ng)
+    _, _, Pg, Qg = x2var(x, nVm=N, nVa=N, nPg=Ng, nQg=Ng)
 
-    # fval = np.sum((c2 * np.power(Pg * Sbase, 2) + c1 * Pg * Sbase + c0))
-    # fval = np.sum((c2 * np.power(Pg, 2) + c1 * Pg + c0))
     fval = np.sum((c0 + c1 * Pg * Sbase + c2 * np.power(Pg * Sbase, 2))) * 1e-4
 
     return fval
 
 
-def eval_g(x, Ybus, Yf, Cg, Sd, slack, no_slack) -> Vec:
+def eval_g(x, Ybus, Yf, Cg, Sd, slack) -> Vec:
     """
 
     :param x:
@@ -82,14 +103,12 @@ def eval_g(x, Ybus, Yf, Cg, Sd, slack, no_slack) -> Vec:
     :param Cg:
     :param Sd:
     :param slack:
-    :param no_slack:
     :return:
     """
     M, N = Yf.shape
     Ng = Cg.shape[1]  # Check
 
-    va = np.zeros(N)
-    vm, va, Pg, Qg = x2var(x, n_vm=N, n_va=N, n_P=Ng, n_Q=Ng)
+    vm, va, Pg, Qg = x2var(x, nVm=N, nVa=N, nPg=Ng, nQg=Ng)
 
     V = vm * np.exp(1j * va)
     S = V * np.conj(Ybus @ V)
@@ -99,11 +118,11 @@ def eval_g(x, Ybus, Yf, Cg, Sd, slack, no_slack) -> Vec:
 
     gval = np.r_[dS.real, dS.imag, va[slack]]
 
-    return gval
+    return gval, S
 
 
-def eval_h(x, Yf, Yt, from_idx, to_idx, slack, no_slack, th_max, th_min, V_U, V_L, P_U, P_L, Q_U, Q_L, Cg,
-           rates) -> Vec:
+def eval_h(x, Yf, Yt, from_idx, to_idx, no_slack, Va_max, Va_min, Vm_max, Vm_min,
+           Pg_max, Pg_min, Qg_max, Qg_min, Cg, rates) -> Vec:
     """
 
     :param x:
@@ -111,16 +130,15 @@ def eval_h(x, Yf, Yt, from_idx, to_idx, slack, no_slack, th_max, th_min, V_U, V_
     :param Yt:
     :param from_idx:
     :param to_idx:
-    :param slack:
     :param no_slack:
-    :param th_max:
-    :param th_min:
-    :param V_U:
-    :param V_L:
-    :param P_U:
-    :param P_L:
-    :param Q_U:
-    :param Q_L:
+    :param Va_max:
+    :param Va_min:
+    :param Vm_max:
+    :param Vm_min:
+    :param Pg_max:
+    :param Pg_min:
+    :param Qg_max:
+    :param Qg_min:
     :param Cg:
     :param rates:
     :return:
@@ -128,180 +146,326 @@ def eval_h(x, Yf, Yt, from_idx, to_idx, slack, no_slack, th_max, th_min, V_U, V_
     M, N = Yf.shape
     Ng = Cg.shape[1]  # Check
 
-    vm, va, Pg, Qg = x2var(x, n_vm=N, n_va=N, n_P=Ng, n_Q=Ng)
+    vm, va, Pg, Qg = x2var(x, nVm=N, nVa=N, nPg=Ng, nQg=Ng)
 
     V = vm * np.exp(1j * va)
     If = np.conj(Yf @ V)
     Lf = If * If
     Sf = V[from_idx] * If
     St = V[to_idx] * np.conj(Yt @ V)
-
-    hval = np.r_[abs(Sf) - rates,  # rates "lower limit"
-                 abs(St) - rates,  # rates "upper limit"
-                 vm - V_U,  # voltage module upper limit
-                 V_L - vm,  # voltage module lower limit
-                 va[no_slack] - th_max[no_slack],  # voltage angles upper limit
-                 th_min[no_slack] - va[no_slack],  # voltage angles lower limit
-                 Pg - P_U,  # generator P upper limits
-                 P_L - Pg,  # generator P lower limits
-                 Qg - Q_U,  # generator Q upper limits
-                 Q_L - Qg  # generation Q lower limits
+    Sf2 = np.conj(Sf) * Sf
+    St2 = np.conj(St) * St
+    hval = np.r_[Sf2.real - (rates ** 2),  # rates "lower limit"
+                 St2.real - (rates ** 2),  # rates "upper limit"
+                 vm - Vm_max,  # voltage module upper limit
+                 Vm_min - vm,  # voltage module lower limit
+                 va[no_slack] - Va_max[no_slack],  # voltage angles upper limit
+                 Va_min[no_slack] - va[no_slack],  # voltage angles lower limit
+                 Pg - Pg_max,  # generator P upper limits
+                 Pg_min - Pg,  # generator P lower limits
+                 Qg - Qg_max,  # generator Q upper limits
+                 Qg_min - Qg  # generation Q lower limits
     ]
 
-    return hval
+    return hval, Sf, St
 
 
-def calc_jacobian_f_obj(func, x: Vec, arg=(), h=1e-5) -> Vec:
+def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, slack, no_slack, mu, lmbda,
+                           compute_jac: bool, compute_hess: bool,):
     """
-    Compute the Jacobian matrix of `func` at `x` using finite differences.
-    This considers that the output is a single value, such as is the case of the objective function f
-    :param func: Linear map (R^n -> R^m). m is 1 for the objective function, NE (Number of Equalities) for
-    G or NI (Number of inequalities) for H.
-    :param x: Point at which to evaluate the Jacobian (numpy array).
-    :param arg: Tuple of arguments to call func aside from x [func(x, *arg)]
-    :param h: Small step for finite difference.
-    :return: Jacobian as a vector, because the objective function is a single value.
+
+    :param x:
+    :param c1:
+    :param c2:
+    :param Cg:
+    :param Cf:
+    :param Ct:
+    :param Yf:
+    :param Yt:
+    :param Ybus:
+    :param Sbase:
+    :param slack:
+    :param no_slack:
+    :param mu:
+    :param lmbda:
+    :return:
     """
-    nx = len(x)
-    f0 = func(x, *arg)
+    M, N = Yf.shape
+    Ng = Cg.shape[1]  # Check
+    NV = len(x)
 
-    jac = np.zeros(nx)
+    vm, va, Pg, Qg = x2var(x, nVm=N, nVa=N, nPg=Ng, nQg=Ng)
+    V = vm * np.exp(1j * va)
+    Vmat = diags(V)
+    vm_inv = diags(1 / vm)
+    E = Vmat @ vm_inv
+    Ibus = Ybus @ V
+    IbusCJmat = diags(np.conj(Ibus))
 
-    for j in range(nx):
-        x_plus_h = np.copy(x)
-        x_plus_h[j] += h
-        f_plus_h = func(x_plus_h, *arg)
-        jac[j] = (f_plus_h - f0) / h
+    if compute_jac:
+        fx = np.zeros(NV)
 
-    return jac
+        fx[2 * N: 2 * N + Ng] = (2 * c2 * Pg * (Sbase ** 2) + c1 * Sbase) * 1e-4
+
+        #########
+
+        GSvm = Vmat @ (IbusCJmat + np.conj(Ybus) @ np.conj(Vmat)) @ vm_inv
+        GSva = 1j * Vmat @ (IbusCJmat - np.conj(Ybus) @ np.conj(Vmat))
+        GSpg = -Cg
+        GSqg = -1j * Cg
+
+        GTH = lil_matrix((len(slack), len(x)), dtype=float)
+        for i, ss in enumerate(slack):
+            GTH[i, N + ss] = 1.
+
+        GS = sparse.hstack([GSvm, GSva, GSpg, GSqg])
+        Gx = sparse.vstack([GS.real, GS.imag, GTH]).T.tocsc()
+
+        #############
+
+        IfCJmat = np.conj(diags(Yf @ V))
+        ItCJmat = np.conj(diags(Yt @ V))
+        Sfmat = diags(diags(Cf @ V) @ np.conj(Yf @ V))
+        Stmat = diags(diags(Ct @ V) @ np.conj(Yt @ V))
+
+        Sfvm = IfCJmat @ Cf @ E + diags(Cf @ V) @ np.conj(Yf) @ np.conj(E)
+        Stvm = ItCJmat @ Ct @ E + diags(Ct @ V) @ np.conj(Yt) @ np.conj(E)
+
+        Sfva = 1j * (IfCJmat @ Cf @ Vmat - diags(Cf @ V) @ np.conj(Yf) @ np.conj(Vmat))
+        Stva = 1j * (ItCJmat @ Ct @ Vmat - diags(Ct @ V) @ np.conj(Yt) @ np.conj(Vmat))
+
+        SfX = sparse.hstack([Sfvm, Sfva, lil_matrix((M, 2 * Ng))])
+        StX = sparse.hstack([Stvm, Stva, lil_matrix((M, 2 * Ng))])
+
+        HSf = 2 * (Sfmat.real @ SfX.real + Sfmat.imag @ SfX.imag)
+        HSt = 2 * (Stmat.real @ StX.real + Stmat.imag @ StX.imag)
+
+        Hvu = np.zeros(N)
+        Hvl = np.zeros(N)
+        # Hvau = np.zeros(N)
+        # Hval = np.zeros(N)
+        Hpu = np.zeros(Ng)
+        Hpl = np.zeros(Ng)
+        Hqu = np.zeros(Ng)
+        Hql = np.zeros(Ng)
+
+        Hvu[0: N] = 1
+        Hvl[0: N] = -1
+        # Hvau[no_slack] = 1
+        # Hval[no_slack] = -1
+        Hvau_ = csc(([1] * (N - len(slack)), (list(range(N - len(slack))), no_slack)))
+        Hval_ = csc(([-1] * (N - len(slack)), (list(range(N - len(slack))), no_slack)))
+
+        Hpu[0: N] = 1
+        Hpl[0: Ng] = -1
+        Hqu[0: Ng] = 1
+        Hql[0: Ng] = -1
+
+        Hvu = sparse.hstack([diags(Hvu), lil_matrix((N, N + 2 * Ng))])
+        Hvl = sparse.hstack([diags(Hvl), lil_matrix((N, N + 2 * Ng))])
+        Hvau = sparse.hstack([lil_matrix((N - len(slack), N)), Hvau_, lil_matrix((N - len(slack), 2 * Ng))])
+        Hval = sparse.hstack([lil_matrix((N - len(slack), N)), Hval_, lil_matrix((N - len(slack), 2 * Ng))])
+        Hpu = sparse.hstack([lil_matrix((Ng, 2 * N)), diags(Hpu), lil_matrix((Ng, Ng))])
+        Hpl = sparse.hstack([lil_matrix((Ng, 2 * N)), diags(Hpl), lil_matrix((Ng, Ng))])
+        Hqu = sparse.hstack([lil_matrix((Ng, 2 * N + Ng)), diags(Hqu)])
+        Hql = sparse.hstack([lil_matrix((Ng, 2 * N + Ng)), diags(Hql)])
+
+        Hx = sparse.vstack([HSf, HSt, Hvu, Hvl, Hvau, Hval, Hpu, Hpl, Hqu, Hql]).T.tocsc()
+    else:
+        fx = None
+        Gx = None
+        Hx = None
+
+    ##########
+
+    if compute_hess:
+
+        assert compute_jac  # we must have the jacobian values to get into here
+
+        fxx = diags((np.r_[np.zeros(2 * N), 2 * c2 * (Sbase ** 2), np.zeros(Ng)]) * 1e-4).tocsc()
+
+        ##########
+
+        '''
+        lmbda_mat = diags(lmbda[0 : 2 * N])
+        Ad = lmbda[0 : 2 * N] * np.r_[V.real, V.imag]
+        A = diags(Ad[0 : N] + 1j * Ad[N : 2 * N])
+        B = Ybus @ Vmat
+        C = A @ np.conj(B)
+        D = np.conj(Ybus).T @ Vmat
+        F = 1j * (diags(lmbda[0 : N]) @ GSva.real + 1j * diags(lmbda[N : 2 * N]) @ GSva.imag)
+        DLmat = D.real @ diags(lmbda[0 : N]) + 1j * D.imag @ diags(lmbda[N : 2 * N])
+        DL = D.real @ lmbda[0 : N] + 1j * D.imag @ lmbda[N : 2 * N]
+        I = np.conj(Vmat) @ (DLmat - diags(DL))
+    
+        GSvava_d = I + F
+        GSvmva_d = 1j * vm_inv @ (I - F)
+        GSvavm_d = GSvmva_d.T
+        GSvmvm_d = vm_inv @ (C + C.T) @ vm_inv
+    
+        GSvava = GSvava_d.real + GSvava_d.imag
+        GSvmva = GSvmva_d.real + GSvmva_d.imag
+        GSvavm = GSvavm_d.real + GSvavm_d.imag
+        GSvmvm = GSvmvm_d.real + GSvmvm_d.imag
+    
+        G1 = sparse.hstack([GSvmvm, GSvmva, lil_matrix((N, 2 * Ng))])
+        G2 = sparse.hstack([GSvavm, GSvava, lil_matrix((N, 2 * Ng))])
+        Gxx = sparse.vstack([G1, G2, lil_matrix((2 * Ng, NV))])
+    
+        #########
+        mu_mat = diags(mu[0 : M]) # Check if we have to grab just the from branches
+        Af = np.conj(Yf).T @ mu_mat @ Cf
+        Bf = np.conj(Vmat) @ Af @ Vmat
+        Df = diags(Af @ V) @ np.conj(Vmat)
+        Ef = diags(Af.T @ np.conj(V)) @ Vmat
+        Ff = Bf + Bf.T
+        Sfvava = Ff - Df - Ef
+        Sfvmva = 1j * vm_inv @ (Bf - Bf.T - Df + Ef)
+        Sfvavm = Sfvmva.T
+        Sfvmvm = vm_inv @ Ff @ vm_inv
+    
+        Hfvava = 2 * (Sfvava @ (np.conj(Sfmat) @ mu[0 : M]) + Sfva.T @ mu_mat @ np.conj(Sfva)).real
+        Hfvmva = 2 * (Sfvmva @ (np.conj(Sfmat) @ mu[0 : M]) + Sfvm.T @ mu_mat @ np.conj(Sfva)).real
+        Hfvavm = 2 * (Sfvavm @ (np.conj(Sfmat) @ mu[0 : M]) + Sfva.T @ mu_mat @ np.conj(Sfvm)).real
+        Hfvmvm = 2 * (Sfvmvm @ (np.conj(Sfmat) @ mu[0 : M]) + Sfvm.T @ mu_mat @ np.conj(Sfvm)).real
+    
+        mu_mat = diags(mu[M: 2 * M])  # Check same
+        At = np.conj(Yt).T @ mu_mat @ Ct
+        Bt = np.conj(Vmat) @ At @ Vmat
+        Dt = diags(At @ V) @ np.conj(Vmat)
+        Et = diags(At.T @ np.conj(V)) @ Vmat
+        Ft = Bt + Bt.T
+        Stvava = Ft - Dt - Et
+        Stvmva = 1j * vm_inv @ (Bt - Bt.T - Dt + Et)
+        Stvavm = Stvmva.T
+        Stvmvm = vm_inv @ Ft @ vm_inv
+    
+        Htvava = 2 * (Stvava @ (np.conj(Stmat) @ mu[M : 2 * M]) + Stva.T @ mu_mat @ np.conj(Stva)).real
+        Htvmva = 2 * (Stvmva @ (np.conj(Stmat) @ mu[M : 2 * M]) + Stvm.T @ mu_mat @ np.conj(Stva)).real
+        Htvavm = 2 * (Stvavm @ (np.conj(Stmat) @ mu[M : 2 * M]) + Stva.T @ mu_mat @ np.conj(Stvm)).real
+        Htvmvm = 2 * (Stvmvm @ (np.conj(Stmat) @ mu[M : 2 * M]) + Stvm.T @ mu_mat @ np.conj(Stvm)).real
+    
+        H1 = sparse.hstack([Hfvmvm + Htvmvm, Hfvmva + Htvmva, lil_matrix((N, 2 * Ng))])
+        H2 = sparse.hstack([Hfvavm + Htvavm, Hfvava + Htvava, lil_matrix((N, 2 * Ng))])
+        Hxx = sparse.vstack([H1, H2, lil_matrix((2 * Ng, NV))])
+        '''
+
+        # # Carlos G
+        # lmbda_mat = diags(lmbda[0: 2 * N])
+        # Ad = lmbda[0: 2 * N] * np.r_[V.real, V.imag]
+        # A = diags(Ad[0: N] + 1j * Ad[N: 2 * N])
+        # B = Ybus @ Vmat
+        # C = A @ np.conj(B)
+        # D = np.conj(Ybus).T @ Vmat
+        # F = 1j * (diags(lmbda[0: N]) @ GSva.real + 1j * diags(lmbda[N: 2 * N]) @ GSva.imag)
+        # DLmat = D.real @ diags(lmbda[0: N]) + 1j * D.imag @ diags(lmbda[N: 2 * N])
+        # DL = D.real @ lmbda[0: N] + 1j * D.imag @ lmbda[N: 2 * N]
+        # I = np.conj(Vmat) @ (DLmat - diags(DL))
+        #
+        # GSvava_d = I + F
+        # GSvmva_d = 1j * vm_inv @ (I - F)
+        # GSvavm_d = GSvmva_d.T
+        # GSvmvm_d = vm_inv @ (C + C.T) @ vm_inv
+        #
+        # GSvava = GSvava_d.real + GSvava_d.imag
+        # GSvmva = GSvmva_d.real + GSvmva_d.imag
+        # GSvavm = GSvavm_d.real + GSvavm_d.imag
+        # GSvmvm = GSvmvm_d.real + GSvmvm_d.imag
+        #
+        # G1 = sparse.hstack([GSvmvm, GSvmva, lil_matrix((N, 2 * Ng))])
+        # G2 = sparse.hstack([GSvavm, GSvava, lil_matrix((N, 2 * Ng))])
+        # Gxx = sparse.vstack([G1, G2, lil_matrix((2 * Ng, NV))])
+
+        # Josep G
+
+        # P
+        lam_p = lmbda[0:N]
+        lam_diag_p = diags(lam_p)
+
+        B_p = np.conj(Ybus) @ np.conj(Vmat)
+        D_p = np.conj(Ybus).T @ Vmat
+        Ibus_p = Ybus @ V
+        I_p = np.conj(Vmat) @ (D_p @ lam_diag_p - diags(D_p @ lam_p))
+        F_p = lam_diag_p @ Vmat @ (B_p - diags(np.conj(Ibus_p)))
+        C_p = lam_diag_p @ Vmat @ B_p
+
+        Gaa_p = I_p + F_p
+        Gva_p = 1j * vm_inv @ (I_p - F_p)
+        Gav_p = Gva_p.T
+        Gvv_p = vm_inv @ (C_p + C_p.T) @ vm_inv
+
+        # Q
+        lam_q = lmbda[N:2 * N]
+        lam_diag_q = diags(lam_q)
+
+        B_q = np.conj(Ybus) @ np.conj(Vmat)
+        D_q = np.conj(Ybus).T @ Vmat
+        Ibus_q = Ybus @ V
+        I_q = np.conj(Vmat) @ (D_q @ lam_diag_q - diags(D_q @ lam_q))
+        F_q = lam_diag_q @ Vmat @ (B_q - diags(np.conj(Ibus_q)))
+        C_q = lam_diag_q @ Vmat @ B_q
+
+        Gaa_q = I_q + F_q
+        Gva_q = 1j * vm_inv @ (I_q - F_q)
+        Gav_q = Gva_q.T
+        Gvv_q = vm_inv @ (C_q + C_q.T) @ vm_inv
+
+        # Add all
+        G1 = sparse.hstack([Gvv_p.real + Gvv_q.imag, Gva_p.real + Gva_q.imag, lil_matrix((N, 2 * Ng))])
+        G2 = sparse.hstack([Gav_p.real + Gav_q.imag, Gaa_p.real + Gaa_q.imag, lil_matrix((N, 2 * Ng))])
+        Gxx = sparse.vstack([G1, G2, lil_matrix((2 * Ng, NV))]).tocsc()
+
+        #########
+
+        mu_mat = diags(np.conj(Sfmat) @ mu[0: M])  # Check if we have to grab just the from branches
+        Af = np.conj(Yf).T @ mu_mat @ Cf
+        Bf = np.conj(Vmat) @ Af @ Vmat
+        Df = diags(Af @ V) @ np.conj(Vmat)
+        Ef = diags(Af.T @ np.conj(V)) @ Vmat
+        Ff = Bf + Bf.T
+        Sfvava = Ff - Df - Ef
+        Sfvmva = 1j * vm_inv @ (Bf - Bf.T - Df + Ef)
+        Sfvavm = Sfvmva.T
+        Sfvmvm = vm_inv @ Ff @ vm_inv
+
+        mu_mat = diags(mu[0:M])
+        Hfvava = 2 * (Sfvava + Sfva.T @ mu_mat @ np.conj(Sfva)).real
+        Hfvmva = 2 * (Sfvmva + Sfvm.T @ mu_mat @ np.conj(Sfva)).real
+        Hfvavm = 2 * (Sfvavm + Sfva.T @ mu_mat @ np.conj(Sfvm)).real
+        Hfvmvm = 2 * (Sfvmvm + Sfvm.T @ mu_mat @ np.conj(Sfvm)).real
+
+        mu_mat = diags(np.conj(Stmat) @ mu[M: 2 * M])  # Check same
+        At = np.conj(Yt).T @ mu_mat @ Ct
+        Bt = np.conj(Vmat) @ At @ Vmat
+        Dt = diags(At @ V) @ np.conj(Vmat)
+        Et = diags(At.T @ np.conj(V)) @ Vmat
+        Ft = Bt + Bt.T
+        Stvava = Ft - Dt - Et
+        Stvmva = 1j * vm_inv @ (Bt - Bt.T - Dt + Et)
+        Stvavm = Stvmva.T
+        Stvmvm = vm_inv @ Ft @ vm_inv
+
+        mu_mat = diags(mu[M:2 * M])
+        Htvava = 2 * (Stvava + Stva.T @ mu_mat @ np.conj(Stva)).real
+        Htvmva = 2 * (Stvmva + Stvm.T @ mu_mat @ np.conj(Stva)).real
+        Htvavm = 2 * (Stvavm + Stva.T @ mu_mat @ np.conj(Stvm)).real
+        Htvmvm = 2 * (Stvmvm + Stvm.T @ mu_mat @ np.conj(Stvm)).real
+
+        H1 = sparse.hstack([Hfvmvm + Htvmvm, Hfvmva + Htvmva, lil_matrix((N, 2 * Ng))])
+        H2 = sparse.hstack([Hfvavm + Htvavm, Hfvava + Htvava, lil_matrix((N, 2 * Ng))])
+        Hxx = sparse.vstack([H1, H2, lil_matrix((2 * Ng, NV))]).tocsc()
+    else:
+        fxx = None
+        Gxx = None
+        Hxx = None
+
+    return fx, Gx, Hx, fxx, Gxx, Hxx
 
 
-def calc_jacobian(func, x: Vec, arg=(), h=1e-5) -> csc:
-    """
-    Compute the Jacobian matrix of `func` at `x` using finite differences.
-
-    :param func: Linear map (R^n -> R^m). m is 1 for the objective function, NE (Number of Equalities) for
-    G or NI (Number of inequalities) for H.
-    :param x: Point at which to evaluate the Jacobian (numpy array).
-    :param arg: Tuple of arguments to call func aside from x [func(x, *arg)]
-    :param h: Small step for finite difference.
-    :return: Jacobian matrix as a CSC matrix.
-    """
-    nx = len(x)
-    f0 = func(x, *arg)
-    n_rows = len(f0)
-
-    jac = lil_matrix((n_rows, nx))
-
-    for j in range(nx):
-        x_plus_h = np.copy(x)
-        x_plus_h[j] += h
-        f_plus_h = func(x_plus_h, *arg)
-        row = (f_plus_h - f0) / h
-        for i in range(n_rows):
-            if row[i] != 0.0:
-                jac[i, j] = row[i]
-
-    return jac.tocsc()
-
-
-def calc_hessian_f_obj(func, x: Vec, arg=(), h=1e-5) -> csc:
-    """
-    Compute the Hessian matrix of `func` at `x` using finite differences.
-    This considers that the output is a single value, such as is the case of the objective function f
-
-    :param func: Linear map (R^n -> R^m). m is 1 for the objective function, NE (Number of Equalities) for
-    G or NI (Number of inequalities) for H.
-    :param x: Point at which to evaluate the Hessian (numpy array).
-    :param arg: Tuple of arguments to call func aside from x [func(x, *arg)]
-    :param h: Small step for finite difference.
-    :return: Hessian matrix as a CSC matrix.
-    """
-    n = len(x)
-    hessian = lil_matrix((n, n))
-    for i in range(n):
-        for j in range(n):
-            x_ijp = np.copy(x)
-            x_ijp[i] += h
-            x_ijp[j] += h
-            f_ijp = func(x_ijp, *arg)
-
-            x_ijm = np.copy(x)
-            x_ijm[i] += h
-            x_ijm[j] -= h
-            f_ijm = func(x_ijm, *arg)
-
-            x_jim = np.copy(x)
-            x_jim[i] -= h
-            x_jim[j] += h
-            f_jim = func(x_jim, *arg)
-
-            x_jjm = np.copy(x)
-            x_jjm[i] -= h
-            x_jjm[j] -= h
-            f_jjm = func(x_jjm, *arg)
-
-            a = (f_ijp - f_ijm - f_jim + f_jjm) / (4 * np.power(h, 2))
-
-            if a != 0.0:
-                hessian[i, j] = a
-
-    return hessian.tocsc()
-
-
-def calc_hessian(func, x: Vec, mult: Vec, arg=(), h=1e-5) -> csc:
-    """
-    Compute the Hessian matrix of `func` at `x` using finite differences.
-
-    :param func: Linear map (R^n -> R^m). m is 1 for the objective function, NE (Number of Equalities) for
-    G or NI (Number of inequalities) for H.
-    :param x: Point at which to evaluate the Hessian (numpy array).
-    :param mult: Array of multipliers associated with the functions. The objective function passes value 1 (no action)
-    :param arg: Tuple of arguments to call func aside from x [func(x, *arg)]
-    :param h: Small step for finite difference.
-    :return: Hessian matrix as a CSC matrix.
-    """
-    n = len(x)
-    const = len(func(x, *arg))  # For objective function, it will be passed as 1. The MULT will be 1 aswell.
-    hessians = lil_matrix((n, n))
-
-    for eq in range(const):
-        hessian = lil_matrix((n, n))
-        for i in range(n):
-            for j in range(n):
-                x_ijp = np.copy(x)
-                x_ijp[i] += h
-                x_ijp[j] += h
-                f_ijp = func(x_ijp, *arg)[eq]
-
-                x_ijm = np.copy(x)
-                x_ijm[i] += h
-                x_ijm[j] -= h
-                f_ijm = func(x_ijm, *arg)[eq]
-
-                x_jim = np.copy(x)
-                x_jim[i] -= h
-                x_jim[j] += h
-                f_jim = func(x_jim, *arg)[eq]
-
-                x_jjm = np.copy(x)
-                x_jjm[i] -= h
-                x_jjm[j] -= h
-                f_jjm = func(x_jjm, *arg)[eq]
-
-                a = mult[eq] * (f_ijp - f_ijm - f_jim + f_jjm) / (4 * np.power(h, 2))
-
-                if a != 0.0:
-                    hessian[i, j] = a
-
-        hessians += hessian
-
-    return hessians.tocsc()
-
-
-def evaluate_power_flow(x, mu, lmbda, Ybus, Yf, Cg, Sd, slack, no_slack, Yt, from_idx, to_idx,
-                        th_max, th_min, V_U, V_L, P_U, P_L, Q_U, Q_L, c0, c1, c2, Sbase, rates, h=1e-5) -> (
-        Tuple)[Vec, Vec, Vec, Vec, csc, csc, csc, csc, csc]:
+def compute_autodiff_structures(x, mu, lam, compute_jac: bool, compute_hess: bool,
+                                Ybus, Yf, Cg, Sd, slack, no_slack, Yt, from_idx, to_idx,
+                                Va_max, Va_min, Vm_max, Vm_min, Pg_max, Pg_min, Qg_max, Qg_min,
+                                c0, c1, c2, Sbase, rates, h=1e-5) -> IpsFunctionReturn:
     """
 
     :param x:
@@ -316,6 +480,81 @@ def evaluate_power_flow(x, mu, lmbda, Ybus, Yf, Cg, Sd, slack, no_slack, Yt, fro
     :param Yt:
     :param from_idx:
     :param to_idx:
+    :param Va_max:
+    :param Va_min:
+    :param Vm_max:
+    :param Vm_min:
+    :param Pg_max:
+    :param Pg_min:
+    :param Qg_max:
+    :param Qg_min:
+    :param c0:
+    :param c1:
+    :param c2:
+    :param Sbase:
+    :param rates:
+    :param h:
+    :return:
+    """
+    f = eval_f(x=x, Cg=Cg, c0=c0, c1=c1, c2=c2, Sbase=Sbase)
+    G, Scalc = eval_g(x=x, Ybus=Ybus, Yf=Yf, Cg=Cg, Sd=Sd, slack=slack)
+    H, Sf, St = eval_h(x=x, Yf=Yf, Yt=Yt, from_idx=from_idx, to_idx=to_idx, no_slack=no_slack, Va_max=Va_max,
+                       Va_min=Va_min, Vm_max=Vm_max, Vm_min=Vm_min, Pg_max=Pg_max, Pg_min=Pg_min,
+                       Qg_max=Qg_max, Qg_min=Qg_min, Cg=Cg,
+                       rates=rates)
+
+    if compute_jac:
+        fx = ad.calc_autodiff_jacobian_f_obj(func=eval_f, x=x, arg=(Cg, c0, c1, c2, Sbase), h=h).tocsc()
+        Gx = ad.calc_autodiff_jacobian(func=eval_g, x=x, arg=(Ybus, Yf, Cg, Sd, slack)).T.tocsc()
+        Hx = ad.calc_autodiff_jacobian(func=eval_h, x=x, arg=(Yf, Yt, from_idx, to_idx, no_slack, Va_max, Va_min,
+                                                              Vm_max, Vm_min, Pg_max, Pg_min, Qg_max, Qg_min, Cg, rates)).T.tocsc()
+    else:
+        fx = None
+        Gx = None
+        Hx = None
+
+    if compute_hess:
+        fxx = ad.calc_autodiff_hessian_f_obj(func=eval_f, x=x, arg=(Cg, c0, c1, c2, Sbase), h=h).tocsc()
+        Gxx = ad.calc_autodiff_hessian(func=eval_g, x=x, mult=lam, arg=(Ybus, Yf, Cg, Sd, slack)).tocsc()
+        Hxx = ad.calc_autodiff_hessian(func=eval_h, x=x, mult=mu, arg=(Yf, Yt, from_idx, to_idx, no_slack, Va_max,
+                                                                       Va_min, Vm_max, Vm_min, Pg_max, Pg_min,
+                                                                       Qg_max, Qg_min, Cg, rates)).tocsc()
+    else:
+        fxx = None
+        Gxx = None
+        Hxx = None
+
+    # approximate the Hessian using the Gauss-Newton matrix
+    # Gxx = Gx @ Gx.T
+    # Hxx = Hx @ Hx.T
+
+    return IpsFunctionReturn(f=f, G=G, H=H,
+                             fx=fx, Gx=Gx, Hx=Hx,
+                             fxx=fxx, Gxx=Gxx, Hxx=Hxx,
+                             S=Scalc, St=St, Sf=Sf)
+
+
+def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: bool,
+                                Ybus, Yf, Cg, Cf, Ct, Sd, slack, no_slack, Yt, from_idx, to_idx,
+                                th_max, th_min, V_U, V_L, P_U, P_L, Q_U, Q_L,
+                                c0, c1, c2, Sbase, rates) -> IpsFunctionReturn:
+    """
+
+    :param x:
+    :param mu:
+    :param lmbda:
+    :param compute_jac
+    :param Ybus:
+    :param Yf:
+    :param Cg:
+    :param Cf:
+    :param Ct:
+    :param Sd:
+    :param slack:
+    :param no_slack:
+    :param Yt:
+    :param from_idx:
+    :param to_idx:
     :param th_max:
     :param th_min:
     :param V_U:
@@ -324,36 +563,130 @@ def evaluate_power_flow(x, mu, lmbda, Ybus, Yf, Cg, Sd, slack, no_slack, Yt, fro
     :param P_L:
     :param Q_U:
     :param Q_L:
+    :param c0:
     :param c1:
     :param c2:
+    :param Sbase:
     :param rates:
     :param h:
     :return:
     """
-    f = eval_f(x=x, Yf=Yf, Cg=Cg, c0=c0, c1=c1, c2=c2, Sbase=Sbase, no_slack=no_slack)
-    G = eval_g(x=x, Ybus=Ybus, Yf=Yf, Cg=Cg, Sd=Sd, slack=slack, no_slack=no_slack)
-    H = eval_h(x=x, Yf=Yf, Yt=Yt, from_idx=from_idx, to_idx=to_idx, slack=slack, no_slack=no_slack, th_max=th_max,
-               th_min=th_min, V_U=V_U, V_L=V_L, P_U=P_U, P_L=P_L, Q_U=Q_U, Q_L=Q_L, Cg=Cg, rates=rates)
+    f = eval_f(x=x, Cg=Cg, c0=c0, c1=c1, c2=c2, Sbase=Sbase)
+    G, Scalc = eval_g(x=x, Ybus=Ybus, Yf=Yf, Cg=Cg, Sd=Sd, slack=slack)
+    H, Sf, St = eval_h(x=x, Yf=Yf, Yt=Yt, from_idx=from_idx, to_idx=to_idx, no_slack=no_slack, Va_max=th_max,
+                       Va_min=th_min, Vm_max=V_U, Vm_min=V_L, Pg_max=P_U, Pg_min=P_L, Qg_max=Q_U, Qg_min=Q_L, Cg=Cg,
+                       rates=rates)
 
-    fx = calc_jacobian_f_obj(func=eval_f, x=x, arg=(Yf, Cg, c0, c1, c2, Sbase, no_slack), h=h)
-    Gx = calc_jacobian(func=eval_g, x=x, arg=(Ybus, Yf, Cg, Sd, slack, no_slack)).T
-    Hx = calc_jacobian(func=eval_h, x=x, arg=(Yf, Yt, from_idx, to_idx, slack, no_slack, th_max, th_min,
-                                              V_U, V_L, P_U, P_L, Q_U, Q_L, Cg, rates)).T
-
-    fxx = calc_hessian_f_obj(func=eval_f, x=x, arg=(Yf, Cg, c0, c1, c2, Sbase, no_slack), h=h)
-    Gxx = calc_hessian(func=eval_g, x=x, mult=lmbda, arg=(Ybus, Yf, Cg, Sd, slack, no_slack))
-    Hxx = calc_hessian(func=eval_h, x=x, mult=mu, arg=(Yf, Yt, from_idx, to_idx, slack, no_slack, th_max,
-                                                       th_min, V_U, V_L, P_U, P_L, Q_U, Q_L, Cg, rates))
-
-    return f, G, H, fx, Gx, Hx, fxx, Gxx, Hxx
+    fx, Gx, Hx, fxx, Gxx, Hxx = jacobians_and_hessians(x=x, c1=c1, c2=c2, Cg=Cg, Cf=Cf, Ct=Ct, Yf=Yf, Yt=Yt,
+                                                       Ybus=Ybus, Sbase=Sbase, slack=slack, no_slack=no_slack,
+                                                       mu=mu, lmbda=lmbda, compute_jac=compute_jac, compute_hess=compute_hess)
 
 
-def ac_optimal_power_flow(nc: gce.NumericalCircuit, pf_options: gce.PowerFlowOptions, verbose = 2):
+    return IpsFunctionReturn(f=f, G=G, H=H,
+                             fx=fx, Gx=Gx, Hx=Hx,
+                             fxx=fxx, Gxx=Gxx, Hxx=Hxx,
+                             S=Scalc, St=St, Sf=Sf)
+
+
+def evaluate_power_flow_debug(x, mu, lmbda, compute_jac: bool, compute_hess: bool,
+                              Ybus, Yf, Cg, Cf, Ct, Sd, slack, no_slack, Yt, from_idx, to_idx,
+                              th_max, th_min, V_U, V_L, P_U, P_L, Q_U, Q_L,
+                              c0, c1, c2, Sbase, rates, h=1e-5) -> IpsFunctionReturn:
     """
 
-    :param nc:
-    :param pf_options:
+    :param x:
+    :param mu:
+    :param lmbda:
+    :param Ybus:
+    :param Yf:
+    :param Cg:
+    :param Cf:
+    :param Ct:
+    :param Sd:
+    :param slack:
+    :param no_slack:
+    :param Yt:
+    :param from_idx:
+    :param to_idx:
+    :param th_max:
+    :param th_min:
+    :param V_U:
+    :param V_L:
+    :param P_U:
+    :param P_L:
+    :param Q_U:
+    :param Q_L:
+    :param c0:
+    :param c1:
+    :param c2:
+    :param Sbase:
+    :param rates:
+    :param h:
     :return:
+    """
+
+    mats_analytic = compute_analytic_structures(x, mu, lmbda, compute_jac, compute_hess,
+                                                Ybus, Yf, Cg, Cf, Ct, Sd, slack, no_slack, Yt, from_idx,
+                                                to_idx,
+                                                th_max, th_min, V_U, V_L, P_U, P_L, Q_U, Q_L, c0, c1, c2, Sbase, rates)
+
+    mats_finite = compute_autodiff_structures(x, mu, lmbda, compute_jac, compute_hess,
+                                              Ybus, Yf, Cg, Sd, slack, no_slack, Yt, from_idx, to_idx,
+                                              th_max, th_min, V_U, V_L, P_U, P_L, Q_U, Q_L, c0, c1, c2, Sbase, rates,
+                                              h=h)
+
+    errors = mats_finite.compare(mats_analytic, h=h)
+
+    if len(errors) > 0:
+        for key, struct in errors.items():
+            print(key + "\n", struct)
+
+        raise Exception('The analytic structures differ from the finite differences: {}'.format(errors))
+
+    return mats_analytic
+
+
+@dataclass
+class NonlinearOPFResults:
+    """
+    Numerical non linear OPF results
+    """
+    Vm: Vec
+    Va: Vec
+    S: CxVec
+    Sf: CxVec
+    St: CxVec
+    loading: Vec
+    Pg: Vec
+    Qg: Vec
+    lam_p: Vec
+    lam_q: Vec
+    error: float
+    converged: bool
+    iterations: int
+
+    @property
+    def V(self) -> CxVec:
+        """
+        Complex voltage
+        :return: CxVec
+        """
+        return self.Vm * np.exp(1j * self.Va)
+
+
+def ac_optimal_power_flow(nc: NumericalCircuit,
+                          pf_options: PowerFlowOptions,
+                          debug: bool = False,
+                          use_autodiff: bool = False,
+                          plot_error: bool = False) -> NonlinearOPFResults:
+    """
+
+    :param nc: NumericalCircuit
+    :param pf_options: PowerFlowOptions
+    :param debug: if true, the jacobians, hessians, etc are checked against finite difeerence versions of them
+    :param use_autodiff: use the autodiff version of the structures
+    :param plot_error:
+    :return: NonlinearOPFResults
     """
 
     # compile the grid snapshot
@@ -366,6 +699,8 @@ def ac_optimal_power_flow(nc: gce.NumericalCircuit, pf_options: gce.PowerFlowOpt
     Yf = nc.Yf
     Yt = nc.Yt
     Cg = nc.generator_data.C_bus_elm
+    Cf = nc.Cf
+    Ct = nc.Ct
 
     # Bus identification lists
     slack = nc.vd
@@ -391,15 +726,11 @@ def ac_optimal_power_flow(nc: gce.NumericalCircuit, pf_options: gce.PowerFlowOpt
     n_no_slack = len(no_slack)
     n_slack = len(slack)
 
-    # Nodal power balances, the voltage module of slack and pv buses and the slack reference
+    # Number of equalities: Nodal power balances, the voltage module of slack and pv buses and the slack reference
     NE = 2 * nbus + n_slack
 
-    # Line ratings, max and min angle of buses, voltage module range and
+    # Number of innequalities: Line ratings, max and min angle of buses, voltage module range and
     NI = 2 * nbr + 2 * n_no_slack + 2 * nbus + 4 * ngen
-
-    # active and reactive power generation range.
-
-    ########
 
     # run power flow to initialize
     pf_results = multi_island_pf_nc(nc=nc, options=pf_options)
@@ -409,221 +740,97 @@ def ac_optimal_power_flow(nc: gce.NumericalCircuit, pf_options: gce.PowerFlowOpt
     p0gen = nc.generator_data.C_bus_elm.T @ np.real(s0gen)
     q0gen = nc.generator_data.C_bus_elm.T @ np.imag(s0gen)
 
+    # nc.Vbus  # dummy initialization
+
     # compose the initial values
-    x0 = var2x(vm=np.abs(pf_results.voltage),
-               va=np.angle(pf_results.voltage),
+    x0 = var2x(Vm=np.abs(pf_results.voltage),
+               Va=np.angle(pf_results.voltage),
                Pg=p0gen,
                Qg=q0gen)
 
+    # number of variables
     NV = len(x0)
 
-    if verbose>0:
+    if pf_options.verbose > 0:
         print("x0:", x0)
-    x, error, gamma, lam = solver(x0=x0, n_x=NV, n_eq=NE, n_ineq=NI,
-                                  func=evaluate_power_flow,
-                                  arg=(Ybus, Yf, Cg, Sd, slack, no_slack, Yt, from_idx, to_idx, Va_max,
-                                       Va_min, Vm_max, Vm_min, Pg_max, Pg_min, Qg_max, Qg_min, c0, c1, c2, Sbase, rates),
-                                  verbose=verbose)
 
-    vm, va, Pg, Qg = x2var(x, n_vm=nbus, n_va=nbus, n_P=ngen, n_Q=ngen)
+    if debug:
+        # run the solver with the function that checks the derivatives
+        # against their finite differences equivalent
+        result = interior_point_solver(x0=x0, n_x=NV, n_eq=NE, n_ineq=NI,
+                                       func=evaluate_power_flow_debug,
+                                       arg=(Ybus, Yf, Cg, Cf, Ct, Sd, slack, no_slack, Yt,
+                                            from_idx, to_idx, Va_max, Va_min, Vm_max, Vm_min,
+                                            Pg_max, Pg_min, Qg_max, Qg_min,
+                                            c0, c1, c2, Sbase, rates),
+                                       verbose=pf_options.verbose,
+                                       max_iter=pf_options.max_iter)
 
-    lam_p, lam_q = lam[:nbus], lam[nbus:2*nbus]
+    else:
+        if use_autodiff:
+            # run the solver with the autodiff derivatives
+            result = interior_point_solver(x0=x0, n_x=NV, n_eq=NE, n_ineq=NI,
+                                           func=compute_autodiff_structures,
+                                           arg=(Ybus, Yf, Cg, Sd, slack, no_slack, Yt, from_idx, to_idx,
+                                                Va_max, Va_min, Vm_max, Vm_min, Pg_max, Pg_min, Qg_max, Qg_min,
+                                                c0, c1, c2, Sbase, rates, 1e-5),
+                                           verbose=pf_options.verbose,
+                                           max_iter=pf_options.max_iter)
+        else:
+            # run the solver with the analytic derivatives
+            result = interior_point_solver(x0=x0, n_x=NV, n_eq=NE, n_ineq=NI,
+                                           func=compute_analytic_structures,
+                                           arg=(Ybus, Yf, Cg, Cf, Ct, Sd, slack, no_slack, Yt,
+                                                from_idx, to_idx, Va_max, Va_min, Vm_max, Vm_min,
+                                                Pg_max, Pg_min, Qg_max, Qg_min,
+                                                c0, c1, c2, Sbase, rates),
+                                           verbose=pf_options.verbose,
+                                           max_iter=pf_options.max_iter)
 
-    df_bus = pd.DataFrame(data={'Vm (p.u.)': vm, 'Va (rad)': va,
-                                'dual price (€/MW)': lam_p, 'dual price (€/MVAr)': lam_q})
-    df_gen = pd.DataFrame(data={'P (MW)': Pg * nc.Sbase, 'Q (MVAr)': Qg * nc.Sbase})
+    # convert the solution to the problem variables
+    Vm, Va, Pg, Qg = x2var(result.x, nVm=nbus, nVa=nbus, nPg=ngen, nQg=ngen)
 
-    if verbose>0:
+    # convert the lagrange multipliers to significant ones
+    lam_p, lam_q = result.lam[:nbus], result.lam[nbus:2 * nbus]
+
+    S = result.structs.S
+    Sf = result.structs.Sf
+    St = result.structs.St
+    loading = np.abs(Sf) / (rates + 1e-9)
+    if pf_options.verbose > 0:
+        df_bus = pd.DataFrame(data={'Vm (p.u.)': Vm, 'Va (rad)': Va,
+                                    'dual price (€/MW)': lam_p, 'dual price (€/MVAr)': lam_q})
+        df_gen = pd.DataFrame(data={'P (MW)': Pg * nc.Sbase, 'Q (MVAr)': Qg * nc.Sbase})
         print()
         print("Bus:\n", df_bus)
         print("Gen:\n", df_gen)
-        print("Error", error)
+        print("Error", result.error)
 
-    return x
+    if plot_error:
+        result.plot_error()
+
+    return NonlinearOPFResults(Vm=Vm, Va=Va, S=S, Sf=Sf, St=St, loading=loading,
+                               Pg=Pg, Qg=Qg, lam_p=lam_p, lam_q=lam_q,
+                               error=result.error, converged=result.converged, iterations=result.iterations)
 
 
-def example_3bus_acopf():
+def run_nonlinear_opf(grid: MultiCircuit,
+                      pf_options: PowerFlowOptions,
+                      t_idx: Union[None, int] = None,
+                      debug: bool = False,
+                      use_autodiff: bool = False,
+                      plot_error: bool = False) -> NonlinearOPFResults:
     """
 
+    :param grid:
+    :param pf_options:
+    :param t_idx:
+    :param debug:
+    :param use_autodiff:
     :return:
     """
+    nc = compile_numerical_circuit_at(circuit=grid, t_idx=t_idx)
 
-    grid = gce.MultiCircuit()
-
-    b1 = gce.Bus(is_slack=True)
-    b2 = gce.Bus()
-    b3 = gce.Bus()
-
-    grid.add_bus(b1)
-    grid.add_bus(b2)
-    grid.add_bus(b3)
-
-    grid.add_line(gce.Line(bus_from=b1, bus_to=b2, name='line 1-2', r=0.001, x=0.05, rate=100))
-    grid.add_line(gce.Line(bus_from=b2, bus_to=b3, name='line 2-3', r=0.001, x=0.05, rate=100))
-    grid.add_line(gce.Line(bus_from=b3, bus_to=b1, name='line 3-1_1', r=0.001, x=0.05, rate=100))
-    # grid.add_line(gce.Line(bus_from=b3, bus_to=b1, name='line 3-1_2', r=0.001, x=0.05, rate=100))
-
-    grid.add_load(b3, gce.Load(name='L3', P=50, Q=20))
-    grid.add_generator(b1, gce.Generator('G1', vset=1.00, Cost=1.0, Cost2=2.0))
-    grid.add_generator(b2, gce.Generator('G2', P=10, vset=0.995, Cost=1.0, Cost2=3.0))
-
-    options = gce.PowerFlowOptions(gce.SolverType.NR, verbose=False)
-    power_flow = gce.PowerFlowDriver(grid, options)
-    power_flow.run()
-
-    # print('\n\n', grid.name)
-    # print('\tConv:\n', power_flow.results.get_bus_df())
-    # print('\tConv:\n', power_flow.results.get_branch_df())
-
-    nc = gce.compile_numerical_circuit_at(grid)
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR)
-    ac_optimal_power_flow(nc=nc, pf_options=pf_options)
-    return
-
-
-def linn5bus_example():
-    """
-    Grid from Lynn Powel's book
-    """
-    # declare a circuit object
-    grid = gce.MultiCircuit()
-
-    # Add the buses and the generators and loads attached
-    bus1 = gce.Bus('Bus 1', vnom=20)
-    # bus1.is_slack = True  # we may mark the bus a slack
-    grid.add_bus(bus1)
-
-    # add a generator to the bus 1
-    gen1 = gce.Generator('Slack Generator', vset=1.0, Pmin=0, Pmax=1000,
-                         Qmin=-1000, Qmax=1000, Cost=15, Cost2=0)
-
-    grid.add_generator(bus1, gen1)
-
-    # add bus 2 with a load attached
-    bus2 = gce.Bus('Bus 2', vnom=20)
-    grid.add_bus(bus2)
-    grid.add_load(bus2, gce.Load('load 2', P=40, Q=20))
-
-    # add bus 3 with a load attached
-    bus3 = gce.Bus('Bus 3', vnom=20)
-    grid.add_bus(bus3)
-    grid.add_load(bus3, gce.Load('load 3', P=25, Q=15))
-
-    # add bus 4 with a load attached
-    bus4 = gce.Bus('Bus 4', vnom=20)
-    grid.add_bus(bus4)
-    grid.add_load(bus4, gce.Load('load 4', P=40, Q=20))
-
-    # add bus 5 with a load attached
-    bus5 = gce.Bus('Bus 5', vnom=20)
-    grid.add_bus(bus5)
-    grid.add_load(bus5, gce.Load('load 5', P=50, Q=20))
-
-    # add Lines connecting the buses
-    grid.add_line(gce.Line(bus1, bus2, 'line 1-2', r=0.05, x=0.11, b=0.02, rate=1000))
-    grid.add_line(gce.Line(bus1, bus3, 'line 1-3', r=0.05, x=0.11, b=0.02, rate=1000))
-    grid.add_line(gce.Line(bus1, bus5, 'line 1-5', r=0.03, x=0.08, b=0.02, rate=1000))
-    grid.add_line(gce.Line(bus2, bus3, 'line 2-3', r=0.04, x=0.09, b=0.02, rate=1000))
-    grid.add_line(gce.Line(bus2, bus5, 'line 2-5', r=0.04, x=0.09, b=0.02, rate=1000))
-    grid.add_line(gce.Line(bus3, bus4, 'line 3-4', r=0.06, x=0.13, b=0.03, rate=1000))
-    grid.add_line(gce.Line(bus4, bus5, 'line 4-5', r=0.04, x=0.09, b=0.02, rate=1000))
-
-    nc = gce.compile_numerical_circuit_at(grid)
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR)
-    ac_optimal_power_flow(nc=nc, pf_options=pf_options)
-
-
-def two_grids_of_3bus():
-    """
-    3 bus grid two times
-    for solving islands at the same time
-    """
-    grid = gce.MultiCircuit()
-
-    # 3 bus grid
-    b1 = gce.Bus(is_slack=True)
-    b2 = gce.Bus()
-    b3 = gce.Bus()
-
-    grid.add_bus(b1)
-    grid.add_bus(b2)
-    grid.add_bus(b3)
-
-    grid.add_line(gce.Line(bus_from=b1, bus_to=b2, name='line 1-2', r=0.001, x=0.05, rate=100))
-    grid.add_line(gce.Line(bus_from=b2, bus_to=b3, name='line 2-3', r=0.001, x=0.05, rate=100))
-    grid.add_line(gce.Line(bus_from=b3, bus_to=b1, name='line 3-1_1', r=0.001, x=0.05, rate=100))
-    # grid.add_line(gce.Line(bus_from=b3, bus_to=b1, name='line 3-1_2', r=0.001, x=0.05, rate=100))
-
-    grid.add_load(b3, gce.Load(name='L3', P=50, Q=20))
-    grid.add_generator(b1, gce.Generator('G1', vset=1.00, Cost=1.0, Cost2=2.0))
-    grid.add_generator(b2, gce.Generator('G2', P=10, vset=0.995, Cost=1.0, Cost2=3.0))
-
-    # 3 bus grid
-    b11 = gce.Bus(is_slack=True)
-    b21 = gce.Bus()
-    b31 = gce.Bus()
-
-    grid.add_bus(b11)
-    grid.add_bus(b21)
-    grid.add_bus(b31)
-
-    grid.add_line(gce.Line(bus_from=b11, bus_to=b21, name='line 1-2 (2)', r=0.001, x=0.05, rate=100))
-    grid.add_line(gce.Line(bus_from=b21, bus_to=b31, name='line 2-3 (2)', r=0.001, x=0.05, rate=100))
-    grid.add_line(gce.Line(bus_from=b31, bus_to=b11, name='line 3-1 (2)', r=0.001, x=0.05, rate=100))
-
-    grid.add_load(b31, gce.Load(name='L3 (2)', P=50, Q=20))
-    grid.add_generator(b11, gce.Generator('G1 (2)', vset=1.00, Cost=1.0, Cost2=2.0))
-    grid.add_generator(b21, gce.Generator('G2 (2)', P=10, vset=0.995, Cost=1.0, Cost2=3.0))
-
-    options = gce.PowerFlowOptions(gce.SolverType.NR, verbose=False)
-    power_flow = gce.PowerFlowDriver(grid, options)
-    power_flow.run()
-
-    # print('\n\n', grid.name)
-    # print('\tConv:\n', power_flow.results.get_bus_df())
-    # print('\tConv:\n', power_flow.results.get_branch_df())
-
-    nc = gce.compile_numerical_circuit_at(grid)
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR)
-    ac_optimal_power_flow(nc=nc, pf_options=pf_options)
-    return
-
-
-def case9():
-
-    import os
-    cwd = os.getcwd()
-    print(cwd)
-
-    # Go back two directories
-    new_directory = os.path.abspath(os.path.join(cwd, '..', '..', '..'))
-    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case9.m')
-
-    grid = gce.FileOpen(file_path).open()
-    nc = gce.compile_numerical_circuit_at(grid)
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR)
-    ac_optimal_power_flow(nc=nc, pf_options=pf_options)
-    return
-
-def case14():
-
-    import os
-    cwd = os.getcwd()
-    print(cwd)
-
-    # Go back two directories
-    new_directory = os.path.abspath(os.path.join(cwd, '..', '..', '..'))
-    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case14.m')
-
-    grid = gce.FileOpen(file_path).open()
-    nc = gce.compile_numerical_circuit_at(grid)
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR)
-    ac_optimal_power_flow(nc=nc, pf_options=pf_options)
-    return
-
-if __name__ == '__main__':
-    example_3bus_acopf()
-    # linn5bus_example()
-    # two_grids_of_3bus()
-    # case9()
-    # case14()
+    return ac_optimal_power_flow(nc=nc, pf_options=pf_options,
+                                 debug=debug, use_autodiff=use_autodiff,
+                                 plot_error=plot_error)

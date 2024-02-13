@@ -1331,7 +1331,7 @@ def newton_pa_contingencies(circuit: MultiCircuit,
         n_threads = 0  # max threads
     else:
         time_indices = [0]
-        n_threads = 1
+        n_threads = 0
 
     if con_opt.contingency_method == ContingencyMethod.PTDF:
         mode = npa.ContingencyAnalysisMode.Linear

@@ -1637,7 +1637,7 @@ class ProfilesModel(QtCore.QAbstractTableModel):
 
         if n > 0:
             profile_property = self.elements[0].properties_with_profile[self.magnitude]
-            formatter = self.elements[0].editable_headers[self.magnitude].tpe
+            formatter = self.elements[0].registered_properties[self.magnitude].tpe
 
             # copy to clipboard
             cb = QtWidgets.QApplication.clipboard()

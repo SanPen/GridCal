@@ -15,15 +15,14 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from typing import List
+from typing import Union
 from GridCalEngine.Core.Devices.editable_device import DeviceType
 from GridCalEngine.Core.Devices.Aggregation.area import GenericAreaGroup
-from GridCalEngine.Core.Devices.Substation.connectivity_node import ConnectivityNode
 
 
 class Substation(GenericAreaGroup):
 
-    def __init__(self, name='Substation', idtag=None, code='', latitude=0.0, longitude=0.0):
+    def __init__(self, name='Substation', idtag: Union[str, None] = None, code='', latitude=0.0, longitude=0.0):
         """
 
         :param name:
@@ -38,6 +37,3 @@ class Substation(GenericAreaGroup):
                                   device_type=DeviceType.SubstationDevice,
                                   latitude=latitude,
                                   longitude=longitude)
-
-        # array of connectivity nodes
-        self.connectivity_nodes: List[ConnectivityNode] = list()

@@ -44,7 +44,7 @@ class FluidNode(EditableDevice):
         :param min_level: Minimum amount of fluid at the node/reservoir [m3]
         :param max_level: Maximum amount of fluid at the node/reservoir [m3]
         :param current_level: Initial level of the node/reservoir [m3]
-        :param spillage_cost: Spillage cost [€/(m3/s)]
+        :param spillage_cost: Spillage cost [e/(m3/s)]
         :param inflow: Inflow from the rain [m3/s]
         :param inflow_prof: Profile for the inflow [m3/s]
         :param bus: electrical bus they are linked with
@@ -65,7 +65,7 @@ class FluidNode(EditableDevice):
         self.build_status = build_status
 
         self.inflow_prof = inflow_prof  # m3/s
-        self.spillage_cost_prof = spillage_cost_prof  # €/(m3/s)
+        self.spillage_cost_prof = spillage_cost_prof  # e/(m3/s)
 
         # list of turbines
         self.turbines = list()
@@ -91,7 +91,7 @@ class FluidNode(EditableDevice):
         self.register(key='build_status', units='', tpe=BuildStatus,
                       definition='Branch build status. Used in expansion planning.')
 
-        self.register(key='spillage_cost', units='€/(m3/s)', tpe=float,
+        self.register(key='spillage_cost', units='e/(m3/s)', tpe=float,
                       definition='Cost of nodal spillage',
                       profile_name='spillage_cost_prof')
 
@@ -117,7 +117,7 @@ class FluidNode(EditableDevice):
         fluid_node.build_status = self.build_status
 
         fluid_node.inflow_prof = self.inflow_prof  # m3/s
-        fluid_node.spillage_cost_prof = self.spillage_cost_prof  # €/(m3/s)
+        fluid_node.spillage_cost_prof = self.spillage_cost_prof  # e/(m3/s)
 
         # list of turbines
         fluid_node.turbines = self.turbines.copy()

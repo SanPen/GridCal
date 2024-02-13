@@ -25,6 +25,7 @@ from GridCalEngine.basic_structures import Logger, Vec, IntVec, CxVec, Mat, ObjV
 from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Core.Devices.Aggregation.contingency_group import ContingencyGroup
+from GridCalEngine.Core.Devices.Aggregation.contingency import Contingency
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.derivatives import dSf_dV_csc
 from GridCalEngine.Utils.Sparse.csc import dense_to_csc
@@ -402,7 +403,6 @@ class LinearMultiContingency:
         flow = base_flow.copy()
 
         if len(self.branch_indices):
-
             # MLODF[k, βδ] x Pf0[βδ]
             flow += self.mlodf_factors @ base_flow[self.branch_indices]
 
@@ -410,7 +410,7 @@ class LinearMultiContingency:
             injection_delta = self.injections_factor * injections[self.bus_indices]
 
             # (MLODF[k, βδ] x PTDF[βδ, i] + PTDF[k, i]) x ΔP[i]
-            flow += self.compensated_ptdf_factors @ injection_delta[self.bus_indices]  # TODO: is the slicing necesary here too?
+            flow += self.compensated_ptdf_factors @ injection_delta
 
         return flow
 
@@ -436,6 +436,99 @@ class LinearMultiContingency:
         return flow
 
 
+class ContingencyIndices:
+    """
+    Contingency indices
+    """
+
+    def __init__(self, contingency_group: ContingencyGroup, contingency_group_dict, branches_dict,
+                 generator_dict, bus_index_dict):
+
+        (self.branch_contingency_indices,
+         self.bus_contingency_indices,
+         self.injections_factors) = self.get_contingencies_info(contingency_group=contingency_group,
+                                                                contingency_group_dict=contingency_group_dict,
+                                                                branches_dict=branches_dict,
+                                                                generator_dict=generator_dict,
+                                                                bus_index_dict=bus_index_dict)
+
+    @staticmethod
+    def try_find_indices(cnt: Contingency, branches_dict, generator_dict, bus_index_dict,
+                         branch_contingency_indices, bus_contingency_indices, injections_factors):
+        """
+        Try to find the contingency indices f the device in the contingency
+        :param cnt: Contingency
+        :param branches_dict:
+        :param generator_dict:
+        :param bus_index_dict:
+        :param branch_contingency_indices:
+        :param bus_contingency_indices:
+        :param injections_factors:
+        :return:
+        """
+        # search for the contingency in the Branches
+        br_idx = branches_dict.get(cnt.device_idtag, None)
+        branch_found = False
+        if br_idx is not None:
+            if cnt.prop == 'active':
+                branch_contingency_indices.append(br_idx)
+                return
+            else:
+                branch_found = True
+                print(f'Unknown branch contingency property {cnt.prop} at {cnt.name} {cnt.idtag}')
+        else:
+            branch_found = False
+
+        gen = generator_dict.get(cnt.device_idtag, None)
+        gen_found = False
+        if gen is not None:
+            if cnt.prop == '%':
+                bus_contingency_indices.append(bus_index_dict[gen.bus])
+                injections_factors.append(cnt.value / 100.0)
+                return
+            else:
+                branch_found = True
+                print(f'Unknown generator contingency property {cnt.prop} at {cnt.name} {cnt.idtag}')
+        else:
+            gen_found = False
+
+        if not branch_found:
+            print(f"contingency branch {cnt.device_idtag} not found")
+        if not gen_found:
+            print(f"contingency generator {cnt.device_idtag} not found")
+
+    def get_contingencies_info(self, contingency_group: ContingencyGroup,
+                               contingency_group_dict, branches_dict,
+                               generator_dict, bus_index_dict) -> Tuple[IntVec, IntVec, Vec]:
+        """
+        Get the indices from a contingency group
+        :param contingency_group:
+        :param contingency_group_dict:
+        :param branches_dict:
+        :param generator_dict:
+        :param bus_index_dict:
+        :return: branch_contingency_indices, bus_contingency_indices, injections_factors
+        """
+
+        # get the group's contingencies
+        contingencies = contingency_group_dict[contingency_group.idtag]
+
+        branch_contingency_indices = list()
+        bus_contingency_indices = list()
+        injections_factors = list()
+
+        # apply the contingencies
+        for cnt in contingencies:
+            self.try_find_indices(cnt, branches_dict, generator_dict, bus_index_dict,
+                                  branch_contingency_indices, bus_contingency_indices, injections_factors)
+
+        branch_contingency_indices = np.array(branch_contingency_indices)
+        bus_contingency_indices = np.array(bus_contingency_indices)
+        injections_factors = np.array(injections_factors)
+
+        return branch_contingency_indices, bus_contingency_indices, injections_factors
+
+
 class LinearMultiContingencies:
     """
     LinearMultiContingencies
@@ -454,45 +547,18 @@ class LinearMultiContingencies:
         self.__branches_dict = {b.idtag: i for i, b in enumerate(grid.get_branches_wo_hvdc())}
         self.__generator_dict = {g.idtag: g for g in grid.get_contingency_devices()}
 
+        self.contingency_indices = list()
+
+        # for each contingency group
+        for ic, contingency_group in enumerate(self.grid.contingency_groups):
+            self.contingency_indices.append(ContingencyIndices(contingency_group=contingency_group,
+                                                               contingency_group_dict=self.__contingency_group_dict,
+                                                               branches_dict=self.__branches_dict,
+                                                               generator_dict=self.__generator_dict,
+                                                               bus_index_dict=self.__bus_index_dict))
+
         # list of LinearMultiContingency objects that are used later to compute the contingency flows
         self.multi_contingencies: List[LinearMultiContingency] = list()
-
-    def get_contingencies_info(self, contingency_group: ContingencyGroup) -> Tuple[IntVec, IntVec, Vec]:
-        """
-        Get the indices from a contingency group
-        :param contingency_group:
-        :return: branch_contingency_indices, bus_contingency_indices, injections_factors
-        """
-
-        # get the group's contingencies
-        contingencies = self.__contingency_group_dict[contingency_group.idtag]
-
-        branch_contingency_indices = list()
-        bus_contingency_indices = list()
-        injections_factors = list()
-
-        # apply the contingencies
-        for cnt in contingencies:
-
-            # search for the contingency in the Branches
-            br_idx = self.__branches_dict.get(cnt.device_idtag, None)
-            if br_idx is not None:
-                if cnt.prop == 'active':
-                    branch_contingency_indices.append(br_idx)
-                else:
-                    print(f'Unknown contingency property {cnt.prop} at {cnt.name} {cnt.idtag}')
-
-            gen = self.__generator_dict.get(cnt.device_idtag, None)
-            if gen is not None:
-                if cnt.prop == '%':
-                    bus_contingency_indices.append(self.__bus_index_dict[gen.bus])
-                    injections_factors.append(cnt.value / 100.0)
-
-        branch_contingency_indices = np.array(branch_contingency_indices)
-        bus_contingency_indices = np.array(bus_contingency_indices)
-        injections_factors = np.array(injections_factors)
-
-        return branch_contingency_indices, bus_contingency_indices, injections_factors
 
     def compute(self,
                 lodf: Mat,
@@ -515,49 +581,53 @@ class LinearMultiContingencies:
         # for each contingency group
         for ic, contingency_group in enumerate(self.grid.contingency_groups):
 
-            (branch_contingency_indices,
-             bus_contingency_indices,
-             injections_factors) = self.get_contingencies_info(contingency_group)
+            contingency_indices = self.contingency_indices[ic]
 
-            if len(branch_contingency_indices) > 1:
+            if len(contingency_indices.branch_contingency_indices) > 1:
 
                 # Compute M matrix [n, n] (lodf relating the outaged lines to each other)
-                M = create_M_numba(lodf=lodf, branch_contingency_indices=branch_contingency_indices)
-                L = lodf[:, branch_contingency_indices]
+                M = create_M_numba(lodf=lodf, branch_contingency_indices=contingency_indices.branch_contingency_indices)
+                L = lodf[:, contingency_indices.branch_contingency_indices]
 
                 # Compute LODF for the multiple failure MLODF[k, βδ]
                 mlodf_factors = dense_to_csc(mat=L @ np.linalg.inv(M),
                                              threshold=lodf_threshold)
 
-            elif len(branch_contingency_indices) == 1:
+            elif len(contingency_indices.branch_contingency_indices) == 1:
                 # append values
-                mlodf_factors = dense_to_csc(mat=lodf[:, branch_contingency_indices], threshold=lodf_threshold)
+                mlodf_factors = dense_to_csc(mat=lodf[:, contingency_indices.branch_contingency_indices],
+                                             threshold=lodf_threshold)
 
             else:
                 mlodf_factors = sp.csc_matrix(([], [], [0]), shape=(lodf.shape[0], 0))
 
-            if len(bus_contingency_indices):
+            if len(contingency_indices.bus_contingency_indices):
 
                 # this is PTDF[k, i]
-                ptdf_k_i = dense_to_csc(mat=ptdf[:, bus_contingency_indices], threshold=ptdf_threshold)
+                ptdf_k_i = dense_to_csc(mat=ptdf[:, contingency_indices.bus_contingency_indices],
+                                        threshold=ptdf_threshold)
 
-                # this is PTDF[βδ, i]
-                ptdf_bd_i = dense_to_csc(mat=ptdf[branch_contingency_indices, bus_contingency_indices],
-                                         threshold=ptdf_threshold)
+                if len(contingency_indices.branch_contingency_indices):
+                    # this is PTDF[βδ, i]
+                    ptdf_bd_i = dense_to_csc(mat=ptdf[
+                        contingency_indices.branch_contingency_indices, contingency_indices.bus_contingency_indices],
+                                             threshold=ptdf_threshold)
 
-                # must compute             MLODF[k, βδ] x PTDF[βδ, i] + PTDF[k, i]
-                compensated_ptdf_factors = mlodf_factors @ ptdf_bd_i + ptdf_k_i
+                    # must compute             MLODF[k, βδ] x PTDF[βδ, i] + PTDF[k, i]
+                    compensated_ptdf_factors = mlodf_factors @ ptdf_bd_i + ptdf_k_i
+                else:
+                    compensated_ptdf_factors = ptdf_k_i  #TODO Comprobar con Jesús
             else:
                 compensated_ptdf_factors = sp.csc_matrix(([], [], [0]), shape=(lodf.shape[0], 0))
 
             # append values
             self.multi_contingencies.append(
                 LinearMultiContingency(
-                    branch_indices=branch_contingency_indices,
-                    bus_indices=bus_contingency_indices,
+                    branch_indices=contingency_indices.branch_contingency_indices,
+                    bus_indices=contingency_indices.bus_contingency_indices,
                     mlodf_factors=mlodf_factors,
                     compensated_ptdf_factors=compensated_ptdf_factors,
-                    injections_factor=injections_factors
+                    injections_factor=contingency_indices.injections_factors
                 )
             )
 

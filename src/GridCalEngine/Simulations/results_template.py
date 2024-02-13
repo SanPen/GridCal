@@ -217,19 +217,20 @@ class ResultsTemplate:
         na = len(area_names)
         x = np.zeros((na, na), dtype=complex)
 
-        for f, t, flow in zip(F, T, Sf):
-            a1 = bus_area_indices[f]
-            a2 = bus_area_indices[t]
-            if a1 != a2:
-                x[a1, a2] += flow
-                x[a2, a1] -= flow
+        if na > 0:
+            for f, t, flow in zip(F, T, Sf):
+                a1 = bus_area_indices[f]
+                a2 = bus_area_indices[t]
+                if a1 != a2:
+                    x[a1, a2] += flow
+                    x[a2, a1] -= flow
 
-        for f, t, flow in zip(hvdc_F, hvdc_T, hvdc_Pf):
-            a1 = bus_area_indices[f]
-            a2 = bus_area_indices[t]
-            if a1 != a2:
-                x[a1, a2] += flow
-                x[a2, a1] -= flow
+            for f, t, flow in zip(hvdc_F, hvdc_T, hvdc_Pf):
+                a1 = bus_area_indices[f]
+                a2 = bus_area_indices[t]
+                if a1 != a2:
+                    x[a1, a2] += flow
+                    x[a2, a1] -= flow
 
         return x
 
@@ -244,8 +245,9 @@ class ResultsTemplate:
         na = len(area_names)
         x = np.zeros(na, dtype=bus_values.dtype)
 
-        for a, val in zip(bus_area_indices, bus_values):
-            x[a] += val
+        if na > 0:
+            for a, val in zip(bus_area_indices, bus_values):
+                x[a] += val
 
         return x
 
@@ -265,10 +267,11 @@ class ResultsTemplate:
         na = len(area_names)
         x = np.zeros((na, na), dtype=branch_values.dtype)
 
-        for f, t, val in zip(F, T, branch_values):
-            a1 = bus_area_indices[f]
-            a2 = bus_area_indices[t]
-            x[a1, a2] += val
+        if na > 0:
+            for f, t, val in zip(F, T, branch_values):
+                a1 = bus_area_indices[f]
+                a2 = bus_area_indices[t]
+                x[a1, a2] += val
 
         return x
 
@@ -286,10 +289,11 @@ class ResultsTemplate:
         na = len(area_names)
         x = np.zeros((na, na), dtype=hvdc_values.dtype)
 
-        for f, t, val in zip(hvdc_F, hvdc_T, hvdc_values):
-            a1 = bus_area_indices[f]
-            a2 = bus_area_indices[t]
-            x[a1, a2] += val
+        if na > 0:
+            for f, t, val in zip(hvdc_F, hvdc_T, hvdc_values):
+                a1 = bus_area_indices[f]
+                a2 = bus_area_indices[t]
+                x[a1, a2] += val
 
         return x
 
