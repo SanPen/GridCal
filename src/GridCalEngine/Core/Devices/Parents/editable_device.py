@@ -630,7 +630,17 @@ class EditableDevice:
         :param version:
         :return:
         """
-        return dict()
+
+        """
+        {'id': self.idtag,
+        'active': active_prof,
+        'rate': rate_prof}
+        """
+        data = {'id': self.idtag}
+        for property_name, profile_name in self.properties_with_profile.items():
+            data[property_name] = profile_name
+
+        return data
 
     def copy(self):
         """

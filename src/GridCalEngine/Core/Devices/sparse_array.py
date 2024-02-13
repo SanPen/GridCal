@@ -53,6 +53,15 @@ class SparseArray:
         """
         return self._map
 
+    def insert(self, i, x):
+        """
+        Insert an element in the data dictionary
+        :param i:
+        :param x:
+        :return:
+        """
+        self._map[i] = x
+
     def get_sparsity(self) -> float:
         """
         Get the sparsity of this profile
@@ -226,4 +235,27 @@ class SparseArray:
                 new_map[i] = it
 
         self._map = new_map
+
+    def get_sparse_representation(self):
+        """
+        Get the sparse representation of the sparse data
+        :return:
+        """
+        indptr = list()
+        data = list()
+        for i, x in self._map:
+            indptr.append(i)
+            data.append(x)
+
+        return indptr, data
+
+    def set_sparse_data_from_data(self, indptr, data):
+        """
+
+        :param indptr:
+        :param data:
+        :return:
+        """
+        for i, x in zip(indptr, data):
+            self._map[i] = x
 

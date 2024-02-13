@@ -15,13 +15,13 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import json
-import bson
 from io import StringIO, TextIOWrapper, BytesIO
 import os
 import numpy as np
 import chardet
 import pandas as pd
 import zipfile
+from warnings import warn
 from typing import List, Dict, Any, Union, Callable
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.IO.gridcal.generic_io_functions import parse_config_df, CustomJSONizer
@@ -34,9 +34,9 @@ def save_gridcal_data_to_zip(dfs: Dict[str, pd.DataFrame],
                              sessions: List[Any],
                              diagrams: List[Union[dev.MapDiagram, dev.BusBranchDiagram, dev.NodeBreakerDiagram]],
                              json_files: Dict[str, dict],
-                             text_func=None,
-                             progress_func=None,
-                             logger = Logger()):
+                             text_func: Union[None, Callable[[str], None]] = None,
+                             progress_func: Union[None, Callable[[float], None]] = None,
+                             logger=Logger()):
     """
     Save a list of DataFrames to a zip file without saving to disk the csv files
     :param dfs: dictionary of pandas dataFrames {name: DataFrame}
@@ -67,7 +67,7 @@ def save_gridcal_data_to_zip(dfs: Dict[str, pd.DataFrame],
                 f_zip_ptr.writestr(filename, json.dumps(object_data, indent=4, cls=CustomJSONizer))
             except TypeError as e:
                 logger.add_error(msg=e, device_class=object_type_name)
-                print(object_type_name, str(e))
+                warn(f"{object_type_name}: {e}")
 
         # save diagrams
         for diagram in diagrams:
@@ -136,12 +136,10 @@ def save_gridcal_data_to_zip(dfs: Dict[str, pd.DataFrame],
                                 text_func('Flushing ' + filename + ' to ' + filename_zip + '...')
 
                             with BytesIO() as buffer:
-                                # np.save(buffer, np.array(arr))  # save the DataFrame to the buffer
-                                # f_zip_ptr.writestr(filename + '.npy', buffer.getvalue())  # save the buffer to the zip file
-
                                 # save the DataFrame to the buffer, protocol4 is to be compatible with python 3.6
                                 np.save(buffer, np.array(arr))  # save the DataFrame to the buffer
-                                f_zip_ptr.writestr(filename + '.npy', buffer.getvalue())  # save the buffer to the zip file
+                                f_zip_ptr.writestr(filename + '.npy',
+                                                   buffer.getvalue())  # save the buffer to the zip file
 
                             if progress_func is not None:
                                 progress_func((i + 1) / n_items * 100)
@@ -352,7 +350,6 @@ def load_session_driver_objects(file_name_zip: str, session_name: str, study_nam
             path = name.split('/')
             if len(path) > 3:
                 if path[0].lower() == 'sessions' and session_name == path[1] and study_name == path[2]:
-
                     # create a buffer to read the file
                     file_pointer = zip_file_pointer.open(name)
 
@@ -399,7 +396,9 @@ def get_xml_content(file_ptr):
     return text_lines
 
 
-def get_xml_from_zip(file_name_zip, text_func=None, progress_func=None):
+def get_xml_from_zip(file_name_zip: str,
+                     text_func: Union[None, Callable[[str], None]] = None,
+                     progress_func: Union[None, Callable[[float], None]] = None,):
     """
     Get the .xml files from a zip file
     :param file_name_zip: name of the zip file

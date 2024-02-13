@@ -346,3 +346,18 @@ class Profile:
         :return: array
         """
         return self.toarray().astype(tpe)
+
+    def get_sparse_representation(self):
+        """
+        Get the sparse representation of the sparse data
+        :return:
+        """
+        return self._sparse_array.get_sparse_representation()
+
+    def set_sparse_data_from_data(self, indptr, data):
+        """
+        Set spasrse data from indices
+        :param indptr: array of data indices
+        :param data: array of data values
+        """
+        self._sparse_array.set_sparse_data_from_data(indptr=indptr, data=data)
