@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from typing import Union, Dict, Tuple, List
+from typing import Union, Dict, Tuple, List, Any
 from collections import Counter
 import numpy as np
 import numba as nb
@@ -96,7 +96,10 @@ class Profile:
     Profile
     """
 
-    def __init__(self, default_value, arr: Union[None, NumericVec] = None, sparsity: int = 0.8,
+    def __init__(self,
+                 default_value,
+                 arr: Union[None, NumericVec] = None,
+                 sparsity_threshold: float = 0.8,
                  is_sparse: bool = False):
 
         self._is_sparse: bool = is_sparse
@@ -105,7 +108,7 @@ class Profile:
 
         self._dense_array: Union[NumericVec, None] = None
 
-        self._sparsity_threshold: float = sparsity
+        self._sparsity_threshold: float = sparsity_threshold
 
         self._dtype = type(default_value)  # float by default
 
@@ -185,6 +188,17 @@ class Profile:
         self._sparse_array = None
         self._initialized = True
 
+    @property
+    def sparsity(self) -> float:
+        """
+        Get the profile sparsity
+        :return: floar value (0 for fully dense, almos 1 for fully sparse)
+        """
+        if self._is_sparse:
+            return self._sparse_array.get_sparsity()
+        else:
+            return 0.0
+
     def set(self, arr: NumericVec):
         """
         Set array value
@@ -203,7 +217,7 @@ class Profile:
             sparsity_factor = most_common_count / len(arr)
 
             # if the sparsity is sufficient...
-            if sparsity_factor > self._sparsity_threshold:
+            if sparsity_factor >= self._sparsity_threshold:
                 base = most_common_element  # this is the most frequent value
                 if isinstance(base, np.bool_):
                     base = bool(base)
@@ -301,13 +315,14 @@ class Profile:
         else:
             self._dense_array = self._dense_array[indices]
 
-    def fill(self, value):
+    def fill(self, value: Any):
         """
         Fill this profile with the same value
         :param value: any value
         """
         self.default_value = value
         self._is_sparse = True
+        self._sparse_array = SparseArray()
         self._sparse_array.fill(value)
         self._dense_array = None
         self._dtype = type(value)

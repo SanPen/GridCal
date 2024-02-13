@@ -518,10 +518,10 @@ def parse_object_type_from_dataframe(main_df: pd.DataFrame,
                             if gc_prop.tpe == DeviceType.GeneratorQCurve:
                                 val = dev.GeneratorQCurve()
                                 val.parse(property_value)
-                                elm.set_snapshot_value(property_name, val)
+                                elm.set_snapshot_value(gc_prop.name, val)
 
                                 if gc_prop.has_profile():
-                                    elm.get_profile(magnitude=property_name).fill(val)
+                                    elm.get_profile(magnitude=gc_prop.name).fill(val)
 
                             else:
                                 # we must look for the refference in elements_dict
@@ -532,60 +532,60 @@ def parse_object_type_from_dataframe(main_df: pd.DataFrame,
                                     ref_elm = collection.get(ref_idtag, None)
 
                                     if ref_elm is not None:
-                                        elm.set_snapshot_value(property_name, ref_elm)
+                                        elm.set_snapshot_value(gc_prop.name, ref_elm)
 
                                         if gc_prop.has_profile():
-                                            elm.get_profile(magnitude=property_name).fill(ref_elm)
+                                            elm.get_profile(magnitude=gc_prop.name).fill(ref_elm)
 
                                     else:
                                         logger.add_error("Could not locate refference",
                                                          device=row.get('idtag', 'not provided'),
                                                          device_class=template_elm.device_type.value,
-                                                         device_property=property_name,
+                                                         device_property=gc_prop.name,
                                                          value=ref_idtag)
                                 else:
                                     logger.add_error("No device of the refferenced type",
                                                      device=row.get('idtag', 'not provided'),
                                                      device_class=template_elm.device_type.value,
-                                                     device_property=property_name,
+                                                     device_property=gc_prop.name,
                                                      value=property_value)
 
                         elif gc_prop.tpe == str:
                             # set the value directly
-                            elm.set_snapshot_value(property_name, str(property_value))
+                            elm.set_snapshot_value(gc_prop.name, str(property_value))
 
                             if gc_prop.has_profile():
-                                elm.get_profile(magnitude=property_name).fill(str(property_value))
+                                elm.get_profile(magnitude=gc_prop.name).fill(str(property_value))
 
                         elif gc_prop.tpe == float:
                             # set the value directly
-                            elm.set_snapshot_value(property_name, float(property_value))
+                            elm.set_snapshot_value(gc_prop.name, float(property_value))
 
                             if gc_prop.has_profile():
-                                elm.get_profile(magnitude=property_name).fill(float(property_value))
+                                elm.get_profile(magnitude=gc_prop.name).fill(float(property_value))
 
                         elif gc_prop.tpe == int:
                             # set the value directly
-                            elm.set_snapshot_value(property_name, int(property_value))
+                            elm.set_snapshot_value(gc_prop.name, int(property_value))
 
                             if gc_prop.has_profile():
-                                elm.get_profile(magnitude=property_name).fill(int(property_value))
+                                elm.get_profile(magnitude=gc_prop.name).fill(int(property_value))
 
                         elif gc_prop.tpe == bool:
                             # set the value directly
-                            elm.set_snapshot_value(property_name, bool(property_value))
+                            elm.set_snapshot_value(gc_prop.name, bool(property_value))
 
                             if gc_prop.has_profile():
-                                elm.get_profile(magnitude=property_name).fill(bool(property_value))
+                                elm.get_profile(magnitude=gc_prop.name).fill(bool(property_value))
 
                         elif isinstance(gc_prop.tpe, EnumType):
 
                             try:
                                 val = gc_prop.tpe(property_value)
-                                elm.set_snapshot_value(property_name, val)
+                                elm.set_snapshot_value(gc_prop.name, val)
 
                                 if gc_prop.has_profile():
-                                    elm.get_profile(magnitude=property_name).fill(val)
+                                    elm.get_profile(magnitude=gc_prop.name).fill(val)
 
                             except ValueError:
                                 logger.add_error(f'Cannot cast value to {gc_prop.tpe}',
@@ -668,10 +668,10 @@ def parse_object_type_from_json(template_elm: dev.EditableDevice,
                             if gc_prop.tpe == DeviceType.GeneratorQCurve:
                                 val = dev.GeneratorQCurve()
                                 val.parse(property_value)
-                                elm.set_snapshot_value(property_name, val)
+                                elm.set_snapshot_value(gc_prop.name, val)
 
                                 if gc_prop.has_profile():
-                                    elm.get_profile(magnitude=property_name).fill(val)
+                                    elm.get_profile(magnitude=gc_prop.name).fill(val)
 
                             else:
                                 # we must look for the refference in elements_dict
@@ -682,60 +682,60 @@ def parse_object_type_from_json(template_elm: dev.EditableDevice,
                                     ref_elm = collection.get(ref_idtag, None)
 
                                     if ref_elm is not None:
-                                        elm.set_snapshot_value(property_name, ref_elm)
+                                        elm.set_snapshot_value(gc_prop.name, ref_elm)
 
                                         if gc_prop.has_profile():
-                                            elm.get_profile(magnitude=property_name).fill(ref_elm)
+                                            elm.get_profile(magnitude=gc_prop.name).fill(ref_elm)
 
                                     else:
                                         logger.add_error("Could not locate refference",
                                                          device=elm.idtag,
                                                          device_class=template_elm.device_type.value,
-                                                         device_property=property_name,
+                                                         device_property=gc_prop.name,
                                                          value=ref_idtag)
                                 else:
                                     logger.add_error("No device of the refferenced type",
                                                      device=elm.idtag,
                                                      device_class=template_elm.device_type.value,
-                                                     device_property=property_name,
+                                                     device_property=gc_prop.name,
                                                      value=property_value)
 
                         elif gc_prop.tpe == str:
                             # set the value directly
-                            elm.set_snapshot_value(property_name, str(property_value))
+                            elm.set_snapshot_value(gc_prop.name, str(property_value))
 
                             if gc_prop.has_profile():
-                                elm.get_profile(magnitude=property_name).fill(str(property_value))
+                                elm.get_profile(magnitude=gc_prop.name).fill(str(property_value))
 
                         elif gc_prop.tpe == float:
                             # set the value directly
-                            elm.set_snapshot_value(property_name, float(property_value))
+                            elm.set_snapshot_value(gc_prop.name, float(property_value))
 
                             if gc_prop.has_profile():
-                                elm.get_profile(magnitude=property_name).fill(float(property_value))
+                                elm.get_profile(magnitude=gc_prop.name).fill(float(property_value))
 
                         elif gc_prop.tpe == int:
                             # set the value directly
-                            elm.set_snapshot_value(property_name, int(property_value))
+                            elm.set_snapshot_value(gc_prop.name, int(property_value))
 
                             if gc_prop.has_profile():
-                                elm.get_profile(magnitude=property_name).fill(int(property_value))
+                                elm.get_profile(magnitude=gc_prop.name).fill(int(property_value))
 
                         elif gc_prop.tpe == bool:
                             # set the value directly
-                            elm.set_snapshot_value(property_name, bool(property_value))
+                            elm.set_snapshot_value(gc_prop.name, bool(property_value))
 
                             if gc_prop.has_profile():
-                                elm.get_profile(magnitude=property_name).fill(bool(property_value))
+                                elm.get_profile(magnitude=gc_prop.name).fill(bool(property_value))
 
                         elif isinstance(gc_prop.tpe, EnumType):
 
                             try:
                                 val = gc_prop.tpe(property_value)
-                                elm.set_snapshot_value(property_name, val)
+                                elm.set_snapshot_value(gc_prop.name, val)
 
                                 if gc_prop.has_profile():
-                                    elm.get_profile(magnitude=property_name).fill(val)
+                                    elm.get_profile(magnitude=gc_prop.name).fill(val)
 
                             except ValueError:
                                 logger.add_error(f'Cannot cast value to {gc_prop.tpe}',
