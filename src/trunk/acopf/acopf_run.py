@@ -261,8 +261,12 @@ def case_pegase89():
     file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case89pegase.m')
 
     grid = gce.FileOpen(file_path).open()
+    nc = compile_numerical_circuit_at(grid)
+    nc.generator_data.cost_0[:] = 0
+    nc.generator_data.cost_1[:] = 0
+    nc.generator_data.cost_2[:] = 0
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, tolerance=1e-8)
-    run_nonlinear_opf(grid=grid, pf_options=pf_options, plot_error=True)
+    ac_optimal_power_flow(nc=nc, pf_options=pf_options, plot_error=True)
 
     grid.get_bus_branch_connectivity_matrix()
     nc = compile_numerical_circuit_at(grid)
@@ -310,5 +314,5 @@ if __name__ == '__main__':
     # case14()
     # case_gb()
     # case6ww()
-    # case_pegase89()
-    case300()
+    case_pegase89()
+    # case300()
