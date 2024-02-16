@@ -19,6 +19,8 @@ import json
 
 from collections.abc import Callable
 from typing import Union, List
+
+from GridCalEngine.IO.cim.cgmes.cgmes_data_parser import CgmesDataParser
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.data_logger import DataLogger
 
@@ -69,15 +71,13 @@ class FileOpen:
 
         self.cgmes_logger = DataLogger()
 
-        if isinstance(self.file_name, str):
+        if type(self.file_name) == str:
             if not os.path.exists(self.file_name):
                 raise Exception("File not found :( \n{}".format(self.file_name))
-        elif isinstance(self.file_name, list):
+        elif type(self.file_name) == list:
             for fname in self.file_name:
                 if not os.path.exists(fname):
                     raise Exception("File not found :( \n{}".format(fname))
-        else:
-            raise Exception("file_name type not supported :( \n{}".format(self.file_name))
 
     def open(self, text_func: Union[None, Callable] = None,
              progress_func: Union[None, Callable] = None) -> Union[MultiCircuit, None]:
@@ -96,10 +96,11 @@ class FileOpen:
                 if file_extension.lower() not in ['.xml', '.zip']:
                     raise Exception('Loading multiple files that are not XML/Zip (xml or zip is for CIM or CGMES)')
 
-            self.cgmes_circuit = CgmesCircuit(text_func=text_func,
-                                              progress_func=progress_func,
-                                              logger=self.cgmes_logger)
-            self.cgmes_circuit.parse_files(files=self.file_name)
+            data_parser = CgmesDataParser(text_func=text_func, progress_func=progress_func, logger=self.cgmes_logger)
+            data_parser.load_files(files=self.file_name)
+            self.cgmes_circuit = CgmesCircuit(cgmes_version=data_parser.cgmes_version,text_func=text_func,
+                                              progress_func=progress_func, logger=self.cgmes_logger)
+            self.cgmes_circuit.parse_files(data_parser=data_parser)
             # self.cgmes_circuit.to_excel(fname=r'C:\Users\BenceSzirbik\Downloads\excel.xlsx')
             self.circuit = cgmes_to_gridcal(cgmes_model=self.cgmes_circuit, logger=self.cgmes_logger)
 
@@ -126,10 +127,11 @@ class FileOpen:
 
                     elif data_dictionary['version'] == 4.0:
                         if data_dictionary is not None:
-                            self.circuit = parse_gridcal_data(data_dictionary, logger=self.logger)
+                            self.circuit = data_frames_to_circuit(data_dictionary, logger=self.logger)
                         else:
                             self.logger.add("Error while reading the file :(")
                             return None
+
                     else:
                         self.logger.add('The file could not be processed')
 
@@ -142,7 +144,7 @@ class FileOpen:
                                                                            logger=self.logger)
                     # interpret file content
                     if data_dictionary is not None:
-                        self.circuit = parse_gridcal_data(data_dictionary, logger=self.logger)
+                        self.circuit = data_frames_to_circuit(data_dictionary, logger=self.logger)
                     else:
                         self.logger.add("Error while reading the file :(")
                         return None
@@ -155,7 +157,7 @@ class FileOpen:
                                                                    progress_func=progress_func)
                     # interpret file content
                     if data_dictionary is not None:
-                        self.circuit = parse_gridcal_data(data_dictionary, logger=self.logger)
+                        self.circuit = data_frames_to_circuit(data_dictionary, logger=self.logger)
                     else:
                         self.logger.add("Error while reading the file :(")
                         return None
@@ -227,10 +229,12 @@ class FileOpen:
                     self.logger += parser.logger
 
                 elif file_extension.lower() in ['.xml', '.zip']:
-                    self.cgmes_circuit = CgmesCircuit(text_func=text_func,
-                                                      progress_func=progress_func,
-                                                      logger=self.cgmes_logger)
-                    self.cgmes_circuit.parse_files(files=[self.file_name])
+                    data_parser = CgmesDataParser(text_func=text_func, progress_func=progress_func,
+                                                  logger=self.cgmes_logger)
+                    data_parser.load_files(files=[self.file_name])
+                    self.cgmes_circuit = CgmesCircuit(cgmes_version=data_parser.cgmes_version, text_func=text_func,
+                                                      progress_func=progress_func, logger=self.cgmes_logger)
+                    self.cgmes_circuit.parse_files(data_parser=data_parser)
                     # self.cgmes_circuit.to_excel(fname=r'C:\Users\BenceSzirbik\Downloads\excel.xlsx')
                     self.circuit = cgmes_to_gridcal(cgmes_model=self.cgmes_circuit, logger=self.cgmes_logger)
 
@@ -356,19 +360,15 @@ class FileSave:
 
         logger = Logger()
 
-        dfs = gather_model_as_data_frames(self.circuit)
+        dfs = create_data_frames(self.circuit)
 
-        model_data = gather_model_as_jsons(self.circuit)
-
-        save_gridcal_data_to_zip(dfs=dfs,
-                                 filename_zip=self.file_name,
-                                 model_data=model_data,
-                                 sessions=self.sessions,
-                                 diagrams=self.circuit.diagrams,
-                                 json_files=self.json_files,
-                                 text_func=self.text_func,
-                                 progress_func=self.progress_func,
-                                 logger=logger)
+        save_data_frames_to_zip(dfs=dfs,
+                                filename_zip=self.file_name,
+                                sessions=self.sessions,
+                                diagrams=self.circuit.diagrams,
+                                json_files=self.json_files,
+                                text_func=self.text_func,
+                                progress_func=self.progress_func)
 
         return logger
 
@@ -380,7 +380,7 @@ class FileSave:
 
         logger = Logger()
 
-        dfs = gather_model_as_data_frames(self.circuit)
+        dfs = create_data_frames(self.circuit)
 
         save_data_frames_to_sqlite(dfs,
                                    file_path=self.file_name,
