@@ -146,15 +146,45 @@ def compute_branch_power_derivatives(alltapm, alltapt, V, k_m, k_tau, k_mtau, Cf
 
 
 
-def compute_branch_power_second_derivatives(alltapm, alltapt, vm, va, k_m, k_tau, k_mtau, Cf, Ct, Yf, Yt, R, X, lam, mu):
+def compute_branch_power_second_derivatives(alltapm, alltapt, vm, va, k_m, k_tau, Cf, Ct, R, X, lam, mu):
     ys = 1.0 / (R + 1.0j * X + 1e-20)
     V = vm * np.exp(1j * va)
     Vf = Cf @ V
     Vt = Ct @ V
     N = len(alltapm)
+    M = int(len(mu) / 2)
     ntapm = len(k_m)
     ntapt = len(k_tau)
 
+    dSbusdmdm = lil_matrix((ntapm, ntapm))
+    dSfdmdm = lil_matrix((ntapm, ntapm), dtype=complex)
+    dStdmdm = lil_matrix((ntapm, ntapm), dtype=complex)
+
+    dSbusdmdva = lil_matrix((N, ntapm))
+    dSfdmdva = lil_matrix((N, ntapm), dtype=complex)
+    dStdmdva = lil_matrix((N, ntapm), dtype=complex)
+
+    dSbusdmdvm = lil_matrix((N, ntapm))
+    dSfdmdvm = lil_matrix((N, ntapm), dtype=complex)
+    dStdmdvm = lil_matrix((N, ntapm), dtype=complex)
+
+    dSbusdtdt = lil_matrix((ntapt, ntapt))
+    dSfdtdt = lil_matrix((ntapt, ntapt), dtype=complex)
+    dStdtdt = lil_matrix((ntapt, ntapt), dtype=complex)
+
+    dSbusdtdva = lil_matrix((N, ntapt))
+    dSfdtdva = lil_matrix((N, ntapt), dtype=complex)
+    dStdtdva = lil_matrix((N, ntapt), dtype=complex)
+
+    dSbusdtdvm = lil_matrix((N, ntapt))
+    dSfdtdvm = lil_matrix((N, ntapt), dtype=complex)
+    dStdtdvm = lil_matrix((N, ntapt), dtype=complex)
+
+    dSbusdmdt = lil_matrix((ntapt, ntapm))
+    dSfdmdt = lil_matrix((ntapt, ntapm), dtype=complex)
+    dStdmdt = lil_matrix((ntapt, ntapm), dtype=complex)
+
+    '''
     GdSfdmdm = lil_matrix((ntapm, ntapm), dtype=complex)
     GdStdmdm = lil_matrix((ntapm, ntapm), dtype=complex)
     dSfdmdm = lil_matrix((ntapm, ntapm), dtype=complex)
@@ -189,6 +219,8 @@ def compute_branch_power_second_derivatives(alltapm, alltapt, vm, va, k_m, k_tau
     GdStdmdt = lil_matrix((ntapt, ntapm), dtype=complex)
     dSfdmdt = lil_matrix((ntapt, ntapm), dtype=complex)
     dStdmdt = lil_matrix((ntapt, ntapm), dtype=complex)
+    '''
+
 
     for mod, line in enumerate(k_m):
         Vf_ = Vf[line]
@@ -197,8 +229,8 @@ def compute_branch_power_second_derivatives(alltapm, alltapt, vm, va, k_m, k_tau
         tau = alltapt[line]
         yk = ys[line]
 
-        f = np.nonzero(Cf[line])[0]
-        t = np.nonzero(Ct[line])[0]
+        f = np.nonzero(Cf[line])[1]
+        t = np.nonzero(Ct[line])[1]
 
         dSfdmdm_ = Vf_ * ((6 * np.conj(yk * Vf_) / mp ** 4) - 2 * np.conj(yk * Vt_) / (mp ** 3 * np.exp(1j * tau)))
         dStdmdm_ = - Vt_ * 2 * np.conj(yk * Vf_) / (mp ** 3 * np.exp(-1j * tau))
@@ -223,34 +255,72 @@ def compute_branch_power_second_derivatives(alltapm, alltapt, vm, va, k_m, k_tau
             dSfdmdt_ = - Vf_ * 1j * (np.conj(yk * Vt_) / (mp ** 2 * np.exp(1j * tau)))
             dStdmdt_ = Vt_ * 1j * (np.conj(yk * Vf_) / (mp ** 2 * np.exp(-1j * tau)))
 
+            dSbusdmdt[ang, mod] = ((dSfdmdt_ * lam[f]).real + (dSfdmdt_ * lam[f + N]).imag
+                                   + (dStdmdt_ * lam[t]).real + (dStdmdt_ * lam[t + N]).imag)
+            dSfdmdt[ang, mod] = dSfdmdt_ * mu[line]
+            dStdmdt[ang, mod] = dStdmdt_ * mu[line + M]
+
+        dSbusdmdm[mod, mod] = ((dSfdmdm_ * lam[f]).real + (dSfdmdm_ * lam[f + N]).imag
+                               + (dStdmdm_ * lam[t]).real + (dStdmdm_ * lam[t + N]).imag)
+        dSfdmdm[mod, mod] = dSfdmdm_ * mu[line]
+        dStdmdm[mod, mod] = dStdmdm_ * mu[line + M]
+
+        dSbusdmdva[f, mod] = ((dSfdmdva_f * lam[f]).real + (dSfdmdva_f * lam[f + N]).imag
+                              + (dStdmdva_f * lam[t]).real + (dStdmdva_f * lam[t + N]).imag)
+        dSfdmdva[f, mod] = dSfdmdva_f * mu[line]
+        dStdmdva[f, mod] = dStdmdva_f * mu[line + M]
+
+        dSbusdmdva[t, mod] = ((dSfdmdva_t * lam[f]).real + (dSfdmdva_t * lam[f + N]).imag
+                              + (dStdmdva_t * lam[t]).real + (dStdmdva_t * lam[t + N]).imag)
+        dSfdmdva[t, mod] = dSfdmdva_t * mu[line]
+        dStdmdva[t, mod] = dStdmdva_t * mu[line + M]
+
+        dSbusdmdvm[f, mod] = ((dSfdmdvm_f * lam[f]).real + (dSfdmdvm_f * lam[f + N]).imag
+                              + (dStdmdvm_f * lam[t]).real + (dStdmdvm_f * lam[t + N]).imag)
+        dSfdmdvm[f, mod] = dSfdmdvm_f * mu[line]
+        dStdmdvm[f, mod] = dStdmdvm_f * mu[line + M]
+
+        dSbusdmdvm[t, mod] = ((dSfdmdvm_t * lam[f]).real + (dSfdmdvm_t * lam[f + N]).imag
+                              + (dStdmdvm_t * lam[t]).real + (dStdmdvm_t * lam[t + N]).imag)
+        dSfdmdvm[t, mod] = dSfdmdvm_t * mu[line]
+        dStdmdvm[t, mod] = dStdmdvm_t * mu[line + M]
+
+        '''
+        l = np.where(k_tau == line)[0]
+        if len(l) != 0:
+            ang = l[0]
+
+            dSfdmdt_ = - Vf_ * 1j * (np.conj(yk * Vt_) / (mp ** 2 * np.exp(1j * tau)))
+            dStdmdt_ = Vt_ * 1j * (np.conj(yk * Vf_) / (mp ** 2 * np.exp(-1j * tau)))
+
             GdSfdmdt[ang, mod] = (dSfdmdt_ * lam[f]).real + (dSfdmdt_ * lam[f + N]).imag
             GdStdmdt[ang, mod] = (dStdmdt_ * lam[t]).real + (dStdmdt_ * lam[t + N]).imag
-            dSfdmdt[ang, mod] = dSfdmdt_ * mu[f]
-            dStdmdt[ang, mod] = dStdmdt_ * mu[t]
+            dSfdmdt[ang, mod] = dSfdmdt_ * mu[line]
+            dStdmdt[ang, mod] = dStdmdt_ * mu[line + M]
 
         GdSfdmdm[mod, mod] = (dSfdmdm_ * lam[f]).real + (dSfdmdm_ * lam[f + N]).imag
         GdStdmdm[mod, mod] = (dStdmdm_ * lam[t]).real + (dStdmdm_ * lam[t + N]).imag
-        dSfdmdm[mod, mod] = dSfdmdm_ * mu[f]
-        dStdmdm[mod, mod] = dStdmdm_ * mu[t]
+        dSfdmdm[mod, mod] = dSfdmdm_ * mu[line]
+        dStdmdm[mod, mod] = dStdmdm_ * mu[line + M]
 
         GdSfdmdva[f, mod] = (dSfdmdva_f * lam[f]).real + (dSfdmdva_f * lam[f + N]).imag
         GdStdmdva[f, mod] = (dStdmdva_f * lam[t]).real + (dStdmdva_f * lam[t + N]).imag
-        dSfdmdva[f, mod] = dSfdmdva_f * mu[f]
-        dStdmdva[f, mod] = dStdmdva_f * mu[t]
+        dSfdmdva[f, mod] = dSfdmdva_f * mu[line]
+        dStdmdva[f, mod] = dStdmdva_f * mu[line + M]
         GdSfdmdva[t, mod] = (dSfdmdva_t * lam[f]).real + (dSfdmdva_t * lam[f + N]).imag
         GdStdmdva[t, mod] = (dStdmdva_t * lam[t]).real + (dStdmdva_t * lam[t + N]).imag
-        dSfdmdva[t, mod] = dSfdmdva_t * mu[f]
-        dStdmdva[t, mod] = dStdmdva_t * mu[t]
+        dSfdmdva[t, mod] = dSfdmdva_t * mu[line]
+        dStdmdva[t, mod] = dStdmdva_t * mu[line + M]
 
         GdSfdmdvm[f, mod] = (dSfdmdvm_f * lam[f]).real + (dSfdmdvm_f * lam[f + N]).imag
         GdStdmdvm[f, mod] = (dStdmdvm_f * lam[t]).real + (dStdmdvm_f * lam[t + N]).imag
-        dSfdmdvm[f, mod] = dSfdmdvm_f * mu[f]
-        dStdmdvm[f, mod] = dStdmdvm_f * mu[t]
+        dSfdmdvm[f, mod] = dSfdmdvm_f * mu[line]
+        dStdmdvm[f, mod] = dStdmdvm_f * mu[line + M]
         GdSfdmdvm[t, mod] = (dSfdmdvm_t * lam[f]).real + (dSfdmdvm_t * lam[f + N]).imag
         GdStdmdvm[t, mod] = (dStdmdvm_t * lam[t]).real + (dStdmdvm_t * lam[t + N]).imag
-        dSfdmdvm[t, mod] = dSfdmdvm_t * mu[f]
-        dStdmdvm[t, mod] = dStdmdvm_t * mu[t]
-
+        dSfdmdvm[t, mod] = dSfdmdvm_t * mu[line]
+        dStdmdvm[t, mod] = dStdmdvm_t * mu[line + M]
+        '''
     for ang, line in enumerate(k_tau):
         Vf_ = Vf[line]
         Vt_ = Vt[line]
@@ -261,44 +331,71 @@ def compute_branch_power_second_derivatives(alltapm, alltapt, vm, va, k_m, k_tau
         f = np.nonzero(Cf[line])[0]
         t = np.nonzero(Ct[line])[0]
 
-        dSfdtdt_ = Vf_ * np.conj(ys * Vt_) / (mp * np.exp(1j * tau))
-        dStdtdt_ = Vt_ * np.conj(ys * Vf_) / (mp * np.exp(-1j * tau))
+        dSfdtdt_ = Vf_ * np.conj(yk * Vt_) / (mp * np.exp(1j * tau))
+        dStdtdt_ = Vt_ * np.conj(yk * Vf_) / (mp * np.exp(-1j * tau))
 
-        dSfdtdva_f = - Vf_ * np.conj(ys * Vt_) / (mp * np.exp(1j * tau))
-        dSfdtdva_t = Vf_ * np.conj(ys * Vt_) / (mp * np.exp(1j * tau))
+        dSfdtdva_f = - Vf_ * np.conj(yk * Vt_) / (mp * np.exp(1j * tau))
+        dSfdtdva_t = Vf_ * np.conj(yk * Vt_) / (mp * np.exp(1j * tau))
 
-        dStdtdva_f = Vt_ * np.conj(ys * Vf_) / (mp * np.exp(-1j * tau))
-        dStdtdva_t = - Vt_ * np.conj(ys * Vf_) / (mp * np.exp(-1j * tau))
+        dStdtdva_f = Vt_ * np.conj(yk * Vf_) / (mp * np.exp(-1j * tau))
+        dStdtdva_t = - Vt_ * np.conj(yk * Vf_) / (mp * np.exp(-1j * tau))
 
-        dSfdtdvm_f = 1j * Vf_ * (1 / vm[f]) * np.conj(ys * Vt_) / (mp * np.exp(1j * tau))
-        dSfdtdvm_t = 1j * Vf_ * (1 / vm[t]) * np.conj(ys * Vt_) / (mp * np.exp(1j * tau))
+        dSfdtdvm_f = 1j * Vf_ * (1 / vm[f]) * np.conj(yk * Vt_) / (mp * np.exp(1j * tau))
+        dSfdtdvm_t = 1j * Vf_ * (1 / vm[t]) * np.conj(yk * Vt_) / (mp * np.exp(1j * tau))
 
-        dStdtdvm_f = -1j * Vt_ * (1 / vm[f]) * np.conj(ys * Vf_) / (mp * np.exp(-1j * tau))
-        dStdtdvm_t = -1j * Vt_ * (1 / vm[t]) * np.conj(ys * Vf_) / (mp * np.exp(-1j * tau))
+        dStdtdvm_f = -1j * Vt_ * (1 / vm[f]) * np.conj(yk * Vf_) / (mp * np.exp(-1j * tau))
+        dStdtdvm_t = -1j * Vt_ * (1 / vm[t]) * np.conj(yk * Vf_) / (mp * np.exp(-1j * tau))
 
-        GdSfdtdt[ang, ang] = (dSfdtdt_ * lam[f]).real + (dSfdtdt_ * lam[f + N]).imag
-        GdStdtdt[ang, ang] = (dStdtdt_ * lam[t]).real + (dStdtdt_ * lam[t + N]).imag
-        dSfdtdt[ang, ang] = dSfdtdt_ * mu[f]
-        dStdtdt[ang, ang] = dStdtdt_ * mu[t]
+        dSbusdtdt[ang, ang] = ((dSfdtdt_ * lam[f]).real + (dSfdtdt_ * lam[f + N]).imag
+                               + (dStdtdt_ * lam[t]).real + (dStdtdt_ * lam[t + N]).imag)
+        dSfdtdt[ang, ang] = dSfdtdt_ * mu[line]
+        dStdtdt[ang, ang] = dStdtdt_ * mu[line + M]
 
+        dSbusdtdva[f, ang] = ((dSfdtdva_f * lam[f]).real + (dSfdtdva_f * lam[f + N]).imag
+                              + (dStdtdva_f * lam[t]).real + (dStdtdva_f * lam[t + N]).imag)
+        dSfdtdva[f, ang] = dSfdtdva_f * mu[line]
+        dStdtdva[f, ang] = dStdtdva_f * mu[line + M]
+
+        dSbusdtdva[t, ang] = ((dSfdtdva_t * lam[f]).real + (dSfdtdva_t * lam[f + N]).imag
+                              + (dStdtdva_t * lam[t]).real + (dStdtdva_t * lam[t + N]).imag)
+        dSfdtdva[t, ang] = dSfdtdva_t * mu[line]
+        dStdtdva[t, ang] = dStdtdva_t * mu[line + M]
+
+        dSbusdtdvm[f, ang] = ((dSfdtdvm_f * lam[f]).real + (dSfdtdvm_f * lam[f + N]).imag
+                              + (dStdtdvm_f * lam[t]).real + (dStdtdvm_f * lam[t + N]).imag)
+        dSfdtdvm[f, ang] = dSfdtdvm_f * mu[line]
+        dStdtdvm[f, ang] = dStdtdvm_f * mu[line + M]
+
+        dSbusdtdvm[t, ang] = ((dSfdtdvm_t * lam[f]).real + (dSfdtdvm_t * lam[f + N]).imag
+                              + (dStdtdvm_t * lam[t]).real + (dStdtdvm_t * lam[t + N]).imag)
+        dSfdtdvm[t, ang] = dSfdtdvm_t * mu[line]
+        dStdtdvm[t, ang] = dStdtdvm_t * mu[line + M]
+
+        dSbusdtdt[ang, ang] = ((dSfdtdt_ * lam[f]).real + (dSfdtdt_ * lam[f + N]).imag
+                               + (dStdtdt_ * lam[t]).real + (dStdtdt_ * lam[t + N]).imag)
+        dSfdtdt[ang, ang] = dSfdtdt_ * mu[line]
+        dStdtdt[ang, ang] = dStdtdt_ * mu[line + M]
+        '''
         GdSfdtdva[f, ang] = (dSfdtdva_f * lam[f]).real + (dSfdtdva_f * lam[f + N]).imag
         GdStdtdva[f, ang] = (dStdtdva_f * lam[t]).real + (dStdtdva_f * lam[t + N]).imag
-        dSfdtdva[f, ang] = dSfdtdva_f * mu[f]
-        dStdtdva[f, ang] = dStdtdva_f * mu[t]
+        dSfdtdva[f, ang] = dSfdtdva_f * mu[line]
+        dStdtdva[f, ang] = dStdtdva_f * mu[line + M]
         GdSfdtdva[t, ang] = (dSfdtdva_t * lam[f]).real + (dSfdtdva_t * lam[f + N]).imag
         GdStdtdva[t, ang] = (dStdtdva_t * lam[t]).real + (dStdtdva_t * lam[t + N]).imag
-        dSfdtdva[t, ang] = dSfdtdva_t * mu[f]
-        dStdtdva[t, ang] = dStdtdva_t * mu[t]
+        dSfdtdva[t, ang] = dSfdtdva_t * mu[line]
+        dStdtdva[t, ang] = dStdtdva_t * mu[line + M]
 
         GdSfdtdvm[f, ang] = (dSfdtdvm_f * lam[f]).real + (dSfdtdvm_f * lam[f + N]).imag
         GdStdtdvm[f, ang] = (dStdtdvm_f * lam[t]).real + (dStdtdvm_f * lam[t + N]).imag
-        dSfdtdvm[f, ang] = dSfdtdvm_f * mu[f]
-        dStdtdvm[f, ang] = dStdtdvm_f * mu[t]
+        dSfdtdvm[f, ang] = dSfdtdvm_f * mu[line]
+        dStdtdvm[f, ang] = dStdtdvm_f * mu[line + M]
         GdSfdtdvm[t, ang] = (dSfdtdvm_t * lam[f]).real + (dSfdtdvm_t * lam[f + N]).imag
         GdStdtdvm[t, ang] = (dStdtdvm_t * lam[t]).real + (dStdtdvm_t * lam[t + N]).imag
-        dSfdtdvm[t, ang] = dSfdtdvm_t * mu[f]
-        dStdtdvm[t, ang] = dStdtdvm_t * mu[t]
+        dSfdtdvm[t, ang] = dSfdtdvm_t * mu[line]
+        dStdtdvm[t, ang] = dStdtdvm_t * mu[line + M]
+        '''
 
+    '''
     dSbusdmdm = Cf.T @ GdSfdmdm + Ct.T @ dStdmdm
     dSbusdmdvm = Cf.T @ GdSfdmdvm + Ct.T @ dStdmdvm
     dSbusdmdva = Cf.T @ GdSfdmdva + Ct.T @ dStdmdva
@@ -306,8 +403,7 @@ def compute_branch_power_second_derivatives(alltapm, alltapt, vm, va, k_m, k_tau
     dSbusdtdt = Cf.T @ GdSfdtdt + Ct.T @ dStdtdt
     dSbusdtdvm = Cf.T @ GdSfdtdvm + Ct.T @ dStdtdvm
     dSbusdtdva = Cf.T @ GdSfdtdva + Ct.T @ dStdtdva
-
-    dSbusdt = Cf.T @ dSfdt + Ct.T @ dStdt
+    '''
 
     return (dSbusdmdm, dSfdmdm, dStdmdm,
             dSbusdmdvm, dSfdmdvm, dStdmdvm,
@@ -348,7 +444,7 @@ def compute_finitediff_admittances(nc, tol=1e-6):
     return dYbusdm, dYfdm, dYtdm, dYbusdt, dYfdt, dYtdt
 
 
-def compute_analytic_admittances_2dev(alltapm, alltapt, k_m, k_tau, k_mtau, Cf, Ct, R, X):
+def compute_analytic_admittances_2dev(alltapm, alltapt, k_m, k_tau, Cf, Ct, R, X):
     ys = 1.0 / (R + 1.0j * X + 1e-20)
     N = len(alltapm)
 
@@ -761,7 +857,7 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
 
         ######## OBJECTIVE FUNCITON HESS
 
-        fxx = diags((np.r_[np.zeros(2 * N), 2 * c2 * (Sbase ** 2), np.zeros(Ng)]) * 1e-4).tocsc()
+        fxx = diags((np.r_[np.zeros(2 * N), 2 * c2 * (Sbase ** 2), np.zeros(Ng + ntapm + ntapt)]) * 1e-4).tocsc()
 
         ######## EQUALITY CONSTRAINTS HESS
 
@@ -801,50 +897,20 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
         Gvv = Gvv_p.real + Gvv_q.imag
 
         if ntapm + ntapt != 0:
+            (GSdmdm, dSfdmdm, dStdmdm,
+            GSdmdvm, dSfdmdvm, dStdmdvm,
+            GSdmdva, dSfdmdva, dStdmdva,
+            GSdmdt, dSfdmdt, dStdmdt,
+            GSdtdt, dSfdtdt, dStdtdt,
+            GSdtdvm, dSfdtdvm, dStdtdvm,
+            GSdtdva, dSfdtdva, dStdtdva) = compute_branch_power_second_derivatives(alltapm, alltapt, vm, va, k_m,
+                                                                                      k_tau, Cf, Ct, R, X,
+                                                                                      lmbda[0: 2*N], mu[0: 2*M])
 
-            (dYbusdmdm, dYfdmdm, dYtdmdm,
-             dYbusdmdt, dYfdmdt, dYtdmdt,
-             dYbusdtdm, dYfdtdm, dYtdtdm,
-             dYbusdtdt, dYfdtdt, dYtdtdt) = compute_analytic_admittances_2dev(alltapm, alltapt, k_m, k_tau,
-                                                                              k_mtau, Cf, Ct, R, X)
-
-            Gtapmvm_p = (E @ np.conj(dYbusdm @ V) + Vmat @ np.conj(dYbusdm @ E)).T @ lam_p
-            Gtapmvm_q = (E @ np.conj(dYbusdm @ V) + Vmat @ np.conj(dYbusdm @ E)).T @ lam_q
-            Gtapmvm = Gtapmvm_p.real + Gtapmvm_q.imag
-            Gvmtapm = Gtapmvm.T
-
-            Gtapmva_p = (Vva @ np.conj(dYbusdm @ V) + Vmat @ np.conj(dYbusdm @ Vva)).T @ lam_p
-            Gtapmva_q = (Vva @ np.conj(dYbusdm @ V) + Vmat @ np.conj(dYbusdm @ Vva)).T @ lam_q
-            Gtapmva = Gtapmva_p.real + Gtapmva_q.imag
-            Gvatapm = Gtapmva.T
-
-            Gtaptvm_p = (E @ np.conj(dYbusdt @ V) + Vmat @ np.conj(dYbusdt @ E)).T @ lam_p
-            Gtaptvm_q = (E @ np.conj(dYbusdt @ V) + Vmat @ np.conj(dYbusdt @ E)).T @ lam_q
-            Gtaptvm = Gtaptvm_p.real + Gtaptvm_q.imag
-            Gvmtapt = Gtaptvm.T
-
-            Gtaptva_p = (Vva @ np.conj(dYbusdt @ V) + Vmat @ np.conj(dYbusdt @ Vva)).T @ lam_p
-            Gtaptva_q = (Vva @ np.conj(dYbusdt @ V) + Vmat @ np.conj(dYbusdt @ Vva)).T @ lam_q
-            Gtaptva = Gtaptva_p.real + Gtaptva_q.imag
-            Gvatapt = Gtaptva.T
-
-            Gtapmtapm_p = (Vmat @ np.conj(dYbusdmdm @ V)).T @ lam_p
-            Gtapmtapm_q = (Vmat @ np.conj(dYbusdmdm @ V)).T @ lam_q
-            Gtapmtapm = Gtapmtapm_p.real + Gtapmtapm_q.imag
-
-            Gtapttapt_p = (Vmat @ np.conj(dYbusdtdt @ V)).T @ lam_p
-            Gtapttapt_q = (Vmat @ np.conj(dYbusdtdt @ V)).T @ lam_q
-            Gtapttapt = Gtapttapt_p.real + Gtapttapt_q.imag
-
-            Gtapmtapt_p = (Vmat @ np.conj(dYbusdmdt @ V)).T @ lam_p
-            Gtapmtapt_q = (Vmat @ np.conj(dYbusdmdt @ V)).T @ lam_q
-            Gtapmtapt = Gtapmtapt_p.real + Gtapmtapt_q.imag
-            Gtapttapm = Gtapmtapt.T
-
-            G1 = sp.hstack([Gaa, Gav, lil_matrix((N, 2 * Ng)), Gvatapm, Gvatapt])
-            G2 = sp.hstack([Gva, Gvv, lil_matrix((N, 2 * Ng)), Gvmtapm, Gvmtapt])
-            G3 = sp.hstack([Gtapmva, Gtapmvm, lil_matrix((ntapm, 2 * Ng)), Gtapmtapm, Gtapmtapt])
-            G4 = sp.hstack([Gtaptva, Gtaptva, lil_matrix((ntapt, 2 * Ng)), Gtapttapm, Gtapttapt])
+            G1 = sp.hstack([Gaa, Gav, lil_matrix((N, 2 * Ng)), GSdmdva, GSdtdva])
+            G2 = sp.hstack([Gva, Gvv, lil_matrix((N, 2 * Ng)), GSdmdvm, GSdtdvm])
+            G3 = sp.hstack([GSdmdva.T, GSdmdvm.T, lil_matrix((ntapm, 2 * Ng)), GSdmdm, GSdmdt.T])
+            G4 = sp.hstack([GSdtdva.T, GSdtdvm.T, lil_matrix((ntapt, 2 * Ng)), GSdmdt, GSdtdt])
 
             Gxx = sp.vstack([G1, G2, lil_matrix((2 * Ng, NV)), G3, G4]).tocsc()
 
@@ -895,61 +961,43 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
         Htvmvm = 2 * (Stvmvm + Stvm.T @ mut_mat @ np.conj(Stvm)).real
 
         if ntapm + ntapt != 0:
-            Sftapmva = (Vfmat @ np.conj(dYbusdm @ Vva) + Cf @ diags(Cf @ Vva) @ np.conj(dYbusdm @ V)).T @ muf
-            Sttapmva = (Vtmat @ np.conj(dYbusdm @ Vva) + Ct @ diags(Ct @ Vva) @ np.conj(dYbusdm @ V)).T @ mut
 
-            Sftapmvm = (Vfmat @ np.conj(dYbusdm @ E) + Cf @ diags(Cf @ E) @ np.conj(dYbusdm @ V)).T @ muf
-            Sttapmvm = (Vtmat @ np.conj(dYbusdm @ E) + Ct @ diags(Ct @ E) @ np.conj(dYbusdm @ V)).T @ mut
+            Hftapmva = 2 * (dSfdmdva.T + Sftapm.T @ muf_mat @ np.conj(Sfva)).real
+            Hftapmvm = 2 * (dSfdmdvm.T + Sftapm.T @ muf_mat @ np.conj(Sfvm)).real
+            Hftaptva = 2 * (dSfdtdva.T + Sftapt.T @ muf_mat @ np.conj(Sfva)).real
+            Hftaptvm = 2 * (dSfdtdvm.T + Sftapt.T @ muf_mat @ np.conj(Sfvm)).real
+            Hftapmtapm = 2 * (dSfdmdm.T + Sftapm.T @ muf_mat @ np.conj(Sftapm)).real
+            Hftapttapt = 2 * (dSfdtdt.T + Sftapt.T @ muf_mat @ np.conj(Sftapt)).real
+            Hftapmtapt = 2 * (dSfdmdt.T + Sftapm.T @ muf_mat @ np.conj(Sftapt)).real
 
-            Sftaptva = (Vfmat @ np.conj(dYbusdt @ Vva) + Cf @ diags(Cf @ Vva) @ np.conj(dYbusdt @ V)).T @ muf
-            Sttaptva = (Vtmat @ np.conj(dYbusdt @ Vva) + Ct @ diags(Ct @ Vva) @ np.conj(dYbusdt @ V)).T @ mut
-
-            Sftaptvm = (Vfmat @ np.conj(dYbusdt @ E) + Cf @ diags(Cf @ E) @ np.conj(dYbusdt @ V)).T @ muf
-            Sttaptvm = (Vtmat @ np.conj(dYbusdt @ E) + Ct @ diags(Ct @ E) @ np.conj(dYbusdt @ V)).T @ mut
-
-            Sftapmtapm = (Vfmat @ np.conj(dYbusdmdm @ V)).T @ muf
-            Sttapmtapm = (Vtmat @ np.conj(dYbusdmdm @ V)).T @ mut
-
-            Sftapttapt = (Vfmat @ np.conj(dYbusdmdm @ V)).T @ muf
-            Sttapttapt = (Vtmat @ np.conj(dYbusdtdt @ V)).T @ mut
-
-            Sftapmtapt = (Vfmat @ np.conj(dYbusdmdt @ V)).T @ muf
-            Sttapmtapt = (Vtmat @ np.conj(dYbusdmdt @ V)).T @ mut
-
-            Hftapmva = 2 * (Sftapmva + Sftapm.T @ muf_mat @ np.conj(Sfva)).real
-            Hftapmvm = 2 * (Sftapmvm + Sftapm.T @ muf_mat @ np.conj(Sfvm)).real
-            Hftaptva = 2 * (Sftaptva + Sftapt.T @ muf_mat @ np.conj(Sfva)).real
-            Hftaptvm = 2 * (Sftaptvm + Sftapt.T @ muf_mat @ np.conj(Sfvm)).real
-            Hftapmtapm = 2 * (Sftapmtapm + Sftapm.T @ muf_mat @ np.conj(Sftapm)).real
-            Hftapttapt = 2 * (Sftapttapt + Sftapt.T @ muf_mat @ np.conj(Sftapt)).real
-            Hftapmtapt = 2 * (Sftapmtapt + Sftapm.T @ muf_mat @ np.conj(Sftapt)).real
-
-            Httapmva = 2 * (Sttapmva + Sttapm.T @ mut_mat @ np.conj(Stva)).real
-            Httapmvm = 2 * (Sttapmvm + Sttapm.T @ mut_mat @ np.conj(Stvm)).real
-            Httaptva = 2 * (Sttaptva + Sttapt.T @ mut_mat @ np.conj(Stva)).real
-            Httaptvm = 2 * (Sttaptvm + Sttapt.T @ mut_mat @ np.conj(Stvm)).real
-            Httapmtapm = 2 * (Sttapmtapm + Sttapm.T @ mut_mat @ np.conj(Sttapm)).real
-            Httapttapt = 2 * (Sttapttapt + Sttapt.T @ mut_mat @ np.conj(Sttapt)).real
-            Httapmtapt = 2 * (Sttapmtapt + Sttapm.T @ mut_mat @ np.conj(Sttapt)).real
+            Httapmva = 2 * (dStdmdva.T + Sttapm.T @ mut_mat @ np.conj(Stva)).real
+            Httapmvm = 2 * (dStdmdvm.T + Sttapm.T @ mut_mat @ np.conj(Stvm)).real
+            Httaptva = 2 * (dStdtdva.T + Sttapt.T @ mut_mat @ np.conj(Stva)).real
+            Httaptvm = 2 * (dStdtdvm.T + Sttapt.T @ mut_mat @ np.conj(Stvm)).real
+            Httapmtapm = 2 * (dStdmdm.T + Sttapm.T @ mut_mat @ np.conj(Sttapm)).real
+            Httapttapt = 2 * (dStdtdt.T + Sttapt.T @ mut_mat @ np.conj(Sttapt)).real
+            Httapmtapt = 2 * (dStdmdt.T + Sttapm.T @ mut_mat @ np.conj(Sttapt)).real
 
             H1 = sp.hstack([Hfvava + Htvava, Hfvavm + Htvavm, lil_matrix((N, 2 * Ng)),
                             Hftapmva.T + Httapmva.T, Hftaptva.T + Httaptva.T])
             H2 = sp.hstack([Hfvmva + Htvmva, Hfvmvm + Htvmvm, lil_matrix((N, 2 * Ng)),
                             Hftapmvm.T + Httapmvm.T, Hftaptvm.T + Httaptvm.T])
-            H3 = sp.hstack([Hftapmva + Httapmva, Hftapmvm + Httapmvm, lil_matrix((ntapm, 2 * Ng)),
+            H3 = sp.hstack([lil_matrix((Ng, 2 * N)), Hqpgpg, lil_matrix((Ng, Ng + ntapm + ntapt))])
+            H4 = sp.hstack([lil_matrix((Ng, 2 * N + Ng)), Hqqgqg, lil_matrix((Ng, ntapm + ntapt))])
+            H5 = sp.hstack([Hftapmva + Httapmva, Hftapmvm + Httapmvm, lil_matrix((ntapm, 2 * Ng)),
                             Hftapmtapm + Httapmtapm, Hftapmtapt + Httapmtapt])
-            H4 = sp.hstack([Hftaptva + Httaptva, Hftaptvm + Httaptvm, lil_matrix((ntapt, 2 * Ng)),
+            H6 = sp.hstack([Hftaptva + Httaptva, Hftaptvm + Httaptvm, lil_matrix((ntapt, 2 * Ng)),
                             Hftapmtapt.T + Httapmtapt.T, Hftapttapt + Httapttapt])
 
-            Hxx = sp.vstack([H1, H2, lil_matrix((2 * Ng, NV)), H3, H4]).tocsc()
-
-        H1 = sp.hstack([Hfvava + Htvava, Hfvavm + Htvavm, lil_matrix((N, 2 * Ng))])
-        H2 = sp.hstack([Hfvmva + Htvmva, Hfvmvm + Htvmvm, lil_matrix((N, 2 * Ng))])
-        H3 = sp.hstack([lil_matrix((Ng, 2 * N)), Hqpgpg, lil_matrix((Ng, Ng))])
-        H4 = sp.hstack([lil_matrix((Ng, 2 * N + Ng)), Hqqgqg])
+            Hxx = sp.vstack([H1, H2, H3, H4, H5, H6]).tocsc()
+        else:
+            H1 = sp.hstack([Hfvava + Htvava, Hfvavm + Htvavm, lil_matrix((N, 2 * Ng))])
+            H2 = sp.hstack([Hfvmva + Htvmva, Hfvmvm + Htvmvm, lil_matrix((N, 2 * Ng))])
+            H3 = sp.hstack([lil_matrix((Ng, 2 * N)), Hqpgpg, lil_matrix((Ng, Ng))])
+            H4 = sp.hstack([lil_matrix((Ng, 2 * N + Ng)), Hqqgqg])
 
         # Hxx = sp.vstack([H1, H2, lil_matrix((2 * Ng, NV))]).tocsc()
-        Hxx = sp.vstack([H1, H2, H3, H4]).tocsc()
+            Hxx = sp.vstack([H1, H2, H3, H4]).tocsc()
 
     else:
         fxx = None
