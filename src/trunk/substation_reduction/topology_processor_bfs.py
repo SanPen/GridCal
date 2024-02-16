@@ -416,11 +416,11 @@ def topology_processor(grid: MultiCircuit, t_idx: Union[int, None], logger: Logg
 
     # create the connectivity matrices
     Cf, Ct, br_active = compute_connectivities(nbus_candidate=nbus_candidate,
-                                               all_branches=all_branches,
+                                               all_branches=grid.get_switches(),
                                                process_info=process_info,
                                                t_idx=t_idx)
 
-    print("Cf:\n", Cf.toarray())
+    # print("Cf:\n", Cf.toarray())
 
     # compose the adjacency matrix from the connectivity information
     A = get_adjacency_matrix(C_branch_bus_f=Cf.tocsc(),
@@ -428,12 +428,12 @@ def topology_processor(grid: MultiCircuit, t_idx: Union[int, None], logger: Logg
                              branch_active=br_active,
                              bus_active=bus_active)
 
-    latexA = ('$$\n' + r'\begin{bmatrix}' + '\n'
-              + (r'\\' + '\n').join('&'.join(str(x) for x in row) for row in A.toarray().astype(int)) + '\n'
-              + r'\end{bmatrix}' + '\n' + '$$')
-
-    print("A:\n", A.toarray())
-    print(latexA)
+    # latexA = ('$$\n' + r'\begin{bmatrix}' + '\n'
+    #           + (r'\\' + '\n').join('&'.join(str(x) for x in row) for row in A.toarray().astype(int)) + '\n'
+    #           + r'\end{bmatrix}' + '\n' + '$$')
+    #
+    # print("A:\n", A.toarray())
+    # print(latexA)
 
     # perform the topology search, this will find candidate buses that reduce to be the same bus
     # each island is finally a single calculation element

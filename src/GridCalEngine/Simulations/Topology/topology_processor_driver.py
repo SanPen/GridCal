@@ -252,7 +252,7 @@ def topology_processor(grid: MultiCircuit, t_idx: Union[int, None], logger: Logg
 
     # create the connectivity matrices
     Cf, Ct, br_active = compute_connectivities(nbus_candidate=nbus_candidate,
-                                               all_branches=all_branches,
+                                               all_branches=grid.get_switches(),
                                                process_info=process_info,
                                                t_idx=t_idx)
 
