@@ -113,11 +113,11 @@ def compute_branch_power_derivatives(alltapm, alltapt, V, k_m, k_tau, k_mtau, Cf
 
     Vf = Cf @ V
     Vt = Ct @ V
-
-    dSfdm = lil_matrix((len(alltapm), len(k_m)), dtype=complex)
-    dStdm = lil_matrix((len(alltapm), len(k_m)), dtype=complex)
-    dSfdt = lil_matrix((len(alltapm), len(k_tau)), dtype=complex)
-    dStdt = lil_matrix((len(alltapm), len(k_tau)), dtype=complex)
+    N = len(alltapm)
+    dSfdm = lil_matrix((N, len(k_m)), dtype=complex)
+    dStdm = lil_matrix((N, len(k_m)), dtype=complex)
+    dSfdt = lil_matrix((N, len(k_tau)), dtype=complex)
+    dStdt = lil_matrix((N, len(k_tau)), dtype=complex)
 
     for mod, line in enumerate(k_m):
         Vf_ = Vf[line]
@@ -126,9 +126,8 @@ def compute_branch_power_derivatives(alltapm, alltapt, V, k_m, k_tau, k_mtau, Cf
         tau = alltapt[line]
         yk = ys[line]
 
-        dSfdm[line, mod] = Vf_ * ((-2 * yk * Vf_ / mp ** 3) + yk * Vt_ / (mp ** 2 * np.exp(1j * tau)))
-
-        dStdm[line, mod] = Vt_ * ((yk * Vf_ / (mp ** 2 * np.exp(1j * tau))) + yk * Vt_ / (mp ** 2 * np.exp(-1j * tau)))
+        dSfdm[line, mod] = Vf_ * ((-2 * np.conj(yk * Vf_) / mp ** 3) + np.conj(yk * Vt_) / (mp ** 2 * np.exp(1j * tau)))
+        dStdm[line, mod] = Vt_ * (np.conj(yk * Vf_) / (mp ** 2 * np.exp(-1j * tau)))
 
     for ang, line in enumerate(k_tau):
         Vf_ = Vf[line]
@@ -137,9 +136,8 @@ def compute_branch_power_derivatives(alltapm, alltapt, V, k_m, k_tau, k_mtau, Cf
         tau = alltapt[line]
         yk = ys[line]
 
-        dSfdt[line, ang] = Vf_ * np.conj(-yk * Vt_ / (-1j * mp * np.exp(-1j * tau)))
-
-        dStdt[line, ang] = Vt_ * np.conj(-yk * Vf_ / (1j * mp * np.exp(1j * tau)))
+        dSfdt[line, ang] = Vf_ * 1j * np.conj(-yk * Vt_) / (mp * np.exp(1j * tau))
+        dStdt[line, ang] = Vt_ * -1j *  np.conj(-yk * Vf_) / (mp * np.exp(-1j * tau))
 
     dSbusdm = Cf.T @ dSfdm + Ct.T @ dStdm
     dSbusdt = Cf.T @ dSfdt + Ct.T @ dStdt
@@ -148,32 +146,49 @@ def compute_branch_power_derivatives(alltapm, alltapt, V, k_m, k_tau, k_mtau, Cf
 
 
 
-def compute_branch_power_second_derivatives(alltapm, alltapt, V, k_m, k_tau, k_mtau, Cf, Ct, Yf, Yt, R, X):
+def compute_branch_power_second_derivatives(alltapm, alltapt, vm, va, k_m, k_tau, k_mtau, Cf, Ct, Yf, Yt, R, X, lam, mu):
     ys = 1.0 / (R + 1.0j * X + 1e-20)
-
+    V = vm * np.exp(1j * va)
     Vf = Cf @ V
     Vt = Ct @ V
     N = len(alltapm)
     ntapm = len(k_m)
     ntapt = len(k_tau)
 
-    dSfdmdm = lil_matrix((N, N), dtype=complex)
-    dStdmdm = lil_matrix((N, N), dtype=complex)
+    GdSfdmdm = lil_matrix((ntapm, ntapm), dtype=complex)
+    GdStdmdm = lil_matrix((ntapm, ntapm), dtype=complex)
+    dSfdmdm = lil_matrix((ntapm, ntapm), dtype=complex)
+    dStdmdm = lil_matrix((ntapm, ntapm), dtype=complex)
 
-    dSfdmdt = lil_matrix((N, N), dtype=complex)
-    dStdmdt = lil_matrix((N, N), dtype=complex)
+    GdSfdmdva = lil_matrix((N, ntapm), dtype=complex)
+    GdStdmdva = lil_matrix((N, ntapm), dtype=complex)
+    dSfdmdva = lil_matrix((N, ntapm), dtype=complex)
+    dStdmdva = lil_matrix((N, ntapm), dtype=complex)
 
-    dSfdtdt = lil_matrix((N, N), dtype=complex)
-    dStdtdt = lil_matrix((N, N), dtype=complex)
+    GdSfdmdvm = lil_matrix((N, ntapm), dtype=complex)
+    GdStdmdvm = lil_matrix((N, ntapm), dtype=complex)
+    dSfdmdvm = lil_matrix((N, ntapm), dtype=complex)
+    dStdmdvm = lil_matrix((N, ntapm), dtype=complex)
 
-    dSfdmdm = lil_matrix((N, N), dtype=complex)
-    dStdmdm = lil_matrix((N, N), dtype=complex)
+    GdSfdtdt = lil_matrix((ntapt, ntapt), dtype=complex)
+    GdStdtdt = lil_matrix((ntapt, ntapt), dtype=complex)
+    dSfdtdt = lil_matrix((ntapt, ntapt), dtype=complex)
+    dStdtdt = lil_matrix((ntapt, ntapt), dtype=complex)
 
-    dSfdmdt = lil_matrix((N, N), dtype=complex)
-    dStdmdt = lil_matrix((N, N), dtype=complex)
+    GdSfdtdva = lil_matrix((N, ntapt), dtype=complex)
+    GdStdtdva = lil_matrix((N, ntapt), dtype=complex)
+    dSfdtdva = lil_matrix((N, ntapt), dtype=complex)
+    dStdtdva = lil_matrix((N, ntapt), dtype=complex)
 
-    dSfdtdt = lil_matrix((N, N), dtype=complex)
-    dStdtdt = lil_matrix((N, N), dtype=complex)
+    GdSfdtdvm = lil_matrix((N, ntapt), dtype=complex)
+    GdStdtdvm = lil_matrix((N, ntapt), dtype=complex)
+    dSfdtdvm = lil_matrix((N, ntapt), dtype=complex)
+    dStdtdvm = lil_matrix((N, ntapt), dtype=complex)
+
+    GdSfdmdt = lil_matrix((ntapt, ntapm), dtype=complex)
+    GdStdmdt = lil_matrix((ntapt, ntapm), dtype=complex)
+    dSfdmdt = lil_matrix((ntapt, ntapm), dtype=complex)
+    dStdmdt = lil_matrix((ntapt, ntapm), dtype=complex)
 
     for mod, line in enumerate(k_m):
         Vf_ = Vf[line]
@@ -182,9 +197,59 @@ def compute_branch_power_second_derivatives(alltapm, alltapt, V, k_m, k_tau, k_m
         tau = alltapt[line]
         yk = ys[line]
 
-        dSfdm[line, mod] = Vf_ * ((-2 * yk * Vf_ / mp ** 3) + yk * Vt_ / (mp ** 2 * np.exp(1j * tau)))
+        f = np.nonzero(Cf[line])[0]
+        t = np.nonzero(Ct[line])[0]
 
-        dStdm[line, mod] = Vt_ * ((yk * Vf_ / (mp ** 2 * np.exp(1j * tau))) + yk * Vt_ / (mp ** 2 * np.exp(-1j * tau)))
+        dSfdmdm_ = Vf_ * ((6 * np.conj(yk * Vf_) / mp ** 4) - 2 * np.conj(yk * Vt_) / (mp ** 3 * np.exp(1j * tau)))
+        dStdmdm_ = - Vt_ * 2 * np.conj(yk * Vf_) / (mp ** 3 * np.exp(-1j * tau))
+
+        dSfdmdva_f = Vf_ * 1j * np.conj(yk * Vt_) / (mp ** 2 * np.exp(1j * tau))
+        dSfdmdva_t = - Vf_ * 1j * np.conj(yk * Vt_) / (mp ** 2 * np.exp(1j * tau))
+
+        dStdmdva_f = - Vt_ * 1j * np.conj(yk * Vf_) / (mp ** 2 * np.exp(-1j * tau))
+        dStdmdva_t = Vt_ * 1j * np.conj(yk * Vf_) / (mp ** 2 * np.exp(-1j * tau))
+
+        dSfdmdvm_f = Vf_ * (1 / vm[f]) * ((-4 * np.conj(yk * Vf_) / mp ** 3)
+                                          + np.conj(yk * Vt_) / (mp ** 2 * np.exp(1j * tau)))
+        dSfdmdvm_t = Vf_ * (1 / vm[t]) * np.conj(yk * Vt_) / (mp ** 2 * np.exp(1j * tau))
+
+        dStdmdvm_f = Vt_ * (1 / vm[f]) * np.conj(yk * Vf_) / (mp ** 2 * np.exp(-1j * tau))
+        dStdmdvm_t = Vt_ * (1 / vm[t]) * np.conj(yk * Vf_) / (mp ** 2 * np.exp(-1j * tau))
+
+        l = np.where(k_tau == line)[0]
+        if len(l) != 0:
+            ang = l[0]
+
+            dSfdmdt_ = - Vf_ * 1j * (np.conj(yk * Vt_) / (mp ** 2 * np.exp(1j * tau)))
+            dStdmdt_ = Vt_ * 1j * (np.conj(yk * Vf_) / (mp ** 2 * np.exp(-1j * tau)))
+
+            GdSfdmdt[ang, mod] = (dSfdmdt_ * lam[f]).real + (dSfdmdt_ * lam[f + N]).imag
+            GdStdmdt[ang, mod] = (dStdmdt_ * lam[t]).real + (dStdmdt_ * lam[t + N]).imag
+            dSfdmdt[ang, mod] = dSfdmdt_ * mu[f]
+            dStdmdt[ang, mod] = dStdmdt_ * mu[t]
+
+        GdSfdmdm[mod, mod] = (dSfdmdm_ * lam[f]).real + (dSfdmdm_ * lam[f + N]).imag
+        GdStdmdm[mod, mod] = (dStdmdm_ * lam[t]).real + (dStdmdm_ * lam[t + N]).imag
+        dSfdmdm[mod, mod] = dSfdmdm_ * mu[f]
+        dStdmdm[mod, mod] = dStdmdm_ * mu[t]
+
+        GdSfdmdva[f, mod] = (dSfdmdva_f * lam[f]).real + (dSfdmdva_f * lam[f + N]).imag
+        GdStdmdva[f, mod] = (dStdmdva_f * lam[t]).real + (dStdmdva_f * lam[t + N]).imag
+        dSfdmdva[f, mod] = dSfdmdva_f * mu[f]
+        dStdmdva[f, mod] = dStdmdva_f * mu[t]
+        GdSfdmdva[t, mod] = (dSfdmdva_t * lam[f]).real + (dSfdmdva_t * lam[f + N]).imag
+        GdStdmdva[t, mod] = (dStdmdva_t * lam[t]).real + (dStdmdva_t * lam[t + N]).imag
+        dSfdmdva[t, mod] = dSfdmdva_t * mu[f]
+        dStdmdva[t, mod] = dStdmdva_t * mu[t]
+
+        GdSfdmdvm[f, mod] = (dSfdmdvm_f * lam[f]).real + (dSfdmdvm_f * lam[f + N]).imag
+        GdStdmdvm[f, mod] = (dStdmdvm_f * lam[t]).real + (dStdmdvm_f * lam[t + N]).imag
+        dSfdmdvm[f, mod] = dSfdmdvm_f * mu[f]
+        dStdmdvm[f, mod] = dStdmdvm_f * mu[t]
+        GdSfdmdvm[t, mod] = (dSfdmdvm_t * lam[f]).real + (dSfdmdvm_t * lam[f + N]).imag
+        GdStdmdvm[t, mod] = (dStdmdvm_t * lam[t]).real + (dStdmdvm_t * lam[t + N]).imag
+        dSfdmdvm[t, mod] = dSfdmdvm_t * mu[f]
+        dStdmdvm[t, mod] = dStdmdvm_t * mu[t]
 
     for ang, line in enumerate(k_tau):
         Vf_ = Vf[line]
@@ -193,31 +258,64 @@ def compute_branch_power_second_derivatives(alltapm, alltapt, V, k_m, k_tau, k_m
         tau = alltapt[line]
         yk = ys[line]
 
-        dSfdt[line, ang] = Vf_ * np.conj(-yk * Vt_ / (-1j * mp * np.exp(-1j * tau)))
+        f = np.nonzero(Cf[line])[0]
+        t = np.nonzero(Ct[line])[0]
 
-        dStdt[line, ang] = Vt_ * np.conj(-yk * Vf_ / (1j * mp * np.exp(1j * tau)))
+        dSfdtdt_ = Vf_ * np.conj(ys * Vt_) / (mp * np.exp(1j * tau))
+        dStdtdt_ = Vt_ * np.conj(ys * Vf_) / (mp * np.exp(-1j * tau))
 
-    dSbusdm = Cf.T @ dSfdm + Ct.T @ dStdm
+        dSfdtdva_f = - Vf_ * np.conj(ys * Vt_) / (mp * np.exp(1j * tau))
+        dSfdtdva_t = Vf_ * np.conj(ys * Vt_) / (mp * np.exp(1j * tau))
+
+        dStdtdva_f = Vt_ * np.conj(ys * Vf_) / (mp * np.exp(-1j * tau))
+        dStdtdva_t = - Vt_ * np.conj(ys * Vf_) / (mp * np.exp(-1j * tau))
+
+        dSfdtdvm_f = 1j * Vf_ * (1 / vm[f]) * np.conj(ys * Vt_) / (mp * np.exp(1j * tau))
+        dSfdtdvm_t = 1j * Vf_ * (1 / vm[t]) * np.conj(ys * Vt_) / (mp * np.exp(1j * tau))
+
+        dStdtdvm_f = -1j * Vt_ * (1 / vm[f]) * np.conj(ys * Vf_) / (mp * np.exp(-1j * tau))
+        dStdtdvm_t = -1j * Vt_ * (1 / vm[t]) * np.conj(ys * Vf_) / (mp * np.exp(-1j * tau))
+
+        GdSfdtdt[ang, ang] = (dSfdtdt_ * lam[f]).real + (dSfdtdt_ * lam[f + N]).imag
+        GdStdtdt[ang, ang] = (dStdtdt_ * lam[t]).real + (dStdtdt_ * lam[t + N]).imag
+        dSfdtdt[ang, ang] = dSfdtdt_ * mu[f]
+        dStdtdt[ang, ang] = dStdtdt_ * mu[t]
+
+        GdSfdtdva[f, ang] = (dSfdtdva_f * lam[f]).real + (dSfdtdva_f * lam[f + N]).imag
+        GdStdtdva[f, ang] = (dStdtdva_f * lam[t]).real + (dStdtdva_f * lam[t + N]).imag
+        dSfdtdva[f, ang] = dSfdtdva_f * mu[f]
+        dStdtdva[f, ang] = dStdtdva_f * mu[t]
+        GdSfdtdva[t, ang] = (dSfdtdva_t * lam[f]).real + (dSfdtdva_t * lam[f + N]).imag
+        GdStdtdva[t, ang] = (dStdtdva_t * lam[t]).real + (dStdtdva_t * lam[t + N]).imag
+        dSfdtdva[t, ang] = dSfdtdva_t * mu[f]
+        dStdtdva[t, ang] = dStdtdva_t * mu[t]
+
+        GdSfdtdvm[f, ang] = (dSfdtdvm_f * lam[f]).real + (dSfdtdvm_f * lam[f + N]).imag
+        GdStdtdvm[f, ang] = (dStdtdvm_f * lam[t]).real + (dStdtdvm_f * lam[t + N]).imag
+        dSfdtdvm[f, ang] = dSfdtdvm_f * mu[f]
+        dStdtdvm[f, ang] = dStdtdvm_f * mu[t]
+        GdSfdtdvm[t, ang] = (dSfdtdvm_t * lam[f]).real + (dSfdtdvm_t * lam[f + N]).imag
+        GdStdtdvm[t, ang] = (dStdtdvm_t * lam[t]).real + (dStdtdvm_t * lam[t + N]).imag
+        dSfdtdvm[t, ang] = dSfdtdvm_t * mu[f]
+        dStdtdvm[t, ang] = dStdtdvm_t * mu[t]
+
+    dSbusdmdm = Cf.T @ GdSfdmdm + Ct.T @ dStdmdm
+    dSbusdmdvm = Cf.T @ GdSfdmdvm + Ct.T @ dStdmdvm
+    dSbusdmdva = Cf.T @ GdSfdmdva + Ct.T @ dStdmdva
+    dSbusdmdt = Cf.T @ GdSfdmdt + Ct.T @ dStdmdt
+    dSbusdtdt = Cf.T @ GdSfdtdt + Ct.T @ dStdtdt
+    dSbusdtdvm = Cf.T @ GdSfdtdvm + Ct.T @ dStdtdvm
+    dSbusdtdva = Cf.T @ GdSfdtdva + Ct.T @ dStdtdva
+
     dSbusdt = Cf.T @ dSfdt + Ct.T @ dStdt
 
-    return dSbusdm, dSfdm, dStdm, dSbusdt, dSfdt, dStdt
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    return (dSbusdmdm, dSfdmdm, dStdmdm,
+            dSbusdmdvm, dSfdmdvm, dStdmdvm,
+            dSbusdmdva, dSfdmdva, dStdmdva,
+            dSbusdmdt, dSfdmdt, dStdmdt,
+            dSbusdtdt, dSfdtdt, dStdtdt,
+            dSbusdtdvm, dSfdtdvm, dStdtdvm,
+            dSbusdtdva, dSfdtdva, dStdtdva)
 
 
 def compute_finitediff_admittances(nc, tol=1e-6):
@@ -606,7 +704,7 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
         # Francesca tanmax curves
 
         Hqmaxp = -2 * (tanmax ** 2) * Pg
-        Hqmaxq= 2 * Qg
+        Hqmaxq = 2 * Qg
 
         Hqmax = sp.hstack([lil_matrix((Ng, 2 * N)), diags(Hqmaxp), diags(Hqmaxq), lil_matrix((Ng, ntapm + ntapt))])
 
@@ -623,18 +721,23 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
             HSf = 2 * (Sfmat.real @ SfX.real + Sfmat.imag @ SfX.imag)
             HSt = 2 * (Stmat.real @ StX.real + Stmat.imag @ StX.imag)
 
+            Hx = sp.vstack([HSf, HSt, Hvu, Hpu, Hqu, Hvl, Hpl, Hql])
+
             if ntapm != 0:
-                Htapmu_ = csc(([1] * ntapm, (list(range(ntapm)), k_m)))
-                Htapml_ = csc(([-1] * ntapm, (list(range(ntapm)), k_m)))
+                Htapmu_ = csc(([1] * ntapm, (list(range(ntapm)), list(range(ntapm)))))
+                Htapml_ = csc(([-1] * ntapm, (list(range(ntapm)), list(range(ntapm)))))
                 Htapmu = sp.hstack([lil_matrix((ntapm, 2 * N + 2 * Ng)), Htapmu_, lil_matrix((ntapm, ntapt))])
                 Htapml = sp.hstack([lil_matrix((ntapm, 2 * N + 2 * Ng)), Htapml_, lil_matrix((ntapm, ntapt))])
+                Hx = sp.vstack([Hx, Htapmu, Htapml])
 
             if ntapt != 0:
-                Htaptu_ = csc(([1] * ntapt, (list(range(ntapt)), k_tau)))
-                Htaptl_ = csc(([-1] * ntapt, (list(range(ntapt)), k_tau)))
+                Htaptu_ = csc(([1] * ntapt, (list(range(ntapt)), list(range(ntapt)))))
+                Htaptl_ = csc(([-1] * ntapt, (list(range(ntapt)), list(range(ntapt)))))
                 Htaptu = sp.hstack([lil_matrix((ntapt, 2 * N + 2 * Ng + ntapm)), Htaptu_])
                 Htaptl = sp.hstack([lil_matrix((ntapt, 2 * N + 2 * Ng + ntapm)), Htaptl_])
+                Hx = sp.vstack([Hx, Htaptu, Htaptl])
 
+            Hx = sp.vstack([Hx, Hqmax]).T.tocsc()
         else:
 
             SfX = sp.hstack([Sfva, Sfvm, lil_matrix((M, 2 * Ng))])
@@ -643,7 +746,7 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
             HSf = 2 * (Sfmat.real @ SfX.real + Sfmat.imag @ SfX.imag)
             HSt = 2 * (Stmat.real @ StX.real + Stmat.imag @ StX.imag)
 
-        Hx = sp.vstack([HSf, HSt, Hvu, Hpu, Hqu, Hvl, Hpl, Hql, Hqmax]).T.tocsc()
+            Hx = sp.vstack([HSf, HSt, Hvu, Hpu, Hqu, Hvl, Hpl, Hql, Hqmax]).T.tocsc()
 
     else:
         fx = None

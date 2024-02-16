@@ -360,7 +360,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     Vm_max = nc.bus_data.Vmax
     Vm_min = nc.bus_data.Vmin
     pf = nc.generator_data.pf
-    tanmax = ((1 - pf**2)**(1/2)) / pf
+    tanmax = ((1 - (pf)**2)**(1/2)) / (pf + 1e-15)
 
     pv = np.flatnonzero(Vm_max == Vm_min)
     pq = np.flatnonzero(Vm_max != Vm_min)
