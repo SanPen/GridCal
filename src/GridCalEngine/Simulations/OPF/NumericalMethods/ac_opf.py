@@ -116,10 +116,10 @@ def compute_autodiff_structures(x, mu, lam, compute_jac: bool, compute_hess: boo
                              S=Scalc, St=St, Sf=Sf)
 
 
-def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: bool, Ybus, Yf, Cg, Cf, Ct,
+def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: bool, Ybus, Yf, Cg, Cf, Ct, R, X,
                                 Sd, slack, no_slack, Yt, from_idx, to_idx, pq, pv, th_max, th_min, V_U, V_L, P_U,
-                                P_L, Q_U, Q_L, tapm_max, tapm_min, tapt_max, tapt_min, alltapm, alltapt, k_m, k_tau,
-                                k_mtau, c0, c1, c2, Sbase, rates, il, ig, nig, Sg_undis) -> IpsFunctionReturn:
+                                P_L, tanmax, Q_U, Q_L, tapm_max, tapm_min, tapt_max, tapt_min, alltapm, alltapt, k_m,
+                                k_tau, k_mtau, c0, c1, c2, Sbase, rates, il, ig, nig, Sg_undis) -> IpsFunctionReturn:
     """
 
     :param x:
@@ -161,13 +161,13 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
     H, Sf, St = eval_h(x=x, Yf=Yf, Yt=Yt, from_idx=from_idx, to_idx=to_idx, pq=pq, no_slack=no_slack, k_m=k_m,
                        k_tau=k_tau, k_mtau=k_mtau, Va_max=th_max, Va_min=th_min, Vm_max=V_U, Vm_min=V_L, Pg_max=P_U,
                        Pg_min=P_L, Qg_max=Q_U, Qg_min=Q_L, tapm_max=tapm_max, tapm_min=tapm_min, tapt_max=tapt_max,
-                       tapt_min=tapt_min, Cg=Cg, rates=rates, il=il, ig=ig)
+                       tapt_min=tapt_min, Cg=Cg, rates=rates, il=il, ig=ig, tanmax=tanmax)
 
     fx, Gx, Hx, fxx, Gxx, Hxx = jacobians_and_hessians(x=x, c1=c1, c2=c2, Cg=Cg, Cf=Cf, Ct=Ct, Yf=Yf, Yt=Yt, Ybus=Ybus,
                                                        Sbase=Sbase, il=il, ig=ig, nig=nig, slack=slack,
-                                                       no_slack=no_slack, pq=pq, pv=pv, alltapm=alltapm,
+                                                       no_slack=no_slack, pq=pq, pv=pv, tanmax=tanmax, alltapm=alltapm,
                                                        alltapt=alltapt, k_m=k_m, k_tau=k_tau, k_mtau=k_mtau, mu=mu,
-                                                       lmbda=lmbda, from_idx=from_idx, to_idx=to_idx,
+                                                       lmbda=lmbda, from_idx=from_idx, to_idx=to_idx, R=R, X=X,
                                                        compute_jac=compute_jac, compute_hess=compute_hess)
 
 
@@ -359,6 +359,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     Qg_min = nc.generator_data.qmin / Sbase
     Vm_max = nc.bus_data.Vmax
     Vm_min = nc.bus_data.Vmin
+    pf = nc.generator_data.pf
+    tanmax = ((1 - pf**2)**(1/2)) / pf
 
     pv = np.flatnonzero(Vm_max == Vm_min)
     pq = np.flatnonzero(Vm_max != Vm_min)
@@ -382,6 +384,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     k_m = nc.k_m
     k_tau = nc.k_tau
     k_mtau = nc.k_mtau
+    R = nc.branch_data.R
+    X = nc.branch_data.X
 
     tapm_max = nc.branch_data.tap_module_max[k_m]
     tapm_min = nc.branch_data.tap_module_min[k_m]
@@ -406,7 +410,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     # Number of inequalities: Line ratings, max and min angle of buses, voltage module range and
     # NI = 2 * nbr + 2 * n_no_slack + 2 * nbus + 4 * ngen
 
-    NI = 2 * nll + 2 * npq + 4 * ngg + 2 * ntapm + 2 * ntapt  # Without angle constraints
+    NI = 2 * nll + 2 * npq + 5 * ngg + 2 * ntapm + 2 * ntapt  # Without angle constraints
     # NI = 2 * nll + 2 * n_no_slack + 2 * nbus + 4 * ngg
 
     # run power flow to initialize
@@ -476,8 +480,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
             # run the solver with the analytic derivatives
             result = interior_point_solver(x0=x0, n_x=NV, n_eq=NE, n_ineq=NI,
                                            func=compute_analytic_structures,
-                                           arg=(Ybus, Yf, Cg, Cf, Ct, Sd, slack, no_slack, Yt, from_idx, to_idx,
-                                                pq, pv, Va_max, Va_min, Vm_max, Vm_min, Pg_max, Pg_min, Qg_max,
+                                           arg=(Ybus, Yf, Cg, Cf, Ct, R, X, Sd, slack, no_slack, Yt, from_idx, to_idx,
+                                                pq, pv, Va_max, Va_min, Vm_max, Vm_min, Pg_max, Pg_min, tanmax, Qg_max,
                                                 Qg_min, tapm_max, tapm_min, tapt_max, tapt_min, alltapm, alltapt,
                                                 k_m, k_tau, k_mtau, c0, c1, c2, Sbase, rates, il, ig, nig, Sg_undis),
                                            verbose=pf_options.verbose,

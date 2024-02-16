@@ -1,4 +1,3 @@
-
 import numpy as np
 import pandas as pd
 from scipy import sparse as sp
@@ -66,7 +65,6 @@ def var2x(Va: Vec, Vm: Vec, Pg: Vec, Qg: Vec, tapm: Vec, tapt: Vec) -> Vec:
 
 
 def compute_analytic_admittances(alltapm, alltapt, k_m, k_tau, k_mtau, Cf, Ct, R, X):
-
     ys = 1.0 / (R + 1.0j * X + 1e-20)
 
     # First partial derivative with respect to tap module
@@ -110,6 +108,118 @@ def compute_analytic_admittances(alltapm, alltapt, k_m, k_tau, k_mtau, Cf, Ct, R
     return dYbusdm, dYfdm, dYtdm, dYbusdt, dYfdt, dYtdt
 
 
+def compute_branch_power_derivatives(alltapm, alltapt, V, k_m, k_tau, k_mtau, Cf, Ct, Yf, Yt, R, X):
+    ys = 1.0 / (R + 1.0j * X + 1e-20)
+
+    Vf = Cf @ V
+    Vt = Ct @ V
+
+    dSfdm = lil_matrix((len(alltapm), len(k_m)), dtype=complex)
+    dStdm = lil_matrix((len(alltapm), len(k_m)), dtype=complex)
+    dSfdt = lil_matrix((len(alltapm), len(k_tau)), dtype=complex)
+    dStdt = lil_matrix((len(alltapm), len(k_tau)), dtype=complex)
+
+    for mod, line in enumerate(k_m):
+        Vf_ = Vf[line]
+        Vt_ = Vt[line]
+        mp = alltapm[line]
+        tau = alltapt[line]
+        yk = ys[line]
+
+        dSfdm[line, mod] = Vf_ * ((-2 * yk * Vf_ / mp ** 3) + yk * Vt_ / (mp ** 2 * np.exp(1j * tau)))
+
+        dStdm[line, mod] = Vt_ * ((yk * Vf_ / (mp ** 2 * np.exp(1j * tau))) + yk * Vt_ / (mp ** 2 * np.exp(-1j * tau)))
+
+    for ang, line in enumerate(k_tau):
+        Vf_ = Vf[line]
+        Vt_ = Vt[line]
+        mp = alltapm[line]
+        tau = alltapt[line]
+        yk = ys[line]
+
+        dSfdt[line, ang] = Vf_ * np.conj(-yk * Vt_ / (-1j * mp * np.exp(-1j * tau)))
+
+        dStdt[line, ang] = Vt_ * np.conj(-yk * Vf_ / (1j * mp * np.exp(1j * tau)))
+
+    dSbusdm = Cf.T @ dSfdm + Ct.T @ dStdm
+    dSbusdt = Cf.T @ dSfdt + Ct.T @ dStdt
+
+    return dSbusdm, dSfdm, dStdm, dSbusdt, dSfdt, dStdt
+
+
+
+def compute_branch_power_second_derivatives(alltapm, alltapt, V, k_m, k_tau, k_mtau, Cf, Ct, Yf, Yt, R, X):
+    ys = 1.0 / (R + 1.0j * X + 1e-20)
+
+    Vf = Cf @ V
+    Vt = Ct @ V
+    N = len(alltapm)
+    ntapm = len(k_m)
+    ntapt = len(k_tau)
+
+    dSfdmdm = lil_matrix((N, N), dtype=complex)
+    dStdmdm = lil_matrix((N, N), dtype=complex)
+
+    dSfdmdt = lil_matrix((N, N), dtype=complex)
+    dStdmdt = lil_matrix((N, N), dtype=complex)
+
+    dSfdtdt = lil_matrix((N, N), dtype=complex)
+    dStdtdt = lil_matrix((N, N), dtype=complex)
+
+    dSfdmdm = lil_matrix((N, N), dtype=complex)
+    dStdmdm = lil_matrix((N, N), dtype=complex)
+
+    dSfdmdt = lil_matrix((N, N), dtype=complex)
+    dStdmdt = lil_matrix((N, N), dtype=complex)
+
+    dSfdtdt = lil_matrix((N, N), dtype=complex)
+    dStdtdt = lil_matrix((N, N), dtype=complex)
+
+    for mod, line in enumerate(k_m):
+        Vf_ = Vf[line]
+        Vt_ = Vt[line]
+        mp = alltapm[line]
+        tau = alltapt[line]
+        yk = ys[line]
+
+        dSfdm[line, mod] = Vf_ * ((-2 * yk * Vf_ / mp ** 3) + yk * Vt_ / (mp ** 2 * np.exp(1j * tau)))
+
+        dStdm[line, mod] = Vt_ * ((yk * Vf_ / (mp ** 2 * np.exp(1j * tau))) + yk * Vt_ / (mp ** 2 * np.exp(-1j * tau)))
+
+    for ang, line in enumerate(k_tau):
+        Vf_ = Vf[line]
+        Vt_ = Vt[line]
+        mp = alltapm[line]
+        tau = alltapt[line]
+        yk = ys[line]
+
+        dSfdt[line, ang] = Vf_ * np.conj(-yk * Vt_ / (-1j * mp * np.exp(-1j * tau)))
+
+        dStdt[line, ang] = Vt_ * np.conj(-yk * Vf_ / (1j * mp * np.exp(1j * tau)))
+
+    dSbusdm = Cf.T @ dSfdm + Ct.T @ dStdm
+    dSbusdt = Cf.T @ dSfdt + Ct.T @ dStdt
+
+    return dSbusdm, dSfdm, dStdm, dSbusdt, dSfdt, dStdt
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 def compute_finitediff_admittances(nc, tol=1e-6):
     k_m = nc.k_m
     k_tau = nc.k_tau
@@ -141,7 +251,6 @@ def compute_finitediff_admittances(nc, tol=1e-6):
 
 
 def compute_analytic_admittances_2dev(alltapm, alltapt, k_m, k_tau, k_mtau, Cf, Ct, R, X):
-
     ys = 1.0 / (R + 1.0j * X + 1e-20)
     N = len(alltapm)
 
@@ -306,7 +415,7 @@ def eval_g(x, Ybus, Yf, Cg, Sd, ig, nig, pv, k_m, k_tau, Vm_max, Sg_undis, slack
 
 
 def eval_h(x, Yf, Yt, from_idx, to_idx, pq, no_slack, k_m, k_tau, k_mtau, Va_max, Va_min, Vm_max, Vm_min,
-           Pg_max, Pg_min, Qg_max, Qg_min, tapm_max, tapm_min, tapt_max, tapt_min, Cg, rates, il, ig) -> Vec:
+           Pg_max, Pg_min, Qg_max, Qg_min, tapm_max, tapm_min, tapt_max, tapt_min, Cg, rates, il, ig, tanmax) -> Vec:
     """
 
     :param x:
@@ -363,7 +472,8 @@ def eval_h(x, Yf, Yt, from_idx, to_idx, pq, no_slack, k_m, k_tau, k_mtau, Va_max
                  tapm - tapm_max,
                  tapm_min - tapm,
                  tapt - tapt_max,
-                 tapt_min - tapt
+                 tapt_min - tapt,
+                 Qg**2 - tanmax**2 * Pg**2
     ]
 
     # Sftot = V[from_idx[il]] * np.conj(Yf[il, :] @ V)
@@ -373,8 +483,8 @@ def eval_h(x, Yf, Yt, from_idx, to_idx, pq, no_slack, k_m, k_tau, k_mtau, Va_max
     return hval, Sf, St
 
 
-def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, nig, slack, no_slack, pq, pv, alltapm,
-                           alltapt, k_m, k_tau, k_mtau, mu, lmbda, from_idx, to_idx, compute_jac: bool,
+def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, nig, slack, no_slack, pq, pv, tanmax,
+                           alltapm, alltapt, k_m, k_tau, k_mtau, mu, lmbda, from_idx, to_idx, R, X, compute_jac: bool,
                            compute_hess: bool):
     """
 
@@ -439,20 +549,22 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
         for i, ss in enumerate(pv):
             Gvm[i, N + ss] = 1.
 
+        GS = sp.hstack([GSva, GSvm, GSpg, GSqg])
+
         if ntapm + ntapt != 0:  # Check if there are tap variables that can affect the admittances
 
-            (dYbusdm, dYfdm, dYtdm,
-             dYbusdt, dYfdt, dYtdt) = compute_analytic_admittances(alltapm, alltapt, k_m, k_tau, k_mtau, Cf, Ct, R, X)
+            (dSbusdm, dSfdm, dStdm,
+             dSbusdt, dSfdt, dStdt) = compute_branch_power_derivatives(alltapm, alltapt, V, k_m, k_tau, k_mtau,
+                                                                       Cf, Ct, Yf, Yt, R, X)
 
-            Gtapm = Vmat * np.conj(dYbusdm * V)
-            Gtapt = Vmat * np.conj(dYbusdt * V)
+            if ntapm != 0:
+                Gtapm = dSbusdm.copy()
+                GS = sp.hstack([GS, Gtapm])
+            if ntapt != 0:
+                Gtapt = dSbusdt.copy()
+                GS = sp.hstack([GS, Gtapt])
 
-            GS = sp.hstack([GSva, GSvm, GSpg, GSqg, Gtapm, Gtapt])
-            Gx = sp.vstack([GS.real, GS.imag, GTH, Gvm]).T.tocsc()
-
-        else:
-            GS = sp.hstack([GSva, GSvm, GSpg, GSqg])
-            Gx = sp.vstack([GS.real, GS.imag, GTH, Gvm]).T.tocsc()
+        Gx = sp.vstack([GS.real, GS.imag, GTH, Gvm]).T.tocsc()
 
         ######### INEQUALITY CONSTRAINTS GRAD
 
@@ -483,20 +595,27 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
         Hqu[0: Ng] = 1
         Hql[0: Ng] = -1
 
-        Hvu = sp.hstack([lil_matrix((len(pq), N)), Hvmu_, lil_matrix((len(pq), 2 * Ng))])
-        Hvl = sp.hstack([lil_matrix((len(pq), N)), Hvml_, lil_matrix((len(pq), 2 * Ng))])
+        Hvu = sp.hstack([lil_matrix((len(pq), N)), Hvmu_, lil_matrix((len(pq), 2 * Ng + ntapm + ntapt))])
+        Hvl = sp.hstack([lil_matrix((len(pq), N)), Hvml_, lil_matrix((len(pq), 2 * Ng + ntapm + ntapt))])
 
-        Hpu = sp.hstack([lil_matrix((Ng, 2 * N)), diags(Hpu), lil_matrix((Ng, Ng))])
-        Hpl = sp.hstack([lil_matrix((Ng, 2 * N)), diags(Hpl), lil_matrix((Ng, Ng))])
-        Hqu = sp.hstack([lil_matrix((Ng, 2 * N + Ng)), diags(Hqu)])
-        Hql = sp.hstack([lil_matrix((Ng, 2 * N + Ng)), diags(Hql)])
+        Hpu = sp.hstack([lil_matrix((Ng, 2 * N)), diags(Hpu), lil_matrix((Ng, Ng + ntapm + ntapt))])
+        Hpl = sp.hstack([lil_matrix((Ng, 2 * N)), diags(Hpl), lil_matrix((Ng, Ng + ntapm + ntapt))])
+        Hqu = sp.hstack([lil_matrix((Ng, 2 * N + Ng)), diags(Hqu), lil_matrix((Ng, ntapm + ntapt))])
+        Hql = sp.hstack([lil_matrix((Ng, 2 * N + Ng)), diags(Hql), lil_matrix((Ng, ntapm + ntapt))])
+
+        # Francesca tanmax curves
+
+        Hqmaxp = -2 * (tanmax ** 2) * Pg
+        Hqmaxq= 2 * Qg
+
+        Hqmax = sp.hstack([lil_matrix((Ng, 2 * N)), diags(Hqmaxp), diags(Hqmaxq), lil_matrix((Ng, ntapm + ntapt))])
 
         if ntapm + ntapt != 0:
 
-            Sftapm = Vfmat @ np.conj(dYbusdm @ V)
-            Sftapt = Vtmat @ np.conj(dYbusdm @ V)
-            Sttapm = Vfmat @ np.conj(dYbusdt @ V)
-            Sttapt = Vtmat @ np.conj(dYbusdt @ V)
+            Sftapm = dSfdm.copy()
+            Sftapt = dSfdt.copy()
+            Sttapm = dStdm.copy()
+            Sttapt = dStdt.copy()
 
             SfX = sp.hstack([Sfva, Sfvm, lil_matrix((M, 2 * Ng)), Sftapm, Sftapt])
             StX = sp.hstack([Stva, Stvm, lil_matrix((M, 2 * Ng)), Sttapm, Sttapt])
@@ -524,7 +643,7 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
             HSf = 2 * (Sfmat.real @ SfX.real + Sfmat.imag @ SfX.imag)
             HSt = 2 * (Stmat.real @ StX.real + Stmat.imag @ StX.imag)
 
-        Hx = sp.vstack([HSf, HSt, Hvu, Hpu, Hqu, Hvl, Hpl, Hql]).T.tocsc()
+        Hx = sp.vstack([HSf, HSt, Hvu, Hpu, Hqu, Hvl, Hpl, Hql, Hqmax]).T.tocsc()
 
     else:
         fx = None
@@ -621,8 +740,8 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
 
             G1 = sp.hstack([Gaa, Gav, lil_matrix((N, 2 * Ng)), Gvatapm, Gvatapt])
             G2 = sp.hstack([Gva, Gvv, lil_matrix((N, 2 * Ng)), Gvmtapm, Gvmtapt])
-            G3 = sp.hstack([Gtapmva, Gtapmvm, lil_matrix((N, 2 * Ng)), Gtapmtapm, Gtapmtapt])
-            G4 = sp.hstack([Gtaptva, Gtaptva, lil_matrix((N, 2 * Ng)), Gtapttapm, Gtapttapt])
+            G3 = sp.hstack([Gtapmva, Gtapmvm, lil_matrix((ntapm, 2 * Ng)), Gtapmtapm, Gtapmtapt])
+            G4 = sp.hstack([Gtaptva, Gtaptva, lil_matrix((ntapt, 2 * Ng)), Gtapttapm, Gtapttapt])
 
             Gxx = sp.vstack([G1, G2, lil_matrix((2 * Ng, NV)), G3, G4]).tocsc()
 
@@ -631,9 +750,8 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
             G2 = sp.hstack([Gva, Gvv, lil_matrix((N, 2 * Ng))])
             Gxx = sp.vstack([G1, G2, lil_matrix((2 * Ng, NV))]).tocsc()
 
-
         ######### INEQUALITY CONSTRAINTS HESS
-        muf = mu[0: N]
+        muf = mu[0: M]
         mut = mu[M: 2 * M]
         muf_mat = diags(muf)
         mut_mat = diags(mut)
@@ -649,6 +767,9 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
         Sfvmva = 1j * vm_inv @ (Bf - Bf.T - Df + Ef)
         Sfvavm = Sfvmva.T
         Sfvmvm = vm_inv @ Ff @ vm_inv
+
+        Hqpgpg = diags(-2 * (tanmax ** 2) * mu[-Ng:])
+        Hqqgqg = diags(np.array([2]*Ng) * mu[-Ng:])
 
         Hfvava = 2 * (Sfvava + Sfva.T @ muf_mat @ np.conj(Sfva)).real
         Hfvmva = 2 * (Sfvmva + Sfvm.T @ muf_mat @ np.conj(Sfva)).real
@@ -671,7 +792,6 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
         Htvmvm = 2 * (Stvmvm + Stvm.T @ mut_mat @ np.conj(Stvm)).real
 
         if ntapm + ntapt != 0:
-
             Sftapmva = (Vfmat @ np.conj(dYbusdm @ Vva) + Cf @ diags(Cf @ Vva) @ np.conj(dYbusdm @ V)).T @ muf
             Sttapmva = (Vtmat @ np.conj(dYbusdm @ Vva) + Ct @ diags(Ct @ Vva) @ np.conj(dYbusdm @ V)).T @ mut
 
@@ -709,9 +829,24 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
             Httapttapt = 2 * (Sttapttapt + Sttapt.T @ mut_mat @ np.conj(Sttapt)).real
             Httapmtapt = 2 * (Sttapmtapt + Sttapm.T @ mut_mat @ np.conj(Sttapt)).real
 
+            H1 = sp.hstack([Hfvava + Htvava, Hfvavm + Htvavm, lil_matrix((N, 2 * Ng)),
+                            Hftapmva.T + Httapmva.T, Hftaptva.T + Httaptva.T])
+            H2 = sp.hstack([Hfvmva + Htvmva, Hfvmvm + Htvmvm, lil_matrix((N, 2 * Ng)),
+                            Hftapmvm.T + Httapmvm.T, Hftaptvm.T + Httaptvm.T])
+            H3 = sp.hstack([Hftapmva + Httapmva, Hftapmvm + Httapmvm, lil_matrix((ntapm, 2 * Ng)),
+                            Hftapmtapm + Httapmtapm, Hftapmtapt + Httapmtapt])
+            H4 = sp.hstack([Hftaptva + Httaptva, Hftaptvm + Httaptvm, lil_matrix((ntapt, 2 * Ng)),
+                            Hftapmtapt.T + Httapmtapt.T, Hftapttapt + Httapttapt])
+
+            Hxx = sp.vstack([H1, H2, lil_matrix((2 * Ng, NV)), H3, H4]).tocsc()
+
         H1 = sp.hstack([Hfvava + Htvava, Hfvavm + Htvavm, lil_matrix((N, 2 * Ng))])
         H2 = sp.hstack([Hfvmva + Htvmva, Hfvmvm + Htvmvm, lil_matrix((N, 2 * Ng))])
-        Hxx = sp.vstack([H1, H2, lil_matrix((2 * Ng, NV))]).tocsc()
+        H3 = sp.hstack([lil_matrix((Ng, 2 * N)), Hqpgpg, lil_matrix((Ng, Ng))])
+        H4 = sp.hstack([lil_matrix((Ng, 2 * N + Ng)), Hqqgqg])
+
+        # Hxx = sp.vstack([H1, H2, lil_matrix((2 * Ng, NV))]).tocsc()
+        Hxx = sp.vstack([H1, H2, H3, H4]).tocsc()
 
     else:
         fxx = None

@@ -20,6 +20,7 @@ import numpy as np
 import pandas as pd
 from typing import List, Dict, Union, Tuple
 from collections.abc import Callable
+from warnings import warn
 import networkx as nx
 import pyproj
 
@@ -887,8 +888,10 @@ class BusBranchEditorWidget(QSplitter):
         Add item to the diagram and the diagram scene
         :param graphic_object: Graphic object associated
         """
-
-        self.diagram_scene.removeItem(graphic_object)
+        if graphic_object.scene() is not None:
+            self.diagram_scene.removeItem(graphic_object)
+        else:
+            warn(f"Null scene for {graphic_object}, was it deleted already?")
 
     def delete_diagram_element(self, device: ALL_DEV_TYPES) -> None:
         """
@@ -901,7 +904,7 @@ class BusBranchEditorWidget(QSplitter):
             try:
                 self.remove_from_scene(graphic_object)
             except:
-                pass
+                warn(f"Could not remove {graphic_object} fro the scene")
 
     def remove_element(self, device: ALL_DEV_TYPES,
                        graphic_object: Union[QGraphicsItem, None] = None) -> None:
@@ -919,7 +922,7 @@ class BusBranchEditorWidget(QSplitter):
 
         self.object_editor_table.setModel(None)
 
-    def delete_diagram_elements(self, elements: List[EditableDevice]):
+    def delete_diagram_elements(self, elements: List[ALL_DEV_TYPES]):
         """
         Delete device from the diagram registry
         :param elements:
@@ -943,7 +946,7 @@ class BusBranchEditorWidget(QSplitter):
         Get the selected buses
         :return:
         """
-        lst: List[Tuple[int, Bus, BusGraphicItem]] = list()
+        lst: List[Tuple[int, Bus, Union[BusGraphicItem, None]]] = list()
         points_group = self.diagram.data.get(DeviceType.BusDevice.value, None)
 
         if points_group:
@@ -951,9 +954,10 @@ class BusBranchEditorWidget(QSplitter):
             bus_dict: Dict[str: Tuple[int, Bus]] = {b.idtag: (i, b) for i, b in enumerate(self.circuit.get_buses())}
 
             for bus_idtag, point in points_group.locations.items():
-                if point.graphic_object.isSelected():
-                    idx, bus = bus_dict[bus_idtag]
-                    lst.append((idx, bus, point.graphic_object))
+                if isinstance(point.graphic_object, BusGraphicItem):
+                    if point.graphic_object.isSelected():
+                        idx, bus = bus_dict[bus_idtag]
+                        lst.append((idx, bus, point.graphic_object))
         return lst
 
     def delete_Selected(self) -> None:
@@ -984,7 +988,7 @@ class BusBranchEditorWidget(QSplitter):
         Get all the buses
         :return: tuple(bus index, bus_api_object, bus_graphic_object)
         """
-        lst: List[Tuple[int, Bus, BusGraphicItem]] = list()
+        lst: List[Tuple[int, Bus, Union[BusGraphicItem, None]]] = list()
         points_group = self.diagram.data.get(DeviceType.BusDevice.value, None)
 
         if points_group:
@@ -1003,7 +1007,9 @@ class BusBranchEditorWidget(QSplitter):
         @param port:
         @return:
         """
-        self.started_branch = LineGraphicItem(fromPort=port, toPort=None, editor=self)
+        self.started_branch = LineGraphicItem(fromPort=port,
+                                              toPort=None,
+                                              editor=self)
         self.add_to_scene(self.started_branch)
 
         port.setZValue(0)
@@ -1240,7 +1246,7 @@ class BusBranchEditorWidget(QSplitter):
         """
 
         # Clear or finnish the started connection:
-        if self.started_branch:
+        if self.started_branch is not None:
             pos = event.scenePos()
             items = self.diagram_scene.items(pos)  # get the item (the terminal) at the mouse position
 
@@ -1284,9 +1290,6 @@ class BusBranchEditorWidget(QSplitter):
                                                  fromPort=self.started_branch.fromPort,
                                                  toPort=self.started_branch.toPort)
 
-                            # delete the ghost branch
-                            self.remove_from_scene(self.started_branch)
-
                         elif self.started_branch.conneted_between_tr3_and_bus():
 
                             tr3_graphic_object: Transformer3WGraphicItem = self.started_branch.get_from_graphic_object()
@@ -1308,9 +1311,6 @@ class BusBranchEditorWidget(QSplitter):
 
                                 tr3_graphic_object.set_connection(i, bus, winding_graphics)
                                 tr3_graphic_object.update_conn()
-
-                            # delete the ghost branch
-                            self.remove_from_scene(self.started_branch)
 
                         elif self.started_branch.connected_between_bus_and_tr3():
 
@@ -1334,18 +1334,12 @@ class BusBranchEditorWidget(QSplitter):
                                 tr3_graphic_object.set_connection(i, bus, winding_graphics)
                                 tr3_graphic_object.update_conn()
 
-                            # delete the ghost branch
-                            self.remove_from_scene(self.started_branch)
-
                         elif self.started_branch.connected_between_fluid_nodes():  # fluid path
 
                             self.create_fluid_path(source=self.started_branch.get_fluid_node_from(),
                                                    target=self.started_branch.get_fluid_node_to(),
                                                    fromPort=self.started_branch.fromPort,
                                                    toPort=self.started_branch.toPort)
-
-                            # delete the ghost branch
-                            self.remove_from_scene(self.started_branch)
 
                         elif self.started_branch.connected_between_fluid_node_and_bus():
 
@@ -1368,9 +1362,6 @@ class BusBranchEditorWidget(QSplitter):
                                              fromPort=self.started_branch.fromPort,
                                              toPort=self.started_branch.toPort)
 
-                            # delete the ghost branch
-                            self.remove_from_scene(self.started_branch)
-
                         elif self.started_branch.connected_between_bus_and_fluid_node():
                             # electrical bus
                             bus = self.started_branch.get_bus_from()
@@ -1391,17 +1382,14 @@ class BusBranchEditorWidget(QSplitter):
                                              fromPort=self.started_branch.fromPort,
                                              toPort=self.started_branch.toPort)
 
-                            # delete the ghost branch
-                            self.remove_from_scene(self.started_branch)
-
                         else:
-                            print('unknown connection')
+                            warn('unknown connection')
 
-                    # remove from the hosted connections
-                    item.remove_connection(started_branch=self.started_branch)
+            # remove from the hosted connections
+            self.remove_from_scene(self.started_branch)
 
-        # release this pointer
-        self.started_branch = None
+            # release this pointer
+            self.started_branch = None
 
     def apply_expansion_factor(self, factor: float):
         """
