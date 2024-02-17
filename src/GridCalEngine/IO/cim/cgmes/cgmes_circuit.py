@@ -172,6 +172,7 @@ from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.topological_island import 
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.coordinate_system import CoordinateSystem
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.location import Location
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.position_point import PositionPoint
+from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.full_model import FullModel
 
 
 def find_references(elements_by_type: Dict[str, List[IdentifiedObject]],
@@ -389,6 +390,7 @@ class CgmesCircuit(BaseCircuit):
     """
 
     def __init__(self,
+                 cgmes_version: str = "",
                  text_func: Union[Callable, None] = None,
                  progress_func: Union[Callable, None] = None,
                  logger=DataLogger()):
@@ -397,6 +399,7 @@ class CgmesCircuit(BaseCircuit):
         """
         BaseCircuit.__init__(self)
 
+        self.cgmes_version = cgmes_version
         self.logger: DataLogger = logger
 
         self.text_func = text_func
@@ -547,6 +550,7 @@ class CgmesCircuit(BaseCircuit):
             'CoordinateSystem': CoordinateSystem,
             'Location': Location,
             'PositionPoint': PositionPoint,
+            'FullModel': FullModel,
         }
 
         self.ACDCConverter_list: List[ACDCConverter] = list()
@@ -693,6 +697,7 @@ class CgmesCircuit(BaseCircuit):
         self.CoordinateSystem_list: List[CoordinateSystem] = list()
         self.Location_list: List[Location] = list()
         self.PositionPoint_list: List[PositionPoint] = list()
+        self.FullModel_list: List[FullModel] = list()
 
         # classes to read, theo others are ignored
         self.classes = [key for key, va in self.class_dict.items()]
@@ -709,19 +714,19 @@ class CgmesCircuit(BaseCircuit):
         self.data: Dict[str, Dict[str, Dict[str, str]]] = dict()
         self.boundary_set: Dict[str, Dict[str, Dict[str, str]]] = dict()
 
-    def parse_files(self, files: List[str], delete_unused=True, detect_circular_references=False):
+    def parse_files(self, data_parser: CgmesDataParser, delete_unused=True, detect_circular_references=False):
         """
         Parse CGMES files into this class
-        :param files: list of CGMES files (.zip / .xml)
         :param delete_unused: Detele the unused boundary set?
+        :param data_parser: getting the read files
         :param detect_circular_references: report the circular references
         """
 
         # read the CGMES data as dictionaries
-        data_parser = CgmesDataParser(text_func=self.text_func,
-                                      progress_func=self.progress_func,
-                                      logger=self.logger)
-        data_parser.load_files(files=files)
+        # data_parser = CgmesDataParser(text_func=self.text_func,
+        #                               progress_func=self.progress_func,
+        #                               logger=self.logger)
+        # data_parser.load_files(files=files)
 
         # set the data
         self.set_data(data=data_parser.data,

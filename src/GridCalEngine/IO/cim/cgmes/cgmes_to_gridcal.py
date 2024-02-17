@@ -682,16 +682,16 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit, logger: DataLogger) -> MultiCirc
                              value=e.ConductingEquipment,
                              expected_value='object')
 
-    calc_node_dict = get_gcdev_calculation_nodes(cgmes_model, gc_model, v_dict, logger)
-    cn_dict = get_gcdev_connectivity_nodes(cgmes_model, gc_model)
-    get_gcdev_loads(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger)
-    get_gcdev_external_grids(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger)
-    get_gcdev_generators(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger)
-
-    get_gcdev_ac_lines(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger, Sbase)
-    get_gcdev_ac_transformers(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger, Sbase)
-
-    get_gcdev_shunts(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger)
+    # calc_node_dict = get_gcdev_calculation_nodes(cgmes_model, gc_model, v_dict, logger)
+    # cn_dict = get_gcdev_connectivity_nodes(cgmes_model, gc_model)
+    # get_gcdev_loads(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger)
+    # get_gcdev_external_grids(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger)
+    # get_gcdev_generators(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger)
+    #
+    # get_gcdev_ac_lines(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger, Sbase)
+    # get_gcdev_ac_transformers(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger, Sbase)
+    #
+    # get_gcdev_shunts(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger)
     # for class_name in cgmes_model.classes:
     #     objects = cgmes_model.get_objects_list(elm_type=class_name)
     #     for obj in objects:
@@ -702,6 +702,6 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit, logger: DataLogger) -> MultiCirc
     #             else:
     #                 print(f"It's an attribute:  {attr_value}")
 
-    cgmes_model.export_to_xml()
+    # cgmes_model.export_to_xml()
 
     return gc_model

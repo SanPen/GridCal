@@ -3,7 +3,7 @@ import GridCalEngine.api as gce
 from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import run_nonlinear_opf, ac_optimal_power_flow
 from GridCalEngine.enumerations import TransformerControlType
-import GridCal
+
 
 
 def example_3bus_acopf():

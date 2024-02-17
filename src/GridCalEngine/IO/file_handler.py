@@ -19,6 +19,8 @@ import json
 
 from collections.abc import Callable
 from typing import Union, List
+
+from GridCalEngine.IO.cim.cgmes.cgmes_data_parser import CgmesDataParser
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.data_logger import DataLogger
 
@@ -96,10 +98,11 @@ class FileOpen:
                 if file_extension.lower() not in ['.xml', '.zip']:
                     raise Exception('Loading multiple files that are not XML/Zip (xml or zip is for CIM or CGMES)')
 
-            self.cgmes_circuit = CgmesCircuit(text_func=text_func,
-                                              progress_func=progress_func,
-                                              logger=self.cgmes_logger)
-            self.cgmes_circuit.parse_files(files=self.file_name)
+            data_parser = CgmesDataParser(text_func=text_func, progress_func=progress_func, logger=self.cgmes_logger)
+            data_parser.load_files(files=self.file_name)
+            self.cgmes_circuit = CgmesCircuit(cgmes_version=data_parser.cgmes_version,text_func=text_func,
+                                              progress_func=progress_func, logger=self.cgmes_logger)
+            self.cgmes_circuit.parse_files(data_parser=data_parser)
             # self.cgmes_circuit.to_excel(fname=r'C:\Users\BenceSzirbik\Downloads\excel.xlsx')
             self.circuit = cgmes_to_gridcal(cgmes_model=self.cgmes_circuit, logger=self.cgmes_logger)
 
@@ -227,10 +230,12 @@ class FileOpen:
                     self.logger += parser.logger
 
                 elif file_extension.lower() in ['.xml', '.zip']:
-                    self.cgmes_circuit = CgmesCircuit(text_func=text_func,
-                                                      progress_func=progress_func,
-                                                      logger=self.cgmes_logger)
-                    self.cgmes_circuit.parse_files(files=[self.file_name])
+                    data_parser = CgmesDataParser(text_func=text_func, progress_func=progress_func,
+                                                  logger=self.cgmes_logger)
+                    data_parser.load_files(files=[self.file_name])
+                    self.cgmes_circuit = CgmesCircuit(cgmes_version=data_parser.cgmes_version, text_func=text_func,
+                                                      progress_func=progress_func, logger=self.cgmes_logger)
+                    self.cgmes_circuit.parse_files(data_parser=data_parser)
                     # self.cgmes_circuit.to_excel(fname=r'C:\Users\BenceSzirbik\Downloads\excel.xlsx')
                     self.circuit = cgmes_to_gridcal(cgmes_model=self.cgmes_circuit, logger=self.cgmes_logger)
 

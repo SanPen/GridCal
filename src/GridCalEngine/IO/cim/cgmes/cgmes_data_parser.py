@@ -267,6 +267,9 @@ class CgmesDataParser(BaseCircuit):
         # boundary set data
         self.boudary_set: Dict[str, Dict[str, Dict[str, str]]] = dict()
 
+        # store the CGMES version from the data files
+        self.cgmes_version = ""
+
     def emit_text(self, val: str) -> None:
         """
         Emit text via the callback
@@ -315,6 +318,7 @@ class CgmesDataParser(BaseCircuit):
                     dependency_list.append((file_name, model_id, depends_on))
                     self.parsed_data[file_name] = file_cgmes_data
                     profile = model_info.get('profile', '')
+                    self.cgmes_version = "2.4.15"
 
                     if 'Boundary' in profile:
                         merge(self.boudary_set, file_cgmes_data, self.logger)
@@ -329,14 +333,42 @@ class CgmesDataParser(BaseCircuit):
                                           comment="This is not a proper CGMES file")
 
             else:
-                self.logger.add_error("File does not contain any FullModel",
-                                      device=file_name,
-                                      device_class="",
-                                      device_property='FullModel', value="", expected_value="FullModel",
-                                      comment="This is not a proper CGMES file")
+                ontology_dict = file_cgmes_data.get('Ontology', None)
+                if ontology_dict:
+
+                    model_keys = list(file_cgmes_data['Ontology'])
+                    if len(model_keys) == 1:  # there must be exacly one Ontology
+                        model_info = file_cgmes_data['Ontology'][model_keys[0]]
+                        self.parsed_data[file_name] = file_cgmes_data
+                        profile = model_info.get('priorVersion', '')
+                        self.cgmes_version = model_info.get('versionInfo', '')
+
+                        if 'Boundary' in profile:
+                            merge(self.boudary_set, file_cgmes_data, self.logger)
+                        else:
+                            merge(self.data, file_cgmes_data, self.logger)
+
+                    else:
+                        self.logger.add_error("File does not contain exactly one Ontology",
+                                              device=file_name,
+                                              device_class="",
+                                              device_property='Ontology', value="", expected_value="Ontology",
+                                              comment="This is not a proper CGMES file")
+
+                else:
+                    self.logger.add_error("File does not contain any FullModel or Ontology",
+                                          device=file_name,
+                                          device_class="",
+                                          device_property='FullModel', value="", expected_value="FullModel",
+                                          comment="This is not a proper CGMES file")
 
             # emit progress
             self.emit_progress((i + 1) / len(data) * 100)
             i += 1
 
         self.emit_text('Done!')
+
+
+    # def set_cgmes_version(self, profile):
+    #     if profile == "":
+    #         pass
