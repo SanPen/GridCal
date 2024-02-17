@@ -136,14 +136,13 @@ def compute_branch_power_derivatives(alltapm, alltapt, V, k_m, k_tau, k_mtau, Cf
         tau = alltapt[line]
         yk = ys[line]
 
-        dSfdt[line, ang] = Vf_ * 1j * np.conj(-yk * Vt_) / (mp * np.exp(1j * tau))
-        dStdt[line, ang] = Vt_ * -1j *  np.conj(-yk * Vf_) / (mp * np.exp(-1j * tau))
+        dSfdt[line, ang] = Vf_ * 1j * np.conj(yk * Vt_) / (mp * np.exp(1j * tau))
+        dStdt[line, ang] = Vt_ * -1j * np.conj(yk * Vf_) / (mp * np.exp(-1j * tau))
 
     dSbusdm = Cf.T @ dSfdm + Ct.T @ dStdm
     dSbusdt = Cf.T @ dSfdt + Ct.T @ dStdt
 
     return dSbusdm, dSfdm, dStdm, dSbusdt, dSfdt, dStdt
-
 
 
 def compute_branch_power_second_derivatives(alltapm, alltapt, vm, va, k_m, k_tau, Cf, Ct, R, X, lam, mu):
@@ -220,7 +219,6 @@ def compute_branch_power_second_derivatives(alltapm, alltapt, vm, va, k_m, k_tau
     dSfdmdt = lil_matrix((ntapt, ntapm), dtype=complex)
     dStdmdt = lil_matrix((ntapt, ntapm), dtype=complex)
     '''
-
 
     for mod, line in enumerate(k_m):
         Vf_ = Vf[line]
@@ -797,8 +795,7 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
         Hqu = sp.hstack([lil_matrix((Ng, 2 * N + Ng)), diags(Hqu), lil_matrix((Ng, ntapm + ntapt))])
         Hql = sp.hstack([lil_matrix((Ng, 2 * N + Ng)), diags(Hql), lil_matrix((Ng, ntapm + ntapt))])
 
-        # Francesca tanmax curves
-
+        # tanmax curves (simplified capability curves of generators)
         Hqmaxp = -2 * (tanmax ** 2) * Pg
         Hqmaxq = 2 * Qg
 
@@ -834,8 +831,8 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
                 Hx = sp.vstack([Hx, Htaptu, Htaptl])
 
             Hx = sp.vstack([Hx, Hqmax]).T.tocsc()
-        else:
 
+        else:
             SfX = sp.hstack([Sfva, Sfvm, lil_matrix((M, 2 * Ng))])
             StX = sp.hstack([Stva, Stvm, lil_matrix((M, 2 * Ng))])
 
