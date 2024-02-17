@@ -61,8 +61,8 @@ def case_3bus():
 
     # grid.add_line(gce.Line(bus_from=b1, bus_to=b2, name='line 1-2', r=0.001, x=0.05, rate=100))
     grid.add_line(gce.Line(bus_from=b2, bus_to=b3, name='line 2-3', r=0.001, x=0.05, rate=100))
-    grid.add_line(gce.Line(bus_from=b2, bus_to=b3, name='line 2-3bis', r=0.001, x=0.05, rate=100))
-    # grid.add_line(gce.Line(bus_from=b3, bus_to=b1, name='line 3-1_1', r=0.001, x=0.05, rate=100))
+    #
+    grid.add_line(gce.Line(bus_from=b3, bus_to=b1, name='line 3-1_1', r=0.001, x=0.05, rate=100))
     # grid.add_line(Line(bus_from=b3, bus_to=b1, name='line 3-1_2', r=0.001, x=0.05, rate=100))
 
     grid.add_load(b3, gce.Load(name='L3', P=50, Q=20))
@@ -70,7 +70,8 @@ def case_3bus():
     grid.add_generator(b2, gce.Generator('G2', P=10, vset=0.995, Cost=1.0, Cost2=3.0))
 
     tr1 = gce.Transformer2W(b1, b2, 'Trafo1', control_mode=TransformerControlType.Pf,
-                            tap_module=1.1, tap_phase=0.02, r=0.001, x=0.05)
+                            tap_module=1.01, tap_phase=-0.02, r=0.001, x=0.05, tap_phase_max=0.05, tap_module_max=1.05,
+                            tap_phase_min=-0.05, tap_module_min=0.95)
     grid.add_transformer2w(tr1)
 
     tr2 = gce.Transformer2W(b3, b1, 'Trafo1', control_mode=TransformerControlType.PtQt,
@@ -85,7 +86,7 @@ def case_3bus():
     # print('\tConv:\n', power_flow.results.get_bus_df())
     # print('\tConv:\n', power_flow.results.get_branch_df())
 
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=3)
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, max_iter=50, verbose=3)
     run_nonlinear_opf(grid=grid, pf_options=pf_options, plot_error=True)
     nc = compile_numerical_circuit_at(circuit=grid)
 
@@ -308,12 +309,12 @@ def case6ww():
 
 if __name__ == '__main__':
     # example_3bus_acopf()
-    # case_3bus()
-    #linn5bus_example()
+    case_3bus()
+    # linn5bus_example()
     # two_grids_of_3bus()
-    # case9()
-    # case14()
+    #case9()
+    #case14()
     # case_gb()
     # case6ww()
-    case_pegase89()
-    # case300()
+    # case_pegase89()
+    #case300()

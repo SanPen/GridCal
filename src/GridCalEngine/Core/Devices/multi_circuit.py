@@ -801,7 +801,7 @@ class MultiCircuit:
         """
         return [e.name for e in self.get_branches_wo_hvdc()]
 
-    def get_branches(self) -> List[dev.Branch]:
+    def get_branches(self) -> List[BRANCH_TYPES]:
         """
         Return all the branch objects
         :return: lines + transformers 2w + hvdc

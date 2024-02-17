@@ -127,11 +127,10 @@ class FileOpen:
 
                     elif data_dictionary['version'] == 4.0:
                         if data_dictionary is not None:
-                            self.circuit = data_frames_to_circuit(data_dictionary, logger=self.logger)
+                            self.circuit = parse_gridcal_data(data_dictionary, logger=self.logger)
                         else:
                             self.logger.add("Error while reading the file :(")
                             return None
-
                     else:
                         self.logger.add('The file could not be processed')
 
@@ -144,7 +143,7 @@ class FileOpen:
                                                                            logger=self.logger)
                     # interpret file content
                     if data_dictionary is not None:
-                        self.circuit = data_frames_to_circuit(data_dictionary, logger=self.logger)
+                        self.circuit = parse_gridcal_data(data_dictionary, logger=self.logger)
                     else:
                         self.logger.add("Error while reading the file :(")
                         return None
@@ -157,7 +156,7 @@ class FileOpen:
                                                                    progress_func=progress_func)
                     # interpret file content
                     if data_dictionary is not None:
-                        self.circuit = data_frames_to_circuit(data_dictionary, logger=self.logger)
+                        self.circuit = parse_gridcal_data(data_dictionary, logger=self.logger)
                     else:
                         self.logger.add("Error while reading the file :(")
                         return None
@@ -360,15 +359,20 @@ class FileSave:
 
         logger = Logger()
 
-        dfs = create_data_frames(self.circuit)
+        dfs = gather_model_as_data_frames(self.circuit,
+                                          legacy=False)
 
-        save_data_frames_to_zip(dfs=dfs,
-                                filename_zip=self.file_name,
-                                sessions=self.sessions,
-                                diagrams=self.circuit.diagrams,
-                                json_files=self.json_files,
-                                text_func=self.text_func,
-                                progress_func=self.progress_func)
+        model_data = gather_model_as_jsons(self.circuit)
+
+        save_gridcal_data_to_zip(dfs=dfs,
+                                 filename_zip=self.file_name,
+                                 model_data=model_data,
+                                 sessions=self.sessions,
+                                 diagrams=self.circuit.diagrams,
+                                 json_files=self.json_files,
+                                 text_func=self.text_func,
+                                 progress_func=self.progress_func,
+                                 logger=logger)
 
         return logger
 
@@ -380,7 +384,7 @@ class FileSave:
 
         logger = Logger()
 
-        dfs = create_data_frames(self.circuit)
+        dfs = gather_model_as_data_frames(self.circuit)
 
         save_data_frames_to_sqlite(dfs,
                                    file_path=self.file_name,
