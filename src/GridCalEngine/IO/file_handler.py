@@ -356,7 +356,8 @@ class FileSave:
 
         logger = Logger()
 
-        dfs = gather_model_as_data_frames(self.circuit)
+        dfs = gather_model_as_data_frames(self.circuit,
+                                          legacy=False)
 
         model_data = gather_model_as_jsons(self.circuit)
 
