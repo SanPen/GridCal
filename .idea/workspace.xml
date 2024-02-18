@@ -28,10 +28,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Fixed problems after merging devel">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Small fix in the dtau for G">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/NumericalMethods/ac_opf_derivatives.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/NumericalMethods/ac_opf_derivatives.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/NumericalMethods/ips.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/NumericalMethods/ips.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/trunk/acopf/acopf_run.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acopf/acopf_run.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -1889,7 +1888,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="466" />
+    <option name="localTasksCounter" value="467" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1935,7 +1934,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Improved ACDC power flow technical note" />
     <MESSAGE value="Split fluid results into node path injection" />
     <MESSAGE value="replaced the progress functions by wrapper functions of the driver_template class" />
     <MESSAGE value="Slightly improved contingency report adding SRAP" />
@@ -1960,7 +1958,8 @@
     <MESSAGE value="Removed phantom files and improved README.md" />
     <MESSAGE value="Fixed problems after merging devel" />
     <MESSAGE value="Fixed a parsing bug when dealing with legacy data&#10;Improved the profile testing&#10;Added the sparsity property to the profile" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed a parsing bug when dealing with legacy data&#10;Improved the profile testing&#10;Added the sparsity property to the profile" />
+    <MESSAGE value="Small fix in the dtau for G" />
+    <option name="LAST_COMMIT_MESSAGE" value="Small fix in the dtau for G" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2449,21 +2448,31 @@
           <option name="timeStamp" value="1298" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/NumericalMethods/ac_opf.py</url>
-          <line>500</line>
-          <option name="timeStamp" value="1328" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/trunk/acopf/acopf_run.py</url>
-          <line>273</line>
+          <line>277</line>
           <option name="timeStamp" value="1331" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/NumericalMethods/ac_opf_derivatives.py</url>
-          <line>750</line>
-          <option name="timeStamp" value="1332" />
+          <line>876</line>
+          <option name="timeStamp" value="1346" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/NumericalMethods/ac_opf_derivatives.py</url>
+          <line>338</line>
+          <option name="timeStamp" value="1352" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Utils/NumericalMethods/ips.py</url>
+          <line>379</line>
+          <option name="timeStamp" value="1355" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
+    <watches-manager>
+      <configuration name="PythonConfigurationType">
+        <watch expression="dStdmdt" />
+      </configuration>
+    </watches-manager>
   </component>
 </project>

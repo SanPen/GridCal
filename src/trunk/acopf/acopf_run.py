@@ -68,8 +68,9 @@ def case_3bus():
     grid.add_generator(b2, gce.Generator('G2', P=10, vset=0.995, Cost=1.0, Cost2=3.0))
 
     tr1 = gce.Transformer2W(b1, b2, 'Trafo 1', control_mode=TransformerControlType.Pf,
-                            tap_module=1.01, tap_phase=-0.02, r=0.001, x=0.05, tap_phase_max=0.05, tap_module_max=1.05,
+                            tap_module=1.0, tap_phase=-0.02, r=0.001, x=0.05, tap_phase_max=0.05, tap_module_max=1.05,
                             tap_phase_min=-0.05, tap_module_min=0.95)
+
     grid.add_transformer2w(tr1)
 
     tr2 = gce.Transformer2W(b2, b3, 'Trafo 2', control_mode=TransformerControlType.PtQt,
@@ -88,7 +89,6 @@ def case_3bus():
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, max_iter=50, verbose=3)
     run_nonlinear_opf(grid=grid, pf_options=pf_options, plot_error=True)
     nc = compile_numerical_circuit_at(circuit=grid)
-
 
 
 def linn5bus_example():
