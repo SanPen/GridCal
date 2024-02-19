@@ -412,7 +412,7 @@ def compute_linear_admittances(nbr: int,
                                Cf: sp.csc_matrix,
                                Ct: sp.csc_matrix,
                                ac: IntVec,
-                               dc: IntVec) -> Tuple[sp.csc_matrix, sp.csc_matrix, sp.csc_matrix]:
+                               dc: IntVec) -> Tuple[sp.csc_matrix, sp.csc_matrix]:
     """
     Compute the linear admittances for methods such as the "DC power flow" of the PTDF
     :param nbr: Number of Branches
@@ -438,7 +438,7 @@ def compute_linear_admittances(nbr: int,
     Bf = b_tt * Cf - b_tt * Ct
     Bt = -b_tt * Cf + b_tt * Ct
     Bbus = Cf.T * Bf + Ct.T * Bt
-    Btau = Bf.T  # (b_tt * (Cf + Ct)).T
+    # Btau = Bf.T  # (b_tt * (Cf + Ct)).T
 
     """
     According to the KULeuven document "DC power flow in unit commitment models"
@@ -455,4 +455,4 @@ def compute_linear_admittances(nbr: int,
     bus_angles = Bbus^-1 x (Pbus - Btau x branch_angles)
     """
 
-    return Bbus, Bf, Btau
+    return Bbus, Bf
