@@ -621,9 +621,9 @@ class DiagramsMain(CompiledArraysMain):
                                  Sbus=results.S[current_step, :],
                                  types=results.bus_types,
                                  bus_active=bus_active,
-                                 Sf=results.worst_flows[current_step, :],
-                                 St=-results.worst_flows[current_step, :],
-                                 loadings=np.abs(results.worst_loading[current_step]),
+                                 Sf=results.max_flows[current_step, :],
+                                 St=-results.max_flows[current_step, :],
+                                 loadings=np.abs(results.max_loading[current_step]),
                                  br_active=br_active,
                                  use_flow_based_width=use_flow_based_width,
                                  min_branch_width=min_branch_width,
@@ -1141,7 +1141,7 @@ class DiagramsMain(CompiledArraysMain):
 
     def set_big_bus_marker_colours(self,
                                    buses: List[dev.Bus],
-                                   colors: List[QtGui.QColor],
+                                   colors: List[type(QtGui.QColor)],
                                    tool_tips: Union[None, List[str]] = None):
         """
         Set a big marker at the selected buses with the matching colours

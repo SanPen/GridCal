@@ -1,0 +1,463 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rdf:RDF xmlns:cims="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:xsd="http://www.w3.org/2001/XMLSchema#" xmlns:cim="http://iec.ch/TC57/2013/CIM-schema-cim16#" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" xml:base="http://iec.ch/TC57/2013/CIM-schema-cim16" xmlns:entsoe="http://entsoe.eu/CIM/SchemaExtension/3/1#" >
+	 <rdf:Description rdf:about="#Package_TopologyProfile">
+	<rdfs:label xml:lang="en">TopologyProfile</rdfs:label>
+	<rdf:type rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#ClassCategory"/>
+	<rdfs:comment rdf:parseType="Literal">This profile has been built on the basis of the IEC 61970-456 document and adjusted to fit the purpose of the ENTSO-E CGMES.</rdfs:comment>
+</rdf:Description>
+	 <rdf:Description rdf:about="http://entsoe.eu/CIM/SchemaExtension/3/1#TopologyVersion">
+	<rdfs:label xml:lang="en">TopologyVersion</rdfs:label>
+	<rdfs:comment  rdf:parseType="Literal">Version details.</rdfs:comment>
+<cims:stereotype>Entsoe</cims:stereotype>
+	<cims:belongsToCategory rdf:resource="#Package_TopologyProfile"/>
+	<rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="http://entsoe.eu/CIM/SchemaExtension/3/1#TopologyVersion.baseUML">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">baseUML</rdfs:label>
+	<rdfs:domain rdf:resource="http://entsoe.eu/CIM/SchemaExtension/3/1#TopologyVersion"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:1..1" />
+	<cims:isFixed rdf:datatype="http://www.w3.org/2001/XMLSchema#string">iec61970cim16v28_iec61968cim12v08_iec62325cim03v01a</cims:isFixed>
+	<rdfs:comment  rdf:parseType="Literal">Base UML provided by CIM model manager.</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#String">
+	<rdfs:label xml:lang="en">String</rdfs:label>
+	<rdfs:comment  rdf:parseType="Literal">A string consisting of a sequence of characters. The character encoding is UTF-8. The string length is unspecified and unlimited.</rdfs:comment>
+<cims:stereotype>Primitive</cims:stereotype>
+	<cims:belongsToCategory rdf:resource="#Package_DomainProfile"/>
+	<rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="http://entsoe.eu/CIM/SchemaExtension/3/1#TopologyVersion.baseURI">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">baseURI</rdfs:label>
+	<rdfs:domain rdf:resource="http://entsoe.eu/CIM/SchemaExtension/3/1#TopologyVersion"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:1..1" />
+	<cims:isFixed rdf:datatype="http://www.w3.org/2001/XMLSchema#string">http://iec.ch/TC57/2013/61970-456/Topology/4</cims:isFixed>
+	<rdfs:comment  rdf:parseType="Literal">Profile URI used in the Model Exchange header and defined in IEC standards.  It uniquely identifies the Profile and its version. It is given for information only and to identify the closest IEC profile to which this CGMES profile is based on.</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="http://entsoe.eu/CIM/SchemaExtension/3/1#TopologyVersion.date">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">date</rdfs:label>
+	<rdfs:domain rdf:resource="http://entsoe.eu/CIM/SchemaExtension/3/1#TopologyVersion"/>
+	<cims:dataType rdf:resource="#Date"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:1..1" />
+	<cims:isFixed rdf:datatype="http://www.w3.org/2001/XMLSchema#date">2014-08-07</cims:isFixed>
+	<rdfs:comment  rdf:parseType="Literal">Profile creation date
+Form is YYYY-MM-DD for example for January 5, 2009 it is 2009-01-05.</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#Date">
+	<rdfs:label xml:lang="en">Date</rdfs:label>
+	<rdfs:comment  rdf:parseType="Literal">Date as "yyyy-mm-dd", which conforms with ISO 8601. UTC time zone is specified as "yyyy-mm-ddZ". A local timezone relative UTC is specified as "yyyy-mm-dd(+/-)hh:mm".</rdfs:comment>
+<cims:stereotype>Primitive</cims:stereotype>
+	<cims:belongsToCategory rdf:resource="#Package_DomainProfile"/>
+	<rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="http://entsoe.eu/CIM/SchemaExtension/3/1#TopologyVersion.differenceModelURI">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">differenceModelURI</rdfs:label>
+	<rdfs:domain rdf:resource="http://entsoe.eu/CIM/SchemaExtension/3/1#TopologyVersion"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:1..1" />
+	<cims:isFixed rdf:datatype="http://www.w3.org/2001/XMLSchema#string">http://iec.ch/TC57/61970-552/DifferenceModel/1#</cims:isFixed>
+	<rdfs:comment  rdf:parseType="Literal">Difference model URI defined by IEC 61970-552. </rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="http://entsoe.eu/CIM/SchemaExtension/3/1#TopologyVersion.entsoeUML">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">entsoeUML</rdfs:label>
+	<rdfs:domain rdf:resource="http://entsoe.eu/CIM/SchemaExtension/3/1#TopologyVersion"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:1..1" />
+	<cims:isFixed rdf:datatype="http://www.w3.org/2001/XMLSchema#string">entsoe_v2.4.15</cims:isFixed>
+	<rdfs:comment  rdf:parseType="Literal">UML provided by ENTSO-E.</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="http://entsoe.eu/CIM/SchemaExtension/3/1#TopologyVersion.entsoeURI">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">entsoeURI</rdfs:label>
+	<rdfs:domain rdf:resource="http://entsoe.eu/CIM/SchemaExtension/3/1#TopologyVersion"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:1..1" />
+	<cims:isFixed rdf:datatype="http://www.w3.org/2001/XMLSchema#string">http://entsoe.eu/CIM/Topology/4/1</cims:isFixed>
+	<rdfs:comment  rdf:parseType="Literal">Profile URI defined by ENTSO-E and used in the Model Exchange header.  It uniquely identifies the Profile and its version. The last two elements in the URI (http://entsoe.eu/CIM/Topology/yy/zzz) indicate major and minor versions where: 
+- yy - indicates a major version;
+- zzz - indicates a minor version. </rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="http://entsoe.eu/CIM/SchemaExtension/3/1#TopologyVersion.modelDescriptionURI">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">modelDescriptionURI</rdfs:label>
+	<rdfs:domain rdf:resource="http://entsoe.eu/CIM/SchemaExtension/3/1#TopologyVersion"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:1..1" />
+	<cims:isFixed rdf:datatype="http://www.w3.org/2001/XMLSchema#string">http://iec.ch/TC57/61970-552/ModelDescription/1#</cims:isFixed>
+	<rdfs:comment  rdf:parseType="Literal">Model Description URI defined by IEC 61970-552. </rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="http://entsoe.eu/CIM/SchemaExtension/3/1#TopologyVersion.namespaceRDF">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">namespaceRDF</rdfs:label>
+	<rdfs:domain rdf:resource="http://entsoe.eu/CIM/SchemaExtension/3/1#TopologyVersion"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:1..1" />
+	<cims:isFixed rdf:datatype="http://www.w3.org/2001/XMLSchema#string">http://www.w3.org/1999/02/22-rdf-syntax-ns#</cims:isFixed>
+	<rdfs:comment  rdf:parseType="Literal">RDF namespace. </rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="http://entsoe.eu/CIM/SchemaExtension/3/1#TopologyVersion.namespaceUML">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">namespaceUML</rdfs:label>
+	<rdfs:domain rdf:resource="http://entsoe.eu/CIM/SchemaExtension/3/1#TopologyVersion"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:1..1" />
+	<cims:isFixed rdf:datatype="http://www.w3.org/2001/XMLSchema#string">http://iec.ch/TC57/2013/CIM-schema-cim16#</cims:isFixed>
+	<rdfs:comment  rdf:parseType="Literal">CIM UML namespace. </rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="http://entsoe.eu/CIM/SchemaExtension/3/1#TopologyVersion.shortName">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">shortName</rdfs:label>
+	<rdfs:domain rdf:resource="http://entsoe.eu/CIM/SchemaExtension/3/1#TopologyVersion"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:1..1" />
+	<cims:isFixed rdf:datatype="http://www.w3.org/2001/XMLSchema#string">TP</cims:isFixed>
+	<rdfs:comment  rdf:parseType="Literal">The short name of the profile used in profile documentation.</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#Package_Core">
+	<rdfs:label xml:lang="en">Core</rdfs:label>
+	<rdf:type rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#ClassCategory"/>
+	<rdfs:comment rdf:parseType="Literal">Contains the core PowerSystemResource and ConductingEquipment entities </rdfs:comment>
+</rdf:Description>
+	 <rdf:Description rdf:about="#ACDCTerminal">
+	<rdfs:label xml:lang="en">ACDCTerminal</rdfs:label>
+	<rdfs:subClassOf rdf:resource="#IdentifiedObject"/>
+	<rdfs:comment  rdf:parseType="Literal">An electrical connection point (AC or DC) to a piece of conducting equipment. Terminals are connected at physical connection points called connectivity nodes.</rdfs:comment>
+	<cims:belongsToCategory rdf:resource="#Package_Core"/>
+	<rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#BaseVoltage">
+	<rdfs:label xml:lang="en">BaseVoltage</rdfs:label>
+	<rdfs:comment  rdf:parseType="Literal">Defines a system base voltage which is referenced. </rdfs:comment>
+	<cims:belongsToCategory rdf:resource="#Package_Core"/>
+	<rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#TopologicalNode.BaseVoltage">
+	<rdfs:label xml:lang="en">BaseVoltage</rdfs:label>
+	<rdfs:comment  rdf:parseType="Literal">The base voltage of the topologocial node.</rdfs:comment>
+	<rdfs:domain rdf:resource="#TopologicalNode"/>
+	<rdfs:range rdf:resource="#BaseVoltage"/>
+	<cims:inverseRoleName rdf:resource="#BaseVoltage.TopologicalNode"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:1..1"/>
+	<cims:AssociationUsed>Yes</cims:AssociationUsed>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#BaseVoltage.TopologicalNode">
+	<rdfs:label xml:lang="en">TopologicalNode</rdfs:label>
+	<rdfs:comment  rdf:parseType="Literal">The topological nodes at the base voltage.</rdfs:comment>
+	<rdfs:domain rdf:resource="#BaseVoltage"/>
+	<rdfs:range rdf:resource="#TopologicalNode"/>
+	<cims:inverseRoleName rdf:resource="#TopologicalNode.BaseVoltage"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..n"/>
+	<cims:AssociationUsed>No</cims:AssociationUsed>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#ConnectivityNode">
+	<rdfs:label xml:lang="en">ConnectivityNode</rdfs:label>
+	<rdfs:comment  rdf:parseType="Literal">Connectivity nodes are points where terminals of AC conducting equipment are connected together with zero impedance.</rdfs:comment>
+<cims:stereotype>Operation</cims:stereotype>
+<cims:stereotype>Description</cims:stereotype>
+	<cims:belongsToCategory rdf:resource="#Package_Core"/>
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#concrete"/>
+	<rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#TopologicalNode.ConnectivityNodes">
+	<rdfs:label xml:lang="en">ConnectivityNodes</rdfs:label>
+	<rdfs:comment  rdf:parseType="Literal">The topological node to which this connectivity node is assigned.  May depend on the current state of switches in the network.</rdfs:comment>
+	<rdfs:domain rdf:resource="#TopologicalNode"/>
+	<rdfs:range rdf:resource="#ConnectivityNode"/>
+	<cims:inverseRoleName rdf:resource="#ConnectivityNode.TopologicalNode"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..n"/>
+	<cims:AssociationUsed>No</cims:AssociationUsed>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#ConnectivityNode.TopologicalNode">
+	<rdfs:label xml:lang="en">TopologicalNode</rdfs:label>
+	<rdfs:comment  rdf:parseType="Literal">The connectivity nodes combine together to form this topological node.  May depend on the current state of switches in the network.</rdfs:comment>
+	<rdfs:domain rdf:resource="#ConnectivityNode"/>
+	<rdfs:range rdf:resource="#TopologicalNode"/>
+	<cims:inverseRoleName rdf:resource="#TopologicalNode.ConnectivityNodes"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..1"/>
+	<cims:AssociationUsed>Yes</cims:AssociationUsed>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#ConnectivityNodeContainer">
+	<rdfs:label xml:lang="en">ConnectivityNodeContainer</rdfs:label>
+	<rdfs:comment  rdf:parseType="Literal">A base class for all objects that may contain connectivity nodes or topological nodes.</rdfs:comment>
+	<cims:belongsToCategory rdf:resource="#Package_Core"/>
+	<rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#TopologicalNode.ConnectivityNodeContainer">
+	<rdfs:label xml:lang="en">ConnectivityNodeContainer</rdfs:label>
+	<rdfs:comment  rdf:parseType="Literal">The connectivity node container to which the toplogical node belongs.</rdfs:comment>
+	<rdfs:domain rdf:resource="#TopologicalNode"/>
+	<rdfs:range rdf:resource="#ConnectivityNodeContainer"/>
+	<cims:inverseRoleName rdf:resource="#ConnectivityNodeContainer.TopologicalNode"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:1"/>
+	<cims:AssociationUsed>Yes</cims:AssociationUsed>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#ConnectivityNodeContainer.TopologicalNode">
+	<rdfs:label xml:lang="en">TopologicalNode</rdfs:label>
+	<rdfs:comment  rdf:parseType="Literal">The topological nodes which belong to this connectivity node container.</rdfs:comment>
+	<rdfs:domain rdf:resource="#ConnectivityNodeContainer"/>
+	<rdfs:range rdf:resource="#TopologicalNode"/>
+	<cims:inverseRoleName rdf:resource="#TopologicalNode.ConnectivityNodeContainer"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..n"/>
+	<cims:AssociationUsed>No</cims:AssociationUsed>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#ReportingGroup">
+	<rdfs:label xml:lang="en">ReportingGroup</rdfs:label>
+	<rdfs:subClassOf rdf:resource="#IdentifiedObject"/>
+	<rdfs:comment  rdf:parseType="Literal">A reporting group is used for various ad-hoc groupings used for reporting.</rdfs:comment>
+	<cims:belongsToCategory rdf:resource="#Package_Core"/>
+	<rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#ReportingGroup.TopologicalNode">
+	<rdfs:label xml:lang="en">TopologicalNode</rdfs:label>
+	<rdfs:comment  rdf:parseType="Literal">The reporting group to which the topological node belongs.</rdfs:comment>
+	<rdfs:domain rdf:resource="#ReportingGroup"/>
+	<rdfs:range rdf:resource="#TopologicalNode"/>
+	<cims:inverseRoleName rdf:resource="#TopologicalNode.ReportingGroup"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..n"/>
+	<cims:AssociationUsed>No</cims:AssociationUsed>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#TopologicalNode.ReportingGroup">
+	<rdfs:label xml:lang="en">ReportingGroup</rdfs:label>
+	<rdfs:comment  rdf:parseType="Literal">The topological nodes that belong to the reporting group.</rdfs:comment>
+	<rdfs:domain rdf:resource="#TopologicalNode"/>
+	<rdfs:range rdf:resource="#ReportingGroup"/>
+	<cims:inverseRoleName rdf:resource="#ReportingGroup.TopologicalNode"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..1"/>
+	<cims:AssociationUsed>Yes</cims:AssociationUsed>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#IdentifiedObject">
+	<rdfs:label xml:lang="en">IdentifiedObject</rdfs:label>
+	<rdfs:comment  rdf:parseType="Literal">This is a root class to provide common identification for all classes needing identification and naming attributes.</rdfs:comment>
+	<cims:belongsToCategory rdf:resource="#Package_Core"/>
+	<rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#IdentifiedObject.description">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">description</rdfs:label>
+	<rdfs:domain rdf:resource="#IdentifiedObject"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..1" />
+	<rdfs:comment  rdf:parseType="Literal">The description is a free human readable text describing or naming the object. It may be non unique and may not correlate to a naming hierarchy.</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="http://entsoe.eu/CIM/SchemaExtension/3/1#IdentifiedObject.energyIdentCodeEic">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">energyIdentCodeEic</rdfs:label>
+	<rdfs:domain rdf:resource="#IdentifiedObject"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..1" />
+	<cims:stereotype>Entsoe</cims:stereotype>
+	<rdfs:comment  rdf:parseType="Literal">The attribute is used for an exchange of the EIC code (Energy identification Code). The length of the string is 16 characters as defined by the EIC code.
+References: 
+<ul>
+	<li>Local issuing offices for EIC: <a href="https://www.entsoe.eu/publications/edi-library/links-to-eic-websites/"><font color="#0000ff"><u>https://www.entsoe.eu/publications/edi-library/links-to-eic-websites/</u></font></a> </li>
+	<li>EIC description: <a href="https://www.entsoe.eu/index.php?id=73&amp;libCat=eic"><font color="#0000ff"><u>https://www.entsoe.eu/index.php?id=73&amp;libCat=eic</u></font></a> .</li>
+</ul></rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#IdentifiedObject.mRID">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">mRID</rdfs:label>
+	<rdfs:domain rdf:resource="#IdentifiedObject"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..1" />
+	<rdfs:comment  rdf:parseType="Literal">Master resource identifier issued by a model authority. The mRID is globally unique within an exchange context. Global uniqueness is easily achieved by using a UUID,  as specified in RFC 4122, for the mRID.  The use of UUID is strongly recommended.
+For CIMXML data files in RDF syntax conforming to IEC 61970-552 Edition 1, the mRID is mapped to rdf:ID or rdf:about attributes that identify CIM object elements.</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#IdentifiedObject.name">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">name</rdfs:label>
+	<rdfs:domain rdf:resource="#IdentifiedObject"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..1" />
+	<rdfs:comment  rdf:parseType="Literal">The name is any free human readable and possibly non unique text naming the object.</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="http://entsoe.eu/CIM/SchemaExtension/3/1#IdentifiedObject.shortName">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">shortName</rdfs:label>
+	<rdfs:domain rdf:resource="#IdentifiedObject"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..1" />
+	<cims:stereotype>Entsoe</cims:stereotype>
+	<rdfs:comment  rdf:parseType="Literal">The attribute is used for an exchange of a human readable short name with length of the string 12 characters maximum.</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#Terminal">
+	<rdfs:label xml:lang="en">Terminal</rdfs:label>
+	<rdfs:subClassOf rdf:resource="#ACDCTerminal"/>
+	<rdfs:comment  rdf:parseType="Literal">An AC electrical connection point to a piece of conducting equipment. Terminals are connected at physical connection points called connectivity nodes.</rdfs:comment>
+<cims:stereotype>Description</cims:stereotype>
+	<cims:belongsToCategory rdf:resource="#Package_Core"/>
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#concrete"/>
+	<rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#TopologicalNode.Terminal">
+	<rdfs:label xml:lang="en">Terminal</rdfs:label>
+	<rdfs:comment  rdf:parseType="Literal">The topological node associated with the terminal.   This can be used as an alternative to the connectivity node path to topological node, thus making it unneccesary to model connectivity nodes in some cases.   Note that the if connectivity nodes are in the model, this association would probably not be used as an input specification.</rdfs:comment>
+	<rdfs:domain rdf:resource="#TopologicalNode"/>
+	<rdfs:range rdf:resource="#Terminal"/>
+	<cims:inverseRoleName rdf:resource="#Terminal.TopologicalNode"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..n"/>
+	<cims:AssociationUsed>No</cims:AssociationUsed>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#Terminal.TopologicalNode">
+	<rdfs:label xml:lang="en">TopologicalNode</rdfs:label>
+	<rdfs:comment  rdf:parseType="Literal">The terminals associated with the topological node.   This can be used as an alternative to the connectivity node path to terminal, thus making it unneccesary to model connectivity nodes in some cases.   Note that if connectivity nodes are in the model, this association would probably not be used as an input specification.</rdfs:comment>
+	<rdfs:domain rdf:resource="#Terminal"/>
+	<rdfs:range rdf:resource="#TopologicalNode"/>
+	<cims:inverseRoleName rdf:resource="#TopologicalNode.Terminal"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:1"/>
+	<cims:AssociationUsed>Yes</cims:AssociationUsed>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#Package_DC">
+	<rdfs:label xml:lang="en">DC</rdfs:label>
+	<rdf:type rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#ClassCategory"/>
+</rdf:Description>
+	 <rdf:Description rdf:about="#ACDCConverterDCTerminal">
+	<rdfs:label xml:lang="en">ACDCConverterDCTerminal</rdfs:label>
+	<rdfs:subClassOf rdf:resource="#DCBaseTerminal"/>
+	<rdfs:comment  rdf:parseType="Literal">A DC electrical connection point at the AC/DC converter. The AC/DC converter is electrically connected also to the AC side. The AC connection is inherited from the AC conducting equipment in the same way as any other AC equipment. The AC/DC converter DC terminal is separate from generic DC terminal to restrict the connection with the AC side to AC/DC converter and so that no other DC conducting equipment can be connected to the AC side.</rdfs:comment>
+<cims:stereotype>Description</cims:stereotype>
+	<cims:belongsToCategory rdf:resource="#Package_DC"/>
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#concrete"/>
+	<rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#DCBaseTerminal">
+	<rdfs:label xml:lang="en">DCBaseTerminal</rdfs:label>
+	<rdfs:subClassOf rdf:resource="#ACDCTerminal"/>
+	<rdfs:comment  rdf:parseType="Literal">An electrical connection point at a piece of DC conducting equipment. DC terminals are connected at one physical DC node that may have multiple DC terminals connected. A DC node is similar to an AC connectivity node. The model enforces that DC connections are distinct from AC connections. </rdfs:comment>
+	<cims:belongsToCategory rdf:resource="#Package_DC"/>
+	<rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#DCTopologicalNode.DCTerminals">
+	<rdfs:label xml:lang="en">DCTerminals</rdfs:label>
+	<rdfs:comment  rdf:parseType="Literal">See association end Terminal.TopologicalNode.</rdfs:comment>
+	<rdfs:domain rdf:resource="#DCTopologicalNode"/>
+	<rdfs:range rdf:resource="#DCBaseTerminal"/>
+	<cims:inverseRoleName rdf:resource="#DCBaseTerminal.DCTopologicalNode"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..n"/>
+	<cims:AssociationUsed>No</cims:AssociationUsed>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#DCBaseTerminal.DCTopologicalNode">
+	<rdfs:label xml:lang="en">DCTopologicalNode</rdfs:label>
+	<rdfs:comment  rdf:parseType="Literal">See association end TopologicalNode.Terminal.</rdfs:comment>
+	<rdfs:domain rdf:resource="#DCBaseTerminal"/>
+	<rdfs:range rdf:resource="#DCTopologicalNode"/>
+	<cims:inverseRoleName rdf:resource="#DCTopologicalNode.DCTerminals"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:1"/>
+	<cims:AssociationUsed>Yes</cims:AssociationUsed>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#DCEquipmentContainer">
+	<rdfs:label xml:lang="en">DCEquipmentContainer</rdfs:label>
+	<rdfs:comment  rdf:parseType="Literal">A modeling construct to provide a root class for containment of DC as well as AC equipment. The class differ from the EquipmentContaner for AC in that it may also contain DCNodes. Hence it can contain both AC and DC equipment.</rdfs:comment>
+	<cims:belongsToCategory rdf:resource="#Package_DC"/>
+	<rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#DCTopologicalNode.DCEquipmentContainer">
+	<rdfs:label xml:lang="en">DCEquipmentContainer</rdfs:label>
+	<rdfs:domain rdf:resource="#DCTopologicalNode"/>
+	<rdfs:range rdf:resource="#DCEquipmentContainer"/>
+	<cims:inverseRoleName rdf:resource="#DCEquipmentContainer.DCTopologicalNode"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..1"/>
+	<cims:AssociationUsed>Yes</cims:AssociationUsed>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#DCEquipmentContainer.DCTopologicalNode">
+	<rdfs:label xml:lang="en">DCTopologicalNode</rdfs:label>
+	<rdfs:domain rdf:resource="#DCEquipmentContainer"/>
+	<rdfs:range rdf:resource="#DCTopologicalNode"/>
+	<cims:inverseRoleName rdf:resource="#DCTopologicalNode.DCEquipmentContainer"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..n"/>
+	<cims:AssociationUsed>No</cims:AssociationUsed>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#DCNode">
+	<rdfs:label xml:lang="en">DCNode</rdfs:label>
+	<rdfs:subClassOf rdf:resource="#IdentifiedObject"/>
+	<rdfs:comment  rdf:parseType="Literal">DC nodes are points where terminals of DC conducting equipment are connected together with zero impedance.</rdfs:comment>
+<cims:stereotype>Description</cims:stereotype>
+	<cims:belongsToCategory rdf:resource="#Package_DC"/>
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#concrete"/>
+	<rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#DCTopologicalNode.DCNodes">
+	<rdfs:label xml:lang="en">DCNodes</rdfs:label>
+	<rdfs:comment  rdf:parseType="Literal">See association end ConnectivityNode.TopologicalNode.</rdfs:comment>
+	<rdfs:domain rdf:resource="#DCTopologicalNode"/>
+	<rdfs:range rdf:resource="#DCNode"/>
+	<cims:inverseRoleName rdf:resource="#DCNode.DCTopologicalNode"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..n"/>
+	<cims:AssociationUsed>No</cims:AssociationUsed>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#DCNode.DCTopologicalNode">
+	<rdfs:label xml:lang="en">DCTopologicalNode</rdfs:label>
+	<rdfs:comment  rdf:parseType="Literal">See association end TopologicalNode.ConnectivityNodes.</rdfs:comment>
+	<rdfs:domain rdf:resource="#DCNode"/>
+	<rdfs:range rdf:resource="#DCTopologicalNode"/>
+	<cims:inverseRoleName rdf:resource="#DCTopologicalNode.DCNodes"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..1"/>
+	<cims:AssociationUsed>Yes</cims:AssociationUsed>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#DCTerminal">
+	<rdfs:label xml:lang="en">DCTerminal</rdfs:label>
+	<rdfs:subClassOf rdf:resource="#DCBaseTerminal"/>
+	<rdfs:comment  rdf:parseType="Literal">An electrical connection point to generic DC conducting equipment.</rdfs:comment>
+<cims:stereotype>Description</cims:stereotype>
+	<cims:belongsToCategory rdf:resource="#Package_DC"/>
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#concrete"/>
+	<rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#DCTopologicalNode">
+	<rdfs:label xml:lang="en">DCTopologicalNode</rdfs:label>
+	<rdfs:subClassOf rdf:resource="#IdentifiedObject"/>
+	<rdfs:comment  rdf:parseType="Literal">DC bus.</rdfs:comment>
+	<cims:belongsToCategory rdf:resource="#Package_DC"/>
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#concrete"/>
+	<rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#Package_Topology">
+	<rdfs:label xml:lang="en">Topology</rdfs:label>
+	<rdf:type rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#ClassCategory"/>
+</rdf:Description>
+	 <rdf:Description rdf:about="#TopologicalNode">
+	<rdfs:label xml:lang="en">TopologicalNode</rdfs:label>
+	<rdfs:subClassOf rdf:resource="#IdentifiedObject"/>
+	<rdfs:comment  rdf:parseType="Literal">For a detailed substation model a topological node is a set of connectivity nodes that, in the current network state, are connected together through any type of closed switches, including  jumpers. Topological nodes change as the current network state changes (i.e., switches, breakers, etc. change state).
+For a planning model, switch statuses are not used to form topological nodes. Instead they are manually created or deleted in a model builder tool. Topological nodes maintained this way are also called "busses".</rdfs:comment>
+	<cims:belongsToCategory rdf:resource="#Package_Topology"/>
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#concrete"/>
+	<rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+	 </rdf:Description>
+</rdf:RDF>

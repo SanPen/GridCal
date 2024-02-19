@@ -19,14 +19,14 @@
 import pandas as pd
 from typing import Union
 from matplotlib import pyplot as plt
-
+import numpy as np
 from GridCalEngine.Core.Devices.Substation.bus import Bus
-from GridCalEngine.Core.Devices.Branches.line import LineTemplate
-from GridCalEngine.Core.Devices.Branches.templates.parent_branch import ParentBranch
+from GridCalEngine.Core.Devices.Parents.branch_parent import BranchParent
+from GridCalEngine.Core.Devices.profile import Profile
 from GridCalEngine.enumerations import DeviceType, BuildStatus
 
 
-class DcLine(ParentBranch):
+class DcLine(BranchParent):
     def __init__(self,
                  bus_from: Union[Bus, None] = None,
                  bus_to: Union[Bus, None] = None,
@@ -47,14 +47,9 @@ class DcLine(ParentBranch):
                  temp_oper=20,
                  alpha=0.00330,
                  template=None,
-                 rate_prof=None,
-                 Cost_prof=None,
-                 active_prof=None,
-                 temp_oper_prof=None,
                  contingency_factor=1.0,
                  contingency_enabled=True,
                  monitor_loading=True,
-                 contingency_factor_prof=None,
                  capex=0,
                  opex=0,
                  build_status: BuildStatus = BuildStatus.Commissioned):
@@ -79,20 +74,15 @@ class DcLine(ParentBranch):
         :param temp_oper: Operational temperature (°C)
         :param alpha: Thermal constant of the material (°C)
         :param template: Basic branch template
-        :param rate_prof: Rating profile
-        :param Cost_prof: Overload cost profile
-        :param active_prof: Active profile
-        :param temp_oper_prof: Operational temperature profile
         :param contingency_factor: Rating factor in case of contingency
         :param contingency_enabled: enabled for contingencies (Legacy)
         :param monitor_loading: monitor the loading (used in OPF)
-        :param contingency_factor_prof: profile of contingency ratings
         :param capex: Cost of investment (e/MW)
         :param opex: Cost of operation (e/MWh)
         :param build_status: build status (now time)
         """
 
-        ParentBranch.__init__(self,
+        BranchParent.__init__(self,
                               name=name,
                               idtag=idtag,
                               code=code,
@@ -101,11 +91,8 @@ class DcLine(ParentBranch):
                               cn_from=None,
                               cn_to=None,
                               active=active,
-                              active_prof=active_prof,
                               rate=rate,
-                              rate_prof=rate_prof,
                               contingency_factor=contingency_factor,
-                              contingency_factor_prof=contingency_factor_prof,
                               contingency_enabled=contingency_enabled,
                               monitor_loading=monitor_loading,
                               mttf=mttf,
@@ -114,7 +101,6 @@ class DcLine(ParentBranch):
                               capex=capex,
                               opex=opex,
                               Cost=cost,
-                              Cost_prof=Cost_prof,
                               device_type=DeviceType.DCLineDevice)
 
         # List of measurements
@@ -136,8 +122,7 @@ class DcLine(ParentBranch):
         # Conductor base and operating temperatures in ºC
         self.temp_base = temp_base
         self.temp_oper = temp_oper
-
-        self.temp_oper_prof = temp_oper_prof
+        self._temp_oper_prof = Profile(default_value=temp_oper)
 
         # Conductor thermal constant (1/ºC)
         self.alpha = alpha
@@ -153,6 +138,23 @@ class DcLine(ParentBranch):
                       definition='Per-unit positioning of the fault:0 would be at the "from" side,1 would '
                                  'be at the "to" side,therefore 0.5 is at the middle.')
         self.register(key='template', units='', tpe=DeviceType.SequenceLineDevice, definition='', editable=False)
+
+    @property
+    def temp_oper_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._temp_oper_prof
+
+    @temp_oper_prof.setter
+    def temp_oper_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._temp_oper_prof = val
+        elif isinstance(val, np.ndarray):
+            self._temp_oper_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a temp_oper_prof')
 
     @property
     def R_corrected(self):
@@ -215,19 +217,19 @@ class DcLine(ParentBranch):
         for name, properties in self.registered_properties.items():
             obj = getattr(self, name)
 
-            if properties.tpe == DeviceType.BusDevice:
-                obj = obj.idtag
+            if obj is None:
+                data.append("")
+            else:
 
-            elif properties.tpe == LineTemplate:
-                if obj is None:
-                    obj = ''
+                if hasattr(obj, 'idtag'):
+                    obj = obj.idtag
                 else:
-                    obj = str(obj)
+                    if properties.tpe not in [str, float, int, bool]:
+                        obj = str(obj)
+                    else:
+                        obj = str(obj)
 
-            elif properties.tpe not in [str, float, int, bool]:
-                obj = str(obj)
-
-            data.append(obj)
+                data.append(obj)
         return data
 
     def get_properties_dict(self, version=3):

@@ -50,7 +50,7 @@ class ContingencyAnalysisResults(ResultsTemplate):
                 ResultTypes.BranchActivePowerFrom,
                 ResultTypes.BranchLoading,
                 ResultTypes.ContingencyAnalysisReport,
-                ResultTypes.SrapFixingProbability
+                ResultTypes.SrapUsedPower
 
             ],
             time_array=None,
@@ -67,7 +67,7 @@ class ContingencyAnalysisResults(ResultsTemplate):
         self.Sbus: CxMat = np.zeros((ncon, nbus), dtype=complex)
         self.Sf: CxMat = np.zeros((ncon, nbr), dtype=complex)
         self.loading: CxMat = np.zeros((ncon, nbr), dtype=complex)
-        self.srap_fixing_probability = np.zeros((nbr, nbus), dtype=float)
+        self.srap_used_power = np.zeros((nbr, nbus), dtype=float)
 
         self.report: ContingencyResultsReport = ContingencyResultsReport()
 
@@ -80,7 +80,7 @@ class ContingencyAnalysisResults(ResultsTemplate):
         self.register(name='Sbus', tpe=CxMat)
         self.register(name='Sf', tpe=CxMat)
         self.register(name='loading', tpe=CxMat)
-        self.register(name='srap_fixing_probability', tpe=Mat)
+        self.register(name='srap_used_power', tpe=Mat)
 
         self.register(name='report', tpe=ContingencyResultsReport)
 
@@ -155,8 +155,8 @@ class ContingencyAnalysisResults(ResultsTemplate):
             labels = self.branch_names
             # index = self.branch_names
 
-        elif result_type == ResultTypes.SrapFixingProbability:
-            data = self.srap_fixing_probability
+        elif result_type == ResultTypes.SrapUsedPower:
+            data = self.srap_used_power
             y_label = ''
             title = result_type.value[0]
             labels = self.bus_names

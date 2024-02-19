@@ -19,12 +19,11 @@
 
 import math
 import random
-import time
 import numpy as np
 from typing import List, Tuple
 from scipy.linalg.blas import dger
 from scipy.optimize import minimize
-from GridCalEngine.basic_structures import Vec, Mat
+from GridCalEngine.basic_structures import Vec, Mat, IntVec
 
 
 def relu(x):
@@ -76,9 +75,10 @@ class SurrogateModel:
         self.scratch = np.zeros(m)  # vector to store temporary results and avoid unnecessary allocations.
 
     @classmethod
-    def init(cls, n_obj, d, lb, ub, num_int) -> 'SurrogateModel':
+    def init(cls, n_obj: int, d: int, lb: Vec, ub: Vec, num_int: int) -> 'SurrogateModel':
         """
         Initializes a surrogate model.
+        :param n_obj: number of objective function dimensions
         :param d: the number of (discrete and continuous) decision variables.
         :param lb: the lower bound of the decision variable values.
         :param ub: the upper bound of the decision variable values.
@@ -143,39 +143,6 @@ class SurrogateModel:
         # The number of basis functions only related to discrete variables.
         int_basis_count = len(b) - 1
 
-        # # Add `num_cont` random linearly independent basis functions (and parallel ones)
-        # # that depend on both integer and continuous variables, where `num_cont` is
-        # # the number of continuous variables.
-        # num_cont = d - num_int
-        # W_cont = np.random.random((num_cont, d))
-        # W_cont = (2 * W_cont - 1) / d  # normalize between -1/d and 1/d.
-        # for k in range(num_cont):
-        #     # Find the set in which `b` needs to lie by moving orthogonal to W.
-        #     signs = np.sign(W_cont[k])
-        #
-        #     # Find relevant corner points of the [lb, ub] hypercube.
-        #     corner_1 = np.copy(lb)
-        #     corner_2 = np.copy(ub)
-        #     for j in range(d):
-        #         if signs[j] < 0:
-        #             corner_1[j] = ub[j]
-        #             corner_2[j] = lb[j]
-        #
-        #     # Calculate minimal distance from hyperplane to corner points.
-        #     b1 = np.dot(W_cont[k], corner_1)
-        #     b2 = np.dot(W_cont[k], corner_2)
-        #
-        #     if b1 > b2:
-        #         print('Warning: b1>b2. This may lead to problems.')
-        #
-        #     # Add the same number of basis functions as for the discrete variables.
-        #     for j in range(math.ceil(int_basis_count / num_int)):
-        #         # or just add 1000 of them
-        #         # for j in range(1000):
-        #         b_j = (b2 - b1) * np.random.random() + b1
-        #         W.append(W_cont[k])
-        #         b.append(-float(b_j))
-
         W = np.asarray(W)
         b = np.asarray(b)
         m = len(b)  # the number of basis functions
@@ -185,13 +152,13 @@ class SurrogateModel:
         # something like c = np.zeros(m, nr_objectives)
         # or: nr_objectives number of vectors c
         # Set model weights corresponding to discrete basis functions to 1, stimulates convexity.
-        c[:, 1:int_basis_count + 1] = 1 #--> changes with multiple objectives: make sure all c are the same at this step
+        c[:, 1:int_basis_count + 1] = 1
 
         # The regularization parameter. 1e-8 is good for the noiseless case,
         # replace by ≈1e-3 if there is noise.
         reg = 1e-8
         bounds = list(zip(lb, ub))
-        return cls(n_obj, m, c, W, b, reg, bounds) # --> changes with multiple objectives: c will be a matrix, or we will have multiple vectors c
+        return cls(n_obj, m, c, W, b, reg, bounds)
 
     def phi(self, x, out=None):
         """
@@ -224,19 +191,20 @@ class SurrogateModel:
 
         # Recursive least squares algorithm
         v = np.matmul(self.P, phi, out=self.scratch)
-        g0 = v / (1 + np.inner(phi, v))  # --> changes with multiple objectives.  Let g depend on the objective index. Do this initialization for all objectives.
+        g0 = v / (1 + np.inner(phi,
+                               v))  # --> changes with multiple objectives.  Let g depend on the objective index. Do this initialization for all objectives.
         # P ← P - gvᵀ
         self.P = dger(-1.0, g0, v, a=self.P,
                       overwrite_x=False, overwrite_y=True, overwrite_a=True)
 
         # for each objective index...
         for i in range(self.n_obj):
-            g = g0 * (y[i] - np.inner(phi, self.c[i, :])) #--> changes with multiple objectives.
+            g = g0 * (y[i] - np.inner(phi, self.c[i, :]))  # --> changes with multiple objectives.
             ## So do this calculation for all different objectives, make sure c and y correspond to the right objective
             # So there will be multiple g: one for each. Initialize them the same way with g = v / (1 + np.inner(phi, v))
-            self.c[i, :] += g #do this for each objective
+            self.c[i, :] += g  # do this for each objective
 
-    def g(self, x): # change this to have the objective index in the argument   def g(self, x, obj_index):
+    def g(self, x):  # change this to have the objective index in the argument   def g(self, x, obj_index):
         """
         Evaluates the surrogate model at `x`.
         :param x: the decision variable values.
@@ -247,13 +215,13 @@ class SurrogateModel:
         #     ret[i] = np.inner(self.c[i,:], phi)   # c[obj_index]
         return self.c @ phi  # vector of size n_obj
 
-    def g_jac(self, x): # change this to have the objective index in the argument   def g(self, x, obj_index):
+    def g_jac(self, x):  # change this to have the objective index in the argument   def g(self, x, obj_index):
         """
         Evaluates the Jacobian of the model at `x`.
         :param x: the decision variable values.
         """
         phi_prime = self.phi_deriv(x, out=self.scratch)
-        b = np.multiply(self.c, phi_prime, out=self.scratch) # use c[obj_index]
+        b = np.multiply(self.c, phi_prime, out=self.scratch)  # use c[obj_index]
         return np.matmul(b, self.W)  # 1×d vector
 
     # --> changes with multiple objectives.
@@ -264,14 +232,14 @@ class SurrogateModel:
         :param x: the decision variable values
         :param scalarization_weights: vector of size n_obj
         """
-        #single_obj = inner product between scalarization_weights and vector of g
-        #or: single_obj = sum of scalarization_weights[obj_index]*g[obj_index]
+        # single_obj = inner product between scalarization_weights and vector of g
+        # or: single_obj = sum of scalarization_weights[obj_index]*g[obj_index]
         # return single_obj
         return self.g(x) @ scalarization_weights
 
     # We need to also calculate the Jacobian of the scalarized single_obj,
     # But we can ignore it for now
-    #def scalarized_jac
+    # def scalarized_jac
     # Probably just scalarization_weights[obj_index]*g_jac[obj_index]
 
     def minimum(self, x0, scalarization_weights):
@@ -280,15 +248,17 @@ class SurrogateModel:
         :param x0: the initial guess.
         """
         res = minimize(self.g_scalarize, x0,
-                       args=(scalarization_weights, ),
-                       method='L-BFGS-B', # --> changes with multiple objectives: instead of g, minimize the single_obj that comes out of scalarize
+                       args=(scalarization_weights,),
+                       method='L-BFGS-B',
+                       # --> changes with multiple objectives: instead of g, minimize the single_obj that comes out of scalarize
                        bounds=self.bounds,
                        # jac=self.g_jac, # remove jacobian at first, until it is calculated
                        options={'maxiter': 20, 'maxfun': 20})
         return res.x
 
 
-def scale(y, y0, scale_threshold=1e-8): #normalize: do this for every objective so that all objectives are more or less in the same range
+def scale(y, y0,
+          scale_threshold=1e-8):  # normalize: do this for every objective so that all objectives are more or less in the same range
     """
     Scale the objective with respect to the initial objective value,
     causing the optimum to lie below zero. This helps exploration and
@@ -303,14 +273,15 @@ def scale(y, y0, scale_threshold=1e-8): #normalize: do this for every objective 
     y -= y0
     for i in range(len(y)):
         if y0[i] > scale_threshold:
-            y[i] /=y0[i]
+            y[i] /= y0[i]
     #
     # if abs(y0) > scale_threshold
     #     y /= abs(y0)
     return y
 
 
-def inv_scale(y_scaled, y0, scale_threshold=1e-8): #do this for every objective so that all objectives are more or less in the same range
+def inv_scale(y_scaled, y0,
+              scale_threshold=1e-8):  # do this for every objective so that all objectives are more or less in the same range
     """
     Computes the inverse function of `scale(y, y0)`.
     :param y_scaled: the scaled objective function value.
@@ -323,7 +294,7 @@ def inv_scale(y_scaled, y0, scale_threshold=1e-8): #do this for every objective 
     return y_scaled + y0
 
 
-def dominates(sol_a: np.ndarray, sol_b: np.ndarray):
+def dominates(sol_a: Vec, sol_b: Vec):
     """
     Check if a solution dominates another in the Pareto sense
     :param sol_a: Array representing the solution A (row of the population)
@@ -340,7 +311,7 @@ def dominates(sol_a: np.ndarray, sol_b: np.ndarray):
     return better_in_any
 
 
-def get_non_dominated_fronts(population):
+def get_non_dominated_fronts(population: Mat) -> List[List[int]]:
     """
     2D non dominated sorting
     :param population: matrix (n points, ndim)
@@ -376,11 +347,11 @@ def get_non_dominated_fronts(population):
     return fronts[:-1]  # Exclude the last empty front
 
 
-def crowding_distance(front, population):
+def crowding_distance(front: List[int], population: Mat) -> Vec:
     """
 
-    :param front:
-    :param population:
+    :param front: list of integers representing the positions in the population matrix
+    :param population: Matrix of function evaluations (Npoints, NObjdim)
     :return:
     """
 
@@ -413,12 +384,13 @@ def crowding_distance(front, population):
     return distances
 
 
-def sort_by_crowding(fronts, population):
+def sort_by_crowding(fronts: List[List[int]], population: Mat) -> Tuple[Mat, IntVec]:
     """
 
-    :param fronts:
-    :param population:
-    :return:
+    :param fronts: Fronts ordered by position (front 1, front 2, Front 3, ...)
+            Each front is a list of integers representing the positions in the population matrix
+    :param population: Matrix of function evaluations (Npoints, NObjdim)
+    :return: sorted population, array of sorting indices
     """
     # Assuming 'fronts' is the output from your get_non_dominated_fronts function
     # and 'population' contains all your solutions
@@ -449,12 +421,13 @@ def sort_by_crowding(fronts, population):
     return population[sorting_indices, :], sorting_indices
 
 
-def non_dominated_sorting(y_values, x_values):
+def non_dominated_sorting(y_values: Mat, x_values: Mat):
     """
     Use non dominated sorting and crowded sorting to sort the multidimensional objectives
     :param y_values: Matrix of function evaluations (Npoints, NObjdim)
     :param x_values: Matrix of values (Npoints, Ndim)
-    :return: Sorted population, Sorted input values (X)
+    :return: Return the pareto y and matching x. The pareto front may have less values than the population
+             [Sorted population, Sorted input values (X)]
     """
     # obtain the sorting fronts
     fronts = get_non_dominated_fronts(y_values)
@@ -466,7 +439,8 @@ def non_dominated_sorting(y_values, x_values):
     return sorted_population, x_values[sorting_indices, :]
 
 
-def MVRSM_multi_minimize(obj_func, x0, lb, ub, num_int, max_evals, n_objectives, rand_evals=0, args=()):
+def MVRSM_multi_minimize(obj_func, x0: Vec, lb: Vec, ub: Vec, num_int: int, max_evals: int, n_objectives: int,
+                         rand_evals: int = 0, args=()):
     """
     MVRSM algorithm for multiple objectives
     x = [integer vars | float vars]
@@ -505,7 +479,6 @@ def MVRSM_multi_minimize(obj_func, x0, lb, ub, num_int, max_evals, n_objectives,
         model.update(x, y)
 
         if i >= rand_evals:
-
             # rnd_weights = np.random.rand(n_objectives)
             rnd_weights = np.random.lognormal(0, 1, n_objectives)
             # rnd_weights = np.full(n_objectives, 0.5)
@@ -593,25 +566,26 @@ if __name__ == '__main__':
     # ub[0:num_int] = num_int + 1
 
     ff = shaffer
-    d = 1  # Total number of variables
-    lb = np.full(d, -10)  # Lower bound
-    ub = np.full(d, 10)  # Upper bound
-    num_int = 0  # number of integer variables
+    d_ = 1  # Total number of variables
+    lb_ = np.full(d_, -10)  # Lower bound
+    ub_ = np.full(d_, 10)  # Upper bound
+    num_int_ = 0  # number of integer variables
     # lb[0:num_int] = 0
     # ub[0:num_int] = num_int + 1
 
-    x0 = np.zeros(d)  # Initial guess
+    x0_ = np.zeros(d_)  # Initial guess
     # x0[0:num_int] = np.round(np.random.rand(num_int) * (ub[0:num_int] - lb[0:num_int]) + lb[0:num_int])  # Random initial guess (integer)
     # x0[num_int:d] = np.random.rand(d - num_int) * (ub[num_int:d] - lb[num_int:d]) + lb[num_int:d]  # Random initial guess (continuous)
 
     sorted_y_, sorted_x_, y_population_ = MVRSM_multi_minimize(obj_func=ff,
-                                                x0=x0,
-                                                lb=lb,
-                                                ub=ub,
-                                                num_int=num_int,
-                                                max_evals=400,
-                                                n_objectives=2,
-                                                rand_evals=100, args=())
+                                                               x0=x0_,
+                                                               lb=lb_,
+                                                               ub=ub_,
+                                                               num_int=num_int_,
+                                                               max_evals=400,
+                                                               n_objectives=2,
+                                                               rand_evals=100,
+                                                               args=())
 
     print("Best solutions:")
     print(sorted_y_)
@@ -619,4 +593,3 @@ if __name__ == '__main__':
     plt.scatter(sorted_y_[:, 0], sorted_y_[:, 1], 1, )
     # plt.plot(y_population_[:, 0])
     plt.show()
-

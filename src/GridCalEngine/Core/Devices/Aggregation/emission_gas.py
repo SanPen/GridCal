@@ -17,8 +17,9 @@
 
 
 from typing import Union
-from GridCalEngine.basic_structures import Vec
-from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceType, GCProp
+import numpy as np
+from GridCalEngine.Core.Devices.Parents.editable_device import EditableDevice, DeviceType
+from GridCalEngine.Core.Devices.profile import Profile
 
 
 class EmissionGas(EditableDevice):
@@ -28,7 +29,6 @@ class EmissionGas(EditableDevice):
                  code: str = '',
                  idtag: Union[str, None] = None,
                  cost: float = 0.0,
-                 cost_prof: Union[Vec, None] = None,
                  color: Union[str, None] = None):
         """
         Emission gas object
@@ -36,7 +36,6 @@ class EmissionGas(EditableDevice):
         :param code: secondary id
         :param idtag: UUID code
         :param cost: cost per tonn (e/t)
-        :param cost_prof: profile of costs
         :param color: hexadecimal color string (i.e. #AA00FF)
         """
         EditableDevice.__init__(self,
@@ -47,13 +46,30 @@ class EmissionGas(EditableDevice):
 
         self.cost = cost
 
-        self.cost_prof = cost_prof
+        self._cost_prof = Profile(default_value=cost)
 
         self.color = color if color is not None else self.rnd_color()
 
         self.register(key='cost', units='e/t', tpe=float, definition='Cost of emissions (e / ton)',
                       profile_name='cost_prof')
         self.register(key='color', units='', tpe=str, definition='Color to paint')
+
+    @property
+    def cost_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._cost_prof
+
+    @cost_prof.setter
+    def cost_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._cost_prof = val
+        elif isinstance(val, np.ndarray):
+            self._cost_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a cost_prof')
 
     def get_properties_dict(self, version=3):
 

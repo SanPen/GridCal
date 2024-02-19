@@ -2,7 +2,7 @@ import os
 from typing import List
 from GridCalEngine.IO.cim.db.base_db import BaseDb
 from GridCalEngine.IO.cim.db.file_system import get_create_roseta_db_folder
-from GridCalEngine.IO.cim.cgmes_2_4_15.cgmes_circuit import CgmesCircuit
+from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
 
 
 class CgmesLookUpDb(BaseDb):

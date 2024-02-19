@@ -55,6 +55,7 @@ def get_bus_data(circuit: MultiCircuit,
         bus_data.Vmin[i] = bus.Vmin
         bus_data.Vmax[i] = bus.Vmax
         bus_data.Vnom[i] = bus.Vnom
+        # TODO: Check that the devices are are changing the guess
         bus_data.Vbus[i] = bus.get_voltage_guess(None, use_stored_guess=use_stored_guess)
 
         bus_data.angle_min[i] = bus.angle_min
@@ -102,7 +103,7 @@ def get_load_data(circuit: MultiCircuit,
     :return:
     """
 
-    data = ds.LoadData(nelm=circuit.get_calculation_loads_number(), nbus=len(circuit.buses))
+    data = ds.LoadData(nelm=circuit.get_load_like_device_number(), nbus=len(circuit.buses))
 
     ii = 0
     for elm in circuit.get_loads():
@@ -613,6 +614,8 @@ def get_branch_data(circuit: MultiCircuit,
 
         data.virtual_tap_f[i], data.virtual_tap_t[i] = elm.get_virtual_taps()
 
+        data.control_mode[i] = TransformerControlType.fixed
+
         ii += 1
 
     # DC-lines
@@ -647,6 +650,8 @@ def get_branch_data(circuit: MultiCircuit,
 
         data.contingency_enabled[ii] = int(elm.contingency_enabled)
         data.monitor_loading[ii] = int(elm.monitor_loading)
+
+        data.control_mode[ii] = TransformerControlType.fixed
 
         data.virtual_tap_f[ii], data.virtual_tap_t[ii] = elm.get_virtual_taps()
 
@@ -978,6 +983,8 @@ def get_branch_data(circuit: MultiCircuit,
 
         data.contingency_enabled[ii] = int(elm.contingency_enabled)
         data.monitor_loading[ii] = int(elm.monitor_loading)
+
+        data.control_mode[ii] = TransformerControlType.fixed
 
         ii += 1
 

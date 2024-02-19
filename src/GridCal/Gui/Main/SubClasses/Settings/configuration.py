@@ -179,14 +179,17 @@ class ConfigurationMain(ResultsMain):
                 "zone_grouping": self.ui.opfZonalGroupByComboBox,
                 "mip_solver": self.ui.mip_solver_comboBox,
                 "contingency_tolerance": self.ui.opfContingencyToleranceSpinBox,
-                "max_module_step": self.ui.maxVoltageModuleStepSpinBox,
-                "max_angle_step": self.ui.maxVoltageAngleStepSpinBox,
                 "skip_generation_limits": self.ui.skipOpfGenerationLimitsCheckBox,
                 "consider_contingencies": self.ui.considerContingenciesOpfCheckBox,
                 "maximize_area_exchange": self.ui.opfMaximizeExcahngeCheckBox,
                 "unit_commitment": self.ui.opfUnitCommitmentCheckBox,
                 "add_opf_report": self.ui.addOptimalPowerFlowReportCheckBox,
                 "save_mip": self.ui.save_mip_checkBox,
+                "ips_method": self.ui.ips_method_comboBox,
+                "ips_tolerance": self.ui.ips_tolerance_spinBox,
+                "ips_iterations": self.ui.ips_iterations_spinBox,
+                "ips_trust_radius": self.ui.ips_trust_radius_doubleSpinBox,
+                "ips_init_with_pf": self.ui.ips_initialize_with_pf_checkBox,
             },
             "continuation_power_flow": {
                 "max_iterations": self.ui.vs_max_iterations_spinBox,
@@ -230,7 +233,8 @@ class ConfigurationMain(ResultsMain):
                 "contingencies_engine": self.ui.contingencyEngineComboBox,
                 "use_srap": self.ui.use_srap_checkBox,
                 "srap_loading_limit": self.ui.srap_loading_limit_doubleSpinBox,
-                "srap_max_power": self.ui.srap_limit_doubleSpinBox
+                "srap_max_power": self.ui.srap_limit_doubleSpinBox,
+                "srap_top_n": self.ui.srap_top_n_SpinBox,
             },
             "file": {
                 "store_results_in_file": self.ui.saveResultsCheckBox

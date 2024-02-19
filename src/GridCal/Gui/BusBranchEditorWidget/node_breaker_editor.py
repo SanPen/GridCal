@@ -16,17 +16,11 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import sys
 import os
-import numpy as np
-import pandas as pd
 from typing import List, Dict, Union, Tuple
-from collections.abc import Callable
-import networkx as nx
-import pyproj
 
 from PySide6.QtCore import (Qt, QPoint, QSize, QPointF, QRect, QRectF, QMimeData, QIODevice, QByteArray,
                             QDataStream, QModelIndex)
-from PySide6.QtGui import (QIcon, QPixmap, QImage, QPainter, QStandardItemModel, QStandardItem, QColor, QPen,
-                           QDragEnterEvent, QDragMoveEvent, QDropEvent, QWheelEvent, QKeyEvent, QDrag)
+from PySide6.QtGui import (QIcon, QPixmap, QImage, QPainter, QStandardItemModel, QStandardItem, QDragEnterEvent, QDragMoveEvent, QDropEvent, QWheelEvent, QKeyEvent)
 from PySide6.QtWidgets import (QApplication, QGraphicsView, QListView, QTableView, QVBoxLayout, QHBoxLayout, QFrame,
                                QSplitter, QMessageBox, QAbstractItemView, QGraphicsScene, QGraphicsSceneMouseEvent,
                                QGraphicsItem)
@@ -34,22 +28,18 @@ from PySide6.QtSvg import QSvgGenerator
 
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Core.Devices.Substation import Bus
-from GridCalEngine.Core.Devices.editable_device import EditableDevice
+from GridCalEngine.Core.Devices.Parents.editable_device import EditableDevice
 from GridCalEngine.Core.Devices.Branches.line import Line
 from GridCalEngine.Core.Devices.Branches.dc_line import DcLine
 from GridCalEngine.Core.Devices.Branches.transformer import Transformer2W
 from GridCalEngine.Core.Devices.Branches.vsc import VSC
 from GridCalEngine.Core.Devices.Branches.upfc import UPFC
 from GridCalEngine.Core.Devices.Branches.hvdc_line import HvdcLine
-from GridCalEngine.Core.Devices.Branches.transformer3w import Transformer3W, Winding
-from GridCalEngine.Core.Devices.Injections.generator import Generator
+from GridCalEngine.Core.Devices.Branches.transformer3w import Transformer3W
 from GridCalEngine.Core.Devices.Fluid import FluidNode, FluidPath
 from GridCalEngine.enumerations import DeviceType
-from GridCalEngine.Simulations.driver_types import SimulationTypes
-from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.Core.Devices.Diagrams.node_breaker_diagram import NodeBreakerDiagram
 from GridCalEngine.Core.Devices.Diagrams.graphic_location import GraphicLocation
-from GridCalEngine.basic_structures import Vec, CxVec, IntVec
 
 from GridCal.Gui.BusBranchEditorWidget.terminal_item import TerminalItem
 from GridCal.Gui.BusBranchEditorWidget.Substation.bus_graphics import BusGraphicItem
@@ -63,12 +53,8 @@ from GridCal.Gui.BusBranchEditorWidget.Branches.hvdc_graphics import HvdcGraphic
 from GridCal.Gui.BusBranchEditorWidget.Branches.vsc_graphics import VscGraphicItem
 from GridCal.Gui.BusBranchEditorWidget.Branches.upfc_graphics import UpfcGraphicItem
 from GridCal.Gui.BusBranchEditorWidget.Branches.transformer3w_graphics import Transformer3WGraphicItem
-from GridCal.Gui.BusBranchEditorWidget.Injections.generator_graphics import GeneratorGraphicItem
 from GridCal.Gui.BusBranchEditorWidget.generic_graphics import ACTIVE
-import GridCal.Gui.Visualization.visualization as viz
-import GridCal.Gui.Visualization.palettes as palettes
 from GridCal.Gui.messages import info_msg
-from matplotlib import pyplot as plt
 
 '''
 Structure:
@@ -372,7 +358,7 @@ class NodeBreakerEditorWidget(QSplitter):
             y0 = point0.y()
 
             if bus_data == obj_type:
-                obj = Bus(name=f'Bus {len(self.circuit.buses)}',
+                obj = Bus(name=f'Bus {len(self.circuit.get_buses())}',
                           vnom=self.default_bus_voltage)
 
                 graphic_object = BusGraphicItem(editor=self,
@@ -907,7 +893,7 @@ class NodeBreakerEditorWidget(QSplitter):
 
         if points_group:
 
-            bus_dict: Dict[str: Tuple[int, Bus]] = {b.idtag: (i, b) for i, b in enumerate(self.circuit.buses)}
+            bus_dict: Dict[str: Tuple[int, Bus]] = {b.idtag: (i, b) for i, b in enumerate(self.circuit.get_buses())}
 
             for bus_idtag, point in points_group.locations.items():
                 if point.graphic_object.isSelected():
@@ -948,7 +934,7 @@ class NodeBreakerEditorWidget(QSplitter):
 
         if points_group:
 
-            bus_dict: Dict[str: Tuple[int, Bus]] = {b.idtag: (i, b) for i, b in enumerate(self.circuit.buses)}
+            bus_dict: Dict[str: Tuple[int, Bus]] = {b.idtag: (i, b) for i, b in enumerate(self.circuit.get_buses())}
 
             for bus_idtag, point in points_group.locations.items():
                 idx, bus = bus_dict[bus_idtag]

@@ -26,15 +26,16 @@ import pyproj
 from PySide6.QtCore import (Qt, QPoint, QSize, QPointF, QRect, QRectF, QMimeData, QIODevice, QByteArray,
                             QDataStream, QModelIndex)
 from PySide6.QtGui import (QIcon, QPixmap, QImage, QPainter, QStandardItemModel, QStandardItem, QColor, QPen,
-                           QDragEnterEvent, QDragMoveEvent, QDropEvent, QWheelEvent, QKeyEvent, QDrag)
+                           QDragEnterEvent, QDragMoveEvent, QDropEvent, QWheelEvent, QKeyEvent)
 from PySide6.QtWidgets import (QApplication, QGraphicsView, QListView, QTableView, QVBoxLayout, QHBoxLayout, QFrame,
                                QSplitter, QMessageBox, QAbstractItemView, QGraphicsScene, QGraphicsSceneMouseEvent,
                                QGraphicsItem)
 from PySide6.QtSvg import QSvgGenerator
 
+from GridCalEngine.Core.Devices.types import ALL_DEV_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Core.Devices.Substation import Bus
-from GridCalEngine.Core.Devices.editable_device import EditableDevice
+from GridCalEngine.Core.Devices.Parents.editable_device import EditableDevice
 from GridCalEngine.Core.Devices.Branches.line import Line
 from GridCalEngine.Core.Devices.Branches.dc_line import DcLine
 from GridCalEngine.Core.Devices.Branches.transformer import Transformer2W
@@ -346,7 +347,7 @@ class BusBranchEditorWidget(QSplitter):
         if diagram is not None:
             self.draw()
 
-    def set_editor_model(self, api_object: EditableDevice, dictionary_of_lists: Dict[str, List[EditableDevice]] = {}):
+    def set_editor_model(self, api_object: ALL_DEV_TYPES, dictionary_of_lists: Dict[str, List[ALL_DEV_TYPES]] = {}):
         """
         Set an api object to appear in the editable table view of the editor
         :param api_object: any EditableDevice
@@ -396,7 +397,7 @@ class BusBranchEditorWidget(QSplitter):
             y0 = point0.y()
 
             if bus_data == obj_type:
-                obj = Bus(name=f'Bus {len(self.circuit.buses)}',
+                obj = Bus(name=f'Bus {len(self.circuit.get_buses())}',
                           vnom=self.default_bus_voltage)
 
                 graphic_object = BusGraphicItem(editor=self,
@@ -558,6 +559,9 @@ class BusBranchEditorWidget(QSplitter):
         Draw diagram
         :return:
         """
+        inj_dev_by_bus = self.circuit.get_injection_devices_grouped_by_bus()
+        inj_dev_by_fluid_node = self.circuit.get_injection_devices_grouped_by_fluid_node()
+
         # add buses first
         bus_dict: Dict[str, BusGraphicItem] = dict()
         fluid_node_dict: Dict[str, FluidNodeGraphicItem] = dict()
@@ -575,7 +579,7 @@ class BusBranchEditorWidget(QSplitter):
                     self.add_to_scene(graphic_object=graphic_object)
 
                     # create the bus children
-                    graphic_object.create_children_widgets()
+                    graphic_object.create_children_widgets(injections_by_tpe=inj_dev_by_bus.get(location.api_object, dict()))
 
                     graphic_object.change_size(h=location.h,
                                                w=location.w)
@@ -635,7 +639,7 @@ class BusBranchEditorWidget(QSplitter):
                     self.add_to_scene(graphic_object=graphic_object)
 
                     # create the bus children
-                    graphic_object.create_children_widgets()
+                    graphic_object.create_children_widgets(injections_by_tpe=inj_dev_by_fluid_node.get(location.api_object, dict()))
 
                     graphic_object.change_size(h=location.h,
                                                w=location.w)
@@ -848,7 +852,7 @@ class BusBranchEditorWidget(QSplitter):
         """
         self.diagram.name = val
 
-    def update_diagram_element(self, device: EditableDevice,
+    def update_diagram_element(self, device: ALL_DEV_TYPES,
                                x: int = 0, y: int = 0, w: int = 0, h: int = 0, r: float = 0,
                                graphic_object: QGraphicsItem = None) -> None:
         """
@@ -886,7 +890,7 @@ class BusBranchEditorWidget(QSplitter):
 
         self.diagram_scene.removeItem(graphic_object)
 
-    def delete_diagram_element(self, device: EditableDevice) -> None:
+    def delete_diagram_element(self, device: ALL_DEV_TYPES) -> None:
         """
         Delete device from the diagram registry
         :param device: EditableDevice
@@ -899,7 +903,7 @@ class BusBranchEditorWidget(QSplitter):
             except:
                 pass
 
-    def remove_element(self, device: EditableDevice,
+    def remove_element(self, device: ALL_DEV_TYPES,
                        graphic_object: Union[QGraphicsItem, None] = None) -> None:
         """
         Remove device from the diagram and the database
@@ -912,6 +916,8 @@ class BusBranchEditorWidget(QSplitter):
             self.remove_from_scene(graphic_object)
 
         self.circuit.delete_elements_by_type(obj=device)
+
+        self.object_editor_table.setModel(None)
 
     def delete_diagram_elements(self, elements: List[EditableDevice]):
         """
@@ -942,7 +948,7 @@ class BusBranchEditorWidget(QSplitter):
 
         if points_group:
 
-            bus_dict: Dict[str: Tuple[int, Bus]] = {b.idtag: (i, b) for i, b in enumerate(self.circuit.buses)}
+            bus_dict: Dict[str: Tuple[int, Bus]] = {b.idtag: (i, b) for i, b in enumerate(self.circuit.get_buses())}
 
             for bus_idtag, point in points_group.locations.items():
                 if point.graphic_object.isSelected():
@@ -983,7 +989,7 @@ class BusBranchEditorWidget(QSplitter):
 
         if points_group:
 
-            bus_dict: Dict[str: Tuple[int, Bus]] = {b.idtag: (i, b) for i, b in enumerate(self.circuit.buses)}
+            bus_dict: Dict[str: Tuple[int, Bus]] = {b.idtag: (i, b) for i, b in enumerate(self.circuit.get_buses())}
 
             for bus_idtag, point in points_group.locations.items():
                 idx, bus = bus_dict[bus_idtag]
@@ -1740,10 +1746,12 @@ class BusBranchEditorWidget(QSplitter):
         else:
             raise Exception('Extension ' + str(extension) + ' not supported :(')
 
-    def add_api_bus(self, bus: Bus, explode_factor: float = 1.0):
+    def add_api_bus(self, bus: Bus, injections_by_tpe: Dict[DeviceType, List[EditableDevice]],
+                    explode_factor: float = 1.0):
         """
         Add API bus to the diagram
         :param bus: Bus instance
+        :param injections_by_tpe: dictionary with the device type as key and the list of devices at the bus as values
         :param explode_factor: explode factor
         """
         x = int(bus.x * explode_factor)
@@ -1753,7 +1761,7 @@ class BusBranchEditorWidget(QSplitter):
         graphic_object = self.create_bus_graphics(bus=bus, x=x, y=y, w=bus.w, h=bus.h)
 
         # create the bus children
-        graphic_object.create_children_widgets()
+        graphic_object.create_children_widgets(injections_by_tpe=injections_by_tpe)
 
         # arrange the children
         graphic_object.arrange_children()
@@ -1991,10 +1999,13 @@ class BusBranchEditorWidget(QSplitter):
 
         return tr3_graphic_object
 
-    def add_api_fluid_node(self, node: FluidNode, explode_factor: float = 1.0):
+    def add_api_fluid_node(self, node: FluidNode,
+                           injections_by_tpe: Dict[DeviceType, List[EditableDevice]],
+                           explode_factor: float = 1.0):
         """
         Add API bus to the diagram
         :param node: FluidNode instance
+        :param injections_by_tpe
         :param explode_factor: explode factor
         """
         x = 0
@@ -2004,7 +2015,7 @@ class BusBranchEditorWidget(QSplitter):
         graphic_object = self.create_fluid_node_graphics(node=node, x=x, y=y, w=80, h=40)
 
         # create the bus children
-        graphic_object.create_children_widgets()
+        graphic_object.create_children_widgets(injections_by_tpe=injections_by_tpe)
 
         # arrange the children
         graphic_object.arrange_children()
@@ -2195,6 +2206,8 @@ class BusBranchEditorWidget(QSplitter):
                                   upfc_devices: List[UPFC],
                                   fluid_nodes: List[FluidNode],
                                   fluid_paths: List[FluidPath],
+                                  injections_by_bus: Dict[Bus, Dict[DeviceType, List[INJECTION_DEVICE_TYPES]]],
+                                  injections_by_fluid_node: Dict[FluidNode, Dict[DeviceType, List[FLUID_TYPES]]],
                                   explode_factor=1.0,
                                   prog_func: Union[Callable, None] = None,
                                   text_func: Union[Callable, None] = None):
@@ -2227,7 +2240,9 @@ class BusBranchEditorWidget(QSplitter):
                 if prog_func is not None:
                     prog_func((i + 1) / nn * 100.0)
 
-                self.add_api_bus(bus, explode_factor)
+                self.add_api_bus(bus=bus,
+                                 injections_by_tpe=injections_by_bus.get(bus, dict()),
+                                 explode_factor=explode_factor)
 
         # --------------------------------------------------------------------------------------------------------------
         if text_func is not None:
@@ -2239,7 +2254,9 @@ class BusBranchEditorWidget(QSplitter):
             if prog_func is not None:
                 prog_func((i + 1) / nn * 100.0)
 
-            self.add_api_fluid_node(elm)
+            self.add_api_fluid_node(node=elm,
+                                    injections_by_tpe=injections_by_fluid_node.get(elm, dict()),
+                                    explode_factor=1.0)
 
         # --------------------------------------------------------------------------------------------------------------
         if text_func is not None:
@@ -2351,7 +2368,7 @@ class BusBranchEditorWidget(QSplitter):
         if len(buses):
             lst = buses
         else:
-            lst = self.circuit.buses
+            lst = self.circuit.get_buses()
 
         if len(lst):
             # first pass
@@ -2752,14 +2769,14 @@ class BusBranchEditorWidget(QSplitter):
                     else:
                         print("HVDC line {0} {1} has no graphic object!!".format(elm.name, elm.idtag))
 
-    def get_selected(self) -> List[Tuple[EditableDevice, QGraphicsItem]]:
+    def get_selected(self) -> List[Tuple[ALL_DEV_TYPES, QGraphicsItem]]:
         """
         Get selection
         :return: List of EditableDevice, QGraphicsItem
         """
         return [(elm.api_object, elm) for elm in self.diagram_scene.selectedItems()]
 
-    def get_selection_api_objects(self) -> List[EditableDevice]:
+    def get_selection_api_objects(self) -> List[ALL_DEV_TYPES]:
         """
         Get a list of the API objects from the selection
         :return: List[EditableDevice]
@@ -2846,12 +2863,12 @@ class BusBranchEditorWidget(QSplitter):
                 for i in idx:
 
                     # try to get the location from the cache
-                    loc_i = locations_cache.get(self.circuit.buses[i], None)
+                    loc_i = locations_cache.get(self.circuit.get_bus_at(i), None)
 
                     if loc_i is None:
                         # search and store
-                        loc_i = self.diagram.query_point(self.circuit.buses[i])
-                        locations_cache[self.circuit.buses[i]] = loc_i
+                        loc_i = self.diagram.query_point(self.circuit.get_bus_at(i))
+                        locations_cache[self.circuit.get_bus_at(i)] = loc_i
 
                     x_arr.append(loc_i.x)
                     y_arr.append(loc_i.y)
@@ -2927,6 +2944,7 @@ class BusBranchEditorWidget(QSplitter):
             if len(x) > 0:
 
                 # search available results
+                # TODO: Fix this
                 power_data = api_object.get_active_injection_profiles_dictionary()
                 voltage = dict()
 
@@ -3010,9 +3028,9 @@ class BusBranchEditorWidget(QSplitter):
                             #     loading_data[key.value] = np.sort(np.abs(atc_perc * 100.0))
 
                             elif key == SimulationTypes.ContingencyAnalysisTS_run:
-                                power_data[key.value] = driver.results.worst_flows.real[:, i]
+                                power_data[key.value] = driver.results.max_flows.real[:, i]
                                 loading_data[key.value] = np.sort(
-                                    np.abs(driver.results.worst_loading.real[:, i] * 100.0))
+                                    np.abs(driver.results.max_loading.real[:, i] * 100.0))
 
                             elif key == SimulationTypes.OPFTimeSeries_run:
                                 power_data[key.value] = driver.results.Sf.real[:, i]

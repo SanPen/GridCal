@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 from typing import Union
-from GridCalEngine.Core.Devices.editable_device import EditableDevice
+from GridCalEngine.Core.Devices.Parents.editable_device import EditableDevice
 from GridCalEngine.Core.Devices.Fluid.fluid_node import FluidNode
 from GridCalEngine.Core.Devices.Injections.generator import Generator
 from GridCalEngine.enumerations import BuildStatus, DeviceType
@@ -58,8 +58,6 @@ class FluidInjectionTemplate(EditableDevice):
         self._generator: Generator = generator
         self.build_status = build_status
 
-        self.power = 0.0  # MW -> LpVar
-
         self.register(key='efficiency', units="MWh/m3", tpe=float,
                       definition="Power plant energy production per fluid unit")
         self.register(key='max_flow_rate', units="m3/s", tpe=float, definition="maximum fluid flow")
@@ -70,24 +68,6 @@ class FluidInjectionTemplate(EditableDevice):
         self.register(key='build_status', units='', tpe=BuildStatus,
                       definition='Branch build status. Used in expansion planning.')
 
-    # def copy(self):
-    #     """
-    #     Make a deep copy of this object
-    #     :return: Copy of this object
-    #     """
-    #
-    #     # make a new instance (separated object in memory)
-    #     fluid_inj = FluidInjectionTemplate()
-    #
-    #     fluid_inj.efficiency = self.efficiency
-    #     fluid_inj.max_flow_rate = self.max_flow_rate
-    #     fluid_inj._plant = self._plant
-    #     fluid_inj._generator = self._generator
-    #     fluid_inj.build_status = self.build_status
-    #     fluid_inj.power = self.power
-    #
-    #     return fluid_inj
-    #
     @property
     def plant(self) -> FluidNode:
         """

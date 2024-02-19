@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 from typing import Union
-from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceType
+from GridCalEngine.Core.Devices.Parents.editable_device import EditableDevice, DeviceType
 from GridCalEngine.Core.Devices import Generator, Fuel
 
 

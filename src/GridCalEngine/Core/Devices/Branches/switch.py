@@ -15,21 +15,22 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-
 from GridCalEngine.Core.Devices.Substation.bus import Bus
+from GridCalEngine.Core.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.enumerations import BuildStatus
-from GridCalEngine.Core.Devices.Branches.templates.parent_branch import ParentBranch
-from GridCalEngine.Core.Devices.editable_device import DeviceType
+from GridCalEngine.Core.Devices.Parents.branch_parent import BranchParent
+from GridCalEngine.Core.Devices.Parents.editable_device import DeviceType
 
 
-class Switch(ParentBranch):
+class Switch(BranchParent):
     """
     The **Switch** class represents the connections between nodes (i.e.
     :ref:`buses<bus>`) in **GridCal**. A Switch is an devices that cuts or allows the flow.
     """
 
-    def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='Switch', idtag=None, code='',
-                 r=1e-20, x=1e-20, rate=1.0, active=True, active_prof=None, contingency_factor=1.0):
+    def __init__(self, bus_from: Bus = None, bus_to: Bus = None, cn_from: ConnectivityNode = None,
+                 cn_to: ConnectivityNode = None, name='Switch', idtag=None, code='', r=1e-20, x=1e-20, rate=1.0,
+                 active=True, active_prof=None, contingency_factor=1.0):
         """
         Switch device
         :param bus_from: Bus from
@@ -44,20 +45,17 @@ class Switch(ParentBranch):
         :param active_prof: Active profile
         :param contingency_factor: Rating factor in case of contingency
         """
-        ParentBranch.__init__(self,
+        BranchParent.__init__(self,
                               name=name,
                               idtag=idtag,
                               code=code,
                               bus_from=bus_from,
                               bus_to=bus_to,
-                              cn_from=None,
-                              cn_to=None,
+                              cn_from=cn_from,
+                              cn_to=cn_to,
                               active=active,
-                              active_prof=active_prof,
                               rate=rate,
-                              rate_prof=None,
                               contingency_factor=contingency_factor,
-                              contingency_factor_prof=None,
                               contingency_enabled=True,
                               monitor_loading=True,
                               mttf=0.0,
@@ -66,17 +64,11 @@ class Switch(ParentBranch):
                               capex=0,
                               opex=0,
                               Cost=0,
-                              Cost_prof=None,
                               device_type=DeviceType.SwitchDevice)
-
-        # List of measurements
-        self.measurements = list()
 
         # total impedance and admittance in p.u.
         self.R = r
         self.X = x
-
-        self.active_prof = active_prof
 
         self.register(key='R', units='Ohm/km', tpe=float, definition='Positive-sequence resistance')
         self.register(key='X', units='Ohm/km', tpe=float, definition='Positive-sequence reactance')
