@@ -310,33 +310,33 @@ def compute_branch_power_second_derivatives(alltapm, alltapt, vm, va, k_m, k_tau
         # Merge Sf and St in Sbus
         dSbusdtdt[ang, ang] = ((dSfdtdt_ * lam[f]).real + (dSfdtdt_ * lam[f + N]).imag
                                + (dStdtdt_ * lam[t]).real + (dStdtdt_ * lam[t + N]).imag)
-        dSfdtdt[ang, ang] = dSfdtdt_ * mu[line]
-        dStdtdt[ang, ang] = dStdtdt_ * mu[line + M]
+        dSfdtdt[ang, ang] = dSfdtdt_ * Sf[line].conj() * mu[line]
+        dStdtdt[ang, ang] = dStdtdt_ * St[line].conj() * mu[line + M]
 
         dSbusdtdva[f, ang] = ((dSfdtdva_f * lam[f]).real + (dSfdtdva_f * lam[f + N]).imag
                               + (dStdtdva_f * lam[t]).real + (dStdtdva_f * lam[t + N]).imag)
-        dSfdtdva[f, ang] = dSfdtdva_f * mu[line]
-        dStdtdva[f, ang] = dStdtdva_f * mu[line + M]
+        dSfdtdva[f, ang] = dSfdtdva_f * Sf[line].conj() * mu[line]
+        dStdtdva[f, ang] = dStdtdva_f * St[line].conj() * mu[line + M]
 
         dSbusdtdva[t, ang] = ((dSfdtdva_t * lam[f]).real + (dSfdtdva_t * lam[f + N]).imag
                               + (dStdtdva_t * lam[t]).real + (dStdtdva_t * lam[t + N]).imag)
-        dSfdtdva[t, ang] = dSfdtdva_t * mu[line]
-        dStdtdva[t, ang] = dStdtdva_t * mu[line + M]
+        dSfdtdva[t, ang] = dSfdtdva_t * Sf[line].conj() * mu[line]
+        dStdtdva[t, ang] = dStdtdva_t * St[line].conj() * mu[line + M]
 
         dSbusdtdvm[f, ang] = ((dSfdtdvm_f * lam[f]).real + (dSfdtdvm_f * lam[f + N]).imag
                               + (dStdtdvm_f * lam[t]).real + (dStdtdvm_f * lam[t + N]).imag)
-        dSfdtdvm[f, ang] = dSfdtdvm_f * mu[line]
-        dStdtdvm[f, ang] = dStdtdvm_f * mu[line + M]
+        dSfdtdvm[f, ang] = dSfdtdvm_f * Sf[line].conj() * mu[line]
+        dStdtdvm[f, ang] = dStdtdvm_f * St[line].conj() * mu[line + M]
 
         dSbusdtdvm[t, ang] = ((dSfdtdvm_t * lam[f]).real + (dSfdtdvm_t * lam[f + N]).imag
                               + (dStdtdvm_t * lam[t]).real + (dStdtdvm_t * lam[t + N]).imag)
-        dSfdtdvm[t, ang] = dSfdtdvm_t * mu[line]
-        dStdtdvm[t, ang] = dStdtdvm_t * mu[line + M]
+        dSfdtdvm[t, ang] = dSfdtdvm_t * Sf[line].conj() * mu[line]
+        dStdtdvm[t, ang] = dStdtdvm_t * St[line].conj() * mu[line + M]
 
         dSbusdtdt[ang, ang] = ((dSfdtdt_ * lam[f]).real + (dSfdtdt_ * lam[f + N]).imag
                                + (dStdtdt_ * lam[t]).real + (dStdtdt_ * lam[t + N]).imag)
-        dSfdtdt[ang, ang] = dSfdtdt_ * mu[line]
-        dStdtdt[ang, ang] = dStdtdt_ * mu[line + M]
+        dSfdtdt[ang, ang] = dSfdtdt_ * Sf[line].conj() * mu[line]
+        dStdtdt[ang, ang] = dStdtdt_ * St[line].conj() * mu[line + M]
         '''
         GdSfdtdva[f, ang] = (dSfdtdva_f * lam[f]).real + (dSfdtdva_f * lam[f + N]).imag
         GdStdtdva[f, ang] = (dStdtdva_f * lam[t]).real + (dStdtdva_f * lam[t + N]).imag
@@ -729,8 +729,10 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
 
         IfCJmat = np.conj(diags(Yf[il, :] @ V))
         ItCJmat = np.conj(diags(Yt[il, :] @ V))
-        Sfmat = diags(Vfmat @ np.conj(Yf[il, :] @ V))
-        Stmat = diags(Vtmat @ np.conj(Yt[il, :] @ V))
+        Sf = Vfmat @ np.conj(Yf[il, :] @ V)
+        St = Vtmat @ np.conj(Yt[il, :] @ V)
+        Sfmat = diags(Sf)
+        Stmat = diags(St)
 
         Sfvm = (IfCJmat @ Cf[il, :] @ E + Vfmat @ np.conj(Yf[il, :]) @ np.conj(E))
         Stvm = (ItCJmat @ Ct[il, :] @ E + Vtmat @ np.conj(Yt[il, :]) @ np.conj(E))
@@ -797,6 +799,7 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
             Hx = sp.vstack([Hx, Hqmax]).T.tocsc()
 
         else:
+
             SfX = sp.hstack([Sfva, Sfvm, lil_matrix((M, 2 * Ng))])
             StX = sp.hstack([Stva, Stvm, lil_matrix((M, 2 * Ng))])
 
@@ -866,7 +869,7 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
             GSdtdvm, dSfdtdvm, dStdtdvm,
             GSdtdva, dSfdtdva, dStdtdva) = compute_branch_power_second_derivatives(alltapm, alltapt, vm, va, k_m,
                                                                                       k_tau, Cf, Ct, R, X,
-                                                                                      lmbda[0: 2*N], mu[0: 2*M])
+                                                                                      lmbda[0: 2*N], mu[0: 2*M], Sf, St)
 
             G1 = sp.hstack([Gaa, Gav, lil_matrix((N, 2 * Ng)), GSdmdva, GSdtdva])
             G2 = sp.hstack([Gva, Gvv, lil_matrix((N, 2 * Ng)), GSdmdvm, GSdtdvm])
