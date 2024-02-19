@@ -156,6 +156,7 @@ def get_voltage_ac_line_segment(ac_line_segment: ACLineSegment, logger: DataLogg
 def get_pu_values_ac_line_segment(ac_line_segment: ACLineSegment, logger: DataLogger, Sbase: float = 100.0):
     """
     Get the per-unit values of the equivalent PI model
+
     :param Sbase: Sbase in MVA
     :return: R, X, Gch, Bch
     """
@@ -174,8 +175,8 @@ def get_pu_values_ac_line_segment(ac_line_segment: ACLineSegment, logger: DataLo
             B = ac_line_segment.bch / Ybase
             R0 = ac_line_segment.r0 / Zbase
             X0 = ac_line_segment.x0 / Zbase
-            G0 = ac_line_segment.gch0 / Ybase
-            B0 = ac_line_segment.bch0 / Ybase
+            G0 = ac_line_segment.g0ch / Ybase
+            B0 = ac_line_segment.b0ch / Ybase
         else:
             R = 0
             X = 0
