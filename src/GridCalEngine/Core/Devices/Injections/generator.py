@@ -101,6 +101,8 @@ class Generator(GeneratorParent):
                                  code=code,
                                  bus=None,
                                  cn=None,
+                                 control_bus=None,
+                                 control_cn=None,
                                  active=active,
                                  P=P,
                                  Pmin=Pmin,

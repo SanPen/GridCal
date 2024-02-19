@@ -50,6 +50,7 @@ def cgmes_object():
 
     return circuit
 
+
 def calc_node_dict_object() -> Dict[str, gcdev.Bus]:
     d = dict()
     d[tn_test] = tn_test  # TODO ?
@@ -95,6 +96,3 @@ def test_get_gcdev_generators(cgmes_model, calc_node_dict, cn_dict, device_to_te
     assert created_generator.Qmax == cgmes_syncronous_machine.maxQ
     assert created_generator.Qmin == cgmes_syncronous_machine.minQ
     assert created_generator.Pf == pytest.approx(expected_power_factor, abs=0.01)
-
-
-
