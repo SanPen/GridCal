@@ -63,9 +63,9 @@ def dcpf(Ybus: sp.csc_matrix, Bpqpv: sp.csc_matrix, Bref: sp.csc_matrix, Bf: sp.
         # compute the power injection
         Sbus = cf.compute_zip_power(S0, I0, Y0, Vm)
 
-        # compose the reduced power Injections
+        # compose the reduced power injections (Pinj)
         # Since we have removed the slack nodes, we must account their influence as Injections Bref * Va_ref
-        # We also need to account for the effect of the phase shifters
+        # We also need to account for the effect of the phase shifters (Pps)
         Pps = Bf.T @ tau
         Pinj = Sbus[pvpq].real - (Bref @ Va_ref) * Vm[pvpq] + Pps[pvpq]
 
