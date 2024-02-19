@@ -145,13 +145,13 @@ def compute_branch_power_derivatives(alltapm, alltapt, V, k_m, k_tau, k_mtau, Cf
     return dSbusdm, dSfdm, dStdm, dSbusdt, dSfdt, dStdt
 
 
-def compute_branch_power_second_derivatives(alltapm, alltapt, vm, va, k_m, k_tau, Cf, Ct, R, X, lam, mu):
+def compute_branch_power_second_derivatives(alltapm, alltapt, vm, va, k_m, k_tau, Cf, Ct, R, X, F, T, lam, mu, Sf, St):
     ys = 1.0 / (R + 1.0j * X + 1e-20)
     V = vm * np.exp(1j * va)
     Vf = Cf @ V
     Vt = Ct @ V
-    N = len(alltapm)
-    M = int(len(mu) / 2)
+    N = len(vm)
+    M = len(R)
     ntapm = len(k_m)
     ntapt = len(k_tau)
 
@@ -190,8 +190,8 @@ def compute_branch_power_second_derivatives(alltapm, alltapt, vm, va, k_m, k_tau
         tau = alltapt[line]
         yk = ys[line]
 
-        f = np.nonzero(Cf[line])[1]
-        t = np.nonzero(Ct[line])[1]
+        f = F[line]
+        t = T[line]
 
         dSfdmdm_ = Vf_ * ((6 * np.conj(yk * Vf_) / mp ** 4) - 2 * np.conj(yk * Vt_) / (mp ** 3 * np.exp(1j * tau)))
         dStdmdm_ = - Vt_ * 2 * np.conj(yk * Vf_) / (mp ** 3 * np.exp(-1j * tau))
@@ -218,33 +218,33 @@ def compute_branch_power_second_derivatives(alltapm, alltapt, vm, va, k_m, k_tau
 
             dSbusdmdt[ang, mod] = ((dSfdmdt_ * lam[f]).real + (dSfdmdt_ * lam[f + N]).imag
                                    + (dStdmdt_ * lam[t]).real + (dStdmdt_ * lam[t + N]).imag)
-            dSfdmdt[ang, mod] = dSfdmdt_ * mu[line]
-            dStdmdt[ang, mod] = dStdmdt_ * mu[line + M]
+            dSfdmdt[ang, mod] = dSfdmdt_ * Sf[line].conj() * mu[line]
+            dStdmdt[ang, mod] = dStdmdt_ * St[line].conj() * mu[line + M]
 
         dSbusdmdm[mod, mod] = ((dSfdmdm_ * lam[f]).real + (dSfdmdm_ * lam[f + N]).imag
                                + (dStdmdm_ * lam[t]).real + (dStdmdm_ * lam[t + N]).imag)
-        dSfdmdm[mod, mod] = dSfdmdm_ * mu[line]
-        dStdmdm[mod, mod] = dStdmdm_ * mu[line + M]
+        dSfdmdm[mod, mod] = dSfdmdm_ * Sf[line].conj() * mu[line]
+        dStdmdm[mod, mod] = dStdmdm_ * St[line].conj() * mu[line + M]
 
         dSbusdmdva[f, mod] = ((dSfdmdva_f * lam[f]).real + (dSfdmdva_f * lam[f + N]).imag
                               + (dStdmdva_f * lam[t]).real + (dStdmdva_f * lam[t + N]).imag)
-        dSfdmdva[f, mod] = dSfdmdva_f * mu[line]
-        dStdmdva[f, mod] = dStdmdva_f * mu[line + M]
+        dSfdmdva[f, mod] = dSfdmdva_f * Sf[line].conj() * mu[line]
+        dStdmdva[f, mod] = dStdmdva_f * St[line].conj() * mu[line + M]
 
         dSbusdmdva[t, mod] = ((dSfdmdva_t * lam[f]).real + (dSfdmdva_t * lam[f + N]).imag
                               + (dStdmdva_t * lam[t]).real + (dStdmdva_t * lam[t + N]).imag)
-        dSfdmdva[t, mod] = dSfdmdva_t * mu[line]
-        dStdmdva[t, mod] = dStdmdva_t * mu[line + M]
+        dSfdmdva[t, mod] = dSfdmdva_t * Sf[line].conj() * mu[line]
+        dStdmdva[t, mod] = dStdmdva_t * St[line].conj() * mu[line + M]
 
         dSbusdmdvm[f, mod] = ((dSfdmdvm_f * lam[f]).real + (dSfdmdvm_f * lam[f + N]).imag
                               + (dStdmdvm_f * lam[t]).real + (dStdmdvm_f * lam[t + N]).imag)
-        dSfdmdvm[f, mod] = dSfdmdvm_f * mu[line]
-        dStdmdvm[f, mod] = dStdmdvm_f * mu[line + M]
+        dSfdmdvm[f, mod] = dSfdmdvm_f * Sf[line].conj() * mu[line]
+        dStdmdvm[f, mod] = dStdmdvm_f * St[line].conj() * mu[line + M]
 
         dSbusdmdvm[t, mod] = ((dSfdmdvm_t * lam[f]).real + (dSfdmdvm_t * lam[f + N]).imag
                               + (dStdmdvm_t * lam[t]).real + (dStdmdvm_t * lam[t + N]).imag)
-        dSfdmdvm[t, mod] = dSfdmdvm_t * mu[line]
-        dStdmdvm[t, mod] = dStdmdvm_t * mu[line + M]
+        dSfdmdvm[t, mod] = dSfdmdvm_t * Sf[line].conj() * mu[line]
+        dStdmdvm[t, mod] = dStdmdvm_t * St[line].conj() * mu[line + M]
 
         '''
         l = np.where(k_tau == line)[0]
@@ -289,8 +289,8 @@ def compute_branch_power_second_derivatives(alltapm, alltapt, vm, va, k_m, k_tau
         tau = alltapt[line]
         yk = ys[line]
 
-        f = np.nonzero(Cf.A[line, :])[0]
-        t = np.nonzero(Ct.A[line, :])[0]
+        f = F[line]
+        t = T[line]
 
         dSfdtdt_ = Vf_ * np.conj(yk * Vt_) / (mp * np.exp(1j * tau))
         dStdtdt_ = Vt_ * np.conj(yk * Vf_) / (mp * np.exp(-1j * tau))
@@ -640,8 +640,8 @@ def eval_h(x, Yf, Yt, from_idx, to_idx, pq, no_slack, k_m, k_tau, k_mtau, Va_max
 
 
 def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, nig, slack, no_slack, pq, pv, tanmax,
-                           alltapm, alltapt, k_m, k_tau, k_mtau, mu, lmbda, from_idx, to_idx, R, X, compute_jac: bool,
-                           compute_hess: bool):
+                           alltapm, alltapt, k_m, k_tau, k_mtau, mu, lmbda, from_idx, to_idx, R, X, F, T,
+                           compute_jac: bool, compute_hess: bool):
     """
 
     :param x:
@@ -868,7 +868,7 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
             GSdtdt, dSfdtdt, dStdtdt,
             GSdtdvm, dSfdtdvm, dStdtdvm,
             GSdtdva, dSfdtdva, dStdtdva) = compute_branch_power_second_derivatives(alltapm, alltapt, vm, va, k_m,
-                                                                                      k_tau, Cf, Ct, R, X,
+                                                                                      k_tau, Cf, Ct, R, X, F, T,
                                                                                       lmbda[0: 2*N], mu[0: 2*M], Sf, St)
 
             G1 = sp.hstack([Gaa, Gav, lil_matrix((N, 2 * Ng)), GSdmdva, GSdtdva])
