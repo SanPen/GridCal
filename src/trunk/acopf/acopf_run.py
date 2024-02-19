@@ -61,23 +61,23 @@ def case_3bus():
     grid.add_bus(b3)
 
     # grid.add_line(gce.Line(bus_from=b1, bus_to=b2, name='Line 1-2', r=0.001, x=0.05, rate=100))
-    grid.add_line(gce.Line(bus_from=b2, bus_to=b3, name='Line 2-3', r=0.001, x=0.05, rate=100))
+    # grid.add_line(gce.Line(bus_from=b2, bus_to=b3, name='Line 2-3', r=0.001, x=0.05, rate=100))
     grid.add_line(gce.Line(bus_from=b3, bus_to=b1, name='Line 3-1', r=0.001, x=0.05, rate=100))
 
-    grid.add_load(b3, gce.Load(name='L3', P=50, Q=20))
+    grid.add_load(b3, gce.Load(name='L3', P=50, Q=10))
     grid.add_generator(b1, gce.Generator('G1', vset=1.00, Cost=1.0, Cost2=2.0))
     grid.add_generator(b2, gce.Generator('G2', P=10, vset=0.995, Cost=1.0, Cost2=3.0))
 
-    tr1 = gce.Transformer2W(b1, b2, 'Trafo 1', control_mode=TransformerControlType.Pf,
-                            tap_module=1.0, tap_phase=-0.02, r=0.001, x=0.05, tap_phase_max=0.05, tap_module_max=1.05,
-                            tap_phase_min=-0.05, tap_module_min=0.95)
+    tr1 = gce.Transformer2W(b1, b2, 'Trafo 1', control_mode=TransformerControlType.PtQt,
+                            tap_module=1.01, tap_phase=0.02, r=0.001, x=0.05, tap_phase_max=0.5, tap_module_max=1.1,
+                            tap_phase_min=-0.5, tap_module_min=0.9, rate=100)
 
     grid.add_transformer2w(tr1)
 
     tr2 = gce.Transformer2W(b2, b3, 'Trafo 2', control_mode=TransformerControlType.PtQt,
-                            tap_module=1.05, tap_phase=-0.02, r=0.001, x=0.05, tap_phase_max=0.05, tap_module_max=1.05,
-                            tap_phase_min=-0.05, tap_module_min=0.95)
-    # grid.add_transformer2w(tr2)
+                            tap_module=1.01, tap_phase=+0.02, r=0.004, x=0.08, tap_phase_max=0.03, tap_module_max=1.02,
+                            tap_phase_min=-0.02, tap_module_min=0.98, rate=100)
+    grid.add_transformer2w(tr2)
 
     options = gce.PowerFlowOptions(gce.SolverType.NR, verbose=False)
     power_flow = gce.PowerFlowDriver(grid, options)
@@ -138,6 +138,12 @@ def linn5bus_example():
     grid.add_line(gce.Line(bus2, bus5, name='line 2-5', r=0.04, x=0.09, b=0.02, rate=1000))
     grid.add_line(gce.Line(bus3, bus4, name='line 3-4', r=0.06, x=0.13, b=0.03, rate=1000))
     grid.add_line(gce.Line(bus4, bus5, name='line 4-5', r=0.04, x=0.09, b=0.02, rate=1000))
+
+    tr1 = gce.Transformer2W(b1, b2, 'Trafo 1', control_mode=TransformerControlType.PtQt,
+                            tap_module=1.05, tap_phase=0.02, r=0.05, x=0.05, tap_phase_max=0.5, tap_module_max=1.1,
+                            tap_phase_min=-0.5, tap_module_min=0.9)
+
+    grid.add_transformer2w(tr1)
 
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1)
     run_nonlinear_opf(grid=grid, pf_options=pf_options, plot_error=True)
@@ -264,10 +270,7 @@ def case_pegase89():
 
     grid = gce.FileOpen(file_path).open()
     nc = compile_numerical_circuit_at(grid)
-    nc.generator_data.cost_0[:] = 0
-    nc.generator_data.cost_1[:] = 0
-    nc.generator_data.cost_2[:] = 0
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, tolerance=1e-8)
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, tolerance=1e-8, max_iter=100)
     ac_optimal_power_flow(nc=nc, pf_options=pf_options, plot_error=True)
 
     grid.get_bus_branch_connectivity_matrix()
