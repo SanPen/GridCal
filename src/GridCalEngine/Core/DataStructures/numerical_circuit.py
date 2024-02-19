@@ -388,7 +388,6 @@ class NumericalCircuit:
         # Admittances for Linear
         self.Bbus_: Union[sp.csc_matrix, None] = None
         self.Bf_: Union[sp.csc_matrix, None] = None
-        self.Btau_: Union[sp.csc_matrix, None] = None
         self.Bpqpv_: Union[sp.csc_matrix, None] = None
         self.Bref_: Union[sp.csc_matrix, None] = None
 
@@ -438,7 +437,6 @@ class NumericalCircuit:
         # Admittances for Linear
         self.Bbus_: Union[sp.csc_matrix, None] = None
         self.Bf_: Union[sp.csc_matrix, None] = None
-        self.Btau_: Union[sp.csc_matrix, None] = None
         self.Bpqpv_: Union[sp.csc_matrix, None] = None
         self.Bref_: Union[sp.csc_matrix, None] = None
 
@@ -1408,7 +1406,7 @@ class NumericalCircuit:
         :return:
         """
         if self.Bbus_ is None:
-            self.Bbus_, self.Bf_, self.Btau_ = ycalc.compute_linear_admittances(
+            self.Bbus_, self.Bf_ = ycalc.compute_linear_admittances(
                 nbr=self.nbr,
                 X=self.branch_data.X,
                 R=self.branch_data.R,
@@ -1434,17 +1432,6 @@ class NumericalCircuit:
             _ = self.Bbus  # call the constructor of Bf
 
         return self.Bf_
-
-    @property
-    def Btau(self):
-        """
-
-        :return:
-        """
-        if self.Bf_ is None:
-            _ = self.Bbus  # call the constructor of Bf
-
-        return self.Btau_
 
     @property
     def Bpqpv(self):
