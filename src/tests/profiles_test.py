@@ -132,12 +132,13 @@ def test_profile1():
     """
     n = 100
     x = np.zeros(n)
-    for i in range(10, 30):
+    for i in range(10, 30):  # 20 out of 100 has values (expected 80% sparsity)
         x[i] = math.sin(i)
 
-    profile = Profile(arr=x)
+    # we set the threshold to 90% sparsity, hence the profile will be considered dense
+    profile = Profile(default_value=0.0, arr=x, sparsity_threshold=0.9)
 
-    assert profile.is_sparse
+    assert not profile.is_sparse
 
     all_ok = True
     for i in range(n):
@@ -146,8 +147,14 @@ def test_profile1():
 
     assert all_ok
 
+    # now we set the threshhold to 75% sparsity, hence the array will be considered sparse
+    profile = Profile(default_value=0.0, arr=x, sparsity_threshold=0.75)
+    assert profile.is_sparse
+
     # x is fully sparse, there are only 20 different values
     assert len(profile._sparse_array._map) == 20  # 30 - 10 -> 20
+
+
 
 
 def test_profile2():
@@ -159,7 +166,7 @@ def test_profile2():
     x = np.full(n, 15)
     x[20] = 30
 
-    profile = Profile(arr=x)
+    profile = Profile(default_value=15, arr=x)
 
     assert profile.is_sparse
 

@@ -39,6 +39,14 @@ class FluidTurbineData:
         self.plant_idx = np.empty(nelm, dtype=int)
         self.generator_idx = np.empty(nelm, dtype=int)
 
+    def size(self) -> int:
+        """
+        Get size of the structure
+        :return:
+        """
+
+        return self.nelm
+
     def copy(self) -> "FluidTurbineData":
         """
         Get deep copy of this structure

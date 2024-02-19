@@ -15,10 +15,12 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from typing import Tuple
+from typing import Tuple, Union
+import numpy as np
 from GridCalEngine.Core.Devices.Substation.bus import Bus
-from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceType
+from GridCalEngine.Core.Devices.Parents.editable_device import EditableDevice, DeviceType
 from GridCalEngine.Core.Devices.Branches.winding import Winding
+from GridCalEngine.Core.Devices.profile import Profile
 
 
 def delta_to_star(z12: float, z23: float, z31: float) -> Tuple[float, float, float]:
@@ -83,7 +85,7 @@ class Transformer3W(EditableDevice):
         self._bus3 = bus3
 
         self.active = active
-        self.active_prof = None
+        self._active_prof = Profile(default_value=active)
 
         self._V1 = V1
         self._V2 = V2
@@ -134,6 +136,23 @@ class Transformer3W(EditableDevice):
         self.register(key='rate31', units='MVA', tpe=float, definition='Rating measured from 3->1')
         self.register(key='x', units='px', tpe=float, definition='x position')
         self.register(key='y', units='px', tpe=float, definition='y position')
+
+    @property
+    def active_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._active_prof
+
+    @active_prof.setter
+    def active_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._active_prof = val
+        elif isinstance(val, np.ndarray):
+            self._active_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a active_prof')
 
     def all_connected(self):
         """

@@ -38,7 +38,7 @@ from GridCalEngine.Core.Devices.Branches.dc_line import DcLine
 from GridCalEngine.Core.Devices.Branches.hvdc_line import HvdcLine
 from GridCalEngine.Core.Devices.Fluid.fluid_node import FluidNode
 from GridCalEngine.Core.Devices.Fluid.fluid_path import FluidPath
-from GridCalEngine.Simulations.Topology.topology_driver import reduce_grid_brute
+from GridCalEngine.Simulations.Topology.topology_reduction_driver import reduce_grid_brute
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
@@ -389,8 +389,12 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         else:
             self.symbol = None
 
-        self.width = width
+        self.scale = 1.0;
+        self.pen_style = Qt.SolidLine
+        self.pen_color = Qt.black
         self.pen_width = width
+        self.width = width
+
         self.color = ACTIVE['color']
         self.style = ACTIVE['style']
 
@@ -625,12 +629,20 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
                 if self.symbol is not None:
                     self.symbol.redraw()
 
-    def set_pen(self, pen):
+    def set_pen(self, pen, scale: float = 1.0):
         """
         Set pen to all objects
         Args:
             pen:
         """
+
+        self.pen_style = pen.style()
+        self.pen_color = pen.color()
+        self.pen_width = pen.width()
+        self.scale = scale;
+
+        pen.setWidth(self.pen_width / scale)
+
         self.setPen(pen)
 
         if self.symbol:
@@ -715,7 +727,9 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
             # update the buses (the deleted one and the updated one)
             if removed_bus is not None:
                 # merge the removed bus with the remaining one
+                # TODO: Figure out how to merge two buses
                 updated_bus.graphic_obj.merge(removed_bus.graphic_obj)
+                # circuit.merge_buses(bus1=bus_t, bus2=bus_f)
 
                 # remove the updated bus children
                 for g in updated_bus.graphic_obj.shunt_children:

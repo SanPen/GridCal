@@ -20,7 +20,7 @@ import scipy as sp
 from typing import List
 from GridCalEngine.basic_structures import IntVec, CxVec
 from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit
-from GridCalEngine.Core.admittance_matrices import compute_admittances
+from GridCalEngine.Core.Topology.admittance_matrices import compute_admittances
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.helm_power_flow import helm_coefficients_dY, \
     helm_preparation_dY, HelmPreparation
 

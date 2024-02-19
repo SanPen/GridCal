@@ -280,7 +280,7 @@ class BusViewerWidget(QMainWindow):
                                               hvdc_lines=hvdc_lines,
                                               vsc_devices=vsc_converters,
                                               upfc_devices=upfc_devices,
-                                              fluid_nodes=fluid_nodes,
+                                              fluid_nodes=list(fluid_nodes),
                                               fluid_paths=fluid_paths,
                                               explode_factor=1.0,
                                               prog_func=None,
@@ -296,7 +296,7 @@ if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     circuit_ = MultiCircuit()
     circuit_.add_bus(dev.Bus('bus1'))
-    window = BusViewerWidget(circuit=circuit_, root_bus=circuit_.buses[0])
+    window = BusViewerWidget(circuit=circuit_, root_bus=circuit_.get_bus_at(0))
     window.resize(int(1.61 * 700.0), 600)  # golden ratio
     window.show()
     sys.exit(app.exec())

@@ -110,8 +110,6 @@ def main():
                    Qmin=-9999,  # minimum reactive power in MVAr
                    Qmax=9999,  # Maximum reactive power in MVAr
                    Snom=9999,  # Nominal power in MVA
-                   P_prof=None,  # power profile
-                   vset_prof=None,  # voltage set point profile
                    active=True  # Is active?
                    )
     grid.add_generator(bus1, g1)

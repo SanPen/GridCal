@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from typing import Union, Dict
+from typing import Dict, Any, Union
 import numpy as np
 from GridCalEngine.basic_structures import Numeric, NumericVec, IntVec
 
@@ -26,7 +26,7 @@ class SparseArray:
     SparseArray
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
 
         """
@@ -34,7 +34,42 @@ class SparseArray:
         self._size: int = 0
         self._map: Dict[int, Numeric] = dict()
 
-    def create(self, size: int, default_value: Numeric, data: Dict[int, Numeric] = dict()):
+    def info(self):
+        """
+        Return dictionary with information about the profile object and its content
+        :return:
+        """
+        return {
+            "me": hex(id(self)),
+            "default_value": self._default_value,
+            "size": self._size,
+            "map": hex(id(self._map)),
+        }
+
+    def get_map(self):
+        """
+        Return the dictionary hosting the sparse data
+        :return: Dict[int, Numeric]
+        """
+        return self._map
+
+    def insert(self, i, x):
+        """
+        Insert an element in the data dictionary
+        :param i:
+        :param x:
+        :return:
+        """
+        self._map[i] = x
+
+    def get_sparsity(self) -> float:
+        """
+        Get the sparsity of this profile
+        :return: Sparsity metric
+        """
+        return float(len(self._map)) / float(self._size)
+
+    def create(self, size: int, default_value: Numeric, data: Union[Dict[int, Numeric], None] = None):
         """
         Build sparse from definition
         :param size: size
@@ -43,7 +78,7 @@ class SparseArray:
         """
         self._default_value = default_value
         self._size = size
-        self._map = data
+        self._map = data if data is not None else dict()
 
     def create_from_array(self, array: NumericVec, default_value: Numeric):
         """
@@ -59,7 +94,27 @@ class SparseArray:
             if val != default_value:
                 self._map[i] = val
 
-    def get_vactor(self) -> NumericVec:
+    def create_from_dict(self, default_value: Numeric, size: int, map: Dict[int, Numeric]):
+        """
+        Create this array from dict data
+        :param default_value:
+        :param size:
+        :param map:
+        :return:
+        """
+        self._default_value = default_value
+        self._size = size
+        self._map = map
+
+    def fill(self, value):
+        """
+        Fill the sparse array with the same value
+        :param value: any value
+        """
+        self._default_value = value
+        self._map = dict()
+
+    def toarray(self) -> NumericVec:
         """
         Get numpy vector from this sparse structure
         :return: NumericVec
@@ -89,13 +144,10 @@ class SparseArray:
             else:
                 return val
 
-    def __getitem__(self, key):
-        if isinstance(key, int):
-            return self.at(key)
-        else:
-            raise TypeError("Key must be an integer")
+    def __getitem__(self, key: int) -> Any:
+        return self.at(idx=key)
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: int, value: float) -> None:
 
         if isinstance(key, int):
 
@@ -106,6 +158,23 @@ class SparseArray:
 
         else:
             raise TypeError("Key must be an integer")
+
+    def __eq__(self, other: "SparseArray") -> bool:
+        """
+        Equality operator
+        :param other: SparseArray
+        :return: bool
+        """
+        if self._default_value != other._default_value:
+            return False
+
+        if self._size != other._size:
+            return False
+
+        if self._map != other._map:
+            return False
+
+        return True
 
     def size(self) -> int:
         """
@@ -167,19 +236,26 @@ class SparseArray:
 
         self._map = new_map
 
-    def __eq__(self, other: "SparseArray") -> bool:
+    def get_sparse_representation(self):
         """
-        Equality operator
-        :param other: SparseArray
-        :return: bool
+        Get the sparse representation of the sparse data
+        :return:
         """
-        if self._default_value != other._default_value:
-            return False
+        indptr = list()
+        data = list()
+        for i, x in self._map:
+            indptr.append(i)
+            data.append(x)
 
-        if self._size != other._size:
-            return False
+        return indptr, data
 
-        if self._map != other._map:
-            return False
+    def set_sparse_data_from_data(self, indptr, data):
+        """
 
-        return True
+        :param indptr:
+        :param data:
+        :return:
+        """
+        for i, x in zip(indptr, data):
+            self._map[i] = x
+

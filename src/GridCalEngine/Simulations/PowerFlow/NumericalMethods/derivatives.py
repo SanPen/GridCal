@@ -20,7 +20,7 @@ import numba as nb
 from typing import Tuple
 import scipy.sparse as sp
 from scipy.sparse import lil_matrix, diags, csc_matrix, csr_matrix
-from GridCalEngine.basic_structures import Vec, CxVec, IntVec
+from GridCalEngine.basic_structures import CxVec, IntVec
 
 
 def dSbus_dV(Ybus: csc_matrix, V: CxVec) -> Tuple[csc_matrix, csc_matrix]:
@@ -113,7 +113,8 @@ def dSbus_dV_numba_sparse_csc(Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec, E: Cx
 
 
 @nb.jit(nopython=True, cache=True)
-def dSbus_dV_numba_sparse_csr(Yx: CxVec, Yp: IntVec, Yj: IntVec, V: CxVec, E: CxVec) -> Tuple[CxVec, CxVec]:  # pragma: no cover
+def dSbus_dV_numba_sparse_csr(Yx: CxVec, Yp: IntVec, Yj: IntVec, V: CxVec, E: CxVec) -> Tuple[
+    CxVec, CxVec]:  # pragma: no cover
     """
     partial derivatives of power injection w.r.t. voltage.
     :param Yx: Ybus data in CSC format
@@ -437,8 +438,8 @@ def dSf_dV_csc(Yf, V, F, T):
                                               idx_f=idx_f,
                                               idx_t=idx_t)
 
-    return csc_matrix((dSf_dVm_data, Yf.indices, Yf.indptr), shape=Yf.shape), \
-           csc_matrix((dSf_dVa_data, Yf.indices, Yf.indptr), shape=Yf.shape)
+    return (csc_matrix((dSf_dVm_data, Yf.indices, Yf.indptr), shape=Yf.shape),
+            csc_matrix((dSf_dVa_data, Yf.indices, Yf.indptr), shape=Yf.shape))
 
 
 def dSt_dV_csc(Yt, V, F, T):
@@ -468,8 +469,8 @@ def dSt_dV_csc(Yt, V, F, T):
                                               idx_f=idx_f,
                                               idx_t=idx_t)
 
-    return csc_matrix((dSt_dVm_data, Yt.indices, Yt.indptr), shape=Yt.shape), \
-           csc_matrix((dSt_dVa_data, Yt.indices, Yt.indptr), shape=Yt.shape)
+    return (csc_matrix((dSt_dVm_data, Yt.indices, Yt.indptr), shape=Yt.shape),
+            csc_matrix((dSt_dVa_data, Yt.indices, Yt.indptr), shape=Yt.shape))
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -594,9 +595,9 @@ def derivatives_tau_csc_numba(iPxsh, F: IntVec, T: IntVec, Ys: CxVec, k2, tap, V
     dSf_dsh_indptr[ndev] = ndev
     dSt_dsh_indptr[ndev] = ndev
 
-    return dSbus_dsh_data, dSbus_dsh_indices, dSbus_dsh_indptr, \
-           dSf_dsh_data, dSf_dsh_indices, dSf_dsh_indptr, \
-           dSt_dsh_data, dSt_dsh_indices, dSt_dsh_indptr
+    return (dSbus_dsh_data, dSbus_dsh_indices, dSbus_dsh_indptr,
+            dSf_dsh_data, dSf_dsh_indices, dSf_dsh_indptr,
+            dSt_dsh_data, dSt_dsh_indices, dSt_dsh_indptr)
 
 
 def derivatives_sh_csc_fast(nb, nl, iPxsh, F, T, Ys, k2, tap, V):
@@ -620,9 +621,9 @@ def derivatives_sh_csc_fast(nb, nl, iPxsh, F, T, Ys, k2, tap, V):
     """
     ndev = len(iPxsh)
 
-    dSbus_dsh_data, dSbus_dsh_indices, dSbus_dsh_indptr, \
-    dSf_dsh_data, dSf_dsh_indices, dSf_dsh_indptr, \
-    dSt_dsh_data, dSt_dsh_indices, dSt_dsh_indptr = derivatives_tau_csc_numba(iPxsh, F, T, Ys, k2, tap, V)
+    (dSbus_dsh_data, dSbus_dsh_indices, dSbus_dsh_indptr,
+     dSf_dsh_data, dSf_dsh_indices, dSf_dsh_indptr,
+     dSt_dsh_data, dSt_dsh_indices, dSt_dsh_indptr) = derivatives_tau_csc_numba(iPxsh, F, T, Ys, k2, tap, V)
 
     dSbus_dsh = sp.csc_matrix((dSbus_dsh_data, dSbus_dsh_indices, dSbus_dsh_indptr), shape=(nb, ndev))
     dSf_dsh = sp.csc_matrix((dSf_dsh_data, dSf_dsh_indices, dSf_dsh_indptr), shape=(nl, ndev))
@@ -765,9 +766,9 @@ def derivatives_ma_csc_numba(iXxma, F, T, Ys, k2, tap, ma, Bc, Beq, V):
     dSf_dma_indptr[ndev] = ndev
     dSt_dma_indptr[ndev] = ndev
 
-    return dSbus_dma_data, dSbus_dma_indices, dSbus_dma_indptr, \
-           dSf_dma_data, dSf_dma_indices, dSf_dma_indptr, \
-           dSt_dma_data, dSt_dma_indices, dSt_dma_indptr
+    return (dSbus_dma_data, dSbus_dma_indices, dSbus_dma_indptr,
+            dSf_dma_data, dSf_dma_indices, dSf_dma_indptr,
+            dSt_dma_data, dSt_dma_indices, dSt_dma_indptr)
 
 
 def derivatives_ma_csc_fast(nb, nl, iXxma, F, T, Ys, k2, tap, ma, Bc, Beq, V):
@@ -798,9 +799,9 @@ def derivatives_ma_csc_fast(nb, nl, iXxma, F, T, Ys, k2, tap, ma, Bc, Beq, V):
     # Declare the derivative
     ndev = len(iXxma)
 
-    dSbus_dma_data, dSbus_dma_indices, dSbus_dma_indptr, \
-    dSf_dma_data, dSf_dma_indices, dSf_dma_indptr, \
-    dSt_dma_data, dSt_dma_indices, dSt_dma_indptr = derivatives_ma_csc_numba(iXxma, F, T, Ys, k2, tap, ma, Bc, Beq, V)
+    (dSbus_dma_data, dSbus_dma_indices, dSbus_dma_indptr,
+     dSf_dma_data, dSf_dma_indices, dSf_dma_indptr,
+     dSt_dma_data, dSt_dma_indices, dSt_dma_indptr) = derivatives_ma_csc_numba(iXxma, F, T, Ys, k2, tap, ma, Bc, Beq, V)
 
     dSbus_dma = sp.csc_matrix((dSbus_dma_data, dSbus_dma_indices, dSbus_dma_indptr), shape=(nb, ndev))
     dSf_dma = sp.csc_matrix((dSf_dma_data, dSf_dma_indices, dSf_dma_indptr), shape=(nl, ndev))
@@ -945,12 +946,11 @@ def derivatives_Beq_csc_fast(nb, nl, iBeqx, F, T, V, ma, k2):
 
     ndev = len(iBeqx)
 
-    dSbus_dBeq_data, dSbus_dBeq_indices, dSbus_dBeq_indptr, \
-    dSf_dBeqx_data, dSf_dBeqx_indices, dSf_dBeqx_indptr = derivatives_Beq_csc_numba(iBeqx, F, V, ma, k2)
+    (dSbus_dBeq_data, dSbus_dBeq_indices, dSbus_dBeq_indptr,
+     dSf_dBeqx_data, dSf_dBeqx_indices, dSf_dBeqx_indptr) = derivatives_Beq_csc_numba(iBeqx, F, V, ma, k2)
 
     dSbus_dBeqx = sp.csc_matrix((dSbus_dBeq_data, dSbus_dBeq_indices, dSbus_dBeq_indptr), shape=(nb, ndev))
     dSf_dBeqx = sp.csc_matrix((dSf_dBeqx_data, dSf_dBeqx_indices, dSf_dBeqx_indptr), shape=(nl, ndev))
     dSt_dBeqx = sp.csc_matrix((nl, ndev), dtype=complex)
 
     return dSbus_dBeqx, dSf_dBeqx, dSt_dBeqx
-

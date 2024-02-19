@@ -626,14 +626,10 @@ def grid_analysis(circuit: MultiCircuit,
                                                                      upper_limit=elm.Sn))
 
         elif object_type == DeviceType.BusDevice:
-            elements = circuit.buses
+            elements = circuit.get_buses()
             names = set()
 
             for i, elm in enumerate(elements):
-
-                qmin, qmax = elm.get_reactive_power_limits()
-                Qmin += qmin
-                Qmax += qmax
 
                 if elm.Vnom <= 0.0:
                     logger.add(object_type=object_type.value,
@@ -960,7 +956,7 @@ def object_histogram_analysis(circuit: MultiCircuit, object_type: DeviceType, fi
         properties = ['Vnom']
         types = [float]
         log_scale = [False]
-        objects = circuit.buses
+        objects = circuit.get_buses()
 
     elif object_type == DeviceType.GeneratorDevice.value:
         properties = ['Vset', 'P', 'Qmin', 'Qmax']

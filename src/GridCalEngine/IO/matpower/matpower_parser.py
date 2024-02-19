@@ -191,20 +191,18 @@ def parse_buses_data(circuit: MultiCircuit, data, area_idx_dict, logger: Logger)
         # determine if the bus is set as slack manually
         bus.is_slack = table[i, matpower_buses.BUS_TYPE] == matpower_buses.REF
 
+        # Add the bus to the circuit buses
+        circuit.add_bus(bus)
+
         # Add the load
         if table[i, matpower_buses.PD] != 0 or table[i, matpower_buses.QD] != 0:
             load = dev.Load(P=table[i, matpower_buses.PD], Q=table[i, matpower_buses.QD])
-            load.bus = bus
-            bus.loads.append(load)
+            circuit.add_load(bus=bus, api_obj=load)
 
         # Add the shunt
         if table[i, matpower_buses.GS] != 0 or table[i, matpower_buses.BS] != 0:
             shunt = dev.Shunt(G=table[i, matpower_buses.GS], B=table[i, matpower_buses.BS])
-            shunt.bus = bus
-            bus.shunts.append(shunt)
-
-        # Add the bus to the circuit buses
-        circuit.add_bus(bus)
+            circuit.add_shunt(bus=bus, api_obj=shunt)
 
     return bus_idx_dict
 
@@ -252,7 +250,7 @@ def parse_generators(circuit: MultiCircuit, data, bus_idx_dict, logger: Logger):
 
         # Add the generator to the bus
         gen.bus = circuit.buses[bus_idx]
-        circuit.buses[bus_idx].generators.append(gen)
+        circuit.add_generator(bus=circuit.buses[bus_idx], api_obj=gen)
 
     if 'gencost' in data:
         # parse the OPF data
@@ -401,7 +399,7 @@ def parse_branches_data(circuit: MultiCircuit, data, bus_idx_dict, logger: Logge
                                  alpha2=table[i, matpower_branches.ALPHA2],
                                  alpha3=table[i, matpower_branches.ALPHA3],
                                  monitor_loading=monitor_loading)
-                circuit.add_vsc(branch)
+                circuit.add_vsc(obj=branch)
 
                 logger.add_info('Branch as converter', 'Branch {}'.format(str(i + 1)))
 
@@ -434,7 +432,7 @@ def parse_branches_data(circuit: MultiCircuit, data, bus_idx_dict, logger: Logge
                                                tap_module=table[i, matpower_branches.TAP],
                                                tap_phase=np.deg2rad(table[i, matpower_branches.SHIFT]),  # * np.pi / 180,
                                                active=bool(table[i, matpower_branches.BR_STATUS]))
-                    circuit.add_transformer2w(branch)
+                    circuit.add_transformer2w(obj=branch)
                     logger.add_info('Branch as 2w transformer', 'Branch {}'.format(str(i + 1)))
 
                 else:
@@ -457,7 +455,7 @@ def parse_branches_data(circuit: MultiCircuit, data, bus_idx_dict, logger: Logge
                                       rate=rate,
                                       monitor_loading=monitor_loading,
                                       active=bool(table[i, matpower_branches.BR_STATUS]))
-                    circuit.add_line(branch, logger=logger)
+                    circuit.add_line(obj=branch, logger=logger)
                     logger.add_info('Branch as line', 'Branch {}'.format(str(i + 1)))
 
         else:
@@ -488,7 +486,7 @@ def parse_branches_data(circuit: MultiCircuit, data, bus_idx_dict, logger: Logge
                                            tap_module=table[i, matpower_branches.TAP],
                                            tap_phase=np.deg2rad(table[i, matpower_branches.SHIFT]),  # * np.pi / 180,
                                            active=bool(table[i, matpower_branches.BR_STATUS]))
-                circuit.add_transformer2w(branch)
+                circuit.add_transformer2w(obj=branch)
                 logger.add_info('Branch as 2w transformer', 'Branch {}'.format(str(i + 1)))
 
             else:
@@ -512,7 +510,7 @@ def parse_branches_data(circuit: MultiCircuit, data, bus_idx_dict, logger: Logge
                                   rate=rate,
                                   monitor_loading=monitor_loading,
                                   active=bool(table[i, matpower_branches.BR_STATUS]))
-                circuit.add_line(branch, logger=logger)
+                circuit.add_line(obj=branch, logger=logger)
                 logger.add_info('Branch as line', 'Branch {}'.format(str(i + 1)))
 
     # convert normal lines into DC-lines if needed
@@ -530,7 +528,7 @@ def parse_branches_data(circuit: MultiCircuit, data, bus_idx_dict, logger: Logge
                                  rate_prof=line.rate_prof)
 
             # add device to the circuit
-            circuit.add_dc_line(dc_line)
+            circuit.add_dc_line(obj=dc_line)
 
             # delete the line from the circuit
             circuit.delete_line(line)

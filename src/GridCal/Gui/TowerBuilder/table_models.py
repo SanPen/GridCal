@@ -18,7 +18,7 @@
 from typing import Union
 from PySide6 import QtCore
 from GridCalEngine.Core.Devices.Branches.wire import Wire
-from GridCalEngine.Core.Devices.Branches.templates.overhead_line_type import OverheadLineType, WireInTower
+from GridCalEngine.Core.Devices.Branches.overhead_line_type import OverheadLineType, WireInTower
 
 """
 Equations source:

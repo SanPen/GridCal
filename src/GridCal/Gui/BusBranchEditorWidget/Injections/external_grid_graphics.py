@@ -130,21 +130,6 @@ class ExternalGridGraphicItem(InjectionTemplateGraphicItem):
 
         menu.exec_(event.screenPos())
 
-    def remove(self, ask=True):
-        """
-        Remove this element
-        @return:
-        """
-        if ask:
-            ok = yes_no_question('Are you sure that you want to remove this external grid', 'Remove external grid')
-        else:
-            ok = True
-
-        if ok:
-            self.editor.remove_from_scene(self.nexus)
-            self.editor.remove_from_scene(self)
-            self.api_object.bus.batteries.remove(self.api_object)
-
     def enable_disable_toggle(self):
         """
 

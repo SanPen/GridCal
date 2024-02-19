@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rdf:RDF xmlns:cims="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:xsd="http://www.w3.org/2001/XMLSchema#" xmlns:cim="http://iec.ch/TC57/2013/CIM-schema-cim16#" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" xml:base="http://iec.ch/TC57/2013/CIM-schema-cim16" xmlns:entsoe="http://entsoe.eu/CIM/SchemaExtension/3/1#" >
+	 <rdf:Description rdf:about="#Package_GeographicalLocationProfile">
+	<rdfs:label xml:lang="en">GeographicalLocationProfile</rdfs:label>
+	<rdf:type rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#ClassCategory"/>
+	<rdfs:comment rdf:parseType="Literal">This geographical location profile is built on the basis of the IEC profile. There is small difference in one association which is specific for exchanges between TSOs.</rdfs:comment>
+</rdf:Description>
+	 <rdf:Description rdf:about="http://entsoe.eu/CIM/SchemaExtension/3/1#GeographicalLocationVersion">
+	<rdfs:label xml:lang="en">GeographicalLocationVersion</rdfs:label>
+	<rdfs:comment  rdf:parseType="Literal">Version details.</rdfs:comment>
+<cims:stereotype>Entsoe</cims:stereotype>
+	<cims:belongsToCategory rdf:resource="#Package_GeographicalLocationProfile"/>
+	<rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="http://entsoe.eu/CIM/SchemaExtension/3/1#GeographicalLocationVersion.baseUML">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">baseUML</rdfs:label>
+	<rdfs:domain rdf:resource="http://entsoe.eu/CIM/SchemaExtension/3/1#GeographicalLocationVersion"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:1..1" />
+	<cims:isFixed rdf:datatype="http://www.w3.org/2001/XMLSchema#string">iec61970cim16v28_iec61968cim12v08_iec62325cim03v01a</cims:isFixed>
+	<rdfs:comment  rdf:parseType="Literal">Base UML provided by CIM model manager.</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#String">
+	<rdfs:label xml:lang="en">String</rdfs:label>
+	<rdfs:comment  rdf:parseType="Literal">A string consisting of a sequence of characters. The character encoding is UTF-8. The string length is unspecified and unlimited.</rdfs:comment>
+<cims:stereotype>Primitive</cims:stereotype>
+	<cims:belongsToCategory rdf:resource="#Package_DomainProfile"/>
+	<rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="http://entsoe.eu/CIM/SchemaExtension/3/1#GeographicalLocationVersion.baseURI">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">baseURI</rdfs:label>
+	<rdfs:domain rdf:resource="http://entsoe.eu/CIM/SchemaExtension/3/1#GeographicalLocationVersion"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:1..1" />
+	<cims:isFixed rdf:datatype="http://www.w3.org/2001/XMLSchema#string">http://entsoe.eu/Secretariat/2013/Geographical/2</cims:isFixed>
+	<rdfs:comment  rdf:parseType="Literal">Profile URI used in the Model Exchange header and defined in IEC standards.  It uniquely identifies the Profile and its version. It is given for information only and to identify the closest IEC profile to which this CGMES profile is based on.</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="http://entsoe.eu/CIM/SchemaExtension/3/1#GeographicalLocationVersion.date">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">date</rdfs:label>
+	<rdfs:domain rdf:resource="http://entsoe.eu/CIM/SchemaExtension/3/1#GeographicalLocationVersion"/>
+	<cims:dataType rdf:resource="#Date"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:1..1" />
+	<cims:isFixed rdf:datatype="http://www.w3.org/2001/XMLSchema#date">2014-08-07</cims:isFixed>
+	<rdfs:comment  rdf:parseType="Literal">Profile creation date
+Form is YYYY-MM-DD for example for January 5, 2009 it is 2009-01-05.</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#Date">
+	<rdfs:label xml:lang="en">Date</rdfs:label>
+	<rdfs:comment  rdf:parseType="Literal">Date as "yyyy-mm-dd", which conforms with ISO 8601. UTC time zone is specified as "yyyy-mm-ddZ". A local timezone relative UTC is specified as "yyyy-mm-dd(+/-)hh:mm".</rdfs:comment>
+<cims:stereotype>Primitive</cims:stereotype>
+	<cims:belongsToCategory rdf:resource="#Package_DomainProfile"/>
+	<rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="http://entsoe.eu/CIM/SchemaExtension/3/1#GeographicalLocationVersion.differenceModelURI">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">differenceModelURI</rdfs:label>
+	<rdfs:domain rdf:resource="http://entsoe.eu/CIM/SchemaExtension/3/1#GeographicalLocationVersion"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:1..1" />
+	<cims:isFixed rdf:datatype="http://www.w3.org/2001/XMLSchema#string">http://iec.ch/TC57/61970-552/DifferenceModel/1#</cims:isFixed>
+	<rdfs:comment  rdf:parseType="Literal">Difference model URI defined by IEC 61970-552. </rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="http://entsoe.eu/CIM/SchemaExtension/3/1#GeographicalLocationVersion.entsoeUML">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">entsoeUML</rdfs:label>
+	<rdfs:domain rdf:resource="http://entsoe.eu/CIM/SchemaExtension/3/1#GeographicalLocationVersion"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:1..1" />
+	<cims:isFixed rdf:datatype="http://www.w3.org/2001/XMLSchema#string">entsoe_v2.4.15</cims:isFixed>
+	<rdfs:comment  rdf:parseType="Literal">UML provided by ENTSO-E.</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="http://entsoe.eu/CIM/SchemaExtension/3/1#GeographicalLocationVersion.entsoeURI">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">entsoeURI</rdfs:label>
+	<rdfs:domain rdf:resource="http://entsoe.eu/CIM/SchemaExtension/3/1#GeographicalLocationVersion"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:1..1" />
+	<cims:isFixed rdf:datatype="http://www.w3.org/2001/XMLSchema#string">http://entsoe.eu/CIM/GeographicalLocation/2/1</cims:isFixed>
+	<rdfs:comment  rdf:parseType="Literal">Profile URI defined by ENTSO-E and used in the Model Exchange header.  It uniquely identifies the Profile and its version. The last two elements in the URI (http://entsoe.eu/CIM/GeographicalLocation/yy/zzz) indicate major and minor versions where: 
+- yy - indicates a major version;
+- zzz - indicates a minor version. </rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="http://entsoe.eu/CIM/SchemaExtension/3/1#GeographicalLocationVersion.modelDescriptionURI">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">modelDescriptionURI</rdfs:label>
+	<rdfs:domain rdf:resource="http://entsoe.eu/CIM/SchemaExtension/3/1#GeographicalLocationVersion"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:1..1" />
+	<cims:isFixed rdf:datatype="http://www.w3.org/2001/XMLSchema#string">http://iec.ch/TC57/61970-552/ModelDescription/1#</cims:isFixed>
+	<rdfs:comment  rdf:parseType="Literal">Model Description URI defined by IEC 61970-552. </rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="http://entsoe.eu/CIM/SchemaExtension/3/1#GeographicalLocationVersion.namespaceRDF">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">namespaceRDF</rdfs:label>
+	<rdfs:domain rdf:resource="http://entsoe.eu/CIM/SchemaExtension/3/1#GeographicalLocationVersion"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:1..1" />
+	<cims:isFixed rdf:datatype="http://www.w3.org/2001/XMLSchema#string">http://www.w3.org/1999/02/22-rdf-syntax-ns#</cims:isFixed>
+	<rdfs:comment  rdf:parseType="Literal">RDF namespace. </rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="http://entsoe.eu/CIM/SchemaExtension/3/1#GeographicalLocationVersion.namespaceUML">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">namespaceUML</rdfs:label>
+	<rdfs:domain rdf:resource="http://entsoe.eu/CIM/SchemaExtension/3/1#GeographicalLocationVersion"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:1..1" />
+	<cims:isFixed rdf:datatype="http://www.w3.org/2001/XMLSchema#string">http://iec.ch/TC57/2013/CIM-schema-cim16#</cims:isFixed>
+	<rdfs:comment  rdf:parseType="Literal">CIM UML namespace. </rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="http://entsoe.eu/CIM/SchemaExtension/3/1#GeographicalLocationVersion.shortName">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">shortName</rdfs:label>
+	<rdfs:domain rdf:resource="http://entsoe.eu/CIM/SchemaExtension/3/1#GeographicalLocationVersion"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:1..1" />
+	<cims:isFixed rdf:datatype="http://www.w3.org/2001/XMLSchema#string">GL</cims:isFixed>
+	<rdfs:comment  rdf:parseType="Literal">The short name of the profile used in profile documentation.</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#Package_Common">
+	<rdfs:label xml:lang="en">Common</rdfs:label>
+	<rdf:type rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#ClassCategory"/>
+</rdf:Description>
+	 <rdf:Description rdf:about="#CoordinateSystem">
+	<rdfs:label xml:lang="en">CoordinateSystem</rdfs:label>
+	<rdfs:subClassOf rdf:resource="#IdentifiedObject"/>
+	<rdfs:comment  rdf:parseType="Literal">Coordinate reference system.</rdfs:comment>
+	<cims:belongsToCategory rdf:resource="#Package_Common"/>
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#concrete"/>
+	<rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#CoordinateSystem.crsUrn">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">crsUrn</rdfs:label>
+	<rdfs:domain rdf:resource="#CoordinateSystem"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:1..1" />
+	<rdfs:comment  rdf:parseType="Literal">A Uniform Resource Name (URN) for the coordinate reference system (crs) used to define 'Location.PositionPoints'.
+An example would be the European Petroleum Survey Group (EPSG) code for a coordinate reference system, defined in URN under the Open Geospatial Consortium (OGC) namespace as: urn:ogc:def:uom:EPSG::XXXX, where XXXX is an EPSG code (a full list of codes can be found at the EPSG Registry web site http://www.epsg-registry.org/). To define the coordinate system as being WGS84 (latitude, longitude) using an EPSG OGC, this attribute would be urn:ogc:def:uom:EPSG::4236.
+A profile should limit this code to a set of allowed URNs agreed to by all sending and receiving parties.</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#Location.CoordinateSystem">
+	<rdfs:label xml:lang="en">CoordinateSystem</rdfs:label>
+	<rdfs:comment  rdf:parseType="Literal">Coordinate system used to describe position points of this location.</rdfs:comment>
+	<rdfs:domain rdf:resource="#Location"/>
+	<rdfs:range rdf:resource="#CoordinateSystem"/>
+	<cims:inverseRoleName rdf:resource="#CoordinateSystem.Location"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:1..1"/>
+	<cims:AssociationUsed>Yes</cims:AssociationUsed>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#CoordinateSystem.Location">
+	<rdfs:label xml:lang="en">Location</rdfs:label>
+	<rdfs:comment  rdf:parseType="Literal">All locations described with position points in this coordinate system.</rdfs:comment>
+	<rdfs:domain rdf:resource="#CoordinateSystem"/>
+	<rdfs:range rdf:resource="#Location"/>
+	<cims:inverseRoleName rdf:resource="#Location.CoordinateSystem"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..n"/>
+	<cims:AssociationUsed>No</cims:AssociationUsed>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#Location">
+	<rdfs:label xml:lang="en">Location</rdfs:label>
+	<rdfs:subClassOf rdf:resource="#IdentifiedObject"/>
+	<rdfs:comment  rdf:parseType="Literal">The place, scene, or point of something where someone or something has been, is, and/or will be at a given moment in time. It can be defined with one or more postition points (coordinates) in a given coordinate system.</rdfs:comment>
+	<cims:belongsToCategory rdf:resource="#Package_Common"/>
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#concrete"/>
+	<rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#Location.PowerSystemResources">
+	<rdfs:label xml:lang="en">PowerSystemResources</rdfs:label>
+	<rdfs:comment  rdf:parseType="Literal">All power system resources at this location.</rdfs:comment>
+	<rdfs:domain rdf:resource="#Location"/>
+	<rdfs:range rdf:resource="#PowerSystemResource"/>
+	<cims:inverseRoleName rdf:resource="#PowerSystemResource.Location"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:1"/>
+	<cims:AssociationUsed>Yes</cims:AssociationUsed>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#PowerSystemResource.Location">
+	<rdfs:label xml:lang="en">Location</rdfs:label>
+	<rdfs:comment  rdf:parseType="Literal">Location of this power system resource.</rdfs:comment>
+	<rdfs:domain rdf:resource="#PowerSystemResource"/>
+	<rdfs:range rdf:resource="#Location"/>
+	<cims:inverseRoleName rdf:resource="#Location.PowerSystemResources"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..1"/>
+	<cims:AssociationUsed>No</cims:AssociationUsed>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#Location.PositionPoints">
+	<rdfs:label xml:lang="en">PositionPoints</rdfs:label>
+	<rdfs:comment  rdf:parseType="Literal">Sequence of position points describing this location, expressed in coordinate system 'Location.CoordinateSystem'.</rdfs:comment>
+	<rdfs:domain rdf:resource="#Location"/>
+	<rdfs:range rdf:resource="#PositionPoint"/>
+	<cims:inverseRoleName rdf:resource="#PositionPoint.Location"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:1..n"/>
+	<cims:AssociationUsed>No</cims:AssociationUsed>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#PositionPoint.Location">
+	<rdfs:label xml:lang="en">Location</rdfs:label>
+	<rdfs:comment  rdf:parseType="Literal">Location described by this position point.</rdfs:comment>
+	<rdfs:domain rdf:resource="#PositionPoint"/>
+	<rdfs:range rdf:resource="#Location"/>
+	<cims:inverseRoleName rdf:resource="#Location.PositionPoints"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:1"/>
+	<cims:AssociationUsed>Yes</cims:AssociationUsed>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#PositionPoint">
+	<rdfs:label xml:lang="en">PositionPoint</rdfs:label>
+	<rdfs:comment  rdf:parseType="Literal">Set of spatial coordinates that determine a point, defined in the coordinate system specified in 'Location.CoordinateSystem'. Use a single position point instance to desribe a point-oriented location. Use a sequence of position points to describe a line-oriented object (physical location of non-point oriented objects like cables or lines), or area of an object (like a substation or a geographical zone - in this case, have first and last position point with the same values).</rdfs:comment>
+	<cims:belongsToCategory rdf:resource="#Package_Common"/>
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#concrete"/>
+	<rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#PositionPoint.sequenceNumber">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">sequenceNumber</rdfs:label>
+	<rdfs:domain rdf:resource="#PositionPoint"/>
+	<cims:dataType rdf:resource="#Integer"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..1" />
+	<rdfs:comment  rdf:parseType="Literal">Zero-relative sequence number of this point within a series of points.</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#Integer">
+	<rdfs:label xml:lang="en">Integer</rdfs:label>
+	<rdfs:comment  rdf:parseType="Literal">An integer number. The range is unspecified and not limited.</rdfs:comment>
+<cims:stereotype>Primitive</cims:stereotype>
+	<cims:belongsToCategory rdf:resource="#Package_DomainProfile"/>
+	<rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#PositionPoint.xPosition">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">xPosition</rdfs:label>
+	<rdfs:domain rdf:resource="#PositionPoint"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:1..1" />
+	<rdfs:comment  rdf:parseType="Literal">X axis position.</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#PositionPoint.yPosition">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">yPosition</rdfs:label>
+	<rdfs:domain rdf:resource="#PositionPoint"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:1..1" />
+	<rdfs:comment  rdf:parseType="Literal">Y axis position.</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#PositionPoint.zPosition">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">zPosition</rdfs:label>
+	<rdfs:domain rdf:resource="#PositionPoint"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..1" />
+	<rdfs:comment  rdf:parseType="Literal">(if applicable) Z axis position.</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#Package_Core">
+	<rdfs:label xml:lang="en">Core</rdfs:label>
+	<rdf:type rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#ClassCategory"/>
+</rdf:Description>
+	 <rdf:Description rdf:about="#IdentifiedObject">
+	<rdfs:label xml:lang="en">IdentifiedObject</rdfs:label>
+	<rdfs:comment  rdf:parseType="Literal">This is a root class to provide common identification for all classes needing identification and naming attributes.</rdfs:comment>
+	<cims:belongsToCategory rdf:resource="#Package_Core"/>
+	<rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#IdentifiedObject.mRID">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">mRID</rdfs:label>
+	<rdfs:domain rdf:resource="#IdentifiedObject"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..1" />
+	<rdfs:comment  rdf:parseType="Literal">Master resource identifier issued by a model authority. The mRID is globally unique within an exchange context. Global uniqueness is easily achieved by using a UUID,  as specified in RFC 4122, for the mRID.  The use of UUID is strongly recommended.
+For CIMXML data files in RDF syntax conforming to IEC 61970-552 Edition 1, the mRID is mapped to rdf:ID or rdf:about attributes that identify CIM object elements.</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#IdentifiedObject.name">
+	<cims:stereotype rdf:resource="http://iec.ch/TC57/NonStandard/UML#attribute"/>
+	<rdfs:label xml:lang="en">name</rdfs:label>
+	<rdfs:domain rdf:resource="#IdentifiedObject"/>
+	<cims:dataType rdf:resource="#String"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..1" />
+	<rdfs:comment  rdf:parseType="Literal">The name is any free human readable and possibly non unique text naming the object.</rdfs:comment>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+	 </rdf:Description>
+	 <rdf:Description rdf:about="#PowerSystemResource">
+	<rdfs:label xml:lang="en">PowerSystemResource</rdfs:label>
+	<rdfs:subClassOf rdf:resource="#IdentifiedObject"/>
+	<rdfs:comment  rdf:parseType="Literal">A power system resource can be an item of equipment such as a switch, an equipment container containing many individual items of equipment such as a substation, or an organisational entity such as sub-control area. Power system resources can have measurements associated.</rdfs:comment>
+	<cims:belongsToCategory rdf:resource="#Package_Core"/>
+	<rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+	 </rdf:Description>
+</rdf:RDF>

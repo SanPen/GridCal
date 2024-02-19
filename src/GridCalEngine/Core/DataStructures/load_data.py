@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
 import scipy.sparse as sp
-import GridCalEngine.Core.topology as tp
+import GridCalEngine.Core.Topology.topology as tp
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec, StrVec
 
 
@@ -51,6 +51,14 @@ class LoadData:
         self.cost: Vec = np.zeros(nelm, dtype=float)  # load shedding cost
 
         self.original_idx = np.zeros(nelm, dtype=int)
+
+    def size(self) -> int:
+        """
+        Get size of the structure
+        :return:
+        """
+
+        return self.nelm
 
     def slice(self, elm_idx: IntVec, bus_idx: IntVec) -> "LoadData":
         """
@@ -150,6 +158,15 @@ class LoadData:
         :return:
         """
         return - self.C_bus_elm * self.get_linear_effective_load()
+
+    def get_array_per_bus(self, arr: Vec) -> Vec:
+        """
+        Get generator array per bus
+        :param arr:
+        :return:
+        """
+        assert len(arr) == self.nelm
+        return self.C_bus_elm @ arr
 
     def get_current_injections_per_bus(self) -> CxVec:
         """
