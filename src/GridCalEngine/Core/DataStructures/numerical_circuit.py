@@ -1441,6 +1441,7 @@ class NumericalCircuit:
 
         :return:
         """
+        # TODO: eliminate Btau and use Bf instead
         if self.Bf_ is None:
             _ = self.Bbus  # call the constructor of Bf
 

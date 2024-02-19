@@ -438,7 +438,7 @@ def compute_linear_admittances(nbr: int,
     Bf = b_tt * Cf - b_tt * Ct
     Bt = -b_tt * Cf + b_tt * Ct
     Bbus = Cf.T * Bf + Ct.T * Bt
-    Btau = Bf.T  # (b_tt * (Cf + Ct)).T
+    Btau = Bf.T  # (b_tt * (Cf + Ct)).T  # TODO: eliminate Btau and use Bf instead
 
     """
     According to the KULeuven document "DC power flow in unit commitment models"
