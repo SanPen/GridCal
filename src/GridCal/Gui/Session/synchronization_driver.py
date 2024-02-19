@@ -27,7 +27,7 @@ from GridCalEngine.basic_structures import Logger
 from GridCalEngine.enumerations import SyncIssueType
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.IO.file_handler import FileOpen
-from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceType
+from GridCalEngine.Core.Devices.Parents.editable_device import EditableDevice, DeviceType
 
 
 class SyncIssue:

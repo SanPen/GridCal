@@ -90,6 +90,8 @@ def nonlinear_contingency_analysis(grid: MultiCircuit,
     else:
         PTDF = None
 
+    available_power = numerical_circuit.generator_data.get_injections_per_bus().real
+
     # for each contingency group
     for ic, contingency_group in enumerate(grid.contingency_groups):
 
@@ -130,7 +132,9 @@ def nonlinear_contingency_analysis(grid: MultiCircuit,
                                srap_max_power=options.srap_max_power,
                                multi_contingency=multi_contingency,
                                PTDF=PTDF,
-                               srap_fixing_probability=results.srap_fixing_probability)
+                               available_power=available_power,
+                               srap_used_power=results.srap_used_power,
+                               top_n=options.srap_top_n)
 
         # set the status
         numerical_circuit.set_contingency_status(contingencies, revert=True)

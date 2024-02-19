@@ -43,8 +43,6 @@ POAP==0.1.26
 prompt-toolkit==3.0.16
 ptyprocess==0.7.0
 py==1.10.0
-pyDOE==0.3.8
-pyDOE2==1.3.0
 Pygments==2.15.0
 pyparsing==2.4.7
 pyproj==3.0.0.post1

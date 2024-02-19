@@ -20,7 +20,6 @@ from typing import List, Tuple, Union
 import networkx as nx
 import numpy as np
 from PySide6 import QtGui, QtWidgets
-from PySide6.QtCore import QRectF, Qt
 from matplotlib import pyplot as plt
 from pandas.plotting import register_matplotlib_converters
 
@@ -34,7 +33,7 @@ from GridCal.Gui.GeneralDialogues import CheckListDialogue, StartEndSelectionDia
 from GridCal.Gui.BusViewer.bus_viewer_dialogue import BusViewerWidget
 from GridCal.Gui.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget, \
     generate_bus_branch_diagram
-from GridCal.Gui.BusBranchEditorWidget.node_breaker_editor import NodeBreakerEditorWidget
+from GridCal.Gui.NodeBreakerEditorWidget.node_breaker_editor_widget import NodeBreakerEditorWidget
 from GridCal.Gui.MapWidget.grid_map_widget import GridMapWidget
 from GridCal.Gui.messages import yes_no_question, error_msg, info_msg
 from GridCal.Gui.Main.SubClasses.Model.compiled_arrays import CompiledArraysMain
@@ -621,9 +620,9 @@ class DiagramsMain(CompiledArraysMain):
                                  Sbus=results.S[current_step, :],
                                  types=results.bus_types,
                                  bus_active=bus_active,
-                                 Sf=results.worst_flows[current_step, :],
-                                 St=-results.worst_flows[current_step, :],
-                                 loadings=np.abs(results.worst_loading[current_step]),
+                                 Sf=results.max_flows[current_step, :],
+                                 St=-results.max_flows[current_step, :],
+                                 loadings=np.abs(results.max_loading[current_step]),
                                  br_active=br_active,
                                  use_flow_based_width=use_flow_based_width,
                                  min_branch_width=min_branch_width,
@@ -1141,7 +1140,7 @@ class DiagramsMain(CompiledArraysMain):
 
     def set_big_bus_marker_colours(self,
                                    buses: List[dev.Bus],
-                                   colors: List[QtGui.QColor],
+                                   colors: List[type(QtGui.QColor)],
                                    tool_tips: Union[None, List[str]] = None):
         """
         Set a big marker at the selected buses with the matching colours

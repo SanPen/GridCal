@@ -8,7 +8,7 @@ main_circuit = gce.FileOpen(fname).open()
 # for br in main_circuit.get_branches_wo_hvdc():
 #     br.rate = 1e-20
 
-for bus in main_circuit.buses:
+for bus in main_circuit.get_buses():
     bus.angle_max = 6
     bus.angle_min = 0.01
 

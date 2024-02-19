@@ -1,4 +1,3 @@
-
 # GridCal
 # Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
@@ -16,7 +15,8 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from typing import Union, Dict, Tuple
+from typing import Union, Dict, Tuple, List, Any
+from collections import Counter
 import numpy as np
 import numba as nb
 from GridCalEngine.basic_structures import Numeric, NumericVec, IntVec
@@ -24,35 +24,20 @@ from GridCalEngine.Core.Devices.sparse_array import SparseArray
 
 
 @nb.njit()
-def compress_array_numba(value, base):
+def compress_array_numba(arr, base):
     """
-
-    :param value:
-    :param base:
-    :return:
+    Compress Array
+    :param arr: array to compress
+    :param base: base value to have the compressed array
+    :return: list of values different from base, list of indices of those values
     """
-    data = list()
+    data = list()  # keep them as lists since I may want to compress arrays of objects
     indptr = list()
-    for i, x in enumerate(value):
+    for i, x in enumerate(arr):
         if x != base:
             data.append(x)
             indptr.append(i)
     return data, indptr
-
-
-@nb.njit()
-def compress_array_numba_map(value, base) -> Dict[int, Numeric]:
-    """
-
-    :param value:
-    :param base:
-    :return:
-    """
-    data = dict()
-    for i, x in enumerate(value):
-        if x != base:
-            data[i] = x
-    return data
 
 
 def check_if_sparse(arr: Union[NumericVec], sparsity: float = 0.8) -> Tuple[bool, Union[float, int]]:
@@ -105,23 +90,65 @@ def check_if_sparse(arr: Union[NumericVec], sparsity: float = 0.8) -> Tuple[bool
         # it is sparse
         return True, max_val
 
+
 class Profile:
     """
     Profile
     """
 
-    def __init__(self, arr: Union[None, NumericVec], sparsity: int = 0.8):
+    def __init__(self,
+                 default_value,
+                 arr: Union[None, NumericVec] = None,
+                 sparsity_threshold: float = 0.8,
+                 is_sparse: bool = False):
 
-        self._is_sparse: bool = False
+        self._is_sparse: bool = is_sparse
 
         self._sparse_array: Union[SparseArray, None] = None
 
         self._dense_array: Union[NumericVec, None] = None
 
-        self._sparsity: float = sparsity
+        self._sparsity_threshold: float = sparsity_threshold
+
+        self._dtype = type(default_value)  # float by default
+
+        self._initialized: bool = False
+
+        self.default_value = default_value
 
         if arr is not None:
             self.set(arr=arr)
+
+    def info(self):
+        """
+        Return dictionary with information about the profile object and its content
+        :return:
+        """
+        return {
+            "me": hex(id(self)),
+            "initialized": self._initialized,
+            "is_sparse": self._is_sparse,
+            "sparsity_threshold": self._sparsity_threshold,
+            "dense_array": {"me": hex(id(self._dense_array)),
+                            "size": len(self._dense_array)} if self._dense_array is not None else "None",
+            "sparse_array": self._sparse_array.info() if self._sparse_array is not None else "None",
+        }
+
+    def get_sparse_map(self) -> Dict[int, Numeric]:
+        """
+        Return the dictionary hosting the sparse data if this profile is sparse
+        :return: Dict[int, Numeric]
+        """
+        if self._sparse_array is not None:
+            return self._sparse_array.get_map()
+
+    @property
+    def dtype(self) -> type:
+        """
+        Get the declared type
+        :return: type
+        """
+        return self._dtype
 
     @property
     def is_sparse(self) -> bool:
@@ -130,6 +157,14 @@ class Profile:
         :return: bool
         """
         return self._is_sparse
+
+    @property
+    def is_initialized(self) -> bool:
+        """
+        is the profile initialized?
+        :return: bool
+        """
+        return self._initialized
 
     def create_sparse(self, size: int, default_value: Numeric):
         """
@@ -140,6 +175,7 @@ class Profile:
         self._is_sparse = True
         self._sparse_array = SparseArray()
         self._sparse_array.create(size=size, default_value=default_value)
+        self._initialized = True
 
     def create_dense(self, size: int, default_value: Numeric):
         """
@@ -150,6 +186,18 @@ class Profile:
         self._is_sparse = False
         self._dense_array = np.full(size, default_value)
         self._sparse_array = None
+        self._initialized = True
+
+    @property
+    def sparsity(self) -> float:
+        """
+        Get the profile sparsity
+        :return: floar value (0 for fully dense, almos 1 for fully sparse)
+        """
+        if self._is_sparse:
+            return self._sparse_array.get_sparsity()
+        else:
+            return 0.0
 
     def set(self, arr: NumericVec):
         """
@@ -158,20 +206,29 @@ class Profile:
         :return:
         """
         if len(arr) > 0:
-            u, counts = np.unique(arr, return_counts=True)
-            f = len(u) / len(arr)  # sparsity factor
-            if f < self._sparsity:
-                ind = np.argmax(counts)
-                base = u[ind]  # this is the most frequent value
+
+            # Count occurrences of each element in the array
+            counts = Counter(arr)
+
+            # Find the most frequent element
+            most_common_element, most_common_count = counts.most_common(1)[0]
+
+            # compute the sparsity factor
+            sparsity_factor = most_common_count / len(arr)
+
+            # if the sparsity is sufficient...
+            if sparsity_factor >= self._sparsity_threshold:
+                base = most_common_element  # this is the most frequent value
                 if isinstance(base, np.bool_):
                     base = bool(base)
 
                 self._is_sparse = True
                 self._sparse_array = SparseArray()
 
-                if len(u) > 1:
+                if most_common_count > 1:
                     if isinstance(arr, np.ndarray):
-                        data_map = compress_array_numba_map(arr, base)
+                        data, indptr = compress_array_numba(arr, base)
+                        data_map = {i: x for i, x in zip(indptr, data)}  # this is to use a native python dict
                     else:
                         raise Exception('Unknown profile type' + str(type(arr)))
                 else:
@@ -180,29 +237,30 @@ class Profile:
                 self._sparse_array.create(size=len(arr),
                                           default_value=base,
                                           data=data_map)
+                self._dtype = type(base)
             else:
                 self._is_sparse = False
                 self._dense_array = arr
+                self._dtype = arr.dtype
         else:
             self._is_sparse = False
             self._dense_array = arr
+            self._dtype = arr.dtype
 
-    def __getitem__(self, key):
+        self._initialized = True
+
+    def __getitem__(self, key: int):
         """
         Get item
         :param key: index position
         :return: value at "key"
         """
-        if isinstance(key, int):
-
-            if self._is_sparse:
-                return self._sparse_array[key]
-            else:
-                return self._dense_array[key]
+        if self._is_sparse:
+            return self._sparse_array[key]
         else:
-            raise TypeError("Key must be an integer")
+            return self._dense_array[key]
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: int, value):
         """
         Set item
         :param key: item index
@@ -220,9 +278,101 @@ class Profile:
         else:
             raise TypeError("Key must be an integer")
 
+    def convert_sparse_to_dense(self) -> None:
+        """
+        Convert this profile to sparse
+        :return: Nothing
+        """
+        if self._is_sparse:
+            self._dense_array = self._sparse_array.toarray()
+            self._sparse_array = None
+            self._is_sparse = False
+
+    def resize(self, n: int):
+        """
+        Resize the profile
+        :param n: new size
+        """
+        if isinstance(n, int):
+            if self._initialized:
+                if self._is_sparse:
+                    self._sparse_array.resize(n=n)
+                else:
+                    self._dense_array.resize(n)
+            else:
+                self._initialized = True
+                self.create_sparse(size=n, default_value=self.default_value)
+        else:
+            raise TypeError("The size must be an integer")
+
+    def resample(self, indices: IntVec):
+        """
+        Resample this profile in-place
+        :param indices: new indices
+        """
+        if self._is_sparse:
+            self._sparse_array.resample(indices=indices)
+        else:
+            self._dense_array = self._dense_array[indices]
+
+    def fill(self, value: Any):
+        """
+        Fill this profile with the same value
+        :param value: any value
+        """
+        self.default_value = value
+        self._is_sparse = True
+        self._sparse_array = SparseArray()
+        self._sparse_array.fill(value)
+        self._dense_array = None
+        self._dtype = type(value)
+
     def size(self) -> int:
         """
         Get the size
         :return: integer
         """
-        return self._sparse_array.size() if self._is_sparse else len(self._dense_array)
+        if self._initialized:
+            return self._sparse_array.size() if self._is_sparse else len(self._dense_array)
+        else:
+            return 0
+
+    def toarray(self) -> NumericVec:
+        """
+        Get dense numpy array representation
+        :return: NumericVec
+        """
+        if self._is_sparse:
+            return self._sparse_array.toarray()
+        else:
+            return self._dense_array
+
+    def tolist(self) -> List[Union[int, float]]:
+        """
+        Get dense list representation
+        :return: List[Union[int, float]]
+        """
+        return self.toarray().tolist()
+
+    def astype(self, tpe):
+        """
+        get the dense array as type specified by tpe
+        :param tpe: type
+        :return: array
+        """
+        return self.toarray().astype(tpe)
+
+    def get_sparse_representation(self):
+        """
+        Get the sparse representation of the sparse data
+        :return:
+        """
+        return self._sparse_array.get_sparse_representation()
+
+    def set_sparse_data_from_data(self, indptr, data):
+        """
+        Set spasrse data from indices
+        :param indptr: array of data indices
+        :param data: array of data values
+        """
+        self._sparse_array.set_sparse_data_from_data(indptr=indptr, data=data)

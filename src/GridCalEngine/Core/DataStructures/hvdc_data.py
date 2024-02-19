@@ -17,7 +17,7 @@
 import numpy as np
 from typing import List, Tuple
 import scipy.sparse as sp
-import GridCalEngine.Core.topology as tp
+import GridCalEngine.Core.Topology.topology as tp
 from GridCalEngine.enumerations import HvdcControlType
 from GridCalEngine.basic_structures import Vec, IntVec, BoolVec, StrVec
 
@@ -72,6 +72,14 @@ class HvdcData:
                                                          dtype=int)  # this ons is just for splitting islands
         self.C_hvdc_bus_t: sp.lil_matrix = sp.lil_matrix((nelm, nbus),
                                                          dtype=int)  # this ons is just for splitting islands
+
+    def size(self) -> int:
+        """
+        Get size of the structure
+        :return:
+        """
+
+        return self.nelm
 
     def copy(self) -> "HvdcData":
         """

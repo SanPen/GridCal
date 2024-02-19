@@ -16,7 +16,6 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import numpy as np
-from numba import jit, prange
 from typing import Union
 
 from GridCalEngine.basic_structures import IntVec, StrVec
@@ -29,94 +28,11 @@ from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_driver i
                                                                                        ContingencyAnalysisDriver)
 from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_ts_results import (
     ContingencyAnalysisTimeSeriesResults)
-from GridCalEngine.Simulations.ContingencyAnalysis.Methods.nonlinear_contingency_analysis import nonlinear_contingency_analysis
-from GridCalEngine.Simulations.ContingencyAnalysis.Methods.linear_contingency_analysis import linear_contingency_analysis
-from GridCalEngine.Simulations.ContingencyAnalysis.Methods.helm_contingency_analysis import helm_contingency_analysis
 from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.driver_template import TimeSeriesDriverTemplate
 from GridCalEngine.Simulations.Clustering.clustering_results import ClusteringResults
 from GridCalEngine.Core.Compilers.circuit_to_newton_pa import newton_pa_contingencies, translate_contingency_report
-
-
-@jit(nopython=True, parallel=False, cache=True)
-def compute_flows_numba_t(e, c, nt, LODF, Flows, rates, overload_count, max_overload, worst_flows):
-    """
-    Compute LODF based flows (Sf)
-    :param e: element index
-    :param c: contingency element index
-    :param nt: number of time steps
-    :param LODF: LODF matrix (element, failed element)
-    :param Flows: base Sf matrix (time, element)
-    :param rates: Matrix of rates (time, element)
-    :param overload_count: [out] number of overloads per element (element, contingency element)
-    :param max_overload: [out] maximum overload per element (element, contingency element)
-    :param worst_flows: [out] worst flows per element (time, element)
-    :return: Cube of N-1 Flows (time, elements, contingencies)
-    """
-
-    for t in range(nt):
-        # the formula is: Fn-1(i) = Fbase(i) + LODF(i,j) * Fbase(j) here i->line, j->failed line
-        flow_n_1 = LODF[e, c] * Flows[t, c] + Flows[t, e]
-        flow_n_1_abs = abs(flow_n_1)
-
-        if rates[t, e] > 0:
-            rate = flow_n_1_abs / rates[t, e]
-
-            if rate > 1:
-                overload_count[e, c] += 1
-                if flow_n_1_abs > max_overload[e, c]:
-                    max_overload[e, c] = flow_n_1_abs
-
-        if flow_n_1_abs > abs(worst_flows[t, e]):
-            worst_flows[t, e] = flow_n_1
-
-
-@jit(nopython=True, parallel=True, cache=True)
-def compute_flows_numba(e, nt, contingency_branch_idx, LODF, Flows, rates, overload_count,
-                        max_overload, worst_flows, parallelize_from=500):
-    """
-    Compute LODF based Sf
-    :param e: element index
-    :param nt: number of time steps
-    :param contingency_branch_idx: list of branch indices to fail
-    :param LODF: LODF matrix (element, failed element)
-    :param Flows: base Sf matrix (time, element)
-    :param rates:
-    :param overload_count:
-    :param max_overload:
-    :param worst_flows:
-    :param parallelize_from:
-    :return:  Cube of N-1 Flows (time, elements, contingencies)
-    """
-    nc = len(contingency_branch_idx)
-    if nc < parallelize_from:
-        for ic in range(nc):
-            c = contingency_branch_idx[ic]
-            compute_flows_numba_t(
-                e=e,
-                c=c,
-                nt=nt,
-                LODF=LODF,
-                Flows=Flows,
-                rates=rates,
-                overload_count=overload_count,
-                max_overload=max_overload,
-                worst_flows=worst_flows,
-            )
-    else:
-        for ic in prange(nc):
-            c = contingency_branch_idx[ic]
-            compute_flows_numba_t(
-                e=e,
-                c=c,
-                nt=nt,
-                LODF=LODF,
-                Flows=Flows,
-                rates=rates,
-                overload_count=overload_count,
-                max_overload=max_overload,
-                worst_flows=worst_flows,
-            )
+from GridCalEngine.Utils.NumericalMethods.weldorf_online_stddev import WeldorfOnlineStdDevMat
 
 
 class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
@@ -194,8 +110,6 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
                                             options=self.options,
                                             linear_multiple_contingencies=linear_multiple_contingencies)
 
-        contingency_count = None
-
         if self.options.contingency_method == ContingencyMethod.PTDF:
             linear = LinearAnalysisTimeSeriesDriver(
                 grid=self.grid,
@@ -204,45 +118,46 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
             )
             linear.run()
 
+        std_dev_counter = WeldorfOnlineStdDevMat(nrow=results.nt, ncol=results.nbranch)
+
         for it, t in enumerate(self.time_indices):
 
             self.report_text('Contingency at ' + str(self.grid.time_profile[t]))
             self.report_progress2(it, len(self.time_indices))
 
-            # # run contingency at t using the specified method
-            # if self.options.contingency_method == ContingencyMethod.PowerFlow:
-            #
-            #
-            # elif self.options.contingency_method == ContingencyMethod.PTDF:
-            #     res_t = cdriver.n_minus_k_ptdf(t=t)
-            #
-            # elif self.options.contingency_method == ContingencyMethod.HELM:
-            #     res_t = cdriver.n_minus_k_helm(t=t)
-            #
-            # else:
-            #     res_t = cdriver.n_minus_k(t=t)
-
             res_t = cdriver.run_at(t=t)
-            l_abs = np.abs(res_t.loading)
-            contingency = l_abs > 1
-            if contingency_count is None:
-                contingency_count = contingency.sum(axis=0)
-            else:
-                contingency_count += contingency.sum(axis=0)
 
             results.S[it, :] = res_t.Sbus.real.max(axis=0)
-            results.worst_flows[it, :] = np.abs(res_t.Sf).max(axis=0)
-            results.worst_loading[it, :] = np.abs(res_t.loading).max(axis=0)
-            results.max_overload = np.maximum(results.max_overload, results.worst_loading[it, :])
-            results.report.merge(res_t.report)
+
+            results.max_flows[it, :] = np.abs(res_t.Sf).max(axis=0)
+
+            # Note: Loading is (ncon, nbranch)
+
+            loading_abs = np.abs(res_t.loading)
+            overloading = loading_abs.copy()
+            overloading[overloading <= 1.0] = 0
+
+            for k in range(results.ncon):
+                std_dev_counter.update(it, overloading[k, :])
+
+            results.max_loading[it, :] = loading_abs.max(axis=0)
+            results.overload_count[it, :] = np.count_nonzero(overloading > 1.0)
+            results.sum_overload[it, :] = overloading.sum(axis=0)
+
+            results.std_dev_overload[it, :] = np.abs(res_t.loading).max(axis=0)
+
+            results.srap_used_power += res_t.srap_used_power
+
+            # TODO: think what to do about this
+            # results.report.merge(res_t.report)
 
             if self.__cancel__:
-                results.overload_count = contingency_count
-                results.relative_frequency = contingency_count / len(self.time_indices)
                 return results
 
-        results.overload_count = contingency_count
-        results.relative_frequency = contingency_count / len(self.time_indices)
+        # compute the mean
+        std_dev_counter.finalize()
+        results.mean_overload = std_dev_counter.mean
+        results.std_dev_overload = std_dev_counter.std_dev
 
         return results
 
@@ -272,8 +187,8 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
         )
 
         # results.S[t, :] = res_t.S.real.max(axis=0)
-        results.worst_flows = np.abs(res.contingency_flows)
-        results.worst_loading = res.contingency_loading
+        results.max_flows = np.abs(res.contingency_flows)
+        results.max_loading = res.contingency_loading
 
         translate_contingency_report(newton_report=res.report, gridcal_report=results.report)
 

@@ -253,13 +253,13 @@ grid.add_bus(bus5)
 grid.add_load(bus5, gce.Load('load 5', P=50, Q=20))
 
 # add Lines connecting the buses
-grid.add_line(gce.Line(bus1, bus2, 'line 1-2', r=0.05, x=0.11, b=0.02))
-grid.add_line(gce.Line(bus1, bus3, 'line 1-3', r=0.05, x=0.11, b=0.02))
-grid.add_line(gce.Line(bus1, bus5, 'line 1-5', r=0.03, x=0.08, b=0.02))
-grid.add_line(gce.Line(bus2, bus3, 'line 2-3', r=0.04, x=0.09, b=0.02))
-grid.add_line(gce.Line(bus2, bus5, 'line 2-5', r=0.04, x=0.09, b=0.02))
-grid.add_line(gce.Line(bus3, bus4, 'line 3-4', r=0.06, x=0.13, b=0.03))
-grid.add_line(gce.Line(bus4, bus5, 'line 4-5', r=0.04, x=0.09, b=0.02))
+grid.add_line(gce.Line(bus1, bus2, name='line 1-2', r=0.05, x=0.11, b=0.02))
+grid.add_line(gce.Line(bus1, bus3, name='line 1-3', r=0.05, x=0.11, b=0.02))
+grid.add_line(gce.Line(bus1, bus5, name='line 1-5', r=0.03, x=0.08, b=0.02))
+grid.add_line(gce.Line(bus2, bus3, name='line 2-3', r=0.04, x=0.09, b=0.02))
+grid.add_line(gce.Line(bus2, bus5, name='line 2-5', r=0.04, x=0.09, b=0.02))
+grid.add_line(gce.Line(bus3, bus4, name='line 3-4', r=0.06, x=0.13, b=0.03))
+grid.add_line(gce.Line(bus4, bus5, name='line 4-5', r=0.04, x=0.09, b=0.02))
 ```
 
 ### Power Flow
@@ -538,7 +538,6 @@ PowerFlowDriver:
 
 ```python
 import os
-import numpy as np
 import GridCalEngine.api as gce
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
@@ -780,7 +779,7 @@ THe simulation then tries all the contingency groups and apply the events regist
 ```python
 import os
 from GridCalEngine.api import *
-import GridCalEngine.basic_structures as bs
+from GridCalEngine.enumerations import ContingencyMethod
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
 fname = os.path.join(folder, 'IEEE 5 Bus.xlsx')
@@ -812,7 +811,7 @@ pf_options = PowerFlowOptions(solver_type=SolverType.NR)
 # declare the contingency options
 options_ = ContingencyAnalysisOptions(use_provided_flows=False,
                                       Pf=None,
-                                      engine=bs.ContingencyEngine.PowerFlow,
+                                      engine=ContingencyMethod.PowerFlow,
                                       # if no power flow options are provided 
                                       # a linear power flow is used
                                       pf_options=pf_options)
@@ -861,23 +860,22 @@ b1 = Bus('B1', is_slack=True)
 b2 = Bus('B2')
 b3 = Bus('B3')
 
-br1 = Line(b1, b2, 'Br1', r=0.01, x=0.03, rate=100.0)
-br2 = Line(b1, b3, 'Br2', r=0.02, x=0.05, rate=100.0)
-br3 = Line(b2, b3, 'Br3', r=0.03, x=0.08, rate=100.0)
+br1 = Line(b1, b2, name='Br1', r=0.01, x=0.03, rate=100.0)
+br2 = Line(b1, b3, name='Br2', r=0.02, x=0.05, rate=100.0)
+br3 = Line(b2, b3, name='Br3', r=0.03, x=0.08, rate=100.0)
 
 # add measurements
-br1.measurements.append(Measurement(0.888, 0.008, MeasurementType.Pflow))
-br2.measurements.append(Measurement(1.173, 0.008, MeasurementType.Pflow))
+m_circuit.add_pf_measurement(PfMeasurement(0.888, 0.008, br1))
+m_circuit.add_pf_measurement(PfMeasurement(1.173, 0.008, br2))
 
-b2.measurements.append(Measurement(-0.501, 0.01, MeasurementType.Pinj))
+m_circuit.add_qf_measurement(QfMeasurement(0.568, 0.008, br1))
+m_circuit.add_qf_measurement(QfMeasurement(0.663, 0.008, br2))
 
-br1.measurements.append(Measurement(0.568, 0.008, MeasurementType.Qflow))
-br2.measurements.append(Measurement(0.663, 0.008, MeasurementType.Qflow))
+m_circuit.add_pi_measurement(PiMeasurement(-0.501, 0.01, b2))
+m_circuit.add_qi_measurement(QiMeasurement(-0.286, 0.01, b2))
 
-b2.measurements.append(Measurement(-0.286, 0.01, MeasurementType.Qinj))
-
-b1.measurements.append(Measurement(1.006, 0.004, MeasurementType.Vmag))
-b2.measurements.append(Measurement(0.968, 0.004, MeasurementType.Vmag))
+m_circuit.add_vm_measurement(VmMeasurement(1.006, 0.004, b1))
+m_circuit.add_vm_measurement(VmMeasurement(0.968, 0.004, b2))
 
 m_circuit.add_bus(b1)
 m_circuit.add_bus(b2)

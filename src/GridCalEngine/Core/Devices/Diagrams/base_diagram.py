@@ -21,10 +21,10 @@ import networkx as nx
 from typing import Dict, Union, List, Tuple
 from GridCalEngine.Core.Devices.Diagrams.graphic_location import GraphicLocation
 from GridCalEngine.Core.Devices.Diagrams.map_location import MapLocation
-from GridCalEngine.Core.Devices.editable_device import EditableDevice
 from GridCalEngine.Core.Devices.Substation.bus import Bus
 from GridCalEngine.enumerations import DiagramType, DeviceType
 from GridCalEngine.basic_structures import Logger
+from GridCalEngine.Core.Devices.types import ALL_DEV_TYPES
 
 
 class PointsGroup:
@@ -42,7 +42,7 @@ class PointsGroup:
         # device_type: {device uuid: {x, y, h, w, r}}
         self.locations: Dict[str, Union[GraphicLocation, MapLocation]] = dict()
 
-    def set_point(self, device: EditableDevice, location: Union[GraphicLocation, MapLocation]):
+    def set_point(self, device: ALL_DEV_TYPES, location: Union[GraphicLocation, MapLocation]):
         """
 
         :param device:
@@ -51,7 +51,7 @@ class PointsGroup:
         """
         self.locations[device.idtag] = location
 
-    def delete_device(self, device: EditableDevice) -> Union[object, None]:
+    def delete_device(self, device: ALL_DEV_TYPES) -> Union[object, None]:
         """
         Delete location
         :param device:
@@ -66,7 +66,7 @@ class PointsGroup:
         else:
             return None
 
-    def query_point(self, device: EditableDevice) -> Union[GraphicLocation, MapLocation, None]:
+    def query_point(self, device: ALL_DEV_TYPES) -> Union[GraphicLocation, MapLocation, None]:
         """
 
         :param device:
@@ -85,7 +85,7 @@ class PointsGroup:
 
     def parse_data(self,
                    data: Dict[str, Dict[str, Union[int, float, List[Tuple[float, float]]]]],
-                   obj_dict: Dict[str, EditableDevice],
+                   obj_dict: Dict[str, ALL_DEV_TYPES],
                    logger: Logger,
                    category: str = "") -> None:
         """
@@ -143,7 +143,7 @@ class BaseDiagram:
 
         self.diagram_type = diagram_type
 
-    def set_point(self, device: EditableDevice, location: Union[GraphicLocation, MapLocation]):
+    def set_point(self, device: ALL_DEV_TYPES, location: Union[GraphicLocation, MapLocation]):
         """
 
         :param device:
@@ -165,7 +165,7 @@ class BaseDiagram:
             # the category does exists, add point
             d.set_point(device, location)  # the category, exists, just add
 
-    def delete_device(self, device: EditableDevice) -> Union[object, None]:
+    def delete_device(self, device: ALL_DEV_TYPES) -> Union[object, None]:
         """
 
         :param device:
@@ -184,7 +184,7 @@ class BaseDiagram:
         else:
             return None
 
-    def query_point(self, device: EditableDevice) -> Union[GraphicLocation, MapLocation, None]:
+    def query_point(self, device: ALL_DEV_TYPES) -> Union[GraphicLocation, MapLocation, None]:
         """
 
         :param device:
@@ -224,7 +224,7 @@ class BaseDiagram:
 
     def parse_data(self,
                    data: Dict[str, Dict[str, Dict[str, Union[int, float]]]],
-                   obj_dict: Dict[str, Dict[str, EditableDevice]],
+                   obj_dict: Dict[str, Dict[str, ALL_DEV_TYPES]],
                    logger: Logger):
         """
         Parse file data ito this class
