@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="AnalysisUIOptions">
-    <option name="SPLITTER_PROPORTION" value="0.33371824" />
+    <option name="AUTOSCROLL_TO_SOURCE" value="true" />
     <option name="GROUP_BY_SEVERITY" value="true" />
     <option name="SCOPE_TYPE" value="8" />
     <option name="CUSTOM_SCOPE_NAME" value="Module 'GridCal'" />
@@ -28,9 +28,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Taps fixed, pegase89 works!">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Small fix in the dtau for G">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/multi_circuit.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Core/Devices/multi_circuit.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/NumericalMethods/ac_opf_derivatives.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/NumericalMethods/ac_opf_derivatives.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/trunk/acopf/acopf_run.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acopf/acopf_run.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -57,9 +57,22 @@
     </option>
   </component>
   <component name="Git.Settings">
+    <favorite-branches>
+      <branch-storage>
+        <map>
+          <entry type="LOCAL">
+            <value>
+              <list>
+                <branch-info repo="$PROJECT_DIR$" source="devel" />
+              </list>
+            </value>
+          </entry>
+        </map>
+      </branch-storage>
+    </favorite-branches>
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="205_ACOPF" />
+        <entry key="$PROJECT_DIR$" value="devel" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -75,63 +88,14 @@
   </component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/requirements.txt" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Core/Compilers/__init__.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Core/Compilers/circuit_to_alliander_pgm.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Core/Compilers/circuit_to_bentayga.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Core/Compilers/circuit_to_newton_pa.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Core/admittance_matrices.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Core/multi_circuit.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Core/snapshot_pf_data.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Devices/dc_line.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Devices/editable_device.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Devices/enumerations.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Devices/generator.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Devices/groupings.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Devices/hvdc_line.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Devices/line.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Devices/load.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Devices/transformer.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Devices/upfc.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Devices/vsc.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/IO/file_handler.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/IO/json_parser.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/IO/pack_unpack.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/IO/zip_interface.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/ATC/available_transfer_capacity_ts_driver.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/ContingencyAnalysis/contingency_analysis_driver.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/ContinuationPowerFlow/continuation_power_flow_driver.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/LinearFactors/linear_analysis.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF/opf_templates.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/ac_jacobian.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/acdc_jacobian.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/common_functions.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/derivatives.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/helm_power_flow.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/iwamoto_newton_raphson.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/power_flow_driver.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/power_flow_options.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/power_flow_worker.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/time_Series_input.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow/time_series_driver.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/ShortCircuitStudies/short_circuit.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/ShortCircuitStudies/short_circuit_driver.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/ShortCircuitStudies/short_circuit_worker.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/SigmaAnalysis/sigma_analysis_driver.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/Simulations/results_template.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/GridCal/Engine/basic_structures.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/GridCal/Gui/ConsoleWidget.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/GridCal/Gui/CoordinatesInput/coordinates_dialogue.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/GridCal/Gui/GIS/gis_dialogue.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/GridCal/Gui/Session/export_results_driver.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/GridCal/Gui/Session/session.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/GridCal/Gui/plot_config.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/GridCal/ThirdParty/pulp/solver_interfaces/highs.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/GridCal/__version__.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/setup.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/tests/test_unbalanced_faults.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/../GridCalUI/src/GridCalUi/CoordinatesInput/coordinates_dialogue.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/../GridCalUI/src/GridCalUi/Main/GridCalMain.py" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="JupyterTrust" id="3f3378b4-0928-4af1-9795-ba1c77415c18" />
   <component name="MarkdownSettingsMigration">
@@ -143,9 +107,10 @@
     </order>
   </component>
   <component name="ProblemsViewState">
-    <option name="selectedTabId" value="ProjectErrors" />
+    <option name="selectedTabId" value="CurrentFile" />
   </component>
   <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
   &quot;associatedIndex&quot;: 8
 }</component>
   <component name="ProjectId" id="1bGvT9JqoJhBes9WGdphyWxAfMi" />
@@ -161,29 +126,26 @@
   &quot;keyToString&quot;: {
     &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
     &quot;Git.Branch.Popup.ShowAllRemotes&quot;: &quot;true&quot;,
+    &quot;JavaScript Debug.index.html.executor&quot;: &quot;Run&quot;,
     &quot;MATLAB_INTERPRETER&quot;: &quot;/usr/local/MATLAB/R2018a/bin/matlab&quot;,
-    &quot;Notification.DisplayName-DoNotAsk-CythonWarning&quot;: &quot;Python debugger native extension available&quot;,
-    &quot;Notification.DoNotAsk-CythonWarning&quot;: &quot;true&quot;,
+    &quot;Python tests.Nosetests for tests.test_contingency.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests for tests.test_ptdf.executor&quot;: &quot;Run&quot;,
     &quot;Python tests.Nosetests in tests.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest in test_tutorials.py.executor&quot;: &quot;Run&quot;,
     &quot;Python.ExecuteGridCal.executor&quot;: &quot;Run&quot;,
-    &quot;Python.acopf_run.executor&quot;: &quot;Run&quot;,
-    &quot;Python.power_flow_research.executor&quot;: &quot;Run&quot;,
+    &quot;Python.make.executor&quot;: &quot;Run&quot;,
     &quot;Python.srap_example.executor&quot;: &quot;Run&quot;,
-    &quot;Python.update_gui_file (1).executor&quot;: &quot;Run&quot;,
     &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;Shell Script.make.sh.executor&quot;: &quot;Run&quot;,
     &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
     &quot;git-widget-placeholder&quot;: &quot;205__ACOPF&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/a1003/Desktop/PYPOWER&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/SIROCO/GridCal/src/trunk/qt_related&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
     &quot;run.code.analysis.last.selected.profile&quot;: &quot;aDefault&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;debugger.dataViews.python.type.renderers&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
@@ -194,21 +156,62 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="C:\Users\a1003\Desktop\GridCal\Grids_and_profiles\grids" />
-      <recent name="$PROJECT_DIR$/src/trunk" />
-      <recent name="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/Injections" />
-      <recent name="$PROJECT_DIR$/src" />
-      <recent name="$PROJECT_DIR$/src/GridCalEngine" />
+      <recent name="D:\SIROCO\GridCal\src\trunk\qt_related" />
+      <recent name="D:\SIROCO\GridCal\src\GridCal\Gui\NodeBreakerEditorWidget\Substation" />
+      <recent name="$PROJECT_DIR$/doc/rst_source/theory/linear" />
+      <recent name="$PROJECT_DIR$/examples/trunk/acdc_pf/docs" />
+      <recent name="$PROJECT_DIR$/examples/trunk/acdc_pf" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/src/GridCalEngine/Utils/NumericalMethods" />
-      <recent name="$PROJECT_DIR$/src/GridCalEngine" />
-      <recent name="$PROJECT_DIR$/src/GridCal" />
-      <recent name="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/Branches" />
-      <recent name="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/Injections" />
+      <recent name="D:\SIROCO\GridCal\src\GridCal\Gui\NodeBreakerEditorWidget" />
+      <recent name="$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/Methods" />
+      <recent name="$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis" />
+      <recent name="$PROJECT_DIR$/doc/rst_source/figures/opf" />
+      <recent name="$PROJECT_DIR$/doc/rst_source/theory/linear" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.srap_example">
+  <component name="RunManager">
+    <configuration default="true" type="DjangoTestsConfigurationType">
+      <module name="GridCalEngine" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="TARGET" value="" />
+      <option name="SETTINGS_FILE" value="" />
+      <option name="CUSTOM_SETTINGS" value="false" />
+      <option name="USE_OPTIONS" value="false" />
+      <option name="OPTIONS" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="DjangoTestsConfigurationType">
+      <module name="GridCalEngine" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="TARGET" value="" />
+      <option name="SETTINGS_FILE" value="" />
+      <option name="CUSTOM_SETTINGS" value="false" />
+      <option name="USE_OPTIONS" value="false" />
+      <option name="OPTIONS" value="" />
+      <method v="2" />
+    </configuration>
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -239,6 +242,28 @@
       <option name="INTERPRETER_OPTIONS" value="" />
       <method v="2" />
     </configuration>
+    <configuration default="true" type="MatlabApplication">
+      <option name="FILE_PATH" value="" />
+      <option name="INTERPRETER_PATH" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="PARAMETERS" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="PyBehaveRunConfigurationType" factoryName="Behave">
+      <module name="GridCalEngine" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="ADDITIONAL_ARGS" value="" />
+      <method v="2" />
+    </configuration>
     <configuration default="true" type="PyBehaveRunConfigurationType" factoryName="Behave">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -253,6 +278,77 @@
       <option name="ADDITIONAL_ARGS" value="" />
       <method v="2" />
     </configuration>
+    <configuration default="true" type="PyBehaveRunConfigurationType" factoryName="Behave">
+      <module name="GridCalEngine" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="ADDITIONAL_ARGS" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="PythonConfigurationType" factoryName="Python">
+      <module name="GridCalEngine" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="PythonConfigurationType" factoryName="Python">
+      <module name="GridCalEngine" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="Python.FlaskServer">
+      <module name="GridCalEngine" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="launchJavascriptDebuger" value="false" />
+      <method v="2" />
+    </configuration>
     <configuration default="true" type="Python.FlaskServer">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -265,6 +361,238 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="launchJavascriptDebuger" value="false" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="Python.FlaskServer">
+      <module name="GridCalEngine" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="launchJavascriptDebuger" value="false" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="Tox" factoryName="Tox">
+      <module name="GridCalEngine" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="Tox" factoryName="Tox">
+      <module name="GridCalEngine" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="docs" factoryName="Docutils task">
+      <module name="GridCalEngine" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="docutils_input_file" value="" />
+      <option name="docutils_output_file" value="" />
+      <option name="docutils_params" value="" />
+      <option name="docutils_task" value="" />
+      <option name="docutils_open_in_browser" value="false" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="docs" factoryName="Docutils task">
+      <module name="GridCalEngine" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="docutils_input_file" value="" />
+      <option name="docutils_output_file" value="" />
+      <option name="docutils_params" value="" />
+      <option name="docutils_task" value="" />
+      <option name="docutils_open_in_browser" value="false" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="docs" factoryName="Sphinx task">
+      <module name="GridCalEngine" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="docutils_input_file" value="" />
+      <option name="docutils_output_file" value="" />
+      <option name="docutils_params" value="" />
+      <option name="docutils_task" value="" />
+      <option name="docutils_open_in_browser" value="false" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="docs" factoryName="Sphinx task">
+      <module name="GridCalEngine" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="docutils_input_file" value="" />
+      <option name="docutils_output_file" value="" />
+      <option name="docutils_params" value="" />
+      <option name="docutils_task" value="" />
+      <option name="docutils_open_in_browser" value="false" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="tests" factoryName="Doctests">
+      <module name="GridCalEngine" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="CLASS_NAME" value="" />
+      <option name="METHOD_NAME" value="" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_SCRIPT" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="tests" factoryName="Doctests">
+      <module name="GridCalEngine" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="CLASS_NAME" value="" />
+      <option name="METHOD_NAME" value="" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_SCRIPT" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="tests" factoryName="Nosetests">
+      <module name="GridCalEngine" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="_new_regexPattern" value="&quot;&quot;" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;&quot;" />
+      <option name="_new_targetType" value="&quot;PATH&quot;" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="tests" factoryName="Nosetests">
+      <module name="GridCalEngine" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="_new_regexPattern" value="&quot;&quot;" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;&quot;" />
+      <option name="_new_targetType" value="&quot;PATH&quot;" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="tests" factoryName="py.test">
+      <module name="GridCalEngine" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="_new_keywords" value="&quot;&quot;" />
+      <option name="_new_parameters" value="&quot;&quot;" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;&quot;" />
+      <option name="_new_targetType" value="&quot;PATH&quot;" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="tests" factoryName="py.test">
+      <module name="GridCalEngine" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="_new_keywords" value="&quot;&quot;" />
+      <option name="_new_parameters" value="&quot;&quot;" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;&quot;" />
+      <option name="_new_targetType" value="&quot;PATH&quot;" />
+      <method v="2" />
+    </configuration>
+    <configuration name="ExecuteGridCal" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="GridCal" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/GridCal" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCal/ExecuteGridCal.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
     <configuration name="ExecuteGridCal" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
@@ -325,6 +653,51 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/trunk/acopf/acopf_run.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="mips" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+      <module name="GridCal" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCalEngine/Utils/MIPS/mips.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="mips" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+      <module name="GridCal" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="SDK_NAME" value="Python 3.11 (GridCal)" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCalEngine/Utils/MIPS/mips.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -486,19 +859,20 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python.srap_example" />
+      <item itemvalue="Python.mips" />
       <item itemvalue="Python.acopf_run" />
       <item itemvalue="Python.ExecuteGridCal" />
-      <item itemvalue="Python tests.Nosetests in tests" />
+      <item itemvalue="Python.srap_example" />
       <item itemvalue="Python tests.Nosetests in test_ac_opf.py" />
+      <item itemvalue="Python tests.Nosetests in tests" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.acopf_run" />
-        <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python tests.Nosetests in tests" />
         <item itemvalue="Python tests.Nosetests in test_ac_opf.py" />
         <item itemvalue="Python.srap_example" />
+        <item itemvalue="Python.acopf_run" />
+        <item itemvalue="Python.ExecuteGridCal" />
       </list>
     </recent_temporary>
   </component>
@@ -515,7 +889,7 @@
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="" />
+      <changelist id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="removed ntcFeseabilityCheck" />
       <created>1588271249557</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
@@ -1098,587 +1472,423 @@
       <workItem from="1662057124587" duration="4751000" />
       <workItem from="1662067830182" duration="1211000" />
       <workItem from="1662359262233" duration="956000" />
-      <workItem from="1674823262666" duration="1341000" />
-      <workItem from="1674988874398" duration="514000" />
-      <workItem from="1675072545622" duration="14000" />
-      <workItem from="1675076057170" duration="3196000" />
-      <workItem from="1675091502640" duration="65000" />
-      <workItem from="1675118846283" duration="418000" />
-      <workItem from="1675175529964" duration="307000" />
-      <workItem from="1675239774589" duration="1097000" />
-      <workItem from="1675939739979" duration="3701000" />
-      <workItem from="1675974476715" duration="1884000" />
-      <workItem from="1676015328357" duration="4361000" />
-      <workItem from="1676111110825" duration="4206000" />
-      <workItem from="1676194969578" duration="4940000" />
-      <workItem from="1676276188996" duration="1114000" />
-      <workItem from="1676284849883" duration="10327000" />
-      <workItem from="1676369533105" duration="7696000" />
-      <workItem from="1676492884143" duration="800000" />
-      <workItem from="1676493768657" duration="1278000" />
-      <workItem from="1676534954184" duration="708000" />
-      <workItem from="1676629492197" duration="174000" />
-      <workItem from="1676638199237" duration="628000" />
-      <workItem from="1676889704624" duration="7862000" />
-      <workItem from="1676927078942" duration="1236000" />
-      <workItem from="1677509760217" duration="6729000" />
-      <workItem from="1677668102957" duration="5420000" />
-      <workItem from="1677753648168" duration="2758000" />
-      <workItem from="1677830019966" duration="8915000" />
-      <workItem from="1678179266181" duration="1601000" />
-      <workItem from="1678263164061" duration="4406000" />
-      <workItem from="1678368936917" duration="1406000" />
-      <workItem from="1678376437959" duration="1212000" />
-      <workItem from="1678448425428" duration="1839000" />
-      <workItem from="1678463753275" duration="2857000" />
-      <workItem from="1678693930259" duration="4858000" />
-      <workItem from="1678780085013" duration="1910000" />
-      <workItem from="1678783592600" duration="3392000" />
-      <workItem from="1678865989006" duration="458000" />
-      <workItem from="1679239726900" duration="1742000" />
-      <workItem from="1679407976373" duration="355000" />
-      <workItem from="1679999550907" duration="9000" />
-      <workItem from="1681476028080" duration="7434000" />
-      <workItem from="1681673639441" duration="3012000" />
-      <workItem from="1681715570781" duration="7024000" />
-      <workItem from="1681735636151" duration="2107000" />
-      <workItem from="1681756383546" duration="3483000" />
-      <workItem from="1681800921423" duration="3953000" />
-      <workItem from="1681831937438" duration="2799000" />
-      <workItem from="1681902885302" duration="9595000" />
-      <workItem from="1681978855713" duration="19000" />
-      <workItem from="1681978940125" duration="21286000" />
-      <workItem from="1682059420961" duration="2502000" />
-      <workItem from="1682066315669" duration="16767000" />
-      <workItem from="1682154678345" duration="8511000" />
-      <workItem from="1682179739744" duration="887000" />
-      <workItem from="1682321926846" duration="437000" />
-      <workItem from="1682333643813" duration="2700000" />
-      <workItem from="1682493624347" duration="1555000" />
-      <workItem from="1683041906565" duration="7000" />
-      <workItem from="1683042034287" duration="1286000" />
-      <workItem from="1683569075517" duration="2308000" />
-      <workItem from="1683700935505" duration="3678000" />
-      <workItem from="1683732598655" duration="3204000" />
-      <workItem from="1683742706952" duration="1832000" />
-      <workItem from="1683790672652" duration="4274000" />
-      <workItem from="1683822681847" duration="2492000" />
-      <workItem from="1683875494418" duration="1970000" />
-      <workItem from="1683968733976" duration="12706000" />
-      <workItem from="1683995450757" duration="123000" />
-      <workItem from="1683995580519" duration="3723000" />
-      <workItem from="1684138731449" duration="2790000" />
-      <workItem from="1684157673733" duration="2429000" />
-      <workItem from="1684160491390" duration="2609000" />
-      <workItem from="1684168978139" duration="1321000" />
-      <workItem from="1684185487445" duration="1182000" />
-      <workItem from="1684220510101" duration="20000" />
-      <workItem from="1684220799271" duration="6662000" />
-      <workItem from="1684313805587" duration="1017000" />
-      <workItem from="1686306751196" duration="1699000" />
-      <workItem from="1686346712390" duration="4335000" />
-      <workItem from="1686515207041" duration="11314000" />
-      <workItem from="1686762258739" duration="8598000" />
-      <workItem from="1686856691543" duration="4853000" />
-      <workItem from="1687291640452" duration="5000" />
-      <workItem from="1687330038822" duration="817000" />
-      <workItem from="1687335084245" duration="22000" />
-      <workItem from="1687340305362" duration="9588000" />
-      <workItem from="1687417655964" duration="1837000" />
-      <workItem from="1687419508232" duration="316000" />
-      <workItem from="1687437242184" duration="1725000" />
-      <workItem from="1687443439997" duration="8781000" />
-      <workItem from="1687683453013" duration="11805000" />
-      <workItem from="1687723801083" duration="3816000" />
-      <workItem from="1687760769808" duration="24533000" />
-      <workItem from="1687804392549" duration="94000" />
-      <workItem from="1687804720435" duration="1042000" />
-      <workItem from="1687847037404" duration="27855000" />
-      <workItem from="1687933816656" duration="2104000" />
-      <workItem from="1687935927450" duration="4296000" />
-      <workItem from="1687940234802" duration="660000" />
-      <workItem from="1687940900929" duration="11666000" />
-      <workItem from="1688036639011" duration="500000" />
-      <workItem from="1688042210097" duration="4708000" />
-      <workItem from="1688128994721" duration="1062000" />
-      <workItem from="1688133783351" duration="4909000" />
-      <workItem from="1688145673381" duration="371000" />
-      <workItem from="1688328773559" duration="2091000" />
-      <workItem from="1688365877527" duration="17109000" />
-      <workItem from="1688452332375" duration="15232000" />
-      <workItem from="1688470849480" duration="282000" />
-      <workItem from="1688473827325" duration="7108000" />
-      <workItem from="1688480957767" duration="6117000" />
-      <workItem from="1688491404658" duration="31000" />
-      <workItem from="1688500162398" duration="1275000" />
-      <workItem from="1688539441226" duration="28121000" />
-      <workItem from="1688581319660" duration="605000" />
-      <workItem from="1688630026520" duration="6817000" />
-      <workItem from="1688668790291" duration="553000" />
-      <workItem from="1688713084204" duration="558000" />
-      <workItem from="1688997242091" duration="599000" />
-      <workItem from="1689019757599" duration="2114000" />
-      <workItem from="1689057488774" duration="8254000" />
-      <workItem from="1689077710717" duration="601000" />
-      <workItem from="1689082913283" duration="8054000" />
-      <workItem from="1689145454082" duration="4792000" />
-      <workItem from="1689173699417" duration="4998000" />
-      <workItem from="1689251972447" duration="7160000" />
-      <workItem from="1689320382184" duration="1203000" />
-      <workItem from="1689336727755" duration="2101000" />
-      <workItem from="1689597813602" duration="5460000" />
-      <workItem from="1689663103312" duration="7581000" />
-      <workItem from="1689684002555" duration="29000" />
-      <workItem from="1690015899078" duration="5184000" />
-      <workItem from="1690029525199" duration="3576000" />
-      <workItem from="1690047443102" duration="696000" />
-      <workItem from="1690203826282" duration="19198000" />
-      <workItem from="1690266948722" duration="13335000" />
-      <workItem from="1690353648253" duration="10097000" />
-      <workItem from="1690456827953" duration="599000" />
-      <workItem from="1690547486625" duration="3201000" />
-      <workItem from="1690798949038" duration="5043000" />
-      <workItem from="1690806175986" duration="3817000" />
-      <workItem from="1691345204584" duration="1451000" />
-      <workItem from="1691397878338" duration="5000" />
-      <workItem from="1691412505131" duration="9930000" />
-      <workItem from="1691431983487" duration="5702000" />
-      <workItem from="1691482390555" duration="16727000" />
-      <workItem from="1691563994958" duration="3161000" />
-      <workItem from="1691571786443" duration="1490000" />
-      <workItem from="1691583695694" duration="537000" />
-      <workItem from="1691664195563" duration="12714000" />
-      <workItem from="1691756719846" duration="5416000" />
-      <workItem from="1691763964200" duration="10358000" />
-      <workItem from="1691995277388" duration="21686000" />
-      <workItem from="1692045802731" duration="1461000" />
-      <workItem from="1692048160136" duration="1413000" />
-      <workItem from="1692106005526" duration="703000" />
-      <workItem from="1692126647786" duration="2088000" />
-      <workItem from="1692172577773" duration="10273000" />
-      <workItem from="1692188443493" duration="7680000" />
-      <workItem from="1692253701148" duration="20793000" />
-      <workItem from="1692345824712" duration="17762000" />
-      <workItem from="1692599861467" duration="27257000" />
-      <workItem from="1692645266350" duration="3238000" />
-      <workItem from="1692685824724" duration="17692000" />
-      <workItem from="1692710790501" duration="2873000" />
-      <workItem from="1692732219522" duration="402000" />
-      <workItem from="1692772848998" duration="11957000" />
-      <workItem from="1692795506142" duration="370000" />
-      <workItem from="1692795882804" duration="9010000" />
-      <workItem from="1692806668758" duration="7398000" />
-      <workItem from="1692815325393" duration="5882000" />
-      <workItem from="1692858824878" duration="530000" />
-      <workItem from="1692859375048" duration="663000" />
-      <workItem from="1692860045343" duration="17127000" />
-      <workItem from="1693212787610" duration="667000" />
-      <workItem from="1693213460396" duration="6952000" />
-      <workItem from="1693226225100" duration="1623000" />
-      <workItem from="1693240428089" duration="3885000" />
-      <workItem from="1693291800769" duration="14021000" />
-      <workItem from="1693318207467" duration="601000" />
-      <workItem from="1693380829083" duration="3976000" />
-      <workItem from="1693401183663" duration="680000" />
-      <workItem from="1693406057180" duration="231000" />
-      <workItem from="1693406293095" duration="1718000" />
-      <workItem from="1693409908745" duration="1421000" />
-      <workItem from="1693476470309" duration="1270000" />
-      <workItem from="1693489620790" duration="5436000" />
-      <workItem from="1693506385560" duration="632000" />
-      <workItem from="1693546957819" duration="5215000" />
-      <workItem from="1693809517086" duration="2349000" />
-      <workItem from="1693845663065" duration="174000" />
-      <workItem from="1693896966056" duration="13179000" />
-      <workItem from="1694004691266" duration="6060000" />
-      <workItem from="1694030920174" duration="6891000" />
-      <workItem from="1694069771395" duration="10100000" />
-      <workItem from="1694344560308" duration="29000" />
-      <workItem from="1694414416922" duration="11537000" />
-      <workItem from="1694462023491" duration="2697000" />
-      <workItem from="1694499928389" duration="2577000" />
-      <workItem from="1694587849959" duration="1575000" />
-      <workItem from="1694608032968" duration="9733000" />
-      <workItem from="1694689826416" duration="399000" />
-      <workItem from="1694690445301" duration="2131000" />
-      <workItem from="1694721364193" duration="1201000" />
-      <workItem from="1694796411443" duration="2000" />
-      <workItem from="1694796938071" duration="2979000" />
-      <workItem from="1694852052729" duration="9388000" />
-      <workItem from="1694877093508" duration="8097000" />
-      <workItem from="1695020261488" duration="19970000" />
-      <workItem from="1695109081459" duration="5061000" />
-      <workItem from="1695147425004" duration="2244000" />
-      <workItem from="1695196772111" duration="2158000" />
-      <workItem from="1695227274084" duration="2866000" />
-      <workItem from="1695236806134" duration="607000" />
-      <workItem from="1695279298859" duration="1970000" />
-      <workItem from="1695306416476" duration="4201000" />
-      <workItem from="1695366460259" duration="17395000" />
-      <workItem from="1695752204912" duration="4842000" />
-      <workItem from="1695888913853" duration="7038000" />
-      <workItem from="1696062297677" duration="3418000" />
-      <workItem from="1696275387120" duration="1402000" />
-      <workItem from="1696928279344" duration="1442000" />
-      <workItem from="1696930769823" duration="1488000" />
-      <workItem from="1697014627489" duration="3278000" />
-      <workItem from="1699355305446" duration="572000" />
-      <workItem from="1699474527077" duration="42000" />
-      <workItem from="1699947405238" duration="1488000" />
-      <workItem from="1700239957013" duration="383000" />
-      <workItem from="1700724875045" duration="1439000" />
-      <workItem from="1702629200986" duration="1255000" />
-      <workItem from="1703006353012" duration="1633000" />
-      <workItem from="1703057509971" duration="4635000" />
-      <workItem from="1704891950343" duration="810000" />
-      <workItem from="1705859646499" duration="3400000" />
-      <workItem from="1705945243262" duration="87000" />
-      <workItem from="1706004118272" duration="2606000" />
+      <workItem from="1698829696357" duration="9620000" />
+      <workItem from="1698913871767" duration="18784000" />
+      <workItem from="1698953701354" duration="2358000" />
+      <workItem from="1698996592752" duration="11711000" />
+      <workItem from="1699271674571" duration="13491000" />
+      <workItem from="1699341650956" duration="3059000" />
+      <workItem from="1699355765219" duration="1095000" />
+      <workItem from="1699428982391" duration="6556000" />
+      <workItem from="1699436121896" duration="2930000" />
+      <workItem from="1699439391061" duration="512000" />
+      <workItem from="1699439908976" duration="17736000" />
+      <workItem from="1699603123310" duration="15700000" />
+      <workItem from="1699635720383" duration="3314000" />
+      <workItem from="1699697247913" duration="4574000" />
+      <workItem from="1699708986716" duration="25000" />
+      <workItem from="1699710852134" duration="609000" />
+      <workItem from="1699860978077" duration="22093000" />
+      <workItem from="1699946763282" duration="33000" />
+      <workItem from="1699949346151" duration="4130000" />
+      <workItem from="1700033837256" duration="19744000" />
+      <workItem from="1700121324590" duration="3442000" />
+      <workItem from="1700207672195" duration="531000" />
+      <workItem from="1700208207765" duration="1470000" />
+      <workItem from="1700308883043" duration="1345000" />
+      <workItem from="1700312701584" duration="3902000" />
+      <workItem from="1700326869167" duration="471000" />
+      <workItem from="1700470463152" duration="4362000" />
+      <workItem from="1700553657394" duration="14781000" />
+      <workItem from="1700578116404" duration="1396000" />
+      <workItem from="1700637891675" duration="14641000" />
+      <workItem from="1700686676102" duration="5000" />
+      <workItem from="1700724835256" duration="8974000" />
+      <workItem from="1700811718560" duration="405000" />
+      <workItem from="1700903996560" duration="4018000" />
+      <workItem from="1701073755235" duration="1826000" />
+      <workItem from="1701095421326" duration="1859000" />
+      <workItem from="1701162061060" duration="5274000" />
+      <workItem from="1701168598414" duration="3582000" />
+      <workItem from="1701177452262" duration="932000" />
+      <workItem from="1701182230848" duration="2306000" />
+      <workItem from="1701262178348" duration="3698000" />
+      <workItem from="1702300553238" duration="6108000" />
+      <workItem from="1702317842317" duration="1124000" />
+      <workItem from="1702322673403" duration="6000" />
+      <workItem from="1702371608219" duration="2136000" />
+      <workItem from="1702385265374" duration="3087000" />
+      <workItem from="1702413669897" duration="5110000" />
+      <workItem from="1702543871362" duration="490000" />
+      <workItem from="1702552316509" duration="8302000" />
+      <workItem from="1702647843123" duration="7659000" />
+      <workItem from="1702671448779" duration="670000" />
+      <workItem from="1702720580036" duration="7000" />
+      <workItem from="1702898831468" duration="9005000" />
+      <workItem from="1704277162371" duration="2862000" />
+      <workItem from="1704291407336" duration="528000" />
+      <workItem from="1705478162991" duration="16256000" />
+      <workItem from="1705569557456" duration="13206000" />
+      <workItem from="1705590497990" duration="5364000" />
+      <workItem from="1705991478871" duration="13904000" />
+      <workItem from="1706086655336" duration="6246000" />
+      <workItem from="1706107318854" duration="700000" />
+      <workItem from="1706170591942" duration="1534000" />
+      <workItem from="1706505481498" duration="17803000" />
+      <workItem from="1706598309290" duration="14651000" />
+      <workItem from="1706627728527" duration="37000" />
+      <workItem from="1706685499726" duration="12642000" />
+      <workItem from="1707067664088" duration="8295000" />
+      <workItem from="1707135504342" duration="603000" />
+      <workItem from="1707222837119" duration="8894000" />
+      <workItem from="1707300329890" duration="1491000" />
+      <workItem from="1707458496725" duration="694000" />
+      <workItem from="1707804894735" duration="1224000" />
     </task>
-    <task id="LOCAL-00436" summary="GUI enhancements&#10;Fix bug in the OPF time steps">
-      <created>1688544358055</created>
-      <option name="number" value="00436" />
-      <option name="presentableId" value="LOCAL-00436" />
+    <task id="LOCAL-00310" summary="implemented newtonPA time series">
+      <created>1656059954202</created>
+      <option name="number" value="00310" />
+      <option name="presentableId" value="LOCAL-00310" />
       <option name="project" value="LOCAL" />
-      <updated>1688544358055</updated>
+      <updated>1656059954202</updated>
     </task>
-    <task id="LOCAL-00437" summary="Refactored the linear ATC calculation">
-      <created>1688550551903</created>
-      <option name="number" value="00437" />
-      <option name="presentableId" value="LOCAL-00437" />
+    <task id="LOCAL-00311" summary="parallel threads in newton_pa">
+      <created>1656068672004</created>
+      <option name="number" value="00311" />
+      <option name="presentableId" value="LOCAL-00311" />
       <option name="project" value="LOCAL" />
-      <updated>1688550551903</updated>
+      <updated>1656068672004</updated>
     </task>
-    <task id="LOCAL-00438" summary="Modifications to correctly work with the ZIP model and import from PSSe">
-      <created>1688556960092</created>
-      <option name="number" value="00438" />
-      <option name="presentableId" value="LOCAL-00438" />
+    <task id="LOCAL-00312" summary="implemented sparse profiles in the json v3 export">
+      <created>1656757347766</created>
+      <option name="number" value="00312" />
+      <option name="presentableId" value="LOCAL-00312" />
       <option name="project" value="LOCAL" />
-      <updated>1688556960092</updated>
+      <updated>1656757347774</updated>
     </task>
-    <task id="LOCAL-00439" summary="More typings">
-      <created>1688561658932</created>
-      <option name="number" value="00439" />
-      <option name="presentableId" value="LOCAL-00439" />
+    <task id="LOCAL-00313" summary="moved the Gui package out as GridCalGui and refactored all that was necessary">
+      <created>1656759710081</created>
+      <option name="number" value="00313" />
+      <option name="presentableId" value="LOCAL-00313" />
       <option name="project" value="LOCAL" />
-      <updated>1688561658932</updated>
+      <updated>1656759710081</updated>
     </task>
-    <task id="LOCAL-00440" summary="Reordered the OPF results to be clearer">
-      <created>1688565817390</created>
-      <option name="number" value="00440" />
-      <option name="presentableId" value="LOCAL-00440" />
+    <task id="LOCAL-00314" summary="Some more refactoring of missing imports">
+      <created>1656760923750</created>
+      <option name="number" value="00314" />
+      <option name="presentableId" value="LOCAL-00314" />
       <option name="project" value="LOCAL" />
-      <updated>1688565817390</updated>
+      <updated>1656760923751</updated>
     </task>
-    <task id="LOCAL-00441" summary="More typings">
-      <created>1688573324429</created>
-      <option name="number" value="00441" />
-      <option name="presentableId" value="LOCAL-00441" />
+    <task id="LOCAL-00315" summary="refactoring changes">
+      <created>1656838027113</created>
+      <option name="number" value="00315" />
+      <option name="presentableId" value="LOCAL-00315" />
       <option name="project" value="LOCAL" />
-      <updated>1688573324429</updated>
+      <updated>1656838027114</updated>
     </task>
-    <task id="LOCAL-00442" summary="updated copyright&#10;Improved warnings">
-      <created>1688659860849</created>
-      <option name="number" value="00442" />
-      <option name="presentableId" value="LOCAL-00442" />
+    <task id="LOCAL-00316" summary="Implemented profile sparsity in the ejson v3">
+      <created>1656844513018</created>
+      <option name="number" value="00316" />
+      <option name="presentableId" value="LOCAL-00316" />
       <option name="project" value="LOCAL" />
-      <updated>1688659860849</updated>
+      <updated>1656844513019</updated>
     </task>
-    <task id="LOCAL-00443" summary="Adaptations to new newton version">
-      <created>1689074817527</created>
-      <option name="number" value="00443" />
-      <option name="presentableId" value="LOCAL-00443" />
+    <task id="LOCAL-00317" summary="added the newtonpa time series error reading">
+      <created>1657011725858</created>
+      <option name="number" value="00317" />
+      <option name="presentableId" value="LOCAL-00317" />
       <option name="project" value="LOCAL" />
-      <updated>1689074817527</updated>
+      <updated>1657011725858</updated>
     </task>
-    <task id="LOCAL-00444" summary="added generator to battery conversion">
-      <created>1689184637451</created>
-      <option name="number" value="00444" />
-      <option name="presentableId" value="LOCAL-00444" />
+    <task id="LOCAL-00318" summary="Added if condition to prevent bug with time series">
+      <created>1658234803791</created>
+      <option name="number" value="00318" />
+      <option name="presentableId" value="LOCAL-00318" />
       <option name="project" value="LOCAL" />
-      <updated>1689184637452</updated>
+      <updated>1658234803791</updated>
     </task>
-    <task id="LOCAL-00445" summary="fixed buses not beign added to investments&#10;Fixed bug in storage selection">
-      <created>1689252500250</created>
-      <option name="number" value="00445" />
-      <option name="presentableId" value="LOCAL-00445" />
+    <task id="LOCAL-00319" summary="4.5.5">
+      <created>1658390864104</created>
+      <option name="number" value="00319" />
+      <option name="presentableId" value="LOCAL-00319" />
       <option name="project" value="LOCAL" />
-      <updated>1689252500250</updated>
+      <updated>1658390864104</updated>
     </task>
-    <task id="LOCAL-00446" summary="Fixed bug in storage selection">
-      <created>1689253351759</created>
-      <option name="number" value="00446" />
-      <option name="presentableId" value="LOCAL-00446" />
+    <task id="LOCAL-00320" summary="Improved newtonpa integration">
+      <created>1658852227239</created>
+      <option name="number" value="00320" />
+      <option name="presentableId" value="LOCAL-00320" />
       <option name="project" value="LOCAL" />
-      <updated>1689253351759</updated>
+      <updated>1658852227240</updated>
     </task>
-    <task id="LOCAL-00447" summary="Added object selection dialogue when adding investments and contingencies">
-      <created>1689255894352</created>
-      <option name="number" value="00447" />
-      <option name="presentableId" value="LOCAL-00447" />
+    <task id="LOCAL-00321" summary="Derivatives investigation">
+      <created>1659088731980</created>
+      <option name="number" value="00321" />
+      <option name="presentableId" value="LOCAL-00321" />
       <option name="project" value="LOCAL" />
-      <updated>1689255894352</updated>
+      <updated>1659088731981</updated>
     </task>
-    <task id="LOCAL-00448" summary="Fixed stochastic power flow">
-      <created>1690021145243</created>
-      <option name="number" value="00448" />
-      <option name="presentableId" value="LOCAL-00448" />
+    <task id="LOCAL-00322" summary="added newton pa support for clustering time series">
+      <created>1659101561988</created>
+      <option name="number" value="00322" />
+      <option name="presentableId" value="LOCAL-00322" />
       <option name="project" value="LOCAL" />
-      <updated>1690021145243</updated>
+      <updated>1659101561988</updated>
     </task>
-    <task id="LOCAL-00449" summary="Refactored MultiCircuit into devices and numericalcircuit into data structures&#10;also, added deep copy to the data structures">
-      <created>1690207900459</created>
-      <option name="number" value="00449" />
-      <option name="presentableId" value="LOCAL-00449" />
+    <task id="LOCAL-00323" summary="Worked on new expressions">
+      <created>1659198521514</created>
+      <option name="number" value="00323" />
+      <option name="presentableId" value="LOCAL-00323" />
       <option name="project" value="LOCAL" />
-      <updated>1690207900459</updated>
+      <updated>1659198521515</updated>
     </task>
-    <task id="LOCAL-00450" summary="Dummy investments evaluation classes">
-      <created>1690214605517</created>
-      <option name="number" value="00450" />
-      <option name="presentableId" value="LOCAL-00450" />
+    <task id="LOCAL-00324" summary="added negative and zero sequence magnitudes to the branches">
+      <created>1659278447975</created>
+      <option name="number" value="00324" />
+      <option name="presentableId" value="LOCAL-00324" />
       <option name="project" value="LOCAL" />
-      <updated>1690214605517</updated>
+      <updated>1659278447975</updated>
     </task>
-    <task id="LOCAL-00451" summary="Added special plots">
-      <created>1690223884237</created>
-      <option name="number" value="00451" />
-      <option name="presentableId" value="LOCAL-00451" />
+    <task id="LOCAL-00325" summary="Added DPI support">
+      <created>1659344870126</created>
+      <option name="number" value="00325" />
+      <option name="presentableId" value="LOCAL-00325" />
       <option name="project" value="LOCAL" />
-      <updated>1690223884237</updated>
+      <updated>1659344870126</updated>
     </task>
-    <task id="LOCAL-00452" summary="Added hyperopt evaluation">
-      <created>1690226730625</created>
-      <option name="number" value="00452" />
-      <option name="presentableId" value="LOCAL-00452" />
+    <task id="LOCAL-00326" summary="Added sequence components to the generator and battery&#10;Modelled the south island of new zealand as per arrillaga's book">
+      <created>1659437894876</created>
+      <option name="number" value="00326" />
+      <option name="presentableId" value="LOCAL-00326" />
       <option name="project" value="LOCAL" />
-      <updated>1690226730625</updated>
+      <updated>1659437894877</updated>
     </task>
-    <task id="LOCAL-00453" summary="added mvrsm and overload criteria">
-      <created>1690269488406</created>
-      <option name="number" value="00453" />
-      <option name="presentableId" value="LOCAL-00453" />
+    <task id="LOCAL-00327" summary="Fixed the matpower expression making the new derivatives exact as matpowers'">
+      <created>1659531463759</created>
+      <option name="number" value="00327" />
+      <option name="presentableId" value="LOCAL-00327" />
       <option name="project" value="LOCAL" />
-      <updated>1690269488406</updated>
+      <updated>1659531463759</updated>
     </task>
-    <task id="LOCAL-00454" summary="added hyperopt as requirement">
-      <created>1690269531781</created>
-      <option name="number" value="00454" />
-      <option name="presentableId" value="LOCAL-00454" />
+    <task id="LOCAL-00328" summary="Merged the unbalanced short circuit and removed the sympy import">
+      <created>1660324468177</created>
+      <option name="number" value="00328" />
+      <option name="presentableId" value="LOCAL-00328" />
       <option name="project" value="LOCAL" />
-      <updated>1690269531781</updated>
+      <updated>1660324468178</updated>
     </task>
-    <task id="LOCAL-00455" summary="Fixed bug with LODF based contingencies">
-      <created>1690274908830</created>
-      <option name="number" value="00455" />
-      <option name="presentableId" value="LOCAL-00455" />
+    <task id="LOCAL-00329" summary="Integrated the new short circuit logic in the GUI">
+      <created>1660327016158</created>
+      <option name="number" value="00329" />
+      <option name="presentableId" value="LOCAL-00329" />
       <option name="project" value="LOCAL" />
-      <updated>1690274908830</updated>
+      <updated>1660327016158</updated>
     </task>
-    <task id="LOCAL-00456" summary="Included improvements in linear contingency creation">
-      <created>1690375871777</created>
-      <option name="number" value="00456" />
-      <option name="presentableId" value="LOCAL-00456" />
+    <task id="LOCAL-00330" summary="Refactored the short circuit functions">
+      <created>1660327579581</created>
+      <option name="number" value="00330" />
+      <option name="presentableId" value="LOCAL-00330" />
       <option name="project" value="LOCAL" />
-      <updated>1690375871777</updated>
+      <updated>1660327579582</updated>
     </task>
-    <task id="LOCAL-00457" summary="Improvements in creating and using linear multi-contingencies">
-      <created>1690387635323</created>
-      <option name="number" value="00457" />
-      <option name="presentableId" value="LOCAL-00457" />
+    <task id="LOCAL-00331" summary="added docstrings and deleted commented code">
+      <created>1660328109870</created>
+      <option name="number" value="00331" />
+      <option name="presentableId" value="LOCAL-00331" />
       <option name="project" value="LOCAL" />
-      <updated>1690387635323</updated>
+      <updated>1660328109870</updated>
     </task>
-    <task id="LOCAL-00458" summary="Adapted newer newton changes">
-      <created>1690550938413</created>
-      <option name="number" value="00458" />
-      <option name="presentableId" value="LOCAL-00458" />
+    <task id="LOCAL-00332" summary="completely refactored the ShortCircuitResults object to properly represent the sequence results">
+      <created>1660568962484</created>
+      <option name="number" value="00332" />
+      <option name="presentableId" value="LOCAL-00332" />
       <option name="project" value="LOCAL" />
-      <updated>1690550938413</updated>
+      <updated>1660568962485</updated>
     </task>
-    <task id="LOCAL-00459" summary="major changes to add cluster expansion">
-      <created>1690803543628</created>
-      <option name="number" value="00459" />
-      <option name="presentableId" value="LOCAL-00459" />
+    <task id="LOCAL-00333" summary="Added icons to the results tree view">
+      <created>1660571615657</created>
+      <option name="number" value="00333" />
+      <option name="presentableId" value="LOCAL-00333" />
       <option name="project" value="LOCAL" />
-      <updated>1690803543628</updated>
+      <updated>1660571615657</updated>
     </task>
-    <task id="LOCAL-00460" summary="minor changes in the MVRSM formatting and types">
-      <created>1690818837552</created>
-      <option name="number" value="00460" />
-      <option name="presentableId" value="LOCAL-00460" />
+    <task id="LOCAL-00334" summary="major refactor in the short circuit study">
+      <created>1660636533200</created>
+      <option name="number" value="00334" />
+      <option name="presentableId" value="LOCAL-00334" />
       <option name="project" value="LOCAL" />
-      <updated>1690818837552</updated>
+      <updated>1660636533201</updated>
     </task>
-    <task id="LOCAL-00461" summary="Fixed bug when reading legacy excel model files">
-      <created>1691414875921</created>
-      <option name="number" value="00461" />
-      <option name="presentableId" value="LOCAL-00461" />
+    <task id="LOCAL-00335" summary="Set the SC loading values to display in %">
+      <created>1660640003161</created>
+      <option name="number" value="00335" />
+      <option name="presentableId" value="LOCAL-00335" />
       <option name="project" value="LOCAL" />
-      <updated>1691414875922</updated>
+      <updated>1660640003162</updated>
     </task>
-    <task id="LOCAL-00462" summary="Added options to add catalogue devices for the line and transformer">
-      <created>1691425464905</created>
-      <option name="number" value="00462" />
-      <option name="presentableId" value="LOCAL-00462" />
+    <task id="LOCAL-00336" summary="fixed issue with no-slack islands">
+      <created>1660895719767</created>
+      <option name="number" value="00336" />
+      <option name="presentableId" value="LOCAL-00336" />
       <option name="project" value="LOCAL" />
-      <updated>1691425464905</updated>
+      <updated>1660895719768</updated>
     </task>
-    <task id="LOCAL-00463" summary="Added line splitting">
-      <created>1691438246728</created>
-      <option name="number" value="00463" />
-      <option name="presentableId" value="LOCAL-00463" />
+    <task id="LOCAL-00337" summary="Minor refactor of the newer get admmitance functions in generatorDate and BatteryData">
+      <created>1660908328753</created>
+      <option name="number" value="00337" />
+      <option name="presentableId" value="LOCAL-00337" />
       <option name="project" value="LOCAL" />
-      <updated>1691438246728</updated>
+      <updated>1660908328753</updated>
     </task>
-    <task id="LOCAL-00464" summary="added arrows to the lines (line and transformer for now)">
-      <created>1691495594256</created>
-      <option name="number" value="00464" />
-      <option name="presentableId" value="LOCAL-00464" />
+    <task id="LOCAL-00338" summary="Made the short circuit vastly more efficient by avoiding Y inversions">
+      <created>1660923842529</created>
+      <option name="number" value="00338" />
+      <option name="presentableId" value="LOCAL-00338" />
       <option name="project" value="LOCAL" />
-      <updated>1691495594257</updated>
+      <updated>1660923842529</updated>
     </task>
-    <task id="LOCAL-00465" summary="more work with having a common line template for the GUI drawing">
-      <created>1691503308488</created>
-      <option name="number" value="00465" />
-      <option name="presentableId" value="LOCAL-00465" />
+    <task id="LOCAL-00339" summary="slight refactor">
+      <created>1660924026298</created>
+      <option name="number" value="00339" />
+      <option name="presentableId" value="LOCAL-00339" />
       <option name="project" value="LOCAL" />
-      <updated>1691503308488</updated>
+      <updated>1660924026298</updated>
     </task>
-    <task id="LOCAL-00466" summary="Improved arrows and fixed some signs bug in the OPF visualization">
-      <created>1691572267698</created>
-      <option name="number" value="00466" />
-      <option name="presentableId" value="LOCAL-00466" />
+    <task id="LOCAL-00340" summary="slight refactor">
+      <created>1661166574525</created>
+      <option name="number" value="00340" />
+      <option name="presentableId" value="LOCAL-00340" />
       <option name="project" value="LOCAL" />
-      <updated>1691572267699</updated>
+      <updated>1661166574526</updated>
     </task>
-    <task id="LOCAL-00467" summary="Refactoring the map widget">
-      <created>1691667830056</created>
-      <option name="number" value="00467" />
-      <option name="presentableId" value="LOCAL-00467" />
+    <task id="LOCAL-00341" summary="Modified the text of some results' naming">
+      <created>1661846548882</created>
+      <option name="number" value="00341" />
+      <option name="presentableId" value="LOCAL-00341" />
       <option name="project" value="LOCAL" />
-      <updated>1691667830057</updated>
+      <updated>1661846548883</updated>
     </task>
-    <task id="LOCAL-00468" summary="Refactoring the map widget (2)">
-      <created>1691673020698</created>
-      <option name="number" value="00468" />
-      <option name="presentableId" value="LOCAL-00468" />
+    <task id="LOCAL-00342" summary="Fixed short circuit indexing bug in islands">
+      <created>1661863735026</created>
+      <option name="number" value="00342" />
+      <option name="presentableId" value="LOCAL-00342" />
       <option name="project" value="LOCAL" />
-      <updated>1691673020698</updated>
+      <updated>1661863735027</updated>
     </task>
-    <task id="LOCAL-00469" summary="Fixed the default tiles to be gray and red when errors">
-      <created>1691775113176</created>
-      <option name="number" value="00469" />
-      <option name="presentableId" value="LOCAL-00469" />
+    <task id="LOCAL-00343" summary="Merged devel with devel_REE (successfully)">
+      <created>1662028943800</created>
+      <option name="number" value="00343" />
+      <option name="presentableId" value="LOCAL-00343" />
       <option name="project" value="LOCAL" />
-      <updated>1691775113176</updated>
+      <updated>1662028943800</updated>
     </task>
-    <task id="LOCAL-00470" summary="Added color to some object tags&#10;Added color as an item delegate">
-      <created>1692022876924</created>
-      <option name="number" value="00470" />
-      <option name="presentableId" value="LOCAL-00470" />
+    <task id="LOCAL-00344" summary="updated version">
+      <created>1662028986050</created>
+      <option name="number" value="00344" />
+      <option name="presentableId" value="LOCAL-00344" />
       <option name="project" value="LOCAL" />
-      <updated>1692022876924</updated>
+      <updated>1662028986050</updated>
     </task>
-    <task id="LOCAL-00471" summary="added matpower to dictionary structure">
-      <created>1692131285086</created>
-      <option name="number" value="00471" />
-      <option name="presentableId" value="LOCAL-00471" />
+    <task id="LOCAL-00345" summary="Updated the version file">
+      <created>1662029493419</created>
+      <option name="number" value="00345" />
+      <option name="presentableId" value="LOCAL-00345" />
       <option name="project" value="LOCAL" />
-      <updated>1692131285086</updated>
+      <updated>1662029493419</updated>
     </task>
-    <task id="LOCAL-00472" summary="Separated the cascading GUI">
-      <created>1692266726637</created>
-      <option name="number" value="00472" />
-      <option name="presentableId" value="LOCAL-00472" />
+    <task id="LOCAL-00346" summary="Added losses % to the power flow time series&#10;Minor refactors of the GUI">
+      <created>1662042947521</created>
+      <option name="number" value="00346" />
+      <option name="presentableId" value="LOCAL-00346" />
       <option name="project" value="LOCAL" />
-      <updated>1692266726638</updated>
+      <updated>1662042947521</updated>
     </task>
-    <task id="LOCAL-00473" summary="Implemented the base decoupling of diagrams">
-      <created>1692289033527</created>
-      <option name="number" value="00473" />
-      <option name="presentableId" value="LOCAL-00473" />
+    <task id="LOCAL-00347" summary="csc sparse branch derivatives">
+      <created>1662061867029</created>
+      <option name="number" value="00347" />
+      <option name="presentableId" value="LOCAL-00347" />
       <option name="project" value="LOCAL" />
-      <updated>1692289033527</updated>
+      <updated>1662061867029</updated>
     </task>
-    <task id="LOCAL-00474" summary="Moved sliders to the designer tab">
-      <created>1692616472293</created>
-      <option name="number" value="00474" />
-      <option name="presentableId" value="LOCAL-00474" />
+    <task id="LOCAL-00348" summary="removed ntcFeseabilityCheck">
+      <created>1669381559126</created>
+      <option name="number" value="00348" />
+      <option name="presentableId" value="LOCAL-00348" />
       <option name="project" value="LOCAL" />
-      <updated>1692616472293</updated>
+      <updated>1669381559127</updated>
     </task>
-    <task id="LOCAL-00475" summary="added CGMES trasnsformer and line conversions">
-      <created>1692618460212</created>
-      <option name="number" value="00475" />
-      <option name="presentableId" value="LOCAL-00475" />
+    <task id="LOCAL-00349" summary="removed ntcFeseabilityCheck">
+      <created>1675071155909</created>
+      <option name="number" value="00349" />
+      <option name="presentableId" value="LOCAL-00349" />
       <option name="project" value="LOCAL" />
-      <updated>1692618460212</updated>
+      <updated>1675071155913</updated>
     </task>
-    <task id="LOCAL-00476" summary="Refactored IO&#10;Massive work in getting to save the diagrams in the files (WIP)">
-      <created>1692649138429</created>
-      <option name="number" value="00476" />
-      <option name="presentableId" value="LOCAL-00476" />
+    <task id="LOCAL-00350" summary="Union types fixed">
+      <created>1697446931261</created>
+      <option name="number" value="00350" />
+      <option name="presentableId" value="LOCAL-00350" />
       <option name="project" value="LOCAL" />
-      <updated>1692649138429</updated>
+      <updated>1697446931261</updated>
     </task>
-    <task id="LOCAL-00477" summary="split the Main gui into several subclasses">
-      <created>1692704503136</created>
-      <option name="number" value="00477" />
-      <option name="presentableId" value="LOCAL-00477" />
+    <task id="LOCAL-00351" summary="Fixed report title">
+      <created>1697454826422</created>
+      <option name="number" value="00351" />
+      <option name="presentableId" value="LOCAL-00351" />
       <option name="project" value="LOCAL" />
-      <updated>1692704503136</updated>
+      <updated>1697454826422</updated>
     </task>
-    <task id="LOCAL-00478" summary="optimized imports">
-      <created>1692708565675</created>
-      <option name="number" value="00478" />
-      <option name="presentableId" value="LOCAL-00478" />
+    <task id="LOCAL-00352" summary="Start refactoring NTC optimization">
+      <created>1697641065079</created>
+      <option name="number" value="00352" />
+      <option name="presentableId" value="LOCAL-00352" />
       <option name="project" value="LOCAL" />
-      <updated>1692708565675</updated>
+      <updated>1697641065079</updated>
     </task>
-    <task id="LOCAL-00479" summary="Corrected many PySide6 usages">
-      <created>1692720330690</created>
-      <option name="number" value="00479" />
-      <option name="presentableId" value="LOCAL-00479" />
+    <task id="LOCAL-00353" summary="Added Pbus">
+      <created>1698144136175</created>
+      <option name="number" value="00353" />
+      <option name="presentableId" value="LOCAL-00353" />
       <option name="project" value="LOCAL" />
-      <updated>1692720330690</updated>
+      <updated>1698144136178</updated>
     </task>
-    <task id="LOCAL-00480" summary="managed to make a BusBranchEditor draw a diagram without using the circuit-stored data">
-      <created>1692814978278</created>
-      <option name="number" value="00480" />
-      <option name="presentableId" value="LOCAL-00480" />
+    <task id="LOCAL-00354" summary="renamed time_grouping">
+      <created>1698144175357</created>
+      <option name="number" value="00354" />
+      <option name="presentableId" value="LOCAL-00354" />
       <option name="project" value="LOCAL" />
-      <updated>1692814978279</updated>
+      <updated>1698144175357</updated>
     </task>
-    <task id="LOCAL-00481" summary="Fixed multiple inheritance and passed to a single inheritance model">
-      <created>1692816096492</created>
-      <option name="number" value="00481" />
-      <option name="presentableId" value="LOCAL-00481" />
+    <task id="LOCAL-00355" summary="renamed time_grouping">
+      <created>1698144214107</created>
+      <option name="number" value="00355" />
+      <option name="presentableId" value="LOCAL-00355" />
       <option name="project" value="LOCAL" />
-      <updated>1692816096492</updated>
+      <updated>1698144214107</updated>
     </task>
-    <task id="LOCAL-00482" summary="more work to load stored diagrams">
-      <created>1692821188440</created>
-      <option name="number" value="00482" />
-      <option name="presentableId" value="LOCAL-00482" />
+    <task id="LOCAL-00356" summary="ntc refactoring">
+      <created>1698144237875</created>
+      <option name="number" value="00356" />
+      <option name="presentableId" value="LOCAL-00356" />
       <option name="project" value="LOCAL" />
-      <updated>1692821188440</updated>
+      <updated>1698144237875</updated>
     </task>
-    <task id="LOCAL-00483" summary="set the diagrams listview as a model">
-      <created>1692864394626</created>
-      <option name="number" value="00483" />
-      <option name="presentableId" value="LOCAL-00483" />
+    <task id="LOCAL-00357" summary="ntc refactoring">
+      <created>1698144450245</created>
+      <option name="number" value="00357" />
+      <option name="presentableId" value="LOCAL-00357" />
       <option name="project" value="LOCAL" />
-      <updated>1692864394626</updated>
+      <updated>1698144450245</updated>
     </task>
-    <task id="LOCAL-00484" summary="Seem to have tamed the CGMES boundary set -&gt; model duality">
-      <created>1693298903267</created>
-      <option name="number" value="00484" />
-      <option name="presentableId" value="LOCAL-00484" />
+    <task id="LOCAL-00358" summary="ntc refactoring II">
+      <created>1698766404661</created>
+      <option name="number" value="00358" />
+      <option name="presentableId" value="LOCAL-00358" />
       <option name="project" value="LOCAL" />
-      <updated>1693298903267</updated>
+      <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="542" />
+    <option name="localTasksCounter" value="467" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1706,13 +1916,6 @@
         <entry key="MAIN">
           <value>
             <State>
-              <option name="COLUMN_ID_WIDTH">
-                <map>
-                  <entry key="Table.Default.Author.ColumnIdWidth" value="82" />
-                  <entry key="Table.Default.Date.ColumnIdWidth" value="65" />
-                  <entry key="Table.Space.CommitStatus.ColumnIdWidth" value="32" />
-                </map>
-              </option>
               <option name="FILTERS">
                 <map>
                   <entry key="branch">
@@ -1731,32 +1934,32 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="minimal improvement in fcn synthax" />
-    <MESSAGE value="Wrote some more README.md" />
-    <MESSAGE value="5.0.0a20" />
-    <MESSAGE value="fixed opf formulation indexing in HVDC devices" />
-    <MESSAGE value="minimal refactoring changes in reliability_study_run.py" />
-    <MESSAGE value="fixed broken tests (newton equivalence and tutorials)" />
-    <MESSAGE value="implemented results transposition" />
-    <MESSAGE value="minimal refactoring" />
-    <MESSAGE value="Started creating numerical methods un utils" />
-    <MESSAGE value="Added the vector_sum_srap function to speed up the SRAP" />
-    <MESSAGE value="Small adaptation to the newtonpa contingency analysis" />
-    <MESSAGE value="Added substation reduction examples" />
-    <MESSAGE value="Try some experiments with the initialization" />
-    <MESSAGE value="Add pegase89 grid" />
-    <MESSAGE value="Try different initialization" />
-    <MESSAGE value="Implement line selection il but pegase89 still fails" />
-    <MESSAGE value="Get pegase89 working with large iter number" />
-    <MESSAGE value="Implement slicing also for gens" />
-    <MESSAGE value="Change order to get Va, Vm" />
-    <MESSAGE value="Change order H vector and Jacobian" />
-    <MESSAGE value="Modify feascond and gradcond, but debug more iterations" />
-    <MESSAGE value="case6 working well up to here" />
-    <MESSAGE value="Original cases running, detected issue in Ybus for pegase89" />
-    <MESSAGE value="Tap angles were causing trouble..." />
-    <MESSAGE value="Taps fixed, pegase89 works!" />
-    <option name="LAST_COMMIT_MESSAGE" value="Taps fixed, pegase89 works!" />
+    <MESSAGE value="Split fluid results into node path injection" />
+    <MESSAGE value="replaced the progress functions by wrapper functions of the driver_template class" />
+    <MESSAGE value="Slightly improved contingency report adding SRAP" />
+    <MESSAGE value="added missing picture" />
+    <MESSAGE value="Fixed bug with SRAP parameters" />
+    <MESSAGE value="Added SRAP and PTDF sparse configuration values to the GUI management" />
+    <MESSAGE value="Improved the type hinting in struct_to_data" />
+    <MESSAGE value="Fixed misnaming" />
+    <MESSAGE value="Updated the copyright to 2024" />
+    <MESSAGE value="changed pulp for ortools" />
+    <MESSAGE value="Improved docs" />
+    <MESSAGE value="added complex support for csc diags" />
+    <MESSAGE value="added the compensated factors" />
+    <MESSAGE value="renamed LinearMultiContingencies.update to LinearMultiContingencies.compute" />
+    <MESSAGE value="Extracted contingency methods outside the driver&#10;Renamed ContingencyEngine to ContingencyMethod" />
+    <MESSAGE value="Moved the SRAP logic to the results analysis to save massive amounts of time" />
+    <MESSAGE value="Updated the SRAP stuff for the nonlinear contingency analysis" />
+    <MESSAGE value="slightly better comment for the srap" />
+    <MESSAGE value="fixed the use of the ContingencyAnalysisDriver from the ContingencyAnalysisTimeSeriesDriver" />
+    <MESSAGE value="Removed the distributed_slack property in the ContingencyAnalysisOptions because it was not used&#10;Corrected the SRAP loading condition&#10;General refactor" />
+    <MESSAGE value="New schema connectors" />
+    <MESSAGE value="Removed phantom files and improved README.md" />
+    <MESSAGE value="Fixed problems after merging devel" />
+    <MESSAGE value="Fixed a parsing bug when dealing with legacy data&#10;Improved the profile testing&#10;Added the sparsity property to the profile" />
+    <MESSAGE value="Small fix in the dtau for G" />
+    <option name="LAST_COMMIT_MESSAGE" value="Small fix in the dtau for G" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2245,16 +2448,31 @@
           <option name="timeStamp" value="1298" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/NumericalMethods/ac_opf.py</url>
-          <line>1014</line>
-          <option name="timeStamp" value="1328" />
+          <url>file://$PROJECT_DIR$/src/trunk/acopf/acopf_run.py</url>
+          <line>277</line>
+          <option name="timeStamp" value="1331" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/trunk/acopf/acopf_run.py</url>
-          <line>218</line>
-          <option name="timeStamp" value="1331" />
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/NumericalMethods/ac_opf_derivatives.py</url>
+          <line>876</line>
+          <option name="timeStamp" value="1346" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/NumericalMethods/ac_opf_derivatives.py</url>
+          <line>338</line>
+          <option name="timeStamp" value="1352" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Utils/NumericalMethods/ips.py</url>
+          <line>379</line>
+          <option name="timeStamp" value="1355" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
+    <watches-manager>
+      <configuration name="PythonConfigurationType">
+        <watch expression="dStdmdt" />
+      </configuration>
+    </watches-manager>
   </component>
 </project>

@@ -136,8 +136,8 @@ def compute_branch_power_derivatives(alltapm, alltapt, V, k_m, k_tau, k_mtau, Cf
         tau = alltapt[line]
         yk = ys[line]
 
-        dSfdt[line, ang] = Vf_ * 1j * np.conj(-yk * Vt_) / (mp * np.exp(1j * tau))
-        dStdt[line, ang] = Vt_ * -1j *  np.conj(-yk * Vf_) / (mp * np.exp(-1j * tau))
+        dSfdt[line, ang] = Vf_ * 1j * np.conj(yk * Vt_) / (mp * np.exp(1j * tau))
+        dStdt[line, ang] = Vt_ * -1j * np.conj(yk * Vf_) / (mp * np.exp(-1j * tau))
 
     dSbusdm = Cf.T @ dSfdm + Ct.T @ dStdm
     dSbusdt = Cf.T @ dSfdt + Ct.T @ dStdt
@@ -145,8 +145,7 @@ def compute_branch_power_derivatives(alltapm, alltapt, V, k_m, k_tau, k_mtau, Cf
     return dSbusdm, dSfdm, dStdm, dSbusdt, dSfdt, dStdt
 
 
-
-def compute_branch_power_second_derivatives(alltapm, alltapt, vm, va, k_m, k_tau, Cf, Ct, R, X, lam, mu, Sf, St):
+def compute_branch_power_second_derivatives(alltapm, alltapt, vm, va, k_m, k_tau, Cf, Ct, R, X, lam, mu):
     ys = 1.0 / (R + 1.0j * X + 1e-20)
     V = vm * np.exp(1j * va)
     Vf = Cf @ V
@@ -183,44 +182,6 @@ def compute_branch_power_second_derivatives(alltapm, alltapt, vm, va, k_m, k_tau
     dSbusdmdt = lil_matrix((ntapt, ntapm))
     dSfdmdt = lil_matrix((ntapt, ntapm), dtype=complex)
     dStdmdt = lil_matrix((ntapt, ntapm), dtype=complex)
-
-    '''
-    GdSfdmdm = lil_matrix((ntapm, ntapm), dtype=complex)
-    GdStdmdm = lil_matrix((ntapm, ntapm), dtype=complex)
-    dSfdmdm = lil_matrix((ntapm, ntapm), dtype=complex)
-    dStdmdm = lil_matrix((ntapm, ntapm), dtype=complex)
-
-    GdSfdmdva = lil_matrix((N, ntapm), dtype=complex)
-    GdStdmdva = lil_matrix((N, ntapm), dtype=complex)
-    dSfdmdva = lil_matrix((N, ntapm), dtype=complex)
-    dStdmdva = lil_matrix((N, ntapm), dtype=complex)
-
-    GdSfdmdvm = lil_matrix((N, ntapm), dtype=complex)
-    GdStdmdvm = lil_matrix((N, ntapm), dtype=complex)
-    dSfdmdvm = lil_matrix((N, ntapm), dtype=complex)
-    dStdmdvm = lil_matrix((N, ntapm), dtype=complex)
-
-    GdSfdtdt = lil_matrix((ntapt, ntapt), dtype=complex)
-    GdStdtdt = lil_matrix((ntapt, ntapt), dtype=complex)
-    dSfdtdt = lil_matrix((ntapt, ntapt), dtype=complex)
-    dStdtdt = lil_matrix((ntapt, ntapt), dtype=complex)
-
-    GdSfdtdva = lil_matrix((N, ntapt), dtype=complex)
-    GdStdtdva = lil_matrix((N, ntapt), dtype=complex)
-    dSfdtdva = lil_matrix((N, ntapt), dtype=complex)
-    dStdtdva = lil_matrix((N, ntapt), dtype=complex)
-
-    GdSfdtdvm = lil_matrix((N, ntapt), dtype=complex)
-    GdStdtdvm = lil_matrix((N, ntapt), dtype=complex)
-    dSfdtdvm = lil_matrix((N, ntapt), dtype=complex)
-    dStdtdvm = lil_matrix((N, ntapt), dtype=complex)
-
-    GdSfdmdt = lil_matrix((ntapt, ntapm), dtype=complex)
-    GdStdmdt = lil_matrix((ntapt, ntapm), dtype=complex)
-    dSfdmdt = lil_matrix((ntapt, ntapm), dtype=complex)
-    dStdmdt = lil_matrix((ntapt, ntapm), dtype=complex)
-    '''
-
 
     for mod, line in enumerate(k_m):
         Vf_ = Vf[line]
@@ -328,8 +289,8 @@ def compute_branch_power_second_derivatives(alltapm, alltapt, vm, va, k_m, k_tau
         tau = alltapt[line]
         yk = ys[line]
 
-        f = np.nonzero(Cf[line])[0]
-        t = np.nonzero(Ct[line])[0]
+        f = np.nonzero(Cf.A[line, :])[0]
+        t = np.nonzero(Ct.A[line, :])[0]
 
         dSfdtdt_ = Vf_ * np.conj(yk * Vt_) / (mp * np.exp(1j * tau))
         dStdtdt_ = Vt_ * np.conj(yk * Vf_) / (mp * np.exp(-1j * tau))
@@ -337,15 +298,16 @@ def compute_branch_power_second_derivatives(alltapm, alltapt, vm, va, k_m, k_tau
         dSfdtdva_f = - Vf_ * np.conj(yk * Vt_) / (mp * np.exp(1j * tau))
         dSfdtdva_t = Vf_ * np.conj(yk * Vt_) / (mp * np.exp(1j * tau))
 
-        dStdtdva_f = Vt_ * np.conj(yk * Vf_) / (mp * np.exp(-1j * tau))
-        dStdtdva_t = - Vt_ * np.conj(yk * Vf_) / (mp * np.exp(-1j * tau))
+        dStdtdva_f = - Vt_ * np.conj(yk * Vf_) / (mp * np.exp(-1j * tau))
+        dStdtdva_t = Vt_ * np.conj(yk * Vf_) / (mp * np.exp(-1j * tau))
 
-        dSfdtdvm_f = 1j * Vf_ * (1 / vm[f]) * np.conj(yk * Vt_) / (mp * np.exp(1j * tau))
-        dSfdtdvm_t = 1j * Vf_ * (1 / vm[t]) * np.conj(yk * Vt_) / (mp * np.exp(1j * tau))
+        dSfdtdvm_f = 1j * Vf_ / abs(Vf_) * np.conj(yk * Vt_) / (mp * np.exp(1j * tau))
+        dSfdtdvm_t = 1j * Vf_ / abs(Vt_) * np.conj(yk * Vt_) / (mp * np.exp(1j * tau))
 
-        dStdtdvm_f = -1j * Vt_ * (1 / vm[f]) * np.conj(yk * Vf_) / (mp * np.exp(-1j * tau))
-        dStdtdvm_t = -1j * Vt_ * (1 / vm[t]) * np.conj(yk * Vf_) / (mp * np.exp(-1j * tau))
+        dStdtdvm_f = -1j * Vt_ / abs(Vf_) * np.conj(yk * Vf_) / (mp * np.exp(-1j * tau))
+        dStdtdvm_t = -1j * Vt_ / abs(Vt_) * np.conj(yk * Vf_) / (mp * np.exp(-1j * tau))
 
+        # Merge Sf and St in Sbus
         dSbusdtdt[ang, ang] = ((dSfdtdt_ * lam[f]).real + (dSfdtdt_ * lam[f + N]).imag
                                + (dStdtdt_ * lam[t]).real + (dStdtdt_ * lam[t + N]).imag)
         dSfdtdt[ang, ang] = dSfdtdt_ * Sf[line].conj() * mu[line]
@@ -799,8 +761,7 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
         Hqu = sp.hstack([lil_matrix((Ng, 2 * N + Ng)), diags(Hqu), lil_matrix((Ng, ntapm + ntapt))])
         Hql = sp.hstack([lil_matrix((Ng, 2 * N + Ng)), diags(Hql), lil_matrix((Ng, ntapm + ntapt))])
 
-        # Francesca tanmax curves
-
+        # tanmax curves (simplified capability curves of generators)
         Hqmaxp = -2 * (tanmax ** 2) * Pg
         Hqmaxq = 2 * Qg
 
@@ -836,6 +797,7 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
                 Hx = sp.vstack([Hx, Htaptu, Htaptl])
 
             Hx = sp.vstack([Hx, Hqmax]).T.tocsc()
+
         else:
 
             SfX = sp.hstack([Sfva, Sfvm, lil_matrix((M, 2 * Ng))])
@@ -915,6 +877,7 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
             G4 = sp.hstack([GSdtdva.T, GSdtdvm.T, lil_matrix((ntapt, 2 * Ng)), GSdmdt, GSdtdt])
 
             Gxx = sp.vstack([G1, G2, lil_matrix((2 * Ng, NV)), G3, G4]).tocsc()
+            print('')
 
         else:
             G1 = sp.hstack([Gaa, Gav, lil_matrix((N, 2 * Ng))])
