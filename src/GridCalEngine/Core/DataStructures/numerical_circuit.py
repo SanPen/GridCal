@@ -43,8 +43,20 @@ if TYPE_CHECKING:  # Only imports the below statements during type checking
 
 sparse_type = get_sparse_type()
 
-ALL_STRUCTS = Union[ds.BusData, ds.GeneratorData, ds.BatteryData, ds.LoadData, ds.ShuntData, ds.BranchData, ds.HvdcData,
-                    ds.FluidNodeData, ds.FluidTurbineData, ds.FluidPumpData, ds.FluidP2XData, ds.FluidPathData]
+ALL_STRUCTS = Union[
+    ds.BusData,
+    ds.GeneratorData,
+    ds.BatteryData,
+    ds.LoadData,
+    ds.ShuntData,
+    ds.BranchData,
+    ds.HvdcData,
+    ds.FluidNodeData,
+    ds.FluidTurbineData,
+    ds.FluidPumpData,
+    ds.FluidP2XData,
+    ds.FluidPathData
+]
 
 
 @nb.njit(cache=True)
@@ -527,7 +539,7 @@ class NumericalCircuit:
 
         self.determine_control_indices()
 
-    def re_calc_admittance_matrices(self, tap_module, idx=None):
+    def re_calc_admittance_matrices(self, tap_module: Vec, idx: Union[None, IntVec] = None):
         """
         Fast admittance recombination
         :param tap_module: transformer taps (if idx is provided, must have the same length as idx,
@@ -596,9 +608,9 @@ class NumericalCircuit:
         k_vt_m_lst = list()  # indices of the Branches when controlling Vt with ma
         k_qt_m_lst = list()  # indices of the Branches controlling the Qt flow with ma
         k_pf_dp_lst = list()  # indices of the drop converters controlling the power flow with theta sh
-        k_m_modif_lst = list() # indices of the transformers with controlled tap module
-        k_tau_modif_lst = list() # indices of the transformers with controlled tap angle
-        k_mtau_modif_lst = list() # indices of the transformers with controlled tap angle and module
+        k_m_modif_lst = list()  # indices of the transformers with controlled tap module
+        k_tau_modif_lst = list()  # indices of the transformers with controlled tap angle
+        k_mtau_modif_lst = list()  # indices of the transformers with controlled tap angle and module
         i_m_modif_lst = list()  # indices of the controlled buses with tap module
         i_tau_modif_lst = list()  # indices of the controlled buses with tap angle
         i_mtau_modif_lst = list()  # indices of the controlled buses with tap module and angle
@@ -615,7 +627,7 @@ class NumericalCircuit:
             elif tpe == TransformerControlType.Pf:  # TODO: change name .Pt by .Pf
                 k_pf_tau_lst.append(k)
                 k_tau_modif_lst.append(k)
-                i_tau_modif_lst.append(self.F[k]) #TODO: identify which index is the controlled one
+                i_tau_modif_lst.append(self.F[k])  # TODO: identify which index is the controlled one
                 self.any_control = True
 
             elif tpe == TransformerControlType.Qt:
@@ -725,12 +737,6 @@ class NumericalCircuit:
             else:
                 raise Exception('Unknown control type:' + str(tpe))
 
-        # VfBeqbus_sh = list()
-        # for k, is_controlled in enumerate(self.shunt_data.get_controlled_per_bus()):
-        #     if is_controlled:
-        #         VfBeqbus_sh.append(k)
-        #         self.any_control = True
-
         # FUBM- Saves the "from" bus identifier for Vf controlled by Beq
         #  (Converters type II for Vdc control)
         self.i_vf_beq = self.F[k_vf_beq_lst]
@@ -792,10 +798,10 @@ class NumericalCircuit:
         return nc
 
     def get_structures_list(self) -> List[Union[ds.BusData, ds.LoadData, ds.ShuntData,
-                                                ds.GeneratorData, ds.BatteryData,
-                                                ds.BranchData, ds.HvdcData,
-                                                ds.FluidNodeData, ds.FluidTurbineData, ds.FluidPumpData,
-                                                ds.FluidP2XData, ds.FluidPathData]]:
+    ds.GeneratorData, ds.BatteryData,
+    ds.BranchData, ds.HvdcData,
+    ds.FluidNodeData, ds.FluidTurbineData, ds.FluidPumpData,
+    ds.FluidP2XData, ds.FluidPathData]]:
         """
         Get a list of the structures inside the NumericalCircuit
         :return:
@@ -893,7 +899,7 @@ class NumericalCircuit:
                         structure.active[idx] = int(cnt.value)
                 elif cnt.prop == '%':
                     # TODO Cambiar el acceso a P por una función (o función que incremente- decremente porcentaje)
-                    assert not isinstance(structure, ds.HvdcData) # TODO Arreglar esto
+                    assert not isinstance(structure, ds.HvdcData)  # TODO Arreglar esto
                     dev_injections = np.zeros(structure.size())
                     dev_injections[idx] -= structure.p[idx]
                     if revert:
@@ -1255,8 +1261,8 @@ class NumericalCircuit:
             self.A_ = (self.Cf - self.Ct).tocsc()
 
         return self.A_
-    
-    def compute_admittance(self) -> ycalc.Admittance: 
+
+    def compute_admittance(self) -> ycalc.Admittance:
         """
         Get Admittance structures
         :return: Admittance object
@@ -1264,29 +1270,28 @@ class NumericalCircuit:
 
         # compute admittances on demand
         return ycalc.compute_admittances(
-                R=self.branch_data.R,
-                X=self.branch_data.X,
-                G=self.branch_data.G,
-                B=self.branch_data.B,
-                k=self.branch_data.k,
-                tap_module=self.branch_data.tap_module,
-                vtap_f=self.branch_data.virtual_tap_f,
-                vtap_t=self.branch_data.virtual_tap_t,
-                tap_angle=self.branch_data.tap_angle,
-                Beq=self.branch_data.Beq,
-                Cf=self.Cf,
-                Ct=self.Ct,
-                G0sw=self.branch_data.G0sw,
-                If=np.zeros(len(self.branch_data)),
-                a=self.branch_data.a,
-                b=self.branch_data.b,
-                c=self.branch_data.c,
-                Yshunt_bus=self.Yshunt_from_devices,
-                conn=self.branch_data.conn,
-                seq=1,
-                add_windings_phase=False
-            )
-
+            R=self.branch_data.R,
+            X=self.branch_data.X,
+            G=self.branch_data.G,
+            B=self.branch_data.B,
+            k=self.branch_data.k,
+            tap_module=self.branch_data.tap_module,
+            vtap_f=self.branch_data.virtual_tap_f,
+            vtap_t=self.branch_data.virtual_tap_t,
+            tap_angle=self.branch_data.tap_angle,
+            Beq=self.branch_data.Beq,
+            Cf=self.Cf,
+            Ct=self.Ct,
+            G0sw=self.branch_data.G0sw,
+            If=np.zeros(len(self.branch_data)),
+            a=self.branch_data.a,
+            b=self.branch_data.b,
+            c=self.branch_data.c,
+            Yshunt_bus=self.Yshunt_from_devices,
+            conn=self.branch_data.conn,
+            seq=1,
+            add_windings_phase=False
+        )
 
     @property
     def Ybus(self):
@@ -1298,7 +1303,7 @@ class NumericalCircuit:
         # compute admittances on demand
         if self.admittances_ is None:
             self.admittances_ = self.compute_admittance()
-            
+
         return self.admittances_.Ybus
 
     @property

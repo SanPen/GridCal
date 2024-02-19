@@ -43,7 +43,7 @@ def step_calculation(V: Vec, dV: Vec, tau:float=0.99995):
     :return:
     """
     k = np.flatnonzero(dV < 0.0)
-    alpha = min([tau * min(V[k] / -dV[k]), 1])
+    alpha = min([tau * min(V[k] / (-dV[k] + 1e-15)), 1])
 
     #
     # alpha = 1.0
