@@ -71,15 +71,13 @@ class FileOpen:
 
         self.cgmes_logger = DataLogger()
 
-        if isinstance(self.file_name, str):
+        if type(self.file_name) == str:
             if not os.path.exists(self.file_name):
                 raise Exception("File not found :( \n{}".format(self.file_name))
-        elif isinstance(self.file_name, list):
+        elif type(self.file_name) == list:
             for fname in self.file_name:
                 if not os.path.exists(fname):
                     raise Exception("File not found :( \n{}".format(fname))
-        else:
-            raise Exception("file_name type not supported :( \n{}".format(self.file_name))
 
     def open(self, text_func: Union[None, Callable] = None,
              progress_func: Union[None, Callable] = None) -> Union[MultiCircuit, None]:
