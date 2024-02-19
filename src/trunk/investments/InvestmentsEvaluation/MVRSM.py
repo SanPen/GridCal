@@ -492,7 +492,7 @@ def MVRSM_minimize_md(obj_func, x0, lb, ub, num_int, max_evals, rand_evals=1, ob
         criteria_no_normalized = obj_func(x.astype(int), *args)  # [GTEP]: added astype(int)
 
         # Perform random search
-        next_x = np.random.binomial(1, rand_search_bias, num_int)  # [GTEP]
+        next_x = np.random.binomial(1, np.random.rand(), num_int)  # [GTEP]
         # next_x[0:num_int] = np.random.randint(lb[0:num_int], ub[0:num_int] + 1)  # integer variables
         # next_x[num_int:d] = np.random.uniform(lb[num_int:d], ub[num_int:d])  # continuous variables
 

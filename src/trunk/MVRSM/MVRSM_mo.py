@@ -453,7 +453,7 @@ def MVRSM_multi_minimize(obj_func, x0: Vec, lb: Vec, ub: Vec, num_int: int, max_
     :param n_objectives: number of objectives expected
     :param rand_evals: number of random initial evaluations
     :param args: extra arguments to be passed to obj_func appart from x
-    :return: best x, best y, SurrogateModel
+    :return: pareto front y, pareto front x, all y not sorted
     """
     d = len(x0)  # number of decision variables
 
@@ -498,7 +498,7 @@ def MVRSM_multi_minimize(obj_func, x0: Vec, lb: Vec, ub: Vec, num_int: int, max_
         if i < rand_evals:
             # Perform random search
             # next_x = np.random.binomial(1, rand_search_bias, num_int)  # [GTEP]
-            next_x[0:num_int] = np.random.randint(lb[0:num_int], ub[0:num_int] + 1)  # integer variables
+            next_x[0:num_int] = np.random.binomial(1, np.random.rand(), num_int)  # integer variables
             next_x[num_int:d] = np.random.uniform(lb[num_int:d], ub[num_int:d])  # continuous variables
 
         # Skip exploration in the last iteration (to end at the exact minimum of the surrogate model).
@@ -549,7 +549,7 @@ def MVRSM_multi_minimize(obj_func, x0: Vec, lb: Vec, ub: Vec, num_int: int, max_
     y_sorted, x_sorted = non_dominated_sorting(y_values=y_population.copy(),
                                                x_values=x_population)
 
-    return y_sorted, x_sorted, y_population
+    return y_sorted, x_sorted, y_population, x_population
 
 
 if __name__ == '__main__':
@@ -577,15 +577,14 @@ if __name__ == '__main__':
     # x0[0:num_int] = np.round(np.random.rand(num_int) * (ub[0:num_int] - lb[0:num_int]) + lb[0:num_int])  # Random initial guess (integer)
     # x0[num_int:d] = np.random.rand(d - num_int) * (ub[num_int:d] - lb[num_int:d]) + lb[num_int:d]  # Random initial guess (continuous)
 
-    sorted_y_, sorted_x_, y_population_ = MVRSM_multi_minimize(obj_func=ff,
-                                                               x0=x0_,
-                                                               lb=lb_,
-                                                               ub=ub_,
-                                                               num_int=num_int_,
-                                                               max_evals=400,
-                                                               n_objectives=2,
-                                                               rand_evals=100,
-                                                               args=())
+    sorted_y_, sorted_x_, y_population_, x_population_ = MVRSM_multi_minimize(obj_func=ff,
+                                                                              x0=x0,
+                                                                              lb=lb,
+                                                                              ub=ub,
+                                                                              num_int=num_int,
+                                                                              max_evals=400,
+                                                                              n_objectives=2,
+                                                                              rand_evals=100, args=())
 
     print("Best solutions:")
     print(sorted_y_)
