@@ -29,6 +29,7 @@ from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
 from trunk.investments.InvestmentsEvaluation.MVRSM import MVRSM_minimize, MVRSM_minimize_md
+from trunk.MVRSM.MVRSM_mo import MVRSM_multi_minimize
 from GridCalEngine.Simulations.InvestmentsEvaluation.stop_crits import StochStopCriterion
 from GridCalEngine.basic_structures import IntVec
 from GridCalEngine.enumerations import InvestmentEvaluationMethod
@@ -289,7 +290,23 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         conf_level = 0.95
         stop_crit = StochStopCriterion(conf_dist, conf_level)
         # x0 = np.random.binomial(1, rand_search_active_prob, self.dim)
-        x0 = np.zeros(self.dim)
+        x0 = [0., 0., 0., 0., 0., 1., 0., 1., 1., 0., 0., 1., 0., 0., 0., 0., 0., 1., 0., 0., 1., 1., 0., 0., 0., 0.,
+              0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 1., 0., 0.,
+              0., 0., 1., 0., 0., 0., 0., 1., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0.,
+              0., 0., 0., 1., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0.,
+              0., 0., 1., 0., 0., 0., 1., 0., 0., 0., 1., 0., 1., 0., 0., 0., 0., 1., 0., 0., 0., 1., 0., 0., 0., 0.,
+              0., 0., 1., 0., 1., 0., 1., 1., 0., 0., 0., 1., 1., 0., 0., 1., 1., 0., 1., 0., 0., 0., 1., 0., 1., 0.,
+              0., 0., 0., 0., 0., 1., 0., 0., 0., 1., 1., 0., 1., 0., 0., 1., 1., 1., 0., 0., 0., 0., 1., 1., 1., 0.,
+              1., 1., 0., 1., 0., 1., 1., 0., 1., 0., 0., 1., 1., 0., 0., 1., 1., 1., 1., 0., 0., 1., 1., 0., 0., 1.,
+              1., 1., 1., 0., 0., 0., 1., 1., 0., 1., 1., 0., 0., 0., 0., 1., 0., 1., 0., 0., 0., 1., 0., 1., 0., 1.,
+              0., 0., 1., 0., 0., 1., 0., 0., 1., 1., 0., 1., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+              0., 0., 0., 0., 0., 1., 0., 1., 0., 0., 0., 0., 0., 0., 0., 1., 1., 0., 1., 0., 0., 0., 0., 1., 0., 0.,
+              0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 1., 0., 0., 1., 0., 1., 0.,
+              0., 0., 0., 0., 0., 0., 0., 0., 0., 1., 1., 0., 0., 0., 1., 1., 0., 0., 0., 0., 0., 0., 0., 1., 0., 0.,
+              0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 1., 1., 0., 0., 0., 0., 0., 1., 1., 1.,
+              0., 0., 1., 1., 1., 0., 0., 1., 0., 1., 1., 0., 0., 1., 0., 0., 1., 0., 0., 1., 0., 0., 0., 0., 1., 0.]
+
+        x0 = np.array(x0)
 
         # compile the snapshot
         self.nc = compile_numerical_circuit_at(circuit=self.grid, t_idx=None)
@@ -305,27 +322,50 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         self.objective_function(combination=np.zeros(self.results.n_groups, dtype=int))
 
         # optimize
-        all_x, all_crits, all_ys, model = MVRSM_minimize_md(obj_func=self.objective_function,
-                                                            x0=x0,
-                                                            lb=lb,
-                                                            ub=ub,
-                                                            num_int=self.dim,
-                                                            max_evals=self.options.max_eval,
-                                                            rand_evals=rand_evals,
-                                                            obj_threshold=threshold,
-                                                            stop_crit=stop_crit,
-                                                            rand_search_bias=rand_search_active_prob,
-                                                            f_obj_dim=6)
+        if self.options.solver == InvestmentEvaluationMethod.MVRSM:
+            all_x, all_crits, all_ys, model = MVRSM_minimize_md(obj_func=self.objective_function,
+                                                                x0=x0,
+                                                                lb=lb,
+                                                                ub=ub,
+                                                                num_int=self.dim,
+                                                                max_evals=self.options.max_eval,
+                                                                rand_evals=rand_evals,
+                                                                obj_threshold=threshold,
+                                                                stop_crit=stop_crit,
+                                                                rand_search_bias=rand_search_active_prob,
+                                                                f_obj_dim=6)
+            lowest_indices = np.argsort(all_ys)[:1]
+            print(all_x[lowest_indices])
 
-        self.results.set_at(eval_idx=np.arange(self.options.max_eval),
-                            capex=all_crits[:, 4],
-                            opex=all_crits[:, 5],
-                            losses=all_crits[:, 0],
-                            overload_score=all_crits[:, 1],
-                            voltage_score=all_crits[:, 2],
-                            objective_function=all_ys,
-                            combination=all_x,
-                            index_name=np.array(['Evaluation {}'.format(i) for i in range(self.options.max_eval)]))
+            self.results.set_at(eval_idx=np.arange(self.options.max_eval),
+                                capex=all_crits[:, 4],
+                                opex=all_crits[:, 5],
+                                losses=all_crits[:, 0],
+                                overload_score=all_crits[:, 1],
+                                voltage_score=all_crits[:, 2],
+                                objective_function=all_ys,
+                                combination=all_x,
+                                index_name=np.array(['Evaluation {}'.format(i) for i in range(self.options.max_eval)]))
+
+        elif self.options.solver == InvestmentEvaluationMethod.MVRSM_multi:
+            sorted_y_, sorted_x_, y_population_, x_population_ = MVRSM_multi_minimize(obj_func=self.objective_function,
+                                                                                      x0=x0,
+                                                                                      lb=lb,
+                                                                                      ub=ub,
+                                                                                      num_int=self.dim,
+                                                                                      max_evals=self.options.max_eval,
+                                                                                      n_objectives=6,
+                                                                                      rand_evals=rand_evals)
+
+            self.results.set_at(eval_idx=np.arange(len(y_population_)),
+                                capex=y_population_[:, 4],
+                                opex=y_population_[:, 5],
+                                losses=y_population_[:, 0],
+                                overload_score=y_population_[:, 1],
+                                voltage_score=y_population_[:, 2],
+                                objective_function=y_population_[:, 4] * 0.00001 + y_population_[:, 0],
+                                combination=x_population_,
+                                index_name=np.array(['Evaluation {}'.format(i) for i in range(len(y_population_))]))
 
         self.report_done()
 
@@ -343,7 +383,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         elif self.options.solver == InvestmentEvaluationMethod.Hyperopt:
             self.optimized_evaluation_hyperopt()
 
-        elif self.options.solver == InvestmentEvaluationMethod.MVRSM:
+        elif self.options.solver == InvestmentEvaluationMethod.MVRSM or self.options.solver == InvestmentEvaluationMethod.MVRSM_multi:
             self.optimized_evaluation_mvrsm()
 
         else:

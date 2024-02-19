@@ -156,7 +156,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
             plt.colorbar(sc3, fraction=0.05, label='Objective function')
             fig.suptitle(result_type.value[0])
             plt.tight_layout()
-            plt.show()
+            # plt.show()
 
         elif result_type == ResultTypes.InvestmentsIterationsPlot:
             labels = self._index_names
