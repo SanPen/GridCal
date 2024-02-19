@@ -21,16 +21,16 @@ from matplotlib import pyplot as plt
 
 from GridCalEngine.Core.Devices.Substation.bus import Bus
 from GridCalEngine.enumerations import BuildStatus
-from GridCalEngine.Core.Devices.Branches.templates.parent_branch import ParentBranch
-from GridCalEngine.Core.Devices.editable_device import DeviceType
+from GridCalEngine.Core.Devices.Parents.branch_parent import BranchParent
+from GridCalEngine.Core.Devices.Parents.editable_device import DeviceType
 
 
-class UPFC(ParentBranch):
+class UPFC(BranchParent):
 
     def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='UPFC', code='', idtag=None, active=True,
-                 rs=0.0, xs=0.00001, rp=0.0, xp=0.0, vp=1.0, Pset = 0.0, Qset=0.0, rate=9999,
-                 mttf=0, mttr=0, cost=100, cost_prof=None, rate_prof=None, active_prof=None, contingency_factor=1.0,
-                 contingency_enabled=True, monitor_loading=True, contingency_factor_prof=None,
+                 rs=0.0, xs=0.00001, rp=0.0, xp=0.0, vp=1.0, Pset=0.0, Qset=0.0, rate=9999,
+                 mttf=0, mttr=0, cost=100, contingency_factor=1.0,
+                 contingency_enabled=True, monitor_loading=True,
                  rs0=0.0, xs0=0.00001, rp0=0.0, xp0=0.0,
                  rs2=0.0, xs2=0.00001, rp2=0.0, xp2=0.0,
                  capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned):
@@ -53,13 +53,9 @@ class UPFC(ParentBranch):
         :param mttf:
         :param mttr:
         :param cost:
-        :param cost_prof:
-        :param rate_prof:
-        :param active_prof:
         :param contingency_factor:
         :param contingency_enabled:
         :param monitor_loading:
-        :param contingency_factor_prof:
         :param rs0:
         :param xs0:
         :param rp0:
@@ -73,7 +69,7 @@ class UPFC(ParentBranch):
         :param build_status:
         """
 
-        ParentBranch.__init__(self,
+        BranchParent.__init__(self,
                               name=name,
                               idtag=idtag,
                               code=code,
@@ -82,11 +78,8 @@ class UPFC(ParentBranch):
                               cn_from=None,
                               cn_to=None,
                               active=active,
-                              active_prof=active_prof,
                               rate=rate,
-                              rate_prof=rate_prof,
                               contingency_factor=contingency_factor,
-                              contingency_factor_prof=contingency_factor_prof,
                               contingency_enabled=contingency_enabled,
                               monitor_loading=monitor_loading,
                               mttf=mttf,
@@ -95,11 +88,7 @@ class UPFC(ParentBranch):
                               capex=capex,
                               opex=opex,
                               Cost=cost,
-                              Cost_prof=cost_prof,
                               device_type=DeviceType.UpfcDevice)
-
-        # List of measurements
-        self.measurements = list()
 
         # total impedance and admittance in p.u.
         self.Rs = rs

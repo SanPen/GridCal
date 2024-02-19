@@ -25,12 +25,12 @@ from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.basic_structures import Vec, IntVec, CxVec
 from GridCalEngine.enumerations import BranchImpedanceMode
-import GridCalEngine.Core.topology as tp
+import GridCalEngine.Core.Topology.topology as tp
 
-from GridCalEngine.Core.topology import compile_types
+from GridCalEngine.Core.Topology.topology import compile_types
 from GridCalEngine.Utils.NumericalMethods.sparse_solve import get_sparse_type
 import GridCalEngine.Core.Compilers.circuit_to_data as gc_compiler2
-import GridCalEngine.Core.admittance_matrices as ycalc
+import GridCalEngine.Core.Topology.admittance_matrices as ycalc
 from GridCalEngine.enumerations import TransformerControlType, ConverterControlType
 import GridCalEngine.Core.DataStructures as ds
 from GridCalEngine.Core.Devices.Substation.bus import Bus
@@ -388,7 +388,6 @@ class NumericalCircuit:
         # Admittances for Linear
         self.Bbus_: Union[sp.csc_matrix, None] = None
         self.Bf_: Union[sp.csc_matrix, None] = None
-        self.Btau_: Union[sp.csc_matrix, None] = None
         self.Bpqpv_: Union[sp.csc_matrix, None] = None
         self.Bref_: Union[sp.csc_matrix, None] = None
 
@@ -438,7 +437,6 @@ class NumericalCircuit:
         # Admittances for Linear
         self.Bbus_: Union[sp.csc_matrix, None] = None
         self.Bf_: Union[sp.csc_matrix, None] = None
-        self.Btau_: Union[sp.csc_matrix, None] = None
         self.Bpqpv_: Union[sp.csc_matrix, None] = None
         self.Bref_: Union[sp.csc_matrix, None] = None
 
@@ -873,6 +871,43 @@ class NumericalCircuit:
                     print(f'Unknown contingency property {cnt.prop} at {cnt.name} {cnt.idtag}')
             else:
                 print(f'contingency device not found {cnt.name} {cnt.idtag}')
+
+    def set_linear_contingency_status(self, contingencies_list: List[Contingency], revert: bool = False):
+        """
+        Set the status of a list of contingencies
+        :param contingencies_list: list of contingencies
+        :param revert: if false, the contingencies are applied, else they are reversed
+        """
+        injections = np.zeros(self.nbus)
+        # apply the contingencies
+        for cnt in contingencies_list:
+
+            # search the investment device
+            structure, idx = self.structs_dict.get(cnt.device_idtag, (None, 0))
+
+            if structure is not None:
+                if cnt.prop == 'active':
+                    if revert:
+                        structure.active[idx] = int(not bool(cnt.value))
+                    else:
+                        structure.active[idx] = int(cnt.value)
+                elif cnt.prop == '%':
+                    # TODO Cambiar el acceso a P por una función (o función que incremente- decremente porcentaje)
+                    assert not isinstance(structure, ds.HvdcData) # TODO Arreglar esto
+                    dev_injections = np.zeros(structure.size())
+                    dev_injections[idx] -= structure.p[idx]
+                    if revert:
+                        structure.p[idx] /= float(cnt.value / 100.0)
+                    else:
+                        structure.p[idx] *= float(cnt.value / 100.0)
+                    dev_injections[idx] += structure.p[idx]
+                    injections += structure.get_array_per_bus(dev_injections)
+                else:
+                    print(f'Unknown contingency property {cnt.prop} at {cnt.name} {cnt.idtag}')
+            else:
+                print(f'contingency device not found {cnt.name} {cnt.idtag}')
+
+        return injections
 
     @property
     def original_bus_idx(self):
@@ -1371,7 +1406,7 @@ class NumericalCircuit:
         :return:
         """
         if self.Bbus_ is None:
-            self.Bbus_, self.Bf_, self.Btau_ = ycalc.compute_linear_admittances(
+            self.Bbus_, self.Bf_ = ycalc.compute_linear_admittances(
                 nbr=self.nbr,
                 X=self.branch_data.X,
                 R=self.branch_data.R,
@@ -1397,17 +1432,6 @@ class NumericalCircuit:
             _ = self.Bbus  # call the constructor of Bf
 
         return self.Bf_
-
-    @property
-    def Btau(self):
-        """
-
-        :return:
-        """
-        if self.Bf_ is None:
-            _ = self.Bbus  # call the constructor of Bf
-
-        return self.Btau_
 
     @property
     def Bpqpv(self):
