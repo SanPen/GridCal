@@ -144,8 +144,8 @@ def compute_autodiff_structures(x, mu, lam, compute_jac: bool, compute_hess: boo
                              S=Scalc, St=St, Sf=Sf)
 
 
-def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: bool, Ybus, Yf, Cg, Cf, Ct, R, X, F,T,
-                                Sd, slack, no_slack, Yt, from_idx, to_idx, pq, pv, th_max, th_min, V_U, V_L, P_U,
+def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: bool, admittances, Cg, R, X, F, T,
+                                Sd, slack, no_slack, from_idx, to_idx, pq, pv, th_max, th_min, V_U, V_L, P_U,
                                 P_L, tanmax, Q_U, Q_L, tapm_max, tapm_min, tapt_max, tapt_min, alltapm, alltapt, k_m,
                                 k_tau, k_mtau, c0, c1, c2, Sbase, rates, il, ig, nig, Sg_undis) -> IpsFunctionReturn:
     """
@@ -182,10 +182,27 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
     :param ig:
     :return:
     """
+    M, N = admittances.Cf.shape
+    Ng = len(ig)
+    ntapm = len(k_m)
+    ntapt = len(k_tau)
 
-    Ybus, Yf, Yt = compute_updated_admittances(x, R, X, ig, alltapm, alltapt, k_m, k_tau, Cf, Ct)
+    alltapm0 = alltapm.copy()
+    alltapt0 = alltapt.copy()
 
-    # TODO: Update admittance matrix. It should happen here, check if needed before.
+    _, _, _, _, tapm, tapt = x2var(x, nVa=N, nVm=N, nPg=Ng, nQg=Ng, ntapm=ntapm, ntapt=ntapt)
+
+    alltapm[k_m] = tapm
+    alltapt[k_tau] = tapt
+
+    admittances.modify_taps(alltapm0, alltapm, alltapt0, alltapt)
+
+    Ybus = admittances.Ybus
+    Yf = admittances.Yf
+    Yt = admittances.Yt
+    Cf = admittances.Cf
+    Ct = admittances.Ct
+
     f = eval_f(x=x, Cg=Cg,k_m=k_m, k_tau=k_tau, c0=c0, c1=c1, c2=c2, ig=ig, Sbase=Sbase)
     G, Scalc = eval_g(x=x, Ybus=Ybus, Yf=Yf, Cg=Cg, Sd=Sd, ig=ig, nig=nig,
                       pv=pv, k_m=k_m, k_tau=k_tau, Vm_max=V_U, Sg_undis=Sg_undis, slack=slack)
@@ -366,12 +383,9 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     c1 = nc.generator_data.cost_1
     c2 = nc.generator_data.cost_2
 
-    Ybus = nc.Ybus
-    Yf = nc.Yf
-    Yt = nc.Yt
+    admittances = nc.compute_admittance()
+
     Cg = nc.generator_data.C_bus_elm
-    Cf = nc.Cf
-    Ct = nc.Ct
     F = nc.F
     T = nc.T
     # dfa = pd.DataFrame(Yf.A.real)
@@ -392,7 +406,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     Vm_max = nc.bus_data.Vmax
     Vm_min = nc.bus_data.Vmin
     pf = nc.generator_data.pf
-    tanmax = 0.5 + ((1 - (pf)**2)**(1/2)) / (pf + 1e-15)
+    tanmax = ((1 - (pf)**2)**(1/2)) / (pf + 1e-15)
 
     pv = np.flatnonzero(Vm_max == Vm_min)
     pq = np.flatnonzero(Vm_max != Vm_min)
@@ -486,7 +500,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         # against their finite differences equivalent
         result = interior_point_solver(x0=x0, n_x=NV, n_eq=NE, n_ineq=NI,
                                        func=evaluate_power_flow_debug,
-                                       arg=(Ybus, Yf, Cg, Cf, Ct, Sd, slack, no_slack, Yt, from_idx, to_idx,
+                                       arg=(admittances, Cg, Sd, slack, no_slack, from_idx, to_idx,
                                             pq, pv, Va_max, Va_min, Vm_max, Vm_min, Pg_max, Pg_min,
                                             Qg_max, Qg_min, tapm_max, tapm_min, tapt_max, tapt_min, alltapm, alltapt,
                                             k_m, k_tau, k_mtau, c0, c1, c2, Sbase, rates, il, ig, nig, Sg_undis),
@@ -500,7 +514,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
             # run the solver with the autodiff derivatives
             result = interior_point_solver(x0=x0, n_x=NV, n_eq=NE, n_ineq=NI,
                                            func=compute_autodiff_structures,
-                                           arg=(Ybus, Yf, Cg, Sd, slack, no_slack, Yt, from_idx, to_idx, pq, pv,
+                                           arg=(admittances, Cg, Sd, slack, no_slack, from_idx, to_idx, pq, pv,
                                                 Va_max, Va_min, Vm_max, Vm_min, Pg_max, Pg_min, Qg_max, Qg_min,
                                                 tapm_max, tapm_min, tapt_max, tapt_min, k_m, k_tau, k_mtau,
                                                 c0, c1, c2, Sbase, rates, il, ig, nig, Sg_undis, 1e-5),
@@ -512,7 +526,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
             # run the solver with the analytic derivatives
             result = interior_point_solver(x0=x0, n_x=NV, n_eq=NE, n_ineq=NI,
                                            func=compute_analytic_structures,
-                                           arg=(Ybus, Yf, Cg, Cf, Ct, R, X, F, T, Sd, slack, no_slack, Yt, from_idx,
+                                           arg=(admittances, Cg, R, X, F, T, Sd, slack, no_slack, from_idx,
                                                 to_idx, pq, pv, Va_max, Va_min, Vm_max, Vm_min, Pg_max, Pg_min, tanmax,
                                                 Qg_max, Qg_min, tapm_max, tapm_min, tapt_max, tapt_min, alltapm,
                                                 alltapt, k_m, k_tau, k_mtau, c0, c1, c2, Sbase, rates, il, ig, nig,
@@ -551,8 +565,13 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                                     'dual price (€/MW)': lam_p, 'dual price (€/MVAr)': lam_q})
         df_gen = pd.DataFrame(data={'P (MW)': Pg * nc.Sbase, 'Q (MVAr)': Qg * nc.Sbase})
 
+        df_trafo_m = pd.DataFrame(data={'V (p.u.)': tapm})
+        df_trafo_tau = pd.DataFrame(data={'Tau (rad)': tapt})
+
         print()
         print("Bus:\n", df_bus)
+        print("V-Trafos:\n", df_trafo_m)
+        print("Tau-Trafos:\n", df_trafo_tau)
         print("Gen:\n", df_gen)
         print("Error", result.error)
 
