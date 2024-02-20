@@ -1,16 +1,72 @@
 import polars as pl
-from rdflib import Graph, RDFS, RDF, Namespace, XSD, OWL
+from rdflib.util import first
+from rdflib import Graph, RDFS, RDF, Namespace, OWL, IdentifiedNode, plugin
 import rdflib
 from rdflib.plugins.parsers.RDFVOC import RDFVOC
+from rdflib.plugins.serializers.rdfxml import PrettyXMLSerializer
+from rdflib.serializer import Serializer
 import os
-from cgmes_circuit import CgmesCircuit
+from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
+
+plugin.register("cim_xml", Serializer, "GridCalEngine.IO.cim.cgmes.cgmes_export", "CimSerializer")
 
 
-class Cgmes_exporter:
+class CimSerializer(PrettyXMLSerializer):
+    def __init__(self, store: Graph):
+        super().__init__(store)
+        self.about_list = self.about_list_import()
+
+    def about_list_import(self, profile: str = ""):
+        about_list = []
+        return about_list
+
+    def subject(self, subject: IdentifiedNode, depth: int = 1):
+        store = self.store
+        writer = self.writer
+
+        if subject in self.forceRDFAbout:
+            writer.push(RDFVOC.Description)
+            writer.attribute(RDFVOC.about, self.relativize(subject))
+            writer.pop(RDFVOC.Description)
+            self.forceRDFAbout.remove(subject)  # type: ignore[arg-type]
+
+        elif subject not in self._PrettyXMLSerializer__serialized:
+            self._PrettyXMLSerializer__serialized[subject] = 1
+            type = first(store.objects(subject, RDF.type))
+
+            try:
+                # type error: Argument 1 to "qname" of "NamespaceManager" has incompatible type "Optional[Node]"; expected "str"
+                self.nm.qname(type)  # type: ignore[arg-type]
+            except Exception:
+                type = None
+
+            element = type or RDFVOC.Description
+            writer.push(element)
+
+            if subject in self.about_list:
+                writer.attribute(RDFVOC.about, self.relativize(subject))
+            else:
+                writer.attribute(RDFVOC.ID, self.relativize(subject))
+
+            if (subject, None, None) in store:
+                for predicate, object in store.predicate_objects(subject):
+                    if not (predicate == RDF.type and object == type):
+                        self.predicate(predicate, object, depth + 1)
+
+            writer.pop(element)
+
+        elif subject in self.forceRDFAbout:
+            writer.push(RDFVOC.Description)
+            writer.attribute(RDFVOC.about, self.relativize(subject))
+            writer.pop(RDFVOC.Description)
+            self.forceRDFAbout.remove(subject)  # type: ignore[arg-type]
+
+
+class CgmesExporter:
     def __init__(self, cgmes_circuit: CgmesCircuit = None):
         self.cgmes_circuit = cgmes_circuit
 
-    def export(self):
+    def export_to_xml(self):
         current_directory = os.path.dirname(__file__)
         relative_path_to_excel = "export_docs/CGMES_2_4_EQ_SSH_TP_SV_ConcreteClassesAllProperties.xlsx"
         absolute_path_to_excel = os.path.join(current_directory, relative_path_to_excel)
@@ -137,13 +193,13 @@ class Cgmes_exporter:
         relative_path_to_files = "export_docs/"
         absolute_path_to_files = os.path.join(current_directory, relative_path_to_files)
 
-        eq_graph.serialize(destination=absolute_path_to_files + "eq.xml", format="pretty-xml",
+        eq_graph.serialize(destination=absolute_path_to_files + "eq.xml", format="cim_xml",
                            base="http://iec.ch/TC57/2013/CIM-schema-cim16#")
-        ssh_graph.serialize(destination=absolute_path_to_files + "ssh.xml", format="pretty-xml",
+        ssh_graph.serialize(destination=absolute_path_to_files + "ssh.xml", format="cim_xml",
                             base="http://iec.ch/TC57/2013/CIM-schema-cim16#")
-        tp_graph.serialize(destination=absolute_path_to_files + "tp.xml", format="pretty-xml",
+        tp_graph.serialize(destination=absolute_path_to_files + "tp.xml", format="cim_xml",
                            base="http://iec.ch/TC57/2013/CIM-schema-cim16#")
-        sv_graph.serialize(destination=absolute_path_to_files + "sv.xml", format="pretty-xml",
+        sv_graph.serialize(destination=absolute_path_to_files + "sv.xml", format="cim_xml",
                            base="http://iec.ch/TC57/2013/CIM-schema-cim16#")
         print("CGMES graph export completed.")
 

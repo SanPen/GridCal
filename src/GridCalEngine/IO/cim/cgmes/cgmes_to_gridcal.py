@@ -20,6 +20,7 @@ import GridCalEngine.IO.cim.cgmes.cgmes_enums as cgmes_enums
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 import GridCalEngine.Core.Devices as gcdev
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
+from GridCalEngine.IO.cim.cgmes.cgmes_export import CgmesExporter
 from GridCalEngine.IO.cim.cgmes.cgmes_utils import get_nominal_voltage, get_pu_values_power_transformer, get_pu_values_ac_line_segment, \
     get_rate
 from GridCalEngine.data_logger import DataLogger
@@ -702,6 +703,8 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit, logger: DataLogger) -> MultiCirc
     #             else:
     #                 print(f"It's an attribute:  {attr_value}")
 
-    # cgmes_model.export_to_xml()
+    # Export test
+    cgmes_exporter = CgmesExporter(cgmes_model)
+    cgmes_exporter.export_to_xml()
 
     return gc_model
