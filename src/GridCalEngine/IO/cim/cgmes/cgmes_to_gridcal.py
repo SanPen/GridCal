@@ -161,8 +161,7 @@ def get_gcdev_connectivity_nodes(cgmes_model: CgmesCircuit,
         gcdev_elm = gcdev.ConnectivityNode(idtag=cgmes_elm.uuid,
                                            code=cgmes_elm.description,
                                            name=cgmes_elm.name,
-                                           dc=False,
-                                           bus_bar=None)
+                                           dc=False)
 
         # gcdev_model.connectivity_nodes.append(gcdev_elm)
         cn_node_dict[gcdev_elm.idtag] = gcdev_elm
