@@ -45,13 +45,13 @@ def find_terms_connections(cgmes_terminal,
     if cgmes_terminal is not None:
         # get the rosetta calculation node if exists
         if cgmes_terminal.TopologicalNode is not None:
-            calc_node = calc_node_dict.get(cgmes_terminal.TopologicalNode, None)
+            calc_node = calc_node_dict.get(cgmes_terminal.TopologicalNode.uuid, None)
         else:
             calc_node = None
 
         # get the gcdev connectivity node if exists
         if cgmes_terminal.ConnectivityNode is not None:
-            cn = cn_dict.get(cgmes_terminal.ConnectivityNode, None)
+            cn = cn_dict.get(cgmes_terminal.ConnectivityNode.uuid, None)
         else:
             cn = None
     else:
@@ -683,14 +683,14 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit, logger: DataLogger) -> MultiCirc
                              value=e.ConductingEquipment,
                              expected_value='object')
 
-    # calc_node_dict = get_gcdev_calculation_nodes(cgmes_model, gc_model, v_dict, logger)
-    # cn_dict = get_gcdev_connectivity_nodes(cgmes_model, gc_model)
-    # get_gcdev_loads(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger)
-    # get_gcdev_external_grids(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger)
-    # get_gcdev_generators(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger)
-    #
-    # get_gcdev_ac_lines(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger, Sbase)
-    # get_gcdev_ac_transformers(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger, Sbase)
+    calc_node_dict = get_gcdev_calculation_nodes(cgmes_model, gc_model, v_dict, logger)
+    cn_dict = get_gcdev_connectivity_nodes(cgmes_model, gc_model)
+    get_gcdev_loads(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger)
+    get_gcdev_external_grids(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger)
+    get_gcdev_generators(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger)
+
+    get_gcdev_ac_lines(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger, Sbase)
+    get_gcdev_ac_transformers(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger, Sbase)
     #
     # get_gcdev_shunts(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger)
     # for class_name in cgmes_model.classes:
