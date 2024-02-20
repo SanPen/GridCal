@@ -520,8 +520,13 @@ def power_flow_post_process(calculation_inputs: NumericalCircuit,
     else:
         # DC power flow
         theta = np.angle(V, deg=False)
+        theta_f = theta[calculation_inputs.F]
+        theta_t = theta[calculation_inputs.T]
+
         b = 1.0 / (calculation_inputs.branch_data.X * calculation_inputs.branch_data.tap_module)
-        Pf = calculation_inputs.Bf @ theta - b * calculation_inputs.branch_data.tap_angle
+        # Pf = calculation_inputs.Bf @ theta - b * calculation_inputs.branch_data.tap_angle
+
+        Pf = b * (theta_f - theta_t - calculation_inputs.branch_data.tap_angle)
 
         Sfb = Pf * calculation_inputs.Sbase
         Stb = -Pf * calculation_inputs.Sbase
