@@ -172,6 +172,7 @@ from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.topological_island import 
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.coordinate_system import CoordinateSystem
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.location import Location
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.position_point import PositionPoint
+from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.full_model import FullModel
 
 
 def find_references(elements_by_type: Dict[str, List[IdentifiedObject]],
@@ -320,7 +321,6 @@ def find_references(elements_by_type: Dict[str, List[IdentifiedObject]],
             else:
                 check(logger=logger)
 
-
     # modify the elements_by_type here adding the elements from the boundary set
     # all_elements_dict was modified in the previous loop
     for referenced_object in added_from_the_boundary_set:
@@ -389,6 +389,7 @@ class CgmesCircuit(BaseCircuit):
     """
 
     def __init__(self,
+                 cgmes_version: str = "",
                  text_func: Union[Callable, None] = None,
                  progress_func: Union[Callable, None] = None,
                  logger=DataLogger()):
@@ -397,6 +398,7 @@ class CgmesCircuit(BaseCircuit):
         """
         BaseCircuit.__init__(self)
 
+        self.cgmes_version = cgmes_version
         self.logger: DataLogger = logger
 
         self.text_func = text_func
@@ -547,6 +549,7 @@ class CgmesCircuit(BaseCircuit):
             'CoordinateSystem': CoordinateSystem,
             'Location': Location,
             'PositionPoint': PositionPoint,
+            'FullModel': FullModel,
         }
 
         self.ACDCConverter_list: List[ACDCConverter] = list()
@@ -693,6 +696,7 @@ class CgmesCircuit(BaseCircuit):
         self.CoordinateSystem_list: List[CoordinateSystem] = list()
         self.Location_list: List[Location] = list()
         self.PositionPoint_list: List[PositionPoint] = list()
+        self.FullModel_list: List[FullModel] = list()
 
         # classes to read, theo others are ignored
         self.classes = [key for key, va in self.class_dict.items()]
@@ -709,19 +713,19 @@ class CgmesCircuit(BaseCircuit):
         self.data: Dict[str, Dict[str, Dict[str, str]]] = dict()
         self.boundary_set: Dict[str, Dict[str, Dict[str, str]]] = dict()
 
-    def parse_files(self, files: List[str], delete_unused=True, detect_circular_references=False):
+    def parse_files(self, data_parser: CgmesDataParser, delete_unused=True, detect_circular_references=False):
         """
         Parse CGMES files into this class
-        :param files: list of CGMES files (.zip / .xml)
         :param delete_unused: Detele the unused boundary set?
+        :param data_parser: getting the read files
         :param detect_circular_references: report the circular references
         """
 
         # read the CGMES data as dictionaries
-        data_parser = CgmesDataParser(text_func=self.text_func,
-                                      progress_func=self.progress_func,
-                                      logger=self.logger)
-        data_parser.load_files(files=files)
+        # data_parser = CgmesDataParser(text_func=self.text_func,
+        #                               progress_func=self.progress_func,
+        #                               logger=self.logger)
+        # data_parser.load_files(files=files)
 
         # set the data
         self.set_data(data=data_parser.data,
@@ -1172,7 +1176,7 @@ class CgmesCircuit(BaseCircuit):
 
     def export_to_xml(self):
         import polars as pl
-        from rdflib import Graph, RDFS, RDF, Namespace
+        from rdflib import Graph, RDFS, RDF, Namespace, XSD, OWL
         import rdflib
         import os
 
@@ -1180,17 +1184,25 @@ class CgmesCircuit(BaseCircuit):
         relative_path_to_excel = "export_docs/CGMES_2_4_EQ_SSH_TP_SV_ConcreteClassesAllProperties.xlsx"
         absolute_path_to_excel = os.path.join(current_directory, relative_path_to_excel)
 
+        rdf_serialization = Graph()
+        rdf_serialization.parse(source="C:\WorkProjects\PycharmProjects\GridCal\src\GridCalEngine\IO\cim\cgmes"
+                                       "\export_docs\RDFSSerialisation.ttl", format="ttl")
+        enum_dict = dict()
+        enum_list = dict()
+        for s_i, p_i, o_i in rdf_serialization.triples((None, RDF.type, RDFS.Class)):
+            if str(s_i).split("#")[1] == "RdfEnum":
+                for s, p, o in rdf_serialization.triples((s_i, OWL.members, None)):
+                    enum_list[str(o).split("#")[1]] = str(o)
+                enum_dict["eq"] = enum_list
+
         profiles_info = pl.read_excel(
             source=absolute_path_to_excel,
             sheet_name="Profiles")
-        graph_with_ns = Graph()
-        graph_with_ns.bind("cim", Namespace("http://iec.ch/TC57/2013/CIM-schema-cim16#"))
-        graph_with_ns.bind("entsoe", Namespace("http://entsoe.eu/CIM/SchemaExtension/3/1#"))
 
-        eq_graph = graph_with_ns
-        ssh_graph = graph_with_ns
-        tp_graph = graph_with_ns
-        sv_graph = graph_with_ns
+        eq_graph = self.create_graph()
+        ssh_graph = self.create_graph()
+        tp_graph = self.create_graph()
+        sv_graph = self.create_graph()
 
         for class_name in self.classes:
             objects = self.get_objects_list(elm_type=class_name)
@@ -1201,63 +1213,109 @@ class CgmesCircuit(BaseCircuit):
                 for attr_name, attr_value in obj.__dict__.items():
                     # print(f"{attr_name}: {attr_value}")
                     try:
-                        filt_property = filt_class.filter(pl.col("Property-AttributeAssociationSimple") == attr_name)
-                        profile = filt_property[0, 8].__str__()
-                        if hasattr(attr_value, "rdfid"):
-                            # print("It's an assoc: " + attr_value.rdfid)
+                        if attr_value is not None or attr_value != "":
+                            filt_property = filt_class.filter(pl.col("Property-AttributeAssociationSimple") == attr_name)
+                            profile = filt_property[0, 8].__str__()
+                            obj_id = rdflib.URIRef("_" + obj.rdfid)
+                            if hasattr(attr_value, "rdfid"):
+                                # print("It's an assoc: " + attr_value.rdfid)
 
-                            if profile == "EQ":
-                                eq_graph.add((rdflib.URIRef(obj.rdfid), RDF.type,
-                                              rdflib.URIRef(filt_property[0, 1].__str__())))
-                                eq_graph.add((rdflib.URIRef(attr_value.rdfid), rdflib.URIRef(filt_property[0, 3].__str__()),
-                                              rdflib.URIRef(attr_value.rdfid)))
-                            elif profile == "SSH":
-                                ssh_graph.add((rdflib.URIRef(obj.rdfid), RDF.type,
-                                               rdflib.URIRef(filt_property[0, 1].__str__())))
-                                ssh_graph.add(
-                                    (rdflib.URIRef(attr_value.rdfid), rdflib.URIRef(filt_property[0, 3].__str__()),
-                                     rdflib.URIRef(attr_value.rdfid)))
-                            elif profile == "TP":
-                                tp_graph.add((rdflib.URIRef(obj.rdfid), RDF.type,
-                                              rdflib.URIRef(filt_property[0, 1].__str__())))
-                                tp_graph.add((rdflib.URIRef(attr_value.rdfid), rdflib.URIRef(filt_property[0, 3].__str__()),
-                                              rdflib.URIRef(attr_value.rdfid)))
-                            elif profile == "SV":
-                                sv_graph.add((rdflib.URIRef(obj.rdfid), RDF.type,
-                                              rdflib.URIRef(filt_property[0, 1].__str__())))
-                                sv_graph.add((rdflib.URIRef(attr_value.rdfid), rdflib.URIRef(filt_property[0, 3].__str__()),
-                                              rdflib.URIRef(attr_value.rdfid)))
-                        else:
-                            # print(f"It's an attribute:  {attr_value}")
-                            if profile == "EQ":
-                                eq_graph.add((rdflib.URIRef(obj.rdfid), RDF.type,
-                                              rdflib.URIRef(filt_property[0, 1].__str__())))
-                                eq_graph.add((rdflib.URIRef(obj.rdfid), rdflib.URIRef(filt_property[0, 3].__str__()),
-                                              rdflib.Literal(attr_value)))
-                            elif profile == "SSH":
-                                ssh_graph.add((rdflib.URIRef(obj.rdfid), RDF.type,
-                                               rdflib.URIRef(filt_property[0, 1].__str__())))
-                                ssh_graph.add(
-                                    (rdflib.URIRef(obj.rdfid), rdflib.URIRef(filt_property[0, 3].__str__()),
-                                     rdflib.Literal(attr_value)))
-                            elif profile == "TP":
-                                tp_graph.add((rdflib.URIRef(obj.rdfid), RDF.type,
-                                              rdflib.URIRef(filt_property[0, 1].__str__())))
-                                tp_graph.add((rdflib.URIRef(obj.rdfid), rdflib.URIRef(filt_property[0, 3].__str__()),
-                                              rdflib.Literal(attr_value)))
-                            elif profile == "SV":
-                                sv_graph.add((rdflib.URIRef(obj.rdfid), RDF.type,
-                                              rdflib.URIRef(filt_property[0, 1].__str__())))
-                                sv_graph.add((rdflib.URIRef(obj.rdfid), rdflib.URIRef(filt_property[0, 3].__str__()),
-                                              rdflib.Literal(attr_value)))
+                                if profile == "EQ":
+                                    eq_graph.add((obj_id, RDF.type,
+                                                  rdflib.URIRef(filt_property[0, 1].__str__())))
+                                    eq_graph.add(
+                                        (rdflib.URIRef(obj_id), rdflib.URIRef(filt_property[0, 3].__str__()),
+                                         rdflib.URIRef("#_"+attr_value.rdfid)))
+                                elif profile == "SSH":
+                                    ssh_graph.add((obj_id, RDF.type,
+                                                   rdflib.URIRef(filt_property[0, 1].__str__())))
+                                    ssh_graph.add(
+                                        (rdflib.URIRef(obj_id), rdflib.URIRef(filt_property[0, 3].__str__()),
+                                         rdflib.URIRef("#_" + attr_value.rdfid)))
+                                elif profile == "TP":
+                                    tp_graph.add((obj_id, RDF.type,
+                                                  rdflib.URIRef(filt_property[0, 1].__str__())))
+                                    tp_graph.add(
+                                        (rdflib.URIRef(obj_id), rdflib.URIRef(filt_property[0, 3].__str__()),
+                                         rdflib.URIRef("#_" + attr_value.rdfid)))
+                                elif profile == "SV":
+                                    sv_graph.add((obj_id, RDF.type,
+                                                  rdflib.URIRef(filt_property[0, 1].__str__())))
+                                    sv_graph.add(
+                                        (rdflib.URIRef(obj_id), rdflib.URIRef(filt_property[0, 3].__str__()),
+                                         rdflib.URIRef("#_" + attr_value.rdfid)))
+
+                            elif filt_property[0,6].__str__() == "Enumeration":
+                                if profile == "EQ":
+                                    eq_graph.add((obj_id, RDF.type,
+                                                  rdflib.URIRef(filt_property[0, 1].__str__())))
+                                    di = enum_dict.get("eq")
+                                    va = di.get(str(attr_value))
+                                    eq_graph.add((obj_id, rdflib.URIRef(filt_property[0, 3].__str__()),
+                                                  rdflib.URIRef(va)))
+                                elif profile == "SSH":
+                                    ssh_graph.add((obj_id, RDF.type,
+                                                   rdflib.URIRef(filt_property[0, 1].__str__())))
+                                    di = enum_dict.get("ssh")
+                                    va = di.get(str(attr_value))
+                                    ssh_graph.add((obj_id, rdflib.URIRef(filt_property[0, 3].__str__()),
+                                                  rdflib.URIRef(va)))
+                                elif profile == "TP":
+                                    tp_graph.add((obj_id, RDF.type,
+                                                  rdflib.URIRef(filt_property[0, 1].__str__())))
+                                    di = enum_dict.get("tp")
+                                    va = di.get(str(attr_value))
+                                    tp_graph.add((obj_id, rdflib.URIRef(filt_property[0, 3].__str__()),
+                                                  rdflib.URIRef(va)))
+                                elif profile == "SV":
+                                    sv_graph.add((obj_id, RDF.type,
+                                                  rdflib.URIRef(filt_property[0, 1].__str__())))
+                                    di = enum_dict.get("sv")
+                                    va = di.get(str(attr_value))
+                                    sv_graph.add((obj_id, rdflib.URIRef(filt_property[0, 3].__str__()),
+                                                  rdflib.URIRef(va)))
+                            else:
+                                # print(f"It's an attribute:  {attr_value}")
+                                if isinstance(attr_value, bool):
+                                    attr_value = str(attr_value).lower()
+                                if profile == "EQ":
+                                    eq_graph.add((obj_id, RDF.type,
+                                                  rdflib.URIRef(filt_property[0, 1].__str__())))
+                                    eq_graph.add((obj_id, rdflib.URIRef(filt_property[0, 3].__str__()),
+                                                  rdflib.Literal(str(attr_value), datatype=None)))
+                                elif profile == "SSH":
+                                    ssh_graph.add((obj_id, RDF.type,
+                                                   rdflib.URIRef(filt_property[0, 1].__str__())))
+                                    ssh_graph.add(
+                                        (obj_id, rdflib.URIRef(filt_property[0, 3].__str__()),
+                                         rdflib.Literal(str(attr_value), datatype=None)))
+                                elif profile == "TP":
+                                    tp_graph.add((obj_id, RDF.type,
+                                                  rdflib.URIRef(filt_property[0, 1].__str__())))
+                                    tp_graph.add((obj_id, rdflib.URIRef(filt_property[0, 3].__str__()),
+                                                  rdflib.Literal(str(attr_value), datatype=None)))
+                                elif profile == "SV":
+                                    sv_graph.add((obj_id, RDF.type,
+                                                  rdflib.URIRef(filt_property[0, 1].__str__())))
+                                    sv_graph.add((obj_id, rdflib.URIRef(filt_property[0, 3].__str__()),
+                                                  rdflib.Literal(str(attr_value), datatype=None)))
                     except Exception:
                         continue
 
         relative_path_to_files = "export_docs/"
         absolute_path_to_files = os.path.join(current_directory, relative_path_to_files)
 
-        eq_graph.serialize(destination=absolute_path_to_files+"eq.xml", format="xml")
-        ssh_graph.serialize(destination=absolute_path_to_files+"ssh.xml", format="xml")
-        tp_graph.serialize(destination=absolute_path_to_files+"tp.xml", format="xml")
-        sv_graph.serialize(destination=absolute_path_to_files+"sv.xml", format="xml")
+        eq_graph.serialize(destination=absolute_path_to_files + "eq.xml", format="pretty-xml", base="http://iec.ch/TC57/2013/CIM-schema-cim16#")
+        ssh_graph.serialize(destination=absolute_path_to_files + "ssh.xml", format="pretty-xml", base="http://iec.ch/TC57/2013/CIM-schema-cim16#")
+        tp_graph.serialize(destination=absolute_path_to_files + "tp.xml", format="pretty-xml", base="http://iec.ch/TC57/2013/CIM-schema-cim16#")
+        sv_graph.serialize(destination=absolute_path_to_files + "sv.xml", format="pretty-xml", base="http://iec.ch/TC57/2013/CIM-schema-cim16#")
         print("CGMES graph export completed.")
+
+    def create_graph(self):
+        from rdflib import Graph, RDFS, RDF, Namespace
+
+        graph_with_ns = Graph()
+        graph_with_ns.bind("cim", Namespace("http://iec.ch/TC57/2013/CIM-schema-cim16#"))
+        graph_with_ns.bind("entsoe", Namespace("http://entsoe.eu/CIM/SchemaExtension/3/1#"))
+        graph_with_ns.bind("md", Namespace("http://iec.ch/TC57/61970-552/ModelDescription/1#"))
+        return graph_with_ns

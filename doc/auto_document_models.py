@@ -2,7 +2,7 @@ import os
 from typing import Dict
 import pandas as pd
 from pytablewriter import RstSimpleTableWriter
-from GridCalEngine.IO.cim.cgmes_2_4_15.cgmes_circuit import CgmesCircuit
+from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
 from GridCalEngine.IO.raw.devices.psse_circuit import PsseCircuit
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.IO.gridcal.pack_unpack import get_objects_dictionary

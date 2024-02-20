@@ -230,7 +230,7 @@ def apply_results_to_grid(t_idx: Union[None, int],
 
     for dev_lst in grid.get_injection_devices_lists():
         for elm in dev_lst:
-            elm.set_bus_at(t_idx=t_idx, val=process_info.get_final_bus(elm.cn_to))
+            elm.set_bus_at(t_idx=t_idx, val=process_info.get_final_bus(elm.cn))
 
 
 def topology_processor(grid: MultiCircuit, t_idx: Union[int, None], logger: Logger):
@@ -252,7 +252,7 @@ def topology_processor(grid: MultiCircuit, t_idx: Union[int, None], logger: Logg
 
     # create the connectivity matrices
     Cf, Ct, br_active = compute_connectivities(nbus_candidate=nbus_candidate,
-                                               all_branches=all_branches,
+                                               all_branches=grid.get_switches(),
                                                process_info=process_info,
                                                t_idx=t_idx)
 

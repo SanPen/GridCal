@@ -88,5 +88,27 @@ def test_ieee_grids():
         print(solver_type, 'ok')
 
 
+def test_dc_pf_ieee14():
+    """
+    Test the DC power flow
+    :return:
+    """
+    options = PowerFlowOptions(SolverType.DC,
+                               verbose=False,
+                               initialize_with_existing_solution=False,
+                               multi_core=False,
+                               dispatch_storage=True,
+                               control_q=ReactivePowerControlMode.NoControl,
+                               control_p=True,
+                               retry_with_other_methods=False)
+
+    fname = os.path.join('data', 'grids', 'case14.m')
+    main_circuit = FileOpen(fname).open()
+    power_flow = PowerFlowDriver(main_circuit, options)
+    power_flow.run()
+
+    print()
+
+
 if __name__ == '__main__':
     test_ieee_grids()

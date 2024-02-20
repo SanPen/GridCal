@@ -19,12 +19,12 @@ from typing import List, Dict, Tuple
 import numpy as np
 import numba as nb
 from scipy.sparse import csc_matrix, csr_matrix, diags
-from GridCalEngine.basic_structures import IntVec, Vec, Mat, CxVec
+from GridCalEngine.basic_structures import IntVec, Vec
 from GridCalEngine.enumerations import BusMode
 
 
 @nb.njit(cache=True)
-def find_islands_numba(node_number: int, indptr: IntVec, indices: IntVec, active: IntVec) -> List[Vec]:
+def find_islands_numba(node_number: int, indptr: IntVec, indices: IntVec, active: IntVec) -> List[IntVec]:
     """
     Method to get the islands of a graph
     This is the non-recursive version
@@ -143,7 +143,7 @@ def get_elements_of_the_island_numba(n_rows: int,
     return elm_idx
 
 
-def find_islands(adj: csc_matrix, active: IntVec) -> List[List[int]]:
+def find_islands(adj: csc_matrix, active: IntVec) -> List[IntVec]:
     """
     Method to get the islands of a graph
     This is the non-recursive version
@@ -296,7 +296,12 @@ def compile_types(Pbus: Vec, types: IntVec) -> Tuple[IntVec, IntVec, IntVec, Int
     return ref, pq, pv, no_slack
 
 
-def get_csr_bus_indices(C: csr_matrix):
+def get_csr_bus_indices(C: csr_matrix) -> IntVec:
+    """
+    Get the bus indices given a CSR shunt-element->bus connectivity matrix
+    :param C: CSR connectivity matrix
+    :return: Bus indices
+    """
     arr = np.zeros(C.shape[1], dtype=int)
     for j in range(C.shape[0]):  # para cada columna j ...
         for k in range(C.indptr[j], C.indptr[j + 1]):  # para cada entrada de la columna ....

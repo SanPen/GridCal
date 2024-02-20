@@ -408,16 +408,18 @@ def compute_fast_decoupled_admittances(X: Vec,
 def compute_linear_admittances(nbr: int,
                                X: Vec,
                                R: Vec,
+                               m: Vec,
                                active: IntVec,
                                Cf: sp.csc_matrix,
                                Ct: sp.csc_matrix,
                                ac: IntVec,
-                               dc: IntVec) -> Tuple[sp.csc_matrix, sp.csc_matrix, sp.csc_matrix]:
+                               dc: IntVec) -> Tuple[sp.csc_matrix, sp.csc_matrix]:
     """
     Compute the linear admittances for methods such as the "DC power flow" of the PTDF
     :param nbr: Number of Branches
     :param X: array of branch reactance (p.u.)
     :param R: array of branch resistance (p.u.)
+    :param m: array of branch tap modules (p.u.)
     :param active: array of branch active (bool)
     :param Cf: Connectivity branch-bus "from" with the branch states computed
     :param Ct: Connectivity branch-bus "to" with the branch states computed
@@ -429,16 +431,16 @@ def compute_linear_admittances(nbr: int,
         # compose the vector for AC-DC grids where the R is needed for this matrix
         # even if conceptually we only want the susceptance
         b = np.zeros(nbr)
-        b[ac] = 1.0 / (X[ac] * active[ac] + 1e-20)  # for ac Branches
-        b[dc] = 1.0 / (R[dc] * active[dc] + 1e-20)  # for dc Branches
+        b[ac] = 1.0 / (X[ac] * active[ac] * m[ac] + 1e-20)  # for ac Branches
+        b[dc] = 1.0 / (R[dc] * active[dc] * m[dc] + 1e-20)  # for dc Branches
     else:
-        b = 1.0 / (X * active + 1e-20)  # for ac Branches
+        b = 1.0 / (X * active * m + 1e-20)  # for ac Branches
 
     b_tt = sp.diags(b)  # This is Bd from the
     Bf = b_tt * Cf - b_tt * Ct
     Bt = -b_tt * Cf + b_tt * Ct
     Bbus = Cf.T * Bf + Ct.T * Bt
-    Btau = Bf.T  # (b_tt * (Cf + Ct)).T
+    # Btau = Bf.T  # (b_tt * (Cf + Ct)).T
 
     """
     According to the KULeuven document "DC power flow in unit commitment models"
@@ -455,4 +457,4 @@ def compute_linear_admittances(nbr: int,
     bus_angles = Bbus^-1 x (Pbus - Btau x branch_angles)
     """
 
-    return Bbus, Bf, Btau
+    return Bbus, Bf

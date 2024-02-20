@@ -36,6 +36,8 @@ class GeneratorParent(InjectionParent):
                  code: str,
                  bus: Union[Bus, None],
                  cn: Union[ConnectivityNode, None],
+                 control_bus: Union[Bus, None],
+                 control_cn: Union[ConnectivityNode, None],
                  active: bool,
                  P: float,
                  Pmin: float,
@@ -82,6 +84,11 @@ class GeneratorParent(InjectionParent):
                                  build_status=build_status,
                                  device_type=device_type)
 
+        self.control_bus = control_bus
+        self._control_bus_prof = Profile(default_value=control_bus)
+
+        self.control_cn = control_cn
+
         self.P = P
         self._P_prof = Profile(default_value=P)
 
@@ -91,9 +98,31 @@ class GeneratorParent(InjectionParent):
         # Maximum dispatched power in MW
         self.Pmax = Pmax
 
+        self.register(key='control_bus', units='', tpe=DeviceType.BusDevice, definition='Control bus',
+                      editable=False, profile_name="control_bus_prof")
+
+        self.register(key='control_cn', units='', tpe=DeviceType.ConnectivityNodeDevice,
+                      definition='Control connectivity node', editable=False)
         self.register(key='P', units='MW', tpe=float, definition='Active power', profile_name='P_prof')
         self.register(key='Pmin', units='MW', tpe=float, definition='Minimum active power. Used in OPF.')
         self.register(key='Pmax', units='MW', tpe=float, definition='Maximum active power. Used in OPF.')
+
+    @property
+    def control_bus_prof(self) -> Profile:
+        """
+        Control bus profile
+        :return: Profile
+        """
+        return self._control_bus_prof
+
+    @control_bus_prof.setter
+    def control_bus_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._control_bus_prof = val
+        elif isinstance(val, np.ndarray):
+            self._control_bus_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into control_bus_prof')
 
     @property
     def P_prof(self) -> Profile:

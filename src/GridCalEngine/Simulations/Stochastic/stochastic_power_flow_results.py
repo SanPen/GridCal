@@ -17,11 +17,10 @@
 import numpy as np
 from sklearn.ensemble import RandomForestRegressor
 from GridCalEngine.basic_structures import CDF
-from GridCalEngine.Simulations.result_types import ResultTypes
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.basic_structures import DateVec, IntVec, Vec, StrVec, CxMat, Mat, BoolVec, CxVec
-from GridCalEngine.enumerations import StudyResultsType
+from GridCalEngine.enumerations import StudyResultsType, ResultTypes
 
 
 class StochasticPowerFlowResults(ResultsTemplate):
