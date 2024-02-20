@@ -10,6 +10,7 @@ from GridCalEngine import *
 from GridCalEngine.IO.file_handler import FileOpen
 import GridCalEngine.Core.Devices as dev
 import GridCalEngine.Simulations as sim
+import trunk.investments.InvestmentsEvaluation as invsim
 from GridCalEngine.enumerations import InvestmentEvaluationMethod
 from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions, multi_island_pf_nc
@@ -162,18 +163,31 @@ def plot_scatter_plot(df1, df2, title, plot_df2=True):
 
 
 if __name__ == "__main__":
+    import cProfile
 
     absolute_path = os.path.abspath(
         os.path.join(os.getcwd(), 'Grids_and_profiles', 'grids', 'ding0_test_network_2_mvlv.gridcal'))
     grid = FileOpen(absolute_path).open()
 
     pf_options = sim.PowerFlowOptions()
-    mvrsm = InvestmentEvaluationMethod.MVRSM
+    mvrsm = InvestmentEvaluationMethod.MVRSM_multi
 
-    print(6*len(grid.investments))
-    options = sim.InvestmentsEvaluationOptions(solver=mvrsm, max_eval=6*len(grid.investments), pf_options=pf_options)
-    inv = sim.InvestmentsEvaluationDriver(grid, options=options)
+    print(4*len(grid.investments))
+    options = invsim.InvestmentsEvaluationOptions(solver=mvrsm, max_eval=4*len(grid.investments), pf_options=pf_options)
+    inv = invsim.InvestmentsEvaluationDriver(grid, options=options)
+
+    # Profile the inv.run() method
+    import cProfile
+    import pstats
+
+    profiler = cProfile.Profile()
+    profiler.enable()
     inv.run()
+    profiler.disable()
+
+    # Print profiling statistics to the console
+    stats = pstats.Stats(profiler)
+    stats.print_stats()
 
     inv_results = inv.results
     results_tpe_report = sim.result_types.ResultTypes.InvestmentsReportResults
