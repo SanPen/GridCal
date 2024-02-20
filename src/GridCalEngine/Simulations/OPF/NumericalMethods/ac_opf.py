@@ -29,6 +29,7 @@ from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at, NumericalCircuit
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
+from GridCalEngine.enumerations import TransformerControlType
 from typing import Tuple, Union
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec
 from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf_derivatives import (x2var, var2x, eval_f, eval_g, eval_h,
@@ -565,8 +566,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                                     'dual price (€/MW)': lam_p, 'dual price (€/MVAr)': lam_q})
         df_gen = pd.DataFrame(data={'P (MW)': Pg * nc.Sbase, 'Q (MVAr)': Qg * nc.Sbase})
 
-        df_trafo_m = pd.DataFrame(data={'V (p.u.)': tapm})
-        df_trafo_tau = pd.DataFrame(data={'Tau (rad)': tapt})
+        df_trafo_m = pd.DataFrame(data={'V (p.u.)': tapm}, index=k_m)
+        df_trafo_tau = pd.DataFrame(data={'Tau (rad)': tapt}, index=k_tau)
 
         print()
         print("Bus:\n", df_bus)
@@ -603,7 +604,9 @@ def run_nonlinear_opf(grid: MultiCircuit,
 
     # compile the system
     nc = compile_numerical_circuit_at(circuit=grid, t_idx=t_idx)
-
+    #nc.branch_data.control_mode[1] = TransformerControlType.Vt
+    #nc.branch_data.control_mode[2] = TransformerControlType.PtQt
+    #nc.branch_data.control_mode[391] = TransformerControlType.PtQt
     # filter garbage out mostly since the ACOPF can simulate multi-island systems
     islands = nc.split_into_islands(ignore_single_node_islands=True)
 

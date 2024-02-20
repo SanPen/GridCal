@@ -60,8 +60,8 @@ def case_3bus():
     grid.add_bus(b2)
     grid.add_bus(b3)
 
-    # grid.add_line(gce.Line(bus_from=b1, bus_to=b2, name='Line 1-2', r=0.001, x=0.05, rate=100))
-    # grid.add_line(gce.Line(bus_from=b2, bus_to=b3, name='Line 2-3', r=0.001, x=0.05, rate=100))
+    #grid.add_line(gce.Line(bus_from=b1, bus_to=b2, name='Line 1-2', r=0.001, x=0.05, rate=100))
+    #grid.add_line(gce.Line(bus_from=b2, bus_to=b3, name='Line 2-3', r=0.001, x=0.05, rate=100))
     grid.add_line(gce.Line(bus_from=b3, bus_to=b1, name='Line 3-1', r=0.001, x=0.05, rate=100))
 
     grid.add_load(b3, gce.Load(name='L3', P=50, Q=20))
@@ -141,7 +141,7 @@ def linn5bus_example():
 
     tr1 = gce.Transformer2W(bus1, bus2, 'Trafo 1', control_mode=TransformerControlType.PtQt,
                             tap_module=0.95, tap_phase=-0.02, r=0.05, x=0.11, tap_phase_max=0.5, tap_module_max=1.1,
-                            tap_phase_min=-0.5, tap_module_min=0.9, rate = 1000)
+                            tap_phase_min=-0.5, tap_module_min=0.9, rate=1000)
 
     grid.add_transformer2w(tr1)
 
@@ -237,7 +237,28 @@ def case14():
     file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case14.m')
 
     grid = gce.FileOpen(file_path).open()
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, tolerance=1e-10)
+
+    grid.transformers2w[0].control_mode = TransformerControlType.PtQt
+    grid.transformers2w[1].control_mode = TransformerControlType.Pf
+    grid.transformers2w[2].control_mode = TransformerControlType.Vt
+
+    #grid.delete_line(grid.lines[0])
+    #grid.delete_line(grid.lines[1])
+    for l in range(len(grid.lines)):
+        grid.lines[l].monitor_loading = True
+
+    tr1 = gce.Transformer2W(grid.buses[0], grid.buses[1], 'Trafo 1', control_mode=TransformerControlType.PtQt,
+                            tap_module=0.95, tap_phase=-0.02, r=0.05, x=0.11, tap_phase_max=0.5, tap_module_max=1.1,
+                            tap_phase_min=-0.5, tap_module_min=0.9, rate=1000)
+
+    #grid.add_transformer2w(tr1)
+    tr2 = gce.Transformer2W(grid.buses[0], grid.buses[4], 'Trafo 2', control_mode=TransformerControlType.PtQt,
+                            tap_module=0.95, tap_phase=-0.02, r=0.05, x=0.11, tap_phase_max=0.5, tap_module_max=1.1,
+                            tap_phase_min=-0.5, tap_module_min=0.9, rate=1000)
+
+    #grid.add_transformer2w(tr2)
+
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, tolerance=1e-10, max_iter=50)
     run_nonlinear_opf(grid=grid, pf_options=pf_options, plot_error=True)
 
 
@@ -291,8 +312,8 @@ def case300():
 
     grid = gce.FileOpen(file_path).open()
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, max_iter=50)
-    run_nonlinear_opf(grid=grid, pf_options=pf_options, plot_error=True)
 
+    run_nonlinear_opf(grid=grid, pf_options=pf_options, plot_error=True)
 
 def case6ww():
     """
@@ -313,11 +334,11 @@ def case6ww():
 if __name__ == '__main__':
     # example_3bus_acopf()
     # case_3bus()
-    linn5bus_example()
+    # linn5bus_example()
     # two_grids_of_3bus()
     # case9()
-    # case14()
+    case14()
     # case_gb()
     # case6ww()
-    # case_pegase89()
-    # case300()
+    #case_pegase89()
+    #case300()
