@@ -29,7 +29,7 @@ from matplotlib import pyplot as plt
 from scipy.sparse import csc_matrix, lil_matrix
 
 from GridCalEngine.Core import EditableDevice
-from GridCalEngine.basic_structures import DateVec, IntVec, StrVec, Vec, Mat, CxVec, IntMat, CxMat
+from GridCalEngine.basic_structures import IntVec, StrVec, Vec, Mat, CxVec, IntMat, CxMat
 from GridCalEngine.data_logger import DataLogger
 import GridCalEngine.Core.Devices as dev
 from GridCalEngine.Core.Devices.types import ALL_DEV_TYPES, BRANCH_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES
@@ -73,7 +73,7 @@ def get_fused_device_lst(elm_list: List[INJECTION_DEVICE_TYPES], property_names:
         elm1 = elm_list[0]  # select the main device
         deletable_elms = [elm_list[i] for i in range(1, len(elm_list))]
         act_final = elm1.active
-        act_prof_final = elm1.active_prof
+        act_prof_final = elm1.active_prof.toarray()
 
         # set the final active value
         for i in range(1, len(elm_list)):  # for each of the other generators
@@ -83,7 +83,7 @@ def get_fused_device_lst(elm_list: List[INJECTION_DEVICE_TYPES], property_names:
             act_final = bool(act_final + elm2.active)  # equivalent to OR
 
             if act_prof_final is not None:
-                act_prof_final = (act_prof_final + elm2.active_prof).astype(bool)
+                act_prof_final = (act_prof_final.toarray() + elm2.active_prof.toarray()).astype(bool)
 
         for prop in property_names:  # sum the properties
 
@@ -3640,8 +3640,10 @@ class MultiCircuit:
                             name='HVDC Line',
                             active=line.active,
                             rate=line.rate,
-                            active_prof=line.active_prof,
-                            rate_prof=line.rate_prof)
+                            )
+
+        hvdc.active_prof = line.active_prof
+        hvdc.rate_prof = line.rate_prof
 
         # add device to the circuit
         self.add_hvdc(hvdc)
@@ -3665,8 +3667,10 @@ class MultiCircuit:
                                         r=line.R,
                                         x=line.X,
                                         b=line.B,
-                                        active_prof=line.active_prof,
-                                        rate_prof=line.rate_prof)
+                                        )
+
+        transformer.active_prof = line.active_prof
+        transformer.rate_prof = line.rate_prof
 
         # add device to the circuit
         self.add_transformer2w(transformer)
@@ -3688,12 +3692,12 @@ class MultiCircuit:
                            power_factor=gen.Pf,
                            vset=gen.Vset,
                            is_controlled=gen.is_controlled,
-                           Qmin=gen.Qmin, Qmax=gen.Qmax, Snom=gen.Snom,
-                           P_prof=gen.P_prof,
-                           power_factor_prof=gen.Pf_prof,
-                           vset_prof=gen.Vset_prof,
+                           Qmin=gen.Qmin,
+                           Qmax=gen.Qmax,
+                           Snom=gen.Snom,
                            active=gen.active,
-                           Pmin=gen.Pmin, Pmax=gen.Pmax,
+                           Pmin=gen.Pmin,
+                           Pmax=gen.Pmax,
                            Cost=gen.Cost,
                            Sbase=gen.Sbase,
                            enabled_dispatch=gen.enabled_dispatch,
@@ -3705,6 +3709,11 @@ class MultiCircuit:
                            capex=gen.capex,
                            opex=gen.opex,
                            build_status=gen.build_status)
+
+        batt.active_prof = gen.active_prof
+        batt.P_prof = gen.P_prof
+        batt.power_factor_prof = gen.Pf_prof
+        batt.vset_prof = gen.Vset_prof
 
         # add device to the circuit
         self.add_battery(gen.bus, batt)
@@ -3729,8 +3738,10 @@ class MultiCircuit:
                       x=line.X,
                       Beq=line.B,
                       tap_module=1.0,
-                      active_prof=line.active_prof,
-                      rate_prof=line.rate_prof)
+                      )
+
+        vsc.active_prof = line.active_prof
+        vsc.rate_prof = line.rate_prof
 
         # add device to the circuit
         self.add_vsc(vsc)
@@ -3754,8 +3765,10 @@ class MultiCircuit:
                         rs=line.R,
                         xs=line.X,
                         # bl=line.B,
-                        active_prof=line.active_prof,
-                        rate_prof=line.rate_prof)
+                        )
+
+        upfc.active_prof = line.active_prof
+        upfc.rate_prof = line.rate_prof
 
         # add device to the circuit
         self.add_upfc(upfc)
@@ -4442,12 +4455,12 @@ class MultiCircuit:
 
         return groups
 
-    def get_batteries_by_bus(self) -> Dict[dev.Bus, dev.Battery]:
+    def get_batteries_by_bus(self) -> Dict[dev.Bus, List[dev.Battery]]:
         """
         Get the injection devices grouped by bus and by device type
         :return: Dict[bus, Dict[DeviceType, List[Injection devs]]
         """
-        groups: Dict[dev.Bus, dev.Battery] = dict()
+        groups: Dict[dev.Bus, List[dev.Battery]] = dict()
 
         for elm in self.get_batteries():
 
