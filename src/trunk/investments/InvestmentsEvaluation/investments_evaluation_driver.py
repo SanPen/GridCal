@@ -334,8 +334,31 @@ class InvestmentsEvaluationDriver(DriverTemplate):
                                                                 stop_crit=stop_crit,
                                                                 rand_search_bias=rand_search_active_prob,
                                                                 f_obj_dim=6)
-            lowest_indices = np.argsort(all_ys)[:1]
-            print(all_x[lowest_indices])
+            import matplotlib.pyplot as plt
+            # Create a figure and axis object
+            fig, ax1 = plt.subplots()
+
+            # Plotting the values on the left y-axis
+            ax1.plot(range(len(all_crits)), all_crits[:, 0], label='technical crit', color='blue')
+            ax1.set_xlabel('X-axis')
+            ax1.set_ylabel('Technical Crit', color='blue')
+            ax1.tick_params('y', colors='blue')
+
+            # Create a twin axis on the right side
+            ax2 = ax1.twinx()
+
+            # Plotting the values on the right y-axis
+            ax2.plot(range(len(all_crits)), all_crits[:, 4], label='economical crit', color='red')
+            ax2.set_ylabel('Economical Crit', color='red')
+            ax2.tick_params('y', colors='red')
+
+            # Adding legend
+            lines, labels = ax1.get_legend_handles_labels()
+            lines2, labels2 = ax2.get_legend_handles_labels()
+            ax2.legend(lines + lines2, labels + labels2, loc='upper left')
+
+            # Showing the plot
+            plt.show()
 
             self.results.set_at(eval_idx=np.arange(self.options.max_eval),
                                 capex=all_crits[:, 4],
@@ -356,6 +379,32 @@ class InvestmentsEvaluationDriver(DriverTemplate):
                                                                                       max_evals=self.options.max_eval,
                                                                                       n_objectives=6,
                                                                                       rand_evals=rand_evals)
+
+            import matplotlib.pyplot as plt
+            # Create a figure and axis object
+            fig, ax1 = plt.subplots()
+
+            # Plotting the values on the left y-axis
+            ax1.plot(range(len(y_population_)), y_population_[:, 0], label='technical crit', color='blue')
+            ax1.set_xlabel('X-axis')
+            ax1.set_ylabel('Technical Crit', color='blue')
+            ax1.tick_params('y', colors='blue')
+
+            # Create a twin axis on the right side
+            ax2 = ax1.twinx()
+
+            # Plotting the values on the right y-axis
+            ax2.plot(range(len(y_population_)), y_population_[:, 4], label='economical crit', color='red')
+            ax2.set_ylabel('Economical Crit', color='red')
+            ax2.tick_params('y', colors='red')
+
+            # Adding legend
+            lines, labels = ax1.get_legend_handles_labels()
+            lines2, labels2 = ax2.get_legend_handles_labels()
+            ax2.legend(lines + lines2, labels + labels2, loc='upper left')
+
+            # Showing the plot
+            plt.show()
 
             self.results.set_at(eval_idx=np.arange(len(y_population_)),
                                 capex=y_population_[:, 4],

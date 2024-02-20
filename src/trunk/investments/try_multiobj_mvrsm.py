@@ -5,6 +5,7 @@ from GridCalEngine.IO.file_handler import FileOpen
 import GridCalEngine.Simulations as sim
 import trunk.investments.InvestmentsEvaluation as invsim
 from GridCalEngine.enumerations import InvestmentEvaluationMethod
+import time
 import cProfile
 import cProfile
 import pstats
@@ -18,7 +19,7 @@ if __name__ == "__main__":
     mvrsm_multi = InvestmentEvaluationMethod.MVRSM_multi
     mvrsm_1 = InvestmentEvaluationMethod.MVRSM
 
-    solvers = np.array([mvrsm_1, mvrsm_multi])
+    solvers = np.array([mvrsm_multi])
     results_tpe_plot = sim.result_types.ResultTypes.InvestmentsParetoPlot
     inv_results = []
 
@@ -27,14 +28,17 @@ if __name__ == "__main__":
                                                       pf_options=pf_options)
 
         inv = invsim.InvestmentsEvaluationDriver(grid, options=options)
+        st_time = time.time()
         inv.run()
+        e_time = time.time()
+        print(e_time-st_time)
         inv_results.append(inv.results)
 
     results1 = inv_results[0]
-    results2 = inv_results[1]
+    # results2 = inv_results[1]
 
     mdl1 = results1.mdl(results_tpe_plot)
-    mdl2 = results2.mdl(results_tpe_plot)
+    # mdl2 = results2.mdl(results_tpe_plot)
     plt.show()
 
     '''# Profile 

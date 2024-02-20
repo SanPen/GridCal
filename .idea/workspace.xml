@@ -28,20 +28,11 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="commented out misaligned test">
-      <change afterPath="$PROJECT_DIR$/src/trunk/investments/InvestmentsEvaluation/MVRSM.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/trunk/investments/InvestmentsEvaluation/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/trunk/investments/InvestmentsEvaluation/investments_evaluation_driver.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/trunk/investments/InvestmentsEvaluation/investments_evaluation_options.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/trunk/investments/InvestmentsEvaluation/investments_evaluation_results.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/trunk/investments/InvestmentsEvaluation/stop_crits.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/trunk/investments/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/trunk/investments/try_investment_optimization.py" afterDir="false" />
+    <list default="true" id="903393a6-e011-4cf7-964c-90325cdcb845" name="Default Changelist" comment="Write about multi-objective">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/rst_source/theory/investments_evaluation.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/theory/investments_evaluation.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/MVRSM.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/MVRSM.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/investments_evaluation_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/investments_evaluation_driver.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/investments_evaluation_results.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/investments_evaluation_results.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/trunk/investments/InvestmentsEvaluation/investments_evaluation_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/investments/InvestmentsEvaluation/investments_evaluation_driver.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/trunk/investments/try_multiobj_mvrsm.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/investments/try_multiobj_mvrsm.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/try_normalization" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -191,7 +182,7 @@
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
     &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/Jana/GridCal/src/trunk/investments/try_investment_optimization.py&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/Jana/GridCal&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
@@ -209,11 +200,11 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\Jana\GridCal" />
       <recent name="C:\Users\Jana\GridCal\src\trunk\investments" />
       <recent name="$PROJECT_DIR$/src/trunk/pf" />
       <recent name="C:\Users\a1003\Desktop\GridCal\Grids_and_profiles\grids" />
       <recent name="$PROJECT_DIR$/src/trunk" />
-      <recent name="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/Injections" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\Jana\GridCal\src\trunk\investments" />
@@ -223,7 +214,7 @@
       <recent name="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget/Branches" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.try_inv_op">
+  <component name="RunManager" selected="Python.multi_obj">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -282,6 +273,28 @@
       <option name="launchJavascriptDebuger" value="false" />
       <method v="2" />
     </configuration>
+    <configuration name="ExecuteGridCal" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="GridCal" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/GridCal" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCal/ExecuteGridCal.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
       <module name="GridCalEngine" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -296,6 +309,29 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="multi_obj" type="PythonConfigurationType" factoryName="Python">
+      <module name="GridCal" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="SDK_NAME" value="Python 3.10 (GridCal)" />
+      <option name="WORKING_DIRECTORY" value="C:\Users\Jana\GridCal" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/trunk/investments/try_multiobj_mvrsm.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -370,22 +406,6 @@
       <option name="docutils_params" value="" />
       <option name="docutils_task" value="" />
       <option name="docutils_open_in_browser" value="false" />
-      <method v="2" />
-    </configuration>
-    <configuration name="Nosetests for tests.test_opf.test_opf" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
-      <module name="GridCal" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/tests" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="_new_regexPattern" value="&quot;&quot;" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;tests.test_opf.test_opf&quot;" />
-      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
     <configuration name="Nosetests for tests.test_unbalanced_faults.test_unbalanced_short_circuit" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
@@ -489,19 +509,20 @@
       <method v="2" />
     </configuration>
     <list>
+      <item itemvalue="Python.multi_obj" />
+      <item itemvalue="Python.ExecuteGridCal" />
       <item itemvalue="Python.try_inv_op" />
-      <item itemvalue="Python tests.Nosetests for tests.test_opf.test_opf" />
       <item itemvalue="Python tests.Nosetests for tests.test_unbalanced_faults.test_unbalanced_short_circuit" />
       <item itemvalue="Python tests.Nosetests in tests" />
       <item itemvalue="Python tests.Nosetests in deep_copy_test.py" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python.try_inv_op" />
         <item itemvalue="Python tests.Nosetests in tests" />
         <item itemvalue="Python tests.Nosetests in deep_copy_test.py" />
         <item itemvalue="Python tests.Nosetests in tests" />
-        <item itemvalue="Python tests.Nosetests for tests.test_unbalanced_faults.test_unbalanced_short_circuit" />
       </list>
     </recent_temporary>
   </component>
@@ -1685,7 +1706,7 @@
       <option name="project" value="LOCAL" />
       <updated>1693298903267</updated>
     </task>
-    <option name="localTasksCounter" value="549" />
+    <option name="localTasksCounter" value="557" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1725,7 +1746,7 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="devel" />
+                        <option value="204_investments_evaluation" />
                       </list>
                     </value>
                   </entry>
@@ -1738,14 +1759,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Started creating numerical methods un utils" />
-    <MESSAGE value="Added the vector_sum_srap function to speed up the SRAP" />
-    <MESSAGE value="Small adaptation to the newtonpa contingency analysis" />
-    <MESSAGE value="Added substation reduction examples" />
-    <MESSAGE value="Try some experiments with the initialization" />
-    <MESSAGE value="Add pegase89 grid" />
-    <MESSAGE value="Try different initialization" />
-    <MESSAGE value="Implement line selection il but pegase89 still fails" />
     <MESSAGE value="Get pegase89 working with large iter number" />
     <MESSAGE value="some ips improvements&#10;renamed pf_options.mu to trust" />
     <MESSAGE value="some ips improvements" />
@@ -1763,7 +1776,15 @@
     <MESSAGE value="commented out misaligned test" />
     <MESSAGE value="cualquier texto" />
     <MESSAGE value="Test MVRSM separately" />
-    <option name="LAST_COMMIT_MESSAGE" value="Test MVRSM separately" />
+    <MESSAGE value="Add scripts to trunk" />
+    <MESSAGE value="Update documentation" />
+    <MESSAGE value="Add multiobjective MVRSM" />
+    <MESSAGE value="Change random next_x" />
+    <MESSAGE value="minor changes" />
+    <MESSAGE value="Create file to compare solvers" />
+    <MESSAGE value="Add figure" />
+    <MESSAGE value="Write about multi-objective" />
+    <option name="LAST_COMMIT_MESSAGE" value="Write about multi-objective" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2142,43 +2163,8 @@
           <option name="timeStamp" value="1183" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes_2_4_15/cgmes_data_parser.py</url>
-          <line>293</line>
-          <option name="timeStamp" value="1184" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes_2_4_15/cgmes_data_parser.py</url>
-          <line>295</line>
-          <option name="timeStamp" value="1185" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes_2_4_15/cgmes_data_parser.py</url>
-          <line>342</line>
-          <option name="timeStamp" value="1189" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes_2_4_15/cgmes_circuit.py</url>
-          <line>536</line>
-          <option name="timeStamp" value="1190" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes_2_4_15/cgmes_circuit.py</url>
-          <line>554</line>
-          <option name="timeStamp" value="1191" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes_2_4_15/cgmes_circuit.py</url>
-          <line>546</line>
-          <option name="timeStamp" value="1192" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes_2_4_15/cgmes_circuit.py</url>
-          <line>556</line>
-          <option name="timeStamp" value="1193" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/file_handler.py</url>
-          <line>98</line>
+          <line>103</line>
           <option name="timeStamp" value="1194" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -2198,8 +2184,13 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/trunk/investments/InvestmentsEvaluation/investments_evaluation_driver.py</url>
-          <line>174</line>
-          <option name="timeStamp" value="1324" />
+          <line>373</line>
+          <option name="timeStamp" value="1355" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/trunk/MVRSM/MVRSM_mo.py</url>
+          <line>551</line>
+          <option name="timeStamp" value="1357" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
