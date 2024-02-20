@@ -15,11 +15,13 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+from typing import List
 import io
 import numpy as np
 import pandas as pd
 from PySide6 import QtCore, QtWidgets
 from GridCalEngine.Simulations.results_table import ResultsTable
+from GridCalEngine.Core.Devices.types import ALL_DEV_TYPES
 
 
 def fast_data_to_numpy_text(data: np.ndarray) -> str:
@@ -64,6 +66,13 @@ class ResultsModel(QtCore.QAbstractTableModel):
         self.table = table
 
         self.units = table.units
+
+    def set_devices(self, devices_list: List[ALL_DEV_TYPES]):
+        """
+        Set the list of devices that matches the results for filtering
+        :param devices_list:
+        """
+        self.table.set_devices(devices_list=devices_list)
 
     def flags(self, index):
         if self.table.editable and index.column() > self.table.editable_min_idx:

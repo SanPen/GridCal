@@ -17,11 +17,10 @@
 
 import numpy as np
 import pandas as pd
-from GridCalEngine.Simulations.result_types import ResultTypes
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.basic_structures import IntVec, Vec, StrVec, Mat, CxVec
-from GridCalEngine.enumerations import StudyResultsType
+from GridCalEngine.enumerations import StudyResultsType, ResultTypes
 
 
 class LinearAnalysisResults(ResultsTemplate):

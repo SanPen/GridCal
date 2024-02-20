@@ -25,8 +25,7 @@ from collections import defaultdict
 
 from GridCalEngine.Core.Devices import Bus, ContingencyGroup
 from GridCalEngine.Core.Devices.Parents.editable_device import GCProp, EditableDevice
-from GridCalEngine.enumerations import DeviceType
-from GridCalEngine.Simulations.result_types import ResultTypes
+from GridCalEngine.enumerations import DeviceType, ResultTypes
 from GridCalEngine.basic_structures import IntVec
 from GridCalEngine.data_logger import DataLogger
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit, IdentifiedObject

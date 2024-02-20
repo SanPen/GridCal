@@ -105,10 +105,10 @@ def test_ptdf_ieee14_definition():
         # diff = simulation.results.PTDF - ptdf
         # print(diff)
 
-        assert (np.isclose(simulation.results.PTDF, ptdf).all())
+        assert np.allclose(simulation.results.PTDF, ptdf)
 
 
-def test_lodf_ieee14_definition():
+def test_lodf_ieee14_definition() -> None:
     """
     Compare the PSSE LODF and the GridCal LODF for the IEEE14
     """
@@ -155,10 +155,10 @@ def test_lodf_ieee14_definition():
         # diff = simulation.results.LODF - lodf
         # print(diff)
 
-        assert (np.isclose(simulation.results.LODF, lodf).all())
+        assert np.allclose(simulation.results.LODF, lodf)
 
 
-def test_lodf_ieee14_psse():
+def test_lodf_ieee14_psse() -> None:
     """
     Compare the PSSE LODF and the GridCal LODF for the IEEE14
     """
@@ -198,10 +198,10 @@ def test_lodf_ieee14_psse():
     # diff = lodf - simulation.results.LODF
     # print(diff)
 
-    assert (np.isclose(lodf, simulation.results.LODF, atol=1e-5).all())
+    assert np.allclose(lodf, simulation.results.LODF, atol=1e-5)
 
 
-def test_ptdf_psse():
+def test_ptdf_psse() -> None:
     for fname, pssename, name in [
         (os.path.join('data', 'grids', 'RAW', 'IEEE 14 bus.raw'),
          os.path.join('data', 'results', 'comparison', 'IEEE 14 bus PTDF PSSe.csv'), 'IEEE14'),
@@ -264,7 +264,7 @@ def test_ptdf_psse():
 
                 nodepsse = np.array(ptdf['NUDO{}'.format(str(i))])
 
-                if not (np.isclose(nodegridcal, -nodepsse, atol=1e-3).all()):
+                if not np.allclose(nodegridcal, -nodepsse, atol=1e-3):
                     print('------------ XXXX PTDFs not equal XXXX ------------ ')
                     print('------------------Difference: {}'.format(np.sum(nodegridcal - (-nodepsse))))
                     counter += 1
@@ -279,7 +279,7 @@ def test_ptdf_psse():
     """
 
 
-def test_lodf_psse():
+def test_lodf_psse() -> None:
     """
     Compare the PSSE LODF and the GridCal LODF for IEEE14, IEEE30, IEEE118 and REE networks
     """
@@ -346,7 +346,7 @@ def test_lodf_psse():
                 else:
                     print('La línea {} no se ha calculado por PSSe'.format(i))
 
-                if not (np.isclose(branchgridcal, branchpsse, atol=1e-3).all()):
+                if not np.allclose(branchgridcal, branchpsse, atol=1e-3):
                     print('------------ XXXX LODFs not equal XXXX ------------ ')
                     print('------------------Difference: {}'.format(np.sum(branchgridcal - branchpsse)))
                     counter += 1
@@ -357,7 +357,7 @@ def test_lodf_psse():
             print(fname, "does not exists...")
 
 
-def test_mlodf():
+def test_mlodf() -> None:
     """
     Compare power flow per branches in N-2 contingencies using theoretical methodology and MLODF
     """
@@ -485,7 +485,7 @@ def test_ptdf_generation_contingencies():
         # linear_multi_contingency = LinearMultiContingencies(grid=main_circuit)
         # linear_multi_contingency.compute(ptdf=linear_analysis.results.PTDF, lodf=linear_analysis.results.LODF)
         options2 = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyMethod.PTDF)
-        cont_analysis_driver2 = ContingencyAnalysisDriver(grid=main_circuit, options=options2)  # , linear_multiple_contingencies=linear_multi_contingency)
+        cont_analysis_driver2 = ContingencyAnalysisDriver(grid=main_circuit, options=options2)
         cont_analysis_driver2.run()
 
         ok = np.allclose(cont_analysis_driver1.results.Sf, cont_analysis_driver2.results.Sf, atol=1e-1)
@@ -530,11 +530,12 @@ def test_lodf_single_contingencies():
         linear_multi_contingency = LinearMultiContingencies(grid=main_circuit)
         linear_multi_contingency.compute(ptdf=linear_analysis.results.PTDF, lodf=linear_analysis.results.LODF)
         options2 = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyMethod.PTDF)
-        cont_analysis_driver2 = ContingencyAnalysisDriver(grid=main_circuit, options=options2)  # linear_multiple_contingencies=linear_multi_contingency)
+        cont_analysis_driver2 = ContingencyAnalysisDriver(grid=main_circuit,
+                                                          options=options2)  # linear_multiple_contingencies=linear_multi_contingency)
         cont_analysis_driver2.run()
 
-    ok = np.allclose(cont_analysis_driver1.results.Sf, cont_analysis_driver2.results.Sf, atol=1.5)
-    assert ok
+        ok = np.allclose(cont_analysis_driver1.results.Sf, cont_analysis_driver2.results.Sf, atol=1.5)
+        assert ok
 
 
 def test_generation_contingencies_powerflow():
@@ -551,9 +552,9 @@ def test_generation_contingencies_powerflow():
             'cont_index_change': {1: 1.2}  # Generator contingency dict: {index: %change}
         },
         {
-             'orig': os.path.join('data', 'grids', 'RAW', 'IEEE 30 bus.raw'),
-             'conti': os.path.join('data', 'grids', 'IEEE30-gen80.gridcal'),
-             'cont_index_change': {1: 0.8}
+            'orig': os.path.join('data', 'grids', 'RAW', 'IEEE 30 bus.raw'),
+            'conti': os.path.join('data', 'grids', 'IEEE30-gen80.gridcal'),
+            'cont_index_change': {1: 0.8}
         },
         {
             'orig': os.path.join('data', 'grids', 'RAW', 'IEEE 118 Bus v2.raw'),
@@ -587,8 +588,3 @@ def test_generation_contingencies_powerflow():
 
         ok = np.allclose(cont_analysis_driver1.results.Sf, power_flow.results.Sf)
         assert ok
-
-
-
-if __name__ == '__main__':
-    test_ptdf()

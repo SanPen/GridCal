@@ -20,7 +20,7 @@ import numpy as np
 from typing import Dict, Union
 
 from GridCalEngine.Simulations.results_template import ResultsTemplate
-from GridCalEngine.Simulations.result_types import ResultTypes
+from GridCalEngine.enumerations import ResultTypes
 from GridCalEngine.Simulations.results_table import ResultsTable
 
 
