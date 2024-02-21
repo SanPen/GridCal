@@ -348,6 +348,19 @@ class BusBranchEditorWidget(QSplitter):
         if diagram is not None:
             self.draw()
 
+        self.time_index_: Union[None, int] = None
+
+    def set_time_index(self, time_index: Union[int, None]):
+        """
+        Set the time index of the table
+        :param time_index: None or integer value
+        """
+        self.time_index_ = time_index
+
+        mdl = self.object_editor_table.model()
+        if isinstance(mdl, ObjectsModel):
+            mdl.set_time_index(time_index=time_index)
+
     def set_editor_model(self, api_object: ALL_DEV_TYPES, dictionary_of_lists: Dict[str, List[ALL_DEV_TYPES]] = {}):
         """
         Set an api object to appear in the editable table view of the editor
@@ -355,7 +368,8 @@ class BusBranchEditorWidget(QSplitter):
         :param dictionary_of_lists: dictionary of lists of objects that may be referenced to
         """
         mdl = ObjectsModel(objects=[api_object],
-                           editable_headers=api_object.registered_properties,
+                           property_list=api_object.property_list,
+                           time_index=self.time_index_,
                            parent=self.object_editor_table,
                            editable=True,
                            transposed=True,

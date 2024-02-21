@@ -477,7 +477,44 @@ class EditableDevice:
                 # the property has no profile, just return it
                 setattr(self, prop.name, value)
 
-    def set_snapshot_value(self, property_name, value: Any, try_fill_profile: bool = False) -> None:
+    def get_vaule(self, prop: GCProp, t_idx: Union[None, int]) -> Any:
+        """
+        Return value regardless of the property index
+        :param prop: GCProp
+        :param t_idx: time index
+        :return: Some value
+        """
+        if t_idx is None:
+            # return the normal property
+            return getattr(self, prop.name)
+        else:
+            if prop.has_profile():
+                # get the profile value
+                return getattr(self, prop.profile_name)[t_idx]
+            else:
+                # return the normal property
+                return getattr(self, prop.name)
+
+    def set_vaule(self, prop: GCProp, t_idx: Union[None, int], value: Any) -> None:
+        """
+        Return value regardless of the property index
+        :param prop: GCProp
+        :param t_idx: time index
+        :param value: Some value
+        """
+        if t_idx is None:
+            # return the normal property
+            setattr(self, prop.name, value)
+        else:
+            if prop.has_profile():
+                # get the profile value
+                prof: Profile = getattr(self, prop.profile_name)
+                prof[t_idx] = value  # assign the value
+            else:
+                # return the normal property
+                setattr(self, prop.name, value)
+
+    def set_snapshot_value(self, property_name, value: Any) -> None:
         """
         Set the value of a snapshot property
         :param property_name: name of the property

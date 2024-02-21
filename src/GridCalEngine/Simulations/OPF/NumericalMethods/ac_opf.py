@@ -384,7 +384,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     c1 = nc.generator_data.cost_1
     c2 = nc.generator_data.cost_2
 
-    admittances = nc.compute_admittance()
+    admittances = nc.get_admittance_matrices()
 
     Cg = nc.generator_data.C_bus_elm
     F = nc.F

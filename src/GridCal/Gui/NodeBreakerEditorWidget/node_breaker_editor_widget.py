@@ -50,6 +50,7 @@ from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.Core.Devices.Diagrams.node_breaker_diagram import NodeBreakerDiagram
 from GridCalEngine.Core.Devices.Diagrams.graphic_location import GraphicLocation
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec
+from GridCalEngine.Core.Devices.types import ALL_DEV_TYPES
 
 from GridCal.Gui.NodeBreakerEditorWidget.terminal_item import TerminalItem
 from GridCal.Gui.NodeBreakerEditorWidget.Substation.bus_graphics import BusGraphicItem
@@ -68,6 +69,7 @@ from GridCal.Gui.NodeBreakerEditorWidget.generic_graphics import ACTIVE
 import GridCal.Gui.Visualization.visualization as viz
 import GridCal.Gui.Visualization.palettes as palettes
 from GridCal.Gui.messages import info_msg
+from GridCal.Gui.GuiFunctions import ObjectsModel
 from matplotlib import pyplot as plt
 
 '''
@@ -382,6 +384,35 @@ class NodeBreakerEditorWidget(QSplitter):
         self.previewLine = Connector(self.diagram_scene, self.previewPlug1, self.previewPlug2)
 
         self.DisablePreview()
+
+        self.time_index_: Union[None, int] = None
+
+    def set_time_index(self, time_index: Union[int, None]):
+        """
+        Set the time index of the table
+        :param time_index: None or integer value
+        """
+        self.time_index_ = time_index
+
+        mdl = self.object_editor_table.model()
+        if isinstance(mdl, ObjectsModel):
+            mdl.set_time_index(time_index=time_index)
+
+    def set_editor_model(self, api_object: ALL_DEV_TYPES, dictionary_of_lists: Dict[str, List[ALL_DEV_TYPES]] = {}):
+        """
+        Set an api object to appear in the editable table view of the editor
+        :param api_object: any EditableDevice
+        :param dictionary_of_lists: dictionary of lists of objects that may be referenced to
+        """
+        mdl = ObjectsModel(objects=[api_object],
+                           property_list=api_object.property_list,
+                           time_index=self.time_index_,
+                           parent=self.object_editor_table,
+                           editable=True,
+                           transposed=True,
+                           dictionary_of_lists=dictionary_of_lists)
+
+        self.object_editor_table.setModel(mdl)
 
     def DisablePreview(self):
         self.previewPlug1.setVisible(False)
