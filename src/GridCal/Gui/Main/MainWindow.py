@@ -600,6 +600,7 @@ class Ui_mainWindow(object):
 
         self.db_step_label = QLabel(self.frame_26)
         self.db_step_label.setObjectName(u"db_step_label")
+        self.db_step_label.setAlignment(Qt.AlignCenter)
 
         self.verticalLayout_27.addWidget(self.db_step_label)
 

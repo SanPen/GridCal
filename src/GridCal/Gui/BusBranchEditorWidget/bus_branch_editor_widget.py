@@ -27,7 +27,7 @@ import pyproj
 from PySide6.QtCore import (Qt, QPoint, QSize, QPointF, QRect, QRectF, QMimeData, QIODevice, QByteArray,
                             QDataStream, QModelIndex)
 from PySide6.QtGui import (QIcon, QPixmap, QImage, QPainter, QStandardItemModel, QStandardItem, QColor, QPen,
-                           QDragEnterEvent, QDragMoveEvent, QDropEvent, QWheelEvent, QKeyEvent)
+                           QDragEnterEvent, QDragMoveEvent, QDropEvent, QWheelEvent, QKeyEvent, QMouseEvent)
 from PySide6.QtWidgets import (QApplication, QGraphicsView, QListView, QTableView, QVBoxLayout, QHBoxLayout, QFrame,
                                QSplitter, QMessageBox, QAbstractItemView, QGraphicsScene, QGraphicsSceneMouseEvent,
                                QGraphicsItem)
@@ -205,20 +205,21 @@ class BusBranchDiagramScene(QGraphicsScene):
         """
 
         # pan movement
-        if self.parent_.startPos is not None:
-            scale_factor = 1.5
-            try:
-                scene_pos = QPointF(event.scenePos())
-                self.displacement = self.displacement + ((scene_pos - self.parent_.startPos) / scale_factor)
-                temp_cen = self.parent_.newCenterPos - self.displacement
-                self.parent_.editor_graphics_view.centerOn(temp_cen)
-            except RecursionError:
-                print("Recursion Error at mouseMoveEvent")
+        # if self.parent_.startPos is not None:
+        #     scale_factor = 1.5
+        #     try:
+        #         scene_pos = QPointF(event.scenePos())
+        #         self.displacement = self.displacement + ((scene_pos - self.parent_.startPos) / scale_factor)
+        #         temp_cen = self.parent_.newCenterPos - self.displacement
+        #         self.parent_.editor_graphics_view.centerOn(temp_cen)
+        #     except RecursionError:
+        #         print("Recursion Error at mouseMoveEvent")
+        #         return
 
         self.parent_.scene_mouse_move_event(event)
 
         # call the parent event
-        super(BusBranchDiagramScene, self).mouseMoveEvent(event)
+        # super(BusBranchDiagramScene, self).mouseMoveEvent(event)
 
     def mousePressEvent(self, event: QGraphicsSceneMouseEvent) -> None:
         """
@@ -246,6 +247,65 @@ class BusBranchDiagramScene(QGraphicsScene):
 
         # call mouseReleaseEvent on "me" (continue with the rest of the actions)
         super(BusBranchDiagramScene, self).mouseReleaseEvent(event)
+
+
+class CustomGraphicsView(QGraphicsView):
+    """
+    Note: This class has been created to handle events
+    like panning the diagram with the center button
+    """
+    def __init__(self, scene):
+        super().__init__(scene)
+        self.setDragMode(QGraphicsView.DragMode.ScrollHandDrag)
+        self.setRenderHint(QPainter.Antialiasing)
+        self.setRenderHint(QPainter.SmoothPixmapTransform)
+
+        self.drag_start_pos = None
+
+    def mousePressEvent(self, event: QMouseEvent):
+        """
+
+        :param event:
+        :return:
+        """
+        if event.button() == Qt.MiddleButton:
+            # When the middle mouse button is pressed, this line stores the position
+            # of the mouse cursor within the view (event.pos()) in the instance
+            # variable self.drag_start_pos. This position will be used as a reference
+            # point for calculating the distance moved during dragging.
+            self.drag_start_pos = event.pos()
+            event.accept()
+        else:
+            super().mousePressEvent(event)
+
+    def mouseMoveEvent(self, event: QMouseEvent):
+        """
+
+        :param event:
+        :return:
+        """
+        if self.drag_start_pos is not None:
+            # While moving and dragging, do the movement math
+            delta = event.pos() - self.drag_start_pos
+            self.horizontalScrollBar().setValue(self.horizontalScrollBar().value() - delta.x())
+            self.verticalScrollBar().setValue(self.verticalScrollBar().value() - delta.y())
+            self.drag_start_pos = event.pos()
+            event.accept()
+        else:
+            super().mouseMoveEvent(event)
+
+    def mouseReleaseEvent(self, event: QMouseEvent):
+        """
+
+        :param event:
+        :return:
+        """
+        if event.button() == Qt.MiddleButton:
+            # Release the dragging status
+            self.drag_start_pos = None
+            event.accept()
+        else:
+            super().mouseReleaseEvent(event)
 
 
 class BusBranchEditorWidget(QSplitter):
@@ -297,7 +357,7 @@ class BusBranchEditorWidget(QSplitter):
 
         self.results_dictionary = dict()
 
-        self.editor_graphics_view = QGraphicsView(self.diagram_scene)
+        self.editor_graphics_view = CustomGraphicsView(self.diagram_scene)
         self.editor_graphics_view.setDragMode(QGraphicsView.DragMode.RubberBandDrag)
         self.editor_graphics_view.setRubberBandSelectionMode(Qt.IntersectsItemShape)
         self.editor_graphics_view.setMouseTracking(True)

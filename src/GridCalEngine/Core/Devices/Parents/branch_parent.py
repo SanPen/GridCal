@@ -465,10 +465,13 @@ class BranchParent(EditableDevice):
         :param branch_connection_voltage_tolerance:
         :return:
         """
-        V1 = min(self.bus_to.Vnom, self.bus_from.Vnom)
-        V2 = max(self.bus_to.Vnom, self.bus_from.Vnom)
-        per = V1 / V2
-        return per < (1.0 - branch_connection_voltage_tolerance)
+        if self.bus_to is not None and self.bus_from is not None:
+            V1 = min(self.bus_to.Vnom, self.bus_from.Vnom)
+            V2 = max(self.bus_to.Vnom, self.bus_from.Vnom)
+            per = V1 / V2
+            return per < (1.0 - branch_connection_voltage_tolerance)
+        else:
+            return False
 
     def apply_template(self, obj, Sbase, logger: Logger):
         """
