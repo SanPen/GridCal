@@ -731,12 +731,6 @@ class Ui_mainWindow(object):
 
         self.horizontalLayout_28.addWidget(self.structure_analysis_pushButton)
 
-        self.delete_and_reduce_pushButton = QPushButton(self.frame_54)
-        self.delete_and_reduce_pushButton.setObjectName(u"delete_and_reduce_pushButton")
-        self.delete_and_reduce_pushButton.setIcon(icon61)
-
-        self.horizontalLayout_28.addWidget(self.delete_and_reduce_pushButton)
-
 
         self.verticalLayout_26.addWidget(self.frame_54)
 
@@ -4706,10 +4700,6 @@ class Ui_mainWindow(object):
         self.structure_analysis_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Run the histogram analysis of the selected data structure</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
         self.structure_analysis_pushButton.setText("")
-#if QT_CONFIG(tooltip)
-        self.delete_and_reduce_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Delete and reduce.</p><p>Applicable to buses, it removes a bus and places its objects (loads, generators, etc.) into the next feasible bus of higher voltage.</p></body></html>", None))
-#endif // QT_CONFIG(tooltip)
-        self.delete_and_reduce_pushButton.setText("")
 #if QT_CONFIG(tooltip)
         self.add_object_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Add new object", None))
 #endif // QT_CONFIG(tooltip)
