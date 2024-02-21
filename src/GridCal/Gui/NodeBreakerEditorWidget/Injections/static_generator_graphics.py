@@ -134,7 +134,8 @@ class StaticGeneratorGraphicItem(InjectionTemplateGraphicItem):
         @return:
         """
         if ask:
-            ok = yes_no_question('Are you sure that you want to remove this static generator', 'Remove static generator')
+            ok = yes_no_question('Are you sure that you want to remove this static generator',
+                                 'Remove static generator')
         else:
             ok = True
 
@@ -197,7 +198,6 @@ class StaticGeneratorGraphicItem(InjectionTemplateGraphicItem):
         :param QGraphicsSceneMouseEvent:
         :return:
         """
-        mdl = ObjectsModel([self.api_object], self.api_object.editable_headers,
-                           parent=self.editor.object_editor_table, editable=True, transposed=True,
-                           dictionary_of_lists={DeviceType.Technology.value: self.editor.circuit.technologies, })
-        self.editor.object_editor_table.setModel(mdl)
+        self.editor.set_editor_model(api_object=self.api_object,
+                                     dictionary_of_lists={
+                                         DeviceType.Technology.value: self.editor.circuit.technologies, })

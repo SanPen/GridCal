@@ -137,25 +137,25 @@ class DiagramsMain(CompiledArraysMain):
         self.ui.actionCenter_view.triggered.connect(self.center_nodes)
         self.ui.actionAutoatic_layout.triggered.connect(self.auto_layout)
         self.ui.actionSearchDiagram.triggered.connect(self.search_diagram)
+        self.ui.actionEdit_simulation_time_limits.triggered.connect(self.edit_time_interval)
 
         # Buttons
         self.ui.colour_results_pushButton.clicked.connect(self.colour_diagrams)
-        self.ui.view_previous_simulation_step_pushButton.clicked.connect(self.colour_previous_simulation_step)
-        self.ui.view_next_simulation_step_pushButton.clicked.connect(self.colour_next_simulation_step)
+        # self.ui.view_previous_simulation_step_pushButton.clicked.connect(self.colour_previous_simulation_step)
+        # self.ui.view_next_simulation_step_pushButton.clicked.connect(self.colour_next_simulation_step)
         self.ui.busViewerButton.clicked.connect(self.add_bus_vecinity_diagram_from_model)
-        self.ui.editTimeIntervalButton.clicked.connect(self.edit_time_interval)
 
         # list clicks
         self.ui.diagramsListView.clicked.connect(self.set_selected_diagram_on_click)
 
         # combobox change
         self.ui.plt_style_comboBox.currentTextChanged.connect(self.plot_style_change)
-        self.ui.available_results_to_color_comboBox.currentTextChanged.connect(self.update_available_steps_to_color)
 
         # sliders
-        self.ui.simulation_results_step_slider.sliderReleased.connect(self.diagrams_time_slider_change)
-        # self.ui.simulation_results_step_slider.sliderMoved.connect(self.diagrams_time_slider_change)
-        self.ui.simulation_results_step_slider.valueChanged.connect(self.update_time_slider_texts)
+        # self.ui.simulation_results_step_slider.sliderReleased.connect(self.diagrams_time_slider_change)
+        self.ui.simulation_results_step_slider.valueChanged.connect(self.diagrams_time_slider_change)
+        # self.ui.db_step_slider.sliderReleased.connect(self.objects_time_slider_change)
+        self.ui.db_step_slider.valueChanged.connect(self.objects_time_slider_change)
 
         # spinbox change
         self.ui.explosion_factor_doubleSpinBox.valueChanged.connect(self.explosion_factor_change)
@@ -1055,26 +1055,60 @@ class DiagramsMain(CompiledArraysMain):
         """
         After releasing the time slider, do something
         """
+        self.update_diagram_time_slider_texts()
         idx = self.ui.simulation_results_step_slider.value()
 
-        if len(self.schematic_list_steps):
-            if idx > -1:
-                self.colour_diagrams()
-        else:
-            self.ui.schematic_step_label.setText("No steps")
+        # correct to interpret -1 as None
+        idx2 = idx if idx > -1 else None
 
-    def update_time_slider_texts(self):
+        # modify the time index in all the bus-branch diagrams
+        for diagram in self.diagram_widgets_list:
+            if isinstance(diagram, BusBranchEditorWidget):
+                diagram.set_time_index(time_index=idx2)
+
+                # TODO: consider other diagrams
+
+    def update_diagram_time_slider_texts(self):
         """
         Update the slider text label as it is moved
         :return:
         """
         idx = self.ui.simulation_results_step_slider.value()
 
-        if len(self.schematic_list_steps):
-            if idx > -1:
-                self.ui.schematic_step_label.setText(self.schematic_list_steps[idx])
+        if idx > -1:
+            val = str(self.circuit.time_profile[idx])
+            self.ui.schematic_step_label.setText(val)
         else:
-            self.ui.schematic_step_label.setText("No steps")
+            self.ui.schematic_step_label.setText("Snapshot")
+
+    def objects_time_slider_change(self) -> None:
+        """
+        After releasing the time slider, do something
+        """
+        self.objects_diagram_time_slider_texts()
+
+        idx = self.ui.db_step_slider.value()
+
+        # correct to interpret -1 as None
+        idx2 = idx if idx > -1 else None
+
+        # modify the time index in the current DB objects model
+        mdl = self.ui.dataStructureTableView.model()
+        if isinstance(mdl, gf.ObjectsModel):
+            mdl.set_time_index(time_index=idx2)
+
+    def objects_diagram_time_slider_texts(self):
+        """
+        Update the slider text label as it is moved
+        :return:
+        """
+        idx = self.ui.db_step_slider.value()
+
+        if idx > -1:
+            val = str(self.circuit.time_profile[idx])
+            self.ui.db_step_label.setText(val)
+        else:
+            self.ui.db_step_label.setText("Snapshot")
 
     def export_diagram(self):
         """
@@ -1208,60 +1242,6 @@ class DiagramsMain(CompiledArraysMain):
                 diagram_widget.try_to_fix_buses_location(buses_selection=selected_buses)
             else:
                 info_msg('Choose some elements from the schematic', 'Fix buses locations')
-
-    def colour_next_simulation_step(self):
-        """
-        Next colour step
-        """
-        current_step = self.ui.simulation_results_step_slider.value()
-        count = self.ui.simulation_results_step_slider.maximum() + 1
-
-        if count > 0:
-            nxt = current_step + 1
-
-            if nxt >= count:
-                nxt = count - 1
-
-            self.ui.simulation_results_step_slider.setValue(nxt)
-
-            self.colour_diagrams()
-
-    def colour_previous_simulation_step(self):
-        """
-        Prev colour step
-        """
-        current_step = self.ui.simulation_results_step_slider.value()
-        count = self.ui.simulation_results_step_slider.maximum() + 1
-
-        if count > 0:
-            prv = current_step - 1
-
-            if prv < 0:
-                prv = 0
-
-            self.ui.simulation_results_step_slider.setValue(prv)
-
-            self.colour_diagrams()
-
-    def update_available_steps_to_color(self):
-        """
-        Update the available simulation steps in the combo box
-        """
-        if self.ui.available_results_to_color_comboBox.currentIndex() > -1:
-            current_study = self.ui.available_results_to_color_comboBox.currentText()
-
-            self.schematic_list_steps = self.available_results_steps_dict[current_study]
-
-            if len(self.schematic_list_steps) > 0:
-                self.ui.simulation_results_step_slider.setMinimum(0)
-                self.ui.simulation_results_step_slider.setMaximum(len(self.schematic_list_steps) - 1)
-                self.ui.simulation_results_step_slider.setSliderPosition(0)
-                self.ui.schematic_step_label.setText(self.schematic_list_steps[0])
-            else:
-                self.ui.simulation_results_step_slider.setMinimum(0)
-                self.ui.simulation_results_step_slider.setMaximum(0)
-                self.ui.simulation_results_step_slider.setSliderPosition(0)
-                self.ui.schematic_step_label.setText("No steps")
 
     def get_selected_devices(self) -> List[dev.EditableDevice]:
         """

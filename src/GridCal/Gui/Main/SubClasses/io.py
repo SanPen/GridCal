@@ -378,6 +378,7 @@ class IoMain(ConfigurationMain):
                     diagram.center_nodes()
 
         self.collect_memory()
+        self.setup_time_sliders()
 
     def add_circuit(self):
         """

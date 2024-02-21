@@ -484,11 +484,11 @@ class RosetaExplorerGUI(QMainWindow):
                     editable_headers = dict()
                     headers = list()
 
-                mdl = ObjectsModel(objects=objects,
-                                   editable_headers=editable_headers,
-                                   parent=self.ui.propertiesTableView,
-                                   editable=True,
-                                   dictionary_of_lists={})
+                mdl = ObjectsModelOld(objects=objects,
+                                      editable_headers=editable_headers,
+                                      parent=self.ui.propertiesTableView,
+                                      editable=True,
+                                      dictionary_of_lists={})
             else:
                 return
 

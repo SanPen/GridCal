@@ -241,7 +241,8 @@ class ObjectsTableMain(DiagramsMain):
             raise Exception('elm_type not understood: ' + elm_type.value)
 
         mdl = gf.ObjectsModel(objects=elements,
-                              editable_headers=elm.registered_properties,
+                              property_list=elm.property_list,
+                              time_index=self.get_db_slider_index(),
                               parent=self.ui.dataStructureTableView,
                               editable=True,
                               dictionary_of_lists=dictionary_of_lists)

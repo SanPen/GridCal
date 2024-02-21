@@ -408,9 +408,7 @@ class SimulationsMain(TimeEventsMain):
         self.ui.available_results_to_color_comboBox.model().clear()
         self.ui.results_treeView.setModel(None)
 
-        self.ui.schematic_step_label.setText("")
-        self.ui.simulation_results_step_slider.setMinimum(0)
-        self.ui.simulation_results_step_slider.setMaximum(0)
+        self.setup_time_sliders()
 
         self.ui.simulationDataStructureTableView.setModel(None)
         self.ui.profiles_tableView.setModel(None)
