@@ -24,14 +24,14 @@ from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Core.Devices.Substation.bus import Bus
 from GridCalEngine.Core.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.enumerations import TransformerControlType, WindingsConnection, BuildStatus
-from GridCalEngine.Core.Devices.Parents.branch_parent import BranchParent
+from GridCalEngine.Core.Devices.Parents.controllable_branch_parent import ControllableBranchParent
 from GridCalEngine.Core.Devices.Branches.transformer_type import TransformerType
 from GridCalEngine.Core.Devices.Branches.tap_changer import TapChanger
 from GridCalEngine.Core.Devices.Parents.editable_device import DeviceType
 from GridCalEngine.Core.Devices.profile import Profile
 
 
-class Transformer2W(BranchParent):
+class Transformer2W(ControllableBranchParent):
 
     def __init__(self,
                  bus_from: Bus = None,
@@ -116,26 +116,53 @@ class Transformer2W(BranchParent):
         :param build_status: build status (now time)
         """
 
-        BranchParent.__init__(self,
-                              name=name,
-                              idtag=idtag,
-                              code=code,
-                              bus_from=bus_from,
-                              bus_to=bus_to,
-                              cn_from=cn_from,
-                              cn_to=cn_to,
-                              active=active,
-                              rate=rate,
-                              contingency_factor=contingency_factor,
-                              contingency_enabled=contingency_enabled,
-                              monitor_loading=monitor_loading,
-                              mttf=mttf,
-                              mttr=mttr,
-                              build_status=build_status,
-                              capex=capex,
-                              opex=opex,
-                              Cost=cost,
-                              device_type=DeviceType.Transformer2WDevice)
+        ControllableBranchParent.__init__(self,
+                                          name=name,
+                                          idtag=idtag,
+                                          code=code,
+                                          bus_from=bus_from,
+                                          bus_to=bus_to,
+                                          cn_from=cn_from,
+                                          cn_to=cn_to,
+                                          active=active,
+                                          rate=rate,
+                                          r=r,
+                                          x=x,
+                                          g=g,
+                                          b=b,
+                                          tap_module=tap_module,
+                                          tap_module_max=tap_module_max,
+                                          tap_module_min=tap_module_min,
+                                          tap_phase=tap_phase,
+                                          tap_phase_max=tap_phase_max,
+                                          tap_phase_min=tap_phase_min,
+                                          tolerance=tolerance,
+                                          Cost=cost,
+                                          mttf=mttf,
+                                          mttr=mttr,
+                                          vset=vset,
+                                          Pset=Pset,
+                                          regulation_bus=None,
+                                          regulation_cn=None,
+                                          temp_base=temp_base,
+                                          temp_oper=temp_oper,
+                                          alpha=alpha,
+                                          control_mode=control_mode,
+                                          contingency_factor=contingency_factor,
+                                          contingency_enabled=contingency_enabled,
+                                          monitor_loading=monitor_loading,
+                                          r0=r0,
+                                          x0=x0,
+                                          g0=g0,
+                                          b0=b0,
+                                          r2=r2,
+                                          x2=x2,
+                                          g2=g2,
+                                          b2=b2,
+                                          capex=capex,
+                                          opex=opex,
+                                          build_status=build_status,
+                                          device_type=DeviceType.Transformer2WDevice)
 
         # set the high and low voltage values
         self.HV = 0
@@ -152,73 +179,13 @@ class Transformer2W(BranchParent):
 
         self.Vsc = short_circuit_voltage
 
-        # List of measurements
-        self.measurements = list()
-
-        # branch impedance tolerance
-        self.tolerance = tolerance
-
-        # total impedance and admittance in p.u.
-        self.R = r
-        self.X = x
-        self.G = g
-        self.B = b
-
-        self.R0 = r0
-        self.X0 = x0
-        self.G0 = g0
-        self.B0 = b0
-
-        self.R2 = r2
-        self.X2 = x2
-        self.G2 = g2
-        self.B2 = b2
-
-        self.conn = conn 
-
-        # Conductor base and operating temperatures in ºC
-        self.temp_base = temp_base
-        self.temp_oper = temp_oper
-        self._temp_oper_prof = Profile(default_value=temp_oper)
-
-        # Conductor thermal constant (1/ºC)
-        self.alpha = alpha
-
-        # tap changer object
-        self.tap_changer = TapChanger()
-
-        # Tap module
-        if tap_module != 0:
-            self.tap_module = tap_module
-            self.tap_changer.set_tap(self.tap_module)
-        else:
-            self.tap_module = self.tap_changer.get_tap()
-
-        self._tap_module_prof = Profile(default_value=tap_module)
-
-        # Tap angle
-        self.tap_phase = tap_phase
-        self._tap_phase_prof = Profile(default_value=tap_phase)
-
-        self.tap_module_max = tap_module_max
-        self.tap_module_min = tap_module_min
-        self.tap_phase_max = tap_phase_max
-        self.tap_phase_min = tap_phase_min
+        # connection type
+        self.conn = conn
 
         # type template
         self.template = template
 
-        self.vset = vset
-        self.Pset = Pset
-
-        self.control_mode = control_mode
-
-        self.bus_to_regulated = bus_to_regulated
-
-        if bus_to_regulated and self.control_mode == TransformerControlType.fixed:
-            print(self.name, self.idtag, 'Overriding to V controller')
-            self.control_mode = TransformerControlType.Vt
-
+        # register
         self.register(key='HV', units='kV', tpe=float, definition='High voltage rating')
         self.register(key='LV', units='kV', tpe=float, definition='Low voltage rating')
         self.register(key='Sn', units='MVA', tpe=float, definition='Nominal power')
@@ -227,100 +194,10 @@ class Transformer2W(BranchParent):
         self.register(key='I0', units='%', tpe=float, definition='No-load current (optional)')
         self.register(key='Vsc', units='%', tpe=float, definition='Short-circuit voltage (optional)')
 
-        self.register(key='R', units='p.u.', tpe=float, definition='Total positive sequence resistance.')
-        self.register(key='X', units='p.u.', tpe=float, definition='Total positive sequence reactance.')
-        self.register(key='G', units='p.u.', tpe=float, definition='Total positive sequence shunt conductance.')
-        self.register(key='B', units='p.u.', tpe=float, definition='Total positive sequence shunt susceptance.')
-        self.register(key='R0', units='p.u.', tpe=float, definition='Total zero sequence resistance.')
-        self.register(key='X0', units='p.u.', tpe=float, definition='Total zero sequence reactance.')
-        self.register(key='G0', units='p.u.', tpe=float, definition='Total zero sequence shunt conductance.')
-        self.register(key='B0', units='p.u.', tpe=float, definition='Total zero sequence shunt susceptance.')
-        self.register(key='R2', units='p.u.', tpe=float, definition='Total negative sequence resistance.')
-        self.register(key='X2', units='p.u.', tpe=float, definition='Total negative sequence reactance.')
-        self.register(key='G2', units='p.u.', tpe=float, definition='Total negative sequence shunt conductance.')
-        self.register(key='B2', units='p.u.', tpe=float, definition='Total negative sequence shunt susceptance.')
         self.register(key='conn', units='', tpe=WindingsConnection,
                       definition='Windings connection (from, to):G: grounded starS: ungrounded starD: delta')
 
-        self.register(key='tolerance', units='%', tpe=float,
-                      definition='Tolerance expected for the impedance values% '
-                                 'is expected for transformers0% for lines.')
-
-        self.register(key='tap_module', units='', tpe=float, definition='Tap changer module, it a value close to 1.0',
-                      profile_name='tap_module_prof', old_names=['tap'])
-        self.register(key='tap_module_max', units='', tpe=float, definition='Tap changer module max value')
-        self.register(key='tap_module_min', units='', tpe=float, definition='Tap changer module min value')
-
-        self.register(key='tap_phase', units='rad', tpe=float, definition='Angle shift of the tap changer.',
-                      profile_name='tap_phase_prof', old_names=['angle'])
-        self.register(key='tap_phase_max', units='rad', tpe=float, definition='Max angle.', old_names=['angle_max'])
-        self.register(key='tap_phase_min', units='rad', tpe=float, definition='Min angle.', old_names=['angle_min'])
-
-        self.register(key='control_mode', units='', tpe=TransformerControlType,
-                      definition='Control type of the transformer')
-        self.register(key='vset', units='p.u.', tpe=float,
-                      definition='Objective voltage at the "to" side of the bus when regulating the tap.')
-        self.register(key='Pset', units='p.u.', tpe=float,
-                      definition='Objective power at the "from" side of when regulating the angle.')
-        self.register(key='temp_base', units='ºC', tpe=float, definition='Base temperature at which R was measured.')
-        self.register(key='temp_oper', units='ºC', tpe=float, definition='Operation temperature to modify R.',
-                      profile_name='temp_oper_prof')
-        self.register(key='alpha', units='1/ºC', tpe=float,
-                      definition='Thermal coefficient to modify R,around a reference temperatureusing a linear '
-                                 'approximation.For example:Copper @ 20ºC: 0.004041,Copper @ 75ºC: 0.00323,'
-                                 'Annealed copper @ 20ºC: 0.00393,Aluminum @ 20ºC: 0.004308,Aluminum @ 75ºC: 0.00330')
         self.register(key='template', units='', tpe=DeviceType.TransformerTypeDevice, definition='', editable=False)
-
-    @property
-    def tap_module_prof(self) -> Profile:
-        """
-        Cost profile
-        :return: Profile
-        """
-        return self._tap_module_prof
-
-    @tap_module_prof.setter
-    def tap_module_prof(self, val: Union[Profile, np.ndarray]):
-        if isinstance(val, Profile):
-            self._tap_module_prof = val
-        elif isinstance(val, np.ndarray):
-            self._tap_module_prof.set(arr=val)
-        else:
-            raise Exception(str(type(val)) + 'not supported to be set into a tap_module_prof')
-
-    @property
-    def tap_phase_prof(self) -> Profile:
-        """
-        Cost profile
-        :return: Profile
-        """
-        return self._tap_phase_prof
-
-    @tap_phase_prof.setter
-    def tap_phase_prof(self, val: Union[Profile, np.ndarray]):
-        if isinstance(val, Profile):
-            self._tap_phase_prof = val
-        elif isinstance(val, np.ndarray):
-            self._tap_phase_prof.set(arr=val)
-        else:
-            raise Exception(str(type(val)) + 'not supported to be set into a tap_phase_prof')
-
-    @property
-    def temp_oper_prof(self) -> Profile:
-        """
-        Cost profile
-        :return: Profile
-        """
-        return self._temp_oper_prof
-
-    @temp_oper_prof.setter
-    def temp_oper_prof(self, val: Union[Profile, np.ndarray]):
-        if isinstance(val, Profile):
-            self._temp_oper_prof = val
-        elif isinstance(val, np.ndarray):
-            self._temp_oper_prof.set(arr=val)
-        else:
-            raise Exception(str(type(val)) + 'not supported to be set into a temp_oper_prof')
 
     def set_hv_and_lv(self, HV: float, LV: float):
         """
@@ -344,36 +221,6 @@ class Transformer2W(BranchParent):
             self.LV = vl
         else:
             self.LV = LV
-
-    @property
-    def R_corrected(self):
-        """
-        Returns a temperature corrected resistance based on a formula provided by:
-        NFPA 70-2005, National Electrical Code, Table 8, footnote #2; and
-        https://en.wikipedia.org/wiki/Electrical_resistivity_and_conductivity#Linear_approximation
-        (version of 2019-01-03 at 15:20 EST).
-        """
-        return self.R * (1 + self.alpha * (self.temp_oper - self.temp_base))
-
-    def change_base(self, Sbase_old: float, Sbase_new: float):
-        """
-        Change the impedance base
-        :param Sbase_old: old base (MVA)
-        :param Sbase_new: new base (MVA)
-        """
-        b = Sbase_new / Sbase_old
-
-        self.R *= b
-        self.X *= b
-        self.G *= b
-        self.B *= b
-
-    def get_weight(self):
-        """
-        Get a weight for the graphs
-        :return: sqrt(r^2 + x^2)
-        """
-        return np.sqrt(self.R * self.R + self.X * self.X)
 
     def copy(self, bus_dict=None):
         """
@@ -403,7 +250,6 @@ class Transformer2W(BranchParent):
                           active=self.active,
                           mttf=self.mttf,
                           mttr=self.mttr,
-                          bus_to_regulated=self.bus_to_regulated,
                           vset=self.vset,
                           temp_base=self.temp_base,
                           temp_oper=self.temp_oper,
@@ -412,76 +258,13 @@ class Transformer2W(BranchParent):
                           opex=self.opex,
                           capex=self.capex)
 
-        b.measurements = self.measurements
-
+        b.regulation_bus = self.regulation_bus
+        b.regulation_cn = self.regulation_cn
         b.active_prof = self.active_prof
         b.rate_prof = self.rate_prof
         b.Cost_prof = self.Cost_prof
 
         return b
-
-    def flip(self):
-        """
-        Change the terminals' positions
-        """
-        F, T = self.bus_from, self.bus_to
-        self.bus_to, self.bus_from = F, T
-
-    def tap_up(self):
-        """
-        Move the tap changer one position up
-        """
-        self.tap_changer.tap_up()
-        self.tap_module = self.tap_changer.get_tap()
-
-    def tap_down(self):
-        """
-        Move the tap changer one position up
-        """
-        self.tap_changer.tap_down()
-        self.tap_module = self.tap_changer.get_tap()
-
-    def apply_tap_changer(self, tap_changer: TapChanger):
-        """
-        Apply a new tap changer
-
-        Argument:
-
-            **tap_changer** (:class:`GridCalEngine.Devices.branch.TapChanger`): Tap changer object
-
-        """
-        self.tap_changer = tap_changer
-
-        if self.tap_module != 0:
-            self.tap_changer.set_tap(self.tap_module)
-        else:
-            self.tap_module = self.tap_changer.get_tap()
-
-    def get_sorted_buses_voltages(self):
-        """
-        GEt the sorted bus voltages
-        :return: high voltage, low voltage
-        """
-        bus_f_v = self.bus_from.Vnom
-        bus_t_v = self.bus_to.Vnom
-        if bus_f_v > bus_t_v:
-            return bus_f_v, bus_t_v
-        else:
-            return bus_t_v, bus_f_v
-
-    def get_max_bus_nominal_voltage(self):
-        """
-
-        :return:
-        """
-        return max(self.bus_from.Vnom, self.bus_to.Vnom)
-
-    def get_min_bus_nominal_voltage(self):
-        """
-
-        :return:
-        """
-        return min(self.bus_from.Vnom, self.bus_to.Vnom)
 
     def get_from_to_nominal_voltages(self):
         """
@@ -504,8 +287,8 @@ class Transformer2W(BranchParent):
             tpe_f_v = self.LV
 
         return tpe_f_v, tpe_t_v
-
-    def get_virtual_taps(self):
+    
+    def get_virtual_taps(self) -> Tuple[float, float]:
         """
         Get the branch virtual taps
 
@@ -755,48 +538,6 @@ class Transformer2W(BranchParent):
                 'base_temperature': 'ºC',
                 'operational_temperature': 'ºC',
                 'alpha': '1/ºC'}
-
-    def plot_profiles(self, time_series=None, my_index=0, show_fig=True):
-        """
-        Plot the time series results of this object
-        :param time_series: TimeSeries Instance
-        :param my_index: index of this object in the simulation
-        :param show_fig: Show the figure?
-        """
-
-        if time_series is not None:
-            fig = plt.figure(figsize=(12, 8))
-
-            ax_1 = fig.add_subplot(211)
-            ax_2 = fig.add_subplot(212, sharex=ax_1)
-
-            x = time_series.results.time_array
-
-            # loading
-            y = time_series.results.loading.real * 100.0
-            df = pd.DataFrame(data=y[:, my_index], index=x, columns=[self.name])
-            ax_1.set_title('Loading', fontsize=14)
-            ax_1.set_ylabel('Loading [%]', fontsize=11)
-            df.plot(ax=ax_1)
-
-            # losses
-            y = np.abs(time_series.results.losses)
-            df = pd.DataFrame(data=y[:, my_index], index=x, columns=[self.name])
-            ax_2.set_title('Losses', fontsize=14)
-            ax_2.set_ylabel('Losses [MVA]', fontsize=11)
-            df.plot(ax=ax_2)
-
-            plt.legend()
-            fig.suptitle(self.name, fontsize=20)
-
-        if show_fig:
-            plt.show()
-
-    def get_coordinates(self) -> List[Tuple[float, float]]:
-        """
-        Get the branch defining coordinates
-        """
-        return [self.bus_from.get_coordinates(), self.bus_to.get_coordinates()]
 
     def delete_virtual_taps(self):
         """

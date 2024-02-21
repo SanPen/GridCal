@@ -318,6 +318,18 @@ class BranchParent(EditableDevice):
         """
         return min(self.bus_from.Vnom, self.bus_to.Vnom)
 
+    def get_sorted_buses_voltages(self):
+        """
+        Get the sorted bus voltages
+        :return: high voltage, low voltage
+        """
+        bus_f_v = self.bus_from.Vnom
+        bus_t_v = self.bus_to.Vnom
+        if bus_f_v > bus_t_v:
+            return bus_f_v, bus_t_v
+        else:
+            return bus_t_v, bus_f_v
+
     def get_virtual_taps(self) -> Tuple[float, float]:
         """
         Get the branch virtual taps
@@ -415,42 +427,6 @@ class BranchParent(EditableDevice):
                 'base_temperature': 'ºC',
                 'operational_temperature': 'ºC',
                 'alpha': '1/ºC'}
-
-    def plot_profiles(self, time_series=None, my_index=0, show_fig=True):
-        """
-        Plot the time series results of this object
-        :param time_series: TimeSeries Instance
-        :param my_index: index of this object in the simulation
-        :param show_fig: Show the figure?
-        """
-
-        if time_series is not None:
-            fig = plt.figure(figsize=(12, 8))
-
-            ax_1 = fig.add_subplot(211)
-            ax_2 = fig.add_subplot(212, sharex=ax_1)
-
-            x = time_series.results.time_array
-
-            # loading
-            y = time_series.results.loading.real * 100.0
-            df = pd.DataFrame(data=y[:, my_index], index=x, columns=[self.name])
-            ax_1.set_title('Loading', fontsize=14)
-            ax_1.set_ylabel('Loading [%]', fontsize=11)
-            df.plot(ax=ax_1)
-
-            # losses
-            y = np.abs(time_series.results.losses)
-            df = pd.DataFrame(data=y[:, my_index], index=x, columns=[self.name])
-            ax_2.set_title('Losses', fontsize=14)
-            ax_2.set_ylabel('Losses [MVA]', fontsize=11)
-            df.plot(ax=ax_2)
-
-            plt.legend()
-            fig.suptitle(self.name, fontsize=20)
-
-        if show_fig:
-            plt.show()
 
     def get_coordinates(self):
         """
