@@ -11,7 +11,6 @@ def test_ptdf():
     options = LinearAnalysisOptions(distribute_slack=False, correct_values=False)
     simulation = LinearAnalysisDriver(grid=main_circuit, options=options)
     simulation.run()
-    # ptdf_df = simulation.results.mdl(result_type=ResultTypes.PTDFBranchesSensitivity)
 
     test_PTDF = [[0, -0.470623900249771, -0.40256295349251, -0.314889382426403, -0.321730075985739, -0.406428143061441],
                  [0, -0.314889382426403, -0.294871456909562, -0.504379230125413, -0.271097081172276,

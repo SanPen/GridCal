@@ -572,14 +572,14 @@ class PandasModel(QtCore.QAbstractTableModel):
 
         if n > 0:
             # gather values
-            if type(self.cols_c) == pd.Index:
+            if isinstance(self.cols_c, pd.Index):
                 names = self.cols_c.values
 
                 if len(names) > 0:
-                    if type(names[0]) == ResultTypes:
+                    if isinstance(names[0], ResultTypes):
                         names = [val.name for val in names]
 
-            elif type(self.cols_c) == ResultTypes:
+            elif isinstance(self.cols_c, ResultTypes):
                 names = [val.name for val in self.cols_c]
             else:
                 names = [val.name for val in self.cols_c]
