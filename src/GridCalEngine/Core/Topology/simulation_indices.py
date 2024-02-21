@@ -85,10 +85,10 @@ def compose_generator_voltage_profile(nbus: int,
                                       hvdc_status: np.ndarray,
                                       hvdc_vf: np.ndarray,
                                       hvdc_vt: np.ndarray,
-                                      iBeqv: np.ndarray,
-                                      iVtma: np.ndarray,
-                                      VfBeqbus: np.ndarray,
-                                      Vtmabus: np.ndarray,
+                                      k_vf_beq: np.ndarray,
+                                      k_vt_m: np.ndarray,
+                                      i_vf_beq: np.ndarray,
+                                      i_vt_m: np.ndarray,
                                       branch_status: np.ndarray,
                                       br_vf: np.ndarray,
                                       br_vt: np.ndarray):
@@ -108,10 +108,10 @@ def compose_generator_voltage_profile(nbus: int,
     :param hvdc_status: array of hvdc status (nhvdc)
     :param hvdc_vf: array of hvdc voltage from set points (nhvdc)
     :param hvdc_vt: array of hvdc voltage to set points (nhvdc)
-    :param iBeqv: indices of the Branches when controlling Vf with Beq
-    :param iVtma: indices of the Branches when controlling Vt with ma
-    :param VfBeqbus: indices of the buses where Vf is controlled by Beq
-    :param Vtmabus: indices of the buses where Vt is controlled by ma
+    :param k_vf_beq: indices of the Branches when controlling Vf with Beq
+    :param k_vt_m: indices of the Branches when controlling Vt with ma
+    :param i_vf_beq: indices of the buses where Vf is controlled by Beq
+    :param i_vt_m: indices of the buses where Vt is controlled by ma
     :param branch_status: array of brach status (nbr)
     :param br_vf: array of branch voltage from set points (nbr)
     :param br_vt: array of branch voltage from set points (nbr)
@@ -119,6 +119,8 @@ def compose_generator_voltage_profile(nbus: int,
     """
     V = np.ones(nbus, dtype=nb.complex128)
     used = np.zeros(nbus, dtype=nb.int8)
+    # V = np.ones(nbus, dtype=complex)
+    # used = np.zeros(nbus, dtype=int)
 
     # generators
     for i, bus_idx in enumerate(gen_bus_indices):
@@ -149,19 +151,17 @@ def compose_generator_voltage_profile(nbus: int,
                 used[to_idx] = 1
 
     # branch - from
-    for i in iBeqv:  # Branches controlling Vf
-        from_idx = VfBeqbus[i]
-        if branch_status[i] != 0:
+    for k, from_idx in zip(k_vf_beq, i_vf_beq):  # Branches controlling Vf
+        if branch_status[k] != 0:
             if used[from_idx] == 0:
-                V[from_idx] = complex(br_vf[i], 0)
+                V[from_idx] = complex(br_vf[k], 0)
                 used[from_idx] = 1
 
     # branch - to
-    for i in iVtma:  # Branches controlling Vt
-        from_idx = Vtmabus[i]
-        if branch_status[i] != 0:
+    for k, from_idx in zip(k_vt_m, i_vt_m):  # Branches controlling Vt
+        if branch_status[k] != 0:
             if used[from_idx] == 0:
-                V[from_idx] = complex(br_vt[i], 0)
+                V[from_idx] = complex(br_vt[k], 0)
                 used[from_idx] = 1
 
     return V
@@ -503,10 +503,10 @@ class SimulationIndices:
             hvdc_status=hvdc_data.active,
             hvdc_vf=hvdc_data.Vset_f,
             hvdc_vt=hvdc_data.Vset_t,
-            iBeqv=np.array(self.k_vf_beq, dtype=int),
-            iVtma=np.array(self.k_vt_m, dtype=int),
-            VfBeqbus=np.array(self.i_vf_beq, dtype=int),
-            Vtmabus=np.array(self.i_vt_m, dtype=int),
+            k_vf_beq=self.k_vf_beq,
+            k_vt_m=self.k_vt_m,
+            i_vf_beq=self.i_vf_beq,
+            i_vt_m=self.i_vt_m,
             branch_status=branch_data.active,
             br_vf=branch_data.vf_set,
             br_vt=branch_data.vt_set
