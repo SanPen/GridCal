@@ -15,12 +15,13 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from typing import Union
+from typing import Union, List
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
-from GridCalEngine.Simulations.result_types import ResultTypes
+from GridCalEngine.enumerations import ResultTypes
 from GridCalEngine.basic_structures import StrVec, Mat, Vec
+from GridCalEngine.Core.Devices.types import ALL_DEV_TYPES
 
 
 class ResultsTable:
@@ -88,6 +89,16 @@ class ResultsTable:
         self.format_string = '.' + str(decimals) + 'f'
 
         self.formatter = lambda x: "%.2f" % x
+
+        # list of devices that match the columns or rows for filtering
+        self._devices = list()
+
+    def set_devices(self, devices_list: List[ALL_DEV_TYPES]):
+        """
+        Set the list of devices that matches the results for filtering
+        :param devices_list:
+        """
+        self._devices = devices_list
 
     def transpose(self):
         """

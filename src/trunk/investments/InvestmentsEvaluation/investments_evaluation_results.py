@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2024 Santiago Peñate Vera
+# Copyright (C) 2015 - 2023 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -18,9 +18,10 @@ import numpy as np
 from matplotlib import pyplot as plt
 import matplotlib.colors as plt_colors
 from GridCalEngine.Simulations.results_template import ResultsTemplate
+from GridCalEngine.Simulations.result_types import ResultTypes
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.basic_structures import IntVec, Vec, StrVec
-from GridCalEngine.enumerations import StudyResultsType, ResultTypes
+from GridCalEngine.enumerations import StudyResultsType
 
 
 class InvestmentsEvaluationResults(ResultsTemplate):
@@ -82,7 +83,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         return self._index_names
 
     def set_at(self, eval_idx, capex, opex, losses, overload_score, voltage_score, objective_function,
-               combination: IntVec, index_name: str) -> None:
+               combination: IntVec, index_name) -> None:
         """
         Set the results at an investment group
         :param eval_idx: evaluation index
@@ -134,23 +135,28 @@ class InvestmentsEvaluationResults(ResultsTemplate):
             labels = self._index_names
             columns = ["CAPEX (M€) + OPEX (M€)", "Objective function"]
             x = self._capex + self._opex
-            y = self._f_obj
+            y = self._losses + self._overload_score + self._voltage_score
+            z = self._f_obj
+
+            if np.min(z) <= 0:  # necessary to apply color_norm correctly
+                color_norm = plt_colors.Normalize()
+            else:
+                color_norm = plt_colors.LogNorm()
+
             data = np.c_[x, y]
             y_label = ''
             title = ''
 
             #plt.ion()
-            color_norm = plt_colors.LogNorm()
             fig = plt.figure(figsize=(8, 6))
             ax3 = plt.subplot(1, 1, 1)
-            sc3 = ax3.scatter(x, y, c=y, norm=color_norm)
+            sc3 = ax3.scatter(x, y, c=z, norm=color_norm)
             ax3.set_xlabel('Investment cost (M€)')
             ax3.set_ylabel('Total cost of losses (M€)')
             plt.colorbar(sc3, fraction=0.05, label='Objective function')
             fig.suptitle(result_type.value[0])
             plt.tight_layout()
-            plt.show()
-            print('Plot!')
+            # plt.show()
 
         elif result_type == ResultTypes.InvestmentsIterationsPlot:
             labels = self._index_names

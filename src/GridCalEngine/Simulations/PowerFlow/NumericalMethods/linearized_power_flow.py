@@ -67,7 +67,7 @@ def dcpf(Ybus: sp.csc_matrix, Bpqpv: sp.csc_matrix, Bref: sp.csc_matrix, Bf: sp.
         # Since we have removed the slack nodes, we must account their influence as Injections Bref * Va_ref
         # We also need to account for the effect of the phase shifters (Pps)
         Pps = Bf.T @ tau
-        Pinj = Sbus[pvpq].real - (Bref @ Va_ref) * Vm[pvpq] + Pps[pvpq]
+        Pinj = Sbus[pvpq].real - (Bref @ Va_ref) * Vm[pvpq] + Pps[pvpq]  # TODO: add G from shunts
 
         # update angles for non-reference buses
         Va[pvpq] = linear_solver(Bpqpv, Pinj)

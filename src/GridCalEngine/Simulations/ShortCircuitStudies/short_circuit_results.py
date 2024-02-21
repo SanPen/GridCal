@@ -17,12 +17,11 @@
 
 import numpy as np
 import pandas as pd
-from GridCalEngine.Simulations.result_types import ResultTypes
 from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.enumerations import FaultType
 from GridCalEngine.basic_structures import DateVec, IntVec, Vec, StrVec, CxMat, Mat, BoolVec, CxVec
-from GridCalEngine.enumerations import StudyResultsType
+from GridCalEngine.enumerations import StudyResultsType, ResultTypes
 
 
 class ShortCircuitResults(ResultsTemplate):

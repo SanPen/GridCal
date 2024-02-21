@@ -76,20 +76,22 @@ class Admittance:
 
         self.Gsw = Gsw
 
-    def modify_taps(self, m, m2, idx=None) -> Tuple[sp.csc_matrix, sp.csc_matrix, sp.csc_matrix]:
+    def modify_taps(self, m, m2, tau, tau2, idx=None) -> Tuple[sp.csc_matrix, sp.csc_matrix, sp.csc_matrix]:
         """
         Compute the new admittance matrix given the tap variation
-        :param m: previous tap
-        :param m2: new tap
+        :param m: previous tap module
+        :param m2: new tap module
+        :param tau: previous tap angle
+        :param tau2: new tap angle
         :param idx: indices that apply, if none assumes that m and m2 length math yff etc...
         :return: Ybus, Yf, Yt
         """
 
         if idx is None:
-            yff = ((self.yff - self.Gsw) * (m * m) / (m2 * m2)) + self.Gsw
-            yft = self.yft * m / m2
-            ytf = self.ytf * m / m2
-            ytt = self.ytt
+            self.yff = ((self.yff - self.Gsw) * (m * m) / (m2 * m2)) + self.Gsw
+            self.yft = self.yft * (m * np.exp(-1.0j * tau)) / (m2 * np.exp(-1.0j * tau2))
+            self.ytf = self.ytf * (m * np.exp(1.0j * tau)) / (m2 * np.exp(1.0j * tau2))
+            self.ytt = self.ytt
         else:
             yff = self.yff.copy()
             yft = self.yft.copy()
@@ -97,15 +99,15 @@ class Admittance:
             ytt = self.ytt.copy()
 
             yff[idx] = ((yff[idx] - self.Gsw[idx]) * (m * m) / (m2 * m2)) + self.Gsw[idx]
-            yft[idx] = yft[idx] * m / m2
-            ytf[idx] = ytf[idx] * m / m2
+            yft[idx] = yft[idx] * (m * np.exp(-1.0j * tau)) / (m2 * np.exp(-1.0j * tau2))
+            ytf[idx] = ytf[idx] * (m * np.exp(1.0j * tau)) / (m2 * np.exp(1.0j * tau2))
 
         # compose the matrices
-        Yf = sp.diags(yff) * self.Cf + sp.diags(yft) * self.Ct
-        Yt = sp.diags(ytf) * self.Cf + sp.diags(ytt) * self.Ct
-        Ybus = self.Cf.T * Yf + self.Ct.T * Yt + sp.diags(self.Yshunt_bus)
+        self.Yf = sp.diags(self.yff) * self.Cf + sp.diags(self.yft) * self.Ct
+        self.Yt = sp.diags(self.ytf) * self.Cf + sp.diags(self.ytt) * self.Ct
+        self.Ybus = self.Cf.T * self.Yf + self.Ct.T * self.Yt + sp.diags(self.Yshunt_bus)
 
-        return Ybus, Yf, Yt
+        return self.Ybus, self.Yf, self.Yt
 
 
 def compute_connectivity(branch_active, Cf_, Ct_) -> Tuple[sp.csc_matrix, sp.csc_matrix]:
@@ -408,6 +410,7 @@ def compute_fast_decoupled_admittances(X: Vec,
 def compute_linear_admittances(nbr: int,
                                X: Vec,
                                R: Vec,
+                               m: Vec,
                                active: IntVec,
                                Cf: sp.csc_matrix,
                                Ct: sp.csc_matrix,
@@ -418,6 +421,7 @@ def compute_linear_admittances(nbr: int,
     :param nbr: Number of Branches
     :param X: array of branch reactance (p.u.)
     :param R: array of branch resistance (p.u.)
+    :param m: array of branch tap modules (p.u.)
     :param active: array of branch active (bool)
     :param Cf: Connectivity branch-bus "from" with the branch states computed
     :param Ct: Connectivity branch-bus "to" with the branch states computed
@@ -429,10 +433,10 @@ def compute_linear_admittances(nbr: int,
         # compose the vector for AC-DC grids where the R is needed for this matrix
         # even if conceptually we only want the susceptance
         b = np.zeros(nbr)
-        b[ac] = 1.0 / (X[ac] * active[ac] + 1e-20)  # for ac Branches
-        b[dc] = 1.0 / (R[dc] * active[dc] + 1e-20)  # for dc Branches
+        b[ac] = 1.0 / (X[ac] * active[ac] * m[ac] + 1e-20)  # for ac Branches
+        b[dc] = 1.0 / (R[dc] * active[dc] * m[dc] + 1e-20)  # for dc Branches
     else:
-        b = 1.0 / (X * active + 1e-20)  # for ac Branches
+        b = 1.0 / (X * active * m + 1e-20)  # for ac Branches
 
     b_tt = sp.diags(b)  # This is Bd from the
     Bf = b_tt * Cf - b_tt * Ct

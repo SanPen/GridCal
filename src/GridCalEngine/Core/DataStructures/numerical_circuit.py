@@ -1415,6 +1415,7 @@ class NumericalCircuit:
                 nbr=self.nbr,
                 X=self.branch_data.X,
                 R=self.branch_data.R,
+                m=self.branch_data.tap_module,
                 active=self.branch_data.active,
                 Cf=self.Cf,
                 Ct=self.Ct,
