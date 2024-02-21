@@ -10,15 +10,13 @@ from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
 
 plugin.register("cim_xml", Serializer, "GridCalEngine.IO.cim.cgmes.cgmes_export", "CimSerializer")
 
+about_dict = dict()
+
 
 class CimSerializer(PrettyXMLSerializer):
     def __init__(self, store: Graph):
         super().__init__(store)
-        self.about_list = self.about_list_import()
-
-    def about_list_import(self, profile: str = ""):
-        about_list = []
-        return about_list
+        self.about_list = self.get_about_list()
 
     def subject(self, subject: IdentifiedNode, depth: int = 1):
         store = self.store
@@ -32,34 +30,54 @@ class CimSerializer(PrettyXMLSerializer):
 
         elif subject not in self._PrettyXMLSerializer__serialized:
             self._PrettyXMLSerializer__serialized[subject] = 1
-            type = first(store.objects(subject, RDF.type))
+            tpe = first(store.objects(subject, RDF.type))
 
             try:
-                # type error: Argument 1 to "qname" of "NamespaceManager" has incompatible type "Optional[Node]"; expected "str"
-                self.nm.qname(type)  # type: ignore[arg-type]
+                # type error: Argument 1 to "qname" of "NamespaceManager" has incompatible type "Optional[Node]";
+                # expected "str"
+                self.nm.qname(tpe)  # type: ignore[arg-type]
             except Exception:
-                type = None
+                tpe = None
 
-            element = type or RDFVOC.Description
+            element = tpe or RDFVOC.Description
             writer.push(element)
 
-            if subject in self.about_list:
+            if store.value(subject, RDF.type).__str__() in self.about_list:
                 writer.attribute(RDFVOC.about, self.relativize(subject))
             else:
                 writer.attribute(RDFVOC.ID, self.relativize(subject))
 
             if (subject, None, None) in store:
-                for predicate, object in store.predicate_objects(subject):
-                    if not (predicate == RDF.type and object == type):
-                        self.predicate(predicate, object, depth + 1)
+                for predicate, obj in store.predicate_objects(subject):
+                    if not (predicate == RDF.type and obj == tpe):
+                        self.predicate(predicate, obj, depth + 1)
 
             writer.pop(element)
 
-        elif subject in self.forceRDFAbout:
-            writer.push(RDFVOC.Description)
-            writer.attribute(RDFVOC.about, self.relativize(subject))
-            writer.pop(RDFVOC.Description)
-            self.forceRDFAbout.remove(subject)  # type: ignore[arg-type]
+    def get_about_list(self):
+        about_list = list()
+        # Todo test phase only modify needed in future
+        profile = self.store.objects(None,
+                                     rdflib.URIRef("http://iec.ch/TC57/61970-552/ModelDescription/1#profile"))
+        for pro in profile:
+            try:
+                pro = pro.__str__()
+                if pro == "http://entsoe.eu/CIM/EquipmentCore/3/1":
+                    about_list = about_dict["eq"]
+                    break
+                elif pro == "http://entsoe.eu/CIM/StateVariables/4/1":
+                    about_list = about_dict["sv"]
+                    break
+                elif pro == "http://entsoe.eu/CIM/SteadyStateHypothesis/1/1":
+                    about_list = about_dict["ssh"]
+                    break
+                elif pro == "http://entsoe.eu/CIM/Topology/4/1":
+                    about_list = about_dict["tp"]
+                    break
+            except:
+                about_list = []
+
+        return about_list
 
 
 class CgmesExporter:
@@ -75,21 +93,66 @@ class CgmesExporter:
         rdf_serialization.parse(source=os.path.join(current_directory, "export_docs\RDFSSerialisation.ttl"),
                                 format="ttl")
         enum_dict = dict()
-        enum_list = dict()
+
         for s_i, p_i, o_i in rdf_serialization.triples((None, RDF.type, RDFS.Class)):
             if str(s_i).split("#")[1] == "RdfEnum":
+                enum_list_dict = dict()
                 for s, p, o in rdf_serialization.triples((s_i, OWL.members, None)):
-                    enum_list[str(o).split("#")[1]] = str(o)
-                enum_dict["eq"] = enum_list
+                    enum_list_dict[str(o).split("#")[1]] = str(o)
+                if str(s_i).split("#")[0] == "http://entsoe.eu/CIM/EquipmentCore/3/1":
+                    enum_dict["eq"] = enum_list_dict
+                elif str(s_i).split("#")[0] == "http://entsoe.eu/CIM/StateVariables/4/1":
+                    enum_dict["sv"] = enum_list_dict
+                elif str(s_i).split("#")[0] == "http://entsoe.eu/CIM/SteadyStateHypothesis/1/1":
+                    enum_dict["ssh"] = enum_list_dict
+                elif str(s_i).split("#")[0] == "http://entsoe.eu/CIM/Topology/4/1":
+                    enum_dict["tp"] = enum_list_dict
+
+            if str(s_i).split("#")[1] == "RdfAbout":
+                about_list = list()
+                for s, p, o in rdf_serialization.triples((s_i, OWL.members, None)):
+                    about_list.append(str(o))
+                if str(s_i).split("#")[0] == "http://entsoe.eu/CIM/EquipmentCore/3/1":
+                    about_dict["eq"] = about_list
+                elif str(s_i).split("#")[0] == "http://entsoe.eu/CIM/StateVariables/4/1":
+                    about_dict["sv"] = about_list
+                elif str(s_i).split("#")[0] == "http://entsoe.eu/CIM/SteadyStateHypothesis/1/1":
+                    about_dict["ssh"] = about_list
+                elif str(s_i).split("#")[0] == "http://entsoe.eu/CIM/Topology/4/1":
+                    about_dict["tp"] = about_list
 
         profiles_info = pl.read_excel(
             source=absolute_path_to_excel,
             sheet_name="Profiles")
 
         eq_graph = self.create_graph()
+        eq_graph.add((rdflib.URIRef("urn:uuid:7d06cd3f-a6dc-9642-826a-266fc538e942"),
+                      rdflib.URIRef(RDF.type),
+                      rdflib.URIRef("http://iec.ch/TC57/61970-552/ModelDescription/1#FullModel")))
+        eq_graph.add((rdflib.URIRef("urn:uuid:7d06cd3f-a6dc-9642-826a-266fc538e942"),
+                      rdflib.URIRef("http://iec.ch/TC57/61970-552/ModelDescription/1#profile"),
+                      rdflib.Literal("http://entsoe.eu/CIM/EquipmentCore/3/1")))
         ssh_graph = self.create_graph()
+        ssh_graph.add((rdflib.URIRef("urn:uuid:7d06cd3f-a6dc-9642-826a-266fc538e942"),
+                       rdflib.URIRef(RDF.type),
+                       rdflib.URIRef("http://iec.ch/TC57/61970-552/ModelDescription/1#FullModel")))
+        ssh_graph.add((rdflib.URIRef("urn:uuid:7d06cd3f-a6dc-9642-826a-266fc538e942"),
+                       rdflib.URIRef("http://iec.ch/TC57/61970-552/ModelDescription/1#profile"),
+                       rdflib.Literal("http://entsoe.eu/CIM/SteadyStateHypothesis/1/1")))
         tp_graph = self.create_graph()
+        tp_graph.add((rdflib.URIRef("urn:uuid:7d06cd3f-a6dc-9642-826a-266fc538e942"),
+                      rdflib.URIRef(RDF.type),
+                      rdflib.URIRef("http://iec.ch/TC57/61970-552/ModelDescription/1#FullModel")))
+        tp_graph.add((rdflib.URIRef("urn:uuid:7d06cd3f-a6dc-9642-826a-266fc538e942"),
+                      rdflib.URIRef("http://iec.ch/TC57/61970-552/ModelDescription/1#profile"),
+                      rdflib.Literal("http://entsoe.eu/CIM/Topology/4/1")))
         sv_graph = self.create_graph()
+        sv_graph.add((rdflib.URIRef("urn:uuid:7d06cd3f-a6dc-9642-826a-266fc538e942"),
+                      rdflib.URIRef(RDF.type),
+                      rdflib.URIRef("http://iec.ch/TC57/61970-552/ModelDescription/1#FullModel")))
+        sv_graph.add((rdflib.URIRef("urn:uuid:7d06cd3f-a6dc-9642-826a-266fc538e942"),
+                      rdflib.URIRef("http://iec.ch/TC57/61970-552/ModelDescription/1#profile"),
+                      rdflib.Literal("http://entsoe.eu/CIM/StateVariables/4/1")))
 
         for class_name in self.cgmes_circuit.classes:
             objects = self.cgmes_circuit.get_objects_list(elm_type=class_name)
