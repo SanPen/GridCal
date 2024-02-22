@@ -529,11 +529,11 @@ class Ui_mainWindow(object):
 
         self.verticalLayout_2.addWidget(self.grid_colouring_frame)
 
-        self.simulation_results_step_slider = QSlider(self.diagram_selection_frame)
-        self.simulation_results_step_slider.setObjectName(u"simulation_results_step_slider")
-        self.simulation_results_step_slider.setOrientation(Qt.Horizontal)
+        self.diagram_step_slider = QSlider(self.diagram_selection_frame)
+        self.diagram_step_slider.setObjectName(u"diagram_step_slider")
+        self.diagram_step_slider.setOrientation(Qt.Horizontal)
 
-        self.verticalLayout_2.addWidget(self.simulation_results_step_slider)
+        self.verticalLayout_2.addWidget(self.diagram_step_slider)
 
         self.schematic_step_label = QLabel(self.diagram_selection_frame)
         self.schematic_step_label.setObjectName(u"schematic_step_label")
@@ -600,6 +600,7 @@ class Ui_mainWindow(object):
 
         self.db_step_label = QLabel(self.frame_26)
         self.db_step_label.setObjectName(u"db_step_label")
+        self.db_step_label.setAlignment(Qt.AlignCenter)
 
         self.verticalLayout_27.addWidget(self.db_step_label)
 
@@ -4637,7 +4638,7 @@ class Ui_mainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.colour_results_pushButton.setText("")
 #if QT_CONFIG(tooltip)
-        self.simulation_results_step_slider.setToolTip(QCoreApplication.translate("mainWindow", u"Diagrams time slider", None))
+        self.diagram_step_slider.setToolTip(QCoreApplication.translate("mainWindow", u"Diagrams time slider", None))
 #endif // QT_CONFIG(tooltip)
         self.schematic_step_label.setText(QCoreApplication.translate("mainWindow", u"Snapshot", None))
         self.tabWidget_3.setTabText(self.tabWidget_3.indexOf(self.GridSectionTab), QCoreApplication.translate("mainWindow", u"Diagrams", None))

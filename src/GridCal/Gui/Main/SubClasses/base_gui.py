@@ -520,7 +520,7 @@ class BaseMainGui(QMainWindow):
 
     def get_diagram_slider_index(self):
 
-        idx = self.ui.simulation_results_step_slider.value()
+        idx = self.ui.diagram_step_slider.value()
         return idx if idx > -1 else None
 
     def get_db_slider_index(self):
@@ -532,7 +532,7 @@ class BaseMainGui(QMainWindow):
         """
         Setup the time sliders
         """
-        for slider in [self.ui.simulation_results_step_slider, self.ui.db_step_slider]:
+        for slider in [self.ui.diagram_step_slider, self.ui.db_step_slider]:
             if self.circuit.has_time_series:
                 slider.setRange(-1, self.circuit.get_time_number() - 1)
             else:

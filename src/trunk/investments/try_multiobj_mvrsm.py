@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from GridCalEngine.IO.file_handler import FileOpen
 import GridCalEngine.Simulations as sim
 import trunk.investments.InvestmentsEvaluation as invsim
-from GridCalEngine.enumerations import InvestmentEvaluationMethod
+from GridCalEngine.enumerations import InvestmentEvaluationMethod, ResultTypes
 import cProfile
 import cProfile
 import pstats
@@ -19,7 +19,7 @@ if __name__ == "__main__":
     mvrsm_1 = InvestmentEvaluationMethod.MVRSM
 
     solvers = np.array([mvrsm_1, mvrsm_multi])
-    results_tpe_plot = sim.result_types.ResultTypes.InvestmentsParetoPlot
+    results_tpe_plot = ResultTypes.InvestmentsParetoPlot
     inv_results = []
 
     for i, solver in enumerate(solvers):

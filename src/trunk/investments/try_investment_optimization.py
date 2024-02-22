@@ -14,28 +14,30 @@ import trunk.investments.InvestmentsEvaluation as invsim
 from GridCalEngine.enumerations import InvestmentEvaluationMethod
 from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions, multi_island_pf_nc
+from GridCalEngine.enumerations import ResultTypes
+
 
 # Define investment power lines in the grid
 def add_investments_to_grid(grid):
 
 
-    line1 = dev.Line(grid.get_buses()[23], grid.get_buses()[71], 'Line_inv_1', r=0.0488, x=0.196, b=0.0488, rate=4.3,
+    line1 = dev.Line(grid.get_buses()[23], grid.get_buses()[71], name='Line_inv_1', r=0.0488, x=0.196, b=0.0488, rate=4.3,
                      cost=2)
-    line2 = dev.Line(grid.get_buses()[23], grid.get_buses()[69], 'Line_inv_2', r=0.00221, x=0.4115, b=0.10198, rate=9.4,
+    line2 = dev.Line(grid.get_buses()[23], grid.get_buses()[69], name='Line_inv_2', r=0.00221, x=0.4115, b=0.10198, rate=9.4,
                      cost=2)
-    line3 = dev.Line(grid.get_buses()[71], grid.get_buses()[70], 'Line_inv_3', r=0.0446, x=0.18, b=0.04444, rate=13,
+    line3 = dev.Line(grid.get_buses()[71], grid.get_buses()[70], name='Line_inv_3', r=0.0446, x=0.18, b=0.04444, rate=13,
                      cost=2)
-    line4_1 = dev.Line(grid.get_buses()[71], grid.get_buses()[69], 'Line_inv_41', r=0.02, x=0.2, b=0.08, rate=10,
+    line4_1 = dev.Line(grid.get_buses()[71], grid.get_buses()[69], name='Line_inv_41', r=0.02, x=0.2, b=0.08, rate=10,
                        cost=2)
-    line5_1 = dev.Line(grid.get_buses()[23], grid.get_buses()[66], 'Line_inv_51', r=0.02, x=0.2, b=0.02, rate=10,
+    line5_1 = dev.Line(grid.get_buses()[23], grid.get_buses()[66], name='Line_inv_51', r=0.02, x=0.2, b=0.02, rate=10,
                        cost=2)
-    line6_1 = dev.Line(grid.get_buses()[71], grid.get_buses()[22], 'Line_inv_61', r=0.02, x=0.2, b=0.02, rate=10,
+    line6_1 = dev.Line(grid.get_buses()[71], grid.get_buses()[22], name='Line_inv_61', r=0.02, x=0.2, b=0.02, rate=10,
                        cost=2)
-    line4_2 = dev.Line(grid.get_buses()[71], grid.get_buses()[69], 'Line_inv_42', r=0.02, x=0.2, b=0.08, rate=10,
+    line4_2 = dev.Line(grid.get_buses()[71], grid.get_buses()[69], name='Line_inv_42', r=0.02, x=0.2, b=0.08, rate=10,
                        cost=2)
-    line5_2 = dev.Line(grid.get_buses()[23], grid.get_buses()[66], 'Line_inv_52', r=0.02, x=0.2, b=0.02, rate=10,
+    line5_2 = dev.Line(grid.get_buses()[23], grid.get_buses()[66], name='Line_inv_52', r=0.02, x=0.2, b=0.02, rate=10,
                        cost=2)
-    line6_2 = dev.Line(grid.get_buses()[71], grid.get_buses()[22], 'Line_inv_62', r=0.02, x=0.2, b=0.02, rate=10,
+    line6_2 = dev.Line(grid.get_buses()[71], grid.get_buses()[22], name='Line_inv_62', r=0.02, x=0.2, b=0.02, rate=10,
                        cost=2)
 
     lines_list = [line1, line2, line3, line4_1, line5_1, line6_1, line4_2, line5_2, line6_2]
@@ -79,7 +81,7 @@ def add_random_lines_investments(grid, num_lines):
             bus_t = random.randint(0, len(buses) - 1)
 
         # Create a new line and corresponding investment
-        line = dev.Line(grid.get_buses()[bus_f], grid.get_buses()[bus_t], f'Line_inv_rand_{i}',
+        line = dev.Line(grid.get_buses()[bus_f], grid.get_buses()[bus_t], name=f'Line_inv_rand_{i}',
                         r=0.02, x=0.2, b=0.02, rate=10, cost=2)
 
         inv_group = dev.InvestmentsGroup(name=f'Ig_rand_{i}')
@@ -190,8 +192,8 @@ if __name__ == "__main__":
     stats.print_stats()
 
     inv_results = inv.results
-    results_tpe_report = sim.result_types.ResultTypes.InvestmentsReportResults
-    results_tpe_plot = sim.result_types.ResultTypes.InvestmentsParetoPlot
+    results_tpe_report = ResultTypes.InvestmentsReportResults
+    results_tpe_plot = ResultTypes.InvestmentsParetoPlot
 
     print('Before plot')
     mdl = inv_results.mdl(results_tpe_plot)

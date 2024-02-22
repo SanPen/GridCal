@@ -41,7 +41,7 @@ from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCalEngine.enumerations import (DeviceType, AvailableTransferMode, GenerationNtcFormulation, SolverType,
                                         ReactivePowerControlMode, TapsControlMode, MIPSolvers, TimeGrouping,
                                         ZonalGrouping, ContingencyMethod, InvestmentEvaluationMethod, EngineType,
-                                        BranchImpedanceMode)
+                                        BranchImpedanceMode, ResultTypes)
 
 
 class SimulationsMain(TimeEventsMain):
@@ -175,7 +175,7 @@ class SimulationsMain(TimeEventsMain):
         self.ptdf_group_modes = OrderedDict()
 
         # dictionaries for available results
-        self.available_results_dict: Union[Dict[str, List[sim.ResultTypes]], None] = dict()
+        self.available_results_dict: Union[Dict[str, List[ResultTypes]], None] = dict()
 
         self.buses_for_storage: Union[List[dev.Bus], None] = None
 
