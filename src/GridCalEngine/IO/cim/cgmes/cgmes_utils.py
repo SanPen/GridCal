@@ -34,11 +34,25 @@ def get_windings_number(power_transformer: PowerTransformer):
 
 def get_windings(power_transformer: PowerTransformer) -> List["PowerTransformerEnd"]:
     """
-    Get list of windings
+    Get list of windings in order of .endNumber
     :return: list of winding objects
     """
     try:
-        return list(power_transformer.references_to_me['PowerTransformerEnd'])
+        windings_init: List[PowerTransformerEnd] = list(power_transformer.references_to_me['PowerTransformerEnd'])
+
+        # windings: List[PowerTransformerEnd] = list()
+        # for winding in windings_init:
+        #     if winding.endNumber == 1:
+        #         windings.append(winding)
+        # for winding in windings_init:
+        #     if winding.endNumber == 2:
+        #         windings.append(winding)
+        # if len(windings_init) == 3:
+        #     for winding in windings_init:
+        #         if winding.endNumber == 3:
+        #             windings.append(winding)
+
+        return sorted(windings_init, key=lambda x: x.endNumber)
     except KeyError:
         return list()
 
@@ -70,6 +84,34 @@ def get_pu_values_power_transformer(power_transformer: PowerTransformer, System_
         R0, X0, G0, B0 = 0, 0, 0, 0
 
     return R, X, G, B, R0, X0, G0, B0
+
+
+def get_pu_values_power_transformer3w(power_transformer: PowerTransformer, System_Sbase):
+    """
+    Get the transformer p.u. values
+    :return:
+    """
+    try:
+        windings = get_windings(power_transformer)
+
+        r12, r23, r31, x12, x23, x31 = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+
+        if len(windings) == 3:
+            r1, x1, g1, b1, r0_1, x0_1, g0_1, b0_1 = get_pu_values_power_transformer_end(windings[0], System_Sbase)
+            r2, x2, g2, b2, r0_2, x0_2, g0_2, b0_2 = get_pu_values_power_transformer_end(windings[1], System_Sbase)
+            r3, x3, g3, b3, r0_3, x0_3, g0_3, b0_3 = get_pu_values_power_transformer_end(windings[2], System_Sbase)
+
+            r12 = r1 + r2
+            r31 = r3 + r1
+            r23 = r2 + r3
+            x12 = x1 + x2
+            x31 = x3 + x1
+            x23 = x2 + x3
+
+    except KeyError:
+        r12, r23, r31, x12, x23, x31 = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+
+    return r12, r23, r31, x12, x23, x31
 
 
 def get_voltages(power_transformer: PowerTransformer):
@@ -115,14 +157,22 @@ def get_pu_values_power_transformer_end(power_transformer_end: PowerTransformerE
         Ybase = 1.0 / Zbase
         machine_to_sys = Sbase_system / power_transformer_end.ratedS
         # at this point r, x, g, b are the complete values for all the line length
-        R = power_transformer_end.r / Zbase * machine_to_sys
-        X = power_transformer_end.x / Zbase * machine_to_sys
-        G = power_transformer_end.g / Ybase * machine_to_sys
-        B = power_transformer_end.b / Ybase * machine_to_sys
-        R0 = power_transformer_end.r0 / Zbase * machine_to_sys
-        X0 = power_transformer_end.x0 / Zbase * machine_to_sys
-        G0 = power_transformer_end.g0 / Ybase * machine_to_sys
-        B0 = power_transformer_end.b0 / Ybase * machine_to_sys
+        R = power_transformer_end.r / Zbase
+        X = power_transformer_end.x / Zbase
+        G = power_transformer_end.g / Ybase
+        B = power_transformer_end.b / Ybase
+        R0 = power_transformer_end.r0 / Zbase
+        X0 = power_transformer_end.x0 / Zbase
+        G0 = power_transformer_end.g0 / Ybase
+        B0 = power_transformer_end.b0 / Ybase
+        # R = power_transformer_end.r / Zbase * machine_to_sys
+        # X = power_transformer_end.x / Zbase * machine_to_sys
+        # G = power_transformer_end.g / Ybase * machine_to_sys
+        # B = power_transformer_end.b / Ybase * machine_to_sys
+        # R0 = power_transformer_end.r0 / Zbase * machine_to_sys
+        # X0 = power_transformer_end.x0 / Zbase * machine_to_sys
+        # G0 = power_transformer_end.g0 / Ybase * machine_to_sys
+        # B0 = power_transformer_end.b0 / Ybase * machine_to_sys
     else:
         R = 0
         X = 0
