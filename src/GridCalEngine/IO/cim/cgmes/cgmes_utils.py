@@ -9,6 +9,8 @@ from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.identified_object import I
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.load_response_characteristic import LoadResponseCharacteristic
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.power_transformer import PowerTransformer
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.power_transformer_end import PowerTransformerEnd
+from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.regulating_cond_eq import RegulatingCondEq
+from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.regulating_control import RegulatingControl
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.switch import Switch
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.terminal import Terminal
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.topological_node import TopologicalNode
@@ -159,7 +161,7 @@ def get_voltage_shunt(shunt: LinearShuntCompensator, logger: DataLogger):
         return shunt.BaseVoltage.nominalVoltage
     elif shunt.nomU is not None:
         return shunt.nomU
-    else:       # TODO look at EquipmentContainer/VoltageLevel/BaseVoltage
+    else:  # TODO look at EquipmentContainer/VoltageLevel/BaseVoltage
         if 'Terminal' in shunt.references_to_me.keys():
             tps = list(shunt.references_to_me['Terminal'])
 
@@ -410,7 +412,7 @@ def get_dict(conducting_equipment: ConductingEquipment):
     Get dictionary with the data
     :return: Dictionary
     """
-    tp = get_topological_node_monopole(conducting_equipment)    
+    tp = get_topological_node_monopole(conducting_equipment)
     bus = get_bus_topological_node(tp) if tp is not None else None  # todo: is it ok?
 
     d = conducting_equipment.get_dict()  # todo: check it
@@ -589,4 +591,53 @@ def check_load_response_characteristic(load_response_characteristic: LoadRespons
 def base_voltage_to_str(base_voltage: BaseVoltage):
     return base_voltage.tpe + ':' + base_voltage.rdfid + ':' + str(base_voltage.nominalVoltage) + ' kV'
 
+
 # endregion
+
+def get_regulating_control(cgmes_elm: RegulatingCondEq, cgmes_enums, logger: DataLogger):
+    if cgmes_elm.RegulatingControl is not None:
+        if cgmes_elm.RegulatingControl.mode == cgmes_enums.RegulatingControlModeKind.voltage:
+
+            if cgmes_elm.EquipmentContainer.tpe == 'VoltageLevel':
+                v_control_value = cgmes_elm.RegulatingControl.targetValue  # kV
+                v_set = v_control_value / cgmes_elm.EquipmentContainer.BaseVoltage.nominalVoltage
+                is_controlled = True
+
+                # find the control node
+                # control_terminal = cgmes_elm.RegulatingControl.Terminal
+                # control_node, cn = find_terms_connections(cgmes_terminal=control_terminal,
+                #                                           calc_node_dict=calc_node_dict,
+                #                                           cn_dict=cn_dict)
+
+            else:
+                control_node = None
+                v_set = 1.0
+                is_controlled = False
+                logger.add_warning(msg='RegulatingCondEq has no voltage control',
+                                   device=cgmes_elm.rdfid,
+                                   device_class=cgmes_elm.tpe,
+                                   device_property="EquipmentContainer",
+                                   value='None',
+                                   expected_value='BaseVoltage')
+
+        else:
+            control_node = None
+            v_set = 1.0
+            is_controlled = False
+            logger.add_warning(msg='RegulatingCondEq has no voltage control',
+                               device=cgmes_elm.rdfid,
+                               device_class=cgmes_elm.tpe,
+                               device_property="EquipmentContainer",
+                               value='None',
+                               expected_value='BaseVoltage')
+    else:
+        control_node = None
+        v_set = 1.0
+        is_controlled = False
+        logger.add_warning(msg='RegulatingCondEq has no voltage control',
+                           device=cgmes_elm.rdfid,
+                           device_class=cgmes_elm.tpe,
+                           device_property="EquipmentContainer",
+                           value='None',
+                           expected_value='BaseVoltage')
+    return v_set, is_controlled

@@ -21,8 +21,9 @@ from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 import GridCalEngine.Core.Devices as gcdev
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
 from GridCalEngine.IO.cim.cgmes.cgmes_export import CgmesExporter
-from GridCalEngine.IO.cim.cgmes.cgmes_utils import get_nominal_voltage, get_pu_values_power_transformer, get_pu_values_ac_line_segment, \
-    get_rate, get_values_shunt
+from GridCalEngine.IO.cim.cgmes.cgmes_utils import get_nominal_voltage, get_pu_values_power_transformer, \
+    get_pu_values_ac_line_segment, \
+    get_rate, get_values_shunt, get_regulating_control
 from GridCalEngine.data_logger import DataLogger
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.identified_object import IdentifiedObject
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.terminal import Terminal
@@ -273,53 +274,9 @@ def get_gcdev_generators(cgmes_model: CgmesCircuit,
 
                 if cgmes_elm.GeneratingUnit is not None:
 
-                    if cgmes_elm.RegulatingControl is not None:
-                        if cgmes_elm.RegulatingControl.mode == cgmes_enums.RegulatingControlModeKind.voltage:
-
-                            if cgmes_elm.EquipmentContainer.tpe == 'VoltageLevel':
-                                v_control_value = cgmes_elm.RegulatingControl.targetValue  # kV
-                                v_set = v_control_value / cgmes_elm.EquipmentContainer.BaseVoltage.nominalVoltage
-                                is_controlled = True
-
-                                # find the control node
-                                control_terminal = cgmes_elm.RegulatingControl.Terminal
-                                control_node, cn = find_terms_connections(cgmes_terminal=control_terminal,
-                                                                          calc_node_dict=calc_node_dict,
-                                                                          cn_dict=cn_dict)
-
-                                print(end='')
-
-                            else:
-                                control_node = None
-                                v_set = 1.0
-                                is_controlled = False
-                                logger.add_warning(msg='SynchronousMachine has no voltage control',
-                                                   device=cgmes_elm.rdfid,
-                                                   device_class=cgmes_elm.tpe,
-                                                   device_property="EquipmentContainer",
-                                                   value='None',
-                                                   expected_value='BaseVoltage')
-
-                        else:
-                            control_node = None
-                            v_set = 1.0
-                            is_controlled = False
-                            logger.add_warning(msg='SynchronousMachine has no voltage control',
-                                               device=cgmes_elm.rdfid,
-                                               device_class=cgmes_elm.tpe,
-                                               device_property="EquipmentContainer",
-                                               value='None',
-                                               expected_value='BaseVoltage')
-                    else:
-                        control_node = None
-                        v_set = 1.0
-                        is_controlled = False
-                        logger.add_warning(msg='SynchronousMachine has no voltage control',
-                                           device=cgmes_elm.rdfid,
-                                           device_class=cgmes_elm.tpe,
-                                           device_property="EquipmentContainer",
-                                           value='None',
-                                           expected_value='BaseVoltage')
+                    v_set, is_controlled = get_regulating_control(cgmes_elm=cgmes_elm,
+                                                                  cgmes_enums=cgmes_enums,
+                                                                  logger=logger)
 
                     if cgmes_elm.p != 0.0:
                         pf = np.cos(np.arctan(cgmes_elm.q / cgmes_elm.p))
