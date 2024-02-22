@@ -21,9 +21,11 @@ from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 import GridCalEngine.Core.Devices as gcdev
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
 from GridCalEngine.IO.cim.cgmes.cgmes_export import CgmesExporter
-from GridCalEngine.IO.cim.cgmes.cgmes_utils import get_nominal_voltage, get_pu_values_power_transformer, \
-    get_pu_values_ac_line_segment, \
-    get_rate, get_values_shunt, get_regulating_control
+from GridCalEngine.IO.cim.cgmes.cgmes_utils import (get_nominal_voltage,
+    get_pu_values_ac_line_segment,
+    get_rate, get_values_shunt,
+    get_pu_values_power_transformer, get_pu_values_power_transformer3w, get_windings,
+    get_regulating_control)
 from GridCalEngine.data_logger import DataLogger
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.identified_object import IdentifiedObject
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.terminal import Terminal
