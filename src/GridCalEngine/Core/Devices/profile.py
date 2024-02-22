@@ -101,12 +101,19 @@ class Profile:
                  arr: Union[None, NumericVec] = None,
                  sparsity_threshold: float = 0.8,
                  is_sparse: bool = False):
+        """
+        Profile constructor
+        :param default_value: Default value
+        :param arr: Array to be set, if provided the array is analyzed and the default value is deduced from the array
+        :param sparsity_threshold: Threshold to consider an array sparse (0.8 -> 80% sparse is the default)
+        :param is_sparse: Is sparse? provide the value, if the array is provided, this is deduced from the array
+        """
 
         self._is_sparse: bool = is_sparse
 
         self._sparse_array: Union[SparseArray, None] = None
 
-        self._dense_array: Union[NumericVec, None] = np.zeros(0)
+        self._dense_array: Union[NumericVec, None] = None
 
         self._sparsity_threshold: float = sparsity_threshold
 

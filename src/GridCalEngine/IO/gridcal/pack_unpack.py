@@ -215,7 +215,7 @@ def gather_model_as_data_frames(circuit: MultiCircuit, legacy: bool = False) -> 
         dfs['tower_wires'] = pd.DataFrame(data=associations,
                                           columns=['tower_name', 'wire_name', 'xpos', 'ypos', 'phase'])
 
-        # Time -------------------------------------------------------------------------------------------------------------
+        # Time ---------------------------------------------------------------------------------------------------------
 
         if circuit.time_profile is not None:
             if isinstance(circuit.time_profile, pd.DatetimeIndex):
@@ -232,22 +232,34 @@ def profile_todict(profile: Profile) -> Dict[str, str]:
     Get a dictionary representation of the profile
     :return:
     """
-    if profile.is_sparse:
-        return {
-            'is_sparse': profile.is_sparse,
-            'size': profile.size(),
-            'default': profile.default_value,
-            'sparse_data': {
-                'map': profile._sparse_array.get_map()
+    s = profile.size()
+
+    if s > 0:
+        if profile.is_sparse:
+            return {
+                'is_sparse': True,
+                'size': s,
+                'default': profile.default_value,
+                'sparse_data': {
+                    'map': profile._sparse_array.get_map()
+                }
             }
-        }
+        else:
+            return {
+                'is_sparse': False,
+                'size': s,
+                'default': profile.default_value,
+                'dense_data': list(profile._dense_array),
+            }
     else:
         return {
-            'is_sparse': profile.is_sparse,
-            'size': profile.size(),
-            'default': profile.default_value,
-            'dense_data': list(profile._dense_array),
-        }
+                'is_sparse': True,
+                'size': s,
+                'default': profile.default_value,
+                'sparse_data': {
+                    'map': dict()
+                }
+            }
 
 
 def profile_todict_idtag(profile: Profile) -> Dict[str, str]:
@@ -278,21 +290,34 @@ def profile_todict_str(profile: Profile) -> Dict[str, str]:
     Get a dictionary representation of the profile
     :return:
     """
-    if profile.is_sparse:
+    s = profile.size()
+
+    if s > 0:
+        if profile.is_sparse:
+            return {
+                'is_sparse': True,
+                'size': s,
+                'default': str(profile.default_value),
+                'sparse_data': {
+                    'map': {key: str(val) for key, val in profile._sparse_array.get_map().items()}
+                }
+            }
+        else:
+            return {
+                'is_sparse': False,
+                'size': s,
+                'default': str(profile.default_value),
+                'dense_data': [str(e) for e in profile._dense_array],
+            }
+    else:
+        # empty profile
         return {
-            'is_sparse': profile.is_sparse,
-            'size': profile.size(),
+            'is_sparse': True,
+            'size': s,
             'default': str(profile.default_value),
             'sparse_data': {
-                'map': {key: str(val) for key, val in profile._sparse_array.get_map().items()}
+                'map': dict()
             }
-        }
-    else:
-        return {
-            'is_sparse': profile.is_sparse,
-            'size': profile.size(),
-            'default': str(profile.default_value),
-            'dense_data': [str(e) for e in profile._dense_array],
         }
 
 
@@ -384,7 +409,7 @@ def gather_model_as_jsons(circuit: MultiCircuit) -> Dict[str, Dict[str, str]]:
     # time
     unix_time = circuit.get_unix_time()
     data['time'] = {'unix': unix_time.tolist(),
-                    'prob': np.ones(len(unix_time))}
+                    'prob': list(np.ones(len(unix_time)))}
 
     return data
 
