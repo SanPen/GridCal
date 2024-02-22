@@ -2,6 +2,7 @@ from GridCalEngine.api import *
 import GridCalEngine.Core.Devices as dev
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Core.Topology.topology import find_islands, get_adjacency_matrix
+from GridCalEngine.Core.Devices.types import BRANCH_TYPES
 from scipy.sparse import lil_matrix
 
 
@@ -135,7 +136,7 @@ def create_topology_process_info(grid: MultiCircuit) -> TopologyProcessorInfo:
 
 
 def compute_connectivities(nbus_candidate: int,
-                           all_branches: List[dev.ParentBranch],
+                           all_branches: List[BRANCH_TYPES],
                            process_info: TopologyProcessorInfo,
                            t_idx: Union[int, None] = None):
     """
@@ -177,7 +178,7 @@ def compute_connectivities(nbus_candidate: int,
 def apply_results_to_grid(t_idx: Union[None, int],
                           grid: MultiCircuit,
                           final_buses: List[dev.Bus],
-                          all_branches: List[dev.ParentBranch],
+                          all_branches: List[BRANCH_TYPES],
                           process_info: TopologyProcessorInfo,
                           logger: Logger) -> None:
     """

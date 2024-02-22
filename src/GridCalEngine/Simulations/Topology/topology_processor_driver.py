@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from typing import List, Union, Any
+from typing import List, Union
 import numpy as np
 from scipy.sparse import lil_matrix
 import GridCalEngine.Core.Devices as dev
@@ -312,7 +312,6 @@ class TopologyProcessorDriver(DriverTemplate):
                                logger=self.logger)
 
             self.report_progress2(t, nt)
-
 
         # display progress
         self.report_done()
