@@ -29,15 +29,11 @@ from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at, NumericalCircuit
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
-from GridCalEngine.enumerations import TransformerControlType
+from GridCalEngine.enumerations import TransformerControlType, ReactivePowerControlMode
 from typing import Tuple, Union
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec
 from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf_derivatives import (x2var, var2x, eval_f, eval_g, eval_h,
-                                                                               jacobians_and_hessians,
-                                                                               compute_analytic_admittances,
-                                                                               compute_analytic_admittances_2dev,
-                                                                               compute_finitediff_admittances,
-                                                                               compute_finitediff_admittances_2dev)
+                                                                               jacobians_and_hessians)
 
 
 def compute_updated_admittances(x, R, X, ig, alltapm, alltapt, k_m, k_tau, Cf, Ct):
@@ -148,7 +144,7 @@ def compute_autodiff_structures(x, mu, lam, compute_jac: bool, compute_hess: boo
 def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: bool, admittances, Cg, R, X, F, T,
                                 Sd, slack, no_slack, from_idx, to_idx, pq, pv, th_max, th_min, V_U, V_L, P_U,
                                 P_L, tanmax, Q_U, Q_L, tapm_max, tapm_min, tapt_max, tapt_min, alltapm, alltapt, k_m,
-                                k_tau, k_mtau, c0, c1, c2, Sbase, rates, il, ig, nig, Sg_undis) -> IpsFunctionReturn:
+                                k_tau, k_mtau, c0, c1, c2, Sbase, rates, il, ig, nig, Sg_undis, ctQ) -> IpsFunctionReturn:
     """
 
     :param x:
@@ -210,14 +206,14 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
     H, Sf, St = eval_h(x=x, Yf=Yf, Yt=Yt, from_idx=from_idx, to_idx=to_idx, pq=pq, no_slack=no_slack, k_m=k_m,
                        k_tau=k_tau, k_mtau=k_mtau, Va_max=th_max, Va_min=th_min, Vm_max=V_U, Vm_min=V_L, Pg_max=P_U,
                        Pg_min=P_L, Qg_max=Q_U, Qg_min=Q_L, tapm_max=tapm_max, tapm_min=tapm_min, tapt_max=tapt_max,
-                       tapt_min=tapt_min, Cg=Cg, rates=rates, il=il, ig=ig, tanmax=tanmax)
+                       tapt_min=tapt_min, Cg=Cg, rates=rates, il=il, ig=ig, tanmax=tanmax, ctQ=ctQ)
 
     fx, Gx, Hx, fxx, Gxx, Hxx = jacobians_and_hessians(x=x, c1=c1, c2=c2, Cg=Cg, Cf=Cf, Ct=Ct, Yf=Yf, Yt=Yt, Ybus=Ybus,
                                                        Sbase=Sbase, il=il, ig=ig, nig=nig, slack=slack,
                                                        no_slack=no_slack, pq=pq, pv=pv, tanmax=tanmax, alltapm=alltapm,
                                                        alltapt=alltapt, k_m=k_m, k_tau=k_tau, k_mtau=k_mtau, mu=mu,
                                                        lmbda=lmbda, from_idx=from_idx, to_idx=to_idx, R=R, X=X, F=F,
-                                                       T=T, compute_jac=compute_jac, compute_hess=compute_hess)
+                                                       T=T, ctQ=ctQ, compute_jac=compute_jac, compute_hess=compute_hess)
 
 
     return IpsFunctionReturn(f=f, G=G, H=H,
@@ -448,17 +444,18 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     ngen = nc.generator_data.nelm
     n_no_slack = len(no_slack)
     n_slack = len(slack)
-    ntapm = len(k_m)  # TODO: Check how many associated constraints these variables add.
-    ntapt = len(k_tau)  # TODO: Check how many associated constraints these variables add.
+    ntapm = len(k_m)
+    ntapt = len(k_tau)
 
     # Number of equalities: Nodal power balances, the voltage module of slack and pv buses and the slack reference
     NE = 2 * nbus + n_slack + npv
 
     # Number of inequalities: Line ratings, max and min angle of buses, voltage module range and
     # NI = 2 * nbr + 2 * n_no_slack + 2 * nbus + 4 * ngen
-
-    NI = 2 * nll + 2 * npq + 5 * ngg + 2 * ntapm + 2 * ntapt  # Without angle constraints
-    # NI = 2 * nll + 2 * n_no_slack + 2 * nbus + 4 * ngg
+    if pf_options.control_Q == ReactivePowerControlMode.NoControl:
+        NI = 2 * nll + 2 * npq + 4 * ngg + 2 * ntapm + 2 * ntapt  # Without Reactive power constraint (power curve)
+    else:
+        NI = 2 * nll + 2 * npq + 5 * ngg + 2 * ntapm + 2 * ntapt
 
     # run power flow to initialize
     pf_results = multi_island_pf_nc(nc=nc, options=pf_options)
@@ -504,11 +501,12 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                                        arg=(admittances, Cg, Sd, slack, no_slack, from_idx, to_idx,
                                             pq, pv, Va_max, Va_min, Vm_max, Vm_min, Pg_max, Pg_min,
                                             Qg_max, Qg_min, tapm_max, tapm_min, tapt_max, tapt_min, alltapm, alltapt,
-                                            k_m, k_tau, k_mtau, c0, c1, c2, Sbase, rates, il, ig, nig, Sg_undis),
+                                            k_m, k_tau, k_mtau, c0, c1, c2, Sbase, rates, il, ig, nig, Sg_undis,
+                                            pf_options.control_Q),
                                        verbose=pf_options.verbose,
                                        max_iter=pf_options.max_iter,
                                        tol=pf_options.tolerance,
-                                       trust=pf_options.trust)
+                                       trust=pf_options.trust_radius)
 
     else:
         if use_autodiff:
@@ -531,7 +529,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                                                 to_idx, pq, pv, Va_max, Va_min, Vm_max, Vm_min, Pg_max, Pg_min, tanmax,
                                                 Qg_max, Qg_min, tapm_max, tapm_min, tapt_max, tapt_min, alltapm,
                                                 alltapt, k_m, k_tau, k_mtau, c0, c1, c2, Sbase, rates, il, ig, nig,
-                                                Sg_undis),
+                                                Sg_undis, pf_options.control_Q),
                                            verbose=pf_options.verbose,
                                            max_iter=pf_options.max_iter,
                                            tol=pf_options.tolerance,
@@ -575,6 +573,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         print("Tau-Trafos:\n", df_trafo_tau)
         print("Gen:\n", df_gen)
         print("Error", result.error)
+        print("Gamma", result.gamma)
+        print("Sf", result.structs.Sf)
 
     if plot_error:
         result.plot_error()
