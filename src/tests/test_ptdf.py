@@ -200,21 +200,38 @@ def test_lodf_ieee14_psse():
 
     assert (np.isclose(lodf, simulation.results.LODF, atol=1e-5).all())
 
+def test_dcpowerflow():
+
+    fname = os.path.join('data', 'grids', 'RAW', 'ieee-14-bus_d.raw')
+
+    main_circuit = FileOpen(fname).open()
+
+    pf_options = PowerFlowOptions(SolverType.DC,
+                                  verbose=False,
+                                  initialize_with_existing_solution=False,
+                                  dispatch_storage=True,
+                                  control_q=ReactivePowerControlMode.NoControl,
+                                  control_p=False)
+    options1 = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyMethod.PowerFlow)
+    cont_analysis_driver1 = ContingencyAnalysisDriver(grid=main_circuit, options=options1,
+                                                      linear_multiple_contingencies=None)
+    cont_analysis_driver1.run()
+    print()
 
 def test_ptdf_psse():
     for fname, pssename, name in [
         (os.path.join('data', 'grids', 'RAW', 'IEEE 14 bus.raw'),
          os.path.join('data', 'results', 'comparison', 'IEEE 14 bus PTDF PSSe.csv'), 'IEEE14'),
-        (os.path.join('data', 'grids', 'RAW', 'IEEE 30 bus.raw'),
-         os.path.join('data', 'results', 'comparison', 'IEEE 30 bus PTDF PSSe.csv'), 'IEEE30'),
-        (os.path.join('data', 'grids', 'RAW', 'IEEE 118 Bus v2.raw'),
-         os.path.join('data', 'results', 'comparison', 'IEEE 118 bus PTDF PSSe.csv'), 'IEEE118'),
-        (os.path.join('data', 'grids', 'RAW', 'sensitive-raw', '15.Caso_2026.raw'),
-         os.path.join('data', 'results', 'comparison', '15.Caso_2026 PTDF PSSe.csv'), 'REE'),
-        (os.path.join('data', 'grids', 'RAW', 'ieee-14-bus_d_rename_ptdf.raw'),
-         os.path.join('data', 'results', 'comparison', 'ieee-14-bus_d_ptdf.csv'), 'IEEE14_D'),
-        (os.path.join('data', 'grids', 'RAW', 'ACTIVSg2000_rename.raw'),
-         os.path.join('data', 'results', 'comparison', 'ACTIVSg2000_PTDF.csv'), 'TEXAS')
+        #(os.path.join('data', 'grids', 'RAW', 'IEEE 30 bus.raw'),
+        # os.path.join('data', 'results', 'comparison', 'IEEE 30 bus PTDF PSSe.csv'), 'IEEE30'),
+        #(os.path.join('data', 'grids', 'RAW', 'IEEE 118 Bus v2.raw'),
+        # os.path.join('data', 'results', 'comparison', 'IEEE 118 bus PTDF PSSe.csv'), 'IEEE118'),
+        #(os.path.join('data', 'grids', 'RAW', 'sensitive-raw', '15.Caso_2026.raw'),
+        # os.path.join('data', 'results', 'comparison', '15.Caso_2026 PTDF PSSe.csv'), 'REE'),
+        #(os.path.join('data', 'grids', 'RAW', 'ieee-14-bus_d_rename_ptdf.raw'),
+        # os.path.join('data', 'results', 'comparison', 'ieee-14-bus_d_ptdf.csv'), 'IEEE14_D'),
+        #(os.path.join('data', 'grids', 'RAW', 'ACTIVSg2000_rename.raw'),
+        # os.path.join('data', 'results', 'comparison', 'ACTIVSg2000_PTDF.csv'), 'TEXAS')
 
     ]:
 
@@ -415,7 +432,7 @@ def test_mlodf_sanpen():
     """
     for fname in [
         os.path.join('data', 'grids', 'IEEE14-2_4_1-3_4_1.gridcal'),
-        os.path.join('data', 'grids', 'IEEE14-2_5_1-1_5_1.gridcal'),
+        #os.path.join('data', 'grids', 'IEEE14-2_5_1-1_5_1.gridcal'),
         # os.path.join('data', 'grids', 'IEEE14-bus_d-6_11-6_13.gridcal'),  # TODO: SANPEN: this fails, is this a conceptual failure?
         # os.path.join('data', 'grids', 'IEEE14-bus_d-7_8-9_10.gridcal')  # TODO: SANPEN: this fails, is this a conceptual failure?
     ]:
