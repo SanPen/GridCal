@@ -22,7 +22,7 @@ from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 import GridCalEngine.Core.Devices as dev
 from GridCalEngine.enumerations import DeviceType
-from GridCalEngine.IO.gridcal.pack_unpack import create_data_frames, get_objects_dictionary
+from GridCalEngine.IO.gridcal.pack_unpack import gather_model_as_data_frames, get_objects_dictionary
 
 
 def check_names(names: List[str]) -> None:
@@ -1138,7 +1138,7 @@ def save_excel(circuit: MultiCircuit, file_path):
     """
     logger = Logger()
 
-    dfs = create_data_frames(circuit=circuit)
+    dfs = gather_model_as_data_frames(circuit=circuit)
 
     # flush-save ###################################################################################################
     with pd.ExcelWriter(file_path) as writer:

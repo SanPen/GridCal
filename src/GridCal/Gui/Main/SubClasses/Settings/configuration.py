@@ -185,6 +185,11 @@ class ConfigurationMain(ResultsMain):
                 "unit_commitment": self.ui.opfUnitCommitmentCheckBox,
                 "add_opf_report": self.ui.addOptimalPowerFlowReportCheckBox,
                 "save_mip": self.ui.save_mip_checkBox,
+                "ips_method": self.ui.ips_method_comboBox,
+                "ips_tolerance": self.ui.ips_tolerance_spinBox,
+                "ips_iterations": self.ui.ips_iterations_spinBox,
+                "ips_trust_radius": self.ui.ips_trust_radius_doubleSpinBox,
+                "ips_init_with_pf": self.ui.ips_initialize_with_pf_checkBox,
             },
             "continuation_power_flow": {
                 "max_iterations": self.ui.vs_max_iterations_spinBox,

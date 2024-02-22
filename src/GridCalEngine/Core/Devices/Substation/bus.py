@@ -15,14 +15,15 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from typing import Tuple
+from typing import Tuple, Union
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 from GridCalEngine.enumerations import BusMode
-from GridCalEngine.Core.Devices.editable_device import EditableDevice, DeviceType
+from GridCalEngine.Core.Devices.Parents.editable_device import EditableDevice, DeviceType
 from GridCalEngine.Core.Devices.Aggregation import Area, Zone, Country
 from GridCalEngine.Core.Devices.Substation.substation import Substation
+from GridCalEngine.Core.Devices.profile import Profile
 
 
 class Bus(EditableDevice):
@@ -92,7 +93,7 @@ class Bus(EditableDevice):
                                 device_type=DeviceType.BusDevice)
 
         self.active = active
-        self.active_prof = None
+        self._active_prof = Profile(default_value=active)
 
         # Nominal voltage (kV)
         self.Vnom = vnom
@@ -135,27 +136,6 @@ class Bus(EditableDevice):
 
         self.substation: Substation = substation
 
-        # # List of load s attached to this bus
-        # self.loads = list()
-        #
-        # # List of Controlled generators attached to this bus
-        # self.generators = list()
-        #
-        # # List of External Grids
-        # self.external_grids = list()
-        #
-        # # List of shunt s attached to this bus
-        # self.shunts = list()
-        #
-        # # List of batteries attached to this bus
-        # self.batteries = list()
-        #
-        # # List of static generators attached tot this bus
-        # self.static_generators = list()
-        #
-        # # List of measurements
-        # self.measurements = list()
-
         # Bus type
         self.type = BusMode.PQ
 
@@ -180,10 +160,6 @@ class Bus(EditableDevice):
         self.longitude = longitude
         self.latitude = latitude
 
-        # self.register(key='name', units='', tpe=str, definition='Name of the bus', profile_name='')
-        # self.register(key='idtag', units='', tpe=str, definition='Unique ID', profile_name='', editable=False)
-        # self.register(key='code', units='', tpe=str, definition='Some code to further identify the bus',
-        #               profile_name='')
         self.register(key='active', units='', tpe=bool, definition='Is the bus active? used to disable the bus.',
                       profile_name='active_prof')
         self.register(key='is_slack', units='', tpe=bool, definition='Force the bus to be of slack type.',
@@ -230,12 +206,21 @@ class Bus(EditableDevice):
         self.register(key='latitude', units='deg', tpe=float, definition='latitude of the bus.', profile_name='')
 
     @property
-    def name(self):
-        return self._name
+    def active_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._active_prof
 
-    @name.setter
-    def name(self, val: str):
-        self._name = val
+    @active_prof.setter
+    def active_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._active_prof = val
+        elif isinstance(val, np.ndarray):
+            self._active_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a active_prof')
 
     def determine_bus_type(self) -> BusMode:
         """
@@ -301,7 +286,6 @@ class Bus(EditableDevice):
             pd.DataFrame(data=v, index=t, columns=['Voltage (p.u.)']).plot(ax=ax_voltage)
             pd.DataFrame(data=P_data, index=t).plot(ax=ax_load)
 
-
             ax_load.set_ylabel('Power [MW]', fontsize=11)
             ax_load.legend()
         else:
@@ -313,22 +297,6 @@ class Bus(EditableDevice):
 
         if show_fig:
             plt.show()
-
-    # def get_active_injection_profiles_dictionary(self):
-    #     """
-    #     Get the devices' profiles in a dictionary with the correct sign
-    #     :return:
-    #     """
-    #     dta = dict()
-    #     devices = self.generators + self.batteries + self.static_generators
-    #     if len(devices) > 0:
-    #         for elm in devices:
-    #             dta[elm.name] = elm.P_prof
-    #
-    #     for elm in self.loads:
-    #         dta[elm.name] = -elm.P_prof
-    #
-    #     return dta
 
     def get_properties_dict(self, version=3):
         """
@@ -392,15 +360,6 @@ class Bus(EditableDevice):
                 'lat': 'degrees',
                 'lon': 'degrees',
                 'alt': 'm'}
-
-    def set_state(self, t):
-        """
-        Set the profiles state of the objects in this bus to the value given in the profiles at the index t
-        :param t: index of the profile
-        :return: Nothing
-        """
-
-        self.set_profile_values(t)
 
     def get_fault_impedance(self):
         """

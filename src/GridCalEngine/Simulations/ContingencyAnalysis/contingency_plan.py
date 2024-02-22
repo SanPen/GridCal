@@ -20,7 +20,8 @@ from typing import List, Tuple
 
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Core.Devices.Aggregation.contingency import Contingency, ContingencyGroup
-from GridCalEngine.Core.Devices.editable_device import DeviceType
+from GridCalEngine.Core.Devices.Parents.editable_device import DeviceType
+from GridCalEngine.Core.Devices.types import BRANCH_TYPES
 import GridCalEngine.Core.Devices as dev
 
 
@@ -49,7 +50,7 @@ def enumerate_states_n_k(m: int, k: int = 1):
     return np.array(states), indices
 
 
-def add_n1_contingencies(branches: List[dev.BranchTemplate],
+def add_n1_contingencies(branches: List[BRANCH_TYPES],
                          vmin: float,
                          vmax: float,
                          filter_branches_by_voltage: bool,

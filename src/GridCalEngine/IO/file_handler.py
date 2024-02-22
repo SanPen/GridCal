@@ -19,13 +19,15 @@ import json
 
 from collections.abc import Callable
 from typing import Union, List
+
+from GridCalEngine.IO.cim.cgmes.cgmes_data_parser import CgmesDataParser
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.data_logger import DataLogger
 
 from GridCalEngine.IO.gridcal.json_parser import save_json_file_v3
 from GridCalEngine.IO.cim.cim16.cim_parser import CIMExport
 from GridCalEngine.IO.gridcal.excel_interface import save_excel, load_from_xls, interpret_excel_v3, interprete_excel_v2
-from GridCalEngine.IO.gridcal.pack_unpack import create_data_frames, data_frames_to_circuit
+from GridCalEngine.IO.gridcal.pack_unpack import gather_model_as_data_frames, parse_gridcal_data, gather_model_as_jsons
 from GridCalEngine.IO.matpower.matpower_parser import interpret_data_v1
 from GridCalEngine.IO.dgs.dgs_parser import dgs_to_circuit
 from GridCalEngine.IO.matpower.matpower_parser import parse_matpower_file
@@ -37,9 +39,9 @@ from GridCalEngine.IO.raw.raw_to_gridcal import psse_to_gridcal
 from GridCalEngine.IO.raw.gridcal_to_raw import gridcal_to_raw
 from GridCalEngine.IO.epc.epc_parser import PowerWorldParser
 # from GridCalEngine.IO.cim.cim16.cim_parser import CIMImport
-from GridCalEngine.IO.cim.cgmes_2_4_15.cgmes_circuit import CgmesCircuit
-from GridCalEngine.IO.cim.cgmes_2_4_15.cgmes_to_gridcal import cgmes_to_gridcal
-from GridCalEngine.IO.gridcal.zip_interface import save_data_frames_to_zip, get_frames_from_zip
+from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
+from GridCalEngine.IO.cim.cgmes.cgmes_to_gridcal import cgmes_to_gridcal
+from GridCalEngine.IO.gridcal.zip_interface import save_gridcal_data_to_zip, get_frames_from_zip
 from GridCalEngine.IO.gridcal.sqlite_interface import save_data_frames_to_sqlite, open_data_frames_from_sqlite
 from GridCalEngine.IO.gridcal.h5_interface import save_h5, open_h5
 from GridCalEngine.IO.raw.rawx_parser_writer import parse_rawx, write_rawx
@@ -69,13 +71,15 @@ class FileOpen:
 
         self.cgmes_logger = DataLogger()
 
-        if type(self.file_name) == str:
+        if isinstance(self.file_name, str):
             if not os.path.exists(self.file_name):
                 raise Exception("File not found :( \n{}".format(self.file_name))
-        elif type(self.file_name) == list:
+        elif isinstance(self.file_name, list):
             for fname in self.file_name:
                 if not os.path.exists(fname):
                     raise Exception("File not found :( \n{}".format(fname))
+        else:
+            raise Exception("file_name type not supported :( \n{}".format(self.file_name))
 
     def open(self, text_func: Union[None, Callable] = None,
              progress_func: Union[None, Callable] = None) -> Union[MultiCircuit, None]:
@@ -94,8 +98,12 @@ class FileOpen:
                 if file_extension.lower() not in ['.xml', '.zip']:
                     raise Exception('Loading multiple files that are not XML/Zip (xml or zip is for CIM or CGMES)')
 
-            self.cgmes_circuit = CgmesCircuit(text_func=text_func, progress_func=progress_func, logger=self.cgmes_logger)
-            self.cgmes_circuit.parse_files(files=self.file_name)
+            data_parser = CgmesDataParser(text_func=text_func, progress_func=progress_func, logger=self.cgmes_logger)
+            data_parser.load_files(files=self.file_name)
+            self.cgmes_circuit = CgmesCircuit(cgmes_version=data_parser.cgmes_version,text_func=text_func,
+                                              progress_func=progress_func, logger=self.cgmes_logger)
+            self.cgmes_circuit.parse_files(data_parser=data_parser)
+            # self.cgmes_circuit.to_excel(fname=r'C:\Users\BenceSzirbik\Downloads\excel.xlsx')
             self.circuit = cgmes_to_gridcal(cgmes_model=self.cgmes_circuit, logger=self.cgmes_logger)
 
         else:
@@ -121,11 +129,10 @@ class FileOpen:
 
                     elif data_dictionary['version'] == 4.0:
                         if data_dictionary is not None:
-                            self.circuit = data_frames_to_circuit(data_dictionary, logger=self.logger)
+                            self.circuit = parse_gridcal_data(data_dictionary, logger=self.logger)
                         else:
                             self.logger.add("Error while reading the file :(")
                             return None
-
                     else:
                         self.logger.add('The file could not be processed')
 
@@ -138,7 +145,7 @@ class FileOpen:
                                                                            logger=self.logger)
                     # interpret file content
                     if data_dictionary is not None:
-                        self.circuit = data_frames_to_circuit(data_dictionary, logger=self.logger)
+                        self.circuit = parse_gridcal_data(data_dictionary, logger=self.logger)
                     else:
                         self.logger.add("Error while reading the file :(")
                         return None
@@ -151,7 +158,7 @@ class FileOpen:
                                                                    progress_func=progress_func)
                     # interpret file content
                     if data_dictionary is not None:
-                        self.circuit = data_frames_to_circuit(data_dictionary, logger=self.logger)
+                        self.circuit = parse_gridcal_data(data_dictionary, logger=self.logger)
                     else:
                         self.logger.add("Error while reading the file :(")
                         return None
@@ -223,10 +230,13 @@ class FileOpen:
                     self.logger += parser.logger
 
                 elif file_extension.lower() in ['.xml', '.zip']:
-                    self.cgmes_circuit = CgmesCircuit(text_func=text_func,
-                                                      progress_func=progress_func,
-                                                      logger=self.cgmes_logger)
-                    self.cgmes_circuit.parse_files(files=[self.file_name])
+                    data_parser = CgmesDataParser(text_func=text_func, progress_func=progress_func,
+                                                  logger=self.cgmes_logger)
+                    data_parser.load_files(files=[self.file_name])
+                    self.cgmes_circuit = CgmesCircuit(cgmes_version=data_parser.cgmes_version, text_func=text_func,
+                                                      progress_func=progress_func, logger=self.cgmes_logger)
+                    self.cgmes_circuit.parse_files(data_parser=data_parser)
+                    # self.cgmes_circuit.to_excel(fname=r'C:\Users\BenceSzirbik\Downloads\excel.xlsx')
                     self.circuit = cgmes_to_gridcal(cgmes_model=self.cgmes_circuit, logger=self.cgmes_logger)
 
                 elif file_extension.lower() == '.hdf5':
@@ -351,15 +361,20 @@ class FileSave:
 
         logger = Logger()
 
-        dfs = create_data_frames(self.circuit)
+        dfs = gather_model_as_data_frames(self.circuit,
+                                          legacy=False)
 
-        save_data_frames_to_zip(dfs=dfs,
-                                filename_zip=self.file_name,
-                                sessions=self.sessions,
-                                diagrams=self.circuit.diagrams,
-                                json_files=self.json_files,
-                                text_func=self.text_func,
-                                progress_func=self.progress_func)
+        model_data = gather_model_as_jsons(self.circuit)
+
+        save_gridcal_data_to_zip(dfs=dfs,
+                                 filename_zip=self.file_name,
+                                 model_data=model_data,
+                                 sessions=self.sessions,
+                                 diagrams=self.circuit.diagrams,
+                                 json_files=self.json_files,
+                                 text_func=self.text_func,
+                                 progress_func=self.progress_func,
+                                 logger=logger)
 
         return logger
 
@@ -371,7 +386,7 @@ class FileSave:
 
         logger = Logger()
 
-        dfs = create_data_frames(self.circuit)
+        dfs = gather_model_as_data_frames(self.circuit)
 
         save_data_frames_to_sqlite(dfs,
                                    file_path=self.file_name,

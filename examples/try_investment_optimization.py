@@ -10,7 +10,7 @@ from GridCalEngine import *
 from GridCalEngine.IO.file_handler import FileOpen
 import GridCalEngine.Core.Devices as dev
 import GridCalEngine.Simulations as sim
-from GridCalEngine.basic_structures import InvestmentEvaluationMethod
+from GridCalEngine.enumerations import InvestmentEvaluationMethod
 from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions, multi_island_pf_nc
 
@@ -170,8 +170,8 @@ if __name__ == "__main__":
     pf_options = sim.PowerFlowOptions()
     mvrsm = InvestmentEvaluationMethod.MVRSM
 
-    print(4*len(grid.investments))
-    options = sim.InvestmentsEvaluationOptions(solver=mvrsm, max_eval=4*len(grid.investments), pf_options=pf_options)
+    print(6*len(grid.investments))
+    options = sim.InvestmentsEvaluationOptions(solver=mvrsm, max_eval=6*len(grid.investments), pf_options=pf_options)
     inv = sim.InvestmentsEvaluationDriver(grid, options=options)
     inv.run()
 

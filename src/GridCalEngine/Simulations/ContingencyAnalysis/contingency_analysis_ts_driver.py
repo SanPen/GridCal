@@ -131,12 +131,14 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
 
             results.max_flows[it, :] = np.abs(res_t.Sf).max(axis=0)
 
+            # Note: Loading is (ncon, nbranch)
+
             loading_abs = np.abs(res_t.loading)
             overloading = loading_abs.copy()
             overloading[overloading <= 1.0] = 0
 
             for k in range(results.ncon):
-                std_dev_counter.update(it, overloading[:, k])
+                std_dev_counter.update(it, overloading[k, :])
 
             results.max_loading[it, :] = loading_abs.max(axis=0)
             results.overload_count[it, :] = np.count_nonzero(overloading > 1.0)
@@ -146,7 +148,8 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
 
             results.srap_used_power += res_t.srap_used_power
 
-            results.report.merge(res_t.report)
+            # TODO: think what to do about this
+            # results.report.merge(res_t.report)
 
             if self.__cancel__:
                 return results

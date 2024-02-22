@@ -1,11 +1,11 @@
 Models
 =============
 
-Roseta
-------------------------------------------------------------
+GridCal
+----------------------------------------------------------------------
 
 Area
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
 
@@ -21,7 +21,7 @@ Area
 
 
 Battery
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
 
@@ -39,9 +39,13 @@ Battery
     capex                     float              e/MW    False                 Cost of investment. Used in expansion planning.                                    
     opex                      float              e/MWh   False                 Cost of operation. Used in expansion planning.                                     
     build_status              enum BuildStatus           False                 Branch build status. Used in expansion planning.                                   
-    Cost                      float              e/MWh   False                 Generation linear cost. Used in OPF.                                               
-    is_controlled             bool                       False                 Is this generator voltage-controlled?                                              
+    Cost                      float              e/MWh   False                 Cost of not served energy. Used in OPF.                                            
+    control_bus               Bus                        False                 Control bus                                                                        
+    control_cn                Connectivity Node          False                 Control connectivity node                                                          
     P                         float              MW      False                 Active power                                                                       
+    Pmin                      float              MW      False                 Minimum active power. Used in OPF.                                                 
+    Pmax                      float              MW      False                 Maximum active power. Used in OPF.                                                 
+    is_controlled             bool                       False                 Is this generator voltage-controlled?                                              
     Pf                        float                      False                 Power factor (cos(fi)). This is used for non-controlled generators.                
     Vset                      float              p.u.    False                 Set voltage. This is used for controlled generators.                               
     Snom                      float              MVA     False                 Nomnial power.                                                                     
@@ -49,15 +53,13 @@ Battery
     Qmax                      float              MVAr    False                 Maximum reactive power.                                                            
     use_reactive_power_curve  bool                       False                 Use the reactive power capability curve?                                           
     q_curve                   Generator Q curve  MVAr    False                 Capability curve data (double click on the generator to edit)                      
-    Pmin                      float              MW      False                 Minimum active power. Used in OPF.                                                 
-    Pmax                      float              MW      False                 Maximum active power. Used in OPF.                                                 
     R1                        float              p.u.    False                 Total positive sequence resistance.                                                
     X1                        float              p.u.    False                 Total positive sequence reactance.                                                 
     R0                        float              p.u.    False                 Total zero sequence resistance.                                                    
     X0                        float              p.u.    False                 Total zero sequence reactance.                                                     
     R2                        float              p.u.    False                 Total negative sequence resistance.                                                
     X2                        float              p.u.    False                 Total negative sequence reactance.                                                 
-    Cost2                     float              e/MWh²  False                 Generation quadratic cost. Used in OPF.                                            
+    Cost2                     float              e/MWhÂ²  False                 Generation quadratic cost. Used in OPF.                                            
     Cost0                     float              e/h     False                 Generation constant cost. Used in OPF.                                             
     StartupCost               float              e/h     False                 Generation start-up cost. Used in OPF.                                             
     ShutdownCost              float              e/h     False                 Generation shut-down cost. Used in OPF.                                            
@@ -77,7 +79,7 @@ Battery
 
 
 Branch
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
 
@@ -97,19 +99,19 @@ Branch
     monitor_loading     bool                      False                 Monitor this device loading for OPF, NTC or contingency studies.                                                                                                                                                                                 
     mttf                float              h      False                 Mean time to failure                                                                                                                                                                                                                             
     mttr                float              h      False                 Mean time to repair                                                                                                                                                                                                                              
-    Cost                float              €/MWh  False                 Cost of overloads. Used in OPF                                                                                                                                                                                                                   
+    Cost                float              e/MWh  False                 Cost of overloads. Used in OPF                                                                                                                                                                                                                   
     build_status        enum BuildStatus          False                 Branch build status. Used in expansion planning.                                                                                                                                                                                                 
-    capex               float              €/MW   False                 Cost of investment. Used in expansion planning.                                                                                                                                                                                                  
-    opex                float              €/MWh  False                 Cost of operation. Used in expansion planning.                                                                                                                                                                                                   
+    capex               float              e/MW   False                 Cost of investment. Used in expansion planning.                                                                                                                                                                                                  
+    opex                float              e/MWh  False                 Cost of operation. Used in expansion planning.                                                                                                                                                                                                   
     R                   float              p.u.   False                 Total positive sequence resistance.                                                                                                                                                                                                              
     X                   float              p.u.   False                 Total positive sequence reactance.                                                                                                                                                                                                               
     B                   float              p.u.   False                 Total positive sequence shunt susceptance.                                                                                                                                                                                                       
     G                   float              p.u.   False                 Total positive sequence shunt conductance.                                                                                                                                                                                                       
     tolerance           float              %      False                 Tolerance expected for the impedance values % is expected for transformers0% for lines.                                                                                                                                                          
     length              float              km     False                 Length of the line (not used for calculation)                                                                                                                                                                                                    
-    temp_base           float              ºC     False                 Base temperature at which R was measured.                                                                                                                                                                                                        
-    temp_oper           float              ºC     False                 Operation temperature to modify R.                                                                                                                                                                                                               
-    alpha               float              1/ºC   False                 Thermal coefficient to modify R,around a reference temperatureusing a linear approximation.For example:Copper @ 20ºC: 0.004041,Copper @ 75ºC: 0.00323,Annealed copper @ 20ºC: 0.00393,Aluminum @ 20ºC: 0.004308,Aluminum @ 75ºC: 0.00330         
+    temp_base           float              ÂºC     False                 Base temperature at which R was measured.                                                                                                                                                                                                        
+    temp_oper           float              ÂºC     False                 Operation temperature to modify R.                                                                                                                                                                                                               
+    alpha               float              1/ÂºC   False                 Thermal coefficient to modify R,around a reference temperatureusing a linear approximation.For example:Copper @ 20ÂºC: 0.004041,Copper @ 75ÂºC: 0.00323,Annealed copper @ 20ÂºC: 0.00393,Aluminum @ 20ÂºC: 0.004308,Aluminum @ 75ÂºC: 0.00330         
     tap_module          float                     False                 Tap changer module, it a value close to 1.0                                                                                                                                                                                                      
     angle               float              rad    False                 Angle shift of the tap changer.                                                                                                                                                                                                                  
     template            enum BranchType           False                                                                                                                                                                                                                                                                  
@@ -123,7 +125,7 @@ Branch
 
 
 Bus
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
 
@@ -131,8 +133,8 @@ Bus
        name      class_type   unit   mandatory  max_chars                                           descriptions                                            comment
     ===========  ==========  ======  =========  =========  ===============================================================================================  =======
     idtag        str                 False                 Unique ID                                                                                               
-    name         str                 False                 Name of the bus                                                                                         
-    code         str                 False                 Some code to further identify the bus                                                                   
+    name         str                 False                 Name of the branch.                                                                                     
+    code         str                 False                 Secondary ID                                                                                            
     active       bool                False                 Is the bus active? used to disable the bus.                                                             
     is_slack     bool                False                 Force the bus to be of slack type.                                                                      
     is_dc        bool                False                 Is this bus of DC type?.                                                                                
@@ -142,10 +144,10 @@ Bus
     Va0          float       rad.    False                 Voltage angle guess.                                                                                    
     Vmin         float       p.u.    False                 Lower range of allowed voltage module.                                                                  
     Vmax         float       p.u.    False                 Higher range of allowed voltage module.                                                                 
-    Vm_cost      float       €/unit  False                 Cost of over and under voltages                                                                         
+    Vm_cost      float       e/unit  False                 Cost of over and under voltages                                                                         
     angle_min    float       rad.    False                 Lower range of allowed voltage angle.                                                                   
     angle_max    float       rad.    False                 Higher range of allowed voltage angle.                                                                  
-    angle_cost   float       €/unit  False                 Cost of over and under angles                                                                           
+    angle_cost   float       e/unit  False                 Cost of over and under angles                                                                           
     r_fault      float       p.u.    False                 Resistance of the fault.This is used for short circuit studies.                                         
     x_fault      float       p.u.    False                 Reactance of the fault.This is used for short circuit studies.                                          
     x            float       px      False                 x position in pixels.                                                                                   
@@ -161,40 +163,58 @@ Bus
     ===========  ==========  ======  =========  =========  ===============================================================================================  =======
 
 
-Connectivity Node
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+BusBar
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
 
-    =====  ==========  ====  =========  =========  ===================  =======
-    name   class_type  unit  mandatory  max_chars     descriptions      comment
-    =====  ==========  ====  =========  =========  ===================  =======
-    idtag  str               False                 Unique ID                   
-    name   str               False                 Name of the branch.         
-    code   str               False                 Secondary ID                
-    =====  ==========  ====  =========  =========  ===================  =======
+    ==========  =================  ====  =========  =========  =====================================  =======
+       name        class_type      unit  mandatory  max_chars              descriptions               comment
+    ==========  =================  ====  =========  =========  =====================================  =======
+    idtag       str                      False                 Unique ID                                     
+    name        str                      False                 Name of the branch.                           
+    code        str                      False                 Secondary ID                                  
+    substation  Substation               False                 Substation of this bus bar (optional)         
+    cn          Connectivity Node        False                 Internal connectvity node                     
+    ==========  =================  ====  =========  =========  =====================================  =======
+
+
+Connectivity Node
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. table::
+
+    ===========  ==========  ====  =========  =========  =====================================================  =======
+       name      class_type  unit  mandatory  max_chars                      descriptions                       comment
+    ===========  ==========  ====  =========  =========  =====================================================  =======
+    idtag        str               False                 Unique ID                                                     
+    name         str               False                 Name of the branch.                                           
+    code         str               False                 Secondary ID                                                  
+    dc           bool              False                 is this a DC connectivity node?                               
+    default_bus  Bus               False                 Default bus to use for topology processing (optional)         
+    ===========  ==========  ====  =========  =========  =====================================================  =======
 
 
 Contingency
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
 
-    ============  =================  ====  =========  =========  =====================================  =======
-        name         class_type      unit  mandatory  max_chars              descriptions               comment
-    ============  =================  ====  =========  =========  =====================================  =======
-    idtag         str                      False                 Unique ID                                     
-    name          str                      False                 Name of the branch.                           
-    code          str                      False                 Secondary ID                                  
-    device_idtag  str                      False                 Unique ID                                     
-    prop          str                      False                 Name of the object property to change         
-    value         float                    False                 Property value                                
-    group         Contingency Group        False                 Contingency group                             
-    ============  =================  ====  =========  =========  =====================================  =======
+    ============  =================  ====  =========  =========  =================================================  =======
+        name         class_type      unit  mandatory  max_chars                    descriptions                     comment
+    ============  =================  ====  =========  =========  =================================================  =======
+    idtag         str                      False                 Unique ID                                                 
+    name          str                      False                 Name of the branch.                                       
+    code          str                      False                 Secondary ID                                              
+    device_idtag  str                      False                 Unique ID                                                 
+    prop          str                      False                 Name of the object property to change (active, %)         
+    value         float                    False                 Property value                                            
+    group         Contingency Group        False                 Contingency group                                         
+    ============  =================  ====  =========  =========  =================================================  =======
 
 
 Contingency Group
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
 
@@ -209,7 +229,7 @@ Contingency Group
 
 
 Country
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
 
@@ -225,7 +245,7 @@ Country
 
 
 DC line
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
 
@@ -245,10 +265,10 @@ DC line
     monitor_loading     bool                      False                 Monitor this device loading for OPF, NTC or contingency studies.                                                                    
     mttf                float              h      False                 Mean time to failure                                                                                                                
     mttr                float              h      False                 Mean time to repair                                                                                                                 
-    Cost                float              €/MWh  False                 Cost of overloads. Used in OPF                                                                                                      
+    Cost                float              e/MWh  False                 Cost of overloads. Used in OPF                                                                                                      
     build_status        enum BuildStatus          False                 Branch build status. Used in expansion planning.                                                                                    
-    capex               float              €/MW   False                 Cost of investment. Used in expansion planning.                                                                                     
-    opex                float              €/MWh  False                 Cost of operation. Used in expansion planning.                                                                                      
+    capex               float              e/MW   False                 Cost of investment. Used in expansion planning.                                                                                     
+    opex                float              e/MWh  False                 Cost of operation. Used in expansion planning.                                                                                      
     R                   float              p.u.   False                 Total positive sequence resistance.                                                                                                 
     length              float              km     False                 Length of the line (not used for calculation)                                                                                       
     r_fault             float              p.u.   False                 Resistance of the mid-line fault.Used in short circuit studies.                                                                     
@@ -258,23 +278,23 @@ DC line
 
 
 Emission
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
 
-    =====  ==========  ====  =========  =========  ==================================  =======
-    name   class_type  unit  mandatory  max_chars             descriptions             comment
-    =====  ==========  ====  =========  =========  ==================================  =======
-    idtag  str               False                 Unique ID                                  
-    name   str               False                 Name of the branch.                        
-    code   str               False                 Secondary ID                               
-    cost   float       €/t   False                 Cost of emissions (currency / ton)         
-    color  str               False                 Color to paint                             
-    =====  ==========  ====  =========  =========  ==================================  =======
+    =====  ==========  ====  =========  =========  ===========================  =======
+    name   class_type  unit  mandatory  max_chars         descriptions          comment
+    =====  ==========  ====  =========  =========  ===========================  =======
+    idtag  str               False                 Unique ID                           
+    name   str               False                 Name of the branch.                 
+    code   str               False                 Secondary ID                        
+    cost   float       e/t   False                 Cost of emissions (e / ton)         
+    color  str               False                 Color to paint                      
+    =====  ==========  ====  =========  =========  ===========================  =======
 
 
 Fluid P2X
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
 
@@ -293,7 +313,7 @@ Fluid P2X
 
 
 Fluid Pump
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
 
@@ -312,7 +332,7 @@ Fluid Pump
 
 
 Fluid Turbine
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
 
@@ -331,7 +351,7 @@ Fluid Turbine
 
 
 Fluid node
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
 
@@ -346,13 +366,13 @@ Fluid node
     initial_level  float             hm3       False                 Initial level of the node/reservoir                      
     bus            Bus                         False                 Electrical bus.                                          
     build_status   enum BuildStatus            False                 Branch build status. Used in expansion planning.         
-    spillage_cost  float             €/(m3/s)  False                 Cost of nodal spillage                                   
+    spillage_cost  float             e/(m3/s)  False                 Cost of nodal spillage                                   
     inflow         float             m3/s      False                 Flow of fluid coming from the rain                       
     =============  ================  ========  =========  =========  ================================================  =======
 
 
 Fluid path
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
 
@@ -370,23 +390,23 @@ Fluid path
 
 
 Fuel
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
 
-    =====  ==========  ====  =========  =========  =============================  =======
-    name   class_type  unit  mandatory  max_chars          descriptions           comment
-    =====  ==========  ====  =========  =========  =============================  =======
-    idtag  str               False                 Unique ID                             
-    name   str               False                 Name of the branch.                   
-    code   str               False                 Secondary ID                          
-    cost   float       €/t   False                 Cost of fuel (currency / ton)         
-    color  str               False                 Color to paint                        
-    =====  ==========  ====  =========  =========  =============================  =======
+    =====  ==========  ====  =========  =========  ======================  =======
+    name   class_type  unit  mandatory  max_chars       descriptions       comment
+    =====  ==========  ====  =========  =========  ======================  =======
+    idtag  str               False                 Unique ID                      
+    name   str               False                 Name of the branch.            
+    code   str               False                 Secondary ID                   
+    cost   float       e/t   False                 Cost of fuel (e / ton)         
+    color  str               False                 Color to paint                 
+    =====  ==========  ====  =========  =========  ======================  =======
 
 
 Generator
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
 
@@ -404,9 +424,13 @@ Generator
     capex                     float              e/MW    False                 Cost of investment. Used in expansion planning.                                    
     opex                      float              e/MWh   False                 Cost of operation. Used in expansion planning.                                     
     build_status              enum BuildStatus           False                 Branch build status. Used in expansion planning.                                   
-    Cost                      float              e/MWh   False                 Generation linear cost. Used in OPF.                                               
-    is_controlled             bool                       False                 Is this generator voltage-controlled?                                              
+    Cost                      float              e/MWh   False                 Cost of not served energy. Used in OPF.                                            
+    control_bus               Bus                        False                 Control bus                                                                        
+    control_cn                Connectivity Node          False                 Control connectivity node                                                          
     P                         float              MW      False                 Active power                                                                       
+    Pmin                      float              MW      False                 Minimum active power. Used in OPF.                                                 
+    Pmax                      float              MW      False                 Maximum active power. Used in OPF.                                                 
+    is_controlled             bool                       False                 Is this generator voltage-controlled?                                              
     Pf                        float                      False                 Power factor (cos(fi)). This is used for non-controlled generators.                
     Vset                      float              p.u.    False                 Set voltage. This is used for controlled generators.                               
     Snom                      float              MVA     False                 Nomnial power.                                                                     
@@ -414,15 +438,13 @@ Generator
     Qmax                      float              MVAr    False                 Maximum reactive power.                                                            
     use_reactive_power_curve  bool                       False                 Use the reactive power capability curve?                                           
     q_curve                   Generator Q curve  MVAr    False                 Capability curve data (double click on the generator to edit)                      
-    Pmin                      float              MW      False                 Minimum active power. Used in OPF.                                                 
-    Pmax                      float              MW      False                 Maximum active power. Used in OPF.                                                 
     R1                        float              p.u.    False                 Total positive sequence resistance.                                                
     X1                        float              p.u.    False                 Total positive sequence reactance.                                                 
     R0                        float              p.u.    False                 Total zero sequence resistance.                                                    
     X0                        float              p.u.    False                 Total zero sequence reactance.                                                     
     R2                        float              p.u.    False                 Total negative sequence resistance.                                                
     X2                        float              p.u.    False                 Total negative sequence reactance.                                                 
-    Cost2                     float              e/MWh²  False                 Generation quadratic cost. Used in OPF.                                            
+    Cost2                     float              e/MWhÂ²  False                 Generation quadratic cost. Used in OPF.                                            
     Cost0                     float              e/h     False                 Generation constant cost. Used in OPF.                                             
     StartupCost               float              e/h     False                 Generation start-up cost. Used in OPF.                                             
     ShutdownCost              float              e/h     False                 Generation shut-down cost. Used in OPF.                                            
@@ -435,7 +457,7 @@ Generator
 
 
 Generator Emission
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
 
@@ -452,7 +474,7 @@ Generator Emission
 
 
 Generator Fuel
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
 
@@ -469,7 +491,7 @@ Generator Fuel
 
 
 Generator Technology
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
 
@@ -486,7 +508,7 @@ Generator Technology
 
 
 HVDC Line
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
 
@@ -506,10 +528,10 @@ HVDC Line
     monitor_loading     bool                          False                 Monitor this device loading for OPF, NTC or contingency studies.                                    
     mttf                float                 h       False                 Mean time to failure                                                                                
     mttr                float                 h       False                 Mean time to repair                                                                                 
-    Cost                float                 €/MWh   False                 Cost of overloads. Used in OPF                                                                      
+    Cost                float                 e/MWh   False                 Cost of overloads. Used in OPF                                                                      
     build_status        enum BuildStatus              False                 Branch build status. Used in expansion planning.                                                    
-    capex               float                 €/MW    False                 Cost of investment. Used in expansion planning.                                                     
-    opex                float                 €/MWh   False                 Cost of operation. Used in expansion planning.                                                      
+    capex               float                 e/MW    False                 Cost of investment. Used in expansion planning.                                                     
+    opex                float                 e/MWh   False                 Cost of operation. Used in expansion planning.                                                      
     dispatchable        bool                          False                 Is the line power optimizable?                                                                      
     control_mode        enum HvdcControlType  -       False                 Control type.                                                                                       
     Pset                float                 MW      False                 Set power flow.                                                                                     
@@ -527,7 +549,7 @@ HVDC Line
 
 
 Investment
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
 
@@ -538,15 +560,15 @@ Investment
     name          str                      False                 Name of the branch.                                                            
     code          str                      False                 Secondary ID                                                                   
     device_idtag  str                      False                 Unique ID                                                                      
-    CAPEX         float              M€    False                 Capital expenditures. This is the initial investment.                          
-    OPEX          float              M€    False                 Operation expenditures. Maintenance costs among other recurrent costs.         
+    CAPEX         float              Me    False                 Capital expenditures. This is the initial investment.                          
+    OPEX          float              Me    False                 Operation expenditures. Maintenance costs among other recurrent costs.         
     group         Investments Group        False                 Investment group                                                               
     comment       str                      False                 Comments                                                                       
     ============  =================  ====  =========  =========  ======================================================================  =======
 
 
 Investments Group
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
 
@@ -562,7 +584,7 @@ Investments Group
 
 
 Line
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
 
@@ -582,7 +604,7 @@ Line
     monitor_loading     bool                      False                 Monitor this device loading for OPF, NTC or contingency studies.                                                                                                                                                                                 
     mttf                float              h      False                 Mean time to failure                                                                                                                                                                                                                             
     mttr                float              h      False                 Mean time to repair                                                                                                                                                                                                                              
-    Cost                float              e/MWh  False                 Cost of overloads. Used in OPF.                                                                                                                                                                                                                  
+    Cost                float              e/MWh  False                 Cost of overloads. Used in OPF                                                                                                                                                                                                                   
     build_status        enum BuildStatus          False                 Branch build status. Used in expansion planning.                                                                                                                                                                                                 
     capex               float              e/MW   False                 Cost of investment. Used in expansion planning.                                                                                                                                                                                                  
     opex                float              e/MWh  False                 Cost of operation. Used in expansion planning.                                                                                                                                                                                                   
@@ -597,9 +619,9 @@ Line
     B2                  float              p.u.   False                 Total negative sequence shunt susceptance.                                                                                                                                                                                                       
     tolerance           float              %      False                 Tolerance expected for the impedance values % is expected for transformers0% for lines.                                                                                                                                                          
     length              float              km     False                 Length of the line (not used for calculation)                                                                                                                                                                                                    
-    temp_base           float              ºC     False                 Base temperature at which R was measured.                                                                                                                                                                                                        
-    temp_oper           float              ºC     False                 Operation temperature to modify R.                                                                                                                                                                                                               
-    alpha               float              1/ºC   False                 Thermal coefficient to modify R,around a reference temperatureusing a linear approximation.For example:Copper @ 20ºC: 0.004041,Copper @ 75ºC: 0.00323,Annealed copper @ 20ºC: 0.00393,Aluminum @ 20ºC: 0.004308,Aluminum @ 75ºC: 0.00330         
+    temp_base           float              ÂºC     False                 Base temperature at which R was measured.                                                                                                                                                                                                        
+    temp_oper           float              ÂºC     False                 Operation temperature to modify R.                                                                                                                                                                                                               
+    alpha               float              1/ÂºC   False                 Thermal coefficient to modify R,around a reference temperatureusing a linear approximation.For example:Copper @ 20ÂºC: 0.004041,Copper @ 75ÂºC: 0.00323,Annealed copper @ 20ÂºC: 0.00393,Aluminum @ 20ÂºC: 0.004308,Aluminum @ 75ÂºC: 0.00330         
     r_fault             float              p.u.   False                 Resistance of the mid-line fault.Used in short circuit studies.                                                                                                                                                                                  
     x_fault             float              p.u.   False                 Reactance of the mid-line fault.Used in short circuit studies.                                                                                                                                                                                   
     fault_pos           float              p.u.   False                 Per-unit positioning of the fault:0 would be at the "from" side,1 would be at the "to" side,therefore 0.5 is at the middle.                                                                                                                      
@@ -608,7 +630,7 @@ Line
 
 
 Load
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
 
@@ -637,7 +659,7 @@ Load
 
 
 Sequence line
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
 
@@ -659,7 +681,7 @@ Sequence line
 
 
 Shunt
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
 
@@ -678,11 +700,11 @@ Shunt
     opex           float              e/MWh  False                 Cost of operation. Used in expansion planning.                                
     build_status   enum BuildStatus          False                 Branch build status. Used in expansion planning.                              
     Cost           float              e/MWh  False                 Cost of not served energy. Used in OPF.                                       
-    is_controlled  bool                      False                 Is the shunt controllable?                                                    
-    G              float              MW     False                 Active power of the impedance component at V=1.0 p.u.                         
-    B              float              MVAr   False                 Reactive power of the impedance component at V=1.0 p.u.                       
+    G              float              MW     False                 Active power                                                                  
+    B              float              MVAr   False                 Reactive power                                                                
     G0             float              MW     False                 Zero sequence active power of the impedance component at V=1.0 p.u.           
     B0             float              MVAr   False                 Zero sequence reactive power of the impedance component at V=1.0 p.u.         
+    is_controlled  bool                      False                 Is the shunt controllable?                                                    
     Bmin           float              MVAr   False                 Reactive power min control value at V=1.0 p.u.                                
     Bmax           float              MVAr   False                 Reactive power max control value at V=1.0 p.u.                                
     Vset           float              p.u.   False                 Set voltage. This is used for controlled shunts.                              
@@ -690,7 +712,7 @@ Shunt
 
 
 Static Generator
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
 
@@ -715,7 +737,7 @@ Static Generator
 
 
 Substation
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
 
@@ -731,7 +753,7 @@ Substation
 
 
 Technology
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
 
@@ -749,7 +771,7 @@ Technology
 
 
 Tower
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
 
@@ -773,7 +795,7 @@ Tower
 
 
 Transformer
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
 
@@ -793,10 +815,10 @@ Transformer
     monitor_loading     bool                                False                 Monitor this device loading for OPF, NTC or contingency studies.                                                                                                                                                                                 
     mttf                float                        h      False                 Mean time to failure                                                                                                                                                                                                                             
     mttr                float                        h      False                 Mean time to repair                                                                                                                                                                                                                              
-    Cost                float                        €/MWh  False                 Cost of overloads. Used in OPF                                                                                                                                                                                                                   
+    Cost                float                        e/MWh  False                 Cost of overloads. Used in OPF                                                                                                                                                                                                                   
     build_status        enum BuildStatus                    False                 Branch build status. Used in expansion planning.                                                                                                                                                                                                 
-    capex               float                        €/MW   False                 Cost of investment. Used in expansion planning.                                                                                                                                                                                                  
-    opex                float                        €/MWh  False                 Cost of operation. Used in expansion planning.                                                                                                                                                                                                   
+    capex               float                        e/MW   False                 Cost of investment. Used in expansion planning.                                                                                                                                                                                                  
+    opex                float                        e/MWh  False                 Cost of operation. Used in expansion planning.                                                                                                                                                                                                   
     HV                  float                        kV     False                 High voltage rating                                                                                                                                                                                                                              
     LV                  float                        kV     False                 Low voltage rating                                                                                                                                                                                                                               
     Sn                  float                        MVA    False                 Nominal power                                                                                                                                                                                                                                    
@@ -827,15 +849,15 @@ Transformer
     control_mode        enum TransformerControlType         False                 Control type of the transformer                                                                                                                                                                                                                  
     vset                float                        p.u.   False                 Objective voltage at the "to" side of the bus when regulating the tap.                                                                                                                                                                           
     Pset                float                        p.u.   False                 Objective power at the "from" side of when regulating the angle.                                                                                                                                                                                 
-    temp_base           float                        ºC     False                 Base temperature at which R was measured.                                                                                                                                                                                                        
-    temp_oper           float                        ºC     False                 Operation temperature to modify R.                                                                                                                                                                                                               
-    alpha               float                        1/ºC   False                 Thermal coefficient to modify R,around a reference temperatureusing a linear approximation.For example:Copper @ 20ºC: 0.004041,Copper @ 75ºC: 0.00323,Annealed copper @ 20ºC: 0.00393,Aluminum @ 20ºC: 0.004308,Aluminum @ 75ºC: 0.00330         
+    temp_base           float                        ÂºC     False                 Base temperature at which R was measured.                                                                                                                                                                                                        
+    temp_oper           float                        ÂºC     False                 Operation temperature to modify R.                                                                                                                                                                                                               
+    alpha               float                        1/ÂºC   False                 Thermal coefficient to modify R,around a reference temperatureusing a linear approximation.For example:Copper @ 20ÂºC: 0.004041,Copper @ 75ÂºC: 0.00323,Annealed copper @ 20ÂºC: 0.00393,Aluminum @ 20ÂºC: 0.004308,Aluminum @ 75ÂºC: 0.00330         
     template            Transformer type                    False                                                                                                                                                                                                                                                                  
     ==================  ===========================  =====  =========  =========  ========================================================================================================================================================================================================================================  =======
 
 
 Transformer type
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
 
@@ -856,7 +878,7 @@ Transformer type
 
 
 Transformer3W
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
 
@@ -892,7 +914,7 @@ Transformer3W
 
 
 UPFC
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
 
@@ -912,10 +934,10 @@ UPFC
     monitor_loading     bool                      False                 Monitor this device loading for OPF, NTC or contingency studies.         
     mttf                float              h      False                 Mean time to failure                                                     
     mttr                float              h      False                 Mean time to repair                                                      
-    Cost                float              €/MWh  False                 Cost of overloads. Used in OPF                                           
+    Cost                float              e/MWh  False                 Cost of overloads. Used in OPF                                           
     build_status        enum BuildStatus          False                 Branch build status. Used in expansion planning.                         
-    capex               float              €/MW   False                 Cost of investment. Used in expansion planning.                          
-    opex                float              €/MWh  False                 Cost of operation. Used in expansion planning.                           
+    capex               float              e/MW   False                 Cost of investment. Used in expansion planning.                          
+    opex                float              e/MWh  False                 Cost of operation. Used in expansion planning.                           
     Rs                  float              p.u.   False                 Series positive sequence resistance.                                     
     Xs                  float              p.u.   False                 Series positive sequence reactance.                                      
     Rsh                 float              p.u.   False                 Shunt positive sequence resistance.                                      
@@ -935,7 +957,7 @@ UPFC
 
 
 Underground line
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
 
@@ -957,7 +979,7 @@ Underground line
 
 
 VSC
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
 
@@ -977,10 +999,10 @@ VSC
     monitor_loading     bool                                  False                 Monitor this device loading for OPF, NTC or contingency studies.         
     mttf                float                      h          False                 Mean time to failure                                                     
     mttr                float                      h          False                 Mean time to repair                                                      
-    Cost                float                      €/MWh      False                 Cost of overloads. Used in OPF                                           
+    Cost                float                      e/MWh      False                 Cost of overloads. Used in OPF                                           
     build_status        enum BuildStatus                      False                 Branch build status. Used in expansion planning.                         
-    capex               float                      €/MW       False                 Cost of investment. Used in expansion planning.                          
-    opex                float                      €/MWh      False                 Cost of operation. Used in expansion planning.                           
+    capex               float                      e/MW       False                 Cost of investment. Used in expansion planning.                          
+    opex                float                      e/MWh      False                 Cost of operation. Used in expansion planning.                           
     R                   float                      p.u.       False                 Resistive positive sequence losses.                                      
     X                   float                      p.u.       False                 Magnetic positive sequence losses.                                       
     R0                  float                      p.u.       False                 Resistive zero sequence losses.                                          
@@ -1011,7 +1033,7 @@ VSC
 
 
 Winding
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
 
@@ -1031,10 +1053,10 @@ Winding
     monitor_loading     bool                                False                 Monitor this device loading for OPF, NTC or contingency studies.                                                                                                                                                                                 
     mttf                float                        h      False                 Mean time to failure                                                                                                                                                                                                                             
     mttr                float                        h      False                 Mean time to repair                                                                                                                                                                                                                              
-    Cost                float                        €/MWh  False                 Cost of overloads. Used in OPF                                                                                                                                                                                                                   
+    Cost                float                        e/MWh  False                 Cost of overloads. Used in OPF                                                                                                                                                                                                                   
     build_status        enum BuildStatus                    False                 Branch build status. Used in expansion planning.                                                                                                                                                                                                 
-    capex               float                        €/MW   False                 Cost of investment. Used in expansion planning.                                                                                                                                                                                                  
-    opex                float                        €/MWh  False                 Cost of operation. Used in expansion planning.                                                                                                                                                                                                   
+    capex               float                        e/MW   False                 Cost of investment. Used in expansion planning.                                                                                                                                                                                                  
+    opex                float                        e/MWh  False                 Cost of operation. Used in expansion planning.                                                                                                                                                                                                   
     HV                  float                        kV     False                 High voltage rating                                                                                                                                                                                                                              
     LV                  float                        kV     False                 Low voltage rating                                                                                                                                                                                                                               
     R                   float                        p.u.   False                 Total positive sequence resistance.                                                                                                                                                                                                              
@@ -1050,7 +1072,7 @@ Winding
     G2                  float                        p.u.   False                 Total negative sequence shunt conductance.                                                                                                                                                                                                       
     B2                  float                        p.u.   False                 Total negative sequence shunt susceptance.                                                                                                                                                                                                       
     conn                enum WindingsConnection             False                 Windings connection (from, to):G: grounded starS: ungrounded starD: delta                                                                                                                                                                        
-    tolerance           float                        %      False                 Tolerance expected for the impedance values7% is expected for transformers0% for lines.                                                                                                                                                          
+    tolerance           float                        %      False                 Tolerance expected for the impedance values.                                                                                                                                                                                                     
     tap_module          float                               False                 Tap changer module, it a value close to 1.0                                                                                                                                                                                                      
     tap_module_max      float                               False                 Tap changer module max value                                                                                                                                                                                                                     
     tap_module_min      float                               False                 Tap changer module min value                                                                                                                                                                                                                     
@@ -1060,15 +1082,15 @@ Winding
     control_mode        enum TransformerControlType         False                 Control type of the transformer                                                                                                                                                                                                                  
     vset                float                        p.u.   False                 Objective voltage at the "to" side of the bus when regulating the tap.                                                                                                                                                                           
     Pset                float                        p.u.   False                 Objective power at the "from" side of when regulating the angle.                                                                                                                                                                                 
-    temp_base           float                        ºC     False                 Base temperature at which R was measured.                                                                                                                                                                                                        
-    temp_oper           float                        ºC     False                 Operation temperature to modify R.                                                                                                                                                                                                               
-    alpha               float                        1/ºC   False                 Thermal coefficient to modify R,around a reference temperatureusing a linear approximation.For example:Copper @ 20ºC: 0.004041,Copper @ 75ºC: 0.00323,Annealed copper @ 20ºC: 0.00393,Aluminum @ 20ºC: 0.004308,Aluminum @ 75ºC: 0.00330         
+    temp_base           float                        ÂºC     False                 Base temperature at which R was measured.                                                                                                                                                                                                        
+    temp_oper           float                        ÂºC     False                 Operation temperature to modify R.                                                                                                                                                                                                               
+    alpha               float                        1/ÂºC   False                 Thermal coefficient to modify R,around a reference temperatureusing a linear approximation.For example:Copper @ 20ÂºC: 0.004041,Copper @ 75ÂºC: 0.00323,Annealed copper @ 20ÂºC: 0.00393,Aluminum @ 20ÂºC: 0.004308,Aluminum @ 75ÂºC: 0.00330         
     template            Transformer type                    False                                                                                                                                                                                                                                                                  
     ==================  ===========================  =====  =========  =========  ========================================================================================================================================================================================================================================  =======
 
 
 Wire
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
 
@@ -1086,7 +1108,7 @@ Wire
 
 
 Zone
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
 

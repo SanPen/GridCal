@@ -56,8 +56,6 @@ dependencies = ["PySide6>=6.5.0",  # for now, 5.14 breaks the UI generation for 
                 "xlrd>=1.1.0",
                 "matplotlib>=2.1.1",
                 "qtconsole>=4.5.4",
-                "pyDOE>=0.3.8",
-                "pySOT>=0.2.1",
                 "openpyxl>=2.4.9",
                 "smopy>=0.0.6",
                 "chardet>=3.0.4",

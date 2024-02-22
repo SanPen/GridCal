@@ -16,9 +16,12 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 from typing import Union
-from GridCalEngine.Core.Devices.editable_device import EditableDevice
+import numpy as np
+
+from GridCalEngine.Core.Devices.Parents.editable_device import EditableDevice
 from GridCalEngine.Core.Devices.Substation.bus import Bus
 from GridCalEngine.enumerations import BuildStatus, DeviceType
+from GridCalEngine.Core.Devices.profile import Profile
 
 
 class FluidNode(EditableDevice):
@@ -32,8 +35,6 @@ class FluidNode(EditableDevice):
                  current_level: float = 0.0,
                  spillage_cost: float = 1000.0,
                  inflow: float = 0.0,
-                 spillage_cost_prof=None,
-                 inflow_prof=None,
                  bus: Union[None, Bus] = None,
                  build_status: BuildStatus = BuildStatus.Commissioned):
         """
@@ -46,7 +47,6 @@ class FluidNode(EditableDevice):
         :param current_level: Initial level of the node/reservoir [m3]
         :param spillage_cost: Spillage cost [e/(m3/s)]
         :param inflow: Inflow from the rain [m3/s]
-        :param inflow_prof: Profile for the inflow [m3/s]
         :param bus: electrical bus they are linked with
         :param build_status
         """
@@ -64,8 +64,8 @@ class FluidNode(EditableDevice):
         self._bus: Bus = bus
         self.build_status = build_status
 
-        self.inflow_prof = inflow_prof  # m3/s
-        self.spillage_cost_prof = spillage_cost_prof  # e/(m3/s)
+        self._inflow_prof = Profile(default_value=inflow)  # m3/s
+        self._spillage_cost_prof = Profile(default_value=spillage_cost)  # e/(m3/s)
 
         self.register(key='min_level', units='hm3', tpe=float,
                       definition="Minimum amount of fluid at the node/reservoir")
@@ -89,6 +89,40 @@ class FluidNode(EditableDevice):
         self.register(key='inflow', units='m3/s', tpe=float,
                       definition='Flow of fluid coming from the rain',
                       profile_name='inflow_prof')
+
+    @property
+    def spillage_cost_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._spillage_cost_prof
+
+    @spillage_cost_prof.setter
+    def spillage_cost_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._spillage_cost_prof = val
+        elif isinstance(val, np.ndarray):
+            self._spillage_cost_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a spillage_cost_prof')
+
+    @property
+    def inflow_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._inflow_prof
+
+    @inflow_prof.setter
+    def inflow_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._inflow_prof = val
+        elif isinstance(val, np.ndarray):
+            self._inflow_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a inflow_prof')
 
     def copy(self):
         """

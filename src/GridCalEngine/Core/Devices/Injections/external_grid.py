@@ -14,16 +14,19 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from typing import Union
+import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 from GridCalEngine.enumerations import DeviceType, BuildStatus, ExternalGridMode
-from GridCalEngine.Core.Devices.Injections.injection_template import LoadLikeTemplate
+from GridCalEngine.Core.Devices.Parents.load_parent import LoadParent
+from GridCalEngine.Core.Devices.profile import Profile
 
 
-class ExternalGrid(LoadLikeTemplate):
+class ExternalGrid(LoadParent):
 
     def __init__(self, name='External grid', idtag=None, code='', active=True, substituted_device_id: str = '',
-                 Vm=1.0, Va=0.0, Vm_prof=None, Va_prof=None, P=0.0, Q=0.0, P_prof=None, Q_prof=None,
+                 Vm=1.0, Va=0.0, P=0.0, Q=0.0,
                  mttf=0.0, mttr=0.0, mode: ExternalGridMode = ExternalGridMode.PQ,
                  capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned):
         """
@@ -36,12 +39,8 @@ class ExternalGrid(LoadLikeTemplate):
         :param substituted_device_id:
         :param Vm:
         :param Va:
-        :param Vm_prof:
-        :param Va_prof:
         :param P:
         :param Q:
-        :param P_prof:
-        :param Q_prof:
         :param mttf:
         :param mttr:
         :param mode:
@@ -50,26 +49,22 @@ class ExternalGrid(LoadLikeTemplate):
         :param build_status:
         """
 
-        LoadLikeTemplate.__init__(self,
-                                  name=name,
-                                  idtag=idtag,
-                                  code=code,
-                                  bus=None,
-                                  cn=None,
-                                  active=active,
-                                  active_prof=None,
-                                  P=P,
-                                  P_prof=P_prof,
-                                  Q=Q,
-                                  Q_prof=Q_prof,
-                                  Cost=0,
-                                  Cost_prof=None,
-                                  mttf=mttf,
-                                  mttr=mttr,
-                                  capex=capex,
-                                  opex=opex,
-                                  build_status=build_status,
-                                  device_type=DeviceType.ExternalGridDevice)
+        LoadParent.__init__(self,
+                            name=name,
+                            idtag=idtag,
+                            code=code,
+                            bus=None,
+                            cn=None,
+                            active=active,
+                            P=P,
+                            Q=Q,
+                            Cost=0,
+                            mttf=mttf,
+                            mttr=mttr,
+                            capex=capex,
+                            opex=opex,
+                            build_status=build_status,
+                            device_type=DeviceType.ExternalGridDevice)
 
         self.mode = mode
 
@@ -78,8 +73,8 @@ class ExternalGrid(LoadLikeTemplate):
         # Impedance in equivalent MVA
         self.Vm = Vm
         self.Va = Va
-        self.Vm_prof = Vm_prof
-        self.Va_prof = Va_prof
+        self._Vm_prof = Profile(default_value=Vm)
+        self._Va_prof = Profile(default_value=Va)
 
         self.register(key='mode', units='', tpe=ExternalGridMode,
                       definition='Operation mode of the external grid (voltage or load)')
@@ -87,6 +82,40 @@ class ExternalGrid(LoadLikeTemplate):
                       definition='idtag of the device that was substituted by this external grid equivalent')
         self.register(key='Vm', units='p.u.', tpe=float, definition='Active power', profile_name='Vm_prof')
         self.register(key='Va', units='radians', tpe=float, definition='Reactive power', profile_name='Va_prof')
+
+    @property
+    def Vm_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._Vm_prof
+
+    @Vm_prof.setter
+    def Vm_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._Vm_prof = val
+        elif isinstance(val, np.ndarray):
+            self._Vm_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a Vm_prof')
+
+    @property
+    def Va_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._Va_prof
+
+    @Va_prof.setter
+    def Va_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._Va_prof = val
+        elif isinstance(val, np.ndarray):
+            self._Va_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a Va_prof')
 
     def get_properties_dict(self, version=3):
         """
@@ -155,21 +184,23 @@ class ExternalGrid(LoadLikeTemplate):
             ax_2 = fig.add_subplot(212)
 
             if self.mode == ExternalGridMode.VD:
-                y1 = self.Vm_prof
+                y1 = self.Vm_prof.toarray()
                 title_1 = 'Voltage module'
                 units_1 = 'p.u'
 
-                y2 = self.Va_prof
+                y2 = self.Va_prof.toarray()
                 title_2 = 'Voltage angle'
                 units_2 = 'radians'
+
             elif self.mode == ExternalGridMode.PQ:
-                y1 = self.P_prof
+                y1 = self.P_prof.toarray()
                 title_1 = 'Active Power'
                 units_1 = 'MW'
 
-                y2 = self.Q_prof
+                y2 = self.Q_prof.toarray()
                 title_2 = 'Reactive power'
                 units_2 = 'MVAr'
+
             else:
                 raise Exception('Unrecognised external grid mode: ' + str(self.mode))
 

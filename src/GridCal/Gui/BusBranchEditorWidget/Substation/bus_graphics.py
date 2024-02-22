@@ -23,7 +23,6 @@ from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor
 from PySide6.QtWidgets import QMenu, QGraphicsSceneMouseEvent
 from GridCalEngine.Core.Devices.Substation import Bus
 from GridCal.Gui.BusBranchEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, FONT_SCALE, EMERGENCY
-from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCalEngine.Simulations.Topology.topology_reduction_driver import reduce_buses
 from GridCal.Gui.BusBranchEditorWidget.terminal_item import TerminalItem, HandleItem
 from GridCal.Gui.BusBranchEditorWidget.Injections.load_graphics import LoadGraphicItem
@@ -34,7 +33,7 @@ from GridCal.Gui.BusBranchEditorWidget.Injections.shunt_graphics import ShuntGra
 from GridCal.Gui.BusBranchEditorWidget.Injections.external_grid_graphics import ExternalGridGraphicItem
 from GridCal.Gui.messages import yes_no_question
 from GridCalEngine.enumerations import DeviceType, FaultType
-from GridCalEngine.Core.Devices.editable_device import EditableDevice
+from GridCalEngine.Core.Devices.Parents.editable_device import EditableDevice
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
@@ -170,7 +169,6 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
             event: QGraphicsSceneMouseEvent inherited
         """
         super().mouseMoveEvent(event)
-
         self.editor.update_diagram_element(device=self.api_object,
                                            x=self.pos().x(),
                                            y=self.pos().y(),
@@ -335,7 +333,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
 
         self.arrange_children()
 
-    def contextMenuEvent(self, event):
+    def contextMenuEvent(self, event: QtWidgets.QGraphicsSceneContextMenuEvent):
         """
         Display context menu
         @param event:

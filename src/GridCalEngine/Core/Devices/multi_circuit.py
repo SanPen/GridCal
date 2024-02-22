@@ -29,13 +29,13 @@ from matplotlib import pyplot as plt
 from scipy.sparse import csc_matrix, lil_matrix
 
 from GridCalEngine.Core import EditableDevice
-from GridCalEngine.basic_structures import DateVec, IntVec, StrVec, Vec, Mat, CxVec, IntMat, CxMat
+from GridCalEngine.basic_structures import IntVec, StrVec, Vec, Mat, CxVec, IntMat, CxMat
 from GridCalEngine.data_logger import DataLogger
 import GridCalEngine.Core.Devices as dev
 from GridCalEngine.Core.Devices.types import ALL_DEV_TYPES, BRANCH_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES
 from GridCalEngine.basic_structures import Logger
 import GridCalEngine.Core.Topology.topology as tp
-from GridCalEngine.enumerations import DeviceType
+from GridCalEngine.enumerations import DeviceType, ResultTypes
 
 
 def get_system_user() -> str:
@@ -73,7 +73,7 @@ def get_fused_device_lst(elm_list: List[INJECTION_DEVICE_TYPES], property_names:
         elm1 = elm_list[0]  # select the main device
         deletable_elms = [elm_list[i] for i in range(1, len(elm_list))]
         act_final = elm1.active
-        act_prof_final = elm1.active_prof
+        act_prof_final = elm1.active_prof.toarray()
 
         # set the final active value
         for i in range(1, len(elm_list)):  # for each of the other generators
@@ -83,7 +83,7 @@ def get_fused_device_lst(elm_list: List[INJECTION_DEVICE_TYPES], property_names:
             act_final = bool(act_final + elm2.active)  # equivalent to OR
 
             if act_prof_final is not None:
-                act_prof_final = (act_prof_final + elm2.active_prof).astype(bool)
+                act_prof_final = (act_prof_final.toarray() + elm2.active_prof.toarray()).astype(bool)
 
         for prop in property_names:  # sum the properties
 
@@ -94,7 +94,7 @@ def get_fused_device_lst(elm_list: List[INJECTION_DEVICE_TYPES], property_names:
             else:
                 if act_prof_final is not None:
                     # it is a profile property
-                    val = getattr(elm1, prop) * elm1.active_prof
+                    val = getattr(elm1, prop).toarray() * elm1.active_prof.toarray()
                 else:
                     val = None
 
@@ -107,17 +107,17 @@ def get_fused_device_lst(elm_list: List[INJECTION_DEVICE_TYPES], property_names:
                 else:
                     if act_prof_final is not None:
                         # it is a profile property
-                        val += getattr(elm2, prop) * elm2.active_prof
+                        val += elm2.get_profile(prop).toarray() * elm2.active_prof.toarray()
 
             # set the final property value
             if 'prof' not in prop:
-                setattr(elm1, prop, val)
+                elm1.set_snapshot_value(prop, val)
             else:
-                setattr(elm1, prop, val)
+                elm1.set_profile(prop, val)
 
         # set the final active status
         elm1.active = act_final
-        elm1.active_prof = act_prof_final
+        elm1.active_prof.set(act_prof_final)
 
         return [elm1], deletable_elms
 
@@ -279,7 +279,7 @@ class MultiCircuit:
         self.logger: Logger = Logger()
 
         # master time profile
-        self.time_profile: DateVec = None
+        self.time_profile: Union[pd.DatetimeIndex, None] = None
 
         # contingencies
         self.contingencies: List[dev.Contingency] = list()
@@ -415,13 +415,28 @@ class MultiCircuit:
         """
         # sanity check
         if len(self.buses) > 0:
-            if self.buses[0].active_prof is None:
-
-                if self.time_profile is not None:
+            if self.time_profile is not None:
+                if self.buses[0].active_prof.size() != self.get_time_number():
                     warnings.warn('The grid has a time signature but the objects do not!')
-                return False
 
         return self.time_profile is not None
+
+    def get_unix_time(self) -> IntVec:
+        """
+        Get the unix time representation of the time
+        :return:
+        """
+        if self.has_time_series:
+            return self.time_profile.values.astype(np.int64) // 10 ** 9
+        else:
+            return np.zeros(0, dtype=np.int64)
+
+    def set_unix_time(self, arr: IntVec):
+        """
+        Set the time with a unix time
+        :param arr: UNIX time iterable
+        """
+        self.time_profile = pd.to_datetime(arr, unit='s')
 
     def get_objects_with_profiles_list(self) -> List[dev.EditableDevice]:
         """
@@ -628,6 +643,10 @@ class MultiCircuit:
         else:
             return 0
 
+    def get_time_array(self):
+
+        return self.time_profile
+
     def get_all_time_indices(self) -> IntVec:
         """
         Get array with all the time steps
@@ -656,7 +675,7 @@ class MultiCircuit:
         """
         active = np.empty((self.get_time_number(), self.get_branch_number_wo_hvdc()), dtype=int)
         for i, b in enumerate(self.get_branches_wo_hvdc()):
-            active[:, i] = b.active_prof
+            active[:, i] = b.active_prof.toarray()
         return active
 
     def get_topologic_group_dict(self) -> Dict[int, List[int]]:
@@ -782,7 +801,7 @@ class MultiCircuit:
         """
         return [e.name for e in self.get_branches_wo_hvdc()]
 
-    def get_branches(self) -> List[dev.Branch]:
+    def get_branches(self) -> List[BRANCH_TYPES]:
         """
         Return all the branch objects
         :return: lines + transformers 2w + hvdc
@@ -854,6 +873,17 @@ class MultiCircuit:
                 + self.get_fluid_pumps()
                 + self.get_fluid_turbines()
                 + self.get_fluid_p2xs())
+
+    def get_fluid_lists(self) -> List[List[FLUID_TYPES]]:
+        """
+        Get a list of all devices that can inject or subtract power from a node
+        :return: List of EditableDevice
+        """
+        return [self.get_fluid_nodes(),
+                self.get_fluid_paths(),
+                self.get_fluid_pumps(),
+                self.get_fluid_turbines(),
+                self.get_fluid_p2xs()]
 
     def get_contingency_devices(self) -> List[dev.EditableDevice]:
         """
@@ -2021,6 +2051,60 @@ class MultiCircuit:
         else:
             return {elm.idtag: elm for elm in self.get_elements_by_type(element_type)}
 
+    def get_devices_list(self, result_type: ResultTypes) -> List[ALL_DEV_TYPES]:
+        """
+        Given a result type, get the matching list of devices
+        :param result_type: ResultTypes
+        :return: List of devices
+        """
+        name: str = result_type.value[0]
+        device_tpe: DeviceType = result_type.value[1]
+
+        if device_tpe == DeviceType.BusDevice:
+            return self.get_buses()
+
+        elif device_tpe == DeviceType.BranchDevice:
+            return self.get_branches_wo_hvdc()
+
+        elif device_tpe == DeviceType.Transformer2WDevice:
+            return self.get_transformers2w()
+
+        elif device_tpe == DeviceType.BatteryDevice:
+            return self.get_batteries()
+
+        elif device_tpe == DeviceType.LoadDevice:
+            return self.get_loads()
+
+        elif device_tpe == DeviceType.GeneratorDevice:
+            return self.get_generators()
+
+        elif device_tpe == DeviceType.FluidNodeDevice:
+            return self.get_fluid_devices()
+
+        elif device_tpe == DeviceType.FluidPathDevice:
+            return self.get_fluid_paths()
+
+        elif device_tpe == DeviceType.FluidInjectionDevice:
+            return self.get_fluid_injections()
+
+        elif device_tpe == DeviceType.FluidTurbineDevice:
+            return self.get_fluid_turbines()
+
+        elif device_tpe == DeviceType.FluidPumpDevice:
+            return self.get_fluid_pumps()
+
+        elif device_tpe == DeviceType.FluidP2XDevice:
+            return self.get_fluid_p2xs()
+
+        elif device_tpe == DeviceType.HVDCLineDevice:
+            return self.get_hvdc()
+
+        elif device_tpe == DeviceType.NoDevice:
+            return list()
+
+        else:
+            raise Exception("Unknown device type")
+
     def copy(self) -> "MultiCircuit":
         """
         Returns a deep (true) copy of this circuit.
@@ -2304,13 +2388,10 @@ class MultiCircuit:
 
         self.format_profiles(index)
 
-    def format_profiles(self, index):
+    def format_profiles(self, index: pd.DatetimeIndex):
         """
         Format the pandas profiles in place using a time index.
-
-        Arguments:
-
-            **index**: Time profile
+        :param index: Time profile
         """
 
         self.time_profile = pd.to_datetime(index, dayfirst=True)
@@ -2318,15 +2399,17 @@ class MultiCircuit:
         for elm in self.buses:
             elm.create_profiles(index)
 
-        for branch_list in self.get_branch_lists():
-            for elm in branch_list:
+        for devs_list in self.get_injection_devices_lists():
+            for elm in devs_list:
                 elm.create_profiles(index)
 
-        for elm in self.fluid_nodes:
-            elm.create_profiles(index)
+        for devs_list in self.get_branch_lists():
+            for elm in devs_list:
+                elm.create_profiles(index)
 
-        for elm in self.fluid_paths:
-            elm.create_profiles(index)
+        for devs_list in self.get_fluid_lists():
+            for elm in devs_list:
+                elm.create_profiles(index)
 
     def set_time_profile(self, unix_data: IntVec):
         """
@@ -3557,8 +3640,10 @@ class MultiCircuit:
                             name='HVDC Line',
                             active=line.active,
                             rate=line.rate,
-                            active_prof=line.active_prof,
-                            rate_prof=line.rate_prof)
+                            )
+
+        hvdc.active_prof = line.active_prof
+        hvdc.rate_prof = line.rate_prof
 
         # add device to the circuit
         self.add_hvdc(hvdc)
@@ -3582,8 +3667,10 @@ class MultiCircuit:
                                         r=line.R,
                                         x=line.X,
                                         b=line.B,
-                                        active_prof=line.active_prof,
-                                        rate_prof=line.rate_prof)
+                                        )
+
+        transformer.active_prof = line.active_prof
+        transformer.rate_prof = line.rate_prof
 
         # add device to the circuit
         self.add_transformer2w(transformer)
@@ -3605,12 +3692,12 @@ class MultiCircuit:
                            power_factor=gen.Pf,
                            vset=gen.Vset,
                            is_controlled=gen.is_controlled,
-                           Qmin=gen.Qmin, Qmax=gen.Qmax, Snom=gen.Snom,
-                           P_prof=gen.P_prof,
-                           power_factor_prof=gen.Pf_prof,
-                           vset_prof=gen.Vset_prof,
+                           Qmin=gen.Qmin,
+                           Qmax=gen.Qmax,
+                           Snom=gen.Snom,
                            active=gen.active,
-                           Pmin=gen.Pmin, Pmax=gen.Pmax,
+                           Pmin=gen.Pmin,
+                           Pmax=gen.Pmax,
                            Cost=gen.Cost,
                            Sbase=gen.Sbase,
                            enabled_dispatch=gen.enabled_dispatch,
@@ -3622,6 +3709,11 @@ class MultiCircuit:
                            capex=gen.capex,
                            opex=gen.opex,
                            build_status=gen.build_status)
+
+        batt.active_prof = gen.active_prof
+        batt.P_prof = gen.P_prof
+        batt.power_factor_prof = gen.Pf_prof
+        batt.vset_prof = gen.Vset_prof
 
         # add device to the circuit
         self.add_battery(gen.bus, batt)
@@ -3646,8 +3738,10 @@ class MultiCircuit:
                       x=line.X,
                       Beq=line.B,
                       tap_module=1.0,
-                      active_prof=line.active_prof,
-                      rate_prof=line.rate_prof)
+                      )
+
+        vsc.active_prof = line.active_prof
+        vsc.rate_prof = line.rate_prof
 
         # add device to the circuit
         self.add_vsc(vsc)
@@ -3671,8 +3765,10 @@ class MultiCircuit:
                         rs=line.R,
                         xs=line.X,
                         # bl=line.B,
-                        active_prof=line.active_prof,
-                        rate_prof=line.rate_prof)
+                        )
+
+        upfc.active_prof = line.active_prof
+        upfc.rate_prof = line.rate_prof
 
         # add device to the circuit
         self.add_upfc(upfc)
@@ -4359,12 +4455,12 @@ class MultiCircuit:
 
         return groups
 
-    def get_batteries_by_bus(self) -> Dict[dev.Bus, dev.Battery]:
+    def get_batteries_by_bus(self) -> Dict[dev.Bus, List[dev.Battery]]:
         """
         Get the injection devices grouped by bus and by device type
         :return: Dict[bus, Dict[DeviceType, List[Injection devs]]
         """
-        groups: Dict[dev.Bus, dev.Battery] = dict()
+        groups: Dict[dev.Bus, List[dev.Battery]] = dict()
 
         for elm in self.get_batteries():
 
@@ -4456,7 +4552,7 @@ class MultiCircuit:
         if P=0, active = False else active=True
         """
         for g in self.get_generators():
-            g.active_prof = g.P_prof.astype(bool)
+            g.active_prof.set(g.P_prof.toarray().astype(bool))
 
     def set_batteries_active_profile_from_their_active_power(self):
         """
@@ -4464,7 +4560,7 @@ class MultiCircuit:
         if P=0, active = False else active=True
         """
         for g in self.get_batteries():
-            g.active_prof = g.P_prof.astype(bool)
+            g.active_prof.set(g.P_prof.toarray().astype(bool))
 
     def set_loads_active_profile_from_their_active_power(self):
         """
@@ -4472,7 +4568,7 @@ class MultiCircuit:
         if P=0, active = False else active=True
         """
         for ld in self.get_loads():
-            ld.active_prof = ld.P_prof.astype(bool)
+            ld.active_prof.set(ld.P_prof.toarray().astype(bool))
 
     def set_contingencies(self, contingencies: List[dev.Contingency]):
         """
@@ -4635,7 +4731,7 @@ class MultiCircuit:
         val = np.zeros((self.get_time_number(), self.get_branch_number_wo_hvdc()))
 
         for i, branch in enumerate(self.get_branches_wo_hvdc()):
-            val[:, i] = branch.rate_prof * branch.contingency_factor_prof
+            val[:, i] = branch.rate_prof.toarray() * branch.contingency_factor_prof.toarray()
 
         return val
 
@@ -4647,7 +4743,7 @@ class MultiCircuit:
         val = np.zeros(self.get_branch_number_wo_hvdc())
 
         for i, branch in enumerate(self.get_branches_wo_hvdc()):
-            val[i] = branch.rate_prof * branch.contingency_factor
+            val[i] = branch.rate_prof.toarray() * branch.contingency_factor.toarray()
 
         return val
 

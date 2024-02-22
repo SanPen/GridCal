@@ -19,14 +19,15 @@ import numpy as np
 import pandas as pd
 from typing import Union
 from matplotlib import pyplot as plt
-from GridCalEngine.basic_structures import Logger, Vec
+from GridCalEngine.basic_structures import Logger
 from GridCalEngine.enumerations import DeviceType, BuildStatus
 from GridCalEngine.Core.Devices.Aggregation.technology import Technology
-from GridCalEngine.Core.Devices.Injections.injection_template import GeneratorLikeTemplate
+from GridCalEngine.Core.Devices.Parents.generator_parent import GeneratorParent
 from GridCalEngine.Core.Devices.Injections.generator_q_curve import GeneratorQCurve
+from GridCalEngine.Core.Devices.profile import Profile
 
 
-class Generator(GeneratorLikeTemplate):
+class Generator(GeneratorParent):
 
     def __init__(self,
                  name='gen',
@@ -39,10 +40,6 @@ class Generator(GeneratorLikeTemplate):
                  Qmin: float = -9999,
                  Qmax: float = 9999,
                  Snom: float = 9999,
-                 P_prof: Union[Vec, None] = None,
-                 power_factor_prof: Union[Vec, None] = None,
-                 vset_prof: Union[Vec, None] = None,
-                 active_prof: Union[Vec, None] = None,
                  active: bool = True,
                  Pmin: float = 0.0,
                  Pmax: float = 9999.0,
@@ -64,10 +61,7 @@ class Generator(GeneratorLikeTemplate):
                  x2: float = 1e-20,
                  capex: float = 0,
                  opex: float = 0,
-                 build_status: BuildStatus = BuildStatus.Commissioned,
-                 Cost_prof: Union[Vec, None] = None,
-                 Cost2_prof: Union[Vec, None] = None,
-                 Cost0_prof: Union[Vec, None] = None):
+                 build_status: BuildStatus = BuildStatus.Commissioned):
         """
         Voltage controlled generator. This generators supports several reactive power
         :param name: Name of the generator
@@ -80,10 +74,6 @@ class Generator(GeneratorLikeTemplate):
         :param Qmin: Minimum reactive power in MVAr
         :param Qmax: Maximum reactive power in MVAr
         :param Snom: Nominal apparent power in MVA
-        :param P_prof: active power profile in MW (array)
-        :param power_factor_prof: power factor profile (array)
-        :param vset_prof: voltage setpoint profile in per unit
-        :param active_prof:
         :param active: Is the generator active?
         :param Pmin:
         :param Pmax:
@@ -104,30 +94,26 @@ class Generator(GeneratorLikeTemplate):
         :param capex:
         :param opex:
         :param build_status:
-        :param Cost_prof:
-        :param Cost2_prof:
-        :param Cost0_prof:
         """
-        GeneratorLikeTemplate.__init__(self,
-                                       name=name,
-                                       idtag=idtag,
-                                       code=code,
-                                       bus=None,
-                                       cn=None,
-                                       active=active,
-                                       active_prof=active_prof,
-                                       P=P,
-                                       P_prof=P_prof,
-                                       Pmin=Pmin,
-                                       Pmax=Pmax,
-                                       Cost=Cost,
-                                       Cost_prof=Cost_prof,
-                                       mttf=mttf,
-                                       mttr=mttr,
-                                       capex=capex,
-                                       opex=opex,
-                                       build_status=build_status,
-                                       device_type=DeviceType.GeneratorDevice)
+        GeneratorParent.__init__(self,
+                                 name=name,
+                                 idtag=idtag,
+                                 code=code,
+                                 bus=None,
+                                 cn=None,
+                                 control_bus=None,
+                                 control_cn=None,
+                                 active=active,
+                                 P=P,
+                                 Pmin=Pmin,
+                                 Pmax=Pmax,
+                                 Cost=Cost,
+                                 mttf=mttf,
+                                 mttr=mttr,
+                                 capex=capex,
+                                 opex=opex,
+                                 build_status=build_status,
+                                 device_type=DeviceType.GeneratorDevice)
 
         self.technology = technology
 
@@ -156,7 +142,7 @@ class Generator(GeneratorLikeTemplate):
         self.Pf = power_factor
 
         # voltage set profile for this load in p.u.
-        self.Pf_prof = power_factor_prof
+        self._Pf_prof = Profile(default_value=power_factor)
 
         # If this generator is voltage controlled it produces a PV node, otherwise the node remains as PQ
         self.is_controlled = is_controlled
@@ -168,7 +154,7 @@ class Generator(GeneratorLikeTemplate):
         self.Vset = vset
 
         # voltage set profile for this load in p.u.
-        self.Vset_prof = vset_prof
+        self._Vset_prof = Profile(default_value=vset)
 
         self.use_reactive_power_curve = use_reactive_power_curve
 
@@ -198,8 +184,8 @@ class Generator(GeneratorLikeTemplate):
         self.RampUp = 1e20
         self.RampDown = 1e20
 
-        self.Cost2_prof = Cost2_prof
-        self.Cost0_prof = Cost0_prof
+        self._Cost2_prof = Profile(default_value=Cost2)
+        self._Cost0_prof = Profile(default_value=Cost0)
 
         # Dynamic vars
         # self.Ra = Ra
@@ -261,69 +247,73 @@ class Generator(GeneratorLikeTemplate):
 
         self.register(key='enabled_dispatch', units='', tpe=bool, definition='Enabled for dispatch? Used in OPF.')
 
-    def copy(self):
+    @property
+    def Pf_prof(self) -> Profile:
         """
-        Make a deep copy of this object
-        :return: Copy of this object
+        Cost profile
+        :return: Profile
         """
+        return self._Pf_prof
 
-        # make a new instance (separated object in memory)
-        gen = Generator()
+    @Pf_prof.setter
+    def Pf_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._Pf_prof = val
+        elif isinstance(val, np.ndarray):
+            self._Pf_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a Pf_prof')
 
-        gen.name = self.name
+    @property
+    def Vset_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._Vset_prof
 
-        # Power (MVA), MVA = kV * kA
-        gen.P = self.P
+    @Vset_prof.setter
+    def Vset_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._Vset_prof = val
+        elif isinstance(val, np.ndarray):
+            self._Vset_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a Vset_prof')
 
-        # is the generator active?
-        gen.active = self.active
+    @property
+    def Cost2_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._Cost2_prof
 
-        # r0, r1, r2, x0, x1, x2
-        gen.R0 = self.R0
-        gen.R1 = self.R1
-        gen.R2 = self.R2
+    @Cost2_prof.setter
+    def Cost2_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._Cost2_prof = val
+        elif isinstance(val, np.ndarray):
+            self._Cost2_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a Cost2_prof')
 
-        gen.X0 = self.X0
-        gen.X1 = self.X1
-        gen.X2 = self.X2
+    @property
+    def Cost0_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._Cost0_prof
 
-        # active profile
-        gen.active_prof = self.active_prof
-
-        # power profile for this load
-        gen.P_prof = self.P_prof
-
-        # Power factor profile
-        gen.Pf_prof = self.Pf_prof
-
-        # Voltage module set point (p.u.)
-        gen.Vset = self.Vset
-
-        # voltage set profile for this load
-        gen.Vset_prof = self.Vset_prof
-
-        # minimum reactive power in per unit
-        gen.Qmin = self.Qmin
-
-        # Maximum reactive power in per unit
-        gen.Qmax = self.Qmax
-
-        # Nominal power
-        gen.Snom = self.Snom
-
-        # is the generator enabled for dispatch?
-        gen.enabled_dispatch = self.enabled_dispatch
-
-        gen.mttf = self.mttf
-
-        gen.mttr = self.mttr
-
-        gen.technology = self.technology
-
-        gen.opex = self.opex
-        gen.capex = self.capex
-
-        return gen
+    @Cost0_prof.setter
+    def Cost0_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._Cost0_prof = val
+        elif isinstance(val, np.ndarray):
+            self._Cost0_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a Cost0_prof')
 
     def get_properties_dict(self, version=3):
         """
@@ -449,14 +439,14 @@ class Generator(GeneratorLikeTemplate):
             ax_2 = fig.add_subplot(212, sharex=ax_1)
 
             # P
-            y = self.P_prof
+            y = self.P_prof.toarray()
             df = pd.DataFrame(data=y, index=time, columns=[self.name])
             ax_1.set_title('Active power', fontsize=14)
             ax_1.set_ylabel('MW', fontsize=11)
             df.plot(ax=ax_1)
 
             # V
-            y = self.Vset_prof
+            y = self.Vset_prof.toarray()
             df = pd.DataFrame(data=y, index=time, columns=[self.name])
             ax_2.set_title('Voltage Set point', fontsize=14)
             ax_2.set_ylabel('p.u.', fontsize=11)

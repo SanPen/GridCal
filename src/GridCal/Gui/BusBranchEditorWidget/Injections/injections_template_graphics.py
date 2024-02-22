@@ -20,10 +20,9 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QPen, QCursor
 from PySide6.QtWidgets import QGraphicsLineItem, QGraphicsItemGroup
 from GridCal.Gui.BusBranchEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER
-from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg
 from GridCalEngine.enumerations import DeviceType
-from GridCalEngine.Core.Devices.Injections.injection_template import InjectionTemplate
+from GridCalEngine.Core.Devices.Parents.injection_parent import InjectionParent
 from GridCalEngine.Core.Devices.Fluid.fluid_injection_template import FluidInjectionTemplate
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
@@ -37,7 +36,7 @@ class InjectionTemplateGraphicItem(QGraphicsItemGroup):
 
     def __init__(self,
                  parent,
-                 api_obj: Union[InjectionTemplate, FluidInjectionTemplate],
+                 api_obj: Union[InjectionParent, FluidInjectionTemplate],
                  device_type_name: str,
                  w: int,
                  h: int,

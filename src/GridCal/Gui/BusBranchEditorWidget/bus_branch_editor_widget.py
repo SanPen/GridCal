@@ -20,13 +20,14 @@ import numpy as np
 import pandas as pd
 from typing import List, Dict, Union, Tuple
 from collections.abc import Callable
+from warnings import warn
 import networkx as nx
 import pyproj
 
 from PySide6.QtCore import (Qt, QPoint, QSize, QPointF, QRect, QRectF, QMimeData, QIODevice, QByteArray,
                             QDataStream, QModelIndex)
 from PySide6.QtGui import (QIcon, QPixmap, QImage, QPainter, QStandardItemModel, QStandardItem, QColor, QPen,
-                           QDragEnterEvent, QDragMoveEvent, QDropEvent, QWheelEvent, QKeyEvent, QDrag)
+                           QDragEnterEvent, QDragMoveEvent, QDropEvent, QWheelEvent, QKeyEvent, QMouseEvent)
 from PySide6.QtWidgets import (QApplication, QGraphicsView, QListView, QTableView, QVBoxLayout, QHBoxLayout, QFrame,
                                QSplitter, QMessageBox, QAbstractItemView, QGraphicsScene, QGraphicsSceneMouseEvent,
                                QGraphicsItem)
@@ -35,7 +36,7 @@ from PySide6.QtSvg import QSvgGenerator
 from GridCalEngine.Core.Devices.types import ALL_DEV_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Core.Devices.Substation import Bus
-from GridCalEngine.Core.Devices.editable_device import EditableDevice
+from GridCalEngine.Core.Devices.Parents.editable_device import EditableDevice
 from GridCalEngine.Core.Devices.Branches.line import Line
 from GridCalEngine.Core.Devices.Branches.dc_line import DcLine
 from GridCalEngine.Core.Devices.Branches.transformer import Transformer2W
@@ -194,7 +195,6 @@ class BusBranchDiagramScene(QGraphicsScene):
         super(BusBranchDiagramScene, self).__init__(parent)
         self.parent_ = parent
         self.displacement = QPoint(0, 0)
-        # self.setSceneRect(-5000, -5000, 10000, 10000)
 
     def mouseMoveEvent(self, event: QGraphicsSceneMouseEvent) -> None:
         """
@@ -202,18 +202,6 @@ class BusBranchDiagramScene(QGraphicsScene):
         @param event:
         @return:
         """
-
-        # pan movement
-        if self.parent_.startPos is not None:
-            scale_factor = 1.5
-            try:
-                scene_pos = QPointF(event.scenePos())
-                self.displacement = self.displacement + ((scene_pos - self.parent_.startPos) / scale_factor)
-                temp_cen = self.parent_.newCenterPos - self.displacement
-                self.parent_.editor_graphics_view.centerOn(temp_cen)
-            except RecursionError:
-                print("Recursion Error at mouseMoveEvent")
-
         self.parent_.scene_mouse_move_event(event)
 
         # call the parent event
@@ -225,7 +213,6 @@ class BusBranchDiagramScene(QGraphicsScene):
         :param event:
         :return:
         """
-
         self.parent_.scene_mouse_press_event(event)
         self.displacement = QPointF(0, 0)
         super(BusBranchDiagramScene, self).mousePressEvent(event)
@@ -238,13 +225,48 @@ class BusBranchDiagramScene(QGraphicsScene):
         """
         self.parent_.create_branch_on_mouse_release_event(event)
 
-        # Mouse pan
-        if event.button() == Qt.MouseButton.RightButton:
-            self.parent_.startPos = None
-            self.parent_.editor_graphics_view.setDragMode(QGraphicsView.DragMode.RubberBandDrag)
-
         # call mouseReleaseEvent on "me" (continue with the rest of the actions)
         super(BusBranchDiagramScene, self).mouseReleaseEvent(event)
+
+
+class CustomGraphicsView(QGraphicsView):
+    """
+    CustomGraphicsView to handle the panning of the grid
+    """
+    def __init__(self, scene: QGraphicsScene):
+        """
+        Constructor
+        :param scene: QGraphicsScene
+        """
+        super().__init__(scene)
+        self.setRenderHint(QPainter.Antialiasing)
+        self.setRenderHint(QPainter.SmoothPixmapTransform)
+
+        self.drag_mode = QGraphicsView.DragMode.RubberBandDrag
+
+        self.setDragMode(QGraphicsView.DragMode.RubberBandDrag)
+        self.setRubberBandSelectionMode(Qt.IntersectsItemShape)
+        self.setMouseTracking(True)
+        self.setInteractive(True)
+        self.setRenderHints(QPainter.Antialiasing | QPainter.SmoothPixmapTransform)
+        self.setAlignment(Qt.AlignCenter)
+
+    def mousePressEvent(self, event: QMouseEvent) -> None:
+        """
+        Mouse press event
+        :param event: QMouseEvent
+        """
+
+        # By pressing ctrl while dragging, we can move the grid
+        if event.modifiers() & Qt.ControlModifier:
+            self.drag_mode = QGraphicsView.DragMode.ScrollHandDrag
+        else:
+            self.drag_mode = QGraphicsView.DragMode.RubberBandDrag
+
+        self.setDragMode(self.drag_mode)
+
+        # process the rest of the events
+        super().mousePressEvent(event)
 
 
 class BusBranchEditorWidget(QSplitter):
@@ -296,14 +318,10 @@ class BusBranchEditorWidget(QSplitter):
 
         self.results_dictionary = dict()
 
-        self.editor_graphics_view = QGraphicsView(self.diagram_scene)
-        self.editor_graphics_view.setDragMode(QGraphicsView.DragMode.RubberBandDrag)
-        self.editor_graphics_view.setRubberBandSelectionMode(Qt.IntersectsItemShape)
-        self.editor_graphics_view.setMouseTracking(True)
-        self.editor_graphics_view.setInteractive(True)
-        self.editor_graphics_view.setRenderHints(QPainter.Antialiasing | QPainter.SmoothPixmapTransform)
-        self.editor_graphics_view.setAlignment(Qt.AlignCenter)
+        self.editor_graphics_view = CustomGraphicsView(self.diagram_scene)
 
+
+        # override events
         self.editor_graphics_view.dragEnterEvent = self.graphicsDragEnterEvent
         self.editor_graphics_view.dragMoveEvent = self.graphicsDragMoveEvent
         self.editor_graphics_view.dropEvent = self.graphicsDropEvent
@@ -347,18 +365,34 @@ class BusBranchEditorWidget(QSplitter):
         if diagram is not None:
             self.draw()
 
-    def set_editor_model(self, api_object: ALL_DEV_TYPES, dictionary_of_lists: Dict[str, List[ALL_DEV_TYPES]] = {}):
+        self.time_index_: Union[None, int] = None
+
+    def set_time_index(self, time_index: Union[int, None]):
+        """
+        Set the time index of the table
+        :param time_index: None or integer value
+        """
+        self.time_index_ = time_index
+
+        mdl = self.object_editor_table.model()
+        if isinstance(mdl, ObjectsModel):
+            mdl.set_time_index(time_index=time_index)
+
+    def set_editor_model(self,
+                         api_object: ALL_DEV_TYPES,
+                         dictionary_of_lists: Union[None, Dict[str, List[ALL_DEV_TYPES]]] = None):
         """
         Set an api object to appear in the editable table view of the editor
         :param api_object: any EditableDevice
         :param dictionary_of_lists: dictionary of lists of objects that may be referenced to
         """
         mdl = ObjectsModel(objects=[api_object],
-                           editable_headers=api_object.registered_properties,
+                           property_list=api_object.property_list,
+                           time_index=self.time_index_,
                            parent=self.object_editor_table,
                            editable=True,
                            transposed=True,
-                           dictionary_of_lists=dictionary_of_lists)
+                           dictionary_of_lists=dictionary_of_lists if dictionary_of_lists is not None else dict())
 
         self.object_editor_table.setModel(mdl)
 
@@ -579,7 +613,8 @@ class BusBranchEditorWidget(QSplitter):
                     self.add_to_scene(graphic_object=graphic_object)
 
                     # create the bus children
-                    graphic_object.create_children_widgets(injections_by_tpe=inj_dev_by_bus.get(location.api_object, dict()))
+                    graphic_object.create_children_widgets(
+                        injections_by_tpe=inj_dev_by_bus.get(location.api_object, dict()))
 
                     graphic_object.change_size(h=location.h,
                                                w=location.w)
@@ -639,7 +674,8 @@ class BusBranchEditorWidget(QSplitter):
                     self.add_to_scene(graphic_object=graphic_object)
 
                     # create the bus children
-                    graphic_object.create_children_widgets(injections_by_tpe=inj_dev_by_fluid_node.get(location.api_object, dict()))
+                    graphic_object.create_children_widgets(
+                        injections_by_tpe=inj_dev_by_fluid_node.get(location.api_object, dict()))
 
                     graphic_object.change_size(h=location.h,
                                                w=location.w)
@@ -887,8 +923,10 @@ class BusBranchEditorWidget(QSplitter):
         Add item to the diagram and the diagram scene
         :param graphic_object: Graphic object associated
         """
-
-        self.diagram_scene.removeItem(graphic_object)
+        if graphic_object.scene() is not None:
+            self.diagram_scene.removeItem(graphic_object)
+        else:
+            warn(f"Null scene for {graphic_object}, was it deleted already?")
 
     def delete_diagram_element(self, device: ALL_DEV_TYPES) -> None:
         """
@@ -901,7 +939,7 @@ class BusBranchEditorWidget(QSplitter):
             try:
                 self.remove_from_scene(graphic_object)
             except:
-                pass
+                warn(f"Could not remove {graphic_object} fro the scene")
 
     def remove_element(self, device: ALL_DEV_TYPES,
                        graphic_object: Union[QGraphicsItem, None] = None) -> None:
@@ -919,7 +957,7 @@ class BusBranchEditorWidget(QSplitter):
 
         self.object_editor_table.setModel(None)
 
-    def delete_diagram_elements(self, elements: List[EditableDevice]):
+    def delete_diagram_elements(self, elements: List[ALL_DEV_TYPES]):
         """
         Delete device from the diagram registry
         :param elements:
@@ -943,7 +981,7 @@ class BusBranchEditorWidget(QSplitter):
         Get the selected buses
         :return:
         """
-        lst: List[Tuple[int, Bus, BusGraphicItem]] = list()
+        lst: List[Tuple[int, Bus, Union[BusGraphicItem, None]]] = list()
         points_group = self.diagram.data.get(DeviceType.BusDevice.value, None)
 
         if points_group:
@@ -951,9 +989,10 @@ class BusBranchEditorWidget(QSplitter):
             bus_dict: Dict[str: Tuple[int, Bus]] = {b.idtag: (i, b) for i, b in enumerate(self.circuit.get_buses())}
 
             for bus_idtag, point in points_group.locations.items():
-                if point.graphic_object.isSelected():
-                    idx, bus = bus_dict[bus_idtag]
-                    lst.append((idx, bus, point.graphic_object))
+                if isinstance(point.graphic_object, BusGraphicItem):
+                    if point.graphic_object.isSelected():
+                        idx, bus = bus_dict[bus_idtag]
+                        lst.append((idx, bus, point.graphic_object))
         return lst
 
     def delete_Selected(self) -> None:
@@ -984,7 +1023,7 @@ class BusBranchEditorWidget(QSplitter):
         Get all the buses
         :return: tuple(bus index, bus_api_object, bus_graphic_object)
         """
-        lst: List[Tuple[int, Bus, BusGraphicItem]] = list()
+        lst: List[Tuple[int, Bus, Union[BusGraphicItem, None]]] = list()
         points_group = self.diagram.data.get(DeviceType.BusDevice.value, None)
 
         if points_group:
@@ -1003,7 +1042,9 @@ class BusBranchEditorWidget(QSplitter):
         @param port:
         @return:
         """
-        self.started_branch = LineGraphicItem(fromPort=port, toPort=None, editor=self)
+        self.started_branch = LineGraphicItem(fromPort=port,
+                                              toPort=None,
+                                              editor=self)
         self.add_to_scene(self.started_branch)
 
         port.setZValue(0)
@@ -1240,7 +1281,7 @@ class BusBranchEditorWidget(QSplitter):
         """
 
         # Clear or finnish the started connection:
-        if self.started_branch:
+        if self.started_branch is not None:
             pos = event.scenePos()
             items = self.diagram_scene.items(pos)  # get the item (the terminal) at the mouse position
 
@@ -1284,9 +1325,6 @@ class BusBranchEditorWidget(QSplitter):
                                                  fromPort=self.started_branch.fromPort,
                                                  toPort=self.started_branch.toPort)
 
-                            # delete the ghost branch
-                            self.remove_from_scene(self.started_branch)
-
                         elif self.started_branch.conneted_between_tr3_and_bus():
 
                             tr3_graphic_object: Transformer3WGraphicItem = self.started_branch.get_from_graphic_object()
@@ -1308,9 +1346,6 @@ class BusBranchEditorWidget(QSplitter):
 
                                 tr3_graphic_object.set_connection(i, bus, winding_graphics)
                                 tr3_graphic_object.update_conn()
-
-                            # delete the ghost branch
-                            self.remove_from_scene(self.started_branch)
 
                         elif self.started_branch.connected_between_bus_and_tr3():
 
@@ -1334,18 +1369,12 @@ class BusBranchEditorWidget(QSplitter):
                                 tr3_graphic_object.set_connection(i, bus, winding_graphics)
                                 tr3_graphic_object.update_conn()
 
-                            # delete the ghost branch
-                            self.remove_from_scene(self.started_branch)
-
                         elif self.started_branch.connected_between_fluid_nodes():  # fluid path
 
                             self.create_fluid_path(source=self.started_branch.get_fluid_node_from(),
                                                    target=self.started_branch.get_fluid_node_to(),
                                                    fromPort=self.started_branch.fromPort,
                                                    toPort=self.started_branch.toPort)
-
-                            # delete the ghost branch
-                            self.remove_from_scene(self.started_branch)
 
                         elif self.started_branch.connected_between_fluid_node_and_bus():
 
@@ -1368,9 +1397,6 @@ class BusBranchEditorWidget(QSplitter):
                                              fromPort=self.started_branch.fromPort,
                                              toPort=self.started_branch.toPort)
 
-                            # delete the ghost branch
-                            self.remove_from_scene(self.started_branch)
-
                         elif self.started_branch.connected_between_bus_and_fluid_node():
                             # electrical bus
                             bus = self.started_branch.get_bus_from()
@@ -1391,17 +1417,14 @@ class BusBranchEditorWidget(QSplitter):
                                              fromPort=self.started_branch.fromPort,
                                              toPort=self.started_branch.toPort)
 
-                            # delete the ghost branch
-                            self.remove_from_scene(self.started_branch)
-
                         else:
-                            print('unknown connection')
+                            warn('unknown connection')
 
-                    # remove from the hosted connections
-                    item.remove_connection(started_branch=self.started_branch)
+            # remove from the hosted connections
+            self.remove_from_scene(self.started_branch)
 
-        # release this pointer
-        self.started_branch = None
+            # release this pointer
+            self.started_branch = None
 
     def apply_expansion_factor(self, factor: float):
         """

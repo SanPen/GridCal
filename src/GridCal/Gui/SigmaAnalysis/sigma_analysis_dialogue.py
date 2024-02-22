@@ -4,11 +4,14 @@ from PySide6 import QtWidgets
 
 from GridCal.Gui.SigmaAnalysis.gui import Ui_MainWindow
 from GridCal.Gui.Session.results_model import ResultsModel
-from GridCalEngine.Simulations.result_types import ResultTypes
+from GridCalEngine.enumerations import ResultTypes
 from GridCalEngine.Simulations.SigmaAnalysis.sigma_analysis_driver import SigmaAnalysisResults
 
 
 class SigmaAnalysisGUI(QtWidgets.QMainWindow):
+    """
+    SigmaAnalysisGUI
+    """
 
     def __init__(self, parent=None, results: SigmaAnalysisResults = None, bus_names=None,
                  good_coefficients=True):

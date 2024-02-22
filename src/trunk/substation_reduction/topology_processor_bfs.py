@@ -62,6 +62,7 @@ def createExampleGridDiagram1() -> MultiCircuit:
 
     return grid
 
+
 def createExampleGridTest1() -> MultiCircuit:
     """
     This function creates a Multicircuit example from Grid Test 1 in documentation to test topology processor
@@ -115,6 +116,7 @@ def createExampleGridTest1() -> MultiCircuit:
         grid.switch_devices.append(s)
 
     return grid
+
 
 def createExampleGridTest2() -> MultiCircuit:
     """
@@ -184,6 +186,7 @@ def createExampleGridTest2() -> MultiCircuit:
         grid.switch_devices.append(s)
 
     return grid
+
 
 class TopologyProcessorInfo:
     """
@@ -315,7 +318,7 @@ def create_topology_process_info(grid: MultiCircuit) -> TopologyProcessorInfo:
 
 
 def compute_connectivities(nbus_candidate: int,
-                           all_branches: List[dev.ParentBranch],
+                           all_branches: List[Any],
                            process_info: TopologyProcessorInfo,
                            t_idx: Union[int, None] = None):
     """
@@ -357,7 +360,7 @@ def compute_connectivities(nbus_candidate: int,
 def apply_results_to_grid(t_idx: Union[None, int],
                           grid: MultiCircuit,
                           final_buses: List[dev.Bus],
-                          all_branches: List[dev.ParentBranch],
+                          all_branches: List[Any],
                           process_info: TopologyProcessorInfo,
                           logger: Logger) -> None:
     """
@@ -391,7 +394,7 @@ def apply_results_to_grid(t_idx: Union[None, int],
     # TODO: Make profiles of the bus
     for dev_lst in grid.get_injection_devices_lists():
         for elm in dev_lst:
-            elm.bus = process_info.get_final_bus(elm.cn_to)
+            elm.bus = process_info.get_final_bus(elm.cn)
 
 
 def topology_processor(grid: MultiCircuit, t_idx: Union[int, None], logger: Logger):
@@ -413,15 +416,24 @@ def topology_processor(grid: MultiCircuit, t_idx: Union[int, None], logger: Logg
 
     # create the connectivity matrices
     Cf, Ct, br_active = compute_connectivities(nbus_candidate=nbus_candidate,
-                                               all_branches=all_branches,
+                                               all_branches=grid.get_switches(),
                                                process_info=process_info,
                                                t_idx=t_idx)
+
+    # print("Cf:\n", Cf.toarray())
 
     # compose the adjacency matrix from the connectivity information
     A = get_adjacency_matrix(C_branch_bus_f=Cf.tocsc(),
                              C_branch_bus_t=Ct.tocsc(),
                              branch_active=br_active,
                              bus_active=bus_active)
+
+    # latexA = ('$$\n' + r'\begin{bmatrix}' + '\n'
+    #           + (r'\\' + '\n').join('&'.join(str(x) for x in row) for row in A.toarray().astype(int)) + '\n'
+    #           + r'\end{bmatrix}' + '\n' + '$$')
+    #
+    # print("A:\n", A.toarray())
+    # print(latexA)
 
     # perform the topology search, this will find candidate buses that reduce to be the same bus
     # each island is finally a single calculation element
@@ -440,9 +452,9 @@ def topology_processor(grid: MultiCircuit, t_idx: Union[int, None], logger: Logg
 
 
 if __name__ == '__main__':
-    # grid_ = createExampleGridDiagram1()
+    grid_ = createExampleGridDiagram1()
     # grid_ = createExampleGridTest1()
-    grid_ = createExampleGridTest2()
+    # grid_ = createExampleGridTest2()
     logger_ = Logger()
     topology_processor(grid=grid_, t_idx=None, logger=logger_)
     logger_.print()

@@ -22,11 +22,10 @@ from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
 from GridCalEngine.Simulations.driver_types import SimulationTypes
-from GridCalEngine.Simulations.result_types import ResultTypes
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.Simulations.driver_template import DriverTemplate
-from GridCalEngine.enumerations import StudyResultsType, AvailableTransferMode
+from GridCalEngine.enumerations import StudyResultsType, AvailableTransferMode, ResultTypes
 
 
 @nb.njit()

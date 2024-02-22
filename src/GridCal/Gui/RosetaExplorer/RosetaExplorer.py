@@ -13,8 +13,8 @@ from GridCal.Gui.messages import *
 from GridCal.Gui.RosetaExplorer.MainWindow import *
 from GridCal.Gui.TreeModelViewer.TreeModelViewer import TreeModelViewerGUI
 
-from GridCalEngine.IO.cim.cgmes_2_4_15.cgmes_circuit import CgmesCircuit
-from GridCalEngine.IO.cim.cgmes_2_4_15.cgmes_enums import cgmesProfile
+from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
 from GridCalEngine.IO.raw.devices.psse_circuit import PsseCircuit
 from GridCalEngine.IO.cim.db.db_handler import DbHandler
 from GridCalEngine.data_logger import DataLogger
@@ -484,11 +484,11 @@ class RosetaExplorerGUI(QMainWindow):
                     editable_headers = dict()
                     headers = list()
 
-                mdl = ObjectsModel(objects=objects,
-                                   editable_headers=editable_headers,
-                                   parent=self.ui.propertiesTableView,
-                                   editable=True,
-                                   dictionary_of_lists={})
+                mdl = ObjectsModelOld(objects=objects,
+                                      editable_headers=editable_headers,
+                                      parent=self.ui.propertiesTableView,
+                                      editable=True,
+                                      dictionary_of_lists={})
             else:
                 return
 
