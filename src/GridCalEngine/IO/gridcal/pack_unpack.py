@@ -321,7 +321,7 @@ def profile_todict_str(profile: Profile) -> Dict[str, str]:
         }
 
 
-def get_profile_from_dict(data: Dict[str, Union[str, Dict[str, str]]]) -> Profile:
+def get_profile_from_dict(data: Dict[str, Union[str, Union[Any, Dict[str, Any]]]]) -> Profile:
     """
     Create a profile from json dict data
     :param data: Json dict data
@@ -663,6 +663,7 @@ def parse_object_type_from_json(template_elm: dev.EditableDevice,
     :param template_elm:
     :param data_list:
     :param elements_dict_by_type:
+    :param time_profile:
     :param logger:
     :return:
     """
