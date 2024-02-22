@@ -2,23 +2,19 @@ from typing import Dict, List
 
 import pytest
 
-from GridCalEngine.Core import MultiCircuit
-from GridCalEngine.IO.cim.cgmes import cgmes_enums
-from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
-from GridCalEngine.IO.cim.cgmes.cgmes_to_gridcal import get_gcdev_generators, get_gcdev_ac_lines
 import GridCalEngine.Core.Devices as gcdev
+from GridCalEngine.Core import MultiCircuit
+from GridCalEngine.Core.DataStructures import BusData
+from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
+from GridCalEngine.IO.cim.cgmes.cgmes_to_gridcal import get_gcdev_ac_lines
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.ac_line_segment import ACLineSegment
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.acdc_terminal import ACDCTerminal
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.base_voltage import BaseVoltage
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.connectivity_node import ConnectivityNode
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.current_limit import CurrentLimit
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.equipment_container import EquipmentContainer
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.generating_unit import GeneratingUnit
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.operational_limit_set import OperationalLimitSet
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.synchronous_machine import SynchronousMachine
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.terminal import Terminal
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.topological_node import TopologicalNode
-from GridCalEngine.IO.cim.cim16.cim_devices import RegulatingControl
 from GridCalEngine.data_logger import DataLogger
 
 tn_test = TopologicalNode(rdfid="tn1")
@@ -32,23 +28,36 @@ def cgmes_object():
     circuit.CurrentLimit_list[0].OperationalLimitSet.Terminal = ACDCTerminal()
     circuit.CurrentLimit_list[0].OperationalLimitSet.Terminal.ConductingEquipment = ACLineSegment()
     circuit.CurrentLimit_list[0].OperationalLimitSet.Terminal.ConductingEquipment.uuid = "branch_id"
-
+    circuit.CurrentLimit_list[0].value = 10
     circuit.ACLineSegment_list = [ACLineSegment(rdfid="a"), ACLineSegment(rdfid="b")]
 
+    circuit.ACLineSegment_list[0].BaseVoltage = BaseVoltage()
+    circuit.ACLineSegment_list[0].BaseVoltage.nominalVoltage = 10
+    circuit.ACLineSegment_list[0].r = 100
+    circuit.ACLineSegment_list[0].x = 100
+    circuit.ACLineSegment_list[0].gch = 100
+    circuit.ACLineSegment_list[0].bch = 100
+    circuit.ACLineSegment_list[0].r0 = 100
+    circuit.ACLineSegment_list[0].x0 = 100
+    circuit.ACLineSegment_list[0].gch0 = 100
+    circuit.ACLineSegment_list[0].bch0 = 100
     return circuit
 
 
 def calc_node_dict_object() -> Dict[str, gcdev.Bus]:
     d = dict()
-    
-    d["tn1"] = tn_test  # TODO ?
-    d["tn2"] = tn_test
+
+    bus_data = BusData(1)
+    bus_data.Vnom = 10
+    d["tn1"] = bus_data
+    d["tn2"] = bus_data
+
     return d
 
 
 def cn_dict_object() -> Dict[str, gcdev.ConnectivityNode]:
     d = dict()
-    d["cn1"] = [cn_test]  # TODO ?
+    d["cn1"] = [cn_test]
     return d
 
 
@@ -64,14 +73,37 @@ def device_to_terminal_dict_object() -> Dict[str, List[Terminal]]:
 
 
 generators_test_params = [(cgmes_object(), calc_node_dict_object(), cn_dict_object(),
-                           device_to_terminal_dict_object(), 0)]
+                           device_to_terminal_dict_object(), 10, 1000.0, 0.0, 1e-20, 100.0, 10.0, 10.0, 1e-20, 10.0, 10,
+                           10, 10.0, 10.0, 1e-20, 1e-20, 20, 20)]
 
 
-@pytest.mark.parametrize("cgmes_model,calc_node_dict,cn_dict,device_to_terminal_dict,s_base",
-                         generators_test_params)
-def test_ac_lines(cgmes_model, calc_node_dict, cn_dict, device_to_terminal_dict, s_base):
+@pytest.mark.parametrize(
+    "cgmes_model,calc_node_dict,cn_dict,device_to_terminal_dict,s_base,expected_b,expected_b0,expected_b2,expected_cost,expected_r,expected_r0,expected_r2,expected_r_corrected,expected_vf,expected_vt,expected_x,expected_x0,expected_x2,expected_rate,expected_temp_base,expected_temp_oper",
+    generators_test_params)
+def test_ac_lines(cgmes_model, calc_node_dict, cn_dict, device_to_terminal_dict, s_base, expected_b, expected_b0,
+                  expected_b2, expected_cost, expected_r, expected_r0,
+                  expected_r2, expected_r_corrected, expected_vf, expected_vt, expected_x, expected_x0, expected_x2,
+                  expected_rate, expected_temp_base, expected_temp_oper):
     logger = DataLogger()
     multi_circuit = MultiCircuit()
     tn_test.BaseVoltage = BaseVoltage()
     tn_test.BaseVoltage.nominalVoltage = 100
     get_gcdev_ac_lines(cgmes_model, multi_circuit, calc_node_dict, cn_dict, device_to_terminal_dict, logger, s_base)
+    generated_ac_line = multi_circuit.lines[0]
+
+    assert generated_ac_line.B == expected_b
+    assert generated_ac_line.B0 == expected_b0
+    assert generated_ac_line.B2 == expected_b2
+    assert generated_ac_line.Cost == expected_cost
+    assert generated_ac_line.R == expected_r
+    assert generated_ac_line.R0 == expected_r0
+    assert generated_ac_line.R2 == expected_r2
+    assert generated_ac_line.R_corrected == expected_r_corrected
+    assert generated_ac_line.Vf == expected_vf
+    assert generated_ac_line.Vt == expected_vt
+    assert generated_ac_line.X == expected_x
+    assert generated_ac_line.X0 == expected_x0
+    assert generated_ac_line.X2 == expected_x2
+    assert generated_ac_line.rate == expected_rate
+    assert generated_ac_line.temp_base == expected_temp_base
+    assert generated_ac_line.temp_oper == expected_temp_oper
