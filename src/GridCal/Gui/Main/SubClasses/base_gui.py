@@ -518,6 +518,27 @@ class BaseMainGui(QMainWindow):
         self.simulation_start_index = st
         self.simulation_end_index = en
 
+    def get_diagram_slider_index(self):
+
+        idx = self.ui.simulation_results_step_slider.value()
+        return idx if idx > -1 else None
+
+    def get_db_slider_index(self):
+
+        idx = self.ui.db_step_slider.value()
+        return idx if idx > -1 else None
+
+    def setup_time_sliders(self):
+        """
+        Setup the time sliders
+        """
+        for slider in [self.ui.simulation_results_step_slider, self.ui.db_step_slider]:
+            if self.circuit.has_time_series:
+                slider.setRange(-1, self.circuit.get_time_number() - 1)
+            else:
+                slider.setRange(-1, -1)
+            slider.setValue(-1)
+
     def update_date_dependent_combos(self):
         """
         update the drop down menus that display dates
@@ -533,6 +554,7 @@ class BaseMainGui(QMainWindow):
         self.ui.profile_time_selection_comboBox.setModel(mdl)
         self.ui.vs_departure_comboBox.setModel(mdl)
         self.ui.vs_target_comboBox.setModel(mdl)
+        self.setup_time_sliders()
 
     def update_area_combos(self):
         """

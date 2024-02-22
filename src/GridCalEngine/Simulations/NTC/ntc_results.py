@@ -16,11 +16,10 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
 
-from GridCalEngine.Simulations.result_types import ResultTypes
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.basic_structures import DateVec, IntVec, Vec, StrVec, CxMat
-from GridCalEngine.enumerations import StudyResultsType, TransformerControlType
+from GridCalEngine.enumerations import StudyResultsType, TransformerControlType, ResultTypes
 
 
 def add_shifter_data(y, columns, controlled_shifters, phase_shift):

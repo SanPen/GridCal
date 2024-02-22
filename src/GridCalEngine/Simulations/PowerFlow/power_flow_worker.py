@@ -485,9 +485,6 @@ def power_flow_post_process(calculation_inputs: NumericalCircuit,
     vd = calculation_inputs.vd
     pv = calculation_inputs.pv
 
-    Vf = calculation_inputs.Cf * V
-    Vt = calculation_inputs.Ct * V
-
     if method not in [SolverType.DC]:
         # power at the slack nodes
         Sbus[vd] = V[vd] * np.conj(calculation_inputs.Ybus[vd, :].dot(V))
@@ -503,6 +500,8 @@ def power_flow_post_process(calculation_inputs: NumericalCircuit,
             Yt = calculation_inputs.Yt
 
         # Branches current, loading, etc
+        Vf = V[calculation_inputs.branch_data.F]
+        Vt = V[calculation_inputs.branch_data.T]
         If = Yf * V
         It = Yt * V
         Sf = Vf * np.conj(If)
@@ -520,16 +519,25 @@ def power_flow_post_process(calculation_inputs: NumericalCircuit,
 
     else:
         # DC power flow
-        theta_f = np.angle(Vf, deg=False)
-        theta_t = np.angle(Vt, deg=False)
-        Vbranch = theta_f - theta_t
-        Sf = (1.0 / calculation_inputs.branch_data.X) * Vbranch
-        Sfb = Sf * calculation_inputs.Sbase
-        Stb = -Sf * calculation_inputs.Sbase
-        If = Sf / (Vf + 1e-20)
+        theta = np.angle(V, deg=False)
+        theta_f = theta[calculation_inputs.F]
+        theta_t = theta[calculation_inputs.T]
+
+        b = 1.0 / (calculation_inputs.branch_data.X * calculation_inputs.branch_data.tap_module)
+        # Pf = calculation_inputs.Bf @ theta - b * calculation_inputs.branch_data.tap_angle
+
+        Pf = b * (theta_f - theta_t - calculation_inputs.branch_data.tap_angle)
+
+        Sfb = Pf * calculation_inputs.Sbase
+        Stb = -Pf * calculation_inputs.Sbase
+
+        Vf = V[calculation_inputs.branch_data.F]
+        Vt = V[calculation_inputs.branch_data.T]
+        Vbranch = Vf - Vt
+        If = Pf / (Vf + 1e-20)
         It = -If
         # losses are not considered in the power flow computation
-        losses = np.zeros(Sf.shape)  # If * If * calculation_inputs.branch_data.R * calculation_inputs.Sbase
+        losses = np.zeros(calculation_inputs.nbr)
 
     # Branch loading in p.u.
     loading = Sfb / (branch_rates + 1e-9)

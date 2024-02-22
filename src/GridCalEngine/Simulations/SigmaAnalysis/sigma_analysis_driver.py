@@ -22,7 +22,7 @@ from typing import Union
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Simulations.results_table import ResultsTable
-from GridCalEngine.Simulations.result_types import ResultTypes
+from GridCalEngine.enumerations import ResultTypes
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.helm_power_flow import helm_coefficients_josep, \

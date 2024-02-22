@@ -181,6 +181,4 @@ if __name__ == "__main__":
 
     print('Before plot')
     mdl = inv_results.mdl(results_tpe_plot)
-    df = inv_results.mdl(results_tpe_report).save_to_csv('try_normalization')
-    print(df)
     print('Done')

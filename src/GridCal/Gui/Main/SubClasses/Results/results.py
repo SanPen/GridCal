@@ -25,6 +25,7 @@ from GridCal.Gui.Main.SubClasses.simulations import SimulationsMain
 from GridCal.Gui.Session.session import ResultsModel
 from GridCal.Gui.GeneralDialogues import fill_tree_from_logs
 from GridCalEngine.basic_structures import Logger
+from GridCalEngine.enumerations import ResultTypes
 
 
 class ResultsMain(SimulationsMain):
@@ -102,7 +103,8 @@ class ResultsMain(SimulationsMain):
 
                     if result_name in self.available_results_dict[study_name].keys():
 
-                        study_type = self.available_results_dict[study_name][result_name]
+                        # study_type: ResultTypes
+                        study_type: ResultTypes = self.available_results_dict[study_name][result_name]
 
                         self.results_mdl = None
 
@@ -110,6 +112,9 @@ class ResultsMain(SimulationsMain):
                                                                                   study_type=study_type)
 
                         if self.results_mdl is not None:
+
+                            # pass the matching list of devices to the ResultsModel and ResultsTable for filtering
+                            self.results_mdl.set_devices(devices_list=self.circuit.get_devices_list(study_type))
 
                             if self.ui.results_traspose_checkBox.isChecked():
                                 self.results_mdl.transpose()

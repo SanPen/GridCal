@@ -38,7 +38,7 @@ from GridCalEngine.Simulations.Stochastic.stochastic_power_flow_results import S
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.Simulations.driver_types import SimulationTypes
-from GridCalEngine.Simulations.result_types import ResultTypes
+from GridCalEngine.enumerations import ResultTypes
 from GridCalEngine.basic_structures import Logger
 from GridCal.Gui.Session.results_model import ResultsModel
 

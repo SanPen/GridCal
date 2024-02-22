@@ -18,13 +18,12 @@
 import numpy as np
 import pandas as pd
 from typing import Union
-from GridCalEngine.Simulations.result_types import ResultTypes
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Simulations.ContingencyAnalysis.contingencies_report import ContingencyResultsReport
 from GridCalEngine.basic_structures import DateVec, IntVec, StrVec, Mat
-from GridCalEngine.enumerations import StudyResultsType
+from GridCalEngine.enumerations import StudyResultsType, ResultTypes
 from GridCalEngine.Simulations.Clustering.clustering_results import ClusteringResults
 
 

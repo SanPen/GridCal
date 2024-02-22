@@ -33,10 +33,10 @@ _______
 The selected objective function considers both technical and economical criteria. In particular, it is defined as:
 
 .. math::
-    f_o(x) = \sum{C_l(x)_{br}} + \sum C_o(x)_{br} + \sum C_vm(x)_b + \sum C_va(x)_b + \sum CAPEX(x)_i + \sum OPEX(x)_i
+    f_o(x) = \sum{C_l(x)_{br}} + \sum C_o(x)_{br} + \sum C_{vm}(x)_b + \sum C_{va}(x)_b + \sum CAPEX(x)_i + \sum OPEX(x)_i
 
 where :math:`C_l` is a penalty function associated with active power losses, :math:`C_o` accounts for branch
-overloadings, :math:`C_vm` gathers the undervoltage and overvoltage module penalties, and :math:`C_va` represents the
+overloadings, :math:`C_{vm}` gathers the undervoltage and overvoltage module penalties, and :math:`C_{va}` represents the
 voltage angle deviation penalties. Power losses and the overloadings are calculated for every branch
 of the grid :math:`br`, the voltage-related costs are computed at every bus :math:`b` and the CAPEX and OPEX are related
 to each active investment :math:`i`. Note here that the unknown :math:`x` is used to represent the investment
@@ -108,10 +108,10 @@ of including economical criterion.
     :alt: Results wo CAPEX
     :scale: 50 %
 
-    Figure 2: Paretto plot for investments evaluation without CAPEX.
+    Figure 2: Paretto plot for investments evaluation without CAPEX inside the objective function.
 
 It is clear in Figure 2 that the more investments are selected, the lower the technical criteria are and, therefore, the
-lower the objective function. Hence, the algorithm learns that more investments equal minimum objective function values.
+lower the objective function. Hence, the algorithm learns that more investments equals minimum objective function values.
 By adding the CAPEX to the objective function, it is expected to correct this tendency and instead find an optimal point
 regarding both technical and economic criteria.
 
@@ -159,8 +159,8 @@ the objective function and normalize the terms by dividing the factors by the re
 objective function presented in Formulation would be modified as:
 
 .. math::
-    f_o(x) = \frac{\sum{C_l(x)_{br}}}{l_{ref}} + \frac{\sum C_o(x)_{br}}{o_{ref}} + \frac{\sum C_vm(x)_b}{vm_{ref}} +
-    \frac{\sum C_va(x)_b}{va_{ref}} + \frac{\sum CAPEX(x)_i}{CAPEX_{ref}} + \frac{\sum OPEX(x)_i}{OPEX_{ref}}
+    f_o(x) = \frac{\sum{C_l(x)_{br}}}{l_{ref}} + \frac{\sum C_o(x)_{br}}{o_{ref}} + \frac{\sum C_{vm}(x)_b}{vm_{ref}} +
+    \frac{\sum C_{va}(x)_b}{va_{ref}} + \frac{\sum CAPEX(x)_i}{CAPEX_{ref}} + \frac{\sum OPEX(x)_i}{OPEX_{ref}}
 
 However, given the nature of the problem being solved, it is not possible to determine reference values for each
 criteria beforehand. Hence, some solutions are proposed, the reader can find the explanation and results obtained in the
@@ -176,7 +176,7 @@ compute scaling factors referent to that iteration as
 
 being:
 
-    - :math:`sf_{i}`: the scale factor for each :math:`i` criteria; losses scaling factor, overload scaling factor, etc.),
+    - :math:`sf_{i}`: the scale factor for each :math:`i` criteria ; losses scaling factor, overload scaling factor, etc.,
     - :math:`mean_i`: the mean between the maximum and minimum value of each criteria; :math:`\frac{max(losses) + min(losses)}{2}`,
     - :math:`mean`: an array of all the computed means of the factors; :math:`[mean_{losses}, mean_{overload}, mean_{vm}, ... ]`.
 
@@ -185,7 +185,7 @@ the objective function ends up being:
 
 .. math::
     f_o(x) = sf_l \sum{C_l(x)_{br}} + sf_o \sum C_o(x)_{br} + sf_{vm} \sum C_{vm}(x)_b +
-    sf_{va} \sum C_va(x)_b + sf_{CAPEX} \sum CAPEX(x)_i + sf_{OPEX} \sum OPEX(x)_i
+    sf_{va} \sum C_{va}(x)_b + sf_{CAPEX} \sum CAPEX(x)_i + sf_{OPEX} \sum OPEX(x)_i
 
 
 The results obtained in this normalization resemble the ones shown in Figure 5, given that the CAPEX scaling factor is
@@ -208,7 +208,7 @@ order to apply the normalization as:
 .. math::
     y_{norm} = \frac{y - y_{min}}{y_{max} - y_{min}}
 
-where :math:`y` is a vector containing the values of the criteria before normalization and :math:´y_{norm}´ represents
+where :math:`y` is a vector containing the values of the criteria before normalization and :math:`y_{norm}` represents
 the values after normalization. Hence, this normalization is applied to all the values found in the random process and
 the model is now updated with the normalized values.
 
@@ -250,8 +250,42 @@ Finally, the algorithm is tested in the presented grid.
 
     Figure 11: Results obtained for the updated algorithm.
 
-The results show a similar points distribution as Figure 5. This is not a coincidence, given that by applying the
+The results show a similar points distribution as Figure 4. This is not a coincidence, given that by applying the
 normalization, both the technical and economic criteria end up being a similar order of magnitude, which is the same
-case as the one shown in Figure 5.
+case as the one shown in Figure 4.
 
-It is worth mentioning that due to the fact that the objective function can now take negative values, the normalization used in the colors visualization can no longer be LogNorm() and has been changed to Normalize().
+It is worth mentioning that due to the fact that the objective function can now take negative values, the normalization
+used in the colors visualization can no longer be LogNorm() and has been changed to Normalize().
+
+Random evaluations process
+---------------------------
+Given that all previous figures share a similar shape in terms of point distribution, with two separated regions,
+it is questioned that the algorithm is exploring all the possible solutions, especially during the random evaluation iterations.
+One would expect a continuous Pareto front, whereas the obtained results show no solutions at intermediate points.
+
+Therefore, it is determined that when creating random :math:`x` vectors the probability of getting a 0 or a 1 must
+change for each random iteration. Therefore tThen, the random vectors obtained represent combinations of varying number
+of investments. For the previous testing, the probability was fixed to 0.5. This meant that the vectors had more or less the same number of investments.
+
+The results obtained with the scaled algorithm show a clear Pareto front as seen in Figure 12.
+
+.. figure:: ../figures/investments/Pareto_single.png
+    :alt: Pareto front
+    :scale: 50 %
+
+    Figure 11: Results obtained for the updated random evaluation iterations.
+
+
+Multi-objective optimization
+----------------------------
+Another line of research includes modifying the MVRSM model to support multi-objective minimization. This way, the
+scaling process after the random evaluations is not necessary and instead the model works directly with the values obtained
+for each cost computation (losses cost, overload cost, CAPEX,...). Hence, the problem becomes a 6 objective minimization problem.
+
+To do so, on the one hand, the MVRSM is adapted so that the surrogate model can predict an outcome for every objective,
+the process followed for 1 objective has to be repeated now 6 times. On the other hand, to minimize the model, some random
+weights are chosen for each objective ( the sum of the weights must be 1) and a single value is obtained. In every iteration
+these random weights must change. Then, it is possible to still use scipy's tool minimize, since the model still returns
+one single value. The explanation behind this process is further explained in this `reference paper <https://arxiv.org/abs/2006.04655>`_.
+
+

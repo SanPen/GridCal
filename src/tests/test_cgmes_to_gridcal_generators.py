@@ -21,7 +21,7 @@ tn_test = TopologicalNode()
 cn_test = ConnectivityNode()
 
 
-def cgmes_object():
+def cgmes_object(p):
     circuit = CgmesCircuit()
     generator = SynchronousMachine("sm_rdfid", "tpe")
     generator.GeneratingUnit = GeneratingUnit()
@@ -41,7 +41,7 @@ def cgmes_object():
     generator.description = "test description"
     generator.name = "test name"
     generator.ratedS = 10
-    generator.p = 2
+    generator.p = p
     generator.q = 3
     generator.GeneratingUnit.minOperatingP = 30
     generator.GeneratingUnit.maxOperatingP = 40
@@ -73,8 +73,10 @@ def device_to_terminal_dict_object() -> Dict[str, List[Terminal]]:
     return d
 
 
-generators_test_params = [(cgmes_object(), calc_node_dict_object(), cn_dict_object(),
-                           device_to_terminal_dict_object(), 0.55)]
+generators_test_params = [(cgmes_object(2), calc_node_dict_object(), cn_dict_object(),
+                           device_to_terminal_dict_object(), 0.55),
+                          (cgmes_object(0), calc_node_dict_object(), cn_dict_object(),
+                           device_to_terminal_dict_object(), 0.8)]
 
 
 @pytest.mark.parametrize("cgmes_model,calc_node_dict,cn_dict,device_to_terminal_dict,expected_power_factor",
@@ -96,3 +98,60 @@ def test_get_gcdev_generators(cgmes_model, calc_node_dict, cn_dict, device_to_te
     assert created_generator.Qmax == cgmes_syncronous_machine.maxQ
     assert created_generator.Qmin == cgmes_syncronous_machine.minQ
     assert created_generator.Pf == pytest.approx(expected_power_factor, abs=0.01)
+
+
+def test_get_gcdev_generators_zero_terminals_log_error():
+    device_terminal_dict = dict()
+    device_terminal_dict[tn_test] = tn_test
+    logger = DataLogger()
+    multi_circuit = MultiCircuit()
+    cgmes = cgmes_object(p=2)
+    get_gcdev_generators(cgmes, multi_circuit, calc_node_dict_object(), cn_dict_object(),
+                         device_terminal_dict, logger)
+    assert len(logger.entries) == 2
+    assert logger.entries[0].msg == 'No terminal for the device'
+    assert logger.entries[1].msg == 'Not exactly one terminal'
+
+
+def test_get_gcdev_generators_generating_unit_is_none_log_error():
+    logger = DataLogger()
+    multi_circuit = MultiCircuit()
+    cgmes = cgmes_object(p=2)
+    cgmes.SynchronousMachine_list[0].GeneratingUnit = None
+    get_gcdev_generators(cgmes, multi_circuit, calc_node_dict_object(), cn_dict_object(),
+                         device_to_terminal_dict_object(), logger)
+    assert len(logger.entries) == 1
+    assert logger.entries[0].msg == 'SynchronousMachine has no generating unit'
+
+
+def test_get_gcdev_generators_regulating_controls_none_log_warning():
+    logger = DataLogger()
+    multi_circuit = MultiCircuit()
+    cgmes = cgmes_object(p=2)
+    cgmes.SynchronousMachine_list[0].RegulatingControl = None
+    get_gcdev_generators(cgmes, multi_circuit, calc_node_dict_object(), cn_dict_object(),
+                         device_to_terminal_dict_object(), logger)
+    assert len(logger.entries) == 1
+    assert logger.entries[0].msg == 'SynchronousMachine has no voltage control'
+
+
+def test_get_gcdev_generators_regulating_control_mode_kind_not_voltage_log_warning():
+    logger = DataLogger()
+    multi_circuit = MultiCircuit()
+    cgmes = cgmes_object(p=2)
+    cgmes.SynchronousMachine_list[0].RegulatingControl.mode = "aaa"
+    get_gcdev_generators(cgmes, multi_circuit, calc_node_dict_object(), cn_dict_object(),
+                         device_to_terminal_dict_object(), logger)
+    assert len(logger.entries) == 1
+    assert logger.entries[0].msg == 'SynchronousMachine has no voltage control'
+
+
+def test_get_gcdev_generators_equipment_container_tpe_not_voltage_level_log_warning():
+    logger = DataLogger()
+    multi_circuit = MultiCircuit()
+    cgmes = cgmes_object(p=2)
+    cgmes.SynchronousMachine_list[0].EquipmentContainer.tpe = "aaa"
+    get_gcdev_generators(cgmes, multi_circuit, calc_node_dict_object(), cn_dict_object(),
+                         device_to_terminal_dict_object(), logger)
+    assert len(logger.entries) == 1
+    assert logger.entries[0].msg == 'SynchronousMachine has no voltage control'
