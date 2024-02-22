@@ -202,7 +202,10 @@ def test_lodf_ieee14_psse():
 
 def test_dcpowerflow():
 
-    fname = os.path.join('data', 'grids', 'RAW', 'ieee-14-bus_d.raw')
+    #fname = os.path.join('data', 'grids', 'RAW', 'IEEE 30 bus.raw')
+    #fname = os.path.join('data', 'grids', 'RAW', 'IEEE 14 bus.raw')
+    #fname = os.path.join('data', 'grids', 'RAW', 'ieee-14-d.raw')
+    fname = os.path.join('data', 'grids', 'IEEE14-gen80.gridcal')
 
     main_circuit = FileOpen(fname).open()
 

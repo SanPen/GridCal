@@ -24,7 +24,7 @@ from GridCalEngine.Core.Topology.topology import find_islands, get_adjacency_mat
 from GridCalEngine.basic_structures import IntVec, Logger
 from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Simulations.driver_types import SimulationTypes
-from GridCalEngine.Simulations.driver_template import TimeSeriesDriverTemplate
+from GridCalEngine.Simulations.driver_template import DriverTemplate
 
 
 class TopologyProcessorInfo:
@@ -281,7 +281,7 @@ def topology_processor(grid: MultiCircuit, t_idx: Union[int, None], logger: Logg
                           logger=logger)
 
 
-class TopologyProcessorDriver(TimeSeriesDriverTemplate):
+class TopologyProcessorDriver(DriverTemplate):
     """
     TopologyProcessorDriver
     """
@@ -289,16 +289,13 @@ class TopologyProcessorDriver(TimeSeriesDriverTemplate):
     name = 'Topology processor'
     tpe = SimulationTypes.TopologyProcessor_run
 
-    def __init__(self, grid: MultiCircuit, time_indices: Union[IntVec, List[Union[None, Any]]] = [None]):
+    def __init__(self, grid: MultiCircuit):
         """
         Electric distance clustering
         :param grid: MultiCircuit instance
         :param time_indices: array of time indices to simulate
         """
-        TimeSeriesDriverTemplate.__init__(self,
-                                          grid=grid,
-                                          time_indices=time_indices,
-                                          clustering_results=None)
+        DriverTemplate.__init__(self, grid=grid)
 
     def run(self):
         """
@@ -307,14 +304,19 @@ class TopologyProcessorDriver(TimeSeriesDriverTemplate):
         """
         self.tic()
         self.report_progress(0.0)
-        nt = len(self.time_indices)
+        nt = self.grid.get_time_number()
 
-        for it, t in enumerate(self.time_indices):
+        topology_processor(grid=self.grid,
+                           t_idx=None,
+                           logger=self.logger)
+
+        for t in range(nt):
             topology_processor(grid=self.grid,
                                t_idx=t,
                                logger=self.logger)
 
-            self.report_progress2(it, nt)
+            self.report_progress2(t, nt)
+
 
         # display progress
         self.report_done()

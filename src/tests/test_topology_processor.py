@@ -3,7 +3,7 @@ from GridCalEngine.api import *
 import GridCalEngine.Core.Devices as dev
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Core.Topology.topology_substation_reduction import topology_processor, create_topology_process_info
-
+#from GridCalEngine.Simulations.Topology.topology_processor_driver import
 
 
 def createExampleGridDiagram1() -> MultiCircuit:
@@ -189,24 +189,27 @@ def createExampleGridTest2() -> MultiCircuit:
 def test_topology_reduction():
 
     for grid_ in [createExampleGridTest2(), createExampleGridTest1(), createExampleGridDiagram1()]:
-        print()
 
         logger_ = Logger()
-        topology_processor(grid=grid_, t_idx=None, logger=logger_)
-        logger_.print()
+        #topology_processor(grid=grid_, t_idx=None, logger=logger_)
+        # logger_.print()
+        driver = TopologyProcessorDriver(grid=grid_)
+        driver.run()
+
 
         assert grid_.buses, "Buses creation failed"
 
-        for l in grid_.lines:
+        for l in grid_.get_branches():
             assert l.bus_from, "Line without bus_from associated"
             assert l.bus_to, "Line without bus_to associated"
-        for s in grid_.switch_devices:
-            assert s.bus_from, "Switch without bus_from associated"
-            assert s.bus_to, "Switch without bus_to associated"
-        if grid_.transformers2w:
-            for t in grid_.transformers2w:
-                assert t.bus_from, "Transformer2w without bus_from associated"
-                assert t.bus_to, "Transformer2w without bus_to associated"
+        #for s in grid_.switch_devices:
+        #    assert s.bus_from, "Switch without bus_from associated"
+        #    assert s.bus_to, "Switch without bus_to associated"
+        #if grid_.transformers2w:
+        #    for t in grid_.transformers2w:
+        #        assert t.bus_from, "Transformer2w without bus_from associated"
+        #        assert t.bus_to, "Transformer2w without bus_to associated"
+        # TODO: procesador topológico adaptarlo a transformadores de 3
         if grid_.transformers3w:
             for t in grid_.transformers3w:
                 assert t.bus1, "Transformer3w without bus1 associated"
