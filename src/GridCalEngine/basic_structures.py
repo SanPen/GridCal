@@ -257,11 +257,20 @@ class LogEntry:
     Logger entry
     """
 
-    def __init__(self, msg="", severity: LogSeverity = LogSeverity.Information, device="", value="", expected_value=""):
+    def __init__(self,
+                 msg="",
+                 severity: LogSeverity = LogSeverity.Information,
+                 device="",
+                 value="",
+                 expected_value="",
+                 device_class="",
+                 device_property=""):
         self.time = "{date:%H:%M:%S}".format(date=datetime.datetime.now())  # might use %Y/%m/%d %H:%M:%S
         self.msg = str(msg)
         self.severity = severity
         self.device = device
+        self.device_class = device_class
+        self.device_property = device_property
         self.value = value
         self.expected_value = str(expected_value)
 
@@ -351,7 +360,13 @@ class Logger:
         :param comment:
         :return:
         """
-        self.entries.append(LogEntry(msg, LogSeverity.Error, device, str(value), str(expected_value)))
+        self.entries.append(LogEntry(msg=msg,
+                                     severity=LogSeverity.Error,
+                                     device=device,
+                                     value=str(value),
+                                     expected_value=str(expected_value),
+                                     device_class=device_class,
+                                     device_property=device_property))
 
     def add_divergence(self, msg, device="", value=0, expected_value=0, tol=1e-6):
         """

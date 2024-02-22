@@ -27,6 +27,7 @@ from datetime import timedelta, datetime
 import networkx as nx
 from matplotlib import pyplot as plt
 from scipy.sparse import csc_matrix, lil_matrix
+from warnings import warn
 
 from GridCalEngine.Core import EditableDevice
 from GridCalEngine.basic_structures import IntVec, StrVec, Vec, Mat, CxVec, IntMat, CxMat
@@ -4882,3 +4883,66 @@ class MultiCircuit:
 
             if elm.bus == bus2:
                 elm.bus = bus1
+
+    def compare_circuits(self, grid2: "MultiCircuit") -> Tuple[bool, Logger]:
+        """
+        Compare this circuit with another circuits for equality
+        :param grid2: MultiCircuit
+        :return: equal?, Logger with the comparison information
+        """
+        logger = Logger()
+
+        if self.get_time_number() != grid2.get_time_number():
+            nt = 0
+            logger.add_error(msg="Different number of time steps",
+                             device_class="time",
+                             value=grid2.get_time_number(),
+                             expected_value=self.get_time_number())
+        else:
+            nt = self.get_time_number()
+
+        # for each category
+        for key, template_elms_list in self.objects_with_profiles.items():
+
+            # for each object type
+            for template_elm in template_elms_list:
+
+                # get all objects of the type
+                elms1 = self.get_elements_by_type(device_type=template_elm.device_type)
+                elms2 = grid2.get_elements_by_type(device_type=template_elm.device_type)
+
+                if len(elms1) != len(elms2):
+                    logger.add_error(msg="Different number of elements",
+                                     device_class=template_elm.device_type.value)
+
+                # for every property
+                for prop_name, prop in template_elm.registered_properties.items():
+
+                    # for every pair of elements:
+                    for elm1, elm2 in zip(elms1, elms2):
+
+                        # compare the snapshot values
+                        v1 = elm1.get_property_value(prop=prop, t_idx=None)
+                        v2 = elm2.get_property_value(prop=prop, t_idx=None)
+
+                        if v1 != v2:
+                            logger.add_error(msg="Different snapshot values",
+                                             device_class=template_elm.device_type.value,
+                                             device_property=prop.name,
+                                             value=v2,
+                                             expected_value=v1)
+
+                        for t_idx in range(nt):
+                            v1 = elm1.get_property_value(prop=prop, t_idx=t_idx)
+                            v2 = elm2.get_property_value(prop=prop, t_idx=t_idx)
+
+                            if v1 != v2:
+                                logger.add_error(msg="Different time series values",
+                                                 device_class=template_elm.device_type.value,
+                                                 device_property=prop.name,
+                                                 device=str(elm1),
+                                                 value=v2,
+                                                 expected_value=v1)
+
+        # if any error in the logger, bad
+        return logger.error_count() == 0, logger

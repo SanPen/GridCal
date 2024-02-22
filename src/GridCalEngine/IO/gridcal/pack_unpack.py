@@ -321,21 +321,37 @@ def profile_todict_str(profile: Profile) -> Dict[str, str]:
         }
 
 
-def get_profile_from_dict(data: Dict[str, Union[str, Union[Any, Dict[str, Any]]]]) -> Profile:
+def get_profile_from_dict(data: Dict[str, Union[str, Union[Any, Dict[str, Any]]]],
+                          collection: Union[None, Dict[str, Any]] = None) -> Profile:
     """
     Create a profile from json dict data
     :param data: Json dict data
+    :param collection: if the collection is provided, it will be used to convert idtags into objects
+    :return: Profile
     """
-    profile = Profile(default_value=data['default'], is_sparse=bool(data['is_sparse']))
+    default_value = data['default']
+    profile = Profile(default_value=default_value, is_sparse=bool(data['is_sparse']))
 
     if profile.is_sparse:
         sp_data = data['sparse_data']
         profile._sparse_array = SparseArray()
-        profile._sparse_array.create_from_dict(default_value=data['default'],
+        if collection is None:
+            map_data = sp_data['map']
+
+        else:
+            default_value = collection.get(data['default'], default_value)
+            map_data = {key: collection.get(val, default_value) for key, val in sp_data['map'].items()}
+
+        profile._sparse_array.create_from_dict(default_value=default_value,
                                                size=data['size'],
-                                               map=sp_data['map'])
+                                               map=map_data)
     else:
-        profile._dense_array = np.array(data['dense_data'])
+
+        if collection is None:
+            arr = data['dense_data']
+        else:
+            arr = [collection.get(i, default_value) for i in data['dense_data']]
+        profile._dense_array = np.array(arr)
 
     return profile
 
@@ -653,6 +669,61 @@ def parse_object_type_from_dataframe(main_df: pd.DataFrame,
     return devices, devices_dict
 
 
+def searc_property_into_json(json_entry: dict, prop: GCProp):
+    """
+    Find property in Json entry
+    :param json_entry: json of an object
+    :param prop: GCProp
+    :return: value or None if not found
+    """
+    
+    # search for the main property
+    property_value = json_entry.get(prop.name, None)
+
+    if property_value is None:
+        
+        # if not found, search for an old property
+        for p_name in prop.old_names:
+            property_value = json_entry.get(p_name, None)
+            if property_value is not None:
+                return property_value
+        
+        # we couldn't find the property or the old names...
+        return None
+            
+    else:
+        
+        # we found the property at first
+        return property_value
+
+
+def search_and_apply_json_profile(json_entry: dict,
+                                  gc_prop: GCProp,
+                                  elm: dev.EditableDevice,
+                                  property_value: Any,
+                                  collection: Union[None, Dict[str, Any]] = None) -> None:
+    """
+    Search fro the property profiles into the json and apply it
+    :param json_entry: Json entry of an object
+    :param gc_prop: GCProp
+    :param elm: THe device to set the profile into
+    :param property_value: The snapshot value
+    :param collection: if the collection is provided, it will be used to convert idtags into objects
+    :return: None
+    """
+    if gc_prop.has_profile():
+        
+        # search the profile in the json
+        json_profile = json_entry.get(gc_prop.profile_name, None)
+        
+        if json_profile is None:
+            # the profile was not found, so we fill it with the default stuff
+            elm.get_profile(magnitude=gc_prop.name).fill(property_value)
+        else:
+            profile = get_profile_from_dict(data=json_profile, collection=collection)
+            elm.set_profile(prop=gc_prop, arr=profile)
+
+
 def parse_object_type_from_json(template_elm: dev.EditableDevice,
                                 data_list: List[Dict[str, Dict[str, str]]],
                                 elements_dict_by_type: Dict[DeviceType, Dict[str, dev.EditableDevice]],
@@ -679,107 +750,127 @@ def parse_object_type_from_json(template_elm: dev.EditableDevice,
         if time_profile is not None:
             elm.ensure_profiles_exist(index=time_profile)
 
-        for property_name_, property_value in json_entry.items():
-            property_name = str(property_name_)
+        # for property_name_, property_value in json_entry.items():
+        for property_name, gc_prop in template_elm.registered_properties.items():
 
-            if property_name != 'idtag':  # idtag was set already
-                gc_prop: GCProp = look_for_property(elm=elm, property_name=property_name)
+            # search for the property in the json
+            property_value = searc_property_into_json(json_entry, gc_prop)
+            
+            if property_value is not None:                
 
-                if gc_prop is not None:
-
-                    if valid_value(property_value):
-
-                        if isinstance(gc_prop.tpe, DeviceType):
-
-                            if gc_prop.tpe == DeviceType.GeneratorQCurve:
-                                val = dev.GeneratorQCurve()
-                                val.parse(property_value)
-                                elm.set_snapshot_value(gc_prop.name, val)
-
-                                if gc_prop.has_profile():
-                                    elm.get_profile(magnitude=gc_prop.name).fill(val)
-
-                            else:
-                                # we must look for the refference in elements_dict
-                                collection = elements_dict_by_type.get(gc_prop.tpe, None)
-
-                                if collection is not None:
-                                    ref_idtag = str(property_value)
-                                    ref_elm = collection.get(ref_idtag, None)
-
-                                    if ref_elm is not None:
-                                        elm.set_snapshot_value(gc_prop.name, ref_elm)
-
-                                        if gc_prop.has_profile():
-                                            elm.get_profile(magnitude=gc_prop.name).fill(ref_elm)
-
+                if property_name != 'idtag':  # idtag was set already
+                    # gc_prop: GCProp = look_for_property(elm=elm, property_name=property_name)
+    
+                    if gc_prop is not None:
+    
+                        if valid_value(property_value):
+    
+                            if isinstance(gc_prop.tpe, DeviceType):
+    
+                                if gc_prop.tpe == DeviceType.GeneratorQCurve:
+                                    val = dev.GeneratorQCurve()
+                                    val.parse(property_value)
+                                    elm.set_snapshot_value(gc_prop.name, val)
+                                    search_and_apply_json_profile(json_entry=json_entry,
+                                                                  gc_prop=gc_prop,
+                                                                  elm=elm,
+                                                                  property_value=val)
+    
+                                else:
+                                    # we must look for the refference in elements_dict
+                                    collection = elements_dict_by_type.get(gc_prop.tpe, None)
+    
+                                    if collection is not None:
+                                        ref_idtag = str(property_value)
+                                        ref_elm = collection.get(ref_idtag, None)
+    
+                                        if ref_elm is not None:
+                                            elm.set_snapshot_value(gc_prop.name, ref_elm)
+                                            search_and_apply_json_profile(json_entry=json_entry,
+                                                                          gc_prop=gc_prop,
+                                                                          elm=elm,
+                                                                          property_value=ref_elm,
+                                                                          collection=collection)
+    
+                                        else:
+                                            logger.add_error("Could not locate refference",
+                                                             device=elm.idtag,
+                                                             device_class=template_elm.device_type.value,
+                                                             device_property=gc_prop.name,
+                                                             value=ref_idtag)
                                     else:
-                                        logger.add_error("Could not locate refference",
+                                        logger.add_error("No device of the refferenced type",
                                                          device=elm.idtag,
                                                          device_class=template_elm.device_type.value,
                                                          device_property=gc_prop.name,
-                                                         value=ref_idtag)
-                                else:
-                                    logger.add_error("No device of the refferenced type",
-                                                     device=elm.idtag,
-                                                     device_class=template_elm.device_type.value,
-                                                     device_property=gc_prop.name,
-                                                     value=property_value)
-
-                        elif gc_prop.tpe == str:
-                            # set the value directly
-                            elm.set_snapshot_value(gc_prop.name, str(property_value))
-
-                            if gc_prop.has_profile():
-                                elm.get_profile(magnitude=gc_prop.name).fill(str(property_value))
-
-                        elif gc_prop.tpe == float:
-                            # set the value directly
-                            elm.set_snapshot_value(gc_prop.name, float(property_value))
-
-                            if gc_prop.has_profile():
-                                elm.get_profile(magnitude=gc_prop.name).fill(float(property_value))
-
-                        elif gc_prop.tpe == int:
-                            # set the value directly
-                            elm.set_snapshot_value(gc_prop.name, int(property_value))
-
-                            if gc_prop.has_profile():
-                                elm.get_profile(magnitude=gc_prop.name).fill(int(property_value))
-
-                        elif gc_prop.tpe == bool:
-                            # set the value directly
-                            elm.set_snapshot_value(gc_prop.name, bool(property_value))
-
-                            if gc_prop.has_profile():
-                                elm.get_profile(magnitude=gc_prop.name).fill(bool(property_value))
-
-                        elif isinstance(gc_prop.tpe, EnumType):
-
-                            try:
-                                val = gc_prop.tpe(property_value)
+                                                         value=property_value)
+    
+                            elif gc_prop.tpe == str:
+                                # set the value directly
+                                val = str(property_value)
                                 elm.set_snapshot_value(gc_prop.name, val)
+                                search_and_apply_json_profile(json_entry=json_entry,
+                                                              gc_prop=gc_prop,
+                                                              elm=elm,
+                                                              property_value=val)
 
-                                if gc_prop.has_profile():
-                                    elm.get_profile(magnitude=gc_prop.name).fill(val)
-
-                            except ValueError:
-                                logger.add_error(f'Cannot cast value to {gc_prop.tpe}',
-                                                 device=elm.name,
-                                                 value=property_value)
-
+                            elif gc_prop.tpe == float:
+                                # set the value directly
+                                val = float(property_value)
+                                elm.set_snapshot_value(gc_prop.name, val)
+                                search_and_apply_json_profile(json_entry=json_entry,
+                                                              gc_prop=gc_prop,
+                                                              elm=elm,
+                                                              property_value=val)
+    
+                            elif gc_prop.tpe == int:
+                                # set the value directly
+                                val = int(property_value)
+                                elm.set_snapshot_value(gc_prop.name, val)
+                                search_and_apply_json_profile(json_entry=json_entry,
+                                                              gc_prop=gc_prop,
+                                                              elm=elm,
+                                                              property_value=val)
+    
+                            elif gc_prop.tpe == bool:
+                                # set the value directly
+                                val = bool(property_value)
+                                elm.set_snapshot_value(gc_prop.name, val)
+                                search_and_apply_json_profile(json_entry=json_entry,
+                                                              gc_prop=gc_prop,
+                                                              elm=elm,
+                                                              property_value=val)
+    
+                            elif isinstance(gc_prop.tpe, EnumType):
+    
+                                try:
+                                    val = gc_prop.tpe(property_value)
+                                    elm.set_snapshot_value(gc_prop.name, val)
+                                    search_and_apply_json_profile(json_entry=json_entry,
+                                                                  gc_prop=gc_prop,
+                                                                  elm=elm,
+                                                                  property_value=val)
+    
+                                except ValueError:
+                                    logger.add_error(f'Cannot cast value to {gc_prop.tpe}',
+                                                     device=elm.name,
+                                                     value=property_value)
+    
+                            else:
+                                raise Exception(f'Unsupported property type: {gc_prop.tpe}')
+    
                         else:
-                            raise Exception(f'Unsupported property type: {gc_prop.tpe}')
-
+                            # invalid property value
+                            pass
                     else:
-                        # invalid property value
+                        # property not found
                         pass
+    
                 else:
-                    # property not found
+                    # the property is idtag
                     pass
-
             else:
-                # the property is idtag
+                # the object property was not found in the json entry
                 pass
 
         # save the element in the dictionary for later

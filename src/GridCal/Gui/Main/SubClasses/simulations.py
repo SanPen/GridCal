@@ -26,7 +26,7 @@ from matplotlib.colors import LinearSegmentedColormap
 # Engine imports
 import GridCalEngine.Core.Devices as dev
 import GridCalEngine.Simulations as sim
-import GridCalEngine.grid_analysis as grid_analysis
+import GridCalEngine.Simulations.PowerFlow.grid_analysis as grid_analysis
 import GridCal.Gui.GuiFunctions as gf
 import GridCal.Gui.Visualization.visualization as viz
 from GridCal.Gui.BusBranchEditorWidget import BusBranchEditorWidget
