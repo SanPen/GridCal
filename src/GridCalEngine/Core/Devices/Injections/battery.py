@@ -92,7 +92,9 @@ class Battery(Generator):
                  enabled_dispatch=True, mttf=0.0, mttr=0.0, charge_efficiency=0.9, discharge_efficiency=0.9,
                  max_soc=0.99, min_soc=0.3, soc=0.8, charge_per_cycle=0.1, discharge_per_cycle=0.1,
                  r1=1e-20, x1=1e-20, r0=1e-20, x0=1e-20, r2=1e-20, x2=1e-20,
-                 capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned):
+                 capex=0, opex=0,
+                 srap_enabled: bool = True,
+                 build_status: BuildStatus = BuildStatus.Commissioned):
         """
 
         :param name:
@@ -149,6 +151,7 @@ class Battery(Generator):
                            r2=r2, x2=x2,
                            capex=capex,
                            opex=opex,
+                           srap_enabled=srap_enabled,
                            build_status=build_status)
 
         # type of this device

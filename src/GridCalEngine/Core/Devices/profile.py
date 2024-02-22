@@ -106,7 +106,7 @@ class Profile:
 
         self._sparse_array: Union[SparseArray, None] = None
 
-        self._dense_array: Union[NumericVec, None] = None
+        self._dense_array: Union[NumericVec, None] = np.zeros(0)
 
         self._sparsity_threshold: float = sparsity_threshold
 

@@ -46,6 +46,7 @@ class BranchParent(EditableDevice):
                  active: bool,
                  rate: float,
                  contingency_factor: float,
+                 protection_rating_factor: float,
                  contingency_enabled: bool,
                  monitor_loading: bool,
                  mttf: float,
@@ -122,6 +123,9 @@ class BranchParent(EditableDevice):
         self.contingency_factor = contingency_factor
         self._contingency_factor_prof = Profile(default_value=contingency_factor)
 
+        self.protection_rating_factor = protection_rating_factor
+        self._protection_rating_factor_prof = Profile(default_value=protection_rating_factor)
+
         # List of measurements
         self.measurements = list()
 
@@ -142,6 +146,10 @@ class BranchParent(EditableDevice):
         self.register('rate', units="MVA", tpe=float, definition='Thermal rating power', profile_name="rate_prof")
         self.register('contingency_factor', units="p.u.", tpe=float,
                       definition='Rating multiplier for contingencies', profile_name="contingency_factor_prof")
+
+        self.register('protection_rating_factor', units="p.u.", tpe=float,
+                      definition='Rating multiplier that indicates the maximum flow before the protections tripping',
+                      profile_name="protection_rating_factor_prof")
 
         self.register('monitor_loading', units="", tpe=bool,
                       definition="Monitor this device loading for OPF, NTC or contingency studies.")
@@ -286,6 +294,23 @@ class BranchParent(EditableDevice):
             self._contingency_factor_prof.set(arr=val)
         else:
             raise Exception(str(type(val)) + 'not supported to be set into a contingency_factor_prof')
+
+    @property
+    def protection_rating_factor_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._protection_rating_factor_prof
+
+    @protection_rating_factor_prof.setter
+    def protection_rating_factor_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._protection_rating_factor_prof = val
+        elif isinstance(val, np.ndarray):
+            self._protection_rating_factor_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a protection_rating_factor_prof')
 
     @property
     def Cost_prof(self) -> Profile:

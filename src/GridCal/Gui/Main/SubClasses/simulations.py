@@ -957,9 +957,11 @@ class SimulationsMain(TimeEventsMain):
             pf_options=pf_options,
             lin_options=self.get_linear_options(),
             use_srap=self.ui.use_srap_checkBox.isChecked(),
-            srap_max_loading=self.ui.srap_loading_limit_doubleSpinBox.value(),
             srap_max_power=self.ui.srap_limit_doubleSpinBox.value(),
             srap_top_n=self.ui.srap_top_n_SpinBox.value(),
+            srap_deadband=self.ui.srap_deadband_doubleSpinBox.value(),
+            srap_rever_to_nominal_rating=self.ui.srap_revert_to_nominal_rating_checkBox.isChecked(),
+            detailed_massive_report=self.ui.contingency_detailed_massive_report_checkBox.isChecked(),
             engine=self.contingency_engines_dict[self.ui.contingencyEngineComboBox.currentText()]
         )
 

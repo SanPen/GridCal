@@ -128,6 +128,7 @@ class Branch(BranchParent):
                               active=active,
                               rate=rate,
                               contingency_factor=1.0,
+                              protection_rating_factor=1.4,
                               contingency_enabled=True,
                               monitor_loading=True,
                               mttf=mttf,
