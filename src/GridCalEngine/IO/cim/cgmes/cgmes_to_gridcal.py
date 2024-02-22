@@ -22,7 +22,7 @@ import GridCalEngine.Core.Devices as gcdev
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
 from GridCalEngine.IO.cim.cgmes.cgmes_export import CgmesExporter
 from GridCalEngine.IO.cim.cgmes.cgmes_utils import get_nominal_voltage, get_pu_values_power_transformer, get_pu_values_ac_line_segment, \
-    get_rate
+    get_rate, get_values_shunt
 from GridCalEngine.data_logger import DataLogger
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.identified_object import IdentifiedObject
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.terminal import Terminal
@@ -582,7 +582,8 @@ def get_gcdev_shunts(cgmes_model: CgmesCircuit,
                      calc_node_dict: Dict[str, gcdev.Bus],
                      cn_dict: Dict[str, gcdev.ConnectivityNode],
                      device_to_terminal_dict: Dict[str, List[Terminal]],
-                     logger: DataLogger) -> None:
+                     logger: DataLogger,
+                     Sbase: float) -> None:
     """
     Convert the CGMES shunts to gcdev
 
@@ -606,23 +607,26 @@ def get_gcdev_shunts(cgmes_model: CgmesCircuit,
                 calc_node = calc_nodes[0]
                 cn = cns[0]
 
+                # conversion
+                G, B, G0, B0 = get_values_shunt(shunt=cgmes_elm,
+                                                logger=logger,
+                                                Sbase=Sbase)
+
                 gcdev_elm = gcdev.Shunt(
-                    name=cgmes_elm.rdfid,
-                    G=cgmes_elm.gPerSection,
-                    # B=self.B,
-                    # G_prof=self.G_prof,
-                    # B_prof=self.B_prof,
-                    # G0=self.G0,
-                    # B0=self.B0,
-                    # G0_prof=self.G0_prof,
-                    # B0_prof=self.B0_prof,
-                    # active=self.active,
-                    # active_prof=self.active_prof,
-                    # Bmax=self.Bmax,
-                    # Bmin=self.Bmin,
-                    # vset=self.Vset,
-                    # mttf=self.mttf,
-                    # mttr=self.mttr
+                    idtag=cgmes_elm.uuid,
+                    name=cgmes_elm.name,
+                    code=cgmes_elm.description,
+                    G=G * cgmes_elm.sections,
+                    B=B * cgmes_elm.sections,
+                    G0=G0 * cgmes_elm.sections,
+                    B0=B0 * cgmes_elm.sections,
+                    Bmax=B * cgmes_elm.maximumSections,
+                    Bmin=B,
+                    active=True,        # TODO what is this?
+                    controlled=False,
+                    vset=1,
+                    # bus=calc_node,  # ?
+                    # cn=cn,  # ?
                 )
                 gcdev_model.add_shunt(calc_node, gcdev_elm)
             else:
@@ -690,8 +694,9 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit, logger: DataLogger) -> MultiCirc
 
     get_gcdev_ac_lines(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger, Sbase)
     get_gcdev_ac_transformers(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger, Sbase)
-    #
-    # get_gcdev_shunts(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger)
+
+    get_gcdev_shunts(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger, Sbase)
+    print('debug')
     # for class_name in cgmes_model.classes:
     #     objects = cgmes_model.get_objects_list(elm_type=class_name)
     #     for obj in objects:
@@ -703,7 +708,7 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit, logger: DataLogger) -> MultiCirc
     #                 print(f"It's an attribute:  {attr_value}")
 
     # Export test
-    cgmes_exporter = CgmesExporter(cgmes_model)
-    cgmes_exporter.export_to_xml()
+    # cgmes_exporter = CgmesExporter(cgmes_model)
+    # cgmes_exporter.export_to_xml()
 
     return gc_model

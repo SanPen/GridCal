@@ -12,6 +12,7 @@ from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.power_transformer_end impo
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.switch import Switch
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.terminal import Terminal
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.topological_node import TopologicalNode
+from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.linear_shunt_compensator import LinearShuntCompensator
 from GridCalEngine.data_logger import DataLogger
 import numpy as np
 
@@ -153,6 +154,25 @@ def get_voltage_ac_line_segment(ac_line_segment: ACLineSegment, logger: DataLogg
             return None
 
 
+def get_voltage_shunt(shunt: LinearShuntCompensator, logger: DataLogger):
+    if shunt.BaseVoltage is not None:
+        return shunt.BaseVoltage.nominalVoltage
+    elif shunt.nomU is not None:
+        return shunt.nomU
+    else:       # TODO look at EquipmentContainer/VoltageLevel/BaseVoltage
+        if 'Terminal' in shunt.references_to_me.keys():
+            tps = list(shunt.references_to_me['Terminal'])
+
+            if len(tps) > 0:
+                tp = tps[0]
+
+                return get_voltage_terminal(tp, logger=logger)
+            else:
+                return None
+        else:
+            return None
+
+
 def get_pu_values_ac_line_segment(ac_line_segment: ACLineSegment, logger: DataLogger, Sbase: float = 100.0):
     """
     Get the per-unit values of the equivalent PI model
@@ -197,6 +217,56 @@ def get_pu_values_ac_line_segment(ac_line_segment: ACLineSegment, logger: DataLo
         B0 = 0
 
     return R, X, G, B, R0, X0, G0, B0
+
+
+def get_values_shunt(shunt: LinearShuntCompensator, logger: DataLogger, Sbase: float = 100.0):
+    """
+    Get the per-unit values of the Shunt (per Section)
+
+    :param Sbase: Sbase in MVA
+    :return: G, B
+    """
+    if shunt.BaseVoltage is not None:
+        Vnom = get_voltage_shunt(shunt, logger=logger)
+
+        if Vnom is not None:
+
+            # Zbase = (Vnom * Vnom) / Sbase
+            # Ybase = 1.0 / Zbase
+
+            # at this point g, b are the complete values for all the line length
+            G = shunt.gPerSection * (Vnom * Vnom)
+            B = shunt.bPerSection * (Vnom * Vnom)
+            G0 = shunt.g0PerSection * (Vnom * Vnom)
+            B0 = shunt.b0PerSection * (Vnom * Vnom)
+
+        else:
+            G = 0
+            B = 0
+            G0 = 0
+            B0 = 0
+
+    else:
+        Vnom = get_voltage_shunt(shunt, logger=logger)
+
+        if Vnom is not None:
+
+            # Zbase = (Vnom * Vnom) / Sbase
+            # Ybase = 1.0 / Zbase
+
+            # at this point g, b are the complete values for all the line length
+            G = shunt.gPerSection * (Vnom * Vnom)
+            B = shunt.bPerSection * (Vnom * Vnom)
+            G0 = shunt.g0PerSection * (Vnom * Vnom)
+            B0 = shunt.b0PerSection * (Vnom * Vnom)
+
+        else:
+            G = 0
+            B = 0
+            G0 = 0
+            B0 = 0
+
+    return G, B, G0, B0
 
 
 def get_rate_ac_line_segment():

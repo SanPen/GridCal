@@ -741,7 +741,7 @@ class CgmesCircuit(BaseCircuit):
                                 logger=self.logger)
 
         # convert the dictionaries to the internal class model,
-        # this marks as used only the boundary set objects that are refferenced,
+        # this marks as used only the boundary set objects that are referenced,
         # this allows to delete the excess of boundary set objects later
         convert_data_to_objects(data=self.data,
                                 all_objects_dict=self.all_objects_dict,
