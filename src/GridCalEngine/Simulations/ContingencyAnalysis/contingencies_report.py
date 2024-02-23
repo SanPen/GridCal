@@ -363,6 +363,10 @@ class ContingencyResultsReport:
             # perform the analysis
             # ----------------------------------------------------------------------------------------------------------
             srap_condition = 1.0 < b_flow[m] <= srap_ratings[m]
+
+
+            #starting new reporting
+
             if using_srap and srap_condition:
 
                 # compute the sensitivities for the monitored line with all buses
