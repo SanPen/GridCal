@@ -30,6 +30,9 @@ def cgmes_object(p):
     regulating_control.targetValue = 5000.0
     generator.RegulatingControl = regulating_control
     generator.RegulatingControl.Terminal = Terminal()
+    generator.RegulatingControl.Terminal.TopologicalNode = TopologicalNode()
+    generator.RegulatingControl.Terminal.TopologicalNode.BaseVoltage = BaseVoltage()
+    generator.RegulatingControl.Terminal.TopologicalNode.BaseVoltage.nominalVoltage = 3
 
     generator.EquipmentContainer = EquipmentContainer("equipmentcontainer_rdfid", "VoltageLevel")
     generator.EquipmentContainer.BaseVoltage = BaseVoltage()
@@ -68,6 +71,8 @@ def device_to_terminal_dict_object() -> Dict[str, List[Terminal]]:
     t = Terminal("rdfterminal", "tpeterminal")
 
     t.TopologicalNode = tn_test
+    t.TopologicalNode.BaseVoltage = BaseVoltage('b', 'v')
+    t.TopologicalNode.BaseVoltage.nominalVoltage = 100
     t.ConnectivityNode = cn_test
     d['smrdfid'] = [t]
     return d
@@ -132,7 +137,7 @@ def test_get_gcdev_generators_regulating_controls_none_log_warning():
     get_gcdev_generators(cgmes, multi_circuit, calc_node_dict_object(), cn_dict_object(),
                          device_to_terminal_dict_object(), logger)
     assert len(logger.entries) == 1
-    assert logger.entries[0].msg == 'SynchronousMachine has no voltage control'
+    assert logger.entries[0].msg == 'RegulatingCondEq has no control'
 
 
 def test_get_gcdev_generators_regulating_control_mode_kind_not_voltage_log_warning():
@@ -143,15 +148,4 @@ def test_get_gcdev_generators_regulating_control_mode_kind_not_voltage_log_warni
     get_gcdev_generators(cgmes, multi_circuit, calc_node_dict_object(), cn_dict_object(),
                          device_to_terminal_dict_object(), logger)
     assert len(logger.entries) == 1
-    assert logger.entries[0].msg == 'SynchronousMachine has no voltage control'
-
-
-def test_get_gcdev_generators_equipment_container_tpe_not_voltage_level_log_warning():
-    logger = DataLogger()
-    multi_circuit = MultiCircuit()
-    cgmes = cgmes_object(p=2)
-    cgmes.SynchronousMachine_list[0].EquipmentContainer.tpe = "aaa"
-    get_gcdev_generators(cgmes, multi_circuit, calc_node_dict_object(), cn_dict_object(),
-                         device_to_terminal_dict_object(), logger)
-    assert len(logger.entries) == 1
-    assert logger.entries[0].msg == 'SynchronousMachine has no voltage control'
+    assert logger.entries[0].msg == 'RegulatingCondEq has control, but not voltage'

@@ -25,6 +25,7 @@ def cgmes_object():
     ptend = PowerTransformerEnd()
     ptend.BaseVoltage = BaseVoltage("a", "b")
     ptend.BaseVoltage.nominalVoltage = 100
+    ptend.endNumber = 1
 
     circuit.PowerTransformer_list[0].references_to_me["PowerTransformerEnd"] = [ptend, ptend]
     return circuit
@@ -72,7 +73,9 @@ def test_ac_transformers_one_power_transofmer_end_log_error():
 
     cgmes = CgmesCircuit()
     cgmes.PowerTransformer_list = [PowerTransformer()]
-    cgmes.PowerTransformer_list[0].references_to_me["PowerTransformerEnd"] = [PowerTransformerEnd()]
+    power_transformer_end = PowerTransformerEnd()
+    power_transformer_end.endNumber = 1
+    cgmes.PowerTransformer_list[0].references_to_me["PowerTransformerEnd"] = [power_transformer_end]
     get_gcdev_ac_transformers(cgmes, multi_circuit, None, None, None, logger,
                               0)
     assert len(logger.entries) == 1
@@ -89,8 +92,11 @@ def test_ac_transformers_zero_calc_node_log_error():
 
     cgmes = CgmesCircuit()
     cgmes.PowerTransformer_list = [PowerTransformer()]
-    cgmes.PowerTransformer_list[0].references_to_me["PowerTransformerEnd"] = [PowerTransformerEnd(),
-                                                                              PowerTransformerEnd()]
+    power_transformer_end = PowerTransformerEnd()
+    power_transformer_end.endNumber = 1
+    cgmes.PowerTransformer_list[0].references_to_me["PowerTransformerEnd"] = [power_transformer_end,
+                                                                              power_transformer_end]
+
     get_gcdev_ac_transformers(cgmes, multi_circuit, calc_node_dict, cn_dict_object(),
                               device_to_terminal_dict_object_2_terminals(),
                               logger,
@@ -118,6 +124,7 @@ def test_ac_transformers2w():
     power_transformer_end.x0 = 1
     power_transformer_end.g0 = 1
     power_transformer_end.b0 = 1
+    power_transformer_end.endNumber = 1
     power_transformer_end.BaseVoltage = BaseVoltage("a", "b")
     power_transformer_end.BaseVoltage.nominalVoltage = 100
     cgmes.PowerTransformer_list[0].references_to_me["PowerTransformerEnd"] = [power_transformer_end,
@@ -180,6 +187,7 @@ def test_ac_transformers3w_only_two_terminals_log_error():
     power_transformer_end.x0 = 1
     power_transformer_end.g0 = 1
     power_transformer_end.b0 = 1
+    power_transformer_end.endNumber = 1
     power_transformer_end.BaseVoltage = BaseVoltage("a", "b")
     power_transformer_end.BaseVoltage.nominalVoltage = 100
     cgmes.PowerTransformer_list[0].references_to_me["PowerTransformerEnd"] = [power_transformer_end,
@@ -212,6 +220,7 @@ def test_ac_transformers3w():
     power_transformer_end.b0 = 1
     power_transformer_end.BaseVoltage = BaseVoltage("a", "b")
     power_transformer_end.BaseVoltage.nominalVoltage = 100
+    power_transformer_end.endNumber = 1
     cgmes.PowerTransformer_list[0].references_to_me["PowerTransformerEnd"] = [power_transformer_end,
                                                                               power_transformer_end,
                                                                               power_transformer_end]
