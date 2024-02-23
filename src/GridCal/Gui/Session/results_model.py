@@ -196,7 +196,7 @@ class ResultsModel(QtCore.QAbstractTableModel):
         :return:
         """
         filter_ = FilterResultsTable(self.table)
-        filter_.parse(query=txt)
+        filter_.parse(expression=txt)
         mdl = filter_.apply()
         # mdl = self.table.search(txt)
 

@@ -933,10 +933,10 @@ class SimulationsMain(TimeEventsMain):
 
             self.update_available_results()
 
-            if results.S.shape[0] > 0:
-                self.colour_diagrams()
-            else:
-                info_msg('Cannot colour because the PTDF results have zero time steps :/')
+            # if results.S.shape[0] > 0:
+            #     self.colour_diagrams()
+            # else:
+            #     info_msg('Cannot colour because the PTDF results have zero time steps :/')
 
         else:
             error_msg('Something went wrong, There are no PTDF Time series results.')

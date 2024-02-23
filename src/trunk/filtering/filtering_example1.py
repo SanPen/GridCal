@@ -13,11 +13,12 @@ res = ResultsTable(data=np.random.rand(nrows, ncols) * 100.0 - 50.0,
 
 flt = FilterResultsTable(table=res)
 
-# expr = "val > 0.5 and val < 12 and col in [column1, column2]"
+# expr = "val > 0.5 and val < 12 and col != [column1, column2]"
 # expr = "val > 48 and val > 0"
 # expr = "val > 20 and val < 48 and val > 30"
 # expr = "col = column1"
-expr = "val > 0 or col in [column1, column4]"
+# expr = "col != [column1, column4]"
+expr = "col notlike [n2, n6] and val > 0"
 
 flt.parse(expression=expr)
 res2 = flt.apply()

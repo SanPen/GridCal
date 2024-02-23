@@ -23,10 +23,10 @@ class CompOps(Enum):
     LT = "<"
     GEQ = ">="
     LEQ = "<="
-    DIFF = "!="
+    NOT_EQ = "!="
     EQ = "="
-    IN = "in"
-    NOT_IN = "not in"
+    LIKE = "like"
+    NOT_LIKE = "notlike"
     STARTS = "starts"
     ENDS = "ends"
 
@@ -132,7 +132,7 @@ class MasterFilter:
     MasterFilter
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
 
         """
@@ -160,7 +160,7 @@ def parse_single(token: str) -> Union[Filter, None]:
     :param token:
     :return:
     """
-    elms = re.split(r'([<>=!]=?|[<>]|in|starts|ends)', token)
+    elms = re.split(r'([<>=!]=?|in|starts|ends|like|notlike)', token)
 
     if len(elms) == 3:
         return Filter(element=FilterSubject(elms[0].strip()),
@@ -201,6 +201,41 @@ def is_numeric(obj):
     return all(hasattr(obj, attr) for attr in attrs)
 
 
+def is_negative(flt: Filter) -> bool:
+    if flt.op == CompOps.GT:
+        return False
+
+    elif flt.op == CompOps.LT:
+        return False
+
+    elif flt.op == CompOps.GEQ:
+        return False
+
+    elif flt.op == CompOps.LEQ:
+        return False
+
+    elif flt.op == CompOps.NOT_EQ:
+        return True
+
+    elif flt.op == CompOps.EQ:
+        return False
+
+    elif flt.op == CompOps.LIKE:
+        return False
+
+    elif flt.op == CompOps.NOT_LIKE:
+        return True
+
+    elif flt.op == CompOps.STARTS:
+        return False
+
+    elif flt.op == CompOps.ENDS:
+        return False
+
+    else:
+        return False
+
+
 def compute_results_table_masks(table: ResultsTable, flt: Filter) -> Tuple[BoolVec, BoolVec, Mat]:
     """
 
@@ -209,170 +244,191 @@ def compute_results_table_masks(table: ResultsTable, flt: Filter) -> Tuple[BoolV
     :return:
     """
 
-    if flt.op == CompOps.IN or flt.op == CompOps.NOT_IN:
+    if "[" in flt.value:
         val = flt.value.replace("[", "").replace("]", "").strip()
         lst = [a.strip() for a in val.split(",")]
     else:
-        lst = list()
+        lst = [flt.value]
 
-    if flt.element == FilterSubject.VAL:
+    is_neg = is_negative(flt)
 
-        if is_numeric(table.data_c):
-            val = float(flt.value)
-        else:
-            val = flt.value
+    if is_neg:
+        final_idx_mask = np.ones(table.r, dtype=bool)
+        final_col_mask = np.ones(table.c, dtype=bool)
+        final_data_mask = np.ones((table.r, table.c), dtype=bool)
+    else:
+        final_idx_mask = np.zeros(table.r, dtype=bool)
+        final_col_mask = np.zeros(table.c, dtype=bool)
+        final_data_mask = np.zeros((table.r, table.c), dtype=bool)
 
-        data_mask = np.zeros((table.r, table.c), dtype=bool)
-        idx_mask = np.zeros(table.r, dtype=bool)
-        col_mask = np.zeros(table.c, dtype=bool)
+    for value in lst:
+        if flt.element == FilterSubject.VAL:
 
-        for i in range(table.r):
-            for j in range(table.c):
+            if is_numeric(table.data_c):
+                val = float(value)
+            else:
+                val = value
+
+            data_mask = np.zeros((table.r, table.c), dtype=bool)
+            idx_mask = np.zeros(table.r, dtype=bool)
+            col_mask = np.zeros(table.c, dtype=bool)
+
+            for i in range(table.r):
+                for j in range(table.c):
+
+                    if flt.op == CompOps.GT:
+                        ok = table.data_c[i, j] > val
+
+                    elif flt.op == CompOps.LT:
+                        ok = table.data_c[i, j] < val
+
+                    elif flt.op == CompOps.GEQ:
+                        ok = table.data_c[i, j] >= val
+
+                    elif flt.op == CompOps.LEQ:
+                        ok = table.data_c[i, j] <= val
+
+                    elif flt.op == CompOps.NOT_EQ:
+                        ok = table.data_c[i, j] != val
+
+                    elif flt.op == CompOps.EQ:
+                        ok = table.data_c[i, j] == val
+
+                    elif flt.op == CompOps.LIKE:
+                        ok = val in str(table.data_c[i, j])
+
+                    elif flt.op == CompOps.NOT_LIKE:
+                        ok = val not in str(table.data_c[i, j])
+
+                    elif flt.op == CompOps.STARTS:
+                        ok = str(table.data_c[i, j]).startswith(val)
+
+                    elif flt.op == CompOps.ENDS:
+                        ok = str(table.data_c[i, j]).endswith(val)
+
+                    else:
+                        ok = False
+
+                    if ok:
+                        idx_mask[i] = True
+                        col_mask[j] = True
+                        data_mask[i, j] = True
+
+        elif flt.element == FilterSubject.IDX:
+
+            val = value
+            idx_mask = np.zeros(table.r, dtype=bool)
+            col_mask = np.ones(table.c, dtype=bool)
+            data_mask = np.zeros((table.r, table.c), dtype=bool)
+
+            for i in range(table.r):
 
                 if flt.op == CompOps.GT:
-                    ok = table.data_c[i, j] > val
+                    ok = table.index_c[i] > val
 
                 elif flt.op == CompOps.LT:
-                    ok = table.data_c[i, j] < val
+                    ok = table.index_c[i] < val
 
                 elif flt.op == CompOps.GEQ:
-                    ok = table.data_c[i, j] >= val
+                    ok = table.index_c[i] >= val
 
                 elif flt.op == CompOps.LEQ:
-                    ok = table.data_c[i, j] <= val
+                    ok = table.index_c[i] <= val
 
-                elif flt.op == CompOps.DIFF:
-                    ok = table.data_c[i, j] != val
+                elif flt.op == CompOps.NOT_EQ:
+                    ok = table.index_c[i] != val
 
                 elif flt.op == CompOps.EQ:
-                    ok = table.data_c[i, j] == val
+                    ok = table.index_c[i] == val
 
-                elif flt.op == CompOps.IN:
-                    ok = table.data_c[i, j] in lst
+                elif flt.op == CompOps.LIKE:
+                    ok = val in str(table.index_c[i])
 
-                elif flt.op == CompOps.NOT_IN:
-                    ok = table.data_c[i, j] not in lst
+                elif flt.op == CompOps.NOT_LIKE:
+                    ok = val not in str(table.index_c[i])
 
                 elif flt.op == CompOps.STARTS:
-                    ok = str(table.data_c[i, j]).startswith(val)
+                    ok = str(table.index_c[i]).startswith(val)
 
                 elif flt.op == CompOps.ENDS:
-                    ok = str(table.data_c[i, j]).endswith(val)
+                    ok = str(table.index_c[i]).endswith(val)
 
                 else:
                     ok = False
 
                 if ok:
                     idx_mask[i] = True
+                    data_mask[i, :] = True
+
+        elif flt.element == FilterSubject.COL:
+
+            val = value
+            idx_mask = np.ones(table.r, dtype=bool)
+            col_mask = np.zeros(table.c, dtype=bool)
+            data_mask = np.zeros((table.r, table.c), dtype=bool)
+
+            for j in range(table.c):
+
+                if flt.op == CompOps.GT:
+                    ok = table.cols_c[j] > val
+
+                elif flt.op == CompOps.LT:
+                    ok = table.cols_c[j] < val
+
+                elif flt.op == CompOps.GEQ:
+                    ok = table.cols_c[j] >= val
+
+                elif flt.op == CompOps.LEQ:
+                    ok = table.cols_c[j] <= val
+
+                elif flt.op == CompOps.NOT_EQ:
+                    ok = table.cols_c[j] != val
+
+                elif flt.op == CompOps.EQ:
+                    ok = table.cols_c[j] == val
+
+                elif flt.op == CompOps.LIKE:
+                    ok = val in str(table.cols_c[j])
+
+                elif flt.op == CompOps.NOT_LIKE:
+                    ok = val not in str(table.cols_c[j])
+
+                elif flt.op == CompOps.STARTS:
+                    ok = str(table.cols_c[j]).startswith(val)
+
+                elif flt.op == CompOps.ENDS:
+                    ok = str(table.cols_c[j]).endswith(val)
+
+                else:
+                    ok = False
+
+                if ok:
                     col_mask[j] = True
-                    data_mask[i, j] = True
+                    data_mask[:, j] = True
 
-    elif flt.element == FilterSubject.IDX:
+        elif flt.element == FilterSubject.COL_OBJECT:
+            idx_mask = np.ones(table.r, dtype=bool)
+            col_mask = np.zeros(table.c, dtype=bool)
+            data_mask = np.zeros((table.r, table.c), dtype=bool)
 
-        val = flt.value
-        idx_mask = np.zeros(table.r, dtype=bool)
-        col_mask = np.ones(table.c, dtype=bool)
-        data_mask = np.zeros((table.r, table.c), dtype=bool)
+        elif flt.element == FilterSubject.IDX_OBJECT:
+            idx_mask = np.zeros(table.r, dtype=bool)
+            col_mask = np.ones(table.c, dtype=bool)
+            data_mask = np.zeros((table.r, table.c), dtype=bool)
 
-        for i in range(table.r):
+        else:
+            raise Exception("Invalid FilterSubject")
 
-            if flt.op == CompOps.GT:
-                ok = table.index_c[i] > val
+        if is_neg:
+            final_idx_mask *= idx_mask
+            final_col_mask *= col_mask
+            final_data_mask *= data_mask
+        else:
+            final_idx_mask += idx_mask
+            final_col_mask += col_mask
+            final_data_mask += data_mask
 
-            elif flt.op == CompOps.LT:
-                ok = table.index_c[i] < val
-
-            elif flt.op == CompOps.GEQ:
-                ok = table.index_c[i] >= val
-
-            elif flt.op == CompOps.LEQ:
-                ok = table.index_c[i] <= val
-
-            elif flt.op == CompOps.DIFF:
-                ok = table.index_c[i] != val
-
-            elif flt.op == CompOps.EQ:
-                ok = table.index_c[i] == val
-
-            elif flt.op == CompOps.IN:
-                ok = table.index_c[i] in lst
-
-            elif flt.op == CompOps.NOT_IN:
-                ok = table.index_c[i] not in lst
-
-            elif flt.op == CompOps.STARTS:
-                ok = str(table.index_c[i]).startswith(val)
-
-            elif flt.op == CompOps.ENDS:
-                ok = str(table.index_c[i]).endswith(val)
-
-            else:
-                ok = False
-
-            if ok:
-                idx_mask[i] = True
-                data_mask[i, :] = True
-
-    elif flt.element == FilterSubject.COL:
-
-        val = flt.value
-        idx_mask = np.ones(table.r, dtype=bool)
-        col_mask = np.zeros(table.c, dtype=bool)
-        data_mask = np.zeros((table.r, table.c), dtype=bool)
-
-        for j in range(table.c):
-
-            if flt.op == CompOps.GT:
-                ok = table.cols_c[j] > val
-
-            elif flt.op == CompOps.LT:
-                ok = table.cols_c[j] < val
-
-            elif flt.op == CompOps.GEQ:
-                ok = table.cols_c[j] >= val
-
-            elif flt.op == CompOps.LEQ:
-                ok = table.cols_c[j] <= val
-
-            elif flt.op == CompOps.DIFF:
-                ok = table.cols_c[j] != val
-
-            elif flt.op == CompOps.EQ:
-                ok = table.cols_c[j] == val
-
-            elif flt.op == CompOps.IN:
-                ok = table.cols_c[j] in lst
-
-            elif flt.op == CompOps.NOT_IN:
-                ok = table.cols_c[j] not in lst
-
-            elif flt.op == CompOps.STARTS:
-                ok = str(table.cols_c[j]).startswith(val)
-
-            elif flt.op == CompOps.ENDS:
-                ok = str(table.cols_c[j]).endswith(val)
-
-            else:
-                ok = False
-
-            if ok:
-                col_mask[j] = True
-                data_mask[:, j] = True
-
-    elif flt.element == FilterSubject.COL_OBJECT:
-        idx_mask = np.ones(table.r, dtype=bool)
-        col_mask = np.zeros(table.c, dtype=bool)
-        data_mask = np.zeros((table.r, table.c), dtype=bool)
-
-    elif flt.element == FilterSubject.IDX_OBJECT:
-        idx_mask = np.zeros(table.r, dtype=bool)
-        col_mask = np.ones(table.c, dtype=bool)
-        data_mask = np.zeros((table.r, table.c), dtype=bool)
-
-    else:
-        raise Exception("Invalid FilterSubject")
-
-    return idx_mask, col_mask, data_mask
+    return final_idx_mask, final_col_mask, final_data_mask
 
 
 class FilterResultsTable:
