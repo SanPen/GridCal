@@ -45,6 +45,7 @@ class BranchData:
         self.active: IntVec = np.zeros(nelm, dtype=int)
         self.rates: Vec = np.zeros(nelm, dtype=float)
         self.contingency_rates: Vec = np.zeros(nelm, dtype=float)
+        self.protection_rates: Vec = np.zeros(nelm, dtype=float)
 
         self.F: IntVec = np.zeros(self.nelm, dtype=int)  # indices of the "from" buses
         self.T: IntVec = np.zeros(self.nelm, dtype=int)  # indices of the "to" buses
@@ -175,6 +176,7 @@ class BranchData:
         data.active = self.active[elm_idx]
         data.rates = self.rates[elm_idx]
         data.contingency_rates = self.contingency_rates[elm_idx]
+        data.protection_rates = self.protection_rates[elm_idx]
         data.tap_module = self.tap_module[elm_idx]
 
         data.tap_module_min = self.tap_module_min[elm_idx]
@@ -260,6 +262,7 @@ class BranchData:
         data.active = self.active.copy()
         data.rates = self.rates.copy()
         data.contingency_rates = self.contingency_rates.copy()
+        data.protection_rates = self.protection_rates.copy()
         data.tap_module = self.tap_module.copy()
 
         data.tap_module_min = self.tap_module_min.copy()

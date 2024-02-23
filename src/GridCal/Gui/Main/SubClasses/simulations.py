@@ -26,7 +26,7 @@ from matplotlib.colors import LinearSegmentedColormap
 # Engine imports
 import GridCalEngine.Core.Devices as dev
 import GridCalEngine.Simulations as sim
-import GridCalEngine.grid_analysis as grid_analysis
+import GridCalEngine.Simulations.PowerFlow.grid_analysis as grid_analysis
 import GridCal.Gui.GuiFunctions as gf
 import GridCal.Gui.Visualization.visualization as viz
 from GridCal.Gui.BusBranchEditorWidget import BusBranchEditorWidget
@@ -41,7 +41,7 @@ from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCalEngine.enumerations import (DeviceType, AvailableTransferMode, GenerationNtcFormulation, SolverType,
                                         ReactivePowerControlMode, TapsControlMode, MIPSolvers, TimeGrouping,
                                         ZonalGrouping, ContingencyMethod, InvestmentEvaluationMethod, EngineType,
-                                        BranchImpedanceMode)
+                                        BranchImpedanceMode, ResultTypes)
 
 
 class SimulationsMain(TimeEventsMain):
@@ -175,7 +175,7 @@ class SimulationsMain(TimeEventsMain):
         self.ptdf_group_modes = OrderedDict()
 
         # dictionaries for available results
-        self.available_results_dict: Union[Dict[str, List[sim.ResultTypes]], None] = dict()
+        self.available_results_dict: Union[Dict[str, List[ResultTypes]], None] = dict()
 
         self.buses_for_storage: Union[List[dev.Bus], None] = None
 
@@ -957,9 +957,11 @@ class SimulationsMain(TimeEventsMain):
             pf_options=pf_options,
             lin_options=self.get_linear_options(),
             use_srap=self.ui.use_srap_checkBox.isChecked(),
-            srap_max_loading=self.ui.srap_loading_limit_doubleSpinBox.value(),
             srap_max_power=self.ui.srap_limit_doubleSpinBox.value(),
             srap_top_n=self.ui.srap_top_n_SpinBox.value(),
+            srap_deadband=self.ui.srap_deadband_doubleSpinBox.value(),
+            srap_rever_to_nominal_rating=self.ui.srap_revert_to_nominal_rating_checkBox.isChecked(),
+            detailed_massive_report=self.ui.contingency_detailed_massive_report_checkBox.isChecked(),
             engine=self.contingency_engines_dict[self.ui.contingencyEngineComboBox.currentText()]
         )
 

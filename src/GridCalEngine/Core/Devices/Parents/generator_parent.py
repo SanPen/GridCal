@@ -47,6 +47,7 @@ class GeneratorParent(InjectionParent):
                  mttr: float,
                  capex: float,
                  opex: float,
+                 srap_enabled: bool,
                  build_status: BuildStatus,
                  device_type: DeviceType):
         """
@@ -65,6 +66,7 @@ class GeneratorParent(InjectionParent):
         :param mttr: mean time to recovery (h)
         :param capex: capital expenditures (investment cost)
         :param opex: operational expenditures (maintainance cost)
+        :param srap_enabled: Is the unit available for SRAP participation?
         :param build_status: BuildStatus
         :param device_type: DeviceType
         """
@@ -92,6 +94,9 @@ class GeneratorParent(InjectionParent):
         self.P = P
         self._P_prof = Profile(default_value=P)
 
+        self.srap_enabled = srap_enabled
+        self._srap_enabled_prof = Profile(default_value=srap_enabled)
+
         # Minimum dispatched power in MW
         self.Pmin = Pmin
 
@@ -106,6 +111,10 @@ class GeneratorParent(InjectionParent):
         self.register(key='P', units='MW', tpe=float, definition='Active power', profile_name='P_prof')
         self.register(key='Pmin', units='MW', tpe=float, definition='Minimum active power. Used in OPF.')
         self.register(key='Pmax', units='MW', tpe=float, definition='Maximum active power. Used in OPF.')
+
+        self.register(key='srap_enabled', units='', tpe=bool,
+                      definition='Is the unit available for SRAP participation?',
+                      editable=True, profile_name="srap_enabled_prof")
 
     @property
     def control_bus_prof(self) -> Profile:
@@ -140,6 +149,23 @@ class GeneratorParent(InjectionParent):
             self._P_prof.set(arr=val)
         else:
             raise Exception(str(type(val)) + 'not supported to be set into a P_prof')
+
+    @property
+    def srap_enabled_prof(self) -> Profile:
+        """
+        Control bus profile
+        :return: Profile
+        """
+        return self._srap_enabled_prof
+
+    @srap_enabled_prof.setter
+    def srap_enabled_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._srap_enabled_prof = val
+        elif isinstance(val, np.ndarray):
+            self._srap_enabled_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into srap_enabled_prof')
 
     def get_properties_dict(self, version=3):
         """

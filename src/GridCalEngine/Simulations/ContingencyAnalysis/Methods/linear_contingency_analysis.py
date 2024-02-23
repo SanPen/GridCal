@@ -89,8 +89,6 @@ def linear_contingency_analysis(grid: MultiCircuit,
     if calling_class is not None:
         calling_class.report_text('Computing loading...')
 
-    available_power = numerical_circuit.generator_data.get_injections_per_bus().real
-
     # for each contingency group
     for ic, multi_contingency in enumerate(linear_multiple_contingencies.multi_contingencies):
 
@@ -117,11 +115,13 @@ def linear_contingency_analysis(grid: MultiCircuit,
                                contingency_idx=ic,
                                contingency_group=grid.contingency_groups[ic],
                                using_srap=options.use_srap,
-                               srap_max_loading=options.srap_max_loading,
+                               srap_ratings=numerical_circuit.branch_data.protection_rates,
                                srap_max_power=options.srap_max_power,
+                               srap_deadband=options.srap_deadband,
+                               srap_rever_to_nominal_rating=options.srap_rever_to_nominal_rating,
                                multi_contingency=multi_contingency,
                                PTDF=linear_analysis.PTDF,
-                               available_power=available_power,
+                               available_power=numerical_circuit.bus_data.srap_availbale_power,
                                srap_used_power=results.srap_used_power,
                                top_n=options.srap_top_n)
 
