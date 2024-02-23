@@ -403,7 +403,6 @@ class EditableDevice:
         :param prop: GCProp
         :return: Whatever value is there
         """
-
         return getattr(self, prop.name)
 
     def get_property_value(self, prop: GCProp, t_idx: Union[None, int]) -> Any:
@@ -416,14 +415,14 @@ class EditableDevice:
 
         if t_idx is None:
             # pick the snapshot value whatever it is
-            return getattr(self, prop.name)
+            return self.get_snapshot_value(prop=prop)
         else:
             if prop.has_profile():
                 # the property has a profile, return the value at t_idx
-                return getattr(self, prop.profile_name)[t_idx]
+                return self.get_profile_by_prop(prop=prop)[t_idx]
             else:
                 # the property has no profile, just return it
-                return getattr(self, prop.name)
+                return self.get_snapshot_value(prop=prop)
 
     def get_property_by_idx(self, property_idx: int) -> GCProp:
         """

@@ -239,9 +239,9 @@ def profile_todict(profile: Profile) -> Dict[str, str]:
             return {
                 'is_sparse': True,
                 'size': s,
-                'default': profile.default_value,
+                'default': profile.sparse_array.default_value,
                 'sparse_data': {
-                    'map': profile._sparse_array.get_map()
+                    'map': profile.sparse_array.get_map()
                 }
             }
         else:
@@ -249,13 +249,14 @@ def profile_todict(profile: Profile) -> Dict[str, str]:
                 'is_sparse': False,
                 'size': s,
                 'default': profile.default_value,
-                'dense_data': list(profile._dense_array),
+                'dense_data': profile.dense_array.tolist(),
             }
     else:
         return {
                 'is_sparse': True,
                 'size': s,
-                'default': profile.default_value,
+                'default': profile.default_value
+                if profile.sparse_array is None else profile.sparse_array.default_value,
                 'sparse_data': {
                     'map': dict()
                 }

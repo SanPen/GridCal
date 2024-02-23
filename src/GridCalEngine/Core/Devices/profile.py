@@ -173,6 +173,22 @@ class Profile:
         """
         return self._initialized
 
+    @property
+    def sparse_array(self) -> Union[SparseArray, None]:
+        """
+        Sparse array getter
+        :return: SparseArray or None
+        """
+        return self._sparse_array
+
+    @property
+    def dense_array(self) -> Union[np.ndarray, None]:
+        """
+        Dense array getter
+        :return: numpy array or None
+        """
+        return self._dense_array
+
     def create_sparse(self, size: int, default_value: Numeric):
         """
         Build sparse from definition
@@ -255,6 +271,22 @@ class Profile:
             self._dtype = arr.dtype
 
         self._initialized = True
+
+    def __eq__(self, other: "Profile") -> bool:
+        """
+        Compare two profiles
+        :param other: Profile
+        :return: equal?
+        """
+        if self._is_sparse == other._is_sparse:
+
+            if self._is_sparse:
+                return self._sparse_array == other._sparse_array
+            else:
+                return np.array_equal(self._dense_array, other._dense_array)
+
+        else:
+            return False
 
     def __getitem__(self, key: int):
         """

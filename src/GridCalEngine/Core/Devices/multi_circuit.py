@@ -4884,10 +4884,11 @@ class MultiCircuit:
             if elm.bus == bus2:
                 elm.bus = bus1
 
-    def compare_circuits(self, grid2: "MultiCircuit") -> Tuple[bool, Logger]:
+    def compare_circuits(self, grid2: "MultiCircuit", detailed_profile_comparison: bool = True) -> Tuple[bool, Logger]:
         """
         Compare this circuit with another circuits for equality
         :param grid2: MultiCircuit
+        :param detailed_profile_comparison: if true, profiles are compared element-wise with the getters
         :return: equal?, Logger with the comparison information
         """
         logger = Logger()
@@ -4932,17 +4933,51 @@ class MultiCircuit:
                                              value=v2,
                                              expected_value=v1)
 
-                        for t_idx in range(nt):
-                            v1 = elm1.get_property_value(prop=prop, t_idx=t_idx)
-                            v2 = elm2.get_property_value(prop=prop, t_idx=t_idx)
+                        if prop.has_profile():
+                            p1 = elm1.get_profile_by_prop(prop=prop)
+                            p2 = elm1.get_profile_by_prop(prop=prop)
 
-                            if v1 != v2:
-                                logger.add_error(msg="Different time series values",
+                            if p1 != p2:
+                                logger.add_error(msg="Different profile values",
                                                  device_class=template_elm.device_type.value,
                                                  device_property=prop.name,
-                                                 device=str(elm1),
-                                                 value=v2,
-                                                 expected_value=v1)
+                                                 object_value=p2,
+                                                 expected_object_value=p1)
+
+                            if detailed_profile_comparison:
+                                for t_idx in range(nt):
+
+                                    v1 = p1[t_idx]
+                                    v2 = p2[t_idx]
+
+                                    if v1 != v2:
+                                        logger.add_error(msg="Different time series values",
+                                                         device_class=template_elm.device_type.value,
+                                                         device_property=prop.name,
+                                                         device=str(elm1),
+                                                         value=v2,
+                                                         expected_value=v1)
+
+                                    v1b = elm1.get_property_value(prop=prop, t_idx=t_idx)
+                                    v2b = elm2.get_property_value(prop=prop, t_idx=t_idx)
+
+                                    if v1 != v1b:
+                                        logger.add_error(
+                                            msg="Profile getting values differ with different getter methods!",
+                                            device_class=template_elm.device_type.value,
+                                            device_property=prop.name,
+                                            device=str(elm1),
+                                            value=v1b,
+                                            expected_value=v1)
+
+                                    if v2 != v2b:
+                                        logger.add_error(
+                                            msg="Profile getting values differ with different getter methods!",
+                                            device_class=template_elm.device_type.value,
+                                            device_property=prop.name,
+                                            device=str(elm1),
+                                            value=v1b,
+                                            expected_value=v1)
 
         # if any error in the logger, bad
         return logger.error_count() == 0, logger

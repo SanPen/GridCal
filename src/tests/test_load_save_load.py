@@ -19,8 +19,17 @@ import GridCalEngine.api as gce
 
 
 def test_load_save_load() -> None:
-    
-    folder = os.path.join('data', 'grids', )
+    """
+    This test checks if the saving and load process is correct
+
+    The test consists in:
+    - loading grids in different gridcal variations (grid1)
+    - saving the grid with a different name
+    - loading the saved grid (grid2)
+    - comparing that grid1 == grid2
+
+    """
+    folder = os.path.join('data', 'grids')
     
     for name in ['IEEE39_1W.gridcal',
                  'hydro_grid_IEEE39.gridcal',
@@ -40,6 +49,7 @@ def test_load_save_load() -> None:
         # open the main grid again
         grid2 = gce.open_file(fname2)
 
-        equal, logger = grid1.compare_circuits(grid2)
+        # compare the original grid with the saved one to check that they are equal
+        equal, logger = grid1.compare_circuits(grid2, detailed_profile_comparison=True)
 
         assert equal
