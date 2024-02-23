@@ -30,7 +30,7 @@ class Switch(BranchParent):
 
     def __init__(self, bus_from: Bus = None, bus_to: Bus = None, cn_from: ConnectivityNode = None,
                  cn_to: ConnectivityNode = None, name='Switch', idtag=None, code='', r=1e-20, x=1e-20, rate=1.0,
-                 active=True, active_prof=None, contingency_factor=1.0):
+                 active=True, active_prof=None, contingency_factor=1.0, protection_rating_factor: float = 1.4):
         """
         Switch device
         :param bus_from: Bus from
@@ -56,6 +56,7 @@ class Switch(BranchParent):
                               active=active,
                               rate=rate,
                               contingency_factor=contingency_factor,
+                              protection_rating_factor=protection_rating_factor,
                               contingency_enabled=True,
                               monitor_loading=True,
                               mttf=0.0,

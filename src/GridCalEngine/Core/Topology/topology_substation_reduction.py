@@ -1,31 +1,9 @@
-# GridCal
-# Copyright (C) 2015 - 2024 Santiago Peñate Vera
-#
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU Lesser General Public
-# License as published by the Free Software Foundation; either
-# version 3 of the License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with this program; if not, write to the Free Software Foundation,
-# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
-from typing import List, Union
-import numpy as np
-from scipy.sparse import lil_matrix
+from GridCalEngine.api import *
 import GridCalEngine.Core.Devices as dev
-from GridCalEngine.Core.Devices.types import BRANCH_TYPES
 from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Core.Topology.topology import find_islands, get_adjacency_matrix
-from GridCalEngine.basic_structures import IntVec, Logger
-from GridCalEngine.enumerations import DeviceType
-from GridCalEngine.Simulations.driver_types import SimulationTypes
-from GridCalEngine.Simulations.driver_template import DriverTemplate
+from GridCalEngine.Core.Devices.types import BRANCH_TYPES
+from scipy.sparse import lil_matrix
 
 
 class TopologyProcessorInfo:
@@ -214,26 +192,30 @@ def apply_results_to_grid(t_idx: Union[None, int],
     :return: Nothig, the grid is processed in-place
     """
     # add any extra bus that may arise from the calculation
+    print("Extra buses:")
     grid_buses_set = {b for b in grid.get_buses()}
     for bus_device in final_buses:
         if bus_device not in grid_buses_set:
             grid.add_bus(bus_device)
             logger.add_info("Bus added to grid", device=bus_device.name)
+            # print("Bus {} added to grid".format(elm))
 
     # map the buses to the branches from their connectivity nodes
+    # todo: make profiles of the bus_from and bus_to
     for i, elm in enumerate(all_branches):
         if elm.cn_from is not None:
-            elm.set_bus_from_at(t_idx=t_idx, val=process_info.get_final_bus(elm.cn_from))
+            elm.bus_from = process_info.get_final_bus(elm.cn_from)
 
         if elm.cn_to is not None:
-            elm.set_bus_to_at(t_idx=t_idx, val=process_info.get_final_bus(elm.cn_to))
+            elm.bus_to = process_info.get_final_bus(elm.cn_to)
 
+    # TODO: Make profiles of the bus
     for dev_lst in grid.get_injection_devices_lists():
         for elm in dev_lst:
-            elm.set_bus_at(t_idx=t_idx, val=process_info.get_final_bus(elm.cn))
+            elm.bus = process_info.get_final_bus(elm.cn_to)
 
 
-def topology_processor(grid: MultiCircuit, t_idx: Union[int, None], logger: Logger):
+def topology_processor(grid: MultiCircuit, t_idx: Union[int, None], logger: Logger, test: bool = False):
     """
     Topology processor finding the Buses that calculate a certain node-breaker topology
     This function fill the bus pointers into the grid object, and adds any new bus required for simulation
@@ -252,7 +234,7 @@ def topology_processor(grid: MultiCircuit, t_idx: Union[int, None], logger: Logg
 
     # create the connectivity matrices
     Cf, Ct, br_active = compute_connectivities(nbus_candidate=nbus_candidate,
-                                               all_branches=grid.get_switches(),
+                                               all_branches=all_branches,
                                                process_info=process_info,
                                                t_idx=t_idx)
 
@@ -265,62 +247,18 @@ def topology_processor(grid: MultiCircuit, t_idx: Union[int, None], logger: Logg
     # perform the topology search, this will find candidate buses that reduce to be the same bus
     # each island is finally a single calculation element
     islands = find_islands(adj=A, active=bus_active)
+    if test:
+        return islands
+    else:
+        # generate auxiliary structures that derive from the topology results
+        final_buses = process_info.apply_results(islands=islands)
+        # TODO: ¿No estaría bien asignar a cada connectivity node el bus final al que está asociado para invertirlo?
+        # apply the results to the grid object
+        apply_results_to_grid(t_idx=t_idx,
+                              grid=grid,
+                              final_buses=final_buses,
+                              all_branches=all_branches,
+                              process_info=process_info,
+                              logger=logger)
 
-    # generate auxiliary structures that derive from the topology results
-    final_buses = process_info.apply_results(islands=islands)
 
-    # apply the results to the grid object
-    apply_results_to_grid(t_idx=t_idx,
-                          grid=grid,
-                          final_buses=final_buses,
-                          all_branches=all_branches,
-                          process_info=process_info,
-                          logger=logger)
-
-
-class TopologyProcessorDriver(DriverTemplate):
-    """
-    TopologyProcessorDriver
-    """
-
-    name = 'Topology processor'
-    tpe = SimulationTypes.TopologyProcessor_run
-
-    def __init__(self, grid: MultiCircuit):
-        """
-        Electric distance clustering
-        :param grid: MultiCircuit instance
-        """
-        DriverTemplate.__init__(self, grid=grid)
-
-    def run(self):
-        """
-        Run the topology processing in-place
-        @return:
-        """
-        self.tic()
-        self.report_progress(0.0)
-        nt = self.grid.get_time_number()
-
-        topology_processor(grid=self.grid,
-                           t_idx=None,
-                           logger=self.logger)
-
-        for t in range(nt):
-            topology_processor(grid=self.grid,
-                               t_idx=t,
-                               logger=self.logger)
-
-            self.report_progress2(t, nt)
-
-        # display progress
-        self.report_done()
-        self.toc()
-
-    def cancel(self):
-        """
-        Cancel the simulation
-        :return:
-        """
-        self.__cancel__ = True
-        self.report_done("Cancelled!")

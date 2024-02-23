@@ -137,25 +137,23 @@ class DiagramsMain(CompiledArraysMain):
         self.ui.actionCenter_view.triggered.connect(self.center_nodes)
         self.ui.actionAutoatic_layout.triggered.connect(self.auto_layout)
         self.ui.actionSearchDiagram.triggered.connect(self.search_diagram)
+        self.ui.actionEdit_simulation_time_limits.triggered.connect(self.edit_time_interval)
 
         # Buttons
         self.ui.colour_results_pushButton.clicked.connect(self.colour_diagrams)
-        self.ui.view_previous_simulation_step_pushButton.clicked.connect(self.colour_previous_simulation_step)
-        self.ui.view_next_simulation_step_pushButton.clicked.connect(self.colour_next_simulation_step)
         self.ui.busViewerButton.clicked.connect(self.add_bus_vecinity_diagram_from_model)
-        self.ui.editTimeIntervalButton.clicked.connect(self.edit_time_interval)
 
         # list clicks
         self.ui.diagramsListView.clicked.connect(self.set_selected_diagram_on_click)
 
         # combobox change
         self.ui.plt_style_comboBox.currentTextChanged.connect(self.plot_style_change)
-        self.ui.available_results_to_color_comboBox.currentTextChanged.connect(self.update_available_steps_to_color)
 
         # sliders
-        self.ui.simulation_results_step_slider.sliderReleased.connect(self.diagrams_time_slider_change)
-        # self.ui.simulation_results_step_slider.sliderMoved.connect(self.diagrams_time_slider_change)
-        self.ui.simulation_results_step_slider.valueChanged.connect(self.update_time_slider_texts)
+        # self.ui.diagram_step_slider.sliderReleased.connect(self.diagrams_time_slider_change)
+        self.ui.diagram_step_slider.valueChanged.connect(self.diagrams_time_slider_change)
+        # self.ui.db_step_slider.sliderReleased.connect(self.objects_time_slider_change)
+        self.ui.db_step_slider.valueChanged.connect(self.objects_time_slider_change)
 
         # spinbox change
         self.ui.explosion_factor_doubleSpinBox.valueChanged.connect(self.explosion_factor_change)
@@ -301,12 +299,12 @@ class DiagramsMain(CompiledArraysMain):
         else:
             info_msg("There are no time series :/")
 
-    def grid_colour_function(self, plot_function, current_study: str, current_step: int) -> None:
+    def grid_colour_function(self, plot_function, current_study: str, t_idx: Union[None, int]) -> None:
         """
         Colour the schematic or the map
         :param plot_function: function pointer to the function doing the plotting
         :param current_study: current_study name
-        :param current_step: current time step
+        :param t_idx: current time step (if None, the snapshot is taken)
         """
         use_flow_based_width = self.ui.branch_width_based_on_flow_checkBox.isChecked()
         min_branch_width = self.ui.min_branch_size_spinBox.value()
@@ -357,26 +355,26 @@ class DiagramsMain(CompiledArraysMain):
 
         elif current_study == sim.PowerFlowTimeSeriesDriver.tpe.value:
             results: sim.PowerFlowTimeSeriesResults = self.session.get_results(sim.SimulationTypes.TimeSeries_run)
-            bus_active = [bus.active_prof[current_step] for bus in self.circuit.buses]
-            br_active = [br.active_prof[current_step] for br in self.circuit.get_branches_wo_hvdc()]
-            hvdc_active = [hvdc.active_prof[current_step] for hvdc in self.circuit.hvdc_lines]
+            bus_active = [bus.active_prof[t_idx] for bus in self.circuit.buses]
+            br_active = [br.active_prof[t_idx] for br in self.circuit.get_branches_wo_hvdc()]
+            hvdc_active = [hvdc.active_prof[t_idx] for hvdc in self.circuit.hvdc_lines]
 
             return plot_function(buses=buses,
                                  branches=branches,
                                  hvdc_lines=hvdc_lines,
-                                 Sbus=results.S[current_step, :],
+                                 Sbus=results.S[t_idx, :],
                                  bus_active=bus_active,
-                                 Sf=results.Sf[current_step, :],
-                                 St=results.St[current_step, :],
-                                 voltages=results.voltage[current_step, :],
-                                 loadings=np.abs(results.loading[current_step, :]),
+                                 Sf=results.Sf[t_idx, :],
+                                 St=results.St[t_idx, :],
+                                 voltages=results.voltage[t_idx, :],
+                                 loadings=np.abs(results.loading[t_idx, :]),
                                  types=results.bus_types,
-                                 losses=results.losses[current_step, :],
+                                 losses=results.losses[t_idx, :],
                                  br_active=br_active,
-                                 hvdc_Pf=results.hvdc_Pf[current_step, :],
-                                 hvdc_Pt=results.hvdc_Pt[current_step, :],
-                                 hvdc_losses=results.hvdc_losses[current_step, :],
-                                 hvdc_loading=results.hvdc_loading[current_step, :],
+                                 hvdc_Pf=results.hvdc_Pf[t_idx, :],
+                                 hvdc_Pt=results.hvdc_Pt[t_idx, :],
+                                 hvdc_losses=results.hvdc_losses[t_idx, :],
+                                 hvdc_loading=results.hvdc_loading[t_idx, :],
                                  hvdc_active=hvdc_active,
                                  use_flow_based_width=use_flow_based_width,
                                  min_branch_width=min_branch_width,
@@ -395,13 +393,13 @@ class DiagramsMain(CompiledArraysMain):
             return plot_function(buses=buses,
                                  branches=branches,
                                  hvdc_lines=hvdc_lines,
-                                 Sbus=results.Sbus[current_step, :],
+                                 Sbus=results.Sbus[t_idx, :],
                                  bus_active=bus_active,
-                                 Sf=results.Sf[current_step, :],
-                                 St=results.St[current_step, :],
-                                 voltages=results.voltages[current_step, :],
+                                 Sf=results.Sf[t_idx, :],
+                                 St=results.St[t_idx, :],
+                                 voltages=results.voltages[t_idx, :],
                                  types=results.bus_types,
-                                 loadings=np.abs(results.loading[current_step, :]),
+                                 loadings=np.abs(results.loading[t_idx, :]),
                                  br_active=br_active,
                                  hvdc_Pf=None,
                                  hvdc_Pt=None,
@@ -424,13 +422,13 @@ class DiagramsMain(CompiledArraysMain):
             return plot_function(buses=buses,
                                  branches=branches,
                                  hvdc_lines=hvdc_lines,
-                                 Sbus=results.S_points[current_step, :],
+                                 Sbus=results.S_points[t_idx, :],
                                  types=results.bus_types,
-                                 voltages=results.V_points[current_step, :],
+                                 voltages=results.V_points[t_idx, :],
                                  bus_active=bus_active,
-                                 loadings=np.abs(results.loading_points[current_step, :]),
-                                 Sf=results.Sbr_points[current_step, :],
-                                 St=-results.Sbr_points[current_step, :],
+                                 loadings=np.abs(results.loading_points[t_idx, :]),
+                                 Sf=results.Sbr_points[t_idx, :],
+                                 St=-results.Sbr_points[t_idx, :],
                                  br_active=br_active,
                                  hvdc_Pf=None,
                                  hvdc_Pt=None,
@@ -504,24 +502,24 @@ class DiagramsMain(CompiledArraysMain):
             results: sim.OptimalPowerFlowTimeSeriesResults = self.session.get_results(
                 sim.SimulationTypes.OPFTimeSeries_run
             )
-            bus_active = [bus.active_prof[current_step] for bus in self.circuit.buses]
-            br_active = [br.active_prof[current_step] for br in self.circuit.get_branches_wo_hvdc()]
-            hvdc_active = [hvdc.active_prof[current_step] for hvdc in self.circuit.hvdc_lines]
+            bus_active = [bus.active_prof[t_idx] for bus in self.circuit.buses]
+            br_active = [br.active_prof[t_idx] for br in self.circuit.get_branches_wo_hvdc()]
+            hvdc_active = [hvdc.active_prof[t_idx] for hvdc in self.circuit.hvdc_lines]
 
             return plot_function(buses=buses,
                                  branches=branches,
                                  hvdc_lines=hvdc_lines,
-                                 voltages=results.voltage[current_step, :],
-                                 Sbus=results.Sbus[current_step, :],
+                                 voltages=results.voltage[t_idx, :],
+                                 Sbus=results.Sbus[t_idx, :],
                                  types=results.bus_types,
                                  bus_active=bus_active,
-                                 Sf=results.Sf[current_step, :],
-                                 St=results.St[current_step, :],
-                                 loadings=np.abs(results.loading[current_step, :]),
+                                 Sf=results.Sf[t_idx, :],
+                                 St=results.St[t_idx, :],
+                                 loadings=np.abs(results.loading[t_idx, :]),
                                  br_active=br_active,
-                                 hvdc_Pf=results.hvdc_Pf[current_step, :],
-                                 hvdc_Pt=-results.hvdc_Pf[current_step, :],
-                                 hvdc_loading=results.hvdc_loading[current_step, :],
+                                 hvdc_Pf=results.hvdc_Pf[t_idx, :],
+                                 hvdc_Pt=-results.hvdc_Pf[t_idx, :],
+                                 hvdc_loading=results.hvdc_loading[t_idx, :],
                                  hvdc_active=hvdc_active,
                                  use_flow_based_width=use_flow_based_width,
                                  min_branch_width=min_branch_width,
@@ -559,20 +557,20 @@ class DiagramsMain(CompiledArraysMain):
         elif current_study == sim.LinearAnalysisTimeSeriesDriver.tpe.value:
             results: sim.LinearAnalysisTimeSeriesResults = self.session.get_results(
                 sim.SimulationTypes.LinearAnalysis_TS_run)
-            bus_active = [bus.active_prof[current_step] for bus in self.circuit.buses]
-            br_active = [br.active_prof[current_step] for br in self.circuit.get_branches_wo_hvdc()]
-            hvdc_active = [hvdc.active_prof[current_step] for hvdc in self.circuit.hvdc_lines]
+            bus_active = [bus.active_prof[t_idx] for bus in self.circuit.buses]
+            br_active = [br.active_prof[t_idx] for br in self.circuit.get_branches_wo_hvdc()]
+            hvdc_active = [hvdc.active_prof[t_idx] for hvdc in self.circuit.hvdc_lines]
 
             return plot_function(buses=buses,
                                  branches=branches,
                                  hvdc_lines=hvdc_lines,
-                                 Sbus=results.S[current_step],
-                                 voltages=results.voltage[current_step],
+                                 Sbus=results.S[t_idx],
+                                 voltages=results.voltage[t_idx],
                                  types=results.bus_types,
                                  bus_active=bus_active,
-                                 Sf=results.Sf[current_step],
-                                 St=-results.Sf[current_step],
-                                 loadings=np.abs(results.loading[current_step]),
+                                 Sf=results.Sf[t_idx],
+                                 St=-results.Sf[t_idx],
+                                 loadings=np.abs(results.loading[t_idx]),
                                  br_active=br_active,
                                  use_flow_based_width=use_flow_based_width,
                                  min_branch_width=min_branch_width,
@@ -587,42 +585,44 @@ class DiagramsMain(CompiledArraysMain):
             bus_active = [bus.active for bus in self.circuit.buses]
             br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
             hvdc_active = [hvdc.active for hvdc in self.circuit.hvdc_lines]
+            # TODO: the slider provides time now, not step
+            return
 
-            return plot_function(buses=buses,
-                                 branches=branches,
-                                 hvdc_lines=hvdc_lines,
-                                 Sbus=results.Sbus[current_step, :],
-                                 voltages=results.voltage[current_step, :],
-                                 types=results.bus_types,
-                                 bus_active=bus_active,
-                                 Sf=results.Sf[current_step, :],
-                                 St=-results.Sf[current_step, :],
-                                 loadings=np.abs(results.loading[current_step, :]),
-                                 br_active=br_active,
-                                 use_flow_based_width=use_flow_based_width,
-                                 min_branch_width=min_branch_width,
-                                 max_branch_width=max_branch_width,
-                                 min_bus_width=min_bus_width,
-                                 max_bus_width=max_bus_width,
-                                 cmap=cmap)
+            # return plot_function(buses=buses,
+            #                      branches=branches,
+            #                      hvdc_lines=hvdc_lines,
+            #                      Sbus=results.Sbus[t_idx, :],
+            #                      voltages=results.voltage[t_idx, :],
+            #                      types=results.bus_types,
+            #                      bus_active=bus_active,
+            #                      Sf=results.Sf[t_idx, :],
+            #                      St=-results.Sf[t_idx, :],
+            #                      loadings=np.abs(results.loading[t_idx, :]),
+            #                      br_active=br_active,
+            #                      use_flow_based_width=use_flow_based_width,
+            #                      min_branch_width=min_branch_width,
+            #                      max_branch_width=max_branch_width,
+            #                      min_bus_width=min_bus_width,
+            #                      max_bus_width=max_bus_width,
+            #                      cmap=cmap)
 
         elif current_study == sim.ContingencyAnalysisTimeSeries.tpe.value:
             results: sim.ContingencyAnalysisTimeSeriesResults = self.session.get_results(
                 sim.SimulationTypes.ContingencyAnalysisTS_run)
-            bus_active = [bus.active_prof[current_step] for bus in self.circuit.buses]
-            br_active = [br.active_prof[current_step] for br in self.circuit.get_branches_wo_hvdc()]
-            hvdc_active = [hvdc.active_prof[current_step] for hvdc in self.circuit.hvdc_lines]
+            bus_active = [bus.active_prof[t_idx] for bus in self.circuit.buses]
+            br_active = [br.active_prof[t_idx] for br in self.circuit.get_branches_wo_hvdc()]
+            hvdc_active = [hvdc.active_prof[t_idx] for hvdc in self.circuit.hvdc_lines]
 
             return plot_function(buses=buses,
                                  branches=branches,
                                  hvdc_lines=hvdc_lines,
                                  voltages=np.ones(results.nbus, dtype=complex),
-                                 Sbus=results.S[current_step, :],
+                                 Sbus=results.S[t_idx, :],
                                  types=results.bus_types,
                                  bus_active=bus_active,
-                                 Sf=results.max_flows[current_step, :],
-                                 St=-results.max_flows[current_step, :],
-                                 loadings=np.abs(results.max_loading[current_step]),
+                                 Sf=results.max_flows[t_idx, :],
+                                 St=-results.max_flows[t_idx, :],
+                                 loadings=np.abs(results.max_loading[t_idx]),
                                  br_active=br_active,
                                  use_flow_based_width=use_flow_based_width,
                                  min_branch_width=min_branch_width,
@@ -636,8 +636,8 @@ class DiagramsMain(CompiledArraysMain):
             results = self.session.get_results(sim.SimulationTypes.InputsAnalysis_run)
             nbus = self.circuit.get_bus_number()
             nbr = self.circuit.get_branch_number()
-            bus_active = [bus.active_prof[current_step] for bus in self.circuit.buses]
-            br_active = [br.active_prof[current_step] for br in self.circuit.get_branches_wo_hvdc()]
+            bus_active = [bus.active_prof[t_idx] for bus in self.circuit.buses]
+            br_active = [br.active_prof[t_idx] for br in self.circuit.get_branches_wo_hvdc()]
 
             # empty
             return plot_function(buses=buses,
@@ -675,29 +675,28 @@ class DiagramsMain(CompiledArraysMain):
         """
 
         if self.ui.available_results_to_color_comboBox.currentIndex() > -1:
+
             current_study = self.ui.available_results_to_color_comboBox.currentText()
-            current_step = self.ui.simulation_results_step_slider.value()
+            val = self.ui.diagram_step_slider.value()
+            t_idx = val if val > -1 else None
 
             for diagram in self.diagram_widgets_list:
 
                 if isinstance(diagram, BusBranchEditorWidget):
                     self.grid_colour_function(plot_function=diagram.colour_results,
                                               current_study=current_study,
-                                              current_step=current_step)
+                                              t_idx=t_idx)
 
                 elif isinstance(diagram, BusViewerWidget):
                     self.grid_colour_function(plot_function=diagram.colour_results,
                                               current_study=current_study,
-                                              current_step=current_step)
+                                              t_idx=t_idx)
                 elif isinstance(diagram, GridMapWidget):
                     self.grid_colour_function(plot_function=diagram.colour_results,
                                               current_study=current_study,
-                                              current_step=current_step)
+                                              t_idx=t_idx)
                 elif isinstance(diagram, NodeBreakerEditorWidget):
                     pass  # this is not implemented yet
-                    # self.grid_colour_function(plot_function=diagram.colour_results,
-                    #                           current_study=current_study,
-                    #                           current_step=current_step)
 
     def set_diagrams_list_view(self) -> None:
         """
@@ -1055,26 +1054,60 @@ class DiagramsMain(CompiledArraysMain):
         """
         After releasing the time slider, do something
         """
-        idx = self.ui.simulation_results_step_slider.value()
+        self.update_diagram_time_slider_texts()
+        idx = self.ui.diagram_step_slider.value()
 
-        if len(self.schematic_list_steps):
-            if idx > -1:
-                self.colour_diagrams()
-        else:
-            self.ui.schematic_step_label.setText("No steps")
+        # correct to interpret -1 as None
+        idx2 = idx if idx > -1 else None
 
-    def update_time_slider_texts(self):
+        # modify the time index in all the bus-branch diagrams
+        for diagram in self.diagram_widgets_list:
+            if isinstance(diagram, BusBranchEditorWidget):
+                diagram.set_time_index(time_index=idx2)
+
+                # TODO: consider other diagrams
+
+    def update_diagram_time_slider_texts(self):
         """
         Update the slider text label as it is moved
         :return:
         """
-        idx = self.ui.simulation_results_step_slider.value()
+        idx = self.ui.diagram_step_slider.value()
 
-        if len(self.schematic_list_steps):
-            if idx > -1:
-                self.ui.schematic_step_label.setText(self.schematic_list_steps[idx])
+        if idx > -1:
+            val = str(self.circuit.time_profile[idx])
+            self.ui.schematic_step_label.setText(val)
         else:
-            self.ui.schematic_step_label.setText("No steps")
+            self.ui.schematic_step_label.setText("Snapshot")
+
+    def objects_time_slider_change(self) -> None:
+        """
+        After releasing the time slider, do something
+        """
+        self.objects_diagram_time_slider_texts()
+
+        idx = self.ui.db_step_slider.value()
+
+        # correct to interpret -1 as None
+        idx2 = idx if idx > -1 else None
+
+        # modify the time index in the current DB objects model
+        mdl = self.ui.dataStructureTableView.model()
+        if isinstance(mdl, gf.ObjectsModel):
+            mdl.set_time_index(time_index=idx2)
+
+    def objects_diagram_time_slider_texts(self):
+        """
+        Update the slider text label as it is moved
+        :return:
+        """
+        idx = self.ui.db_step_slider.value()
+
+        if idx > -1:
+            val = str(self.circuit.time_profile[idx])
+            self.ui.db_step_label.setText(val)
+        else:
+            self.ui.db_step_label.setText("Snapshot")
 
     def export_diagram(self):
         """
@@ -1208,60 +1241,6 @@ class DiagramsMain(CompiledArraysMain):
                 diagram_widget.try_to_fix_buses_location(buses_selection=selected_buses)
             else:
                 info_msg('Choose some elements from the schematic', 'Fix buses locations')
-
-    def colour_next_simulation_step(self):
-        """
-        Next colour step
-        """
-        current_step = self.ui.simulation_results_step_slider.value()
-        count = self.ui.simulation_results_step_slider.maximum() + 1
-
-        if count > 0:
-            nxt = current_step + 1
-
-            if nxt >= count:
-                nxt = count - 1
-
-            self.ui.simulation_results_step_slider.setValue(nxt)
-
-            self.colour_diagrams()
-
-    def colour_previous_simulation_step(self):
-        """
-        Prev colour step
-        """
-        current_step = self.ui.simulation_results_step_slider.value()
-        count = self.ui.simulation_results_step_slider.maximum() + 1
-
-        if count > 0:
-            prv = current_step - 1
-
-            if prv < 0:
-                prv = 0
-
-            self.ui.simulation_results_step_slider.setValue(prv)
-
-            self.colour_diagrams()
-
-    def update_available_steps_to_color(self):
-        """
-        Update the available simulation steps in the combo box
-        """
-        if self.ui.available_results_to_color_comboBox.currentIndex() > -1:
-            current_study = self.ui.available_results_to_color_comboBox.currentText()
-
-            self.schematic_list_steps = self.available_results_steps_dict[current_study]
-
-            if len(self.schematic_list_steps) > 0:
-                self.ui.simulation_results_step_slider.setMinimum(0)
-                self.ui.simulation_results_step_slider.setMaximum(len(self.schematic_list_steps) - 1)
-                self.ui.simulation_results_step_slider.setSliderPosition(0)
-                self.ui.schematic_step_label.setText(self.schematic_list_steps[0])
-            else:
-                self.ui.simulation_results_step_slider.setMinimum(0)
-                self.ui.simulation_results_step_slider.setMaximum(0)
-                self.ui.simulation_results_step_slider.setSliderPosition(0)
-                self.ui.schematic_step_label.setText("No steps")
 
     def get_selected_devices(self) -> List[dev.EditableDevice]:
         """

@@ -9,7 +9,7 @@ from GridCalEngine.enumerations import ReactivePowerControlMode, CpfParametrizat
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_direct
-from GridCalEngine.Core.Topology.topology import compile_types
+from GridCalEngine.Core.Topology.simulation_indices import compile_types
 import GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions as cf
 from GridCalEngine.Utils.NumericalMethods.sparse_solve import get_sparse_type, get_linear_solver
 

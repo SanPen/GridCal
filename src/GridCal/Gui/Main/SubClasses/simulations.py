@@ -26,7 +26,7 @@ from matplotlib.colors import LinearSegmentedColormap
 # Engine imports
 import GridCalEngine.Core.Devices as dev
 import GridCalEngine.Simulations as sim
-import GridCalEngine.grid_analysis as grid_analysis
+import GridCalEngine.Simulations.PowerFlow.grid_analysis as grid_analysis
 import GridCal.Gui.GuiFunctions as gf
 import GridCal.Gui.Visualization.visualization as viz
 from GridCal.Gui.BusBranchEditorWidget import BusBranchEditorWidget
@@ -41,7 +41,7 @@ from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCalEngine.enumerations import (DeviceType, AvailableTransferMode, GenerationNtcFormulation, SolverType,
                                         ReactivePowerControlMode, TapsControlMode, MIPSolvers, TimeGrouping,
                                         ZonalGrouping, ContingencyMethod, InvestmentEvaluationMethod, EngineType,
-                                        BranchImpedanceMode)
+                                        BranchImpedanceMode, ResultTypes)
 
 
 class SimulationsMain(TimeEventsMain):
@@ -175,7 +175,7 @@ class SimulationsMain(TimeEventsMain):
         self.ptdf_group_modes = OrderedDict()
 
         # dictionaries for available results
-        self.available_results_dict: Union[Dict[str, List[sim.ResultTypes]], None] = dict()
+        self.available_results_dict: Union[Dict[str, List[ResultTypes]], None] = dict()
 
         self.buses_for_storage: Union[List[dev.Bus], None] = None
 
@@ -207,7 +207,6 @@ class SimulationsMain(TimeEventsMain):
         self.ui.actionFind_node_groups.triggered.connect(self.run_find_node_groups)
         self.ui.actionFuse_devices.triggered.connect(self.fuse_devices)
         self.ui.actionInvestments_evaluation.triggered.connect(self.run_investments_evaluation)
-        self.ui.delete_and_reduce_pushButton.clicked.connect(self.delete_and_reduce_selected_objects)
         self.ui.actionProcess_topology.triggered.connect(self.run_topology_processor)
 
         # combobox change
@@ -408,9 +407,7 @@ class SimulationsMain(TimeEventsMain):
         self.ui.available_results_to_color_comboBox.model().clear()
         self.ui.results_treeView.setModel(None)
 
-        self.ui.schematic_step_label.setText("")
-        self.ui.simulation_results_step_slider.setMinimum(0)
-        self.ui.simulation_results_step_slider.setMaximum(0)
+        self.setup_time_sliders()
 
         self.ui.simulationDataStructureTableView.setModel(None)
         self.ui.profiles_tableView.setModel(None)
@@ -960,9 +957,11 @@ class SimulationsMain(TimeEventsMain):
             pf_options=pf_options,
             lin_options=self.get_linear_options(),
             use_srap=self.ui.use_srap_checkBox.isChecked(),
-            srap_max_loading=self.ui.srap_loading_limit_doubleSpinBox.value(),
             srap_max_power=self.ui.srap_limit_doubleSpinBox.value(),
             srap_top_n=self.ui.srap_top_n_SpinBox.value(),
+            srap_deadband=self.ui.srap_deadband_doubleSpinBox.value(),
+            srap_rever_to_nominal_rating=self.ui.srap_revert_to_nominal_rating_checkBox.isChecked(),
+            detailed_massive_report=self.ui.contingency_detailed_massive_report_checkBox.isChecked(),
             engine=self.contingency_engines_dict[self.ui.contingencyEngineComboBox.currentText()]
         )
 
@@ -2642,89 +2641,6 @@ class SimulationsMain(TimeEventsMain):
             error_msg('Something went wrong, There are no power short circuit results.')
 
         if not self.session.is_anything_running():
-            self.UNLOCK()
-
-    def delete_and_reduce_selected_objects(self):
-        """
-        Delete and reduce the buses
-        This function removes the buses but whenever a bus is removed, the devices connected to it
-        are inherited by the bus of higher voltage that is connected.
-        If the bus is isolated, those devices are lost.
-        """
-        model = self.ui.dataStructureTableView.model()
-
-        if model is not None:
-            sel_idx = self.ui.dataStructureTableView.selectedIndexes()
-            objects = model.objects
-
-            if len(objects) > 0:
-
-                if objects[0].device_type == DeviceType.BusDevice:
-
-                    if len(sel_idx) > 0:
-
-                        reply = QtWidgets.QMessageBox.question(self, 'Message',
-                                                               'Do you want to reduce and delete the selected elements?',
-                                                               QtWidgets.QMessageBox.StandardButton.Yes,
-                                                               QtWidgets.QMessageBox.StandardButton.No)
-
-                        if reply == QtWidgets.QMessageBox.StandardButton.Yes:
-
-                            self.LOCK()
-
-                            self.add_simulation(sim.SimulationTypes.Delete_and_reduce_run)
-
-                            self.delete_and_reduce_driver = sim.DeleteAndReduce(grid=self.circuit,
-                                                                                objects=objects,
-                                                                                sel_idx=sel_idx)
-
-                            self.delete_and_reduce_driver.progress_signal.connect(self.ui.progressBar.setValue)
-                            self.delete_and_reduce_driver.progress_text.connect(self.ui.progress_label.setText)
-                            self.delete_and_reduce_driver.done_signal.connect(self.UNLOCK)
-                            self.delete_and_reduce_driver.done_signal.connect(
-                                self.post_delete_and_reduce_selected_objects)
-
-                            self.delete_and_reduce_driver.start()
-
-                        else:
-                            # selected QMessageBox.No
-                            pass
-
-                    else:
-                        # no selection
-                        pass
-
-                else:
-                    info_msg('This function is only applicable to buses')
-
-            else:
-                # no objects
-                pass
-        else:
-            pass
-
-    def post_delete_and_reduce_selected_objects(self):
-        """
-        POst delete and merge buses
-        """
-        if self.delete_and_reduce_driver is not None:
-
-            for diagram_widget in self.diagram_widgets_list:
-                if isinstance(diagram_widget, BusBranchEditorWidget):
-                    for bus in self.delete_and_reduce_driver.buses_merged:
-
-                        graphic_object = diagram_widget.diagram.query_point(bus)
-
-                        if graphic_object is not None:
-                            graphic_object.create_children_widgets()
-                            graphic_object.arrange_children()
-
-            self.redraw_current_diagram()
-
-            self.clear_results()
-
-            self.remove_simulation(sim.SimulationTypes.Delete_and_reduce_run)
-
             self.UNLOCK()
 
     def fuse_devices(self):

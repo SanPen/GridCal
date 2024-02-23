@@ -101,6 +101,13 @@ class Profile:
                  arr: Union[None, NumericVec] = None,
                  sparsity_threshold: float = 0.8,
                  is_sparse: bool = False):
+        """
+        Profile constructor
+        :param default_value: Default value
+        :param arr: Array to be set, if provided the array is analyzed and the default value is deduced from the array
+        :param sparsity_threshold: Threshold to consider an array sparse (0.8 -> 80% sparse is the default)
+        :param is_sparse: Is sparse? provide the value, if the array is provided, this is deduced from the array
+        """
 
         self._is_sparse: bool = is_sparse
 
@@ -165,6 +172,22 @@ class Profile:
         :return: bool
         """
         return self._initialized
+
+    @property
+    def sparse_array(self) -> Union[SparseArray, None]:
+        """
+        Sparse array getter
+        :return: SparseArray or None
+        """
+        return self._sparse_array
+
+    @property
+    def dense_array(self) -> Union[np.ndarray, None]:
+        """
+        Dense array getter
+        :return: numpy array or None
+        """
+        return self._dense_array
 
     def create_sparse(self, size: int, default_value: Numeric):
         """
@@ -248,6 +271,22 @@ class Profile:
             self._dtype = arr.dtype
 
         self._initialized = True
+
+    def __eq__(self, other: "Profile") -> bool:
+        """
+        Compare two profiles
+        :param other: Profile
+        :return: equal?
+        """
+        if self._is_sparse == other._is_sparse:
+
+            if self._is_sparse:
+                return self._sparse_array == other._sparse_array
+            else:
+                return np.array_equal(self._dense_array, other._dense_array)
+
+        else:
+            return False
 
     def __getitem__(self, key: int):
         """

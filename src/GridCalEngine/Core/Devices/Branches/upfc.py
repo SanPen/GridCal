@@ -29,7 +29,7 @@ class UPFC(BranchParent):
 
     def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='UPFC', code='', idtag=None, active=True,
                  rs=0.0, xs=0.00001, rp=0.0, xp=0.0, vp=1.0, Pset=0.0, Qset=0.0, rate=9999,
-                 mttf=0, mttr=0, cost=100, contingency_factor=1.0,
+                 mttf=0, mttr=0, cost=100, contingency_factor=1.0, protection_rating_factor: float = 1.4,
                  contingency_enabled=True, monitor_loading=True,
                  rs0=0.0, xs0=0.00001, rp0=0.0, xp0=0.0,
                  rs2=0.0, xs2=0.00001, rp2=0.0, xp2=0.0,
@@ -80,6 +80,7 @@ class UPFC(BranchParent):
                               active=active,
                               rate=rate,
                               contingency_factor=contingency_factor,
+                              protection_rating_factor=protection_rating_factor,
                               contingency_enabled=contingency_enabled,
                               monitor_loading=monitor_loading,
                               mttf=mttf,

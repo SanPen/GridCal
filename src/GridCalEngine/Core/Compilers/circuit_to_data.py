@@ -350,16 +350,21 @@ def get_generator_data(circuit: MultiCircuit,
             data.cost_1[k] = elm.Cost_prof[t_idx]
             data.cost_2[k] = elm.Cost2_prof[t_idx]
 
-            if elm.active_prof[t_idx] and elm.is_controlled:
+            if elm.active_prof[t_idx]:
 
-                if bus_data.bus_types[i] != 3:  # if it is not Slack
-                    bus_data.bus_types[i] = 2  # set as PV
+                if elm.srap_enabled_prof[t_idx] and data.p[k] > 0.0:
+                    bus_data.srap_availbale_power[i] += data.p[k]
 
-                    if not use_stored_guess:
-                        if Vbus[i].real == 1.0:
-                            Vbus[i] = complex(elm.Vset_prof[t_idx], 0)
-                        elif elm.Vset_prof[t_idx] != Vbus[i]:
-                            logger.add_error('Different set points', elm.bus.name, elm.Vset_prof[t_idx], Vbus[i])
+                if elm.is_controlled:
+
+                    if bus_data.bus_types[i] != 3:  # if it is not Slack
+                        bus_data.bus_types[i] = 2  # set as PV
+
+                        if not use_stored_guess:
+                            if Vbus[i].real == 1.0:
+                                Vbus[i] = complex(elm.Vset_prof[t_idx], 0)
+                            elif elm.Vset_prof[t_idx] != Vbus[i]:
+                                logger.add_error('Different set points', elm.bus.name, elm.Vset_prof[t_idx], Vbus[i])
 
         else:
             if opf_results is not None:
@@ -375,15 +380,20 @@ def get_generator_data(circuit: MultiCircuit,
             data.cost_1[k] = elm.Cost
             data.cost_2[k] = elm.Cost2
 
-            if elm.active and elm.is_controlled:
-                if bus_data.bus_types[i] != 3:  # if it is not Slack
-                    bus_data.bus_types[i] = 2  # set as PV
+            if elm.active:
 
-                if not use_stored_guess:
-                    if Vbus[i].real == 1.0:
-                        Vbus[i] = complex(elm.Vset, 0)
-                    elif elm.Vset != Vbus[i]:
-                        logger.add_error('Different set points', elm.bus.name, elm.Vset, Vbus[i])
+                if elm.srap_enabled and data.p[k] > 0.0:
+                    bus_data.srap_availbale_power[i] += data.p[k]
+
+                if elm.is_controlled:
+                    if bus_data.bus_types[i] != 3:  # if it is not Slack
+                        bus_data.bus_types[i] = 2  # set as PV
+
+                    if not use_stored_guess:
+                        if Vbus[i].real == 1.0:
+                            Vbus[i] = complex(elm.Vset, 0)
+                        elif elm.Vset != Vbus[i]:
+                            logger.add_error('Different set points', elm.bus.name, elm.Vset, Vbus[i])
 
         # reactive power limits, for the given power value
         if elm.use_reactive_power_curve:
@@ -479,15 +489,20 @@ def get_battery_data(circuit: MultiCircuit,
             data.cost_1[k] = elm.Cost_prof[t_idx]
             data.cost_2[k] = elm.Cost2_prof[t_idx]
 
-            if elm.active_prof[t_idx] and elm.is_controlled:
-                if bus_data.bus_types[i] != 3:  # if it is not Slack
-                    bus_data.bus_types[i] = 2  # set as PV
+            if elm.active_prof[t_idx]:
 
-                    if not use_stored_guess:
-                        if Vbus[i].real == 1.0:
-                            Vbus[i] = complex(elm.Vset_prof[t_idx], 0)
-                        elif elm.Vset_prof[t_idx] != Vbus[i]:
-                            logger.add_error('Different set points', elm.bus.name, elm.Vset_prof[t_idx], Vbus[i])
+                if elm.srap_enabled_prof[t_idx] and data.p[k] > 0.0:
+                    bus_data.srap_availbale_power[i] += data.p[k]
+
+                if elm.is_controlled:
+                    if bus_data.bus_types[i] != 3:  # if it is not Slack
+                        bus_data.bus_types[i] = 2  # set as PV
+
+                        if not use_stored_guess:
+                            if Vbus[i].real == 1.0:
+                                Vbus[i] = complex(elm.Vset_prof[t_idx], 0)
+                            elif elm.Vset_prof[t_idx] != Vbus[i]:
+                                logger.add_error('Different set points', elm.bus.name, elm.Vset_prof[t_idx], Vbus[i])
 
         else:
             if opf_results is not None:
@@ -503,15 +518,20 @@ def get_battery_data(circuit: MultiCircuit,
             data.cost_1[k] = elm.Cost
             data.cost_2[k] = elm.Cost2
 
-            if elm.active and elm.is_controlled:
-                if bus_data.bus_types[i] != 3:  # if it is not Slack
-                    bus_data.bus_types[i] = 2  # set as PV
+            if elm.active:
 
-                if not use_stored_guess:
-                    if Vbus[i].real == 1.0:
-                        Vbus[i] = complex(elm.Vset, 0)
-                    elif elm.Vset != Vbus[i]:
-                        logger.add_error('Different set points', elm.bus.name, elm.Vset, Vbus[i])
+                if elm.srap_enabled and data.p[k] > 0.0:
+                    bus_data.srap_availbale_power[i] += data.p[k]
+
+                if elm.is_controlled:
+                    if bus_data.bus_types[i] != 3:  # if it is not Slack
+                        bus_data.bus_types[i] = 2  # set as PV
+
+                    if not use_stored_guess:
+                        if Vbus[i].real == 1.0:
+                            Vbus[i] = complex(elm.Vset, 0)
+                        elif elm.Vset != Vbus[i]:
+                            logger.add_error('Different set points', elm.bus.name, elm.Vset, Vbus[i])
 
         # reactive power limits, for the given power value
         if elm.use_reactive_power_curve:
@@ -569,6 +589,7 @@ def get_branch_data(circuit: MultiCircuit,
             data.active[i] = elm.active_prof[t_idx]
             data.rates[i] = elm.rate_prof[t_idx]
             data.contingency_rates[i] = elm.rate_prof[t_idx] * elm.contingency_factor_prof[t_idx]
+            data.protection_rates[i] = elm.rate_prof[t_idx] * elm.protection_rating_factor_prof[t_idx]
 
             data.overload_cost[i] = elm.Cost_prof[t_idx]
 
@@ -576,6 +597,7 @@ def get_branch_data(circuit: MultiCircuit,
             data.active[i] = elm.active
             data.rates[i] = elm.rate
             data.contingency_rates[i] = elm.rate * elm.contingency_factor
+            data.protection_rates[i] = elm.rate * elm.protection_rating_factor
 
             data.overload_cost[i] = elm.Cost
 
@@ -636,11 +658,13 @@ def get_branch_data(circuit: MultiCircuit,
             data.active[ii] = elm.active_prof[t_idx]
             data.rates[ii] = elm.rate_prof[t_idx]
             data.contingency_rates[ii] = elm.rate_prof[t_idx] * elm.contingency_factor_prof[t_idx]
+            data.protection_rates[ii] = elm.rate_prof[t_idx] * elm.protection_rating_factor_prof[t_idx]
             data.overload_cost[ii] = elm.Cost_prof[t_idx]
         else:
             data.active[ii] = elm.active
             data.rates[ii] = elm.rate
             data.contingency_rates[ii] = elm.rate * elm.contingency_factor
+            data.protection_rates[ii] = elm.rate * elm.protection_rating_factor
             data.overload_cost[ii] = elm.Cost
 
         data.C_branch_bus_f[ii, f] = 1
@@ -684,11 +708,13 @@ def get_branch_data(circuit: MultiCircuit,
             data.active[ii] = elm.active_prof[t_idx]
             data.rates[ii] = elm.rate_prof[t_idx]
             data.contingency_rates[ii] = elm.rate_prof[t_idx] * elm.contingency_factor_prof[t_idx]
+            data.protection_rates[ii] = elm.rate_prof[t_idx] * elm.protection_rating_factor_prof[t_idx]
             data.overload_cost[ii] = elm.Cost_prof[t_idx]
         else:
             data.active[ii] = elm.active
             data.rates[ii] = elm.rate
             data.contingency_rates[ii] = elm.rate * elm.contingency_factor
+            data.protection_rates[ii] = elm.rate * elm.protection_rating_factor
             data.overload_cost[ii] = elm.Cost
 
         data.C_branch_bus_f[ii, f] = 1
@@ -765,11 +791,13 @@ def get_branch_data(circuit: MultiCircuit,
                 data.active[ii] = elm.active_prof[t_idx]
                 data.rates[ii] = elm.rate_prof[t_idx]
                 data.contingency_rates[ii] = elm.rate_prof[t_idx] * elm.contingency_factor_prof[t_idx]
+                data.protection_rates[ii] = elm.rate_prof[t_idx] * elm.protection_rating_factor_prof[t_idx]
                 data.overload_cost[ii] = elm.Cost_prof[t_idx]
             else:
                 data.active[ii] = elm.active
                 data.rates[ii] = elm.rate
                 data.contingency_rates[ii] = elm.rate * elm.contingency_factor
+                data.protection_rates[ii] = elm.rate * elm.protection_rating_factor
                 data.overload_cost[ii] = elm.Cost
 
             f = bus_dict[elm.bus_from]
@@ -853,11 +881,13 @@ def get_branch_data(circuit: MultiCircuit,
             data.active[ii] = elm.active_prof[t_idx]
             data.rates[ii] = elm.rate_prof[t_idx]
             data.contingency_rates[ii] = elm.rate_prof[t_idx] * elm.contingency_factor_prof[t_idx]
+            data.protection_rates[ii] = elm.rate_prof[t_idx] * elm.protection_rating_factor_prof[t_idx]
             data.overload_cost[ii] = elm.Cost_prof[t_idx]
         else:
             data.active[ii] = elm.active
             data.rates[ii] = elm.rate
             data.contingency_rates[ii] = elm.rate * elm.contingency_factor
+            data.protection_rates[ii] = elm.rate * elm.protection_rating_factor
             data.overload_cost[ii] = elm.Cost
 
         data.C_branch_bus_f[ii, f] = 1
@@ -955,11 +985,13 @@ def get_branch_data(circuit: MultiCircuit,
             data.active[ii] = elm.active_prof[t_idx]
             data.rates[ii] = elm.rate_prof[t_idx]
             data.contingency_rates[ii] = elm.rate_prof[t_idx] * elm.contingency_factor_prof[t_idx]
+            data.protection_rates[ii] = elm.rate_prof[t_idx] * elm.protection_rating_factor_prof[t_idx]
             data.overload_cost[ii] = elm.Cost_prof[t_idx]
         else:
             data.active[ii] = elm.active
             data.rates[ii] = elm.rate
             data.contingency_rates[ii] = elm.rate * elm.contingency_factor
+            data.protection_rates[ii] = elm.rate * elm.protection_rating_factor
             data.overload_cost[ii] = elm.Cost
 
         data.C_branch_bus_f[ii, f] = 1
@@ -1028,6 +1060,7 @@ def get_hvdc_data(circuit: MultiCircuit,
             data.active[i] = elm.active_prof[t_idx]
             data.rate[i] = elm.rate_prof[t_idx]
             data.contingency_rate[i] = elm.rate_prof[t_idx] * elm.contingency_factor_prof[t_idx]
+            data.protection_rates[i] = elm.rate_prof[t_idx] * elm.protection_rating_factor_prof[t_idx]
             data.angle_droop[i] = elm.angle_droop_prof[t_idx]
 
             if opf_results is not None:
@@ -1050,6 +1083,7 @@ def get_hvdc_data(circuit: MultiCircuit,
             data.active[i] = elm.active
             data.rate[i] = elm.rate
             data.contingency_rate[i] = elm.rate * elm.contingency_factor
+            data.protection_rates[i] = elm.rate * elm.protection_rating_factor
             data.angle_droop[i] = elm.angle_droop
             data.r[i] = elm.r
 

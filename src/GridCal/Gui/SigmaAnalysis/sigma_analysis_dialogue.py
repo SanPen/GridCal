@@ -9,6 +9,9 @@ from GridCalEngine.Simulations.SigmaAnalysis.sigma_analysis_driver import SigmaA
 
 
 class SigmaAnalysisGUI(QtWidgets.QMainWindow):
+    """
+    SigmaAnalysisGUI
+    """
 
     def __init__(self, parent=None, results: SigmaAnalysisResults = None, bus_names=None,
                  good_coefficients=True):
