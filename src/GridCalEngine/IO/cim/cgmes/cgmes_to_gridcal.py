@@ -21,9 +21,11 @@ from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 import GridCalEngine.Core.Devices as gcdev
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
 from GridCalEngine.IO.cim.cgmes.cgmes_export import CgmesExporter
-from GridCalEngine.IO.cim.cgmes.cgmes_utils import get_nominal_voltage, get_pu_values_power_transformer, \
-    get_pu_values_ac_line_segment, \
-    get_rate, get_values_shunt, get_regulating_control
+from GridCalEngine.IO.cim.cgmes.cgmes_utils import (get_nominal_voltage,
+    get_pu_values_ac_line_segment,
+    get_rate, get_values_shunt,
+    get_pu_values_power_transformer, get_pu_values_power_transformer3w, get_windings,
+    get_regulating_control)
 from GridCalEngine.data_logger import DataLogger
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.identified_object import IdentifiedObject
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.terminal import Terminal
@@ -186,7 +188,9 @@ def get_gcdev_loads(cgmes_model: CgmesCircuit,
     :param logger:
     """
     # convert loads
-    for device_list in [cgmes_model.ConformLoad_list, cgmes_model.NonConformLoad_list]:
+    for device_list in [cgmes_model.EnergyConsumer_list,
+                        cgmes_model.ConformLoad_list,
+                        cgmes_model.NonConformLoad_list]:
         for cgmes_elm in device_list:
             calc_nodes, cns = find_connections(cgmes_elm=cgmes_elm,
                                                device_to_terminal_dict=device_to_terminal_dict,
@@ -471,7 +475,8 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
 
         for cgmes_elm in device_list:
 
-            windings: List[PowerTransformerEnd] = list(cgmes_elm.references_to_me['PowerTransformerEnd'])
+            windings = get_windings(cgmes_elm)
+            # windings: List[PowerTransformerEnd] = list(cgmes_elm.references_to_me['PowerTransformerEnd'])
 
             if len(windings) == 2:
                 calc_nodes, cns = find_connections(cgmes_elm=cgmes_elm,
@@ -525,6 +530,58 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                                      value=len(calc_nodes),
                                      expected_value=2)
 
+            elif len(windings) == 3:
+                calc_nodes, cns = find_connections(cgmes_elm=cgmes_elm,
+                                                   device_to_terminal_dict=device_to_terminal_dict,
+                                                   calc_node_dict=calc_node_dict,
+                                                   cn_dict=cn_dict,
+                                                   logger=logger)
+
+                if len(calc_nodes) == 3:
+                    calc_node_1 = calc_nodes[0]
+                    calc_node_2 = calc_nodes[1]
+                    calc_node_3 = calc_nodes[2]
+                    cn_1 = cns[0]
+                    cn_2 = cns[1]
+                    cn_3 = cns[2]
+
+                    v1 = windings[0].BaseVoltage.nominalVoltage
+                    v2 = windings[1].BaseVoltage.nominalVoltage
+                    v3 = windings[2].BaseVoltage.nominalVoltage
+                    HV = max(v1, v2, v3)
+                    LV = min(v1, v2, v3)
+                    # get per unit values
+
+                    r12, r23, r31, x12, x23, x31 = get_pu_values_power_transformer3w(cgmes_elm, Sbase)
+
+                    gcdev_elm = gcdev.Transformer3W(idtag=cgmes_elm.uuid,
+                                                    code=cgmes_elm.description,
+                                                    name=cgmes_elm.name,
+                                                    active=True,
+                                                    bus1=calc_node_1,
+                                                    bus2=calc_node_2,
+                                                    bus3=calc_node_3,
+                                                    V1=v1,
+                                                    V2=v2,
+                                                    V3=v3,
+                                                    r12=r12, r23=r23, r31=r31,
+                                                    x12=x12, x23=x23, x31=x31,
+                                                    rate12=windings[0].ratedS,
+                                                    rate23=windings[1].ratedS,
+                                                    rate31=windings[2].ratedS,
+                                                    x=0.0, y=0.0
+                                                    )
+
+                    gcdev_model.add_transformer3w(gcdev_elm)
+
+                else:
+                    logger.add_error(msg='Not exactly three terminals',
+                                     device=cgmes_elm.rdfid,
+                                     device_class=cgmes_elm.tpe,
+                                     device_property="number of associated terminals",
+                                     value=len(calc_nodes),
+                                     expected_value=2)
+
             else:
                 logger.add_error(msg='Transformers with {} windings not supported yet'.format(len(windings)),
                                  device=cgmes_elm.rdfid,
@@ -552,8 +609,10 @@ def get_gcdev_shunts(cgmes_model: CgmesCircuit,
     :param logger:
     """
     # convert shunts
-    for device_list in [cgmes_model.LinearShuntCompensator_list]:
+    for device_list in [cgmes_model.LinearShuntCompensator_list, cgmes_model.NonlinearShuntCompensator_list]:
+
         for cgmes_elm in device_list:
+
             calc_nodes, cns = find_connections(cgmes_elm=cgmes_elm,
                                                device_to_terminal_dict=device_to_terminal_dict,
                                                calc_node_dict=calc_node_dict,
@@ -568,6 +627,10 @@ def get_gcdev_shunts(cgmes_model: CgmesCircuit,
                 G, B, G0, B0 = get_values_shunt(shunt=cgmes_elm,
                                                 logger=logger,
                                                 Sbase=Sbase)
+                v_set, is_controlled = get_regulating_control(
+                    cgmes_elm=cgmes_elm,
+                    cgmes_enums=cgmes_enums,
+                    logger=logger)
 
                 gcdev_elm = gcdev.Shunt(
                     idtag=cgmes_elm.uuid,
@@ -580,8 +643,8 @@ def get_gcdev_shunts(cgmes_model: CgmesCircuit,
                     Bmax=B * cgmes_elm.maximumSections,
                     Bmin=B,
                     active=True,        # TODO what is this?
-                    controlled=False,
-                    vset=1,
+                    controlled=is_controlled,
+                    vset=v_set,
                     # bus=calc_node,  # ?
                     # cn=cn,  # ?
                 )

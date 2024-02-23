@@ -39,8 +39,8 @@ def cgmes_object():
     circuit.ACLineSegment_list[0].bch = 100
     circuit.ACLineSegment_list[0].r0 = 100
     circuit.ACLineSegment_list[0].x0 = 100
-    circuit.ACLineSegment_list[0].gch0 = 100
-    circuit.ACLineSegment_list[0].bch0 = 100
+    circuit.ACLineSegment_list[0].g0ch = 100
+    circuit.ACLineSegment_list[0].b0ch = 100
     return circuit
 
 
@@ -73,7 +73,7 @@ def device_to_terminal_dict_object() -> Dict[str, List[Terminal]]:
 
 
 generators_test_params = [(cgmes_object(), calc_node_dict_object(), cn_dict_object(),
-                           device_to_terminal_dict_object(), 10, 1000.0, 0.0, 1e-20, 100.0, 10.0, 10.0, 1e-20, 10.0, 10,
+                           device_to_terminal_dict_object(), 10, 1000.0, 1000.0, 1e-20, 100.0, 10.0, 10.0, 1e-20, 10.0, 10,
                            10, 10.0, 10.0, 1e-20, 1e-20, 20, 20)]
 
 
@@ -107,3 +107,5 @@ def test_ac_lines(cgmes_model, calc_node_dict, cn_dict, device_to_terminal_dict,
     assert generated_ac_line.rate == expected_rate
     assert generated_ac_line.temp_base == expected_temp_base
     assert generated_ac_line.temp_oper == expected_temp_oper
+    assert len(logger.entries) == 1
+    assert logger.entries[0].msg == 'Not exactly two terminals'
