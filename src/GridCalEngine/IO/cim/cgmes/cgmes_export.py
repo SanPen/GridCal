@@ -1,4 +1,4 @@
-import polars as pl
+# import polars as pl  # TOOD: REMOVE This dependency ASAP
 from rdflib.util import first
 from rdflib import Graph, RDFS, RDF, Namespace, OWL, IdentifiedNode, plugin
 import rdflib
@@ -208,7 +208,6 @@ class CgmesExporter:
                             else:
                                 if isinstance(attr_value, bool):
                                     attr_value = str(attr_value).lower()
-
 
                                 if graph is not None:
                                     graph.add((obj_id, RDF.type, rdflib.URIRef(filt_property[0, 1].__str__())))
