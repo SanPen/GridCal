@@ -1,7 +1,7 @@
 
 import numpy as np
 from GridCalEngine.Simulations.results_table import ResultsTable
-from GridCalEngine.Utils.Filtering.filtering import FilterResultsTable
+from GridCalEngine.Utils.Filtering.results_table_filtering import FilterResultsTable
 
 ncols = 10
 nrows = 20
