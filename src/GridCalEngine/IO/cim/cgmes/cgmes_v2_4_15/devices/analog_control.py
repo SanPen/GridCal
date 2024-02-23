@@ -23,8 +23,8 @@ class AnalogControl(Control):
 	def __init__(self, rdfid='', tpe='AnalogControl'):
 		Control.__init__(self, rdfid, tpe)
 
-		self.maxValue: float = 0.0
-		self.minValue: float = 0.0
+		self.maxValue: float = None
+		self.minValue: float = None
 
 		self.register_property(
 			name='maxValue',

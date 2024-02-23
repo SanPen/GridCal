@@ -31,7 +31,7 @@ class TransformerEnd(IdentifiedObject):
 		self.RatioTapChanger: RatioTapChanger | None = None
 		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.terminal import Terminal
 		self.Terminal: Terminal | None = None
-		self.endNumber: int = 0
+		self.endNumber: int = None
 
 		self.register_property(
 			name='BaseVoltage',

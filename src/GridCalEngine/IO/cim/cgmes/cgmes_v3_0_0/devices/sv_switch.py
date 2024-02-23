@@ -23,7 +23,7 @@ class SvSwitch(Base):
 	def __init__(self, rdfid, tpe, resources=list(), class_replacements=dict()):
 		Base.__init__(self, rdfid=rdfid, tpe=tpe, resources=resources, class_replacements=class_replacements)
 
-		self.open: bool = False
+		self.open: bool = None
 		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.switch import Switch
 		self.Switch: Switch | None = None
 

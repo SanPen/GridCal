@@ -23,12 +23,12 @@ class ACDCTerminal(IdentifiedObject):
 	def __init__(self, rdfid='', tpe='ACDCTerminal'):
 		IdentifiedObject.__init__(self, rdfid, tpe)
 
-		self.sequenceNumber: int = 0
+		self.sequenceNumber: int = None
 		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.operational_limit_set import OperationalLimitSet
 		self.OperationalLimitSet: OperationalLimitSet | None = None
 		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.bus_name_marker import BusNameMarker
 		self.BusNameMarker: BusNameMarker | None = None
-		self.connected: bool = False
+		self.connected: bool = None
 
 		self.register_property(
 			name='sequenceNumber',

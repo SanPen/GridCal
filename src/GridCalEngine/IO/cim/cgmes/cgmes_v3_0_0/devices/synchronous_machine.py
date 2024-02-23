@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.rotating_machine import RotatingMachine
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile, SynchronousMachineOperatingMode, UnitSymbol, SynchronousMachineKind
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile, SynchronousMachineOperatingMode, SynchronousMachineKind, UnitSymbol
 
 
 class SynchronousMachine(RotatingMachine):
@@ -25,12 +25,12 @@ class SynchronousMachine(RotatingMachine):
 
 		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.reactive_capability_curve import ReactiveCapabilityCurve
 		self.InitialReactiveCapabilityCurve: ReactiveCapabilityCurve | None = None
-		self.maxQ: float = 0.0
-		self.minQ: float = 0.0
-		self.qPercent: float = 0.0
+		self.maxQ: float = None
+		self.minQ: float = None
+		self.qPercent: float = None
 		self.type: SynchronousMachineKind = None
 		self.operatingMode: SynchronousMachineOperatingMode = None
-		self.referencePriority: int = 0
+		self.referencePriority: int = None
 
 		self.register_property(
 			name='InitialReactiveCapabilityCurve',

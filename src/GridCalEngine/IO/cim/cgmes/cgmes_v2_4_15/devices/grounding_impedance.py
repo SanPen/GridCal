@@ -23,7 +23,7 @@ class GroundingImpedance(EarthFaultCompensator):
 	def __init__(self, rdfid='', tpe='GroundingImpedance'):
 		EarthFaultCompensator.__init__(self, rdfid, tpe)
 
-		self.x: float = 0.0
+		self.x: float = None
 
 		self.register_property(
 			name='x',

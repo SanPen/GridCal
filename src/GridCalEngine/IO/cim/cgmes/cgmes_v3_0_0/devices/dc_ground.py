@@ -23,8 +23,8 @@ class DCGround(DCConductingEquipment):
 	def __init__(self, rdfid='', tpe='DCGround'):
 		DCConductingEquipment.__init__(self, rdfid, tpe)
 
-		self.inductance: float = 0.0
-		self.r: float = 0.0
+		self.inductance: float = None
+		self.r: float = None
 
 		self.register_property(
 			name='inductance',

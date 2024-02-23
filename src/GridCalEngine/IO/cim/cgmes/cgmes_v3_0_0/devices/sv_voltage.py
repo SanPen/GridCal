@@ -23,8 +23,8 @@ class SvVoltage(Base):
 	def __init__(self, rdfid, tpe, resources=list(), class_replacements=dict()):
 		Base.__init__(self, rdfid=rdfid, tpe=tpe, resources=resources, class_replacements=class_replacements)
 
-		self.angle: float = 0.0
-		self.v: float = 0.0
+		self.angle: float = None
+		self.v: float = None
 		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.topological_node import TopologicalNode
 		self.TopologicalNode: TopologicalNode | None = None
 

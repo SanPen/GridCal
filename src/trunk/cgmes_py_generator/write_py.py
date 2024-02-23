@@ -178,16 +178,16 @@ def get_attribute_code(attributes):
         if "datatype" in attribute:  # Attribute
             data_type = attribute["datatype"]
             if data_type == "Float" or data_type == "Decimal":
-                default_value = "float = 0.0"
+                default_value = "float = None"
             elif data_type == "Integer":
-                default_value = "int = 0"
+                default_value = "int = None"
             elif data_type == "DateTime" or data_type == "MonthDay":
                 default_value = "datetime.datetime | None = None"
                 code += f"\t\timport datetime\n"
             elif data_type == "Boolean":
-                default_value = "bool = False"
+                default_value = "bool = None"
             elif data_type == "String":
-                default_value = "str = ''"
+                default_value = "str = None"
             code += f"\t\tself.{attr_name}: {default_value}\n"
         elif "range" in attribute:  # Association
             assoc_range = attribute["range"]

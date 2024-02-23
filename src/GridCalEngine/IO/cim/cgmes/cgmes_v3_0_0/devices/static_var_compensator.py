@@ -16,19 +16,19 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.regulating_cond_eq import RegulatingCondEq
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile, SVCControlMode, UnitSymbol
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile, UnitSymbol, SVCControlMode
 
 
 class StaticVarCompensator(RegulatingCondEq):
 	def __init__(self, rdfid='', tpe='StaticVarCompensator'):
 		RegulatingCondEq.__init__(self, rdfid, tpe)
 
-		self.capacitiveRating: float = 0.0
-		self.inductiveRating: float = 0.0
-		self.slope: float = 0.0
+		self.capacitiveRating: float = None
+		self.inductiveRating: float = None
+		self.slope: float = None
 		self.sVCControlMode: SVCControlMode = None
-		self.voltageSetPoint: float = 0.0
-		self.q: float = 0.0
+		self.voltageSetPoint: float = None
+		self.q: float = None
 
 		self.register_property(
 			name='capacitiveRating',

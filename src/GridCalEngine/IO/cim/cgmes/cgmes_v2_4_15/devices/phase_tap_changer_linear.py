@@ -23,9 +23,9 @@ class PhaseTapChangerLinear(PhaseTapChanger):
 	def __init__(self, rdfid='', tpe='PhaseTapChangerLinear'):
 		PhaseTapChanger.__init__(self, rdfid, tpe)
 
-		self.stepPhaseShiftIncrement: float = 0.0
-		self.xMax: float = 0.0
-		self.xMin: float = 0.0
+		self.stepPhaseShiftIncrement: float = None
+		self.xMax: float = None
+		self.xMin: float = None
 
 		self.register_property(
 			name='stepPhaseShiftIncrement',

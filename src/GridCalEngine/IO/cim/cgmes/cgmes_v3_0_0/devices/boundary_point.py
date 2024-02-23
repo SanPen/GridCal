@@ -23,14 +23,14 @@ class BoundaryPoint(PowerSystemResource):
 	def __init__(self, rdfid='', tpe='BoundaryPoint'):
 		PowerSystemResource.__init__(self, rdfid, tpe)
 
-		self.fromEndIsoCode: str = ''
-		self.fromEndName: str = ''
-		self.fromEndNameTso: str = ''
-		self.toEndIsoCode: str = ''
-		self.toEndName: str = ''
-		self.toEndNameTso: str = ''
-		self.isDirectCurrent: bool = False
-		self.isExcludedFromAreaInterchange: bool = False
+		self.fromEndIsoCode: str = None
+		self.fromEndName: str = None
+		self.fromEndNameTso: str = None
+		self.toEndIsoCode: str = None
+		self.toEndName: str = None
+		self.toEndNameTso: str = None
+		self.isDirectCurrent: bool = None
+		self.isExcludedFromAreaInterchange: bool = None
 		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.connectivity_node import ConnectivityNode
 		self.ConnectivityNode: ConnectivityNode | None = None
 

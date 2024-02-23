@@ -23,7 +23,7 @@ class PhaseTapChangerAsymmetrical(PhaseTapChangerNonLinear):
 	def __init__(self, rdfid='', tpe='PhaseTapChangerAsymmetrical'):
 		PhaseTapChangerNonLinear.__init__(self, rdfid, tpe)
 
-		self.windingConnectionAngle: float = 0.0
+		self.windingConnectionAngle: float = None
 
 		self.register_property(
 			name='windingConnectionAngle',
