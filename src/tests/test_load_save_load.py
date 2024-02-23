@@ -52,4 +52,8 @@ def test_load_save_load() -> None:
         # compare the original grid with the saved one to check that they are equal
         equal, logger = grid1.compare_circuits(grid2, detailed_profile_comparison=True)
 
+        # asset for failing
         assert equal
+
+        # if all ok, we can remove the test file
+        os.remove(fname2)
