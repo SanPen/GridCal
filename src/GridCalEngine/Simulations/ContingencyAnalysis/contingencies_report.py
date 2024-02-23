@@ -320,13 +320,16 @@ class ContingencyResultsReport:
                 contingency_idx: int,
                 contingency_group: ContingencyGroup,
                 using_srap: bool = False,
-                srap_max_loading: float = 1.4,
+                srap_ratings: Union[Vec, None] = None,
                 srap_max_power: float = 1400.0,
+                srap_deadband: float = 0.0,
+                srap_rever_to_nominal_rating: bool = False,
                 multi_contingency: LinearMultiContingency = None,
                 PTDF: Mat = None,
                 available_power: Vec = None,
                 srap_used_power: Mat = None,
-                top_n: int = 5):
+                top_n: int = 5,
+                detailed_massive_report: bool = True):
         """
         Analize contingency resuts and add them to the report
         :param t: time index
@@ -340,13 +343,16 @@ class ContingencyResultsReport:
         :param contingency_idx: contingency group index
         :param contingency_group: ContingencyGroup
         :param using_srap: Inspect contingency using the SRAP conditions
-        :param srap_max_loading: Rate multiplier under which we can use SRAP conditions
+        :param srap_ratings: Array of protection ratings of the branches to use with SRAP
         :param srap_max_power: Max amount of power to lower using SRAP conditions
+        :param srap_deadband: (in %)
+        :param srap_rever_to_nominal_rating:
         :param multi_contingency: list of buses for SRAP conditions
         :param PTDF: PTDF for SRAP conditions
         :param available_power: Array of power avaiable for SRAP
         :param srap_used_power: (branch, nbus) matrix to stre SRAP usage
         :param top_n: maximum number of nodes affecting the oveload
+        :param detailed_massive_report: Generate massive report
         """
         for m in mon_idx:  # for each monitored branch ...
 
@@ -356,7 +362,7 @@ class ContingencyResultsReport:
             # ----------------------------------------------------------------------------------------------------------
             # perform the analysis
             # ----------------------------------------------------------------------------------------------------------
-            srap_condition = 1.0 < abs(contingency_loadings[m]) <= srap_max_loading
+            srap_condition = 1.0 < b_flow[m] <= srap_ratings[m]
             if using_srap and srap_condition:
 
                 # compute the sensitivities for the monitored line with all buses
@@ -383,27 +389,7 @@ class ContingencyResultsReport:
                     srap_used_power=srap_used_power
                 )
 
-                self.add(time_index=t if t is not None else 0,
-                         base_name=numerical_circuit.branch_data.names[m],
-                         base_uuid=calc_branches[m].idtag,
-                         base_flow=b_flow,
-                         base_rating=numerical_circuit.branch_data.rates[m],
-                         base_loading=abs(base_loading[m] * 100.0),
-                         contingency_idx=contingency_idx,
-                         contingency_name=contingency_group.name,
-                         contingency_uuid=contingency_group.idtag,
-                         post_contingency_flow=c_flow,
-                         contingency_rating=numerical_circuit.branch_data.contingency_rates[m],
-                         post_contingency_loading=abs(contingency_loadings[m]) * 100.0,
-                         solved_by_srap=solved_by_srap,
-                         srap_power=max_srap_power,
-                         srap_bus_indices=None)
-
-            else:
-
-                if c_flow > numerical_circuit.contingency_rates[m]:
-                    # if the contingency flow is greater than the rate ...
-
+                if detailed_massive_report:
                     self.add(time_index=t if t is not None else 0,
                              base_name=numerical_circuit.branch_data.names[m],
                              base_uuid=calc_branches[m].idtag,
@@ -415,4 +401,26 @@ class ContingencyResultsReport:
                              contingency_uuid=contingency_group.idtag,
                              post_contingency_flow=c_flow,
                              contingency_rating=numerical_circuit.branch_data.contingency_rates[m],
-                             post_contingency_loading=abs(contingency_loadings[m]) * 100.0)
+                             post_contingency_loading=abs(contingency_loadings[m]) * 100.0,
+                             solved_by_srap=solved_by_srap,
+                             srap_power=max_srap_power,
+                             srap_bus_indices=None)
+
+            else:
+
+                if c_flow > numerical_circuit.contingency_rates[m]:
+                    # if the contingency flow is greater than the rate ...
+
+                    if detailed_massive_report:
+                        self.add(time_index=t if t is not None else 0,
+                                 base_name=numerical_circuit.branch_data.names[m],
+                                 base_uuid=calc_branches[m].idtag,
+                                 base_flow=b_flow,
+                                 base_rating=numerical_circuit.branch_data.rates[m],
+                                 base_loading=abs(base_loading[m] * 100.0),
+                                 contingency_idx=contingency_idx,
+                                 contingency_name=contingency_group.name,
+                                 contingency_uuid=contingency_group.idtag,
+                                 post_contingency_flow=c_flow,
+                                 contingency_rating=numerical_circuit.branch_data.contingency_rates[m],
+                                 post_contingency_loading=abs(contingency_loadings[m]) * 100.0)

@@ -40,6 +40,7 @@ class BusData:
         self.angle_max: Vec = np.full(nbus, fill_value=3.14, dtype=float)
         self.bus_types: IntVec = np.empty(nbus, dtype=int)
         self.installed_power: Vec = np.zeros(nbus, dtype=float)
+        self.srap_availbale_power: Vec = np.zeros(nbus, dtype=float)
         self.is_dc: BoolVec = np.empty(nbus, dtype=bool)
         self.areas: IntVec = np.empty(nbus, dtype=int)
         self.substations: IntVec = np.empty(nbus, dtype=int)
@@ -68,6 +69,7 @@ class BusData:
 
         data.bus_types = self.bus_types[elm_idx]
         data.installed_power = self.installed_power[elm_idx]
+        data.srap_availbale_power = self.srap_availbale_power[elm_idx]
         data.is_dc = self.is_dc[elm_idx]
         data.areas = self.areas[elm_idx]
         data.substations = self.substations[elm_idx]
@@ -105,6 +107,7 @@ class BusData:
 
         data.bus_types = self.bus_types.copy()
         data.installed_power = self.installed_power.copy()
+        data.srap_availbale_power = self.srap_availbale_power.copy()
         data.is_dc = self.is_dc.copy()
         data.areas = self.areas.copy()
         data.substations = self.substations.copy()

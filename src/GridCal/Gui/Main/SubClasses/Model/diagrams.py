@@ -585,24 +585,26 @@ class DiagramsMain(CompiledArraysMain):
             bus_active = [bus.active for bus in self.circuit.buses]
             br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
             hvdc_active = [hvdc.active for hvdc in self.circuit.hvdc_lines]
+            # TODO: the slider provides time now, not step
+            return
 
-            return plot_function(buses=buses,
-                                 branches=branches,
-                                 hvdc_lines=hvdc_lines,
-                                 Sbus=results.Sbus[t_idx, :],
-                                 voltages=results.voltage[t_idx, :],
-                                 types=results.bus_types,
-                                 bus_active=bus_active,
-                                 Sf=results.Sf[t_idx, :],
-                                 St=-results.Sf[t_idx, :],
-                                 loadings=np.abs(results.loading[t_idx, :]),
-                                 br_active=br_active,
-                                 use_flow_based_width=use_flow_based_width,
-                                 min_branch_width=min_branch_width,
-                                 max_branch_width=max_branch_width,
-                                 min_bus_width=min_bus_width,
-                                 max_bus_width=max_bus_width,
-                                 cmap=cmap)
+            # return plot_function(buses=buses,
+            #                      branches=branches,
+            #                      hvdc_lines=hvdc_lines,
+            #                      Sbus=results.Sbus[t_idx, :],
+            #                      voltages=results.voltage[t_idx, :],
+            #                      types=results.bus_types,
+            #                      bus_active=bus_active,
+            #                      Sf=results.Sf[t_idx, :],
+            #                      St=-results.Sf[t_idx, :],
+            #                      loadings=np.abs(results.loading[t_idx, :]),
+            #                      br_active=br_active,
+            #                      use_flow_based_width=use_flow_based_width,
+            #                      min_branch_width=min_branch_width,
+            #                      max_branch_width=max_branch_width,
+            #                      min_bus_width=min_bus_width,
+            #                      max_bus_width=max_bus_width,
+            #                      cmap=cmap)
 
         elif current_study == sim.ContingencyAnalysisTimeSeries.tpe.value:
             results: sim.ContingencyAnalysisTimeSeriesResults = self.session.get_results(

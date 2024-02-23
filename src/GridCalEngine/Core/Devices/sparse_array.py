@@ -34,6 +34,14 @@ class SparseArray:
         self._size: int = 0
         self._map: Dict[int, Numeric] = dict()
 
+    @property
+    def default_value(self):
+        """
+        Default value getter
+        :return: numeric value
+        """
+        return self._default_value
+
     def info(self):
         """
         Return dictionary with information about the profile object and its content
