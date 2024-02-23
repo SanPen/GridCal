@@ -205,7 +205,9 @@ def test_ac_transformers3w():
     multi_circuit = MultiCircuit()
 
     cgmes = CgmesCircuit()
-    cgmes.PowerTransformer_list = [PowerTransformer("a")]
+    power_transformer = PowerTransformer("a")
+    power_transformer.name = "pt_name"
+    cgmes.PowerTransformer_list = [power_transformer]
     power_transformer_end = PowerTransformerEnd()
     power_transformer_end.ratedS = 1
     power_transformer_end.ratedU = 2
