@@ -25,14 +25,14 @@ from pandas.plotting import register_matplotlib_converters
 
 import GridCalEngine.Core.Devices as dev
 import GridCalEngine.Simulations as sim
-from GridCalEngine.enumerations import DeviceType
 import GridCal.Gui.GuiFunctions as gf
 import GridCal.Gui.Visualization.palettes as palettes
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCal.Gui.GeneralDialogues import CheckListDialogue, StartEndSelectionDialogue, InputSearchDialogue
 from GridCal.Gui.BusViewer.bus_viewer_dialogue import BusViewerWidget
-from GridCal.Gui.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget, \
-    generate_bus_branch_diagram
+from GridCal.Gui.BusBranchEditorWidget.bus_branch_editor_widget import (BusBranchEditorWidget,
+                                                                        BusGraphicItem,
+                                                                        generate_bus_branch_diagram)
 from GridCal.Gui.NodeBreakerEditorWidget.node_breaker_editor_widget import NodeBreakerEditorWidget
 from GridCal.Gui.MapWidget.grid_map_widget import GridMapWidget
 from GridCal.Gui.messages import yes_no_question, error_msg, info_msg
@@ -227,7 +227,7 @@ class DiagramsMain(CompiledArraysMain):
 
                 diagram.center_nodes(elements=buses)
 
-    def get_selected_buses(self) -> List[Tuple[int, dev.Bus, "BusGraphicItem"]]:
+    def get_selected_buses(self) -> List[Tuple[int, dev.Bus, BusGraphicItem]]:
         """
         Get the selected buses
         :return: list of (bus position, bus object, bus_graphics object)
@@ -352,6 +352,8 @@ class DiagramsMain(CompiledArraysMain):
                                      min_bus_width=min_bus_width,
                                      max_bus_width=max_bus_width,
                                      cmap=cmap)
+            else:
+                info_msg(f"{current_study} only has values for the snapshot")
 
         elif current_study == sim.PowerFlowTimeSeriesDriver.tpe.value:
             if t_idx is not None:
@@ -383,6 +385,8 @@ class DiagramsMain(CompiledArraysMain):
                                      min_bus_width=min_bus_width,
                                      max_bus_width=max_bus_width,
                                      cmap=cmap)
+            else:
+                info_msg(f"{current_study} does not have values for the snapshot")
 
         elif current_study == sim.ContinuationPowerFlowDriver.tpe.value:
             if t_idx is None:
@@ -414,10 +418,13 @@ class DiagramsMain(CompiledArraysMain):
                                      min_bus_width=min_bus_width,
                                      max_bus_width=max_bus_width,
                                      cmap=cmap)
+            else:
+                info_msg(f"{current_study} only has values for the snapshot")
 
         elif current_study == sim.StochasticPowerFlowDriver.tpe.value:
             if t_idx is None:
-                results: sim.StochasticPowerFlowResults = self.session.get_results(sim.SimulationTypes.StochasticPowerFlow)
+                results: sim.StochasticPowerFlowResults = self.session.get_results(
+                    sim.SimulationTypes.StochasticPowerFlow)
                 bus_active = [bus.active for bus in self.circuit.buses]
                 br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
                 # hvdc_active = [hvdc.active for hvdc in self.circuit.hvdc_lines]
@@ -425,13 +432,13 @@ class DiagramsMain(CompiledArraysMain):
                 return plot_function(buses=buses,
                                      branches=branches,
                                      hvdc_lines=hvdc_lines,
-                                     Sbus=results.S_points[t_idx, :],
+                                     Sbus=results.S_points.mean(axis=0),
                                      types=results.bus_types,
-                                     voltages=results.V_points[t_idx, :],
+                                     voltages=results.V_points.mean(axis=0),
                                      bus_active=bus_active,
-                                     loadings=np.abs(results.loading_points[t_idx, :]),
-                                     Sf=results.Sbr_points[t_idx, :],
-                                     St=-results.Sbr_points[t_idx, :],
+                                     loadings=np.abs(results.loading_points).mean(axis=0),
+                                     Sf=results.Sbr_points.mean(axis=0),
+                                     St=-results.Sbr_points.mean(axis=0),
                                      br_active=br_active,
                                      hvdc_Pf=None,
                                      hvdc_Pt=None,
@@ -444,6 +451,8 @@ class DiagramsMain(CompiledArraysMain):
                                      min_bus_width=min_bus_width,
                                      max_bus_width=max_bus_width,
                                      cmap=cmap)
+            else:
+                info_msg(f"{current_study} only has values for the snapshot")
 
         elif current_study == sim.ShortCircuitDriver.tpe.value:
             if t_idx is None:
@@ -473,6 +482,8 @@ class DiagramsMain(CompiledArraysMain):
                                      min_bus_width=min_bus_width,
                                      max_bus_width=max_bus_width,
                                      cmap=cmap)
+            else:
+                info_msg(f"{current_study} only has values for the snapshot")
 
         elif current_study == sim.OptimalPowerFlowDriver.tpe.value:
             if t_idx is None:
@@ -502,6 +513,8 @@ class DiagramsMain(CompiledArraysMain):
                                      min_bus_width=min_bus_width,
                                      max_bus_width=max_bus_width,
                                      cmap=cmap)
+            else:
+                info_msg(f"{current_study} only has values for the snapshot")
 
         elif current_study == sim.OptimalPowerFlowTimeSeriesDriver.tpe.value:
 
@@ -534,6 +547,8 @@ class DiagramsMain(CompiledArraysMain):
                                      min_bus_width=min_bus_width,
                                      max_bus_width=max_bus_width,
                                      cmap=cmap)
+            else:
+                info_msg(f"{current_study} does not have values for the snapshot")
 
         elif current_study == sim.LinearAnalysisDriver.tpe.value:
             if t_idx is None:
@@ -561,6 +576,8 @@ class DiagramsMain(CompiledArraysMain):
                                      min_bus_width=min_bus_width,
                                      max_bus_width=max_bus_width,
                                      cmap=cmap)
+            else:
+                info_msg(f"{current_study} only has values for the snapshot")
 
         elif current_study == sim.LinearAnalysisTimeSeriesDriver.tpe.value:
             if t_idx is not None:
@@ -587,6 +604,8 @@ class DiagramsMain(CompiledArraysMain):
                                      min_bus_width=min_bus_width,
                                      max_bus_width=max_bus_width,
                                      cmap=cmap)
+            else:
+                info_msg(f"{current_study} does not have values for the snapshot")
 
         elif current_study == sim.ContingencyAnalysisDriver.tpe.value:
 
@@ -614,6 +633,8 @@ class DiagramsMain(CompiledArraysMain):
                                      min_bus_width=min_bus_width,
                                      max_bus_width=max_bus_width,
                                      cmap=cmap)
+            else:
+                info_msg(f"{current_study} only has values for the snapshot")
 
         elif current_study == sim.ContingencyAnalysisTimeSeries.tpe.value:
             if t_idx is not None:
@@ -640,6 +661,8 @@ class DiagramsMain(CompiledArraysMain):
                                      min_bus_width=min_bus_width,
                                      max_bus_width=max_bus_width,
                                      cmap=cmap)
+            else:
+                info_msg(f"{current_study} does not have values for the snapshot")
 
         elif current_study == sim.InputsAnalysisDriver.tpe.value:
 
@@ -666,6 +689,8 @@ class DiagramsMain(CompiledArraysMain):
                                      min_bus_width=min_bus_width,
                                      max_bus_width=max_bus_width,
                                      cmap=cmap)
+            else:
+                info_msg(f"{current_study} only has values for the snapshot")
 
         elif current_study == sim.AvailableTransferCapacityTimeSeriesDriver.tpe.value:
             pass
@@ -1085,7 +1110,7 @@ class DiagramsMain(CompiledArraysMain):
         idx = self.ui.diagram_step_slider.value()
 
         if idx > -1:
-            val = str(self.circuit.time_profile[idx])
+            val = f"[{idx}] {self.circuit.time_profile[idx]}"
             self.ui.schematic_step_label.setText(val)
         else:
             self.ui.schematic_step_label.setText("Snapshot")
@@ -1114,7 +1139,7 @@ class DiagramsMain(CompiledArraysMain):
         idx = self.ui.db_step_slider.value()
 
         if idx > -1:
-            val = str(self.circuit.time_profile[idx])
+            val = f"[{idx}] {self.circuit.time_profile[idx]}"
             self.ui.db_step_label.setText(val)
         else:
             self.ui.db_step_label.setText("Snapshot")
@@ -1172,14 +1197,7 @@ class DiagramsMain(CompiledArraysMain):
         for diagram in self.diagram_widgets_list:
 
             if isinstance(diagram, BusBranchEditorWidget):
-
-                for bus in buses:
-
-                    graphic_obj = diagram.diagram.query_point(bus).graphic_object
-
-                    if graphic_obj is not None:
-                        graphic_obj.add_big_marker(color=color)
-                        graphic_obj.setSelected(True)
+                diagram.set_big_bus_marker(buses=buses, color=color)
 
     def set_big_bus_marker_colours(self,
                                    buses: List[dev.Bus],
@@ -1195,23 +1213,9 @@ class DiagramsMain(CompiledArraysMain):
         for diagram in self.diagram_widgets_list:
 
             if isinstance(diagram, BusBranchEditorWidget):
-
-                if tool_tips:
-                    for bus, color, tool_tip in zip(buses, colors, tool_tips):
-
-                        graphic_obj = diagram.diagram.query_point(bus).graphic_object
-
-                        if graphic_obj is not None:
-                            graphic_obj.add_big_marker(color=color, tool_tip_text=tool_tip)
-                            graphic_obj.setSelected(True)
-                else:
-                    for bus, color in zip(buses, colors):
-
-                        graphic_obj = diagram.diagram.query_point(bus).graphic_object
-
-                        if graphic_obj is not None:
-                            graphic_obj.add_big_marker(color=color)
-                            graphic_obj.setSelected(True)
+                diagram.set_big_bus_marker_colours(buses=buses,
+                                                   colors=colors,
+                                                   tool_tips=tool_tips)
 
     def clear_big_bus_markers(self):
         """
@@ -1221,13 +1225,7 @@ class DiagramsMain(CompiledArraysMain):
         for diagram in self.diagram_widgets_list:
 
             if isinstance(diagram, BusBranchEditorWidget):
-
-                buses_diagram_group = diagram.diagram.query_by_type(DeviceType.BusDevice)
-
-                if buses_diagram_group is not None:
-                    for idtag, geo in buses_diagram_group.locations.items():
-                        if geo.graphic_object is not None:
-                            geo.graphic_object.delete_big_marker()
+                diagram.clear_big_bus_markers()
 
     def delete_selected_from_the_schematic(self):
         """
