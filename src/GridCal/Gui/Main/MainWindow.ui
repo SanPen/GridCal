@@ -375,7 +375,7 @@
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_27">
                 <property name="topMargin">
-                 <number>10</number>
+                 <number>0</number>
                 </property>
                 <property name="rightMargin">
                  <number>0</number>
@@ -408,6 +408,20 @@
                     <number>0</number>
                    </property>
                    <item>
+                    <widget class="QPushButton" name="set_profile_state_button">
+                     <property name="toolTip">
+                      <string>Assign the values of the selected time step into the grid</string>
+                     </property>
+                     <property name="text">
+                      <string/>
+                     </property>
+                     <property name="icon">
+                      <iconset resource="icons.qrc">
+                       <normaloff>:/Icons/icons/copy2left.svg</normaloff>:/Icons/icons/copy2left.svg</iconset>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
                     <widget class="QSlider" name="db_step_slider">
                      <property name="toolTip">
                       <string>Database time slider</string>
@@ -422,6 +436,11 @@
                 </item>
                 <item>
                  <widget class="QLabel" name="db_step_label">
+                  <property name="font">
+                   <font>
+                    <pointsize>9</pointsize>
+                   </font>
+                  </property>
                   <property name="text">
                    <string>Snapshot</string>
                   </property>
@@ -465,6 +484,9 @@
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_26">
                 <property name="leftMargin">
+                 <number>0</number>
+                </property>
+                <property name="topMargin">
                  <number>0</number>
                 </property>
                 <property name="rightMargin">
@@ -544,11 +566,17 @@ p, li { white-space: pre-wrap; }
                     </widget>
                    </item>
                    <item>
-                    <widget class="QLabel" name="label_27">
-                     <property name="text">
-                      <string/>
+                    <spacer name="horizontalSpacer_2">
+                     <property name="orientation">
+                      <enum>Qt::Horizontal</enum>
                      </property>
-                    </widget>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>40</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                    </spacer>
                    </item>
                    <item>
                     <widget class="QPushButton" name="copyObjectsTableButton">
@@ -593,12 +621,46 @@ p, li { white-space: pre-wrap; }
                     </widget>
                    </item>
                    <item>
-                    <widget class="QLabel" name="label_36">
+                    <widget class="QPushButton" name="structure_analysis_pushButton">
+                     <property name="toolTip">
+                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Run the histogram analysis of the selected data structure&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                     </property>
                      <property name="text">
                       <string/>
                      </property>
+                     <property name="icon">
+                      <iconset resource="icons.qrc">
+                       <normaloff>:/Icons/icons/histogram.svg</normaloff>:/Icons/icons/histogram.svg</iconset>
+                     </property>
                     </widget>
                    </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QTableView" name="dataStructureTableView"/>
+                </item>
+                <item>
+                 <widget class="QFrame" name="frame_9">
+                  <property name="frameShape">
+                   <enum>QFrame::NoFrame</enum>
+                  </property>
+                  <property name="frameShadow">
+                   <enum>QFrame::Raised</enum>
+                  </property>
+                  <layout class="QHBoxLayout" name="horizontalLayout_25">
+                   <property name="leftMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>0</number>
+                   </property>
                    <item>
                     <widget class="QPushButton" name="busViewerButton">
                      <property name="toolTip">
@@ -670,7 +732,7 @@ p, li { white-space: pre-wrap; }
                     </widget>
                    </item>
                    <item>
-                    <spacer name="horizontalSpacer_6">
+                    <spacer name="horizontalSpacer_9">
                      <property name="orientation">
                       <enum>Qt::Horizontal</enum>
                      </property>
@@ -682,47 +744,6 @@ p, li { white-space: pre-wrap; }
                      </property>
                     </spacer>
                    </item>
-                   <item>
-                    <widget class="QPushButton" name="structure_analysis_pushButton">
-                     <property name="toolTip">
-                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Run the histogram analysis of the selected data structure&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                     </property>
-                     <property name="text">
-                      <string/>
-                     </property>
-                     <property name="icon">
-                      <iconset resource="icons.qrc">
-                       <normaloff>:/Icons/icons/histogram.svg</normaloff>:/Icons/icons/histogram.svg</iconset>
-                     </property>
-                    </widget>
-                   </item>
-                  </layout>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QTableView" name="dataStructureTableView"/>
-                </item>
-                <item>
-                 <widget class="QFrame" name="frame_9">
-                  <property name="frameShape">
-                   <enum>QFrame::NoFrame</enum>
-                  </property>
-                  <property name="frameShadow">
-                   <enum>QFrame::Raised</enum>
-                  </property>
-                  <layout class="QHBoxLayout" name="horizontalLayout_25">
-                   <property name="leftMargin">
-                    <number>0</number>
-                   </property>
-                   <property name="topMargin">
-                    <number>0</number>
-                   </property>
-                   <property name="rightMargin">
-                    <number>0</number>
-                   </property>
-                   <property name="bottomMargin">
-                    <number>0</number>
-                   </property>
                    <item>
                     <widget class="QPushButton" name="add_object_pushButton">
                      <property name="toolTip">
@@ -750,19 +771,6 @@ p, li { white-space: pre-wrap; }
                        <normaloff>:/Icons/icons/minus.svg</normaloff>:/Icons/icons/minus.svg</iconset>
                      </property>
                     </widget>
-                   </item>
-                   <item>
-                    <spacer name="horizontalSpacer_9">
-                     <property name="orientation">
-                      <enum>Qt::Horizontal</enum>
-                     </property>
-                     <property name="sizeHint" stdset="0">
-                      <size>
-                       <width>40</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                    </spacer>
                    </item>
                    <item>
                     <widget class="QPushButton" name="catalogue_edit_pushButton">
@@ -878,16 +886,20 @@ p, li { white-space: pre-wrap; }
                 </widget>
                </item>
                <item>
-                <widget class="QPushButton" name="delete_profiles_structure_pushButton">
+                <widget class="QLineEdit" name="lineEdit">
                  <property name="toolTip">
-                  <string>Delete profiles</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Subjects:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;col, idx, val, colobj, idxobj&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Operators:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&amp;gt;, &amp;lt;, &amp;gt;=, &amp;lt;=, !=, =, like, notlike, starts, ends&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Examples:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;-&amp;gt; &lt;span style=&quot; font-style:italic;&quot;&gt;col != [column1, column2] and val &amp;gt; 5 or idx like [ab, mn]&lt;/span&gt;&lt;/p&gt;&lt;p&gt;-&amp;gt; &lt;span style=&quot; font-style:italic;&quot;&gt;val &amp;gt; 0.5 and val &amp;lt; 20.0&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="timeseries_search_Button">
                  <property name="text">
                   <string/>
                  </property>
                  <property name="icon">
                   <iconset resource="icons.qrc">
-                   <normaloff>:/Icons/icons/delete.svg</normaloff>:/Icons/icons/delete.svg</iconset>
+                   <normaloff>:/Icons/icons/magnifying_glass.svg</normaloff>:/Icons/icons/magnifying_glass.svg</iconset>
                  </property>
                 </widget>
                </item>
@@ -905,99 +917,13 @@ p, li { white-space: pre-wrap; }
                 </spacer>
                </item>
                <item>
-                <widget class="QPushButton" name="copy_profile_pushButton">
-                 <property name="toolTip">
-                  <string>Copy displayed profile</string>
-                 </property>
-                 <property name="statusTip">
-                  <string/>
-                 </property>
-                 <property name="text">
-                  <string/>
-                 </property>
-                 <property name="icon">
-                  <iconset resource="icons.qrc">
-                   <normaloff>:/Icons/icons/copy.svg</normaloff>:/Icons/icons/copy.svg</iconset>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QPushButton" name="paste_profiles_pushButton">
-                 <property name="toolTip">
-                  <string>Paste clipboard into the displayed profile</string>
-                 </property>
-                 <property name="text">
-                  <string/>
-                 </property>
-                 <property name="icon">
-                  <iconset resource="icons.qrc">
-                   <normaloff>:/Icons/icons/paste.svg</normaloff>:/Icons/icons/paste.svg</iconset>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QPushButton" name="set_linear_combination_profile_pushButton">
-                 <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Copy the selected profile into the profiles selected next to this button&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                 </property>
-                 <property name="text">
-                  <string/>
-                 </property>
-                 <property name="icon">
-                  <iconset resource="icons.qrc">
-                   <normaloff>:/Icons/icons/copy2right.svg</normaloff>:/Icons/icons/copy2right.svg</iconset>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QComboBox" name="device_type_magnitude_comboBox_2">
-                 <property name="toolTip">
-                  <string>Profile where to copy the current profile</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <spacer name="horizontalSpacer_7">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>183</width>
-                   <height>20</height>
-                  </size>
-                 </property>
-                </spacer>
-               </item>
-               <item>
-                <widget class="QPushButton" name="set_profile_state_button">
-                 <property name="toolTip">
-                  <string>Assign the values of the selected time step into the grid</string>
-                 </property>
-                 <property name="text">
-                  <string/>
-                 </property>
-                 <property name="icon">
-                  <iconset resource="icons.qrc">
-                   <normaloff>:/Icons/icons/copy2left.svg</normaloff>:/Icons/icons/copy2left.svg</iconset>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QComboBox" name="profile_time_selection_comboBox">
+                <widget class="QComboBox" name="profile_device_type_comboBox">
                  <property name="minimumSize">
                   <size>
-                   <width>200</width>
+                   <width>150</width>
                    <height>0</height>
                   </size>
                  </property>
-                 <property name="toolTip">
-                  <string>Time step selector</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QComboBox" name="profile_device_type_comboBox">
                  <property name="toolTip">
                   <string>Device type</string>
                  </property>
@@ -1005,6 +931,12 @@ p, li { white-space: pre-wrap; }
                </item>
                <item>
                 <widget class="QComboBox" name="device_type_magnitude_comboBox">
+                 <property name="minimumSize">
+                  <size>
+                   <width>200</width>
+                   <height>0</height>
+                  </size>
+                 </property>
                  <property name="toolTip">
                   <string>Magnitude with profile</string>
                  </property>
@@ -1061,6 +993,91 @@ p, li { white-space: pre-wrap; }
                <property name="bottomMargin">
                 <number>2</number>
                </property>
+               <item>
+                <widget class="QPushButton" name="delete_profiles_structure_pushButton">
+                 <property name="toolTip">
+                  <string>Delete profiles</string>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="icons.qrc">
+                   <normaloff>:/Icons/icons/delete.svg</normaloff>:/Icons/icons/delete.svg</iconset>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="copy_profile_pushButton">
+                 <property name="toolTip">
+                  <string>Copy displayed profile</string>
+                 </property>
+                 <property name="statusTip">
+                  <string/>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="icons.qrc">
+                   <normaloff>:/Icons/icons/copy.svg</normaloff>:/Icons/icons/copy.svg</iconset>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="paste_profiles_pushButton">
+                 <property name="toolTip">
+                  <string>Paste clipboard into the displayed profile</string>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="icons.qrc">
+                   <normaloff>:/Icons/icons/paste.svg</normaloff>:/Icons/icons/paste.svg</iconset>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QComboBox" name="device_type_magnitude_comboBox_2">
+                 <property name="minimumSize">
+                  <size>
+                   <width>200</width>
+                   <height>0</height>
+                  </size>
+                 </property>
+                 <property name="toolTip">
+                  <string>Profile where to copy the current profile</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="set_linear_combination_profile_pushButton">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Copy the selected profile into the profiles selected next to this button&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="icons.qrc">
+                   <normaloff>:/Icons/icons/copy2right.svg</normaloff>:/Icons/icons/copy2right.svg</iconset>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <spacer name="horizontalSpacer_13">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>267</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
                <item>
                 <widget class="QPushButton" name="profile_add_pushButton">
                  <property name="toolTip">
@@ -1143,19 +1160,6 @@ p, li { white-space: pre-wrap; }
                   <double>1.000000000000000</double>
                  </property>
                 </widget>
-               </item>
-               <item>
-                <spacer name="horizontalSpacer_13">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>267</width>
-                   <height>20</height>
-                  </size>
-                 </property>
-                </spacer>
                </item>
               </layout>
              </widget>
@@ -1764,9 +1768,20 @@ p, li { white-space: pre-wrap; }
                        <number>0</number>
                       </property>
                       <item>
-                       <widget class="QLabel" name="units_label">
+                       <widget class="QLineEdit" name="sear_results_lineEdit">
+                        <property name="toolTip">
+                         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Subjects:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;col, idx, val, colobj, idxobj&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Operators:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&amp;gt;, &amp;lt;, &amp;gt;=, &amp;lt;=, !=, =, like, notlike, starts, ends&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Examples:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;-&amp;gt; &lt;span style=&quot; font-style:italic;&quot;&gt;col != [column1, column2] and val &amp;gt; 5 or idx like [ab, mn]&lt;/span&gt;&lt;/p&gt;&lt;p&gt;-&amp;gt; &lt;span style=&quot; font-style:italic;&quot;&gt;val &amp;gt; 0.5 and val &amp;lt; 20.0&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QPushButton" name="search_results_Button">
                         <property name="text">
                          <string/>
+                        </property>
+                        <property name="icon">
+                         <iconset resource="icons.qrc">
+                          <normaloff>:/Icons/icons/magnifying_glass.svg</normaloff>:/Icons/icons/magnifying_glass.svg</iconset>
                         </property>
                        </widget>
                       </item>
@@ -1784,44 +1799,9 @@ p, li { white-space: pre-wrap; }
                        </spacer>
                       </item>
                       <item>
-                       <widget class="QPushButton" name="copy_results_pushButton">
-                        <property name="toolTip">
-                         <string>Copy to data frame to clipboard</string>
-                        </property>
+                       <widget class="QLabel" name="units_label">
                         <property name="text">
-                         <string/>
-                        </property>
-                        <property name="icon">
-                         <iconset resource="icons.qrc">
-                          <normaloff>:/Icons/icons/copy.svg</normaloff>:/Icons/icons/copy.svg</iconset>
-                        </property>
-                       </widget>
-                      </item>
-                      <item>
-                       <widget class="QPushButton" name="copy_numpy_button">
-                        <property name="toolTip">
-                         <string>Copy data in numpy format to clipboard</string>
-                        </property>
-                        <property name="text">
-                         <string/>
-                        </property>
-                        <property name="icon">
-                         <iconset resource="icons.qrc">
-                          <normaloff>:/Icons/icons/array.svg</normaloff>:/Icons/icons/array.svg</iconset>
-                        </property>
-                       </widget>
-                      </item>
-                      <item>
-                       <widget class="QPushButton" name="saveResultsButton">
-                        <property name="toolTip">
-                         <string>Export data</string>
-                        </property>
-                        <property name="text">
-                         <string/>
-                        </property>
-                        <property name="icon">
-                         <iconset resource="icons.qrc">
-                          <normaloff>:/Icons/icons/save.svg</normaloff>:/Icons/icons/save.svg</iconset>
+                         <string>...</string>
                         </property>
                        </widget>
                       </item>
@@ -1874,31 +1854,46 @@ p, li { white-space: pre-wrap; }
                        </widget>
                       </item>
                       <item>
-                       <widget class="QLineEdit" name="sear_results_lineEdit"/>
-                      </item>
-                      <item>
-                       <widget class="QPushButton" name="search_results_Button">
+                       <widget class="QPushButton" name="copy_results_pushButton">
+                        <property name="toolTip">
+                         <string>Copy to data frame to clipboard</string>
+                        </property>
                         <property name="text">
                          <string/>
                         </property>
                         <property name="icon">
                          <iconset resource="icons.qrc">
-                          <normaloff>:/Icons/icons/magnifying_glass.svg</normaloff>:/Icons/icons/magnifying_glass.svg</iconset>
+                          <normaloff>:/Icons/icons/copy.svg</normaloff>:/Icons/icons/copy.svg</iconset>
                         </property>
                        </widget>
                       </item>
                       <item>
-                       <spacer name="horizontalSpacer_17">
-                        <property name="orientation">
-                         <enum>Qt::Horizontal</enum>
+                       <widget class="QPushButton" name="copy_numpy_button">
+                        <property name="toolTip">
+                         <string>Copy data in numpy format to clipboard</string>
                         </property>
-                        <property name="sizeHint" stdset="0">
-                         <size>
-                          <width>40</width>
-                          <height>20</height>
-                         </size>
+                        <property name="text">
+                         <string/>
                         </property>
-                       </spacer>
+                        <property name="icon">
+                         <iconset resource="icons.qrc">
+                          <normaloff>:/Icons/icons/array.svg</normaloff>:/Icons/icons/array.svg</iconset>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QPushButton" name="saveResultsButton">
+                        <property name="toolTip">
+                         <string>Export data</string>
+                        </property>
+                        <property name="text">
+                         <string/>
+                        </property>
+                        <property name="icon">
+                         <iconset resource="icons.qrc">
+                          <normaloff>:/Icons/icons/save.svg</normaloff>:/Icons/icons/save.svg</iconset>
+                        </property>
+                       </widget>
                       </item>
                       <item>
                        <widget class="QPushButton" name="plot_data_pushButton">
@@ -8831,7 +8826,6 @@ QProgressBar::chunk{
     <addaction name="actionAuto_rate_branches"/>
     <addaction name="actionDetect_transformers"/>
     <addaction name="actionFind_node_groups"/>
-    <addaction name="actionGrid_Reduction"/>
     <addaction name="actionEdit_simulation_time_limits"/>
     <addaction name="actionProcess_topology"/>
     <addaction name="actionFuse_devices"/>
@@ -9211,18 +9205,6 @@ QProgressBar::chunk{
    </property>
    <property name="text">
     <string>All the devices' profiles</string>
-   </property>
-  </action>
-  <action name="actionGrid_Reduction">
-   <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/Icons/icons/grid_reduction.svg</normaloff>:/Icons/icons/grid_reduction.svg</iconset>
-   </property>
-   <property name="text">
-    <string>Grid Reduction</string>
-   </property>
-   <property name="toolTip">
-    <string>Performs a topological grid reduction</string>
    </property>
   </action>
   <action name="actionStorage_location_suggestion">
