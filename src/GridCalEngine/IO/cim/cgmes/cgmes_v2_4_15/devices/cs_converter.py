@@ -23,20 +23,20 @@ class CsConverter(ACDCConverter):
 	def __init__(self, rdfid='', tpe='CsConverter'):
 		ACDCConverter.__init__(self, rdfid, tpe)
 
-		self.maxAlpha: float = 0.0
-		self.maxGamma: float = 0.0
-		self.maxIdc: float = 0.0
-		self.minAlpha: float = 0.0
-		self.minGamma: float = 0.0
-		self.minIdc: float = 0.0
-		self.ratedIdc: float = 0.0
-		self.alpha: float = 0.0
-		self.gamma: float = 0.0
+		self.maxAlpha: float = None
+		self.maxGamma: float = None
+		self.maxIdc: float = None
+		self.minAlpha: float = None
+		self.minGamma: float = None
+		self.minIdc: float = None
+		self.ratedIdc: float = None
+		self.alpha: float = None
+		self.gamma: float = None
 		self.operatingMode: CsOperatingModeKind = None
 		self.pPccControl: CsPpccControlKind = None
-		self.targetAlpha: float = 0.0
-		self.targetGamma: float = 0.0
-		self.targetIdc: float = 0.0
+		self.targetAlpha: float = None
+		self.targetGamma: float = None
+		self.targetIdc: float = None
 
 		self.register_property(
 			name='maxAlpha',

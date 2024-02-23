@@ -23,10 +23,10 @@ class EquivalentBranch(EquivalentEquipment):
 	def __init__(self, rdfid='', tpe='EquivalentBranch'):
 		EquivalentEquipment.__init__(self, rdfid, tpe)
 
-		self.r: float = 0.0
-		self.r21: float = 0.0
-		self.x: float = 0.0
-		self.x21: float = 0.0
+		self.r: float = None
+		self.r21: float = None
+		self.x: float = None
+		self.x21: float = None
 
 		self.register_property(
 			name='r',

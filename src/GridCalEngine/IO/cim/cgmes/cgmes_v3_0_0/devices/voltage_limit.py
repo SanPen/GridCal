@@ -23,8 +23,8 @@ class VoltageLimit(OperationalLimit):
 	def __init__(self, rdfid='', tpe='VoltageLimit'):
 		OperationalLimit.__init__(self, rdfid, tpe)
 
-		self.normalValue: float = 0.0
-		self.value: float = 0.0
+		self.normalValue: float = None
+		self.value: float = None
 
 		self.register_property(
 			name='normalValue',

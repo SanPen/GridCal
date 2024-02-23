@@ -23,7 +23,7 @@ class SvTapStep(Base):
 	def __init__(self, rdfid, tpe, resources=list(), class_replacements=dict()):
 		Base.__init__(self, rdfid=rdfid, tpe=tpe, resources=resources, class_replacements=class_replacements)
 
-		self.position: float = 0.0
+		self.position: float = None
 		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.tap_changer import TapChanger
 		self.TapChanger: TapChanger | None = None
 

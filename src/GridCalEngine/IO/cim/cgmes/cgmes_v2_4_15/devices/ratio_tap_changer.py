@@ -24,7 +24,7 @@ class RatioTapChanger(TapChanger):
 		TapChanger.__init__(self, rdfid, tpe)
 
 		self.tculControlMode: TransformerControlMode = None
-		self.stepVoltageIncrement: float = 0.0
+		self.stepVoltageIncrement: float = None
 		from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.ratio_tap_changer_table import RatioTapChangerTable
 		self.RatioTapChangerTable: RatioTapChangerTable | None = None
 		from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.transformer_end import TransformerEnd

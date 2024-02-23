@@ -25,7 +25,7 @@ class PhaseTapChangerTablePoint(Base):
 
 		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.phase_tap_changer_table import PhaseTapChangerTable
 		self.PhaseTapChangerTable: PhaseTapChangerTable | None = None
-		self.angle: float = 0.0
+		self.angle: float = None
 
 		self.register_property(
 			name='PhaseTapChangerTable',

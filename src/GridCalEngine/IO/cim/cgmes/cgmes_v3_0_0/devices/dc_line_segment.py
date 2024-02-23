@@ -23,10 +23,10 @@ class DCLineSegment(DCConductingEquipment):
 	def __init__(self, rdfid='', tpe='DCLineSegment'):
 		DCConductingEquipment.__init__(self, rdfid, tpe)
 
-		self.capacitance: float = 0.0
-		self.inductance: float = 0.0
-		self.resistance: float = 0.0
-		self.length: float = 0.0
+		self.capacitance: float = None
+		self.inductance: float = None
+		self.resistance: float = None
+		self.length: float = None
 
 		self.register_property(
 			name='capacitance',

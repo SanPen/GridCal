@@ -23,14 +23,14 @@ class EnergyConsumer(EnergyConnection):
 	def __init__(self, rdfid='', tpe='EnergyConsumer'):
 		EnergyConnection.__init__(self, rdfid, tpe)
 
-		self.pfixed: float = 0.0
-		self.pfixedPct: float = 0.0
-		self.qfixed: float = 0.0
-		self.qfixedPct: float = 0.0
+		self.pfixed: float = None
+		self.pfixedPct: float = None
+		self.qfixed: float = None
+		self.qfixedPct: float = None
 		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.load_response_characteristic import LoadResponseCharacteristic
 		self.LoadResponse: LoadResponseCharacteristic | None = None
-		self.p: float = 0.0
-		self.q: float = 0.0
+		self.p: float = None
+		self.q: float = None
 
 		self.register_property(
 			name='pfixed',

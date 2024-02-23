@@ -23,9 +23,9 @@ class PhaseTapChangerNonLinear(PhaseTapChanger):
 	def __init__(self, rdfid='', tpe='PhaseTapChangerNonLinear'):
 		PhaseTapChanger.__init__(self, rdfid, tpe)
 
-		self.voltageStepIncrement: float = 0.0
-		self.xMax: float = 0.0
-		self.xMin: float = 0.0
+		self.voltageStepIncrement: float = None
+		self.xMax: float = None
+		self.xMin: float = None
 
 		self.register_property(
 			name='voltageStepIncrement',

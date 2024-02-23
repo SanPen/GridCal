@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.power_system_resource import PowerSystemResource
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile, UnitSymbol, ControlAreaTypeKind
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile, ControlAreaTypeKind, UnitSymbol
 
 
 class ControlArea(PowerSystemResource):
@@ -30,8 +30,8 @@ class ControlArea(PowerSystemResource):
 		self.TieFlow: TieFlow | None = None
 		from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.control_area_generating_unit import ControlAreaGeneratingUnit
 		self.ControlAreaGeneratingUnit: ControlAreaGeneratingUnit | None = None
-		self.netInterchange: float = 0.0
-		self.pTolerance: float = 0.0
+		self.netInterchange: float = None
+		self.pTolerance: float = None
 
 		self.register_property(
 			name='EnergyArea',

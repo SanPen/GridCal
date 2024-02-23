@@ -16,22 +16,22 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.rotating_machine import RotatingMachine
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile, AsynchronousMachineKind, UnitSymbol
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile, UnitSymbol, AsynchronousMachineKind
 
 
 class AsynchronousMachine(RotatingMachine):
 	def __init__(self, rdfid='', tpe='AsynchronousMachine'):
 		RotatingMachine.__init__(self, rdfid, tpe)
 
-		self.converterFedDrive: bool = False
-		self.efficiency: float = 0.0
-		self.iaIrRatio: float = 0.0
-		self.nominalFrequency: float = 0.0
-		self.nominalSpeed: float = 0.0
-		self.polePairNumber: int = 0
-		self.ratedMechanicalPower: float = 0.0
-		self.reversible: bool = False
-		self.rxLockedRotorRatio: float = 0.0
+		self.converterFedDrive: bool = None
+		self.efficiency: float = None
+		self.iaIrRatio: float = None
+		self.nominalFrequency: float = None
+		self.nominalSpeed: float = None
+		self.polePairNumber: int = None
+		self.ratedMechanicalPower: float = None
+		self.reversible: bool = None
+		self.rxLockedRotorRatio: float = None
 		self.asynchronousMachineType: AsynchronousMachineKind = None
 
 		self.register_property(

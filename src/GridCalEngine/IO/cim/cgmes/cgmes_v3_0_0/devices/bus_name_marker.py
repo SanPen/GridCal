@@ -25,7 +25,7 @@ class BusNameMarker(IdentifiedObject):
 
 		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.acdc_terminal import ACDCTerminal
 		self.Terminal: ACDCTerminal | None = None
-		self.priority: int = 0
+		self.priority: int = None
 		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.reporting_group import ReportingGroup
 		self.ReportingGroup: ReportingGroup | None = None
 

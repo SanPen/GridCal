@@ -177,7 +177,7 @@ class CgmesExporter:
 
                 for attr_name, attr_value in obj_dict.items():
                     try:
-                        if attr_value is None or attr_value == "":
+                        if attr_value is None:
                             continue
 
                         filt_property = filt_class.filter(pl.col("Property-AttributeAssociationSimple") == attr_name)

@@ -23,10 +23,10 @@ class LinearShuntCompensator(ShuntCompensator):
 	def __init__(self, rdfid='', tpe='LinearShuntCompensator'):
 		ShuntCompensator.__init__(self, rdfid, tpe)
 
-		self.b0PerSection: float = 0.0
-		self.bPerSection: float = 0.0
-		self.g0PerSection: float = 0.0
-		self.gPerSection: float = 0.0
+		self.b0PerSection: float = None
+		self.bPerSection: float = None
+		self.g0PerSection: float = None
+		self.gPerSection: float = None
 
 		self.register_property(
 			name='b0PerSection',

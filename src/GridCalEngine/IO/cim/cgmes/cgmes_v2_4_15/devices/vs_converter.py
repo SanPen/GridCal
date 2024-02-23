@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.acdc_converter import ACDCConverter
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile, VsPpccControlKind, VsQpccControlKind, UnitSymbol
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile, UnitSymbol, VsPpccControlKind, VsQpccControlKind
 
 
 class VsConverter(ACDCConverter):
@@ -25,17 +25,17 @@ class VsConverter(ACDCConverter):
 
 		from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.vs_capability_curve import VsCapabilityCurve
 		self.CapabilityCurve: VsCapabilityCurve | None = None
-		self.maxModulationIndex: float = 0.0
-		self.maxValveCurrent: float = 0.0
-		self.delta: float = 0.0
-		self.uf: float = 0.0
-		self.droop: float = 0.0
-		self.droopCompensation: float = 0.0
+		self.maxModulationIndex: float = None
+		self.maxValveCurrent: float = None
+		self.delta: float = None
+		self.uf: float = None
+		self.droop: float = None
+		self.droopCompensation: float = None
 		self.pPccControl: VsPpccControlKind = None
 		self.qPccControl: VsQpccControlKind = None
-		self.qShare: float = 0.0
-		self.targetQpcc: float = 0.0
-		self.targetUpcc: float = 0.0
+		self.qShare: float = None
+		self.targetQpcc: float = None
+		self.targetUpcc: float = None
 
 		self.register_property(
 			name='CapabilityCurve',

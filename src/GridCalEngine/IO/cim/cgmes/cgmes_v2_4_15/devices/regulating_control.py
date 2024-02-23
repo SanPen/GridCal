@@ -28,10 +28,10 @@ class RegulatingControl(PowerSystemResource):
 		from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.regulating_cond_eq import RegulatingCondEq
 		self.RegulatingCondEq: RegulatingCondEq | None = None
 		self.mode: RegulatingControlModeKind = None
-		self.discrete: bool = False
-		self.enabled: bool = False
-		self.targetDeadband: float = 0.0
-		self.targetValue: float = 0.0
+		self.discrete: bool = None
+		self.enabled: bool = None
+		self.targetDeadband: float = None
+		self.targetValue: float = None
 		self.targetValueUnitMultiplier: UnitMultiplier = None
 
 		self.register_property(

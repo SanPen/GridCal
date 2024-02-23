@@ -23,7 +23,7 @@ class BaseVoltage(IdentifiedObject):
 	def __init__(self, rdfid='', tpe='BaseVoltage'):
 		IdentifiedObject.__init__(self, rdfid, tpe)
 
-		self.nominalVoltage: float = 0.0
+		self.nominalVoltage: float = None
 		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.conducting_equipment import ConductingEquipment
 		self.ConductingEquipment: ConductingEquipment | None = None
 		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.voltage_level import VoltageLevel

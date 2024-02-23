@@ -25,7 +25,7 @@ class MeasurementValue(IdentifiedObject):
 
 		import datetime
 		self.timeStamp: datetime.datetime | None = None
-		self.sensorAccuracy: float = 0.0
+		self.sensorAccuracy: float = None
 
 		self.register_property(
 			name='timeStamp',
