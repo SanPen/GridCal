@@ -22,7 +22,7 @@ import pandas as pd
 from PySide6 import QtCore, QtWidgets
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Core.Devices.types import ALL_DEV_TYPES
-from GridCalEngine.Utils.Filtering.filtering import FilterResultsTable
+from GridCalEngine.Utils.Filtering.results_table_filtering import FilterResultsTable
 
 
 def fast_data_to_numpy_text(data: np.ndarray) -> str:
