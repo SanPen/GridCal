@@ -18,6 +18,7 @@ from GridCalEngine.basic_structures import *
 from GridCalEngine.Simulations import *
 from GridCalEngine.IO import *
 from GridCalEngine.Core import *
+from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.enumerations import *
 
 
