@@ -14,12 +14,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from typing import Tuple
+from typing import List, Any, Union, Tuple
 import numpy as np
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.basic_structures import BoolVec, Mat
 from GridCalEngine.Utils.Filtering.filtering import (MasterFilter, Filter, FilterOps, CompOps, FilterSubject,
-                                                     is_odd, is_numeric, parse_expression)
+                                                     is_negative, is_odd, is_numeric, parse_expression)
 
 
 def compute_results_table_masks(table: ResultsTable, flt: Filter) -> Tuple[BoolVec, BoolVec, Mat]:
@@ -36,7 +36,7 @@ def compute_results_table_masks(table: ResultsTable, flt: Filter) -> Tuple[BoolV
     else:
         lst = [flt.value]
 
-    is_neg = flt.is_negative()
+    is_neg = is_negative(flt)
 
     if is_neg:
         final_idx_mask = np.ones(table.r, dtype=bool)
@@ -217,7 +217,7 @@ def compute_results_table_masks(table: ResultsTable, flt: Filter) -> Tuple[BoolV
     return final_idx_mask, final_col_mask, final_data_mask
 
 
-class FilterResultsTable:
+class FilterTimeSeriesModel:
     """
     FilterResultsTable class
     """

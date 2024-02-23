@@ -127,10 +127,10 @@ class Filter:
 
     def __init__(self, element: FilterSubject, op: CompOps, value: Union[PRIMARY_TYPES, List[PRIMARY_TYPES]]):
         """
-
-        :param element:
-        :param op:
-        :param value:
+        Filter constructor
+        :param element: FilterSubject
+        :param op: CompOps
+        :param value: Comparison value
         """
         self.element = element
         self.op = op
@@ -141,6 +141,44 @@ class Filter:
 
     def __repr__(self):
         return str(self)
+
+    def is_negative(self) -> bool:
+        """
+        Is the filter operation negative?
+        :return: is negative?
+        """
+        if self.op == CompOps.GT:
+            return False
+
+        elif self.op == CompOps.LT:
+            return False
+
+        elif self.op == CompOps.GEQ:
+            return False
+
+        elif self.op == CompOps.LEQ:
+            return False
+
+        elif self.op == CompOps.NOT_EQ:
+            return True
+
+        elif self.op == CompOps.EQ:
+            return False
+
+        elif self.op == CompOps.LIKE:
+            return False
+
+        elif self.op == CompOps.NOT_LIKE:
+            return True
+
+        elif self.op == CompOps.STARTS:
+            return False
+
+        elif self.op == CompOps.ENDS:
+            return False
+
+        else:
+            raise Exception(f"Unknown op: {self.op}")
 
 
 class MasterFilter:
@@ -172,9 +210,9 @@ class MasterFilter:
 
 def parse_single(token: str) -> Union[Filter, None]:
     """
-
-    :param token:
-    :return:
+    Parse single token, these are tokens that are composed on 3 parts: element, operation, comparison value
+    :param token: Token
+    :return: Filter or None if the token is not valid
     """
     elms = re.split(r'([<>=!]=?|in|starts|ends|like|notlike)', token)
 
@@ -213,46 +251,12 @@ def parse_expression(expression: str) -> MasterFilter:
 
 
 def is_numeric(obj):
+    """
+    Checks if the numpy array is numeric
+    :param obj:
+    :return:
+    """
     attrs = ['__add__', '__sub__', '__mul__', '__truediv__', '__pow__']
     return all(hasattr(obj, attr) for attr in attrs)
-
-
-def is_negative(flt: Filter) -> bool:
-    if flt.op == CompOps.GT:
-        return False
-
-    elif flt.op == CompOps.LT:
-        return False
-
-    elif flt.op == CompOps.GEQ:
-        return False
-
-    elif flt.op == CompOps.LEQ:
-        return False
-
-    elif flt.op == CompOps.NOT_EQ:
-        return True
-
-    elif flt.op == CompOps.EQ:
-        return False
-
-    elif flt.op == CompOps.LIKE:
-        return False
-
-    elif flt.op == CompOps.NOT_LIKE:
-        return True
-
-    elif flt.op == CompOps.STARTS:
-        return False
-
-    elif flt.op == CompOps.ENDS:
-        return False
-
-    else:
-        return False
-
-
-
-
 
 
