@@ -12,6 +12,7 @@ from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.power_transformer import P
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.power_transformer_end import PowerTransformerEnd
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.terminal import Terminal
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.topological_node import TopologicalNode
+from GridCalEngine.IO.cim.cim16.cim_devices import BaseVoltage
 from GridCalEngine.data_logger import DataLogger
 
 tn_test = TopologicalNode(rdfid="tn1")
@@ -21,7 +22,11 @@ cn_test = ConnectivityNode(rdfid="cn1")
 def cgmes_object():
     circuit = CgmesCircuit()
     circuit.PowerTransformer_list = [PowerTransformer()]
-    circuit.PowerTransformer_list[0].references_to_me["PowerTransformerEnd"] = [PowerTransformerEnd()]
+    ptend = PowerTransformerEnd()
+    ptend.BaseVoltage = BaseVoltage("a", "b")
+    ptend.BaseVoltage.nominalVoltage = 100
+
+    circuit.PowerTransformer_list[0].references_to_me["PowerTransformerEnd"] = [ptend, ptend]
     return circuit
 
 
@@ -52,8 +57,8 @@ def device_to_terminal_dict_object() -> Dict[str, List[Terminal]]:
     return d
 
 
-generators_test_params = [(cgmes_object(), calc_node_dict_object(), cn_dict_object(),
-                           device_to_terminal_dict_object(), 10)]
+transformer_test_data = [(calc_node_dict_object(), cn_dict_object(),
+                          device_to_terminal_dict_object(), 10)]
 
 
 def test_ac_transformers_one_power_transofmer_end_log_error():
@@ -90,15 +95,67 @@ def test_ac_transformers_zero_calc_node_log_error():
 
 
 @pytest.mark.parametrize(
-    "cgmes_model,calc_node_dict,cn_dict,device_to_terminal_dict,s_base",
-    generators_test_params)
-def test_ac_transformers2(cgmes_model, calc_node_dict, cn_dict, device_to_terminal_dict, s_base):
+    "calc_node_dict,cn_dict,device_to_terminal_dict,s_base",
+    transformer_test_data)
+def test_ac_transformers2w(calc_node_dict, cn_dict, device_to_terminal_dict, s_base):
     logger = DataLogger()
     multi_circuit = MultiCircuit()
 
     cgmes = CgmesCircuit()
-    cgmes.PowerTransformer_list = [PowerTransformer()]
-    cgmes.PowerTransformer_list[0].references_to_me["PowerTransformerEnd"] = [PowerTransformerEnd(),
-                                                                              PowerTransformerEnd()]
+    cgmes.PowerTransformer_list = [PowerTransformer("a")]
+    power_transformer_end = PowerTransformerEnd()
+    power_transformer_end.ratedS = 1
+    power_transformer_end.ratedU = 2
+
+    power_transformer_end.r = 1
+    power_transformer_end.x = 1
+    power_transformer_end.g = 1
+    power_transformer_end.b = 1
+    power_transformer_end.r0 = 1
+    power_transformer_end.x0 = 1
+    power_transformer_end.g0 = 1
+    power_transformer_end.b0 = 1
+    power_transformer_end.BaseVoltage = BaseVoltage("a", "b")
+    power_transformer_end.BaseVoltage.nominalVoltage = 100
+    cgmes.PowerTransformer_list[0].references_to_me["PowerTransformerEnd"] = [power_transformer_end,
+                                                                              power_transformer_end]
     get_gcdev_ac_transformers(cgmes, multi_circuit, calc_node_dict, cn_dict, device_to_terminal_dict, logger,
                               s_base)
+    generated_transtormer2w = multi_circuit.transformers2w[0]
+    assert generated_transtormer2w.B == 80.0
+    assert generated_transtormer2w.B0==80.0
+    assert generated_transtormer2w.B2 == 1e-20
+    assert generated_transtormer2w.Cost == 100.0
+    assert generated_transtormer2w.G == 80.0
+    assert generated_transtormer2w.G0 == 80.0
+    assert generated_transtormer2w.G2 == 1e-20
+    assert generated_transtormer2w.HV == 100
+    assert generated_transtormer2w.I0 == 0
+    assert generated_transtormer2w.LV == 100
+    assert generated_transtormer2w.Pcu == 0
+    assert generated_transtormer2w.Pfe == 0
+    assert generated_transtormer2w.Pset == 0
+    assert generated_transtormer2w.R == 5.0
+    assert generated_transtormer2w.R0 == 5.0
+    assert generated_transtormer2w.R2 == 1e-20
+    assert generated_transtormer2w.R_corrected == 5.0
+    assert generated_transtormer2w.Sn == 0.001
+    assert generated_transtormer2w.Vf == 10
+    assert generated_transtormer2w.Vsc == 0.0
+    assert generated_transtormer2w.Vt == 10
+    assert generated_transtormer2w.X == 5.0
+    assert generated_transtormer2w.X0 == 5.0
+    assert generated_transtormer2w.X2 == 1e-20
+    assert generated_transtormer2w.alpha == 0.0033
+    assert generated_transtormer2w.rate == 1
+    assert generated_transtormer2w.tap_module == 1.0
+    assert generated_transtormer2w.tap_module_max == 1.2
+    assert generated_transtormer2w.tap_module_min == 0.5
+    assert generated_transtormer2w.tap_phase == 0
+    assert generated_transtormer2w.tap_phase_max == 6.28
+    assert generated_transtormer2w.tap_phase_min == -6.28
+    assert generated_transtormer2w.temp_base == 20
+    assert generated_transtormer2w.temp_oper == 20
+
+
+
