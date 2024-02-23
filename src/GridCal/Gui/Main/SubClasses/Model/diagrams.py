@@ -320,342 +320,352 @@ class DiagramsMain(CompiledArraysMain):
         hvdc_lines = self.circuit.hvdc_lines
 
         if current_study == sim.PowerFlowDriver.tpe.value:
-            results: sim.PowerFlowResults = self.session.get_results(sim.SimulationTypes.PowerFlow_run)
+            if t_idx is None:
+                results: sim.PowerFlowResults = self.session.get_results(sim.SimulationTypes.PowerFlow_run)
+                bus_active = [bus.active for bus in self.circuit.buses]
+                br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
+                hvdc_active = [hvdc.active for hvdc in self.circuit.hvdc_lines]
 
-            bus_active = [bus.active for bus in self.circuit.buses]
-            br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
-            hvdc_active = [hvdc.active for hvdc in self.circuit.hvdc_lines]
-
-            return plot_function(buses=buses,
-                                 branches=branches,
-                                 hvdc_lines=hvdc_lines,
-                                 Sbus=results.Sbus,
-                                 bus_active=bus_active,
-                                 Sf=results.Sf,
-                                 St=results.St,
-                                 voltages=results.voltage,
-                                 loadings=np.abs(results.loading),
-                                 types=results.bus_types,
-                                 losses=results.losses,
-                                 br_active=br_active,
-                                 hvdc_Pf=results.hvdc_Pf,
-                                 hvdc_Pt=results.hvdc_Pt,
-                                 hvdc_losses=results.hvdc_losses,
-                                 hvdc_loading=results.hvdc_loading,
-                                 hvdc_active=hvdc_active,
-                                 ma=results.tap_module,
-                                 theta=results.tap_angle,
-                                 Beq=results.Beq,
-                                 use_flow_based_width=use_flow_based_width,
-                                 min_branch_width=min_branch_width,
-                                 max_branch_width=max_branch_width,
-                                 min_bus_width=min_bus_width,
-                                 max_bus_width=max_bus_width,
-                                 cmap=cmap)
+                return plot_function(buses=buses,
+                                     branches=branches,
+                                     hvdc_lines=hvdc_lines,
+                                     Sbus=results.Sbus,
+                                     bus_active=bus_active,
+                                     Sf=results.Sf,
+                                     St=results.St,
+                                     voltages=results.voltage,
+                                     loadings=np.abs(results.loading),
+                                     types=results.bus_types,
+                                     losses=results.losses,
+                                     br_active=br_active,
+                                     hvdc_Pf=results.hvdc_Pf,
+                                     hvdc_Pt=results.hvdc_Pt,
+                                     hvdc_losses=results.hvdc_losses,
+                                     hvdc_loading=results.hvdc_loading,
+                                     hvdc_active=hvdc_active,
+                                     ma=results.tap_module,
+                                     theta=results.tap_angle,
+                                     Beq=results.Beq,
+                                     use_flow_based_width=use_flow_based_width,
+                                     min_branch_width=min_branch_width,
+                                     max_branch_width=max_branch_width,
+                                     min_bus_width=min_bus_width,
+                                     max_bus_width=max_bus_width,
+                                     cmap=cmap)
 
         elif current_study == sim.PowerFlowTimeSeriesDriver.tpe.value:
-            results: sim.PowerFlowTimeSeriesResults = self.session.get_results(sim.SimulationTypes.TimeSeries_run)
-            bus_active = [bus.active_prof[t_idx] for bus in self.circuit.buses]
-            br_active = [br.active_prof[t_idx] for br in self.circuit.get_branches_wo_hvdc()]
-            hvdc_active = [hvdc.active_prof[t_idx] for hvdc in self.circuit.hvdc_lines]
+            if t_idx is not None:
+                results: sim.PowerFlowTimeSeriesResults = self.session.get_results(sim.SimulationTypes.TimeSeries_run)
+                bus_active = [bus.active_prof[t_idx] for bus in self.circuit.buses]
+                br_active = [br.active_prof[t_idx] for br in self.circuit.get_branches_wo_hvdc()]
+                hvdc_active = [hvdc.active_prof[t_idx] for hvdc in self.circuit.hvdc_lines]
 
-            return plot_function(buses=buses,
-                                 branches=branches,
-                                 hvdc_lines=hvdc_lines,
-                                 Sbus=results.S[t_idx, :],
-                                 bus_active=bus_active,
-                                 Sf=results.Sf[t_idx, :],
-                                 St=results.St[t_idx, :],
-                                 voltages=results.voltage[t_idx, :],
-                                 loadings=np.abs(results.loading[t_idx, :]),
-                                 types=results.bus_types,
-                                 losses=results.losses[t_idx, :],
-                                 br_active=br_active,
-                                 hvdc_Pf=results.hvdc_Pf[t_idx, :],
-                                 hvdc_Pt=results.hvdc_Pt[t_idx, :],
-                                 hvdc_losses=results.hvdc_losses[t_idx, :],
-                                 hvdc_loading=results.hvdc_loading[t_idx, :],
-                                 hvdc_active=hvdc_active,
-                                 use_flow_based_width=use_flow_based_width,
-                                 min_branch_width=min_branch_width,
-                                 max_branch_width=max_branch_width,
-                                 min_bus_width=min_bus_width,
-                                 max_bus_width=max_bus_width,
-                                 cmap=cmap)
+                return plot_function(buses=buses,
+                                     branches=branches,
+                                     hvdc_lines=hvdc_lines,
+                                     Sbus=results.S[t_idx, :],
+                                     bus_active=bus_active,
+                                     Sf=results.Sf[t_idx, :],
+                                     St=results.St[t_idx, :],
+                                     voltages=results.voltage[t_idx, :],
+                                     loadings=np.abs(results.loading[t_idx, :]),
+                                     types=results.bus_types,
+                                     losses=results.losses[t_idx, :],
+                                     br_active=br_active,
+                                     hvdc_Pf=results.hvdc_Pf[t_idx, :],
+                                     hvdc_Pt=results.hvdc_Pt[t_idx, :],
+                                     hvdc_losses=results.hvdc_losses[t_idx, :],
+                                     hvdc_loading=results.hvdc_loading[t_idx, :],
+                                     hvdc_active=hvdc_active,
+                                     use_flow_based_width=use_flow_based_width,
+                                     min_branch_width=min_branch_width,
+                                     max_branch_width=max_branch_width,
+                                     min_bus_width=min_bus_width,
+                                     max_bus_width=max_bus_width,
+                                     cmap=cmap)
 
         elif current_study == sim.ContinuationPowerFlowDriver.tpe.value:
-            results: sim.ContinuationPowerFlowResults = self.session.get_results(
-                sim.SimulationTypes.ContinuationPowerFlow_run
-            )
-            bus_active = [bus.active for bus in self.circuit.buses]
-            br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
+            if t_idx is None:
+                results: sim.ContinuationPowerFlowResults = self.session.get_results(
+                    sim.SimulationTypes.ContinuationPowerFlow_run
+                )
+                bus_active = [bus.active for bus in self.circuit.buses]
+                br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
 
-            return plot_function(buses=buses,
-                                 branches=branches,
-                                 hvdc_lines=hvdc_lines,
-                                 Sbus=results.Sbus[t_idx, :],
-                                 bus_active=bus_active,
-                                 Sf=results.Sf[t_idx, :],
-                                 St=results.St[t_idx, :],
-                                 voltages=results.voltages[t_idx, :],
-                                 types=results.bus_types,
-                                 loadings=np.abs(results.loading[t_idx, :]),
-                                 br_active=br_active,
-                                 hvdc_Pf=None,
-                                 hvdc_Pt=None,
-                                 hvdc_losses=None,
-                                 hvdc_loading=None,
-                                 hvdc_active=None,
-                                 use_flow_based_width=use_flow_based_width,
-                                 min_branch_width=min_branch_width,
-                                 max_branch_width=max_branch_width,
-                                 min_bus_width=min_bus_width,
-                                 max_bus_width=max_bus_width,
-                                 cmap=cmap)
+                return plot_function(buses=buses,
+                                     branches=branches,
+                                     hvdc_lines=hvdc_lines,
+                                     Sbus=results.Sbus[t_idx, :],
+                                     bus_active=bus_active,
+                                     Sf=results.Sf[t_idx, :],
+                                     St=results.St[t_idx, :],
+                                     voltages=results.voltages[t_idx, :],
+                                     types=results.bus_types,
+                                     loadings=np.abs(results.loading[t_idx, :]),
+                                     br_active=br_active,
+                                     hvdc_Pf=None,
+                                     hvdc_Pt=None,
+                                     hvdc_losses=None,
+                                     hvdc_loading=None,
+                                     hvdc_active=None,
+                                     use_flow_based_width=use_flow_based_width,
+                                     min_branch_width=min_branch_width,
+                                     max_branch_width=max_branch_width,
+                                     min_bus_width=min_bus_width,
+                                     max_bus_width=max_bus_width,
+                                     cmap=cmap)
 
         elif current_study == sim.StochasticPowerFlowDriver.tpe.value:
-            results: sim.StochasticPowerFlowResults = self.session.get_results(sim.SimulationTypes.StochasticPowerFlow)
-            bus_active = [bus.active for bus in self.circuit.buses]
-            br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
-            # hvdc_active = [hvdc.active for hvdc in self.circuit.hvdc_lines]
+            if t_idx is None:
+                results: sim.StochasticPowerFlowResults = self.session.get_results(sim.SimulationTypes.StochasticPowerFlow)
+                bus_active = [bus.active for bus in self.circuit.buses]
+                br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
+                # hvdc_active = [hvdc.active for hvdc in self.circuit.hvdc_lines]
 
-            return plot_function(buses=buses,
-                                 branches=branches,
-                                 hvdc_lines=hvdc_lines,
-                                 Sbus=results.S_points[t_idx, :],
-                                 types=results.bus_types,
-                                 voltages=results.V_points[t_idx, :],
-                                 bus_active=bus_active,
-                                 loadings=np.abs(results.loading_points[t_idx, :]),
-                                 Sf=results.Sbr_points[t_idx, :],
-                                 St=-results.Sbr_points[t_idx, :],
-                                 br_active=br_active,
-                                 hvdc_Pf=None,
-                                 hvdc_Pt=None,
-                                 hvdc_losses=None,
-                                 hvdc_loading=None,
-                                 hvdc_active=None,
-                                 use_flow_based_width=use_flow_based_width,
-                                 min_branch_width=min_branch_width,
-                                 max_branch_width=max_branch_width,
-                                 min_bus_width=min_bus_width,
-                                 max_bus_width=max_bus_width,
-                                 cmap=cmap)
+                return plot_function(buses=buses,
+                                     branches=branches,
+                                     hvdc_lines=hvdc_lines,
+                                     Sbus=results.S_points[t_idx, :],
+                                     types=results.bus_types,
+                                     voltages=results.V_points[t_idx, :],
+                                     bus_active=bus_active,
+                                     loadings=np.abs(results.loading_points[t_idx, :]),
+                                     Sf=results.Sbr_points[t_idx, :],
+                                     St=-results.Sbr_points[t_idx, :],
+                                     br_active=br_active,
+                                     hvdc_Pf=None,
+                                     hvdc_Pt=None,
+                                     hvdc_losses=None,
+                                     hvdc_loading=None,
+                                     hvdc_active=None,
+                                     use_flow_based_width=use_flow_based_width,
+                                     min_branch_width=min_branch_width,
+                                     max_branch_width=max_branch_width,
+                                     min_bus_width=min_bus_width,
+                                     max_bus_width=max_bus_width,
+                                     cmap=cmap)
 
         elif current_study == sim.ShortCircuitDriver.tpe.value:
-            results: sim.ShortCircuitResults = self.session.get_results(sim.SimulationTypes.ShortCircuit_run)
-            bus_active = [bus.active for bus in self.circuit.buses]
-            br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
+            if t_idx is None:
+                results: sim.ShortCircuitResults = self.session.get_results(sim.SimulationTypes.ShortCircuit_run)
+                bus_active = [bus.active for bus in self.circuit.buses]
+                br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
 
-            return plot_function(buses=buses,
-                                 branches=branches,
-                                 hvdc_lines=hvdc_lines,
-                                 Sbus=results.Sbus1,
-                                 bus_active=bus_active,
-                                 Sf=results.Sf1,
-                                 St=results.St1,
-                                 voltages=results.voltage1,
-                                 types=results.bus_types,
-                                 loadings=results.loading1,
-                                 br_active=br_active,
-                                 hvdc_Pf=None,
-                                 hvdc_Pt=None,
-                                 hvdc_losses=None,
-                                 hvdc_loading=None,
-                                 hvdc_active=None,
-                                 use_flow_based_width=use_flow_based_width,
-                                 min_branch_width=min_branch_width,
-                                 max_branch_width=max_branch_width,
-                                 min_bus_width=min_bus_width,
-                                 max_bus_width=max_bus_width,
-                                 cmap=cmap)
+                return plot_function(buses=buses,
+                                     branches=branches,
+                                     hvdc_lines=hvdc_lines,
+                                     Sbus=results.Sbus1,
+                                     bus_active=bus_active,
+                                     Sf=results.Sf1,
+                                     St=results.St1,
+                                     voltages=results.voltage1,
+                                     types=results.bus_types,
+                                     loadings=results.loading1,
+                                     br_active=br_active,
+                                     hvdc_Pf=None,
+                                     hvdc_Pt=None,
+                                     hvdc_losses=None,
+                                     hvdc_loading=None,
+                                     hvdc_active=None,
+                                     use_flow_based_width=use_flow_based_width,
+                                     min_branch_width=min_branch_width,
+                                     max_branch_width=max_branch_width,
+                                     min_bus_width=min_bus_width,
+                                     max_bus_width=max_bus_width,
+                                     cmap=cmap)
 
         elif current_study == sim.OptimalPowerFlowDriver.tpe.value:
-            results: sim.OptimalPowerFlowResults = self.session.get_results(sim.SimulationTypes.OPF_run)
-            bus_active = [bus.active for bus in self.circuit.buses]
-            br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
-            hvdc_active = [hvdc.active for hvdc in self.circuit.hvdc_lines]
+            if t_idx is None:
+                results: sim.OptimalPowerFlowResults = self.session.get_results(sim.SimulationTypes.OPF_run)
+                bus_active = [bus.active for bus in self.circuit.buses]
+                br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
+                hvdc_active = [hvdc.active for hvdc in self.circuit.hvdc_lines]
 
-            return plot_function(buses=buses,
-                                 branches=branches,
-                                 hvdc_lines=hvdc_lines,
-                                 Sbus=results.Sbus,
-                                 voltages=results.voltage,
-                                 bus_active=bus_active,
-                                 loadings=results.loading,
-                                 types=results.bus_types,
-                                 Sf=results.Sf,
-                                 St=results.St,
-                                 br_active=br_active,
-                                 hvdc_Pf=results.hvdc_Pf,
-                                 hvdc_Pt=-results.hvdc_Pf,
-                                 hvdc_loading=results.hvdc_loading,
-                                 hvdc_active=hvdc_active,
-                                 use_flow_based_width=use_flow_based_width,
-                                 min_branch_width=min_branch_width,
-                                 max_branch_width=max_branch_width,
-                                 min_bus_width=min_bus_width,
-                                 max_bus_width=max_bus_width,
-                                 cmap=cmap)
+                return plot_function(buses=buses,
+                                     branches=branches,
+                                     hvdc_lines=hvdc_lines,
+                                     Sbus=results.Sbus,
+                                     voltages=results.voltage,
+                                     bus_active=bus_active,
+                                     loadings=results.loading,
+                                     types=results.bus_types,
+                                     Sf=results.Sf,
+                                     St=results.St,
+                                     br_active=br_active,
+                                     hvdc_Pf=results.hvdc_Pf,
+                                     hvdc_Pt=-results.hvdc_Pf,
+                                     hvdc_loading=results.hvdc_loading,
+                                     hvdc_active=hvdc_active,
+                                     use_flow_based_width=use_flow_based_width,
+                                     min_branch_width=min_branch_width,
+                                     max_branch_width=max_branch_width,
+                                     min_bus_width=min_bus_width,
+                                     max_bus_width=max_bus_width,
+                                     cmap=cmap)
 
         elif current_study == sim.OptimalPowerFlowTimeSeriesDriver.tpe.value:
-            results: sim.OptimalPowerFlowTimeSeriesResults = self.session.get_results(
-                sim.SimulationTypes.OPFTimeSeries_run
-            )
-            bus_active = [bus.active_prof[t_idx] for bus in self.circuit.buses]
-            br_active = [br.active_prof[t_idx] for br in self.circuit.get_branches_wo_hvdc()]
-            hvdc_active = [hvdc.active_prof[t_idx] for hvdc in self.circuit.hvdc_lines]
 
-            return plot_function(buses=buses,
-                                 branches=branches,
-                                 hvdc_lines=hvdc_lines,
-                                 voltages=results.voltage[t_idx, :],
-                                 Sbus=results.Sbus[t_idx, :],
-                                 types=results.bus_types,
-                                 bus_active=bus_active,
-                                 Sf=results.Sf[t_idx, :],
-                                 St=results.St[t_idx, :],
-                                 loadings=np.abs(results.loading[t_idx, :]),
-                                 br_active=br_active,
-                                 hvdc_Pf=results.hvdc_Pf[t_idx, :],
-                                 hvdc_Pt=-results.hvdc_Pf[t_idx, :],
-                                 hvdc_loading=results.hvdc_loading[t_idx, :],
-                                 hvdc_active=hvdc_active,
-                                 use_flow_based_width=use_flow_based_width,
-                                 min_branch_width=min_branch_width,
-                                 max_branch_width=max_branch_width,
-                                 min_bus_width=min_bus_width,
-                                 max_bus_width=max_bus_width,
-                                 cmap=cmap)
+            if t_idx is not None:
+                results: sim.OptimalPowerFlowTimeSeriesResults = self.session.get_results(
+                    sim.SimulationTypes.OPFTimeSeries_run
+                )
+                bus_active = [bus.active_prof[t_idx] for bus in self.circuit.buses]
+                br_active = [br.active_prof[t_idx] for br in self.circuit.get_branches_wo_hvdc()]
+                hvdc_active = [hvdc.active_prof[t_idx] for hvdc in self.circuit.hvdc_lines]
+
+                return plot_function(buses=buses,
+                                     branches=branches,
+                                     hvdc_lines=hvdc_lines,
+                                     voltages=results.voltage[t_idx, :],
+                                     Sbus=results.Sbus[t_idx, :],
+                                     types=results.bus_types,
+                                     bus_active=bus_active,
+                                     Sf=results.Sf[t_idx, :],
+                                     St=results.St[t_idx, :],
+                                     loadings=np.abs(results.loading[t_idx, :]),
+                                     br_active=br_active,
+                                     hvdc_Pf=results.hvdc_Pf[t_idx, :],
+                                     hvdc_Pt=-results.hvdc_Pf[t_idx, :],
+                                     hvdc_loading=results.hvdc_loading[t_idx, :],
+                                     hvdc_active=hvdc_active,
+                                     use_flow_based_width=use_flow_based_width,
+                                     min_branch_width=min_branch_width,
+                                     max_branch_width=max_branch_width,
+                                     min_bus_width=min_bus_width,
+                                     max_bus_width=max_bus_width,
+                                     cmap=cmap)
 
         elif current_study == sim.LinearAnalysisDriver.tpe.value:
-            results: sim.LinearAnalysisResults = self.session.get_results(sim.SimulationTypes.LinearAnalysis_run)
-            bus_active = [bus.active for bus in self.circuit.buses]
-            br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
-            hvdc_active = [hvdc.active for hvdc in self.circuit.hvdc_lines]
-            voltage = np.ones(self.circuit.get_bus_number())
+            if t_idx is None:
+                results: sim.LinearAnalysisResults = self.session.get_results(sim.SimulationTypes.LinearAnalysis_run)
+                bus_active = [bus.active for bus in self.circuit.buses]
+                br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
+                hvdc_active = [hvdc.active for hvdc in self.circuit.hvdc_lines]
+                voltage = np.ones(self.circuit.get_bus_number())
 
-            return plot_function(buses=buses,
-                                 branches=branches,
-                                 hvdc_lines=hvdc_lines,
-                                 voltages=voltage,
-                                 Sbus=results.Sbus,
-                                 types=results.bus_types,
-                                 bus_active=bus_active,
-                                 Sf=results.Sf,
-                                 St=-results.Sf,
-                                 loadings=results.loading,
-                                 br_active=br_active,
-                                 loading_label='Loading',
-                                 use_flow_based_width=use_flow_based_width,
-                                 min_branch_width=min_branch_width,
-                                 max_branch_width=max_branch_width,
-                                 min_bus_width=min_bus_width,
-                                 max_bus_width=max_bus_width,
-                                 cmap=cmap)
+                return plot_function(buses=buses,
+                                     branches=branches,
+                                     hvdc_lines=hvdc_lines,
+                                     voltages=voltage,
+                                     Sbus=results.Sbus,
+                                     types=results.bus_types,
+                                     bus_active=bus_active,
+                                     Sf=results.Sf,
+                                     St=-results.Sf,
+                                     loadings=results.loading,
+                                     br_active=br_active,
+                                     loading_label='Loading',
+                                     use_flow_based_width=use_flow_based_width,
+                                     min_branch_width=min_branch_width,
+                                     max_branch_width=max_branch_width,
+                                     min_bus_width=min_bus_width,
+                                     max_bus_width=max_bus_width,
+                                     cmap=cmap)
 
         elif current_study == sim.LinearAnalysisTimeSeriesDriver.tpe.value:
-            results: sim.LinearAnalysisTimeSeriesResults = self.session.get_results(
-                sim.SimulationTypes.LinearAnalysis_TS_run)
-            bus_active = [bus.active_prof[t_idx] for bus in self.circuit.buses]
-            br_active = [br.active_prof[t_idx] for br in self.circuit.get_branches_wo_hvdc()]
-            hvdc_active = [hvdc.active_prof[t_idx] for hvdc in self.circuit.hvdc_lines]
+            if t_idx is not None:
+                results: sim.LinearAnalysisTimeSeriesResults = self.session.get_results(
+                    sim.SimulationTypes.LinearAnalysis_TS_run)
+                bus_active = [bus.active_prof[t_idx] for bus in self.circuit.buses]
+                br_active = [br.active_prof[t_idx] for br in self.circuit.get_branches_wo_hvdc()]
+                hvdc_active = [hvdc.active_prof[t_idx] for hvdc in self.circuit.hvdc_lines]
 
-            return plot_function(buses=buses,
-                                 branches=branches,
-                                 hvdc_lines=hvdc_lines,
-                                 Sbus=results.S[t_idx],
-                                 voltages=results.voltage[t_idx],
-                                 types=results.bus_types,
-                                 bus_active=bus_active,
-                                 Sf=results.Sf[t_idx],
-                                 St=-results.Sf[t_idx],
-                                 loadings=np.abs(results.loading[t_idx]),
-                                 br_active=br_active,
-                                 use_flow_based_width=use_flow_based_width,
-                                 min_branch_width=min_branch_width,
-                                 max_branch_width=max_branch_width,
-                                 min_bus_width=min_bus_width,
-                                 max_bus_width=max_bus_width,
-                                 cmap=cmap)
+                return plot_function(buses=buses,
+                                     branches=branches,
+                                     hvdc_lines=hvdc_lines,
+                                     Sbus=results.S[t_idx],
+                                     voltages=results.voltage[t_idx],
+                                     types=results.bus_types,
+                                     bus_active=bus_active,
+                                     Sf=results.Sf[t_idx],
+                                     St=-results.Sf[t_idx],
+                                     loadings=np.abs(results.loading[t_idx]),
+                                     br_active=br_active,
+                                     use_flow_based_width=use_flow_based_width,
+                                     min_branch_width=min_branch_width,
+                                     max_branch_width=max_branch_width,
+                                     min_bus_width=min_bus_width,
+                                     max_bus_width=max_bus_width,
+                                     cmap=cmap)
 
         elif current_study == sim.ContingencyAnalysisDriver.tpe.value:
-            results: sim.ContingencyAnalysisResults = self.session.get_results(
-                sim.SimulationTypes.ContingencyAnalysis_run)
-            bus_active = [bus.active for bus in self.circuit.buses]
-            br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
-            hvdc_active = [hvdc.active for hvdc in self.circuit.hvdc_lines]
-            # TODO: the slider provides time now, not step
-            return
 
-            # return plot_function(buses=buses,
-            #                      branches=branches,
-            #                      hvdc_lines=hvdc_lines,
-            #                      Sbus=results.Sbus[t_idx, :],
-            #                      voltages=results.voltage[t_idx, :],
-            #                      types=results.bus_types,
-            #                      bus_active=bus_active,
-            #                      Sf=results.Sf[t_idx, :],
-            #                      St=-results.Sf[t_idx, :],
-            #                      loadings=np.abs(results.loading[t_idx, :]),
-            #                      br_active=br_active,
-            #                      use_flow_based_width=use_flow_based_width,
-            #                      min_branch_width=min_branch_width,
-            #                      max_branch_width=max_branch_width,
-            #                      min_bus_width=min_bus_width,
-            #                      max_bus_width=max_bus_width,
-            #                      cmap=cmap)
+            if t_idx is None:
+                results: sim.ContingencyAnalysisResults = self.session.get_results(
+                    sim.SimulationTypes.ContingencyAnalysis_run)
+                bus_active = [bus.active for bus in self.circuit.buses]
+                br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
+                hvdc_active = [hvdc.active for hvdc in self.circuit.hvdc_lines]
+                con_idx = 0
+                return plot_function(buses=buses,
+                                     branches=branches,
+                                     hvdc_lines=hvdc_lines,
+                                     Sbus=results.Sbus[con_idx, :],
+                                     voltages=results.voltage[con_idx, :],
+                                     types=results.bus_types,
+                                     bus_active=bus_active,
+                                     Sf=results.Sf[con_idx, :],
+                                     St=-results.Sf[con_idx, :],
+                                     loadings=np.abs(results.loading[con_idx, :]),
+                                     br_active=br_active,
+                                     use_flow_based_width=use_flow_based_width,
+                                     min_branch_width=min_branch_width,
+                                     max_branch_width=max_branch_width,
+                                     min_bus_width=min_bus_width,
+                                     max_bus_width=max_bus_width,
+                                     cmap=cmap)
 
         elif current_study == sim.ContingencyAnalysisTimeSeries.tpe.value:
-            results: sim.ContingencyAnalysisTimeSeriesResults = self.session.get_results(
-                sim.SimulationTypes.ContingencyAnalysisTS_run)
-            bus_active = [bus.active_prof[t_idx] for bus in self.circuit.buses]
-            br_active = [br.active_prof[t_idx] for br in self.circuit.get_branches_wo_hvdc()]
-            hvdc_active = [hvdc.active_prof[t_idx] for hvdc in self.circuit.hvdc_lines]
+            if t_idx is not None:
+                results: sim.ContingencyAnalysisTimeSeriesResults = self.session.get_results(
+                    sim.SimulationTypes.ContingencyAnalysisTS_run)
+                bus_active = [bus.active_prof[t_idx] for bus in self.circuit.buses]
+                br_active = [br.active_prof[t_idx] for br in self.circuit.get_branches_wo_hvdc()]
+                hvdc_active = [hvdc.active_prof[t_idx] for hvdc in self.circuit.hvdc_lines]
 
-            return plot_function(buses=buses,
-                                 branches=branches,
-                                 hvdc_lines=hvdc_lines,
-                                 voltages=np.ones(results.nbus, dtype=complex),
-                                 Sbus=results.S[t_idx, :],
-                                 types=results.bus_types,
-                                 bus_active=bus_active,
-                                 Sf=results.max_flows[t_idx, :],
-                                 St=-results.max_flows[t_idx, :],
-                                 loadings=np.abs(results.max_loading[t_idx]),
-                                 br_active=br_active,
-                                 use_flow_based_width=use_flow_based_width,
-                                 min_branch_width=min_branch_width,
-                                 max_branch_width=max_branch_width,
-                                 min_bus_width=min_bus_width,
-                                 max_bus_width=max_bus_width,
-                                 cmap=cmap)
+                return plot_function(buses=buses,
+                                     branches=branches,
+                                     hvdc_lines=hvdc_lines,
+                                     voltages=np.ones(results.nbus, dtype=complex),
+                                     Sbus=results.S[t_idx, :],
+                                     types=results.bus_types,
+                                     bus_active=bus_active,
+                                     Sf=results.max_flows[t_idx, :],
+                                     St=-results.max_flows[t_idx, :],
+                                     loadings=np.abs(results.max_loading[t_idx]),
+                                     br_active=br_active,
+                                     use_flow_based_width=use_flow_based_width,
+                                     min_branch_width=min_branch_width,
+                                     max_branch_width=max_branch_width,
+                                     min_bus_width=min_bus_width,
+                                     max_bus_width=max_bus_width,
+                                     cmap=cmap)
 
         elif current_study == sim.InputsAnalysisDriver.tpe.value:
 
-            results = self.session.get_results(sim.SimulationTypes.InputsAnalysis_run)
-            nbus = self.circuit.get_bus_number()
-            nbr = self.circuit.get_branch_number()
-            bus_active = [bus.active_prof[t_idx] for bus in self.circuit.buses]
-            br_active = [br.active_prof[t_idx] for br in self.circuit.get_branches_wo_hvdc()]
+            if t_idx is None:
+                results = self.session.get_results(sim.SimulationTypes.InputsAnalysis_run)
+                nbus = self.circuit.get_bus_number()
+                nbr = self.circuit.get_branch_number()
+                bus_active = [bus.active for bus in self.circuit.buses]
+                br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
 
-            # empty
-            return plot_function(buses=buses,
-                                 branches=branches,
-                                 hvdc_lines=hvdc_lines,
-                                 Sbus=np.zeros(nbus, dtype=complex),
-                                 voltages=np.ones(nbus, dtype=complex),
-                                 bus_active=bus_active,
-                                 Sf=np.zeros(nbr, dtype=complex),
-                                 St=np.zeros(nbr, dtype=complex),
-                                 loadings=np.zeros(nbr, dtype=complex),
-                                 br_active=br_active,
-                                 use_flow_based_width=use_flow_based_width,
-                                 min_branch_width=min_branch_width,
-                                 max_branch_width=max_branch_width,
-                                 min_bus_width=min_bus_width,
-                                 max_bus_width=max_bus_width,
-                                 cmap=cmap)
+                return plot_function(buses=buses,
+                                     branches=branches,
+                                     hvdc_lines=hvdc_lines,
+                                     Sbus=np.zeros(nbus, dtype=complex),
+                                     voltages=np.ones(nbus, dtype=complex),
+                                     bus_active=bus_active,
+                                     Sf=np.zeros(nbr, dtype=complex),
+                                     St=np.zeros(nbr, dtype=complex),
+                                     loadings=np.zeros(nbr, dtype=complex),
+                                     br_active=br_active,
+                                     use_flow_based_width=use_flow_based_width,
+                                     min_branch_width=min_branch_width,
+                                     max_branch_width=max_branch_width,
+                                     min_bus_width=min_bus_width,
+                                     max_bus_width=max_bus_width,
+                                     cmap=cmap)
 
         elif current_study == sim.AvailableTransferCapacityTimeSeriesDriver.tpe.value:
             pass
