@@ -14,6 +14,19 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from GridCalEngine.Utils.Filtering.filtering import *
-from GridCalEngine.Utils.Filtering.objects_filtering import *
-from GridCalEngine.Utils.Filtering.results_table_filtering import *
+import numpy as np
+from typing import Union, List
+from GridCalEngine.Utils.Filtering.filtering import Filter
+from GridCalEngine.Core.Devices.types import ALL_DEV_TYPES
+
+
+def single_objects_filter(objects: List[ALL_DEV_TYPES], f: Filter):
+    """
+    Filter objects by the given filter
+    :param objects:
+    :param f:
+    :return:
+    """
+    mask = np.zeros(len(objects), dtype=bool)
+
+    return mask

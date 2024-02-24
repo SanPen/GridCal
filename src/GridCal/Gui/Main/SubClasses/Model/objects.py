@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
-from typing import Union, Tuple
+from typing import Union, List
 from PySide6 import QtGui, QtCore
 from matplotlib import pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
@@ -24,8 +24,9 @@ from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit
 import GridCalEngine.basic_structures as bs
 import GridCalEngine.Core.Devices as dev
 import GridCal.Gui.GuiFunctions as gf
-import GridCalEngine.Utils.Filtering.filtering as flt
+import GridCalEngine.Utils.Filtering as flt
 from GridCalEngine.enumerations import DeviceType
+from GridCalEngine.Core.Devices.types import ALL_DEV_TYPES
 from GridCal.Gui.Analysis.object_plot_analysis import object_histogram_analysis
 from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_msg
 from GridCal.Gui.Main.SubClasses.Model.diagrams import DiagramsMain
@@ -730,13 +731,20 @@ class ObjectsTableMain(DiagramsMain):
 
     def objects_smart_search(self):
         """
-        Filter
+        Objects and time series object-based filtering
+        :return:
         """
 
         if len(self.type_objects_list) > 0:
             command = self.ui.smart_search_lineEdit.text().lower()
             master_filter = flt.parse_expression(expression=command)
 
+            if master_filter.size():
+                initial_model = self.get_current_objects_model_view()
+                objects = initial_model.objects
+                mask = np.zeros(len(objects), dtype=bool)
+
+                mask_1 = flt.single_objects_filter(objects=objects, f=master_filter.stack[0])
 
             elm = self.type_objects_list[0]
             tpe = elm.registered_properties[attr].tpe

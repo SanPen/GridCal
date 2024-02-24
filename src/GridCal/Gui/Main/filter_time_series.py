@@ -36,7 +36,7 @@ def compute_results_table_masks(table: ResultsTable, flt: Filter) -> Tuple[BoolV
     else:
         lst = [flt.value]
 
-    is_neg = is_negative(flt)
+    is_neg = flt.is_negative()
 
     if is_neg:
         final_idx_mask = np.ones(table.r, dtype=bool)
