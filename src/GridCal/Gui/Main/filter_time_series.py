@@ -19,7 +19,7 @@ import numpy as np
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.basic_structures import BoolVec, Mat
 from GridCalEngine.Utils.Filtering.filtering import (MasterFilter, Filter, FilterOps, CompOps, FilterSubject,
-                                                     is_negative, is_odd, is_numeric, parse_expression)
+                                                     is_odd, is_numeric, parse_expression)
 
 
 def compute_results_table_masks(table: ResultsTable, flt: Filter) -> Tuple[BoolVec, BoolVec, Mat]:

@@ -24,6 +24,7 @@ from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit
 import GridCalEngine.basic_structures as bs
 import GridCalEngine.Core.Devices as dev
 import GridCal.Gui.GuiFunctions as gf
+import GridCalEngine.Utils.Filtering.filtering as flt
 from GridCalEngine.enumerations import DeviceType
 from GridCal.Gui.Analysis.object_plot_analysis import object_histogram_analysis
 from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_msg
@@ -56,7 +57,7 @@ class ObjectsTableMain(DiagramsMain):
 
         # Buttons
         self.ui.setValueToColumnButton.clicked.connect(self.set_value_to_column)
-        self.ui.filter_pushButton.clicked.connect(self.smart_search)
+        self.ui.filter_pushButton.clicked.connect(self.objects_smart_search)
         self.ui.catalogue_edit_pushButton.clicked.connect(self.edit_from_catalogue)
         self.ui.copyObjectsTableButton.clicked.connect(self.copy_objects_data)
         self.ui.delete_selected_objects_pushButton.clicked.connect(self.delete_selected_objects)
@@ -74,7 +75,7 @@ class ObjectsTableMain(DiagramsMain):
         self.ui.dataStructuresTreeView.clicked.connect(self.view_objects_data)
 
         # line edit enter
-        self.ui.smart_search_lineEdit.returnPressed.connect(self.smart_search)
+        self.ui.smart_search_lineEdit.returnPressed.connect(self.objects_smart_search)
 
     def create_objects_model(self, elements, elm_type: DeviceType) -> gf.ObjectsModel:
         """
@@ -271,12 +272,19 @@ class ObjectsTableMain(DiagramsMain):
         """
         Copy the current displayed objects table to the clipboard
         """
-        mdl = self.ui.dataStructureTableView.model()
+        mdl = self.get_current_objects_model_view()
         if mdl is not None:
             mdl.copy_to_clipboard()
             print('Copied!')
         else:
             warning_msg('There is no data displayed, please display one', 'Copy profile to clipboard')
+
+    def get_db_object_selected_type(self) -> str:
+        """
+        Get the selected object type in the database tree view
+        :return:
+        """
+        return self.ui.dataStructuresTreeView.selectedIndexes()[0].data(role=QtCore.Qt.ItemDataRole.DisplayRole)
 
     def view_objects_data(self):
         """
@@ -286,27 +294,29 @@ class ObjectsTableMain(DiagramsMain):
         if self.ui.dataStructuresTreeView.selectedIndexes()[0].parent().row() > -1:
             # if the clicked element has a valid parent...
 
-            elm_type = self.ui.dataStructuresTreeView.selectedIndexes()[0].data(role=QtCore.Qt.ItemDataRole.DisplayRole)
+            elm_type = self.get_db_object_selected_type()
 
             elements = self.circuit.get_elements_by_type(device_type=DeviceType(elm_type))
 
-            mdl = self.create_objects_model(elements=elements,
-                                            elm_type=DeviceType(elm_type))
+            objects_mdl = self.create_objects_model(elements=elements, elm_type=DeviceType(elm_type))
 
+            # update slice-view
             self.type_objects_list = elements
-            self.ui.dataStructureTableView.setModel(mdl)
-            self.ui.property_comboBox.clear()
-            self.ui.property_comboBox.addItems(mdl.attributes)
+            self.ui.dataStructureTableView.setModel(objects_mdl)
+
+            # update time series view
+            ts_mdl = gf.get_list_model(self.circuit.profile_magnitudes[elm_type][0])
+            self.ui.device_type_magnitude_comboBox.setModel(ts_mdl)
+            self.ui.device_type_magnitude_comboBox_2.setModel(ts_mdl)
         else:
             self.ui.dataStructureTableView.setModel(None)
-            self.ui.property_comboBox.clear()
 
     def delete_selected_objects(self):
         """
         Delete selection
         """
 
-        model = self.ui.dataStructureTableView.model()
+        model = self.get_current_objects_model_view()
 
         if model is not None:
             sel_idx = self.ui.dataStructureTableView.selectedIndexes()
@@ -349,7 +359,7 @@ class ObjectsTableMain(DiagramsMain):
         """
         Add default objects objects
         """
-        model = self.ui.dataStructureTableView.model()
+        model = self.get_current_objects_model_view()
         elm_type = self.ui.dataStructuresTreeView.selectedIndexes()[0].data(role=QtCore.Qt.ItemDataRole.DisplayRole)
 
         if model is not None:
@@ -461,7 +471,7 @@ class ObjectsTableMain(DiagramsMain):
         """
         Edit catalogue element
         """
-        model = self.ui.dataStructureTableView.model()
+        model = self.get_current_objects_model_view()
         sel_item = self.ui.dataStructuresTreeView.selectedIndexes()[0]
         elm_type = sel_item.data(role=QtCore.Qt.ItemDataRole.DisplayRole)
 
@@ -499,7 +509,7 @@ class ObjectsTableMain(DiagramsMain):
         :return: Nothing
         """
         idx = self.ui.dataStructureTableView.currentIndex()
-        mdl = self.ui.dataStructureTableView.model()  # is of type ObjectsModel
+        mdl = self.get_current_objects_model_view()
         col = idx.column()
         if mdl is not None:
             if col > -1:
@@ -511,13 +521,12 @@ class ObjectsTableMain(DiagramsMain):
         else:
             pass
 
-
     def highlight_selection_buses(self):
         """
         Highlight and select the buses of the selected objects
         """
 
-        model = self.ui.dataStructureTableView.model()
+        model = self.get_current_objects_model_view()
 
         if model is not None:
 
@@ -579,13 +588,19 @@ class ObjectsTableMain(DiagramsMain):
         else:
             return t_idx
 
+    def get_current_objects_model_view(self) -> gf.ObjectsModel:
+        """
+        Get the current ObjectsModel from the GUI
+        :return: ObjectsModel
+        """
+        return self.ui.dataStructureTableView.model()
+
     def highlight_based_on_property(self):
         """
         Highlight and select the buses of the selected objects
         """
 
-        model = self.ui.dataStructureTableView.model()
-
+        model = self.get_current_objects_model_view()
         t_idx = self.get_objects_time_index()
 
         if model is not None:
@@ -594,18 +609,20 @@ class ObjectsTableMain(DiagramsMain):
             if len(objects) > 0:
 
                 elm = objects[0]
-                attr = self.ui.property_comboBox.currentText()
-                gc_prop = elm.registered_properties[attr]
-                tpe = gc_prop.tpe
+                attr = self.ui.smart_search_lineEdit.text().strip()
+                gc_prop = elm.registered_properties.get(attr, None)
+                if gc_prop:
+                    info_msg(f"The proprty {attr} cannot be found :(", "Highlight based on property")
+                    return
 
-                if tpe in [float, int]:
+                if gc_prop.tpe in [float, int]:
 
                     self.clear_big_bus_markers()
 
                     if elm.device_type == DeviceType.BusDevice:
                         # buses
                         buses = objects
-                        values = [elm.get_vaule(gc_prop=gc_prop, t_idx=t_idx) for elm in objects]
+                        values = [elm.get_vaule(prop=gc_prop, t_idx=t_idx) for elm in objects]
 
                     elif elm.device_type in [DeviceType.BranchDevice,
                                              DeviceType.LineDevice,
@@ -622,7 +639,7 @@ class ObjectsTableMain(DiagramsMain):
                             gc_prop = br.registered_properties[attr]
                             buses.append(br.bus_from)
                             buses.append(br.bus_to)
-                            val = elm.get_vaule(gc_prop=gc_prop, t_idx=t_idx)
+                            val = elm.get_vaule(prop=gc_prop, t_idx=t_idx)
                             values.append(val)
                             values.append(val)
 
@@ -632,7 +649,7 @@ class ObjectsTableMain(DiagramsMain):
                         values = list()
                         for elm in objects:
                             gc_prop = elm.registered_properties[attr]
-                            val = elm.get_vaule(gc_prop=gc_prop, t_idx=t_idx)
+                            val = elm.get_vaule(prop=gc_prop, t_idx=t_idx)
                             buses.append(elm.bus)
                             values.append(val)
 
@@ -670,7 +687,7 @@ class ObjectsTableMain(DiagramsMain):
         indices = self.ui.dataStructureTableView.selectedIndexes()
 
         if len(indices):
-            model = self.ui.dataStructureTableView.model()
+            model = self.get_current_objects_model_view()
 
             if model is not None:
                 objects = model.objects
@@ -686,7 +703,7 @@ class ObjectsTableMain(DiagramsMain):
                     attr = model.attributes[p_idx]
                     gc_prop = elm.registered_properties[attr]
                     if gc_prop.has_profile():
-                        val = elm.get_value(gc_prop=gc_prop, t_idx=t_idx)
+                        val = elm.get_value(prop=gc_prop, t_idx=t_idx)
                         profile = elm.get_profile_by_prop(prop=gc_prop)
                         profile.fill(val)
                     else:
@@ -711,14 +728,15 @@ class ObjectsTableMain(DiagramsMain):
         else:
             info_msg('Select a data structure')
 
-    def smart_search(self):
+    def objects_smart_search(self):
         """
         Filter
         """
 
         if len(self.type_objects_list) > 0:
             command = self.ui.smart_search_lineEdit.text().lower()
-            attr = self.ui.property_comboBox.currentText()
+            master_filter = flt.parse_expression(expression=command)
+
 
             elm = self.type_objects_list[0]
             tpe = elm.registered_properties[attr].tpe

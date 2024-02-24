@@ -31,7 +31,7 @@ class Ui_mainWindow(object):
     def setupUi(self, mainWindow):
         if not mainWindow.objectName():
             mainWindow.setObjectName(u"mainWindow")
-        mainWindow.resize(1371, 807)
+        mainWindow.resize(1351, 779)
         mainWindow.setBaseSize(QSize(0, 0))
         icon = QIcon()
         icon.addFile(u":/Program icon/GridCal_icon.svg", QSize(), QIcon.Normal, QIcon.Off)
@@ -441,7 +441,7 @@ class Ui_mainWindow(object):
         self.verticalLayout_9 = QVBoxLayout(self.GridTab)
         self.verticalLayout_9.setSpacing(0)
         self.verticalLayout_9.setObjectName(u"verticalLayout_9")
-        self.verticalLayout_9.setContentsMargins(0, 10, 0, 0)
+        self.verticalLayout_9.setContentsMargins(0, 0, 0, 0)
         self.tabWidget_3 = QTabWidget(self.GridTab)
         self.tabWidget_3.setObjectName(u"tabWidget_3")
         self.tabWidget_3.setTabPosition(QTabWidget.South)
@@ -571,52 +571,11 @@ class Ui_mainWindow(object):
         self.frame_26.setFrameShadow(QFrame.Raised)
         self.verticalLayout_27 = QVBoxLayout(self.frame_26)
         self.verticalLayout_27.setObjectName(u"verticalLayout_27")
-        self.verticalLayout_27.setContentsMargins(-1, 0, 0, 4)
+        self.verticalLayout_27.setContentsMargins(-1, 6, 0, 6)
         self.dataStructuresTreeView = QTreeView(self.frame_26)
         self.dataStructuresTreeView.setObjectName(u"dataStructuresTreeView")
 
         self.verticalLayout_27.addWidget(self.dataStructuresTreeView)
-
-        self.frame_69 = QFrame(self.frame_26)
-        self.frame_69.setObjectName(u"frame_69")
-        self.frame_69.setFrameShape(QFrame.NoFrame)
-        self.frame_69.setFrameShadow(QFrame.Raised)
-        self.horizontalLayout_35 = QHBoxLayout(self.frame_69)
-        self.horizontalLayout_35.setObjectName(u"horizontalLayout_35")
-        self.horizontalLayout_35.setContentsMargins(0, 0, 0, 0)
-        self.set_profile_state_button = QPushButton(self.frame_69)
-        self.set_profile_state_button.setObjectName(u"set_profile_state_button")
-        icon67 = QIcon()
-        icon67.addFile(u":/Icons/icons/copy2left.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.set_profile_state_button.setIcon(icon67)
-
-        self.horizontalLayout_35.addWidget(self.set_profile_state_button)
-
-        self.db_step_slider = QSlider(self.frame_69)
-        self.db_step_slider.setObjectName(u"db_step_slider")
-        self.db_step_slider.setOrientation(Qt.Horizontal)
-
-        self.horizontalLayout_35.addWidget(self.db_step_slider)
-
-
-        self.verticalLayout_27.addWidget(self.frame_69)
-
-        self.db_step_label = QLabel(self.frame_26)
-        self.db_step_label.setObjectName(u"db_step_label")
-        self.db_step_label.setFont(font)
-        self.db_step_label.setAlignment(Qt.AlignCenter)
-
-        self.verticalLayout_27.addWidget(self.db_step_label)
-
-        self.frame_17 = QFrame(self.frame_26)
-        self.frame_17.setObjectName(u"frame_17")
-        self.frame_17.setFrameShape(QFrame.NoFrame)
-        self.frame_17.setFrameShadow(QFrame.Raised)
-        self.horizontalLayout_26 = QHBoxLayout(self.frame_17)
-        self.horizontalLayout_26.setObjectName(u"horizontalLayout_26")
-        self.horizontalLayout_26.setContentsMargins(0, 0, 0, 0)
-
-        self.verticalLayout_27.addWidget(self.frame_17)
 
         self.dataStructuresSplitter.addWidget(self.frame_26)
         self.frame_38 = QFrame(self.dataStructuresSplitter)
@@ -625,8 +584,17 @@ class Ui_mainWindow(object):
         self.frame_38.setFrameShadow(QFrame.Raised)
         self.verticalLayout_26 = QVBoxLayout(self.frame_38)
         self.verticalLayout_26.setObjectName(u"verticalLayout_26")
-        self.verticalLayout_26.setContentsMargins(0, 0, 0, -1)
-        self.frame_54 = QFrame(self.frame_38)
+        self.verticalLayout_26.setContentsMargins(0, 0, 0, 0)
+        self.tabWidget_5 = QTabWidget(self.frame_38)
+        self.tabWidget_5.setObjectName(u"tabWidget_5")
+        self.tabWidget_5.setTabPosition(QTabWidget.East)
+        self.tabWidget_5.setDocumentMode(True)
+        self.tab_15 = QWidget()
+        self.tab_15.setObjectName(u"tab_15")
+        self.verticalLayout_20 = QVBoxLayout(self.tab_15)
+        self.verticalLayout_20.setObjectName(u"verticalLayout_20")
+        self.verticalLayout_20.setContentsMargins(0, 6, 8, 6)
+        self.frame_54 = QFrame(self.tab_15)
         self.frame_54.setObjectName(u"frame_54")
         self.frame_54.setMinimumSize(QSize(0, 25))
         self.frame_54.setFrameShape(QFrame.NoFrame)
@@ -634,12 +602,6 @@ class Ui_mainWindow(object):
         self.horizontalLayout_28 = QHBoxLayout(self.frame_54)
         self.horizontalLayout_28.setObjectName(u"horizontalLayout_28")
         self.horizontalLayout_28.setContentsMargins(0, 0, 0, 0)
-        self.property_comboBox = QComboBox(self.frame_54)
-        self.property_comboBox.setObjectName(u"property_comboBox")
-        self.property_comboBox.setMinimumSize(QSize(120, 0))
-
-        self.horizontalLayout_28.addWidget(self.property_comboBox)
-
         self.smart_search_lineEdit = QLineEdit(self.frame_54)
         self.smart_search_lineEdit.setObjectName(u"smart_search_lineEdit")
         self.smart_search_lineEdit.setMinimumSize(QSize(120, 0))
@@ -652,94 +614,116 @@ class Ui_mainWindow(object):
 
         self.horizontalLayout_28.addWidget(self.filter_pushButton)
 
+        self.busViewerButton = QPushButton(self.frame_54)
+        self.busViewerButton.setObjectName(u"busViewerButton")
+        self.busViewerButton.setIcon(icon31)
+
+        self.horizontalLayout_28.addWidget(self.busViewerButton)
+
+        self.addToCurrentDiagramButton = QPushButton(self.frame_54)
+        self.addToCurrentDiagramButton.setObjectName(u"addToCurrentDiagramButton")
+        icon67 = QIcon()
+        icon67.addFile(u":/Icons/icons/schematicadd_to.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.addToCurrentDiagramButton.setIcon(icon67)
+
+        self.horizontalLayout_28.addWidget(self.addToCurrentDiagramButton)
+
+        self.highlight_selection_buses_pushButton = QPushButton(self.frame_54)
+        self.highlight_selection_buses_pushButton.setObjectName(u"highlight_selection_buses_pushButton")
+        icon68 = QIcon()
+        icon68.addFile(u":/Icons/icons/highlight.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.highlight_selection_buses_pushButton.setIcon(icon68)
+
+        self.horizontalLayout_28.addWidget(self.highlight_selection_buses_pushButton)
+
+        self.highlight_by_property_pushButton = QPushButton(self.frame_54)
+        self.highlight_by_property_pushButton.setObjectName(u"highlight_by_property_pushButton")
+        icon69 = QIcon()
+        icon69.addFile(u":/Icons/icons/highlight2.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.highlight_by_property_pushButton.setIcon(icon69)
+
+        self.horizontalLayout_28.addWidget(self.highlight_by_property_pushButton)
+
+        self.clear_highlight_pushButton = QPushButton(self.frame_54)
+        self.clear_highlight_pushButton.setObjectName(u"clear_highlight_pushButton")
+        icon70 = QIcon()
+        icon70.addFile(u":/Icons/icons/unhighlight.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.clear_highlight_pushButton.setIcon(icon70)
+
+        self.horizontalLayout_28.addWidget(self.clear_highlight_pushButton)
+
         self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
         self.horizontalLayout_28.addItem(self.horizontalSpacer_2)
 
         self.copyObjectsTableButton = QPushButton(self.frame_54)
         self.copyObjectsTableButton.setObjectName(u"copyObjectsTableButton")
-        icon68 = QIcon()
-        icon68.addFile(u":/Icons/icons/copy.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.copyObjectsTableButton.setIcon(icon68)
+        icon71 = QIcon()
+        icon71.addFile(u":/Icons/icons/copy.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.copyObjectsTableButton.setIcon(icon71)
 
         self.horizontalLayout_28.addWidget(self.copyObjectsTableButton)
 
         self.setValueToColumnButton = QPushButton(self.frame_54)
         self.setValueToColumnButton.setObjectName(u"setValueToColumnButton")
-        icon69 = QIcon()
-        icon69.addFile(u":/Icons/icons/copy2down.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.setValueToColumnButton.setIcon(icon69)
+        icon72 = QIcon()
+        icon72.addFile(u":/Icons/icons/copy2down.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.setValueToColumnButton.setIcon(icon72)
 
         self.horizontalLayout_28.addWidget(self.setValueToColumnButton)
 
         self.assignToProfileButton = QPushButton(self.frame_54)
         self.assignToProfileButton.setObjectName(u"assignToProfileButton")
-        icon70 = QIcon()
-        icon70.addFile(u":/Icons/icons/assign_to_profile.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.assignToProfileButton.setIcon(icon70)
+        icon73 = QIcon()
+        icon73.addFile(u":/Icons/icons/assign_to_profile.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.assignToProfileButton.setIcon(icon73)
 
         self.horizontalLayout_28.addWidget(self.assignToProfileButton)
 
         self.structure_analysis_pushButton = QPushButton(self.frame_54)
         self.structure_analysis_pushButton.setObjectName(u"structure_analysis_pushButton")
-        icon71 = QIcon()
-        icon71.addFile(u":/Icons/icons/histogram.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.structure_analysis_pushButton.setIcon(icon71)
+        icon74 = QIcon()
+        icon74.addFile(u":/Icons/icons/histogram.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.structure_analysis_pushButton.setIcon(icon74)
 
         self.horizontalLayout_28.addWidget(self.structure_analysis_pushButton)
 
 
-        self.verticalLayout_26.addWidget(self.frame_54)
+        self.verticalLayout_20.addWidget(self.frame_54)
 
-        self.dataStructureTableView = QTableView(self.frame_38)
+        self.dataStructureTableView = QTableView(self.tab_15)
         self.dataStructureTableView.setObjectName(u"dataStructureTableView")
 
-        self.verticalLayout_26.addWidget(self.dataStructureTableView)
+        self.verticalLayout_20.addWidget(self.dataStructureTableView)
 
-        self.frame_9 = QFrame(self.frame_38)
+        self.frame_9 = QFrame(self.tab_15)
         self.frame_9.setObjectName(u"frame_9")
         self.frame_9.setFrameShape(QFrame.NoFrame)
         self.frame_9.setFrameShadow(QFrame.Raised)
         self.horizontalLayout_25 = QHBoxLayout(self.frame_9)
         self.horizontalLayout_25.setObjectName(u"horizontalLayout_25")
         self.horizontalLayout_25.setContentsMargins(0, 0, 0, 0)
-        self.busViewerButton = QPushButton(self.frame_9)
-        self.busViewerButton.setObjectName(u"busViewerButton")
-        self.busViewerButton.setIcon(icon31)
-
-        self.horizontalLayout_25.addWidget(self.busViewerButton)
-
-        self.addToCurrentDiagramButton = QPushButton(self.frame_9)
-        self.addToCurrentDiagramButton.setObjectName(u"addToCurrentDiagramButton")
-        icon72 = QIcon()
-        icon72.addFile(u":/Icons/icons/schematicadd_to.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.addToCurrentDiagramButton.setIcon(icon72)
-
-        self.horizontalLayout_25.addWidget(self.addToCurrentDiagramButton)
-
-        self.highlight_selection_buses_pushButton = QPushButton(self.frame_9)
-        self.highlight_selection_buses_pushButton.setObjectName(u"highlight_selection_buses_pushButton")
-        icon73 = QIcon()
-        icon73.addFile(u":/Icons/icons/highlight.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.highlight_selection_buses_pushButton.setIcon(icon73)
-
-        self.horizontalLayout_25.addWidget(self.highlight_selection_buses_pushButton)
-
-        self.highlight_by_property_pushButton = QPushButton(self.frame_9)
-        self.highlight_by_property_pushButton.setObjectName(u"highlight_by_property_pushButton")
-        icon74 = QIcon()
-        icon74.addFile(u":/Icons/icons/highlight2.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.highlight_by_property_pushButton.setIcon(icon74)
-
-        self.horizontalLayout_25.addWidget(self.highlight_by_property_pushButton)
-
-        self.clear_highlight_pushButton = QPushButton(self.frame_9)
-        self.clear_highlight_pushButton.setObjectName(u"clear_highlight_pushButton")
+        self.set_profile_state_button = QPushButton(self.frame_9)
+        self.set_profile_state_button.setObjectName(u"set_profile_state_button")
         icon75 = QIcon()
-        icon75.addFile(u":/Icons/icons/unhighlight.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.clear_highlight_pushButton.setIcon(icon75)
+        icon75.addFile(u":/Icons/icons/copy2left.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.set_profile_state_button.setIcon(icon75)
 
-        self.horizontalLayout_25.addWidget(self.clear_highlight_pushButton)
+        self.horizontalLayout_25.addWidget(self.set_profile_state_button)
+
+        self.db_step_slider = QSlider(self.frame_9)
+        self.db_step_slider.setObjectName(u"db_step_slider")
+        self.db_step_slider.setOrientation(Qt.Horizontal)
+
+        self.horizontalLayout_25.addWidget(self.db_step_slider)
+
+        self.db_step_label = QLabel(self.frame_9)
+        self.db_step_label.setObjectName(u"db_step_label")
+        self.db_step_label.setMinimumSize(QSize(200, 0))
+        self.db_step_label.setFont(font)
+        self.db_step_label.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignVCenter)
+
+        self.horizontalLayout_25.addWidget(self.db_step_label)
 
         self.horizontalSpacer_9 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
@@ -768,25 +752,27 @@ class Ui_mainWindow(object):
         self.horizontalLayout_25.addWidget(self.catalogue_edit_pushButton)
 
 
-        self.verticalLayout_26.addWidget(self.frame_9)
+        self.verticalLayout_20.addWidget(self.frame_9)
 
-        self.dataStructuresSplitter.addWidget(self.frame_38)
-
-        self.verticalLayout_8.addWidget(self.dataStructuresSplitter)
-
-        self.tabWidget_3.addTab(self.DataTab, icon50, "")
-        self.timeEventsTab = QWidget()
-        self.timeEventsTab.setObjectName(u"timeEventsTab")
-        self.verticalLayout_14 = QVBoxLayout(self.timeEventsTab)
-        self.verticalLayout_14.setObjectName(u"verticalLayout_14")
-        self.verticalLayout_14.setContentsMargins(0, 0, 0, 0)
-        self.frame = QFrame(self.timeEventsTab)
+        self.tabWidget_5.addTab(self.tab_15, icon50, "")
+        self.tab_16 = QWidget()
+        self.tab_16.setObjectName(u"tab_16")
+        self.verticalLayout_42 = QVBoxLayout(self.tab_16)
+        self.verticalLayout_42.setObjectName(u"verticalLayout_42")
+        self.verticalLayout_42.setContentsMargins(0, 6, 8, 6)
+        self.frame = QFrame(self.tab_16)
         self.frame.setObjectName(u"frame")
         self.frame.setFrameShape(QFrame.NoFrame)
         self.frame.setFrameShadow(QFrame.Raised)
         self.horizontalLayout = QHBoxLayout(self.frame)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.horizontalLayout.setContentsMargins(1, 2, 1, 2)
+        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
+        self.device_type_magnitude_comboBox = QComboBox(self.frame)
+        self.device_type_magnitude_comboBox.setObjectName(u"device_type_magnitude_comboBox")
+        self.device_type_magnitude_comboBox.setMinimumSize(QSize(160, 0))
+
+        self.horizontalLayout.addWidget(self.device_type_magnitude_comboBox)
+
         self.new_profiles_structure_pushButton = QPushButton(self.frame)
         self.new_profiles_structure_pushButton.setObjectName(u"new_profiles_structure_pushButton")
         self.new_profiles_structure_pushButton.setIcon(icon21)
@@ -811,32 +797,9 @@ class Ui_mainWindow(object):
 
         self.horizontalLayout.addWidget(self.edit_profiles_from_models_pushButton)
 
-        self.lineEdit = QLineEdit(self.frame)
-        self.lineEdit.setObjectName(u"lineEdit")
-
-        self.horizontalLayout.addWidget(self.lineEdit)
-
-        self.timeseries_search_Button = QPushButton(self.frame)
-        self.timeseries_search_Button.setObjectName(u"timeseries_search_Button")
-        self.timeseries_search_Button.setIcon(icon64)
-
-        self.horizontalLayout.addWidget(self.timeseries_search_Button)
-
         self.horizontalSpacer = QSpacerItem(183, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
         self.horizontalLayout.addItem(self.horizontalSpacer)
-
-        self.profile_device_type_comboBox = QComboBox(self.frame)
-        self.profile_device_type_comboBox.setObjectName(u"profile_device_type_comboBox")
-        self.profile_device_type_comboBox.setMinimumSize(QSize(150, 0))
-
-        self.horizontalLayout.addWidget(self.profile_device_type_comboBox)
-
-        self.device_type_magnitude_comboBox = QComboBox(self.frame)
-        self.device_type_magnitude_comboBox.setObjectName(u"device_type_magnitude_comboBox")
-        self.device_type_magnitude_comboBox.setMinimumSize(QSize(200, 0))
-
-        self.horizontalLayout.addWidget(self.device_type_magnitude_comboBox)
 
         self.plot_time_series_pushButton = QPushButton(self.frame)
         self.plot_time_series_pushButton.setObjectName(u"plot_time_series_pushButton")
@@ -847,23 +810,23 @@ class Ui_mainWindow(object):
         self.horizontalLayout.addWidget(self.plot_time_series_pushButton)
 
 
-        self.verticalLayout_14.addWidget(self.frame)
+        self.verticalLayout_42.addWidget(self.frame)
 
-        self.profiles_tableView = QTableView(self.timeEventsTab)
+        self.profiles_tableView = QTableView(self.tab_16)
         self.profiles_tableView.setObjectName(u"profiles_tableView")
         self.profiles_tableView.setLayoutDirection(Qt.LeftToRight)
         self.profiles_tableView.setAlternatingRowColors(True)
         self.profiles_tableView.setSelectionMode(QAbstractItemView.ContiguousSelection)
 
-        self.verticalLayout_14.addWidget(self.profiles_tableView)
+        self.verticalLayout_42.addWidget(self.profiles_tableView)
 
-        self.frame_12 = QFrame(self.timeEventsTab)
+        self.frame_12 = QFrame(self.tab_16)
         self.frame_12.setObjectName(u"frame_12")
         self.frame_12.setFrameShape(QFrame.NoFrame)
         self.frame_12.setFrameShadow(QFrame.Raised)
         self.horizontalLayout_4 = QHBoxLayout(self.frame_12)
         self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
-        self.horizontalLayout_4.setContentsMargins(1, 2, 1, 2)
+        self.horizontalLayout_4.setContentsMargins(0, 0, 0, 0)
         self.delete_profiles_structure_pushButton = QPushButton(self.frame_12)
         self.delete_profiles_structure_pushButton.setObjectName(u"delete_profiles_structure_pushButton")
         self.delete_profiles_structure_pushButton.setIcon(icon47)
@@ -872,7 +835,7 @@ class Ui_mainWindow(object):
 
         self.copy_profile_pushButton = QPushButton(self.frame_12)
         self.copy_profile_pushButton.setObjectName(u"copy_profile_pushButton")
-        self.copy_profile_pushButton.setIcon(icon68)
+        self.copy_profile_pushButton.setIcon(icon71)
 
         self.horizontalLayout_4.addWidget(self.copy_profile_pushButton)
 
@@ -884,12 +847,6 @@ class Ui_mainWindow(object):
 
         self.horizontalLayout_4.addWidget(self.paste_profiles_pushButton)
 
-        self.device_type_magnitude_comboBox_2 = QComboBox(self.frame_12)
-        self.device_type_magnitude_comboBox_2.setObjectName(u"device_type_magnitude_comboBox_2")
-        self.device_type_magnitude_comboBox_2.setMinimumSize(QSize(200, 0))
-
-        self.horizontalLayout_4.addWidget(self.device_type_magnitude_comboBox_2)
-
         self.set_linear_combination_profile_pushButton = QPushButton(self.frame_12)
         self.set_linear_combination_profile_pushButton.setObjectName(u"set_linear_combination_profile_pushButton")
         icon82 = QIcon()
@@ -897,6 +854,12 @@ class Ui_mainWindow(object):
         self.set_linear_combination_profile_pushButton.setIcon(icon82)
 
         self.horizontalLayout_4.addWidget(self.set_linear_combination_profile_pushButton)
+
+        self.device_type_magnitude_comboBox_2 = QComboBox(self.frame_12)
+        self.device_type_magnitude_comboBox_2.setObjectName(u"device_type_magnitude_comboBox_2")
+        self.device_type_magnitude_comboBox_2.setMinimumSize(QSize(200, 0))
+
+        self.horizontalLayout_4.addWidget(self.device_type_magnitude_comboBox_2)
 
         self.horizontalSpacer_13 = QSpacerItem(267, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
@@ -947,11 +910,19 @@ class Ui_mainWindow(object):
         self.horizontalLayout_4.addWidget(self.profile_factor_doubleSpinBox)
 
 
-        self.verticalLayout_14.addWidget(self.frame_12)
+        self.verticalLayout_42.addWidget(self.frame_12)
 
         icon86 = QIcon()
         icon86.addFile(u":/Icons/icons/clock.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.tabWidget_3.addTab(self.timeEventsTab, icon86, "")
+        self.tabWidget_5.addTab(self.tab_16, icon86, "")
+
+        self.verticalLayout_26.addWidget(self.tabWidget_5)
+
+        self.dataStructuresSplitter.addWidget(self.frame_38)
+
+        self.verticalLayout_8.addWidget(self.dataStructuresSplitter)
+
+        self.tabWidget_3.addTab(self.DataTab, icon50, "")
         self.compiledArraysTab = QWidget()
         self.compiledArraysTab.setObjectName(u"compiledArraysTab")
         self.horizontalLayout_7 = QHBoxLayout(self.compiledArraysTab)
@@ -1033,7 +1004,7 @@ class Ui_mainWindow(object):
         self.copyArraysButton = QPushButton(self.frame_29)
         self.copyArraysButton.setObjectName(u"copyArraysButton")
         self.copyArraysButton.setMinimumSize(QSize(32, 0))
-        self.copyArraysButton.setIcon(icon68)
+        self.copyArraysButton.setIcon(icon71)
 
         self.gridLayout_23.addWidget(self.copyArraysButton, 0, 2, 1, 1)
 
@@ -1257,7 +1228,7 @@ class Ui_mainWindow(object):
 
         self.copy_results_pushButton = QPushButton(self.frame_8)
         self.copy_results_pushButton.setObjectName(u"copy_results_pushButton")
-        self.copy_results_pushButton.setIcon(icon68)
+        self.copy_results_pushButton.setIcon(icon71)
 
         self.horizontalLayout_2.addWidget(self.copy_results_pushButton)
 
@@ -4161,7 +4132,7 @@ class Ui_mainWindow(object):
         mainWindow.setCentralWidget(self.centralwidget)
         self.menuBar = QMenuBar(mainWindow)
         self.menuBar.setObjectName(u"menuBar")
-        self.menuBar.setGeometry(QRect(0, 0, 1371, 22))
+        self.menuBar.setGeometry(QRect(0, 0, 1351, 22))
         self.menuProject = QMenu(self.menuBar)
         self.menuProject.setObjectName(u"menuProject")
         self.menuExport = QMenu(self.menuProject)
@@ -4336,6 +4307,7 @@ class Ui_mainWindow(object):
 
         self.tabWidget.setCurrentIndex(0)
         self.tabWidget_3.setCurrentIndex(0)
+        self.tabWidget_5.setCurrentIndex(0)
         self.tabWidget_4.setCurrentIndex(0)
         self.tabWidget_2.setCurrentIndex(0)
         self.settings_tabWidget.setCurrentIndex(0)
@@ -4634,30 +4606,33 @@ class Ui_mainWindow(object):
         self.schematic_step_label.setText(QCoreApplication.translate("mainWindow", u"Snapshot", None))
         self.tabWidget_3.setTabText(self.tabWidget_3.indexOf(self.GridSectionTab), QCoreApplication.translate("mainWindow", u"Diagrams", None))
 #if QT_CONFIG(tooltip)
-        self.set_profile_state_button.setToolTip(QCoreApplication.translate("mainWindow", u"Assign the values of the selected time step into the grid", None))
-#endif // QT_CONFIG(tooltip)
-        self.set_profile_state_button.setText("")
-#if QT_CONFIG(tooltip)
-        self.db_step_slider.setToolTip(QCoreApplication.translate("mainWindow", u"Database time slider", None))
-#endif // QT_CONFIG(tooltip)
-        self.db_step_label.setText(QCoreApplication.translate("mainWindow", u"Snapshot", None))
-#if QT_CONFIG(tooltip)
-        self.smart_search_lineEdit.setToolTip(QCoreApplication.translate("mainWindow", u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-"p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:'MS Shell Dlg 2'; font-size:8pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Write search criteria. i.e.:</p>\n"
-"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">&gt;=20: Is greater or equal to 20</p>\n"
-"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">==bus1: Is exacty equal to bus1</p>\n"
-"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">&gt;Bus2: Is greater than Bus2</p>\n"
-"<p style=\" margin-top:12px; marg"
-                        "in-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">== 30: Is equal to 30</p>\n"
-"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">*bus : Contains the word bus</p></body></html>", None))
+        self.smart_search_lineEdit.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p><span style=\" font-weight:700;\">Subjects:</span></p><p>col, idx, val, colobj, idxobj</p><p><span style=\" font-weight:700;\">Operators:</span></p><p>&gt;, &lt;, &gt;=, &lt;=, !=, =, like, notlike, starts, ends</p><p><span style=\" font-weight:700;\">Examples:</span></p><p>-&gt; <span style=\" font-style:italic;\">col != [column1, column2] and val &gt; 5 or idx like [ab, mn]</span></p><p>-&gt; <span style=\" font-style:italic;\">val &gt; 0.5 and val &lt; 20.0</span></p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(tooltip)
         self.filter_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Smart filter", None))
 #endif // QT_CONFIG(tooltip)
         self.filter_pushButton.setText("")
+#if QT_CONFIG(tooltip)
+        self.busViewerButton.setToolTip(QCoreApplication.translate("mainWindow", u"Add bus vecinity viewer of the selected items", None))
+#endif // QT_CONFIG(tooltip)
+        self.busViewerButton.setText("")
+#if QT_CONFIG(tooltip)
+        self.addToCurrentDiagramButton.setToolTip(QCoreApplication.translate("mainWindow", u"Add selection to the current diagram", None))
+#endif // QT_CONFIG(tooltip)
+        self.addToCurrentDiagramButton.setText("")
+#if QT_CONFIG(tooltip)
+        self.highlight_selection_buses_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Highlight the buses of the selected elements.\n"
+"For this to work you need to type the desired highlighting property in the search box.", None))
+#endif // QT_CONFIG(tooltip)
+        self.highlight_selection_buses_pushButton.setText("")
+#if QT_CONFIG(tooltip)
+        self.highlight_by_property_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Highlight the schematic buses based on the values of the selected property", None))
+#endif // QT_CONFIG(tooltip)
+        self.highlight_by_property_pushButton.setText("")
+#if QT_CONFIG(tooltip)
+        self.clear_highlight_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Clear the bus highlight", None))
+#endif // QT_CONFIG(tooltip)
+        self.clear_highlight_pushButton.setText("")
 #if QT_CONFIG(tooltip)
         self.copyObjectsTableButton.setToolTip(QCoreApplication.translate("mainWindow", u"Copy the displayed table to the clipboard", None))
 #endif // QT_CONFIG(tooltip)
@@ -4675,25 +4650,13 @@ class Ui_mainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.structure_analysis_pushButton.setText("")
 #if QT_CONFIG(tooltip)
-        self.busViewerButton.setToolTip(QCoreApplication.translate("mainWindow", u"Add bus vecinity viewer of the selected items", None))
+        self.set_profile_state_button.setToolTip(QCoreApplication.translate("mainWindow", u"Assign the values of the selected time step into the snapshot", None))
 #endif // QT_CONFIG(tooltip)
-        self.busViewerButton.setText("")
+        self.set_profile_state_button.setText("")
 #if QT_CONFIG(tooltip)
-        self.addToCurrentDiagramButton.setToolTip(QCoreApplication.translate("mainWindow", u"Add selection to the current diagram", None))
+        self.db_step_slider.setToolTip(QCoreApplication.translate("mainWindow", u"Database time slider", None))
 #endif // QT_CONFIG(tooltip)
-        self.addToCurrentDiagramButton.setText("")
-#if QT_CONFIG(tooltip)
-        self.highlight_selection_buses_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Highlight the buses of the selected elements", None))
-#endif // QT_CONFIG(tooltip)
-        self.highlight_selection_buses_pushButton.setText("")
-#if QT_CONFIG(tooltip)
-        self.highlight_by_property_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Highlight the schematic buses based on the values of the selected property", None))
-#endif // QT_CONFIG(tooltip)
-        self.highlight_by_property_pushButton.setText("")
-#if QT_CONFIG(tooltip)
-        self.clear_highlight_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Clear the bus highlight", None))
-#endif // QT_CONFIG(tooltip)
-        self.clear_highlight_pushButton.setText("")
+        self.db_step_label.setText(QCoreApplication.translate("mainWindow", u"Snapshot", None))
 #if QT_CONFIG(tooltip)
         self.add_object_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Add new object", None))
 #endif // QT_CONFIG(tooltip)
@@ -4706,7 +4669,10 @@ class Ui_mainWindow(object):
         self.catalogue_edit_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Edit", None))
 #endif // QT_CONFIG(tooltip)
         self.catalogue_edit_pushButton.setText("")
-        self.tabWidget_3.setTabText(self.tabWidget_3.indexOf(self.DataTab), QCoreApplication.translate("mainWindow", u"Objects DB", None))
+        self.tabWidget_5.setTabText(self.tabWidget_5.indexOf(self.tab_15), QCoreApplication.translate("mainWindow", u"Objects", None))
+#if QT_CONFIG(tooltip)
+        self.device_type_magnitude_comboBox.setToolTip(QCoreApplication.translate("mainWindow", u"Magnitude with profile", None))
+#endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(tooltip)
         self.new_profiles_structure_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Create profiles", None))
 #endif // QT_CONFIG(tooltip)
@@ -4719,16 +4685,6 @@ class Ui_mainWindow(object):
         self.edit_profiles_from_models_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Import profiles from models. This is, load many individual grids and take the operational data from them", None))
 #endif // QT_CONFIG(tooltip)
         self.edit_profiles_from_models_pushButton.setText("")
-#if QT_CONFIG(tooltip)
-        self.lineEdit.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p><span style=\" font-weight:700;\">Subjects:</span></p><p>col, idx, val, colobj, idxobj</p><p><span style=\" font-weight:700;\">Operators:</span></p><p>&gt;, &lt;, &gt;=, &lt;=, !=, =, like, notlike, starts, ends</p><p><span style=\" font-weight:700;\">Examples:</span></p><p>-&gt; <span style=\" font-style:italic;\">col != [column1, column2] and val &gt; 5 or idx like [ab, mn]</span></p><p>-&gt; <span style=\" font-style:italic;\">val &gt; 0.5 and val &lt; 20.0</span></p></body></html>", None))
-#endif // QT_CONFIG(tooltip)
-        self.timeseries_search_Button.setText("")
-#if QT_CONFIG(tooltip)
-        self.profile_device_type_comboBox.setToolTip(QCoreApplication.translate("mainWindow", u"Device type", None))
-#endif // QT_CONFIG(tooltip)
-#if QT_CONFIG(tooltip)
-        self.device_type_magnitude_comboBox.setToolTip(QCoreApplication.translate("mainWindow", u"Magnitude with profile", None))
-#endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(tooltip)
         self.plot_time_series_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Plot the selected object's profile", None))
 #endif // QT_CONFIG(tooltip)
@@ -4749,12 +4705,12 @@ class Ui_mainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.paste_profiles_pushButton.setText("")
 #if QT_CONFIG(tooltip)
-        self.device_type_magnitude_comboBox_2.setToolTip(QCoreApplication.translate("mainWindow", u"Profile where to copy the current profile", None))
-#endif // QT_CONFIG(tooltip)
-#if QT_CONFIG(tooltip)
-        self.set_linear_combination_profile_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Copy the selected profile into the profiles selected next to this button</p></body></html>", None))
+        self.set_linear_combination_profile_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Copy the current profile into the profile selected by the drop-down selector", None))
 #endif // QT_CONFIG(tooltip)
         self.set_linear_combination_profile_pushButton.setText("")
+#if QT_CONFIG(tooltip)
+        self.device_type_magnitude_comboBox_2.setToolTip(QCoreApplication.translate("mainWindow", u"Profile where to copy the current profile", None))
+#endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(tooltip)
         self.profile_add_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Add value to the profile", None))
 #endif // QT_CONFIG(tooltip)
@@ -4775,7 +4731,8 @@ class Ui_mainWindow(object):
         self.set_profile_value_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Set the value to all or to the selection", None))
 #endif // QT_CONFIG(tooltip)
         self.set_profile_value_pushButton.setText("")
-        self.tabWidget_3.setTabText(self.tabWidget_3.indexOf(self.timeEventsTab), QCoreApplication.translate("mainWindow", u"Time series", None))
+        self.tabWidget_5.setTabText(self.tabWidget_5.indexOf(self.tab_16), QCoreApplication.translate("mainWindow", u"Time series", None))
+        self.tabWidget_3.setTabText(self.tabWidget_3.indexOf(self.DataTab), QCoreApplication.translate("mainWindow", u"Database", None))
 #if QT_CONFIG(tooltip)
         self.compute_simulation_data_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Update the islands dispayed", None))
 #endif // QT_CONFIG(tooltip)

@@ -42,9 +42,6 @@ class TimeEventsMain(ObjectsTableMain):
         # create main window
         ObjectsTableMain.__init__(self, parent)
 
-        mdl = gf.get_list_model(self.circuit.profile_magnitudes.keys())
-        self.ui.profile_device_type_comboBox.setModel(mdl)
-        self.profile_device_type_changed()
 
         # --------------------------------------------------------------------------------------------------------------
         self.ui.actionre_index_time.triggered.connect(self.re_index_time)
@@ -67,14 +64,13 @@ class TimeEventsMain(ObjectsTableMain):
         self.ui.paste_profiles_pushButton.clicked.connect(self.paste_profiles)
 
         # combobox chnage
-        self.ui.profile_device_type_comboBox.currentTextChanged.connect(self.profile_device_type_changed)
         self.ui.device_type_magnitude_comboBox.currentTextChanged.connect(self.display_profiles)
 
     def profile_device_type_changed(self):
         """
         profile_device_type_changed
         """
-        dev_type = self.ui.profile_device_type_comboBox.currentText()
+        dev_type = self.get_db_object_selected_type()
         mdl = gf.get_list_model(self.circuit.profile_magnitudes[dev_type][0])
         self.ui.device_type_magnitude_comboBox.setModel(mdl)
         self.ui.device_type_magnitude_comboBox_2.setModel(mdl)
@@ -125,7 +121,7 @@ class TimeEventsMain(ObjectsTableMain):
         """
         Profile importer
         """
-        dev_type_text = self.ui.profile_device_type_comboBox.currentText()
+        dev_type_text = self.get_db_object_selected_type()
         magnitudes, mag_types = self.circuit.profile_magnitudes[dev_type_text]
 
         idx = self.ui.device_type_magnitude_comboBox.currentIndex()
@@ -209,7 +205,7 @@ class TimeEventsMain(ObjectsTableMain):
         """
         value = self.ui.profile_factor_doubleSpinBox.value()
 
-        dev_type_text = self.ui.profile_device_type_comboBox.currentText()
+        dev_type_text = self.get_db_object_selected_type()
         magnitudes, mag_types = self.circuit.profile_magnitudes[dev_type_text]
         idx = self.ui.device_type_magnitude_comboBox.currentIndex()
         magnitude = magnitudes[idx]
@@ -320,7 +316,7 @@ class TimeEventsMain(ObjectsTableMain):
 
         # value = self.ui.profile_factor_doubleSpinBox.value()
 
-        dev_type_text = self.ui.profile_device_type_comboBox.currentText()
+        dev_type_text = self.get_db_object_selected_type()
         magnitudes, mag_types = self.circuit.profile_magnitudes[dev_type_text]
         idx_from = self.ui.device_type_magnitude_comboBox.currentIndex()
         magnitude_from = magnitudes[idx_from]
@@ -384,9 +380,7 @@ class TimeEventsMain(ObjectsTableMain):
         """
         Plot profiles from the time events
         """
-        value = self.ui.profile_factor_doubleSpinBox.value()
-
-        dev_type_text = self.ui.profile_device_type_comboBox.currentText()
+        dev_type_text = self.get_db_object_selected_type()
         magnitudes, mag_types = self.circuit.profile_magnitudes[dev_type_text]
         idx = self.ui.device_type_magnitude_comboBox.currentIndex()
         magnitude = magnitudes[idx]
@@ -418,8 +412,7 @@ class TimeEventsMain(ObjectsTableMain):
             # plot every column
             dta = dict()
             for k in cols:
-                attr = objects[k].properties_with_profile[magnitude]
-                dta[objects[k].name] = objects[k].get_profile(magnitude=attr).toarray()
+                dta[objects[k].name] = objects[k].get_profile(magnitude=magnitude).toarray()
             df = pd.DataFrame(data=dta, index=t)
             df.plot(ax=ax)
 
@@ -431,7 +424,7 @@ class TimeEventsMain(ObjectsTableMain):
         """
         if self.circuit.time_profile is not None:
 
-            dev_type_text = self.ui.profile_device_type_comboBox.currentText()
+            dev_type_text = self.get_db_object_selected_type()
 
             magnitudes, mag_types = self.circuit.profile_magnitudes[dev_type_text]
 

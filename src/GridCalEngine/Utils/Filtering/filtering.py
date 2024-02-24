@@ -125,14 +125,20 @@ class Filter:
     Filter
     """
 
-    def __init__(self, element: FilterSubject, op: CompOps, value: Union[PRIMARY_TYPES, List[PRIMARY_TYPES]]):
+    def __init__(self,
+                 element: FilterSubject,
+                 element_args: List[str],
+                 op: CompOps,
+                 value: Union[PRIMARY_TYPES, List[PRIMARY_TYPES]]):
         """
         Filter constructor
         :param element: FilterSubject
+        :param element_args: further search elements
         :param op: CompOps
         :param value: Comparison value
         """
         self.element = element
+        self.element_args = element_args
         self.op = op
         self.value = value
 
@@ -217,7 +223,18 @@ def parse_single(token: str) -> Union[Filter, None]:
     elms = re.split(r'([<>=!]=?|in|starts|ends|like|notlike)', token)
 
     if len(elms) == 3:
-        return Filter(element=FilterSubject(elms[0].strip()),
+
+        if "." in elms[0]:
+            coms = elms[0].strip().split(".")
+            element = coms[0]
+            coms.pop(0)
+            element_args = coms
+        else:
+            element = elms[0].strip()
+            element_args = list()
+
+        return Filter(element=FilterSubject(element),
+                      element_args=element_args,
                       op=CompOps(elms[1].strip()),
                       value=elms[2].strip())
     else:
