@@ -244,7 +244,7 @@ class FilterResultsTable:
             idx_mask, col_mask, data_mask = compute_results_table_masks(table=self.table,
                                                                         flt=self.master_filter.stack[0])
 
-            if is_odd(self.master_filter.size()):
+            if self.master_filter.correct_size():
 
                 for st_idx in range(1, self.master_filter.size(), 2):
 

@@ -213,6 +213,13 @@ class MasterFilter:
         """
         return len(self.stack)
 
+    def correct_size(self) -> bool:
+        """
+        Returs if the stack has the right size: an odd number
+        :return:
+        """
+        return is_odd(self.size())
+
 
 def parse_single(token: str) -> Union[Filter, None]:
     """

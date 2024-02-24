@@ -42,7 +42,6 @@ class TimeEventsMain(ObjectsTableMain):
         # create main window
         ObjectsTableMain.__init__(self, parent)
 
-
         # --------------------------------------------------------------------------------------------------------------
         self.ui.actionre_index_time.triggered.connect(self.re_index_time)
 
@@ -344,7 +343,6 @@ class TimeEventsMain(ObjectsTableMain):
                     attr_to = objects[0].properties_with_profile[magnitude_to]
 
                     for i, elm in enumerate(objects):
-
                         profile_from = elm.get_profile(magnitude=attr_from)
                         profile_to = elm.get_profile(magnitude=attr_to)
                         profile_to.set(profile_from.toarray())
@@ -417,35 +415,6 @@ class TimeEventsMain(ObjectsTableMain):
             df.plot(ax=ax)
 
             plt.show()
-
-    def display_profiles(self):
-        """
-        Display profile
-        """
-        if self.circuit.time_profile is not None:
-
-            dev_type_text = self.get_db_object_selected_type()
-
-            magnitudes, mag_types = self.circuit.profile_magnitudes[dev_type_text]
-
-            if len(magnitudes) > 0:
-                # get the enumeration univoque association with he device text
-                dev_type = self.circuit.device_type_name_dict[dev_type_text]
-
-                idx = self.ui.device_type_magnitude_comboBox.currentIndex()
-                magnitude = magnitudes[idx]
-                mtype = mag_types[idx]
-
-                mdl = gf.ProfilesModel(time_array=self.circuit.get_time_array(),
-                                       elements=self.circuit.get_elements_by_type(dev_type),
-                                       device_type=dev_type,
-                                       magnitude=magnitude,
-                                       data_format=mtype,
-                                       parent=self.ui.profiles_tableView)
-            else:
-                mdl = None
-
-            self.ui.profiles_tableView.setModel(mdl)
 
     def import_profiles_from_models(self):
         """

@@ -252,19 +252,50 @@ class ObjectsTableMain(DiagramsMain):
 
         return mdl
 
-    def display_filter(self, elements):
+    def display_profiles(self):
+        """
+        Display profile
+        """
+        if self.circuit.time_profile is not None:
+
+            dev_type_text = self.get_db_object_selected_type()
+
+            magnitudes, mag_types = self.circuit.profile_magnitudes[dev_type_text]
+
+            if len(magnitudes) > 0:
+                # get the enumeration univoque association with he device text
+                dev_type = self.circuit.device_type_name_dict[dev_type_text]
+
+                idx = self.ui.device_type_magnitude_comboBox.currentIndex()
+                magnitude = magnitudes[idx]
+                mtype = mag_types[idx]
+
+                elements = self.get_current_objects_model_view().objects
+
+                mdl = gf.ProfilesModel(time_array=self.circuit.get_time_array(),
+                                       elements=elements,
+                                       device_type=dev_type,
+                                       magnitude=magnitude,
+                                       data_format=mtype,
+                                       parent=self.ui.profiles_tableView)
+            else:
+                mdl = None
+
+            self.ui.profiles_tableView.setModel(mdl)
+
+    def display_objects_filter(self, elements: List[ALL_DEV_TYPES]):
         """
         Display a list of elements that comes from a filter
-        :param elements:
+        :param elements: list of devices
         """
         if len(elements) > 0:
 
-            elm = elements[0]
+            # display objects
+            objects_mdl = self.create_objects_model(elements=elements, elm_type=elements[0].device_type)
+            self.ui.dataStructureTableView.setModel(objects_mdl)
 
-            mdl = self.create_objects_model(elements=elements,
-                                            elm_type=elm.device_type)
-
-            self.ui.dataStructureTableView.setModel(mdl)
+            # display time series
+            self.display_profiles()
 
         else:
             self.ui.dataStructureTableView.setModel(None)
@@ -346,7 +377,7 @@ class ObjectsTableMain(DiagramsMain):
                             self.circuit.delete_elements_by_type(obj=objects[r])
 
                     # update the view
-                    self.display_filter(objects)
+                    self.display_objects_filter(objects)
                     self.update_area_combos()
                     self.update_date_dependent_combos()
                 else:
@@ -734,153 +765,20 @@ class ObjectsTableMain(DiagramsMain):
         Objects and time series object-based filtering
         :return:
         """
+        initial_model = self.get_current_objects_model_view()
 
-        if len(self.type_objects_list) > 0:
-            command = self.ui.smart_search_lineEdit.text().lower()
-            master_filter = flt.parse_expression(expression=command)
+        if initial_model is not None:
+            if len(initial_model.objects) > 0:
 
-            if master_filter.size():
-                initial_model = self.get_current_objects_model_view()
-                objects = initial_model.objects
-                mask = np.zeros(len(objects), dtype=bool)
+                obj_filter = flt.FilterObjects(objects=initial_model.objects)
+                obj_filter.parse(expression=self.ui.smart_search_lineEdit.text().lower())
+                filtered_objects = obj_filter.apply()
 
-                mask_1 = flt.single_objects_filter(objects=objects, f=master_filter.stack[0])
-
-            elm = self.type_objects_list[0]
-            tpe = elm.registered_properties[attr].tpe
-
-            filtered_objects = list()
-
-            if command.startswith('>') and not command.startswith('>='):
-                # greater than selection
-                args = command.replace('>', '').strip()
-
-                try:
-                    args = tpe(args)
-                except TypeError:
-                    error_msg('Could not parse the argument for the data type')
-                    return
-
-                filtered_objects = [x for x in self.type_objects_list if getattr(x, attr) > args]
-
-            elif command.startswith('<') and not command.startswith('<='):
-                # "less than" selection
-                args = command.replace('<', '').strip()
-
-                try:
-                    args = tpe(args)
-                except TypeError:
-                    error_msg('Could not parse the argument for the data type')
-                    return
-
-                filtered_objects = [x for x in self.type_objects_list if getattr(x, attr) < args]
-
-            elif command.startswith('>='):
-                # greater or equal than selection
-                args = command.replace('>=', '').strip()
-
-                try:
-                    args = tpe(args)
-                except TypeError:
-                    error_msg('Could not parse the argument for the data type')
-                    return
-
-                filtered_objects = [x for x in self.type_objects_list if getattr(x, attr) >= args]
-
-            elif command.startswith('<='):
-                # "less or equal than" selection
-                args = command.replace('<=', '').strip()
-
-                try:
-                    args = tpe(args)
-                except TypeError:
-                    error_msg('Could not parse the argument for the data type')
-                    return
-
-                filtered_objects = [x for x in self.type_objects_list if getattr(x, attr) <= args]
-
-            elif command.startswith('*'):
-                # "like" selection
-                args = command.replace('*', '').strip()
-
-                if tpe == str:
-
-                    try:
-                        args = tpe(args)
-                    except TypeError:
-                        error_msg('Could not parse the argument for the data type')
-                        return
-
-                    filtered_objects = [x for x in self.type_objects_list if args in getattr(x, attr).lower()]
-
-                elif elm.device_type == DeviceType.BusDevice:
-                    filtered_objects = [x for x in self.type_objects_list if args in getattr(x, attr).name.lower()]
-
-                else:
-                    info_msg('This filter type is only valid for strings')
-
-            elif command.startswith('='):
-                # Exact match
-                args = command.replace('=', '').strip()
-
-                if tpe == str:
-
-                    try:
-                        args = tpe(args)
-                    except TypeError:
-                        error_msg('Could not parse the argument for the data type')
-                        return
-
-                    filtered_objects = [x for x in self.type_objects_list if getattr(x, attr).lower() == args]
-
-                elif tpe == bool:
-
-                    if args.lower() == 'true':
-                        args = True
-                    elif args.lower() == 'false':
-                        args = False
-                    else:
-                        args = False
-
-                    filtered_objects = [x for x in self.type_objects_list if getattr(x, attr) == args]
-
-                elif elm.device_type == DeviceType.BusDevice:
-                    filtered_objects = [x for x in self.type_objects_list if args == getattr(x, attr).name.lower()]
-
-                else:
-                    try:
-                        filtered_objects = [x for x in self.type_objects_list if getattr(x, attr).name.lower() == args]
-                    except:
-                        filtered_objects = [x for x in self.type_objects_list if getattr(x, attr) == args]
-
-            elif command.startswith('!='):
-                # Exact match
-                args = command.replace('==', '').strip()
-
-                if tpe == str:
-
-                    try:
-                        args = tpe(args)
-                    except TypeError:
-                        error_msg('Could not parse the argument for the data type')
-                        return
-
-                    filtered_objects = [x for x in self.type_objects_list if getattr(x, attr).lower() != args]
-
-                elif elm.device_type == DeviceType.BusDevice:
-                    filtered_objects = [x for x in self.type_objects_list if args != getattr(x, attr).name.lower()]
-
-                else:
-                    filtered_objects = [x for x in self.type_objects_list if getattr(x, attr) != args]
+                self.display_objects_filter(filtered_objects)
 
             else:
-                filtered_objects = self.type_objects_list
-
-            self.display_filter(filtered_objects)
-
-        else:
-            # nothing to search
-            pass
+                # nothing to search
+                pass
 
     def delete_inconsistencies(self):
         """
