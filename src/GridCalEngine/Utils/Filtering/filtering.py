@@ -186,6 +186,19 @@ class Filter:
         else:
             raise Exception(f"Unknown op: {self.op}")
 
+    def get_list_of_values(self) -> List[str]:
+        """
+        Get a list of values to compare to
+        :return: list of strings
+        """
+        if "[" in self.value:
+            val = self.value.replace("[", "").replace("]", "").strip()
+            lst = [a.strip() for a in val.split(",")]
+        else:
+            lst = [self.value]
+
+        return lst
+
 
 class MasterFilter:
     """

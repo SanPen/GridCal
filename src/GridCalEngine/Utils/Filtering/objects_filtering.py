@@ -15,10 +15,10 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
-from typing import List, Any, Union, Tuple
+from typing import List, Any, Tuple
 from GridCalEngine.basic_structures import BoolVec, Mat
 from GridCalEngine.Utils.Filtering.filtering import (MasterFilter, Filter, FilterOps, CompOps, FilterSubject,
-                                                     is_odd, is_numeric, parse_expression)
+                                                     parse_expression)
 from GridCalEngine.Core.Devices.types import ALL_DEV_TYPES
 
 
@@ -34,24 +34,19 @@ def object_extract(elm: ALL_DEV_TYPES, args: List[str]) -> Any:
         if hasattr(p, arg):
             p = getattr(p, arg)
         else:
-            return ""
+            return None
     return p
 
 
 def compute_objects_masks(objects: List[ALL_DEV_TYPES], flt: Filter) -> Tuple[BoolVec, BoolVec, Mat]:
     """
-
-    :param objects:
-    :param flt:
-    :return:
+    Give a list of objects, apply the single filter and return the filtering mask
+    :param objects: List of GridCal objects
+    :param flt: Filter
+    :return: boolean array of the same length of objects
     """
 
-    if "[" in flt.value:
-        val = flt.value.replace("[", "").replace("]", "").strip()
-        lst = [a.strip() for a in val.split(",")]
-    else:
-        lst = [flt.value]
-
+    lst = flt.get_list_of_values()
     is_neg = flt.is_negative()
     n = len(objects)
     if is_neg:
@@ -68,50 +63,56 @@ def compute_objects_masks(objects: List[ALL_DEV_TYPES], flt: Filter) -> Tuple[Bo
             for i in range(n):
 
                 obj_val = object_extract(elm=objects[i], args=flt.element_args)
-                tpe = type(obj_val)
 
-                try:
-                    val = tpe(val)
-                except TypeError:
-                    # if the casting failed, try string comparison
-                    val = str(val)
-                    obj_val = str(obj_val)
+                if obj_val is not None:
 
-                if flt.op == CompOps.GT:
-                    ok = obj_val > val
+                    tpe = type(obj_val)
 
-                elif flt.op == CompOps.LT:
-                    ok = obj_val < val
+                    try:
+                        val = tpe(val)
+                    except TypeError:
+                        # if the casting failed, try string comparison
+                        val = str(val)
+                        obj_val = str(obj_val)
 
-                elif flt.op == CompOps.GEQ:
-                    ok = obj_val >= val
+                    if flt.op == CompOps.GT:
+                        ok = obj_val > val
 
-                elif flt.op == CompOps.LEQ:
-                    ok = obj_val <= val
+                    elif flt.op == CompOps.LT:
+                        ok = obj_val < val
 
-                elif flt.op == CompOps.NOT_EQ:
-                    ok = obj_val != val
+                    elif flt.op == CompOps.GEQ:
+                        ok = obj_val >= val
 
-                elif flt.op == CompOps.EQ:
-                    ok = obj_val == val
+                    elif flt.op == CompOps.LEQ:
+                        ok = obj_val <= val
 
-                elif flt.op == CompOps.LIKE:
-                    ok = val in str(obj_val)
+                    elif flt.op == CompOps.NOT_EQ:
+                        ok = obj_val != val
 
-                elif flt.op == CompOps.NOT_LIKE:
-                    ok = val not in str(obj_val)
+                    elif flt.op == CompOps.EQ:
+                        ok = obj_val == val
 
-                elif flt.op == CompOps.STARTS:
-                    ok = str(obj_val).startswith(val)
+                    elif flt.op == CompOps.LIKE:
+                        ok = val in str(obj_val)
 
-                elif flt.op == CompOps.ENDS:
-                    ok = str(obj_val).endswith(val)
+                    elif flt.op == CompOps.NOT_LIKE:
+                        ok = val not in str(obj_val)
 
+                    elif flt.op == CompOps.STARTS:
+                        ok = str(obj_val).startswith(val)
+
+                    elif flt.op == CompOps.ENDS:
+                        ok = str(obj_val).endswith(val)
+
+                    else:
+                        ok = False
+
+                    if ok:
+                        idx_mask[i] = True
                 else:
-                    ok = False
-
-                if ok:
-                    idx_mask[i] = True
+                    # the object_val is None
+                    pass
 
         else:
             raise Exception("Invalid FilterSubject")
