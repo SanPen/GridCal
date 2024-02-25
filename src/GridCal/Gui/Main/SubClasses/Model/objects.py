@@ -771,7 +771,7 @@ class ObjectsTableMain(DiagramsMain):
             if len(initial_model.objects) > 0:
 
                 obj_filter = flt.FilterObjects(objects=initial_model.objects)
-                obj_filter.parse(expression=self.ui.smart_search_lineEdit.text().lower())
+                obj_filter.parse(expression=self.ui.smart_search_lineEdit.text())
                 filtered_objects = obj_filter.apply()
 
                 self.display_objects_filter(filtered_objects)

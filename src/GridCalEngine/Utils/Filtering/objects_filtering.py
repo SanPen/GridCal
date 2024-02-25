@@ -68,6 +68,14 @@ def compute_objects_masks(objects: List[ALL_DEV_TYPES], flt: Filter) -> Tuple[Bo
             for i in range(n):
 
                 obj_val = object_extract(elm=objects[i], args=flt.element_args)
+                tpe = type(obj_val)
+
+                try:
+                    val = tpe(val)
+                except TypeError:
+                    # if the casting failed, try string comparison
+                    val = str(val)
+                    obj_val = str(obj_val)
 
                 if flt.op == CompOps.GT:
                     ok = obj_val > val
