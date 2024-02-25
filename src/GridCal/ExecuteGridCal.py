@@ -14,6 +14,7 @@
 # along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
 import os
 import sys
+import ctypes
 PACKAGE_PARENT = '..'
 SCRIPT_DIR = os.path.dirname(os.path.realpath(os.path.join(os.getcwd(), os.path.expanduser(__file__))))
 sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, PACKAGE_PARENT)))
@@ -23,7 +24,6 @@ import platform
 
 if platform.system() == 'Windows':
     # this makes the icon display properly under windows
-    import ctypes
     myappid = 'mycompany.myproduct.subproduct.version'  # arbitrary string
     ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
@@ -34,13 +34,6 @@ if __name__ == "__main__":
 
     # Set the application style to the clear theme
     os.environ["QT_QUICK_CONTROLS_STYLE"] = "Basic"
-    os.environ["QT_QPA_PLATFORMTHEME"] = "qt5ct"
-
-    # app = QApplication(sys.argv)
-    # app.setStyle('Fusion')  # ['Breeze', 'Oxygen', 'QtCurve', 'Windows', 'Fusion']
-    #
-    # splash = Splash()
-    # splash.show()
+    # os.environ["QT_QPA_PLATFORMTHEME"] = "qt5ct"  # this forces QT-only menus and look and feel
 
     runGridCal()
-    # sys.exit(app.exec_())
