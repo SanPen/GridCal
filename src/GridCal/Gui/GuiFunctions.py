@@ -29,6 +29,7 @@ from GridCalEngine.enumerations import DeviceType, ResultTypes
 from GridCalEngine.basic_structures import IntVec
 from GridCalEngine.data_logger import DataLogger
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit, IdentifiedObject
+from GridCalEngine.Core.Devices.types import ALL_DEV_TYPES
 import GridCal
 
 
@@ -1050,14 +1051,14 @@ class ObjectsModel(QtCore.QAbstractTableModel):
     """
 
     def __init__(self,
-                 objects: List[EditableDevice],
+                 objects: List[ALL_DEV_TYPES],
                  property_list: List[GCProp],
                  time_index: Union[int, None],
                  parent=None,
                  editable=False,
                  transposed=False,
                  check_unique=list(),
-                 dictionary_of_lists: Dict[str, List[EditableDevice]] = {}):
+                 dictionary_of_lists: Dict[str, List[ALL_DEV_TYPES]] = {}):
         """
 
         :param objects: list of objects associated to the editor

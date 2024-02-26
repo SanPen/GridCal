@@ -52,7 +52,7 @@ class MainGUI(ScriptingMain):
         self.setAcceptDrops(True)
 
         # 1:4
-        self.ui.dataStructuresSplitter.setStretchFactor(0, 2)
+        self.ui.dataStructuresSplitter.setStretchFactor(0, 3)
         self.ui.dataStructuresSplitter.setStretchFactor(1, 4)
 
         self.ui.simulationDataSplitter.setStretchFactor(1, 15)

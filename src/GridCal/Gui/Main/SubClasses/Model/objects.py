@@ -15,6 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
+from typing import Union, List
 from PySide6 import QtGui, QtCore
 from matplotlib import pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
@@ -23,7 +24,9 @@ from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit
 import GridCalEngine.basic_structures as bs
 import GridCalEngine.Core.Devices as dev
 import GridCal.Gui.GuiFunctions as gf
+import GridCalEngine.Utils.Filtering as flt
 from GridCalEngine.enumerations import DeviceType
+from GridCalEngine.Core.Devices.types import ALL_DEV_TYPES
 from GridCal.Gui.Analysis.object_plot_analysis import object_histogram_analysis
 from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_msg
 from GridCal.Gui.Main.SubClasses.Model.diagrams import DiagramsMain
@@ -55,7 +58,7 @@ class ObjectsTableMain(DiagramsMain):
 
         # Buttons
         self.ui.setValueToColumnButton.clicked.connect(self.set_value_to_column)
-        self.ui.filter_pushButton.clicked.connect(self.smart_search)
+        self.ui.filter_pushButton.clicked.connect(self.objects_smart_search)
         self.ui.catalogue_edit_pushButton.clicked.connect(self.edit_from_catalogue)
         self.ui.copyObjectsTableButton.clicked.connect(self.copy_objects_data)
         self.ui.delete_selected_objects_pushButton.clicked.connect(self.delete_selected_objects)
@@ -73,7 +76,7 @@ class ObjectsTableMain(DiagramsMain):
         self.ui.dataStructuresTreeView.clicked.connect(self.view_objects_data)
 
         # line edit enter
-        self.ui.smart_search_lineEdit.returnPressed.connect(self.smart_search)
+        self.ui.smart_search_lineEdit.returnPressed.connect(self.objects_smart_search)
 
     def create_objects_model(self, elements, elm_type: DeviceType) -> gf.ObjectsModel:
         """
@@ -249,19 +252,50 @@ class ObjectsTableMain(DiagramsMain):
 
         return mdl
 
-    def display_filter(self, elements):
+    def display_profiles(self):
+        """
+        Display profile
+        """
+        if self.circuit.time_profile is not None:
+
+            dev_type_text = self.get_db_object_selected_type()
+
+            magnitudes, mag_types = self.circuit.profile_magnitudes[dev_type_text]
+
+            if len(magnitudes) > 0:
+                # get the enumeration univoque association with he device text
+                dev_type = self.circuit.device_type_name_dict[dev_type_text]
+
+                idx = self.ui.device_type_magnitude_comboBox.currentIndex()
+                magnitude = magnitudes[idx]
+                mtype = mag_types[idx]
+
+                elements = self.get_current_objects_model_view().objects
+
+                mdl = gf.ProfilesModel(time_array=self.circuit.get_time_array(),
+                                       elements=elements,
+                                       device_type=dev_type,
+                                       magnitude=magnitude,
+                                       data_format=mtype,
+                                       parent=self.ui.profiles_tableView)
+            else:
+                mdl = None
+
+            self.ui.profiles_tableView.setModel(mdl)
+
+    def display_objects_filter(self, elements: List[ALL_DEV_TYPES]):
         """
         Display a list of elements that comes from a filter
-        :param elements:
+        :param elements: list of devices
         """
         if len(elements) > 0:
 
-            elm = elements[0]
+            # display objects
+            objects_mdl = self.create_objects_model(elements=elements, elm_type=elements[0].device_type)
+            self.ui.dataStructureTableView.setModel(objects_mdl)
 
-            mdl = self.create_objects_model(elements=elements,
-                                            elm_type=elm.device_type)
-
-            self.ui.dataStructureTableView.setModel(mdl)
+            # display time series
+            self.display_profiles()
 
         else:
             self.ui.dataStructureTableView.setModel(None)
@@ -270,12 +304,19 @@ class ObjectsTableMain(DiagramsMain):
         """
         Copy the current displayed objects table to the clipboard
         """
-        mdl = self.ui.dataStructureTableView.model()
+        mdl = self.get_current_objects_model_view()
         if mdl is not None:
             mdl.copy_to_clipboard()
             print('Copied!')
         else:
             warning_msg('There is no data displayed, please display one', 'Copy profile to clipboard')
+
+    def get_db_object_selected_type(self) -> str:
+        """
+        Get the selected object type in the database tree view
+        :return:
+        """
+        return self.ui.dataStructuresTreeView.selectedIndexes()[0].data(role=QtCore.Qt.ItemDataRole.DisplayRole)
 
     def view_objects_data(self):
         """
@@ -285,27 +326,29 @@ class ObjectsTableMain(DiagramsMain):
         if self.ui.dataStructuresTreeView.selectedIndexes()[0].parent().row() > -1:
             # if the clicked element has a valid parent...
 
-            elm_type = self.ui.dataStructuresTreeView.selectedIndexes()[0].data(role=QtCore.Qt.ItemDataRole.DisplayRole)
+            elm_type = self.get_db_object_selected_type()
 
             elements = self.circuit.get_elements_by_type(device_type=DeviceType(elm_type))
 
-            mdl = self.create_objects_model(elements=elements,
-                                            elm_type=DeviceType(elm_type))
+            objects_mdl = self.create_objects_model(elements=elements, elm_type=DeviceType(elm_type))
 
+            # update slice-view
             self.type_objects_list = elements
-            self.ui.dataStructureTableView.setModel(mdl)
-            self.ui.property_comboBox.clear()
-            self.ui.property_comboBox.addItems(mdl.attributes)
+            self.ui.dataStructureTableView.setModel(objects_mdl)
+
+            # update time series view
+            ts_mdl = gf.get_list_model(self.circuit.profile_magnitudes[elm_type][0])
+            self.ui.device_type_magnitude_comboBox.setModel(ts_mdl)
+            self.ui.device_type_magnitude_comboBox_2.setModel(ts_mdl)
         else:
             self.ui.dataStructureTableView.setModel(None)
-            self.ui.property_comboBox.clear()
 
     def delete_selected_objects(self):
         """
         Delete selection
         """
 
-        model = self.ui.dataStructureTableView.model()
+        model = self.get_current_objects_model_view()
 
         if model is not None:
             sel_idx = self.ui.dataStructureTableView.selectedIndexes()
@@ -334,7 +377,7 @@ class ObjectsTableMain(DiagramsMain):
                             self.circuit.delete_elements_by_type(obj=objects[r])
 
                     # update the view
-                    self.display_filter(objects)
+                    self.display_objects_filter(objects)
                     self.update_area_combos()
                     self.update_date_dependent_combos()
                 else:
@@ -348,7 +391,7 @@ class ObjectsTableMain(DiagramsMain):
         """
         Add default objects objects
         """
-        model = self.ui.dataStructureTableView.model()
+        model = self.get_current_objects_model_view()
         elm_type = self.ui.dataStructuresTreeView.selectedIndexes()[0].data(role=QtCore.Qt.ItemDataRole.DisplayRole)
 
         if model is not None:
@@ -460,7 +503,7 @@ class ObjectsTableMain(DiagramsMain):
         """
         Edit catalogue element
         """
-        model = self.ui.dataStructureTableView.model()
+        model = self.get_current_objects_model_view()
         sel_item = self.ui.dataStructuresTreeView.selectedIndexes()[0]
         elm_type = sel_item.data(role=QtCore.Qt.ItemDataRole.DisplayRole)
 
@@ -498,7 +541,7 @@ class ObjectsTableMain(DiagramsMain):
         :return: Nothing
         """
         idx = self.ui.dataStructureTableView.currentIndex()
-        mdl = self.ui.dataStructureTableView.model()  # is of type ObjectsModel
+        mdl = self.get_current_objects_model_view()
         col = idx.column()
         if mdl is not None:
             if col > -1:
@@ -510,13 +553,12 @@ class ObjectsTableMain(DiagramsMain):
         else:
             pass
 
-
     def highlight_selection_buses(self):
         """
         Highlight and select the buses of the selected objects
         """
 
-        model = self.ui.dataStructureTableView.model()
+        model = self.get_current_objects_model_view()
 
         if model is not None:
 
@@ -566,12 +608,32 @@ class ObjectsTableMain(DiagramsMain):
             else:
                 pass
 
+    def get_objects_time_index(self) -> Union[None, int]:
+        """
+        Get the time index of the objects slider already
+        accouting for the -1 -> None converison
+        :return: None or int
+        """
+        t_idx = self.ui.db_step_slider.value()
+        if t_idx <= -1:
+            return None
+        else:
+            return t_idx
+
+    def get_current_objects_model_view(self) -> gf.ObjectsModel:
+        """
+        Get the current ObjectsModel from the GUI
+        :return: ObjectsModel
+        """
+        return self.ui.dataStructureTableView.model()
+
     def highlight_based_on_property(self):
         """
         Highlight and select the buses of the selected objects
         """
 
-        model = self.ui.dataStructureTableView.model()
+        model = self.get_current_objects_model_view()
+        t_idx = self.get_objects_time_index()
 
         if model is not None:
             objects = model.objects
@@ -579,17 +641,20 @@ class ObjectsTableMain(DiagramsMain):
             if len(objects) > 0:
 
                 elm = objects[0]
-                attr = self.ui.property_comboBox.currentText()
-                tpe = elm.registered_properties[attr].tpe
+                attr = self.ui.smart_search_lineEdit.text().strip()
+                gc_prop = elm.registered_properties.get(attr, None)
+                if gc_prop:
+                    info_msg(f"The proprty {attr} cannot be found :(", "Highlight based on property")
+                    return
 
-                if tpe in [float, int]:
+                if gc_prop.tpe in [float, int]:
 
                     self.clear_big_bus_markers()
 
                     if elm.device_type == DeviceType.BusDevice:
                         # buses
                         buses = objects
-                        values = [getattr(elm, attr) for elm in objects]
+                        values = [elm.get_vaule(prop=gc_prop, t_idx=t_idx) for elm in objects]
 
                     elif elm.device_type in [DeviceType.BranchDevice,
                                              DeviceType.LineDevice,
@@ -603,16 +668,22 @@ class ObjectsTableMain(DiagramsMain):
                         buses = list()
                         values = list()
                         for br in objects:
+                            gc_prop = br.registered_properties[attr]
                             buses.append(br.bus_from)
                             buses.append(br.bus_to)
-                            val = getattr(br, attr)
+                            val = elm.get_vaule(prop=gc_prop, t_idx=t_idx)
                             values.append(val)
                             values.append(val)
 
                     else:
                         # loads, generators, etc...
-                        buses = [elm.bus for elm in objects]
-                        values = [getattr(elm, attr) for elm in objects]
+                        buses = list()
+                        values = list()
+                        for elm in objects:
+                            gc_prop = elm.registered_properties[attr]
+                            val = elm.get_vaule(prop=gc_prop, t_idx=t_idx)
+                            buses.append(elm.bus)
+                            values.append(val)
 
                     # build the color map
                     seq = [(0.0, 'gray'),
@@ -648,27 +719,27 @@ class ObjectsTableMain(DiagramsMain):
         indices = self.ui.dataStructureTableView.selectedIndexes()
 
         if len(indices):
-            model = self.ui.dataStructureTableView.model()
+            model = self.get_current_objects_model_view()
 
             if model is not None:
                 objects = model.objects
 
                 logger = bs.Logger()
 
+                t_idx = self.get_objects_time_index()
+
                 for index in indices:
                     i = index.row()
                     p_idx = index.column()
                     elm = objects[i]
                     attr = model.attributes[p_idx]
-                    prof_attr = elm.registered_properties[attr].profile_name
-
-                    if prof_attr != '':
-                        if hasattr(elm, prof_attr):
-                            val = getattr(elm, attr)
-                            profile = getattr(elm, prof_attr)
-                            profile.fill(val)
-                        else:
-                            logger.add_error("No profile found for " + attr, device=elm.name)
+                    gc_prop = elm.registered_properties[attr]
+                    if gc_prop.has_profile():
+                        val = elm.get_value(prop=gc_prop, t_idx=t_idx)
+                        profile = elm.get_profile_by_prop(prop=gc_prop)
+                        profile.fill(val)
+                    else:
+                        logger.add_error("No profile found for " + attr, device=elm.name)
 
                 if logger.size():
                     logs_window = LogsDialogue("Assign to profile", logger=logger)
@@ -689,150 +760,25 @@ class ObjectsTableMain(DiagramsMain):
         else:
             info_msg('Select a data structure')
 
-    def smart_search(self):
+    def objects_smart_search(self):
         """
-        Filter
+        Objects and time series object-based filtering
+        :return:
         """
+        initial_model = self.get_current_objects_model_view()
 
-        if len(self.type_objects_list) > 0:
-            command = self.ui.smart_search_lineEdit.text().lower()
-            attr = self.ui.property_comboBox.currentText()
+        if initial_model is not None:
+            if len(initial_model.objects) > 0:
 
-            elm = self.type_objects_list[0]
-            tpe = elm.registered_properties[attr].tpe
+                obj_filter = flt.FilterObjects(objects=initial_model.objects)
+                obj_filter.parse(expression=self.ui.smart_search_lineEdit.text())
+                filtered_objects = obj_filter.apply()
 
-            filtered_objects = list()
-
-            if command.startswith('>') and not command.startswith('>='):
-                # greater than selection
-                args = command.replace('>', '').strip()
-
-                try:
-                    args = tpe(args)
-                except TypeError:
-                    error_msg('Could not parse the argument for the data type')
-                    return
-
-                filtered_objects = [x for x in self.type_objects_list if getattr(x, attr) > args]
-
-            elif command.startswith('<') and not command.startswith('<='):
-                # "less than" selection
-                args = command.replace('<', '').strip()
-
-                try:
-                    args = tpe(args)
-                except TypeError:
-                    error_msg('Could not parse the argument for the data type')
-                    return
-
-                filtered_objects = [x for x in self.type_objects_list if getattr(x, attr) < args]
-
-            elif command.startswith('>='):
-                # greater or equal than selection
-                args = command.replace('>=', '').strip()
-
-                try:
-                    args = tpe(args)
-                except TypeError:
-                    error_msg('Could not parse the argument for the data type')
-                    return
-
-                filtered_objects = [x for x in self.type_objects_list if getattr(x, attr) >= args]
-
-            elif command.startswith('<='):
-                # "less or equal than" selection
-                args = command.replace('<=', '').strip()
-
-                try:
-                    args = tpe(args)
-                except TypeError:
-                    error_msg('Could not parse the argument for the data type')
-                    return
-
-                filtered_objects = [x for x in self.type_objects_list if getattr(x, attr) <= args]
-
-            elif command.startswith('*'):
-                # "like" selection
-                args = command.replace('*', '').strip()
-
-                if tpe == str:
-
-                    try:
-                        args = tpe(args)
-                    except TypeError:
-                        error_msg('Could not parse the argument for the data type')
-                        return
-
-                    filtered_objects = [x for x in self.type_objects_list if args in getattr(x, attr).lower()]
-
-                elif elm.device_type == DeviceType.BusDevice:
-                    filtered_objects = [x for x in self.type_objects_list if args in getattr(x, attr).name.lower()]
-
-                else:
-                    info_msg('This filter type is only valid for strings')
-
-            elif command.startswith('='):
-                # Exact match
-                args = command.replace('=', '').strip()
-
-                if tpe == str:
-
-                    try:
-                        args = tpe(args)
-                    except TypeError:
-                        error_msg('Could not parse the argument for the data type')
-                        return
-
-                    filtered_objects = [x for x in self.type_objects_list if getattr(x, attr).lower() == args]
-
-                elif tpe == bool:
-
-                    if args.lower() == 'true':
-                        args = True
-                    elif args.lower() == 'false':
-                        args = False
-                    else:
-                        args = False
-
-                    filtered_objects = [x for x in self.type_objects_list if getattr(x, attr) == args]
-
-                elif elm.device_type == DeviceType.BusDevice:
-                    filtered_objects = [x for x in self.type_objects_list if args == getattr(x, attr).name.lower()]
-
-                else:
-                    try:
-                        filtered_objects = [x for x in self.type_objects_list if getattr(x, attr).name.lower() == args]
-                    except:
-                        filtered_objects = [x for x in self.type_objects_list if getattr(x, attr) == args]
-
-            elif command.startswith('!='):
-                # Exact match
-                args = command.replace('==', '').strip()
-
-                if tpe == str:
-
-                    try:
-                        args = tpe(args)
-                    except TypeError:
-                        error_msg('Could not parse the argument for the data type')
-                        return
-
-                    filtered_objects = [x for x in self.type_objects_list if getattr(x, attr).lower() != args]
-
-                elif elm.device_type == DeviceType.BusDevice:
-                    filtered_objects = [x for x in self.type_objects_list if args != getattr(x, attr).name.lower()]
-
-                else:
-                    filtered_objects = [x for x in self.type_objects_list if getattr(x, attr) != args]
+                self.display_objects_filter(filtered_objects)
 
             else:
-                filtered_objects = self.type_objects_list
-
-            self.display_filter(filtered_objects)
-
-        else:
-            # nothing to search
-            pass
+                # nothing to search
+                pass
 
     def delete_inconsistencies(self):
         """
