@@ -2281,7 +2281,9 @@ class SimulationsMain(TimeEventsMain):
                         bus_colours[i] = QtGui.QColor(r * 255, g * 255, b * 255, a * 255)
                         tool_tips[i] = 'Group ' + str(c)
 
-            self.set_big_bus_marker_colours(buses=self.circuit.buses, colors=bus_colours, tool_tips=tool_tips)
+            self.set_big_bus_marker_colours(buses=self.circuit.buses,
+                                            colors=bus_colours,
+                                            tool_tips=tool_tips)
 
     def run_inputs_analysis(self):
         """

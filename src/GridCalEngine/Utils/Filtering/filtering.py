@@ -138,7 +138,7 @@ class Filter:
         :param value: Comparison value
         """
         self.element = element
-        self.element_args = element_args
+        self.element_args: List[str] = element_args
         self.op = op
         self.value = value
 
