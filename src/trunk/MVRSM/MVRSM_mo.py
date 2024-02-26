@@ -146,7 +146,7 @@ class SurrogateModel:
         W = np.asarray(W)
         b = np.asarray(b)
         m = len(b)  # the number of basis functions
-        assert m >= d
+        # assert m >= d
 
         c = np.zeros((n_obj, m))  # the model weights --> changes with multiple objectives
         # something like c = np.zeros(m, nr_objectives)
@@ -439,6 +439,44 @@ def non_dominated_sorting(y_values: Mat, x_values: Mat):
     return sorted_population, x_values[sorting_indices, :]
 
 
+def get_norm_factors(scaling_values):
+    """
+    Computes the factors used to normalize objective function criteria..
+    :param scaling_values: Array with all the criteria obtained during random evaluation process.
+    :return: Tuple of arrays where 1st array is maximum values of y and second minimum values.
+    """
+    terms_max = np.max(scaling_values, axis=0)
+    terms_min = np.min(scaling_values, axis=0)
+
+    return terms_max, terms_min
+
+
+def normalize_md(y_no_normalized, norm_factors):
+    """
+    Computes the normalization of y_no_normalized --> y_normalized=(y_no_normalized-y_min)/(y_max-y_min).
+    :param y_no_normalized: The no normalized objective function values: np.array.shape[1]=f_obj_dim.
+    :param norm_factors: Tuple of arrays where 1st array is maximum values of y and second minimum values.
+    :return: the value `y_normalized` such that `normalize_md(y_no_normalized, y0) = y_normalized`.
+    """
+    max_min = norm_factors[0] - norm_factors[1]
+    max_min[max_min == 0] = 1
+
+    return (y_no_normalized - norm_factors[1]) / max_min
+
+
+def inv_normalize_md(y_normalized, norm_factors):
+    """
+    Computes the inverse of normalize_md(y_no_normalized, norm_factors).
+    :param y_normalized: The normalized objective function values: np.array.shape[1]=f_obj_dim.
+    :param norm_factors: Tuple of arrays where 1st array is maximum values of y and second minimum values.
+    :return: the value `y_no_normalized` such that `inv_normalize_md(y_normalized, y0) = y_no_normalized`.
+    """
+
+    max_min = norm_factors[0] - norm_factors[1]
+
+    return y_normalized * max_min + norm_factors[1]
+
+
 def MVRSM_multi_minimize(obj_func, x0: Vec, lb: Vec, ub: Vec, num_int: int, max_evals: int, n_objectives: int,
                          rand_evals: int = 0, args=()):
     """
@@ -458,51 +496,72 @@ def MVRSM_multi_minimize(obj_func, x0: Vec, lb: Vec, ub: Vec, num_int: int, max_
     d = len(x0)  # number of decision variables
 
     model = SurrogateModel.init(n_objectives, d, lb, ub, num_int)
-    next_x = x0  # candidate solution
+    next_x = np.array(x0, dtype=float)  # candidate solution
 
+    # Initialize storing arrays
     y_population = np.zeros((max_evals, n_objectives))
     x_population = np.zeros((max_evals, d))
 
+    # Start random iterations loop
+    for i in range(rand_evals):
+        # Evaluate random point
+        x = next_x.astype(float, copy=False)
+        y = obj_func(x, *args)
+
+        # Store evaluated point
+        x_population[i, :] = x
+        y_population[i, :] = y
+
+        # Perform random search
+        next_x[0:num_int] = np.random.binomial(1, np.random.rand(), num_int)  # integer variables
+        next_x[num_int:d] = np.random.uniform(lb[num_int:d], ub[num_int:d])  # continuous variables
+
+    # Once random iterations finish, get y_max and y_min for each objective
+    normalization_factors = get_norm_factors(y_population)
+
+    # Normalize objectives obtained in random evaluations
+    objectives_normalized = normalize_md(y_population, normalization_factors)
+
+    # Update the model with the normalized random evaluation points
+    for rand_it in range(len(x_population)):
+        model.update(x_population[rand_it], objectives_normalized[rand_it])
+
     # Iteratively evaluate the objective, update the model, find the minimum of the model,
     # and explore the search space.
-    for i in range(max_evals):
+    for i in range(rand_evals, max_evals):
 
         # Evaluate the objective function
         x = next_x.astype(float, copy=False)
         y = obj_func(x, *args)
 
-        # store the solution in the population at the position "i"
+        # Store the solution in the population at the position "i"
         y_population[i, :] = y
         x_population[i, :] = x
 
         # Update the surrogate model
-        model.update(x, y)
+        y_normalized = normalize_md(y, normalization_factors)
+        model.update(x, y_normalized)
 
-        if i >= rand_evals:
-            # rnd_weights = np.random.rand(n_objectives)
-            rnd_weights = np.random.lognormal(0, 1, n_objectives)
-            # rnd_weights = np.full(n_objectives, 0.5)
-            scalarization_weights = rnd_weights / rnd_weights.sum()
+        # Get scalarization weights
+        # rnd_weights = np.random.rand(n_objectives)
+        rnd_weights = np.random.lognormal(0, 1, n_objectives)
+        # rnd_weights = np.full(n_objectives, 0.5)
+        scalarization_weights = rnd_weights / rnd_weights.sum()
 
-            # Minimize surrogate model
-            next_x = model.minimum(x, scalarization_weights)
+        # Minimize surrogate model
+        next_x = model.minimum(x, scalarization_weights)
 
-            # Round discrete variables to the nearest integer.
-            next_x[0:num_int].round(out=next_x[0:num_int])
+        # Round discrete variables to the nearest integer.
+        next_x[0:num_int].round(out=next_x[0:num_int])
 
-            # Just to be sure, clip the decision variables to the bounds.
-            np.clip(next_x, lb, ub, out=next_x)
+        # Just to be sure, clip the decision variables to the bounds.
+        np.clip(next_x, lb, ub, out=next_x)
 
         # Perform exploration to prevent the algorithm from getting stuck in local minima
         # of the surrogate model.
-        if i < rand_evals:
-            # Perform random search
-            # next_x = np.random.binomial(1, rand_search_bias, num_int)  # [GTEP]
-            next_x[0:num_int] = np.random.binomial(1, np.random.rand(), num_int)  # integer variables
-            next_x[num_int:d] = np.random.uniform(lb[num_int:d], ub[num_int:d])  # continuous variables
 
         # Skip exploration in the last iteration (to end at the exact minimum of the surrogate model).
-        elif i < max_evals - 2:
+        if i < max_evals - 2:
             # Randomly perturb the discrete variables. Each x_i is shifted n units
             # to the left (if dir is False) or to the right (if dir is True).
             # The bounds of each variable are respected.

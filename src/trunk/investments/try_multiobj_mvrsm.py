@@ -5,6 +5,7 @@ from GridCalEngine.IO.file_handler import FileOpen
 import GridCalEngine.Simulations as sim
 import trunk.investments.InvestmentsEvaluation as invsim
 from GridCalEngine.enumerations import InvestmentEvaluationMethod, ResultTypes
+import time
 import cProfile
 import cProfile
 import pstats
@@ -23,11 +24,14 @@ if __name__ == "__main__":
     inv_results = []
 
     for i, solver in enumerate(solvers):
-        options = invsim.InvestmentsEvaluationOptions(solver=solver, max_eval=4 * len(grid.investments),
+        options = invsim.InvestmentsEvaluationOptions(solver=solver, max_eval=3 * len(grid.investments),
                                                       pf_options=pf_options)
 
         inv = invsim.InvestmentsEvaluationDriver(grid, options=options)
+        st_time = time.time()
         inv.run()
+        e_time = time.time()
+        print(e_time-st_time)
         inv_results.append(inv.results)
 
     results1 = inv_results[0]

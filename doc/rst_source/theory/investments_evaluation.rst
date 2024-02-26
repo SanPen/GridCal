@@ -273,19 +273,31 @@ The results obtained with the scaled algorithm show a clear Pareto front as seen
     :alt: Pareto front
     :scale: 50 %
 
-    Figure 11: Results obtained for the updated random evaluation iterations.
+    Figure 12: Results obtained for the updated random evaluation iterations.
 
 
 Multi-objective optimization
 ----------------------------
 Another line of research includes modifying the MVRSM model to support multi-objective minimization. This way, the
-scaling process after the random evaluations is not necessary and instead the model works directly with the values obtained
-for each cost computation (losses cost, overload cost, CAPEX,...). Hence, the problem becomes a 6 objective minimization problem.
+scaling process after the random evaluations is not necessary, instead, the model works directly with the values obtained
+for each cost computation (losses cost, overload cost, CAPEX,...). Hence, the problem becomes a 6-objective minimization problem.
 
-To do so, on the one hand, the MVRSM is adapted so that the surrogate model can predict an outcome for every objective,
-the process followed for 1 objective has to be repeated now 6 times. On the other hand, to minimize the model, some random
-weights are chosen for each objective ( the sum of the weights must be 1) and a single value is obtained. In every iteration
-these random weights must change. Then, it is possible to still use scipy's tool minimize, since the model still returns
-one single value. The explanation behind this process is further explained in this `reference paper <https://arxiv.org/abs/2006.04655>`_.
+On the one hand, the MVRSM is adapted so that the surrogate model can predict an outcome for every objective.
+What was previously done for one objective has to be repeated now six times, hence, the computation time is significantly higher
+than for the previous case.
 
+On the other hand, to minimize the model, random weights are chosen for each objective ( the sum of the weights must be 1),
+then a single value is computed as the sum of each objective multiplied by its weight. In every iteration, these random
+weights must change. This way, it is still possible to use Scipy's tool "minimize", since the model still returns one
+single value. The reader can find a more in depth explanation of the reasoning behind this process in
+this `reference paper <https://arxiv.org/abs/2006.04655>`_.
+
+The results obtained show a similar distribution as in Figure 12, however the algorithm does not find the points outside
+the curve and closer to the optimal point (0,0).
+
+.. figure:: ../figures/investments/Pareto_multi.png
+    :alt: Multi-objective optimization results
+    :scale: 50 %
+
+    Figure 12: Results obtained for the multi objective optimization.
 
