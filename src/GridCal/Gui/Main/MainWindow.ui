@@ -285,7 +285,7 @@
                    <item>
                     <widget class="QSlider" name="diagram_step_slider">
                      <property name="toolTip">
-                      <string>Diagrams time slider</string>
+                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Time slider&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Move this time slider to select the appropriate time slot to view.&lt;/p&gt;&lt;p&gt;The first position sets the snapshot values, the rest attend to the time series values.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                      </property>
                      <property name="orientation">
                       <enum>Qt::Horizontal</enum>
@@ -525,8 +525,7 @@
                        <item>
                         <widget class="QPushButton" name="highlight_selection_buses_pushButton">
                          <property name="toolTip">
-                          <string>Highlight the buses of the selected elements.
-For this to work you need to type the desired highlighting property in the search box.</string>
+                          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Highlight&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Highlight the buses of the selected elements. For this to work you need to type the desired highlighting property in the search box.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                          </property>
                          <property name="text">
                           <string/>
@@ -540,7 +539,7 @@ For this to work you need to type the desired highlighting property in the searc
                        <item>
                         <widget class="QPushButton" name="highlight_by_property_pushButton">
                          <property name="toolTip">
-                          <string>Highlight the schematic buses based on the values of the selected property</string>
+                          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Highlight&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Highlight the schematic buses based on the values of the selected property&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                          </property>
                          <property name="text">
                           <string/>
@@ -554,7 +553,7 @@ For this to work you need to type the desired highlighting property in the searc
                        <item>
                         <widget class="QPushButton" name="clear_highlight_pushButton">
                          <property name="toolTip">
-                          <string>Clear the bus highlight</string>
+                          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Highlight&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Clear the bus highlight&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                          </property>
                          <property name="text">
                           <string/>
@@ -623,7 +622,7 @@ For this to work you need to type the desired highlighting property in the searc
                        <item>
                         <widget class="QPushButton" name="structure_analysis_pushButton">
                          <property name="toolTip">
-                          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Run the histogram analysis of the selected data structure&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Histogram&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Run the histogram analysis of the selected data structure&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                          </property>
                          <property name="text">
                           <string/>
@@ -664,7 +663,7 @@ For this to work you need to type the desired highlighting property in the searc
                        <item>
                         <widget class="QPushButton" name="set_profile_state_button">
                          <property name="toolTip">
-                          <string>Assign the values of the selected time step into the snapshot</string>
+                          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Snapshot&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Assign the values of the selected time step into the snapshot&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                          </property>
                          <property name="text">
                           <string/>
@@ -678,7 +677,7 @@ For this to work you need to type the desired highlighting property in the searc
                        <item>
                         <widget class="QSlider" name="db_step_slider">
                          <property name="toolTip">
-                          <string>Database time slider</string>
+                          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Time slider&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Move this time slider to select the appropriate time slot to view.&lt;/p&gt;&lt;p&gt;The first position sets the snapshot values, the rest attend to the time series values.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                          </property>
                          <property name="orientation">
                           <enum>Qt::Horizontal</enum>
@@ -750,7 +749,7 @@ For this to work you need to type the desired highlighting property in the searc
                        <item>
                         <widget class="QPushButton" name="catalogue_edit_pushButton">
                          <property name="toolTip">
-                          <string>Edit</string>
+                          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Edit&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Edit the selected object (where editors ara availble)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                          </property>
                          <property name="text">
                           <string/>
@@ -824,7 +823,7 @@ For this to work you need to type the desired highlighting property in the searc
                        <item>
                         <widget class="QPushButton" name="new_profiles_structure_pushButton">
                          <property name="toolTip">
-                          <string>Create profiles</string>
+                          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Create profiles&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This will create all the object's profiles&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                          </property>
                          <property name="text">
                           <string/>
@@ -836,9 +835,23 @@ For this to work you need to type the desired highlighting property in the searc
                         </widget>
                        </item>
                        <item>
+                        <widget class="QPushButton" name="delete_profiles_structure_pushButton">
+                         <property name="toolTip">
+                          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Delete profiles&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This will delete all the profiles and leave the snapshot.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                         </property>
+                         <property name="text">
+                          <string/>
+                         </property>
+                         <property name="icon">
+                          <iconset resource="icons.qrc">
+                           <normaloff>:/Icons/icons/new (delete).svg</normaloff>:/Icons/icons/new (delete).svg</iconset>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
                         <widget class="QPushButton" name="edit_profiles_pushButton">
                          <property name="toolTip">
-                          <string>Import profiles</string>
+                          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Import profiles&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Import from data in CSV or Excel files&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                          </property>
                          <property name="text">
                           <string/>
@@ -855,7 +868,7 @@ For this to work you need to type the desired highlighting property in the searc
                        <item>
                         <widget class="QPushButton" name="edit_profiles_from_models_pushButton">
                          <property name="toolTip">
-                          <string>Import profiles from models. This is, load many individual grids and take the operational data from them</string>
+                          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Import profiles from grid models. &lt;/span&gt;&lt;/p&gt;&lt;p&gt;This is, load many individual grids in any of the supported GridCal formats and take the operational data from them, aplying them to all the profiles.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                          </property>
                          <property name="text">
                           <string/>
@@ -934,23 +947,9 @@ For this to work you need to type the desired highlighting property in the searc
                         <number>0</number>
                        </property>
                        <item>
-                        <widget class="QPushButton" name="delete_profiles_structure_pushButton">
-                         <property name="toolTip">
-                          <string>Delete profiles</string>
-                         </property>
-                         <property name="text">
-                          <string/>
-                         </property>
-                         <property name="icon">
-                          <iconset resource="icons.qrc">
-                           <normaloff>:/Icons/icons/delete.svg</normaloff>:/Icons/icons/delete.svg</iconset>
-                         </property>
-                        </widget>
-                       </item>
-                       <item>
                         <widget class="QPushButton" name="copy_profile_pushButton">
                          <property name="toolTip">
-                          <string>Copy displayed profile</string>
+                          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Copy data&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Copy displayed profile&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                          </property>
                          <property name="statusTip">
                           <string/>
@@ -967,7 +966,7 @@ For this to work you need to type the desired highlighting property in the searc
                        <item>
                         <widget class="QPushButton" name="paste_profiles_pushButton">
                          <property name="toolTip">
-                          <string>Paste clipboard into the displayed profile</string>
+                          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Paste data&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Paste clipboard into the displayed profile&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                          </property>
                          <property name="text">
                           <string/>
@@ -981,7 +980,7 @@ For this to work you need to type the desired highlighting property in the searc
                        <item>
                         <widget class="QPushButton" name="set_linear_combination_profile_pushButton">
                          <property name="toolTip">
-                          <string>Copy the current profile into the profile selected by the drop-down selector</string>
+                          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Copy profile&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Copy the current profile into the profile selected by the drop-down selector&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                          </property>
                          <property name="text">
                           <string/>
@@ -1724,6 +1723,9 @@ For this to work you need to type the desired highlighting property in the searc
                       </item>
                       <item>
                        <widget class="QPushButton" name="search_results_Button">
+                        <property name="toolTip">
+                         <string>Smart search</string>
+                        </property>
                         <property name="text">
                          <string/>
                         </property>
@@ -8865,7 +8867,6 @@ QProgressBar::chunk{
    <addaction name="actionNew_project"/>
    <addaction name="actionOpen_file"/>
    <addaction name="actionSave"/>
-   <addaction name="actionSync"/>
    <addaction name="separator"/>
    <addaction name="actionPower_flow"/>
    <addaction name="actionPower_Flow_Time_series"/>
@@ -8956,6 +8957,9 @@ QProgressBar::chunk{
    <property name="text">
     <string>Power Flow</string>
    </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Power Flow&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Run a power flow analysis with the snapshot data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
    <property name="shortcut">
     <string>F5</string>
    </property>
@@ -8969,7 +8973,7 @@ QProgressBar::chunk{
     <string>Power flow time series</string>
    </property>
    <property name="toolTip">
-    <string>Power flow time series</string>
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Power flow&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Run the power flow study with time series data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
    <property name="shortcut">
     <string>F6</string>
@@ -9014,7 +9018,7 @@ QProgressBar::chunk{
     <string>Stochastic power flow</string>
    </property>
    <property name="toolTip">
-    <string>Stochastic power flow</string>
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Stochastic power flow&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform a stochastic power flow over the time series data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
   </action>
   <action name="actionVoltage_stability">
@@ -9026,7 +9030,7 @@ QProgressBar::chunk{
     <string>Continuation power flow</string>
    </property>
    <property name="toolTip">
-    <string>Continuation power flow</string>
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Continuation power flow&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Run a continuation power flow over the snapshot data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
    <property name="shortcut">
     <string>F7</string>
@@ -9063,6 +9067,9 @@ QProgressBar::chunk{
    </property>
    <property name="text">
     <string>Short Circuit</string>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Short Circuit&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Run a short circuit study over the snapshot data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
   </action>
   <action name="actionAutoatic_layout">
@@ -9101,7 +9108,7 @@ QProgressBar::chunk{
     <string>Optimal power flow</string>
    </property>
    <property name="toolTip">
-    <string>Optimal power flow</string>
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Optimal power flow&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This runs an optimal power flow for the snapshot&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
    <property name="shortcut">
     <string>F9</string>
@@ -9116,7 +9123,7 @@ QProgressBar::chunk{
     <string>Optimal power flow time series</string>
    </property>
    <property name="toolTip">
-    <string>Optimal power flow time series</string>
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Optimal power flow&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This runs an optimal power flow for the time series data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
    <property name="shortcut">
     <string>F10</string>
@@ -9239,7 +9246,7 @@ QProgressBar::chunk{
     <string>Linear Analysis</string>
    </property>
    <property name="toolTip">
-    <string>Perform linear analysis with distribution factors (PTDF, LODF)</string>
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Linear analysis&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform linear analysis with distribution factors (PTDF, LODF)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
   </action>
   <action name="actionReset_console">
@@ -9263,7 +9270,7 @@ QProgressBar::chunk{
     <string>Set OPF results to power flow (non destructive)</string>
    </property>
    <property name="toolTip">
-    <string>Set the OPF results into the power flow or time series simulations (non destructive)</string>
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Copy OPF data&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Set the OPF results into the power flow or time series simulations (non destructive)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
   </action>
   <action name="actionTry_to_fix_buses_location">
@@ -9287,7 +9294,7 @@ QProgressBar::chunk{
     <string>Copy OPF generation to profiles (destructive)</string>
    </property>
    <property name="toolTip">
-    <string>Destructive copy of the OPF generation results to the input profiles</string>
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Copy OPF data&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Destructive copy of the OPF generation results to the input profiles&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
   </action>
   <action name="actionPTDF_time_series">
@@ -9299,7 +9306,7 @@ QProgressBar::chunk{
     <string>Linear analysis time series power flow</string>
    </property>
    <property name="toolTip">
-    <string>PTDF based time series power flow</string>
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Linear analysis&lt;/span&gt;&lt;/p&gt;&lt;p&gt;PTDF based time series power flow&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
   </action>
   <action name="actionAdd_circuit">
@@ -9350,7 +9357,7 @@ QProgressBar::chunk{
     <string>Sigma analysis</string>
    </property>
    <property name="toolTip">
-    <string>Perform HELM-Sigma analysis</string>
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Sigma analysis&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform HELM-Sigma analysis&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
   </action>
   <action name="actionClear_stuff_running_right_now">
@@ -9425,7 +9432,7 @@ QProgressBar::chunk{
     <string>Contingency analysis time series</string>
    </property>
    <property name="toolTip">
-    <string>Contingency analysis time series</string>
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Contingency analysis&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Per form a contingency analysis with the selected method over the time series data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
   </action>
   <action name="actionImportPlexosBranchRates">
@@ -9435,18 +9442,6 @@ QProgressBar::chunk{
    </property>
    <property name="text">
     <string>Branch rates</string>
-   </property>
-  </action>
-  <action name="actionClustering_time_series">
-   <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/Icons/icons/pf_ts_cluster.svg</normaloff>:/Icons/icons/pf_ts_cluster.svg</iconset>
-   </property>
-   <property name="text">
-    <string>Clustering time series</string>
-   </property>
-   <property name="toolTip">
-    <string>Perform the time series simulation using clusters for speed / accuracy trade-off</string>
    </property>
   </action>
   <action name="actionSetSelectedBusArea">
@@ -9494,7 +9489,7 @@ QProgressBar::chunk{
     <string>Available Transfer Capacity</string>
    </property>
    <property name="toolTip">
-    <string>Net Transfer Capacity</string>
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Net Transfer Capacity&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform a linear net transfer capacity assesment for the snapshot data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
   </action>
   <action name="actionATC_Time_Series">
@@ -9506,7 +9501,7 @@ QProgressBar::chunk{
     <string>Available Transfer Capacity Time Series</string>
    </property>
    <property name="toolTip">
-    <string>Net Transfer Capacity Time Series</string>
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Net Transfer Capacity&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform a linear net transfer capacity assesment for the time series data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
   </action>
   <action name="actionContingency_analysis">
@@ -9516,6 +9511,9 @@ QProgressBar::chunk{
    </property>
    <property name="text">
     <string>Contingency analysis</string>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Contingency analysis&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform a contingency analysis with the selected method over the snapshot data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
   </action>
   <action name="actionOptimal_Net_Transfer_Capacity">
@@ -9527,7 +9525,7 @@ QProgressBar::chunk{
     <string>Optimal net transfer capacity</string>
    </property>
    <property name="toolTip">
-    <string>Optimal Net Transfer Capacity</string>
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Net Transfer Capacity&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform an optimal net transfer capacity optimization over the snapshot data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
   </action>
   <action name="actionSet_schematic_positions_from_GPS_coordinates">
@@ -9546,6 +9544,9 @@ QProgressBar::chunk{
    </property>
    <property name="text">
     <string>Inputs analysis</string>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Inputs analysis&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform an analysis of the inputs for both the snapshot and time series data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
    <property name="shortcut">
     <string>F4</string>
@@ -9596,19 +9597,7 @@ QProgressBar::chunk{
     <string>Optimal NTC time series</string>
    </property>
    <property name="toolTip">
-    <string>Optimal net transfer capacity time series</string>
-   </property>
-  </action>
-  <action name="actionOptimal_NTC_time_series_clustering">
-   <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/Icons/icons/ntc_opf_ts_clustering.svg</normaloff>:/Icons/icons/ntc_opf_ts_clustering.svg</iconset>
-   </property>
-   <property name="text">
-    <string>Optimal NTC time series with clustering</string>
-   </property>
-   <property name="toolTip">
-    <string>Optimal NTC time series with clustering</string>
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Net Transfer Capacity&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform a net transfer capacity optimization over the time series data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
   </action>
   <action name="actionre_index_time">
@@ -9658,6 +9647,9 @@ QProgressBar::chunk{
    <property name="text">
     <string>Initialize contingencies</string>
    </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Contingencies wizard&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Launch the contingencies wizard to automatically set up the contingency objects&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
   </action>
   <action name="actionExport_contingencies">
    <property name="icon">
@@ -9677,7 +9669,7 @@ QProgressBar::chunk{
     <string>Add selected as new contingency</string>
    </property>
    <property name="toolTip">
-    <string>Add schematic selection as new contingency</string>
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Contingency analysis&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Create a new contingency from the schematic selection&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+A, Ctrl+C</string>
@@ -9692,7 +9684,7 @@ QProgressBar::chunk{
     <string>Add selected as new investment</string>
    </property>
    <property name="toolTip">
-    <string>Add schematic selection as new investment</string>
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Investments&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Create new investment with the schematic selection&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+A, Ctrl+I</string>
@@ -9731,7 +9723,7 @@ QProgressBar::chunk{
     <string>Clustering</string>
    </property>
    <property name="toolTip">
-    <string>Clustering of the time series</string>
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Clustering&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform a clustering study of the time series data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
    <property name="menuRole">
     <enum>QAction::NoRole</enum>
@@ -9749,7 +9741,7 @@ QProgressBar::chunk{
     <string>Use clustering</string>
    </property>
    <property name="toolTip">
-    <string>Check if you want the available clustering results to be used</string>
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Clustering&lt;/span&gt;&lt;/p&gt;&lt;p&gt;If active, the available clustering results are used in all the simulations that handle time series data non-destructivelly&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
   </action>
   <action name="actionInvestments_evaluation">
@@ -9761,7 +9753,7 @@ QProgressBar::chunk{
     <string>Investments evaluation</string>
    </property>
    <property name="toolTip">
-    <string>Run the investments evaluation</string>
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Investments&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform the investments evaluation&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+I, Ctrl+E</string>

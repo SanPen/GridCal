@@ -23,7 +23,7 @@ from PySide6 import QtGui, QtWidgets
 from matplotlib import pyplot as plt
 from pandas.plotting import register_matplotlib_converters
 
-import GridCalEngine.Core.Devices as dev
+import GridCalEngine.Devices as dev
 import GridCalEngine.Simulations as sim
 import GridCal.Gui.GuiFunctions as gf
 import GridCal.Gui.Visualization.palettes as palettes
@@ -40,7 +40,7 @@ from GridCal.Gui.Main.SubClasses.Model.compiled_arrays import CompiledArraysMain
 from GridCal.Gui.Main.object_select_window import ObjectSelectWindow
 from GridCal.Gui.MapWidget.TileProviders.blue_marble import BlueMarbleTiles
 from GridCal.Gui.MapWidget.TileProviders.cartodb import CartoDbTiles
-from GridCalEngine.Core.Devices.types import ALL_DEV_TYPES
+from GridCalEngine.Devices.types import ALL_DEV_TYPES
 
 
 ALL_EDITORS = Union[BusBranchEditorWidget, GridMapWidget, BusViewerWidget, NodeBreakerEditorWidget]
@@ -758,6 +758,7 @@ class DiagramsMain(CompiledArraysMain):
                                                       dc_lines=self.circuit.dc_lines,
                                                       transformers2w=self.circuit.transformers2w,
                                                       transformers3w=self.circuit.transformers3w,
+                                                      windings=self.circuit.windings,
                                                       hvdc_lines=self.circuit.hvdc_lines,
                                                       vsc_devices=self.circuit.vsc_devices,
                                                       upfc_devices=self.circuit.upfc_devices,
@@ -789,6 +790,7 @@ class DiagramsMain(CompiledArraysMain):
                                               dc_lines=self.circuit.dc_lines,
                                               transformers2w=self.circuit.transformers2w,
                                               transformers3w=self.circuit.transformers3w,
+                                              windings=self.circuit.windings,
                                               hvdc_lines=self.circuit.hvdc_lines,
                                               vsc_devices=self.circuit.vsc_devices,
                                               upfc_devices=self.circuit.upfc_devices,
@@ -801,7 +803,8 @@ class DiagramsMain(CompiledArraysMain):
 
         diagram_widget = BusBranchEditorWidget(circuit=self.circuit,
                                                diagram=diagram,
-                                               default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value())
+                                               default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
+                                               time_index=self.get_diagram_slider_index())
 
         diagram_widget.setStretchFactor(1, 10)
         diagram_widget.center_nodes()
@@ -829,7 +832,8 @@ class DiagramsMain(CompiledArraysMain):
                 diagram = diagram_widget.get_selection_diagram()
                 self.add_diagram(BusBranchEditorWidget(self.circuit,
                                                        diagram=diagram,
-                                                       default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value()))
+                                                       default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
+                                                       time_index=self.get_diagram_slider_index()))
                 self.set_diagrams_list_view()
 
     def add_bus_vecinity_diagram_from_model(self):
@@ -906,7 +910,8 @@ class DiagramsMain(CompiledArraysMain):
             if isinstance(diagram, dev.BusBranchDiagram):
                 diagram_widget = BusBranchEditorWidget(self.circuit,
                                                        diagram=diagram,
-                                                       default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value())
+                                                       default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
+                                                       time_index=self.get_diagram_slider_index())
                 diagram_widget.setStretchFactor(1, 10)
                 diagram_widget.center_nodes()
                 self.diagram_widgets_list.append(diagram_widget)

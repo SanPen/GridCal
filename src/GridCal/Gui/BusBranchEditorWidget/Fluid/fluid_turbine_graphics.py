@@ -20,7 +20,7 @@ from PySide6.QtCore import QPointF
 from PySide6.QtGui import QPen, QIcon, QPixmap
 from PySide6.QtWidgets import (QMenu, QGraphicsTextItem, QGraphicsSceneMouseEvent)
 from GridCalEngine.enumerations import DeviceType
-from GridCalEngine.Core.Devices.Fluid.fluid_turbine import FluidTurbine
+from GridCalEngine.Devices.Fluid.fluid_turbine import FluidTurbine
 from GridCal.Gui.BusBranchEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Circle
 from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCal.Gui.messages import yes_no_question

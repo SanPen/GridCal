@@ -19,7 +19,7 @@ from typing import TYPE_CHECKING
 from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtWidgets import QMenu
 from GridCal.Gui.BusBranchEditorWidget.Substation.bus_graphics import TerminalItem
-from GridCalEngine.Core.Devices.Branches.vsc import VSC
+from GridCalEngine.Devices.Branches.vsc import VSC
 from GridCal.Gui.BusBranchEditorWidget.Branches.line_graphics_template import LineGraphicTemplateItem
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking

@@ -25,7 +25,7 @@ from warnings import warn
 from typing import List, Dict, Any, Union, Callable
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.IO.gridcal.generic_io_functions import parse_config_df, CustomJSONizer
-import GridCalEngine.Core.Devices as dev
+import GridCalEngine.Devices as dev
 
 
 def save_gridcal_data_to_zip(dfs: Dict[str, pd.DataFrame],

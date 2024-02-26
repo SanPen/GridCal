@@ -17,8 +17,8 @@
 import numpy as np
 from typing import Dict, List, Tuple
 import GridCalEngine.IO.cim.cgmes.cgmes_enums as cgmes_enums
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-import GridCalEngine.Core.Devices as gcdev
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
+import GridCalEngine.Devices as gcdev
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
 from GridCalEngine.IO.cim.cgmes.cgmes_export import CgmesExporter
 from GridCalEngine.IO.cim.cgmes.cgmes_utils import (get_nominal_voltage,
@@ -491,13 +491,16 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                     cn_f = cns[0]
                     cn_t = cns[1]
 
-                    v1 = windings[0].BaseVoltage.nominalVoltage
-                    v2 = windings[1].BaseVoltage.nominalVoltage
-                    HV = max(v1, v2)
-                    LV = min(v1, v2)
+                    # v1 = windings[0].BaseVoltage.nominalVoltage
+                    # v2 = windings[1].BaseVoltage.nominalVoltage
+                    HV = windings[0].ratedU
+                    LV = windings[1].ratedU
+                    # HV = max(v1, v2)
+                    # LV = min(v1, v2)
                     # get per unit vlaues
 
                     r, x, g, b, r0, x0, g0, b0 = get_pu_values_power_transformer(cgmes_elm, Sbase)
+                    rated_s = windings[0].ratedS
 
                     gcdev_elm = gcdev.Transformer2W(idtag=cgmes_elm.uuid,
                                                     code=cgmes_elm.description,
@@ -507,6 +510,7 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                                                     # cn_to=cn_t,
                                                     bus_from=calc_node_f,
                                                     bus_to=calc_node_t,
+                                                    nominal_power=rated_s,
                                                     HV=HV,
                                                     LV=LV,
                                                     r=r,
@@ -519,7 +523,8 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                                                     b0=b0,
                                                     tap_module=1.0,
                                                     tap_phase=0.0,
-                                                    rate=get_rate(cgmes_elm))
+                                                    # rate=get_rate(cgmes_elm))
+                                                    rate=rated_s)
 
                     gcdev_model.add_transformer2w(gcdev_elm)
                 else:
@@ -545,11 +550,14 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                     cn_2 = cns[1]
                     cn_3 = cns[2]
 
-                    v1 = windings[0].BaseVoltage.nominalVoltage
-                    v2 = windings[1].BaseVoltage.nominalVoltage
-                    v3 = windings[2].BaseVoltage.nominalVoltage
-                    HV = max(v1, v2, v3)
-                    LV = min(v1, v2, v3)
+                    # v1 = windings[0].BaseVoltage.nominalVoltage
+                    # v2 = windings[1].BaseVoltage.nominalVoltage
+                    # v3 = windings[2].BaseVoltage.nominalVoltage
+                    v1 = windings[0].ratedU
+                    v2 = windings[1].ratedU
+                    v3 = windings[2].ratedU
+                    # HV = max(v1, v2, v3)
+                    # LV = min(v1, v2, v3)
                     # get per unit values
 
                     r12, r23, r31, x12, x23, x31 = get_pu_values_power_transformer3w(cgmes_elm, Sbase)
@@ -717,15 +725,6 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit, logger: DataLogger) -> MultiCirc
 
     get_gcdev_shunts(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger, Sbase)
     print('debug')
-    # for class_name in cgmes_model.classes:
-    #     objects = cgmes_model.get_objects_list(elm_type=class_name)
-    #     for obj in objects:
-    #         for attr_name, attr_value in obj.__dict__.items():
-    #             print(f"{attr_name}: {attr_value}")
-    #             if hasattr(attr_value, "rdfid"):
-    #                 print("It's an assoc: " + attr_value.rdfid)
-    #             else:
-    #                 print(f"It's an attribute:  {attr_value}")
 
     # Export test
     # cgmes_exporter = CgmesExporter(cgmes_model)

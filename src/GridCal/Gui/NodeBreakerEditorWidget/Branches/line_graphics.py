@@ -24,7 +24,7 @@ from GridCal.Gui.NodeBreakerEditorWidget.Substation.bus_graphics import Terminal
 from GridCal.Gui.NodeBreakerEditorWidget.Branches.line_editor import LineEditor
 from GridCal.Gui.messages import yes_no_question, warning_msg
 from GridCal.Gui.NodeBreakerEditorWidget.Branches.line_graphics_template import LineGraphicTemplateItem
-from GridCalEngine.Core.Devices.Branches.line import Line, SequenceLineType
+from GridCalEngine.Devices.Branches.line import Line, SequenceLineType
 from GridCalEngine.enumerations import DeviceType
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking

@@ -33,24 +33,24 @@ from PySide6.QtWidgets import (QApplication, QGraphicsView, QListView, QTableVie
 from PySide6.QtSvg import QSvgGenerator
 
 from GridCal.Gui.NodeBreakerEditorWidget.Connector import Connector, Plug, ConnectionManager
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.Core.Devices.Substation import Bus
-from GridCalEngine.Core.Devices.Parents.editable_device import EditableDevice
-from GridCalEngine.Core.Devices.Branches.line import Line
-from GridCalEngine.Core.Devices.Branches.dc_line import DcLine
-from GridCalEngine.Core.Devices.Branches.transformer import Transformer2W
-from GridCalEngine.Core.Devices.Branches.vsc import VSC
-from GridCalEngine.Core.Devices.Branches.upfc import UPFC
-from GridCalEngine.Core.Devices.Branches.hvdc_line import HvdcLine
-from GridCalEngine.Core.Devices.Branches.transformer3w import Transformer3W
-from GridCalEngine.Core.Devices.Fluid import FluidNode, FluidPath
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Devices.Substation import Bus
+from GridCalEngine.Devices.Parents.editable_device import EditableDevice
+from GridCalEngine.Devices.Branches.line import Line
+from GridCalEngine.Devices.Branches.dc_line import DcLine
+from GridCalEngine.Devices.Branches.transformer import Transformer2W
+from GridCalEngine.Devices.Branches.vsc import VSC
+from GridCalEngine.Devices.Branches.upfc import UPFC
+from GridCalEngine.Devices.Branches.hvdc_line import HvdcLine
+from GridCalEngine.Devices.Branches.transformer3w import Transformer3W
+from GridCalEngine.Devices.Fluid import FluidNode, FluidPath
 from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.driver_template import DriverTemplate
-from GridCalEngine.Core.Devices.Diagrams.node_breaker_diagram import NodeBreakerDiagram
-from GridCalEngine.Core.Devices.Diagrams.graphic_location import GraphicLocation
+from GridCalEngine.Devices.Diagrams.node_breaker_diagram import NodeBreakerDiagram
+from GridCalEngine.Devices.Diagrams.graphic_location import GraphicLocation
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec
-from GridCalEngine.Core.Devices.types import ALL_DEV_TYPES
+from GridCalEngine.Devices.types import ALL_DEV_TYPES
 
 from GridCal.Gui.NodeBreakerEditorWidget.terminal_item import TerminalItem
 from GridCal.Gui.NodeBreakerEditorWidget.Substation.bus_graphics import BusGraphicItem

@@ -23,13 +23,13 @@ from warnings import warn
 from enum import EnumMeta
 from collections import defaultdict
 
-from GridCalEngine.Core.Devices import Bus, ContingencyGroup
-from GridCalEngine.Core.Devices.Parents.editable_device import GCProp, EditableDevice
+from GridCalEngine.Devices import Bus, ContingencyGroup
+from GridCalEngine.Devices.Parents.editable_device import GCProp, EditableDevice
 from GridCalEngine.enumerations import DeviceType, ResultTypes
 from GridCalEngine.basic_structures import IntVec
 from GridCalEngine.data_logger import DataLogger
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit, IdentifiedObject
-from GridCalEngine.Core.Devices.types import ALL_DEV_TYPES
+from GridCalEngine.Devices.types import ALL_DEV_TYPES
 import GridCal
 
 
@@ -2041,13 +2041,14 @@ class ProfilesModel(QtCore.QAbstractTableModel):
         :return:
         """
         if role == QtCore.Qt.ItemDataRole.DisplayRole:
-            if orientation == QtCore.Qt.Orientation.Horizontal:
-                return str(self.elements[section].name)
-            elif orientation == QtCore.Qt.Orientation.Vertical:
-                if self.time_array is None:
-                    return str(section)
-                else:
-                    return pd.to_datetime(self.time_array[section]).strftime('%d-%m-%Y %H:%M')
+            if len(self.elements):
+                if orientation == QtCore.Qt.Orientation.Horizontal:
+                    return str(self.elements[section].name)
+                elif orientation == QtCore.Qt.Orientation.Vertical:
+                    if self.time_array is None:
+                        return str(section)
+                    else:
+                        return pd.to_datetime(self.time_array[section]).strftime('%d-%m-%Y %H:%M:%S')
 
         return None
 

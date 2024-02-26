@@ -21,7 +21,7 @@ from matplotlib import pyplot as plt
 from GridCalEngine.enumerations import EngineType
 import GridCal.Gui.GuiFunctions as gf
 from GridCal.Gui.Main.SubClasses.base_gui import BaseMainGui
-from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
+from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 
 
 class CompiledArraysMain(BaseMainGui):
@@ -128,11 +128,11 @@ class CompiledArraysMain(BaseMainGui):
                 self.calculation_inputs_to_display = calculation_inputs
 
             elif engine == EngineType.Bentayga:
-                import GridCalEngine.Core.Compilers.circuit_to_bentayga as ben
+                import GridCalEngine.Compilers.circuit_to_bentayga as ben
                 self.calculation_inputs_to_display = ben.get_snapshots_from_bentayga(self.circuit)
 
             elif engine == EngineType.NewtonPA:
-                import GridCalEngine.Core.Compilers.circuit_to_newton_pa as ne
+                import GridCalEngine.Compilers.circuit_to_newton_pa as ne
                 self.calculation_inputs_to_display = ne.get_snapshots_from_newtonpa(self.circuit)
 
             else:

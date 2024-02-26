@@ -18,10 +18,10 @@
 from typing import List, Union
 import numpy as np
 from scipy.sparse import lil_matrix
-import GridCalEngine.Core.Devices as dev
-from GridCalEngine.Core.Devices.types import BRANCH_TYPES
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.Core.Topology.topology import find_islands, get_adjacency_matrix
+import GridCalEngine.Devices as dev
+from GridCalEngine.Devices.types import BRANCH_TYPES
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Topology.topology import find_islands, get_adjacency_matrix
 from GridCalEngine.basic_structures import IntVec, Logger
 from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Simulations.driver_types import SimulationTypes

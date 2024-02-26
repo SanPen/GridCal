@@ -19,8 +19,8 @@ from warnings import warn
 import numpy as np
 import pandas as pd
 from GridCalEngine.basic_structures import Logger
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-import GridCalEngine.Core.Devices as dev
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
+import GridCalEngine.Devices as dev
 from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.IO.gridcal.pack_unpack import gather_model_as_data_frames, get_objects_dictionary
 
