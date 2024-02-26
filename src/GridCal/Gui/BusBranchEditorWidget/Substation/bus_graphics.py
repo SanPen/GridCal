@@ -21,7 +21,7 @@ from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, QPoint, QRectF, QRect
 from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor
 from PySide6.QtWidgets import QMenu, QGraphicsSceneMouseEvent
-from GridCalEngine.Core.Devices.Substation import Bus
+from GridCalEngine.Devices.Substation import Bus
 from GridCal.Gui.BusBranchEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, FONT_SCALE, EMERGENCY
 from GridCalEngine.Simulations.Topology.topology_reduction_driver import reduce_buses
 from GridCal.Gui.BusBranchEditorWidget.terminal_item import TerminalItem, HandleItem
@@ -33,7 +33,7 @@ from GridCal.Gui.BusBranchEditorWidget.Injections.shunt_graphics import ShuntGra
 from GridCal.Gui.BusBranchEditorWidget.Injections.external_grid_graphics import ExternalGridGraphicItem
 from GridCal.Gui.messages import yes_no_question
 from GridCalEngine.enumerations import DeviceType, FaultType
-from GridCalEngine.Core.Devices.Parents.editable_device import EditableDevice
+from GridCalEngine.Devices.Parents.editable_device import EditableDevice
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget

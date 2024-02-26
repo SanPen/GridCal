@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import numpy as np
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Simulations.NTC.ntc_opf import run_linear_ntc_opf_ts
 from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.driver_template import DriverTemplate

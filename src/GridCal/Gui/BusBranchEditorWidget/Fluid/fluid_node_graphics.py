@@ -23,15 +23,15 @@ from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QPainterPath, Q
 from PySide6.QtWidgets import QMenu, QGraphicsRectItem, QGraphicsSceneMouseEvent, QGraphicsTextItem
 
 from GridCal.Gui.BusBranchEditorWidget.generic_graphics import ACTIVE, FONT_SCALE
-from GridCalEngine.Core.Devices.Fluid import FluidNode, FluidTurbine, FluidPump, FluidP2x
-from GridCalEngine.Core.Devices.Substation.bus import Bus
+from GridCalEngine.Devices.Fluid import FluidNode, FluidTurbine, FluidPump, FluidP2x
+from GridCalEngine.Devices.Substation.bus import Bus
 from GridCal.Gui.BusBranchEditorWidget.terminal_item import TerminalItem, HandleItem
 from GridCal.Gui.BusBranchEditorWidget.Fluid.fluid_turbine_graphics import FluidTurbineGraphicItem
 from GridCal.Gui.BusBranchEditorWidget.Fluid.fluid_pump_graphics import FluidPumpGraphicItem
 from GridCal.Gui.BusBranchEditorWidget.Fluid.fluid_p2x_graphics import FluidP2xGraphicItem
 from GridCal.Gui.messages import yes_no_question
 from GridCalEngine.enumerations import DeviceType, FaultType
-from GridCalEngine.Core.Devices.Parents.editable_device import EditableDevice
+from GridCalEngine.Devices.Parents.editable_device import EditableDevice
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget

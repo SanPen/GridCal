@@ -17,8 +17,8 @@
 import numpy as np
 from typing import Dict, List, Tuple
 import GridCalEngine.IO.cim.cgmes.cgmes_enums as cgmes_enums
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-import GridCalEngine.Core.Devices as gcdev
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
+import GridCalEngine.Devices as gcdev
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
 from GridCalEngine.IO.cim.cgmes.cgmes_export import CgmesExporter
 from GridCalEngine.IO.cim.cgmes.cgmes_utils import (get_nominal_voltage,

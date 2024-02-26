@@ -32,15 +32,15 @@ from matplotlib import pyplot as plt
 from PySide6 import QtGui, QtWidgets, QtCore
 
 # Engine imports
-import GridCalEngine.Core as core
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
 import GridCalEngine.Simulations as sim
 from GridCalEngine.enumerations import EngineType
-from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit, compile_numerical_circuit_at
+from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit, compile_numerical_circuit_at
 import GridCal.Gui.GuiFunctions as gf
 import GridCal.Gui.Session.synchronization_driver as syncdrv
-from GridCalEngine.Core.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE
-from GridCalEngine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE
-from GridCalEngine.Core.Compilers.circuit_to_pgm import PGM_AVAILABLE
+from GridCalEngine.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE
+from GridCalEngine.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE
+from GridCalEngine.Compilers.circuit_to_pgm import PGM_AVAILABLE
 from GridCal.Gui.AboutDialogue.about_dialogue import AboutDialogueGuiGUI
 from GridCal.Gui.Analysis.AnalysisDialogue import GridAnalysisGUI
 from GridCal.Gui.ContingencyPlanner.contingency_planner_dialogue import ContingencyPlannerGUI
@@ -132,7 +132,7 @@ class BaseMainGui(QMainWindow):
         self.ui.setupUi(self)
 
         # Declare circuit
-        self.circuit: core.MultiCircuit = core.MultiCircuit()
+        self.circuit: MultiCircuit = MultiCircuit()
 
         self.lock_ui = False
         self.ui.progress_frame.setVisible(self.lock_ui)

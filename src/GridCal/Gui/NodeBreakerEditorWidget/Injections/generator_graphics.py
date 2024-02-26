@@ -21,8 +21,8 @@ from PySide6.QtCore import Qt, QAbstractTableModel, QModelIndex, QPointF
 from PySide6.QtGui import QPen, QIcon, QPixmap
 from PySide6.QtWidgets import (QMenu, QGraphicsTextItem, QDialog, QTableView, QVBoxLayout, QHBoxLayout,
                                QPushButton, QSplitter, QFrame, QSpacerItem, QSizePolicy)
-from GridCalEngine.Core.Devices.Injections.generator import Generator
-from GridCalEngine.Core.Devices.Injections.generator_q_curve import GeneratorQCurve
+from GridCalEngine.Devices.Injections.generator import Generator
+from GridCalEngine.Devices.Injections.generator_q_curve import GeneratorQCurve
 from GridCalEngine.basic_structures import Mat, Vec
 from GridCal.Gui.NodeBreakerEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Circle
 from GridCal.Gui.NodeBreakerEditorWidget.matplotlibwidget import MatplotlibWidget

@@ -23,8 +23,8 @@ from GridCal.Gui.NodeBreakerEditorWidget.generic_graphics import ACTIVE, DEACTIV
 from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg
 from GridCalEngine.enumerations import DeviceType
-from GridCalEngine.Core.Devices.Parents.injection_parent import InjectionParent
-from GridCalEngine.Core.Devices.Fluid.fluid_injection_template import FluidInjectionTemplate
+from GridCalEngine.Devices.Parents.injection_parent import InjectionParent
+from GridCalEngine.Devices.Fluid.fluid_injection_template import FluidInjectionTemplate
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.NodeBreakerEditorWidget.node_breaker_editor_widget import NodeBreakerEditorWidget

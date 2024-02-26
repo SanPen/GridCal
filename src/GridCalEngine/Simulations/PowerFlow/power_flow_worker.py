@@ -24,11 +24,11 @@ from GridCalEngine.basic_structures import Logger, ConvergenceReport
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
-from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
-from GridCalEngine.Core.Devices.Substation.bus import Bus
-from GridCalEngine.Core.Devices.Aggregation.area import Area
+from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
+from GridCalEngine.Devices.Substation.bus import Bus
+from GridCalEngine.Devices.Aggregation.area import Area
 from GridCalEngine.basic_structures import CxVec, Vec, IntVec
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking

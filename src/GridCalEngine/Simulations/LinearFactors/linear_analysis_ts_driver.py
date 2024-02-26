@@ -18,11 +18,11 @@
 import time
 from typing import Dict, Union
 from GridCalEngine.basic_structures import IntVec
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
 from GridCalEngine.Simulations.LinearFactors.linear_analysis_options import LinearAnalysisOptions
 # from GridCalEngine.Simulations.LinearFactors.linear_analysis_driver import LinearAnalysisOptions
-from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
+from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.driver_template import TimeSeriesDriverTemplate
 from GridCalEngine.Simulations.LinearFactors.linear_analysis_ts_results import LinearAnalysisTimeSeriesResults

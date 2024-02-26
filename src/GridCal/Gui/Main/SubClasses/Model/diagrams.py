@@ -23,7 +23,7 @@ from PySide6 import QtGui, QtWidgets
 from matplotlib import pyplot as plt
 from pandas.plotting import register_matplotlib_converters
 
-import GridCalEngine.Core.Devices as dev
+import GridCalEngine.Devices as dev
 import GridCalEngine.Simulations as sim
 import GridCal.Gui.GuiFunctions as gf
 import GridCal.Gui.Visualization.palettes as palettes
@@ -40,7 +40,7 @@ from GridCal.Gui.Main.SubClasses.Model.compiled_arrays import CompiledArraysMain
 from GridCal.Gui.Main.object_select_window import ObjectSelectWindow
 from GridCal.Gui.MapWidget.TileProviders.blue_marble import BlueMarbleTiles
 from GridCal.Gui.MapWidget.TileProviders.cartodb import CartoDbTiles
-from GridCalEngine.Core.Devices.types import ALL_DEV_TYPES
+from GridCalEngine.Devices.types import ALL_DEV_TYPES
 
 
 ALL_EDITORS = Union[BusBranchEditorWidget, GridMapWidget, BusViewerWidget, NodeBreakerEditorWidget]

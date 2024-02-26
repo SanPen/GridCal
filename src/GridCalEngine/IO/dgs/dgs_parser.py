@@ -18,8 +18,8 @@ GridCal
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """
 
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-import GridCalEngine.Core.Devices as dev
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
+import GridCalEngine.Devices as dev
 import math
 import numpy as np
 from numpy import array

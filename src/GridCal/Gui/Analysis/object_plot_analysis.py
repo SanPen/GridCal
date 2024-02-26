@@ -23,7 +23,7 @@ import math
 from PySide6 import QtGui
 
 from GridCalEngine.basic_structures import LogSeverity
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.enumerations import DeviceType
 

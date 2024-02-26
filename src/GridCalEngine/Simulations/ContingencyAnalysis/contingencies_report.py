@@ -19,8 +19,8 @@ import numba as nb
 from scipy.sparse import csc_matrix
 from typing import List, Union, Any
 from GridCalEngine.basic_structures import IntVec, StrMat, StrVec, Vec, Mat
-from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit
-from GridCalEngine.Core.Devices import ContingencyGroup
+from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
+from GridCalEngine.Devices import ContingencyGroup
 from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearMultiContingency
 from GridCalEngine.Simulations.ContingencyAnalysis.Methods.srap import BusesForSrap
 from GridCalEngine.Utils.Sparse.csc_numba import get_sparse_array_numba

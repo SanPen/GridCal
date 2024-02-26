@@ -7,12 +7,12 @@ The added profile is just to demonstrate how to create load profiles properly
 Author: Santiago Peñate Vera (September 2018)
 """
 from GridCalEngine.api import *
-from GridCalEngine.Core.Devices import Bus
-from GridCalEngine.Core.Devices import Generator
-from GridCalEngine.Core.Devices import Load
+from GridCalEngine.Devices import Bus
+from GridCalEngine.Devices import Generator
+from GridCalEngine.Devices import Load
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
 from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Simulations.PowerFlow.power_flow_ts_driver import PowerFlowTimeSeriesDriver
 
 

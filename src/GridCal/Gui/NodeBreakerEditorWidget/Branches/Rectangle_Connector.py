@@ -23,7 +23,7 @@ from PySide6.QtWidgets import QGraphicsItem, QGraphicsEllipseItem, QGraphicsRect
     QGraphicsTextItem
 
 from GridCal.Gui.NodeBreakerEditorWidget.Connector import ConnectionItem
-from GridCalEngine.Core.Devices.Branches.transformer3w import Transformer3W
+from GridCalEngine.Devices.Branches.transformer3w import Transformer3W
 from GridCal.Gui.NodeBreakerEditorWidget.generic_graphics import ACTIVE, DEACTIVATED
 from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCal.Gui.NodeBreakerEditorWidget.terminal_item import TerminalItem

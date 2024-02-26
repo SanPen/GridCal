@@ -1,8 +1,8 @@
 import os
 from GridCalEngine.api import *
-import GridCalEngine.Core.Devices as dev
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.Core.Topology.topology_substation_reduction import topology_processor, create_topology_process_info
+import GridCalEngine.Devices as dev
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Topology.topology_substation_reduction import topology_processor, create_topology_process_info
 #from GridCalEngine.Simulations.Topology.topology_processor_driver import
 
 

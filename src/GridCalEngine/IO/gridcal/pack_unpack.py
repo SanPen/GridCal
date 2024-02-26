@@ -20,11 +20,11 @@ import pandas as pd
 import numpy as np
 from enum import EnumMeta as EnumType
 from GridCalEngine.basic_structures import Logger
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-import GridCalEngine.Core.Devices as dev
-from GridCalEngine.Core.Devices.Parents.editable_device import GCProp
-from GridCalEngine.Core.Devices.profile import Profile
-from GridCalEngine.Core.Devices.sparse_array import SparseArray
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
+import GridCalEngine.Devices as dev
+from GridCalEngine.Devices.Parents.editable_device import GCProp
+from GridCalEngine.Devices.profile import Profile
+from GridCalEngine.Devices.sparse_array import SparseArray
 from GridCalEngine.enumerations import DiagramType, DeviceType
 
 

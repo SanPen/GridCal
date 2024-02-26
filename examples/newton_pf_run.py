@@ -1,5 +1,5 @@
 from GridCalEngine.api import *
-from GridCalEngine.Core.Compilers.circuit_to_newton_pa import translate_newton_pa_pf_results, newton_pa_pf
+from GridCalEngine.Compilers.circuit_to_newton_pa import translate_newton_pa_pf_results, newton_pa_pf
 
 # fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE14_from_raw.gridcal'
 fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/IEEE39.gridcal'

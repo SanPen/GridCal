@@ -19,10 +19,10 @@ from typing import Any, Dict, Tuple
 import json
 import numpy as np
 
-from GridCalEngine.Core import Zone, Area
+from GridCalEngine.Devices import Zone, Area
 from GridCalEngine.basic_structures import Logger, CompressedJsonStruct
-import GridCalEngine.Core.Devices as dev
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
+import GridCalEngine.Devices as dev
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.IO.raw.raw_parser_legacy import get_psse_transformer_impedances
 
 

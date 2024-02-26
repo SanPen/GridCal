@@ -18,7 +18,7 @@
 import numpy as np
 from sklearn.neighbors import KNeighborsRegressor
 from GridCalEngine.Simulations.Stochastic.latin_hypercube_sampling import lhs
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.basic_structures import CDF, CxVec, CxMat
 
 

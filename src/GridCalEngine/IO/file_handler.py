@@ -46,7 +46,7 @@ from GridCalEngine.IO.gridcal.sqlite_interface import save_data_frames_to_sqlite
 from GridCalEngine.IO.gridcal.h5_interface import save_h5, open_h5
 from GridCalEngine.IO.raw.rawx_parser_writer import parse_rawx, write_rawx
 from GridCalEngine.IO.others.pypsa_parser import parse_netcdf, parse_hdf5
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
 
 
 class FileOpen:
@@ -454,7 +454,7 @@ class FileSave:
         Save the circuit information in sqlite
         :return: logger with information
         """
-        from GridCalEngine.Core.Compilers.circuit_to_newton_pa import to_newton_pa, npa
+        from GridCalEngine.Compilers.circuit_to_newton_pa import to_newton_pa, npa
         logger = Logger()
 
         time_series = self.circuit.time_profile is not None
@@ -475,7 +475,7 @@ class FileSave:
         Save to Power Grid Model format
         :return: logger with information
         """
-        from GridCalEngine.Core.Compilers.circuit_to_pgm import save_pgm
+        from GridCalEngine.Compilers.circuit_to_pgm import save_pgm
         logger = Logger()
 
         save_pgm(filename=self.file_name, circuit=self.circuit, logger=logger, time_series=self.circuit.has_time_series)

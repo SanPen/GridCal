@@ -22,10 +22,10 @@ from typing import Union, List, Tuple
 from scipy.sparse.linalg import spsolve
 
 from GridCalEngine.basic_structures import Logger, Vec, IntVec, CxVec, Mat, ObjVec, CxMat
-from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.Core.Devices.Aggregation.contingency_group import ContingencyGroup
-from GridCalEngine.Core.Devices.Aggregation.contingency import Contingency
+from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Devices.Aggregation.contingency_group import ContingencyGroup
+from GridCalEngine.Devices.Aggregation.contingency import Contingency
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.derivatives import dSf_dV_csc
 from GridCalEngine.Utils.Sparse.csc import dense_to_csc

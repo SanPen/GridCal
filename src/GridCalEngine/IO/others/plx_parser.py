@@ -21,8 +21,8 @@ import numpy as np
 from enum import Enum
 import zipfile
 from xml.etree import cElementTree as ElementTree
-from GridCalEngine.Core.Devices import Bus, Generator, Branch, Load, BranchType
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Devices import Bus, Generator, Branch, Load, BranchType
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
 
 
 class XmlDictConfig(dict):
