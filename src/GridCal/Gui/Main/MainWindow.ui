@@ -414,7 +414,7 @@
                    <enum>QTabWidget::East</enum>
                   </property>
                   <property name="currentIndex">
-                   <number>0</number>
+                   <number>1</number>
                   </property>
                   <property name="documentMode">
                    <bool>true</bool>
@@ -824,7 +824,7 @@ For this to work you need to type the desired highlighting property in the searc
                        <item>
                         <widget class="QPushButton" name="new_profiles_structure_pushButton">
                          <property name="toolTip">
-                          <string>Create profiles</string>
+                          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Create profiles&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This will create all the object's profiles&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                          </property>
                          <property name="text">
                           <string/>
@@ -836,9 +836,23 @@ For this to work you need to type the desired highlighting property in the searc
                         </widget>
                        </item>
                        <item>
+                        <widget class="QPushButton" name="delete_profiles_structure_pushButton">
+                         <property name="toolTip">
+                          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Delete profiles&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This will delete all the profiles and leave the snapshot.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                         </property>
+                         <property name="text">
+                          <string/>
+                         </property>
+                         <property name="icon">
+                          <iconset resource="icons.qrc">
+                           <normaloff>:/Icons/icons/new (delete).svg</normaloff>:/Icons/icons/new (delete).svg</iconset>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
                         <widget class="QPushButton" name="edit_profiles_pushButton">
                          <property name="toolTip">
-                          <string>Import profiles</string>
+                          <string>Import profiles from data in CSV or Excel files</string>
                          </property>
                          <property name="text">
                           <string/>
@@ -855,7 +869,7 @@ For this to work you need to type the desired highlighting property in the searc
                        <item>
                         <widget class="QPushButton" name="edit_profiles_from_models_pushButton">
                          <property name="toolTip">
-                          <string>Import profiles from models. This is, load many individual grids and take the operational data from them</string>
+                          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Import profiles from grid models. &lt;/span&gt;&lt;/p&gt;&lt;p&gt;This is, load many individual grids in any &lt;/p&gt;&lt;p&gt;of the supported GridCal formats and &lt;/p&gt;&lt;p&gt;take the operational data from them,&lt;/p&gt;&lt;p&gt;apllying them to all the profiles.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                          </property>
                          <property name="text">
                           <string/>
@@ -933,20 +947,6 @@ For this to work you need to type the desired highlighting property in the searc
                        <property name="bottomMargin">
                         <number>0</number>
                        </property>
-                       <item>
-                        <widget class="QPushButton" name="delete_profiles_structure_pushButton">
-                         <property name="toolTip">
-                          <string>Delete profiles</string>
-                         </property>
-                         <property name="text">
-                          <string/>
-                         </property>
-                         <property name="icon">
-                          <iconset resource="icons.qrc">
-                           <normaloff>:/Icons/icons/delete.svg</normaloff>:/Icons/icons/delete.svg</iconset>
-                         </property>
-                        </widget>
-                       </item>
                        <item>
                         <widget class="QPushButton" name="copy_profile_pushButton">
                          <property name="toolTip">
@@ -1724,6 +1724,9 @@ For this to work you need to type the desired highlighting property in the searc
                       </item>
                       <item>
                        <widget class="QPushButton" name="search_results_Button">
+                        <property name="toolTip">
+                         <string>Smart search</string>
+                        </property>
                         <property name="text">
                          <string/>
                         </property>
