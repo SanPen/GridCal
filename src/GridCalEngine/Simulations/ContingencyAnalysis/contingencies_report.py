@@ -80,21 +80,24 @@ class ContingencyTableEntry:
     Entry of a contingency report
     """
 
-    __hdr__ = ["time index",
-               "base name",
-               "base uuid",
-               "base flow",
-               "base rating",
-               "base loading",
-               "contingency idx",
-               "contingency name",
-               "contingency uuid",
-               "post_contingency flow",
-               "contingency rating",
-               "post_contingency loading",
-               "Solved with SRAP",
-               "SRAP power",
-               "SRAP buses"]
+    __hdr__ = ["Time",
+               "Area 1",
+               "Area 2",
+               "Monitored",
+               "Contingency",
+               "Base rating (MW)",
+               "Contingency rating (MW)",
+               "SRAP rating (MW)",
+               "Base flow (MW)",
+               "Post-Contingency flow (MW)",
+               "Post-SRAP flow (MW)",
+               "Base loading (pu)",
+               "Post-Contingency loading (pu)",
+               "Post-SRAP loading (pu)",
+               "Overload",
+               "SRAP availability",
+               "SRAP Power (MW)",
+               "Solved with SRAP"]
 
     def __init__(self,
                  # time_index: int,
@@ -129,6 +132,7 @@ class ContingencyTableEntry:
                 post_srap_loading: float,
                 msg_ov: str,
                 msg_srap: str,
+                srap_power: float,
                 solved_by_srap: bool = False):
         """
         ContingencyTableEntry constructor
@@ -184,6 +188,7 @@ class ContingencyTableEntry:
         self.post_srap_loading: float = post_srap_loading
         self.msg_ov : str = msg_ov
         self.msg_srap = str = msg_srap
+        self.srap_power: float = srap_power
         self.solved_by_srap: bool = solved_by_srap
 
     def get_headers(self) -> List[str]:
@@ -230,6 +235,7 @@ class ContingencyTableEntry:
                 self.post_srap_loading,
                 self.msg_ov,
                 self.msg_srap,
+                self.srap_power,
                 self.solved_by_srap]
 
     def to_string_list(self) -> List[str]:
@@ -299,6 +305,7 @@ class ContingencyResultsReport:
             post_srap_loading: float,
             msg_ov = str,
             msg_srap = str,
+            srap_power = float,
             solved_by_srap: bool = False):
 
 
@@ -347,10 +354,11 @@ class ContingencyResultsReport:
                                             post_contingency_flow= post_contingency_flow,
                                             post_srap_flow= post_srap_flow,
                                             base_loading= base_loading,
-                                            post_contingency_loading= post_contingency_loading,
+                                            post_contingency_loading = post_contingency_loading,
                                             post_srap_loading= post_srap_loading,
                                             msg_ov = msg_ov,
                                             msg_srap = msg_srap,
+                                            srap_power=srap_power,
                                             solved_by_srap = solved_by_srap))
 
     def merge(self, other: "ContingencyResultsReport"):
@@ -446,6 +454,13 @@ class ContingencyResultsReport:
         :param detailed_massive_report: Generate massive report
         """
 
+        #Aqui reporte de base
+
+
+
+
+        ##################
+
 
         for m in mon_idx:  # for each monitored branch ...
 
@@ -457,42 +472,46 @@ class ContingencyResultsReport:
             rate_nx_pu = numerical_circuit.contingency_rates[m]/(numerical_circuit.rates[m]+ 1e-9)
             rate_srap_pu = srap_ratings[m]/(numerical_circuit.rates[m]+ 1e-9)
 
-            # affected by contingency?
+            # Affected by contingency?
             affected_by_cont = contingency_flows[m] != base_flow[m]
 
-            #duda: no quiero que se estudie ni se reporte si no está afectada por la contingencia. asi hago que no se estudie, pero hago que no se estudie?
-            if affected_by_cont:
+            # Only study if the flow is affected enough by contingency, if it produces an overload, and if the variation affects negatively to the flow
+            if affected_by_cont and c_load > 1 and c_flow > b_flow:
 
-                #conditions to set behaviour
+                #Conditions to set behaviour
                 if 1 < c_load <= rate_nx_pu:
                     ov_status = 1
                     msg_ov = 'Overload acceptable'
-                    cond_srap = False # Srap no necesario
+                    cond_srap = False
                     msg_srap = 'SRAP not needed'
-                    # fc, fb, fcsrap=0
+                    post_srap_flow = c_flow
+                    solved_by_srap = False
+                    max_srap_power = 0
 
-                elif c_load <= rate_srap_pu:
+                elif rate_nx_pu < c_load <= rate_srap_pu:
                     ov_status = 2
-                    msg_ov = 'Overload not acceptable' # Si despues se soluciona se sobrescribe
+                    msg_ov = 'Overload not acceptable' # Overwritten if solved
                     cond_srap = True # Srap aplicable
                     msg_srap = 'SRAP applicable'
-                    # fc, fb, fcsrap
 
-                elif c_load <= rate_srap_pu + srap_deadband/100:
+                elif rate_srap_pu < c_load <= rate_srap_pu + srap_deadband/100:
                     ov_status = 3
-                    msg_ov = 'Overload not acceptable' # SC no aceptable
-                    cond_srap = True # Srap no aplicable
+                    msg_ov = 'Overload not acceptable'
+                    cond_srap = True
                     msg_srap = 'SRAP not applicable'
-                    # fc, fb, fcsrap
 
-                else:
+                elif c_load > rate_srap_pu + srap_deadband/100:
                     ov_status = 4
-                    msg_ov = 'Overload not acceptable' # SC no aceptable
-                    cond_srap = False  # Srap no aplicable
+                    msg_ov = 'Overload not acceptable'
+                    cond_srap = False
                     msg_srap = 'SRAP not applicable'
-                    # fc, fb, fcsrap=0
+                    post_srap_flow = c_flow
+                    solved_by_srap = False
+                    max_srap_power = 0
+
 
                 if using_srap and cond_srap:
+
                     # compute the sensitivities for the monitored line with all buses
                     # PTDFc = MLODF[m, βδ] x PTDF[βδ, :] + PTDF[m, :]
                     # PTDFc = multi_contingency.mlodf_factors[m, :] @ PTDF[multi_contingency.branch_indices, :] + PTDF[m, :]
@@ -516,79 +535,82 @@ class ContingencyResultsReport:
                         top_n=top_n,
                         srap_used_power=srap_used_power
                     )
+
+                    post_srap_flow = abs(c_flow) - abs(max_srap_power)
+                    if  post_srap_flow < 0:
+                        post_srap_flow = 0
+
                     if(solved_by_srap and ov_status == 2):
                         msg_ov = 'Overload acceptable'
 
+                if detailed_massive_report:
+                    # self.add(time_index=t if t is not None else 0,
+                    #          base_name=numerical_circuit.branch_data.names[m],
+                    #          base_uuid=calc_branches[m].idtag,
+                    #          base_flow=abs(b_flow),
+                    #          base_rating=numerical_circuit.branch_data.rates[m],
+                    #          base_loading=abs(base_loading[m] * 100.0),
+                    #          contingency_idx=contingency_idx,
+                    #          contingency_name=contingency_group.name,
+                    #          contingency_uuid=contingency_group.idtag,
+                    #          post_contingency_flow=abs(c_flow),
+                    #          contingency_rating=numerical_circuit.branch_data.contingency_rates[m],
+                    #          post_contingency_loading=abs(contingency_loadings[m]) * 100.0,
+                    #          solved_by_srap=solved_by_srap,
+                    #          srap_power=max_srap_power,
+                    #          srap_bus_indices=None)
 
-                    if detailed_massive_report:
-                        # self.add(time_index=t if t is not None else 0,
-                        #          base_name=numerical_circuit.branch_data.names[m],
-                        #          base_uuid=calc_branches[m].idtag,
-                        #          base_flow=abs(b_flow),
-                        #          base_rating=numerical_circuit.branch_data.rates[m],
-                        #          base_loading=abs(base_loading[m] * 100.0),
-                        #          contingency_idx=contingency_idx,
-                        #          contingency_name=contingency_group.name,
-                        #          contingency_uuid=contingency_group.idtag,
-                        #          post_contingency_flow=abs(c_flow),
-                        #          contingency_rating=numerical_circuit.branch_data.contingency_rates[m],
-                        #          post_contingency_loading=abs(contingency_loadings[m]) * 100.0,
-                        #          solved_by_srap=solved_by_srap,
-                        #          srap_power=max_srap_power,
-                        #          srap_bus_indices=None)
+                    self.add(time_index=t if t is not None else 0,  # --------->Convertir a fecha
+                             base_uuid=calc_branches[m].idtag,  # --------->Cambiar a CCAA1
+                             contingency_uuid=contingency_group.idtag,  # --------->Cambiar a CCAA2
+                             base_name=numerical_circuit.branch_data.names[m],
+                             contingency_name=contingency_group.name,
+                             base_rating=numerical_circuit.branch_data.rates[m],
+                             contingency_rating=numerical_circuit.branch_data.contingency_rates[m],
+                             srap_rating = srap_ratings[m],
+                             base_flow=abs(b_flow),
+                             post_contingency_flow=abs(c_flow),
+                             post_srap_flow = post_srap_flow,
+                             base_loading=abs(base_loading[m] ),
+                             post_contingency_loading=abs(contingency_loadings[m]) ,
+                             post_srap_loading = post_srap_flow /(numerical_circuit.rates[m]+ 1e-9),
+                             msg_ov = msg_ov,
+                             msg_srap = msg_srap,
+                             srap_power=abs(max_srap_power),
+                             solved_by_srap=solved_by_srap)
 
-                        self.add(time_index=t if t is not None else 0,  # --------->Convertir a fecha
-                                 base_uuid=calc_branches[m].idtag,  # --------->Cambiar a CCAA1
-                                 contingency_uuid=contingency_group.idtag,  # --------->Cambiar a CCAA2
-                                 base_name=numerical_circuit.branch_data.names[m],
-                                 contingency_name=contingency_group.name,
-                                 base_rating=numerical_circuit.branch_data.rates[m],
-                                 contingency_rating=numerical_circuit.branch_data.contingency_rates[m],
-                                 srap_rating = srap_ratings[m],
-                                 base_flow=abs(b_flow),
-                                 post_contingency_flow=abs(c_flow),
-                                 post_srap_flow = abs(c_flow) - abs(max_srap_power),
-                                 base_loading=abs(base_loading[m] * 100.0),
-                                 post_contingency_loading=abs(contingency_loadings[m]) * 100.0,
-                                 post_srap_loading = (abs(c_flow) - abs(max_srap_power))*100.0 /(numerical_circuit.rates[m]+ 1e-9),
-                                 msg_ov = msg_ov,
-                                 msg_srap = msg_srap,
-                                 solved_by_srap=solved_by_srap)
-
-                else:
-
-                    if c_flow > numerical_circuit.contingency_rates[m]:
-                        # if the contingency flow is greater than the rate ...
-
-                        if detailed_massive_report:
-                            # self.add(time_index=t if t is not None else 0,
-                            #          base_name=numerical_circuit.branch_data.names[m],
-                            #          base_uuid=calc_branches[m].idtag,
-                            #          base_flow=b_flow,
-                            #          base_rating=numerical_circuit.branch_data.rates[m],
-                            #          base_loading=abs(base_loading[m] * 100.0),
-                            #          contingency_idx=contingency_idx,
-                            #          contingency_name=contingency_group.name,
-                            #          contingency_uuid=contingency_group.idtag,
-                            #          post_contingency_flow=c_flow,
-                            #          contingency_rating=numerical_circuit.branch_data.contingency_rates[m],
-                            #          post_contingency_loading=abs(contingency_loadings[m]) * 100.0)
-
-                            self.add(time_index=t if t is not None else 0,  # --------->Convertir a fecha
-                                     base_uuid=calc_branches[m].idtag,  # --------->Cambiar a CCAA1
-                                     contingency_uuid=contingency_group.idtag,  # --------->Cambiar a CCAA2
-                                     base_name=numerical_circuit.branch_data.names[m],
-                                     contingency_name=contingency_group.name,
-                                     base_rating=numerical_circuit.branch_data.rates[m],
-                                     contingency_rating=numerical_circuit.branch_data.contingency_rates[m],
-                                     srap_rating=srap_ratings[m],
-                                     base_flow=abs(b_flow),
-                                     post_contingency_flow=abs(c_flow),
-                                     post_srap_flow=abs(c_flow) - 0,
-                                     base_loading=abs(base_loading[m])* 100.0,
-                                     post_contingency_loading=abs(contingency_loadings[m]) * 100.0,
-                                     post_srap_loading=(abs(c_flow) - 0) * 100.0 / (
-                                                 numerical_circuit.rates[m] + 1e-9),
-                                     msg_ov=msg_ov,
-                                     msg_srap=msg_srap,
-                                     solved_by_srap= False)
+                # else:
+                #
+                #     if detailed_massive_report:
+                #         # self.add(time_index=t if t is not None else 0,
+                #         #          base_name=numerical_circuit.branch_data.names[m],
+                #         #          base_uuid=calc_branches[m].idtag,
+                #         #          base_flow=b_flow,
+                #         #          base_rating=numerical_circuit.branch_data.rates[m],
+                #         #          base_loading=abs(base_loading[m] * 100.0),
+                #         #          contingency_idx=contingency_idx,
+                #         #          contingency_name=contingency_group.name,
+                #         #          contingency_uuid=contingency_group.idtag,
+                #         #          post_contingency_flow=c_flow,
+                #         #          contingency_rating=numerical_circuit.branch_data.contingency_rates[m],
+                #         #          post_contingency_loading=abs(contingency_loadings[m]) * 100.0)
+                #
+                #         self.add(time_index=t if t is not None else 0,  # --------->Convertir a fecha
+                #                  base_uuid=calc_branches[m].idtag,  # --------->Cambiar a CCAA1
+                #                  contingency_uuid=contingency_group.idtag,  # --------->Cambiar a CCAA2
+                #                  base_name=numerical_circuit.branch_data.names[m],
+                #                  contingency_name=contingency_group.name,
+                #                  base_rating=numerical_circuit.branch_data.rates[m],
+                #                  contingency_rating=numerical_circuit.branch_data.contingency_rates[m],
+                #                  srap_rating=srap_ratings[m],
+                #                  base_flow=abs(b_flow),
+                #                  post_contingency_flow=abs(c_flow),
+                #                  post_srap_flow=abs(c_flow) - 0,
+                #                  base_loading=abs(base_loading[m]),
+                #                  post_contingency_loading=abs(contingency_loadings[m]) ,
+                #                  post_srap_loading=(abs(c_flow) - 0)  / (
+                #                              numerical_circuit.rates[m] + 1e-9),
+                #                  msg_ov=msg_ov,
+                #                  msg_srap=msg_srap,
+                #                  srap_power=abs(max_srap_power),
+                #                  solved_by_srap= False)
