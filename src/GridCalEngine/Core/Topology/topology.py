@@ -18,9 +18,9 @@
 from typing import List, Dict, Tuple
 import numpy as np
 import numba as nb
+import scipy.sparse as sp
 from scipy.sparse import csc_matrix, csr_matrix, diags
 from GridCalEngine.basic_structures import IntVec, Vec
-from GridCalEngine.enumerations import BusMode
 
 
 @nb.njit(cache=True)
@@ -249,53 +249,6 @@ def find_different_states(states_array: IntVec, force_all=False) -> Dict[int, Li
         return states
 
 
-@nb.njit(cache=True)
-def compile_types(Pbus: Vec, types: IntVec) -> Tuple[IntVec, IntVec, IntVec, IntVec]:
-    """
-    Compile the types.
-    :param Pbus: array of real power Injections per node used to choose the slack as
-                 the node with greater generation if no slack is provided
-    :param types: array of tentative node types (it may be modified internally)
-    :return: ref, pq, pv, pqpv
-    """
-
-    # check that Sbus is a 1D array
-    assert (len(Pbus.shape) == 1)
-
-    pq = np.where(types == BusMode.PQ.value)[0]
-    pv = np.where(types == BusMode.PV.value)[0]
-    ref = np.where(types == BusMode.Slack.value)[0]
-
-    if len(ref) == 0:  # there is no slack!
-
-        if len(pv) == 0:  # there are no pv neither -> blackout grid
-            pass
-        else:  # select the first PV generator as the slack
-
-            mx = max(Pbus[pv])
-            if mx > 0:
-                # find the generator that is injecting the most
-                i = np.where(Pbus == mx)[0][0]
-
-            else:
-                # all the generators are injecting zero, pick the first pv
-                i = pv[0]
-
-            # delete the selected pv bus from the pv list and put it in the slack list
-            pv = np.delete(pv, np.where(pv == i)[0])
-            ref = np.array([i])
-
-        for r in ref:
-            types[r] = BusMode.Slack.value
-    else:
-        pass  # no problem :)
-
-    no_slack = np.concatenate((pq, pv))
-    no_slack.sort()
-
-    return ref, pq, pv, no_slack
-
-
 def get_csr_bus_indices(C: csr_matrix) -> IntVec:
     """
     Get the bus indices given a CSR shunt-element->bus connectivity matrix
@@ -309,3 +262,52 @@ def get_csr_bus_indices(C: csr_matrix) -> IntVec:
             # value = data[k]  # obtener el valor de i, j
             arr[i] = j
     return arr
+
+
+class ConnectivityMatrices:
+    """
+    Connectivity matrices
+    """
+
+    def __init__(self, Cf: sp.csc_matrix, Ct: sp.csc_matrix):
+        self.Cf_ = Cf
+        self.Ct_ = Ct
+
+    @property
+    def Cf(self) -> sp.csc_matrix:
+        """
+        Get the connectivity from matrix
+        :return: sp.csc_matrix
+        """
+        if not isinstance(self.Cf_, sp.csc_matrix):
+            self.Cf_ = self.Cf_.tocsc()
+        return self.Cf_
+
+    @property
+    def Ct(self) -> sp.csc_matrix:
+        """
+        Get the connectivity to matrix
+        :return: sp.csc_matrix
+        """
+        if not isinstance(self.Ct_, sp.csc_matrix):
+            self.Ct_ = self.Ct_.tocsc()
+        return self.Ct_
+
+    @property
+    def A(self) -> sp.csc_matrix:
+        return (self.Cf_ - self.Ct_).tocsc()
+
+
+def compute_connectivity(branch_active, Cf_, Ct_) -> ConnectivityMatrices:
+    """
+    Compute the from and to connectivity matrices applying the branch states
+    :param branch_active: array of branch states
+    :param Cf_: Connectivity branch-bus "from"
+    :param Ct_: Connectivity branch-bus "to"
+    :return: Final Ct and Cf in CSC format
+    """
+    br_states_diag = sp.diags(branch_active)
+    Cf = br_states_diag * Cf_
+    Ct = br_states_diag * Ct_
+
+    return ConnectivityMatrices(Cf=Cf.tocsc(), Ct=Ct.tocsc())

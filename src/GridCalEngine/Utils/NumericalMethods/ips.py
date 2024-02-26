@@ -31,8 +31,7 @@ from GridCalEngine.enumerations import SparseSolver
 
 linear_solver = get_linear_solver(SparseSolver.Pardiso)
 
-
-@nb.njit(cache=True)
+#@nb.njit(cache=True)
 def step_calculation(V: Vec, dV: Vec, tau:float=0.99995):
     """
     This function calculates for each Lambda multiplier or its associated Slack variable
@@ -43,8 +42,10 @@ def step_calculation(V: Vec, dV: Vec, tau:float=0.99995):
     :return:
     """
     k = np.flatnonzero(dV < 0.0)
-    alpha = min([tau * min(V[k] / (-dV[k] + 1e-15)), 1])
-
+    if len(k)>0:
+        alpha = min([tau * min(V[k] / (-dV[k] + 1e-15)), 1])
+    else:
+        alpha = 1
     #
     # alpha = 1.0
     #
@@ -433,14 +434,15 @@ def interior_point_solver(x0: Vec,
             alpha = 1.0
             for j in range(20):
                 dx1 = alpha * dx
-                dlam1 = alpha * lam
-                dmu1 = alpha * mu
+                #dlam1 = alpha * lam
+                #dmu1 = alpha * mu
 
                 x1 = x + dx1
-                lam1 = lam + dlam1
-                mu1 = mu + dmu1
+                #lam1 = lam + dlam1
+                #mu1 = mu + dmu1
 
-                ret1 = func(x1, mu1, lam1, False, False, *arg)
+                #ret1 = func(x1, mu1, lam1, False, False, *arg)
+                ret1 = func(x1, mu, lam, False, False, *arg)
 
                 L1 = ret1.f + lam.T @ ret1.G + mu.T @ (ret1.H + z) - gamma * np.sum(np.log(z))
                 rho = (L1 - L) / (Lx @ dx1 + 0.5 * dx1.T @ Lxx @ dx1)

@@ -2,7 +2,8 @@ import os
 import GridCalEngine.api as gce
 
 # fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', "IEEE39_1W.gridcal")
-fname = '/home/santi/Escritorio/Redes/Spain_France_portugal.gridcal'
+# fname = '/home/santi/Escritorio/Redes/Spain_France_portugal.gridcal'
+fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', "IEEE57.gridcal")
 
 grid_ = gce.open_file(fname)
 

@@ -16,7 +16,6 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 import numpy as np
-import numba as nb
 import pandas as pd
 import scipy.sparse as sp
 from typing import List, Tuple, Dict, Union, TYPE_CHECKING
@@ -26,12 +25,11 @@ from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.basic_structures import Vec, IntVec, CxVec
 from GridCalEngine.enumerations import BranchImpedanceMode
 import GridCalEngine.Core.Topology.topology as tp
+import GridCalEngine.Core.Topology.simulation_indices as si
 
-from GridCalEngine.Core.Topology.topology import compile_types
 from GridCalEngine.Utils.NumericalMethods.sparse_solve import get_sparse_type
 import GridCalEngine.Core.Compilers.circuit_to_data as gc_compiler2
 import GridCalEngine.Core.Topology.admittance_matrices as ycalc
-from GridCalEngine.enumerations import TransformerControlType, ConverterControlType
 import GridCalEngine.Core.DataStructures as ds
 from GridCalEngine.Core.Devices.Substation.bus import Bus
 from GridCalEngine.Core.Devices.Aggregation.area import Area
@@ -57,103 +55,6 @@ ALL_STRUCTS = Union[
     ds.FluidP2XData,
     ds.FluidPathData
 ]
-
-
-@nb.njit(cache=True)
-def compose_generator_voltage_profile(nbus: int,
-                                      gen_bus_indices: np.ndarray,
-                                      gen_vset: np.ndarray,
-                                      gen_status: np.ndarray,
-                                      gen_is_controlled: np.ndarray,
-                                      bat_bus_indices: np.ndarray,
-                                      bat_vset: np.ndarray,
-                                      bat_status: np.ndarray,
-                                      bat_is_controlled: np.ndarray,
-                                      hvdc_bus_f: np.ndarray,
-                                      hvdc_bus_t: np.ndarray,
-                                      hvdc_status: np.ndarray,
-                                      hvdc_vf: np.ndarray,
-                                      hvdc_vt: np.ndarray,
-                                      iBeqv: np.ndarray,
-                                      iVtma: np.ndarray,
-                                      VfBeqbus: np.ndarray,
-                                      Vtmabus: np.ndarray,
-                                      branch_status: np.ndarray,
-                                      br_vf: np.ndarray,
-                                      br_vt: np.ndarray):
-    """
-    Get the array of voltage set points per bus
-    :param nbus: number of buses
-    :param gen_bus_indices: array of bus indices per generator (ngen)
-    :param gen_vset: array of voltage set points (ngen)
-    :param gen_status: array of generator status (ngen)
-    :param gen_is_controlled: array of values indicating if a generator controls the voltage or not (ngen)
-    :param bat_bus_indices:  array of bus indices per battery (nbatt)
-    :param bat_vset: array of voltage set points (nbatt)
-    :param bat_status: array of battery status (nbatt)
-    :param bat_is_controlled: array of values indicating if a battery controls the voltage or not (nbatt)
-    :param hvdc_bus_f: array of hvdc bus from indices (nhvdc)
-    :param hvdc_bus_t: array of hvdc bus to indices (nhvdc)
-    :param hvdc_status: array of hvdc status (nhvdc)
-    :param hvdc_vf: array of hvdc voltage from set points (nhvdc)
-    :param hvdc_vt: array of hvdc voltage to set points (nhvdc)
-    :param iBeqv: indices of the Branches when controlling Vf with Beq
-    :param iVtma: indices of the Branches when controlling Vt with ma
-    :param VfBeqbus: indices of the buses where Vf is controlled by Beq
-    :param Vtmabus: indices of the buses where Vt is controlled by ma
-    :param branch_status: array of brach status (nbr)
-    :param br_vf: array of branch voltage from set points (nbr)
-    :param br_vt: array of branch voltage from set points (nbr)
-    :return: Voltage set points array per bus nbus
-    """
-    V = np.ones(nbus, dtype=nb.complex128)
-    used = np.zeros(nbus, dtype=nb.int8)
-
-    # generators
-    for i, bus_idx in enumerate(gen_bus_indices):
-        if gen_is_controlled[i]:
-            if used[bus_idx] == 0:
-                if gen_status[i]:
-                    V[bus_idx] = complex(gen_vset[i], 0)
-                    used[bus_idx] = 1
-
-    # batteries
-    for i, bus_idx in enumerate(bat_bus_indices):
-        if bat_is_controlled[i]:
-            if used[bus_idx] == 0:
-                if bat_status[i]:
-                    V[bus_idx] = complex(bat_vset[i], 0)
-                    used[bus_idx] = 1
-
-    # HVDC
-    for i in range(hvdc_status.shape[0]):
-        from_idx = hvdc_bus_f[i]
-        to_idx = hvdc_bus_t[i]
-        if hvdc_status[i] != 0:
-            if used[from_idx] == 0:
-                V[from_idx] = complex(hvdc_vf[i], 0)
-                used[from_idx] = 1
-            if used[to_idx] == 0:
-                V[to_idx] = complex(hvdc_vt[i], 0)
-                used[to_idx] = 1
-
-    # branch - from
-    for i in iBeqv:  # Branches controlling Vf
-        from_idx = VfBeqbus[i]
-        if branch_status[i] != 0:
-            if used[from_idx] == 0:
-                V[from_idx] = complex(br_vf[i], 0)
-                used[from_idx] = 1
-
-    # branch - to
-    for i in iVtma:  # Branches controlling Vt
-        from_idx = Vtmabus[i]
-        if branch_status[i] != 0:
-            if used[from_idx] == 0:
-                V[from_idx] = complex(br_vt[i], 0)
-                used[from_idx] = 1
-
-    return V
 
 
 def get_inter_areas_branch(F: np.ndarray,
@@ -294,59 +195,6 @@ class NumericalCircuit:
 
         self.Sbase: float = sbase
 
-        self.any_control: bool = False
-
-        # (old iPfsh) indices of the Branches controlling Pf flow with theta sh
-        self.k_pf_tau: IntVec = np.zeros(0, dtype=int)
-
-        # (old iQfma) indices of the Branches controlling Qf with ma
-        self.k_qf_m: IntVec = np.zeros(0, dtype=int)
-
-        # (old iBeqz) indices of the Branches when forcing the Qf flow to zero (aka "the zero condition")
-        self.k_zero_beq: IntVec = np.zeros(0, dtype=int)
-
-        # (old iBeqv) indices of the Branches when controlling Vf with Beq
-        self.k_vf_beq: IntVec = np.zeros(0, dtype=int)
-
-        # (old iVtma) indices of the Branches when controlling Vt with ma
-        self.k_vt_m: IntVec = np.zeros(0, dtype=int)
-
-        # (old iQtma) indices of the Branches controlling the Qt flow with ma
-        self.k_qt_m: IntVec = np.zeros(0, dtype=int)
-
-        # (old iPfdp) indices of the drop-Vm converters controlling the power flow with theta sh
-        self.k_pf_dp: IntVec = np.zeros(0, dtype=int)
-
-        # indices of the transformers with controlled tap module
-        self.k_m: IntVec = np.zeros(0, dtype=int)
-
-        # indices of the transformers with controlled tap angle
-        self.k_tau: IntVec = np.zeros(0, dtype=int)
-
-        # indices of the transformers with controlled tap angle and module
-        self.k_mtau: IntVec = np.zeros(0, dtype=int)
-
-        # indices of the buses with controlled tap module
-        self.i_m: IntVec = np.zeros(0, dtype=int)
-
-        # indices of the buses with controlled tap angle
-        self.i_tau: IntVec = np.zeros(0, dtype=int)
-
-        # indices of the buses with controlled tap angle and module
-        self.i_mtau: IntVec = np.zeros(0, dtype=int)
-
-        # (old iPfdp_va) indices of the drop-Va converters controlling the power flow with theta sh
-        self.iPfdp_va: IntVec = np.zeros(0, dtype=int)
-
-        # indices of the converters
-        self.i_vsc: IntVec = np.zeros(0, dtype=int)
-
-        # (old VfBeqbus) indices of the buses where Vf is controlled by Beq
-        self.i_vf_beq: IntVec = np.zeros(0, dtype=int)
-
-        # (old Vtmabus) indices of the buses where Vt is controlled by ma
-        self.i_vt_m: IntVec = np.zeros(0, dtype=int)
-
         # --------------------------------------------------------------------------------------------------------------
         # Data structures
         # --------------------------------------------------------------------------------------------------------------
@@ -372,10 +220,6 @@ class NumericalCircuit:
         # Internal variables filled on demand, to be ready to consume once computed
         # --------------------------------------------------------------------------------------------------------------
 
-        self.Cf_: Union[sp.csc_matrix, None] = None
-        self.Ct_: Union[sp.csc_matrix, None] = None
-        self.A_: Union[sp.csc_matrix, None] = None
-
         self.Vbus_: CxVec = None
         self.Sbus_: CxVec = None
         self.Ibus_: CxVec = None
@@ -387,28 +231,23 @@ class NumericalCircuit:
         self.Bmax_bus_: Vec = None
         self.Bmin_bus_: Vec = None
 
-        self.admittances_: Union[ycalc.Admittance, None] = None
+        # class that holds all the simulation indices
+        self.simulation_indices_: Union[None, si.SimulationIndices] = None
+
+        # Connectivity matrices
+        self.conn_matrices_: Union[tp.ConnectivityMatrices, None] = None
+
+        # general admittances
+        self.admittances_: Union[ycalc.AdmittanceMatrices, None] = None
 
         # Admittance for HELM / AC linear
-        self.Yseries_: Union[sp.csc_matrix, None] = None
-        self.Yshunt_: Union[sp.csc_matrix, None] = None
+        self.series_admittances_: Union[ycalc.SeriesAdmittanceMatrices, None] = None
 
         # Admittances for Fast-Decoupled
-        self.B1_: Union[sp.csc_matrix, None] = None
-        self.B2_: Union[sp.csc_matrix, None] = None
+        self.fast_decoupled_admittances_: Union[ycalc.FastDecoupledAdmittanceMatrices, None] = None
 
         # Admittances for Linear
-        self.Bbus_: Union[sp.csc_matrix, None] = None
-        self.Bf_: Union[sp.csc_matrix, None] = None
-        self.Bpqpv_: Union[sp.csc_matrix, None] = None
-        self.Bref_: Union[sp.csc_matrix, None] = None
-
-        self.pq_: IntVec = None
-        self.pv_: IntVec = None
-        self.vd_: IntVec = None
-        self.no_slack_: IntVec = None
-        self.ac_: IntVec = None
-        self.dc_: IntVec = None
+        self.linear_admittances_: Union[ycalc.LinearAdmittanceMatrices, None] = None
 
         # dictionary relating idtags to structures and indices
         # Dict[idtag] -> (structure, index)
@@ -421,10 +260,6 @@ class NumericalCircuit:
         this should be called after all modifications prior to the usage in any
         calculation
         """
-        self.Cf_: Union[sp.csc_matrix, None] = None
-        self.Ct_: Union[sp.csc_matrix, None] = None
-        self.A_: Union[sp.csc_matrix, None] = None
-
         self.Vbus_: CxVec = None
         self.Sbus_: CxVec = None
         self.Ibus_: CxVec = None
@@ -436,28 +271,20 @@ class NumericalCircuit:
         self.Bmax_bus_: Vec = None
         self.Bmin_bus_: Vec = None
 
-        self.admittances_: Union[ycalc.Admittance, None] = None
+        # Connectivity matrices
+        self.conn_matrices_: Union[tp.ConnectivityMatrices, None] = None
+
+        # general admittances
+        self.admittances_: Union[ycalc.AdmittanceMatrices, None] = None
 
         # Admittance for HELM / AC linear
-        self.Yseries_: Union[sp.csc_matrix, None] = None
-        self.Yshunt_: Union[sp.csc_matrix, None] = None
+        self.series_admittances_: Union[ycalc.SeriesAdmittanceMatrices, None] = None
 
         # Admittances for Fast-Decoupled
-        self.B1_: Union[sp.csc_matrix, None] = None
-        self.B2_: Union[sp.csc_matrix, None] = None
+        self.fast_decoupled_admittances_: Union[ycalc.FastDecoupledAdmittanceMatrices, None] = None
 
         # Admittances for Linear
-        self.Bbus_: Union[sp.csc_matrix, None] = None
-        self.Bf_: Union[sp.csc_matrix, None] = None
-        self.Bpqpv_: Union[sp.csc_matrix, None] = None
-        self.Bref_: Union[sp.csc_matrix, None] = None
-
-        self.pq_: IntVec = None
-        self.pv_: IntVec = None
-        self.vd_: IntVec = None
-        self.no_slack_: IntVec = None
-        self.ac_: IntVec = None
-        self.dc_: IntVec = None
+        self.linear_admittances_: Union[ycalc.LinearAdmittanceMatrices, None] = None
 
         # dictionary relating idtags to structures and indices
         # Dict[idtag] -> (structure, index)
@@ -513,7 +340,7 @@ class NumericalCircuit:
         self.bus_data.installed_power += self.battery_data.get_installed_power_per_bus()
 
         if not use_stored_guess:
-            self.bus_data.Vbus = compose_generator_voltage_profile(
+            self.bus_data.Vbus = si.compose_generator_voltage_profile(
                 nbus=self.nbus,
                 gen_bus_indices=self.generator_data.get_bus_indices(),
                 gen_vset=self.generator_data.v,
@@ -528,238 +355,14 @@ class NumericalCircuit:
                 hvdc_status=self.hvdc_data.active,
                 hvdc_vf=self.hvdc_data.Vset_f,
                 hvdc_vt=self.hvdc_data.Vset_t,
-                iBeqv=np.array(self.k_vf_beq, dtype=int),
-                iVtma=np.array(self.k_vt_m, dtype=int),
-                VfBeqbus=np.array(self.i_vf_beq, dtype=int),
-                Vtmabus=np.array(self.i_vt_m, dtype=int),
+                k_vf_beq=self.k_vf_beq,
+                i_vf_beq=self.i_vf_beq,
+                k_vt_m=self.k_vt_m,
+                i_vt_m=self.i_vt_m,
                 branch_status=self.branch_data.active,
                 br_vf=self.branch_data.vf_set,
                 br_vt=self.branch_data.vt_set
             )
-
-        self.determine_control_indices()
-
-    def re_calc_admittance_matrices(self, tap_module: Vec, idx: Union[None, IntVec] = None):
-        """
-        Fast admittance recombination
-        :param tap_module: transformer taps (if idx is provided, must have the same length as idx,
-                           otherwise the length must be the number of Branches)
-        :param idx: Indices of the Branches where the tap belongs,
-                    if None assumes that the tap sizes is equal to the number of Branches
-        :return:
-        """
-        if idx is None:
-            Ybus_, Yf_, Yt_ = self.admittances_.modify_taps(self.branch_data.tap_module, tap_module)
-        else:
-            Ybus_, Yf_, Yt_ = self.admittances_.modify_taps(self.branch_data.tap_module[idx], tap_module)
-
-        self.admittances_.Ybus = Ybus_
-        self.admittances_.Yf = Yf_
-        self.admittances_.Yt = Yt_
-
-    def determine_control_indices(self) -> None:
-        """
-        This function fills in the lists of indices to control different magnitudes
-
-        VSC Control modes:
-
-        in the paper's scheme:
-        from -> DC
-        to   -> AC
-
-        |   Mode    |   const.1 |   const.2 |   type    |
-        -------------------------------------------------
-        |   1       |   theta   |   Vac     |   I       |
-        |   2       |   Pf      |   Qac     |   I       |
-        |   3       |   Pf      |   Vac     |   I       |
-        -------------------------------------------------
-        |   4       |   Vdc     |   Qac     |   II      |
-        |   5       |   Vdc     |   Vac     |   II      |
-        -------------------------------------------------
-        |   6       | Vdc droop |   Qac     |   III     |
-        |   7       | Vdc droop |   Vac     |   III     |
-        -------------------------------------------------
-
-        Indices where each control goes:
-        mismatch  →  |  ∆Pf	Qf	Qf  Qt	∆Qt
-        variable  →  |  Ɵsh	Beq	m	m	Beq
-        Indices   →  |  Ish	Iqz	Ivf	Ivt	Iqt
-        ------------------------------------
-        VSC 1	     |  -	1	-	1	-   |   AC voltage control (voltage “to”)
-        VSC 2	     |  1	1	-	-	1   |   Active and reactive power control
-        VSC 3	     |  1	1	-	1	-   |   Active power and AC voltage control
-        VSC 4	     |  -	-	1	-	1   |   Dc voltage and Reactive power flow control
-        VSC 5	     |  -	-	-	1	1   |   Ac and Dc voltage control
-        ------------------------------------
-        Transformer 0|	-	-	-	-	-   |   Fixed transformer
-        Transformer 1|	1	-	-	-	-   |   Phase shifter → controls power
-        Transformer 2|	-	-	1	-	-   |   Control the voltage at the “from” side
-        Transformer 3|	-	-	-	1	-   |   Control the voltage at the “to” side
-        Transformer 4|	1	-	1	-	-   |   Control the power flow and the voltage at the “from” side
-        Transformer 5|	1	-	-	1	-   |   Control the power flow and the voltage at the “to” side
-        ------------------------------------
-        """
-
-        # indices in the global branch scheme
-        k_pf_tau_lst = list()  # indices of the Branches controlling Pf flow with theta sh
-        k_qf_m_lst = list()  # indices of the Branches controlling Qf with ma
-        k_zero_beq_lst = list()  # indices of the Branches when forcing the Qf flow to zero (aka "the zero condition")
-        k_vf_beq_lst = list()  # indices of the Branches when controlling Vf with Beq
-        k_vt_m_lst = list()  # indices of the Branches when controlling Vt with ma
-        k_qt_m_lst = list()  # indices of the Branches controlling the Qt flow with ma
-        k_pf_dp_lst = list()  # indices of the drop converters controlling the power flow with theta sh
-        k_m_modif_lst = list()  # indices of the transformers with controlled tap module
-        k_tau_modif_lst = list()  # indices of the transformers with controlled tap angle
-        k_mtau_modif_lst = list()  # indices of the transformers with controlled tap angle and module
-        i_m_modif_lst = list()  # indices of the controlled buses with tap module
-        i_tau_modif_lst = list()  # indices of the controlled buses with tap angle
-        i_mtau_modif_lst = list()  # indices of the controlled buses with tap module and angle
-        i_vsc_lst = list()  # indices of the converters
-        iPfdp_va_lst = list()
-
-        self.any_control = False
-
-        for k, tpe in enumerate(self.branch_data.control_mode):
-
-            if tpe == TransformerControlType.fixed:
-                pass
-
-            elif tpe == TransformerControlType.Pf:  # TODO: change name .Pt by .Pf
-                k_pf_tau_lst.append(k)
-                k_tau_modif_lst.append(k)
-                i_tau_modif_lst.append(self.F[k])  # TODO: identify which index is the controlled one
-                self.any_control = True
-
-            elif tpe == TransformerControlType.Qt:
-                k_qt_m_lst.append(k)
-                k_m_modif_lst.append(k)
-                i_m_modif_lst.append(self.T[k])
-                self.any_control = True
-
-            elif tpe == TransformerControlType.PtQt:
-                k_pf_tau_lst.append(k)
-                k_qt_m_lst.append(k)
-                k_m_modif_lst.append(k)
-                k_tau_modif_lst.append(k)
-                k_mtau_modif_lst.append(k)
-                i_tau_modif_lst.append(self.F[k])
-                i_m_modif_lst.append(self.T[k])
-                self.any_control = True
-
-            elif tpe == TransformerControlType.Vt:
-                k_vt_m_lst.append(k)
-                k_m_modif_lst.append(k)
-                i_m_modif_lst.append(self.T[k])
-                self.any_control = True
-
-            elif tpe == TransformerControlType.PtVt:
-                k_pf_tau_lst.append(k)
-                k_vt_m_lst.append(k)
-                k_m_modif_lst.append(k)
-                k_tau_modif_lst.append(k)
-                k_mtau_modif_lst.append(k)
-                i_tau_modif_lst.append(self.F[k])
-                i_m_modif_lst.append(self.T[k])
-                self.any_control = True
-
-            # VSC ------------------------------------------------------------------------------------------------------
-            elif tpe == ConverterControlType.type_0_free:  # 1a:Free
-                k_zero_beq_lst.append(k)
-                i_vsc_lst.append(k)
-                self.any_control = True
-
-            elif tpe == ConverterControlType.type_I_1:  # 1:Vac
-                k_vt_m_lst.append(k)
-                k_zero_beq_lst.append(k)
-                i_vsc_lst.append(k)
-                self.any_control = True
-
-            elif tpe == ConverterControlType.type_I_2:  # 2:Pdc+Qac
-
-                k_pf_tau_lst.append(k)
-                k_qt_m_lst.append(k)
-                k_zero_beq_lst.append(k)
-
-                i_vsc_lst.append(k)
-                self.any_control = True
-
-            elif tpe == ConverterControlType.type_I_3:  # 3:Pdc+Vac
-                k_pf_tau_lst.append(k)
-                k_vt_m_lst.append(k)
-                k_zero_beq_lst.append(k)
-
-                i_vsc_lst.append(k)
-                self.any_control = True
-
-            elif tpe == ConverterControlType.type_II_4:  # 4:Vdc+Qac
-                k_vf_beq_lst.append(k)
-                k_qt_m_lst.append(k)
-
-                i_vsc_lst.append(k)
-                self.any_control = True
-
-            elif tpe == ConverterControlType.type_II_5:  # 5:Vdc+Vac
-                k_vf_beq_lst.append(k)
-                k_vt_m_lst.append(k)
-
-                i_vsc_lst.append(k)
-                self.any_control = True
-
-            elif tpe == ConverterControlType.type_III_6:  # 6:Droop+Qac
-                k_pf_dp_lst.append(k)
-                k_qt_m_lst.append(k)
-
-                i_vsc_lst.append(k)
-                self.any_control = True
-
-            elif tpe == ConverterControlType.type_III_7:  # 4a:Droop-slack
-                k_pf_dp_lst.append(k)
-                k_vt_m_lst.append(k)
-
-                i_vsc_lst.append(k)
-                self.any_control = True
-
-            elif tpe == ConverterControlType.type_IV_I:  # 8:Vdc
-                k_vf_beq_lst.append(k)
-                i_vsc_lst.append(k)
-
-                self.any_control = True
-
-            elif tpe == ConverterControlType.type_IV_II:  # 9:Pdc
-                k_pf_tau_lst.append(k)
-                k_zero_beq_lst.append(k)
-
-                self.any_control = True
-
-            elif tpe == 0:
-                pass  # required for the no-control case
-
-            else:
-                raise Exception('Unknown control type:' + str(tpe))
-
-        # FUBM- Saves the "from" bus identifier for Vf controlled by Beq
-        #  (Converters type II for Vdc control)
-        self.i_vf_beq = self.F[k_vf_beq_lst]
-
-        # FUBM- Saves the "to"   bus identifier for Vt controlled by ma
-        #  (Converters and Transformers)
-        self.i_vt_m = self.T[k_vt_m_lst]
-
-        self.k_pf_tau = np.array(k_pf_tau_lst, dtype=int)
-        self.k_qf_m = np.array(k_qf_m_lst, dtype=int)
-        self.k_zero_beq = np.array(k_zero_beq_lst, dtype=int)
-        self.k_vf_beq = np.array(k_vf_beq_lst, dtype=int)
-        self.k_vt_m = np.array(k_vt_m_lst, dtype=int)
-        self.k_qt_m = np.array(k_qt_m_lst, dtype=int)
-        self.k_pf_dp = np.array(k_pf_dp_lst, dtype=int)
-        self.k_m = np.array(k_m_modif_lst, dtype=int)
-        self.k_tau = np.array(k_tau_modif_lst, dtype=int)
-        self.k_mtau = np.array(k_mtau_modif_lst, dtype=int)
-        self.i_m = np.array(i_m_modif_lst, dtype=int)
-        self.i_tau = np.array(i_tau_modif_lst, dtype=int)
-        self.i_mtau = np.array(i_mtau_modif_lst, dtype=int)
-        self.iPfdp_va = np.array(iPfdp_va_lst, dtype=int)
-        self.i_vsc = np.array(i_vsc_lst, dtype=int)
 
     def copy(self) -> "NumericalCircuit":
         """
@@ -1198,10 +801,10 @@ class NumericalCircuit:
         Array of indices of the AC Branches
         :return: array of indices
         """
-        if self.ac_ is None:
-            self.ac_ = self.branch_data.get_ac_indices()
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
 
-        return self.ac_
+        return self.simulation_indices_.ac
 
     @property
     def dc_indices(self):
@@ -1209,10 +812,10 @@ class NumericalCircuit:
         Array of indices of the DC Branches
         :return: array of indices
         """
-        if self.dc_ is None:
-            self.dc_ = self.branch_data.get_dc_indices()
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
 
-        return self.dc_
+        return self.simulation_indices_.dc
 
     @property
     def Cf(self):
@@ -1221,16 +824,10 @@ class NumericalCircuit:
         :return: CSC matrix
         """
         # compute on demand and store
-        if self.Cf_ is None:
-            self.Cf_, self.Ct_ = ycalc.compute_connectivity(
-                branch_active=self.branch_data.active,
-                Cf_=self.branch_data.C_branch_bus_f,
-                Ct_=self.branch_data.C_branch_bus_t)
+        if self.conn_matrices_ is None:
+            self.conn_matrices_ = self.get_connectivity_matrices()
 
-        if not isinstance(self.Cf_, sp.csc_matrix):
-            self.Cf_ = self.Cf_.tocsc()
-
-        return self.Cf_
+        return self.conn_matrices_.Cf
 
     @property
     def Ct(self):
@@ -1239,16 +836,10 @@ class NumericalCircuit:
         :return: CSC matrix
         """
         # compute on demand and store
-        if self.Ct_ is None:
-            self.Cf_, self.Ct_ = ycalc.compute_connectivity(
-                branch_active=self.branch_data.active,
-                Cf_=self.branch_data.C_branch_bus_f,
-                Ct_=self.branch_data.C_branch_bus_t)
+        if self.conn_matrices_ is None:
+            self.conn_matrices_ = self.get_connectivity_matrices()
 
-        if not isinstance(self.Ct_, sp.csc_matrix):
-            self.Ct_ = self.Ct_.tocsc()
-
-        return self.Ct_
+        return self.conn_matrices_.Ct
 
     @property
     def A(self):
@@ -1256,13 +847,36 @@ class NumericalCircuit:
         Connectivity matrix
         :return: CSC matrix
         """
+        if self.conn_matrices_ is None:
+            self.conn_matrices_ = self.get_connectivity_matrices()
 
-        if self.A_ is None:
-            self.A_ = (self.Cf - self.Ct).tocsc()
+        return self.conn_matrices_.A
 
-        return self.A_
+    def get_simulation_indices(self) -> si.SimulationIndices:
+        """
+        Get the simulation indices
+        :return:
+        """
+        return si.SimulationIndices(bus_types=self.bus_data.bus_types,
+                                    Pbus=self.Sbus.real,
+                                    control_mode=self.branch_data.control_mode,
+                                    F=self.branch_data.F,
+                                    T=self.branch_data.T,
+                                    dc=self.branch_data.dc
+                                    )
 
-    def compute_admittance(self) -> ycalc.Admittance:
+    def get_connectivity_matrices(self) -> tp.ConnectivityMatrices:
+        """
+        Get connectivity matrices
+        :return:
+        """
+        return tp.compute_connectivity(
+            branch_active=self.branch_data.active,
+            Cf_=self.branch_data.C_branch_bus_f,
+            Ct_=self.branch_data.C_branch_bus_t
+        )
+
+    def get_admittance_matrices(self) -> ycalc.AdmittanceMatrices:
         """
         Get Admittance structures
         :return: Admittance object
@@ -1293,6 +907,64 @@ class NumericalCircuit:
             add_windings_phase=False
         )
 
+    def get_series_admittance_matrices(self) -> ycalc.SeriesAdmittanceMatrices:
+        """
+
+        :return:
+        """
+        return ycalc.compute_split_admittances(
+            R=self.branch_data.R,
+            X=self.branch_data.X,
+            G=self.branch_data.G,
+            B=self.branch_data.B,
+            k=self.branch_data.k,
+            tap_module=self.branch_data.tap_module,
+            vtap_f=self.branch_data.virtual_tap_f,
+            vtap_t=self.branch_data.virtual_tap_t,
+            tap_angle=self.branch_data.tap_angle,
+            Beq=self.branch_data.Beq,
+            Cf=self.Cf,
+            Ct=self.Ct,
+            G0sw=self.branch_data.G0sw,
+            If=np.zeros(len(self.branch_data)),
+            a=self.branch_data.a,
+            b=self.branch_data.b,
+            c=self.branch_data.c,
+            Yshunt_bus=self.Yshunt_from_devices,
+        )
+
+    def get_fast_decoupled_amittances(self) -> ycalc.FastDecoupledAdmittanceMatrices:
+        """
+
+        :return:
+        """
+        return ycalc.compute_fast_decoupled_admittances(
+            X=self.branch_data.X,
+            B=self.branch_data.B,
+            tap_module=self.branch_data.tap_module,
+            vtap_f=self.branch_data.vf_set,
+            vtap_t=self.branch_data.vt_set,
+            Cf=self.Cf,
+            Ct=self.Ct,
+        )
+
+    def get_linear_admittance_matrices(self) -> ycalc.LinearAdmittanceMatrices:
+        """
+
+        :return:
+        """
+        return ycalc.compute_linear_admittances(
+            nbr=self.nbr,
+            X=self.branch_data.X,
+            R=self.branch_data.R,
+            m=self.branch_data.tap_module,
+            active=self.branch_data.active,
+            Cf=self.Cf,
+            Ct=self.Ct,
+            ac=self.ac_indices,
+            dc=self.dc_indices
+        )
+
     @property
     def Ybus(self):
         """
@@ -1302,7 +974,7 @@ class NumericalCircuit:
 
         # compute admittances on demand
         if self.admittances_ is None:
-            self.admittances_ = self.compute_admittance()
+            self.admittances_ = self.get_admittance_matrices()
 
         return self.admittances_.Ybus
 
@@ -1313,7 +985,7 @@ class NumericalCircuit:
         :return: CSC matrix
         """
         if self.admittances_ is None:
-            _ = self.Ybus  # call the constructor of Yf
+            self.admittances_ = self.get_admittance_matrices()
 
         return self.admittances_.Yf
 
@@ -1324,7 +996,7 @@ class NumericalCircuit:
         :return: CSC matrix
         """
         if self.admittances_ is None:
-            _ = self.Ybus  # call the constructor of Yt
+            self.admittances_ = self.get_admittance_matrices()
 
         return self.admittances_.Yt
 
@@ -1335,29 +1007,10 @@ class NumericalCircuit:
         :return: CSC matrix
         """
         # compute admittances on demand
-        if self.Yseries_ is None:
-            self.Yseries_, self.Yshunt_ = ycalc.compute_split_admittances(
-                R=self.branch_data.R,
-                X=self.branch_data.X,
-                G=self.branch_data.G,
-                B=self.branch_data.B,
-                k=self.branch_data.k,
-                tap_module=self.branch_data.tap_module,
-                vtap_f=self.branch_data.virtual_tap_f,
-                vtap_t=self.branch_data.virtual_tap_t,
-                tap_angle=self.branch_data.tap_angle,
-                Beq=self.branch_data.Beq,
-                Cf=self.Cf,
-                Ct=self.Ct,
-                G0sw=self.branch_data.G0sw,
-                If=np.zeros(len(self.branch_data)),
-                a=self.branch_data.a,
-                b=self.branch_data.b,
-                c=self.branch_data.c,
-                Yshunt_bus=self.Yshunt_from_devices,
-            )
+        if self.series_admittances_ is None:
+            self.series_admittances_ = self.get_series_admittance_matrices()
 
-        return self.Yseries_
+        return self.series_admittances_.Yseries
 
     @property
     def Yshunt(self):
@@ -1365,14 +1018,10 @@ class NumericalCircuit:
         Array of shunt admittances of the pi model of the Branches (used in HELM mostly)
         :return: Array of complex values
         """
-        if self.Yshunt_ is None:
-            _ = self.Yseries  # call the constructor of Yshunt
+        if self.series_admittances_ is None:
+            self.series_admittances_ = self.get_series_admittance_matrices()
 
-        return self.Yshunt_
-
-    # @property
-    # def YshuntHelm(self):
-    #     return self.Yshunt_from_devices
+        return self.series_admittances_.Yshunt
 
     @property
     def B1(self):
@@ -1380,18 +1029,10 @@ class NumericalCircuit:
         B' matrix of the fast decoupled method
         :return:
         """
-        if self.B1_ is None:
-            self.B1_, self.B2_ = ycalc.compute_fast_decoupled_admittances(
-                X=self.branch_data.X,
-                B=self.branch_data.B,
-                tap_module=self.branch_data.tap_module,
-                vtap_f=self.branch_data.vf_set,
-                vtap_t=self.branch_data.vt_set,
-                Cf=self.Cf,
-                Ct=self.Ct,
-            )
+        if self.fast_decoupled_admittances_ is None:
+            self.fast_decoupled_admittances_ = self.get_fast_decoupled_amittances()
 
-        return self.B1_
+        return self.fast_decoupled_admittances_.B1
 
     @property
     def B2(self):
@@ -1399,10 +1040,10 @@ class NumericalCircuit:
         B'' matrix of the fast decoupled method
         :return:
         """
-        if self.B2_ is None:
-            _ = self.B1  # call the constructor of B2
+        if self.fast_decoupled_admittances_ is None:
+            self.fast_decoupled_admittances_ = self.get_fast_decoupled_amittances()
 
-        return self.B2_
+        return self.fast_decoupled_admittances_.B2
 
     @property
     def Bbus(self):
@@ -1410,23 +1051,10 @@ class NumericalCircuit:
         Susceptance matrix for the linear methods
         :return:
         """
-        if self.Bbus_ is None:
-            self.Bbus_, self.Bf_ = ycalc.compute_linear_admittances(
-                nbr=self.nbr,
-                X=self.branch_data.X,
-                R=self.branch_data.R,
-                m=self.branch_data.tap_module,
-                active=self.branch_data.active,
-                Cf=self.Cf,
-                Ct=self.Ct,
-                ac=self.ac_indices,
-                dc=self.dc_indices
-            )
+        if self.linear_admittances_ is None:
+            self.linear_admittances_ = self.get_linear_admittance_matrices()
 
-            self.Bpqpv_ = self.Bbus_[np.ix_(self.pqpv, self.pqpv)].tocsc()
-            self.Bref_ = self.Bbus_[np.ix_(self.pqpv, self.vd)].tocsc()
-
-        return self.Bbus_
+        return self.linear_admittances_.Bbus
 
     @property
     def Bf(self):
@@ -1434,10 +1062,10 @@ class NumericalCircuit:
         Susceptance matrix of the "from" nodes to the Branches
         :return:
         """
-        if self.Bf_ is None:
-            _ = self.Bbus  # call the constructor of Bf
+        if self.linear_admittances_ is None:
+            self.linear_admittances_ = self.get_linear_admittance_matrices()
 
-        return self.Bf_
+        return self.linear_admittances_.Bf
 
     @property
     def Bpqpv(self):
@@ -1445,10 +1073,10 @@ class NumericalCircuit:
 
         :return:
         """
-        if self.Bpqpv_ is None:
-            _ = self.Bbus  # call the constructor of Bpqpv
+        if self.linear_admittances_ is None:
+            self.linear_admittances_ = self.get_linear_admittance_matrices()
 
-        return self.Bpqpv_
+        return self.linear_admittances_.get_Bred(pqpv=self.pqpv)
 
     @property
     def Bref(self):
@@ -1456,10 +1084,10 @@ class NumericalCircuit:
 
         :return:
         """
-        if self.Bref_ is None:
-            _ = self.Bbus  # call the constructor of Bref
+        if self.linear_admittances_ is None:
+            self.linear_admittances_ = self.get_linear_admittance_matrices()
 
-        return self.Bref_
+        return self.linear_admittances_.get_Bslack(pqpv=self.pqpv, vd=self.vd)
 
     @property
     def vd(self):
@@ -1467,11 +1095,10 @@ class NumericalCircuit:
 
         :return:
         """
-        if self.vd_ is None:
-            self.vd_, self.pq_, self.pv_, self.no_slack_ = compile_types(Pbus=self.Sbus.real,
-                                                                         types=self.bus_data.bus_types)
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
 
-        return self.vd_
+        return self.simulation_indices_.vd
 
     @property
     def pq(self):
@@ -1479,10 +1106,10 @@ class NumericalCircuit:
 
         :return:
         """
-        if self.pq_ is None:
-            _ = self.vd  # call the constructor
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
 
-        return self.pq_
+        return self.simulation_indices_.pq
 
     @property
     def pv(self):
@@ -1490,10 +1117,10 @@ class NumericalCircuit:
 
         :return:
         """
-        if self.pv_ is None:
-            _ = self.vd  # call the constructor
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
 
-        return self.pv_
+        return self.simulation_indices_.pv
 
     @property
     def pqpv(self):
@@ -1502,10 +1129,208 @@ class NumericalCircuit:
         :return:
         """
         # TODO: rename to "no_slack"
-        if self.no_slack_ is None:
-            _ = self.vd  # call the constructor
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
 
-        return self.no_slack_
+        return self.simulation_indices_.no_slack
+
+    @property
+    def any_control(self):
+        """
+
+        :return:
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.any_control
+
+    @property
+    def k_pf_tau(self):
+        """
+        Get k_pf_tau
+        :return:
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.k_pf_tau
+
+    @property
+    def k_qf_m(self):
+        """
+        Get k_qf_m
+        :return:
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.k_qf_m
+
+    @property
+    def k_zero_beq(self):
+        """
+        Get k_zero_beq
+        :return:
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.k_zero_beq
+
+    @property
+    def k_vf_beq(self):
+        """
+        Get k_vf_beq
+        :return:
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.k_vf_beq
+
+    @property
+    def k_vt_m(self):
+        """
+        Get k_vt_m
+        :return:
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.k_vt_m
+
+    @property
+    def k_qt_m(self):
+        """
+        Get k_qt_m
+        :return:
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.k_qt_m
+
+    @property
+    def k_pf_dp(self):
+        """
+        Get k_pf_dp
+        :return:
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.k_pf_dp
+
+    @property
+    def k_m(self):
+        """
+        Get k_m
+        :return:
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.k_m
+
+    @property
+    def k_tau(self):
+        """
+        Get k_tau
+        :return:
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.k_tau
+
+    @property
+    def k_mtau(self):
+        """
+        Get k_mtau
+        :return:
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.k_mtau
+
+    @property
+    def i_m(self):
+        """
+        Get i_m
+        :return:
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.i_m
+
+    @property
+    def i_tau(self):
+        """
+        Get i_tau
+        :return:
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.i_tau
+
+    @property
+    def i_mtau(self):
+        """
+        Get i_mtau
+        :return:
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.i_mtau
+
+    @property
+    def iPfdp_va(self):
+        """
+        Get iPfdp_va
+        :return:
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.iPfdp_va
+
+    @property
+    def i_vsc(self):
+        """
+        Get i_vsc
+        :return:
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.i_vsc
+
+    @property
+    def i_vf_beq(self):
+        """
+        Get i_vf_beq
+        :return:
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.i_vf_beq
+
+    @property
+    def i_vt_m(self):
+        """
+        Get i_vt_m
+        :return:
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.i_vt_m
 
     @property
     def structs_dict(self):
@@ -2029,8 +1854,6 @@ class NumericalCircuit:
         nc.battery_data = self.battery_data.slice(elm_idx=batt_idx, bus_idx=bus_idx)
         nc.generator_data = self.generator_data.slice(elm_idx=gen_idx, bus_idx=bus_idx)
         nc.shunt_data = self.shunt_data.slice(elm_idx=shunt_idx, bus_idx=bus_idx)
-
-        nc.determine_control_indices()
 
         return nc
 

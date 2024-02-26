@@ -194,8 +194,8 @@ class IoMain(ConfigurationMain):
         """
         if ('file_save' not in self.stuff_running_now) and ('file_open' not in self.stuff_running_now):
             if self.circuit.get_bus_number() > 0:
-                quit_msg = "Are you sure that you want to quit the current grid and open a new one?" \
-                           "\n If the process is cancelled the grid will remain."
+                quit_msg = ("Are you sure that you want to quit the current grid and open a new one?"
+                            "\n If the process is cancelled the grid will remain.")
                 reply = QtWidgets.QMessageBox.question(self, 'Message', quit_msg,
                                                        QtWidgets.QMessageBox.StandardButton.Yes,
                                                        QtWidgets.QMessageBox.StandardButton.No)
@@ -216,20 +216,17 @@ class IoMain(ConfigurationMain):
         Open file from a Qt thread to remain responsive
         """
 
-        files_types = "Formats (*.gridcal *.gch5 *.xlsx *.xls *.sqlite *.dgs " \
-                      "*.m *.raw *.RAW *.rawx *.json *.ejson2 *.ejson3 *.xml *.zip *.dpx *.epc *.nc *.hdf5)"
-        # files_types = ''
-        # call dialog to select the file
+        files_types = ("Formats (*.gridcal *.gch5 *.xlsx *.xls *.sqlite *.dgs "
+                       "*.m *.raw *.RAW *.rawx *.json *.ejson2 *.ejson3 *.xml *.zip *.dpx *.epc *.nc *.hdf5)")
 
-        # options = QtWidgets.QFileDialog.Options()
-        # options |= QtWidgets.QFileDialog.DontUseNativeDialog
+        dialogue = QtWidgets.QFileDialog(None,
+                                         caption='Open file',
+                                         directory=self.project_directory,
+                                         filter=files_types)
+        # dialogue.setOption(QtWidgets.QFileDialog.Option.DontUseNativeDialog, True)
 
-        filenames, type_selected = QtWidgets.QFileDialog.getOpenFileNames(parent=self,
-                                                                          caption='Open file',
-                                                                          dir=self.project_directory,
-                                                                          filter=files_types)
-
-        if len(filenames) > 0:
+        if dialogue.exec():
+            filenames = dialogue.selectedFiles()
             self.open_file_now(filenames, post_function)
 
     def select_csv_file(self, caption='Open CSV file'):
@@ -378,6 +375,7 @@ class IoMain(ConfigurationMain):
                     diagram.center_nodes()
 
         self.collect_memory()
+        self.setup_time_sliders()
 
     def add_circuit(self):
         """

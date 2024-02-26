@@ -27,7 +27,7 @@ class GeneratorQCurve:
     GeneratorQCurve
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
 
         # Array of points [(P1, Qmin1, Qmax1), (P2, Qmin2, Qmax2), ...]
         self._q_points: Mat = np.zeros((0, 3))
@@ -141,12 +141,20 @@ class GeneratorQCurve:
         else:
             return self._q_points[0, 1]
 
-    def __str__(self):
+    def __str__(self) -> str:
         """
         Get string representation of the curve
         :return: json string of list of lists: "[[P1, Qmin1, Qmax1], [P2, Qmin2, Qmax2], ...]"
         """
         return self.str()
+
+    def __eq__(self, other: "GeneratorQCurve") -> bool:
+        """
+        Equality check
+        :param other: GeneratorQCurve
+        :return: equal?
+        """
+        return np.allclose(self._q_points, other._q_points)
 
     def str(self) -> str:
         """

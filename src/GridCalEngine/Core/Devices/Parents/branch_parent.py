@@ -46,6 +46,7 @@ class BranchParent(EditableDevice):
                  active: bool,
                  rate: float,
                  contingency_factor: float,
+                 protection_rating_factor: float,
                  contingency_enabled: bool,
                  monitor_loading: bool,
                  mttf: float,
@@ -122,6 +123,9 @@ class BranchParent(EditableDevice):
         self.contingency_factor = contingency_factor
         self._contingency_factor_prof = Profile(default_value=contingency_factor)
 
+        self.protection_rating_factor = protection_rating_factor
+        self._protection_rating_factor_prof = Profile(default_value=protection_rating_factor)
+
         # List of measurements
         self.measurements = list()
 
@@ -142,6 +146,10 @@ class BranchParent(EditableDevice):
         self.register('rate', units="MVA", tpe=float, definition='Thermal rating power', profile_name="rate_prof")
         self.register('contingency_factor', units="p.u.", tpe=float,
                       definition='Rating multiplier for contingencies', profile_name="contingency_factor_prof")
+
+        self.register('protection_rating_factor', units="p.u.", tpe=float,
+                      definition='Rating multiplier that indicates the maximum flow before the protections tripping',
+                      profile_name="protection_rating_factor_prof")
 
         self.register('monitor_loading', units="", tpe=bool,
                       definition="Monitor this device loading for OPF, NTC or contingency studies.")
@@ -288,6 +296,23 @@ class BranchParent(EditableDevice):
             raise Exception(str(type(val)) + 'not supported to be set into a contingency_factor_prof')
 
     @property
+    def protection_rating_factor_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._protection_rating_factor_prof
+
+    @protection_rating_factor_prof.setter
+    def protection_rating_factor_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._protection_rating_factor_prof = val
+        elif isinstance(val, np.ndarray):
+            self._protection_rating_factor_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a protection_rating_factor_prof')
+
+    @property
     def Cost_prof(self) -> Profile:
         """
         Cost profile
@@ -317,6 +342,18 @@ class BranchParent(EditableDevice):
         :return:
         """
         return min(self.bus_from.Vnom, self.bus_to.Vnom)
+
+    def get_sorted_buses_voltages(self):
+        """
+        Get the sorted bus voltages
+        :return: high voltage, low voltage
+        """
+        bus_f_v = self.bus_from.Vnom
+        bus_t_v = self.bus_to.Vnom
+        if bus_f_v > bus_t_v:
+            return bus_f_v, bus_t_v
+        else:
+            return bus_t_v, bus_f_v
 
     def get_virtual_taps(self) -> Tuple[float, float]:
         """
@@ -416,42 +453,6 @@ class BranchParent(EditableDevice):
                 'operational_temperature': 'ºC',
                 'alpha': '1/ºC'}
 
-    def plot_profiles(self, time_series=None, my_index=0, show_fig=True):
-        """
-        Plot the time series results of this object
-        :param time_series: TimeSeries Instance
-        :param my_index: index of this object in the simulation
-        :param show_fig: Show the figure?
-        """
-
-        if time_series is not None:
-            fig = plt.figure(figsize=(12, 8))
-
-            ax_1 = fig.add_subplot(211)
-            ax_2 = fig.add_subplot(212, sharex=ax_1)
-
-            x = time_series.results.time_array
-
-            # loading
-            y = time_series.results.loading.real * 100.0
-            df = pd.DataFrame(data=y[:, my_index], index=x, columns=[self.name])
-            ax_1.set_title('Loading', fontsize=14)
-            ax_1.set_ylabel('Loading [%]', fontsize=11)
-            df.plot(ax=ax_1)
-
-            # losses
-            y = np.abs(time_series.results.losses)
-            df = pd.DataFrame(data=y[:, my_index], index=x, columns=[self.name])
-            ax_2.set_title('Losses', fontsize=14)
-            ax_2.set_ylabel('Losses [MVA]', fontsize=11)
-            df.plot(ax=ax_2)
-
-            plt.legend()
-            fig.suptitle(self.name, fontsize=20)
-
-        if show_fig:
-            plt.show()
-
     def get_coordinates(self):
         """
         Get the line defining coordinates
@@ -489,10 +490,13 @@ class BranchParent(EditableDevice):
         :param branch_connection_voltage_tolerance:
         :return:
         """
-        V1 = min(self.bus_to.Vnom, self.bus_from.Vnom)
-        V2 = max(self.bus_to.Vnom, self.bus_from.Vnom)
-        per = V1 / V2
-        return per < (1.0 - branch_connection_voltage_tolerance)
+        if self.bus_to is not None and self.bus_from is not None:
+            V1 = min(self.bus_to.Vnom, self.bus_from.Vnom)
+            V2 = max(self.bus_to.Vnom, self.bus_from.Vnom)
+            per = V1 / V2
+            return per < (1.0 - branch_connection_voltage_tolerance)
+        else:
+            return False
 
     def apply_template(self, obj, Sbase, logger: Logger):
         """

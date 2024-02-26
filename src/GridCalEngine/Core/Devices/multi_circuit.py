@@ -27,9 +27,10 @@ from datetime import timedelta, datetime
 import networkx as nx
 from matplotlib import pyplot as plt
 from scipy.sparse import csc_matrix, lil_matrix
+from warnings import warn
 
 from GridCalEngine.Core import EditableDevice
-from GridCalEngine.basic_structures import DateVec, IntVec, StrVec, Vec, Mat, CxVec, IntMat, CxMat
+from GridCalEngine.basic_structures import IntVec, StrVec, Vec, Mat, CxVec, IntMat, CxMat
 from GridCalEngine.data_logger import DataLogger
 import GridCalEngine.Core.Devices as dev
 from GridCalEngine.Core.Devices.types import ALL_DEV_TYPES, BRANCH_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES
@@ -73,7 +74,7 @@ def get_fused_device_lst(elm_list: List[INJECTION_DEVICE_TYPES], property_names:
         elm1 = elm_list[0]  # select the main device
         deletable_elms = [elm_list[i] for i in range(1, len(elm_list))]
         act_final = elm1.active
-        act_prof_final = elm1.active_prof
+        act_prof_final = elm1.active_prof.toarray()
 
         # set the final active value
         for i in range(1, len(elm_list)):  # for each of the other generators
@@ -83,7 +84,7 @@ def get_fused_device_lst(elm_list: List[INJECTION_DEVICE_TYPES], property_names:
             act_final = bool(act_final + elm2.active)  # equivalent to OR
 
             if act_prof_final is not None:
-                act_prof_final = (act_prof_final + elm2.active_prof).astype(bool)
+                act_prof_final = (act_prof_final.toarray() + elm2.active_prof.toarray()).astype(bool)
 
         for prop in property_names:  # sum the properties
 
@@ -3640,8 +3641,10 @@ class MultiCircuit:
                             name='HVDC Line',
                             active=line.active,
                             rate=line.rate,
-                            active_prof=line.active_prof,
-                            rate_prof=line.rate_prof)
+                            )
+
+        hvdc.active_prof = line.active_prof
+        hvdc.rate_prof = line.rate_prof
 
         # add device to the circuit
         self.add_hvdc(hvdc)
@@ -3665,8 +3668,10 @@ class MultiCircuit:
                                         r=line.R,
                                         x=line.X,
                                         b=line.B,
-                                        active_prof=line.active_prof,
-                                        rate_prof=line.rate_prof)
+                                        )
+
+        transformer.active_prof = line.active_prof
+        transformer.rate_prof = line.rate_prof
 
         # add device to the circuit
         self.add_transformer2w(transformer)
@@ -3688,12 +3693,12 @@ class MultiCircuit:
                            power_factor=gen.Pf,
                            vset=gen.Vset,
                            is_controlled=gen.is_controlled,
-                           Qmin=gen.Qmin, Qmax=gen.Qmax, Snom=gen.Snom,
-                           P_prof=gen.P_prof,
-                           power_factor_prof=gen.Pf_prof,
-                           vset_prof=gen.Vset_prof,
+                           Qmin=gen.Qmin,
+                           Qmax=gen.Qmax,
+                           Snom=gen.Snom,
                            active=gen.active,
-                           Pmin=gen.Pmin, Pmax=gen.Pmax,
+                           Pmin=gen.Pmin,
+                           Pmax=gen.Pmax,
                            Cost=gen.Cost,
                            Sbase=gen.Sbase,
                            enabled_dispatch=gen.enabled_dispatch,
@@ -3705,6 +3710,11 @@ class MultiCircuit:
                            capex=gen.capex,
                            opex=gen.opex,
                            build_status=gen.build_status)
+
+        batt.active_prof = gen.active_prof
+        batt.P_prof = gen.P_prof
+        batt.power_factor_prof = gen.Pf_prof
+        batt.vset_prof = gen.Vset_prof
 
         # add device to the circuit
         self.add_battery(gen.bus, batt)
@@ -3729,8 +3739,10 @@ class MultiCircuit:
                       x=line.X,
                       Beq=line.B,
                       tap_module=1.0,
-                      active_prof=line.active_prof,
-                      rate_prof=line.rate_prof)
+                      )
+
+        vsc.active_prof = line.active_prof
+        vsc.rate_prof = line.rate_prof
 
         # add device to the circuit
         self.add_vsc(vsc)
@@ -3754,8 +3766,10 @@ class MultiCircuit:
                         rs=line.R,
                         xs=line.X,
                         # bl=line.B,
-                        active_prof=line.active_prof,
-                        rate_prof=line.rate_prof)
+                        )
+
+        upfc.active_prof = line.active_prof
+        upfc.rate_prof = line.rate_prof
 
         # add device to the circuit
         self.add_upfc(upfc)
@@ -4442,12 +4456,12 @@ class MultiCircuit:
 
         return groups
 
-    def get_batteries_by_bus(self) -> Dict[dev.Bus, dev.Battery]:
+    def get_batteries_by_bus(self) -> Dict[dev.Bus, List[dev.Battery]]:
         """
         Get the injection devices grouped by bus and by device type
         :return: Dict[bus, Dict[DeviceType, List[Injection devs]]
         """
-        groups: Dict[dev.Bus, dev.Battery] = dict()
+        groups: Dict[dev.Bus, List[dev.Battery]] = dict()
 
         for elm in self.get_batteries():
 
@@ -4869,3 +4883,101 @@ class MultiCircuit:
 
             if elm.bus == bus2:
                 elm.bus = bus1
+
+    def compare_circuits(self, grid2: "MultiCircuit", detailed_profile_comparison: bool = True) -> Tuple[bool, Logger]:
+        """
+        Compare this circuit with another circuits for equality
+        :param grid2: MultiCircuit
+        :param detailed_profile_comparison: if true, profiles are compared element-wise with the getters
+        :return: equal?, Logger with the comparison information
+        """
+        logger = Logger()
+
+        if self.get_time_number() != grid2.get_time_number():
+            nt = 0
+            logger.add_error(msg="Different number of time steps",
+                             device_class="time",
+                             value=grid2.get_time_number(),
+                             expected_value=self.get_time_number())
+        else:
+            nt = self.get_time_number()
+
+        # for each category
+        for key, template_elms_list in self.objects_with_profiles.items():
+
+            # for each object type
+            for template_elm in template_elms_list:
+
+                # get all objects of the type
+                elms1 = self.get_elements_by_type(device_type=template_elm.device_type)
+                elms2 = grid2.get_elements_by_type(device_type=template_elm.device_type)
+
+                if len(elms1) != len(elms2):
+                    logger.add_error(msg="Different number of elements",
+                                     device_class=template_elm.device_type.value)
+
+                # for every property
+                for prop_name, prop in template_elm.registered_properties.items():
+
+                    # for every pair of elements:
+                    for elm1, elm2 in zip(elms1, elms2):
+
+                        # compare the snapshot values
+                        v1 = elm1.get_property_value(prop=prop, t_idx=None)
+                        v2 = elm2.get_property_value(prop=prop, t_idx=None)
+
+                        if v1 != v2:
+                            logger.add_error(msg="Different snapshot values",
+                                             device_class=template_elm.device_type.value,
+                                             device_property=prop.name,
+                                             value=v2,
+                                             expected_value=v1)
+
+                        if prop.has_profile():
+                            p1 = elm1.get_profile_by_prop(prop=prop)
+                            p2 = elm1.get_profile_by_prop(prop=prop)
+
+                            if p1 != p2:
+                                logger.add_error(msg="Different profile values",
+                                                 device_class=template_elm.device_type.value,
+                                                 device_property=prop.name,
+                                                 object_value=p2,
+                                                 expected_object_value=p1)
+
+                            if detailed_profile_comparison:
+                                for t_idx in range(nt):
+
+                                    v1 = p1[t_idx]
+                                    v2 = p2[t_idx]
+
+                                    if v1 != v2:
+                                        logger.add_error(msg="Different time series values",
+                                                         device_class=template_elm.device_type.value,
+                                                         device_property=prop.name,
+                                                         device=str(elm1),
+                                                         value=v2,
+                                                         expected_value=v1)
+
+                                    v1b = elm1.get_property_value(prop=prop, t_idx=t_idx)
+                                    v2b = elm2.get_property_value(prop=prop, t_idx=t_idx)
+
+                                    if v1 != v1b:
+                                        logger.add_error(
+                                            msg="Profile getting values differ with different getter methods!",
+                                            device_class=template_elm.device_type.value,
+                                            device_property=prop.name,
+                                            device=str(elm1),
+                                            value=v1b,
+                                            expected_value=v1)
+
+                                    if v2 != v2b:
+                                        logger.add_error(
+                                            msg="Profile getting values differ with different getter methods!",
+                                            device_class=template_elm.device_type.value,
+                                            device_property=prop.name,
+                                            device=str(elm1),
+                                            value=v1b,
+                                            expected_value=v1)
+
+        # if any error in the logger, bad
+        return logger.error_count() == 0, logger

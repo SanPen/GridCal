@@ -23,7 +23,7 @@ from GridCalEngine.enumerations import WindingsConnection
 from GridCalEngine.basic_structures import ObjVec, Vec, CxVec, IntVec
 
 
-class Admittance:
+class AdmittanceMatrices:
     """
     Class to store admittance matrices
     """
@@ -76,20 +76,22 @@ class Admittance:
 
         self.Gsw = Gsw
 
-    def modify_taps(self, m, m2, idx=None) -> Tuple[sp.csc_matrix, sp.csc_matrix, sp.csc_matrix]:
+    def modify_taps(self, m, m2, tau, tau2, idx=None) -> Tuple[sp.csc_matrix, sp.csc_matrix, sp.csc_matrix]:
         """
         Compute the new admittance matrix given the tap variation
-        :param m: previous tap
-        :param m2: new tap
+        :param m: previous tap module
+        :param m2: new tap module
+        :param tau: previous tap angle
+        :param tau2: new tap angle
         :param idx: indices that apply, if none assumes that m and m2 length math yff etc...
         :return: Ybus, Yf, Yt
         """
 
         if idx is None:
-            yff = ((self.yff - self.Gsw) * (m * m) / (m2 * m2)) + self.Gsw
-            yft = self.yft * m / m2
-            ytf = self.ytf * m / m2
-            ytt = self.ytt
+            self.yff = ((self.yff - self.Gsw) * (m * m) / (m2 * m2)) + self.Gsw
+            self.yft = self.yft * (m * np.exp(-1.0j * tau)) / (m2 * np.exp(-1.0j * tau2))
+            self.ytf = self.ytf * (m * np.exp(1.0j * tau)) / (m2 * np.exp(1.0j * tau2))
+            self.ytt = self.ytt
         else:
             yff = self.yff.copy()
             yft = self.yft.copy()
@@ -97,30 +99,15 @@ class Admittance:
             ytt = self.ytt.copy()
 
             yff[idx] = ((yff[idx] - self.Gsw[idx]) * (m * m) / (m2 * m2)) + self.Gsw[idx]
-            yft[idx] = yft[idx] * m / m2
-            ytf[idx] = ytf[idx] * m / m2
+            yft[idx] = yft[idx] * (m * np.exp(-1.0j * tau)) / (m2 * np.exp(-1.0j * tau2))
+            ytf[idx] = ytf[idx] * (m * np.exp(1.0j * tau)) / (m2 * np.exp(1.0j * tau2))
 
         # compose the matrices
-        Yf = sp.diags(yff) * self.Cf + sp.diags(yft) * self.Ct
-        Yt = sp.diags(ytf) * self.Cf + sp.diags(ytt) * self.Ct
-        Ybus = self.Cf.T * Yf + self.Ct.T * Yt + sp.diags(self.Yshunt_bus)
+        self.Yf = sp.diags(self.yff) * self.Cf + sp.diags(self.yft) * self.Ct
+        self.Yt = sp.diags(self.ytf) * self.Cf + sp.diags(self.ytt) * self.Ct
+        self.Ybus = self.Cf.T * self.Yf + self.Ct.T * self.Yt + sp.diags(self.Yshunt_bus)
 
-        return Ybus, Yf, Yt
-
-
-def compute_connectivity(branch_active, Cf_, Ct_) -> Tuple[sp.csc_matrix, sp.csc_matrix]:
-    """
-    Compute the from and to connectivity matrices applying the branch states
-    :param branch_active: array of branch states
-    :param Cf_: Connectivity branch-bus "from"
-    :param Ct_: Connectivity branch-bus "to"
-    :return: Final Ct and Cf in CSC format
-    """
-    br_states_diag = sp.diags(branch_active)
-    Cf = br_states_diag * Cf_
-    Ct = br_states_diag * Ct_
-
-    return Cf.tocsc(), Ct.tocsc()
+        return self.Ybus, self.Yf, self.Yt
 
 
 def compute_admittances(R: Vec,
@@ -143,7 +130,7 @@ def compute_admittances(R: Vec,
                         Yshunt_bus: CxVec,
                         conn: Union[List[WindingsConnection], ObjVec],
                         seq: int,
-                        add_windings_phase: bool = False) -> Admittance:
+                        add_windings_phase: bool = False) -> AdmittanceMatrices:
     """
     Compute the complete admittance matrices for the general power flow methods (Newton-Raphson based)
 
@@ -238,7 +225,7 @@ def compute_admittances(R: Vec,
     Yt = sp.diags(Ytf) * Cf + sp.diags(Ytt) * Ct
     Ybus = Cf.T * Yf + Ct.T * Yt + sp.diags(Yshunt_bus)
 
-    return Admittance(Ybus, Yf, Yt, Cf, Ct, Yff, Yft, Ytf, Ytt, Yshunt_bus, Gsw)
+    return AdmittanceMatrices(Ybus, Yf, Yt, Cf, Ct, Yff, Yft, Ytf, Ytt, Yshunt_bus, Gsw)
 
 
 def compile_y_acdc(Cf: sp.csc_matrix,
@@ -299,6 +286,15 @@ def compile_y_acdc(Cf: sp.csc_matrix,
     return Ybus, Yf.tocsc(), Yt.tocsc(), tap
 
 
+class SeriesAdmittanceMatrices:
+    """
+    Admittance matrices for HELM and the AC linear methods
+    """
+    def __init__(self, Yseries: sp.csc_matrix, Yshunt: sp.csc_matrix):
+        self.Yseries = Yseries
+        self.Yshunt = Yshunt
+
+
 def compute_split_admittances(R: Vec,
                               X: Vec,
                               G: Vec,
@@ -316,7 +312,7 @@ def compute_split_admittances(R: Vec,
                               a: Vec,
                               b: Vec,
                               c: Vec,
-                              Yshunt_bus: CxVec) -> Tuple[sp.csc_matrix, sp.csc_matrix]:
+                              Yshunt_bus: CxVec) -> SeriesAdmittanceMatrices:
     """
     Compute the complete admittance matrices for the helm method and others that may require them
     :param R: array of branch resistance (p.u.)
@@ -360,11 +356,20 @@ def compute_split_admittances(R: Vec,
     Yseries = Cf.T * Yfs + Ct.T * Yts
     Yshunt = Cf.T * ysh + Ct.T * ysh + Yshunt_bus
 
-    GBc = G + 1.0j * B
-    Gsh = GBc / 2.0
-    Ysh = Yshunt_bus + Cf.T * Gsh + Ct.T * Gsh
+    # GBc = G + 1.0j * B
+    # Gsh = GBc / 2.0
+    # Ysh = Yshunt_bus + Cf.T * Gsh + Ct.T * Gsh
 
-    return Yseries, Yshunt
+    return SeriesAdmittanceMatrices(Yseries, Yshunt)
+
+
+class FastDecoupledAdmittanceMatrices:
+    """
+    Admittance matrices for HELM and the AC linear methods
+    """
+    def __init__(self, B1: sp.csc_matrix, B2: sp.csc_matrix):
+        self.B1 = B1
+        self.B2 = B2
 
 
 def compute_fast_decoupled_admittances(X: Vec,
@@ -373,7 +378,7 @@ def compute_fast_decoupled_admittances(X: Vec,
                                        vtap_f: Vec,
                                        vtap_t: Vec,
                                        Cf: sp.csc_matrix,
-                                       Ct: sp.csc_matrix) -> Tuple[sp.csc_matrix, sp.csc_matrix]:
+                                       Ct: sp.csc_matrix) -> FastDecoupledAdmittanceMatrices:
     """
     Compute the admittance matrices for the fast decoupled method
     :param X: array of branch reactance (p.u.)
@@ -402,7 +407,33 @@ def compute_fast_decoupled_admittances(X: Vec,
     B2t = sp.diags(b2_tf) * Cf - sp.diags(b2_tt) * Ct
     B2 = Cf.T * B2f + Ct.T * B2t
 
-    return B1.tocsc(), B2.tocsc()
+    return FastDecoupledAdmittanceMatrices(B1=B1.tocsc(), B2=B2.tocsc())
+
+
+class LinearAdmittanceMatrices:
+    """
+    Admittance matrices for linear methods (DC power flow, PTDF, ..)
+    """
+    def __init__(self, Bbus: sp.csc_matrix, Bf: sp.csc_matrix):
+        self.Bbus = Bbus
+        self.Bf = Bf
+
+    def get_Bred(self, pqpv: IntVec) -> sp.csc_matrix:
+        """
+        Get Bred or Bpqpv for the PTDF and DC power flow
+        :param pqpv: list of non-slack indices
+        :return: B[pqpv, pqpv]
+        """
+        return self.Bbus[np.ix_(pqpv, pqpv)].tocsc()
+
+    def get_Bslack(self, pqpv: IntVec, vd: IntVec) -> sp.csc_matrix:
+        """
+        Get Bslack for the PTDF and DC power flow
+        :param pqpv: list of non-slack indices
+        :param vd: list of slack ndices
+        :return: B[pqpv, vd]
+        """
+        return self.Bbus[np.ix_(pqpv, vd)].tocsc()
 
 
 def compute_linear_admittances(nbr: int,
@@ -413,7 +444,7 @@ def compute_linear_admittances(nbr: int,
                                Cf: sp.csc_matrix,
                                Ct: sp.csc_matrix,
                                ac: IntVec,
-                               dc: IntVec) -> Tuple[sp.csc_matrix, sp.csc_matrix]:
+                               dc: IntVec) -> LinearAdmittanceMatrices:
     """
     Compute the linear admittances for methods such as the "DC power flow" of the PTDF
     :param nbr: Number of Branches
@@ -440,7 +471,6 @@ def compute_linear_admittances(nbr: int,
     Bf = b_tt * Cf - b_tt * Ct
     Bt = -b_tt * Cf + b_tt * Ct
     Bbus = Cf.T * Bf + Ct.T * Bt
-    # Btau = Bf.T  # (b_tt * (Cf + Ct)).T
 
     """
     According to the KULeuven document "DC power flow in unit commitment models"
@@ -457,4 +487,4 @@ def compute_linear_admittances(nbr: int,
     bus_angles = Bbus^-1 x (Pbus - Btau x branch_angles)
     """
 
-    return Bbus, Bf
+    return LinearAdmittanceMatrices(Bbus=Bbus, Bf=Bf)
