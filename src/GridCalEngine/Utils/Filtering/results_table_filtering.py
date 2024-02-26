@@ -19,7 +19,7 @@ import numpy as np
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.basic_structures import BoolVec, Mat
 from GridCalEngine.Utils.Filtering.filtering import (MasterFilter, Filter, FilterOps, CompOps, FilterSubject,
-                                                     is_odd, is_numeric, parse_expression)
+                                                     is_numeric, parse_expression)
 
 
 def compute_results_table_masks(table: ResultsTable, flt: Filter) -> Tuple[BoolVec, BoolVec, Mat]:
@@ -30,12 +30,7 @@ def compute_results_table_masks(table: ResultsTable, flt: Filter) -> Tuple[BoolV
     :return:
     """
 
-    if "[" in flt.value:
-        val = flt.value.replace("[", "").replace("]", "").strip()
-        lst = [a.strip() for a in val.split(",")]
-    else:
-        lst = [flt.value]
-
+    lst = flt.get_list_of_values()
     is_neg = flt.is_negative()
 
     if is_neg:
@@ -244,7 +239,7 @@ class FilterResultsTable:
             idx_mask, col_mask, data_mask = compute_results_table_masks(table=self.table,
                                                                         flt=self.master_filter.stack[0])
 
-            if is_odd(self.master_filter.size()):
+            if self.master_filter.correct_size():
 
                 for st_idx in range(1, self.master_filter.size(), 2):
 
@@ -284,8 +279,8 @@ class FilterResultsTable:
 
             # return the sliced table
             return ResultsTable(data=data[np.ix_(ii, jj)],
-                                columns=[self.table.cols_c[j] for j in jj],
-                                index=[self.table.index_c[i] for i in ii])
+                                columns=np.array([self.table.cols_c[j] for j in jj]),
+                                index=np.array([self.table.index_c[i] for i in ii]))
 
         else:
             return self.table

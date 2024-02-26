@@ -40,6 +40,8 @@ from GridCal.Gui.Main.SubClasses.Model.compiled_arrays import CompiledArraysMain
 from GridCal.Gui.Main.object_select_window import ObjectSelectWindow
 from GridCal.Gui.MapWidget.TileProviders.blue_marble import BlueMarbleTiles
 from GridCal.Gui.MapWidget.TileProviders.cartodb import CartoDbTiles
+from GridCalEngine.Core.Devices.types import ALL_DEV_TYPES
+
 
 ALL_EDITORS = Union[BusBranchEditorWidget, GridMapWidget, BusViewerWidget, NodeBreakerEditorWidget]
 ALL_EDITORS_NONE = Union[None, BusBranchEditorWidget, GridMapWidget, BusViewerWidget, NodeBreakerEditorWidget]
@@ -245,18 +247,6 @@ class DiagramsMain(CompiledArraysMain):
         for diagram in self.diagram_widgets_list:
             if isinstance(diagram, BusBranchEditorWidget):
                 diagram.expand_factor = self.ui.explosion_factor_doubleSpinBox.value()
-
-    def adjust_all_node_width(self):
-        """
-        Adapt the width of all the nodes to their names
-        """
-
-        for diagram in self.diagram_widgets_list:
-
-            if isinstance(diagram, BusBranchEditorWidget):
-
-                for bus in self.circuit.buses:
-                    diagram.diagram.query_point(bus).graphic_object.adapt()
 
     def zoom_in(self):
         """
@@ -1406,7 +1396,7 @@ class DiagramsMain(CompiledArraysMain):
             elif isinstance(diagram, NodeBreakerEditorWidget):
                 pass
 
-    def delete_from_all_diagrams(self, elements: List[dev.EditableDevice]):
+    def delete_from_all_diagrams(self, elements: List[ALL_DEV_TYPES]):
         """
         Delete elements from all editors
         :param elements: list of devices to delete from the graphics editors

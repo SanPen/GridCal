@@ -28,7 +28,7 @@ from GridCalEngine.Core.Devices.Aggregation.investment import Investment
 from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
-from trunk.investments.InvestmentsEvaluation.MVRSM import MVRSM_minimize, MVRSM_minimize_md
+from trunk.investments.InvestmentsEvaluation.MVRSM import MVRSM_minimize, MVRSM_normalization_minimize
 from trunk.MVRSM.MVRSM_mo import MVRSM_multi_minimize
 from GridCalEngine.Simulations.InvestmentsEvaluation.stop_crits import StochStopCriterion
 from GridCalEngine.basic_structures import IntVec
@@ -323,29 +323,53 @@ class InvestmentsEvaluationDriver(DriverTemplate):
 
         # optimize
         if self.options.solver == InvestmentEvaluationMethod.MVRSM:
-            all_x, all_crits, all_ys, model = MVRSM_minimize_md(obj_func=self.objective_function,
-                                                                x0=x0,
-                                                                lb=lb,
-                                                                ub=ub,
-                                                                num_int=self.dim,
-                                                                max_evals=self.options.max_eval,
-                                                                rand_evals=rand_evals,
-                                                                obj_threshold=threshold,
-                                                                stop_crit=stop_crit,
-                                                                rand_search_bias=rand_search_active_prob,
-                                                                f_obj_dim=6)
-            lowest_indices = np.argsort(all_ys)[:1]
-            print(all_x[lowest_indices])
+            sorted_y_, sorted_x_, y_population_, x_population_ = MVRSM_normalization_minimize(obj_func=self.objective_function,
+                                                                           x0=x0,
+                                                                           lb=lb,
+                                                                           ub=ub,
+                                                                           num_int=self.dim,
+                                                                           max_evals=self.options.max_eval,
+                                                                           rand_evals=rand_evals,
+                                                                           obj_threshold=threshold,
+                                                                           stop_crit=stop_crit,
+                                                                           rand_search_bias=rand_search_active_prob,
+                                                                           n_objectives=6)
+            import matplotlib.pyplot as plt
+            # Create a figure and axis object
+            fig, ax1 = plt.subplots()
 
-            self.results.set_at(eval_idx=np.arange(self.options.max_eval),
-                                capex=all_crits[:, 4],
-                                opex=all_crits[:, 5],
-                                losses=all_crits[:, 0],
-                                overload_score=all_crits[:, 1],
-                                voltage_score=all_crits[:, 2],
-                                objective_function=all_ys,
-                                combination=all_x,
-                                index_name=np.array(['Evaluation {}'.format(i) for i in range(self.options.max_eval)]))
+            # Plotting the values on the left y-axis
+            ax1.plot(range(len(y_population_)), y_population_[:, 0], label='technical crit', color='blue')
+            ax1.set_xlabel('X-axis')
+            ax1.set_ylabel('Technical Crit', color='blue')
+            ax1.tick_params('y', colors='blue')
+
+            # Create a twin axis on the right side
+            ax2 = ax1.twinx()
+
+            # Plotting the values on the right y-axis
+            ax2.plot(range(len(y_population_)), y_population_[:, 4], label='economical crit', color='red')
+            ax2.set_ylabel('Economical Crit', color='red')
+            ax2.tick_params('y', colors='red')
+
+            # Adding legend
+            lines, labels = ax1.get_legend_handles_labels()
+            lines2, labels2 = ax2.get_legend_handles_labels()
+            ax2.legend(lines + lines2, labels + labels2, loc='upper left')
+
+            # Showing the plot
+            plt.show()
+
+            self.results.set_at(eval_idx=np.arange(len(y_population_)),
+                                capex=y_population_[:, 4],
+                                opex=y_population_[:, 5],
+                                losses=y_population_[:, 0],
+                                overload_score=y_population_[:, 1],
+                                voltage_score=y_population_[:, 2],
+                                objective_function=y_population_[:, 4] * 0.00001 + y_population_[:, 0],
+                                combination=x_population_,
+                                index_name=np.array(['Evaluation {}'.format(i) for i in range(len(y_population_))]))
+
 
         elif self.options.solver == InvestmentEvaluationMethod.MVRSM_multi:
             sorted_y_, sorted_x_, y_population_, x_population_ = MVRSM_multi_minimize(obj_func=self.objective_function,
@@ -356,6 +380,32 @@ class InvestmentsEvaluationDriver(DriverTemplate):
                                                                                       max_evals=self.options.max_eval,
                                                                                       n_objectives=6,
                                                                                       rand_evals=rand_evals)
+
+            import matplotlib.pyplot as plt
+            # Create a figure and axis object
+            fig, ax1 = plt.subplots()
+
+            # Plotting the values on the left y-axis
+            ax1.plot(range(len(y_population_)), y_population_[:, 0], label='technical crit', color='blue')
+            ax1.set_xlabel('X-axis')
+            ax1.set_ylabel('Technical Crit', color='blue')
+            ax1.tick_params('y', colors='blue')
+
+            # Create a twin axis on the right side
+            ax2 = ax1.twinx()
+
+            # Plotting the values on the right y-axis
+            ax2.plot(range(len(y_population_)), y_population_[:, 4], label='economical crit', color='red')
+            ax2.set_ylabel('Economical Crit', color='red')
+            ax2.tick_params('y', colors='red')
+
+            # Adding legend
+            lines, labels = ax1.get_legend_handles_labels()
+            lines2, labels2 = ax2.get_legend_handles_labels()
+            ax2.legend(lines + lines2, labels + labels2, loc='upper left')
+
+            # Showing the plot
+            plt.show()
 
             self.results.set_at(eval_idx=np.arange(len(y_population_)),
                                 capex=y_population_[:, 4],
