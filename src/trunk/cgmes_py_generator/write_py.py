@@ -244,13 +244,37 @@ def write_class_import(name):
         file.write(import_code)
 
 
+def import_enum_data():
+    from rdflib import Graph, RDF, RDFS, OWL
+
+    enum_dict = dict()
+
+    current_directory = os.path.dirname(__file__)
+    rdf_serialization = Graph()
+    rdf_serialization.parse(source=os.path.join(current_directory,
+                                                "RDFS/cgmes_v2_4_15/CGMES_v2.4.15_RDFSSerialisation.ttl"),
+                            format="ttl")
+    rdf_serialization.parse(source=os.path.join(current_directory,
+                                                "RDFS/cgmes_v3_0_0/CGMES_v3.0.0_RDFSSerialisation.ttl"),
+                            format="ttl")
+
+    for s_i, p_i, o_i in rdf_serialization.triples((None, RDF.type, RDFS.Class)):
+        if str(s_i).split("#")[1] == "RdfEnum":
+            for enum in rdf_serialization.objects(s_i, OWL.members):
+                enum_wns = str(enum).split("#")[-1]
+                enum_class, enum_value = enum_wns.split('.')
+                if enum_class not in enum_dict:
+                    enum_dict[enum_class] = set()
+                enum_dict[enum_class].add(enum_value)
+
+    return enum_dict
+
+
 def write_enums():
-    import cgmes_rdfs_graph
     code = "\nfrom enum import Enum\n\n\n"
-    enums_to_generate = cgmes_rdfs_graph.get_enum_data(enum_name_list)
-    for enum_class in enums_to_generate:
-        enum_name = enum_class["name"]
-        enum_values = enum_class["values"]
+    enums_to_generate = import_enum_data()
+    for enum_class, enum_values in enums_to_generate.items():
+        enum_name = enum_class
 
         code += f"class {enum_name}(Enum):\n"
         for value in enum_values:
