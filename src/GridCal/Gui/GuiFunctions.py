@@ -2041,13 +2041,14 @@ class ProfilesModel(QtCore.QAbstractTableModel):
         :return:
         """
         if role == QtCore.Qt.ItemDataRole.DisplayRole:
-            if orientation == QtCore.Qt.Orientation.Horizontal:
-                return str(self.elements[section].name)
-            elif orientation == QtCore.Qt.Orientation.Vertical:
-                if self.time_array is None:
-                    return str(section)
-                else:
-                    return pd.to_datetime(self.time_array[section]).strftime('%d-%m-%Y %H:%M')
+            if len(self.elements):
+                if orientation == QtCore.Qt.Orientation.Horizontal:
+                    return str(self.elements[section].name)
+                elif orientation == QtCore.Qt.Orientation.Vertical:
+                    if self.time_array is None:
+                        return str(section)
+                    else:
+                        return pd.to_datetime(self.time_array[section]).strftime('%d-%m-%Y %H:%M:%S')
 
         return None
 

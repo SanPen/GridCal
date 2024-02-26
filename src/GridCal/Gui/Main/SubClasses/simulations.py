@@ -190,7 +190,6 @@ class SimulationsMain(TimeEventsMain):
         self.ui.actionOPF_time_series.triggered.connect(self.run_opf_time_series)
         self.ui.actionOptimal_Net_Transfer_Capacity.triggered.connect(self.run_opf_ntc)
         self.ui.actionOptimal_Net_Transfer_Capacity_Time_Series.triggered.connect(self.run_opf_ntc_ts)
-        self.ui.actionOptimal_NTC_time_series_clustering.triggered.connect(self.run_opf_ntc_ts)
         self.ui.actionInputs_analysis.triggered.connect(self.run_inputs_analysis)
         self.ui.actionStorage_location_suggestion.triggered.connect(self.storage_location)
         self.ui.actionLinearAnalysis.triggered.connect(self.run_linear_analysis)
