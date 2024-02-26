@@ -169,6 +169,7 @@ class CgmesExporter:
 
         for class_name, filt_class in class_filters.items():
             objects = self.cgmes_circuit.get_objects_list(elm_type=class_name)
+            filters = filt_class.set_index("Property-AttributeAssociationSimple").to_dict()
 
             for obj in objects:
                 obj_dict = obj.__dict__
@@ -179,18 +180,17 @@ class CgmesExporter:
                         if attr_value is None:
                             continue
 
-                        filt_property = filt_class[filt_class["Property-AttributeAssociationSimple"] == attr_name]
-                        if not filt_property.empty:
-                            profile = filt_property.iloc[0, 8]
+                        if attr_name in filters["Property-AttributeAssociationFull"]:
+                            profile = filters["Profile"][attr_name]
                             graph = graphs_dict.get(profile)
 
                             if hasattr(attr_value, "rdfid"):
                                 if graph is not None:
-                                    graph.add((obj_id, RDF.type, rdflib.URIRef(filt_property.iloc[0, 1])))
-                                    graph.add((rdflib.URIRef(obj_id), rdflib.URIRef(filt_property.iloc[0, 3]),
+                                    graph.add((obj_id, RDF.type, rdflib.URIRef(filters["ClassFullName"][attr_name])))
+                                    graph.add((rdflib.URIRef(obj_id), rdflib.URIRef(filters["Property-AttributeAssociationFull"][attr_name]),
                                                rdflib.URIRef("#_" + attr_value.rdfid)))
                             else:
-                                enum_type = filt_property.iloc[0, 6]
+                                enum_type = filters["Type"][attr_name]
                                 enum_dict_key = None
 
                                 if enum_type == "Enumeration":
@@ -201,16 +201,16 @@ class CgmesExporter:
                                     enum_value = enum_dict_value.get(str(attr_value))
 
                                     if graph is not None:
-                                        graph.add((obj_id, RDF.type, rdflib.URIRef(filt_property.iloc[0, 1])))
-                                        graph.add((obj_id, rdflib.URIRef(filt_property.iloc[0, 3]),
+                                        graph.add((obj_id, RDF.type, rdflib.URIRef(filters["ClassFullName"][attr_name])))
+                                        graph.add((obj_id, rdflib.URIRef(filters["Property-AttributeAssociationFull"][attr_name]),
                                                    rdflib.URIRef(enum_value)))
                                 else:
                                     if isinstance(attr_value, bool):
                                         attr_value = str(attr_value).lower()
 
                                     if graph is not None:
-                                        graph.add((obj_id, RDF.type, rdflib.URIRef(filt_property.iloc[0, 1])))
-                                        graph.add((obj_id, rdflib.URIRef(filt_property.iloc[0, 3]),
+                                        graph.add((obj_id, RDF.type, rdflib.URIRef(filters["ClassFullName"][attr_name])))
+                                        graph.add((obj_id, rdflib.URIRef(filters["Property-AttributeAssociationFull"][attr_name]),
                                                    rdflib.Literal(str(attr_value))))
 
                     except Exception:
