@@ -25,7 +25,7 @@ class SvShuntCompensatorSections(Base):
 
 		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.shunt_compensator import ShuntCompensator
 		self.ShuntCompensator: ShuntCompensator | None = None
-		self.sections: float = 0.0
+		self.sections: float = None
 
 		self.register_property(
 			name='ShuntCompensator',

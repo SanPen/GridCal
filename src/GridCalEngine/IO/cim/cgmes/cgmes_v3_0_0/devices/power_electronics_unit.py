@@ -25,8 +25,8 @@ class PowerElectronicsUnit(Equipment):
 
 		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.power_electronics_connection import PowerElectronicsConnection
 		self.PowerElectronicsConnection: PowerElectronicsConnection | None = None
-		self.maxP: float = 0.0
-		self.minP: float = 0.0
+		self.maxP: float = None
+		self.minP: float = None
 
 		self.register_property(
 			name='PowerElectronicsConnection',

@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.rotating_machine import RotatingMachine
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile, ShortCircuitRotorKind, SynchronousMachineKind, SynchronousMachineOperatingMode, UnitSymbol
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile, UnitSymbol, ShortCircuitRotorKind, SynchronousMachineKind, SynchronousMachineOperatingMode
 
 
 class SynchronousMachine(RotatingMachine):
@@ -25,27 +25,27 @@ class SynchronousMachine(RotatingMachine):
 
 		from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.reactive_capability_curve import ReactiveCapabilityCurve
 		self.InitialReactiveCapabilityCurve: ReactiveCapabilityCurve | None = None
-		self.earthing: bool = False
-		self.earthingStarPointR: float = 0.0
-		self.earthingStarPointX: float = 0.0
-		self.ikk: float = 0.0
-		self.maxQ: float = 0.0
-		self.minQ: float = 0.0
-		self.mu: float = 0.0
-		self.qPercent: float = 0.0
-		self.r0: float = 0.0
-		self.r2: float = 0.0
-		self.satDirectSubtransX: float = 0.0
-		self.satDirectSyncX: float = 0.0
-		self.satDirectTransX: float = 0.0
+		self.earthing: bool = None
+		self.earthingStarPointR: float = None
+		self.earthingStarPointX: float = None
+		self.ikk: float = None
+		self.maxQ: float = None
+		self.minQ: float = None
+		self.mu: float = None
+		self.qPercent: float = None
+		self.r0: float = None
+		self.r2: float = None
+		self.satDirectSubtransX: float = None
+		self.satDirectSyncX: float = None
+		self.satDirectTransX: float = None
 		self.shortCircuitRotorType: ShortCircuitRotorKind = None
 		self.type: SynchronousMachineKind = None
-		self.voltageRegulationRange: float = 0.0
-		self.r: float = 0.0
-		self.x0: float = 0.0
-		self.x2: float = 0.0
+		self.voltageRegulationRange: float = None
+		self.r: float = None
+		self.x0: float = None
+		self.x2: float = None
 		self.operatingMode: SynchronousMachineOperatingMode = None
-		self.referencePriority: int = 0
+		self.referencePriority: int = None
 
 		self.register_property(
 			name='InitialReactiveCapabilityCurve',

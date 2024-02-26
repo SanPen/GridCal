@@ -178,16 +178,16 @@ def get_attribute_code(attributes):
         if "datatype" in attribute:  # Attribute
             data_type = attribute["datatype"]
             if data_type == "Float" or data_type == "Decimal":
-                default_value = "float = 0.0"
+                default_value = "float = None"
             elif data_type == "Integer":
-                default_value = "int = 0"
+                default_value = "int = None"
             elif data_type == "DateTime" or data_type == "MonthDay":
                 default_value = "datetime.datetime | None = None"
                 code += f"\t\timport datetime\n"
             elif data_type == "Boolean":
-                default_value = "bool = False"
+                default_value = "bool = None"
             elif data_type == "String":
-                default_value = "str = ''"
+                default_value = "str = None"
             code += f"\t\tself.{attr_name}: {default_value}\n"
         elif "range" in attribute:  # Association
             assoc_range = attribute["range"]
@@ -244,13 +244,37 @@ def write_class_import(name):
         file.write(import_code)
 
 
+def import_enum_data():
+    from rdflib import Graph, RDF, RDFS, OWL
+
+    enum_dict = dict()
+
+    current_directory = os.path.dirname(__file__)
+    rdf_serialization = Graph()
+    rdf_serialization.parse(source=os.path.join(current_directory,
+                                                "RDFS/cgmes_v2_4_15/CGMES_v2.4.15_RDFSSerialisation.ttl"),
+                            format="ttl")
+    rdf_serialization.parse(source=os.path.join(current_directory,
+                                                "RDFS/cgmes_v3_0_0/CGMES_v3.0.0_RDFSSerialisation.ttl"),
+                            format="ttl")
+
+    for s_i, p_i, o_i in rdf_serialization.triples((None, RDF.type, RDFS.Class)):
+        if str(s_i).split("#")[1] == "RdfEnum":
+            for enum in rdf_serialization.objects(s_i, OWL.members):
+                enum_wns = str(enum).split("#")[-1]
+                enum_class, enum_value = enum_wns.split('.')
+                if enum_class not in enum_dict:
+                    enum_dict[enum_class] = set()
+                enum_dict[enum_class].add(enum_value)
+
+    return enum_dict
+
+
 def write_enums():
-    import cgmes_rdfs_graph
     code = "\nfrom enum import Enum\n\n\n"
-    enums_to_generate = cgmes_rdfs_graph.get_enum_data(enum_name_list)
-    for enum_class in enums_to_generate:
-        enum_name = enum_class["name"]
-        enum_values = enum_class["values"]
+    enums_to_generate = import_enum_data()
+    for enum_class, enum_values in enums_to_generate.items():
+        enum_name = enum_class
 
         code += f"class {enum_name}(Enum):\n"
         for value in enum_values:

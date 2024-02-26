@@ -25,10 +25,10 @@ class PositionPoint(Base):
 
 		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.location import Location
 		self.Location: Location | None = None
-		self.sequenceNumber: int = 0
-		self.xPosition: str = ''
-		self.yPosition: str = ''
-		self.zPosition: str = ''
+		self.sequenceNumber: int = None
+		self.xPosition: str = None
+		self.yPosition: str = None
+		self.zPosition: str = None
 
 		self.register_property(
 			name='Location',

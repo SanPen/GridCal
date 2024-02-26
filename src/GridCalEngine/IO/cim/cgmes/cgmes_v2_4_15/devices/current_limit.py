@@ -23,7 +23,7 @@ class CurrentLimit(OperationalLimit):
 	def __init__(self, rdfid='', tpe='CurrentLimit'):
 		OperationalLimit.__init__(self, rdfid, tpe)
 
-		self.value: float = 0.0
+		self.value: float = None
 
 		self.register_property(
 			name='value',

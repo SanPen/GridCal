@@ -23,7 +23,7 @@ class Conductor(ConductingEquipment):
 	def __init__(self, rdfid='', tpe='Conductor'):
 		ConductingEquipment.__init__(self, rdfid, tpe)
 
-		self.length: float = 0.0
+		self.length: float = None
 
 		self.register_property(
 			name='length',

@@ -16,24 +16,24 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes.base import Base
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile, Validity, Source
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile, Source, Validity
 
 
 class Quality61850(Base):
 	def __init__(self, rdfid, tpe, resources=list(), class_replacements=dict()):
 		Base.__init__(self, rdfid=rdfid, tpe=tpe, resources=resources, class_replacements=class_replacements)
 
-		self.badReference: bool = False
-		self.estimatorReplaced: bool = False
-		self.failure: bool = False
-		self.oldData: bool = False
-		self.operatorBlocked: bool = False
-		self.oscillatory: bool = False
-		self.outOfRange: bool = False
-		self.overFlow: bool = False
+		self.badReference: bool = None
+		self.estimatorReplaced: bool = None
+		self.failure: bool = None
+		self.oldData: bool = None
+		self.operatorBlocked: bool = None
+		self.oscillatory: bool = None
+		self.outOfRange: bool = None
+		self.overFlow: bool = None
 		self.source: Source = None
-		self.suspect: bool = False
-		self.test: bool = False
+		self.suspect: bool = None
+		self.test: bool = None
 		self.validity: Validity = None
 
 		self.register_property(

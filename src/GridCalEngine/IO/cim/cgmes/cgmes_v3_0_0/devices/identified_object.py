@@ -23,11 +23,11 @@ class IdentifiedObject(Base):
 	def __init__(self, rdfid, tpe, resources=list(), class_replacements=dict()):
 		Base.__init__(self, rdfid=rdfid, tpe=tpe, resources=resources, class_replacements=class_replacements)
 
-		self.description: str = ''
-		self.energyIdentCodeEic: str = ''
-		self.mRID: str = ''
-		self.name: str = ''
-		self.shortName: str = ''
+		self.description: str = None
+		self.energyIdentCodeEic: str = None
+		self.mRID: str = None
+		self.name: str = None
+		self.shortName: str = None
 
 		self.register_property(
 			name='description',

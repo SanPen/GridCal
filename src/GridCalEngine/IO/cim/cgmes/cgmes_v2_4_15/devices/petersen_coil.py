@@ -24,12 +24,12 @@ class PetersenCoil(EarthFaultCompensator):
 		EarthFaultCompensator.__init__(self, rdfid, tpe)
 
 		self.mode: PetersenCoilModeKind = None
-		self.nominalU: float = 0.0
-		self.offsetCurrent: float = 0.0
-		self.positionCurrent: float = 0.0
-		self.xGroundMax: float = 0.0
-		self.xGroundMin: float = 0.0
-		self.xGroundNominal: float = 0.0
+		self.nominalU: float = None
+		self.offsetCurrent: float = None
+		self.positionCurrent: float = None
+		self.xGroundMax: float = None
+		self.xGroundMin: float = None
+		self.xGroundNominal: float = None
 
 		self.register_property(
 			name='mode',

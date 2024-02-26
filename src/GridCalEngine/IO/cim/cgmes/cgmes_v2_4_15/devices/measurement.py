@@ -23,7 +23,7 @@ class Measurement(IdentifiedObject):
 	def __init__(self, rdfid='', tpe='Measurement'):
 		IdentifiedObject.__init__(self, rdfid, tpe)
 
-		self.measurementType: str = ''
+		self.measurementType: str = None
 		self.phases: PhaseCode = None
 		self.unitSymbol: UnitSymbol = None
 		self.unitMultiplier: UnitMultiplier = None

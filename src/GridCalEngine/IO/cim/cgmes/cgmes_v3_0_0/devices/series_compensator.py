@@ -23,8 +23,8 @@ class SeriesCompensator(ConductingEquipment):
 	def __init__(self, rdfid='', tpe='SeriesCompensator'):
 		ConductingEquipment.__init__(self, rdfid, tpe)
 
-		self.r: float = 0.0
-		self.x: float = 0.0
+		self.r: float = None
+		self.x: float = None
 
 		self.register_property(
 			name='r',

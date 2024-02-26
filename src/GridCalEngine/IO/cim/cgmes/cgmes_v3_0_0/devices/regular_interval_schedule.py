@@ -23,7 +23,7 @@ class RegularIntervalSchedule(BasicIntervalSchedule):
 	def __init__(self, rdfid='', tpe='RegularIntervalSchedule'):
 		BasicIntervalSchedule.__init__(self, rdfid, tpe)
 
-		self.timeStep: float = 0.0
+		self.timeStep: float = None
 		import datetime
 		self.endTime: datetime.datetime | None = None
 

@@ -23,29 +23,29 @@ class ACDCConverter(ConductingEquipment):
 	def __init__(self, rdfid='', tpe='ACDCConverter'):
 		ConductingEquipment.__init__(self, rdfid, tpe)
 
-		self.baseS: float = 0.0
-		self.idleLoss: float = 0.0
-		self.maxUdc: float = 0.0
-		self.minUdc: float = 0.0
-		self.numberOfValves: int = 0
-		self.ratedUdc: float = 0.0
-		self.resistiveLoss: float = 0.0
-		self.switchingLoss: float = 0.0
-		self.valveU0: float = 0.0
-		self.maxP: float = 0.0
-		self.minP: float = 0.0
+		self.baseS: float = None
+		self.idleLoss: float = None
+		self.maxUdc: float = None
+		self.minUdc: float = None
+		self.numberOfValves: int = None
+		self.ratedUdc: float = None
+		self.resistiveLoss: float = None
+		self.switchingLoss: float = None
+		self.valveU0: float = None
+		self.maxP: float = None
+		self.minP: float = None
 		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.terminal import Terminal
 		self.PccTerminal: Terminal | None = None
 		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.acdc_converterdc_terminal import ACDCConverterDCTerminal
 		self.DCTerminals: ACDCConverterDCTerminal | None = None
-		self.idc: float = 0.0
-		self.poleLossP: float = 0.0
-		self.uc: float = 0.0
-		self.udc: float = 0.0
-		self.p: float = 0.0
-		self.q: float = 0.0
-		self.targetPpcc: float = 0.0
-		self.targetUdc: float = 0.0
+		self.idc: float = None
+		self.poleLossP: float = None
+		self.uc: float = None
+		self.udc: float = None
+		self.p: float = None
+		self.q: float = None
+		self.targetPpcc: float = None
+		self.targetUdc: float = None
 
 		self.register_property(
 			name='baseS',

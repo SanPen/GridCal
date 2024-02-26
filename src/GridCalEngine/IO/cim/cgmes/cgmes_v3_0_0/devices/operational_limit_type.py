@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.identified_object import IdentifiedObject
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile, LimitKind, UnitSymbol, OperationalLimitDirectionKind
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile, OperationalLimitDirectionKind, UnitSymbol, LimitKind
 
 
 class OperationalLimitType(IdentifiedObject):
@@ -25,9 +25,9 @@ class OperationalLimitType(IdentifiedObject):
 
 		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.operational_limit import OperationalLimit
 		self.OperationalLimit: OperationalLimit | None = None
-		self.acceptableDuration: float = 0.0
+		self.acceptableDuration: float = None
 		self.direction: OperationalLimitDirectionKind = None
-		self.isInfiniteDuration: bool = False
+		self.isInfiniteDuration: bool = None
 		self.kind: LimitKind = None
 
 		self.register_property(

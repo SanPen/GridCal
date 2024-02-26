@@ -23,7 +23,7 @@ class SvShuntCompensatorSections(Base):
 	def __init__(self, rdfid, tpe, resources=list(), class_replacements=dict()):
 		Base.__init__(self, rdfid=rdfid, tpe=tpe, resources=resources, class_replacements=class_replacements)
 
-		self.sections: float = 0.0
+		self.sections: float = None
 		from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.shunt_compensator import ShuntCompensator
 		self.ShuntCompensator: ShuntCompensator | None = None
 
