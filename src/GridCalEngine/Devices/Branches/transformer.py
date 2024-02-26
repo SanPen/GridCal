@@ -21,7 +21,8 @@ from typing import Tuple, Union
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
-from GridCalEngine.enumerations import TransformerControlType, WindingsConnection, BuildStatus
+from GridCalEngine.enumerations import (TransformerControlType, WindingsConnection, BuildStatus,
+                                        TapAngleControl, TapModuleControl)
 from GridCalEngine.Devices.Parents.controllable_branch_parent import ControllableBranchParent
 from GridCalEngine.Devices.Branches.transformer_type import TransformerType
 from GridCalEngine.Devices.Parents.editable_device import DeviceType
@@ -66,6 +67,8 @@ class Transformer2W(ControllableBranchParent):
                  temp_oper: float = 20.0,
                  alpha: float = 0.00330,
                  control_mode: TransformerControlType = TransformerControlType.fixed,
+                 tap_module_control_mode: TapModuleControl = TapModuleControl.fixed,
+                 tap_angle_control_mode: TapAngleControl = TapAngleControl.fixed,
                  template: TransformerType = None,
                  contingency_factor: float = 1.0,
                  protection_rating_factor: float = 1.4,
@@ -170,6 +173,8 @@ class Transformer2W(ControllableBranchParent):
                                           temp_oper=temp_oper,
                                           alpha=alpha,
                                           control_mode=control_mode,
+                                          tap_module_control_mode=tap_module_control_mode,
+                                          tap_angle_control_mode=tap_angle_control_mode,
                                           contingency_factor=contingency_factor,
                                           protection_rating_factor=protection_rating_factor,
                                           contingency_enabled=contingency_enabled,

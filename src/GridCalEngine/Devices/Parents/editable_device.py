@@ -17,11 +17,10 @@
 import random
 import uuid
 import numpy as np
-from typing import List, Dict, AnyStr, Any, Optional, Union, Type, Tuple
 from GridCalEngine.enumerations import (DeviceType, TimeFrame, BuildStatus, WindingsConnection, TransformerControlType,
-                                        ConverterControlType)
-from GridCalEngine.basic_structures import Vec, IntVec, BoolVec
+                                        ConverterControlType, TapModuleControl, TapAngleControl)
 from GridCalEngine.Devices.profile import Profile
+from typing import List, Dict, AnyStr, Any, Optional, Union, Type, Tuple
 
 
 # types that can be assigned to a GridCal property
@@ -34,7 +33,9 @@ GCPROP_TYPES = Union[
     Type[BuildStatus],
     Type[WindingsConnection],
     Type[TransformerControlType],
-    Type[ConverterControlType]
+    Type[ConverterControlType],
+    Type[TapModuleControl],
+    Type[TapAngleControl],
 ]
 
 
