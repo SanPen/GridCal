@@ -586,45 +586,61 @@ class LinearMultiContingencies:
 
             if len(contingency_indices.branch_contingency_indices) > 1:
 
+                # Flow =
+                #   Pf0[k]
+                # + MLODF[k, bd] * Pf0[bd]
+                # + MLODF[k, bd] * PTDF[bd, i] * dP[i]
+                # + PTDF[k, i] * dPi
+
                 # Compute M matrix [n, n] (lodf relating the outaged lines to each other)
                 M = create_M_numba(lodf=lodf,
                                    branch_contingency_indices=contingency_indices.branch_contingency_indices)
                 L = lodf[:, contingency_indices.branch_contingency_indices]
 
-                # TODO: check if we need compensated_ptdf_factors here
-
                 # Compute LODF for the multiple failure MLODF[k, βδ]
-                mlodf_factors = dense_to_csc(mat=L @ np.linalg.inv(M),
+                MLODF = L @ np.linalg.inv(M)
+
+                # MLODF filtered
+                mlodf_factors = dense_to_csc(mat=MLODF,
                                              threshold=lodf_threshold)
-
-            elif len(contingency_indices.branch_contingency_indices) == 1:
-
-                # TODO: check if we need compensated_ptdf_factors here
-
-                # append values
-                mlodf_factors = dense_to_csc(mat=lodf[:, contingency_indices.branch_contingency_indices],
-                                             threshold=lodf_threshold)
-
-            else:
-                mlodf_factors = sp.csc_matrix(([], [], [0]), shape=(lodf.shape[0], 0))
-
-            if len(contingency_indices.bus_contingency_indices):
 
                 # this is PTDF[k, i]
                 ptdf_k_i = dense_to_csc(mat=ptdf[:, contingency_indices.bus_contingency_indices],
                                         threshold=ptdf_threshold)
 
-                if len(contingency_indices.branch_contingency_indices):
-                    # this is PTDF[βδ, i]
-                    ptdf_bd_i = dense_to_csc(mat=ptdf[
-                        contingency_indices.branch_contingency_indices, contingency_indices.bus_contingency_indices],
-                                             threshold=ptdf_threshold)
+                # PTDF[βδ, i]
+                ptdf_bd_i = dense_to_csc(mat=ptdf[contingency_indices.branch_contingency_indices,
+                contingency_indices.bus_contingency_indices],
+                                         threshold=ptdf_threshold)
 
-                    # must compute             MLODF[k, βδ] x PTDF[βδ, i] + PTDF[k, i]
-                    compensated_ptdf_factors = mlodf_factors @ ptdf_bd_i + ptdf_k_i
-                else:
-                    compensated_ptdf_factors = ptdf_k_i  # TODO Comprobar con Jesús
+                # must compute: MLODF[k, βδ] x PTDF[βδ, i] + PTDF[k, i]
+                compensated_ptdf_factors = mlodf_factors @ ptdf_bd_i + ptdf_k_i
+
+            elif len(contingency_indices.branch_contingency_indices) == 1:
+
+                # Pf0[k]
+                # + LODF[k, c] * Pf0[c]
+                # + LODF[k, c] * PTDF[c, i] * dPi
+                # + PTDF[k, i] * dPi
+
+                # append values
+                mlodf_factors = dense_to_csc(mat=lodf[:, contingency_indices.branch_contingency_indices],
+                                             threshold=lodf_threshold)
+
+                # this is PTDF[k, i]
+                ptdf_k_i = dense_to_csc(mat=ptdf[:, contingency_indices.bus_contingency_indices],
+                                        threshold=ptdf_threshold)
+
+                # PTDF[βδ, i]
+                ptdf_bd_i = dense_to_csc(mat=ptdf[contingency_indices.branch_contingency_indices,
+                contingency_indices.bus_contingency_indices],
+                                         threshold=ptdf_threshold)
+
+                # must compute: MLODF[k, βδ] x PTDF[βδ, i] + PTDF[k, i]
+                compensated_ptdf_factors = mlodf_factors @ ptdf_bd_i + ptdf_k_i
+
             else:
+                mlodf_factors = sp.csc_matrix(([], [], [0]), shape=(lodf.shape[0], 0))
                 compensated_ptdf_factors = sp.csc_matrix(([], [], [0]), shape=(lodf.shape[0], 0))
 
             # append values

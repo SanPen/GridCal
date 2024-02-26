@@ -283,7 +283,7 @@
                     </widget>
                    </item>
                    <item>
-                    <widget class="QSlider" name="simulation_results_step_slider">
+                    <widget class="QSlider" name="diagram_step_slider">
                      <property name="toolTip">
                       <string>Diagrams time slider</string>
                      </property>
