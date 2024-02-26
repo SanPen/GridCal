@@ -454,7 +454,31 @@ class ContingencyResultsReport:
         :param detailed_massive_report: Generate massive report
         """
 
-        #Aqui reporte de base
+        #Reporting base case
+        if (contingency_idx == 0): #only doing it once per hour
+
+            for m in mon_idx:
+
+                if abs(base_flow[m]) > numerical_circuit.rates[m]: #only add if overloaded
+
+                    self.add(time_index=t if t is not None else 0,  # --------->Convertir a fecha
+                             base_uuid=calc_branches[m].idtag,  # --------->Cambiar a CCAA1
+                             contingency_uuid=contingency_group.idtag,  # --------->Cambiar a CCAA2
+                             base_name=numerical_circuit.branch_data.names[m],
+                             contingency_name=  'Base',
+                             base_rating=numerical_circuit.branch_data.rates[m],
+                             contingency_rating=numerical_circuit.branch_data.contingency_rates[m],
+                             srap_rating=srap_ratings[m],
+                             base_flow=abs(base_flow[m]),
+                             post_contingency_flow = 0.0,
+                             post_srap_flow= 0.0,
+                             base_loading= abs(base_flow[m]) / (numerical_circuit.rates[m]+ 1e-9),
+                             post_contingency_loading= 0.0,
+                             post_srap_loading= 0.0,
+                             msg_ov= 'Overload not acceptable',
+                             msg_srap='SRAP not applicable',
+                             srap_power= 0.0,
+                             solved_by_srap='False')
 
 
 
