@@ -54,6 +54,7 @@ class ControllableBranchParent(BranchParent):
                  mttr: float,
                  vset: float,
                  Pset: float,
+                 regulation_branch: Union[BranchParent, None],
                  regulation_bus: Union[Bus, None],
                  regulation_cn: Union[ConnectivityNode, None],
                  temp_base: float,
@@ -95,6 +96,7 @@ class ControllableBranchParent(BranchParent):
         :param mttr: Mean time to recovery in hours
         :param vset: Voltage set-point of the voltage controlled bus in per unit
         :param Pset: Power set point
+        :param regulation_branch: Branch object where the flow regulation is applied
         :param regulation_bus: Bus object where the regulation is applied
         :param regulation_cn: ConnectivityNode where the regulation is applied
         :param temp_base: Base temperature at which `r` is measured in °C
@@ -191,6 +193,7 @@ class ControllableBranchParent(BranchParent):
         self.Pset = Pset
 
         self.control_mode: TransformerControlType = control_mode
+        self.regulation_branch: BranchParent = regulation_branch
         self.regulation_bus: Bus = regulation_bus
         self.regulation_cn: ConnectivityNode = regulation_cn
 
@@ -223,10 +226,22 @@ class ControllableBranchParent(BranchParent):
 
         self.register(key='control_mode', units='', tpe=TransformerControlType,
                       definition='Control type of the transformer')
+
         self.register(key='vset', units='p.u.', tpe=float,
                       definition='Objective voltage at the "to" side of the bus when regulating the tap.')
+
         self.register(key='Pset', units='p.u.', tpe=float,
                       definition='Objective power at the "from" side of when regulating the angle.')
+
+        self.register(key='regulation_branch', units='', tpe=DeviceType.BranchDevice,
+                      definition='Branch where the controls are applied.')
+
+        self.register(key='regulation_bus', units='', tpe=DeviceType.BusDevice,
+                      definition='Bus where the regulation is applied.')
+
+        self.register(key='regulation_cn', units='', tpe=DeviceType.ConnectivityNodeDevice,
+                      definition='Connectivity node where the regulation is applied.')
+
         self.register(key='temp_base', units='ºC', tpe=float, definition='Base temperature at which R was measured.')
         self.register(key='temp_oper', units='ºC', tpe=float, definition='Operation temperature to modify R.',
                       profile_name='temp_oper_prof')

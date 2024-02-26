@@ -363,13 +363,13 @@ class SimulationIndices:
                 i_m_modif_lst.append(T[k])
                 self.any_control = True
 
-            elif tpe == TransformerControlType.Vt:
+            elif tpe == TransformerControlType.V:
                 k_vt_m_lst.append(k)
                 k_m_modif_lst.append(k)
                 i_m_modif_lst.append(T[k])
                 self.any_control = True
 
-            elif tpe == TransformerControlType.PtVt:
+            elif tpe == TransformerControlType.PtV:
                 k_pf_tau_lst.append(k)
                 k_vt_m_lst.append(k)
                 k_m_modif_lst.append(k)

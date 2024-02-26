@@ -47,9 +47,12 @@ class MainGUI(ScriptingMain):
 
         # create main window
         ScriptingMain.__init__(self, parent=None)
-
         self.setWindowTitle('GridCal ' + __GridCal_VERSION__)
         self.setAcceptDrops(True)
+
+        ################################################################################################################
+        # Set splitters
+        ################################################################################################################
 
         # 1:4
         self.ui.dataStructuresSplitter.setStretchFactor(0, 3)

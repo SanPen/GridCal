@@ -8963,6 +8963,9 @@ QProgressBar::chunk{
    <property name="shortcut">
     <string>F5</string>
    </property>
+   <property name="menuRole">
+    <enum>QAction::TextHeuristicRole</enum>
+   </property>
   </action>
   <action name="actionPower_Flow_Time_series">
    <property name="icon">
