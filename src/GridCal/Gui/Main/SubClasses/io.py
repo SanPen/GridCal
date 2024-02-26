@@ -321,7 +321,7 @@ class IoMain(ConfigurationMain):
                     else:
                         pass
                         # create schematic
-                        # self.add_complete_bus_branch_diagram()
+                        self.add_complete_bus_branch_diagram()
 
                 # set base magnitudes
                 self.ui.sbase_doubleSpinBox.setValue(self.circuit.Sbase)

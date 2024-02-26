@@ -801,7 +801,8 @@ class DiagramsMain(CompiledArraysMain):
 
         diagram_widget = BusBranchEditorWidget(circuit=self.circuit,
                                                diagram=diagram,
-                                               default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value())
+                                               default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
+                                               time_index=self.get_diagram_slider_index())
 
         diagram_widget.setStretchFactor(1, 10)
         diagram_widget.center_nodes()
@@ -829,7 +830,8 @@ class DiagramsMain(CompiledArraysMain):
                 diagram = diagram_widget.get_selection_diagram()
                 self.add_diagram(BusBranchEditorWidget(self.circuit,
                                                        diagram=diagram,
-                                                       default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value()))
+                                                       default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
+                                                       time_index=self.get_diagram_slider_index()))
                 self.set_diagrams_list_view()
 
     def add_bus_vecinity_diagram_from_model(self):
@@ -906,7 +908,8 @@ class DiagramsMain(CompiledArraysMain):
             if isinstance(diagram, dev.BusBranchDiagram):
                 diagram_widget = BusBranchEditorWidget(self.circuit,
                                                        diagram=diagram,
-                                                       default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value())
+                                                       default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
+                                                       time_index=self.get_diagram_slider_index())
                 diagram_widget.setStretchFactor(1, 10)
                 diagram_widget.center_nodes()
                 self.diagram_widgets_list.append(diagram_widget)

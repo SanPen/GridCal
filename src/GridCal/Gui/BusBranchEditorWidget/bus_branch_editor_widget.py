@@ -233,6 +233,7 @@ class CustomGraphicsView(QGraphicsView):
     """
     CustomGraphicsView to handle the panning of the grid
     """
+
     def __init__(self, scene: QGraphicsScene):
         """
         Constructor
@@ -278,12 +279,14 @@ class BusBranchEditorWidget(QSplitter):
     def __init__(self,
                  circuit: MultiCircuit,
                  diagram: Union[BusBranchDiagram, None],
-                 default_bus_voltage: float = 10.0):
+                 default_bus_voltage: float = 10.0,
+                 time_index: Union[None, int] = None):
         """
         Creates the Diagram Editor (BusBranchEditorWidget)
         :param circuit: Circuit that is handling
         :param diagram: BusBranchDiagram to use (optional)
         :param default_bus_voltage: Default bus voltages (kV)
+        :param time_index: time index to represent
         """
 
         QSplitter.__init__(self)
@@ -319,7 +322,6 @@ class BusBranchEditorWidget(QSplitter):
         self.results_dictionary = dict()
 
         self.editor_graphics_view = CustomGraphicsView(self.diagram_scene)
-
 
         # override events
         self.editor_graphics_view.dragEnterEvent = self.graphicsDragEnterEvent
@@ -362,21 +364,31 @@ class BusBranchEditorWidget(QSplitter):
         self.displacement = QPoint()
         self.startPos = None
 
+        # current time index from the GUI (None or 0, 1, 2, ..., n-1)
+        self._time_index: Union[None, int] = time_index
+
         if diagram is not None:
             self.draw()
 
-        self.time_index_: Union[None, int] = None
+        # Note: Do not declare any variable beyond here, as it may bnot be considered if draw is called :/
 
     def set_time_index(self, time_index: Union[int, None]):
         """
         Set the time index of the table
         :param time_index: None or integer value
         """
-        self.time_index_ = time_index
+        self._time_index = time_index
 
         mdl = self.object_editor_table.model()
         if isinstance(mdl, ObjectsModel):
-            mdl.set_time_index(time_index=time_index)
+            mdl.set_time_index(time_index=self._time_index)
+
+    def get_time_index(self) -> Union[int, None]:
+        """
+        Get the time index
+        :return: int, None
+        """
+        return self._time_index
 
     def set_editor_model(self,
                          api_object: ALL_DEV_TYPES,
@@ -388,7 +400,7 @@ class BusBranchEditorWidget(QSplitter):
         """
         mdl = ObjectsModel(objects=[api_object],
                            property_list=api_object.property_list,
-                           time_index=self.time_index_,
+                           time_index=self.get_time_index(),
                            parent=self.object_editor_table,
                            editable=True,
                            transposed=True,
@@ -3508,14 +3520,13 @@ def generate_bus_branch_diagram(buses: List[Bus],
 
     return diagram
 
-
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-
-    window = BusBranchEditorWidget(circuit=MultiCircuit(),
-                                   diagram=BusBranchDiagram(),
-                                   default_bus_voltage=10.0)
-
-    window.resize(1.61 * 700.0, 600.0)  # golden ratio
-    window.show()
-    sys.exit(app.exec())
+# if __name__ == "__main__":
+#     app = QApplication(sys.argv)
+#
+#     window = BusBranchEditorWidget(circuit=MultiCircuit(),
+#                                    diagram=BusBranchDiagram(),
+#                                    default_bus_voltage=10.0)
+#
+#     window.resize(1.61 * 700.0, 600.0)  # golden ratio
+#     window.show()
+#     sys.exit(app.exec())

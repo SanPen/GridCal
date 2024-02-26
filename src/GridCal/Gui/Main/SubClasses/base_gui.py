@@ -518,13 +518,19 @@ class BaseMainGui(QMainWindow):
         self.simulation_start_index = st
         self.simulation_end_index = en
 
-    def get_diagram_slider_index(self):
-
+    def get_diagram_slider_index(self) -> Union[int, None]:
+        """
+        Get the diagram slider value
+        :return: [None, int]
+        """
         idx = self.ui.diagram_step_slider.value()
         return idx if idx > -1 else None
 
-    def get_db_slider_index(self):
-
+    def get_db_slider_index(self) -> Union[int, None]:
+        """
+        Get the db slider value
+        :return: [None, int]
+        """
         idx = self.ui.db_step_slider.value()
         return idx if idx > -1 else None
 
