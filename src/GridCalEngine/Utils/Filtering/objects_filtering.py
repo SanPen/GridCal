@@ -62,7 +62,10 @@ def compute_objects_masks(objects: List[ALL_DEV_TYPES], flt: Filter) -> Tuple[Bo
 
             for i in range(n):
 
-                obj_val = object_extract(elm=objects[i], args=flt.element_args)
+                if len(flt.element_args):
+                    obj_val = object_extract(elm=objects[i], args=flt.element_args)
+                else:
+                    obj_val = str(objects[i])
 
                 if obj_val is not None:
 
@@ -112,7 +115,8 @@ def compute_objects_masks(objects: List[ALL_DEV_TYPES], flt: Filter) -> Tuple[Bo
                         idx_mask[i] = True
                 else:
                     # the object_val is None
-                    pass
+                    a = ".".join(flt.element_args)
+                    raise ValueError(f"{a} cannot be found for the objects :(")
 
         else:
             raise Exception("Invalid FilterSubject")

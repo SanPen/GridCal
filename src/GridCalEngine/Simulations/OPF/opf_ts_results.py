@@ -14,7 +14,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
+from __future__ import annotations
+from typing import Union, TYPE_CHECKING
 import numpy as np
 import pandas as pd
 from GridCalEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults
@@ -24,18 +25,41 @@ from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.basic_structures import IntVec, Vec, StrVec, CxMat, Mat, BoolVec
 from GridCalEngine.enumerations import StudyResultsType, ResultTypes
 
+if TYPE_CHECKING:  # Only imports the below statements during type checking
+    from GridCalEngine.Simulations.Clustering.clustering_results import ClusteringResults
+    from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit
+
 
 class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
     """
     Optimal power flow time series results
     """
 
-    def __init__(self, bus_names, branch_names, load_names, generator_names,
-                 battery_names, hvdc_names, fuel_names, emission_names,
-                 fluid_node_names, fluid_path_names, fluid_injection_names,
-                 n, m, nt, ngen=0, nbat=0, nload=0, nhvdc=0, n_fluid_node=0,
-                 n_fluid_path=0, n_fluid_injection=0,
-                 time_array=None, bus_types=(), clustering_results=None):
+    def __init__(self,
+                 bus_names: StrVec,
+                 branch_names: StrVec,
+                 load_names: StrVec,
+                 generator_names: StrVec,
+                 battery_names: StrVec,
+                 hvdc_names: StrVec,
+                 fuel_names: StrVec,
+                 emission_names: StrVec,
+                 fluid_node_names: StrVec,
+                 fluid_path_names: StrVec,
+                 fluid_injection_names: StrVec,
+                 n: int,
+                 m: int,
+                 nt: int,
+                 ngen: int = 0,
+                 nbat: int = 0,
+                 nload: int = 0,
+                 nhvdc: int = 0,
+                 n_fluid_node: int = 0,
+                 n_fluid_path: int = 0,
+                 n_fluid_injection: int = 0,
+                 time_array=None,
+                 bus_types=(),
+                 clustering_results: Union[None, ClusteringResults] = None):
         """
         OPF Time Series results constructor
         :param bus_names:
@@ -52,15 +76,15 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
         :param n: number of buses
         :param m: number of Branches
         :param nt: number of time steps
-        :param ngen:
-        :param nbat:
-        :param nload:
-        :param nhvdc:
-        :param n_fluid_node:
-        :param n_fluid_path:
-        :param n_fluid_injection:
+        :param ngen: number of generators
+        :param nbat: number of batteries
+        :param nload: number of loads
+        :param nhvdc: number of HVDC lines
+        :param n_fluid_node: number of fluid nodes
+        :param n_fluid_path: number of fluid paths
+        :param n_fluid_injection: number of fluid injections
         :param time_array: Time array (optional)
-        :param bus_types:
+        :param bus_types: array of bus types
         :param clustering_results:
         """
         ResultsTemplate.__init__(self,
@@ -231,7 +255,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
 
         self.register(name='converged', tpe=BoolVec)
 
-    def apply_new_time_series_rates(self, nc: "NumericalCircuit"):
+    def apply_new_time_series_rates(self, nc: NumericalCircuit):
         """
 
         :param nc:
@@ -422,7 +446,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
         elif result_type == ResultTypes.GeneratorCost:
             labels = self.generator_names
             y = self.generator_cost
-            y_label = '(€/MWh)'
+            y_label = '(Currency)'
             title = 'Generator cost'
 
         elif result_type == ResultTypes.GeneratorFuels:
