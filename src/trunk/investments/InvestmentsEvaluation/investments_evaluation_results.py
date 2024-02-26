@@ -18,10 +18,9 @@ import numpy as np
 from matplotlib import pyplot as plt
 import matplotlib.colors as plt_colors
 from GridCalEngine.Simulations.results_template import ResultsTemplate
-from GridCalEngine.Simulations.result_types import ResultTypes
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.basic_structures import IntVec, Vec, StrVec
-from GridCalEngine.enumerations import StudyResultsType
+from GridCalEngine.enumerations import StudyResultsType, ResultTypes
 
 
 class InvestmentsEvaluationResults(ResultsTemplate):
@@ -138,10 +137,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
             y = self._losses + self._overload_score + self._voltage_score
             z = self._f_obj
 
-            if np.min(z) <= 0:  # necessary to apply color_norm correctly
-                color_norm = plt_colors.Normalize()
-            else:
-                color_norm = plt_colors.LogNorm()
+            color_norm = plt_colors.Normalize()
 
             data = np.c_[x, y]
             y_label = ''
@@ -150,7 +146,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
             #plt.ion()
             fig = plt.figure(figsize=(8, 6))
             ax3 = plt.subplot(1, 1, 1)
-            sc3 = ax3.scatter(x, y, c=z, norm=color_norm)
+            sc3 = ax3.scatter(x, y, c=range(len(x)), norm=color_norm)
             ax3.set_xlabel('Investment cost (M€)')
             ax3.set_ylabel('Total cost of losses (M€)')
             plt.colorbar(sc3, fraction=0.05, label='Objective function')
