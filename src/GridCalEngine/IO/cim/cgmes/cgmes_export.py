@@ -7,6 +7,7 @@ from rdflib.plugins.serializers.rdfxml import PrettyXMLSerializer
 from rdflib.serializer import Serializer
 import os
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
+import pandas as pd
 
 plugin.register("cim_xml", Serializer, "GridCalEngine.IO.cim.cgmes.cgmes_export", "CimSerializer")
 
@@ -122,9 +123,7 @@ class CgmesExporter:
                 elif str(s_i).split("#")[0] == "http://entsoe.eu/CIM/Topology/4/1":
                     about_dict["tp"] = about_list
 
-        profiles_info = pl.read_excel(
-            source=absolute_path_to_excel,
-            sheet_name="Profiles")
+        profiles_info = pd.read_excel(absolute_path_to_excel, sheet_name="Profiles")
         endt = time.time()
         print("Serialization and excel load time: ", endt - start, "sec")
 
@@ -165,8 +164,8 @@ class CgmesExporter:
             "SV": sv_graph
         }
 
-        class_filters = {class_name: profiles_info.filter(pl.col("ClassSimpleName") == class_name) for class_name in
-                         self.cgmes_circuit.classes}
+        class_filters = {class_name: profiles_info[profiles_info["ClassSimpleName"] == class_name] for class_name
+                         in self.cgmes_circuit.classes}
 
         for class_name, filt_class in class_filters.items():
             objects = self.cgmes_circuit.get_objects_list(elm_type=class_name)
@@ -180,39 +179,39 @@ class CgmesExporter:
                         if attr_value is None:
                             continue
 
-                        filt_property = filt_class.filter(pl.col("Property-AttributeAssociationSimple") == attr_name)
-                        profile = filt_property[0, 8].__str__()
-                        graph = graphs_dict.get(profile)
+                        filt_property = filt_class[filt_class["Property-AttributeAssociationSimple"] == attr_name]
+                        if not filt_property.empty:
+                            profile = filt_property.iloc[0, 8]
+                            graph = graphs_dict.get(profile)
 
-                        if hasattr(attr_value, "rdfid"):
-
-                            if graph is not None:
-                                graph.add((obj_id, RDF.type, rdflib.URIRef(filt_property[0, 1].__str__())))
-                                graph.add((rdflib.URIRef(obj_id), rdflib.URIRef(filt_property[0, 3].__str__()),
-                                           rdflib.URIRef("#_" + attr_value.rdfid)))
-                        else:
-                            enum_type = filt_property[0, 6].__str__()
-                            enum_dict_key = None
-
-                            if enum_type == "Enumeration":
-                                enum_dict_key = profile.lower()
-
-                            if enum_dict_key:
-                                enum_dict_value = enum_dict.get(enum_dict_key)
-                                enum_value = enum_dict_value.get(str(attr_value))
-
+                            if hasattr(attr_value, "rdfid"):
                                 if graph is not None:
-                                    graph.add((obj_id, RDF.type, rdflib.URIRef(filt_property[0, 1].__str__())))
-                                    graph.add((obj_id, rdflib.URIRef(filt_property[0, 3].__str__()),
-                                               rdflib.URIRef(enum_value)))
+                                    graph.add((obj_id, RDF.type, rdflib.URIRef(filt_property.iloc[0, 1])))
+                                    graph.add((rdflib.URIRef(obj_id), rdflib.URIRef(filt_property.iloc[0, 3]),
+                                               rdflib.URIRef("#_" + attr_value.rdfid)))
                             else:
-                                if isinstance(attr_value, bool):
-                                    attr_value = str(attr_value).lower()
+                                enum_type = filt_property.iloc[0, 6]
+                                enum_dict_key = None
 
-                                if graph is not None:
-                                    graph.add((obj_id, RDF.type, rdflib.URIRef(filt_property[0, 1].__str__())))
-                                    graph.add((obj_id, rdflib.URIRef(filt_property[0, 3].__str__()),
-                                               rdflib.Literal(str(attr_value))))
+                                if enum_type == "Enumeration":
+                                    enum_dict_key = profile.lower()
+
+                                if enum_dict_key:
+                                    enum_dict_value = enum_dict.get(enum_dict_key)
+                                    enum_value = enum_dict_value.get(str(attr_value))
+
+                                    if graph is not None:
+                                        graph.add((obj_id, RDF.type, rdflib.URIRef(filt_property.iloc[0, 1])))
+                                        graph.add((obj_id, rdflib.URIRef(filt_property.iloc[0, 3]),
+                                                   rdflib.URIRef(enum_value)))
+                                else:
+                                    if isinstance(attr_value, bool):
+                                        attr_value = str(attr_value).lower()
+
+                                    if graph is not None:
+                                        graph.add((obj_id, RDF.type, rdflib.URIRef(filt_property.iloc[0, 1])))
+                                        graph.add((obj_id, rdflib.URIRef(filt_property.iloc[0, 3]),
+                                                   rdflib.Literal(str(attr_value))))
 
                     except Exception:
                         continue
