@@ -20,7 +20,7 @@ from typing import Union
 
 from GridCalEngine.basic_structures import IntVec, StrVec
 from GridCalEngine.enumerations import EngineType, ContingencyMethod
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearMultiContingencies
 from GridCalEngine.Simulations.LinearFactors.linear_analysis_options import LinearAnalysisOptions
 from GridCalEngine.Simulations.LinearFactors.linear_analysis_ts_driver import LinearAnalysisTimeSeriesDriver
@@ -31,7 +31,7 @@ from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_ts_resul
 from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.driver_template import TimeSeriesDriverTemplate
 from GridCalEngine.Simulations.Clustering.clustering_results import ClusteringResults
-from GridCalEngine.Core.Compilers.circuit_to_newton_pa import newton_pa_contingencies, translate_contingency_report
+from GridCalEngine.Compilers.circuit_to_newton_pa import newton_pa_contingencies, translate_contingency_report
 from GridCalEngine.Utils.NumericalMethods.weldorf_online_stddev import WeldorfOnlineStdDevMat
 
 

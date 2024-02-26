@@ -18,8 +18,8 @@
 import numpy as np
 
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit, compile_numerical_circuit_at
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit, compile_numerical_circuit_at
 from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Simulations.driver_template import DriverTemplate
 

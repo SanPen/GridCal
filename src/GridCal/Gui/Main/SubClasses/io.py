@@ -21,10 +21,10 @@ from typing import Union
 import pandas as pd
 from PySide6 import QtWidgets
 
-import GridCalEngine.Core as core
 import GridCal.Gui.GuiFunctions as gf
 import GridCal.Gui.Session.export_results_driver as exprtdrv
 import GridCal.Gui.Session.file_handler as filedrv
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCal.Gui.CoordinatesInput.coordinates_dialogue import CoordinatesInputGUI
 from GridCal.Gui.GeneralDialogues import LogsDialogue, CustomQuestionDialogue
 from GridCal.Gui.BusBranchEditorWidget import BusBranchEditorWidget
@@ -33,10 +33,10 @@ from GridCal.Gui.GridGenerator.grid_generator_dialogue import GridGeneratorGUI
 from GridCal.Gui.RosetaExplorer.RosetaExplorer import RosetaExplorerGUI
 from GridCal.Gui.Main.SubClasses.Settings.configuration import ConfigurationMain
 
-from GridCalEngine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE
-from GridCalEngine.Core.Compilers.circuit_to_pgm import PGM_AVAILABLE
+from GridCalEngine.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE
+from GridCalEngine.Compilers.circuit_to_pgm import PGM_AVAILABLE
 from GridCalEngine.IO.gridcal.contingency_parser import import_contingencies_from_json, export_contingencies_json_file
-from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
+from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 
 
 class IoMain(ConfigurationMain):
@@ -135,7 +135,7 @@ class IoMain(ConfigurationMain):
         New project right now without asking questions
         """
         # clear the circuit model
-        self.circuit = core.MultiCircuit()
+        self.circuit = MultiCircuit()
 
         # clear the file name
         self.file_name = ''
@@ -321,7 +321,7 @@ class IoMain(ConfigurationMain):
                     else:
                         pass
                         # create schematic
-                        # self.add_complete_bus_branch_diagram()
+                        self.add_complete_bus_branch_diagram()
 
                 # set base magnitudes
                 self.ui.sbase_doubleSpinBox.setValue(self.circuit.Sbase)

@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 from typing import Union, List
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.enumerations import EngineType, ContingencyMethod
 from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_results import ContingencyAnalysisResults
 from GridCalEngine.Simulations.driver_types import SimulationTypes
@@ -26,10 +26,10 @@ from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_options 
 from GridCalEngine.Simulations.ContingencyAnalysis.Methods.nonlinear_contingency_analysis import nonlinear_contingency_analysis
 from GridCalEngine.Simulations.ContingencyAnalysis.Methods.linear_contingency_analysis import linear_contingency_analysis
 from GridCalEngine.Simulations.ContingencyAnalysis.Methods.helm_contingency_analysis import helm_contingency_analysis
-from GridCalEngine.Core.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE
-from GridCalEngine.Core.Compilers.circuit_to_newton_pa import (NEWTON_PA_AVAILABLE, newton_pa_contingencies,
+from GridCalEngine.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE
+from GridCalEngine.Compilers.circuit_to_newton_pa import (NEWTON_PA_AVAILABLE, newton_pa_contingencies,
                                                                translate_newton_pa_contingencies)
-from GridCalEngine.Core.Compilers.circuit_to_pgm import PGM_AVAILABLE
+from GridCalEngine.Compilers.circuit_to_pgm import PGM_AVAILABLE
 
 
 class ContingencyAnalysisDriver(DriverTemplate):

@@ -18,11 +18,11 @@ from itertools import combinations
 import numpy as np
 from typing import List, Tuple
 
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.Core.Devices.Aggregation.contingency import Contingency, ContingencyGroup
-from GridCalEngine.Core.Devices.Parents.editable_device import DeviceType
-from GridCalEngine.Core.Devices.types import BRANCH_TYPES
-import GridCalEngine.Core.Devices as dev
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Devices.Aggregation.contingency import Contingency, ContingencyGroup
+from GridCalEngine.Devices.Parents.editable_device import DeviceType
+from GridCalEngine.Devices.types import BRANCH_TYPES
+import GridCalEngine.Devices as dev
 
 
 def enumerate_states_n_k(m: int, k: int = 1):

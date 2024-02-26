@@ -23,8 +23,8 @@ from GridCalEngine.IO.cim.cgmes_2_4_15.cgmes_circuit import CgmesCircuit
 from GridCalEngine.IO.cim.cgmes_2_4_15.devices.branches.transformer.power_transformer_end import PowerTransformerEnd
 from GridCalEngine.IO.cim.cgmes_2_4_15.devices.branches.line.ac_line_segment import ACLineSegment
 from GridCalEngine.IO.cim.cgmes_2_4_15.devices.conducting_equipment import ConductingEquipment
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-import GridCalEngine.Core.Devices as gcdev
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
+import GridCalEngine.Devices as gcdev
 from GridCalEngine.data_logger import DataLogger
 
 

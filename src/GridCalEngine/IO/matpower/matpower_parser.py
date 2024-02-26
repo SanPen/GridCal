@@ -21,8 +21,8 @@ import numpy as np
 
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.enumerations import ConverterControlType
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-import GridCalEngine.Core.Devices as dev
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
+import GridCalEngine.Devices as dev
 import GridCalEngine.IO.matpower.matpower_branch_definitions as matpower_branches
 import GridCalEngine.IO.matpower.matpower_bus_definitions as matpower_buses
 import GridCalEngine.IO.matpower.matpower_gen_definitions as matpower_gen

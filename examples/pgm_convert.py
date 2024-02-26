@@ -1,5 +1,5 @@
 from GridCalEngine.api import *
-from GridCalEngine.Core.Compilers.circuit_to_pgm import pgm_pf
+from GridCalEngine.Compilers.circuit_to_pgm import pgm_pf
 
 # fname = './../../../../../Grids_and_profiles/grids/IEEE 14.xlsx'
 # fname = './../../../../../Grids_and_profiles/grids/IEEE 30 Bus.gridcal'

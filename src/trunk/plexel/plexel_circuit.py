@@ -1,7 +1,7 @@
 from typing import List, Union
 from enum import Enum
 import pandas as pd
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
 
 
 class ClassEnum(Enum):

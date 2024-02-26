@@ -20,8 +20,8 @@ import chardet
 import re
 from typing import List, AnyStr, Dict, Union
 
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-import GridCalEngine.Core.Devices as dev
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
+import GridCalEngine.Devices as dev
 from GridCalEngine.basic_structures import Logger
 
 

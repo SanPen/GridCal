@@ -20,13 +20,13 @@ from PySide6 import QtGui, QtCore
 from matplotlib import pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 
-from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit, compile_numerical_circuit_at
+from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit, compile_numerical_circuit_at
 import GridCalEngine.basic_structures as bs
-import GridCalEngine.Core.Devices as dev
+import GridCalEngine.Devices as dev
 import GridCal.Gui.GuiFunctions as gf
 import GridCalEngine.Utils.Filtering as flt
 from GridCalEngine.enumerations import DeviceType
-from GridCalEngine.Core.Devices.types import ALL_DEV_TYPES
+from GridCalEngine.Devices.types import ALL_DEV_TYPES
 from GridCal.Gui.Analysis.object_plot_analysis import object_histogram_analysis
 from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_msg
 from GridCal.Gui.Main.SubClasses.Model.diagrams import DiagramsMain

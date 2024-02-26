@@ -20,11 +20,11 @@ import pandas as pd
 import numpy as np
 from enum import EnumMeta as EnumType
 from GridCalEngine.basic_structures import Logger
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-import GridCalEngine.Core.Devices as dev
-from GridCalEngine.Core.Devices.Parents.editable_device import GCProp
-from GridCalEngine.Core.Devices.profile import Profile
-from GridCalEngine.Core.Devices.sparse_array import SparseArray
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
+import GridCalEngine.Devices as dev
+from GridCalEngine.Devices.Parents.editable_device import GCProp
+from GridCalEngine.Devices.profile import Profile
+from GridCalEngine.Devices.sparse_array import SparseArray
 from GridCalEngine.enumerations import DiagramType, DeviceType
 
 
@@ -268,21 +268,24 @@ def profile_todict_idtag(profile: Profile) -> Dict[str, str]:
     Get a dictionary representation of the profile
     :return:
     """
+    default = profile.default_value.idtag if profile.default_value else "None"
+
     if profile.is_sparse:
         return {
             'is_sparse': profile.is_sparse,
             'size': profile.size(),
-            'default': profile.default_value.idtag,
+            'default': default,
             'sparse_data': {
-                'map': {key: val.idtag for key, val in profile._sparse_array.get_map().items()}
+                'map': {key: val.idtag for key, val in profile.sparse_array.get_map().items()}
+                       if profile.sparse_array else dict()
             }
         }
     else:
         return {
             'is_sparse': profile.is_sparse,
             'size': profile.size(),
-            'default': profile.default_value.idtag,
-            'dense_data': [e.idtag for e in profile._dense_array],
+            'default': default,
+            'dense_data': [e.idtag for e in profile.dense_array] if profile.dense_array else list(),
         }
 
 
@@ -300,7 +303,7 @@ def profile_todict_str(profile: Profile) -> Dict[str, str]:
                 'size': s,
                 'default': str(profile.default_value),
                 'sparse_data': {
-                    'map': {key: str(val) for key, val in profile._sparse_array.get_map().items()}
+                    'map': {key: str(val) for key, val in profile.sparse_array.get_map().items()}
                 }
             }
         else:
@@ -308,7 +311,7 @@ def profile_todict_str(profile: Profile) -> Dict[str, str]:
                 'is_sparse': False,
                 'size': s,
                 'default': str(profile.default_value),
-                'dense_data': [str(e) for e in profile._dense_array],
+                'dense_data': [str(e) for e in profile.dense_array],
             }
     else:
         # empty profile
@@ -343,9 +346,7 @@ def get_profile_from_dict(data: Dict[str, Union[str, Union[Any, Dict[str, Any]]]
             default_value = collection.get(data['default'], default_value)
             map_data = {key: collection.get(val, default_value) for key, val in sp_data['map'].items()}
 
-        profile._sparse_array.create_from_dict(default_value=default_value,
-                                               size=data['size'],
-                                               map=map_data)
+        profile.sparse_array.create_from_dict(default_value=default_value, size=data['size'], map=map_data)
     else:
 
         if collection is None:

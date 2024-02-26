@@ -24,13 +24,13 @@ from PySide6 import QtGui, QtWidgets
 from matplotlib.colors import LinearSegmentedColormap
 
 # Engine imports
-import GridCalEngine.Core.Devices as dev
+import GridCalEngine.Devices as dev
 import GridCalEngine.Simulations as sim
 import GridCalEngine.Simulations.PowerFlow.grid_analysis as grid_analysis
 import GridCal.Gui.GuiFunctions as gf
 import GridCal.Gui.Visualization.visualization as viz
 from GridCal.Gui.BusBranchEditorWidget import BusBranchEditorWidget
-from GridCalEngine.Core.Compilers.circuit_to_newton_pa import get_newton_mip_solvers_list
+from GridCalEngine.Compilers.circuit_to_newton_pa import get_newton_mip_solvers_list
 from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_msg
 from GridCal.Gui.Main.SubClasses.Model.time_events import TimeEventsMain

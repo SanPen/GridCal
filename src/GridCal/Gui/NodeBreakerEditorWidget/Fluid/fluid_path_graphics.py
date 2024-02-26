@@ -25,7 +25,7 @@ from GridCal.Gui.NodeBreakerEditorWidget.Branches.line_editor import LineEditor
 from GridCal.Gui.messages import yes_no_question
 from GridCal.Gui.NodeBreakerEditorWidget.Branches.line_graphics_template import LineGraphicTemplateItem
 from GridCal.Gui.NodeBreakerEditorWidget.generic_graphics import ACTIVE
-from GridCalEngine.Core.Devices.Fluid.fluid_path import FluidPath
+from GridCalEngine.Devices.Fluid.fluid_path import FluidPath
 from GridCalEngine.enumerations import DeviceType
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking

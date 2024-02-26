@@ -1,7 +1,7 @@
 from GridCalEngine.api import *
-import GridCalEngine.Core.Devices as dev
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.Core.Topology.topology import find_islands, get_adjacency_matrix
+import GridCalEngine.Devices as dev
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Topology.topology import find_islands, get_adjacency_matrix
 from scipy.sparse import lil_matrix
 
 

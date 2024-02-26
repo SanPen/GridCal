@@ -17,13 +17,13 @@
 from __future__ import annotations
 import numpy as np
 from typing import Union, TYPE_CHECKING
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
 from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.driver_template import DriverTemplate
-from GridCalEngine.Core.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE, bentayga_linear_matrices
-from GridCalEngine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE, newton_pa_linear_matrices
+from GridCalEngine.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE, bentayga_linear_matrices
+from GridCalEngine.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE, newton_pa_linear_matrices
 from GridCalEngine.enumerations import EngineType
 from GridCalEngine.Simulations.LinearFactors.linear_analysis_results import LinearAnalysisResults
 from GridCalEngine.Simulations.LinearFactors.linear_analysis_options import LinearAnalysisOptions

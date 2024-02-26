@@ -22,7 +22,7 @@ from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.Simulations.results_table import ResultsTable
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.enumerations import StudyResultsType, ResultTypes
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking

@@ -2,9 +2,9 @@ from typing import Dict, List
 
 import pytest
 
-import GridCalEngine.Core.Devices as gcdev
-from GridCalEngine.Core import MultiCircuit
-from GridCalEngine.Core.DataStructures import BusData
+import GridCalEngine.Devices as gcdev
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.DataStructures import BusData
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
 from GridCalEngine.IO.cim.cgmes.cgmes_to_gridcal import get_gcdev_ac_lines
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.ac_line_segment import ACLineSegment

@@ -20,7 +20,7 @@ import pandas as pd
 from PySide6 import QtWidgets
 
 from GridCal.Gui.TowerBuilder.gui import Ui_Dialog
-import GridCalEngine.Core.Devices as dev
+import GridCalEngine.Devices as dev
 from GridCal.Gui.TowerBuilder.table_models import TowerModel, WireInTower, WiresTable
 from GridCal.Gui.GuiFunctions import PandasModel
 from GridCal.Gui.GeneralDialogues import LogsDialogue

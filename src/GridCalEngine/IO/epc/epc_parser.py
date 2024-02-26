@@ -21,10 +21,10 @@ from typing import List, AnyStr, Dict
 
 import numpy as np
 
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.basic_structures import Logger
-import GridCalEngine.Core.Devices as dev
+import GridCalEngine.Devices as dev
 
 
 def interpret_line(line, splitter=','):

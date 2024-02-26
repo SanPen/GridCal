@@ -19,7 +19,7 @@ import os
 import numpy as np
 import GridCalEngine.api as gce
 from GridCalEngine.enumerations import TransformerControlType
-from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
+from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import ac_optimal_power_flow, NonlinearOPFResults
 from trunk.acopf.acopf_admittance_tap_derivation import (compute_finitediff_admittances,
                                                          compute_finitediff_admittances_2dev,
