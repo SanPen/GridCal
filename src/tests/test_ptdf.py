@@ -604,7 +604,12 @@ def test_compensated_ptdf():
     linear_multi_contingency.compute(ptdf=linear_analysis.results.PTDF, lodf=linear_analysis.results.LODF)
 
     main_circuit_raw = FileOpen(fraw).open()
-    main_circuit_raw.delete_line(main_circuit_raw.get_lines()[0]) # Disable branch 1_2
+    #main_circuit_raw.delete_line(main_circuit_raw.get_lines()[0]) # Disable branch 1_2
+    line = '1_2_1'
+    for l in main_circuit_raw.lines:
+        if l.code == line:
+            l.active = False
+
 
     linear_analysis_raw = LinearAnalysisDriver(grid=main_circuit_raw)
     linear_analysis_raw.run()
