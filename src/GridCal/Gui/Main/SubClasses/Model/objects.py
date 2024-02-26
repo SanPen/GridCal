@@ -15,6 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
+from typing import Union, Tuple
 from PySide6 import QtGui, QtCore
 from matplotlib import pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
@@ -566,12 +567,26 @@ class ObjectsTableMain(DiagramsMain):
             else:
                 pass
 
+    def get_objects_time_index(self) -> Union[None, int]:
+        """
+        Get the time index of the objects slider already
+        accouting for the -1 -> None converison
+        :return: None or int
+        """
+        t_idx = self.ui.db_step_slider.value()
+        if t_idx <= -1:
+            return None
+        else:
+            return t_idx
+
     def highlight_based_on_property(self):
         """
         Highlight and select the buses of the selected objects
         """
 
         model = self.ui.dataStructureTableView.model()
+
+        t_idx = self.get_objects_time_index()
 
         if model is not None:
             objects = model.objects
@@ -580,7 +595,8 @@ class ObjectsTableMain(DiagramsMain):
 
                 elm = objects[0]
                 attr = self.ui.property_comboBox.currentText()
-                tpe = elm.registered_properties[attr].tpe
+                gc_prop = elm.registered_properties[attr]
+                tpe = gc_prop.tpe
 
                 if tpe in [float, int]:
 
@@ -589,7 +605,7 @@ class ObjectsTableMain(DiagramsMain):
                     if elm.device_type == DeviceType.BusDevice:
                         # buses
                         buses = objects
-                        values = [getattr(elm, attr) for elm in objects]
+                        values = [elm.get_vaule(gc_prop=gc_prop, t_idx=t_idx) for elm in objects]
 
                     elif elm.device_type in [DeviceType.BranchDevice,
                                              DeviceType.LineDevice,
@@ -603,16 +619,22 @@ class ObjectsTableMain(DiagramsMain):
                         buses = list()
                         values = list()
                         for br in objects:
+                            gc_prop = br.registered_properties[attr]
                             buses.append(br.bus_from)
                             buses.append(br.bus_to)
-                            val = getattr(br, attr)
+                            val = elm.get_vaule(gc_prop=gc_prop, t_idx=t_idx)
                             values.append(val)
                             values.append(val)
 
                     else:
                         # loads, generators, etc...
-                        buses = [elm.bus for elm in objects]
-                        values = [getattr(elm, attr) for elm in objects]
+                        buses = list()
+                        values = list()
+                        for elm in objects:
+                            gc_prop = elm.registered_properties[attr]
+                            val = elm.get_vaule(gc_prop=gc_prop, t_idx=t_idx)
+                            buses.append(elm.bus)
+                            values.append(val)
 
                     # build the color map
                     seq = [(0.0, 'gray'),
@@ -655,20 +677,20 @@ class ObjectsTableMain(DiagramsMain):
 
                 logger = bs.Logger()
 
+                t_idx = self.get_objects_time_index()
+
                 for index in indices:
                     i = index.row()
                     p_idx = index.column()
                     elm = objects[i]
                     attr = model.attributes[p_idx]
-                    prof_attr = elm.registered_properties[attr].profile_name
-
-                    if prof_attr != '':
-                        if hasattr(elm, prof_attr):
-                            val = getattr(elm, attr)
-                            profile = getattr(elm, prof_attr)
-                            profile.fill(val)
-                        else:
-                            logger.add_error("No profile found for " + attr, device=elm.name)
+                    gc_prop = elm.registered_properties[attr]
+                    if gc_prop.has_profile():
+                        val = elm.get_value(gc_prop=gc_prop, t_idx=t_idx)
+                        profile = elm.get_profile_by_prop(prop=gc_prop)
+                        profile.fill(val)
+                    else:
+                        logger.add_error("No profile found for " + attr, device=elm.name)
 
                 if logger.size():
                     logs_window = LogsDialogue("Assign to profile", logger=logger)

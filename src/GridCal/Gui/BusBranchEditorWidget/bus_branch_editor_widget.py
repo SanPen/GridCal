@@ -2449,6 +2449,61 @@ class BusBranchEditorWidget(QSplitter):
                 if location.graphic_object is not None:
                     location.graphic_object.recolour_mode()
 
+    def set_big_bus_marker(self, buses: List[Bus], color: QColor):
+        """
+        Set a big marker at the selected buses
+        :param buses: list of Bus objects
+        :param color: colour to use
+        """
+
+        for bus in buses:
+
+            graphic_obj = self.diagram.query_point(bus).graphic_object
+
+            if graphic_obj is not None:
+                graphic_obj.add_big_marker(color=color)
+                graphic_obj.setSelected(True)
+
+    def set_big_bus_marker_colours(self,
+                                   buses: List[Bus],
+                                   colors: List[type(QColor)],
+                                   tool_tips: Union[None, List[str]] = None):
+        """
+        Set a big marker at the selected buses with the matching colours
+        :param buses: list of Bus objects
+        :param colors: list of colour to use
+        :param tool_tips: list of tool tips (optional)
+        """
+
+        if tool_tips:
+            for bus, color, tool_tip in zip(buses, colors, tool_tips):
+
+                graphic_obj = self.diagram.query_point(bus).graphic_object
+
+                if graphic_obj is not None:
+                    graphic_obj.add_big_marker(color=color, tool_tip_text=tool_tip)
+                    graphic_obj.setSelected(True)
+        else:
+            for bus, color in zip(buses, colors):
+
+                graphic_obj = self.diagram.query_point(bus).graphic_object
+
+                if graphic_obj is not None:
+                    graphic_obj.add_big_marker(color=color)
+                    graphic_obj.setSelected(True)
+
+    def clear_big_bus_markers(self):
+        """
+        Set a big marker at the selected buses
+        """
+
+        buses_diagram_group = self.diagram.query_by_type(DeviceType.BusDevice)
+
+        if buses_diagram_group is not None:
+            for idtag, geo in buses_diagram_group.locations.items():
+                if geo.graphic_object is not None:
+                    geo.graphic_object.delete_big_marker()
+
     def set_dark_mode(self) -> None:
         """
         Set the dark theme
