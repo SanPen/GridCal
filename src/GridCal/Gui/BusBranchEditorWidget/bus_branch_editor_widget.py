@@ -3004,16 +3004,15 @@ class BusBranchEditorWidget(QSplitter):
         """
         self.results_dictionary = {thr.tpe: thr for thr in all_threads if thr is not None}
 
-    def plot_bus(self, i, api_object):
+    def plot_bus(self, i, api_object: Bus):
         """
         Plot branch results
         :param i: branch index (not counting HVDC lines because those are not real Branches)
-        :param api_object: API object
+        :param api_object: Bus API object
         :return:
         """
         fig = plt.figure(figsize=(12, 8))
         ax_1 = fig.add_subplot(211)
-        # ax_2 = fig.add_subplot(212)
 
         # set time
         x = self.circuit.time_profile
@@ -3021,9 +3020,12 @@ class BusBranchEditorWidget(QSplitter):
         if x is not None:
             if len(x) > 0:
 
-                # search available results
-                # TODO: Fix this
-                power_data = api_object.get_active_injection_profiles_dictionary()
+                # Get all devices grouped by bus
+                all_data = self.circuit.get_injection_devices_grouped_by_bus()
+
+                # filter injections by bus
+                bus_devices = all_data.get(api_object, None)
+
                 voltage = dict()
 
                 for key, driver in self.results_dictionary.items():
@@ -3033,7 +3035,22 @@ class BusBranchEditorWidget(QSplitter):
                                 voltage[key] = np.abs(driver.results.voltage[:, i])
 
                 # Injections
-                if len(power_data.keys()):
+                if bus_devices:
+
+                    power_data = dict()
+                    for tpe_name, devices in bus_devices.items():
+                        for device in devices:
+                            if device.device_type == DeviceType.LoadDevice:
+                                power_data[device.name] = -device.P_prof.toarray()
+                            elif device.device_type == DeviceType.GeneratorDevice:
+                                power_data[device.name] = device.P_prof.toarray()
+                            elif device.device_type == DeviceType.ShuntDevice:
+                                power_data[device.name] = -device.G_prof.toarray()
+                            elif device.device_type == DeviceType.StaticGeneratorDevice:
+                                power_data[device.name] = device.P_prof.toarray()
+                            elif device.device_type == DeviceType.ExternalGridDevice:
+                                power_data[device.name] = device.P_prof.toarray()
+
                     df = pd.DataFrame(data=power_data, index=x)
                     ax_1.set_title('Power', fontsize=14)
                     ax_1.set_ylabel('Injections [MW]', fontsize=11)
@@ -3152,8 +3169,8 @@ class BusBranchEditorWidget(QSplitter):
                     ax_2.set_title('Power', fontsize=14)
                     ax_2.set_ylabel('Power [MW]', fontsize=11)
                     df.plot(ax=ax_2)
-                    ax_2.plot(x, api_object.rate_prof, c='gray', linestyle='dashed', linewidth=1)
-                    ax_2.plot(x, -api_object.rate_prof, c='gray', linestyle='dashed', linewidth=1)
+                    ax_2.plot(x, api_object.rate_prof.toarray(), c='gray', linestyle='dashed', linewidth=1)
+                    ax_2.plot(x, -api_object.rate_prof.toarray(), c='gray', linestyle='dashed', linewidth=1)
 
                 if power_clustering_data is not None:
                     df = pd.DataFrame(data=power_clustering_data,
