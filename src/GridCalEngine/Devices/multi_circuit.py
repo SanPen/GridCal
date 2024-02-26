@@ -2514,9 +2514,9 @@ class MultiCircuit:
                         inj_list[i].bus = None
 
         # remove associations in bus_bars
-        for bus_bar in self.bus_bars:
-            if bus_bar.default_bus == obj:
-                bus_bar.default_bus = None  # remove the association
+        for cn in self.connectivity_nodes:
+            if cn.default_bus == obj:
+                cn.default_bus = None  # remove the association
 
         # remove the bus itself
         if obj in self.buses:
