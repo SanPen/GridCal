@@ -3050,6 +3050,10 @@ class BusBranchEditorWidget(QSplitter):
                                 power_data[device.name] = device.P_prof.toarray()
                             elif device.device_type == DeviceType.ExternalGridDevice:
                                 power_data[device.name] = device.P_prof.toarray()
+                            elif device.device_type == DeviceType.BatteryDevice:
+                                power_data[device.name] = device.P_prof.toarray()
+                            else:
+                                raise Exception("Missing shunt device for plotting")
 
                     df = pd.DataFrame(data=power_data, index=x)
                     ax_1.set_title('Power', fontsize=14)
