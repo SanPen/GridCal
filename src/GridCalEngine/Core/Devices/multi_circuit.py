@@ -2513,9 +2513,9 @@ class MultiCircuit:
                         inj_list[i].bus = None
 
         # remove associations in bus_bars
-        for bus_bar in self.bus_bars:
-            if bus_bar.default_bus == obj:
-                bus_bar.default_bus = None  # remove the association
+        #for bus_bar in self.bus_bars:
+        #    if bus_bar.default_bus == obj:
+        #        bus_bar.default_bus = None  # remove the association
 
         # remove the bus itself
         if obj in self.buses:
@@ -4882,3 +4882,53 @@ class MultiCircuit:
 
             if elm.bus == bus2:
                 elm.bus = bus1
+
+    def convert_to_node_breaker(self):
+        """
+        Convert from bus/branch to node/breaker network model
+        """
+        bbcn = {}
+        for bs in self.buses:
+            bb = dev.BusBar(name='Artificial_BusBar_{}'.format(bs.code), code='{}'.format(bs.code))
+            self.add_bus_bar(bb)
+            bbcn['Artificial_BusBar_{}'.format(bs.code)] = bb.cn
+
+        for l in self.get_branches():
+            # Create two new connectivity nodes
+            cnfrom = dev.ConnectivityNode(name='Artificial_CN_from_L{}'.format(l.name.split(' ')[-1]))
+            cnto = dev.ConnectivityNode(name='Artificial_CN_to_L{}'.format(l.name.split(' ')[-1]))
+            self.add_connectivity_node(cnfrom)
+            self.add_connectivity_node(cnto)
+            l.cn_to = cnto
+            l.cn_from = cnfrom
+            # Create two new switches
+            sw1 = dev.Switch(name='Artificial_SW_from_L{}'.format(l.name.split(' ')[-1]),
+                            cn_from=bbcn['Artificial_BusBar_{}'.format(l.bus_from.code)],
+                            cn_to=cnfrom,
+                            active=True,
+                            code='Artificial_SW_from_L{}'.format(l.name.split(' ')[-1]))
+            sw2 = dev.Switch(name='Artificial_SW_to_L{}'.format(l.name.split(' ')[-1]),
+                             cn_from=cnto,
+                             cn_to=bbcn['Artificial_BusBar_{}'.format(l.bus_to.code)],
+                             active=True,
+                             code='Artificial_SW_to_L{}'.format(l.name.split(' ')[-1]))
+            self.add_switch(sw1)
+            self.add_switch(sw2)
+
+        # Generators
+        for g in self.get_generators():
+            g.cn = bbcn['Artificial_BusBar_{}'.format(g.bus.code)]
+        # Loads
+        for ld in self.get_loads():
+            ld.cn = bbcn['Artificial_BusBar_{}'.format(ld.bus.code)]
+        # Shunts
+        for sh in self.get_shunts():
+            sh.cn = bbcn['Artificial_BusBar_{}'.format(sh.bus.code)]
+
+        # Removing original buses
+        bidx = [b for b in self.get_buses()]
+        for b in bidx:
+            self.delete_bus(b)
+
+
+
