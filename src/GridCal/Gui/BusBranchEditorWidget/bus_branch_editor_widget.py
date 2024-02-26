@@ -28,7 +28,7 @@ from PySide6.QtCore import (Qt, QPoint, QSize, QPointF, QRect, QRectF, QMimeData
                             QDataStream, QModelIndex)
 from PySide6.QtGui import (QIcon, QPixmap, QImage, QPainter, QStandardItemModel, QStandardItem, QColor, QPen,
                            QDragEnterEvent, QDragMoveEvent, QDropEvent, QWheelEvent, QKeyEvent, QMouseEvent)
-from PySide6.QtWidgets import (QApplication, QGraphicsView, QListView, QTableView, QVBoxLayout, QHBoxLayout, QFrame,
+from PySide6.QtWidgets import (QGraphicsView, QListView, QTableView, QVBoxLayout, QHBoxLayout, QFrame,
                                QSplitter, QMessageBox, QAbstractItemView, QGraphicsScene, QGraphicsSceneMouseEvent,
                                QGraphicsItem)
 from PySide6.QtSvg import QSvgGenerator
@@ -268,6 +268,22 @@ class CustomGraphicsView(QGraphicsView):
 
         # process the rest of the events
         super().mousePressEvent(event)
+
+
+def find_my_node(idtag_: str,
+                 bus_dict: Dict[str, BusGraphicItem],
+                 fluid_node_dict: Dict[str, FluidNodeGraphicItem]):
+    """
+    Function to look for the bus or fluid node
+    :param idtag_: bus or fluidnode idtag
+    :param bus_dict:
+    :param fluid_node_dict:
+    :return: Matching graphic object
+    """
+    graphic_obj = bus_dict.get(idtag_, None)
+    if graphic_obj is None:
+        graphic_obj = fluid_node_dict.get(idtag_, None)
+    return graphic_obj
 
 
 class BusBranchEditorWidget(QSplitter):
@@ -611,6 +627,7 @@ class BusBranchEditorWidget(QSplitter):
         # add buses first
         bus_dict: Dict[str, BusGraphicItem] = dict()
         fluid_node_dict: Dict[str, FluidNodeGraphicItem] = dict()
+        windings_dict: Dict[str, WindingGraphicItem] = dict()
         for category, points_group in self.diagram.data.items():
 
             if category == DeviceType.BusDevice.value:
@@ -626,7 +643,8 @@ class BusBranchEditorWidget(QSplitter):
 
                     # create the bus children
                     graphic_object.create_children_widgets(
-                        injections_by_tpe=inj_dev_by_bus.get(location.api_object, dict()))
+                        injections_by_tpe=inj_dev_by_bus.get(location.api_object, dict())
+                    )
 
                     graphic_object.change_size(h=location.h,
                                                w=location.w)
@@ -665,14 +683,20 @@ class BusBranchEditorWidget(QSplitter):
                                                editor=self)
                     graphic_object.set_connection(i=2, bus=elm.bus3, conn=conn3)
 
-                    graphic_object.set_position(x=location.x,
-                                                y=location.y)
+                    graphic_object.set_position(x=location.x, y=location.y)
+                    graphic_object.change_size(h=location.h,  w=location.w)
 
-                    graphic_object.change_size(h=location.h,
-                                               w=location.w)
+                    self.add_to_scene(graphic_object=conn1)
+                    self.add_to_scene(graphic_object=conn2)
+                    self.add_to_scene(graphic_object=conn3)
 
                     graphic_object.update_conn()
                     points_group.locations[idtag].graphic_object = graphic_object
+
+                    # register the windings for the branches pass
+                    windings_dict[elm.winding1.idtag] = conn1
+                    windings_dict[elm.winding2.idtag] = conn2
+                    windings_dict[elm.winding3.idtag] = conn3
 
             if category == DeviceType.FluidNodeDevice.value:
 
@@ -704,17 +728,6 @@ class BusBranchEditorWidget(QSplitter):
                 # pass for now...
                 pass
 
-        def find_my_node(idtag_: str):
-            """
-            Function to look for the bus or fluid node
-            :param idtag_: bus or fluidnode idtag
-            :return: Matching graphic object
-            """
-            graphic_obj = bus_dict.get(idtag_, None)
-            if graphic_obj is None:
-                graphic_obj = fluid_node_dict.get(idtag_, None)
-            return graphic_obj
-
         # add the rest of the branches
         for category, points_group in self.diagram.data.items():
 
@@ -722,8 +735,8 @@ class BusBranchEditorWidget(QSplitter):
 
                 for idtag, location in points_group.locations.items():
                     branch: Line = location.api_object
-                    bus_f_graphic_obj = find_my_node(branch.bus_from.idtag)
-                    bus_t_graphic_obj = find_my_node(branch.bus_to.idtag)
+                    bus_f_graphic_obj = find_my_node(branch.bus_from.idtag, bus_dict, fluid_node_dict)
+                    bus_t_graphic_obj = find_my_node(branch.bus_to.idtag, bus_dict, fluid_node_dict)
 
                     if bus_f_graphic_obj and bus_t_graphic_obj:
                         terminal_from = bus_f_graphic_obj.terminal
@@ -744,8 +757,8 @@ class BusBranchEditorWidget(QSplitter):
 
                 for idtag, location in points_group.locations.items():
                     branch: DcLine = location.api_object
-                    bus_f_graphic_obj = find_my_node(branch.bus_from.idtag)
-                    bus_t_graphic_obj = find_my_node(branch.bus_to.idtag)
+                    bus_f_graphic_obj = find_my_node(branch.bus_from.idtag, bus_dict, fluid_node_dict)
+                    bus_t_graphic_obj = find_my_node(branch.bus_to.idtag, bus_dict, fluid_node_dict)
 
                     if bus_f_graphic_obj and bus_t_graphic_obj:
                         terminal_from = bus_f_graphic_obj.terminal
@@ -766,8 +779,8 @@ class BusBranchEditorWidget(QSplitter):
 
                 for idtag, location in points_group.locations.items():
                     branch: HvdcLine = location.api_object
-                    bus_f_graphic_obj = find_my_node(branch.bus_from.idtag)
-                    bus_t_graphic_obj = find_my_node(branch.bus_to.idtag)
+                    bus_f_graphic_obj = find_my_node(branch.bus_from.idtag, bus_dict, fluid_node_dict)
+                    bus_t_graphic_obj = find_my_node(branch.bus_to.idtag, bus_dict, fluid_node_dict)
 
                     if bus_f_graphic_obj and bus_t_graphic_obj:
                         terminal_from = bus_f_graphic_obj.terminal
@@ -788,8 +801,8 @@ class BusBranchEditorWidget(QSplitter):
 
                 for idtag, location in points_group.locations.items():
                     branch: VSC = location.api_object
-                    bus_f_graphic_obj = find_my_node(branch.bus_from.idtag)
-                    bus_t_graphic_obj = find_my_node(branch.bus_to.idtag)
+                    bus_f_graphic_obj = find_my_node(branch.bus_from.idtag, bus_dict, fluid_node_dict)
+                    bus_t_graphic_obj = find_my_node(branch.bus_to.idtag, bus_dict, fluid_node_dict)
 
                     if bus_f_graphic_obj and bus_t_graphic_obj:
                         terminal_from = bus_f_graphic_obj.terminal
@@ -810,8 +823,8 @@ class BusBranchEditorWidget(QSplitter):
 
                 for idtag, location in points_group.locations.items():
                     branch: UPFC = location.api_object
-                    bus_f_graphic_obj = find_my_node(branch.bus_from.idtag)
-                    bus_t_graphic_obj = find_my_node(branch.bus_to.idtag)
+                    bus_f_graphic_obj = find_my_node(branch.bus_from.idtag, bus_dict, fluid_node_dict)
+                    bus_t_graphic_obj = find_my_node(branch.bus_to.idtag, bus_dict, fluid_node_dict)
 
                     if bus_f_graphic_obj and bus_t_graphic_obj:
                         terminal_from = bus_f_graphic_obj.terminal
@@ -832,8 +845,8 @@ class BusBranchEditorWidget(QSplitter):
 
                 for idtag, location in points_group.locations.items():
                     branch: Transformer2W = location.api_object
-                    bus_f_graphic_obj = find_my_node(branch.bus_from.idtag)
-                    bus_t_graphic_obj = find_my_node(branch.bus_to.idtag)
+                    bus_f_graphic_obj = find_my_node(branch.bus_from.idtag, bus_dict, fluid_node_dict)
+                    bus_t_graphic_obj = find_my_node(branch.bus_to.idtag, bus_dict, fluid_node_dict)
 
                     if bus_f_graphic_obj and bus_t_graphic_obj:
                         terminal_from = bus_f_graphic_obj.terminal
@@ -849,6 +862,14 @@ class BusBranchEditorWidget(QSplitter):
                         terminal_to.hosting_connections.append(graphic_object)
                         graphic_object.redraw()
                         points_group.locations[idtag].graphic_object = graphic_object
+
+            elif category == DeviceType.WindingDevice.value:
+
+                for idtag, location in points_group.locations.items():
+                    # branch: Winding = location.api_object
+                    graphic_object = windings_dict[idtag]
+                    graphic_object.redraw()
+                    points_group.locations[idtag].graphic_object = graphic_object
 
             elif category == DeviceType.FluidPathDevice.value:
 
@@ -2714,36 +2735,31 @@ class BusBranchEditorWidget(QSplitter):
                             if br_active[i]:
 
                                 if use_flow_based_width:
-                                    w = int(
-                                        np.floor(min_branch_width + Sfnorm[i] * (max_branch_width - min_branch_width)))
+                                    w = int(np.floor(min_branch_width + Sfnorm[i] * (max_branch_width - min_branch_width)))
                                 else:
                                     w = graphic_object.pen_width
 
-                                if branch.active:
-                                    style = Qt.SolidLine
+                                style = Qt.SolidLine
 
-                                    a = 255
-                                    if cmap == palettes.Colormaps.Green2Red:
-                                        b, g, r = palettes.green_to_red_bgr(lnorm[i])
+                                a = 255
+                                if cmap == palettes.Colormaps.Green2Red:
+                                    b, g, r = palettes.green_to_red_bgr(lnorm[i])
 
-                                    elif cmap == palettes.Colormaps.Heatmap:
-                                        b, g, r = palettes.heatmap_palette_bgr(lnorm[i])
+                                elif cmap == palettes.Colormaps.Heatmap:
+                                    b, g, r = palettes.heatmap_palette_bgr(lnorm[i])
 
-                                    elif cmap == palettes.Colormaps.TSO:
-                                        b, g, r = palettes.tso_line_palette_bgr(branch.get_max_bus_nominal_voltage(),
-                                                                                lnorm[i])
+                                elif cmap == palettes.Colormaps.TSO:
+                                    b, g, r = palettes.tso_line_palette_bgr(branch.get_max_bus_nominal_voltage(),
+                                                                            lnorm[i])
 
-                                    else:
-                                        r, g, b, a = loading_cmap(lnorm[i])
-                                        r *= 255
-                                        g *= 255
-                                        b *= 255
-                                        a *= 255
-
-                                    color = QColor(r, g, b, a)
                                 else:
-                                    style = Qt.DashLine
-                                    color = Qt.gray
+                                    r, g, b, a = loading_cmap(lnorm[i])
+                                    r *= 255
+                                    g *= 255
+                                    b *= 255
+                                    a *= 255
+
+                                color = QColor(r, g, b, a)
 
                                 tooltip = str(i) + ': ' + branch.name
                                 tooltip += '\n' + loading_label + ': ' + "{:10.4f}".format(lnorm[i] * 100) + ' [%]'
@@ -2786,6 +2802,9 @@ class BusBranchEditorWidget(QSplitter):
                                 graphic_object.set_pen(QPen(color, w, style))
                         else:
                             print("Branch {0} {1} has no graphic object!!".format(branch.name, branch.idtag))
+
+                    else:
+                        pass
 
         if hvdc_Pf is not None:
 
@@ -3348,6 +3367,7 @@ def generate_bus_branch_diagram(buses: List[Bus],
                                 dc_lines: List[DcLine],
                                 transformers2w: List[Transformer2W],
                                 transformers3w: List[Transformer3W],
+                                windings: List[Winding],
                                 hvdc_lines: List[HvdcLine],
                                 vsc_devices: List[VSC],
                                 upfc_devices: List[UPFC],
@@ -3465,6 +3485,22 @@ def generate_bus_branch_diagram(buses: List[Bus],
         x = int(elm.x * explode_factor)
         y = int(elm.y * explode_factor)
         diagram.set_point(device=elm, location=GraphicLocation(x=x, y=y))
+        diagram.set_point(device=elm.winding1, location=GraphicLocation())
+        diagram.set_point(device=elm.winding2, location=GraphicLocation())
+        diagram.set_point(device=elm.winding3, location=GraphicLocation())
+
+    # --------------------------------------------------------------------------------------------------------------
+    if text_func is not None:
+        text_func('Creating schematic winding devices')
+
+    nn = len(windings)
+    for i, branch in enumerate(windings):
+
+        if prog_func is not None:
+            prog_func((i + 1) / nn * 100.0)
+
+        # branch.graphic_obj = self.add_api_transformer(branch)
+        diagram.set_point(device=branch, location=GraphicLocation())
 
     # --------------------------------------------------------------------------------------------------------------
     if text_func is not None:
@@ -3521,6 +3557,7 @@ def generate_bus_branch_diagram(buses: List[Bus],
     return diagram
 
 # if __name__ == "__main__":
+#     from PySide6.QtWidgets import QApplication
 #     app = QApplication(sys.argv)
 #
 #     window = BusBranchEditorWidget(circuit=MultiCircuit(),

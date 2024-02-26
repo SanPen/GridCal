@@ -241,8 +241,10 @@ class BaseDiagram:
         for category, loc_dict in data['data'].items():
 
             points_group = PointsGroup(name=category)
-            points_group.parse_data(data=loc_dict, obj_dict=obj_dict.get(category, dict()),
-                                    logger=logger, category=category)
+            points_group.parse_data(data=loc_dict,
+                                    obj_dict=obj_dict.get(category, dict()),
+                                    logger=logger,
+                                    category=category)
             self.data[category] = points_group
 
     def build_graph(self) -> Tuple[nx.DiGraph, List[Bus]]:

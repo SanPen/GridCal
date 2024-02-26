@@ -234,6 +234,7 @@ class BusViewerWidget(QMainWindow):
         dc_lines = list()
         transformers2w = list()
         transformers3w = list()
+        windings = list()
         hvdc_lines = list()
         vsc_converters = list()
         upfc_devices = list()
@@ -254,6 +255,9 @@ class BusViewerWidget(QMainWindow):
 
             elif obj.device_type == DeviceType.Transformer3WDevice:
                 transformers3w.append(obj)
+
+            elif obj.device_type == DeviceType.WindingDevice:
+                windings.append(obj)
 
             elif obj.device_type == DeviceType.HVDCLineDevice:
                 hvdc_lines.append(obj)
@@ -277,6 +281,7 @@ class BusViewerWidget(QMainWindow):
                                               dc_lines=dc_lines,
                                               transformers2w=transformers2w,
                                               transformers3w=transformers3w,
+                                              windings=windings,
                                               hvdc_lines=hvdc_lines,
                                               vsc_devices=vsc_converters,
                                               upfc_devices=upfc_devices,
