@@ -25,21 +25,21 @@ class EquivalentInjection(EquivalentEquipment):
 
 		from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.reactive_capability_curve import ReactiveCapabilityCurve
 		self.ReactiveCapabilityCurve: ReactiveCapabilityCurve | None = None
-		self.maxP: float = 0.0
-		self.maxQ: float = 0.0
-		self.minP: float = 0.0
-		self.minQ: float = 0.0
-		self.r: float = 0.0
-		self.r0: float = 0.0
-		self.r2: float = 0.0
-		self.regulationCapability: bool = False
-		self.x: float = 0.0
-		self.x0: float = 0.0
-		self.x2: float = 0.0
-		self.regulationStatus: bool = False
-		self.regulationTarget: float = 0.0
-		self.p: float = 0.0
-		self.q: float = 0.0
+		self.maxP: float = None
+		self.maxQ: float = None
+		self.minP: float = None
+		self.minQ: float = None
+		self.r: float = None
+		self.r0: float = None
+		self.r2: float = None
+		self.regulationCapability: bool = None
+		self.x: float = None
+		self.x0: float = None
+		self.x2: float = None
+		self.regulationStatus: bool = None
+		self.regulationTarget: float = None
+		self.p: float = None
+		self.q: float = None
 
 		self.register_property(
 			name='ReactiveCapabilityCurve',

@@ -328,6 +328,11 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
             elif tpe == DeviceType.BatteryDevice:
                 for elm in dev_list:
                     self.add_battery(elm)
+
+            elif tpe == DeviceType.ExternalGridDevice:
+                for elm in dev_list:
+                    self.add_external_grid(elm)
+
             else:
                 raise Exception("Unknown device type:" + str(tpe))
 

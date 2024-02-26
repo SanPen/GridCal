@@ -25,7 +25,7 @@ class Cut(Switch):
 
 		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.ac_line_segment import ACLineSegment
 		self.ACLineSegment: ACLineSegment | None = None
-		self.lengthFromTerminal1: float = 0.0
+		self.lengthFromTerminal1: float = None
 
 		self.register_property(
 			name='ACLineSegment',

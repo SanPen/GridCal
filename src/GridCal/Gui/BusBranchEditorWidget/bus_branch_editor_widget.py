@@ -2449,6 +2449,61 @@ class BusBranchEditorWidget(QSplitter):
                 if location.graphic_object is not None:
                     location.graphic_object.recolour_mode()
 
+    def set_big_bus_marker(self, buses: List[Bus], color: QColor):
+        """
+        Set a big marker at the selected buses
+        :param buses: list of Bus objects
+        :param color: colour to use
+        """
+
+        for bus in buses:
+
+            graphic_obj = self.diagram.query_point(bus).graphic_object
+
+            if graphic_obj is not None:
+                graphic_obj.add_big_marker(color=color)
+                graphic_obj.setSelected(True)
+
+    def set_big_bus_marker_colours(self,
+                                   buses: List[Bus],
+                                   colors: List[type(QColor)],
+                                   tool_tips: Union[None, List[str]] = None):
+        """
+        Set a big marker at the selected buses with the matching colours
+        :param buses: list of Bus objects
+        :param colors: list of colour to use
+        :param tool_tips: list of tool tips (optional)
+        """
+
+        if tool_tips:
+            for bus, color, tool_tip in zip(buses, colors, tool_tips):
+
+                graphic_obj = self.diagram.query_point(bus).graphic_object
+
+                if graphic_obj is not None:
+                    graphic_obj.add_big_marker(color=color, tool_tip_text=tool_tip)
+                    graphic_obj.setSelected(True)
+        else:
+            for bus, color in zip(buses, colors):
+
+                graphic_obj = self.diagram.query_point(bus).graphic_object
+
+                if graphic_obj is not None:
+                    graphic_obj.add_big_marker(color=color)
+                    graphic_obj.setSelected(True)
+
+    def clear_big_bus_markers(self):
+        """
+        Set a big marker at the selected buses
+        """
+
+        buses_diagram_group = self.diagram.query_by_type(DeviceType.BusDevice)
+
+        if buses_diagram_group is not None:
+            for idtag, geo in buses_diagram_group.locations.items():
+                if geo.graphic_object is not None:
+                    geo.graphic_object.delete_big_marker()
+
     def set_dark_mode(self) -> None:
         """
         Set the dark theme
@@ -2949,16 +3004,15 @@ class BusBranchEditorWidget(QSplitter):
         """
         self.results_dictionary = {thr.tpe: thr for thr in all_threads if thr is not None}
 
-    def plot_bus(self, i, api_object):
+    def plot_bus(self, i, api_object: Bus):
         """
         Plot branch results
         :param i: branch index (not counting HVDC lines because those are not real Branches)
-        :param api_object: API object
+        :param api_object: Bus API object
         :return:
         """
         fig = plt.figure(figsize=(12, 8))
         ax_1 = fig.add_subplot(211)
-        # ax_2 = fig.add_subplot(212)
 
         # set time
         x = self.circuit.time_profile
@@ -2966,9 +3020,12 @@ class BusBranchEditorWidget(QSplitter):
         if x is not None:
             if len(x) > 0:
 
-                # search available results
-                # TODO: Fix this
-                power_data = api_object.get_active_injection_profiles_dictionary()
+                # Get all devices grouped by bus
+                all_data = self.circuit.get_injection_devices_grouped_by_bus()
+
+                # filter injections by bus
+                bus_devices = all_data.get(api_object, None)
+
                 voltage = dict()
 
                 for key, driver in self.results_dictionary.items():
@@ -2978,7 +3035,26 @@ class BusBranchEditorWidget(QSplitter):
                                 voltage[key] = np.abs(driver.results.voltage[:, i])
 
                 # Injections
-                if len(power_data.keys()):
+                if bus_devices:
+
+                    power_data = dict()
+                    for tpe_name, devices in bus_devices.items():
+                        for device in devices:
+                            if device.device_type == DeviceType.LoadDevice:
+                                power_data[device.name] = -device.P_prof.toarray()
+                            elif device.device_type == DeviceType.GeneratorDevice:
+                                power_data[device.name] = device.P_prof.toarray()
+                            elif device.device_type == DeviceType.ShuntDevice:
+                                power_data[device.name] = -device.G_prof.toarray()
+                            elif device.device_type == DeviceType.StaticGeneratorDevice:
+                                power_data[device.name] = device.P_prof.toarray()
+                            elif device.device_type == DeviceType.ExternalGridDevice:
+                                power_data[device.name] = device.P_prof.toarray()
+                            elif device.device_type == DeviceType.BatteryDevice:
+                                power_data[device.name] = device.P_prof.toarray()
+                            else:
+                                raise Exception("Missing shunt device for plotting")
+
                     df = pd.DataFrame(data=power_data, index=x)
                     ax_1.set_title('Power', fontsize=14)
                     ax_1.set_ylabel('Injections [MW]', fontsize=11)
@@ -3097,8 +3173,8 @@ class BusBranchEditorWidget(QSplitter):
                     ax_2.set_title('Power', fontsize=14)
                     ax_2.set_ylabel('Power [MW]', fontsize=11)
                     df.plot(ax=ax_2)
-                    ax_2.plot(x, api_object.rate_prof, c='gray', linestyle='dashed', linewidth=1)
-                    ax_2.plot(x, -api_object.rate_prof, c='gray', linestyle='dashed', linewidth=1)
+                    ax_2.plot(x, api_object.rate_prof.toarray(), c='gray', linestyle='dashed', linewidth=1)
+                    ax_2.plot(x, -api_object.rate_prof.toarray(), c='gray', linestyle='dashed', linewidth=1)
 
                 if power_clustering_data is not None:
                     df = pd.DataFrame(data=power_clustering_data,

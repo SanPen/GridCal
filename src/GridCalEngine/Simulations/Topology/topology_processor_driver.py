@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from typing import List, Union, Any
+from typing import List, Union
 import numpy as np
 from scipy.sparse import lil_matrix
 import GridCalEngine.Core.Devices as dev
@@ -25,7 +25,7 @@ from GridCalEngine.Core.Topology.topology import find_islands, get_adjacency_mat
 from GridCalEngine.basic_structures import IntVec, Logger
 from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Simulations.driver_types import SimulationTypes
-from GridCalEngine.Simulations.driver_template import TimeSeriesDriverTemplate
+from GridCalEngine.Simulations.driver_template import DriverTemplate
 
 
 class TopologyProcessorInfo:
@@ -278,7 +278,7 @@ def topology_processor(grid: MultiCircuit, t_idx: Union[int, None], logger: Logg
                           logger=logger)
 
 
-class TopologyProcessorDriver(TimeSeriesDriverTemplate):
+class TopologyProcessorDriver(DriverTemplate):
     """
     TopologyProcessorDriver
     """
@@ -286,16 +286,12 @@ class TopologyProcessorDriver(TimeSeriesDriverTemplate):
     name = 'Topology processor'
     tpe = SimulationTypes.TopologyProcessor_run
 
-    def __init__(self, grid: MultiCircuit, time_indices: Union[IntVec, List[Union[None, Any]]]):
+    def __init__(self, grid: MultiCircuit):
         """
         Electric distance clustering
         :param grid: MultiCircuit instance
-        :param time_indices: array of time indices to simulate, use [None] to process the snapshot
         """
-        TimeSeriesDriverTemplate.__init__(self,
-                                          grid=grid,
-                                          time_indices=time_indices,
-                                          clustering_results=None)
+        DriverTemplate.__init__(self, grid=grid)
 
     def run(self):
         """
@@ -304,14 +300,18 @@ class TopologyProcessorDriver(TimeSeriesDriverTemplate):
         """
         self.tic()
         self.report_progress(0.0)
-        nt = len(self.time_indices)
+        nt = self.grid.get_time_number()
 
-        for it, t in enumerate(self.time_indices):
+        topology_processor(grid=self.grid,
+                           t_idx=None,
+                           logger=self.logger)
+
+        for t in range(nt):
             topology_processor(grid=self.grid,
                                t_idx=t,
                                logger=self.logger)
 
-            self.report_progress2(it, nt)
+            self.report_progress2(t, nt)
 
         # display progress
         self.report_done()

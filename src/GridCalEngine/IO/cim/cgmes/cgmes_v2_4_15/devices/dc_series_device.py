@@ -23,9 +23,9 @@ class DCSeriesDevice(DCConductingEquipment):
 	def __init__(self, rdfid='', tpe='DCSeriesDevice'):
 		DCConductingEquipment.__init__(self, rdfid, tpe)
 
-		self.inductance: float = 0.0
-		self.resistance: float = 0.0
-		self.ratedUdc: float = 0.0
+		self.inductance: float = None
+		self.resistance: float = None
+		self.ratedUdc: float = None
 
 		self.register_property(
 			name='inductance',

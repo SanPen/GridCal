@@ -23,22 +23,22 @@ class EquivalentBranch(EquivalentEquipment):
 	def __init__(self, rdfid='', tpe='EquivalentBranch'):
 		EquivalentEquipment.__init__(self, rdfid, tpe)
 
-		self.negativeR12: float = 0.0
-		self.negativeR21: float = 0.0
-		self.negativeX12: float = 0.0
-		self.negativeX21: float = 0.0
-		self.positiveR12: float = 0.0
-		self.positiveR21: float = 0.0
-		self.positiveX12: float = 0.0
-		self.positiveX21: float = 0.0
-		self.r: float = 0.0
-		self.r21: float = 0.0
-		self.x: float = 0.0
-		self.x21: float = 0.0
-		self.zeroR12: float = 0.0
-		self.zeroR21: float = 0.0
-		self.zeroX12: float = 0.0
-		self.zeroX21: float = 0.0
+		self.negativeR12: float = None
+		self.negativeR21: float = None
+		self.negativeX12: float = None
+		self.negativeX21: float = None
+		self.positiveR12: float = None
+		self.positiveR21: float = None
+		self.positiveX12: float = None
+		self.positiveX21: float = None
+		self.r: float = None
+		self.r21: float = None
+		self.x: float = None
+		self.x21: float = None
+		self.zeroR12: float = None
+		self.zeroR21: float = None
+		self.zeroX12: float = None
+		self.zeroX21: float = None
 
 		self.register_property(
 			name='negativeR12',

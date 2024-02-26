@@ -23,7 +23,7 @@ class DCConductingEquipment(Equipment):
 	def __init__(self, rdfid='', tpe='DCConductingEquipment'):
 		Equipment.__init__(self, rdfid, tpe)
 
-		self.ratedUdc: float = 0.0
+		self.ratedUdc: float = None
 		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.dc_terminal import DCTerminal
 		self.DCTerminals: DCTerminal | None = None
 

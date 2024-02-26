@@ -23,12 +23,12 @@ class PowerTransformer(ConductingEquipment):
 	def __init__(self, rdfid='', tpe='PowerTransformer'):
 		ConductingEquipment.__init__(self, rdfid, tpe)
 
-		self.beforeShCircuitHighestOperatingCurrent: float = 0.0
-		self.beforeShCircuitHighestOperatingVoltage: float = 0.0
-		self.beforeShortCircuitAnglePf: float = 0.0
-		self.highSideMinOperatingU: float = 0.0
-		self.isPartOfGeneratorUnit: bool = False
-		self.operationalValuesConsidered: bool = False
+		self.beforeShCircuitHighestOperatingCurrent: float = None
+		self.beforeShCircuitHighestOperatingVoltage: float = None
+		self.beforeShortCircuitAnglePf: float = None
+		self.highSideMinOperatingU: float = None
+		self.isPartOfGeneratorUnit: bool = None
+		self.operationalValuesConsidered: bool = None
 		from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.power_transformer_end import PowerTransformerEnd
 		self.PowerTransformerEnd: PowerTransformerEnd | None = None
 

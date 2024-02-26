@@ -25,17 +25,17 @@ class EnergySource(ConductingEquipment):
 
 		from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.energy_scheduling_type import EnergySchedulingType
 		self.EnergySchedulingType: EnergySchedulingType | None = None
-		self.nominalVoltage: float = 0.0
-		self.r: float = 0.0
-		self.r0: float = 0.0
-		self.rn: float = 0.0
-		self.voltageAngle: float = 0.0
-		self.voltageMagnitude: float = 0.0
-		self.x: float = 0.0
-		self.x0: float = 0.0
-		self.xn: float = 0.0
-		self.activePower: float = 0.0
-		self.reactivePower: float = 0.0
+		self.nominalVoltage: float = None
+		self.r: float = None
+		self.r0: float = None
+		self.rn: float = None
+		self.voltageAngle: float = None
+		self.voltageMagnitude: float = None
+		self.x: float = None
+		self.x0: float = None
+		self.xn: float = None
+		self.activePower: float = None
+		self.reactivePower: float = None
 
 		self.register_property(
 			name='EnergySchedulingType',

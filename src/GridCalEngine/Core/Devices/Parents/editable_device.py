@@ -403,8 +403,15 @@ class EditableDevice:
         :param prop: GCProp
         :return: Whatever value is there
         """
-
         return getattr(self, prop.name)
+
+    def get_snapshot_value_by_name(self, name) -> Any:
+        """
+        Return the stored object value from the property index
+        :param name: snapshot property name
+        :return: Whatever value is there
+        """
+        return getattr(self, name)
 
     def get_property_value(self, prop: GCProp, t_idx: Union[None, int]) -> Any:
         """
@@ -416,14 +423,14 @@ class EditableDevice:
 
         if t_idx is None:
             # pick the snapshot value whatever it is
-            return getattr(self, prop.name)
+            return self.get_snapshot_value(prop=prop)
         else:
             if prop.has_profile():
                 # the property has a profile, return the value at t_idx
-                return getattr(self, prop.profile_name)[t_idx]
+                return self.get_profile_by_prop(prop=prop)[t_idx]
             else:
                 # the property has no profile, just return it
-                return getattr(self, prop.name)
+                return self.get_snapshot_value(prop=prop)
 
     def get_property_by_idx(self, property_idx: int) -> GCProp:
         """
@@ -454,6 +461,19 @@ class EditableDevice:
             profile.set(arr)
         elif isinstance(arr, Profile):
             setattr(self, prop.profile_name, arr)
+        else:
+            raise Exception("profile type not supported")
+
+    def set_profile_array(self, magnitude, arr: Union[Profile, np.ndarray]) -> None:
+        """
+        Set the profile from eithr an array or an actual profile object
+        :param magnitude: snapshot magnitude
+        :param arr: Profile object or numpy array object
+        """
+        if isinstance(arr, np.ndarray):
+            prof_name = self.properties_with_profile[magnitude]
+            profile: Profile = getattr(self, prof_name)
+            profile.set(arr)
         else:
             raise Exception("profile type not supported")
 
@@ -519,7 +539,6 @@ class EditableDevice:
         Set the value of a snapshot property
         :param property_name: name of the property
         :param value: Any
-        :param try_fill_profile:
         """
         # set the snapshot value whatever it is
         setattr(self, property_name, value)

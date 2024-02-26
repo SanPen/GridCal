@@ -23,7 +23,7 @@ class CoordinateSystem(IdentifiedObject):
 	def __init__(self, rdfid='', tpe='CoordinateSystem'):
 		IdentifiedObject.__init__(self, rdfid, tpe)
 
-		self.crsUrn: str = ''
+		self.crsUrn: str = None
 		from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.location import Location
 		self.Location: Location | None = None
 

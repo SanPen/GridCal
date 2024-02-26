@@ -232,23 +232,6 @@ def get_class_by_name(class_name):
     return None
 
 
-def get_enum_data(enum_name_list):
-    enum_list = []
-    for s_e, p_e, o_e in rdf_graph.triples((None, RDF.type, RDFS.Class)):
-        e_label = rdf_graph.value(s_e, RDFS.label).__str__()
-        stereotype = rdf_graph.value(s_e, cims_stereotype).__str__()
-        enum_dict = {}
-        if e_label in enum_name_list and stereotype == "http://iec.ch/TC57/NonStandard/UML#enumeration":
-            enum_dict["name"] = e_label
-            enum_value_list = []
-            for enum_s in rdf_graph.subjects(RDF.type, rdflib.term.URIRef(base + "#" + e_label)):
-                enum_v = rdf_graph.value(enum_s, RDFS.label)
-                enum_value_list.append(enum_v.__str__())
-            enum_dict["values"] = enum_value_list
-            enum_list.append(enum_dict)
-    return enum_list
-
-
 if __name__ == "__main__":
     generate_cgmes_classes()
 

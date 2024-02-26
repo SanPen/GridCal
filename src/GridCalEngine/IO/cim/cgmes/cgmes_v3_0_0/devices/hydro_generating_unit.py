@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.generating_unit import GeneratingUnit
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile, HydroTurbineKind, UnitSymbol, HydroEnergyConversionKind
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile, HydroTurbineKind, HydroEnergyConversionKind, UnitSymbol
 
 
 class HydroGeneratingUnit(GeneratingUnit):
@@ -24,7 +24,7 @@ class HydroGeneratingUnit(GeneratingUnit):
 		GeneratingUnit.__init__(self, rdfid, tpe)
 
 		self.energyConversionCapability: HydroEnergyConversionKind = None
-		self.dropHeight: float = 0.0
+		self.dropHeight: float = None
 		self.turbineType: HydroTurbineKind = None
 		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.hydro_power_plant import HydroPowerPlant
 		self.HydroPowerPlant: HydroPowerPlant | None = None

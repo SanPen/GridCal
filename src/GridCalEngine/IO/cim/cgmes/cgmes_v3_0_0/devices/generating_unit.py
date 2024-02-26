@@ -26,23 +26,23 @@ class GeneratingUnit(Equipment):
 		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.control_area_generating_unit import ControlAreaGeneratingUnit
 		self.ControlAreaGeneratingUnit: ControlAreaGeneratingUnit | None = None
 		self.genControlSource: GeneratorControlSource = None
-		self.governorSCD: float = 0.0
-		self.longPF: float = 0.0
-		self.maximumAllowableSpinningReserve: float = 0.0
-		self.maxOperatingP: float = 0.0
-		self.minOperatingP: float = 0.0
-		self.nominalP: float = 0.0
-		self.ratedGrossMaxP: float = 0.0
-		self.ratedGrossMinP: float = 0.0
-		self.ratedNetMaxP: float = 0.0
-		self.shortPF: float = 0.0
-		self.startupCost: float = 0.0
-		self.variableCost: float = 0.0
-		self.startupTime: float = 0.0
-		self.totalEfficiency: float = 0.0
+		self.governorSCD: float = None
+		self.longPF: float = None
+		self.maximumAllowableSpinningReserve: float = None
+		self.maxOperatingP: float = None
+		self.minOperatingP: float = None
+		self.nominalP: float = None
+		self.ratedGrossMaxP: float = None
+		self.ratedGrossMinP: float = None
+		self.ratedNetMaxP: float = None
+		self.shortPF: float = None
+		self.startupCost: float = None
+		self.variableCost: float = None
+		self.startupTime: float = None
+		self.totalEfficiency: float = None
 		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.rotating_machine import RotatingMachine
 		self.RotatingMachine: RotatingMachine | None = None
-		self.normalPF: float = 0.0
+		self.normalPF: float = None
 
 		self.register_property(
 			name='ControlAreaGeneratingUnit',

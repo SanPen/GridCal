@@ -46,6 +46,7 @@ class HvdcData:
 
         self.rate: Vec = np.zeros(nelm, dtype=float)
         self.contingency_rate: Vec = np.zeros(nelm, dtype=float)
+        self.protection_rates: Vec = np.zeros(nelm, dtype=float)
 
         self.r: Vec = np.zeros(nelm, dtype=float)
 
@@ -99,6 +100,7 @@ class HvdcData:
 
         data.rate = self.rate.copy()
         data.contingency_rate = self.contingency_rate.copy()
+        data.protection_rates = self.protection_rates.copy()
 
         data.r = self.r.copy()
 

@@ -38,6 +38,7 @@ class VSC(BranchParent):
                  Pfset=0.0, Qfset=0.0, Vac_set=1.0, Vdc_set=1.0,
                  alpha1=0.0001, alpha2=0.015, alpha3=0.2,
                  mttf=0, mttr=0, cost=100, contingency_factor=1.0,
+                 protection_rating_factor: float = 1.4,
                  contingency_enabled=True, monitor_loading=True,
                  r0=0.0001, x0=0.05, r2=0.0001, x2=0.05,
                  capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned):
@@ -98,6 +99,7 @@ class VSC(BranchParent):
                               active=active,
                               rate=rate,
                               contingency_factor=contingency_factor,
+                              protection_rating_factor=protection_rating_factor,
                               contingency_enabled=contingency_enabled,
                               monitor_loading=monitor_loading,
                               mttf=mttf,

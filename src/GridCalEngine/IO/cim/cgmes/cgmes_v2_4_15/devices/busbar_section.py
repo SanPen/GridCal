@@ -23,7 +23,7 @@ class BusbarSection(Connector):
 	def __init__(self, rdfid='', tpe='BusbarSection'):
 		Connector.__init__(self, rdfid, tpe)
 
-		self.ipMax: float = 0.0
+		self.ipMax: float = None
 
 		self.register_property(
 			name='ipMax',

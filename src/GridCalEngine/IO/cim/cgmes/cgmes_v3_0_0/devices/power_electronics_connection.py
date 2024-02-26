@@ -23,14 +23,14 @@ class PowerElectronicsConnection(RegulatingCondEq):
 	def __init__(self, rdfid='', tpe='PowerElectronicsConnection'):
 		RegulatingCondEq.__init__(self, rdfid, tpe)
 
-		self.maxQ: float = 0.0
-		self.minQ: float = 0.0
-		self.ratedS: float = 0.0
-		self.ratedU: float = 0.0
+		self.maxQ: float = None
+		self.minQ: float = None
+		self.ratedS: float = None
+		self.ratedU: float = None
 		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.power_electronics_unit import PowerElectronicsUnit
 		self.PowerElectronicsUnit: PowerElectronicsUnit | None = None
-		self.p: float = 0.0
-		self.q: float = 0.0
+		self.p: float = None
+		self.q: float = None
 
 		self.register_property(
 			name='maxQ',

@@ -23,13 +23,13 @@ class Switch(ConductingEquipment):
 	def __init__(self, rdfid='', tpe='Switch'):
 		ConductingEquipment.__init__(self, rdfid, tpe)
 
-		self.normalOpen: bool = False
-		self.ratedCurrent: float = 0.0
-		self.retained: bool = False
+		self.normalOpen: bool = None
+		self.ratedCurrent: float = None
+		self.retained: bool = None
 		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.sv_switch import SvSwitch
 		self.SvSwitch: SvSwitch | None = None
-		self.open: bool = False
-		self.locked: bool = False
+		self.open: bool = None
+		self.locked: bool = None
 
 		self.register_property(
 			name='normalOpen',

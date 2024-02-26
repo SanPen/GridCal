@@ -61,6 +61,7 @@ class Generator(GeneratorParent):
                  x2: float = 1e-20,
                  capex: float = 0,
                  opex: float = 0,
+                 srap_enabled: bool = True,
                  build_status: BuildStatus = BuildStatus.Commissioned):
         """
         Voltage controlled generator. This generators supports several reactive power
@@ -112,6 +113,7 @@ class Generator(GeneratorParent):
                                  mttr=mttr,
                                  capex=capex,
                                  opex=opex,
+                                 srap_enabled=srap_enabled,
                                  build_status=build_status,
                                  device_type=DeviceType.GeneratorDevice)
 

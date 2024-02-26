@@ -25,9 +25,9 @@ class CurveData(Base):
 
 		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.curve import Curve
 		self.Curve: Curve | None = None
-		self.xvalue: float = 0.0
-		self.y1value: float = 0.0
-		self.y2value: float = 0.0
+		self.xvalue: float = None
+		self.y1value: float = None
+		self.y2value: float = None
 
 		self.register_property(
 			name='Curve',

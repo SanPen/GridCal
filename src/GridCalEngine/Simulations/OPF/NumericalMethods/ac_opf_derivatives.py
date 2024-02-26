@@ -11,7 +11,7 @@ import GridCalEngine.Utils.NumericalMethods.autodiff as ad
 from typing import Tuple, Union
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec
 from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at, NumericalCircuit
-
+from GridCalEngine.enumerations import  ReactivePowerControlMode
 
 def x2var(x: Vec, nVa: int, nVm: int, nPg: int,
           nQg: int, ntapm: int, ntapt: int) -> Tuple[Vec, Vec, Vec, Vec, Vec, Vec]:
@@ -310,7 +310,7 @@ def compute_branch_power_second_derivatives(alltapm, alltapt, vm, va, k_m, k_tau
             dSbusdtdvm, dSfdtdvm, dStdtdvm,
             dSbusdtdva, dSfdtdva, dStdtdva)
 
-
+'''
 def compute_finitediff_admittances(nc, tol=1e-6):
     k_m = nc.k_m
     k_tau = nc.k_tau
@@ -407,7 +407,7 @@ def compute_analytic_admittances_2dev(alltapm, alltapt, k_m, k_tau, Cf, Ct, R, X
     return (dYbusdmdm, dYfdmdm, dYtdmdm, dYbusdmdt, dYfdmdt, dYtdmdt,
             dYbusdtdm, dYfdtdm, dYtdtdm, dYbusdtdt, dYfdtdt, dYtdtdt)
 
-
+'''
 def compute_finitediff_admittances_2dev(nc, tol=1e-6):
     k_m = nc.k_m
     k_tau = nc.k_tau
@@ -506,7 +506,7 @@ def eval_g(x, Ybus, Yf, Cg, Sd, ig, nig, pv, k_m, k_tau, Vm_max, Sg_undis, slack
 
 
 def eval_h(x, Yf, Yt, from_idx, to_idx, pq, no_slack, k_m, k_tau, k_mtau, Va_max, Va_min, Vm_max, Vm_min,
-           Pg_max, Pg_min, Qg_max, Qg_min, tapm_max, tapm_min, tapt_max, tapt_min, Cg, rates, il, ig, tanmax) -> Vec:
+           Pg_max, Pg_min, Qg_max, Qg_min, tapm_max, tapm_min, tapt_max, tapt_min, Cg, rates, il, ig, tanmax, ctQ:ReactivePowerControlMode) -> Vec:
     """
 
     :param x:
@@ -563,9 +563,10 @@ def eval_h(x, Yf, Yt, from_idx, to_idx, pq, no_slack, k_m, k_tau, k_mtau, Va_max
                  tapm - tapm_max,
                  tapm_min - tapm,
                  tapt - tapt_max,
-                 tapt_min - tapt,
-                 Qg ** 2 - tanmax ** 2 * Pg ** 2
-    ]
+                 tapt_min - tapt]
+
+    if ctQ != ReactivePowerControlMode.NoControl:
+        hval = np.r_[hval, Qg ** 2 - tanmax ** 2 * Pg ** 2]
 
     # Sftot = V[from_idx[il]] * np.conj(Yf[il, :] @ V)
     # Sttot = V[to_idx[il]] * np.conj(Yt[il, :] @ V)
@@ -576,7 +577,7 @@ def eval_h(x, Yf, Yt, from_idx, to_idx, pq, no_slack, k_m, k_tau, k_mtau, Va_max
 
 def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, nig, slack, no_slack, pq, pv, tanmax,
                            alltapm, alltapt, k_m, k_tau, k_mtau, mu, lmbda, from_idx, to_idx, R, X, F, T,
-                           compute_jac: bool, compute_hess: bool):
+                           ctQ:ReactivePowerControlMode, compute_jac: bool, compute_hess: bool):
     """
 
     :param x:
@@ -700,12 +701,6 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
         Hqu = sp.hstack([lil_matrix((Ng, 2 * N + Ng)), diags(Hqu), lil_matrix((Ng, ntapm + ntapt))])
         Hql = sp.hstack([lil_matrix((Ng, 2 * N + Ng)), diags(Hql), lil_matrix((Ng, ntapm + ntapt))])
 
-        # tanmax curves (simplified capability curves of generators)
-        Hqmaxp = -2 * (tanmax ** 2) * Pg
-        Hqmaxq = 2 * Qg
-
-        Hqmax = sp.hstack([lil_matrix((Ng, 2 * N)), diags(Hqmaxp), diags(Hqmaxq), lil_matrix((Ng, ntapm + ntapt))])
-
         if ntapm + ntapt != 0:
 
             Sftapm = dSfdm[il, :].copy()
@@ -735,8 +730,6 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
                 Htaptl = sp.hstack([lil_matrix((ntapt, 2 * N + 2 * Ng + ntapm)), Htaptl_])
                 Hx = sp.vstack([Hx, Htaptu, Htaptl])
 
-            Hx = sp.vstack([Hx, Hqmax]).T.tocsc()
-
         else:
 
             SfX = sp.hstack([Sfva, Sfvm, lil_matrix((M, 2 * Ng))])
@@ -745,8 +738,17 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
             HSf = 2 * (Sfmat.real @ SfX.real + Sfmat.imag @ SfX.imag)
             HSt = 2 * (Stmat.real @ StX.real + Stmat.imag @ StX.imag)
 
-            Hx = sp.vstack([HSf, HSt, Hvu, Hpu, Hqu, Hvl, Hpl, Hql, Hqmax]).T.tocsc()
+            Hx = sp.vstack([HSf, HSt, Hvu, Hpu, Hqu, Hvl, Hpl, Hql])
 
+        if ctQ != ReactivePowerControlMode.NoControl:
+            # tanmax curves (simplified capability curves of generators)
+            Hqmaxp = -2 * (tanmax ** 2) * Pg
+            Hqmaxq = 2 * Qg
+
+            Hqmax = sp.hstack([lil_matrix((Ng, 2 * N)), diags(Hqmaxp), diags(Hqmaxq), lil_matrix((Ng, ntapm + ntapt))])
+
+            Hx = sp.vstack([Hx, Hqmax])
+        Hx = Hx.T.tocsc()
     else:
         fx = None
         Gx = None
@@ -842,8 +844,12 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
         Sfvavm = Sfvmva.T
         Sfvmvm = vm_inv @ Ff @ vm_inv
 
-        Hqpgpg = diags(-2 * (tanmax ** 2) * mu[-Ng:])
-        Hqqgqg = diags(np.array([2] * Ng) * mu[-Ng:])
+        if ctQ != ReactivePowerControlMode.NoControl:
+            Hqpgpg = diags(-2 * (tanmax ** 2) * mu[-Ng:])
+            Hqqgqg = diags(np.array([2] * Ng) * mu[-Ng:])
+        else:
+            Hqpgpg = lil_matrix((Ng, Ng))
+            Hqqgqg = lil_matrix((Ng, Ng))
 
         Hfvava = 2 * (Sfvava + Sfva.T @ muf_mat @ np.conj(Sfva)).real
         Hfvmva = 2 * (Sfvmva + Sfvm.T @ muf_mat @ np.conj(Sfva)).real

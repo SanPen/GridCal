@@ -23,7 +23,7 @@ class EarthFaultCompensator(ConductingEquipment):
 	def __init__(self, rdfid='', tpe='EarthFaultCompensator'):
 		ConductingEquipment.__init__(self, rdfid, tpe)
 
-		self.r: float = 0.0
+		self.r: float = None
 
 		self.register_property(
 			name='r',

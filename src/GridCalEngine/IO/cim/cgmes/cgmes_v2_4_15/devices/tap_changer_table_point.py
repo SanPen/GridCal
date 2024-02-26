@@ -23,12 +23,12 @@ class TapChangerTablePoint(Base):
 	def __init__(self, rdfid, tpe, resources=list(), class_replacements=dict()):
 		Base.__init__(self, rdfid=rdfid, tpe=tpe, resources=resources, class_replacements=class_replacements)
 
-		self.b: float = 0.0
-		self.g: float = 0.0
-		self.r: float = 0.0
-		self.ratio: float = 0.0
-		self.step: int = 0
-		self.x: float = 0.0
+		self.b: float = None
+		self.g: float = None
+		self.r: float = None
+		self.ratio: float = None
+		self.step: int = None
+		self.x: float = None
 
 		self.register_property(
 			name='b',

@@ -23,7 +23,6 @@ import nptyping as npt
 from scipy.sparse import csc_matrix, csr_matrix
 from GridCalEngine.enumerations import TimeGrouping, LogSeverity
 
-
 IntList = List[int]
 Numeric = Union[int, float, bool, complex]
 NumericVec = npt.NDArray[npt.Shape['*'], npt.Double]
@@ -257,13 +256,26 @@ class LogEntry:
     Logger entry
     """
 
-    def __init__(self, msg="", severity: LogSeverity = LogSeverity.Information, device="", value="", expected_value=""):
+    def __init__(self,
+                 msg="",
+                 severity: LogSeverity = LogSeverity.Information,
+                 device="",
+                 value="",
+                 expected_value="",
+                 device_class="",
+                 device_property="",
+                 object_value=None,
+                 expected_object_value=None):
         self.time = "{date:%H:%M:%S}".format(date=datetime.datetime.now())  # might use %Y/%m/%d %H:%M:%S
         self.msg = str(msg)
         self.severity = severity
         self.device = device
+        self.device_class = device_class
+        self.device_property = device_property
         self.value = value
         self.expected_value = str(expected_value)
+        self.object_value = object_value
+        self.expected_object_value = expected_object_value
 
     def to_list(self) -> List[Any]:
         """
@@ -314,7 +326,8 @@ class Logger:
         """
         return len(self.entries) > 0
 
-    def add_info(self, msg: str, device="", value="", expected_value="", device_class='', comment='', device_property=''):
+    def add_info(self, msg: str, device="", value="", expected_value="", device_class='', comment='',
+                 device_property=''):
         """
         Add info entry
         :param msg:
@@ -340,7 +353,8 @@ class Logger:
         """
         self.entries.append(LogEntry(msg, LogSeverity.Warning, device, str(value), str(expected_value)))
 
-    def add_error(self, msg, device="", value="", expected_value="", device_class='', comment='', device_property=''):
+    def add_error(self, msg, device="", value="", expected_value="", device_class='', comment='', device_property='',
+                  object_value=None, expected_object_value=None):
         """
         Add error entry
         :param msg:
@@ -349,9 +363,20 @@ class Logger:
         :param expected_value:
         :param device_class:
         :param comment:
+        :param device_property:
+        :param object_value:
+        :param expected_object_value:
         :return:
         """
-        self.entries.append(LogEntry(msg, LogSeverity.Error, device, str(value), str(expected_value)))
+        self.entries.append(LogEntry(msg=msg,
+                                     severity=LogSeverity.Error,
+                                     device=device,
+                                     value=str(value),
+                                     expected_value=str(expected_value),
+                                     device_class=device_class,
+                                     device_property=device_property,
+                                     object_value=object_value,
+                                     expected_object_value=expected_object_value))
 
     def add_divergence(self, msg, device="", value=0, expected_value=0, tol=1e-6):
         """
@@ -510,6 +535,7 @@ class Logger:
         :return:
         """
         return self.count_type(LogSeverity.Error)
+
 
 class ConvergenceReport:
     """

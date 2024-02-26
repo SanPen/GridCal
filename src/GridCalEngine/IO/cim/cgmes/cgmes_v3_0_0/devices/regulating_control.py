@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.power_system_resource import PowerSystemResource
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile, RegulatingControlModeKind, UnitMultiplier
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile, UnitMultiplier, RegulatingControlModeKind
 
 
 class RegulatingControl(PowerSystemResource):
@@ -28,13 +28,13 @@ class RegulatingControl(PowerSystemResource):
 		self.mode: RegulatingControlModeKind = None
 		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.terminal import Terminal
 		self.Terminal: Terminal | None = None
-		self.discrete: bool = False
-		self.enabled: bool = False
-		self.targetDeadband: float = 0.0
-		self.targetValue: float = 0.0
+		self.discrete: bool = None
+		self.enabled: bool = None
+		self.targetDeadband: float = None
+		self.targetValue: float = None
 		self.targetValueUnitMultiplier: UnitMultiplier = None
-		self.maxAllowedTargetValue: float = 0.0
-		self.minAllowedTargetValue: float = 0.0
+		self.maxAllowedTargetValue: float = None
+		self.minAllowedTargetValue: float = None
 
 		self.register_property(
 			name='RegulatingCondEq',

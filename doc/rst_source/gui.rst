@@ -68,47 +68,7 @@ we have the "time events" tab.
     :alt: GridCal objects tabular editor.
     :scale: 50 %
 
-There are some filtering options that can be performed; The first thing is to set the property to filter by in the
-drop down menu. Then in the text box you can type a filter criteria. The available criteria area the following:
-
-.. list-table::
-   :widths: 15 50 15
-   :header-rows: 1
-
-   * - Symbol
-     - Description
-     - Example
-
-   * - <
-     - Less than
-     - <200, <foo
-
-   * - >
-     - Greater than
-     - >200, >bar
-
-   * - <=
-     - Less or equal to
-     - <=200, <=foo
-
-   * - >=
-     - Greater or equal to
-     - >=200, >=bar
-
-   * - =
-     - Exactly equal.
-     - =node or =600
-
-   * - !=
-     - Different from.
-     - !=node or !=600
-
-   * - \*
-     - The field contains this.
-       This command is only available for strings.
-     - \*bus
-
-For strings the comparison does not take into account the case.
+There are some filtering options that can be performed; See the search chapter.
 
 
 If the branch objects are selected, then it is possible to extend the view with the catalogue of template elements
@@ -462,3 +422,49 @@ Branch rating factor
 
 Override values
     If selected any non-zero rate is overridden by the calculated value.
+
+
+Search queries
+^^^^^^^^^^^^^^^^
+
+The database and the results tab contain search boxes to perform advanced searches.
+
+Here we explain how to compose a search query.
+
+Queries in GridCal are made by using the following synthax:
+
+.. code-block::
+
+    [subject] [operation] [value] [and/or] [subject] [operation] [value] [and/or] ...
+
+Observe that this query is composed by smaller sub-queries that are joined by the *and* / *or* operations
+
+Each subquery is composed as:
+
+.. code-block::
+
+    [subject] [operation] [value]
+
+The subject is what to compare. Possible subjects:
+
+- val: Value
+- col: column value
+- idx: Index value
+- colobj: Object underlying
+- idxobj: Object underlying
+
+The operation is how to compare. Possible operations:
+
+- <: less than the value
+- <= less or equal than the value
+- >: Greater than the value
+- >=: Greater or equal than the value
+- "=": Equal than the value
+- "!=": Different than the value
+- "like": The value is in the subject
+- "notlike": The value is not in the subject
+- "starts": The subject starts with the value
+- "ends": The subject ends with the value
+
+Finally, the value is what to compare to. The value can be a single entity
+or a list of values provided between brackets [val1, val2, ...]

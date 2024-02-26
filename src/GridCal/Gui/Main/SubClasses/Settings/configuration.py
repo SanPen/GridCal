@@ -232,9 +232,11 @@ class ConfigurationMain(ResultsMain):
             "contingencies": {
                 "contingencies_engine": self.ui.contingencyEngineComboBox,
                 "use_srap": self.ui.use_srap_checkBox,
-                "srap_loading_limit": self.ui.srap_loading_limit_doubleSpinBox,
                 "srap_max_power": self.ui.srap_limit_doubleSpinBox,
                 "srap_top_n": self.ui.srap_top_n_SpinBox,
+                "srap_deadband": self.ui.srap_deadband_doubleSpinBox,
+                "srap_revert_to_nominal_rating": self.ui.srap_revert_to_nominal_rating_checkBox,
+                "contingency_massive_report": self.ui.contingency_detailed_massive_report_checkBox
             },
             "file": {
                 "store_results_in_file": self.ui.saveResultsCheckBox

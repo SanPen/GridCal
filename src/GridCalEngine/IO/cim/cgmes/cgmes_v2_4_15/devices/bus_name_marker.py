@@ -23,7 +23,7 @@ class BusNameMarker(IdentifiedObject):
 	def __init__(self, rdfid='', tpe='BusNameMarker'):
 		IdentifiedObject.__init__(self, rdfid, tpe)
 
-		self.priority: int = 0
+		self.priority: int = None
 		from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.reporting_group import ReportingGroup
 		self.ReportingGroup: ReportingGroup | None = None
 		from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.acdc_terminal import ACDCTerminal
