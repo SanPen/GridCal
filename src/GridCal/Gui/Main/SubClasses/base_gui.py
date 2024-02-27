@@ -551,7 +551,6 @@ class BaseMainGui(QMainWindow):
 
         else:
             mdl = QtGui.QStandardItemModel()
-        self.ui.profile_time_selection_comboBox.setModel(mdl)
         self.ui.vs_departure_comboBox.setModel(mdl)
         self.ui.vs_target_comboBox.setModel(mdl)
         self.setup_time_sliders()

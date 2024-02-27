@@ -24,6 +24,7 @@ from GridCal.Gui.messages import error_msg, warning_msg
 from GridCal.Gui.Main.SubClasses.simulations import SimulationsMain
 from GridCal.Gui.Session.session import ResultsModel
 from GridCal.Gui.GeneralDialogues import fill_tree_from_logs
+import GridCalEngine.Utils.Filtering as flt
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.enumerations import ResultTypes
 
@@ -42,9 +43,7 @@ class ResultsMain(SimulationsMain):
         # create main window
         SimulationsMain.__init__(self, parent)
 
-        self.results_mdl: sim.ResultsTable = sim.ResultsTable(data=np.zeros((0, 0)),
-                                                              columns=np.zeros(0),
-                                                              index=np.zeros(0))
+        self.results_mdl: Union[None, ResultsModel] = None
 
         self.current_results_logger: Union[None, Logger] = None
 
@@ -105,8 +104,6 @@ class ResultsMain(SimulationsMain):
 
                         # study_type: ResultTypes
                         study_type: ResultTypes = self.available_results_dict[study_name][result_name]
-
-                        self.results_mdl = None
 
                         self.results_mdl = self.session.get_results_model_by_name(study_name=study_name,
                                                                                   study_type=study_type)
@@ -245,14 +242,22 @@ class ResultsMain(SimulationsMain):
         """
 
         if self.results_mdl is not None:
-            text = self.ui.sear_results_lineEdit.text().strip()
 
-            if text != '':
-                mdl = self.results_mdl.search(text)
-            else:
-                mdl = None
+            txt = self.ui.sear_results_lineEdit.text().strip()
 
-            self.ui.resultsTableView.setModel(mdl)
+            filter_ = flt.FilterResultsTable(self.results_mdl.table)
+
+            try:
+                filter_.parse(expression=txt)
+                filtered_table = filter_.apply()
+            except ValueError as e:
+                error_msg(str(e), "Fiter parse")
+                return None
+
+            self.results_mdl = ResultsModel(filtered_table)
+            self.ui.resultsTableView.setModel(self.results_mdl)
+        else:
+            return None
 
     def delete_results_driver(self):
         """

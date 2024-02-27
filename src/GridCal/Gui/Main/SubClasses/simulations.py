@@ -32,7 +32,6 @@ import GridCal.Gui.Visualization.visualization as viz
 from GridCal.Gui.BusBranchEditorWidget import BusBranchEditorWidget
 from GridCalEngine.Core.Compilers.circuit_to_newton_pa import get_newton_mip_solvers_list
 from GridCalEngine.Simulations.driver_types import SimulationTypes
-from GridCal.Gui.GeneralDialogues import ElementsDialogue
 from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_msg
 from GridCal.Gui.Main.SubClasses.Model.time_events import TimeEventsMain
 from GridCal.Gui.SigmaAnalysis.sigma_analysis_dialogue import SigmaAnalysisGUI
@@ -191,8 +190,6 @@ class SimulationsMain(TimeEventsMain):
         self.ui.actionOPF_time_series.triggered.connect(self.run_opf_time_series)
         self.ui.actionOptimal_Net_Transfer_Capacity.triggered.connect(self.run_opf_ntc)
         self.ui.actionOptimal_Net_Transfer_Capacity_Time_Series.triggered.connect(self.run_opf_ntc_ts)
-        self.ui.actionOptimal_NTC_time_series_clustering.triggered.connect(self.run_opf_ntc_ts)
-        self.ui.actionGrid_Reduction.triggered.connect(self.reduce_grid)
         self.ui.actionInputs_analysis.triggered.connect(self.run_inputs_analysis)
         self.ui.actionStorage_location_suggestion.triggered.connect(self.storage_location)
         self.ui.actionLinearAnalysis.triggered.connect(self.run_linear_analysis)
@@ -922,7 +919,6 @@ class SimulationsMain(TimeEventsMain):
         self.remove_simulation(sim.SimulationTypes.LinearAnalysis_TS_run)
 
         # update the results in the circuit structures
-        # if not drv.__cancel__:
         if results is not None:
 
             # expand the clusters
@@ -2228,92 +2224,6 @@ class SimulationsMain(TimeEventsMain):
         if not self.session.is_anything_running():
             self.UNLOCK()
 
-    def reduce_grid(self):
-        """
-        Reduce grid by removing Branches and nodes according to the selected options
-        """
-
-        if len(self.circuit.buses) > 0:
-
-            if not self.session.is_this_running(sim.SimulationTypes.TopologyReduction_run):
-
-                # compute the options
-                rx_criteria = self.ui.rxThresholdCheckBox.isChecked()
-                exponent = self.ui.rxThresholdSpinBox.value()
-                rx_threshold = 1.0 / (10.0 ** exponent)
-
-                # get the selected indices
-                checked = gf.get_checked_indices(self.ui.removeByTypeListView.model())
-
-                if len(checked) > 0:
-
-                    selected_types = list()
-                    for i in checked:
-                        selected_type_txt = self.ui.removeByTypeListView.model().item(i).text()
-                        selected_type = DeviceType(selected_type_txt)
-                        selected_types.append(selected_type)
-
-                    # compose options
-                    options = sim.TopologyReductionOptions(rx_criteria=rx_criteria,
-                                                           rx_threshold=rx_threshold,
-                                                           selected_types=selected_types)
-
-                    # find which Branches to remove
-                    # TODO: Fix this
-                    br_to_remove = sim.select_branches_to_reduce(circuit=self.circuit,
-                                                                 rx_criteria=options.rx_criteria,
-                                                                 rx_threshold=options.rx_threshold,
-                                                                 selected_types=options.selected_type)
-                    if len(br_to_remove) > 0:
-                        # raise dialogue
-                        branches = self.circuit.get_branches()
-                        elms = [branches[i] for i in br_to_remove]
-                        diag = ElementsDialogue('Elements to be reduced', elms)
-                        diag.show()
-                        diag.exec_()
-
-                        if diag.accepted:
-
-                            self.LOCK()
-
-                            self.add_simulation(sim.SimulationTypes.TopologyReduction_run)
-
-                            # reduce the grid
-                            self.topology_reduction = sim.TopologyReduction(grid=self.circuit,
-                                                                            branch_indices=br_to_remove)
-
-                            # Set the time series run options
-                            self.topology_reduction.progress_signal.connect(self.ui.progressBar.setValue)
-                            self.topology_reduction.progress_text.connect(self.ui.progress_label.setText)
-                            self.topology_reduction.done_signal.connect(self.post_reduce_grid)
-
-                            self.topology_reduction.start()
-                        else:
-                            pass
-                    else:
-                        info_msg('There were no Branches identified', 'Topological grid reduction')
-                else:
-                    warning_msg('Select at least one reduction option in the topology settings',
-                                'Topological grid reduction')
-            else:
-                warning_msg('Another topological reduction is being conducted...', 'Topological grid reduction')
-        else:
-            pass
-
-    def post_reduce_grid(self):
-        """
-        Actions after reducing
-        """
-
-        self.remove_simulation(sim.SimulationTypes.TopologyReduction_run)
-
-        self.redraw_current_diagram()
-
-        self.clear_results()
-
-        if not self.session.is_anything_running():
-            self.UNLOCK()
-
     def run_find_node_groups(self):
         """
         Run the node groups algorithm
@@ -2371,7 +2281,9 @@ class SimulationsMain(TimeEventsMain):
                         bus_colours[i] = QtGui.QColor(r * 255, g * 255, b * 255, a * 255)
                         tool_tips[i] = 'Group ' + str(c)
 
-            self.set_big_bus_marker_colours(buses=self.circuit.buses, colors=bus_colours, tool_tips=tool_tips)
+            self.set_big_bus_marker_colours(buses=self.circuit.buses,
+                                            colors=bus_colours,
+                                            tool_tips=tool_tips)
 
     def run_inputs_analysis(self):
         """
