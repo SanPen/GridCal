@@ -18,7 +18,7 @@
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
-from typing import List
+from typing import List, Union, Any
 import math
 from PySide6 import QtGui
 
@@ -26,6 +26,7 @@ from GridCalEngine.basic_structures import LogSeverity
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.enumerations import DeviceType
+from GridCalEngine.Devices.types import ALL_DEV_TYPES
 
 
 class GridErrorLog:
@@ -33,25 +34,31 @@ class GridErrorLog:
     Log of grid errors
     """
 
-    def __init__(self, parent=None):
+    def __init__(self) -> None:
         """
-
-        :param parent:
+        Constructor
         """
         self.logs = dict()
 
-        self.header = ['Object type', 'Name', 'Index', 'Severity', 'Property', 'Lower', 'Value', 'Upper']
+        self.header = ['Object type',
+                       'Name',
+                       'Index',
+                       'Severity',
+                       'Property',
+                       'Lower',
+                       'Value',
+                       'Upper']
 
     def add(self,
             object_type,
-            element_name,
-            element_index,
+            element_name: Union[str, Any],
+            element_index: int,
             severity: LogSeverity,
-            propty,
-            message,
-            lower='',
-            val='',
-            upper=''):
+            propty: str,
+            message: str,
+            lower: Union[str, float, int] = '',
+            val: Union[str, float, int] = '',
+            upper: Union[str, float, int] = ''):
         """
 
         :param object_type:
@@ -66,7 +73,14 @@ class GridErrorLog:
         :return:
         """
 
-        e = [object_type, element_name, element_index, severity, propty, lower, val, upper]
+        e = [object_type,
+             str(element_name),
+             element_index,
+             severity,
+             propty,
+             str(lower),
+             str(val),
+             str(upper)]
 
         if message in self.logs.keys():
             self.logs[message].append(e)
@@ -141,36 +155,54 @@ class FixableErrorOutOfRange:
     Error type for when a value is out of range
     """
 
-    def __init__(self, grid_element, property_name, value, lower_limit, upper_limit):
-        self.grid_element = grid_element
-        self.property_name = property_name
-        self.value = value
-        self.lower_limit = lower_limit
-        self.upper_limit = upper_limit
+    def __init__(self,
+                 grid_element: ALL_DEV_TYPES,
+                 property_name: str,
+                 value: float,
+                 lower_limit: float,
+                 upper_limit: float):
+        """
+
+        :param grid_element:
+        :param property_name:
+        :param value:
+        :param lower_limit:
+        :param upper_limit:
+        """
+        self.grid_element: ALL_DEV_TYPES = grid_element
+        self.property_name: str = property_name
+        self.value: float = value
+        self.lower_limit: float = lower_limit
+        self.upper_limit: float = upper_limit
 
     def fix(self, logger: Logger = Logger(), fix_ts=False):
+        """
 
+        :param logger:
+        :param fix_ts:
+        :return:
+        """
         if self.value < self.lower_limit:
-            setattr(self.grid_element, self.property_name, self.lower_limit)
+            self.grid_element.set_snapshot_value(property_name=self.property_name, value=self.lower_limit)
             logger.add_info("Fixed " + self.property_name, device=self.grid_element.idtag, value=self.value)
 
         elif self.value > self.upper_limit:
-            setattr(self.grid_element, self.property_name, self.upper_limit)
+            self.grid_element.set_snapshot_value(property_name=self.property_name, value=self.upper_limit)
             logger.add_info("Fixed " + self.property_name, device=self.grid_element.idtag, value=self.value)
 
         # fix the associated time series
-        arr_name = self.property_name + '_prof'
-        if fix_ts and hasattr(self.grid_element, arr_name):
-            arr = getattr(self.grid_element, arr_name)
-            if arr is not None:
-                for i, value in enumerate(arr):
-                    if value < self.lower_limit:
-                        getattr(self.grid_element, arr_name)[i] = self.lower_limit
-                        logger.add_info("Fixed " + self.property_name, device=self.grid_element.idtag, value=value)
+        gc_prop = self.grid_element.registered_properties.get(self.property_name, None)
+        if fix_ts and gc_prop.has_profile():
+            profile = self.grid_element.get_profile_by_prop(prop=gc_prop)
+            for i in range(profile.size()):
+                value = profile[i]
+                if value < self.lower_limit:
+                    profile[i] = self.lower_limit
+                    logger.add_info("Fixed " + self.property_name, device=self.grid_element.idtag, value=value)
 
-                    elif value > self.upper_limit:
-                        getattr(self.grid_element, arr_name)[i] = self.upper_limit
-                        logger.add_info("Fixed " + self.property_name, device=self.grid_element.idtag, value=value)
+                elif value > self.upper_limit:
+                    profile[i] = self.upper_limit
+                    logger.add_info("Fixed " + self.property_name, device=self.grid_element.idtag, value=value)
 
 
 class FixableErrorRangeFlip:
@@ -269,7 +301,9 @@ def grid_analysis(circuit: MultiCircuit,
                   branch_connection_voltage_tolerance=0.1,
                   min_vcc=8,
                   max_vcc=18,
-                  logger=GridErrorLog()):
+                  logger=GridErrorLog(),
+                  eps_max: float = 1e20,
+                  eps_min: float = 1e-20):
     """
     Analyze the model data
     :param circuit: Circuit to analyze
@@ -283,6 +317,8 @@ def grid_analysis(circuit: MultiCircuit,
     :param max_vcc: maximum short circuit voltage (%)
     :param min_vcc: Minimum short circuit voltage (%)
     :param logger: GridErrorLog
+    :param eps_max: Max epsylon value for comparison
+    :param eps_min: Min epsylon value for comparison
     :return: list of fixable error objects
     """
     if circuit.time_profile is not None:
@@ -397,8 +433,8 @@ def grid_analysis(circuit: MultiCircuit,
                     fixable_errors.append(FixableErrorOutOfRange(grid_element=elm,
                                                                  property_name='R',
                                                                  value=elm.R,
-                                                                 lower_limit=1e-20,
-                                                                 upper_limit=1e20))
+                                                                 lower_limit=eps_min,
+                                                                 upper_limit=eps_max))
 
                 if elm.X == 0.0:
                     logger.add(object_type=object_type.value,
@@ -411,8 +447,8 @@ def grid_analysis(circuit: MultiCircuit,
                     fixable_errors.append(FixableErrorOutOfRange(grid_element=elm,
                                                                  property_name='X',
                                                                  value=elm.X,
-                                                                 lower_limit=1e-20,
-                                                                 upper_limit=1e20))
+                                                                 lower_limit=eps_min,
+                                                                 upper_limit=eps_max))
 
                 if elm.B == 0.0:
                     logger.add(object_type=object_type.value,
@@ -425,8 +461,8 @@ def grid_analysis(circuit: MultiCircuit,
                     fixable_errors.append(FixableErrorOutOfRange(grid_element=elm,
                                                                  property_name='B',
                                                                  value=elm.B,
-                                                                 lower_limit=1e-20,
-                                                                 upper_limit=1e20))
+                                                                 lower_limit=eps_min,
+                                                                 upper_limit=eps_max))
 
         elif object_type == DeviceType.Transformer2WDevice:
             elements = circuit.transformers2w
@@ -467,13 +503,13 @@ def grid_analysis(circuit: MultiCircuit,
                     fixable_errors.append(FixableErrorOutOfRange(grid_element=elm,
                                                                  property_name='R',
                                                                  value=elm.rate,
-                                                                 lower_limit=1e-20,
-                                                                 upper_limit=1e20))
+                                                                 lower_limit=eps_min,
+                                                                 upper_limit=eps_max))
                     fixable_errors.append(FixableErrorOutOfRange(grid_element=elm,
                                                                  property_name='X',
                                                                  value=elm.rate,
-                                                                 lower_limit=1e-20,
-                                                                 upper_limit=1e20))
+                                                                 lower_limit=eps_min,
+                                                                 upper_limit=eps_max))
 
                 else:
                     if elm.R < 0.0:
@@ -500,22 +536,8 @@ def grid_analysis(circuit: MultiCircuit,
                         fixable_errors.append(FixableErrorOutOfRange(grid_element=elm,
                                                                      property_name='R',
                                                                      value=elm.R,
-                                                                     lower_limit=1e-20,
-                                                                     upper_limit=1e20))
-
-                    # elif elm.X < 0.0:  # this is ok
-                    #     logger.add(object_type=object_type.value,
-                    #                element_name=elm.name,
-                    #                element_index=i,
-                    #                severity=LogSeverity.Information,
-                    #                propty='X',
-                    #                message='The reactance is negative',
-                    #                val=elm.X)
-                    #     fixable_errors.append(FixableErrorOutOfRange(grid_element=elm,
-                    #                                                  property_name='X',
-                    #                                                  value=elm.rate,
-                    #                                                  lower_limit=1e-20,
-                    #                                                  upper_limit=1e20))
+                                                                     lower_limit=eps_min,
+                                                                     upper_limit=eps_max))
 
                     elif elm.X == 0.0:
                         logger.add(object_type=object_type.value,
@@ -528,8 +550,8 @@ def grid_analysis(circuit: MultiCircuit,
                         fixable_errors.append(FixableErrorOutOfRange(grid_element=elm,
                                                                      property_name='X',
                                                                      value=elm.rate,
-                                                                     lower_limit=1e-20,
-                                                                     upper_limit=1e20))
+                                                                     lower_limit=eps_min,
+                                                                     upper_limit=eps_max))
 
                 # check tap module
                 if elm.tap_module > tap_max:
@@ -574,7 +596,7 @@ def grid_analysis(circuit: MultiCircuit,
                                propty='HV or LV',
                                message='Large nominal voltage mismatch at the "from" bus',
                                lower=str(1.0 - transformer_virtual_tap_tolerance),
-                               val=tap_f,
+                               val=str(tap_f),
                                upper=str(1.0 + transformer_virtual_tap_tolerance))
                     fixable_errors.append(FixableTransformerVtaps(grid_element=elm,
                                                                   maximum_difference=transformer_virtual_tap_tolerance))
@@ -588,7 +610,7 @@ def grid_analysis(circuit: MultiCircuit,
                                propty='HV or LV',
                                message='Large nominal voltage mismatch at the "to" bus',
                                lower=str(1.0 - transformer_virtual_tap_tolerance),
-                               val=tap_t,
+                               val=str(tap_t),
                                upper=str(1.0 + transformer_virtual_tap_tolerance))
                     fixable_errors.append(FixableTransformerVtaps(grid_element=elm,
                                                                   maximum_difference=transformer_virtual_tap_tolerance))
@@ -604,7 +626,7 @@ def grid_analysis(circuit: MultiCircuit,
                                message='The short circuit value is suspicious',
                                lower=str(min_vcc),
                                upper=str(max_vcc),
-                               val=vcc)
+                               val=str(vcc))
 
                 # check the nominal power
                 if elm.Sn > 0:
@@ -671,7 +693,7 @@ def grid_analysis(circuit: MultiCircuit,
                 Pg += obj.P * obj.active
 
                 if circuit.time_profile is not None:
-                    Pg_prof += obj.P_prof * obj.active_prof
+                    Pg_prof += obj.P_prof.toarray() * obj.active_prof.toarray()
 
                     if obj.Vset < v_low:
                         logger.add(object_type=object_type.value,
@@ -764,7 +786,7 @@ def grid_analysis(circuit: MultiCircuit,
                 Pg += obj.P * obj.active
 
                 if circuit.time_profile is not None:
-                    Pg_prof += obj.P_prof * obj.active_prof
+                    Pg_prof += obj.P_prof.toarray() * obj.active_prof.toarray()
 
                 if obj.Vset < v_low:
                     logger.add(object_type=object_type.value,
@@ -859,8 +881,8 @@ def grid_analysis(circuit: MultiCircuit,
                 Qg += obj.Q * obj.active
 
                 if circuit.time_profile is not None:
-                    Pg_prof += obj.P_prof * obj.active_prof
-                    Qg_prof += obj.Q_prof * obj.active_prof
+                    Pg_prof += obj.P_prof.toarray() * obj.active_prof.toarray()
+                    Qg_prof += obj.Q_prof.toarray() * obj.active_prof.toarray()
 
                 elif object_type == DeviceType.ShuntDevice:
                     elements = circuit.get_shunts()
@@ -873,11 +895,11 @@ def grid_analysis(circuit: MultiCircuit,
                     Ql += obj.Q * obj.active
 
                 if circuit.time_profile is not None:
-                    Pl_prof += obj.P_prof * obj.active_prof
-                    Ql_prof += obj.Q_prof * obj.active_prof
+                    Pl_prof += obj.P_prof.toarray() * obj.active_prof.toarray()
+                    Ql_prof += obj.Q_prof.toarray() * obj.active_prof.toarray()
 
                 # compare loads
-                p_ratio = abs(Pl - Pg) / (Pl + 1e-20)
+                p_ratio = abs(Pl - Pg) / (Pl + eps_min)
 
                 if p_ratio > imbalance_threshold:
                     msg = ">> " + str(imbalance_threshold) + "%"
@@ -906,7 +928,7 @@ def grid_analysis(circuit: MultiCircuit,
 
                 for t in range(nt):
                     # compare loads
-                    p_ratio = abs(Pl_prof[t] - Pg_prof[t]) / (Pl_prof[t] + 1e-20)
+                    p_ratio = abs(Pl_prof[t] - Pg_prof[t]) / (Pl_prof[t] + eps_min)
                     if p_ratio > imbalance_threshold:
                         msg = ">> " + str(imbalance_threshold) + "%"
                         logger.add(object_type='Active power balance',
@@ -932,11 +954,15 @@ def grid_analysis(circuit: MultiCircuit,
     return fixable_errors
 
 
-def object_histogram_analysis(circuit: MultiCircuit, object_type: DeviceType, fig=None):
+def object_histogram_analysis(circuit: MultiCircuit,
+                              object_type: DeviceType,
+                              t_idx: Union[None, int],
+                              fig=None):
     """
     Draw the histogram analysis of the provided object type
     :param circuit: Circuit
     :param object_type: Object Type (DeviceType)
+    :param t_idx: Time index (None or int) to get the data
     :param fig: matplotlib figure (if None, a new one is created)
     """
 
@@ -991,35 +1017,21 @@ def object_histogram_analysis(circuit: MultiCircuit, object_type: DeviceType, fi
     else:
         return
 
-    # fill values
-    p = 0
-    for i in range(len(properties)):
-        if types[i] is complex:
-            p += 2
-        else:
-            p += 1
-
     n = len(objects)
+    p = len(properties)
     vals = np.zeros((n, p))
     extended_prop = np.zeros(p, dtype=object)
     log_scale_extended = np.zeros(p, dtype=object)
-    for i, elem in enumerate(objects):
-        a = 0
-        for j in range(len(properties)):
-            if types[j] is complex:
-                val = getattr(elem, properties[j])
-                vals[i, a] = val.real
-                vals[i, a + 1] = val.imag
-                extended_prop[a] = properties[j] + '.re'
-                extended_prop[a + 1] = properties[j] + '.im'
-                log_scale_extended[a] = log_scale[j]
-                log_scale_extended[a + 1] = log_scale[j]
-                a += 2
-            else:
-                vals[i, a] = getattr(elem, properties[j])
-                extended_prop[a] = properties[j]
-                log_scale_extended[a] = log_scale[j]
-                a += 1
+    for j in range(len(properties)):
+
+        if len(objects):
+            gc_prop = objects[0].registered_properties[properties[j]]
+
+            for i, elem in enumerate(objects):
+                val = elem.get_property_value(prop=gc_prop, t_idx=t_idx)
+                vals[i, j] = val
+                extended_prop[j] = properties[j]
+                log_scale_extended[j] = log_scale[j]
 
     # create figure if needed
     if fig is None:

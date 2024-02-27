@@ -751,7 +751,10 @@ class ObjectsTableMain(DiagramsMain):
         if len(self.ui.dataStructuresTreeView.selectedIndexes()) > 0:
             elm_type = self.ui.dataStructuresTreeView.selectedIndexes()[0].data(role=QtCore.Qt.ItemDataRole.DisplayRole)
 
-            object_histogram_analysis(circuit=self.circuit, object_type=elm_type, fig=None)
+            object_histogram_analysis(circuit=self.circuit,
+                                      object_type=elm_type,
+                                      t_idx=self.get_db_slider_index(),
+                                      fig=None)
             plt.show()
         else:
             info_msg('Select a data structure')
