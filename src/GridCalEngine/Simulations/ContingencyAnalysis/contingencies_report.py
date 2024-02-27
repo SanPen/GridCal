@@ -504,30 +504,36 @@ class ContingencyResultsReport:
                     msg_ov = 'Overload acceptable'
                     cond_srap = False
                     msg_srap = 'SRAP not needed'
-                    post_srap_flow = c_flow
                     solved_by_srap = False
-                    max_srap_power = 0
+                    post_srap_flow = c_flow
+                    max_srap_power = 0.0
 
                 elif rate_nx_pu < c_load <= rate_srap_pu:
                     ov_status = 2
                     msg_ov = 'Overload not acceptable' # Overwritten if solved
                     cond_srap = True # Srap aplicable
                     msg_srap = 'SRAP applicable'
+                    solved_by_srap = False
+                    post_srap_flow = c_flow # Overwritten if srap activated
+                    max_srap_power = 0.0
 
                 elif rate_srap_pu < c_load <= rate_srap_pu + srap_deadband/100:
                     ov_status = 3
                     msg_ov = 'Overload not acceptable'
                     cond_srap = True
                     msg_srap = 'SRAP not applicable'
+                    solved_by_srap = False
+                    post_srap_flow = c_flow # Overwritten if srap activated
+                    max_srap_power = 0.0
 
                 elif c_load > rate_srap_pu + srap_deadband/100:
                     ov_status = 4
                     msg_ov = 'Overload not acceptable'
                     cond_srap = False
                     msg_srap = 'SRAP not applicable'
-                    post_srap_flow = c_flow
                     solved_by_srap = False
-                    max_srap_power = 0
+                    post_srap_flow = c_flow
+                    max_srap_power = 0.0
 
 
                 if using_srap and cond_srap:
@@ -561,11 +567,14 @@ class ContingencyResultsReport:
                         srap_used_power=srap_used_power
                     )
 
-                    post_srap_flow = abs(c_flow) - abs(max_srap_power)
-                    if  post_srap_flow < 0:
-                        post_srap_flow = 0
+                    if (max_srap_power==0):
+                        1
 
-                    if(solved_by_srap and ov_status == 2):
+                    post_srap_flow = abs(c_flow) - abs(max_srap_power)
+                    if post_srap_flow < 0:
+                        post_srap_flow = 0.0
+
+                    if (solved_by_srap and ov_status == 2):
                         msg_ov = 'Overload acceptable'
 
                 if detailed_massive_report:
@@ -584,9 +593,6 @@ class ContingencyResultsReport:
                     #          solved_by_srap=solved_by_srap,
                     #          srap_power=max_srap_power,
                     #          srap_bus_indices=None)
-
-                    if(abs(contingency_loadings[m]) - abs(c_flow)/(numerical_circuit.rates[m]+ 1e-9) > 0.01):
-                        1
 
 
                     self.add(time_index=t if t is not None else 0,  # --------->Convertir a fecha

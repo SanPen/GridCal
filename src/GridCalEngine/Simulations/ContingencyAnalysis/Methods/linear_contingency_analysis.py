@@ -99,7 +99,7 @@ def linear_contingency_analysis(grid: MultiCircuit,
             injections = None
 
         c_flow = multi_contingency.get_contingency_flows(base_flow=flows_n, injections=injections)
-        c_loading = c_flow / (numerical_circuit.ContingencyRates + 1e-9)
+        c_loading = c_flow / (numerical_circuit.rates + 1e-9)
 
         results.Sf[ic, :] = c_flow  # already in MW
         results.Sbus[ic, :] = Pbus
