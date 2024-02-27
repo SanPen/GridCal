@@ -481,11 +481,7 @@ class ContingencyResultsReport:
                              solved_by_srap='False')
 
 
-
-
-        ##################
-
-
+        #Now evalueting the effect of contingencies
         for m in mon_idx:  # for each monitored branch ...
 
             c_flow = abs(contingency_flows[m])
@@ -550,9 +546,14 @@ class ContingencyResultsReport:
                                                   bus_indices=indices,
                                                   sensitivities=sensitivities)
 
+                    if (srap_rever_to_nominal_rating):
+                        rate_goal = numerical_circuit.rates[m]
+                    else:
+                        rate_goal = numerical_circuit.contingency_rates[m]
+
                     solved_by_srap, max_srap_power = buses_for_srap.is_solvable(
                         c_flow=contingency_flows[m].real,  # the real part because it must have the sign
-                        rating=numerical_circuit.branch_data.rates[m],
+                        rating=rate_goal,
                         srap_pmax_mw=srap_max_power,
                         available_power=available_power,
                         branch_idx=m,
@@ -583,6 +584,10 @@ class ContingencyResultsReport:
                     #          solved_by_srap=solved_by_srap,
                     #          srap_power=max_srap_power,
                     #          srap_bus_indices=None)
+
+                    if(abs(contingency_loadings[m]) - abs(c_flow)/(numerical_circuit.rates[m]+ 1e-9) > 0.01):
+                        1
+
 
                     self.add(time_index=t if t is not None else 0,  # --------->Convertir a fecha
                              base_uuid=calc_branches[m].idtag,  # --------->Cambiar a CCAA1
