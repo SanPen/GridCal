@@ -24,7 +24,7 @@ if __name__ == "__main__":
     inv_results = []
 
     for i, solver in enumerate(solvers):
-        options = invsim.InvestmentsEvaluationOptions(solver=solver, max_eval=3 * len(grid.investments),
+        options = invsim.InvestmentsEvaluationOptions(solver=solver, max_eval=4 * len(grid.investments),
                                                       pf_options=pf_options)
 
         inv = invsim.InvestmentsEvaluationDriver(grid, options=options)
