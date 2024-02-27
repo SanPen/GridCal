@@ -233,8 +233,8 @@ class FixableErrorRangeFlip:
         """
         if self.value_high < self.value_low:
             # flip the values
-            setattr(self.grid_element, self.property_name_low, self.value_high)
-            setattr(self.grid_element, self.property_name_high, self.value_low)
+            self.grid_element.set_snapshot_value(property_name=self.property_name_low, value=self.value_high)
+            self.grid_element.set_snapshot_value(property_name=self.property_name_high, value=self.value_low)
 
 
 class FixableErrorNegative:
@@ -262,7 +262,7 @@ class FixableErrorNegative:
         """
         # set the same value but positive
         if self.value < 0:
-            setattr(self.grid_element, self.property_name, -self.value)
+            self.grid_element.set_snapshot_value(property_name=self.property_name, value=-self.value)
 
 
 class FixableTransformerVtaps:
@@ -287,7 +287,7 @@ class FixableTransformerVtaps:
         :return:
         """
         # set the same value but positive
-        self.grid_element.fix_inconsistencies(logger,
+        self.grid_element.fix_inconsistencies(logger=logger,
                                               maximum_difference=self.maximum_difference)
 
 
