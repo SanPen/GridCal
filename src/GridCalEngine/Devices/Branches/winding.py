@@ -183,7 +183,7 @@ class Winding(BranchParent):
 
         if bus_to_regulated and self.control_mode == TransformerControlType.fixed:
             print(self.name, self.idtag, 'Overriding to V controller')
-            self.control_mode = TransformerControlType.Vt
+            self.control_mode = TransformerControlType.V
 
         self.register(key='HV', units='kV', tpe=float, definition='High voltage rating')
         self.register(key='LV', units='kV', tpe=float, definition='Low voltage rating')
@@ -555,9 +555,9 @@ class Winding(BranchParent):
         
         '''
         control_modes = {TransformerControlType.fixed: 0,
-                         TransformerControlType.Vt: 1,
+                         TransformerControlType.V: 1,
                          TransformerControlType.Pf: 2,
-                         TransformerControlType.PtVt: 3,
+                         TransformerControlType.PtV: 3,
                          TransformerControlType.Qt: 4,
                          TransformerControlType.PtQt: 5}
         if version == 2:
