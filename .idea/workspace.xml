@@ -28,12 +28,11 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Refactored TransformerControlType&#10;Refactored ControllableBranchParent">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Added TapModuleControl and TapAngleControl (WIP)">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/transformer.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/transformer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Parents/controllable_branch_parent.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Parents/controllable_branch_parent.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Parents/editable_device.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Parents/editable_device.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/enumerations.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/enumerations.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/setup.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/setup.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1294,7 +1293,8 @@
       <workItem from="1708464280264" duration="15926000" />
       <workItem from="1708538016328" duration="9653000" />
       <workItem from="1708587621872" duration="5067000" />
-      <workItem from="1708978215152" duration="5459000" />
+      <workItem from="1708978215152" duration="5497000" />
+      <workItem from="1709019607988" duration="802000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1639,7 +1639,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="453" />
+    <option name="localTasksCounter" value="454" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1673,7 +1673,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="added gat_all_elements_dict and improved gat_all_elements_dict_by_type" />
     <MESSAGE value="fixed typo" />
     <MESSAGE value="added profile and sparse array &#10; tests" />
     <MESSAGE value="added fluid_node diagrams" />
@@ -1698,7 +1697,8 @@
     <MESSAGE value="Added missing case24_ieee_rts.m test case" />
     <MESSAGE value="Removed the Core module and moved things outside" />
     <MESSAGE value="Refactored TransformerControlType&#10;Refactored ControllableBranchParent" />
-    <option name="LAST_COMMIT_MESSAGE" value="Refactored TransformerControlType&#10;Refactored ControllableBranchParent" />
+    <MESSAGE value="Added TapModuleControl and TapAngleControl (WIP)" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added TapModuleControl and TapAngleControl (WIP)" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
