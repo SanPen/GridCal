@@ -968,50 +968,42 @@ def object_histogram_analysis(circuit: MultiCircuit,
 
     if object_type == DeviceType.LineDevice.value:
         properties = ['R', 'X', 'B', 'rate']
-        types = [float, float, float, float, float]
         log_scale = [False, False, False, False, False]
         objects = circuit.lines
 
     elif object_type == DeviceType.Transformer2WDevice.value:
         properties = ['R', 'X', 'G', 'B', 'tap_module', 'tap_phase', 'rate']
-        types = [float, float, float, float, float, float, float]
         log_scale = [False, False, False, False, False, False, False]
         objects = circuit.transformers2w
 
     elif object_type == DeviceType.BusDevice.value:
         properties = ['Vnom']
-        types = [float]
         log_scale = [False]
         objects = circuit.get_buses()
 
     elif object_type == DeviceType.GeneratorDevice.value:
         properties = ['Vset', 'P', 'Qmin', 'Qmax']
         log_scale = [False, False, False, False]
-        types = [float, float, float, float]
         objects = circuit.get_generators()
 
     elif object_type == DeviceType.BatteryDevice.value:
         properties = ['Vset', 'P', 'Qmin', 'Qmax']
         log_scale = [False, False, False, False]
-        types = [float, float, float, float]
         objects = circuit.get_batteries()
 
     elif object_type == DeviceType.StaticGeneratorDevice.value:
         properties = ['P', 'Q']
         log_scale = [False, False]
-        types = [float, float]
         objects = circuit.get_static_generators()
 
     elif object_type == DeviceType.ShuntDevice.value:
         properties = ['G', 'B']
         log_scale = [False, False]
-        types = [float, float]
         objects = circuit.get_shunts()
 
     elif object_type == DeviceType.LoadDevice.value:
         properties = ['P', 'Q', 'Ir', 'Ii', 'G', 'B']
         log_scale = [False, False, False, False, False, False]
-        types = [float, float, float, float, float, float]
         objects = circuit.get_loads()
 
     else:
@@ -1054,9 +1046,15 @@ def object_histogram_analysis(circuit: MultiCircuit,
             # plot
             ax = fig.add_subplot(k, k + 1, j + 1)
             ax.set_facecolor('white')
-            ax.hist(x, bins=100, range=r,
-                    cumulative=False, bottom=None, histtype='bar',
-                    align='mid', orientation='vertical')
+            # bin_edges = np.histogram_bin_edges(x)
+            ax.hist(x,
+                    # bins=len(bin_edges),
+                    range=r,
+                    cumulative=False,
+                    bottom=None,
+                    histtype='bar',
+                    align='mid',
+                    orientation='vertical')
             ax.plot(x, np.zeros(n), 'o')
             ax.set_title(extended_prop[j])
 
