@@ -368,13 +368,9 @@ class ObjectsTableMain(DiagramsMain):
                     unique.sort(reverse=True)
                     for r in unique:
 
-                        if objects[r].graphic_obj is not None:
-                            # this is a more complete function than the circuit one because it removes the
-                            # graphical items too, and for loads and generators it deletes them properly
-                            objects[r].graphic_obj.remove(ask=False)
-                        else:
-                            # objects.pop(r)
-                            self.circuit.delete_elements_by_type(obj=objects[r])
+                        self.circuit.delete_elements_by_type(obj=objects[r])
+
+                        # TODO: Call the displays to delete the graphic objects
 
                     # update the view
                     self.display_objects_filter(objects)
