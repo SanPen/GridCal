@@ -18,6 +18,17 @@ from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.linear_shunt_compensator i
 from GridCalEngine.data_logger import DataLogger
 import numpy as np
 
+from trunk.cgmes_py_generator.cgmes_v2_4_15.devices.synchronous_machine import SynchronousMachine
+
+
+def get_slack_id(machines: List[SynchronousMachine], terminals: List[Terminal]):
+    for m in machines:
+        if m.referencePriority == 1:
+            for term in terminals:
+                if term.ConductingEquipment.rdfid == m.rdfid:
+                    return term.TopologicalNode.rdfid
+    return None
+
 
 # region PowerTransformer
 def get_windings_number(power_transformer: PowerTransformer):
@@ -251,7 +262,6 @@ def get_pu_values_ac_line_segment(ac_line_segment: ACLineSegment, logger: DataLo
     return R, X, G, B, R0, X0, G0, B0
 
 
-
 def get_rate_ac_line_segment():
     return 1e-20
 
@@ -326,6 +336,7 @@ def get_values_shunt(shunt: LinearShuntCompensator, logger: DataLogger, Sbase: f
             B0 = 0
 
     return G, B, G0, B0
+
 
 # endregion
 
@@ -647,7 +658,6 @@ def base_voltage_to_str(base_voltage: BaseVoltage):
 # endregion
 
 def get_regulating_control(cgmes_elm: RegulatingCondEq, cgmes_enums, logger: DataLogger):
-
     if cgmes_elm.RegulatingControl is not None:
 
         if cgmes_elm.RegulatingControl.enabled:
