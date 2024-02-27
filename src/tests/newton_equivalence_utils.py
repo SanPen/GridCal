@@ -4,7 +4,7 @@ import newtonpa as npa
 import GridCalEngine.api as gce
 import scipy.sparse as sp
 from typing import List
-from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
+from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
 npa.findAndActivateLicense()
 

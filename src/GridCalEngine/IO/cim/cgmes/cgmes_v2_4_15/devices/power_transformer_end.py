@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.transformer_end import TransformerEnd
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile, WindingConnection, UnitSymbol
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile, UnitSymbol, WindingConnection
 
 
 class PowerTransformerEnd(TransformerEnd):
@@ -25,18 +25,18 @@ class PowerTransformerEnd(TransformerEnd):
 
 		from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.power_transformer import PowerTransformer
 		self.PowerTransformer: PowerTransformer | None = None
-		self.b: float = 0.0
+		self.b: float = None
 		self.connectionKind: WindingConnection = None
-		self.b0: float = 0.0
-		self.phaseAngleClock: int = 0
-		self.ratedS: float = 0.0
-		self.g: float = 0.0
-		self.ratedU: float = 0.0
-		self.g0: float = 0.0
-		self.r: float = 0.0
-		self.r0: float = 0.0
-		self.x: float = 0.0
-		self.x0: float = 0.0
+		self.b0: float = None
+		self.phaseAngleClock: int = None
+		self.ratedS: float = None
+		self.g: float = None
+		self.ratedU: float = None
+		self.g0: float = None
+		self.r: float = None
+		self.r0: float = None
+		self.x: float = None
+		self.x0: float = None
 
 		self.register_property(
 			name='PowerTransformer',

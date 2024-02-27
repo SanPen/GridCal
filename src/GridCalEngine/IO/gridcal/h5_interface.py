@@ -17,7 +17,7 @@
 import pandas as pd
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.IO.gridcal.pack_unpack import gather_model_as_data_frames, parse_gridcal_data
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
 
 
 def save_h5(circuit: MultiCircuit, file_path, compression_opts=5, text_func=None, prog_func=None):

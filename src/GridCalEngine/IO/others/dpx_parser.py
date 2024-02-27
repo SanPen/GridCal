@@ -21,10 +21,9 @@ import chardet
 import numpy as np
 import pandas as pd
 
-from GridCalEngine.Core import MultiCircuit
 from GridCalEngine.basic_structures import Logger
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-import GridCalEngine.Core.Devices as dev
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
+import GridCalEngine.Devices as dev
 
 pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)

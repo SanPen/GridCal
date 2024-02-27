@@ -23,17 +23,17 @@ class EquivalentInjection(EquivalentEquipment):
 	def __init__(self, rdfid='', tpe='EquivalentInjection'):
 		EquivalentEquipment.__init__(self, rdfid, tpe)
 
-		self.maxP: float = 0.0
-		self.maxQ: float = 0.0
-		self.minP: float = 0.0
-		self.minQ: float = 0.0
-		self.regulationCapability: bool = False
+		self.maxP: float = None
+		self.maxQ: float = None
+		self.minP: float = None
+		self.minQ: float = None
+		self.regulationCapability: bool = None
 		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.reactive_capability_curve import ReactiveCapabilityCurve
 		self.ReactiveCapabilityCurve: ReactiveCapabilityCurve | None = None
-		self.regulationStatus: bool = False
-		self.regulationTarget: float = 0.0
-		self.p: float = 0.0
-		self.q: float = 0.0
+		self.regulationStatus: bool = None
+		self.regulationTarget: float = None
+		self.p: float = None
+		self.q: float = None
 
 		self.register_property(
 			name='maxP',

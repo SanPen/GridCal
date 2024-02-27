@@ -22,7 +22,7 @@ import matplotlib.colors as plt_colors
 from typing import Union
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.results_template import ResultsTemplate
-from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit
+from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.basic_structures import IntVec, Vec, StrVec, CxVec, CscMat
 from GridCalEngine.enumerations import StudyResultsType, ResultTypes
 

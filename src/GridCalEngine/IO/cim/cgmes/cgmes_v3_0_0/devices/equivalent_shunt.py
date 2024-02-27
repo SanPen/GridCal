@@ -23,8 +23,8 @@ class EquivalentShunt(EquivalentEquipment):
 	def __init__(self, rdfid='', tpe='EquivalentShunt'):
 		EquivalentEquipment.__init__(self, rdfid, tpe)
 
-		self.b: float = 0.0
-		self.g: float = 0.0
+		self.b: float = None
+		self.g: float = None
 
 		self.register_property(
 			name='b',

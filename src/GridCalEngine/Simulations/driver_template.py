@@ -21,8 +21,8 @@ from GridCalEngine.basic_structures import IntVec, Vec
 from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.enumerations import EngineType
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-import GridCalEngine.Core.Topology.topology as tp
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
+import GridCalEngine.Topology.topology as tp
 
 
 class DummySignal:

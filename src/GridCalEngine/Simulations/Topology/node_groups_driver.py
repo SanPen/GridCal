@@ -19,7 +19,7 @@ import networkx as nx
 from sklearn.cluster import DBSCAN
 from sklearn.preprocessing import Normalizer
 
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Simulations.LinearFactors.linear_analysis_driver import LinearAnalysisResults
 from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.driver_template import DriverTemplate

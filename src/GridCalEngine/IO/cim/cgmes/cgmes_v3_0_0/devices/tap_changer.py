@@ -23,18 +23,18 @@ class TapChanger(PowerSystemResource):
 	def __init__(self, rdfid='', tpe='TapChanger'):
 		PowerSystemResource.__init__(self, rdfid, tpe)
 
-		self.highStep: int = 0
-		self.lowStep: int = 0
-		self.ltcFlag: bool = False
-		self.neutralStep: int = 0
-		self.neutralU: float = 0.0
-		self.normalStep: int = 0
+		self.highStep: int = None
+		self.lowStep: int = None
+		self.ltcFlag: bool = None
+		self.neutralStep: int = None
+		self.neutralU: float = None
+		self.normalStep: int = None
 		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.tap_changer_control import TapChangerControl
 		self.TapChangerControl: TapChangerControl | None = None
 		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.sv_tap_step import SvTapStep
 		self.SvTapStep: SvTapStep | None = None
-		self.controlEnabled: bool = False
-		self.step: float = 0.0
+		self.controlEnabled: bool = None
+		self.step: float = None
 
 		self.register_property(
 			name='highStep',

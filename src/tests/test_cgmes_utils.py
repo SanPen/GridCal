@@ -97,7 +97,7 @@ def test_get_pu_values_power_transformer_two_windings():
     power_transformer_end.x0 = 1
     power_transformer_end.g0 = 1
     power_transformer_end.b0 = 1
-
+    power_transformer_end.endNumber = 1
     power_transformer.references_to_me["PowerTransformerEnd"] = [power_transformer_end, power_transformer_end]
     (R, X, G, B, R0, X0, G0, B0) = get_pu_values_power_transformer(power_transformer, 100.0)
     assert R == 50

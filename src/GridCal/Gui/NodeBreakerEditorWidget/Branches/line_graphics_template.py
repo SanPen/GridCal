@@ -29,15 +29,15 @@ from GridCal.Gui.NodeBreakerEditorWidget.Fluid.fluid_node_graphics import FluidN
 
 from GridCal.Gui.messages import yes_no_question, warning_msg, error_msg
 from GridCal.Gui.GuiFunctions import ObjectsModel
-from GridCalEngine.Core.Devices.Substation.bus import Bus
-from GridCalEngine.Core.Devices.Branches.line import Line
-from GridCalEngine.Core.Devices.Branches.transformer import Transformer2W
-from GridCalEngine.Core.Devices.Branches.vsc import VSC
-from GridCalEngine.Core.Devices.Branches.upfc import UPFC
-from GridCalEngine.Core.Devices.Branches.dc_line import DcLine
-from GridCalEngine.Core.Devices.Branches.hvdc_line import HvdcLine
-from GridCalEngine.Core.Devices.Fluid.fluid_node import FluidNode
-from GridCalEngine.Core.Devices.Fluid.fluid_path import FluidPath
+from GridCalEngine.Devices.Substation.bus import Bus
+from GridCalEngine.Devices.Branches.line import Line
+from GridCalEngine.Devices.Branches.transformer import Transformer2W
+from GridCalEngine.Devices.Branches.vsc import VSC
+from GridCalEngine.Devices.Branches.upfc import UPFC
+from GridCalEngine.Devices.Branches.dc_line import DcLine
+from GridCalEngine.Devices.Branches.hvdc_line import HvdcLine
+from GridCalEngine.Devices.Fluid.fluid_node import FluidNode
+from GridCalEngine.Devices.Fluid.fluid_path import FluidPath
 from GridCalEngine.Simulations.Topology.topology_reduction_driver import reduce_grid_brute
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking

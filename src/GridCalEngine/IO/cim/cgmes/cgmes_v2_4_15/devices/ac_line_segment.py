@@ -23,15 +23,15 @@ class ACLineSegment(Conductor):
 	def __init__(self, rdfid='', tpe='ACLineSegment'):
 		Conductor.__init__(self, rdfid, tpe)
 
-		self.b0ch: float = 0.0
-		self.bch: float = 0.0
-		self.g0ch: float = 0.0
-		self.gch: float = 0.0
-		self.r: float = 0.0
-		self.r0: float = 0.0
-		self.shortCircuitEndTemperature: float = 0.0
-		self.x: float = 0.0
-		self.x0: float = 0.0
+		self.b0ch: float = None
+		self.bch: float = None
+		self.g0ch: float = None
+		self.gch: float = None
+		self.r: float = None
+		self.r0: float = None
+		self.shortCircuitEndTemperature: float = None
+		self.x: float = None
+		self.x0: float = None
 
 		self.register_property(
 			name='b0ch',

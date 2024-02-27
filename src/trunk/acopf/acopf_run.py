@@ -1,6 +1,6 @@
 import os
 import GridCalEngine.api as gce
-from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
+from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import run_nonlinear_opf, ac_optimal_power_flow
 from GridCalEngine.enumerations import TransformerControlType
 
@@ -74,7 +74,7 @@ def case_3bus():
 
     grid.add_transformer2w(tr1)
 
-    tr2 = gce.Transformer2W(b2, b3, 'Trafo 2', control_mode=TransformerControlType.PtVt,
+    tr2 = gce.Transformer2W(b2, b3, 'Trafo 2', control_mode=TransformerControlType.PtV,
                             tap_module=1.01, tap_phase=+0.02, r=0.004, x=0.08, tap_phase_max=0.03, tap_module_max=1.02,
                             tap_phase_min=-0.02, tap_module_min=0.98, rate=100)
     grid.add_transformer2w(tr2)
@@ -240,7 +240,7 @@ def case14():
 
     grid.transformers2w[0].control_mode = TransformerControlType.PtQt
     grid.transformers2w[1].control_mode = TransformerControlType.Pf
-    grid.transformers2w[2].control_mode = TransformerControlType.Vt
+    grid.transformers2w[2].control_mode = TransformerControlType.V
 
     #grid.delete_line(grid.lines[0])
     #grid.delete_line(grid.lines[1])

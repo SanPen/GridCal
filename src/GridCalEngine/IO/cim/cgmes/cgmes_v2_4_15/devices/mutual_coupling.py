@@ -27,14 +27,14 @@ class MutualCoupling(IdentifiedObject):
 		self.First_Terminal: Terminal | None = None
 		from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.terminal import Terminal
 		self.Second_Terminal: Terminal | None = None
-		self.b0ch: float = 0.0
-		self.distance11: float = 0.0
-		self.distance12: float = 0.0
-		self.distance21: float = 0.0
-		self.distance22: float = 0.0
-		self.g0ch: float = 0.0
-		self.r0: float = 0.0
-		self.x0: float = 0.0
+		self.b0ch: float = None
+		self.distance11: float = None
+		self.distance12: float = None
+		self.distance21: float = None
+		self.distance22: float = None
+		self.g0ch: float = None
+		self.r0: float = None
+		self.x0: float = None
 
 		self.register_property(
 			name='First_Terminal',

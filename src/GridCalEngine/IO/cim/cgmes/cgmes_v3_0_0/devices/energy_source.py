@@ -25,13 +25,13 @@ class EnergySource(EnergyConnection):
 
 		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.energy_scheduling_type import EnergySchedulingType
 		self.EnergySchedulingType: EnergySchedulingType | None = None
-		self.nominalVoltage: float = 0.0
-		self.pMin: float = 0.0
-		self.pMax: float = 0.0
-		self.activePower: float = 0.0
-		self.reactivePower: float = 0.0
-		self.voltageAngle: float = 0.0
-		self.voltageMagnitude: float = 0.0
+		self.nominalVoltage: float = None
+		self.pMin: float = None
+		self.pMax: float = None
+		self.activePower: float = None
+		self.reactivePower: float = None
+		self.voltageAngle: float = None
+		self.voltageMagnitude: float = None
 
 		self.register_property(
 			name='EnergySchedulingType',

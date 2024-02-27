@@ -23,13 +23,13 @@ class Equipment(PowerSystemResource):
 	def __init__(self, rdfid='', tpe='Equipment'):
 		PowerSystemResource.__init__(self, rdfid, tpe)
 
-		self.aggregate: bool = False
-		self.normallyInService: bool = False
+		self.aggregate: bool = None
+		self.normallyInService: bool = None
 		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.equipment_container import EquipmentContainer
 		self.EquipmentContainer: EquipmentContainer | None = None
 		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.operational_limit_set import OperationalLimitSet
 		self.OperationalLimitSet: OperationalLimitSet | None = None
-		self.inService: bool = False
+		self.inService: bool = None
 
 		self.register_property(
 			name='aggregate',

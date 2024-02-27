@@ -23,14 +23,14 @@ class ExternalNetworkInjection(RegulatingCondEq):
 	def __init__(self, rdfid='', tpe='ExternalNetworkInjection'):
 		RegulatingCondEq.__init__(self, rdfid, tpe)
 
-		self.governorSCD: float = 0.0
-		self.maxP: float = 0.0
-		self.maxQ: float = 0.0
-		self.minP: float = 0.0
-		self.minQ: float = 0.0
-		self.referencePriority: int = 0
-		self.p: float = 0.0
-		self.q: float = 0.0
+		self.governorSCD: float = None
+		self.maxP: float = None
+		self.maxQ: float = None
+		self.minP: float = None
+		self.minQ: float = None
+		self.referencePriority: int = None
+		self.p: float = None
+		self.q: float = None
 
 		self.register_property(
 			name='governorSCD',

@@ -21,7 +21,7 @@ from PySide6.QtCore import QThread, Signal
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.IO.gridcal.zip_interface import get_session_tree, load_session_driver_objects
 from GridCalEngine.IO.file_handler import FileOpen, FileSave
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
 from GridCalEngine.data_logger import DataLogger
 

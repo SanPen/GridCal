@@ -20,7 +20,7 @@ import pandas as pd
 from typing import Union
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.results_template import ResultsTemplate
-from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit
+from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Simulations.ContingencyAnalysis.contingencies_report import ContingencyResultsReport
 from GridCalEngine.basic_structures import DateVec, IntVec, StrVec, Mat
 from GridCalEngine.enumerations import StudyResultsType, ResultTypes

@@ -10,7 +10,7 @@ from GridCalEngine.Utils.Sparse.csc import diags
 import GridCalEngine.Utils.NumericalMethods.autodiff as ad
 from typing import Tuple, Union
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec
-from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at, NumericalCircuit
+from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at, NumericalCircuit
 from GridCalEngine.enumerations import  ReactivePowerControlMode
 
 def x2var(x: Vec, nVa: int, nVm: int, nPg: int,

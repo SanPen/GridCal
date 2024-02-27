@@ -19,7 +19,7 @@ import os
 import numpy as np
 import GridCalEngine.api as gce
 from GridCalEngine.enumerations import TransformerControlType
-from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
+from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import ac_optimal_power_flow, NonlinearOPFResults
 from trunk.acopf.acopf_admittance_tap_derivation import (compute_finitediff_admittances,
                                                          compute_finitediff_admittances_2dev,
@@ -189,7 +189,7 @@ def case_pegase89() -> NonlinearOPFResults:
     grid = gce.FileOpen(file_path).open()
     grid.get_transformers2w()[3].control_mode = TransformerControlType.PtQt
     grid.get_transformers2w()[7].control_mode = TransformerControlType.PtQt
-    grid.get_transformers2w()[18].control_mode = TransformerControlType.Vt
+    grid.get_transformers2w()[18].control_mode = TransformerControlType.V
     grid.get_transformers2w()[21].control_mode = TransformerControlType.PtQt
     grid.get_transformers2w()[36].control_mode = TransformerControlType.Pf
 

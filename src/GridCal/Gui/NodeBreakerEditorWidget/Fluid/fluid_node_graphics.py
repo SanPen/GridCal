@@ -24,15 +24,15 @@ from PySide6.QtWidgets import QMenu, QGraphicsScene, QGraphicsSceneMouseEvent
 
 from GridCal.Gui.NodeBreakerEditorWidget.generic_graphics import ACTIVE, FONT_SCALE
 from GridCal.Gui.GuiFunctions import ObjectsModel
-from GridCalEngine.Core.Devices.Fluid import FluidNode, FluidTurbine, FluidPump, FluidP2x
-from GridCalEngine.Core.Devices.Substation.bus import Bus
+from GridCalEngine.Devices.Fluid import FluidNode, FluidTurbine, FluidPump, FluidP2x
+from GridCalEngine.Devices.Substation.bus import Bus
 from GridCal.Gui.NodeBreakerEditorWidget.terminal_item import TerminalItem, HandleItem
 from GridCal.Gui.NodeBreakerEditorWidget.Fluid.fluid_turbine_graphics import FluidTurbineGraphicItem
 from GridCal.Gui.NodeBreakerEditorWidget.Fluid.fluid_pump_graphics import FluidPumpGraphicItem
 from GridCal.Gui.NodeBreakerEditorWidget.Fluid.fluid_p2x_graphics import FluidP2xGraphicItem
 from GridCal.Gui.messages import yes_no_question
 from GridCalEngine.enumerations import DeviceType, FaultType
-from GridCalEngine.Core.Devices.Parents.editable_device import EditableDevice
+from GridCalEngine.Devices.Parents.editable_device import EditableDevice
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.NodeBreakerEditorWidget.node_breaker_editor_widget import NodeBreakerEditorWidget

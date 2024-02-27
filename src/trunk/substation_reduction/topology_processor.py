@@ -1,6 +1,6 @@
 from GridCalEngine.api import *
-import GridCalEngine.Core.Devices as dev
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
+import GridCalEngine.Devices as dev
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from scipy.sparse import lil_matrix, csc_matrix
 
 

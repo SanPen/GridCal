@@ -48,12 +48,18 @@ class BusMode(Enum):
 
 
 class CpfStopAt(Enum):
+    """
+    CpfStopAt
+    """
     Nose = 'Nose'
     ExtraOverloads = 'Extra overloads'
     Full = 'Full curve'
 
 
 class CpfParametrization(Enum):
+    """
+    CpfParametrization
+    """
     Natural = 'Natural'
     ArcLength = 'Arc Length'
     PseudoArcLength = 'Pseudo Arc Length'
@@ -175,8 +181,12 @@ class SolverType(Enum):
     Constant_Impedance_linear = 'Constant impedance linear'
     NoSolver = 'No Solver'
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """
+
+        :return:
+        """
+        return str(self.value)
 
     def __repr__(self):
         return str(self)
@@ -532,6 +542,11 @@ class DiagramType(Enum):
 
     @staticmethod
     def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
         try:
             return DiagramType[s]
         except KeyError:
@@ -539,6 +554,10 @@ class DiagramType(Enum):
 
     @classmethod
     def list(cls):
+        """
+
+        :return:
+        """
         return list(map(lambda c: c.value, cls))
 
 
@@ -550,10 +569,10 @@ class TransformerControlType(Enum):
     Pf = '1:Pf'
     Qt = '2:Qt'
     PtQt = '3:Pt+Qt'
-    Vt = '4:Vt'
-    PtVt = '5:Pt+Vt'
+    V = '4:V'
+    PtV = '5:Pt+V'
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.value)
 
     def __repr__(self):
@@ -561,6 +580,11 @@ class TransformerControlType(Enum):
 
     @staticmethod
     def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
         try:
             return TransformerControlType[s]
         except KeyError:
@@ -568,6 +592,81 @@ class TransformerControlType(Enum):
 
     @classmethod
     def list(cls):
+        """
+
+        :return:
+        """
+        return list(map(lambda c: c.value, cls))
+
+
+class TapModuleControl(Enum):
+    """
+    Tap module control types
+    """
+    fixed = 'Fixed'
+    Vm = 'Vm'
+    Qf = 'Qf'
+    Qt = 'Qt'
+
+    def __str__(self) -> str:
+        return str(self.value)
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
+        try:
+            return TapModuleControl[s]
+        except KeyError:
+            return s
+
+    @classmethod
+    def list(cls):
+        """
+
+        :return:
+        """
+        return list(map(lambda c: c.value, cls))
+
+
+class TapAngleControl(Enum):
+    """
+    Tap angle control types
+    """
+    fixed = 'Fixed'
+    Pf = 'Pf'
+    Pt = 'Pt'
+
+    def __str__(self) -> str:
+        return str(self.value)
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
+        try:
+            return TapAngleControl[s]
+        except KeyError:
+            return s
+
+    @classmethod
+    def list(cls):
+        """
+
+        :return:
+        """
         return list(map(lambda c: c.value, cls))
 
 
@@ -603,7 +702,7 @@ class ConverterControlType(Enum):
     type_IV_I = '8:Vdc'
     type_IV_II = '9:Pdc'
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.value)
 
     def __repr__(self):
@@ -611,6 +710,11 @@ class ConverterControlType(Enum):
 
     @staticmethod
     def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
         try:
             return ConverterControlType[s]
         except KeyError:
@@ -618,6 +722,10 @@ class ConverterControlType(Enum):
 
     @classmethod
     def list(cls):
+        """
+
+        :return:
+        """
         return list(map(lambda c: c.value, cls))
 
 
@@ -628,7 +736,7 @@ class HvdcControlType(Enum):
     type_0_free = '0:Free'
     type_1_Pset = '1:Pdc'
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.value)
 
     def __repr__(self):
@@ -636,6 +744,11 @@ class HvdcControlType(Enum):
 
     @staticmethod
     def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
         try:
             return ConverterControlType[s]
         except KeyError:
@@ -643,6 +756,10 @@ class HvdcControlType(Enum):
 
     @classmethod
     def list(cls):
+        """
+
+        :return:
+        """
         return list(map(lambda c: c.value, cls))
 
 
@@ -678,6 +795,11 @@ class FaultType(Enum):
 
     @staticmethod
     def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
         try:
             return FaultType[s]
         except KeyError:
@@ -685,6 +807,10 @@ class FaultType(Enum):
 
     @classmethod
     def list(cls):
+        """
+
+        :return:
+        """
         return list(map(lambda c: c.value, cls))
 
 
@@ -702,7 +828,7 @@ class WindingsConnection(Enum):
     SD = 'SD'
     DD = 'DD'
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.value)
 
     def __repr__(self):
@@ -710,6 +836,11 @@ class WindingsConnection(Enum):
 
     @staticmethod
     def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
         try:
             return WindingsConnection[s]
         except KeyError:
@@ -717,6 +848,10 @@ class WindingsConnection(Enum):
 
     @classmethod
     def list(cls):
+        """
+
+        :return:
+        """
         return list(map(lambda c: c.value, cls))
 
 
@@ -795,14 +930,19 @@ class DeviceType(Enum):
     FluidPathDevice = 'Fluid path'
     FluidNodeDevice = 'Fluid node'
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        return str(self.value)
 
     def __repr__(self):
         return str(self)
 
     @staticmethod
     def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
         try:
             return DeviceType[s]
         except KeyError:
@@ -810,6 +950,10 @@ class DeviceType(Enum):
 
     @classmethod
     def list(cls):
+        """
+
+        :return:
+        """
         return list(map(lambda c: c.value, cls))
 
 
@@ -823,14 +967,19 @@ class BuildStatus(Enum):
     Candidate = 'Candidate'  # Candidate for commissioning, does not exist yet, might be selected for commissioning
     PlannedDecommission = 'PlannedDecommission'  # Already there, but it has been selected for decommissioning
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        return str(self.value)
 
     def __repr__(self):
         return str(self)
 
     @staticmethod
     def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
         try:
             return BuildStatus[s]
         except KeyError:
@@ -838,6 +987,10 @@ class BuildStatus(Enum):
 
     @classmethod
     def list(cls):
+        """
+
+        :return:
+        """
         return list(map(lambda c: c.value, cls))
 
 
@@ -874,6 +1027,11 @@ class StudyResultsType(Enum):
 
     @staticmethod
     def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
         try:
             return StudyResultsType[s]
         except KeyError:
@@ -881,6 +1039,10 @@ class StudyResultsType(Enum):
 
     @classmethod
     def list(cls):
+        """
+
+        :return:
+        """
         return list(map(lambda c: c.value, cls))
 
 
@@ -938,6 +1100,11 @@ class InvestmentsEvaluationObjectives(Enum):
 
     @staticmethod
     def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
         try:
             return InvestmentsEvaluationObjectives[s]
         except KeyError:
@@ -945,6 +1112,10 @@ class InvestmentsEvaluationObjectives(Enum):
 
     @classmethod
     def list(cls):
+        """
+
+        :return:
+        """
         return list(map(lambda c: c.value, cls))
 
 
@@ -993,6 +1164,9 @@ class SparseSolver(Enum):
 
 
 class ResultTypes(Enum):
+    """
+    ResultTypes
+    """
     # Power flow
     BusVoltage = 'Voltage', DeviceType.BusDevice
     BusVoltagePolar = 'Voltage (polar)', DeviceType.BusDevice
@@ -1261,9 +1435,12 @@ class ResultTypes(Enum):
 
     @staticmethod
     def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
         try:
             return ResultTypes[s]
         except KeyError:
             return s
-
-

@@ -1,9 +1,9 @@
 import os
 import json
 from typing import List
-from GridCalEngine.Core.Devices.Aggregation.contingency import Contingency
-from GridCalEngine.Core.Devices.Aggregation.contingency_group import ContingencyGroup
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Devices.Aggregation.contingency import Contingency
+from GridCalEngine.Devices.Aggregation.contingency_group import ContingencyGroup
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
 
 
 def parse_contingencies(data):

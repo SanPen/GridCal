@@ -21,7 +21,7 @@ import numpy as np
 import pandas as pd
 from PySide6 import QtWidgets, QtCore
 from typing import List
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.IO.file_handler import FileOpen
 from GridCalEngine.basic_structures import Logger
 from GridCal.Gui.ProfilesInput.profiles_from_models_gui import Ui_Dialog

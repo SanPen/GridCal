@@ -25,7 +25,7 @@ class OperationalLimitType(IdentifiedObject):
 
 		from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.operational_limit import OperationalLimit
 		self.OperationalLimit: OperationalLimit | None = None
-		self.acceptableDuration: float = 0.0
+		self.acceptableDuration: float = None
 		self.limitType: LimitTypeKind = None
 		self.direction: OperationalLimitDirectionKind = None
 

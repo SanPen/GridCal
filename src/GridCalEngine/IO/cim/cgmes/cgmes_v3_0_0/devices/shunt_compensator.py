@@ -23,15 +23,15 @@ class ShuntCompensator(RegulatingCondEq):
 	def __init__(self, rdfid='', tpe='ShuntCompensator'):
 		RegulatingCondEq.__init__(self, rdfid, tpe)
 
-		self.aVRDelay: float = 0.0
-		self.grounded: bool = False
-		self.maximumSections: int = 0
-		self.nomU: float = 0.0
-		self.normalSections: int = 0
-		self.voltageSensitivity: float = 0.0
+		self.aVRDelay: float = None
+		self.grounded: bool = None
+		self.maximumSections: int = None
+		self.nomU: float = None
+		self.normalSections: int = None
+		self.voltageSensitivity: float = None
 		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.sv_shunt_compensator_sections import SvShuntCompensatorSections
 		self.SvShuntCompensatorSections: SvShuntCompensatorSections | None = None
-		self.sections: float = 0.0
+		self.sections: float = None
 
 		self.register_property(
 			name='aVRDelay',

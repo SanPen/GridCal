@@ -23,10 +23,10 @@ class ACLineSegment(Conductor):
 	def __init__(self, rdfid='', tpe='ACLineSegment'):
 		Conductor.__init__(self, rdfid, tpe)
 
-		self.bch: float = 0.0
-		self.gch: float = 0.0
-		self.r: float = 0.0
-		self.x: float = 0.0
+		self.bch: float = None
+		self.gch: float = None
+		self.r: float = None
+		self.x: float = None
 		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.clamp import Clamp
 		self.Clamp: Clamp | None = None
 		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.cut import Cut

@@ -19,7 +19,7 @@ from typing import TYPE_CHECKING
 from PySide6.QtCore import QPointF
 from PySide6.QtGui import QPen, QIcon, QPixmap
 from PySide6.QtWidgets import (QMenu, QGraphicsTextItem)
-from GridCalEngine.Core.Devices.Fluid.fluid_p2x import FluidP2x
+from GridCalEngine.Devices.Fluid.fluid_p2x import FluidP2x
 from GridCal.Gui.NodeBreakerEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Circle
 from GridCal.Gui.messages import yes_no_question
 from GridCal.Gui.NodeBreakerEditorWidget.Injections.injections_template_graphics import InjectionTemplateGraphicItem

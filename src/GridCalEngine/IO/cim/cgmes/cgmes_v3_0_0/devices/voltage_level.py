@@ -29,8 +29,8 @@ class VoltageLevel(EquipmentContainer):
 		self.Bays: Bay | None = None
 		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.substation import Substation
 		self.Substation: Substation | None = None
-		self.highVoltageLimit: float = 0.0
-		self.lowVoltageLimit: float = 0.0
+		self.highVoltageLimit: float = None
+		self.lowVoltageLimit: float = None
 
 		self.register_property(
 			name='BaseVoltage',

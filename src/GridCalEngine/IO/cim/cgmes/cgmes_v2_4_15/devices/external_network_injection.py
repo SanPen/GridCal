@@ -23,24 +23,24 @@ class ExternalNetworkInjection(RegulatingCondEq):
 	def __init__(self, rdfid='', tpe='ExternalNetworkInjection'):
 		RegulatingCondEq.__init__(self, rdfid, tpe)
 
-		self.governorSCD: float = 0.0
-		self.ikSecond: bool = False
-		self.maxInitialSymShCCurrent: float = 0.0
-		self.maxP: float = 0.0
-		self.maxQ: float = 0.0
-		self.maxR0ToX0Ratio: float = 0.0
-		self.maxR1ToX1Ratio: float = 0.0
-		self.maxZ0ToZ1Ratio: float = 0.0
-		self.minInitialSymShCCurrent: float = 0.0
-		self.minP: float = 0.0
-		self.minQ: float = 0.0
-		self.minR0ToX0Ratio: float = 0.0
-		self.minR1ToX1Ratio: float = 0.0
-		self.minZ0ToZ1Ratio: float = 0.0
-		self.voltageFactor: float = 0.0
-		self.referencePriority: int = 0
-		self.p: float = 0.0
-		self.q: float = 0.0
+		self.governorSCD: float = None
+		self.ikSecond: bool = None
+		self.maxInitialSymShCCurrent: float = None
+		self.maxP: float = None
+		self.maxQ: float = None
+		self.maxR0ToX0Ratio: float = None
+		self.maxR1ToX1Ratio: float = None
+		self.maxZ0ToZ1Ratio: float = None
+		self.minInitialSymShCCurrent: float = None
+		self.minP: float = None
+		self.minQ: float = None
+		self.minR0ToX0Ratio: float = None
+		self.minR1ToX1Ratio: float = None
+		self.minZ0ToZ1Ratio: float = None
+		self.voltageFactor: float = None
+		self.referencePriority: int = None
+		self.p: float = None
+		self.q: float = None
 
 		self.register_property(
 			name='governorSCD',

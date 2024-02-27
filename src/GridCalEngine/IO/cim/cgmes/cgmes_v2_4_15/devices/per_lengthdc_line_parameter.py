@@ -25,9 +25,9 @@ class PerLengthDCLineParameter(Base):
 
 		from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.dc_line_segment import DCLineSegment
 		self.DCLineSegments: DCLineSegment | None = None
-		self.capacitance: float = 0.0
-		self.inductance: float = 0.0
-		self.resistance: float = 0.0
+		self.capacitance: float = None
+		self.inductance: float = None
+		self.resistance: float = None
 
 		self.register_property(
 			name='DCLineSegments',

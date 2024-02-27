@@ -141,7 +141,13 @@ class Base:
 
     def __hash__(self):
         # alternatively, return hash(repr(self))
-        return int(self.uuid, 16)  # hex string to int
+        # handle X nodes Check if the last character is 'X'
+        hex_string = self.uuid
+        if hex_string[-1] == 'X':
+            hex_string_without_X = hex_string[:-1]  # Remove the last character
+        else:
+            hex_string_without_X = hex_string  # No 'X', keep the original string
+        return int(hex_string_without_X, 16)  # hex string to int
 
     def __lt__(self, other):
         return self.__hash__() < other.__hash__()

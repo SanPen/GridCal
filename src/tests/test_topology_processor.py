@@ -1,8 +1,8 @@
 import os
 from GridCalEngine.api import *
-import GridCalEngine.Core.Devices as dev
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.Core.Topology.topology_substation_reduction import topology_processor, create_topology_process_info
+import GridCalEngine.Devices as dev
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Topology.topology_substation_reduction import topology_processor, create_topology_process_info
 #from GridCalEngine.Simulations.Topology.topology_processor_driver import
 
 
@@ -187,28 +187,19 @@ def createExampleGridTest2() -> MultiCircuit:
     return grid
 
 def test_topology_reduction():
-
+    """
+    This function tests topology reduction for Node/Breaker model networks
+    """
     for grid_ in [createExampleGridTest2(), createExampleGridTest1(), createExampleGridDiagram1()]:
 
-        logger_ = Logger()
-        #topology_processor(grid=grid_, t_idx=None, logger=logger_)
-        # logger_.print()
-        driver = TopologyProcessorDriver(grid=grid_)
-        driver.run()
-
+        topodriver = TopologyProcessorDriver(grid=grid_)
+        topodriver.run()
 
         assert grid_.buses, "Buses creation failed"
 
         for l in grid_.get_branches():
-            assert l.bus_from, "Line without bus_from associated"
-            assert l.bus_to, "Line without bus_to associated"
-        #for s in grid_.switch_devices:
-        #    assert s.bus_from, "Switch without bus_from associated"
-        #    assert s.bus_to, "Switch without bus_to associated"
-        #if grid_.transformers2w:
-        #    for t in grid_.transformers2w:
-        #        assert t.bus_from, "Transformer2w without bus_from associated"
-        #        assert t.bus_to, "Transformer2w without bus_to associated"
+            assert l.bus_from, "{} without bus_from associated".format(l.type_name)
+            assert l.bus_to, "{} without bus_to associated".format(l.type_name)
         # TODO: procesador topológico adaptarlo a transformadores de 3
         if grid_.transformers3w:
             for t in grid_.transformers3w:
@@ -216,14 +207,27 @@ def test_topology_reduction():
                 assert t.bus2, "Transformer3w without bus2 associated"
                 assert t.bus3, "Transformer3w without bus3 associated"
 
-        # Check whether the number of buses is equal to the number of islands from the network reduced
-        islands = topology_processor(grid=grid_, t_idx=None, logger=logger_, test=True)
-        assert len(islands) == len(grid_.buses)
-        print("")
 def test_topology_rts():
+    """
+    This function tests topology reduction for Bus/branch model networks
+    """
     for fname in [os.path.join('data', 'grids', 'case24_ieee_rts.m')]:
-        #TODO: Red RTS del .m tiene ya los buses de cálculo, sin connectivity nodes
         grid_ = FileOpen(fname).open()
+
+        # Original grid to compare its topology with reduced topology after creating a Node/Breaker model from it
+        originalgrid = grid_.copy()
+
+        grid_.convert_to_node_breaker() # Converting to Node/Breaker model
+        topodriver = TopologyProcessorDriver(grid=grid_)
+        topodriver.run()    # Processing topology from new grid
+
+        # Comparing bus considering bus number assigned
+        for ln in range(0, len(grid_.get_lines())):
+            loriginal = originalgrid.lines[ln]
+            lnb = grid_.lines[ln]
+
+            assert loriginal.bus_to.name.split(' ')[-1] == lnb.bus_to.name.split('_')[-1]
+            assert loriginal.bus_from.name.split(' ')[-1] == lnb.bus_from.name.split('_')[-1]
         print("")
 
 
