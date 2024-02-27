@@ -199,6 +199,42 @@ class Filter:
 
         return lst
 
+    def apply_filter_op(self, obj_val, val):
+
+        if self.op == CompOps.GT:
+            ok = obj_val > val
+
+        elif self.op == CompOps.LT:
+            ok = obj_val < val
+
+        elif self.op == CompOps.GEQ:
+            ok = obj_val >= val
+
+        elif self.op == CompOps.LEQ:
+            ok = obj_val <= val
+
+        elif self.op == CompOps.NOT_EQ:
+            ok = obj_val != val
+
+        elif self.op == CompOps.EQ:
+            ok = obj_val == val
+
+        elif self.op == CompOps.LIKE:
+            ok = val in str(obj_val)
+
+        elif self.op == CompOps.NOT_LIKE:
+            ok = val not in str(obj_val)
+
+        elif self.op == CompOps.STARTS:
+            ok = str(obj_val).startswith(val)
+
+        elif self.op == CompOps.ENDS:
+            ok = str(obj_val).endswith(val)
+
+        else:
+            ok = False
+
+        return ok
 
 class MasterFilter:
     """

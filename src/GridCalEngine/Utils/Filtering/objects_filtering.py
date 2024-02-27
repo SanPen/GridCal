@@ -78,40 +78,7 @@ def compute_objects_masks(objects: List[ALL_DEV_TYPES], flt: Filter) -> Tuple[Bo
                         val = str(val)
                         obj_val = str(obj_val)
 
-                    if flt.op == CompOps.GT:
-                        ok = obj_val > val
-
-                    elif flt.op == CompOps.LT:
-                        ok = obj_val < val
-
-                    elif flt.op == CompOps.GEQ:
-                        ok = obj_val >= val
-
-                    elif flt.op == CompOps.LEQ:
-                        ok = obj_val <= val
-
-                    elif flt.op == CompOps.NOT_EQ:
-                        ok = obj_val != val
-
-                    elif flt.op == CompOps.EQ:
-                        ok = obj_val == val
-
-                    elif flt.op == CompOps.LIKE:
-                        ok = val in str(obj_val)
-
-                    elif flt.op == CompOps.NOT_LIKE:
-                        ok = val not in str(obj_val)
-
-                    elif flt.op == CompOps.STARTS:
-                        ok = str(obj_val).startswith(val)
-
-                    elif flt.op == CompOps.ENDS:
-                        ok = str(obj_val).endswith(val)
-
-                    else:
-                        ok = False
-
-                    if ok:
+                    if flt.apply_filter_op(obj_val, val):
                         idx_mask[i] = True
                 else:
                     # the object_val is None

@@ -72,40 +72,7 @@ def compute_results_table_masks(table: ResultsTable, flt: Filter) -> Tuple[BoolV
             for i in range(table.r):
                 for j in range(table.c):
 
-                    if flt.op == CompOps.GT:
-                        ok = table.data_c[i, j] > val
-
-                    elif flt.op == CompOps.LT:
-                        ok = table.data_c[i, j] < val
-
-                    elif flt.op == CompOps.GEQ:
-                        ok = table.data_c[i, j] >= val
-
-                    elif flt.op == CompOps.LEQ:
-                        ok = table.data_c[i, j] <= val
-
-                    elif flt.op == CompOps.NOT_EQ:
-                        ok = table.data_c[i, j] != val
-
-                    elif flt.op == CompOps.EQ:
-                        ok = table.data_c[i, j] == val
-
-                    elif flt.op == CompOps.LIKE:
-                        ok = val in str(table.data_c[i, j])
-
-                    elif flt.op == CompOps.NOT_LIKE:
-                        ok = val not in str(table.data_c[i, j])
-
-                    elif flt.op == CompOps.STARTS:
-                        ok = str(table.data_c[i, j]).startswith(val)
-
-                    elif flt.op == CompOps.ENDS:
-                        ok = str(table.data_c[i, j]).endswith(val)
-
-                    else:
-                        ok = False
-
-                    if ok:
+                    if flt.apply_filter_op(table.data_c[i, j], val):
                         idx_mask[i] = True
                         col_mask[j] = True
                         data_mask[i, j] = True
@@ -119,40 +86,7 @@ def compute_results_table_masks(table: ResultsTable, flt: Filter) -> Tuple[BoolV
 
             for i in range(table.r):
 
-                if flt.op == CompOps.GT:
-                    ok = table.index_c[i] > val
-
-                elif flt.op == CompOps.LT:
-                    ok = table.index_c[i] < val
-
-                elif flt.op == CompOps.GEQ:
-                    ok = table.index_c[i] >= val
-
-                elif flt.op == CompOps.LEQ:
-                    ok = table.index_c[i] <= val
-
-                elif flt.op == CompOps.NOT_EQ:
-                    ok = table.index_c[i] != val
-
-                elif flt.op == CompOps.EQ:
-                    ok = table.index_c[i] == val
-
-                elif flt.op == CompOps.LIKE:
-                    ok = val in str(table.index_c[i])
-
-                elif flt.op == CompOps.NOT_LIKE:
-                    ok = val not in str(table.index_c[i])
-
-                elif flt.op == CompOps.STARTS:
-                    ok = str(table.index_c[i]).startswith(val)
-
-                elif flt.op == CompOps.ENDS:
-                    ok = str(table.index_c[i]).endswith(val)
-
-                else:
-                    ok = False
-
-                if ok:
+                if flt.apply_filter_op(table.index_c[i], val):
                     idx_mask[i] = True
                     data_mask[i, :] = True
 
@@ -165,40 +99,7 @@ def compute_results_table_masks(table: ResultsTable, flt: Filter) -> Tuple[BoolV
 
             for j in range(table.c):
 
-                if flt.op == CompOps.GT:
-                    ok = table.cols_c[j] > val
-
-                elif flt.op == CompOps.LT:
-                    ok = table.cols_c[j] < val
-
-                elif flt.op == CompOps.GEQ:
-                    ok = table.cols_c[j] >= val
-
-                elif flt.op == CompOps.LEQ:
-                    ok = table.cols_c[j] <= val
-
-                elif flt.op == CompOps.NOT_EQ:
-                    ok = table.cols_c[j] != val
-
-                elif flt.op == CompOps.EQ:
-                    ok = table.cols_c[j] == val
-
-                elif flt.op == CompOps.LIKE:
-                    ok = val in str(table.cols_c[j])
-
-                elif flt.op == CompOps.NOT_LIKE:
-                    ok = val not in str(table.cols_c[j])
-
-                elif flt.op == CompOps.STARTS:
-                    ok = str(table.cols_c[j]).startswith(val)
-
-                elif flt.op == CompOps.ENDS:
-                    ok = str(table.cols_c[j]).endswith(val)
-
-                else:
-                    ok = False
-
-                if ok:
+                if flt.apply_filter_op(table.cols_c[j], val):
                     col_mask[j] = True
                     data_mask[:, j] = True
 
@@ -235,40 +136,7 @@ def compute_results_table_masks(table: ResultsTable, flt: Filter) -> Tuple[BoolV
                         val = str(val)
                         obj_val = str(obj_val)
 
-                    if flt.op == CompOps.GT:
-                        ok = obj_val > val
-
-                    elif flt.op == CompOps.LT:
-                        ok = obj_val < val
-
-                    elif flt.op == CompOps.GEQ:
-                        ok = obj_val >= val
-
-                    elif flt.op == CompOps.LEQ:
-                        ok = obj_val <= val
-
-                    elif flt.op == CompOps.NOT_EQ:
-                        ok = obj_val != val
-
-                    elif flt.op == CompOps.EQ:
-                        ok = obj_val == val
-
-                    elif flt.op == CompOps.LIKE:
-                        ok = val in str(obj_val)
-
-                    elif flt.op == CompOps.NOT_LIKE:
-                        ok = val not in str(obj_val)
-
-                    elif flt.op == CompOps.STARTS:
-                        ok = str(obj_val).startswith(val)
-
-                    elif flt.op == CompOps.ENDS:
-                        ok = str(obj_val).endswith(val)
-
-                    else:
-                        ok = False
-
-                    if ok:
+                    if flt.apply_filter_op(obj_val, val):
                         col_mask[j] = True
                         data_mask[:, j] = True
                 else:
@@ -284,12 +152,12 @@ def compute_results_table_masks(table: ResultsTable, flt: Filter) -> Tuple[BoolV
             col_mask = np.ones(table.c, dtype=bool)
             data_mask = np.zeros((table.r, table.c), dtype=bool)
 
-            for j in range(table.r):
+            for i in range(table.r):
 
                 if len(flt.element_args):
-                    obj_val = object_extract(elm=table._devices[j], args=flt.element_args)
+                    obj_val = object_extract(elm=table._devices[i], args=flt.element_args)
                 else:
-                    obj_val = str(table._devices[j])
+                    obj_val = str(table._devices[i])
 
                 if obj_val is not None:
 
@@ -302,42 +170,9 @@ def compute_results_table_masks(table: ResultsTable, flt: Filter) -> Tuple[BoolV
                         val = str(val)
                         obj_val = str(obj_val)
 
-                    if flt.op == CompOps.GT:
-                        ok = obj_val > val
-
-                    elif flt.op == CompOps.LT:
-                        ok = obj_val < val
-
-                    elif flt.op == CompOps.GEQ:
-                        ok = obj_val >= val
-
-                    elif flt.op == CompOps.LEQ:
-                        ok = obj_val <= val
-
-                    elif flt.op == CompOps.NOT_EQ:
-                        ok = obj_val != val
-
-                    elif flt.op == CompOps.EQ:
-                        ok = obj_val == val
-
-                    elif flt.op == CompOps.LIKE:
-                        ok = val in str(obj_val)
-
-                    elif flt.op == CompOps.NOT_LIKE:
-                        ok = val not in str(obj_val)
-
-                    elif flt.op == CompOps.STARTS:
-                        ok = str(obj_val).startswith(val)
-
-                    elif flt.op == CompOps.ENDS:
-                        ok = str(obj_val).endswith(val)
-
-                    else:
-                        ok = False
-
-                    if ok:
-                        idx_mask[j] = True
-                        data_mask[j, :] = True
+                    if flt.apply_filter_op(obj_val, val):
+                        idx_mask[i] = True
+                        data_mask[i, :] = True
                 else:
                     # the object_val is None
                     a = ".".join(flt.element_args)
