@@ -107,40 +107,6 @@ class CurrentInjection(InjectionParent):
         else:
             raise Exception(str(type(val)) + 'not supported to be set into a Ii_prof')
 
-    @property
-    def G_prof(self) -> Profile:
-        """
-        Cost profile
-        :return: Profile
-        """
-        return self._G_prof
-
-    @G_prof.setter
-    def G_prof(self, val: Union[Profile, np.ndarray]):
-        if isinstance(val, Profile):
-            self._G_prof = val
-        elif isinstance(val, np.ndarray):
-            self._G_prof.set(arr=val)
-        else:
-            raise Exception(str(type(val)) + 'not supported to be set into a G_prof')
-
-    @property
-    def B_prof(self) -> Profile:
-        """
-        Cost profile
-        :return: Profile
-        """
-        return self._B_prof
-
-    @B_prof.setter
-    def B_prof(self, val: Union[Profile, np.ndarray]):
-        if isinstance(val, Profile):
-            self._B_prof = val
-        elif isinstance(val, np.ndarray):
-            self._B_prof.set(arr=val)
-        else:
-            raise Exception(str(type(val)) + 'not supported to be set into a B_prof')
-
     def get_properties_dict(self, version=3):
         """
         Get json dictionary
@@ -154,12 +120,8 @@ class CurrentInjection(InjectionParent):
                     'name_code': self.code,
                     'bus': self.bus.idtag,
                     'active': bool(self.active),
-                    'g': self.G,
-                    'b': self.B,
                     'ir': self.Ir,
                     'ii': self.Ii,
-                    'p': self.P,
-                    'q': self.Q,
                     'shedding_cost': self.Cost
                     }
         else:
@@ -173,30 +135,18 @@ class CurrentInjection(InjectionParent):
 
         if self.active_prof is not None:
             active_profile = self.active_prof.tolist()
-            P_prof = self.P_prof.tolist()
-            Q_prof = self.Q_prof.tolist()
             Ir_prof = self.Ir_prof.tolist()
             Ii_prof = self.Ii_prof.tolist()
-            G_prof = self.G_prof.tolist()
-            B_prof = self.B_prof.tolist()
 
         else:
             active_profile = list()
-            P_prof = list()
-            Q_prof = list()
             Ir_prof = list()
             Ii_prof = list()
-            G_prof = list()
-            B_prof = list()
 
         return {'id': self.idtag,
                 'active': active_profile,
-                'p': P_prof,
-                'q': Q_prof,
                 'ir': Ir_prof,
-                'ii': Ii_prof,
-                'g': G_prof,
-                'b': B_prof}
+                'ii': Ii_prof}
 
     def get_units_dict(self, version=3):
         """
@@ -223,14 +173,14 @@ class CurrentInjection(InjectionParent):
             ax_2 = fig.add_subplot(212, sharex=ax_1)
 
             # P
-            y = self.P_prof.toarray()
+            y = self.Ir_prof.toarray()
             df = pd.DataFrame(data=y, index=time, columns=[self.name])
             ax_1.set_title('Active power', fontsize=14)
             ax_1.set_ylabel('MW', fontsize=11)
             df.plot(ax=ax_1)
 
             # Q
-            y = self.Q_prof.toarray()
+            y = self.Ii_prof.toarray()
             df = pd.DataFrame(data=y, index=time, columns=[self.name])
             ax_2.set_title('Reactive power', fontsize=14)
             ax_2.set_ylabel('MVAr', fontsize=11)
