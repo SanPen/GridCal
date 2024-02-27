@@ -20,7 +20,7 @@ import functools
 
 from typing import List, Dict, Union
 from GridCalEngine.Simulations.driver_template import DriverTemplate
-from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver, PowerFlowOptions
+from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
 from GridCalEngine.Simulations.driver_types import SimulationTypes
 from trunk.investments.InvestmentsEvaluation.investments_evaluation_results import InvestmentsEvaluationResults
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
@@ -28,9 +28,9 @@ from GridCalEngine.Devices.Aggregation.investment import Investment
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
-from trunk.investments.InvestmentsEvaluation.MVRSM import MVRSM_minimize, MVRSM_normalization_minimize
+from trunk.investments.InvestmentsEvaluation.MVRSM import MVRSM_normalization_minimize
 from trunk.MVRSM.MVRSM_mo import MVRSM_multi_minimize
-from GridCalEngine.Simulations.InvestmentsEvaluation.stop_crits import StochStopCriterion
+from GridCalEngine.Simulations.InvestmentsEvaluation.NumericalMethods.stop_crits import StochStopCriterion
 from GridCalEngine.basic_structures import IntVec
 from GridCalEngine.enumerations import InvestmentEvaluationMethod
 from GridCalEngine.Simulations.InvestmentsEvaluation.investments_evaluation_options import InvestmentsEvaluationOptions

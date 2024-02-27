@@ -167,6 +167,8 @@ class SimulationsMain(TimeEventsMain):
             InvestmentEvaluationMethod.Hyperopt.value] = InvestmentEvaluationMethod.Hyperopt
         self.investment_evaluation_method_dict[
             InvestmentEvaluationMethod.MVRSM.value] = InvestmentEvaluationMethod.MVRSM
+        self.investment_evaluation_method_dict[
+            InvestmentEvaluationMethod.MVRSM_multi.value] = InvestmentEvaluationMethod.MVRSM_multi
         lst = list(self.investment_evaluation_method_dict.keys())
         self.ui.investment_evaluation_method_ComboBox.setModel(gf.get_list_model(lst))
 
