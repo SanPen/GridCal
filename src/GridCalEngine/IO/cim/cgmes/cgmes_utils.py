@@ -15,10 +15,9 @@ from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.switch import Switch
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.terminal import Terminal
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.topological_node import TopologicalNode
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.linear_shunt_compensator import LinearShuntCompensator
+from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.synchronous_machine import SynchronousMachine
 from GridCalEngine.data_logger import DataLogger
 import numpy as np
-
-from trunk.cgmes_py_generator.cgmes_v2_4_15.devices.synchronous_machine import SynchronousMachine
 
 
 def get_slack_id(machines: List[SynchronousMachine], terminals: List[Terminal]):
