@@ -15,9 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-import sys
 from typing import List
-
 from PySide6 import QtWidgets
 from GridCal.Gui.Analysis.gui import Ui_MainWindow
 from GridCal.Gui.Analysis.object_plot_analysis import grid_analysis, GridErrorLog, FixableErrorOutOfRange
@@ -27,7 +25,7 @@ from GridCal.Gui.GeneralDialogues import LogsDialogue, Logger
 
 class GridAnalysisGUI(QtWidgets.QMainWindow):
     """
-
+    GridAnalysisGUI
     """
     def __init__(self, circuit: MultiCircuit = None):
         """
@@ -54,21 +52,6 @@ class GridAnalysisGUI(QtWidgets.QMainWindow):
         self.ui.actionFix_issues.triggered.connect(self.fix_all)
 
         self.analyze_all()
-
-    def msg(self, text, title="Warning"):
-        """
-        Message box
-        :param text: Text to display
-        :param title: Name of the window
-        """
-        msg = QtWidgets.QMessageBox()
-        msg.setIcon(QtWidgets.QMessageBox.Icon.Information)
-        msg.setText(text)
-        # msg.setInformativeText("This is additional information")
-        msg.setWindowTitle(title)
-        # msg.setDetailedText("The details are as follows:")
-        msg.setStandardButtons(QtWidgets.QMessageBox.StandardButton.Ok)
-        retval = msg.exec_()
 
     def analyze_all(self):
         """
@@ -126,12 +109,3 @@ class GridAnalysisGUI(QtWidgets.QMainWindow):
 
         if filename != '':
             self.log.save(filename)
-
-
-if __name__ == "__main__":
-    from PySide6 import QtWidgets
-    app = QtWidgets.QApplication(sys.argv)
-    window = GridAnalysisGUI(circuit=None)
-    window.resize(1.61 * 700.0, 700.0)  # golden ratio
-    window.show()
-    sys.exit(app.exec_())

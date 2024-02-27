@@ -172,9 +172,6 @@ class EditableDevice:
 
         self.device_type: DeviceType = device_type
 
-        # associated graphic object
-        self._graphic_obj = None  # todo: this should disappear
-
         # list of registered properties. This is supremelly useful when accessing via the Table and Tree models
         self.property_list: List[GCProp] = list()
 
@@ -316,20 +313,6 @@ class EditableDevice:
                 data[old_name] = prop.name
 
         return data
-
-    @property
-    def graphic_obj(self):
-        """
-        Get the associated graphical object (if any)
-        :return: graphical object
-        """
-        # todo: this should disappear
-        return self._graphic_obj
-
-    @graphic_obj.setter
-    def graphic_obj(self, obj):
-        # todo: this should disappear
-        self._graphic_obj = obj
 
     def generate_uuid(self):
         """

@@ -874,6 +874,8 @@ class DeviceType(Enum):
     VscDevice = 'VSC'
     BatteryDevice = 'Battery'
     LoadDevice = 'Load'
+    CurrentInjectionDevice = 'Current injection'
+    LinearShuntDevice = 'Linear shunt'
     GeneratorDevice = 'Generator'
     StaticGeneratorDevice = 'Static Generator'
     ShuntDevice = 'Shunt'

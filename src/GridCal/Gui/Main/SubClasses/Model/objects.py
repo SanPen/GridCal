@@ -368,13 +368,9 @@ class ObjectsTableMain(DiagramsMain):
                     unique.sort(reverse=True)
                     for r in unique:
 
-                        if objects[r].graphic_obj is not None:
-                            # this is a more complete function than the circuit one because it removes the
-                            # graphical items too, and for loads and generators it deletes them properly
-                            objects[r].graphic_obj.remove(ask=False)
-                        else:
-                            # objects.pop(r)
-                            self.circuit.delete_elements_by_type(obj=objects[r])
+                        self.circuit.delete_elements_by_type(obj=objects[r])
+
+                        # TODO: Call the displays to delete the graphic objects
 
                     # update the view
                     self.display_objects_filter(objects)
@@ -755,8 +751,12 @@ class ObjectsTableMain(DiagramsMain):
         if len(self.ui.dataStructuresTreeView.selectedIndexes()) > 0:
             elm_type = self.ui.dataStructuresTreeView.selectedIndexes()[0].data(role=QtCore.Qt.ItemDataRole.DisplayRole)
 
-            object_histogram_analysis(circuit=self.circuit, object_type=elm_type, fig=None)
-            plt.show()
+            if len(self.circuit.get_elements_by_type(device_type=DeviceType(elm_type))):
+                object_histogram_analysis(circuit=self.circuit,
+                                          object_type=elm_type,
+                                          t_idx=self.get_db_slider_index(),
+                                          fig=None)
+                plt.show()
         else:
             info_msg('Select a data structure')
 
