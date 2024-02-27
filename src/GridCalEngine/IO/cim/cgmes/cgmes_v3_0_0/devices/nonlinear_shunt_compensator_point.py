@@ -25,9 +25,9 @@ class NonlinearShuntCompensatorPoint(Base):
 
 		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.nonlinear_shunt_compensator import NonlinearShuntCompensator
 		self.NonlinearShuntCompensator: NonlinearShuntCompensator | None = None
-		self.b: float = 0.0
-		self.g: float = 0.0
-		self.sectionNumber: int = 0
+		self.b: float = None
+		self.g: float = None
+		self.sectionNumber: int = None
 
 		self.register_property(
 			name='NonlinearShuntCompensator',

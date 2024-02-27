@@ -23,9 +23,9 @@ class BatteryUnit(PowerElectronicsUnit):
 	def __init__(self, rdfid='', tpe='BatteryUnit'):
 		PowerElectronicsUnit.__init__(self, rdfid, tpe)
 
-		self.ratedE: float = 0.0
+		self.ratedE: float = None
 		self.batteryState: BatteryStateKind = None
-		self.storedE: float = 0.0
+		self.storedE: float = None
 
 		self.register_property(
 			name='ratedE',

@@ -19,7 +19,7 @@ from typing import List, Any, Tuple
 from GridCalEngine.basic_structures import BoolVec, Mat
 from GridCalEngine.Utils.Filtering.filtering import (MasterFilter, Filter, FilterOps, CompOps, FilterSubject,
                                                      parse_expression)
-from GridCalEngine.Core.Devices.types import ALL_DEV_TYPES
+from GridCalEngine.Devices.types import ALL_DEV_TYPES
 
 
 def object_extract(elm: ALL_DEV_TYPES, args: List[str]) -> Any:

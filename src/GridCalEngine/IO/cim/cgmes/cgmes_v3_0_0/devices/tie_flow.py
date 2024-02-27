@@ -27,7 +27,7 @@ class TieFlow(IdentifiedObject):
 		self.ControlArea: ControlArea | None = None
 		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.terminal import Terminal
 		self.Terminal: Terminal | None = None
-		self.positiveFlowIn: bool = False
+		self.positiveFlowIn: bool = None
 
 		self.register_property(
 			name='ControlArea',

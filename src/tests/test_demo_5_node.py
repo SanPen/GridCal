@@ -18,11 +18,11 @@
 import numpy as np
 
 from GridCalEngine.IO.file_handler import FileSave
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.Core.Devices import Bus
-from GridCalEngine.Core.Devices import Generator
-from GridCalEngine.Core.Devices import Load
-from GridCalEngine.Core.Devices import Line
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Devices import Bus
+from GridCalEngine.Devices import Generator
+from GridCalEngine.Devices import Load
+from GridCalEngine.Devices import Line
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import SolverType
 from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions, PowerFlowDriver
 from tests.print_power_flow_results import print_power_flow_results
@@ -30,7 +30,6 @@ from tests.conftest import ROOT_PATH
 
 
 def test_demo_5_node(root_path=ROOT_PATH):
-    np.core.arrayprint.set_printoptions(precision=4)
 
     grid = MultiCircuit()
 
@@ -57,13 +56,13 @@ def test_demo_5_node(root_path=ROOT_PATH):
     grid.add_load(bus5, Load('load 5', P=50, Q=20))
 
     # add Branches (Lines in this case)
-    grid.add_line(Line(bus1, bus2, 'line 1-2', r=0.05, x=0.11, b=0.02))
-    grid.add_line(Line(bus1, bus3, 'line 1-3', r=0.05, x=0.11, b=0.02))
-    grid.add_line(Line(bus1, bus5, 'line 1-5', r=0.03, x=0.08, b=0.02))
-    grid.add_line(Line(bus2, bus3, 'line 2-3', r=0.04, x=0.09, b=0.02))
-    grid.add_line(Line(bus2, bus5, 'line 2-5', r=0.04, x=0.09, b=0.02))
-    grid.add_line(Line(bus3, bus4, 'line 3-4', r=0.06, x=0.13, b=0.03))
-    grid.add_line(Line(bus4, bus5, 'line 4-5', r=0.04, x=0.09, b=0.02))
+    grid.add_line(Line(bus1, bus2, name='line 1-2', r=0.05, x=0.11, b=0.02))
+    grid.add_line(Line(bus1, bus3, name='line 1-3', r=0.05, x=0.11, b=0.02))
+    grid.add_line(Line(bus1, bus5, name='line 1-5', r=0.03, x=0.08, b=0.02))
+    grid.add_line(Line(bus2, bus3, name='line 2-3', r=0.04, x=0.09, b=0.02))
+    grid.add_line(Line(bus2, bus5, name='line 2-5', r=0.04, x=0.09, b=0.02))
+    grid.add_line(Line(bus3, bus4, name='line 3-4', r=0.06, x=0.13, b=0.03))
+    grid.add_line(Line(bus4, bus5, name='line 4-5', r=0.04, x=0.09, b=0.02))
     # grid.plot_graph()
     print('\n\n', grid.name)
 

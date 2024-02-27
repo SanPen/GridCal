@@ -27,10 +27,10 @@ class ACDCTerminal(IdentifiedObject):
 		self.BusNameMarker: BusNameMarker | None = None
 		from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.measurement import Measurement
 		self.Measurements: Measurement | None = None
-		self.sequenceNumber: int = 0
+		self.sequenceNumber: int = None
 		from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.operational_limit_set import OperationalLimitSet
 		self.OperationalLimitSet: OperationalLimitSet | None = None
-		self.connected: bool = False
+		self.connected: bool = None
 
 		self.register_property(
 			name='BusNameMarker',

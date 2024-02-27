@@ -20,11 +20,11 @@ from typing import List, Union, Any, Dict
 from warnings import warn
 import numpy as np
 from GridCalEngine.basic_structures import Logger
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.IO.gridcal.contingency_parser import get_contingencies_dict, parse_contingencies
 from GridCalEngine.IO.gridcal.generic_io_functions import CustomJSONizer
-import GridCalEngine.Core.Devices as dev
-from GridCalEngine.Core.Devices.profile import Profile
+import GridCalEngine.Devices as dev
+from GridCalEngine.Devices.profile import Profile
 from GridCalEngine.enumerations import DeviceType, ConverterControlType, HvdcControlType, BuildStatus
 
 

@@ -23,7 +23,7 @@ class ActivePowerLimit(OperationalLimit):
 	def __init__(self, rdfid='', tpe='ActivePowerLimit'):
 		OperationalLimit.__init__(self, rdfid, tpe)
 
-		self.value: float = 0.0
+		self.value: float = None
 
 		self.register_property(
 			name='value',

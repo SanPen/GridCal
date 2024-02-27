@@ -21,7 +21,7 @@ import numpy as np
 import pandas as pd
 from PySide6 import QtCore, QtWidgets
 from GridCalEngine.Simulations.results_table import ResultsTable
-from GridCalEngine.Core.Devices.types import ALL_DEV_TYPES
+from GridCalEngine.Devices.types import ALL_DEV_TYPES
 from GridCalEngine.Utils.Filtering.results_table_filtering import FilterResultsTable
 
 

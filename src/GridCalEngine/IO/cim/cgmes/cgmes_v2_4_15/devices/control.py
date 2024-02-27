@@ -23,8 +23,8 @@ class Control(IdentifiedObject):
 	def __init__(self, rdfid='', tpe='Control'):
 		IdentifiedObject.__init__(self, rdfid, tpe)
 
-		self.controlType: str = ''
-		self.operationInProgress: bool = False
+		self.controlType: str = None
+		self.operationInProgress: bool = None
 		import datetime
 		self.timeStamp: datetime.datetime | None = None
 		self.unitMultiplier: UnitMultiplier = None

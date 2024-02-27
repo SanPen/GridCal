@@ -1,6 +1,6 @@
 import json
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-import GridCalEngine.Core.Devices as dev
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
+import GridCalEngine.Devices as dev
 
 
 def load_iPA(file_name) -> MultiCircuit:

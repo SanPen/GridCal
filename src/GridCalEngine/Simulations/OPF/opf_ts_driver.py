@@ -19,7 +19,7 @@ import datetime
 import numpy as np
 import pandas as pd
 from typing import Union
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.enumerations import SolverType, TimeGrouping, EngineType
 from GridCalEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
 from GridCalEngine.Simulations.OPF.linear_opf_ts import run_linear_opf_ts
@@ -28,7 +28,7 @@ from GridCalEngine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSer
 from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Simulations.driver_template import TimeSeriesDriverTemplate
-from GridCalEngine.Core.Compilers.circuit_to_newton_pa import newton_pa_linear_opf, newton_pa_nonlinear_opf
+from GridCalEngine.Compilers.circuit_to_newton_pa import newton_pa_linear_opf, newton_pa_nonlinear_opf
 from GridCalEngine.Simulations.Clustering.clustering_results import ClusteringResults
 from GridCalEngine.basic_structures import IntVec, Vec, get_time_groups
 

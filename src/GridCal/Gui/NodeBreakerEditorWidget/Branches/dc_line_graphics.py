@@ -22,8 +22,8 @@ from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtWidgets import QMenu, QLabel, QDoubleSpinBox, QPushButton, QVBoxLayout, QComboBox, QDialog, QGraphicsScene
 from GridCal.Gui.GuiFunctions import get_list_model
 from GridCal.Gui.NodeBreakerEditorWidget.Substation.bus_graphics import TerminalItem
-from GridCalEngine.Core.Devices.Branches.line import SequenceLineType, OverheadLineType, UndergroundLineType
-from GridCalEngine.Core.Devices.Branches.dc_line import DcLine
+from GridCalEngine.Devices.Branches.line import SequenceLineType, OverheadLineType, UndergroundLineType
+from GridCalEngine.Devices.Branches.dc_line import DcLine
 from GridCalEngine.enumerations import DeviceType
 from GridCal.Gui.NodeBreakerEditorWidget.Branches.line_graphics_template import LineGraphicTemplateItem
 

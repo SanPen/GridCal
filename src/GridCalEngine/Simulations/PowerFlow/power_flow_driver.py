@@ -20,14 +20,14 @@ from typing import Union, List, TYPE_CHECKING
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.driver_template import DriverTemplate
-from GridCalEngine.Core.Compilers.circuit_to_bentayga import (BENTAYGA_AVAILABLE, bentayga_pf,
+from GridCalEngine.Compilers.circuit_to_bentayga import (BENTAYGA_AVAILABLE, bentayga_pf,
                                                               translate_bentayga_pf_results)
-from GridCalEngine.Core.Compilers.circuit_to_newton_pa import (NEWTON_PA_AVAILABLE, newton_pa_pf,
+from GridCalEngine.Compilers.circuit_to_newton_pa import (NEWTON_PA_AVAILABLE, newton_pa_pf,
                                                                translate_newton_pa_pf_results)
-from GridCalEngine.Core.Compilers.circuit_to_pgm import PGM_AVAILABLE, pgm_pf
+from GridCalEngine.Compilers.circuit_to_pgm import PGM_AVAILABLE, pgm_pf
 from GridCalEngine.enumerations import EngineType
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking

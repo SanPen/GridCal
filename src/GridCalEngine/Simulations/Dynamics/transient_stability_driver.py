@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowResults
 from GridCalEngine.Simulations.Dynamics.dynamic_modules import dynamic_simulation
 from GridCalEngine.Simulations.driver_template import DriverTemplate

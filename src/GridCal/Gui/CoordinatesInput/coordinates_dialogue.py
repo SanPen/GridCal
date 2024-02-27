@@ -6,7 +6,7 @@ from typing import List, Tuple, Union
 from GridCal.Gui.CoordinatesInput.gui import Ui_Dialog
 from GridCal.Gui.ProfilesInput.excel_dialog import ExcelDialog
 from GridCal.Gui.GeneralDialogues import LogsDialogue
-from GridCalEngine.Core.Devices.Substation import Bus
+from GridCalEngine.Devices.Substation import Bus
 from GridCalEngine.basic_structures import Logger
 from GridCal.Gui.messages import error_msg
 

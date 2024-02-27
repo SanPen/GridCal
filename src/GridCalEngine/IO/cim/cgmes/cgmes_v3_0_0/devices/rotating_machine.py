@@ -27,11 +27,11 @@ class RotatingMachine(RegulatingCondEq):
 		self.GeneratingUnit: GeneratingUnit | None = None
 		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.hydro_pump import HydroPump
 		self.HydroPump: HydroPump | None = None
-		self.ratedPowerFactor: float = 0.0
-		self.ratedS: float = 0.0
-		self.ratedU: float = 0.0
-		self.p: float = 0.0
-		self.q: float = 0.0
+		self.ratedPowerFactor: float = None
+		self.ratedS: float = None
+		self.ratedU: float = None
+		self.p: float = None
+		self.q: float = None
 
 		self.register_property(
 			name='GeneratingUnit',

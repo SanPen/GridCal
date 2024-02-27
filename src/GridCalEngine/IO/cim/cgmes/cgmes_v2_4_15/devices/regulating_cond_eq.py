@@ -25,7 +25,7 @@ class RegulatingCondEq(ConductingEquipment):
 
 		from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.regulating_control import RegulatingControl
 		self.RegulatingControl: RegulatingControl | None = None
-		self.controlEnabled: bool = False
+		self.controlEnabled: bool = None
 
 		self.register_property(
 			name='RegulatingControl',

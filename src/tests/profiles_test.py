@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import math
 import numpy as np
-from GridCalEngine.Core.Devices.profile import Profile, SparseArray, check_if_sparse
+from GridCalEngine.Devices.profile import Profile, SparseArray, check_if_sparse
 
 
 def test_sparse_array1():

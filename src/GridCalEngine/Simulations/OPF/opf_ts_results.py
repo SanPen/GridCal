@@ -21,13 +21,13 @@ import pandas as pd
 from GridCalEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.results_template import ResultsTemplate
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.basic_structures import IntVec, Vec, StrVec, CxMat, Mat, BoolVec
 from GridCalEngine.enumerations import StudyResultsType, ResultTypes
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCalEngine.Simulations.Clustering.clustering_results import ClusteringResults
-    from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit
+    from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 
 
 class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):

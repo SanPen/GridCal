@@ -17,7 +17,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 from PySide6 import QtWidgets, QtGui, QtCore
-from GridCalEngine.Core.Devices.Injections.battery import Battery, DeviceType
+from GridCalEngine.Devices.Injections.battery import Battery, DeviceType
 from GridCal.Gui.NodeBreakerEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Square
 from GridCal.Gui.NodeBreakerEditorWidget.Injections.injections_template_graphics import InjectionTemplateGraphicItem
 from GridCal.Gui.GuiFunctions import ObjectsModel

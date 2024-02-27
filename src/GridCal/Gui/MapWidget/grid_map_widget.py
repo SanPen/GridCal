@@ -20,14 +20,14 @@ from PySide6.QtWidgets import QWidget
 from GridCal.Gui.MapWidget.map_widget import MapWidget, PolylineData, Place
 import GridCal.Gui.Visualization.visualization as viz
 import GridCal.Gui.Visualization.palettes as palettes
-from GridCalEngine.Core.Devices.Substation import Bus
-from GridCalEngine.Core.Devices.Branches.line import Line
-from GridCalEngine.Core.Devices.Branches.dc_line import DcLine
-from GridCalEngine.Core.Devices.Branches.transformer import Transformer2W
-from GridCalEngine.Core.Devices.Branches.vsc import VSC
-from GridCalEngine.Core.Devices.Branches.upfc import UPFC
-from GridCalEngine.Core.Devices.Branches.hvdc_line import HvdcLine
-from GridCalEngine.Core.Devices.Diagrams.map_diagram import MapDiagram
+from GridCalEngine.Devices.Substation import Bus
+from GridCalEngine.Devices.Branches.line import Line
+from GridCalEngine.Devices.Branches.dc_line import DcLine
+from GridCalEngine.Devices.Branches.transformer import Transformer2W
+from GridCalEngine.Devices.Branches.vsc import VSC
+from GridCalEngine.Devices.Branches.upfc import UPFC
+from GridCalEngine.Devices.Branches.hvdc_line import HvdcLine
+from GridCalEngine.Devices.Diagrams.map_diagram import MapDiagram
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec
 from GridCal.Gui.MapWidget.Tiles.tiles import Tiles
 

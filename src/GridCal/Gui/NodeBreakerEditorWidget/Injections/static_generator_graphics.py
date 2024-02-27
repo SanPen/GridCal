@@ -18,7 +18,7 @@ from __future__ import annotations
 from typing import Union, TYPE_CHECKING
 from PySide6.QtGui import QPen, QIcon, QPixmap
 from PySide6.QtWidgets import QMenu, QGraphicsTextItem
-from GridCalEngine.Core.Devices.Injections.static_generator import StaticGenerator, DeviceType
+from GridCalEngine.Devices.Injections.static_generator import StaticGenerator, DeviceType
 from GridCal.Gui.NodeBreakerEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Square
 from GridCal.Gui.NodeBreakerEditorWidget.Injections.injections_template_graphics import InjectionTemplateGraphicItem
 from GridCal.Gui.GuiFunctions import ObjectsModel

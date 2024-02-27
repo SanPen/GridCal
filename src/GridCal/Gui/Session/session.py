@@ -35,7 +35,7 @@ from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResu
 from GridCalEngine.Simulations.PowerFlow.power_flow_ts_driver import PowerFlowTimeSeriesResults
 from GridCalEngine.Simulations.ShortCircuitStudies.short_circuit_driver import ShortCircuitResults
 from GridCalEngine.Simulations.Stochastic.stochastic_power_flow_results import StochasticPowerFlowResults
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.enumerations import ResultTypes

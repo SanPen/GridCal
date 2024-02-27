@@ -22,7 +22,7 @@ from typing import List, Dict, Union, TYPE_CHECKING
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.basic_structures import IntVec, Vec, CxVec, StrVec, Mat, DateVec, CxMat
 from GridCalEngine.enumerations import StudyResultsType, ResultTypes
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCalEngine.Simulations.Clustering.clustering_results import ClusteringResults

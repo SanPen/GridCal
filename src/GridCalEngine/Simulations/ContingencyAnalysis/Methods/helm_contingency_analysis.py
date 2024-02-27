@@ -17,8 +17,8 @@
 
 import numpy as np
 from typing import Union
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_results import ContingencyAnalysisResults
 from GridCalEngine.Simulations.ContingencyAnalysis.Methods.helm_contingencies import HelmVariations
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc

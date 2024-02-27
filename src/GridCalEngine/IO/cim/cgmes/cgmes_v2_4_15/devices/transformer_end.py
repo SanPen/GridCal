@@ -31,10 +31,10 @@ class TransformerEnd(IdentifiedObject):
 		self.PhaseTapChanger: PhaseTapChanger | None = None
 		from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.ratio_tap_changer import RatioTapChanger
 		self.RatioTapChanger: RatioTapChanger | None = None
-		self.rground: float = 0.0
-		self.endNumber: int = 0
-		self.grounded: bool = False
-		self.xground: float = 0.0
+		self.rground: float = None
+		self.endNumber: int = None
+		self.grounded: bool = None
+		self.xground: float = None
 
 		self.register_property(
 			name='BaseVoltage',

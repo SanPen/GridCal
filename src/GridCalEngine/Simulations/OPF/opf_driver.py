@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
 from typing import Union
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.enumerations import SolverType, EngineType
 from GridCalEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
 from GridCalEngine.Simulations.OPF.linear_opf_ts import run_linear_opf_ts
@@ -26,7 +26,7 @@ from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import run_nonlinear_
 from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Simulations.driver_template import TimeSeriesDriverTemplate
-from GridCalEngine.Core.Compilers.circuit_to_newton_pa import newton_pa_linear_opf, newton_pa_nonlinear_opf
+from GridCalEngine.Compilers.circuit_to_newton_pa import newton_pa_linear_opf, newton_pa_nonlinear_opf
 
 
 class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):

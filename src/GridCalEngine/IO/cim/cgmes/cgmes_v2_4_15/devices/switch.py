@@ -23,10 +23,10 @@ class Switch(ConductingEquipment):
 	def __init__(self, rdfid='', tpe='Switch'):
 		ConductingEquipment.__init__(self, rdfid, tpe)
 
-		self.normalOpen: bool = False
-		self.ratedCurrent: float = 0.0
-		self.retained: bool = False
-		self.open: bool = False
+		self.normalOpen: bool = None
+		self.ratedCurrent: float = None
+		self.retained: bool = None
+		self.open: bool = None
 
 		self.register_property(
 			name='normalOpen',

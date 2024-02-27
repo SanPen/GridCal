@@ -17,8 +17,8 @@
 import numpy as np
 from typing import Dict, List, Tuple, Union
 from GridCalEngine.basic_structures import Logger
-import GridCalEngine.Core.Devices as dev
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
+import GridCalEngine.Devices as dev
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.IO.raw.devices.area import RawArea
 from GridCalEngine.IO.raw.devices.branch import RawBranch
 from GridCalEngine.IO.raw.devices.bus import RawBus

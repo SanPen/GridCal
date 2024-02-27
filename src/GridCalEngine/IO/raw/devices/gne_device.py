@@ -17,7 +17,7 @@
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol, Unit
 from GridCalEngine.IO.raw.devices.psse_object import RawObject
 from GridCalEngine.basic_structures import Logger
-import GridCalEngine.Core.Devices as dev
+import GridCalEngine.Devices as dev
 
 
 class RawGneDevice(RawObject):

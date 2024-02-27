@@ -8,11 +8,11 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import to_rgba
 from GridCalEngine import *
 from GridCalEngine.IO.file_handler import FileOpen
-import GridCalEngine.Core.Devices as dev
+import GridCalEngine.Devices as dev
 import GridCalEngine.Simulations as sim
 import trunk.investments.InvestmentsEvaluation as invsim
 from GridCalEngine.enumerations import InvestmentEvaluationMethod
-from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
+from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions, multi_island_pf_nc
 from GridCalEngine.enumerations import ResultTypes
 

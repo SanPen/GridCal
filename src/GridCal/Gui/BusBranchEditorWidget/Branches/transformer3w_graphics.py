@@ -21,7 +21,7 @@ from PySide6.QtCore import Qt, QPoint, QPointF
 from PySide6.QtGui import QPen, QCursor, QColor, QIcon, QPixmap
 from PySide6.QtWidgets import QGraphicsItem, QGraphicsEllipseItem, QGraphicsRectItem, QMenu, QGraphicsSceneMouseEvent
 
-from GridCalEngine.Core.Devices.Branches.transformer3w import Transformer3W
+from GridCalEngine.Devices.Branches.transformer3w import Transformer3W
 from GridCal.Gui.BusBranchEditorWidget.generic_graphics import ACTIVE, DEACTIVATED
 from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCal.Gui.BusBranchEditorWidget.terminal_item import TerminalItem

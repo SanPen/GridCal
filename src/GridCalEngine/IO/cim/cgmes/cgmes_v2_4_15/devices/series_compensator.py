@@ -23,13 +23,13 @@ class SeriesCompensator(ConductingEquipment):
 	def __init__(self, rdfid='', tpe='SeriesCompensator'):
 		ConductingEquipment.__init__(self, rdfid, tpe)
 
-		self.r: float = 0.0
-		self.r0: float = 0.0
-		self.x: float = 0.0
-		self.x0: float = 0.0
-		self.varistorPresent: bool = False
-		self.varistorRatedCurrent: float = 0.0
-		self.varistorVoltageThreshold: float = 0.0
+		self.r: float = None
+		self.r0: float = None
+		self.x: float = None
+		self.x0: float = None
+		self.varistorPresent: bool = None
+		self.varistorRatedCurrent: float = None
+		self.varistorVoltageThreshold: float = None
 
 		self.register_property(
 			name='r',

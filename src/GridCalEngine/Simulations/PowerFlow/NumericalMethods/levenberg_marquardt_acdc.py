@@ -21,11 +21,11 @@ import numpy as np
 import scipy.sparse as sp
 from scipy.sparse.linalg import spsolve
 
-from GridCalEngine.Core.Topology.admittance_matrices import compile_y_acdc
+from GridCalEngine.Topology.admittance_matrices import compile_y_acdc
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 import GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions as cf
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.acdc_jacobian import fubm_jacobian, AcDcSolSlicer
-from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit
+from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.basic_structures import CxVec
 
 

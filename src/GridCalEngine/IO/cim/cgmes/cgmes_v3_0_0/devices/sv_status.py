@@ -25,7 +25,7 @@ class SvStatus(Base):
 
 		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.conducting_equipment import ConductingEquipment
 		self.ConductingEquipment: ConductingEquipment | None = None
-		self.inService: bool = False
+		self.inService: bool = None
 
 		self.register_property(
 			name='ConductingEquipment',

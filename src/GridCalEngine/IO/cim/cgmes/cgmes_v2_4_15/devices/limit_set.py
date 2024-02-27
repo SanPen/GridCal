@@ -23,7 +23,7 @@ class LimitSet(IdentifiedObject):
 	def __init__(self, rdfid='', tpe='LimitSet'):
 		IdentifiedObject.__init__(self, rdfid, tpe)
 
-		self.isPercentageLimits: bool = False
+		self.isPercentageLimits: bool = None
 
 		self.register_property(
 			name='isPercentageLimits',

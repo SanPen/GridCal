@@ -25,17 +25,17 @@ class LoadResponseCharacteristic(IdentifiedObject):
 
 		from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.energy_consumer import EnergyConsumer
 		self.EnergyConsumer: EnergyConsumer | None = None
-		self.exponentModel: bool = False
-		self.pConstantCurrent: float = 0.0
-		self.pConstantImpedance: float = 0.0
-		self.pConstantPower: float = 0.0
-		self.pFrequencyExponent: float = 0.0
-		self.pVoltageExponent: float = 0.0
-		self.qConstantCurrent: float = 0.0
-		self.qConstantImpedance: float = 0.0
-		self.qConstantPower: float = 0.0
-		self.qFrequencyExponent: float = 0.0
-		self.qVoltageExponent: float = 0.0
+		self.exponentModel: bool = None
+		self.pConstantCurrent: float = None
+		self.pConstantImpedance: float = None
+		self.pConstantPower: float = None
+		self.pFrequencyExponent: float = None
+		self.pVoltageExponent: float = None
+		self.qConstantCurrent: float = None
+		self.qConstantImpedance: float = None
+		self.qConstantPower: float = None
+		self.qFrequencyExponent: float = None
+		self.qVoltageExponent: float = None
 
 		self.register_property(
 			name='EnergyConsumer',
