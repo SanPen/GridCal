@@ -848,16 +848,26 @@ class MultiCircuit:
             elms += lst
         return elms
 
+    def get_load_like_devices_lists(self) -> List[List[INJECTION_DEVICE_TYPES]]:
+        """
+        Get a list of all devices that can inject or subtract power from a node
+        :return: List of EditableDevice
+        """
+        return [self.get_loads(),
+                self.get_external_grids(),
+                self.get_static_generators(),
+                self.get_linear_shunts(),
+                self.get_current_injections()]
+
     def get_load_like_devices(self) -> List[INJECTION_DEVICE_TYPES]:
         """
         Get a list of all devices that can inject or subtract power from a node
         :return: List of EditableDevice
         """
-        return (self.get_loads()
-                + self.get_external_grids()
-                + self.get_static_generators()
-                + self.get_linear_shunts()
-                + self.get_current_injections())
+        elms = list()
+        for lst in self.get_load_like_devices_lists():
+            elms += lst
+        return elms
 
     def get_load_like_device_number(self) -> int:
         """
@@ -865,7 +875,7 @@ class MultiCircuit:
         :return: List of EditableDevice
         """
         n = 0
-        for lst in self.get_injection_devices_lists():
+        for lst in self.get_load_like_devices_lists():
             n += len(lst)
 
         return n
