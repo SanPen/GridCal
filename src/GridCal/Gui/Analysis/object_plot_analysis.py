@@ -890,9 +890,9 @@ def grid_analysis(circuit: MultiCircuit,
                 elif object_type == DeviceType.LoadDevice:
                     elements = circuit.get_loads()
 
-                for obj in elements:
-                    Pl += obj.P * obj.active
-                    Ql += obj.Q * obj.active
+                for elm in elements:
+                    Pl += elm.P * elm.active
+                    Ql += elm.Q * elm.active
 
                 if circuit.time_profile is not None:
                     Pl_prof += obj.P_prof.toarray() * obj.active_prof.toarray()

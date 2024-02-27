@@ -27,7 +27,6 @@ from datetime import timedelta, datetime
 import networkx as nx
 from matplotlib import pyplot as plt
 from scipy.sparse import csc_matrix, lil_matrix
-from warnings import warn
 
 from GridCalEngine.Devices.Parents.editable_device import EditableDevice
 from GridCalEngine.basic_structures import IntVec, StrVec, Vec, Mat, CxVec, IntMat, CxMat
@@ -223,23 +222,29 @@ class MultiCircuit:
         # array of busbars
         self.bus_bars: List[dev.BusBar] = list()
 
-        # List of load s attached to this bus
+        # List of loads
         self.loads: List[dev.Load] = list()
 
-        # List of Controlled generators attached to this bus
+        # List of generators
         self.generators: List[dev.Generator] = list()
 
         # List of External Grids
         self.external_grids: List[dev.ExternalGrid] = list()
 
-        # List of shunt s attached to this bus
+        # List of shunts
         self.shunts: List[dev.Shunt] = list()
 
-        # List of batteries attached to this bus
+        # List of batteries
         self.batteries: List[dev.Battery] = list()
 
-        # List of static generators attached tot this bus
+        # List of static generators
         self.static_generators: List[dev.StaticGenerator] = list()
+
+        # List of current injections devices
+        self.current_injections: List[dev.CurrentInjection] = list()
+
+        # List of linear shunt devices
+        self.linear_shunts: List[dev.LinearShunt] = list()
 
         # Lists of measurements
         self.pi_measurements: List[dev.PiMeasurement] = list()
@@ -342,6 +347,8 @@ class MultiCircuit:
                 dev.StaticGenerator(),
                 dev.ExternalGrid(),
                 dev.Shunt(),
+                dev.LinearShunt(),
+                dev.CurrentInjection()
             ],
             "Branches": [
                 dev.Line(),
@@ -809,7 +816,7 @@ class MultiCircuit:
         """
         return self.get_branches_wo_hvdc() + self.hvdc_lines
 
-    def get_branches_wo_hvdc_index_dict(self) -> Dict[dev.Branch, int]:
+    def get_branches_wo_hvdc_index_dict(self) -> Dict[BRANCH_TYPES, int]:
         """
         Get the branch to index dictionary
         :return:
@@ -826,19 +833,20 @@ class MultiCircuit:
                 self.get_loads(),
                 self.get_external_grids(),
                 self.get_static_generators(),
-                self.get_shunts()]
+                self.get_shunts(),
+                self.get_linear_shunts(),
+                self.get_current_injections()]
 
     def get_injection_devices(self) -> List[INJECTION_DEVICE_TYPES]:
         """
         Get a list of all devices that can inject or subtract power from a node
         :return: List of EditableDevice
         """
-        return (self.get_generators()
-                + self.get_batteries()
-                + self.get_loads()
-                + self.get_external_grids()
-                + self.get_static_generators()
-                + self.get_shunts())
+
+        elms = list()
+        for lst in self.get_injection_devices_lists():
+            elms += lst
+        return elms
 
     def get_load_like_devices(self) -> List[INJECTION_DEVICE_TYPES]:
         """
@@ -847,14 +855,20 @@ class MultiCircuit:
         """
         return (self.get_loads()
                 + self.get_external_grids()
-                + self.get_static_generators())
+                + self.get_static_generators()
+                + self.get_linear_shunts()
+                + self.get_current_injections())
 
     def get_load_like_device_number(self) -> int:
         """
         Get a list of all devices that can inject or subtract power from a node
         :return: List of EditableDevice
         """
-        return self.get_loads_number() + self.get_external_grids_number() + self.get_static_generators_number()
+        n = 0
+        for lst in self.get_injection_devices_lists():
+            n += len(lst)
+
+        return n
 
     def get_generation_like_devices(self) -> List[INJECTION_DEVICE_TYPES]:
         """
@@ -1230,6 +1244,108 @@ class MultiCircuit:
         return np.array([elm.Enom for elm in self.batteries])
 
     # ----------------------------------------------------------------------------------------------------------------------
+    # current_injections
+    # ----------------------------------------------------------------------------------------------------------------------
+
+    def get_current_injections(self) -> List[dev.CurrentInjection]:
+        """
+        List of current_injections
+        :return: List[dev.CurrentInjection]
+        """
+        return self.current_injections
+
+    def get_current_injections_number(self) -> int:
+        """
+        Size of the list of current_injections
+        :return: size of current_injections
+        """
+        return len(self.current_injections)
+
+    def get_current_injection_at(self, i: int) -> dev.CurrentInjection:
+        """
+        Get current_injection at i
+        :param i: index
+        :return: CurrentInjection
+        """
+        return self.current_injections[i]
+
+    def get_current_injection_names(self) -> StrVec:
+        """
+        Array of current_injection names
+        :return: StrVec
+        """
+        return np.array([e.name for e in self.current_injections])
+
+    def add_current_injection(self, obj: dev.CurrentInjection):
+        """
+        Add a CurrentInjection object
+        :param obj: CurrentInjection instance
+        """
+
+        if self.time_profile is not None:
+            obj.create_profiles(self.time_profile)
+        self.current_injections.append(obj)
+
+    def delete_current_injection(self, obj: dev.CurrentInjection) -> None:
+        """
+        Add a CurrentInjection object
+        :param obj: CurrentInjection instance
+        """
+
+        self.current_injections.remove(obj)
+
+    # ----------------------------------------------------------------------------------------------------------------------
+    # linear_shunts
+    # ----------------------------------------------------------------------------------------------------------------------
+
+    def get_linear_shunts(self) -> List[dev.LinearShunt]:
+        """
+        List of linear_shunts
+        :return: List[dev.LinearShunt]
+        """
+        return self.linear_shunts
+
+    def get_linear_shunts_number(self) -> int:
+        """
+        Size of the list of linear_shunts
+        :return: size of linear_shunts
+        """
+        return len(self.linear_shunts)
+
+    def get_linear_shunt_at(self, i: int) -> dev.LinearShunt:
+        """
+        Get linear_shunt at i
+        :param i: index
+        :return: LinearShunt
+        """
+        return self.linear_shunts[i]
+
+    def get_linear_shunt_names(self) -> StrVec:
+        """
+        Array of linear_shunt names
+        :return: StrVec
+        """
+        return np.array([e.name for e in self.linear_shunts])
+
+    def add_linear_shunt(self, obj: dev.LinearShunt):
+        """
+        Add a LinearShunt object
+        :param obj: LinearShunt instance
+        """
+
+        if self.time_profile is not None:
+            obj.create_profiles(self.time_profile)
+        self.linear_shunts.append(obj)
+
+    def delete_linear_shunt(self, obj: dev.LinearShunt) -> None:
+        """
+        Add a LinearShunt object
+        :param obj: LinearShunt instance
+        """
+
+        self.linear_shunts.remove(obj)
+
+    # ----------------------------------------------------------------------------------------------------------------------
     # pi_measurements
     # ----------------------------------------------------------------------------------------------------------------------
 
@@ -1560,6 +1676,12 @@ class MultiCircuit:
         elif device_type == DeviceType.ExternalGridDevice:
             return self.get_external_grids()
 
+        elif device_type == DeviceType.CurrentInjectionDevice:
+            return self.get_current_injections()
+
+        elif device_type == DeviceType.LinearShuntDevice:
+            return self.get_linear_shunts()
+
         elif device_type == DeviceType.LineDevice:
             return self.lines
 
@@ -1660,7 +1782,7 @@ class MultiCircuit:
             return self.fluid_nodes
 
         elif device_type == DeviceType.FluidPathDevice:
-            return self.fluid_paths
+            return self.get_fluid_paths()
 
         elif device_type == DeviceType.FluidTurbineDevice:
             return self.get_fluid_turbines()
@@ -1718,6 +1840,12 @@ class MultiCircuit:
 
         elif device_type == DeviceType.ExternalGridDevice:
             self.external_grids = devices
+
+        elif device_type == DeviceType.CurrentInjectionDevice:
+            self.current_injections = devices
+
+        elif device_type == DeviceType.LinearShuntDevice:
+            self.linear_shunts = devices
 
         elif device_type == DeviceType.LineDevice:
             for d in devices:
@@ -1885,6 +2013,12 @@ class MultiCircuit:
 
         elif element_type == DeviceType.ExternalGridDevice:
             self.external_grids.remove(obj)
+
+        elif element_type == DeviceType.CurrentInjectionDevice:
+            self.current_injections.remove(obj)
+
+        elif element_type == DeviceType.LinearShuntDevice:
+            self.linear_shunts.remove(obj)
 
         elif element_type == DeviceType.LineDevice:
             return self.delete_line(obj)
@@ -2079,6 +2213,12 @@ class MultiCircuit:
         elif device_tpe == DeviceType.GeneratorDevice:
             return self.get_generators()
 
+        elif device_tpe == DeviceType.LinearShuntDevice:
+            return self.get_linear_shunts()
+
+        elif device_tpe == DeviceType.CurrentInjectionDevice:
+            return self.get_current_injections()
+
         elif device_tpe == DeviceType.FluidNodeDevice:
             return self.get_fluid_devices()
 
@@ -2122,6 +2262,16 @@ class MultiCircuit:
                 'transformers3w',
                 'windings',
                 'buses',
+
+                'loads',
+                'generators',
+                'external_grids',
+                'shunts',
+                'batteries',
+                'static_generators',
+                'current_injections',
+                'linear_shunts',
+
                 'connectivity_nodes',
                 'bus_bars',
                 'overhead_line_types',
@@ -2364,16 +2514,10 @@ class MultiCircuit:
     def create_profiles(self, steps, step_length, step_unit, time_base: datetime = datetime.now()):
         """
         Set the default profiles in all the objects enabled to have profiles.
-
-        Arguments:
-
-            **steps** (int): Number of time steps
-
-            **step_length** (int): Time length (1, 2, 15, ...)
-
-            **step_unit** (str): Unit of the time step ("h", "m" or "s")
-
-            **time_base** (datetime, datetime.now()): Date to start from
+        :param steps: Number of time steps
+        :param step_length: Time length (1, 2, 15, ...)
+        :param step_unit: Unit of the time step ("h", "m" or "s")
+        :param time_base: Date to start from
         """
 
         index = np.empty(steps, dtype=object)
