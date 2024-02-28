@@ -290,8 +290,8 @@ class ContingencyResultsReport:
             # srap_bus_indices: IntVec = None):
             #
             time_index: int,
-            base_uuid: str,
-            contingency_uuid: str,
+            area_from: str,
+            area_to: str,
             base_name: str,
             contingency_name: str,
             base_rating: float,
@@ -343,8 +343,8 @@ class ContingencyResultsReport:
                                              # srap_power=srap_power,
                                              # srap_bus_indices=srap_bus_indices))
                                             time_index= time_index,
-                                            base_uuid= base_uuid,
-                                            contingency_uuid= contingency_uuid,
+                                            area_from = area_from,
+                                            area_to = area_to,
                                             base_name= base_name,
                                             contingency_name= contingency_name,
                                             base_rating= base_rating,
@@ -422,12 +422,16 @@ class ContingencyResultsReport:
                 srap_ratings: Union[Vec, None] = None,
                 srap_max_power: float = 1400.0,
                 srap_deadband: float = 0.0,
-                min_monit_cont_sensitivity: float = 0.0,
+                contingency_deadband: float = 0.0,
                 srap_rever_to_nominal_rating: bool = False,
                 multi_contingency: LinearMultiContingency = None,
                 PTDF: Mat = None,
                 available_power: Vec = None,
                 srap_used_power: Mat = None,
+                F:Vec = None,
+                T:Vec = None,
+                bus_area_indices:Vec = None,
+                area_names:Vec = None,
                 top_n: int = 5,
                 detailed_massive_report: bool = True):
         """
@@ -463,8 +467,8 @@ class ContingencyResultsReport:
                 if abs(base_flow[m]) > numerical_circuit.rates[m]: #only add if overloaded
 
                     self.add(time_index=t if t is not None else 0,  # --------->Convertir a fecha
-                             base_uuid=calc_branches[m].idtag,  # --------->Cambiar a CCAA1
-                             contingency_uuid=contingency_group.idtag,  # --------->Cambiar a CCAA2
+                             area_from = area_names[bus_area_indices[F[m]]],
+                             area_to = area_names[bus_area_indices[T[m]]],
                              base_name=numerical_circuit.branch_data.names[m],
                              contingency_name=  'Base',
                              base_rating=numerical_circuit.branch_data.rates[m],
@@ -495,7 +499,7 @@ class ContingencyResultsReport:
 
             # Affected by contingency?
             affected_by_cont1 = contingency_flows[m] != base_flow[m]
-            affected_by_cont2 = c_flow/(b_flow+ 1e-9) - 1 > min_monit_cont_sensitivity
+            affected_by_cont2 = c_flow/(b_flow+ 1e-9) - 1 > contingency_deadband
 
             # Only study if the flow is affected enough by contingency, if it produces an overload, and if the variation affects negatively to the flow
             if affected_by_cont1 and affected_by_cont2 and c_load > 1 and c_flow > b_flow:
@@ -595,8 +599,8 @@ class ContingencyResultsReport:
 
 
                     self.add(time_index=t if t is not None else 0,  # --------->Convertir a fecha
-                             base_uuid=calc_branches[m].idtag,  # --------->Cambiar a CCAA1
-                             contingency_uuid=contingency_group.idtag,  # --------->Cambiar a CCAA2
+                             area_from=area_names[bus_area_indices[F[m]]],
+                             area_to=area_names[bus_area_indices[T[m]]],
                              base_name=numerical_circuit.branch_data.names[m],
                              contingency_name=contingency_group.name,
                              base_rating=numerical_circuit.branch_data.rates[m],
