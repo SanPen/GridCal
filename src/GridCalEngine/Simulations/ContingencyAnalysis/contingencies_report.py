@@ -422,6 +422,7 @@ class ContingencyResultsReport:
                 srap_ratings: Union[Vec, None] = None,
                 srap_max_power: float = 1400.0,
                 srap_deadband: float = 0.0,
+                min_monit_cont_sensitivity: float = 0.0,
                 srap_rever_to_nominal_rating: bool = False,
                 multi_contingency: LinearMultiContingency = None,
                 PTDF: Mat = None,
@@ -493,10 +494,11 @@ class ContingencyResultsReport:
             rate_srap_pu = srap_ratings[m]/(numerical_circuit.rates[m]+ 1e-9)
 
             # Affected by contingency?
-            affected_by_cont = contingency_flows[m] != base_flow[m]
+            affected_by_cont1 = contingency_flows[m] != base_flow[m]
+            affected_by_cont2 = c_flow/(b_flow+ 1e-9) - 1 > min_monit_cont_sensitivity
 
             # Only study if the flow is affected enough by contingency, if it produces an overload, and if the variation affects negatively to the flow
-            if affected_by_cont and c_load > 1 and c_flow > b_flow:
+            if affected_by_cont1 and affected_by_cont2 and c_load > 1 and c_flow > b_flow:
 
                 #Conditions to set behaviour
                 if 1 < c_load <= rate_nx_pu:
@@ -566,9 +568,6 @@ class ContingencyResultsReport:
                         top_n=top_n,
                         srap_used_power=srap_used_power
                     )
-
-                    if (max_srap_power==0):
-                        1
 
                     post_srap_flow = abs(c_flow) - abs(max_srap_power)
                     if post_srap_flow < 0:
