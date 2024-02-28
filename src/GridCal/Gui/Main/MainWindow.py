@@ -2918,6 +2918,7 @@ class Ui_mainWindow(object):
 
         self.contingency_deadband_SpinBox = QDoubleSpinBox(self.frame_76)
         self.contingency_deadband_SpinBox.setObjectName(u"contingency_deadband_SpinBox")
+        self.contingency_deadband_SpinBox.setDecimals(1)
 
         self.gridLayout_28.addWidget(self.contingency_deadband_SpinBox, 7, 1, 1, 1)
 
@@ -5129,7 +5130,7 @@ class Ui_mainWindow(object):
 #if QT_CONFIG(tooltip)
         self.label_123.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Dead band over the SRAP rating.</p><p>If greater than zero, the SRAP is investigated for values over the branch protections rating until the specified value.</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
-        self.label_123.setText(QCoreApplication.translate("mainWindow", u"Srap dead band", None))
+        self.label_123.setText(QCoreApplication.translate("mainWindow", u"SRAP dead band", None))
         self.label_53.setText(QCoreApplication.translate("mainWindow", u"SRAP limit", None))
         self.label_119.setText(QCoreApplication.translate("mainWindow", u"Contingency engine", None))
 #if QT_CONFIG(tooltip)
@@ -5154,6 +5155,7 @@ class Ui_mainWindow(object):
         self.label_27.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Amount of contingency loading with respect to the base situation loading that triggers the report of the contingency. This is specially useful when we want to avoig reporting contingencies that are not significant with respect to the base situation.</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
         self.label_27.setText(QCoreApplication.translate("mainWindow", u"Contingency dead band", None))
+        self.contingency_deadband_SpinBox.setSuffix(QCoreApplication.translate("mainWindow", u" %", None))
         self.settings_tabWidget.setTabText(self.settings_tabWidget.indexOf(self.tab_11), QCoreApplication.translate("mainWindow", u"Con", None))
         self.label_95.setText(QCoreApplication.translate("mainWindow", u"Area transfer configuration", None))
         self.label_92.setText("")

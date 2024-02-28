@@ -66,6 +66,7 @@ class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
                 ],
                 ResultTypes.ReportsResults: [
                     ResultTypes.ContingencyAnalysisReport,
+                    ResultTypes.ContingencyStatisticalAnalysisReport
                 ]
             },
             time_array=time_array,
@@ -220,6 +221,13 @@ class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
             labels = self.report.get_headers()
             index = self.report.get_index()
 
+        elif result_type == ResultTypes.ContingencyStatisticalAnalysisReport:
+            df = self.report.get_summary_table()
+            y_label = ''
+            title = result_type.value[0]
+            data = df.values
+            labels = df.columns.tolist()
+            index = df.index.tolist()
         else:
             raise Exception('Result type not understood:' + str(result_type))
 
