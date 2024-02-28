@@ -167,6 +167,8 @@ class SimulationsMain(TimeEventsMain):
             InvestmentEvaluationMethod.Hyperopt.value] = InvestmentEvaluationMethod.Hyperopt
         self.investment_evaluation_method_dict[
             InvestmentEvaluationMethod.MVRSM.value] = InvestmentEvaluationMethod.MVRSM
+        self.investment_evaluation_method_dict[
+            InvestmentEvaluationMethod.MVRSM_multi.value] = InvestmentEvaluationMethod.MVRSM_multi
         lst = list(self.investment_evaluation_method_dict.keys())
         self.ui.investment_evaluation_method_ComboBox.setModel(gf.get_list_model(lst))
 
@@ -958,6 +960,7 @@ class SimulationsMain(TimeEventsMain):
             srap_deadband=self.ui.srap_deadband_doubleSpinBox.value(),
             srap_rever_to_nominal_rating=self.ui.srap_revert_to_nominal_rating_checkBox.isChecked(),
             detailed_massive_report=self.ui.contingency_detailed_massive_report_checkBox.isChecked(),
+            contingency_deadband=self.ui.contingency_deadband_spinBox.value(),
             engine=self.contingency_engines_dict[self.ui.contingencyEngineComboBox.currentText()]
         )
 

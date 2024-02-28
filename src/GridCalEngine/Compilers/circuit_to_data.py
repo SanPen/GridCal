@@ -768,10 +768,10 @@ def get_branch_data(circuit: MultiCircuit,
         data.monitor_loading[ii] = int(elm.monitor_loading)
 
         if not use_stored_guess:
-            if elm.control_mode == TransformerControlType.Vt:
+            if elm.control_mode == TransformerControlType.V:
                 Vbus[t] = elm.vset
 
-            elif elm.control_mode == TransformerControlType.PtVt:  # 2a:Vdc
+            elif elm.control_mode == TransformerControlType.PtV:  # 2a:Vdc
                 Vbus[t] = elm.vset
 
         ii += 1
@@ -853,10 +853,10 @@ def get_branch_data(circuit: MultiCircuit,
             data.monitor_loading[ii] = int(elm.monitor_loading)
 
             if not use_stored_guess:
-                if elm.control_mode == TransformerControlType.Vt:
+                if elm.control_mode == TransformerControlType.V:
                     Vbus[t] = elm.vset
 
-                elif elm.control_mode == TransformerControlType.PtVt:  # 2a:Vdc
+                elif elm.control_mode == TransformerControlType.PtV:  # 2a:Vdc
                     Vbus[t] = elm.vset
 
             ii += 1

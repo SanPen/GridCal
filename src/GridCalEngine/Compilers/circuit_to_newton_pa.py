@@ -673,8 +673,8 @@ def add_transformer_data(circuit: MultiCircuit,
         TransformerControlType.Pf: npa.BranchControlModes.BranchPt,
         TransformerControlType.Qt: npa.BranchControlModes.BranchQt,
         TransformerControlType.PtQt: npa.BranchControlModes.BranchPt,
-        TransformerControlType.Vt: npa.BranchControlModes.BranchVt,
-        TransformerControlType.PtVt: npa.BranchControlModes.BranchPt,
+        TransformerControlType.V: npa.BranchControlModes.BranchVt,
+        TransformerControlType.PtV: npa.BranchControlModes.BranchPt,
     }
 
     for i, elm in enumerate(circuit.transformers2w):
@@ -747,8 +747,8 @@ def add_transformer3w_data(circuit: MultiCircuit,
         TransformerControlType.Pf: npa.BranchControlModes.BranchPt,
         TransformerControlType.Qt: npa.BranchControlModes.BranchQt,
         TransformerControlType.PtQt: npa.BranchControlModes.BranchPt,
-        TransformerControlType.Vt: npa.BranchControlModes.BranchVt,
-        TransformerControlType.PtVt: npa.BranchControlModes.BranchPt,
+        TransformerControlType.V: npa.BranchControlModes.BranchVt,
+        TransformerControlType.PtV: npa.BranchControlModes.BranchPt,
     }
 
     for i, elm in enumerate(circuit.transformers3w):

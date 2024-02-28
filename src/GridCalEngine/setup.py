@@ -76,6 +76,7 @@ dependencies = ['setuptools>=41.0.1',
                 "windpowerlib",
                 "pvlib",
                 "hyperopt",
+                "rdflib"
                 ]
 
 extras_require = {

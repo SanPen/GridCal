@@ -66,6 +66,10 @@ def get_objects_dictionary() -> Dict[str, dev.EditableDevice]:
 
                     'shunt': dev.Shunt(),
 
+                    'linear_shunt': dev.LinearShunt(),
+
+                    'current_injection': dev.CurrentInjection(),
+
                     'wires': dev.Wire(),
                     'overhead_line_types': dev.OverheadLineType(),
                     'underground_cable_types': dev.UndergroundLineType(),

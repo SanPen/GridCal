@@ -22,10 +22,12 @@ import GridCalEngine.Devices as gcdev
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
 from GridCalEngine.IO.cim.cgmes.cgmes_export import CgmesExporter
 from GridCalEngine.IO.cim.cgmes.cgmes_utils import (get_nominal_voltage,
-    get_pu_values_ac_line_segment,
-    get_rate, get_values_shunt,
-    get_pu_values_power_transformer, get_pu_values_power_transformer3w, get_windings,
-    get_regulating_control)
+                                                    get_pu_values_ac_line_segment,
+                                                    get_rate, get_values_shunt,
+                                                    get_pu_values_power_transformer, get_pu_values_power_transformer3w,
+                                                    get_windings,
+                                                    get_regulating_control, get_pu_values_power_transformer_end,
+                                                    get_slack_id)
 from GridCalEngine.data_logger import DataLogger
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.identified_object import IdentifiedObject
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.terminal import Terminal
@@ -112,6 +114,8 @@ def get_gcdev_calculation_nodes(cgmes_model: CgmesCircuit,
     :return: dictionary relating the TopologicalNode uuid to the gcdev CalculationNode
              Dict[str, gcdev.Bus]
     """
+
+    slack_id = get_slack_id(cgmes_model.SynchronousMachine_list, cgmes_model.Terminal_list)
     # dictionary relating the TopologicalNode uuid to the gcdev CalculationNode
     calc_node_dict: Dict[str, gcdev.Bus] = dict()
     for cgmes_elm in cgmes_model.TopologicalNode_list:
@@ -126,13 +130,18 @@ def get_gcdev_calculation_nodes(cgmes_model: CgmesCircuit,
             vm = 1.0
             va = 0.0
 
+        is_slack = False
+        if slack_id is not None:
+            if slack_id == cgmes_elm.rdfid:
+                is_slack = True
+
         gcdev_elm = gcdev.Bus(idtag=cgmes_elm.uuid,
                               code=cgmes_elm.description,
                               name=cgmes_elm.name,
                               active=True,
                               vnom=nominal_voltage,
                               is_dc=False,
-                              is_slack=False,
+                              is_slack=is_slack,
                               vmin=0.9,
                               vmax=1.1,
                               latitude=0.0,
@@ -415,7 +424,8 @@ def get_gcdev_ac_lines(cgmes_model: CgmesCircuit,
                 cn_t = cns[1]
 
                 # get per unit vlaues
-                r, x, g, b, r0, x0, g0, b0 = get_pu_values_ac_line_segment(ac_line_segment=cgmes_elm, logger=logger, Sbase=Sbase)
+                r, x, g, b, r0, x0, g0, b0 = get_pu_values_ac_line_segment(ac_line_segment=cgmes_elm, logger=logger,
+                                                                           Sbase=Sbase)
 
                 current_rate = rates_dict.get(cgmes_elm.uuid, None)  # A
                 if current_rate:
@@ -579,8 +589,40 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                                                     rate31=windings[2].ratedS,
                                                     x=0.0, y=0.0
                                                     )
+                    r, x, g, b, r0, x0, g0, b0 = get_pu_values_power_transformer_end(windings[0], Sbase)
+                    gcdev_elm.winding1.R = r
+                    gcdev_elm.winding1.X = x
+                    gcdev_elm.winding1.G = g
+                    gcdev_elm.winding1.B = b
+                    gcdev_elm.winding1.R0 = r0
+                    gcdev_elm.winding1.X0 = x0
+                    gcdev_elm.winding1.G0 = g0
+                    gcdev_elm.winding1.B0 = b0
+                    gcdev_elm.winding1.rate = windings[0].ratedS
 
+                    r, x, g, b, r0, x0, g0, b0 = get_pu_values_power_transformer_end(windings[1], Sbase)
+                    gcdev_elm.winding2.R = r
+                    gcdev_elm.winding2.X = x
+                    gcdev_elm.winding2.G = g
+                    gcdev_elm.winding2.B = b
+                    gcdev_elm.winding2.R0 = r0
+                    gcdev_elm.winding2.X0 = x0
+                    gcdev_elm.winding2.G0 = g0
+                    gcdev_elm.winding2.B0 = b0
+                    gcdev_elm.winding2.rate = windings[1].ratedS
+
+                    r, x, g, b, r0, x0, g0, b0 = get_pu_values_power_transformer_end(windings[2], Sbase)
+                    gcdev_elm.winding3.R = r
+                    gcdev_elm.winding3.X = x
+                    gcdev_elm.winding3.G = g
+                    gcdev_elm.winding3.B = b
+                    gcdev_elm.winding3.R0 = r0
+                    gcdev_elm.winding3.X0 = x0
+                    gcdev_elm.winding3.G0 = g0
+                    gcdev_elm.winding3.B0 = b0
                     gcdev_model.add_transformer3w(gcdev_elm)
+                    gcdev_elm.winding3.rate = windings[2].ratedS
+
 
                 else:
                     logger.add_error(msg='Not exactly three terminals',
@@ -650,7 +692,7 @@ def get_gcdev_shunts(cgmes_model: CgmesCircuit,
                     B0=B0 * cgmes_elm.sections,
                     Bmax=B * cgmes_elm.maximumSections,
                     Bmin=B,
-                    active=True,        # TODO what is this?
+                    active=True,  # TODO what is this?
                     controlled=is_controlled,
                     vset=v_set,
                     # bus=calc_node,  # ?

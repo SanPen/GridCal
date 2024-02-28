@@ -27,47 +27,8 @@ from GridCalEngine.Devices.profile import Profile
 
 class InjectionParent(EditableDevice):
     """
-    The load object implements the so-called ZIP model, in which the load can be
-    represented by a combination of power (P), current(I), and impedance (Z).
-
-    The sign convention is: Positive to act as a load, negative to act as a generator.
-
-    Arguments:
-
-        **name** (str, "Load"): Name of the load
-
-        **G** (float, 0.0): Conductance in equivalent MW
-
-        **B** (float, 0.0): Susceptance in equivalent MVAr
-
-        **Ir** (float, 0.0): Real current in equivalent MW
-
-        **Ii** (float, 0.0): Imaginary current in equivalent MVAr
-
-        **P** (float, 0.0): Active power in MW
-
-        **Q** (float, 0.0): Reactive power in MVAr
-
-        **G_prof** (DataFrame, None): Pandas DataFrame with the conductance profile in equivalent MW
-
-        **B_prof** (DataFrame, None): Pandas DataFrame with the susceptance profile in equivalent MVAr
-
-        **Ir_prof** (DataFrame, None): Pandas DataFrame with the real current profile in equivalent MW
-
-        **Ii_prof** (DataFrame, None): Pandas DataFrame with the imaginary current profile in equivalent MVAr
-
-        **P_prof** (DataFrame, None): Pandas DataFrame with the active power profile in equivalent MW
-
-        **Q_prof** (DataFrame, None): Pandas DataFrame with the reactive power profile in equivalent MVAr
-
-        **active** (bool, True): Is the load active?
-
-        **mttf** (float, 0.0): Mean time to failure in hours
-
-        **mttr** (float, 0.0): Mean time to recovery in hours
-
+    Parent class for Injections
     """
-
     def __init__(self,
                  name: str,
                  idtag: Union[str, None],

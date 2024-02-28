@@ -36,107 +36,122 @@ def zdt3(x):
     return np.array([f1, f2], dtype=float)
 
 
+def plot_everything(y, initial_value, pareto, random_evals, title, figure_num):
+    plt.figure(figure_num)
+    plt.scatter(y[random_evals:, 0], y[random_evals:, 1],
+                c=np.arange(len(y[random_evals:])),
+                cmap='viridis', s=6, label='All Population')  # plot from rand_evals to max_evals
+
+    plt.scatter(y[:random_evals, 0], y[:random_evals, 1], s=6, c='r', label='Random iterations')
+    plt.scatter(pareto[:, 0], pareto[:, 1], s=3, c='g', label='Pareto')
+    plt.scatter(initial_value[0], initial_value[1], s=10, marker='*', label='Initial point')
+
+    plt.title(title)
+    plt.xlabel('f1')
+    plt.ylabel('f2')
+
+    plt.xlim((0, 1))
+    plt.ylim((-1, 6))
+
+    plt.legend(loc='upper right', bbox_to_anchor=(1, 1), fontsize='8')
+
+    # common_indices = np.isin(y_sorted_[:, 0], y_population_[:rand_evals, 0])
+    # common_elements = y_sorted_[common_indices]
+    # plt.scatter(common_elements[:, 0], common_elements[:, 1], s=6, c='r', label='Random iterations')
+
+
+def plot_iterations(x_multi, x_single, figure_num, title, ylabel):
+    plt.figure(figure_num)
+    plt.plot(np.arange(len(x_multi)), x_multi, c='b', label='Multi-objective')
+    plt.plot(np.arange(len(x_single)), x_single, c='r', label='Single-objective')
+
+    plt.title(title)
+    plt.xlabel('Iterations')
+    plt.ylabel(ylabel)
+    plt.legend()
+
+
 if __name__ == "__main__":
 
-    x0 = np.ones(30) * 0.3
+    rand_evals = 100
+
+    # ZDT-N3 test function
+    x0 = np.zeros(30)
     lb = np.zeros(30)
     ub = np.ones(30)
     f_obj = zdt3
     ax_lim = True
 
-    '''x0 = np.array([0.])
+    values0 = []
+    for i in range(0, 100, 1):
+        x = i / 100
+        x0[0] = x
+        result = zdt3(x0)
+        values0.append(result)
+
+    x0 = np.ones(30) * 0.5
+    y0 = zdt3(x0)
+    print(y0)
+    # print(x0)
+    values0 = np.array(values0)
+
+    xprova = [0.12315956, 0.00077414, 0.06628864, 0.00001940, 0.04370104, 0.01913375, 0.01766757, 0.01171782,
+              0.04128205, 0.00562232, 0.02190583, 0.00527179, 0.02357683, 0.01934453, 0.00342066, 0.02134773,
+              0.00187768, 0.00386075, 0.05118619, 0.00269208, 0.09435962, 0.00020367, 0.01495498, 0.00064205,
+              0.01402580, 0.02566501, 0.00496778, 0.00477290, 0.01687044, 0.03612017]
+
+    yprova = zdt3(xprova)
+
+    '''
+
+    # Schaffer test function
+    x0 = np.array([0.])
     lb = np.array([-5.])
     ub = np.array([10])
     f_obj = schaffer_n2
-    ax_lim = False'''
+    '''
 
     y_sorted_, x_sorted_, y_population_, x_population_ = MVRSM_multi_minimize(obj_func=f_obj,
                                                                               x0=x0,
                                                                               lb=lb,
                                                                               ub=ub,
                                                                               num_int=0,
-                                                                              max_evals=500,
+                                                                              max_evals=3000,
                                                                               n_objectives=2,
-                                                                              rand_evals=50)
+                                                                              rand_evals=rand_evals)
 
     y_sorted_2, x_sorted_2, y_population_2, x_population_2 = MVRSM_normalization_minimize(obj_func=f_obj,
                                                                                           x0=x0,
                                                                                           lb=lb,
                                                                                           ub=ub,
                                                                                           num_int=0,
-                                                                                          max_evals=500,
-                                                                                          rand_evals=50,
+                                                                                          max_evals=3000,
+                                                                                          rand_evals=rand_evals,
                                                                                           n_objectives=2)
 
-    '''# Assuming y_population_ is your data
-    pareto_points = identify_pareto(y_population_)
+    plot_everything(y=y_population_,
+                    initial_value=y0,
+                    pareto=values0,
+                    random_evals=rand_evals,
+                    figure_num=1,
+                    title='Multi-objective')
+    plot_everything(y=y_population_2,
+                    initial_value=y0,
+                    pareto=values0,
+                    random_evals=rand_evals,
+                    figure_num=2,
+                    title='Single-objective')
 
-    fig = plt.figure()
-    ax = fig.add_subplot(projection='3d')
+    plot_iterations(x_population_[:, 0],
+                    x_population_2[:, 0],
+                    figure_num=3,
+                    title='First x value',
+                    ylabel='x[0]')
 
-    px, py, pz = zip(*pareto_points)
-    ax.set_xlabel('f1')
-    ax.set_ylabel('f2')
-    ax.set_zlabel('f3')
-
-    ax.scatter(px, py, pz, c='r', marker='^', label='Pareto Front')
-
-    plt.show()'''
-
-    # Figure 1
-    plt.figure(1)
-    plt.scatter(y_population_[:, 0], y_population_[:, 1], s=6, label='All Population')
-    plt.scatter(y_population_[:50, 0], y_population_[:50, 1], s=6, c='r', label='Random iterations')
-    plt.title('Multi-objective')
-    plt.xlabel('f1')
-    plt.ylabel('f2')
-    if ax_lim:
-        plt.xlim((0, 1))
-        plt.ylim((-1, 6))
-    plt.legend()  # Add legend to distinguish between All Population and Selected Subset
-
-    # Figure 2
-    plt.figure(2)
-    plt.scatter(y_population_2[:, 0], y_population_2[:, 1], s=6, label='All Population')
-    plt.scatter(y_population_2[:50, 0], y_population_2[:50, 1], s=6, c='r', label='Random iterations')
-    plt.title('Single-objective w normalization')
-    plt.xlabel('f1')
-    plt.ylabel('f2')
-    if ax_lim:
-        plt.xlim((0, 1))
-        plt.ylim((-1, 6))
-    plt.legend()  # Add legend to distinguish between All Population and Selected Subset
+    plot_iterations(np.sum(x_population_[:, 1:], axis=1),
+                    np.sum(x_population_2[:, 1:], axis=1),
+                    figure_num=4,
+                    title='Summation',
+                    ylabel='np.sum(x[1:])')
 
     plt.show()
-
-    '''# Create a figure and axis object
-    fig, ax1 = plt.subplots()
-
-    # Plotting the values on the left y-axis
-    ax1.plot(range(len(y_population_)), y_population_[:, 0], label='f1', color='blue')
-    ax1.set_xlabel('Iteration')
-    ax1.tick_params('y', colors='blue')
-
-    # Create a twin axis on the right side
-    ax2 = ax1.twinx()
-
-    # Plotting the values on the right y-axis
-    ax2.plot(range(len(y_population_)), y_population_[:, 1], label='f2', color='red')
-    ax2.tick_params('y', colors='red')
-
-    # Plotting the values on the right y-axis
-    ax2.plot(range(len(all_crits)), all_crits[:, 1], label='f2 single', color='orange')
-
-    # Plotting the values on the right y-axis
-    ax1.plot(range(len(all_crits)), all_crits[:, 0], label='f1 single', color='green')
-
-
-    # Adding legend
-    lines, labels = ax1.get_legend_handles_labels()
-    lines2, labels2 = ax2.get_legend_handles_labels()
-    ax2.legend(lines + lines2, labels + labels2, loc='upper left')
-
-
-
-    # Showing the plot
-    plt.show()'''

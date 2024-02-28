@@ -69,10 +69,18 @@ class InvestmentsEvaluationResults(ResultsTemplate):
 
     @property
     def n_groups(self) -> int:
+        """
+
+        :return:
+        """
         return self._combinations.shape[1]
 
     @property
     def max_eval(self) -> int:
+        """
+
+        :return:
+        """
         return self._combinations.shape[0]
 
     def get_index(self) -> StrVec:
@@ -134,23 +142,22 @@ class InvestmentsEvaluationResults(ResultsTemplate):
             labels = self._index_names
             columns = ["CAPEX (M€) + OPEX (M€)", "Objective function"]
             x = self._capex + self._opex
-            y = self._f_obj
+            y = self._losses
             data = np.c_[x, y]
             y_label = ''
             title = ''
 
-            #plt.ion()
-            color_norm = plt_colors.LogNorm()
+            plt.ion()
+            color_norm = plt_colors.Normalize()
             fig = plt.figure(figsize=(8, 6))
             ax3 = plt.subplot(1, 1, 1)
-            sc3 = ax3.scatter(x, y, c=y, norm=color_norm)
-            ax3.set_xlabel('Investment cost (M€)')
+            sc3 = ax3.scatter(x, y, c=self._f_obj, norm=color_norm)
+            ax3.set_xlabel('Cost (M€)')
             ax3.set_ylabel('Total cost of losses (M€)')
             plt.colorbar(sc3, fraction=0.05, label='Objective function')
             fig.suptitle(result_type.value[0])
             plt.tight_layout()
             plt.show()
-            print('Plot!')
 
         elif result_type == ResultTypes.InvestmentsIterationsPlot:
             labels = self._index_names

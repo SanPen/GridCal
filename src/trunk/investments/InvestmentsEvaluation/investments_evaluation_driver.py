@@ -20,7 +20,7 @@ import functools
 
 from typing import List, Dict, Union
 from GridCalEngine.Simulations.driver_template import DriverTemplate
-from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver, PowerFlowOptions
+from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
 from GridCalEngine.Simulations.driver_types import SimulationTypes
 from trunk.investments.InvestmentsEvaluation.investments_evaluation_results import InvestmentsEvaluationResults
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
@@ -28,9 +28,9 @@ from GridCalEngine.Devices.Aggregation.investment import Investment
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
-from trunk.investments.InvestmentsEvaluation.MVRSM import MVRSM_minimize, MVRSM_normalization_minimize
+from trunk.investments.InvestmentsEvaluation.MVRSM import MVRSM_normalization_minimize
 from trunk.MVRSM.MVRSM_mo import MVRSM_multi_minimize
-from GridCalEngine.Simulations.InvestmentsEvaluation.stop_crits import StochStopCriterion
+from GridCalEngine.Simulations.InvestmentsEvaluation.NumericalMethods.stop_crits import StochStopCriterion
 from GridCalEngine.basic_structures import IntVec
 from GridCalEngine.enumerations import InvestmentEvaluationMethod
 from GridCalEngine.Simulations.InvestmentsEvaluation.investments_evaluation_options import InvestmentsEvaluationOptions
@@ -289,22 +289,22 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         conf_dist = 0.0
         conf_level = 0.95
         stop_crit = StochStopCriterion(conf_dist, conf_level)
-        # x0 = np.random.binomial(1, rand_search_active_prob, self.dim)
-        x0 = [0., 0., 0., 0., 0., 1., 0., 1., 1., 0., 0., 1., 0., 0., 0., 0., 0., 1., 0., 0., 1., 1., 0., 0., 0., 0.,
-              0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 1., 0., 0.,
-              0., 0., 1., 0., 0., 0., 0., 1., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0.,
-              0., 0., 0., 1., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0.,
-              0., 0., 1., 0., 0., 0., 1., 0., 0., 0., 1., 0., 1., 0., 0., 0., 0., 1., 0., 0., 0., 1., 0., 0., 0., 0.,
-              0., 0., 1., 0., 1., 0., 1., 1., 0., 0., 0., 1., 1., 0., 0., 1., 1., 0., 1., 0., 0., 0., 1., 0., 1., 0.,
-              0., 0., 0., 0., 0., 1., 0., 0., 0., 1., 1., 0., 1., 0., 0., 1., 1., 1., 0., 0., 0., 0., 1., 1., 1., 0.,
-              1., 1., 0., 1., 0., 1., 1., 0., 1., 0., 0., 1., 1., 0., 0., 1., 1., 1., 1., 0., 0., 1., 1., 0., 0., 1.,
-              1., 1., 1., 0., 0., 0., 1., 1., 0., 1., 1., 0., 0., 0., 0., 1., 0., 1., 0., 0., 0., 1., 0., 1., 0., 1.,
-              0., 0., 1., 0., 0., 1., 0., 0., 1., 1., 0., 1., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
-              0., 0., 0., 0., 0., 1., 0., 1., 0., 0., 0., 0., 0., 0., 0., 1., 1., 0., 1., 0., 0., 0., 0., 1., 0., 0.,
-              0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 1., 0., 0., 1., 0., 1., 0.,
-              0., 0., 0., 0., 0., 0., 0., 0., 0., 1., 1., 0., 0., 0., 1., 1., 0., 0., 0., 0., 0., 0., 0., 1., 0., 0.,
-              0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 1., 1., 0., 0., 0., 0., 0., 1., 1., 1.,
-              0., 0., 1., 1., 1., 0., 0., 1., 0., 1., 1., 0., 0., 1., 0., 0., 1., 0., 0., 1., 0., 0., 0., 0., 1., 0.]
+        x0 = np.random.binomial(1, rand_search_active_prob, self.dim)
+        # x0 = [0., 0., 0., 0., 0., 1., 0., 1., 1., 0., 0., 1., 0., 0., 0., 0., 0., 1., 0., 0., 1., 1., 0., 0., 0., 0.,
+        #       0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 1., 0., 0.,
+        #       0., 0., 1., 0., 0., 0., 0., 1., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0.,
+        #       0., 0., 0., 1., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0.,
+        #       0., 0., 1., 0., 0., 0., 1., 0., 0., 0., 1., 0., 1., 0., 0., 0., 0., 1., 0., 0., 0., 1., 0., 0., 0., 0.,
+        #       0., 0., 1., 0., 1., 0., 1., 1., 0., 0., 0., 1., 1., 0., 0., 1., 1., 0., 1., 0., 0., 0., 1., 0., 1., 0.,
+        #       0., 0., 0., 0., 0., 1., 0., 0., 0., 1., 1., 0., 1., 0., 0., 1., 1., 1., 0., 0., 0., 0., 1., 1., 1., 0.,
+        #       1., 1., 0., 1., 0., 1., 1., 0., 1., 0., 0., 1., 1., 0., 0., 1., 1., 1., 1., 0., 0., 1., 1., 0., 0., 1.,
+        #       1., 1., 1., 0., 0., 0., 1., 1., 0., 1., 1., 0., 0., 0., 0., 1., 0., 1., 0., 0., 0., 1., 0., 1., 0., 1.,
+        #       0., 0., 1., 0., 0., 1., 0., 0., 1., 1., 0., 1., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+        #       0., 0., 0., 0., 0., 1., 0., 1., 0., 0., 0., 0., 0., 0., 0., 1., 1., 0., 1., 0., 0., 0., 0., 1., 0., 0.,
+        #       0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 1., 0., 0., 1., 0., 1., 0.,
+        #       0., 0., 0., 0., 0., 0., 0., 0., 0., 1., 1., 0., 0., 0., 1., 1., 0., 0., 0., 0., 0., 0., 0., 1., 0., 0.,
+        #       0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 1., 1., 0., 0., 0., 0., 0., 1., 1., 1.,
+        #       0., 0., 1., 1., 1., 0., 0., 1., 0., 1., 1., 0., 0., 1., 0., 0., 1., 0., 0., 1., 0., 0., 0., 0., 1., 0.]
 
         x0 = np.array(x0)
 
@@ -323,17 +323,18 @@ class InvestmentsEvaluationDriver(DriverTemplate):
 
         # optimize
         if self.options.solver == InvestmentEvaluationMethod.MVRSM:
-            sorted_y_, sorted_x_, y_population_, x_population_ = MVRSM_normalization_minimize(obj_func=self.objective_function,
-                                                                           x0=x0,
-                                                                           lb=lb,
-                                                                           ub=ub,
-                                                                           num_int=self.dim,
-                                                                           max_evals=self.options.max_eval,
-                                                                           rand_evals=rand_evals,
-                                                                           obj_threshold=threshold,
-                                                                           stop_crit=stop_crit,
-                                                                           rand_search_bias=rand_search_active_prob,
-                                                                           n_objectives=6)
+            sorted_y_, sorted_x_, y_population_, x_population_ = MVRSM_normalization_minimize(
+                obj_func=self.objective_function,
+                x0=x0,
+                lb=lb,
+                ub=ub,
+                num_int=self.dim,
+                max_evals=self.options.max_eval,
+                rand_evals=rand_evals,
+                obj_threshold=threshold,
+                stop_crit=stop_crit,
+                rand_search_bias=rand_search_active_prob,
+                n_objectives=6)
             import matplotlib.pyplot as plt
             # Create a figure and axis object
             fig, ax1 = plt.subplots()
@@ -369,7 +370,6 @@ class InvestmentsEvaluationDriver(DriverTemplate):
                                 objective_function=y_population_[:, 4] * 0.00001 + y_population_[:, 0],
                                 combination=x_population_,
                                 index_name=np.array(['Evaluation {}'.format(i) for i in range(len(y_population_))]))
-
 
         elif self.options.solver == InvestmentEvaluationMethod.MVRSM_multi:
             sorted_y_, sorted_x_, y_population_, x_population_ = MVRSM_multi_minimize(obj_func=self.objective_function,

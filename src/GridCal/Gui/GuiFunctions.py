@@ -1084,7 +1084,7 @@ class ObjectsModel(QtCore.QAbstractTableModel):
 
         self.tips = [p.definition for p in self.property_list]
 
-        self.objects = objects
+        self.objects: List[ALL_DEV_TYPES] = objects
 
         self.editable = editable
 

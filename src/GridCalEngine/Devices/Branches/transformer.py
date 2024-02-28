@@ -15,20 +15,17 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-import pandas as pd
 import numpy as np
-from typing import List, Tuple, Union
-from matplotlib import pyplot as plt
+from typing import Tuple, Union
 
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
-from GridCalEngine.enumerations import TransformerControlType, WindingsConnection, BuildStatus
+from GridCalEngine.enumerations import (TransformerControlType, WindingsConnection, BuildStatus,
+                                        TapAngleControl, TapModuleControl)
 from GridCalEngine.Devices.Parents.controllable_branch_parent import ControllableBranchParent
 from GridCalEngine.Devices.Branches.transformer_type import TransformerType
-from GridCalEngine.Devices.Branches.tap_changer import TapChanger
 from GridCalEngine.Devices.Parents.editable_device import DeviceType
-from GridCalEngine.Devices.profile import Profile
 
 
 class Transformer2W(ControllableBranchParent):
@@ -36,31 +33,59 @@ class Transformer2W(ControllableBranchParent):
     def __init__(self,
                  bus_from: Bus = None,
                  bus_to: Bus = None,
-                 name='Branch', idtag=None, code='',
+                 name='Branch',
+                 idtag: Union[None, str] = None,
+                 code: str = '',
                  cn_from: ConnectivityNode = None,
                  cn_to: ConnectivityNode = None,
-                 HV=None, LV=None,
-                 nominal_power=0.001,
-                 copper_losses=0.0,
-                 iron_losses=0.0,
-                 no_load_current=0.0,
-                 short_circuit_voltage=0.0,
-                 r=1e-20, x=1e-20, g=1e-20, b=1e-20,
-                 rate=1.0,
-                 tap_module=1.0, tap_module_max=1.2, tap_module_min=0.5,
-                 tap_phase=0.0, tap_phase_max=6.28, tap_phase_min=-6.28,
-                 active=True, tolerance=0, cost=100.0,
-                 mttf=0, mttr=0,
-                 vset=1.0, Pset=0, bus_to_regulated=False,
-                 temp_base=20, temp_oper=20, alpha=0.00330,
+                 HV: Union[None, float] = None,
+                 LV: Union[None, float] = None,
+                 nominal_power: float = 0.001,
+                 copper_losses: float = 0.0,
+                 iron_losses: float = 0.0,
+                 no_load_current: float = 0.0,
+                 short_circuit_voltage: float = 0.0,
+                 r: float = 1e-20,
+                 x: float = 1e-20,
+                 g: float = 1e-20,
+                 b: float = 1e-20,
+                 rate: float = 1.0,
+                 tap_module: float = 1.0,
+                 tap_module_max: float = 1.2,
+                 tap_module_min: float = 0.5,
+                 tap_phase: float = 0.0,
+                 tap_phase_max: float = 6.28,
+                 tap_phase_min: float = -6.28,
+                 active: bool = True,
+                 tolerance: float = 0.0,
+                 cost: float = 100.0,
+                 mttf: float = 0.0,
+                 mttr: float = 0.0,
+                 vset: float = 1.0,
+                 Pset: float = 0.0,
+                 temp_base: float = 20.0,
+                 temp_oper: float = 20.0,
+                 alpha: float = 0.00330,
                  control_mode: TransformerControlType = TransformerControlType.fixed,
+                 tap_module_control_mode: TapModuleControl = TapModuleControl.fixed,
+                 tap_angle_control_mode: TapAngleControl = TapAngleControl.fixed,
                  template: TransformerType = None,
-                 contingency_factor=1.0, protection_rating_factor: float=1.4,
-                 contingency_enabled=True, monitor_loading=True,
-                 r0=1e-20, x0=1e-20, g0=1e-20, b0=1e-20,
-                 r2=1e-20, x2=1e-20, g2=1e-20, b2=1e-20,
+                 contingency_factor: float = 1.0,
+                 protection_rating_factor: float = 1.4,
+                 contingency_enabled: bool = True,
+                 monitor_loading: bool = True,
+                 r0: float = 1e-20,
+                 x0: float = 1e-20,
+                 g0: float = 1e-20,
+                 b0: float = 1e-20,
+                 r2: float = 1e-20,
+                 x2: float = 1e-20,
+                 g2: float = 1e-20,
+                 b2: float = 1e-20,
                  conn: WindingsConnection = WindingsConnection.GG,
-                 capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned):
+                 capex: float = 0.0,
+                 opex: float = 0.0,
+                 build_status: BuildStatus = BuildStatus.Commissioned):
         """
         Transformer constructor
         :param name: Name of the branch
@@ -93,7 +118,6 @@ class Transformer2W(ControllableBranchParent):
         :param mttr: Mean time to recovery in hours
         :param vset: Voltage set-point of the voltage controlled bus in per unit
         :param Pset: Power set point
-        :param bus_to_regulated: Is the `bus_to` voltage regulated by this branch?
         :param temp_base: Base temperature at which `r` is measured in °C
         :param temp_oper: Operating temperature in °C
         :param alpha: Thermal constant of the material in °C
@@ -142,12 +166,15 @@ class Transformer2W(ControllableBranchParent):
                                           mttr=mttr,
                                           vset=vset,
                                           Pset=Pset,
+                                          regulation_branch=None,
                                           regulation_bus=None,
                                           regulation_cn=None,
                                           temp_base=temp_base,
                                           temp_oper=temp_oper,
                                           alpha=alpha,
                                           control_mode=control_mode,
+                                          tap_module_control_mode=tap_module_control_mode,
+                                          tap_angle_control_mode=tap_angle_control_mode,
                                           contingency_factor=contingency_factor,
                                           protection_rating_factor=protection_rating_factor,
                                           contingency_enabled=contingency_enabled,
@@ -401,9 +428,9 @@ class Transformer2W(ControllableBranchParent):
         
         '''
         control_modes = {TransformerControlType.fixed: 0,
-                         TransformerControlType.Vt: 1,
+                         TransformerControlType.V: 1,
                          TransformerControlType.Pf: 2,
-                         TransformerControlType.PtVt: 3,
+                         TransformerControlType.PtV: 3,
                          TransformerControlType.Qt: 4,
                          TransformerControlType.PtQt: 5}
         if version == 2:

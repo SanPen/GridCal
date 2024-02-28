@@ -101,6 +101,12 @@ class ObjectsTableMain(DiagramsMain):
         elif elm_type == DeviceType.StaticGeneratorDevice:
             elm = dev.StaticGenerator()
 
+        elif elm_type == DeviceType.LinearShuntDevice:
+            elm = dev.LinearShunt()
+
+        elif elm_type == DeviceType.CurrentInjectionDevice:
+            elm = dev.CurrentInjection()
+
         elif elm_type == DeviceType.GeneratorDevice:
             elm = dev.Generator()
             dictionary_of_lists = {DeviceType.Technology.value: self.circuit.technologies,
@@ -368,13 +374,9 @@ class ObjectsTableMain(DiagramsMain):
                     unique.sort(reverse=True)
                     for r in unique:
 
-                        if objects[r].graphic_obj is not None:
-                            # this is a more complete function than the circuit one because it removes the
-                            # graphical items too, and for loads and generators it deletes them properly
-                            objects[r].graphic_obj.remove(ask=False)
-                        else:
-                            # objects.pop(r)
-                            self.circuit.delete_elements_by_type(obj=objects[r])
+                        self.circuit.delete_elements_by_type(obj=objects[r])
+
+                        # TODO: Call the displays to delete the graphic objects
 
                     # update the view
                     self.display_objects_filter(objects)
@@ -722,8 +724,6 @@ class ObjectsTableMain(DiagramsMain):
             model = self.get_current_objects_model_view()
 
             if model is not None:
-                objects = model.objects
-
                 logger = bs.Logger()
 
                 t_idx = self.get_objects_time_index()
@@ -731,7 +731,7 @@ class ObjectsTableMain(DiagramsMain):
                 for index in indices:
                     i = index.row()
                     p_idx = index.column()
-                    elm = objects[i]
+                    elm = model.objects[i]
                     attr = model.attributes[p_idx]
                     gc_prop = elm.registered_properties[attr]
                     if gc_prop.has_profile():
@@ -755,8 +755,12 @@ class ObjectsTableMain(DiagramsMain):
         if len(self.ui.dataStructuresTreeView.selectedIndexes()) > 0:
             elm_type = self.ui.dataStructuresTreeView.selectedIndexes()[0].data(role=QtCore.Qt.ItemDataRole.DisplayRole)
 
-            object_histogram_analysis(circuit=self.circuit, object_type=elm_type, fig=None)
-            plt.show()
+            if len(self.circuit.get_elements_by_type(device_type=DeviceType(elm_type))):
+                object_histogram_analysis(circuit=self.circuit,
+                                          object_type=elm_type,
+                                          t_idx=self.get_db_slider_index(),
+                                          fig=None)
+                plt.show()
         else:
             info_msg('Select a data structure')
 
@@ -818,7 +822,7 @@ class ObjectsTableMain(DiagramsMain):
                     buses_to_delete_idx.append(r)
 
         for r, bus in enumerate(self.circuit.buses):
-            if not bus.active and not np.any(bus.active_prof):
+            if not bus.active and not np.any(bus.active_prof.toarray()):
                 if r not in buses_to_delete_idx:
                     buses_to_delete.append(bus)
                     buses_to_delete_idx.append(r)
@@ -842,7 +846,7 @@ class ObjectsTableMain(DiagramsMain):
                         self.circuit.get_static_generators()]:
 
             for elm in dev_lst:
-                if not elm.active and not np.any(elm.active_prof):
+                if not elm.active and not np.any(elm.active_prof.toarray()):
                     self.delete_from_all_diagrams(elements=[elm])
                     print('Deleted ', elm.device_type.value, elm.name)
                     logger.add_info("Deleted " + str(elm.device_type.value), elm.name)

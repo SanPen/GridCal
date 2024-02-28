@@ -17,11 +17,10 @@
 import random
 import uuid
 import numpy as np
-from typing import List, Dict, AnyStr, Any, Optional, Union, Type, Tuple
 from GridCalEngine.enumerations import (DeviceType, TimeFrame, BuildStatus, WindingsConnection, TransformerControlType,
-                                        ConverterControlType)
-from GridCalEngine.basic_structures import Vec, IntVec, BoolVec
+                                        ConverterControlType, TapModuleControl, TapAngleControl)
 from GridCalEngine.Devices.profile import Profile
+from typing import List, Dict, AnyStr, Any, Optional, Union, Type, Tuple
 
 
 # types that can be assigned to a GridCal property
@@ -34,7 +33,9 @@ GCPROP_TYPES = Union[
     Type[BuildStatus],
     Type[WindingsConnection],
     Type[TransformerControlType],
-    Type[ConverterControlType]
+    Type[ConverterControlType],
+    Type[TapModuleControl],
+    Type[TapAngleControl],
 ]
 
 
@@ -170,9 +171,6 @@ class EditableDevice:
         self.code: str = code
 
         self.device_type: DeviceType = device_type
-
-        # associated graphic object
-        self._graphic_obj = None  # todo: this should disappear
 
         # list of registered properties. This is supremelly useful when accessing via the Table and Tree models
         self.property_list: List[GCProp] = list()
@@ -315,20 +313,6 @@ class EditableDevice:
                 data[old_name] = prop.name
 
         return data
-
-    @property
-    def graphic_obj(self):
-        """
-        Get the associated graphical object (if any)
-        :return: graphical object
-        """
-        # todo: this should disappear
-        return self._graphic_obj
-
-    @graphic_obj.setter
-    def graphic_obj(self, obj):
-        # todo: this should disappear
-        self._graphic_obj = obj
 
     def generate_uuid(self):
         """

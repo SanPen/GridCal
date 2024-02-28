@@ -14,13 +14,28 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from typing import Tuple
+from typing import Tuple, Any, List
 import numpy as np
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.basic_structures import BoolVec, Mat
 from GridCalEngine.Utils.Filtering.filtering import (MasterFilter, Filter, FilterOps, CompOps, FilterSubject,
                                                      is_numeric, parse_expression)
+from GridCalEngine.Devices.types import ALL_DEV_TYPES
 
+def object_extract(elm: ALL_DEV_TYPES, args: List[str]) -> Any:
+    """
+    Extract value from object's property chain
+    :param elm: Device
+    :param args: list of properties (i.e. bus.area.name as ['bus', 'area', 'name'])
+    :return: value
+    """
+    p = elm
+    for arg in args:
+        if hasattr(p, arg):
+            p = getattr(p, arg)
+        else:
+            return None
+    return p
 
 def compute_results_table_masks(table: ResultsTable, flt: Filter) -> Tuple[BoolVec, BoolVec, Mat]:
     """
@@ -57,40 +72,7 @@ def compute_results_table_masks(table: ResultsTable, flt: Filter) -> Tuple[BoolV
             for i in range(table.r):
                 for j in range(table.c):
 
-                    if flt.op == CompOps.GT:
-                        ok = table.data_c[i, j] > val
-
-                    elif flt.op == CompOps.LT:
-                        ok = table.data_c[i, j] < val
-
-                    elif flt.op == CompOps.GEQ:
-                        ok = table.data_c[i, j] >= val
-
-                    elif flt.op == CompOps.LEQ:
-                        ok = table.data_c[i, j] <= val
-
-                    elif flt.op == CompOps.NOT_EQ:
-                        ok = table.data_c[i, j] != val
-
-                    elif flt.op == CompOps.EQ:
-                        ok = table.data_c[i, j] == val
-
-                    elif flt.op == CompOps.LIKE:
-                        ok = val in str(table.data_c[i, j])
-
-                    elif flt.op == CompOps.NOT_LIKE:
-                        ok = val not in str(table.data_c[i, j])
-
-                    elif flt.op == CompOps.STARTS:
-                        ok = str(table.data_c[i, j]).startswith(val)
-
-                    elif flt.op == CompOps.ENDS:
-                        ok = str(table.data_c[i, j]).endswith(val)
-
-                    else:
-                        ok = False
-
-                    if ok:
+                    if flt.apply_filter_op(table.data_c[i, j], val):
                         idx_mask[i] = True
                         col_mask[j] = True
                         data_mask[i, j] = True
@@ -104,40 +86,7 @@ def compute_results_table_masks(table: ResultsTable, flt: Filter) -> Tuple[BoolV
 
             for i in range(table.r):
 
-                if flt.op == CompOps.GT:
-                    ok = table.index_c[i] > val
-
-                elif flt.op == CompOps.LT:
-                    ok = table.index_c[i] < val
-
-                elif flt.op == CompOps.GEQ:
-                    ok = table.index_c[i] >= val
-
-                elif flt.op == CompOps.LEQ:
-                    ok = table.index_c[i] <= val
-
-                elif flt.op == CompOps.NOT_EQ:
-                    ok = table.index_c[i] != val
-
-                elif flt.op == CompOps.EQ:
-                    ok = table.index_c[i] == val
-
-                elif flt.op == CompOps.LIKE:
-                    ok = val in str(table.index_c[i])
-
-                elif flt.op == CompOps.NOT_LIKE:
-                    ok = val not in str(table.index_c[i])
-
-                elif flt.op == CompOps.STARTS:
-                    ok = str(table.index_c[i]).startswith(val)
-
-                elif flt.op == CompOps.ENDS:
-                    ok = str(table.index_c[i]).endswith(val)
-
-                else:
-                    ok = False
-
-                if ok:
+                if flt.apply_filter_op(table.index_c[i], val):
                     idx_mask[i] = True
                     data_mask[i, :] = True
 
@@ -150,52 +99,84 @@ def compute_results_table_masks(table: ResultsTable, flt: Filter) -> Tuple[BoolV
 
             for j in range(table.c):
 
-                if flt.op == CompOps.GT:
-                    ok = table.cols_c[j] > val
-
-                elif flt.op == CompOps.LT:
-                    ok = table.cols_c[j] < val
-
-                elif flt.op == CompOps.GEQ:
-                    ok = table.cols_c[j] >= val
-
-                elif flt.op == CompOps.LEQ:
-                    ok = table.cols_c[j] <= val
-
-                elif flt.op == CompOps.NOT_EQ:
-                    ok = table.cols_c[j] != val
-
-                elif flt.op == CompOps.EQ:
-                    ok = table.cols_c[j] == val
-
-                elif flt.op == CompOps.LIKE:
-                    ok = val in str(table.cols_c[j])
-
-                elif flt.op == CompOps.NOT_LIKE:
-                    ok = val not in str(table.cols_c[j])
-
-                elif flt.op == CompOps.STARTS:
-                    ok = str(table.cols_c[j]).startswith(val)
-
-                elif flt.op == CompOps.ENDS:
-                    ok = str(table.cols_c[j]).endswith(val)
-
-                else:
-                    ok = False
-
-                if ok:
+                if flt.apply_filter_op(table.cols_c[j], val):
                     col_mask[j] = True
                     data_mask[:, j] = True
 
+        #TODO
+        # Trasladar no solo _devices sino _devices_c y _devices_r a table para poder hacer consulta
+        # como esta ---> colobj.bus_to.name like PAXTON
+        # Pensar como ejemplo PTDF donde se ha de poder filtrar por filar y por columnas objeto
+        # Quizas se deberian definir los tipos para columnas y filas también
+        # Ver results.py -> 114 (2024-02-27)
+
         elif flt.element == FilterSubject.COL_OBJECT:
+
+            val = value
+
             idx_mask = np.ones(table.r, dtype=bool)
             col_mask = np.zeros(table.c, dtype=bool)
             data_mask = np.zeros((table.r, table.c), dtype=bool)
 
+            for j in range(table.c):
+
+                if len(flt.element_args):
+                    obj_val = object_extract(elm=table._devices[j], args=flt.element_args)
+                else:
+                    obj_val = str(table._devices[j])
+
+                if obj_val is not None:
+
+                    tpe = type(obj_val)
+
+                    try:
+                        val = tpe(val)
+                    except TypeError:
+                        # if the casting failed, try string comparison
+                        val = str(val)
+                        obj_val = str(obj_val)
+
+                    if flt.apply_filter_op(obj_val, val):
+                        col_mask[j] = True
+                        data_mask[:, j] = True
+                else:
+                    # the object_val is None
+                    a = ".".join(flt.element_args)
+                    raise ValueError(f"{a} cannot be found for the objects :(")
+
         elif flt.element == FilterSubject.IDX_OBJECT:
+
+            val = value
+
             idx_mask = np.zeros(table.r, dtype=bool)
             col_mask = np.ones(table.c, dtype=bool)
             data_mask = np.zeros((table.r, table.c), dtype=bool)
+
+            for i in range(table.r):
+
+                if len(flt.element_args):
+                    obj_val = object_extract(elm=table._devices[i], args=flt.element_args)
+                else:
+                    obj_val = str(table._devices[i])
+
+                if obj_val is not None:
+
+                    tpe = type(obj_val)
+
+                    try:
+                        val = tpe(val)
+                    except TypeError:
+                        # if the casting failed, try string comparison
+                        val = str(val)
+                        obj_val = str(obj_val)
+
+                    if flt.apply_filter_op(obj_val, val):
+                        idx_mask[i] = True
+                        data_mask[i, :] = True
+                else:
+                    # the object_val is None
+                    a = ".".join(flt.element_args)
+                    raise ValueError(f"{a} cannot be found for the objects :(")
 
         else:
             raise Exception("Invalid FilterSubject")
@@ -238,7 +219,6 @@ class FilterResultsTable:
         if len(self.master_filter.stack):
             idx_mask, col_mask, data_mask = compute_results_table_masks(table=self.table,
                                                                         flt=self.master_filter.stack[0])
-
             if self.master_filter.correct_size():
 
                 for st_idx in range(1, self.master_filter.size(), 2):
