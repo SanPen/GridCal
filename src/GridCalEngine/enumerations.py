@@ -504,6 +504,7 @@ class ContingencyMethod(Enum):
     Enumeratio of contingency calculation engines
     """
     PowerFlow = 'Power flow'
+    OptimalPowerFlow = 'Optimal power flow'
     HELM = 'HELM'
     PTDF = 'PTDF'
 
@@ -1286,6 +1287,7 @@ class ResultTypes(Enum):
 
     # contingency analysis
     ContingencyAnalysisReport = 'Contingencies report', DeviceType.NoDevice
+    ContingencyStatisticalAnalysisReport = 'Contingencies statistical report', DeviceType.NoDevice
 
     # Srap
     SrapUsedPower = 'Srap used power', DeviceType.NoDevice

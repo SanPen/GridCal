@@ -16,6 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
 import numba as nb
+import pandas as pd
 from scipy.sparse import csc_matrix
 from typing import List, Union, Any
 from GridCalEngine.basic_structures import IntVec, StrMat, StrVec, Vec, Mat
@@ -115,63 +116,46 @@ class ContingencyTableEntry:
                  # solved_by_srap: bool = False,
                  # srap_power: float = 0.0,
                  # srap_bus_indices: IntVec = None):
-                #
-                time_index: int,
-                area_from: str,
-                area_to: str,
-                base_name: str,
-                contingency_name: str,
-                base_rating: float,
-                contingency_rating: float,
-                srap_rating: float,
-                base_flow: complex,
-                post_contingency_flow: complex,
-                post_srap_flow: complex,
-                base_loading: float,
-                post_contingency_loading: float,
-                post_srap_loading: float,
-                msg_ov: str,
-                msg_srap: str,
-                srap_power: float,
-                solved_by_srap: bool = False):
+                 #
+                 time_index: int,
+                 area_from: str,
+                 area_to: str,
+                 base_name: str,
+                 contingency_name: str,
+                 base_rating: float,
+                 contingency_rating: float,
+                 srap_rating: float,
+                 base_flow: complex,
+                 post_contingency_flow: complex,
+                 post_srap_flow: complex,
+                 base_loading: float,
+                 post_contingency_loading: float,
+                 post_srap_loading: float,
+                 msg_ov: str,
+                 msg_srap: str,
+                 srap_power: float,
+                 solved_by_srap: bool = False):
         """
         ContingencyTableEntry constructor
         :param time_index:
+        :param area_from:
+        :param area_to:
         :param base_name:
-        :param base_uuid:
-        :param base_flow:
-        :param base_rating:
-        :param base_loading:
-        :param contingency_idx:
         :param contingency_name:
-        :param contingency_uuid:
-        :param post_contingency_flow:
+        :param base_rating:
         :param contingency_rating:
+        :param srap_rating:
+        :param base_flow:
+        :param post_contingency_flow:
+        :param post_srap_flow:
+        :param base_loading:
         :param post_contingency_loading:
-        :param solved_by_srap:
+        :param post_srap_loading:
+        :param msg_ov:
+        :param msg_srap:
         :param srap_power:
-        :param srap_bus_indices:
+        :param solved_by_srap:
         """
-        # self.time_index: int = time_index
-        #
-        # self.base_name: str = base_name
-        # self.base_uuid: str = base_uuid
-        #
-        # self.base_flow = base_flow
-        # self.base_rating = base_rating
-        # self.base_loading = base_loading
-        #
-        # self.contingency_idx: int = contingency_idx
-        # self.contingency_name: str = contingency_name
-        # self.contingency_uuid: str = contingency_uuid
-        # self.post_contingency_flow: complex = post_contingency_flow
-        # self.contingency_rating: float = contingency_rating
-        # self.post_contingency_loading: float = post_contingency_loading
-        #
-        # self.solved_by_srap: bool = solved_by_srap
-        # self.srap_power = srap_power
-        # self.srap_bus_indices: IntVec = srap_bus_indices if srap_bus_indices is not None else np.zeros(0, dtype=int)
-
         self.time_index: int = time_index
         self.area_from: str = area_from
         self.area_to: str = area_to
@@ -186,8 +170,8 @@ class ContingencyTableEntry:
         self.base_loading: float = base_loading
         self.post_contingency_loading: float = post_contingency_loading
         self.post_srap_loading: float = post_srap_loading
-        self.msg_ov : str = msg_ov
-        self.msg_srap = str = msg_srap
+        self.msg_ov: str = msg_ov
+        self.msg_srap: str = msg_srap
         self.srap_power: float = srap_power
         self.solved_by_srap: bool = solved_by_srap
 
@@ -203,22 +187,6 @@ class ContingencyTableEntry:
         Get a list representation of this entry
         :return: List[Any]
         """
-        # return [self.time_index,
-        #         self.base_name,
-        #         self.base_uuid,
-        #         self.base_flow,
-        #         self.base_rating,
-        #         self.base_loading,
-        #         self.contingency_idx,
-        #         self.contingency_name,
-        #         self.contingency_uuid,
-        #         self.post_contingency_flow,
-        #         self.contingency_rating,
-        #         self.post_contingency_loading,
-        #         self.solved_by_srap,
-        #         self.srap_power,
-        #         ",".join(self.srap_bus_indices)]
-
         return [self.time_index,
                 self.area_from,
                 self.area_to,
@@ -272,23 +240,6 @@ class ContingencyResultsReport:
         self.entries.append(entry)
 
     def add(self,
-            # time_index: int,
-            # base_name: str,
-            # base_uuid: str,
-            # base_flow: complex,
-            # base_rating: float,
-            # base_loading: float,
-            # contingency_idx: int,
-            # contingency_name: str,
-            # contingency_uuid: str,
-            # post_contingency_flow: complex,
-            # contingency_rating: float,
-            # post_contingency_loading: float,
-            # srap_fixing_probability: Mat = [],
-            # solved_by_srap: bool = False,
-            # srap_power: float = 0.0,
-            # srap_bus_indices: IntVec = None):
-            #
             time_index: int,
             area_from: str,
             area_to: str,
@@ -299,67 +250,57 @@ class ContingencyResultsReport:
             srap_rating: float,
             base_flow: complex,
             post_contingency_flow: complex,
-            post_srap_flow : complex,
+            post_srap_flow: complex,
             base_loading: float,
             post_contingency_loading: float,
             post_srap_loading: float,
-            msg_ov = str,
-            msg_srap = str,
-            srap_power = float,
+            msg_ov: str,
+            msg_srap: str,
+            srap_power: float,
             solved_by_srap: bool = False):
-
 
         """
         Add report data
         :param time_index:
+        :param area_from:
+        :param area_to:
         :param base_name:
-        :param base_uuid:
-        :param base_flow:
-        :param base_rating:
-        :param base_loading:
-        :param contingency_idx:
         :param contingency_name:
-        :param contingency_uuid:
-        :param post_contingency_flow:
+        :param base_rating:
         :param contingency_rating:
+        :param srap_rating:
+        :param base_flow:
+        :param post_contingency_flow:
+        :param post_srap_flow:
+        :param base_loading:
         :param post_contingency_loading:
-        :param solved_by_srap:
+        :param post_srap_loading:
+        :param msg_ov:
+        :param msg_srap:
         :param srap_power:
-        :param srap_bus_indices:
+        :param solved_by_srap:
+        :return:
         """
-        self.add_entry(ContingencyTableEntry(#time_index=time_index,
-                                             # base_name=base_name,
-                                             # base_uuid=base_uuid,
-                                             # base_flow=base_flow,
-                                             # base_rating=base_rating,
-                                             # base_loading=base_loading,
-                                             # contingency_idx=contingency_idx,
-                                             # contingency_name=contingency_name,
-                                             # contingency_uuid=contingency_uuid,
-                                             # post_contingency_flow=post_contingency_flow,
-                                             # contingency_rating=contingency_rating,
-                                             # post_contingency_loading=post_contingency_loading,
-                                             # solved_by_srap=solved_by_srap,
-                                             # srap_power=srap_power,
-                                             # srap_bus_indices=srap_bus_indices))
-                                            time_index= time_index,
-                                            area_from = area_from,
-                                            area_to = area_to,
-                                            base_name= base_name,
-                                            contingency_name= contingency_name,
-                                            base_rating= base_rating,
-                                            contingency_rating= contingency_rating,
-                                            srap_rating= srap_rating,
-                                            base_flow= base_flow,
-                                            post_contingency_flow= post_contingency_flow,
-                                            post_srap_flow= post_srap_flow,
-                                            base_loading= base_loading,
-                                            post_contingency_loading = post_contingency_loading,
-                                            post_srap_loading= post_srap_loading,
-                                            msg_ov = msg_ov,
-                                            msg_srap = msg_srap,
-                                            srap_power=srap_power,
-                                            solved_by_srap = solved_by_srap))
+        self.add_entry(ContingencyTableEntry(
+            time_index=time_index,
+            area_from=area_from,
+            area_to=area_to,
+            base_name=base_name,
+            contingency_name=contingency_name,
+            base_rating=base_rating,
+            contingency_rating=contingency_rating,
+            srap_rating=srap_rating,
+            base_flow=base_flow,
+            post_contingency_flow=post_contingency_flow,
+            post_srap_flow=post_srap_flow,
+            base_loading=base_loading,
+            post_contingency_loading=post_contingency_loading,
+            post_srap_loading=post_srap_loading,
+            msg_ov=msg_ov,
+            msg_srap=msg_srap,
+            srap_power=srap_power,
+            solved_by_srap=solved_by_srap)
+        )
 
     def merge(self, other: "ContingencyResultsReport"):
         """
@@ -407,6 +348,33 @@ class ContingencyResultsReport:
             data[i, :] = e.to_array()
         return data
 
+    def get_df(self) -> pd.DataFrame:
+        """
+        Get data as pandas DataFrame
+        :return: DataFrame
+        """
+        return pd.DataFrame(data=self.get_data(),
+                            index=self.get_index(),
+                            columns=self.get_headers())
+
+    def get_summary_table(self) -> pd.DataFrame:
+        """
+
+        :return:
+        """
+        df = self.get_df()
+        return df
+
+    def __iadd__(self, other: "ContingencyResultsReport"):
+        """
+        Incremental adition of reports
+        :param other: ContingencyResultsReport
+        :return: self
+        """
+        for entry in other.entries:
+            self.add_entry(entry)
+        return self
+
     def analyze(self,
                 t: Union[None, int],
                 mon_idx: IntVec,
@@ -428,10 +396,10 @@ class ContingencyResultsReport:
                 PTDF: Mat = None,
                 available_power: Vec = None,
                 srap_used_power: Mat = None,
-                F:Vec = None,
-                T:Vec = None,
-                bus_area_indices:Vec = None,
-                area_names:Vec = None,
+                F: Vec = None,
+                T: Vec = None,
+                bus_area_indices: Vec = None,
+                area_names: Vec = None,
                 top_n: int = 5,
                 detailed_massive_report: bool = True):
         """
@@ -459,34 +427,33 @@ class ContingencyResultsReport:
         :param detailed_massive_report: Generate massive report
         """
 
-        #Reporting base case
-        if (contingency_idx == 0): #only doing it once per hour
+        # Reporting base case
+        if contingency_idx == 0:  # only doing it once per hour
 
             for m in mon_idx:
 
-                if abs(base_flow[m]) > numerical_circuit.rates[m]: #only add if overloaded
+                if abs(base_flow[m]) > numerical_circuit.rates[m]:  # only add if overloaded
 
                     self.add(time_index=t if t is not None else 0,  # --------->Convertir a fecha
-                             area_from = area_names[bus_area_indices[F[m]]],
-                             area_to = area_names[bus_area_indices[T[m]]],
+                             area_from=area_names[bus_area_indices[F[m]]],
+                             area_to=area_names[bus_area_indices[T[m]]],
                              base_name=numerical_circuit.branch_data.names[m],
-                             contingency_name=  'Base',
+                             contingency_name='Base',
                              base_rating=numerical_circuit.branch_data.rates[m],
                              contingency_rating=numerical_circuit.branch_data.contingency_rates[m],
                              srap_rating=srap_ratings[m],
                              base_flow=abs(base_flow[m]),
-                             post_contingency_flow = 0.0,
-                             post_srap_flow= 0.0,
-                             base_loading= abs(base_flow[m]) / (numerical_circuit.rates[m]+ 1e-9),
-                             post_contingency_loading= 0.0,
-                             post_srap_loading= 0.0,
-                             msg_ov= 'Overload not acceptable',
+                             post_contingency_flow=0.0,
+                             post_srap_flow=0.0,
+                             base_loading=abs(base_flow[m]) / (numerical_circuit.rates[m] + 1e-9),
+                             post_contingency_loading=0.0,
+                             post_srap_loading=0.0,
+                             msg_ov='Overload not acceptable',
                              msg_srap='SRAP not applicable',
-                             srap_power= 0.0,
-                             solved_by_srap='False')
+                             srap_power=0.0,
+                             solved_by_srap=False)
 
-
-        #Now evalueting the effect of contingencies
+        # Now evalueting the effect of contingencies
         for m in mon_idx:  # for each monitored branch ...
 
             c_flow = abs(contingency_flows[m])
@@ -494,17 +461,18 @@ class ContingencyResultsReport:
 
             c_load = abs(contingency_loadings[m])
 
-            rate_nx_pu = numerical_circuit.contingency_rates[m]/(numerical_circuit.rates[m]+ 1e-9)
-            rate_srap_pu = srap_ratings[m]/(numerical_circuit.rates[m]+ 1e-9)
+            rate_nx_pu = numerical_circuit.contingency_rates[m] / (numerical_circuit.rates[m] + 1e-9)
+            rate_srap_pu = srap_ratings[m] / (numerical_circuit.rates[m] + 1e-9)
 
             # Affected by contingency?
             affected_by_cont1 = contingency_flows[m] != base_flow[m]
-            affected_by_cont2 = c_flow/(b_flow+ 1e-9) - 1 > contingency_deadband
+            affected_by_cont2 = c_flow / (b_flow + 1e-9) - 1 > contingency_deadband
 
-            # Only study if the flow is affected enough by contingency, if it produces an overload, and if the variation affects negatively to the flow
+            # Only study if the flow is affected enough by contingency,
+            # if it produces an overload, and if the variation affects negatively to the flow
             if affected_by_cont1 and affected_by_cont2 and c_load > 1 and c_flow > b_flow:
 
-                #Conditions to set behaviour
+                # Conditions to set behaviour
                 if 1 < c_load <= rate_nx_pu:
                     ov_status = 1
                     msg_ov = 'Overload acceptable'
@@ -516,23 +484,23 @@ class ContingencyResultsReport:
 
                 elif rate_nx_pu < c_load <= rate_srap_pu:
                     ov_status = 2
-                    msg_ov = 'Overload not acceptable' # Overwritten if solved
-                    cond_srap = True # Srap aplicable
+                    msg_ov = 'Overload not acceptable'  # Overwritten if solved
+                    cond_srap = True  # Srap aplicable
                     msg_srap = 'SRAP applicable'
                     solved_by_srap = False
-                    post_srap_flow = c_flow # Overwritten if srap activated
+                    post_srap_flow = c_flow  # Overwritten if srap activated
                     max_srap_power = 0.0
 
-                elif rate_srap_pu < c_load <= rate_srap_pu + srap_deadband/100:
+                elif rate_srap_pu < c_load <= rate_srap_pu + srap_deadband / 100:
                     ov_status = 3
                     msg_ov = 'Overload not acceptable'
                     cond_srap = True
                     msg_srap = 'SRAP not applicable'
                     solved_by_srap = False
-                    post_srap_flow = c_flow # Overwritten if srap activated
+                    post_srap_flow = c_flow  # Overwritten if srap activated
                     max_srap_power = 0.0
 
-                elif c_load > rate_srap_pu + srap_deadband/100:
+                elif c_load > rate_srap_pu + srap_deadband / 100:
                     ov_status = 4
                     msg_ov = 'Overload not acceptable'
                     cond_srap = False
@@ -540,7 +508,10 @@ class ContingencyResultsReport:
                     solved_by_srap = False
                     post_srap_flow = c_flow
                     max_srap_power = 0.0
-
+                else:
+                    msg_srap = ''
+                    ov_status = 0
+                    cond_srap = False
 
                 if using_srap and cond_srap:
 
@@ -558,7 +529,7 @@ class ContingencyResultsReport:
                                                   bus_indices=indices,
                                                   sensitivities=sensitivities)
 
-                    if (srap_rever_to_nominal_rating):
+                    if srap_rever_to_nominal_rating:
                         rate_goal = numerical_circuit.rates[m]
                     else:
                         rate_goal = numerical_circuit.contingency_rates[m]
@@ -577,27 +548,18 @@ class ContingencyResultsReport:
                     if post_srap_flow < 0:
                         post_srap_flow = 0.0
 
-                    if (solved_by_srap and ov_status == 2):
+                    if solved_by_srap and ov_status == 2:
                         msg_ov = 'Overload acceptable'
+                    else:
+                        msg_ov = ''
+                else:
+                    post_srap_flow = 0.0
+                    msg_ov = ''
+                    msg_srap = ''
+                    max_srap_power = 0.0
+                    solved_by_srap = False
 
                 if detailed_massive_report:
-                    # self.add(time_index=t if t is not None else 0,
-                    #          base_name=numerical_circuit.branch_data.names[m],
-                    #          base_uuid=calc_branches[m].idtag,
-                    #          base_flow=abs(b_flow),
-                    #          base_rating=numerical_circuit.branch_data.rates[m],
-                    #          base_loading=abs(base_loading[m] * 100.0),
-                    #          contingency_idx=contingency_idx,
-                    #          contingency_name=contingency_group.name,
-                    #          contingency_uuid=contingency_group.idtag,
-                    #          post_contingency_flow=abs(c_flow),
-                    #          contingency_rating=numerical_circuit.branch_data.contingency_rates[m],
-                    #          post_contingency_loading=abs(contingency_loadings[m]) * 100.0,
-                    #          solved_by_srap=solved_by_srap,
-                    #          srap_power=max_srap_power,
-                    #          srap_bus_indices=None)
-
-
                     self.add(time_index=t if t is not None else 0,  # --------->Convertir a fecha
                              area_from=area_names[bus_area_indices[F[m]]],
                              area_to=area_names[bus_area_indices[T[m]]],
@@ -605,50 +567,14 @@ class ContingencyResultsReport:
                              contingency_name=contingency_group.name,
                              base_rating=numerical_circuit.branch_data.rates[m],
                              contingency_rating=numerical_circuit.branch_data.contingency_rates[m],
-                             srap_rating = srap_ratings[m],
+                             srap_rating=srap_ratings[m],
                              base_flow=abs(b_flow),
                              post_contingency_flow=abs(c_flow),
-                             post_srap_flow = post_srap_flow,
-                             base_loading=abs(base_loading[m] ),
-                             post_contingency_loading=abs(contingency_loadings[m]) ,
-                             post_srap_loading = post_srap_flow /(numerical_circuit.rates[m]+ 1e-9),
-                             msg_ov = msg_ov,
-                             msg_srap = msg_srap,
+                             post_srap_flow=post_srap_flow,
+                             base_loading=abs(base_loading[m]),
+                             post_contingency_loading=abs(contingency_loadings[m]),
+                             post_srap_loading=post_srap_flow / (numerical_circuit.rates[m] + 1e-9),
+                             msg_ov=msg_ov,
+                             msg_srap=msg_srap,
                              srap_power=abs(max_srap_power),
                              solved_by_srap=solved_by_srap)
-
-                # else:
-                #
-                #     if detailed_massive_report:
-                #         # self.add(time_index=t if t is not None else 0,
-                #         #          base_name=numerical_circuit.branch_data.names[m],
-                #         #          base_uuid=calc_branches[m].idtag,
-                #         #          base_flow=b_flow,
-                #         #          base_rating=numerical_circuit.branch_data.rates[m],
-                #         #          base_loading=abs(base_loading[m] * 100.0),
-                #         #          contingency_idx=contingency_idx,
-                #         #          contingency_name=contingency_group.name,
-                #         #          contingency_uuid=contingency_group.idtag,
-                #         #          post_contingency_flow=c_flow,
-                #         #          contingency_rating=numerical_circuit.branch_data.contingency_rates[m],
-                #         #          post_contingency_loading=abs(contingency_loadings[m]) * 100.0)
-                #
-                #         self.add(time_index=t if t is not None else 0,  # --------->Convertir a fecha
-                #                  base_uuid=calc_branches[m].idtag,  # --------->Cambiar a CCAA1
-                #                  contingency_uuid=contingency_group.idtag,  # --------->Cambiar a CCAA2
-                #                  base_name=numerical_circuit.branch_data.names[m],
-                #                  contingency_name=contingency_group.name,
-                #                  base_rating=numerical_circuit.branch_data.rates[m],
-                #                  contingency_rating=numerical_circuit.branch_data.contingency_rates[m],
-                #                  srap_rating=srap_ratings[m],
-                #                  base_flow=abs(b_flow),
-                #                  post_contingency_flow=abs(c_flow),
-                #                  post_srap_flow=abs(c_flow) - 0,
-                #                  base_loading=abs(base_loading[m]),
-                #                  post_contingency_loading=abs(contingency_loadings[m]) ,
-                #                  post_srap_loading=(abs(c_flow) - 0)  / (
-                #                              numerical_circuit.rates[m] + 1e-9),
-                #                  msg_ov=msg_ov,
-                #                  msg_srap=msg_srap,
-                #                  srap_power=abs(max_srap_power),
-                #                  solved_by_srap= False)

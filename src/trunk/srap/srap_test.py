@@ -45,7 +45,7 @@ con_drv = ContingencyAnalysisDriver(grid=grid,
 con_drv.run()
 
 test2_result_a = con_drv.results.report.entries[0].solved_by_srap # Este debe ser negativo. El grupo que aplicarían SRAP serían el 2 (con un limite de 1 va a entrar 1 del generador 2), insuficiente para resolver
-test2_result_b =  np.around(con_drv.results.report.entries[0].srap_power, decimals=3) == 0.523 #Este es el valor de la ptdf del generador correcto, el que mas influencia proporciona
+test2_result_b = np.around(con_drv.results.report.entries[0].srap_power, decimals=3) == 0.523 #Este es el valor de la ptdf del generador correcto, el que mas influencia proporciona
 
 #test 3
 print("Running contingency analysis...")
@@ -101,7 +101,7 @@ con_drv = ContingencyAnalysisDriver(grid=grid,
 con_drv.run()
 
 test5_result_a= con_drv.results.report.entries[0].solved_by_srap # Este debe ser negativo. El grupo que aplicarían SRAP serían el 2 (con un limite de 1 va a entrar 1 del generador 2), insuficiente para resolver
-test5_result_b =  np.around(con_drv.results.report.entries[0].srap_power, decimals=3) == -0.523 #Este es el valor de la ptdf del generador correcto, el que mas influencia proporciona
+test5_result_b = np.around(con_drv.results.report.entries[0].srap_power, decimals=3) == -0.523 #Este es el valor de la ptdf del generador correcto, el que mas influencia proporciona
 
 #test 6
 print("Running contingency analysis...")

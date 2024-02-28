@@ -86,7 +86,8 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
             n_fluid_node=self.grid.get_fluid_nodes_number(),
             n_fluid_path=self.grid.get_fluid_paths_number(),
             n_fluid_injection=self.grid.get_fluid_injection_number(),
-            time_array=self.grid.time_profile[self.time_indices] if self.time_indices is not None else [datetime.datetime.now()],
+            time_array=self.grid.time_profile[self.time_indices] if self.time_indices is not None else [
+                datetime.datetime.now()],
             bus_types=np.ones(self.grid.get_bus_number(), dtype=int),
             clustering_results=clustering_results)
 
@@ -127,6 +128,9 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                                          zonal_grouping=self.options.zonal_grouping,
                                          skip_generation_limits=self.options.skip_generation_limits,
                                          consider_contingencies=self.options.consider_contingencies,
+                                         unit_Commitment=self.options.unit_commitment,
+                                         ramp_constraints=self.options.unit_commitment,
+                                         all_generators_fixed=False,
                                          lodf_threshold=self.options.lodf_tolerance,
                                          maximize_inter_area_flow=self.options.maximize_flows,
                                          areas_from=self.options.areas_from,
@@ -220,7 +224,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
             # show progress message
             print(start_, ':', end_, ' [', end_ - start_, ']')
             self.report_text('Running OPF for the time group {0} '
-                                    'start {1} - end {2} in external solver...'.format(i, start_, end_))
+                             'start {1} - end {2} in external solver...'.format(i, start_, end_))
 
             # run an opf for the group interval only if the group is within the start:end boundaries
             # DC optimal power flow
@@ -230,6 +234,9 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                                          zonal_grouping=self.options.zonal_grouping,
                                          skip_generation_limits=self.options.skip_generation_limits,
                                          consider_contingencies=self.options.consider_contingencies,
+                                         unit_Commitment=self.options.unit_commitment,
+                                         ramp_constraints=self.options.unit_commitment,
+                                         all_generators_fixed=False,
                                          lodf_threshold=self.options.lodf_tolerance,
                                          maximize_inter_area_flow=self.options.maximize_flows,
                                          areas_from=self.options.areas_from,
@@ -238,7 +245,8 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                                          logger=self.logger,
                                          export_model_fname=self.options.export_model_fname)
 
-            self.results.voltage[time_indices, :] = np.ones((opf_vars.nt, opf_vars.nbus)) * np.exp(1j * opf_vars.bus_vars.theta)
+            self.results.voltage[time_indices, :] = np.ones((opf_vars.nt, opf_vars.nbus)) * np.exp(
+                1j * opf_vars.bus_vars.theta)
             self.results.bus_shadow_prices[time_indices, :] = opf_vars.bus_vars.shadow_prices
 
             self.results.load_shedding[time_indices, :] = opf_vars.load_vars.shedding
@@ -257,7 +265,8 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
 
             self.results.Sf[time_indices, :] = opf_vars.branch_vars.flows
             self.results.St[time_indices, :] = -opf_vars.branch_vars.flows
-            self.results.overloads[time_indices, :] = opf_vars.branch_vars.flow_slacks_pos - opf_vars.branch_vars.flow_slacks_neg
+            self.results.overloads[time_indices,
+            :] = opf_vars.branch_vars.flow_slacks_pos - opf_vars.branch_vars.flow_slacks_neg
             self.results.loading[time_indices, :] = opf_vars.branch_vars.loading
             self.results.phase_shift[time_indices, :] = opf_vars.branch_vars.tap_angles
 

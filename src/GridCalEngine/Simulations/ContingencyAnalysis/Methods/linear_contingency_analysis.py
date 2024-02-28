@@ -51,8 +51,8 @@ def linear_contingency_analysis(grid: MultiCircuit,
 
     area_names, bus_area_indices, F, T, hvdc_F, hvdc_T = grid.get_branch_areas_info()
 
-    #area_names[bus_area_indices[F[m]]]
-    #Tengo que pasar el F, el T, el bus_area_indices y el area_names
+    # area_names[bus_area_indices[F[m]]]
+    # Tengo que pasar el F, el T, el bus_area_indices y el area_names
 
     # declare the results
     results = ContingencyAnalysisResults(ncon=len(grid.contingency_groups),

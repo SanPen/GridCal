@@ -5297,7 +5297,7 @@
                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Dead band over the SRAP rating.&lt;/p&gt;&lt;p&gt;If greater than zero, the SRAP is investigated for values over the branch protections rating until the specified value.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="text">
-                  <string>Srap dead band</string>
+                  <string>SRAP dead band</string>
                  </property>
                 </widget>
                </item>
@@ -5555,7 +5555,14 @@
                 </widget>
                </item>
                <item row="7" column="1">
-                <widget class="QDoubleSpinBox" name="contingency_deadband_SpinBox"/>
+                <widget class="QDoubleSpinBox" name="contingency_deadband_SpinBox">
+                 <property name="suffix">
+                  <string> %</string>
+                 </property>
+                 <property name="decimals">
+                  <number>1</number>
+                 </property>
+                </widget>
                </item>
               </layout>
              </widget>
