@@ -28,7 +28,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="336ac068-5f36-44a4-9f98-8909f6be5848" name="Changes" comment="Long report checked. ADding extra filet (sensitivity moncont wip) Small improvements needed: &#10;- Areas and time&#10;- Top N considering only positives&#10;- Still some comments to delete when checked with Santi">
+    <list default="true" id="336ac068-5f36-44a4-9f98-8909f6be5848" name="Changes" comment="Long report checked. Fixing small issue in areas. Small improvements needed: &#10;- Time lonf format&#10;- Top N considering only positives&#10;- Still some comments to delete when checked with Santi">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -1300,20 +1300,6 @@
       <workItem from="1708610734171" duration="8802000" />
       <workItem from="1708632097466" duration="9574000" />
     </task>
-    <task id="LOCAL-00318" summary="Added if condition to prevent bug with time series">
-      <created>1658234803791</created>
-      <option name="number" value="00318" />
-      <option name="presentableId" value="LOCAL-00318" />
-      <option name="project" value="LOCAL" />
-      <updated>1658234803791</updated>
-    </task>
-    <task id="LOCAL-00319" summary="4.5.5">
-      <created>1658390864104</created>
-      <option name="number" value="00319" />
-      <option name="presentableId" value="LOCAL-00319" />
-      <option name="project" value="LOCAL" />
-      <updated>1658390864104</updated>
-    </task>
     <task id="LOCAL-00320" summary="Improved newtonpa integration">
       <created>1658852227239</created>
       <option name="number" value="00320" />
@@ -1643,7 +1629,21 @@
       <option name="project" value="LOCAL" />
       <updated>1709121703560</updated>
     </task>
-    <option name="localTasksCounter" value="473" />
+    <task id="LOCAL-00473" summary="Long report checked. Adding extra issues (sensitivity moncont included, areas included) Small improvements needed: &#10;- Time lonf format&#10;- Top N considering only positives&#10;- Still some comments to delete when checked with Santi">
+      <created>1709129715274</created>
+      <option name="number" value="00473" />
+      <option name="presentableId" value="LOCAL-00473" />
+      <option name="project" value="LOCAL" />
+      <updated>1709129715274</updated>
+    </task>
+    <task id="LOCAL-00474" summary="Long report checked. Fixing small issue in areas. Small improvements needed: &#10;- Time lonf format&#10;- Top N considering only positives&#10;- Still some comments to delete when checked with Santi">
+      <created>1709130515974</created>
+      <option name="number" value="00474" />
+      <option name="presentableId" value="LOCAL-00474" />
+      <option name="project" value="LOCAL" />
+      <updated>1709130515974</updated>
+    </task>
+    <option name="localTasksCounter" value="475" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1704,8 +1704,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="CGMES file header import and data parser modified for version checking" />
-    <MESSAGE value="Added control_bus_prof to the GeneratorParent" />
     <MESSAGE value="Fixed broken import in the docs" />
     <MESSAGE value="added latex export of the gridcal model" />
     <MESSAGE value="Improved the DC power flow to be as matpower" />
@@ -1729,7 +1727,9 @@
     <MESSAGE value="starting new contingencies logic (wip4).  reporting base case." />
     <MESSAGE value="Long report checked. Small improvements needed: &#10;- Areas and time&#10;- Top N considering only positives&#10;- Still some comments to delete when checked with Santi" />
     <MESSAGE value="Long report checked. ADding extra filet (sensitivity moncont wip) Small improvements needed: &#10;- Areas and time&#10;- Top N considering only positives&#10;- Still some comments to delete when checked with Santi" />
-    <option name="LAST_COMMIT_MESSAGE" value="Long report checked. ADding extra filet (sensitivity moncont wip) Small improvements needed: &#10;- Areas and time&#10;- Top N considering only positives&#10;- Still some comments to delete when checked with Santi" />
+    <MESSAGE value="Long report checked. Adding extra issues (sensitivity moncont included, areas included) Small improvements needed: &#10;- Time lonf format&#10;- Top N considering only positives&#10;- Still some comments to delete when checked with Santi" />
+    <MESSAGE value="Long report checked. Fixing small issue in areas. Small improvements needed: &#10;- Time lonf format&#10;- Top N considering only positives&#10;- Still some comments to delete when checked with Santi" />
+    <option name="LAST_COMMIT_MESSAGE" value="Long report checked. Fixing small issue in areas. Small improvements needed: &#10;- Time lonf format&#10;- Top N considering only positives&#10;- Still some comments to delete when checked with Santi" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2123,19 +2123,14 @@
           <option name="timeStamp" value="1397" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/Methods/srap.py</url>
-          <line>155</line>
-          <option name="timeStamp" value="1410" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/contingencies_report.py</url>
-          <line>552</line>
-          <option name="timeStamp" value="1411" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/contingency_analysis_ts_results.py</url>
           <line>216</line>
           <option name="timeStamp" value="1412" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/contingency_analysis_ts_results.py</url>
+          <line>173</line>
+          <option name="timeStamp" value="1473" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
