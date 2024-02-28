@@ -117,8 +117,8 @@ class ContingencyTableEntry:
                  # srap_bus_indices: IntVec = None):
                 #
                 time_index: int,
-                base_uuid: str,
-                contingency_uuid: str,
+                area_from: str,
+                area_to: str,
                 base_name: str,
                 contingency_name: str,
                 base_rating: float,
@@ -173,8 +173,8 @@ class ContingencyTableEntry:
         # self.srap_bus_indices: IntVec = srap_bus_indices if srap_bus_indices is not None else np.zeros(0, dtype=int)
 
         self.time_index: int = time_index
-        self.base_uuid: str = base_uuid
-        self.contingency_uuid: str = contingency_uuid
+        self.area_from: str = area_from
+        self.area_to: str = area_to
         self.base_name: str = base_name
         self.contingency_name: str = contingency_name
         self.base_rating: float = base_rating
@@ -220,8 +220,8 @@ class ContingencyTableEntry:
         #         ",".join(self.srap_bus_indices)]
 
         return [self.time_index,
-                self.base_uuid,
-                self.contingency_uuid,
+                self.area_from,
+                self.area_to,
                 self.base_name,
                 self.contingency_name,
                 self.base_rating,
