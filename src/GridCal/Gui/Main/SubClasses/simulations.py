@@ -960,7 +960,7 @@ class SimulationsMain(TimeEventsMain):
             srap_deadband=self.ui.srap_deadband_doubleSpinBox.value(),
             srap_rever_to_nominal_rating=self.ui.srap_revert_to_nominal_rating_checkBox.isChecked(),
             detailed_massive_report=self.ui.contingency_detailed_massive_report_checkBox.isChecked(),
-            contingency_deadband=self.ui.contingency_deadband_spinBox.value(),
+            contingency_deadband=self.ui.contingency_deadband_SpinBox.value(),
             engine=self.contingency_engines_dict[self.ui.contingencyEngineComboBox.currentText()]
         )
 
