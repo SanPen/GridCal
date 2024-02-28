@@ -245,8 +245,8 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                                          logger=self.logger,
                                          export_model_fname=self.options.export_model_fname)
 
-            self.results.voltage[time_indices, :] = np.ones((opf_vars.nt, opf_vars.nbus)) * np.exp(
-                1j * opf_vars.bus_vars.theta)
+            self.results.voltage[time_indices, :] = (np.ones((opf_vars.nt, opf_vars.nbus))
+                                                     * np.exp(1j * opf_vars.bus_vars.theta))
             self.results.bus_shadow_prices[time_indices, :] = opf_vars.bus_vars.shadow_prices
 
             self.results.load_shedding[time_indices, :] = opf_vars.load_vars.shedding
