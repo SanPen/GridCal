@@ -49,6 +49,8 @@ def linear_contingency_analysis(grid: MultiCircuit,
 
     calc_branches = grid.get_branches_wo_hvdc()
 
+    area_names, bus_area_indices, F, T, hvdc_F, hvdc_T = grid.get_branch_areas_info()
+
     # declare the results
     results = ContingencyAnalysisResults(ncon=len(grid.contingency_groups),
                                          nbr=numerical_circuit.nbr,

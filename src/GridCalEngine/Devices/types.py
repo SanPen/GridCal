@@ -15,7 +15,6 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from typing import Union
-from GridCalEngine.Devices.Parents import *
 from GridCalEngine.Devices.Aggregation import *
 from GridCalEngine.Devices.Branches import *
 from GridCalEngine.Devices.Injections import *
@@ -24,14 +23,56 @@ from GridCalEngine.Devices.Associations import *
 from GridCalEngine.Devices.Fluid import *
 
 
-INJECTION_DEVICE_TYPES = Union[Generator, Battery, Load, ExternalGrid, StaticGenerator, Shunt]
+INJECTION_DEVICE_TYPES = Union[
+    Generator,
+    Battery,
+    Load,
+    ExternalGrid,
+    StaticGenerator,
+    Shunt,
+    LinearShunt,
+    CurrentInjection
+]
 
-BRANCH_TYPES = Union[Line, DcLine, Transformer2W, HvdcLine, VSC, UPFC, Winding, Switch]
+BRANCH_TYPES = Union[
+    Line,
+    DcLine,
+    Transformer2W,
+    HvdcLine,
+    VSC,
+    UPFC,
+    Winding,
+    Switch
+]
 
-FLUID_TYPES = Union[FluidNode, FluidPath, FluidP2x, FluidTurbine, FluidPump]
+FLUID_TYPES = Union[
+    FluidNode,
+    FluidPath,
+    FluidP2x,
+    FluidTurbine,
+    FluidPump
+]
 
-SUBSTATION_TYPES = Union[Substation, Bus, ConnectivityNode, BusBar]
+SUBSTATION_TYPES = Union[
+    Substation,
+    Bus,
+    ConnectivityNode,
+    BusBar
+]
 
-ALL_DEV_TYPES = Union[INJECTION_DEVICE_TYPES, BRANCH_TYPES, FLUID_TYPES, SUBSTATION_TYPES,
-                      Transformer3W, OverheadLineType, Wire, Area, Zone, TransformerType,
-                      EmissionGas, GeneratorEmission, GeneratorFuel, GeneratorTechnology]
+ALL_DEV_TYPES = Union[
+    INJECTION_DEVICE_TYPES,
+    BRANCH_TYPES,
+    FLUID_TYPES,
+    SUBSTATION_TYPES,
+    Transformer3W,
+    OverheadLineType,
+    Wire,
+    Area,
+    Zone,
+    TransformerType,
+    EmissionGas,
+    GeneratorEmission,
+    GeneratorFuel,
+    GeneratorTechnology
+]

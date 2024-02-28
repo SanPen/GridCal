@@ -84,35 +84,16 @@ if __name__ == '__main__':
     entries = [
         # {"list_name": "", "singular_name": "", "plural_name": "", "cls_name": "", },
 
-        {"list_name": "pi_measurements",
-         "singular_name": "pi_measurement",
-         "plural_name": "pi_measurements",
-         "cls_name": "PiMeasurement", },
+        {"list_name": "current_injections",
+         "singular_name": "current_injection",
+         "plural_name": "current_injections",
+         "cls_name": "CurrentInjection", },
 
-        {"list_name": "qi_measurements",
-         "singular_name": "qi_measurement",
-         "plural_name": "qi_measurements",
-         "cls_name": "QiMeasurement", },
+        {"list_name": "linear_shunts",
+         "singular_name": "linear_shunt",
+         "plural_name": "linear_shunts",
+         "cls_name": "LinearShunt", },
 
-        {"list_name": "vm_measurements",
-         "singular_name": "vm_measurement",
-         "plural_name": "vm_measurements",
-         "cls_name": "VmMeasurement", },
-
-        {"list_name": "pf_measurements",
-         "singular_name": "pf_measurement",
-         "plural_name": "pf_measurements",
-         "cls_name": "PfMeasurement", },
-
-        {"list_name": "qf_measurements",
-         "singular_name": "qf_measurement",
-         "plural_name": "qf_measurements",
-         "cls_name": "QfMeasurement", },
-
-        {"list_name": "if_measurements",
-         "singular_name": "if_measurement",
-         "plural_name": "if_measurements",
-         "cls_name": "IfMeasurement", },
     ]
 
     with open('code_generated.py', "w") as f:

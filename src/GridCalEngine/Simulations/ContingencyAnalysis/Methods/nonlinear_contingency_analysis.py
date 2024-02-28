@@ -53,6 +53,8 @@ def nonlinear_contingency_analysis(grid: MultiCircuit,
     else:
         pf_opts = options.pf_options
 
+    area_names, bus_area_indices, F, T, hvdc_F, hvdc_T = grid.get_branch_areas_info()
+
     # declare the results
     results = ContingencyAnalysisResults(ncon=len(grid.contingency_groups),
                                          nbr=numerical_circuit.nbr,
