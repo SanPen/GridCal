@@ -178,5 +178,23 @@ def test_dc_pf_ieee14_ps():
     assert np.allclose(power_flow.results.Sf.real, Pf_test, atol=1e-3)
 
 
-if __name__ == '__main__':
-    test_ieee_grids()
+def test_zip() -> None:
+    """
+    Test the power flow with ZIP loads compared to PSSe
+    """
+    options = PowerFlowOptions()
+
+    fname = os.path.join('data', 'grids', 'ZIP_load_example.raw')
+    main_circuit = FileOpen(fname).open()
+    power_flow = PowerFlowDriver(main_circuit, options)
+    power_flow.run()
+
+    # Data from Matpower 8
+    Vm_psse = np.array([1.00000, 0.98933, 0.98560, 0.98579])
+    Va_psse = np.deg2rad(np.array([0.00000, -5.1287, -9.1535, -11.4464]))
+
+    Vm = np.abs(power_flow.results.voltage)
+    Va = np.angle(power_flow.results.voltage, deg=False)
+
+    assert np.allclose(Vm_psse, Vm, atol=1e-3)
+    assert np.allclose(Va_psse, Va, atol=1e-3)
