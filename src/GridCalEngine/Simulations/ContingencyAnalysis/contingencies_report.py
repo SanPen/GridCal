@@ -101,22 +101,6 @@ class ContingencyTableEntry:
                "Solved with SRAP"]
 
     def __init__(self,
-                 # time_index: int,
-                 # base_name: str,
-                 # base_uuid: str,
-                 # base_flow: complex,
-                 # base_rating: float,
-                 # base_loading: float,
-                 # contingency_idx: int,
-                 # contingency_name: str,
-                 # contingency_uuid: str,
-                 # post_contingency_flow: complex,
-                 # contingency_rating: float,
-                 # post_contingency_loading: float,
-                 # solved_by_srap: bool = False,
-                 # srap_power: float = 0.0,
-                 # srap_bus_indices: IntVec = None):
-                 #
                  time_index: int,
                  area_from: str,
                  area_to: str,
@@ -363,6 +347,35 @@ class ContingencyResultsReport:
         :return:
         """
         df = self.get_df()
+
+        #
+        # # Loading to consider
+        # # OJO ES NECESARIO TENER EN CUENTA EL FLUJO EN BASE DE LAS DE EN BASE
+        #
+        # # Filter by the overloads not acceptables
+        # df = df[df["Overload"] == "Overload not acceptable"]
+        #
+        # # Group de columns by Area1, Area2, Monitored, COntingency
+        # df_grp = df.groupby(["Area 1", "Area 2", "Monitored", "Contingency","Base rating (MW)","Contingency rating (MW)","SRAP rating (MW)"])
+        #
+        # #Compute the columns
+        #
+        # ov_max = df_grp["C"].max()
+        # ov_max_date = df_grp["D"].idxmax().apply(lambda x: df.loc[x, "Time"])
+        # ov_avg = df_grp["C"].mean()
+        # ov_desvest = df_grp["C"].std()
+        # ov_count = df_grp["C"].count()
+        #
+        # "Overload max (pu)"
+        # "Date Overload max"
+        # "Overload average (pu)"
+        # "Standard deviation (pu)"
+        # # "Hours with overload (h)"
+        # "Overload count (h x ov)"
+
+
+
+
         return df
 
     def __iadd__(self, other: "ContingencyResultsReport"):
@@ -509,9 +522,13 @@ class ContingencyResultsReport:
                     post_srap_flow = c_flow
                     max_srap_power = 0.0
                 else:
-                    msg_srap = ''
+                    msg_srap = 'Error'
                     ov_status = 0
                     cond_srap = False
+                    post_srap_flow = c_flow
+                    msg_ov = 'Error'
+                    max_srap_power = -99999.999
+                    solved_by_srap = False
 
                 if using_srap and cond_srap:
 
@@ -551,13 +568,7 @@ class ContingencyResultsReport:
                     if solved_by_srap and ov_status == 2:
                         msg_ov = 'Overload acceptable'
                     else:
-                        msg_ov = ''
-                else:
-                    post_srap_flow = 0.0
-                    msg_ov = ''
-                    msg_srap = ''
-                    max_srap_power = 0.0
-                    solved_by_srap = False
+                        msg_ov = 'Overload not acceptable'
 
                 if detailed_massive_report:
                     self.add(time_index=t if t is not None else 0,  # --------->Convertir a fecha
