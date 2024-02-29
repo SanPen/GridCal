@@ -614,30 +614,46 @@ def test_compensated_ptdf():
     """
     Compare compensated ptdf from network with contingencies with ptdf of the same network with that branch disabled.
     """
-    fraw = os.path.join('data', 'grids', 'RAW', 'IEEE 14 bus.raw')
-    fgrid = os.path.join('data', 'grids', 'IEEE14-1_2-B2.gridcal')
+    for case in [
+        {
+            'orig': os.path.join('data', 'grids', 'RAW', 'IEEE 14 bus.raw'),
+            'conti': os.path.join('data', 'grids', 'IEEE14-1_2-B2.gridcal')
+        },
+        {
+            'orig': os.path.join('data', 'grids', 'RAW', 'IEEE 14 bus.raw'),
+            'conti': os.path.join('data', 'grids', 'IEEE14-9_14_1.gridcal')
+        },
+        {
+            'orig': os.path.join('data', 'grids', 'RAW', 'IEEE 30 bus.raw'),
+            'conti': os.path.join('data', 'grids', 'IEEE30-27_29_1.gridcal'),
+        },
+        {
+            'orig': os.path.join('data', 'grids', 'RAW', 'IEEE 118 Bus v2.raw'),
+            'conti': os.path.join('data', 'grids', 'IEEE118-91_92_1.gridcal'),
+        }
+    ]:
 
-    main_circuit = FileOpen(fgrid).open()
+        main_circuit = FileOpen(case['conti']).open()
 
-    linear_analysis = LinearAnalysisDriver(grid=main_circuit)
-    linear_analysis.run()
+        linear_analysis = LinearAnalysisDriver(grid=main_circuit)
+        linear_analysis.run()
 
-    linear_multi_contingency = LinearMultiContingencies(grid=main_circuit)
-    linear_multi_contingency.compute(ptdf=linear_analysis.results.PTDF, lodf=linear_analysis.results.LODF)
+        linear_multi_contingency = LinearMultiContingencies(grid=main_circuit)
+        linear_multi_contingency.compute(ptdf=linear_analysis.results.PTDF, lodf=linear_analysis.results.LODF)
 
-    main_circuit_raw = FileOpen(fraw).open()
-    #main_circuit_raw.delete_line(main_circuit_raw.get_lines()[0]) # Disable branch 1_2
-    line = '1_2_1'
-    for l in main_circuit_raw.lines:
-        if l.code == line:
-            l.active = False
+        main_circuit_raw = FileOpen(case['orig']).open()
+        #main_circuit_raw.delete_line(main_circuit_raw.get_lines()[0]) # Disable branch 1_2
+        line = main_circuit.contingencies[0].code
+        for l in main_circuit_raw.lines:
+            if l.code == line:
+                l.active = False
 
 
-    linear_analysis_raw = LinearAnalysisDriver(grid=main_circuit_raw)
-    linear_analysis_raw.run()
+        linear_analysis_raw = LinearAnalysisDriver(grid=main_circuit_raw)
+        linear_analysis_raw.run()
 
-    ok = np.allclose(linear_multi_contingency.multi_contingencies[0].compensated_ptdf_factors.todense(), linear_analysis_raw.results.PTDF, atol=1e-1)
-    assert ok
+        ok = np.allclose(linear_multi_contingency.multi_contingencies[0].compensated_ptdf_factors.todense(), linear_analysis_raw.results.PTDF, atol=1e-1)
+        assert ok
 
 
 if __name__ == '__main__':
