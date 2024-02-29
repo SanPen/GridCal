@@ -35,7 +35,7 @@ import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.types import ALL_DEV_TYPES, BRANCH_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES
 from GridCalEngine.basic_structures import Logger
 import GridCalEngine.Topology.topology as tp
-from GridCalEngine.enumerations import DeviceType, ResultTypes
+from GridCalEngine.enumerations import DeviceType
 
 
 def get_system_user() -> str:
@@ -1821,6 +1821,15 @@ class MultiCircuit:
         elif device_type == DeviceType.IfMeasurementDevice:
             return self.get_if_measurements()
 
+        elif device_type == DeviceType.LoadLikeDevice:
+            return self.get_load_like_devices()
+
+        elif device_type == DeviceType.NoDevice:
+            return list()
+
+        elif device_type == DeviceType.TimeDevice:
+            return self.get_time_array()
+
         else:
             raise Exception('Element type not understood ' + str(device_type))
 
@@ -2195,66 +2204,6 @@ class MultiCircuit:
             return {elm.code: elm for elm in self.get_elements_by_type(element_type)}
         else:
             return {elm.idtag: elm for elm in self.get_elements_by_type(element_type)}
-
-    def get_devices_list(self, result_type: ResultTypes) -> List[ALL_DEV_TYPES]:
-        """
-        Given a result type, get the matching list of devices
-        :param result_type: ResultTypes
-        :return: List of devices
-        """
-        name: str = result_type.value[0]
-        device_tpe: DeviceType = result_type.value[1]
-
-        if device_tpe == DeviceType.BusDevice:
-            return self.get_buses()
-
-        elif device_tpe == DeviceType.BranchDevice:
-            return self.get_branches_wo_hvdc()
-
-        elif device_tpe == DeviceType.Transformer2WDevice:
-            return self.get_transformers2w()
-
-        elif device_tpe == DeviceType.BatteryDevice:
-            return self.get_batteries()
-
-        elif device_tpe == DeviceType.LoadDevice:
-            return self.get_loads()
-
-        elif device_tpe == DeviceType.GeneratorDevice:
-            return self.get_generators()
-
-        elif device_tpe == DeviceType.LinearShuntDevice:
-            return self.get_linear_shunts()
-
-        elif device_tpe == DeviceType.CurrentInjectionDevice:
-            return self.get_current_injections()
-
-        elif device_tpe == DeviceType.FluidNodeDevice:
-            return self.get_fluid_devices()
-
-        elif device_tpe == DeviceType.FluidPathDevice:
-            return self.get_fluid_paths()
-
-        elif device_tpe == DeviceType.FluidInjectionDevice:
-            return self.get_fluid_injections()
-
-        elif device_tpe == DeviceType.FluidTurbineDevice:
-            return self.get_fluid_turbines()
-
-        elif device_tpe == DeviceType.FluidPumpDevice:
-            return self.get_fluid_pumps()
-
-        elif device_tpe == DeviceType.FluidP2XDevice:
-            return self.get_fluid_p2xs()
-
-        elif device_tpe == DeviceType.HVDCLineDevice:
-            return self.get_hvdc()
-
-        elif device_tpe == DeviceType.NoDevice:
-            return list()
-
-        else:
-            raise Exception("Unknown device type")
 
     def copy(self) -> "MultiCircuit":
         """

@@ -468,7 +468,9 @@ class AvailableTransferCapacityResults(ResultsTemplate):
 
 
 class AvailableTransferCapacityOptions:
-
+    """
+    AvailableTransferCapacityOptions
+    """
     def __init__(self, distributed_slack=True, correct_values=True, use_provided_flows=False,
                  bus_idx_from=list(), bus_idx_to=list(), idx_br=list(), sense_br=list(), Pf=None,
                  idx_hvdc_br=list(), sense_hvdc_br=list(), Pf_hvdc=None,

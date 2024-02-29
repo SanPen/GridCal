@@ -202,7 +202,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         return self.results
 
-    def opf_by_groups(self):
+    def opf_by_groups(self) -> None:
         """
         Run the OPF by groups
         """
@@ -257,16 +257,14 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
             self.results.generator_power[time_indices, :] = opf_vars.gen_vars.p
             self.results.generator_shedding[time_indices, :] = opf_vars.gen_vars.shedding
             self.results.generator_cost[time_indices, :] = opf_vars.gen_vars.cost
-            # self.results.generator_fuel[time_indices, :] = opf_vars.gen_vars.fuel
-            # self.results.generator_emissions[time_indices, :] = opf_vars.gen_vars.emissions
             self.results.generator_producing[time_indices, :] = opf_vars.gen_vars.producing
             self.results.generator_starting_up[time_indices, :] = opf_vars.gen_vars.starting_up
             self.results.generator_shutting_down[time_indices, :] = opf_vars.gen_vars.shedding
 
             self.results.Sf[time_indices, :] = opf_vars.branch_vars.flows
             self.results.St[time_indices, :] = -opf_vars.branch_vars.flows
-            self.results.overloads[time_indices,
-            :] = opf_vars.branch_vars.flow_slacks_pos - opf_vars.branch_vars.flow_slacks_neg
+            self.results.overloads[time_indices, :] = (opf_vars.branch_vars.flow_slacks_pos
+                                                       - opf_vars.branch_vars.flow_slacks_neg)
             self.results.loading[time_indices, :] = opf_vars.branch_vars.loading
             self.results.phase_shift[time_indices, :] = opf_vars.branch_vars.tap_angles
 

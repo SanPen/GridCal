@@ -20,7 +20,7 @@ from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.basic_structures import DateVec, IntVec, StrVec, CxMat, Mat
-from GridCalEngine.enumerations import StudyResultsType, ResultTypes
+from GridCalEngine.enumerations import StudyResultsType, ResultTypes, DeviceType
 
 
 class LinearAnalysisTimeSeriesResults(ResultsTemplate):
@@ -103,12 +103,36 @@ class LinearAnalysisTimeSeriesResults(ResultsTemplate):
         :param result_type:
         :return: ResultsModel instance
         """
+        # if self.time_array is not None:
+        #     index = self.time_array
+        # else:
+        #     index = list(range(data.shape[0]))
 
         if result_type == ResultTypes.BusActivePower:
-            labels = self.bus_names
-            data = self.S.real
-            y_label = '(MW)'
-            title = 'Bus active power '
+
+            return ResultsTable(
+                data=self.S.real,
+                index=self.time_array,
+                idx_device_type=DeviceType.TimeDevice,
+                columns=self.bus_names,
+                cols_device_type=DeviceType.BusDevice,
+                title=result_type.value,
+                ylabel='(MW)',
+                units='(MW)'
+            )
+
+        elif result_type == ResultTypes.BusVoltageModule:
+
+            return ResultsTable(
+                data=np.abs(self.voltage),
+                index=self.time_array,
+                idx_device_type=DeviceType.TimeDevice,
+                columns=self.bus_names,
+                cols_device_type=DeviceType.BusDevice,
+                title=result_type.value,
+                ylabel='(p.u.)',
+                units='(p.u.)'
+            )
 
         elif result_type == ResultTypes.BranchActivePowerFrom:
             labels = self.branch_names
@@ -117,37 +141,32 @@ class LinearAnalysisTimeSeriesResults(ResultsTemplate):
             title = 'Branch power '
 
         elif result_type == ResultTypes.BranchLoading:
-            labels = self.branch_names
-            data = np.abs(self.loading) * 100
-            y_label = '(%)'
-            title = 'Branch loading '
+
+            return ResultsTable(
+                data=np.abs(self.loading) * 100,
+                index=self.time_array,
+                idx_device_type=DeviceType.TimeDevice,
+                columns=self.branch_names,
+                cols_device_type=DeviceType.BranchDevice,
+                title=result_type.value,
+                ylabel='(%)',
+                units='(%)'
+            )
 
         elif result_type == ResultTypes.BranchLosses:
-            labels = self.branch_names
-            data = self.losses
-            y_label = '(MVA)'
-            title = 'Branch losses'
 
-        elif result_type == ResultTypes.BusVoltageModule:
-            labels = self.bus_names
-            data = np.abs(self.voltage)
-            y_label = '(p.u.)'
-            title = 'Bus voltage'
+            return ResultsTable(
+                data=self.losses,
+                index=self.time_array,
+                idx_device_type=DeviceType.TimeDevice,
+                columns=self.branch_names,
+                cols_device_type=DeviceType.BranchDevice,
+                title=result_type.value,
+                ylabel='(MW)',
+                units='(MW)'
+            )
 
         else:
             raise Exception('Result type not understood:' + str(result_type))
 
-        if self.time_array is not None:
-            index = self.time_array
-        else:
-            index = list(range(data.shape[0]))
 
-        # assemble model
-        return ResultsTable(
-            data=data,
-            index=index,
-            columns=labels,
-            title=title,
-            ylabel=y_label,
-            units=y_label
-        )

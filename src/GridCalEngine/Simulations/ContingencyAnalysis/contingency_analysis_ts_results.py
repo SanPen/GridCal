@@ -23,7 +23,7 @@ from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Simulations.ContingencyAnalysis.contingencies_report import ContingencyResultsReport
 from GridCalEngine.basic_structures import DateVec, IntVec, StrVec, Mat
-from GridCalEngine.enumerations import StudyResultsType, ResultTypes
+from GridCalEngine.enumerations import StudyResultsType, ResultTypes, DeviceType
 from GridCalEngine.Simulations.Clustering.clustering_results import ClusteringResults
 
 
@@ -173,70 +173,99 @@ class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
         """
 
         if result_type == ResultTypes.MaxContingencyFlows:
-            data = self.max_flows
-            y_label = '(MW)'
-            title = 'Worst contingency Sf '
-            labels = self.branch_names
-            index = pd.to_datetime(self.time_array)
+
+            return ResultsTable(
+                data=self.max_flows,
+                index=pd.to_datetime(self.time_array),
+                columns=self.branch_names,
+                title=result_type.value,
+                units='(MW)',
+                cols_device_type=DeviceType.BranchDevice,
+                idx_device_type=DeviceType.TimeDevice
+            )
 
         elif result_type == ResultTypes.MaxContingencyLoading:
-            data = self.max_loading * 100.0
-            y_label = '(%)'
-            title = 'Worst contingency loading '
-            labels = self.branch_names
-            index = pd.to_datetime(self.time_array)
+
+            return ResultsTable(
+                data=self.max_loading * 100.0,
+                index=pd.to_datetime(self.time_array),
+                columns=self.branch_names,
+                title=result_type.value,
+                units='(%)',
+                cols_device_type=DeviceType.BranchDevice,
+                idx_device_type=DeviceType.TimeDevice
+            )
 
         elif result_type == ResultTypes.ContingencyOverloadSum:
-            data = self.sum_overload
-            y_label = '(MW)'
-            title = result_type.value[0]
-            labels = self.branch_names
-            index = pd.to_datetime(self.time_array)
+
+            return ResultsTable(
+                data=self.sum_overload,
+                index=pd.to_datetime(self.time_array),
+                idx_device_type=DeviceType.TimeDevice,
+                columns=self.branch_names,
+                cols_device_type=DeviceType.BranchDevice,
+                title=result_type.value,
+                units='(MW)'
+            )
 
         elif result_type == ResultTypes.MeanContingencyOverLoading:
-            data = self.mean_overload * 100.0
-            y_label = '(%)'
-            title = result_type.value[0]
-            labels = self.branch_names
-            index = pd.to_datetime(self.time_array)
+
+            return ResultsTable(
+                data=self.mean_overload * 100.0,
+                index=pd.to_datetime(self.time_array),
+                idx_device_type=DeviceType.TimeDevice,
+                columns=self.branch_names,
+                cols_device_type=DeviceType.BranchDevice,
+                title=result_type.value,
+                units='(%)'
+            )
 
         elif result_type == ResultTypes.StdDevContingencyOverLoading:
-            data = self.std_dev_overload * 100.0
-            y_label = '(%)'
-            title = result_type.value[0]
-            labels = self.branch_names
-            index = pd.to_datetime(self.time_array)
+
+            return ResultsTable(
+                data=self.std_dev_overload * 100.0,
+                index=pd.to_datetime(self.time_array),
+                idx_device_type=DeviceType.TimeDevice,
+                columns=self.branch_names,
+                cols_device_type=DeviceType.BranchDevice,
+                title=result_type.value,
+                units='(%)'
+            )
 
         elif result_type == ResultTypes.SrapUsedPower:
-            data = self.srap_used_power
-            y_label = ''
-            title = result_type.value[0]
-            labels = self.bus_names
-            index = self.branch_names
+
+            return ResultsTable(
+                data=self.srap_used_power * 100.0,
+                index=self.branch_names,
+                idx_device_type=DeviceType.BranchDevice,
+                columns=self.bus_names,
+                cols_device_type=DeviceType.BusDevice,
+                title=result_type.value,
+                units='(MW)'
+            )
 
         elif result_type == ResultTypes.ContingencyAnalysisReport:
-            data = self.report.get_data()
-            y_label = ''
-            title = result_type.value[0]
-            labels = self.report.get_headers()
-            index = self.report.get_index()
+
+            return ResultsTable(
+                data=self.report.get_data(),
+                index=self.report.get_index(),
+                idx_device_type=DeviceType.NoDevice,
+                columns=self.report.get_headers(),
+                cols_device_type=DeviceType.NoDevice,
+                title=result_type.value,
+            )
 
         elif result_type == ResultTypes.ContingencyStatisticalAnalysisReport:
             df = self.report.get_summary_table()
-            y_label = ''
-            title = result_type.value[0]
-            data = df.values
-            labels = df.columns.tolist()
-            index = df.index.tolist()
+
+            return ResultsTable(
+                data=df.values,
+                index=df.index.tolist(),
+                idx_device_type=DeviceType.NoDevice,
+                columns=df.columns.tolist(),
+                cols_device_type=DeviceType.NoDevice,
+                title=result_type.value,
+            )
+
         else:
             raise Exception('Result type not understood:' + str(result_type))
-
-        # assemble model
-        mdl = ResultsTable(
-            data=data,
-            index=index,
-            columns=labels,
-            title=title,
-            ylabel=y_label
-        )
-        return mdl
