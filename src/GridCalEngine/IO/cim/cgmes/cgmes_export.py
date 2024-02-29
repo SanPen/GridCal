@@ -1,4 +1,3 @@
-# import polars as pl  # TOOD: REMOVE This dependency ASAP
 from rdflib.util import first
 from rdflib import Graph, RDFS, RDF, Namespace, OWL, IdentifiedNode, plugin
 import rdflib
@@ -164,57 +163,66 @@ class CgmesExporter:
             "SV": sv_graph
         }
 
-        class_filters = {class_name: profiles_info[profiles_info["ClassSimpleName"] == class_name] for class_name
-                         in self.cgmes_circuit.classes}
+        class_filters = {}
+        for class_name in self.cgmes_circuit.classes:
+            filt_class = profiles_info[profiles_info["ClassSimpleName"] == class_name]
+            filters = {}
 
-        for class_name, filt_class in class_filters.items():
+            for _, row in filt_class.iterrows():
+                prop = row["Property-AttributeAssociationSimple"]
+                if prop not in filters:
+                    filters[prop] = {
+                        "Profile": [],
+                        "ClassFullName": row["ClassFullName"],
+                        "Property-AttributeAssociationFull": row["Property-AttributeAssociationFull"],
+                        "Type": row["Type"]
+                    }
+                filters[prop]["Profile"].append(row["Profile"])
+
+            class_filters[class_name] = filters
+
+        for class_name, filters in class_filters.items():
             objects = self.cgmes_circuit.get_objects_list(elm_type=class_name)
-            filters = filt_class.set_index("Property-AttributeAssociationSimple").to_dict()
 
             for obj in objects:
                 obj_dict = obj.__dict__
                 obj_id = rdflib.URIRef("_" + obj.rdfid)
 
                 for attr_name, attr_value in obj_dict.items():
-                    try:
-                        if attr_value is None:
+                    if attr_value is None:
+                        continue
+
+                    if attr_name not in filters:
+                        continue
+
+                    attr_filters = filters[attr_name]
+                    for profile in attr_filters["Profile"]:
+                        graph = graphs_dict.get(profile)
+                        if graph is None:
                             continue
 
-                        if attr_name in filters["Property-AttributeAssociationFull"]:
-                            profile = filters["Profile"][attr_name]
-                            graph = graphs_dict.get(profile)
-
-                            if hasattr(attr_value, "rdfid"):
-                                if graph is not None:
-                                    graph.add((obj_id, RDF.type, rdflib.URIRef(filters["ClassFullName"][attr_name])))
-                                    graph.add((rdflib.URIRef(obj_id), rdflib.URIRef(filters["Property-AttributeAssociationFull"][attr_name]),
-                                               rdflib.URIRef("#_" + attr_value.rdfid)))
-                            else:
-                                enum_type = filters["Type"][attr_name]
-                                enum_dict_key = None
-
-                                if enum_type == "Enumeration":
-                                    enum_dict_key = profile.lower()
-
-                                if enum_dict_key:
-                                    enum_dict_value = enum_dict.get(enum_dict_key)
-                                    enum_value = enum_dict_value.get(str(attr_value))
-
-                                    if graph is not None:
-                                        graph.add((obj_id, RDF.type, rdflib.URIRef(filters["ClassFullName"][attr_name])))
-                                        graph.add((obj_id, rdflib.URIRef(filters["Property-AttributeAssociationFull"][attr_name]),
-                                                   rdflib.URIRef(enum_value)))
-                                else:
-                                    if isinstance(attr_value, bool):
-                                        attr_value = str(attr_value).lower()
-
-                                    if graph is not None:
-                                        graph.add((obj_id, RDF.type, rdflib.URIRef(filters["ClassFullName"][attr_name])))
-                                        graph.add((obj_id, rdflib.URIRef(filters["Property-AttributeAssociationFull"][attr_name]),
-                                                   rdflib.Literal(str(attr_value))))
-
-                    except Exception:
-                        continue
+                        attr_type = attr_filters["Type"]
+                        if attr_type == "Association":
+                            graph.add(
+                                (obj_id, RDF.type, rdflib.URIRef(attr_filters["ClassFullName"])))
+                            graph.add((rdflib.URIRef(obj_id),
+                                       rdflib.URIRef(attr_filters["Property-AttributeAssociationFull"]),
+                                       rdflib.URIRef("#_" + attr_value.rdfid)))
+                        elif attr_type == "Enumeration":
+                            enum_dict_key = profile.lower()
+                            enum_dict_value = enum_dict.get(enum_dict_key)
+                            enum_value = enum_dict_value.get(str(attr_value))
+                            graph.add(
+                                (obj_id, RDF.type, rdflib.URIRef(attr_filters["ClassFullName"])))
+                            graph.add((obj_id, rdflib.URIRef(attr_filters["Property-AttributeAssociationFull"]),
+                                       rdflib.URIRef(enum_value)))
+                        elif attr_type == "Attribute":
+                            if isinstance(attr_value, bool):
+                                attr_value = str(attr_value).lower()
+                            graph.add(
+                                (obj_id, RDF.type, rdflib.URIRef(attr_filters["ClassFullName"])))
+                            graph.add((obj_id, rdflib.URIRef(attr_filters["Property-AttributeAssociationFull"]),
+                                       rdflib.Literal(str(attr_value))))
 
         relative_path_to_files = "export_docs/"
         absolute_path_to_files = os.path.join(current_directory, relative_path_to_files)
