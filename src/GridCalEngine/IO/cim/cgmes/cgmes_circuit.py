@@ -50,6 +50,7 @@ from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.per_lengthdc_line_paramete
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.vs_capability_curve import VsCapabilityCurve
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.vs_converter import VsConverter
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.bus_name_marker import BusNameMarker
+from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.analog_control import AnalogControl
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.control import Control
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.limit import Limit
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.limit_set import LimitSet
@@ -104,6 +105,8 @@ from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.disconnector import Discon
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.earth_fault_compensator import EarthFaultCompensator
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.energy_consumer import EnergyConsumer
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.external_network_injection import ExternalNetworkInjection
+from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.ground import Ground
+from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.ground_disconnector import GroundDisconnector
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.grounding_impedance import GroundingImpedance
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.junction import Junction
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.line import Line
@@ -172,6 +175,7 @@ from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.topological_island import 
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.coordinate_system import CoordinateSystem
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.location import Location
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.position_point import PositionPoint
+
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.full_model import FullModel
 
 
@@ -428,6 +432,7 @@ class CgmesCircuit(BaseCircuit):
             'VsCapabilityCurve': VsCapabilityCurve,
             'VsConverter': VsConverter,
             'BusNameMarker': BusNameMarker,
+            'AnalogControl': AnalogControl,
             'Control': Control,
             'Limit': Limit,
             'LimitSet': LimitSet,
@@ -482,6 +487,8 @@ class CgmesCircuit(BaseCircuit):
             'EarthFaultCompensator': EarthFaultCompensator,
             'EnergyConsumer': EnergyConsumer,
             'ExternalNetworkInjection': ExternalNetworkInjection,
+            'Ground': Ground,
+            'GroundDisconnector': GroundDisconnector,
             'GroundingImpedance': GroundingImpedance,
             'Junction': Junction,
             'Line': Line,
@@ -575,6 +582,7 @@ class CgmesCircuit(BaseCircuit):
         self.VsCapabilityCurve_list: List[VsCapabilityCurve] = list()
         self.VsConverter_list: List[VsConverter] = list()
         self.BusNameMarker_list: List[BusNameMarker] = list()
+        self.AnalogControl_list: List[AnalogControl] = list()
         self.Control_list: List[Control] = list()
         self.Limit_list: List[Limit] = list()
         self.LimitSet_list: List[LimitSet] = list()
@@ -629,6 +637,8 @@ class CgmesCircuit(BaseCircuit):
         self.EarthFaultCompensator_list: List[EarthFaultCompensator] = list()
         self.EnergyConsumer_list: List[EnergyConsumer] = list()
         self.ExternalNetworkInjection_list: List[ExternalNetworkInjection] = list()
+        self.Ground_list: List[Ground] = list()
+        self.GroundDisconnector_list: List[GroundDisconnector] = list()
         self.GroundingImpedance_list: List[GroundingImpedance] = list()
         self.Junction_list: List[Junction] = list()
         self.Line_list: List[Line] = list()
