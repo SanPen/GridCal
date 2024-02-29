@@ -1824,6 +1824,9 @@ class MultiCircuit:
         elif device_type == DeviceType.LoadLikeDevice:
             return self.get_load_like_devices()
 
+        elif device_type == DeviceType.BranchDevice:
+            return self.get_branches_wo_hvdc()
+
         elif device_type == DeviceType.NoDevice:
             return list()
 

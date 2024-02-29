@@ -21,6 +21,7 @@ from GridCalEngine.Devices.Injections import *
 from GridCalEngine.Devices.Substation import *
 from GridCalEngine.Devices.Associations import *
 from GridCalEngine.Devices.Fluid import *
+from GridCalEngine.Devices.measurement import *
 
 
 INJECTION_DEVICE_TYPES = Union[
@@ -60,11 +61,21 @@ SUBSTATION_TYPES = Union[
     BusBar
 ]
 
+MEASUREMENT_TYPES = Union[
+    IfMeasurement,
+    QfMeasurement,
+    PfMeasurement,
+    QiMeasurement,
+    PiMeasurement,
+    VmMeasurement
+]
+
 ALL_DEV_TYPES = Union[
     INJECTION_DEVICE_TYPES,
     BRANCH_TYPES,
     FLUID_TYPES,
     SUBSTATION_TYPES,
+    MEASUREMENT_TYPES,
     Transformer3W,
     OverheadLineType,
     Wire,
