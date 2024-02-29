@@ -1,9 +1,18 @@
+from rdflib.plugins.serializers.rdfxml import XMLLANG
 from rdflib.util import first
-from rdflib import Graph, RDFS, RDF, Namespace, OWL, IdentifiedNode, plugin
+from rdflib import OWL, plugin
 import rdflib
+
+from typing import IO, Dict, Optional, Set
+from rdflib.collection import Collection
+from rdflib.graph import Graph
+from rdflib.namespace import RDF, RDFS, Namespace
 from rdflib.plugins.parsers.RDFVOC import RDFVOC
-from rdflib.plugins.serializers.rdfxml import PrettyXMLSerializer
+from rdflib.plugins.serializers.xmlwriter import XMLWriter
 from rdflib.serializer import Serializer
+from rdflib.term import BNode, IdentifiedNode, Identifier, Literal, Node, URIRef
+from rdflib.util import first, more_than
+import xml.dom.minidom
 import os
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
 import pandas as pd
@@ -13,23 +22,86 @@ plugin.register("cim_xml", Serializer, "GridCalEngine.IO.cim.cgmes.cgmes_export"
 about_dict = dict()
 
 
-class CimSerializer(PrettyXMLSerializer):
+class CimSerializer(Serializer):
     def __init__(self, store: Graph):
         super().__init__(store)
         self.about_list = self.get_about_list()
+
+    def serialize(
+        self,
+        stream: IO[bytes],
+        base: Optional[str] = None,
+        encoding: Optional[str] = None,
+        **args,
+    ):
+        self.__serialized: Dict[Identifier, int] = {}
+        store = self.store
+        # if base is given here, use that, if not and a base is set for the graph use that
+        if base is not None:
+            self.base = base
+        elif store.base is not None:
+            self.base = store.base
+        self.max_depth = args.get("max_depth", 3)
+        assert self.max_depth > 0, "max_depth must be greater than 0"
+
+        self.nm = nm = store.namespace_manager
+        self.writer = writer = XMLWriter(stream, nm, encoding)
+        namespaces = {}
+
+        possible: Set[Node] = set(store.predicates()).union(
+            store.objects(None, RDF.type)
+        )
+
+        for predicate in possible:
+            # type error: Argument 1 to "compute_qname_strict" of "NamespaceManager" has incompatible type "Node";
+            # expected "str"
+            prefix, namespace, local = nm.compute_qname_strict(predicate)  # type: ignore[arg-type]
+            namespaces[prefix] = namespace
+
+        namespaces["rdf"] = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+
+        writer.push(RDFVOC.RDF)
+
+        writer.namespaces(namespaces.items())
+
+        subject: IdentifiedNode
+        # Write out subjects that can not be inline
+        # type error: Incompatible types in assignment (expression has type "Node", variable has type "IdentifiedNode")
+        for subject in store.subjects():  # type: ignore[assignment]
+            if (None, None, subject) in store:
+                if (subject, None, subject) in store:
+                    self.subject(subject, 1)
+            else:
+                self.subject(subject, 1)
+
+        # write out anything that has not yet been reached
+        # write out BNodes last (to ensure they can be inlined where possible)
+        bnodes = set()
+
+        # type error: Incompatible types in assignment (expression has type "Node", variable has type "IdentifiedNode")
+        for subject in store.subjects():  # type: ignore[assignment]
+            if isinstance(subject, BNode):
+                bnodes.add(subject)
+                continue
+            self.subject(subject, 1)
+
+        # now serialize only those BNodes that have not been serialized yet
+        for bnode in bnodes:
+            if bnode not in self.__serialized:
+                self.subject(subject, 1)
+
+        writer.pop(RDFVOC.RDF)
+        stream.write("\n".encode("latin-1"))
+
+        # Set to None so that the memory can get garbage collected.
+        self.__serialized = None  # type: ignore[assignment]
 
     def subject(self, subject: IdentifiedNode, depth: int = 1):
         store = self.store
         writer = self.writer
 
-        if subject in self.forceRDFAbout:
-            writer.push(RDFVOC.Description)
-            writer.attribute(RDFVOC.about, self.relativize(subject))
-            writer.pop(RDFVOC.Description)
-            self.forceRDFAbout.remove(subject)  # type: ignore[arg-type]
-
-        elif subject not in self._PrettyXMLSerializer__serialized:
-            self._PrettyXMLSerializer__serialized[subject] = 1
+        if subject not in self.__serialized:
+            self.__serialized[subject] = 1
             tpe = first(store.objects(subject, RDF.type))
 
             try:
@@ -53,6 +125,18 @@ class CimSerializer(PrettyXMLSerializer):
                         self.predicate(predicate, obj, depth + 1)
 
             writer.pop(element)
+
+    def predicate(self, predicate, object, depth=1):
+        writer = self.writer
+        store = self.store
+        writer.push(predicate)
+
+        if isinstance(object, Literal):
+            writer.text(object)
+        elif object in self.__serialized or not (object, None, None) in store:
+            writer.attribute(RDFVOC.resource, self.relativize(object))
+
+        writer.pop(predicate)
 
     def get_about_list(self):
         about_list = list()
