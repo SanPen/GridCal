@@ -40,10 +40,6 @@ class ShuntData:
         self.active: IntVec = np.zeros(nelm, dtype=bool)
         self.admittance: CxVec = np.zeros(nelm, dtype=complex)
 
-        self.controlled: IntVec = np.zeros(nelm, dtype=bool)
-        self.b_min: Vec = np.zeros(nelm, dtype=float)
-        self.b_max: Vec = np.zeros(nelm, dtype=float)
-
         # reliabilty
         self.mttf: Vec = np.zeros(nelm, dtype=float)
         self.mttr: Vec = np.zeros(nelm, dtype=float)
@@ -73,10 +69,6 @@ class ShuntData:
         data.names = self.names[elm_idx]
         data.idtag = self.idtag[elm_idx]
 
-        data.controlled = self.controlled[elm_idx]
-        data.b_min = self.b_min[elm_idx]
-        data.b_max = self.b_max[elm_idx]
-
         data.active = self.active[elm_idx]
         data.admittance = self.admittance[elm_idx]
 
@@ -99,11 +91,6 @@ class ShuntData:
 
         data.names = self.names.copy()
         data.idtag = self.idtag.copy()
-
-        data.controlled = self.controlled.copy()
-        data.b_min = self.b_min.copy()
-        data.b_max = self.b_max.copy()
-
         data.active = self.active.copy()
         data.admittance = self.admittance.copy()
 
@@ -131,13 +118,6 @@ class ShuntData:
         else:
             return np.zeros(0, dtype=int)
 
-    def get_controlled_per_bus(self) -> IntVec:
-        """
-        Get controlled per bus
-        :return:
-        """
-        return self.C_bus_elm * (self.controlled * self.active)
-
     def get_array_per_bus(self, arr: Vec) -> Vec:
         """
         Get generator array per bus
@@ -153,20 +133,6 @@ class ShuntData:
         :return:
         """
         return self.C_bus_elm * (self.admittance * self.active)
-
-    def get_b_max_per_bus(self) -> Vec:
-        """
-        Get Bmax per bus
-        :return:
-        """
-        return self.C_bus_elm * (self.b_max * self.active)
-
-    def get_b_min_per_bus(self) -> Vec:
-        """
-        Get Bmin per bus
-        :return:
-        """
-        return self.C_bus_elm * (self.b_min * self.active)
 
     def __len__(self) -> int:
         return self.nelm

@@ -211,6 +211,10 @@ def get_load_data(circuit: MultiCircuit,
         data.mttf[ii] = elm.mttf
         data.mttr[ii] = elm.mttr
 
+        data.controlled[ii] = elm.is_controlled
+        data.b_min[ii] = elm.Bmin
+        data.b_max[ii] = elm.Bmax
+
         if time_series:
             data.Y[ii] = complex(elm.G_at(t_idx), elm.B_at(t_idx))
             data.active[ii] = elm.active_prof[t_idx]
