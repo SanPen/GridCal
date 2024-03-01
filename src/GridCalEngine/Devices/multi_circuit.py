@@ -5120,7 +5120,7 @@ class MultiCircuit:
         # if any error in the logger, bad
         return logger.error_count() == 0, logger
 
-    def convert_to_node_breaker(self, keep_buses: bool = False):
+    def convert_to_node_breaker(self):
         """
         Convert from bus/branch to node/breaker network model
         """
@@ -5130,6 +5130,8 @@ class MultiCircuit:
             bus_bar = dev.BusBar(name='Artificial_BusBar_{}'.format(bus.name))
             self.add_bus_bar(bus_bar)
             bbcn[bus.idtag] = bus_bar.cn
+            bus_bar.cn.code = bus.code  # for soft checking later
+            # bus_bar.cn.default_bus = bus
 
         # branches
         for elm in self.get_branches():
@@ -5158,7 +5160,7 @@ class MultiCircuit:
             elm.cn = bbcn[elm.bus.idtag]
 
         # Removing original buses
-        if not keep_buses:
-            bidx = [b for b in self.get_buses()]
-            for b in bidx:
-                self.delete_bus(b)
+        # if not keep_buses:
+        bidx = [b for b in self.get_buses()]
+        for b in bidx:
+            self.delete_bus(b)

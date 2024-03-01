@@ -228,10 +228,10 @@ def test_topology_rts():
         topodriver.run()  # Processing topology from new grid
 
         # Comparing bus considering bus number assigned
-        for ln in range(0, len(grid_.get_lines())):
+        for ln in range(len(grid_.get_lines())):
             loriginal = originalgrid.lines[ln]
             lnb = grid_.lines[ln]
 
-            assert loriginal.bus_to.idtag == lnb.bus_to.idtag
-            assert loriginal.bus_from.idtag == lnb.bus_from.idtag
+            assert loriginal.bus_to.code == lnb.bus_to.code
+            assert loriginal.bus_from.code == lnb.bus_from.code
         print("")

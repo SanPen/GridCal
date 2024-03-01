@@ -145,6 +145,7 @@ def create_topology_process_info(grid: MultiCircuit) -> TopologyProcessorInfo:
         if cn.default_bus is None:  # connectivity nodes can be linked to a previously existing Bus
             # create a new candidate
             candidate_bus = dev.Bus(f"Candidate from {cn.name}")
+            candidate_bus.code = cn.code  # for soft checking
             info.add_new_candidate(candidate_bus)
         else:
             # pick the default candidate
