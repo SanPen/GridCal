@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'MainWindow.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.5.3
+## Created by: Qt User Interface Compiler version 6.6.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -2918,7 +2918,8 @@ class Ui_mainWindow(object):
 
         self.contingency_deadband_SpinBox = QDoubleSpinBox(self.frame_76)
         self.contingency_deadband_SpinBox.setObjectName(u"contingency_deadband_SpinBox")
-        self.contingency_deadband_SpinBox.setDecimals(1)
+        self.contingency_deadband_SpinBox.setDecimals(2)
+        self.contingency_deadband_SpinBox.setValue(0.050000000000000)
 
         self.gridLayout_28.addWidget(self.contingency_deadband_SpinBox, 7, 1, 1, 1)
 
