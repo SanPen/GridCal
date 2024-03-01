@@ -258,7 +258,7 @@ def case14():
 
     #grid.add_transformer2w(tr2)
 
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, tolerance=1e-10, max_iter=50)
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=2, tolerance=1e-10, max_iter=50)
     run_nonlinear_opf(grid=grid, pf_options=pf_options, plot_error=True)
 
 
@@ -314,6 +314,7 @@ def case300():
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, max_iter=50)
 
     run_nonlinear_opf(grid=grid, pf_options=pf_options, plot_error=True)
+
 
 def case6ww():
     """
