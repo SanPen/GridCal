@@ -20,7 +20,7 @@ from GridCalEngine.Devices.Injections.external_grid import ExternalGrid
 from GridCalEngine.Devices.Injections.generator import Generator
 from GridCalEngine.Devices.Injections.load import Load
 from GridCalEngine.Devices.Injections.shunt import Shunt
-from GridCalEngine.Devices.Injections.linear_shunt import LinearShunt
+from GridCalEngine.Devices.Injections.controllable_shunt import ControllableShunt
 from GridCalEngine.Devices.Injections.current_injection import CurrentInjection
 from GridCalEngine.Devices.Injections.static_generator import StaticGenerator
 from GridCalEngine.Devices.Injections.generator_q_curve import GeneratorQCurve

@@ -23,14 +23,17 @@ from GridCalEngine.Devices.Parents.load_parent import InjectionParent
 from GridCalEngine.Devices.profile import Profile
 
 
-class LinearShunt(InjectionParent):
+class ControllableShunt(InjectionParent):
     """
-    Load
+    Controllable Shunt
     """
 
     def __init__(self, name='Linear Shunt', idtag=None, code='',
                  G=0.0, B=0.0,
                  g_min=0, g_max=1e20, b_min=0, b_max=1e20,
+                 is_nonlinear: bool = False,
+                 number_of_steps: int = 1,
+                 step: int = 1,
                  Cost=1200.0,
                  active=True, mttf=0.0, mttr=0.0, capex=0, opex=0,
                  build_status: BuildStatus = BuildStatus.Commissioned):
@@ -63,20 +66,34 @@ class LinearShunt(InjectionParent):
                                  build_status=build_status,
                                  device_type=DeviceType.LinearShuntDevice)
 
+        # TODO calc from steps,
+        # linear: sum until the step
+        # nonlinear: value of the step
         self.G = G
         self.B = B
         self._G_prof = Profile(default_value=G)
         self._B_prof = Profile(default_value=B)
 
+        # TODO calculated from steps
         self.g_min = g_min
         self.g_max = g_max
         self.b_min = b_min
         self.b_max = b_max
 
+        self.is_nonlinear = is_nonlinear
+
+        self.G_steps = np.zeros(number_of_steps)
+        self.B_steps = np.zeros(number_of_steps)
+
+        self.step = step
+        self._step_prof = Profile(default_value=step)
+
         self.register(key='G', units='MW', tpe=float,
                       definition='Active power of the impedance component at V=1.0 p.u.', profile_name='G_prof')
         self.register(key='B', units='MVAr', tpe=float,
                       definition='Reactive power of the impedance component at V=1.0 p.u.', profile_name='B_prof')
+
+        # TODo regiters
 
     @property
     def G_prof(self) -> Profile:
@@ -111,6 +128,23 @@ class LinearShunt(InjectionParent):
             self._B_prof.set(arr=val)
         else:
             raise Exception(str(type(val)) + 'not supported to be set into a B_prof')
+
+    @property
+    def step_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._step_prof
+
+    @step_prof.setter
+    def step_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._step_prof = val
+        elif isinstance(val, np.ndarray):
+            self._step_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a step_prof')
 
     def get_properties_dict(self, version=3):
         """

@@ -695,11 +695,11 @@ def get_gcdev_shunts(cgmes_model: CgmesCircuit,
                     B=B * cgmes_elm.sections,
                     G0=G0 * cgmes_elm.sections,
                     B0=B0 * cgmes_elm.sections,
-                    Bmax=B * cgmes_elm.maximumSections,
-                    Bmin=B,
+                    # Bmax=B * cgmes_elm.maximumSections,
+                    # Bmin=B,
                     active=True,  # TODO what is this?
-                    controlled=is_controlled,
-                    vset=v_set,
+                    # controlled=is_controlled,
+                    # vset=v_set,
                     # bus=calc_node,  # ?
                     # cn=cn,  # ?
                 )

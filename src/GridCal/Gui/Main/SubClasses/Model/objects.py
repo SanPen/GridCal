@@ -102,7 +102,7 @@ class ObjectsTableMain(DiagramsMain):
             elm = dev.StaticGenerator()
 
         elif elm_type == DeviceType.LinearShuntDevice:
-            elm = dev.LinearShunt()
+            elm = dev.ControllableShunt()
 
         elif elm_type == DeviceType.CurrentInjectionDevice:
             elm = dev.CurrentInjection()
