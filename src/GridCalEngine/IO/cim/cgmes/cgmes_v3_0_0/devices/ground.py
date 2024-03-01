@@ -1,5 +1,5 @@
 # GridCal
-# Copyright (C) 2015 - 2024 Santiago Peñate Vera
+# Copyright (C) 2015 - 2023 Santiago Peñate Vera
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -14,13 +14,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
+from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.conducting_equipment import ConductingEquipment
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
 
-from GridCalEngine.Devices.Injections.battery import Battery
-from GridCalEngine.Devices.Injections.external_grid import ExternalGrid
-from GridCalEngine.Devices.Injections.generator import Generator
-from GridCalEngine.Devices.Injections.load import Load
-from GridCalEngine.Devices.Injections.shunt import Shunt
-from GridCalEngine.Devices.Injections.linear_shunt import LinearShunt
-from GridCalEngine.Devices.Injections.current_injection import CurrentInjection
-from GridCalEngine.Devices.Injections.static_generator import StaticGenerator
-from GridCalEngine.Devices.Injections.generator_q_curve import GeneratorQCurve
+
+class Ground(ConductingEquipment):
+	def __init__(self, rdfid='', tpe='Ground'):
+		ConductingEquipment.__init__(self, rdfid, tpe)
+
+

@@ -21,23 +21,30 @@ from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_cir
 from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_results import ContingencyAnalysisResults
 from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearAnalysis, LinearMultiContingencies
 from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_options import ContingencyAnalysisOptions
+from GridCalEngine.Simulations.OPF.linear_opf_ts import run_linear_opf_ts
+from GridCalEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
+from GridCalEngine.basic_structures import Logger
 
 if TYPE_CHECKING:
     from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_driver import ContingencyAnalysisDriver
 
 
-def linear_contingency_analysis(grid: MultiCircuit,
-                                options: ContingencyAnalysisOptions,
-                                linear_multiple_contingencies: LinearMultiContingencies,
-                                calling_class: ContingencyAnalysisDriver,
-                                t=None) -> ContingencyAnalysisResults:
+def optimal_linear_contingency_analysis(grid: MultiCircuit,
+                                        options: ContingencyAnalysisOptions,
+                                        opf_options: OptimalPowerFlowOptions,
+                                        linear_multiple_contingencies: LinearMultiContingencies,
+                                        calling_class: ContingencyAnalysisDriver,
+                                        t=None,
+                                        logger: Logger = Logger()) -> ContingencyAnalysisResults:
     """
     Run N-1 simulation in series with HELM, non-linear solution
     :param grid: MultiCircuit
     :param options: ContingencyAnalysisOptions
+    :param opf_options: OptimalPowerFlowOptions
     :param linear_multiple_contingencies: LinearMultiContingencies
     :param calling_class: ContingencyAnalysisDriver
     :param t: time index, if None the snapshot is used
+    :param logger: Logger object
     :return: returns the results
     """
 
@@ -92,7 +99,25 @@ def linear_contingency_analysis(grid: MultiCircuit,
     loadings_n = flows_n / (numerical_circuit.rates + 1e-9)
 
     if calling_class is not None:
-        calling_class.report_text('Computing loading...')
+        calling_class.report_text('Computing optimal contingency evaluation...')
+
+    # DC optimal power flow
+    opf_vars = run_linear_opf_ts(grid=grid,
+                                 time_indices=[t],
+                                 solver_type=opf_options.mip_solver,
+                                 zonal_grouping=opf_options.zonal_grouping,
+                                 skip_generation_limits=False,
+                                 consider_contingencies=True,
+                                 unit_Commitment=False,
+                                 ramp_constraints=False,
+                                 all_generators_fixed=True,
+                                 lodf_threshold=options.lin_options.lodf_threshold,
+                                 maximize_inter_area_flow=False,
+                                 areas_from=list(),
+                                 areas_to=list(),
+                                 energy_0=None,
+                                 logger=logger,
+                                 export_model_fname=None)
 
     # for each contingency group
     for ic, multi_contingency in enumerate(linear_multiple_contingencies.multi_contingencies):

@@ -183,24 +183,15 @@ class AvailableTransferCapacityTimeSeriesResults(ResultsTemplate):
         """
 
         if result_type == ResultTypes.AvailableTransferCapacityReport:
-            data = np.array(self.report)
-            y_label = ''
-            title, _ = result_type.value
-            index = self.report_indices
-            labels = self.report_headers
+            return ResultsTable(
+                data=np.array(self.report),
+                index=self.report_indices,
+                columns=self.report_headers,
+                title=result_type.value,
+                ylabel="",
+            )
         else:
             raise Exception('Result type not understood:' + str(result_type))
-
-        # assemble model
-        mdl = ResultsTable(
-            data=data,
-            index=index,
-            columns=labels,
-            title=title,
-            ylabel=y_label
-        )
-
-        return mdl
 
 
 class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):

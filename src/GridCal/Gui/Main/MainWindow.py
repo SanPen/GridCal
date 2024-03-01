@@ -68,6 +68,7 @@ class Ui_mainWindow(object):
         icon5 = QIcon()
         icon5.addFile(u":/Icons/icons/pf.svg", QSize(), QIcon.Normal, QIcon.Off)
         self.actionPower_flow.setIcon(icon5)
+        self.actionPower_flow.setMenuRole(QAction.TextHeuristicRole)
         self.actionPower_Flow_Time_series = QAction(mainWindow)
         self.actionPower_Flow_Time_series.setObjectName(u"actionPower_Flow_Time_series")
         icon6 = QIcon()
@@ -2793,9 +2794,42 @@ class Ui_mainWindow(object):
         self.gridLayout_28 = QGridLayout(self.frame_76)
         self.gridLayout_28.setObjectName(u"gridLayout_28")
         self.gridLayout_28.setContentsMargins(-1, 0, -1, -1)
+        self.label_52 = QLabel(self.frame_76)
+        self.label_52.setObjectName(u"label_52")
+
+        self.gridLayout_28.addWidget(self.label_52, 8, 0, 1, 1)
+
+        self.use_srap_checkBox = QCheckBox(self.frame_76)
+        self.use_srap_checkBox.setObjectName(u"use_srap_checkBox")
+
+        self.gridLayout_28.addWidget(self.use_srap_checkBox, 9, 0, 1, 2)
+
+        self.srap_deadband_doubleSpinBox = QDoubleSpinBox(self.frame_76)
+        self.srap_deadband_doubleSpinBox.setObjectName(u"srap_deadband_doubleSpinBox")
+        self.srap_deadband_doubleSpinBox.setDecimals(1)
+        self.srap_deadband_doubleSpinBox.setMaximum(999999999.000000000000000)
+        self.srap_deadband_doubleSpinBox.setValue(10.000000000000000)
+
+        self.gridLayout_28.addWidget(self.srap_deadband_doubleSpinBox, 13, 1, 1, 1)
+
+        self.label_123 = QLabel(self.frame_76)
+        self.label_123.setObjectName(u"label_123")
+
+        self.gridLayout_28.addWidget(self.label_123, 13, 0, 1, 1)
+
+        self.label_53 = QLabel(self.frame_76)
+        self.label_53.setObjectName(u"label_53")
+
+        self.gridLayout_28.addWidget(self.label_53, 11, 0, 1, 1)
+
+        self.label_119 = QLabel(self.frame_76)
+        self.label_119.setObjectName(u"label_119")
+
+        self.gridLayout_28.addWidget(self.label_119, 3, 0, 1, 2)
+
         self.verticalSpacer_19 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
-        self.gridLayout_28.addItem(self.verticalSpacer_19, 15, 0, 1, 2)
+        self.gridLayout_28.addItem(self.verticalSpacer_19, 16, 0, 1, 2)
 
         self.srap_top_n_SpinBox = QSpinBox(self.frame_76)
         self.srap_top_n_SpinBox.setObjectName(u"srap_top_n_SpinBox")
@@ -2803,35 +2837,7 @@ class Ui_mainWindow(object):
         self.srap_top_n_SpinBox.setMaximum(9999999)
         self.srap_top_n_SpinBox.setValue(10)
 
-        self.gridLayout_28.addWidget(self.srap_top_n_SpinBox, 11, 1, 1, 1)
-
-        self.line_25 = QFrame(self.frame_76)
-        self.line_25.setObjectName(u"line_25")
-        palette18 = QPalette()
-        palette18.setBrush(QPalette.Active, QPalette.WindowText, brush2)
-        palette18.setBrush(QPalette.Inactive, QPalette.WindowText, brush2)
-        palette18.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
-        self.line_25.setPalette(palette18)
-        self.line_25.setFrameShadow(QFrame.Plain)
-        self.line_25.setLineWidth(4)
-        self.line_25.setFrameShape(QFrame.HLine)
-
-        self.gridLayout_28.addWidget(self.line_25, 2, 0, 1, 2)
-
-        self.label_123 = QLabel(self.frame_76)
-        self.label_123.setObjectName(u"label_123")
-
-        self.gridLayout_28.addWidget(self.label_123, 12, 0, 1, 1)
-
-        self.label_119 = QLabel(self.frame_76)
-        self.label_119.setObjectName(u"label_119")
-
-        self.gridLayout_28.addWidget(self.label_119, 3, 0, 1, 2)
-
-        self.label_52 = QLabel(self.frame_76)
-        self.label_52.setObjectName(u"label_52")
-
-        self.gridLayout_28.addWidget(self.label_52, 7, 0, 1, 1)
+        self.gridLayout_28.addWidget(self.srap_top_n_SpinBox, 12, 1, 1, 1)
 
         self.srap_limit_doubleSpinBox = QDoubleSpinBox(self.frame_76)
         self.srap_limit_doubleSpinBox.setObjectName(u"srap_limit_doubleSpinBox")
@@ -2839,7 +2845,7 @@ class Ui_mainWindow(object):
         self.srap_limit_doubleSpinBox.setMaximum(9999999.000000000000000)
         self.srap_limit_doubleSpinBox.setValue(1400.000000000000000)
 
-        self.gridLayout_28.addWidget(self.srap_limit_doubleSpinBox, 10, 1, 1, 1)
+        self.gridLayout_28.addWidget(self.srap_limit_doubleSpinBox, 11, 1, 1, 1)
 
         self.frame_78 = QFrame(self.frame_76)
         self.frame_78.setObjectName(u"frame_78")
@@ -2859,11 +2865,11 @@ class Ui_mainWindow(object):
 
         self.label_117 = QLabel(self.frame_78)
         self.label_117.setObjectName(u"label_117")
-        palette19 = QPalette()
-        palette19.setBrush(QPalette.Active, QPalette.WindowText, brush3)
-        palette19.setBrush(QPalette.Inactive, QPalette.WindowText, brush3)
-        palette19.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
-        self.label_117.setPalette(palette19)
+        palette18 = QPalette()
+        palette18.setBrush(QPalette.Active, QPalette.WindowText, brush3)
+        palette18.setBrush(QPalette.Inactive, QPalette.WindowText, brush3)
+        palette18.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
+        self.label_117.setPalette(palette18)
         self.label_117.setFont(font1)
         self.label_117.setAlignment(Qt.AlignBottom|Qt.AlignLeading|Qt.AlignLeft)
 
@@ -2872,43 +2878,49 @@ class Ui_mainWindow(object):
 
         self.gridLayout_28.addWidget(self.frame_78, 0, 0, 1, 2)
 
-        self.label_1322 = QLabel(self.frame_76)
-        self.label_1322.setObjectName(u"label_1322")
+        self.contingency_detailed_massive_report_checkBox = QCheckBox(self.frame_76)
+        self.contingency_detailed_massive_report_checkBox.setObjectName(u"contingency_detailed_massive_report_checkBox")
 
-        self.gridLayout_28.addWidget(self.label_1322, 11, 0, 1, 1)
+        self.gridLayout_28.addWidget(self.contingency_detailed_massive_report_checkBox, 15, 0, 1, 2)
 
         self.srap_revert_to_nominal_rating_checkBox = QCheckBox(self.frame_76)
         self.srap_revert_to_nominal_rating_checkBox.setObjectName(u"srap_revert_to_nominal_rating_checkBox")
 
-        self.gridLayout_28.addWidget(self.srap_revert_to_nominal_rating_checkBox, 13, 0, 1, 2)
+        self.gridLayout_28.addWidget(self.srap_revert_to_nominal_rating_checkBox, 14, 0, 1, 2)
 
         self.contingencyEngineComboBox = QComboBox(self.frame_76)
         self.contingencyEngineComboBox.setObjectName(u"contingencyEngineComboBox")
 
         self.gridLayout_28.addWidget(self.contingencyEngineComboBox, 4, 0, 1, 2)
 
-        self.use_srap_checkBox = QCheckBox(self.frame_76)
-        self.use_srap_checkBox.setObjectName(u"use_srap_checkBox")
+        self.line_25 = QFrame(self.frame_76)
+        self.line_25.setObjectName(u"line_25")
+        palette19 = QPalette()
+        palette19.setBrush(QPalette.Active, QPalette.WindowText, brush2)
+        palette19.setBrush(QPalette.Inactive, QPalette.WindowText, brush2)
+        palette19.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
+        self.line_25.setPalette(palette19)
+        self.line_25.setFrameShadow(QFrame.Plain)
+        self.line_25.setLineWidth(4)
+        self.line_25.setFrameShape(QFrame.HLine)
 
-        self.gridLayout_28.addWidget(self.use_srap_checkBox, 8, 0, 1, 2)
+        self.gridLayout_28.addWidget(self.line_25, 2, 0, 1, 2)
 
-        self.label_53 = QLabel(self.frame_76)
-        self.label_53.setObjectName(u"label_53")
+        self.label_1322 = QLabel(self.frame_76)
+        self.label_1322.setObjectName(u"label_1322")
 
-        self.gridLayout_28.addWidget(self.label_53, 10, 0, 1, 1)
+        self.gridLayout_28.addWidget(self.label_1322, 12, 0, 1, 1)
 
-        self.srap_deadband_doubleSpinBox = QDoubleSpinBox(self.frame_76)
-        self.srap_deadband_doubleSpinBox.setObjectName(u"srap_deadband_doubleSpinBox")
-        self.srap_deadband_doubleSpinBox.setDecimals(1)
-        self.srap_deadband_doubleSpinBox.setMaximum(999999999.000000000000000)
-        self.srap_deadband_doubleSpinBox.setValue(10.000000000000000)
+        self.label_27 = QLabel(self.frame_76)
+        self.label_27.setObjectName(u"label_27")
 
-        self.gridLayout_28.addWidget(self.srap_deadband_doubleSpinBox, 12, 1, 1, 1)
+        self.gridLayout_28.addWidget(self.label_27, 7, 0, 1, 1)
 
-        self.contingency_detailed_massive_report_checkBox = QCheckBox(self.frame_76)
-        self.contingency_detailed_massive_report_checkBox.setObjectName(u"contingency_detailed_massive_report_checkBox")
+        self.contingency_deadband_SpinBox = QDoubleSpinBox(self.frame_76)
+        self.contingency_deadband_SpinBox.setObjectName(u"contingency_deadband_SpinBox")
+        self.contingency_deadband_SpinBox.setDecimals(1)
 
-        self.gridLayout_28.addWidget(self.contingency_detailed_massive_report_checkBox, 14, 0, 1, 2)
+        self.gridLayout_28.addWidget(self.contingency_deadband_SpinBox, 7, 1, 1, 1)
 
 
         self.horizontalLayout_42.addWidget(self.frame_76)
@@ -5109,12 +5121,18 @@ class Ui_mainWindow(object):
 #if QT_CONFIG(tooltip)
         self.settings_tabWidget.setTabToolTip(self.settings_tabWidget.indexOf(self.tab_9), QCoreApplication.translate("mainWindow", u"Linear calculations related settings", None))
 #endif // QT_CONFIG(tooltip)
+        self.label_52.setText("")
+#if QT_CONFIG(tooltip)
+        self.use_srap_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Activate SRAP (Sistema de reducci\u00f3n autom\u00e1tica de potencia)</p><p>It is a mechanism that helps avoiding considering a contingency if it would be eventually resolved by nearby generation shifting.</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
+        self.use_srap_checkBox.setText(QCoreApplication.translate("mainWindow", u"Use SRAP", None))
+        self.srap_deadband_doubleSpinBox.setSuffix(QCoreApplication.translate("mainWindow", u" %", None))
 #if QT_CONFIG(tooltip)
         self.label_123.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Dead band over the SRAP rating.</p><p>If greater than zero, the SRAP is investigated for values over the branch protections rating until the specified value.</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
-        self.label_123.setText(QCoreApplication.translate("mainWindow", u"Dead band", None))
+        self.label_123.setText(QCoreApplication.translate("mainWindow", u"SRAP dead band", None))
+        self.label_53.setText(QCoreApplication.translate("mainWindow", u"SRAP limit", None))
         self.label_119.setText(QCoreApplication.translate("mainWindow", u"Contingency engine", None))
-        self.label_52.setText("")
 #if QT_CONFIG(tooltip)
         self.srap_limit_doubleSpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"Maximum overload power that is solvable using the SRAP technique.", None))
 #endif // QT_CONFIG(tooltip)
@@ -5122,23 +5140,22 @@ class Ui_mainWindow(object):
         self.label_109.setText("")
         self.label_117.setText(QCoreApplication.translate("mainWindow", u"Contingencies", None))
 #if QT_CONFIG(tooltip)
-        self.label_1322.setToolTip(QCoreApplication.translate("mainWindow", u"Maximum number of generation nodes to participate in the SRAP", None))
+        self.contingency_detailed_massive_report_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>If checked, a massive posibly intractable report is generated.</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
-        self.label_1322.setText(QCoreApplication.translate("mainWindow", u"SRAP top N", None))
+        self.contingency_detailed_massive_report_checkBox.setText(QCoreApplication.translate("mainWindow", u"Detailed report", None))
 #if QT_CONFIG(tooltip)
         self.srap_revert_to_nominal_rating_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>If checked the SRAP objective solution is the branch nominal rate. Otherwise the objective rating is the contingency rating.</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
         self.srap_revert_to_nominal_rating_checkBox.setText(QCoreApplication.translate("mainWindow", u"Revert to nominal rating", None))
 #if QT_CONFIG(tooltip)
-        self.use_srap_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Activate SRAP (Sistema de reducci\u00f3n autom\u00e1tica de potencia)</p><p>It is a mechanism that helps avoiding considering a contingency if it would be eventually resolved by nearby generation shifting.</p></body></html>", None))
+        self.label_1322.setToolTip(QCoreApplication.translate("mainWindow", u"Maximum number of generation nodes to participate in the SRAP", None))
 #endif // QT_CONFIG(tooltip)
-        self.use_srap_checkBox.setText(QCoreApplication.translate("mainWindow", u"Use SRAP", None))
-        self.label_53.setText(QCoreApplication.translate("mainWindow", u"SRAP limit", None))
-        self.srap_deadband_doubleSpinBox.setSuffix(QCoreApplication.translate("mainWindow", u" %", None))
+        self.label_1322.setText(QCoreApplication.translate("mainWindow", u"SRAP top N", None))
 #if QT_CONFIG(tooltip)
-        self.contingency_detailed_massive_report_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>If checked, a massive posibly intractable report is generated.</p></body></html>", None))
+        self.label_27.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Amount of contingency loading with respect to the base situation loading that triggers the report of the contingency. This is specially useful when we want to avoig reporting contingencies that are not significant with respect to the base situation.</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
-        self.contingency_detailed_massive_report_checkBox.setText(QCoreApplication.translate("mainWindow", u"Detailed report", None))
+        self.label_27.setText(QCoreApplication.translate("mainWindow", u"Contingency dead band", None))
+        self.contingency_deadband_SpinBox.setSuffix(QCoreApplication.translate("mainWindow", u" %", None))
         self.settings_tabWidget.setTabText(self.settings_tabWidget.indexOf(self.tab_11), QCoreApplication.translate("mainWindow", u"Con", None))
         self.label_95.setText(QCoreApplication.translate("mainWindow", u"Area transfer configuration", None))
         self.label_92.setText("")

@@ -5258,7 +5258,64 @@
                <property name="topMargin">
                 <number>0</number>
                </property>
-               <item row="15" column="0" colspan="2">
+               <item row="8" column="0">
+                <widget class="QLabel" name="label_52">
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
+               <item row="9" column="0" colspan="2">
+                <widget class="QCheckBox" name="use_srap_checkBox">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Activate SRAP (Sistema de reducción automática de potencia)&lt;/p&gt;&lt;p&gt;It is a mechanism that helps avoiding considering a contingency if it would be eventually resolved by nearby generation shifting.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="text">
+                  <string>Use SRAP</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="13" column="1">
+                <widget class="QDoubleSpinBox" name="srap_deadband_doubleSpinBox">
+                 <property name="suffix">
+                  <string> %</string>
+                 </property>
+                 <property name="decimals">
+                  <number>1</number>
+                 </property>
+                 <property name="maximum">
+                  <double>999999999.000000000000000</double>
+                 </property>
+                 <property name="value">
+                  <double>10.000000000000000</double>
+                 </property>
+                </widget>
+               </item>
+               <item row="13" column="0">
+                <widget class="QLabel" name="label_123">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Dead band over the SRAP rating.&lt;/p&gt;&lt;p&gt;If greater than zero, the SRAP is investigated for values over the branch protections rating until the specified value.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="text">
+                  <string>SRAP dead band</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="11" column="0">
+                <widget class="QLabel" name="label_53">
+                 <property name="text">
+                  <string>SRAP limit</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="0" colspan="2">
+                <widget class="QLabel" name="label_119">
+                 <property name="text">
+                  <string>Contingency engine</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="16" column="0" colspan="2">
                 <spacer name="verticalSpacer_19">
                  <property name="orientation">
                   <enum>Qt::Vertical</enum>
@@ -5271,7 +5328,7 @@
                  </property>
                 </spacer>
                </item>
-               <item row="11" column="1">
+               <item row="12" column="1">
                 <widget class="QSpinBox" name="srap_top_n_SpinBox">
                  <property name="minimum">
                   <number>1</number>
@@ -5284,81 +5341,7 @@
                  </property>
                 </widget>
                </item>
-               <item row="2" column="0" colspan="2">
-                <widget class="Line" name="line_25">
-                 <property name="palette">
-                  <palette>
-                   <active>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>186</red>
-                       <green>189</green>
-                       <blue>182</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </active>
-                   <inactive>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>186</red>
-                       <green>189</green>
-                       <blue>182</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </inactive>
-                   <disabled>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>190</red>
-                       <green>190</green>
-                       <blue>190</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </disabled>
-                  </palette>
-                 </property>
-                 <property name="frameShadow">
-                  <enum>QFrame::Plain</enum>
-                 </property>
-                 <property name="lineWidth">
-                  <number>4</number>
-                 </property>
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                </widget>
-               </item>
-               <item row="12" column="0">
-                <widget class="QLabel" name="label_123">
-                 <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Dead band over the SRAP rating.&lt;/p&gt;&lt;p&gt;If greater than zero, the SRAP is investigated for values over the branch protections rating until the specified value.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                 </property>
-                 <property name="text">
-                  <string>Dead band</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="0" colspan="2">
-                <widget class="QLabel" name="label_119">
-                 <property name="text">
-                  <string>Contingency engine</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="7" column="0">
-                <widget class="QLabel" name="label_52">
-                 <property name="text">
-                  <string/>
-                 </property>
-                </widget>
-               </item>
-               <item row="10" column="1">
+               <item row="11" column="1">
                 <widget class="QDoubleSpinBox" name="srap_limit_doubleSpinBox">
                  <property name="toolTip">
                   <string>Maximum overload power that is solvable using the SRAP technique.</string>
@@ -5478,17 +5461,17 @@
                  </layout>
                 </widget>
                </item>
-               <item row="11" column="0">
-                <widget class="QLabel" name="label_1322">
+               <item row="15" column="0" colspan="2">
+                <widget class="QCheckBox" name="contingency_detailed_massive_report_checkBox">
                  <property name="toolTip">
-                  <string>Maximum number of generation nodes to participate in the SRAP</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, a massive posibly intractable report is generated.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="text">
-                  <string>SRAP top N</string>
+                  <string>Detailed report</string>
                  </property>
                 </widget>
                </item>
-               <item row="13" column="0" colspan="2">
+               <item row="14" column="0" colspan="2">
                 <widget class="QCheckBox" name="srap_revert_to_nominal_rating_checkBox">
                  <property name="toolTip">
                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked the SRAP objective solution is the branch nominal rate. Otherwise the objective rating is the contingency rating.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -5501,46 +5484,83 @@
                <item row="4" column="0" colspan="2">
                 <widget class="QComboBox" name="contingencyEngineComboBox"/>
                </item>
-               <item row="8" column="0" colspan="2">
-                <widget class="QCheckBox" name="use_srap_checkBox">
+               <item row="2" column="0" colspan="2">
+                <widget class="Line" name="line_25">
+                 <property name="palette">
+                  <palette>
+                   <active>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>186</red>
+                       <green>189</green>
+                       <blue>182</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </active>
+                   <inactive>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>186</red>
+                       <green>189</green>
+                       <blue>182</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </inactive>
+                   <disabled>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>190</red>
+                       <green>190</green>
+                       <blue>190</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </disabled>
+                  </palette>
+                 </property>
+                 <property name="frameShadow">
+                  <enum>QFrame::Plain</enum>
+                 </property>
+                 <property name="lineWidth">
+                  <number>4</number>
+                 </property>
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                </widget>
+               </item>
+               <item row="12" column="0">
+                <widget class="QLabel" name="label_1322">
                  <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Activate SRAP (Sistema de reducción automática de potencia)&lt;/p&gt;&lt;p&gt;It is a mechanism that helps avoiding considering a contingency if it would be eventually resolved by nearby generation shifting.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  <string>Maximum number of generation nodes to participate in the SRAP</string>
                  </property>
                  <property name="text">
-                  <string>Use SRAP</string>
+                  <string>SRAP top N</string>
                  </property>
                 </widget>
                </item>
-               <item row="10" column="0">
-                <widget class="QLabel" name="label_53">
+               <item row="7" column="0">
+                <widget class="QLabel" name="label_27">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Amount of contingency loading with respect to the base situation loading that triggers the report of the contingency. This is specially useful when we want to avoig reporting contingencies that are not significant with respect to the base situation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
                  <property name="text">
-                  <string>SRAP limit</string>
+                  <string>Contingency dead band</string>
                  </property>
                 </widget>
                </item>
-               <item row="12" column="1">
-                <widget class="QDoubleSpinBox" name="srap_deadband_doubleSpinBox">
+               <item row="7" column="1">
+                <widget class="QDoubleSpinBox" name="contingency_deadband_SpinBox">
                  <property name="suffix">
                   <string> %</string>
                  </property>
                  <property name="decimals">
                   <number>1</number>
-                 </property>
-                 <property name="maximum">
-                  <double>999999999.000000000000000</double>
-                 </property>
-                 <property name="value">
-                  <double>10.000000000000000</double>
-                 </property>
-                </widget>
-               </item>
-               <item row="14" column="0" colspan="2">
-                <widget class="QCheckBox" name="contingency_detailed_massive_report_checkBox">
-                 <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, a massive posibly intractable report is generated.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                 </property>
-                 <property name="text">
-                  <string>Detailed report</string>
                  </property>
                 </widget>
                </item>

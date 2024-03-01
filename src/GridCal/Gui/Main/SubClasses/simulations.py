@@ -146,8 +146,8 @@ class SimulationsMain(TimeEventsMain):
         # reactive power controls
         self.contingency_engines_dict = OrderedDict()
         self.contingency_engines_dict[ContingencyMethod.PowerFlow.value] = ContingencyMethod.PowerFlow
+        self.contingency_engines_dict[ContingencyMethod.OptimalPowerFlow.value] = ContingencyMethod.OptimalPowerFlow
         self.contingency_engines_dict[ContingencyMethod.PTDF.value] = ContingencyMethod.PTDF
-        self.contingency_engines_dict[ContingencyMethod.HELM.value] = ContingencyMethod.HELM
         self.ui.contingencyEngineComboBox.setModel(gf.get_list_model(list(self.contingency_engines_dict.keys())))
 
         # list of stochastic power flow methods
@@ -176,7 +176,7 @@ class SimulationsMain(TimeEventsMain):
         self.ptdf_group_modes = OrderedDict()
 
         # dictionaries for available results
-        self.available_results_dict: Union[Dict[str, List[ResultTypes]], None] = dict()
+        self.available_results_dict: Union[Dict[str, Dict[str, ResultTypes]], None] = dict()
 
         self.buses_for_storage: Union[List[dev.Bus], None] = None
 
@@ -960,6 +960,7 @@ class SimulationsMain(TimeEventsMain):
             srap_deadband=self.ui.srap_deadband_doubleSpinBox.value(),
             srap_rever_to_nominal_rating=self.ui.srap_revert_to_nominal_rating_checkBox.isChecked(),
             detailed_massive_report=self.ui.contingency_detailed_massive_report_checkBox.isChecked(),
+            contingency_deadband=self.ui.contingency_deadband_SpinBox.value(),
             engine=self.contingency_engines_dict[self.ui.contingencyEngineComboBox.currentText()]
         )
 

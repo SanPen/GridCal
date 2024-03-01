@@ -67,6 +67,38 @@ def get_valid_positives(sensitivities: Vec, p_available: Vec):
 
 
 @nb.njit(cache=True)
+def vector_sum_used_power_srap(p_available3: Vec, sensitivities3: Vec, max_srap_power: float):
+    """
+
+    :param p_available3:
+    :param sensitivities3:
+    :param srap_pmax_mw:
+    :return:
+    """
+    # inicializar la suma parcial
+    suma = 0.0
+    max_srap_power = np.abs(max_srap_power)
+    sensitivities3 = np.abs(sensitivities3)
+
+    p_used = np.zeros(len(p_available3))
+
+    # recorrer los elementos de p_available3
+    for i in range(len(p_available3)):
+
+        if suma + p_available3[i] * sensitivities3[i] <= max_srap_power:
+            suma += p_available3[i] * sensitivities3[i]
+            p_used[i] = p_available3[i]
+
+        else:
+            p_used[i] = (max_srap_power - suma) / sensitivities3[i]
+            suma += p_used[i] * sensitivities3[i]
+
+            return p_used
+
+    return p_used
+
+
+@nb.njit(cache=True)
 def vector_sum_srap(p_available3: Vec, sensitivities3: Vec, srap_pmax_mw: float):
     """
 
@@ -78,7 +110,7 @@ def vector_sum_srap(p_available3: Vec, sensitivities3: Vec, srap_pmax_mw: float)
     # inicializar la suma parcial
     suma = 0.0
     max_srap_power = 0.0
-    p_used = np.zeros(len(p_available3))
+    #p_used = np.zeros(len(p_available3))
 
     # recorrer los elementos de p_available3
     for i in range(len(p_available3)):
@@ -88,7 +120,7 @@ def vector_sum_srap(p_available3: Vec, sensitivities3: Vec, srap_pmax_mw: float)
             # asignar el elemento a b
             # p_available_red[i] = p_available3[i]
             max_srap_power += p_available3[i] * sensitivities3[i]
-            p_used[i] = p_available3[i]
+            #p_used[i] = p_available3[i]
             # actualizar la suma
             suma += p_available3[i]
 
@@ -97,16 +129,18 @@ def vector_sum_srap(p_available3: Vec, sensitivities3: Vec, srap_pmax_mw: float)
             # asignar la diferencia entre srap_pmax_mw y la suma
             # p_available_red[i] = srap_pmax_mw - suma
             max_srap_power += (srap_pmax_mw - suma) * sensitivities3[i]
-            p_used[i] = srap_pmax_mw - suma
+            #p_used[i] = srap_pmax_mw - suma
             # p_used_unit = p_used/p_available3
             # salir del bucle
             # break
-            return max_srap_power, p_used
+            #return max_srap_power, p_used
+            return max_srap_power
 
     # max_srap_power = np.sum(p_available_red * sensitivities3)
     # p_used_unit = p_used / p_available3
 
-    return max_srap_power, p_used
+    #return max_srap_power, p_used
+    return max_srap_power
 
 
 class BusesForSrap:
@@ -168,12 +202,14 @@ class BusesForSrap:
                 srap_gen_used3 = srap_gen_used2[idx2]
 
                 # interpolate the srap limit, to get the maximum srap power
-                max_srap_power, p_used = vector_sum_srap(p_available3, sensitivities3, srap_pmax_mw)
+                max_srap_power= vector_sum_srap(p_available3, sensitivities3, srap_pmax_mw)
 
                 # if the max srap power is less than the overload we cannot solve
                 solved = max_srap_power >= overload
 
                 if solved:
+                    max_srap_power = c_flow - rating
+                    p_used = vector_sum_used_power_srap (p_available3, sensitivities3, max_srap_power)
                     srap_used_power[branch_idx, srap_gen_used3] += p_used
 
             else:
@@ -200,13 +236,16 @@ class BusesForSrap:
                 srap_gen_used3 = srap_gen_used2[idx2]
 
                 # interpolate the srap limit, to get the minimum srap power
-                max_srap_power, p_used = vector_sum_srap(p_available3, sensitivities3, srap_pmax_mw)
+                max_srap_power = vector_sum_srap(p_available3, sensitivities3, srap_pmax_mw)
 
                 # if the value is grater than the overload we cannot solve
                 solved = max_srap_power <= overload
 
                 if solved:
+                    max_srap_power = c_flow + rating
+                    p_used = vector_sum_used_power_srap(p_available3, sensitivities3, max_srap_power)
                     srap_used_power[branch_idx, srap_gen_used3] += p_used
+
             else:
                 solved = False
                 max_srap_power = 0.0
