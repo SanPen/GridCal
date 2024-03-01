@@ -32,6 +32,10 @@ from GridCalEngine.data_logger import DataLogger
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.identified_object import IdentifiedObject
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.terminal import Terminal
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.ac_line_segment import ACLineSegment
+from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.switch import Switch
+from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.disconnector import Disconnector
+from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.load_break_switch import LoadBreakSwitch
+from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.breaker import Breaker
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.power_transformer_end import PowerTransformerEnd
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.conducting_equipment import ConductingEquipment
 
@@ -320,6 +324,7 @@ def get_gcdev_generators(cgmes_model: CgmesCircuit,
                                                              generator=gcdev_elm,
                                                              technology=technology)
                         gcdev_model.add_generator_technology(gen_tech)
+                        # gcdev_model.add_generator_fuel()
                 else:
                     logger.add_error(msg='SynchronousMachine has no generating unit',
                                      device=cgmes_elm.rdfid,
@@ -708,6 +713,97 @@ def get_gcdev_shunts(cgmes_model: CgmesCircuit,
                                  expected_value=1)
 
 
+def get_gcdev_switch(cgmes_model: CgmesCircuit,
+                     gcdev_model: MultiCircuit,
+                     calc_node_dict: Dict[str, gcdev.Bus],
+                     cn_dict: Dict[str, gcdev.ConnectivityNode],
+                     device_to_terminal_dict: Dict[str, List[Terminal]],
+                     logger: DataLogger,
+                     Sbase: float) -> None:
+    """
+    Convert the CGMES switching dcives to gcdev
+
+    :param cgmes_model: CgmesCircuit
+    :param gcdev_model: gcdevCircuit
+    :param calc_node_dict: Dict[str, gcdev.Bus]
+    :param cn_dict: Dict[str, gcdev.ConnectivityNode]
+    :param device_to_terminal_dict: Dict[str, Terminal]
+    :param logger: DataLogger
+    :param Sbase: system base power in MVA
+    :return: None
+    """
+    # Build the ratings dictionary
+    rates_dict = {}
+    for e in cgmes_model.CurrentLimit_list:
+        if not isinstance(e.OperationalLimitSet, str):
+            conducting_equipment = e.OperationalLimitSet.Terminal.ConductingEquipment
+            if isinstance(conducting_equipment,
+                          (Switch, Breaker, Disconnector, LoadBreakSwitch)):
+                branch_id = conducting_equipment.uuid
+                rates_dict[branch_id] = e.value
+
+    # convert switch
+    for device_list in [cgmes_model.Switch_list,
+                        cgmes_model.Breaker_list,
+                        cgmes_model.Disconnector_list,
+                        cgmes_model.LoadBreakSwitch_list,
+                        # cgmes_model.GroundDisconnector_list
+                        ]:
+
+        for cgmes_elm in device_list:
+            calc_nodes, cns = find_connections(cgmes_elm=cgmes_elm,
+                                               device_to_terminal_dict=device_to_terminal_dict,
+                                               calc_node_dict=calc_node_dict,
+                                               cn_dict=cn_dict,
+                                               logger=logger)
+
+            if len(calc_nodes) == 2:
+                calc_node_f = calc_nodes[0]
+                calc_node_t = calc_nodes[1]
+                cn_f = cns[0]
+                cn_t = cns[1]
+
+                operational_current_rate = rates_dict.get(cgmes_elm.uuid, None)  # A
+                if operational_current_rate and cgmes_elm.BaseVoltage is not None:
+                    # rate in MVA = A / 1000 * kV * sqrt(3)    CORRECTED!
+                    op_rate = np.round((operational_current_rate / 1000.0) *
+                                       cgmes_elm.BaseVoltage.nominalVoltage * 1.73205080756888,
+                                    4)
+                else:
+                    op_rate = 9999  # Corrected
+
+                if cgmes_elm.ratedCurrent is not None and cgmes_elm.ratedCurrent != 0.0:   # TODO
+                    rated_current = np.round((cgmes_elm.ratedCurrent / 1000.0) * cgmes_elm.BaseVoltage.nominalVoltage * 1.73205080756888,
+                                    4)
+                else:
+                    rated_current = op_rate
+
+                gcdev_elm = gcdev.Switch(
+                    idtag=cgmes_elm.uuid,
+                    code=cgmes_elm.description,
+                    name=cgmes_elm.name,
+                    active=True,
+                    cn_from=cn_f,
+                    cn_to=cn_t,
+                    bus_from=calc_node_f,
+                    bus_to=calc_node_t,
+                    rate=op_rate,
+                    rated_current=rated_current,
+                    open=cgmes_elm.open,
+                    retained=cgmes_elm.retained,
+                    normal_open=cgmes_elm.normalOpen
+                )
+
+                gcdev_model.add_switch(gcdev_elm)
+            else:
+                logger.add_error(msg='Not exactly two terminals',
+                                 device=cgmes_elm.rdfid,
+                                 device_class=cgmes_elm.tpe,
+                                 device_property="number of associated terminals",
+                                 value=len(calc_nodes),
+                                 expected_value=2)
+
+
 def cgmes_to_gridcal(cgmes_model: CgmesCircuit, logger: DataLogger) -> MultiCircuit:
     """
     convert CGMES model to gcdev
@@ -766,6 +862,7 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit, logger: DataLogger) -> MultiCirc
     get_gcdev_ac_transformers(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger, Sbase)
 
     get_gcdev_shunts(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger, Sbase)
+    get_gcdev_switch(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger, Sbase)
     print('debug')
 
     # Export test

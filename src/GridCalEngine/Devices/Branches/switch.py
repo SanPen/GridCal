@@ -28,9 +28,17 @@ class Switch(BranchParent):
     :ref:`buses<bus>`) in **GridCal**. A Switch is an devices that cuts or allows the flow.
     """
 
-    def __init__(self, bus_from: Bus = None, bus_to: Bus = None, cn_from: ConnectivityNode = None,
-                 cn_to: ConnectivityNode = None, name='Switch', idtag=None, code='', r=1e-20, x=1e-20, rate=1.0,
-                 active=True, active_prof=None, contingency_factor=1.0, protection_rating_factor: float = 1.4):
+    def __init__(self, bus_from: Bus = None, bus_to: Bus = None,
+                 cn_from: ConnectivityNode = None, cn_to: ConnectivityNode = None,
+                 name='Switch', idtag=None, code='', r=1e-20, x=1e-20,
+                 rate=1.0,
+                 active=True, active_prof=None,
+                 contingency_factor=1.0, protection_rating_factor: float = 1.4,
+                 open=False,
+                 retained=True,
+                 normal_open=False,
+                 rated_current=0.0,
+                 ):
         """
         Switch device
         :param bus_from: Bus from
@@ -71,8 +79,25 @@ class Switch(BranchParent):
         self.R = r
         self.X = x
 
+        self.open = open
+        self.retained = retained
+
+        self.normal_open = normal_open
+        self.rated_current = rated_current
+
         self.register(key='R', units='Ohm/km', tpe=float, definition='Positive-sequence resistance')
         self.register(key='X', units='Ohm/km', tpe=float, definition='Positive-sequence reactance')
+
+        # TODO registers
+        self.register(key='open', units="", tpe=bool,
+                      definition='Switch is open')
+        self.register(key='retained', units="", tpe=bool,
+                      definition='Switch is retained')
+
+        self.register(key='normal_open', units="", tpe=bool,
+                      definition='Normal position of the switch')
+        self.register(key='rated_current', units="A", tpe=float,
+                      definition='Rated current of the switch device.')
 
     def copy(self, bus_dict=None):
         """
