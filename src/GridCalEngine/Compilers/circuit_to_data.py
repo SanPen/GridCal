@@ -201,7 +201,7 @@ def get_load_data(circuit: MultiCircuit,
         data.C_bus_elm[i, ii] = 1
         ii += 1
 
-    for elm in circuit.get_linear_shunts():
+    for elm in circuit.get_controllable_shunts():
 
         i = bus_dict[elm.bus]
 
