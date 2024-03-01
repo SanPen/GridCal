@@ -31,7 +31,7 @@ INJECTION_DEVICE_TYPES = Union[
     ExternalGrid,
     StaticGenerator,
     Shunt,
-    LinearShunt,
+    ControllableShunt,
     CurrentInjection
 ]
 
