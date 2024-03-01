@@ -219,7 +219,7 @@ def get_gcdev_loads(cgmes_model: CgmesCircuit,
                                        code=cgmes_elm.description,
                                        name=cgmes_elm.name,
                                        active=True,
-                                       P=cgmes_elm.p,
+                                       P=cgmes_elm.p,  # TODO get and multiply LoadChar factors
                                        Q=cgmes_elm.q,
                                        Ir=0.0,
                                        Ii=0.0,
@@ -713,15 +713,15 @@ def get_gcdev_shunts(cgmes_model: CgmesCircuit,
                                  expected_value=1)
 
 
-def get_gcdev_switch(cgmes_model: CgmesCircuit,
-                     gcdev_model: MultiCircuit,
-                     calc_node_dict: Dict[str, gcdev.Bus],
-                     cn_dict: Dict[str, gcdev.ConnectivityNode],
-                     device_to_terminal_dict: Dict[str, List[Terminal]],
-                     logger: DataLogger,
-                     Sbase: float) -> None:
+def get_gcdev_switches(cgmes_model: CgmesCircuit,
+                       gcdev_model: MultiCircuit,
+                       calc_node_dict: Dict[str, gcdev.Bus],
+                       cn_dict: Dict[str, gcdev.ConnectivityNode],
+                       device_to_terminal_dict: Dict[str, List[Terminal]],
+                       logger: DataLogger,
+                       Sbase: float) -> None:
     """
-    Convert the CGMES switching dcives to gcdev
+    Convert the CGMES switching devices to gcdev
 
     :param cgmes_model: CgmesCircuit
     :param gcdev_model: gcdevCircuit
@@ -804,6 +804,39 @@ def get_gcdev_switch(cgmes_model: CgmesCircuit,
                                  expected_value=2)
 
 
+def get_gcdev_substations(cgmes_model: CgmesCircuit,
+                          gcdev_model: MultiCircuit,
+                          # calc_node_dict: Dict[str, gcdev.Bus],
+                          # cn_dict: Dict[str, gcdev.ConnectivityNode],
+                          # device_to_terminal_dict: Dict[str, List[Terminal]],
+                          # logger: DataLogger
+                          ) -> None:
+    """
+    Convert the CGMES substations to gcdev
+
+    :param cgmes_model: CgmesCircuit
+    :param gcdev_model: gcdevCircuit
+    :param calc_node_dict: Dict[str, gcdev.Bus]
+    :param cn_dict: Dict[str, gcdev.ConnectivityNode]
+    :param device_to_terminal_dict: Dict[str, Terminal]
+    :param logger:
+    """
+    # convert substations
+    for device_list in [cgmes_model.Substation_list]:
+
+        for cgmes_elm in device_list:
+
+            gcdev_elm = gcdev.Substation(
+                name=cgmes_elm.name,
+                idtag=cgmes_elm.uuid,
+                code=cgmes_elm.description,
+                # latitude=0.0,
+                # longitude=0.0
+            )
+
+            gcdev_model.add_substation(gcdev_elm)
+
+
 def cgmes_to_gridcal(cgmes_model: CgmesCircuit, logger: DataLogger) -> MultiCircuit:
     """
     convert CGMES model to gcdev
@@ -862,7 +895,9 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit, logger: DataLogger) -> MultiCirc
     get_gcdev_ac_transformers(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger, Sbase)
 
     get_gcdev_shunts(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger, Sbase)
-    get_gcdev_switch(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger, Sbase)
+    get_gcdev_switches(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger, Sbase)
+
+    get_gcdev_substations(cgmes_model, gc_model)
     print('debug')
 
     # Export test
