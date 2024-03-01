@@ -651,8 +651,11 @@ class MultiCircuit:
         else:
             return 0
 
-    def get_time_array(self):
-
+    def get_time_array(self) -> pd.DatetimeIndex:
+        """
+        Get the time array
+        :return: pd.DatetimeIndex
+        """
         return self.time_profile
 
     def get_all_time_indices(self) -> IntVec:
@@ -5115,49 +5118,44 @@ class MultiCircuit:
         # if any error in the logger, bad
         return logger.error_count() == 0, logger
 
-    def convert_to_node_breaker(self):
+    def convert_to_node_breaker(self, keep_buses: bool = False):
         """
         Convert from bus/branch to node/breaker network model
         """
-        bbcn = {}
-        for bs in self.buses:
-            bb = dev.BusBar(name='Artificial_BusBar_{}'.format(bs.code), code='{}'.format(bs.code))
-            self.add_bus_bar(bb)
-            bbcn['Artificial_BusBar_{}'.format(bs.code)] = bb.cn
 
-        for l in self.get_branches():
+        bbcn = dict()
+        for bs in self.buses:
+            bus_bar = dev.BusBar(name='Artificial_BusBar_{}'.format(bs.code))
+            self.add_bus_bar(bus_bar)
+            bbcn[bs.idtag] = bus_bar.cn
+
+        # branches
+        for elm in self.get_branches():
             # Create two new connectivity nodes
-            cnfrom = dev.ConnectivityNode(name='Artificial_CN_from_L{}'.format(l.name.split(' ')[-1]))
-            cnto = dev.ConnectivityNode(name='Artificial_CN_to_L{}'.format(l.name.split(' ')[-1]))
+            cnfrom = dev.ConnectivityNode(name='Artificial_CN_from_L{}'.format(elm.name))
+            cnto = dev.ConnectivityNode(name='Artificial_CN_to_L{}'.format(elm.name))
             self.add_connectivity_node(cnfrom)
             self.add_connectivity_node(cnto)
-            l.cn_to = cnto
-            l.cn_from = cnfrom
+            elm.cn_to = cnto
+            elm.cn_from = cnfrom
             # Create two new switches
-            sw1 = dev.Switch(name='Artificial_SW_from_L{}'.format(l.name.split(' ')[-1]),
-                            cn_from=bbcn['Artificial_BusBar_{}'.format(l.bus_from.code)],
-                            cn_to=cnfrom,
-                            active=True,
-                            code='Artificial_SW_from_L{}'.format(l.name.split(' ')[-1]))
-            sw2 = dev.Switch(name='Artificial_SW_to_L{}'.format(l.name.split(' ')[-1]),
+            sw1 = dev.Switch(name='Artificial_SW_from_L{}'.format(elm.name),
+                             cn_from=bbcn[elm.bus_from.idtag],
+                             cn_to=cnfrom,
+                             active=True)
+            sw2 = dev.Switch(name='Artificial_SW_to_L{}'.format(elm.name),
                              cn_from=cnto,
-                             cn_to=bbcn['Artificial_BusBar_{}'.format(l.bus_to.code)],
-                             active=True,
-                             code='Artificial_SW_to_L{}'.format(l.name.split(' ')[-1]))
+                             cn_to=bbcn[elm.bus_to.idtag],
+                             active=True)
             self.add_switch(sw1)
             self.add_switch(sw2)
 
-        # Generators
-        for g in self.get_generators():
-            g.cn = bbcn['Artificial_BusBar_{}'.format(g.bus.code)]
-        # Loads
-        for ld in self.get_loads():
-            ld.cn = bbcn['Artificial_BusBar_{}'.format(ld.bus.code)]
-        # Shunts
-        for sh in self.get_shunts():
-            sh.cn = bbcn['Artificial_BusBar_{}'.format(sh.bus.code)]
+        # injections
+        for elm in self.get_injection_devices():
+            elm.cn = bbcn[elm.bus.idtag]
 
         # Removing original buses
-        bidx = [b for b in self.get_buses()]
-        for b in bidx:
-            self.delete_bus(b)
+        if not keep_buses:
+            bidx = [b for b in self.get_buses()]
+            for b in bidx:
+                self.delete_bus(b)
