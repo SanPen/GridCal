@@ -211,6 +211,10 @@ def get_load_data(circuit: MultiCircuit,
         data.mttf[ii] = elm.mttf
         data.mttr[ii] = elm.mttr
 
+        data.controlled[ii] = elm.is_controlled
+        data.b_min[ii] = elm.Bmin
+        data.b_max[ii] = elm.Bmax
+
         if time_series:
             data.Y[ii] = complex(elm.G_at(t_idx), elm.B_at(t_idx))
             data.active[ii] = elm.active_prof[t_idx]
@@ -282,22 +286,12 @@ def get_shunt_data(circuit: MultiCircuit,
         data.mttf[k] = elm.mttf
         data.mttr[k] = elm.mttr
 
-        data.controlled[k] = elm.is_controlled
-        data.b_min[k] = elm.Bmin
-        data.b_max[k] = elm.Bmax
-
         if time_series:
             data.active[k] = elm.active_prof[t_idx]
             data.admittance[k] = elm.G_prof[t_idx] + 1j * elm.B_prof[t_idx]
         else:
             data.active[k] = elm.active
             data.admittance[k] = complex(elm.G, elm.B)
-
-        if not use_stored_guess:
-            if Vbus[i].real == 1.0:
-                Vbus[i] = complex(elm.Vset, 0)
-            elif elm.Vset != Vbus[i]:
-                logger.add_error('Different set points', elm.bus.name, elm.Vset, Vbus[i])
 
         data.C_bus_elm[i, k] = 1
 
