@@ -66,7 +66,7 @@ def get_objects_dictionary() -> Dict[str, dev.EditableDevice]:
 
                     'shunt': dev.Shunt(),
 
-                    'linear_shunt': dev.LinearShunt(),
+                    'linear_shunt': dev.ControllableShunt(),
 
                     'current_injection': dev.CurrentInjection(),
 

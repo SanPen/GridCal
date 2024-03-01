@@ -83,12 +83,11 @@ class Switch(BranchParent):
         self.retained = retained
 
         self.normal_open = normal_open
-        self.rated_current = rated_current
+        self.rated_current = rated_current      # TODO handling kA
 
-        self.register(key='R', units='Ohm/km', tpe=float, definition='Positive-sequence resistance')
-        self.register(key='X', units='Ohm/km', tpe=float, definition='Positive-sequence reactance')
+        self.register(key='R', units='pu', tpe=float, definition='Positive-sequence resistance')
+        self.register(key='X', units='pu', tpe=float, definition='Positive-sequence reactance')
 
-        # TODO registers
         self.register(key='open', units="", tpe=bool,
                       definition='Switch is open')
         self.register(key='retained', units="", tpe=bool,
@@ -96,7 +95,7 @@ class Switch(BranchParent):
 
         self.register(key='normal_open', units="", tpe=bool,
                       definition='Normal position of the switch')
-        self.register(key='rated_current', units="A", tpe=float,
+        self.register(key='rated_current', units="kA", tpe=float,
                       definition='Rated current of the switch device.')
 
     def copy(self, bus_dict=None):

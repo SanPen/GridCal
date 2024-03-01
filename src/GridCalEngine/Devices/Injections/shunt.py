@@ -23,10 +23,11 @@ class Shunt(ShuntParent):
 
     def __init__(self, name='shunt', idtag=None, code='',
                  G=0.0, B=0.0, active=True,
-                 controlled=False, Bmin=0.0, Bmax=0.0, vset=1.0, mttf=0.0, mttr=0.0,
+                 mttf=0.0, mttr=0.0,
                  G0=0, B0=0,
                  capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned):
         """
+        Fixed shunt, not controllable
 
         :param name:
         :param idtag:
@@ -66,19 +67,6 @@ class Shunt(ShuntParent):
                              build_status=build_status,
                              device_type=DeviceType.ShuntDevice)
 
-        self.is_controlled = controlled
-
-        self.Bmin = Bmin
-        self.Bmax = Bmax
-        self.Vset = vset
-
-        self.register(key='is_controlled', units='', tpe=bool, definition='Is the shunt controllable?')
-
-        self.register(key='Bmin', units='MVAr', tpe=float, definition='Reactive power min control value at V=1.0 p.u.')
-        self.register(key='Bmax', units='MVAr', tpe=float, definition='Reactive power max control value at V=1.0 p.u.')
-        self.register(key='Vset', units='p.u.', tpe=float,
-                      definition='Set voltage. This is used for controlled shunts.')
-
     def get_properties_dict(self, version=3):
         """
         Get json dictionary
@@ -94,8 +82,6 @@ class Shunt(ShuntParent):
                     'active': self.active,
                     'g': self.G,
                     'b': self.B,
-                    'bmax': self.Bmax,
-                    'bmin': self.Bmin,
                     'id_impedance_table': "",
                     'technology': ""
                     }
@@ -107,13 +93,10 @@ class Shunt(ShuntParent):
                     'name_code': self.code,
                     'bus': self.bus.idtag,
                     'active': self.active,
-                    'controlled': self.is_controlled,
                     'g': self.G,
                     'b': self.B,
                     'g0': self.G0,
                     'b0': self.B0,
-                    'bmax': self.Bmax,
-                    'bmin': self.Bmin,
                     'capex': self.capex,
                     'opex': self.opex,
                     'build_status': str(self.build_status.value).lower(),
@@ -150,4 +133,3 @@ class Shunt(ShuntParent):
         """
         return {'g': 'MVAr at V=1 p.u.',
                 'b': 'MVAr at V=1 p.u.'}
-

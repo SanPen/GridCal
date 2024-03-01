@@ -244,7 +244,7 @@ class MultiCircuit:
         self.current_injections: List[dev.CurrentInjection] = list()
 
         # List of linear shunt devices
-        self.linear_shunts: List[dev.LinearShunt] = list()
+        self.linear_shunts: List[dev.ControllableShunt] = list()
 
         # Lists of measurements
         self.pi_measurements: List[dev.PiMeasurement] = list()
@@ -347,7 +347,7 @@ class MultiCircuit:
                 dev.StaticGenerator(),
                 dev.ExternalGrid(),
                 dev.Shunt(),
-                dev.LinearShunt(),
+                dev.ControllableShunt(),
                 dev.CurrentInjection()
             ],
             "Branches": [
@@ -1311,7 +1311,7 @@ class MultiCircuit:
     # linear_shunts
     # ----------------------------------------------------------------------------------------------------------------------
 
-    def get_linear_shunts(self) -> List[dev.LinearShunt]:
+    def get_linear_shunts(self) -> List[dev.ControllableShunt]:
         """
         List of linear_shunts
         :return: List[dev.LinearShunt]
@@ -1325,7 +1325,7 @@ class MultiCircuit:
         """
         return len(self.linear_shunts)
 
-    def get_linear_shunt_at(self, i: int) -> dev.LinearShunt:
+    def get_linear_shunt_at(self, i: int) -> dev.ControllableShunt:
         """
         Get linear_shunt at i
         :param i: index
@@ -1340,7 +1340,7 @@ class MultiCircuit:
         """
         return np.array([e.name for e in self.linear_shunts])
 
-    def add_linear_shunt(self, obj: dev.LinearShunt):
+    def add_linear_shunt(self, obj: dev.ControllableShunt):
         """
         Add a LinearShunt object
         :param obj: LinearShunt instance
@@ -1350,7 +1350,7 @@ class MultiCircuit:
             obj.create_profiles(self.time_profile)
         self.linear_shunts.append(obj)
 
-    def delete_linear_shunt(self, obj: dev.LinearShunt) -> None:
+    def delete_linear_shunt(self, obj: dev.ControllableShunt) -> None:
         """
         Add a LinearShunt object
         :param obj: LinearShunt instance
