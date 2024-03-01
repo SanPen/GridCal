@@ -1837,7 +1837,7 @@ class MultiCircuit:
             raise Exception('Element type not understood ' + str(device_type))
 
     def set_elements_by_type(self, device_type: DeviceType,
-                             devices: List[dev.EditableDevice],
+                             devices: List[ALL_DEV_TYPES],
                              logger: Logger = Logger()):
         """
         Set a list of elements all at once
@@ -2729,7 +2729,7 @@ class MultiCircuit:
             obj.create_profiles(self.time_profile)
         self.switch_devices.append(obj)
 
-    def add_branch(self, obj: BRANCH_TYPES) -> None:
+    def add_branch(self, obj: Union[BRANCH_TYPES, dev.Branch]) -> None:
         """
         Add any branch object (it's type will be infered here)
         :param obj: any class inheriting from ParentBranch
