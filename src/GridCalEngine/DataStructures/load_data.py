@@ -42,6 +42,10 @@ class LoadData:
         self.I: Vec = np.zeros(nelm, dtype=complex)
         self.Y: Vec = np.zeros(nelm, dtype=complex)
 
+        self.controlled: IntVec = np.zeros(nelm, dtype=bool)
+        self.b_min: Vec = np.zeros(nelm, dtype=float)
+        self.b_max: Vec = np.zeros(nelm, dtype=float)
+
         # reliabilty
         self.mttf: Vec = np.zeros(nelm, dtype=float)
         self.mttr: Vec = np.zeros(nelm, dtype=float)
@@ -78,6 +82,10 @@ class LoadData:
         data.I = self.I[elm_idx]
         data.Y = self.Y[elm_idx]
 
+        data.controlled = self.controlled[elm_idx]
+        data.b_min = self.b_min[elm_idx]
+        data.b_max = self.b_max[elm_idx]
+
         data.mttf = self.mttf[elm_idx]
         data.mttr = self.mttr[elm_idx]
 
@@ -104,6 +112,10 @@ class LoadData:
         data.S = self.S.copy()
         data.I = self.I.copy()
         data.Y = self.Y.copy()
+
+        data.controlled = self.controlled.copy()
+        data.b_min = self.b_min.copy()
+        data.b_max = self.b_max.copy()
 
         data.mttf = self.mttf.copy()
         data.mttr = self.mttr.copy()
@@ -144,6 +156,27 @@ class LoadData:
         :return:
         """
         return self.S.real * self.active
+
+    def get_controlled_per_bus(self) -> IntVec:
+        """
+        Get controlled per bus
+        :return:
+        """
+        return self.C_bus_elm * (self.controlled * self.active)
+
+    def get_b_max_per_bus(self) -> Vec:
+        """
+        Get Bmax per bus
+        :return:
+        """
+        return self.C_bus_elm * (self.b_max * self.active)
+
+    def get_b_min_per_bus(self) -> Vec:
+        """
+        Get Bmin per bus
+        :return:
+        """
+        return self.C_bus_elm * (self.b_min * self.active)
 
     def get_injections_per_bus(self) -> CxVec:
         """
