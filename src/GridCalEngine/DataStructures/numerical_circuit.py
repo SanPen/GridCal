@@ -228,8 +228,6 @@ class NumericalCircuit:
 
         self.Qmax_bus_: Vec = None
         self.Qmin_bus_: Vec = None
-        self.Bmax_bus_: Vec = None
-        self.Bmin_bus_: Vec = None
 
         # class that holds all the simulation indices
         self.simulation_indices_: Union[None, si.SimulationIndices] = None
@@ -656,28 +654,6 @@ class NumericalCircuit:
             self.Qmax_bus_, self.Qmin_bus_ = self.compute_reactive_power_limits()
 
         return self.Qmin_bus_
-
-    @property
-    def Bmax_bus(self):
-        """
-
-        :return:
-        """
-        if self.Bmax_bus_ is None:
-            self.Bmax_bus_, self.Bmin_bus_ = self.compute_susceptance_limits()
-
-        return self.Bmax_bus_
-
-    @property
-    def Bmin_bus(self):
-        """
-
-        :return:
-        """
-        if self.Bmin_bus_ is None:
-            self.Bmax_bus_, self.Bmin_bus_ = self.compute_susceptance_limits()
-
-        return self.Bmin_bus_
 
     @property
     def Yshunt_from_devices(self):
@@ -1357,10 +1333,10 @@ class NumericalCircuit:
             Qmax_bus += self.battery_data.get_qmax_per_bus()
             Qmin_bus += self.battery_data.get_qmin_per_bus()
 
-        if self.nshunt > 0:
-            # shunts
-            Qmax_bus += self.shunt_data.get_b_max_per_bus()
-            Qmin_bus += self.shunt_data.get_b_min_per_bus()
+        # if self.nshunt > 0:
+        #     # shunts
+        #     Qmax_bus += self.shunt_data.get_b_max_per_bus()
+        #     Qmin_bus += self.shunt_data.get_b_min_per_bus()
 
         if self.nhvdc > 0:
             # hvdc from
@@ -1382,8 +1358,8 @@ class NumericalCircuit:
         Compute susceptance limits
         :return:
         """
-        Bmin = self.shunt_data.get_b_min_per_bus() / self.Sbase
-        Bmax = self.shunt_data.get_b_max_per_bus() / self.Sbase
+        Bmin = self.load_data.get_b_min_per_bus() / self.Sbase
+        Bmax = self.load_data.get_b_max_per_bus() / self.Sbase
 
         return Bmax, Bmin
 
