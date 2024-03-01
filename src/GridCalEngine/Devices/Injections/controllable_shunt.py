@@ -28,24 +28,29 @@ class ControllableShunt(InjectionParent):
     Controllable Shunt
     """
 
-    def __init__(self, name='Linear Shunt', idtag=None, code='',
-                 G=0.0, B=0.0,
-                 g_min=0, g_max=1e20, b_min=0, b_max=1e20,
+    def __init__(self,
+                 name='Controllable Shunt',
+                 idtag: Union[None, str] = None,
+                 code: str = '',
                  is_nonlinear: bool = False,
                  number_of_steps: int = 1,
                  step: int = 1,
-                 Cost=1200.0,
-                 active=True, mttf=0.0, mttr=0.0, capex=0, opex=0,
+                 g_per_step: float = 0.0,
+                 b_per_step: float = 0.0,
+                 Cost: float = 1200.0,
+                 active: bool = True,
+                 mttf: float = 0.0,
+                 mttr: float = 0.0,
+                 capex: float = 0.0,
+                 opex: float = 0.0,
                  build_status: BuildStatus = BuildStatus.Commissioned):
         """
-        The load object implements the so-called ZIP model, in which the load can be
+        The controllable shunt object implements the so-called ZIP model, in which the load can be
         represented by a combination of power (P), current(I), and impedance (Z).
         The sign convention is: Positive to act as a load, negative to act as a generator.
         :param name: Name of the load
         :param idtag: UUID code
         :param code: secondary ID code
-        :param G: Conductance in equivalent MW
-        :param B: Susceptance in equivalent MVAr
         :param Cost: Cost of load shedding
         :param active: Is the load active?
         :param mttf: Mean time to failure in hours
@@ -64,70 +69,79 @@ class ControllableShunt(InjectionParent):
                                  capex=capex,
                                  opex=opex,
                                  build_status=build_status,
-                                 device_type=DeviceType.LinearShuntDevice)
-
-        # TODO calc from steps,
-        # linear: sum until the step
-        # nonlinear: value of the step
-        self.G = G
-        self.B = B
-        self._G_prof = Profile(default_value=G)
-        self._B_prof = Profile(default_value=B)
-
-        # TODO calculated from steps
-        self.g_min = g_min
-        self.g_max = g_max
-        self.b_min = b_min
-        self.b_max = b_max
+                                 device_type=DeviceType.ControllableShuntDevice)
 
         self.is_nonlinear = is_nonlinear
+        self._g_steps = np.zeros(number_of_steps)
+        self._b_steps = np.zeros(number_of_steps)
 
-        self.G_steps = np.zeros(number_of_steps)
-        self.B_steps = np.zeros(number_of_steps)
+        # regardless of the linear / nonlinear type, we always store
+        # the cummulative values because the query is faster
+        for i in range(number_of_steps):
+            self._g_steps[i] = g_per_step * (i + 1)
+            self._b_steps[i] = b_per_step * (i + 1)
 
         self.step = step
         self._step_prof = Profile(default_value=step)
 
-        self.register(key='G', units='MW', tpe=float,
-                      definition='Active power of the impedance component at V=1.0 p.u.', profile_name='G_prof')
-        self.register(key='B', units='MVAr', tpe=float,
-                      definition='Reactive power of the impedance component at V=1.0 p.u.', profile_name='B_prof')
-
-        # TODo regiters
+        self.register(key='step', units='MW', tpe=float, definition='Device tap step', profile_name='step_prof')
+        self.register(key='is_nonlinear', units='', tpe=bool, definition='Is non-linear?')
 
     @property
-    def G_prof(self) -> Profile:
+    def g_steps(self):
         """
-        Cost profile
-        :return: Profile
+        G steps
+        :return:
         """
-        return self._G_prof
+        return self._g_steps
 
-    @G_prof.setter
-    def G_prof(self, val: Union[Profile, np.ndarray]):
-        if isinstance(val, Profile):
-            self._G_prof = val
-        elif isinstance(val, np.ndarray):
-            self._G_prof.set(arr=val)
-        else:
-            raise Exception(str(type(val)) + 'not supported to be set into a G_prof')
+    @g_steps.setter
+    def g_steps(self, value: np.ndarray):
+        assert isinstance(value, np.ndarray)
+        self._g_steps = value
 
     @property
-    def B_prof(self) -> Profile:
+    def b_steps(self):
         """
-        Cost profile
-        :return: Profile
+        B steps
+        :return:
         """
-        return self._B_prof
+        return self._b_steps
 
-    @B_prof.setter
-    def B_prof(self, val: Union[Profile, np.ndarray]):
-        if isinstance(val, Profile):
-            self._B_prof = val
-        elif isinstance(val, np.ndarray):
-            self._B_prof.set(arr=val)
-        else:
-            raise Exception(str(type(val)) + 'not supported to be set into a B_prof')
+    @b_steps.setter
+    def b_steps(self, value: np.ndarray):
+        assert isinstance(value, np.ndarray)
+        self._b_steps = value
+
+    @property
+    def G(self):
+        """
+
+        :return:
+        """
+        return self._g_steps[self.step]
+
+    @property
+    def B(self):
+        """
+
+        :return:
+        """
+        return self._b_steps[self.step]
+
+    def G_at(self, t_idx):
+        """
+
+        :return:
+        """
+        return self._g_steps[self.step_prof[t_idx]]
+
+    def B_at(self, t_idx):
+        """
+
+        :return:
+        """
+        return self._b_steps[self.step_prof[t_idx]]
 
     @property
     def step_prof(self) -> Profile:
@@ -136,6 +150,20 @@ class ControllableShunt(InjectionParent):
         :return: Profile
         """
         return self._step_prof
+
+    def get_linear_g_steps(self):
+        """
+
+        :return:
+        """
+        return np.diff(self._g_steps)
+
+    def get_linear_b_steps(self):
+        """
+
+        :return:
+        """
+        return np.diff(self._b_steps)
 
     @step_prof.setter
     def step_prof(self, val: Union[Profile, np.ndarray]):
@@ -159,8 +187,9 @@ class ControllableShunt(InjectionParent):
                     'name_code': self.code,
                     'bus': self.bus.idtag,
                     'active': bool(self.active),
-                    'g': self.G,
-                    'b': self.B,
+                    'g_steps': self._g_steps.tolist(),
+                    'b_steps': self._b_steps.tolist(),
+                    'step': self.step,
                     'shedding_cost': self.Cost
                     }
         else:
@@ -174,25 +203,22 @@ class ControllableShunt(InjectionParent):
 
         if self.active_prof is not None:
             active_profile = self.active_prof.tolist()
-            G_prof = self.G_prof.tolist()
-            B_prof = self.B_prof.tolist()
+            steps_prof = self.step_prof.tolist()
 
         else:
             active_profile = list()
-            G_prof = list()
-            B_prof = list()
+            steps_prof = list()
 
         return {'id': self.idtag,
                 'active': active_profile,
-                'g': G_prof,
-                'b': B_prof}
+                'step': steps_prof,
+                }
 
     def get_units_dict(self, version=3):
         """
         Get units of the values
         """
-        return {'g': 'MVAr at V=1 p.u.',
-                'b': 'MVAr at V=1 p.u.',}
+        return {}
 
     def plot_profiles(self, time=None, show_fig=True):
         """
@@ -208,18 +234,18 @@ class ControllableShunt(InjectionParent):
             ax_2 = fig.add_subplot(212, sharex=ax_1)
 
             # P
-            y = self.G_prof.toarray()
+            y = self.step_prof.toarray()
             df = pd.DataFrame(data=y, index=time, columns=[self.name])
-            ax_1.set_title('Active power conductance', fontsize=14)
-            ax_1.set_ylabel('MW', fontsize=11)
+            ax_1.set_title('Steps', fontsize=14)
+            ax_1.set_ylabel('', fontsize=11)
             df.plot(ax=ax_1)
 
             # Q
-            y = self.B_prof.toarray()
-            df = pd.DataFrame(data=y, index=time, columns=[self.name])
-            ax_2.set_title('Reactive power susceptance', fontsize=14)
-            ax_2.set_ylabel('MVAr', fontsize=11)
-            df.plot(ax=ax_2)
+            # y = self.B_prof.toarray()
+            # df = pd.DataFrame(data=y, index=time, columns=[self.name])
+            # ax_2.set_title('Reactive power susceptance', fontsize=14)
+            # ax_2.set_ylabel('MVAr', fontsize=11)
+            # df.plot(ax=ax_2)
 
             plt.legend()
             fig.suptitle(self.name, fontsize=20)

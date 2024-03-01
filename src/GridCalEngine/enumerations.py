@@ -877,14 +877,13 @@ class DeviceType(Enum):
     BatteryDevice = 'Battery'
     LoadDevice = 'Load'
     CurrentInjectionDevice = 'Current injection'
-    LinearShuntDevice = 'Linear shunt'
+    ControllableShuntDevice = 'Controllable shunt'
     GeneratorDevice = 'Generator'
     StaticGeneratorDevice = 'Static Generator'
     ShuntDevice = 'Shunt'
     UpfcDevice = 'UPFC'  # unified power flow controller
     ExternalGridDevice = 'External grid'
     LoadLikeDevice = 'Load like'
-
 
     LambdaDevice = "Loading from the base situation ($\lambda$)"
 

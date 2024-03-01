@@ -1692,7 +1692,7 @@ class MultiCircuit:
         elif device_type == DeviceType.CurrentInjectionDevice:
             return self.get_current_injections()
 
-        elif device_type == DeviceType.LinearShuntDevice:
+        elif device_type == DeviceType.ControllableShuntDevice:
             return self.get_linear_shunts()
 
         elif device_type == DeviceType.LineDevice:
@@ -1869,7 +1869,7 @@ class MultiCircuit:
         elif device_type == DeviceType.CurrentInjectionDevice:
             self.current_injections = devices
 
-        elif device_type == DeviceType.LinearShuntDevice:
+        elif device_type == DeviceType.ControllableShuntDevice:
             self.linear_shunts = devices
 
         elif device_type == DeviceType.LineDevice:
@@ -2042,7 +2042,7 @@ class MultiCircuit:
         elif element_type == DeviceType.CurrentInjectionDevice:
             self.current_injections.remove(obj)
 
-        elif element_type == DeviceType.LinearShuntDevice:
+        elif element_type == DeviceType.ControllableShuntDevice:
             self.linear_shunts.remove(obj)
 
         elif element_type == DeviceType.LineDevice:
