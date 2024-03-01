@@ -288,7 +288,7 @@ def get_shunt_data(circuit: MultiCircuit,
 
         if time_series:
             data.active[k] = elm.active_prof[t_idx]
-            data.admittance[k] = elm.G_prof[t_idx] + 1j * elm.B_prof[t_idx]
+            data.admittance[k] = complex(elm.G_prof[t_idx], elm.B_prof[t_idx])
         else:
             data.active[k] = elm.active
             data.admittance[k] = complex(elm.G, elm.B)
