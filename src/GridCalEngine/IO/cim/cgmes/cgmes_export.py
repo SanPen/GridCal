@@ -1,4 +1,3 @@
-# import polars as pl  # TOOD: REMOVE This dependency ASAP
 from rdflib.util import first
 from rdflib import Graph, RDFS, RDF, Namespace, OWL, IdentifiedNode, plugin
 import rdflib
