@@ -400,10 +400,6 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
         self.reports = dict()
 
-    def apply_new_rates(self, nc: "NumericalCircuit"):
-        rates = nc.Rates
-        self.loading = self.Sf / (rates + 1e-9)
-
     def initialize(self, n, m):
         """
         Initialize the arrays
@@ -438,7 +434,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
     def create_contingency_report(self, loading_threshold=0.98, reverse=True):
 
-        title = f'{ResultTypes.ContingencyFlowsReport.value[0]}. ' \
+        title = f'{ResultTypes.ContingencyFlowsReport.value}. ' \
                 f'Loading threshold: {str(loading_threshold)}. ' \
                 f'Reverse: {str(reverse)}'
 
@@ -497,7 +493,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         Get flow report
         """
 
-        title = ResultTypes.BranchMonitoring.value[0]
+        title = ResultTypes.BranchMonitoring.value
 
         y = np.array([
             self.monitor,  # Monitor result
@@ -560,7 +556,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         :param reverse: Boolean to get ordered results. None to keep original .
         """
 
-        title = f'{ResultTypes.BaseFlowReport.value[0]}. ' \
+        title = f'{ResultTypes.BaseFlowReport.value}. ' \
                 f'Loading threshold: {str(loading_threshold)}. ' \
                 f'Reverse: {str(reverse)}'
 
@@ -648,7 +644,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         :param reverse: Boolean to get ordered results. None to keep original .
         """
 
-        title = f'{ResultTypes.ContingencyFlowsBranchReport.value[0]}. ' \
+        title = f'{ResultTypes.ContingencyFlowsBranchReport.value}. ' \
                 f'Loading threshold: {str(loading_threshold)}. ' \
                 f'Reverse: {str(reverse)}'
 
@@ -756,7 +752,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         :param loading_threshold: threshold to filter results,
         :param reverse: Boolean to get ordered results. None to keep original .
         """
-        title = f'{ResultTypes.ContingencyFlowsGenerationReport.value[0]}. ' \
+        title = f'{ResultTypes.ContingencyFlowsGenerationReport.value}. ' \
                 f'Loading threshold: {str(loading_threshold)}. ' \
                 f'Reverse: {str(reverse)}'
 
@@ -865,7 +861,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         :param reverse: Boolean to get ordered results. None to keep original .
         """
 
-        title = f'{ResultTypes.ContingencyFlowsHvdcReport.value[0]}. ' \
+        title = f'{ResultTypes.ContingencyFlowsHvdcReport.value}. ' \
                 f'Loading threshold: {str(loading_threshold)}. ' \
                 f'Reverse: {str(reverse)}'
 
@@ -969,7 +965,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
     def create_interarea_exchange_report(self):
 
-        title = ResultTypes.InterAreaExchange.value[0]
+        title = ResultTypes.InterAreaExchange.value
 
         labels = list()
         y = list()
@@ -1059,7 +1055,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                 data=np.abs(self.voltage),
                 index=self.bus_names,
                 columns=['V (p.u.)'],
-                title=result_type.value[0],
+                title=result_type.value,
                 ylabel='(p.u.)',
             )
 
@@ -1068,7 +1064,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                 data=np.angle(self.voltage),
                 index=self.bus_names,
                 columns=['V (radians)'],
-                title=result_type.value[0],
+                title=result_type.value,
                 ylabel='(radians)',
             )
 
@@ -1077,7 +1073,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                 data=self.Sf.real,
                 columns=['Sf'],
                 index=self.branch_names,
-                title=result_type.value[0],
+                title=result_type.value,
                 ylabel='(MW)',
             )
 
@@ -1086,7 +1082,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                 data=self.loading * 100.0,
                 index=self.Sbus.real,
                 columns=['Sb'],
-                title=result_type.value[0],
+                title=result_type.value,
                 ylabel='(MW)',
             )
 
@@ -1095,7 +1091,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                 data=self.loading * 100.0,
                 index=self.branch_names,
                 columns=['Loading'],
-                title=result_type.value[0],
+                title=result_type.value,
                 ylabel='(%)',
             )
 
@@ -1104,7 +1100,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                 data=self.losses.real,
                 index=self.branch_names,
                 columns=['PLosses'],
-                title=result_type.value[0],
+                title=result_type.value,
                 ylabel='(MW)',
             )
 
@@ -1113,7 +1109,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                 data=np.rad2deg(self.phase_shift),
                 index=self.branch_names,
                 columns=['V (deg)'],
-                title=result_type.value[0],
+                title=result_type.value,
                 ylabel='(deg)',
             )
 
@@ -1122,7 +1118,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                 data=self.generator_power,
                 index=self.generator_names,
                 columns=['P'],
-                title=result_type.value[0],
+                title=result_type.value,
                 ylabel='(MW)',
             )
 
@@ -1131,7 +1127,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                 data=self.battery_power,
                 index=self.battery_names,
                 columns=['P'],
-                title=result_type.value[0],
+                title=result_type.value,
                 ylabel='(MW)',
             )
 
@@ -1140,7 +1136,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                 data=self.hvdc_Pf,
                 index=self.hvdc_names,
                 columns=['Pf'],
-                title=result_type.value[0],
+                title=result_type.value,
                 ylabel='(MW)',
             )
 
@@ -1148,7 +1144,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             return ResultsTable(
                 data=self.alpha,
                 index=self.branch_names,
-                title=result_type.value[0],
+                title=result_type.value,
                 columns=['Sensitivity'],
                 ylabel='(p.u.)',
                 xlabel='',
@@ -1160,7 +1156,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                 data=self.alpha_n1,
                 index=self.branch_names,
                 columns=self.branch_names,
-                title=result_type.value[0],
+                title=result_type.value,
                 ylabel='(p.u.)',
                 xlabel='',
                 units='',
@@ -1171,7 +1167,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                 data=self.generation_delta,
                 index=self.generator_names,
                 columns=['P'],
-                title=result_type.value[0],
+                title=result_type.value,
                 ylabel='(MW)',
                 xlabel='',
                 units='',
@@ -1219,7 +1215,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
         :return:
         """
-        title = ResultTypes.BranchMonitoring.value[0]
+        title = ResultTypes.BranchMonitoring.value
 
         if title not in self.reports.keys():
             self.create_monitoring_logic_report()
@@ -1233,7 +1229,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         :param reverse:
         :return:
         """
-        title = f'{ResultTypes.BaseFlowReport.value[0]}. ' \
+        title = f'{ResultTypes.BaseFlowReport.value}. ' \
                 f'Loading threshold: {str(loading_threshold)}. ' \
                 f'Reverse: {str(reverse)}'
 
@@ -1251,7 +1247,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         :param reverse:
         :return:
         """
-        title = f'{ResultTypes.ContingencyFlowsReport.value[0]}. ' \
+        title = f'{ResultTypes.ContingencyFlowsReport.value}. ' \
                 f'Loading threshold: {str(loading_threshold)}. ' \
                 f'Reverse: {str(reverse)}'
 
@@ -1269,7 +1265,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         :param reverse:
         :return:
         """
-        title = f'{ResultTypes.ContingencyFlowsBranchReport.value[0]}. ' \
+        title = f'{ResultTypes.ContingencyFlowsBranchReport.value}. ' \
                 f'Loading threshold: {str(loading_threshold)}. ' \
                 f'Reverse: {str(reverse)}'
 
@@ -1287,7 +1283,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         :param reverse:
         :return:
         """
-        title = f'{ResultTypes.ContingencyFlowsGenerationReport.value[0]}. ' \
+        title = f'{ResultTypes.ContingencyFlowsGenerationReport.value}. ' \
                 f'Loading threshold: {str(loading_threshold)}. ' \
                 f'Reverse: {str(reverse)}'
 
@@ -1306,7 +1302,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         :param reverse:
         :return:
         """
-        title = f'{ResultTypes.ContingencyFlowsHvdcReport.value[0]}. ' \
+        title = f'{ResultTypes.ContingencyFlowsHvdcReport.value}. ' \
                 f'Loading threshold: {str(loading_threshold)}. ' \
                 f'Reverse: {str(reverse)}'
 
@@ -1323,7 +1319,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
         :return:
         """
-        title = ResultTypes.InterAreaExchange.value[0]
+        title = ResultTypes.InterAreaExchange.value
 
         if title not in self.reports.keys():
             self.create_interarea_exchange_report()

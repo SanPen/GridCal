@@ -212,7 +212,7 @@ def get_load_data(circuit: MultiCircuit,
         data.mttr[ii] = elm.mttr
 
         if time_series:
-            data.Y[ii] = complex(elm.G_prof[t_idx], elm.B_prof[t_idx])
+            data.Y[ii] = complex(elm.G_at(t_idx), elm.B_at(t_idx))
             data.active[ii] = elm.active_prof[t_idx]
             data.cost[ii] = elm.Cost_prof[t_idx]
 

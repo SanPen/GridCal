@@ -104,7 +104,6 @@ class FileOpen:
             self.cgmes_circuit = CgmesCircuit(cgmes_version=data_parser.cgmes_version,text_func=text_func,
                                               progress_func=progress_func, logger=self.cgmes_logger)
             self.cgmes_circuit.parse_files(data_parser=data_parser)
-            # self.cgmes_circuit.to_excel(fname=r'C:\Users\BenceSzirbik\Downloads\excel.xlsx')
             endt = time.time()
             print("CGMES model load time: ", endt - start, "sec")
             self.circuit = cgmes_to_gridcal(cgmes_model=self.cgmes_circuit, logger=self.cgmes_logger)
@@ -240,7 +239,6 @@ class FileOpen:
                     self.cgmes_circuit = CgmesCircuit(cgmes_version=data_parser.cgmes_version, text_func=text_func,
                                                       progress_func=progress_func, logger=self.cgmes_logger)
                     self.cgmes_circuit.parse_files(data_parser=data_parser)
-                    # self.cgmes_circuit.to_excel(fname=r'C:\Users\BenceSzirbik\Downloads\excel.xlsx')
                     self.circuit = cgmes_to_gridcal(cgmes_model=self.cgmes_circuit, logger=self.cgmes_logger)
 
                 elif file_extension.lower() == '.hdf5':

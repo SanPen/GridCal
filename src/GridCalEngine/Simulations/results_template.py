@@ -138,11 +138,11 @@ class ResultsTemplate:
         if isinstance(self.available_results, dict):
             for key, values in self.available_results.items():
                 for item in values:
-                    d[item.value[0]] = item
+                    d[item.value] = item
 
         if isinstance(self.available_results, list):
             for item in self.available_results:
-                d[item.value[0]] = item
+                d[item.value] = item
 
         return d
 
@@ -154,9 +154,9 @@ class ResultsTemplate:
         d = dict()
         if isinstance(self.available_results, dict):
             for key, values in self.available_results.items():
-                d[key.value[0]] = [x.value[0] for x in values]
+                d[key.value] = [x.value for x in values]
         if isinstance(self.available_results, list):
-            d = [x.value[0] for x in self.available_results]
+            d = [x.value for x in self.available_results]
 
         return d
 
