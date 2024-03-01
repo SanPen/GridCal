@@ -3329,6 +3329,7 @@ class MultiCircuit:
         Delete zone
         :param obj: index
         """
+        # TODO: remove dependencies
         self.investments_groups.remove(obj)
 
     def add_investment(self, obj: dev.Investment):
@@ -3343,6 +3344,7 @@ class MultiCircuit:
         Delete zone
         :param obj: index
         """
+        # TODO: remove dependencies
         self.investments.remove(obj)
 
     def add_technology(self, obj: dev.Technology):
@@ -5124,10 +5126,10 @@ class MultiCircuit:
         """
 
         bbcn = dict()
-        for bs in self.buses:
-            bus_bar = dev.BusBar(name='Artificial_BusBar_{}'.format(bs.code))
+        for bus in self.buses:
+            bus_bar = dev.BusBar(name='Artificial_BusBar_{}'.format(bus.name))
             self.add_bus_bar(bus_bar)
-            bbcn[bs.idtag] = bus_bar.cn
+            bbcn[bus.idtag] = bus_bar.cn
 
         # branches
         for elm in self.get_branches():
@@ -5152,6 +5154,7 @@ class MultiCircuit:
 
         # injections
         for elm in self.get_injection_devices():
+            # TODO: Add the posibbility to add a switch here too
             elm.cn = bbcn[elm.bus.idtag]
 
         # Removing original buses

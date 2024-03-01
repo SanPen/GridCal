@@ -28,9 +28,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Massive ResultsTable refactor">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Improved convert_to_node_breaker">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/multi_circuit.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/multi_circuit.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/types.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/types.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1312,6 +1312,7 @@
       <workItem from="1709060765952" duration="5263000" />
       <workItem from="1709072351748" duration="352000" />
       <workItem from="1709106611813" duration="16304000" />
+      <workItem from="1709279866432" duration="1793000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1656,7 +1657,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="470" />
+    <option name="localTasksCounter" value="472" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1702,8 +1703,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Import and enum fixes" />
-    <MESSAGE value="Export test from CGMES circuit" />
     <MESSAGE value="Fixes for export test from CGMES circuit" />
     <MESSAGE value="CGMES file header import and data parser modified for version checking" />
     <MESSAGE value="CGMES export refactoring and runtime counters" />
@@ -1727,7 +1726,9 @@
     <MESSAGE value="Fixed: the contingency time series results not adding the detailed report for every time step&#10;&#10;Added all_generators_fixed to run_linear_opf_ts&#10;&#10;Minor GUI labeling" />
     <MESSAGE value="added optimal_linear_contingency_analysis" />
     <MESSAGE value="Massive ResultsTable refactor" />
-    <option name="LAST_COMMIT_MESSAGE" value="Massive ResultsTable refactor" />
+    <MESSAGE value="Improved multi-circuit type hints" />
+    <MESSAGE value="Improved convert_to_node_breaker" />
+    <option name="LAST_COMMIT_MESSAGE" value="Improved convert_to_node_breaker" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
