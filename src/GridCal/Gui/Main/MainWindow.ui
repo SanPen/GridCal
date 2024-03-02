@@ -5560,7 +5560,10 @@
                   <string> %</string>
                  </property>
                  <property name="decimals">
-                  <number>1</number>
+                  <number>2</number>
+                 </property>
+                 <property name="value">
+                  <double>0.050000000000000</double>
                  </property>
                 </widget>
                </item>
