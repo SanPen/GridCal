@@ -2644,8 +2644,7 @@ class SimulationsMain(TimeEventsMain):
                 self.ui.progress_label.setText('Running topology processing...')
                 QtGui.QGuiApplication.processEvents()
                 # set power flow object instance
-                drv = sim.TopologyProcessorDriver(self.circuit,
-                                                  time_indices=[None] + list(self.circuit.get_all_time_indices()))
+                drv = sim.TopologyProcessorDriver(self.circuit)
 
                 self.session.run(drv,
                                  post_func=self.post_topology_processor,
