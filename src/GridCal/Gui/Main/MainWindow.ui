@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1351</width>
-    <height>779</height>
+    <width>1427</width>
+    <height>821</height>
    </rect>
   </property>
   <property name="baseSize">
@@ -244,7 +244,7 @@
                        <number>1</number>
                       </property>
                       <property name="bottomMargin">
-                       <number>1</number>
+                       <number>0</number>
                       </property>
                       <item>
                        <widget class="QComboBox" name="available_results_to_color_comboBox">
@@ -283,16 +283,6 @@
                     </widget>
                    </item>
                    <item>
-                    <widget class="QSlider" name="diagram_step_slider">
-                     <property name="toolTip">
-                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Time slider&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Move this time slider to select the appropriate time slot to view.&lt;/p&gt;&lt;p&gt;The first position sets the snapshot values, the rest attend to the time series values.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                     </property>
-                     <property name="orientation">
-                      <enum>Qt::Horizontal</enum>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
                     <widget class="QLabel" name="schematic_step_label">
                      <property name="font">
                       <font>
@@ -308,27 +298,13 @@
                     </widget>
                    </item>
                    <item>
-                    <widget class="QFrame" name="frame_2">
-                     <property name="frameShape">
-                      <enum>QFrame::NoFrame</enum>
+                    <widget class="QSlider" name="diagram_step_slider">
+                     <property name="toolTip">
+                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Time slider&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Move this time slider to select the appropriate time slot to view.&lt;/p&gt;&lt;p&gt;The first position sets the snapshot values, the rest attend to the time series values.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                      </property>
-                     <property name="frameShadow">
-                      <enum>QFrame::Raised</enum>
+                     <property name="orientation">
+                      <enum>Qt::Horizontal</enum>
                      </property>
-                     <layout class="QHBoxLayout" name="horizontalLayout_29">
-                      <property name="leftMargin">
-                       <number>6</number>
-                      </property>
-                      <property name="topMargin">
-                       <number>0</number>
-                      </property>
-                      <property name="rightMargin">
-                       <number>2</number>
-                      </property>
-                      <property name="bottomMargin">
-                       <number>2</number>
-                      </property>
-                     </layout>
                     </widget>
                    </item>
                   </layout>
@@ -8699,8 +8675,8 @@ QProgressBar::chunk{
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1351</width>
-     <height>22</height>
+     <width>1427</width>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuProject">
