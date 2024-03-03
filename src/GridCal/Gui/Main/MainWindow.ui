@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1410</width>
-    <height>811</height>
+    <width>1292</width>
+    <height>795</height>
    </rect>
   </property>
   <property name="baseSize">
@@ -64,7 +64,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>3</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="GridTab">
        <attribute name="icon">
@@ -744,7 +744,7 @@
                   <widget class="QWidget" name="tab_16">
                    <attribute name="icon">
                     <iconset resource="icons.qrc">
-                     <normaloff>:/Icons/icons/clock.svg</normaloff>:/Icons/icons/clock.svg</iconset>
+                     <normaloff>:/Icons/icons/time_series.svg</normaloff>:/Icons/icons/time_series.svg</iconset>
                    </attribute>
                    <attribute name="title">
                     <string>Time series</string>
@@ -2268,7 +2268,7 @@
            <enum>QTabWidget::South</enum>
           </property>
           <property name="currentIndex">
-           <number>10</number>
+           <number>0</number>
           </property>
           <property name="iconSize">
            <size>
@@ -8695,8 +8695,8 @@ QProgressBar::chunk{
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1410</width>
-     <height>24</height>
+     <width>1292</width>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuProject">
@@ -8774,6 +8774,7 @@ QProgressBar::chunk{
     <addaction name="separator"/>
     <addaction name="actionClustering"/>
     <addaction name="actionUse_clustering"/>
+    <addaction name="actionFind_node_groups"/>
     <addaction name="actionPower_flow_Stochastic"/>
     <addaction name="actionInvestments_evaluation"/>
     <addaction name="actionAdd_selected_as_new_investment"/>
@@ -8794,7 +8795,6 @@ QProgressBar::chunk{
     </property>
     <addaction name="actionAuto_rate_branches"/>
     <addaction name="actionDetect_transformers"/>
-    <addaction name="actionFind_node_groups"/>
     <addaction name="actionEdit_simulation_time_limits"/>
     <addaction name="actionProcess_topology"/>
     <addaction name="actionFuse_devices"/>
@@ -8887,11 +8887,13 @@ QProgressBar::chunk{
    <addaction name="actionOpen_file"/>
    <addaction name="actionSave"/>
    <addaction name="separator"/>
+   <addaction name="actionactivate_time_series"/>
+   <addaction name="actionEdit_simulation_time_limits"/>
+   <addaction name="separator"/>
    <addaction name="actionPower_flow"/>
    <addaction name="actionShort_Circuit"/>
    <addaction name="actionVoltage_stability"/>
    <addaction name="actionSigma_analysis"/>
-   <addaction name="actionInputs_analysis"/>
    <addaction name="separator"/>
    <addaction name="actionOPF"/>
    <addaction name="actionOptimal_Net_Transfer_Capacity"/>
@@ -8909,14 +8911,15 @@ QProgressBar::chunk{
    <addaction name="actionContingency_analysis"/>
    <addaction name="actionATC"/>
    <addaction name="separator"/>
-   <addaction name="actionactivate_time_series"/>
    <addaction name="actionBigger_nodes"/>
    <addaction name="actionSmaller_nodes"/>
    <addaction name="actionCenter_view"/>
    <addaction name="actionAutoatic_layout"/>
    <addaction name="actionDelete_selected"/>
    <addaction name="separator"/>
+   <addaction name="actionInputs_analysis"/>
    <addaction name="actionLaunch_data_analysis_tool"/>
+   <addaction name="separator"/>
   </widget>
   <action name="actionOpen_file">
    <property name="icon">
@@ -8993,7 +8996,7 @@ QProgressBar::chunk{
     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Power flow&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Run the power flow study with time series data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
    <property name="shortcut">
-    <string>F6</string>
+    <string>Ctrl+F5</string>
    </property>
   </action>
   <action name="actionBigger_nodes">
@@ -9048,9 +9051,6 @@ QProgressBar::chunk{
    </property>
    <property name="toolTip">
     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Continuation power flow&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Run a continuation power flow over the snapshot data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-   </property>
-   <property name="shortcut">
-    <string>F7</string>
    </property>
   </action>
   <action name="actionAbout">
@@ -9128,7 +9128,7 @@ QProgressBar::chunk{
     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Optimal power flow&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This runs an optimal power flow for the snapshot&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
    <property name="shortcut">
-    <string>F9</string>
+    <string>F6</string>
    </property>
   </action>
   <action name="actionOPF_time_series">
@@ -9143,7 +9143,7 @@ QProgressBar::chunk{
     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Optimal power flow&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This runs an optimal power flow for the time series data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
    <property name="shortcut">
-    <string>F10</string>
+    <string>Ctrl+F6</string>
    </property>
   </action>
   <action name="actionDetect_transformers">
@@ -9202,8 +9202,11 @@ QProgressBar::chunk{
    <property name="text">
     <string>Launch data analysis tool</string>
    </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Data analysis&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Launch the data analysis tool that finds and tries to repair common grid modelling issues&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
    <property name="shortcut">
-    <string>F8</string>
+    <string>F12</string>
    </property>
   </action>
   <action name="actionOnline_documentation">
@@ -9265,6 +9268,9 @@ QProgressBar::chunk{
    <property name="toolTip">
     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Linear analysis&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform linear analysis with distribution factors (PTDF, LODF)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
+   <property name="shortcut">
+    <string>F7</string>
+   </property>
   </action>
   <action name="actionReset_console">
    <property name="icon">
@@ -9324,6 +9330,9 @@ QProgressBar::chunk{
    </property>
    <property name="toolTip">
     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Linear analysis&lt;/span&gt;&lt;/p&gt;&lt;p&gt;PTDF based time series power flow&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+F7</string>
    </property>
   </action>
   <action name="actionAdd_circuit">
@@ -9451,6 +9460,9 @@ QProgressBar::chunk{
    <property name="toolTip">
     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Contingency analysis&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Per form a contingency analysis with the selected method over the time series data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+F8</string>
+   </property>
   </action>
   <action name="actionImportPlexosBranchRates">
    <property name="icon">
@@ -9532,6 +9544,9 @@ QProgressBar::chunk{
    <property name="toolTip">
     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Contingency analysis&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform a contingency analysis with the selected method over the snapshot data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
+   <property name="shortcut">
+    <string>F8</string>
+   </property>
   </action>
   <action name="actionOptimal_Net_Transfer_Capacity">
    <property name="icon">
@@ -9566,19 +9581,7 @@ QProgressBar::chunk{
     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Inputs analysis&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform an analysis of the inputs for both the snapshot and time series data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
    <property name="shortcut">
-    <string>F4</string>
-   </property>
-  </action>
-  <action name="actionATC_clustering">
-   <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/Icons/icons/atc_ts_clustering.svg</normaloff>:/Icons/icons/atc_ts_clustering.svg</iconset>
-   </property>
-   <property name="text">
-    <string>Available transfer capacity with clustering</string>
-   </property>
-   <property name="toolTip">
-    <string>Perform the ATC time series study with clustering</string>
+    <string>F11</string>
    </property>
   </action>
   <action name="actionFuse_devices">
@@ -9860,10 +9863,13 @@ QProgressBar::chunk{
   <action name="actionEdit_simulation_time_limits">
    <property name="icon">
     <iconset resource="icons.qrc">
-     <normaloff>:/Icons/icons/edit.svg</normaloff>:/Icons/icons/edit.svg</iconset>
+     <normaloff>:/Icons/icons/time_series span.svg</normaloff>:/Icons/icons/time_series span.svg</iconset>
    </property>
    <property name="text">
     <string>Edit simulation time limits</string>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Time series&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Edit simulation time limits&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
   </action>
   <action name="actionactivate_time_series">
@@ -9872,13 +9878,13 @@ QProgressBar::chunk{
    </property>
    <property name="icon">
     <iconset resource="icons.qrc">
-     <normaloff>:/Icons/icons/time_series.svg</normaloff>:/Icons/icons/time_series.svg</iconset>
+     <normaloff>:/Icons/icons/time_series set.svg</normaloff>:/Icons/icons/time_series set.svg</iconset>
    </property>
    <property name="text">
     <string>activate time series</string>
    </property>
    <property name="toolTip">
-    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Time series flag&lt;/span&gt;&lt;/p&gt;&lt;p&gt;When activated, the simulations run their time series version&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Time series mode&lt;/span&gt;&lt;/p&gt;&lt;p&gt;When activated, the simulations run their time series version&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+T</string>
