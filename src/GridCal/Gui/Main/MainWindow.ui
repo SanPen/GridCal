@@ -8887,9 +8887,6 @@ QProgressBar::chunk{
    <addaction name="actionOpen_file"/>
    <addaction name="actionSave"/>
    <addaction name="separator"/>
-   <addaction name="actionactivate_time_series"/>
-   <addaction name="actionEdit_simulation_time_limits"/>
-   <addaction name="separator"/>
    <addaction name="actionPower_flow"/>
    <addaction name="actionShort_Circuit"/>
    <addaction name="actionVoltage_stability"/>
@@ -8919,6 +8916,9 @@ QProgressBar::chunk{
    <addaction name="separator"/>
    <addaction name="actionInputs_analysis"/>
    <addaction name="actionLaunch_data_analysis_tool"/>
+   <addaction name="separator"/>
+   <addaction name="actionactivate_time_series"/>
+   <addaction name="actionEdit_simulation_time_limits"/>
    <addaction name="separator"/>
   </widget>
   <action name="actionOpen_file">
