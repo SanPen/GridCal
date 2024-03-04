@@ -84,7 +84,7 @@ class ControllableShunt(InjectionParent):
         self.step = step
         self._step_prof = Profile(default_value=step)
 
-        self.register(key='step', units='MW', tpe=float, definition='Device tap step', profile_name='step_prof')
+        self.register(key='step', units='', tpe=int, definition='Device tap step', profile_name='step_prof')
         self.register(key='is_nonlinear', units='', tpe=bool, definition='Is non-linear?')
 
     @property
@@ -119,7 +119,7 @@ class ControllableShunt(InjectionParent):
 
         :return:
         """
-        return self._g_steps[self.step]
+        return self._g_steps[self.step - 1]
 
     @property
     def B(self):
@@ -127,21 +127,21 @@ class ControllableShunt(InjectionParent):
 
         :return:
         """
-        return self._b_steps[self.step]
+        return self._b_steps[self.step - 1]
 
     def G_at(self, t_idx):
         """
 
         :return:
         """
-        return self._g_steps[self.step_prof[t_idx]]
+        return self._g_steps[self.step_prof[t_idx] - 1]
 
     def B_at(self, t_idx):
         """
 
         :return:
         """
-        return self._b_steps[self.step_prof[t_idx]]
+        return self._b_steps[self.step_prof[t_idx] - 1]
 
     @property
     def step_prof(self) -> Profile:

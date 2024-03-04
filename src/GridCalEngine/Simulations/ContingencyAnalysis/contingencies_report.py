@@ -348,35 +348,63 @@ class ContingencyResultsReport:
         """
         df = self.get_df()
 
-        #
-        # # Loading to consider
-        # # OJO ES NECESARIO TENER EN CUENTA EL FLUJO EN BASE DE LAS DE EN BASE
-        #
-        # # Filter by the overloads not acceptables
-        # df = df[df["Overload"] == "Overload not acceptable"]
-        #
-        # # Group de columns by Area1, Area2, Monitored, COntingency
-        # df_grp = df.groupby(["Area 1", "Area 2", "Monitored", "Contingency","Base rating (MW)","Contingency rating (MW)","SRAP rating (MW)"])
-        #
-        # #Compute the columns
-        #
-        # ov_max = df_grp["C"].max()
-        # ov_max_date = df_grp["D"].idxmax().apply(lambda x: df.loc[x, "Time"])
-        # ov_avg = df_grp["C"].mean()
-        # ov_desvest = df_grp["C"].std()
-        # ov_count = df_grp["C"].count()
-        #
-        # "Overload max (pu)"
-        # "Date Overload max"
-        # "Overload average (pu)"
-        # "Standard deviation (pu)"
-        # # "Hours with overload (h)"
-        # "Overload count (h x ov)"
+        df["Time"] = df["Time"].astype(int)
+        df["Base rating (MW)"] = df["Base rating (MW)"].astype(float)
+        df["Contingency rating (MW)"] = df["Contingency rating (MW)"].astype(float)
+        df["SRAP rating (MW)"] = df["SRAP rating (MW)"].astype(float)
+        df["Base flow (MW)"] = df["Base flow (MW)"].astype(float)
+        df["Post-Contingency flow (MW)"] = df["Post-Contingency flow (MW)"].astype(float)
+        df["Post-SRAP flow (MW)"] = df["Post-SRAP flow (MW)"].astype(float)
+        df["Base loading (pu)"] = df["Base loading (pu)"].astype(float)
+        df["Post-Contingency loading (pu)"] = df["Post-Contingency loading (pu)"].astype(float)
+        df["Post-SRAP loading (pu)"] = df["Post-SRAP loading (pu)"].astype(float)
+        df["SRAP Power (MW)"] = df["SRAP Power (MW)"].astype(float)
+        df["Solved with SRAP"] = df["Solved with SRAP"].astype(bool)
 
+        # If we are analyzing a base case, we report base case
+        # If we are analyzing an overload due to a contingency (not in base), we report:
+        # --- If 'SRAP applicable' we report "Post-SRAP loading (pu)"
+        # --- If it is different to 'SRAP  applicable' (only two options available "not applicable" o "not needed") and we report "Post-Contingency loading (pu)"
 
+        df["Overload for reporting"] = np.select(
+            condlist=[(df["Contingency"] == "Base"),
+                      (df["Contingency"] != "Base") & (df["SRAP availability"] == "SRAP applicable"),
+                      (df["Contingency"] != "Base") & (df["SRAP availability"] != "SRAP applicable")],
+            choicelist=[df["Base loading (pu)"], df["Post-SRAP loading (pu)"], df["Post-Contingency loading (pu)"]],
+            default=None)
 
+        # Group de columns by Area1, Area2, Monitored, Contingency
+        df_grp = df.groupby(
+            ["Area 1", "Area 2", "Monitored", "Contingency", "Base rating (MW)", "Contingency rating (MW)",
+             "SRAP rating (MW)"])
 
-        return df
+        # Compute the columns
+        ov_max = df_grp["Overload for reporting"].max()
+        ov_max_date = df.loc[df_grp["Overload for reporting"].idxmax(), "Time"]
+        ov_avg = df_grp["Overload for reporting"].mean()
+        ov_desvest = df_grp["Overload for reporting"].std()
+        ov_desvest = ov_desvest.fillna(0)
+        ov_count = df_grp["Overload for reporting"].count()
+
+        # Create the new dataframe with the columns we need
+        df_summary = pd.DataFrame({
+            "Area 1": ov_max.index.get_level_values("Area 1"),
+            "Area 2": ov_max.index.get_level_values("Area 2"),
+            "Monitored": ov_max.index.get_level_values("Monitored"),
+            "Contingency": ov_max.index.get_level_values("Contingency"),
+            "Base rating (MW)": ov_max.index.get_level_values("Base rating (MW)"),
+            "Contingency rating (MW)": ov_max.index.get_level_values("Contingency rating (MW)"),
+            "SRAP rating (MW)": ov_max.index.get_level_values("SRAP rating (MW)"),
+
+            "Overload max (pu)": ov_max.values,
+            "Date Overload max": ov_max_date.values,
+            "Overload average (pu)": ov_avg.values,
+            "Standard deviation (pu)": ov_desvest.values,
+            "Hours with this overload (h)": ov_count.values
+        })
+        df_summary = df_summary.sort_values(by="Contingency", ascending=False).reset_index()
+
+        return df_summary
 
     def __iadd__(self, other: "ContingencyResultsReport"):
         """
