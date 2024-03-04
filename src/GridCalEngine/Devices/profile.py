@@ -173,6 +173,13 @@ class Profile:
         """
         return self._initialized
 
+    def set_initialized(self) -> None:
+        """
+        Set the profile to initialized
+        :return:
+        """
+        self._initialized = True
+
     @property
     def sparse_array(self) -> Union[SparseArray, None]:
         """
