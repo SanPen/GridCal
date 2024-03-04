@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'MainWindow.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.1
+## Created by: Qt User Interface Compiler version 6.5.3
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -4306,13 +4306,12 @@ class Ui_mainWindow(object):
         self.toolBar.addSeparator()
         self.toolBar.addAction(self.actionactivate_time_series)
         self.toolBar.addAction(self.actionEdit_simulation_time_limits)
-        self.toolBar.addSeparator()
 
         self.retranslateUi(mainWindow)
 
         self.tabWidget.setCurrentIndex(0)
-        self.tabWidget_3.setCurrentIndex(1)
-        self.tabWidget_5.setCurrentIndex(1)
+        self.tabWidget_3.setCurrentIndex(0)
+        self.tabWidget_5.setCurrentIndex(0)
         self.tabWidget_4.setCurrentIndex(0)
         self.tabWidget_2.setCurrentIndex(0)
         self.settings_tabWidget.setCurrentIndex(0)

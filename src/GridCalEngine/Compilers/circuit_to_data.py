@@ -1088,7 +1088,7 @@ def get_hvdc_data(circuit: MultiCircuit,
             data.angle_droop[i] = elm.angle_droop_prof[t_idx]
 
             if opf_results is not None:
-                # if we are taking the valñues from the OPF, do not allow the free mode
+                # if we are taking the values from the OPF, do not allow the free mode
                 data.control_mode[i] = HvdcControlType.type_1_Pset
                 data.Pset[i] = opf_results.hvdc_Pf[t_idx, i]
             else:
@@ -1123,9 +1123,9 @@ def get_hvdc_data(circuit: MultiCircuit,
             data.Vset_t[i] = elm.Vset_t
 
             # hack the bus types to believe they are PV
-            if elm.active:
-                bus_types[f] = BusMode.PV.value
-                bus_types[t] = BusMode.PV.value
+            # if elm.active:
+            #     bus_types[f] = BusMode.PV.value
+            #     bus_types[t] = BusMode.PV.value
 
         data.Vnf[i] = elm.bus_from.Vnom
         data.Vnt[i] = elm.bus_to.Vnom
