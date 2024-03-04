@@ -28,11 +28,8 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="336ac068-5f36-44a4-9f98-8909f6be5848" name="Changes" comment="Fixing tests(wip2)">
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Test_SRAP_new.gridcal" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Test_SRAP_reverse_new.gridcal" afterDir="false" />
+    <list default="true" id="336ac068-5f36-44a4-9f98-8909f6be5848" name="Changes" comment="Added more icons and refactored the GUI so that the time series functionality can be accessed by toggling the time series flag">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tests/test_srap.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/test_srap.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -116,14 +113,18 @@
     &quot;Git.Branch.Popup.ShowAllRemotes&quot;: &quot;true&quot;,
     &quot;MATLAB_INTERPRETER&quot;: &quot;/usr/local/MATLAB/R2018a/bin/matlab&quot;,
     &quot;Python tests.Nosetests for test_power_flow.test_zip.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.Nosetests for test_topology_processor.test_topology_rts.executor&quot;: &quot;Debug&quot;,
     &quot;Python tests.Nosetests for tests.test_hydro.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests for tests.test_latin_hypercube.test_lhs.executor&quot;: &quot;Run&quot;,
     &quot;Python tests.Nosetests for tests.test_opf_time_series.test_opf_ts.executor&quot;: &quot;Run&quot;,
     &quot;Python tests.Nosetests for tests.test_topology_processor.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests for tests.test_topology_processor.test_topology_rts.executor&quot;: &quot;Run&quot;,
     &quot;Python tests.Nosetests in admittance_matrix_test.py.executor&quot;: &quot;Run&quot;,
     &quot;Python tests.Nosetests in deep_copy_test.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests in test_topology_processor.py.executor&quot;: &quot;Run&quot;,
     &quot;Python tests.Nosetests in tests.executor&quot;: &quot;Run&quot;,
     &quot;Python.AnalysisDialogue.executor&quot;: &quot;Run&quot;,
-    &quot;Python.ExecuteGridCal.executor&quot;: &quot;Debug&quot;,
+    &quot;Python.ExecuteGridCal.executor&quot;: &quot;Run&quot;,
     &quot;Python.cgmes_rdfs_graph.executor&quot;: &quot;Run&quot;,
     &quot;Python.new_circuit_objects.executor&quot;: &quot;Run&quot;,
     &quot;Python.pymoo_example.executor&quot;: &quot;Debug&quot;,
@@ -132,7 +133,7 @@
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
     &quot;git-widget-placeholder&quot;: &quot;199__finalize__cgmes__import&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/santi/Documentos/Git/GitHub/GridCal/src/tests/data/grids&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/santi/Documentos/Git/GitHub/GridCal/src/GridCal/Gui/BusBranchEditorWidget/Injections&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
@@ -150,18 +151,18 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/GridCal/Gui/BusBranchEditorWidget/Injections" />
+      <recent name="$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/Methods" />
       <recent name="$PROJECT_DIR$/src/tests/data/grids" />
       <recent name="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation" />
       <recent name="$PROJECT_DIR$/src/GridCalEngine/Devices/Injections" />
-      <recent name="C:\WorkProjects\PycharmProjects\GridCal\src\GridCalEngine\IO\cim\cgmes\cgmes_v2_4_15\devices" />
-      <recent name="C:\WorkProjects\PycharmProjects\GridCal\src\GridCalEngine\IO\cim\cgmes" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\ReposGit\github\fernpos\GridCal5\src\tests\data\grids" />
       <recent name="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/NumericalMethods" />
       <recent name="$PROJECT_DIR$/src/GridCalEngine" />
       <recent name="C:\WorkProjects\PycharmProjects\GridCal\src\GridCalEngine\IO\cim\cgmes\export_docs" />
       <recent name="C:\WorkProjects\PycharmProjects\GridCal\src\GridCalEngine\IO\cim\cgmes" />
+      <recent name="C:\WorkProjects\PycharmProjects\GridCal\src\GridCalEngine\IO\cim\cgmes_v2_4_15\devices" />
     </key>
   </component>
   <component name="RunManager" selected="Python.ExecuteGridCal">
@@ -437,15 +438,15 @@
       <method v="2" />
     </configuration>
     <configuration name="update_gui_file" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="GridCal5" />
+      <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
-      <option name="SDK_HOME" value="C:\ReposGit\github\fernpos\GridCal5\venv\Scripts\python.exe" />
+      <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/GridCal/Gui/Main" />
-      <option name="IS_MODULE_SDK" value="false" />
+      <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
@@ -504,7 +505,7 @@
       <option name="docutils_open_in_browser" value="false" />
       <method v="2" />
     </configuration>
-    <configuration name="Nosetests for test_power_flow.test_zip" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
+    <configuration name="Nosetests for test_topology_processor.test_topology_rts" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -516,8 +517,24 @@
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="_new_regexPattern" value="&quot;&quot;" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;test_power_flow.test_zip&quot;" />
+      <option name="_new_target" value="&quot;test_topology_processor.test_topology_rts&quot;" />
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Nosetests in test_topology_processor.py" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
+      <module name="GridCal" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/tests" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="_new_regexPattern" value="&quot;&quot;" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;$PROJECT_DIR$/src/tests/test_topology_processor.py&quot;" />
+      <option name="_new_targetType" value="&quot;PATH&quot;" />
       <method v="2" />
     </configuration>
     <configuration name="Nosetests in tests" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
@@ -534,20 +551,6 @@
       <option name="_new_additionalArguments" value="&quot;&quot;" />
       <option name="_new_target" value="&quot;$PROJECT_DIR$/src/tests&quot;" />
       <option name="_new_targetType" value="&quot;PATH&quot;" />
-      <method v="2" />
-    </configuration>
-    <configuration name="Python tests for test_srap.test_srap" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
-      <module name="GridCal5" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/tests" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;test_srap.test_srap&quot;" />
-      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
     <configuration default="true" type="tests" factoryName="Doctests">
@@ -605,17 +608,17 @@
     <list>
       <item itemvalue="Python.ExecuteGridCal" />
       <item itemvalue="Python.update_gui_file" />
-      <item itemvalue="Python tests.Python tests for test_srap.test_srap" />
-      <item itemvalue="Python tests.Nosetests for test_power_flow.test_zip" />
+      <item itemvalue="Python tests.Nosetests for test_topology_processor.test_topology_rts" />
+      <item itemvalue="Python tests.Nosetests in test_topology_processor.py" />
       <item itemvalue="Python tests.Nosetests in tests" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Python.ExecuteGridCal" />
-        <item itemvalue="Python tests.Python tests for test_srap.test_srap" />
-        <item itemvalue="Python tests.Nosetests in tests" />
-        <item itemvalue="Python tests.Nosetests for test_power_flow.test_zip" />
         <item itemvalue="Python.update_gui_file" />
+        <item itemvalue="Python tests.Nosetests in test_topology_processor.py" />
+        <item itemvalue="Python tests.Nosetests for test_topology_processor.test_topology_rts" />
+        <item itemvalue="Python tests.Nosetests in tests" />
       </list>
     </recent_temporary>
   </component>
@@ -632,7 +635,7 @@
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="336ac068-5f36-44a4-9f98-8909f6be5848" name="Changes" comment="Summary report finished. Increased decimals in contingency deadband&#10;. Small improvements needed: &#10;- Time long format&#10;- Top N considering only positives" />
+      <changelist id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="removed ntcFeseabilityCheck" />
       <created>1588271249557</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
@@ -1278,7 +1281,66 @@
       <workItem from="1709019607988" duration="10470000" />
       <workItem from="1709060765952" duration="5263000" />
       <workItem from="1709072351748" duration="352000" />
-      <workItem from="1709106611813" duration="12900000" />
+      <workItem from="1709106611813" duration="16118000" />
+      <workItem from="1709310522456" duration="2194000" />
+      <workItem from="1709467017631" duration="3475000" />
+      <workItem from="1709494690105" duration="306000" />
+    </task>
+    <task id="LOCAL-00310" summary="implemented newtonPA time series">
+      <created>1656059954202</created>
+      <option name="number" value="00310" />
+      <option name="presentableId" value="LOCAL-00310" />
+      <option name="project" value="LOCAL" />
+      <updated>1656059954202</updated>
+    </task>
+    <task id="LOCAL-00311" summary="parallel threads in newton_pa">
+      <created>1656068672004</created>
+      <option name="number" value="00311" />
+      <option name="presentableId" value="LOCAL-00311" />
+      <option name="project" value="LOCAL" />
+      <updated>1656068672004</updated>
+    </task>
+    <task id="LOCAL-00312" summary="implemented sparse profiles in the json v3 export">
+      <created>1656757347766</created>
+      <option name="number" value="00312" />
+      <option name="presentableId" value="LOCAL-00312" />
+      <option name="project" value="LOCAL" />
+      <updated>1656757347774</updated>
+    </task>
+    <task id="LOCAL-00313" summary="moved the Gui package out as GridCalGui and refactored all that was necessary">
+      <created>1656759710081</created>
+      <option name="number" value="00313" />
+      <option name="presentableId" value="LOCAL-00313" />
+      <option name="project" value="LOCAL" />
+      <updated>1656759710081</updated>
+    </task>
+    <task id="LOCAL-00314" summary="Some more refactoring of missing imports">
+      <created>1656760923750</created>
+      <option name="number" value="00314" />
+      <option name="presentableId" value="LOCAL-00314" />
+      <option name="project" value="LOCAL" />
+      <updated>1656760923751</updated>
+    </task>
+    <task id="LOCAL-00315" summary="refactoring changes">
+      <created>1656838027113</created>
+      <option name="number" value="00315" />
+      <option name="presentableId" value="LOCAL-00315" />
+      <option name="project" value="LOCAL" />
+      <updated>1656838027114</updated>
+    </task>
+    <task id="LOCAL-00316" summary="Implemented profile sparsity in the ejson v3">
+      <created>1656844513018</created>
+      <option name="number" value="00316" />
+      <option name="presentableId" value="LOCAL-00316" />
+      <option name="project" value="LOCAL" />
+      <updated>1656844513019</updated>
+    </task>
+    <task id="LOCAL-00317" summary="added the newtonpa time series error reading">
+      <created>1657011725858</created>
+      <option name="number" value="00317" />
+      <option name="presentableId" value="LOCAL-00317" />
+      <option name="project" value="LOCAL" />
+      <updated>1657011725858</updated>
     </task>
     <task id="LOCAL-00318" summary="Added if condition to prevent bug with time series">
       <created>1658234803791</created>
@@ -1567,62 +1629,6 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <task id="LOCAL-00467" summary="Long report checked with Santi. Merging deom devel. Small improvements needed: &#10;- Time long format&#10;- Top N considering only positives">
-      <created>1709135294298</created>
-      <option name="number" value="00467" />
-      <option name="presentableId" value="LOCAL-00467" />
-      <option name="project" value="LOCAL" />
-      <updated>1709135294298</updated>
-    </task>
-    <task id="LOCAL-00468" summary="Updated flow post srap and p_used. Now only computing the power  without exceeding the needs. Small improvements needed: &#10;- Time long format&#10;- Top N considering only positives">
-      <created>1709209039805</created>
-      <option name="number" value="00468" />
-      <option name="presentableId" value="LOCAL-00468" />
-      <option name="project" value="LOCAL" />
-      <updated>1709209039805</updated>
-    </task>
-    <task id="LOCAL-00469" summary="Small improvements in contingencies report. Small improvements needed: &#10;- Time long format&#10;- Top N considering only positives">
-      <created>1709296595653</created>
-      <option name="number" value="00469" />
-      <option name="presentableId" value="LOCAL-00469" />
-      <option name="project" value="LOCAL" />
-      <updated>1709296595653</updated>
-    </task>
-    <task id="LOCAL-00470" summary="Shunt issue (by Santi)&#10;. Small improvements needed: &#10;- Time long format&#10;- Top N considering only positives">
-      <created>1709297802458</created>
-      <option name="number" value="00470" />
-      <option name="presentableId" value="LOCAL-00470" />
-      <option name="project" value="LOCAL" />
-      <updated>1709297802458</updated>
-    </task>
-    <task id="LOCAL-00471" summary="Summary report finished. Increased decimals in contingency deadband&#10;. Small improvements needed: &#10;- Time long format&#10;- Top N considering only positives">
-      <created>1709310562366</created>
-      <option name="number" value="00471" />
-      <option name="presentableId" value="LOCAL-00471" />
-      <option name="project" value="LOCAL" />
-      <updated>1709310562366</updated>
-    </task>
-    <task id="LOCAL-00472" summary="Summary report finished (removed index in statistical report)">
-      <created>1709540165516</created>
-      <option name="number" value="00472" />
-      <option name="presentableId" value="LOCAL-00472" />
-      <option name="project" value="LOCAL" />
-      <updated>1709540165516</updated>
-    </task>
-    <task id="LOCAL-00473" summary="Fixing tests(wip)">
-      <created>1709544145543</created>
-      <option name="number" value="00473" />
-      <option name="presentableId" value="LOCAL-00473" />
-      <option name="project" value="LOCAL" />
-      <updated>1709544145543</updated>
-    </task>
-    <task id="LOCAL-00474" summary="Fixing tests(wip2)">
-      <created>1709545365570</created>
-      <option name="number" value="00474" />
-      <option name="presentableId" value="LOCAL-00474" />
-      <option name="project" value="LOCAL" />
-      <updated>1709545365570</updated>
-    </task>
     <option name="localTasksCounter" value="475" />
     <servers />
   </component>
@@ -1686,15 +1692,15 @@
     <MESSAGE value="added contingency_deadband" />
     <MESSAGE value="added get_branch_areas_info to the multi-circuit" />
     <MESSAGE value="added the linear shunt and current injection to the compiler" />
-    <MESSAGE value="Long report checked with Santi. Merging deom devel. Small improvements needed: &#10;- Time long format&#10;- Top N considering only positives" />
-    <MESSAGE value="Updated flow post srap and p_used. Now only computing the power  without exceeding the needs. Small improvements needed: &#10;- Time long format&#10;- Top N considering only positives" />
-    <MESSAGE value="Small improvements in contingencies report. Small improvements needed: &#10;- Time long format&#10;- Top N considering only positives" />
-    <MESSAGE value="Shunt issue (by Santi)&#10;. Small improvements needed: &#10;- Time long format&#10;- Top N considering only positives" />
-    <MESSAGE value="Summary report finished. Increased decimals in contingency deadband&#10;. Small improvements needed: &#10;- Time long format&#10;- Top N considering only positives" />
-    <MESSAGE value="Summary report finished (removed index in statistical report)" />
-    <MESSAGE value="Fixing tests(wip)" />
-    <MESSAGE value="Fixing tests(wip2)" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixing tests(wip2)" />
+    <MESSAGE value="Fixed: the contingency time series results not adding the detailed report for every time step&#10;&#10;Added all_generators_fixed to run_linear_opf_ts&#10;&#10;Minor GUI labeling" />
+    <MESSAGE value="fixed test of stochastic pf sending the name" />
+    <MESSAGE value="tried to improve test_topology_processor.py (discuss with ruben carmona)" />
+    <MESSAGE value="Fixed profile loading bug" />
+    <MESSAGE value="converter 1j synthax to complex in circuit_to_data.py" />
+    <MESSAGE value="Fixed topology test for checking" />
+    <MESSAGE value="Added bus action for controllable shunt and current injection" />
+    <MESSAGE value="Added more icons and refactored the GUI so that the time series functionality can be accessed by toggling the time series flag" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added more icons and refactored the GUI so that the time series functionality can be accessed by toggling the time series flag" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2131,20 +2137,25 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/contingencies_report.py</url>
-          <line>554</line>
-          <option name="timeStamp" value="1487" />
+          <line>552</line>
+          <option name="timeStamp" value="1476" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Gui/BusBranchEditorWidget/bus_branch_editor_widget.py</url>
-          <line>16</line>
-          <option name="timeStamp" value="1502" />
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/contingencies_report.py</url>
+          <line>599</line>
+          <option name="timeStamp" value="1478" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/tests/test_srap.py</url>
-          <line>134</line>
-          <option name="timeStamp" value="1503" />
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Devices/multi_circuit.py</url>
+          <line>427</line>
+          <option name="timeStamp" value="1482" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
+    <watches-manager>
+      <configuration name="PythonConfigurationType">
+        <watch expression="case_['gencost'][0]['costtype']" />
+      </configuration>
+    </watches-manager>
   </component>
 </project>

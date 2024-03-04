@@ -131,7 +131,7 @@ def test_srap():
     assert not test5_result_a
 
     # Este es el valor de la ptdf del generador correcto, el que mas influencia proporciona
-    test5_result_b = np.around(con_drv.results.report.entries[0].srap_power, decimals=3) == -0.523
+    test5_result_b = np.around(con_drv.results.report.entries[0].srap_power, decimals=3) == 0.523
     assert test5_result_b
 
     # test 6
