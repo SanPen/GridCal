@@ -25,15 +25,21 @@ from GridCalEngine.Devices.Substation import Bus
 from GridCal.Gui.BusBranchEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, FONT_SCALE, EMERGENCY
 from GridCalEngine.Simulations.Topology.topology_reduction_driver import reduce_buses
 from GridCal.Gui.BusBranchEditorWidget.terminal_item import TerminalItem, HandleItem
-from GridCal.Gui.BusBranchEditorWidget.Injections.load_graphics import LoadGraphicItem
-from GridCal.Gui.BusBranchEditorWidget.Injections.generator_graphics import GeneratorGraphicItem
-from GridCal.Gui.BusBranchEditorWidget.Injections.static_generator_graphics import StaticGeneratorGraphicItem
-from GridCal.Gui.BusBranchEditorWidget.Injections.battery_graphics import BatteryGraphicItem
-from GridCal.Gui.BusBranchEditorWidget.Injections.shunt_graphics import ShuntGraphicItem
-from GridCal.Gui.BusBranchEditorWidget.Injections.external_grid_graphics import ExternalGridGraphicItem
+from GridCal.Gui.BusBranchEditorWidget.Injections.load_graphics import LoadGraphicItem, Load
+from GridCal.Gui.BusBranchEditorWidget.Injections.generator_graphics import GeneratorGraphicItem, Generator
+from GridCal.Gui.BusBranchEditorWidget.Injections.static_generator_graphics import (StaticGeneratorGraphicItem,
+                                                                                    StaticGenerator)
+from GridCal.Gui.BusBranchEditorWidget.Injections.battery_graphics import (BatteryGraphicItem, Battery)
+from GridCal.Gui.BusBranchEditorWidget.Injections.shunt_graphics import (ShuntGraphicItem, Shunt)
+from GridCal.Gui.BusBranchEditorWidget.Injections.external_grid_graphics import (ExternalGridGraphicItem, ExternalGrid)
+from GridCal.Gui.BusBranchEditorWidget.Injections.current_injection_graphics import (CurrentInjectionGraphicItem,
+                                                                                     CurrentInjection)
+from GridCal.Gui.BusBranchEditorWidget.Injections.controllable_shunt_graphics import (ControllableShuntGraphicItem,
+                                                                                      ControllableShunt)
 from GridCal.Gui.messages import yes_no_question
 from GridCalEngine.enumerations import DeviceType, FaultType
-from GridCalEngine.Devices.Parents.editable_device import EditableDevice
+# from GridCalEngine.Devices.Parents.editable_device import EditableDevice
+from GridCalEngine.Devices.types import INJECTION_DEVICE_TYPES
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
@@ -300,7 +306,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         # Arrange line positions
         self.terminal.process_callbacks(self.pos() + self.terminal.pos())
 
-    def create_children_widgets(self, injections_by_tpe: Dict[DeviceType, List[EditableDevice]]):
+    def create_children_widgets(self, injections_by_tpe: Dict[DeviceType, List[INJECTION_DEVICE_TYPES]]):
         """
         Create the icons of the elements that are attached to the API bus object
         Returns:
@@ -332,6 +338,14 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
             elif tpe == DeviceType.ExternalGridDevice:
                 for elm in dev_list:
                     self.add_external_grid(elm)
+
+            elif tpe == DeviceType.CurrentInjectionDevice:
+                for elm in dev_list:
+                    self.add_current_injection(elm)
+
+            elif tpe == DeviceType.ControllableShuntDevice:
+                for elm in dev_list:
+                    self.add_controllable_shunt(elm)
 
             else:
                 raise Exception("Unknown device type:" + str(tpe))
@@ -458,11 +472,23 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         al.setIcon(al_icon)
         al.triggered.connect(self.add_load)
 
+        ac_i = menu.addAction('Current injection')
+        ac_i_icon = QIcon()
+        ac_i_icon.addPixmap(QPixmap(":/Icons/icons/add_load.svg"))
+        ac_i.setIcon(ac_i_icon)
+        ac_i.triggered.connect(self.add_current_injection)
+
         ash = menu.addAction('Shunt')
         ash_icon = QIcon()
         ash_icon.addPixmap(QPixmap(":/Icons/icons/add_shunt.svg"))
         ash.setIcon(ash_icon)
         ash.triggered.connect(self.add_shunt)
+
+        acsh = menu.addAction('Controllable shunt')
+        acsh_icon = QIcon()
+        acsh_icon.addPixmap(QPixmap(":/Icons/icons/add_shunt.svg"))
+        acsh.setIcon(acsh_icon)
+        acsh.triggered.connect(self.add_controllable_shunt)
 
         acg = menu.addAction('Generator')
         acg_icon = QIcon()
@@ -677,7 +703,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         """
         self.terminal.hosting_connections.remove(graphic_obj)
 
-    def add_object(self, api_obj: Union[None, EditableDevice] = None):
+    def add_object(self, api_obj: Union[None, INJECTION_DEVICE_TYPES] = None):
         """
         Add any recognized object
         :param api_obj: EditableDevice
@@ -701,10 +727,16 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         elif api_obj.device_type == DeviceType.ExternalGridDevice:
             self.add_external_grid(api_obj=api_obj)
 
+        elif api_obj.device_type == DeviceType.CurrentInjectionDevice:
+            self.add_current_injection(api_obj=api_obj)
+
+        elif api_obj.device_type == DeviceType.ControllableShuntDevice:
+            self.add_controllable_shunt(api_obj=api_obj)
+
         else:
             raise Exception("Cannot add device of type {}".format(api_obj.device_type.value))
 
-    def add_load(self, api_obj=None):
+    def add_load(self, api_obj: Union[Load, None] = None):
         """
         Add load object to bus
         :param api_obj:
@@ -718,7 +750,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         self.arrange_children()
         return _grph
 
-    def add_shunt(self, api_obj=None):
+    def add_shunt(self, api_obj: Union[Shunt, None] = None):
         """
         Add shunt device
         :param api_obj: If None, a new shunt is created
@@ -731,7 +763,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         self.arrange_children()
         return _grph
 
-    def add_generator(self, api_obj=None):
+    def add_generator(self, api_obj: Union[Generator, None] = None):
         """
         Add generator
         :param api_obj: if None, a new generator is created
@@ -744,7 +776,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         self.arrange_children()
         return _grph
 
-    def add_static_generator(self, api_obj=None):
+    def add_static_generator(self, api_obj: Union[StaticGenerator, None] = None):
         """
         Add static generator
         :param api_obj: If none, a new static generator is created
@@ -759,7 +791,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
 
         return _grph
 
-    def add_battery(self, api_obj=None):
+    def add_battery(self, api_obj: Union[Battery, None] = None):
         """
 
         :param api_obj:
@@ -774,7 +806,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
 
         return _grph
 
-    def add_external_grid(self, api_obj=None):
+    def add_external_grid(self, api_obj: Union[ExternalGrid, None] = None):
         """
 
         :param api_obj:
@@ -784,6 +816,36 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
             api_obj = self.editor.circuit.add_external_grid(bus=self.api_object)
 
         _grph = ExternalGridGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
+        self.shunt_children.append(_grph)
+        self.arrange_children()
+
+        return _grph
+
+    def add_current_injection(self, api_obj: Union[CurrentInjection, None] = None):
+        """
+
+        :param api_obj:
+        :return:
+        """
+        if api_obj is None or type(api_obj) is bool:
+            api_obj = self.editor.circuit.add_current_injection(bus=self.api_object)
+
+        _grph = CurrentInjectionGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
+        self.shunt_children.append(_grph)
+        self.arrange_children()
+
+        return _grph
+
+    def add_controllable_shunt(self, api_obj: Union[ControllableShunt, None] = None):
+        """
+
+        :param api_obj:
+        :return:
+        """
+        if api_obj is None or type(api_obj) is bool:
+            api_obj = self.editor.circuit.add_controllable_shunt(bus=self.api_object)
+
+        _grph = ControllableShuntGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
         self.shunt_children.append(_grph)
         self.arrange_children()
 
