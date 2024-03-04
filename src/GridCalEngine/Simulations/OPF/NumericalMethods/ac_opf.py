@@ -29,6 +29,7 @@ from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at, NumericalCircuit
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
+from GridCalEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
 from GridCalEngine.enumerations import TransformerControlType, ReactivePowerControlMode
 from typing import Tuple, Union
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec
@@ -361,16 +362,19 @@ class NonlinearOPFResults:
 
 def ac_optimal_power_flow(nc: NumericalCircuit,
                           pf_options: PowerFlowOptions,
+                          opf_options: OptimalPowerFlowOptions,
                           debug: bool = False,
                           use_autodiff: bool = False,
-                          pf_init: bool = True,
+                          pf_init: bool = False,
                           plot_error: bool = False) -> NonlinearOPFResults:
     """
 
     :param nc: NumericalCircuit
     :param pf_options: PowerFlowOptions
+    :param opf_options: OptimalPowerFlowOptions
     :param debug: if true, the jacobians, hessians, etc are checked against finite difeerence versions of them
     :param use_autodiff: use the autodiff version of the structures
+    :param pf_init: Initialize with power flow
     :param plot_error:
     :return: NonlinearOPFResults
     """
@@ -448,7 +452,6 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     ntapm = len(k_m)
     ntapt = len(k_tau)
 
-
     ndc = nc.nhvdc
     fdc = nc.hvdc_data.F
     tdc = nc.hvdc_data.T
@@ -487,7 +490,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         vm0 = (Vm_max + Vm_min) / 2
         tapm0 = nc.branch_data.tap_module[k_m]
         tapt0 = nc.branch_data.tap_angle[k_tau]
-        Pfdc0 = np.array([1] * ndc)
+        Pfdc0 = np.array([0] * ndc)
         #Ptdc0 = np.array([1] * ndc)
 
     # compose the initial values
@@ -502,7 +505,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     # number of variables
     NV = len(x0)
 
-    if pf_options.verbose > 0:
+    if opf_options.verbose > 0:
         print("x0:", x0)
 
     if debug:
@@ -515,10 +518,10 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                                             Qg_max, Qg_min, tapm_max, tapm_min, tapt_max, tapt_min, alltapm, alltapt,
                                             k_m, k_tau, k_mtau, c0, c1, c2, Sbase, rates, il, ig, nig, Sg_undis,
                                             pf_options.control_Q),
-                                       verbose=pf_options.verbose,
-                                       max_iter=pf_options.max_iter,
-                                       tol=pf_options.tolerance,
-                                       trust=pf_options.trust_radius)
+                                       verbose=opf_options.verbose,
+                                       max_iter=opf_options.ips_iterations,
+                                       tol=opf_options.ips_tolerance,
+                                       trust=opf_options.ips_trust_radius)
 
     else:
         if use_autodiff:
@@ -529,10 +532,10 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                                                 Va_max, Va_min, Vm_max, Vm_min, Pg_max, Pg_min, Qg_max, Qg_min,
                                                 tapm_max, tapm_min, tapt_max, tapt_min, k_m, k_tau, k_mtau,
                                                 c0, c1, c2, Sbase, rates, il, ig, nig, Sg_undis, 1e-5),
-                                           verbose=pf_options.verbose,
-                                           max_iter=pf_options.max_iter,
-                                           tol=pf_options.tolerance,
-                                           trust=pf_options.trust)
+                                           verbose=opf_options.verbose,
+                                           max_iter=opf_options.ips_iterations,
+                                           tol=opf_options.ips_tolerance,
+                                           trust=opf_options.ips_trust_radius)
         else:
             # run the solver with the analytic derivatives
             result = interior_point_solver(x0=x0, n_x=NV, n_eq=NE, n_ineq=NI,
@@ -542,10 +545,10 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                                                 Pg_min, tanmax, Qg_max, Qg_min, tapm_max, tapm_min, tapt_max, tapt_min,
                                                 alltapm, alltapt, k_m, k_tau, k_mtau, c0, c1, c2, Sbase, rates, il, ig,
                                                 nig, Sg_undis, pf_options.control_Q),
-                                           verbose=pf_options.verbose,
-                                           max_iter=pf_options.max_iter,
-                                           tol=pf_options.tolerance,
-                                           trust=pf_options.trust_radius)
+                                           verbose=opf_options.verbose,
+                                           max_iter=opf_options.ips_iterations,
+                                           tol=opf_options.ips_tolerance,
+                                           trust=opf_options.ips_trust_radius)
 
     # convert the solution to the problem variables
     Va, Vm, Pg_dis, Qg_dis, tapm, tapt, Pfdc = x2var(result.x, nVa=nbus, nVm=nbus, nPg=ngg, nQg=ngg, ntapm=ntapm, ntapt=ntapt, ndc=ndc)
@@ -571,7 +574,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     Sf = result.structs.Sf
     St = result.structs.St
     loading = np.abs(Sf) / (rates[il] + 1e-9)
-    if pf_options.verbose > 0:
+    if opf_options.verbose > 0:
         df_bus = pd.DataFrame(data={'Va (rad)': Va, 'Vm (p.u.)': Vm,
                                     'dual price (€/MW)': lam_p, 'dual price (€/MVAr)': lam_q})
         df_gen = pd.DataFrame(data={'P (MW)': Pg * nc.Sbase, 'Q (MVAr)': Qg * nc.Sbase})
@@ -599,54 +602,33 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
 
 
 def run_nonlinear_opf(grid: MultiCircuit,
+                      opf_options: OptimalPowerFlowOptions,
                       pf_options: PowerFlowOptions,
                       t_idx: Union[None, int] = None,
                       debug: bool = False,
                       use_autodiff: bool = False,
-                      pf_init=True,
+                      pf_init=False,
                       plot_error: bool = False) -> NonlinearOPFResults:
     """
-
-    :param plot_error:
-    :param grid:
-    :param pf_options:
-    :param t_idx:
-    :param debug:
-    :param use_autodiff:
+    Run optimal power flow for a MultiCircuit
+    :param grid: MultiCircuit
+    :param opf_options: OptimalPowerFlowOptions
+    :param pf_options: PowerFlowOptions
+    :param t_idx: Time index
+    :param debug: debug? when active the autodiff is activated
+    :param use_autodiff: Use autodiff?
+    :param pf_init: Initialize with a power flow?
+    :param plot_error: Plot the error?
     :return: NonlinearOPFResults
     """
 
     # compile the system
     nc = compile_numerical_circuit_at(circuit=grid, t_idx=t_idx)
-    #nc.branch_data.control_mode[1] = TransformerControlType.Vt
-    #nc.branch_data.control_mode[2] = TransformerControlType.PtQt
-    #nc.branch_data.control_mode[391] = TransformerControlType.PtQt
-    # filter garbage out mostly since the ACOPF can simulate multi-island systems
-    islands = nc.split_into_islands(ignore_single_node_islands=True)
 
-    if len(islands) > 1:
-        results = NonlinearOPFResults()
-        results.initialize(nbus=nc.nbus, nbr=nc.nbr, ng=nc.ngen)
-
-        for island in islands:
-            island_res = ac_optimal_power_flow(nc=island,
-                                               pf_options=pf_options,
-                                               debug=debug,
-                                               use_autodiff=use_autodiff,
-                                               pf_init=pf_init,
-                                               plot_error=plot_error)
-
-            results.merge(other=island_res,
-                          bus_idx=nc.bus_data.original_idx,
-                          br_idx=nc.branch_data.original_idx,
-                          gen_idx=nc.generator_data.original_idx)
-
-        return results
-    else:
-
-        return ac_optimal_power_flow(nc=islands[0],
-                                     pf_options=pf_options,
-                                     debug=debug,
-                                     use_autodiff=use_autodiff,
-                                     pf_init=pf_init,
-                                     plot_error=plot_error)
+    return ac_optimal_power_flow(nc=nc,
+                                 opf_options=opf_options,
+                                 pf_options=pf_options,
+                                 debug=debug,
+                                 use_autodiff=use_autodiff,
+                                 pf_init=pf_init,
+                                 plot_error=plot_error)

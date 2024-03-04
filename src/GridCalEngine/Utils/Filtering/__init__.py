@@ -16,4 +16,5 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.Utils.Filtering.filtering import *
 from GridCalEngine.Utils.Filtering.objects_filtering import *
+from GridCalEngine.Utils.Filtering.timeseries_filtering import *
 from GridCalEngine.Utils.Filtering.results_table_filtering import *

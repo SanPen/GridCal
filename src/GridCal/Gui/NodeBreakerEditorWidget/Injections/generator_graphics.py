@@ -529,8 +529,8 @@ class GeneratorGraphicItem(InjectionTemplateGraphicItem):
                                 bus_name=self.api_object.bus.name)
             if dlg.exec_():
                 if dlg.is_accepted:
-                    if len(dlg.P) == len(self.api_object.P_prof):
-                        self.api_object.P_prof = dlg.P
+                    if len(dlg.P) == self.api_object.P_prof.size():
+                        self.api_object.P_prof.set(dlg.P)
 
                         self.plot()
                     else:
@@ -556,8 +556,8 @@ class GeneratorGraphicItem(InjectionTemplateGraphicItem):
                                  bus_name=self.api_object.bus.name)
             if dlg.exec_():
                 if dlg.is_accepted:
-                    if len(dlg.P) == len(self.api_object.P_prof):
-                        self.api_object.P_prof = dlg.P
+                    if len(dlg.P) == self.api_object.P_prof.size():
+                        self.api_object.P_prof.set(dlg.P)
 
                         self.plot()
                     else:

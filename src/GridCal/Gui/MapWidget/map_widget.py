@@ -27,7 +27,7 @@ Some semantics:
 
 from typing import List, Dict, Union, Tuple, Callable
 from PySide6.QtCore import Qt, QTimer, QPoint, QPointF, QEvent
-from PySide6.QtWidgets import QSizePolicy, QWidget, QMessageBox
+from PySide6.QtWidgets import QSizePolicy, QWidget, QMessageBox, QGraphicsScene, QGraphicsView, QVBoxLayout
 from PySide6.QtGui import QPainter, QColor, QPixmap, QPen, QFont, QFontMetrics, QPolygon, QBrush, QCursor, \
     QMouseEvent, QKeyEvent, QWheelEvent, QResizeEvent, QEnterEvent, QPaintEvent
 
@@ -285,6 +285,41 @@ class MapWidget(QWidget):
         # callbacks
         self.zoom_callback: Callable[[int], None] = zoom_callback
         self.position_callback: Callable[[float, float], None] = position_callback
+
+        # Create a QGraphicsScene
+        self.scene = QGraphicsScene(self)
+        self.scene.setSceneRect(0, 0, 800, 600)  # Set the scene rect as per your requirements
+
+        # Create a QGraphicsView and set the scene
+        self.view = QGraphicsView(self.scene)
+        self.view.setAlignment(Qt.AlignLeft | Qt.AlignTop)
+
+        # Create a layout for the MapWidget
+        layout = QVBoxLayout()
+        layout.addWidget(self.view)  # Add the QGraphicsView to the layout
+        self.setLayout(layout)  # Set the layout for the MapWidget
+
+        # Install an event filter on the QGraphicsView
+        self.view.installEventFilter(self)
+
+        # Make the layout transparent
+        self.layout().setContentsMargins(0, 0, 0, 0)
+        self.layout().setSpacing(0)
+        self.setStyleSheet("background-color: transparent;")
+
+        # You can add more QGraphicsItems to the scene here
+        rect_item = self.scene.addRect(50, 50, 100, 100)  # Example rectangle
+        ellipse_item = self.scene.addEllipse(200, 200, 100, 100)  # Example ellipse
+
+    def eventFilter(self, obj, event):
+        if obj == self.view and event.type() == QEvent.MouseButtonPress:
+            # Convert the mouse event coordinates to scene coordinates
+            view_pos = event.pos()
+            scene_pos = self.view.mapToScene(view_pos)
+            print("Mouse pressed at scene position:", scene_pos)
+
+        # Pass the event to the base class
+        return super().eventFilter(obj, event)
 
     def on_tile_available(self, level: int, x: float, y: float, image: QPixmap, error: bool):
         """Called when a new 'net tile is available.
@@ -608,6 +643,12 @@ class MapWidget(QWidget):
 
         # recalculate the "key" tile stuff
         self.rectify_key_tile()
+
+        # Resize the view to match the widget's size
+        self.view.setGeometry(0, 0, self.width(), self.height())
+
+        # Adjust the scene rect if needed
+        self.scene.setSceneRect(0, 0, self.width(), self.height())
 
     def enterEvent(self, event: QEnterEvent):
         self.setFocus()

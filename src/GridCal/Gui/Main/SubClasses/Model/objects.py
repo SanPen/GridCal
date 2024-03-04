@@ -77,6 +77,7 @@ class ObjectsTableMain(DiagramsMain):
 
         # line edit enter
         self.ui.smart_search_lineEdit.returnPressed.connect(self.objects_smart_search)
+        self.ui.time_series_search.returnPressed.connect(self.timeseries_search)
 
     def create_objects_model(self, elements, elm_type: DeviceType) -> gf.ObjectsModel:
         """
@@ -763,6 +764,32 @@ class ObjectsTableMain(DiagramsMain):
                 plt.show()
         else:
             info_msg('Select a data structure')
+
+    def timeseries_search(self):
+        """
+
+        :return:
+        """
+
+        initial_model = self.get_current_objects_model_view()
+
+        if initial_model is not None:
+            if len(initial_model.objects) > 0:
+
+                obj_filter = flt.FilterTimeSeries(objects=initial_model.objects)
+
+                try:
+                    obj_filter.parse(expression=self.ui.time_series_search.text())
+                    filtered_objects = obj_filter.apply()
+                except ValueError as e:
+                    error_msg(str(e), "Fiter parse")
+                    return None
+
+                self.display_objects_filter(filtered_objects)
+
+            else:
+                # nothing to search
+                pass
 
     def objects_smart_search(self):
         """

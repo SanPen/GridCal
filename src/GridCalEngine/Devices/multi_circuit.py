@@ -35,7 +35,7 @@ import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.types import ALL_DEV_TYPES, BRANCH_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES
 from GridCalEngine.basic_structures import Logger
 import GridCalEngine.Topology.topology as tp
-from GridCalEngine.enumerations import DeviceType
+from GridCalEngine.enumerations import DeviceType, ResultTypes
 
 
 def get_system_user() -> str:
@@ -3345,7 +3345,6 @@ class MultiCircuit:
         Delete zone
         :param obj: index
         """
-        # TODO: remove dependencies
         self.investments_groups.remove(obj)
 
     def add_investment(self, obj: dev.Investment):
@@ -3360,7 +3359,6 @@ class MultiCircuit:
         Delete zone
         :param obj: index
         """
-        # TODO: remove dependencies
         self.investments.remove(obj)
 
     def add_technology(self, obj: dev.Technology):

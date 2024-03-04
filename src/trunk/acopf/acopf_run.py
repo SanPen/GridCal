@@ -191,8 +191,10 @@ def two_grids_of_3bus():
     grid.add_generator(b11, gce.Generator('G1 (2)', vset=1.00, Cost=1.0, Cost2=1.0))
     grid.add_generator(b21, gce.Generator('G2 (2)', P=10, vset=0.995, Cost=1.0, Cost2=2.0))
 
-    hvdc = gce.HvdcLine(b11, b2, r=0.001, rate=100)
+    hvdc = gce.HvdcLine(b31, b2, r=0.001, rate=0.01)
     grid.add_hvdc(hvdc)
+    hvdc2 = gce.HvdcLine(b11, b1, r=0.001, rate=0.04)
+    grid.add_hvdc(hvdc2)
 
     options = gce.PowerFlowOptions(gce.SolverType.NR, verbose=False)
     power_flow = gce.PowerFlowDriver(grid, options)
@@ -317,10 +319,15 @@ def case6ww():
     # Go back two directories
     new_directory = os.path.abspath(os.path.join(cwd, '..', '..', '..'))
 
-    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case6ww.m')
+    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'ESPGRID.gridcal')
 
     grid = gce.FileOpen(file_path).open()
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=3, max_iter=200)
+
+    options = gce.PowerFlowOptions(gce.SolverType.NR, verbose=False)
+    power_flow = gce.PowerFlowDriver(grid, options)
+    power_flow.run()
+
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, max_iter=200)
     run_nonlinear_opf(grid=grid, pf_options=pf_options, plot_error=True)
 
 
@@ -328,10 +335,10 @@ if __name__ == '__main__':
     # example_3bus_acopf()
     # case_3bus()
     # linn5bus_example()
-    two_grids_of_3bus()
+    # two_grids_of_3bus()
     # case9()
     # case14()
     # case_gb()
-    # case6ww()
+    case6ww()
     # case_pegase89()
     # case300()

@@ -2117,7 +2117,8 @@ class ProfilesModel(QtCore.QAbstractTableModel):
             values = [None] * n
             for c in range(n):
                 names[c] = self.elements[c].name
-                values[c] = getattr(self.elements[c], profile_property)
+                # values[c] = getattr(self.elements[c], profile_property)
+                values[c] = getattr(self.elements[c], profile_property, "N/A")
             values = np.array(values).transpose().astype(str)
 
             # header first

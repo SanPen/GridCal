@@ -757,6 +757,11 @@ class Ui_mainWindow(object):
 
         self.horizontalLayout.addWidget(self.device_type_magnitude_comboBox)
 
+        self.time_series_search = QLineEdit(self.frame)
+        self.time_series_search.setObjectName(u"time_series_search")
+
+        self.horizontalLayout.addWidget(self.time_series_search)
+
         self.new_profiles_structure_pushButton = QPushButton(self.frame)
         self.new_profiles_structure_pushButton.setObjectName(u"new_profiles_structure_pushButton")
         self.new_profiles_structure_pushButton.setIcon(icon21)
@@ -4301,7 +4306,6 @@ class Ui_mainWindow(object):
         self.toolBar.addSeparator()
         self.toolBar.addAction(self.actionactivate_time_series)
         self.toolBar.addAction(self.actionEdit_simulation_time_limits)
-        self.toolBar.addSeparator()
 
         self.retranslateUi(mainWindow)
 

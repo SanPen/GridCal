@@ -14,7 +14,7 @@ from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_cir
 from GridCalEngine.enumerations import  ReactivePowerControlMode
 
 def x2var(x: Vec, nVa: int, nVm: int, nPg: int,
-          nQg: int, ntapm: int, ntapt: int, ndc: int) -> Tuple[Vec, Vec, Vec, Vec, Vec, Vec, Vec, Vec]:
+          nQg: int, ntapm: int, ntapt: int, ndc: int) -> Tuple[Vec, Vec, Vec, Vec, Vec, Vec, Vec]:
     """
     Convert the x solution vector to its composing variables
     :param x: solution vector
@@ -680,9 +680,11 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
 
         if ndc != 0:
 
-            GSpfdc = lil_matrix((N, 1))
-            GSpfdc[fdc] = 1
-            GSpfdc[tdc] = -1
+            GSpfdc = lil_matrix((N, ndc))
+
+            for link in range(ndc):
+                GSpfdc[fdc, link] = 1
+                GSpfdc[tdc, link] = -1
 
             GS = sp.hstack([GS, GSpfdc])
 
@@ -785,15 +787,14 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
 
         if ndc != 0:
 
-            Hx = sp.hstack([Hx, lil_matrix((2 * M + 2 * N + 4 * Ng, 1))])
+            Hx = sp.hstack([Hx, lil_matrix((2 * M + 2 * N + 4 * Ng + 2 * ntapm + 2 * ntapt, ndc))])
 
-            Hdc1 = lil_matrix((1, NV))
-            Hdc2 = lil_matrix((1, NV))
+            Hdcu_ = csc(([1] * ndc, (list(range(ndc)), list(range(ndc)))))
+            Hdcl_ = csc(([-1] * ndc, (list(range(ndc)), list(range(ndc)))))
+            Hdcu = sp.hstack([lil_matrix((ndc, 2 * N + 2 * Ng + ntapm + ntapt)), Hdcu_])
+            Hdcl = sp.hstack([lil_matrix((ndc, 2 * N + 2 * Ng + ntapm + ntapt)), Hdcl_])
 
-            Hdc1[0, 2 * N + 2 * Ng + ntapm + ntapt] = 1
-            Hdc2[0, 2 * N + 2 * Ng + ntapm + ntapt] = -1
-
-            Hx = sp.vstack([Hx, Hdc1, Hdc2])
+            Hx = sp.vstack([Hx, Hdcu, Hdcl])
 
         Hx = Hx.T.tocsc()
 
@@ -866,7 +867,7 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
             G3 = sp.hstack([GSdmdva.T, GSdmdvm.T, lil_matrix((ntapm, 2 * Ng)), GSdmdm, GSdmdt.T])
             G4 = sp.hstack([GSdtdva.T, GSdtdvm.T, lil_matrix((ntapt, 2 * Ng)), GSdmdt, GSdtdt])
 
-            Gxx = sp.vstack([G1, G2, lil_matrix((2 * Ng, 2 * Ng + 2 * N)), G3, G4])
+            Gxx = sp.vstack([G1, G2, lil_matrix((2 * Ng, 2 * Ng + 2 * N + ntapm + ntapt)), G3, G4])
             print('')
 
         else:
@@ -876,8 +877,8 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
 
         if ndc != 0:
 
-            Gxx = sp.hstack([Gxx, lil_matrix((NV - 1, 1))])
-            Gxx = sp.vstack([Gxx, lil_matrix((1, NV))])
+            Gxx = sp.hstack([Gxx, lil_matrix((NV - ndc, ndc))])
+            Gxx = sp.vstack([Gxx, lil_matrix((ndc, NV))])
 
         Gxx = Gxx.tocsc()
 
@@ -968,8 +969,8 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
 
         if ndc != 0:
 
-            Hxx = sp.hstack([Hxx, lil_matrix((NV - 1, 1))])
-            Hxx = sp.vstack([Hxx, lil_matrix((1, NV))])
+            Hxx = sp.hstack([Hxx, lil_matrix((NV - ndc, ndc))])
+            Hxx = sp.vstack([Hxx, lil_matrix((ndc, NV))])
 
         Hxx = Hxx.tocsc()
 
