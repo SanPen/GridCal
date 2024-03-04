@@ -1,23 +1,18 @@
-from rdflib.plugins.serializers.rdfxml import XMLLANG
-from rdflib.util import first
 from rdflib import OWL, plugin
 import rdflib
 
 from typing import IO, Dict, Optional, Set, List
-from rdflib.collection import Collection
 from rdflib.graph import Graph
 from rdflib.namespace import RDF, RDFS, Namespace
 from rdflib.plugins.parsers.RDFVOC import RDFVOC
 from rdflib.plugins.serializers.xmlwriter import XMLWriter
 from rdflib.serializer import Serializer
-from rdflib.term import BNode, IdentifiedNode, Identifier, Literal, Node, URIRef
-from rdflib.util import first, more_than
-import xml.dom.minidom
+from rdflib.term import IdentifiedNode, Identifier, Literal, Node
+from rdflib.util import first
+
 import os
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
 import pandas as pd
-
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.full_model import FullModel
 
 plugin.register("cim_xml", Serializer, "GridCalEngine.IO.cim.cgmes.cgmes_export", "CimSerializer")
 
