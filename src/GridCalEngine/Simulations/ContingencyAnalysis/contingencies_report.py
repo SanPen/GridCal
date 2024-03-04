@@ -346,6 +346,7 @@ class ContingencyResultsReport:
 
         :return:
         """
+
         df = self.get_df()
 
         df["Time"] = df["Time"].astype(int)
@@ -402,7 +403,8 @@ class ContingencyResultsReport:
             "Standard deviation (pu)": ov_desvest.values,
             "Hours with this overload (h)": ov_count.values
         })
-        df_summary = df_summary.sort_values(by="Contingency", ascending=False).reset_index()
+
+        df_summary = df_summary.sort_values(by="Contingency", ascending=False)
 
         return df_summary
 
