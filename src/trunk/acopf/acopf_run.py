@@ -189,9 +189,9 @@ def two_grids_of_3bus():
 
     grid.add_load(b31, gce.Load(name='L3 (2)', P=50, Q=20))
     grid.add_generator(b11, gce.Generator('G1 (2)', vset=1.00, Cost=1.0, Cost2=1.0))
-    grid.add_generator(b21, gce.Generator('G2 (2)', P=10, vset=0.995, Cost=1.0, Cost2=3.0))
+    grid.add_generator(b21, gce.Generator('G2 (2)', P=10, vset=0.995, Cost=1.0, Cost2=2.0))
 
-    hvdc = gce.HvdcLine(b11, b2, r=0.01, rate=100)
+    hvdc = gce.HvdcLine(b11, b2, r=0.001, rate=100)
     grid.add_hvdc(hvdc)
 
     options = gce.PowerFlowOptions(gce.SolverType.NR, verbose=False)
@@ -202,7 +202,7 @@ def two_grids_of_3bus():
     # print('\tConv:\n', power_flow.results.get_bus_df())
     # print('\tConv:\n', power_flow.results.get_branch_df())
 
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1)
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=3, max_iter=50)
     # run_nonlinear_opf(grid=grid, pf_options=pf_options, plot_error=True)
     island = compile_numerical_circuit_at(circuit=grid, t_idx=None)
 
@@ -326,10 +326,10 @@ def case6ww():
 
 if __name__ == '__main__':
     # example_3bus_acopf()
-    # case_3bus()
+    #case_3bus()
     # linn5bus_example()
-    # two_grids_of_3bus()
-    case9()
+    two_grids_of_3bus()
+    #case9()
     # case14()
     # case_gb()
     # case6ww()

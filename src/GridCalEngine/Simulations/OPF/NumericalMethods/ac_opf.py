@@ -187,7 +187,7 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
     alltapm0 = alltapm.copy()
     alltapt0 = alltapt.copy()
 
-    _, _, _, _, tapm, tapt, _, _ = x2var(x, nVa=N, nVm=N, nPg=Ng, nQg=Ng, ntapm=ntapm, ntapt=ntapt, ndc=ndc)
+    _, _, _, _, tapm, tapt, _ = x2var(x, nVa=N, nVm=N, nPg=Ng, nQg=Ng, ntapm=ntapm, ntapt=ntapt, ndc=ndc)
 
     alltapm[k_m] = tapm
     alltapt[k_tau] = tapt
@@ -455,14 +455,14 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     Pdcmax = nc.hvdc_data.rate
 
     # Number of equalities: Nodal power balances, the voltage module of slack and pv buses and the slack reference
-    NE = 2 * nbus + n_slack + npv + ndc
+    NE = 2 * nbus + n_slack + npv
 
     # Number of inequalities: Line ratings, max and min angle of buses, voltage module range and
     # NI = 2 * nbr + 2 * n_no_slack + 2 * nbus + 4 * ngen
     if pf_options.control_Q == ReactivePowerControlMode.NoControl:
-        NI = 2 * nll + 2 * npq + 4 * ngg + 2 * ntapm + 2 * ntapt + 4 * ndc   # Without Reactive power constraint (power curve)
+        NI = 2 * nll + 2 * npq + 4 * ngg + 2 * ntapm + 2 * ntapt + 2 * ndc   # Without Reactive power constraint (power curve)
     else:
-        NI = 2 * nll + 2 * npq + 5 * ngg + 2 * ntapm + 2 * ntapt + 4 * ndc
+        NI = 2 * nll + 2 * npq + 5 * ngg + 2 * ntapm + 2 * ntapt + 2 * ndc
 
     # run power flow to initialize
     pf_results = multi_island_pf_nc(nc=nc, options=pf_options)
@@ -478,7 +478,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         tapm0 = nc.branch_data.tap_module[k_m]
         tapt0 = nc.branch_data.tap_angle[k_tau]
         Pfdc0 = np.array([0] * ndc)
-        Ptdc0 = np.array([0] * ndc)
+        #Ptdc0 = np.array([0] * ndc)
     # nc.Vbus  # dummy initialization
     else:
         p0gen = ((nc.generator_data.pmax + nc.generator_data.pmin) / (2 * nc.Sbase))[ig]
@@ -488,7 +488,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         tapm0 = nc.branch_data.tap_module[k_m]
         tapt0 = nc.branch_data.tap_angle[k_tau]
         Pfdc0 = np.array([1] * ndc)
-        Ptdc0 = np.array([1] * ndc)
+        #Ptdc0 = np.array([1] * ndc)
 
     # compose the initial values
     x0 = var2x(Va=va0,
@@ -497,8 +497,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                Qg=q0gen,
                tapm=tapm0,
                tapt=tapt0,
-               Pfdc=Pfdc0,
-               Ptdc=Ptdc0) # ADD TAPS
+               Pfdc=Pfdc0)
 
     # number of variables
     NV = len(x0)
@@ -549,8 +548,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                                            trust=pf_options.trust_radius)
 
     # convert the solution to the problem variables
-    Va, Vm, Pg_dis, Qg_dis, tapm, tapt, Pfdc, Ptdc = x2var(result.x, nVa=nbus, nVm=nbus, nPg=ngg,
-                                                           nQg=ngg, ntapm=ntapm, ntapt=ntapt, ndc=ndc)
+    Va, Vm, Pg_dis, Qg_dis, tapm, tapt, Pfdc = x2var(result.x, nVa=nbus, nVm=nbus, nPg=ngg, nQg=ngg, ntapm=ntapm, ntapt=ntapt, ndc=ndc)
 
     # Save Results DataFrame for tests
     # pd.DataFrame(Va).transpose().to_csv('pegase89resth.csv')
@@ -577,6 +575,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         df_bus = pd.DataFrame(data={'Va (rad)': Va, 'Vm (p.u.)': Vm,
                                     'dual price (€/MW)': lam_p, 'dual price (€/MVAr)': lam_q})
         df_gen = pd.DataFrame(data={'P (MW)': Pg * nc.Sbase, 'Q (MVAr)': Qg * nc.Sbase})
+        df_linkdc = pd.DataFrame(data={'P_dc (MW)': Pfdc * nc.Sbase})
 
         df_trafo_m = pd.DataFrame(data={'V (p.u.)': tapm}, index=k_m)
         df_trafo_tau = pd.DataFrame(data={'Tau (rad)': tapt}, index=k_tau)
@@ -586,6 +585,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         print("V-Trafos:\n", df_trafo_m)
         print("Tau-Trafos:\n", df_trafo_tau)
         print("Gen:\n", df_gen)
+        print("Link DC:\n", df_linkdc)
         print("Error", result.error)
         print("Gamma", result.gamma)
         print("Sf", result.structs.Sf)
