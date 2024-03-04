@@ -578,6 +578,7 @@ class ContingencyResultsReport:
 
                     if srap_rever_to_nominal_rating:
                         rate_goal = numerical_circuit.rates[m]
+
                     else:
                         rate_goal = numerical_circuit.contingency_rates[m]
 

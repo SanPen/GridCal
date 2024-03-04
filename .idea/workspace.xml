@@ -28,8 +28,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="336ac068-5f36-44a4-9f98-8909f6be5848" name="Changes" comment="Added more icons and refactored the GUI so that the time series functionality can be accessed by toggling the time series flag">
+    <list default="true" id="336ac068-5f36-44a4-9f98-8909f6be5848" name="Changes" comment="Fixed test SRAP">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/Methods/linear_contingency_analysis.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/Methods/linear_contingency_analysis.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/contingencies_report.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/contingencies_report.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -537,8 +539,8 @@
       <option name="_new_targetType" value="&quot;PATH&quot;" />
       <method v="2" />
     </configuration>
-    <configuration name="Nosetests in tests" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
-      <module name="GridCal" />
+    <configuration name="Python tests for test_srap.test_srap" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+      <module name="GridCal5" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
@@ -546,11 +548,9 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="_new_regexPattern" value="&quot;&quot;" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;$PROJECT_DIR$/src/tests&quot;" />
-      <option name="_new_targetType" value="&quot;PATH&quot;" />
+      <option name="_new_target" value="&quot;test_srap.test_srap&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
     <configuration default="true" type="tests" factoryName="Doctests">
@@ -608,17 +608,17 @@
     <list>
       <item itemvalue="Python.ExecuteGridCal" />
       <item itemvalue="Python.update_gui_file" />
+      <item itemvalue="Python tests.Python tests for test_srap.test_srap" />
       <item itemvalue="Python tests.Nosetests for test_topology_processor.test_topology_rts" />
       <item itemvalue="Python tests.Nosetests in test_topology_processor.py" />
-      <item itemvalue="Python tests.Nosetests in tests" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Python.ExecuteGridCal" />
+        <item itemvalue="Python tests.Python tests for test_srap.test_srap" />
         <item itemvalue="Python.update_gui_file" />
         <item itemvalue="Python tests.Nosetests in test_topology_processor.py" />
         <item itemvalue="Python tests.Nosetests for test_topology_processor.test_topology_rts" />
-        <item itemvalue="Python tests.Nosetests in tests" />
       </list>
     </recent_temporary>
   </component>
@@ -1286,13 +1286,6 @@
       <workItem from="1709467017631" duration="3475000" />
       <workItem from="1709494690105" duration="306000" />
     </task>
-    <task id="LOCAL-00310" summary="implemented newtonPA time series">
-      <created>1656059954202</created>
-      <option name="number" value="00310" />
-      <option name="presentableId" value="LOCAL-00310" />
-      <option name="project" value="LOCAL" />
-      <updated>1656059954202</updated>
-    </task>
     <task id="LOCAL-00311" summary="parallel threads in newton_pa">
       <created>1656068672004</created>
       <option name="number" value="00311" />
@@ -1629,7 +1622,14 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="475" />
+    <task id="LOCAL-00475" summary="Fixed test SRAP">
+      <created>1709546327411</created>
+      <option name="number" value="00475" />
+      <option name="presentableId" value="LOCAL-00475" />
+      <option name="project" value="LOCAL" />
+      <updated>1709546327411</updated>
+    </task>
+    <option name="localTasksCounter" value="476" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1656,26 +1656,13 @@
         </entry>
         <entry key="MAIN">
           <value>
-            <State>
-              <option name="FILTERS">
-                <map>
-                  <entry key="branch">
-                    <value>
-                      <list>
-                        <option value="origin/204_investments_evaluation" />
-                      </list>
-                    </value>
-                  </entry>
-                </map>
-              </option>
-            </State>
+            <State />
           </value>
         </entry>
       </map>
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Improved windings drawing" />
     <MESSAGE value="Added missing case24_ieee_rts.m test case" />
     <MESSAGE value="Removed the Core module and moved things outside" />
     <MESSAGE value="Refactored TransformerControlType&#10;Refactored ControllableBranchParent" />
@@ -1700,7 +1687,8 @@
     <MESSAGE value="Fixed topology test for checking" />
     <MESSAGE value="Added bus action for controllable shunt and current injection" />
     <MESSAGE value="Added more icons and refactored the GUI so that the time series functionality can be accessed by toggling the time series flag" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added more icons and refactored the GUI so that the time series functionality can be accessed by toggling the time series flag" />
+    <MESSAGE value="Fixed test SRAP" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed test SRAP" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2137,12 +2125,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/contingencies_report.py</url>
-          <line>552</line>
-          <option name="timeStamp" value="1476" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/contingencies_report.py</url>
-          <line>599</line>
+          <line>600</line>
           <option name="timeStamp" value="1478" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
