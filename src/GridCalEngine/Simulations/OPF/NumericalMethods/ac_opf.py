@@ -531,7 +531,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                                            verbose=pf_options.verbose,
                                            max_iter=pf_options.max_iter,
                                            tol=pf_options.tolerance,
-                                           trust=pf_options.trust)
+                                           trust=pf_options.trust_radius)
         else:
             # run the solver with the analytic derivatives
             result = interior_point_solver(x0=x0, n_x=NV, n_eq=NE, n_ineq=NI,
@@ -605,47 +605,23 @@ def run_nonlinear_opf(grid: MultiCircuit,
                       pf_init=False,
                       plot_error: bool = False) -> NonlinearOPFResults:
     """
-
-    :param plot_error:
-    :param grid:
-    :param pf_options:
-    :param t_idx:
-    :param debug:
-    :param use_autodiff:
+    Run optimal power flow for a MultiCircuit
+    :param grid: MultiCircuit
+    :param pf_options: PowerFlowOptions
+    :param t_idx: Time index
+    :param debug: debug? when active the autodiff is activated
+    :param use_autodiff: Use autodiff?
+    :param pf_init: Initialize with a power flow?
+    :param plot_error: Plot the error?
     :return: NonlinearOPFResults
     """
 
     # compile the system
     nc = compile_numerical_circuit_at(circuit=grid, t_idx=t_idx)
-    #nc.branch_data.control_mode[1] = TransformerControlType.Vt
-    #nc.branch_data.control_mode[2] = TransformerControlType.PtQt
-    #nc.branch_data.control_mode[391] = TransformerControlType.PtQt
-    # filter garbage out mostly since the ACOPF can simulate multi-island systems
-    islands = nc.split_into_islands(ignore_single_node_islands=True)
 
-    if len(islands) > 1:
-        results = NonlinearOPFResults()
-        results.initialize(nbus=nc.nbus, nbr=nc.nbr, ng=nc.ngen)
-
-        for island in islands:
-            island_res = ac_optimal_power_flow(nc=island,
-                                               pf_options=pf_options,
-                                               debug=debug,
-                                               use_autodiff=use_autodiff,
-                                               pf_init=pf_init,
-                                               plot_error=plot_error)
-
-            results.merge(other=island_res,
-                          bus_idx=nc.bus_data.original_idx,
-                          br_idx=nc.branch_data.original_idx,
-                          gen_idx=nc.generator_data.original_idx)
-
-        return results
-    else:
-
-        return ac_optimal_power_flow(nc=islands[0],
-                                     pf_options=pf_options,
-                                     debug=debug,
-                                     use_autodiff=use_autodiff,
-                                     pf_init=pf_init,
-                                     plot_error=plot_error)
+    return ac_optimal_power_flow(nc=nc,
+                                 pf_options=pf_options,
+                                 debug=debug,
+                                 use_autodiff=use_autodiff,
+                                 pf_init=pf_init,
+                                 plot_error=plot_error)
