@@ -10,7 +10,7 @@ def test_srap():
     # First stage of tests
     print('Loading grical circuit... ', sep=' ')
 
-    fname = os.path.join('data', 'grids', 'Test_SRAP.gridcal')
+    fname = os.path.join('data', 'grids', 'Test_SRAP_new.gridcal')
     grid = FileOpen(fname).open()
 
     # test 1
@@ -85,7 +85,7 @@ def test_srap():
     # First stage of tests
     print('Loading grical circuit... ', sep=' ')
 
-    fname = os.path.join('data', 'grids', 'Test_SRAP_reverse.gridcal')
+    fname = os.path.join('data', 'grids', 'Test_SRAP_reverse_new.gridcal')
     grid = FileOpen(fname).open()
 
     # test 4
