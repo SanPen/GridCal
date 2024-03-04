@@ -244,7 +244,7 @@ class MultiCircuit:
         self.current_injections: List[dev.CurrentInjection] = list()
 
         # List of linear shunt devices
-        self.linear_shunts: List[dev.LinearShunt] = list()
+        self.controllable_shunts: List[dev.ControllableShunt] = list()
 
         # Lists of measurements
         self.pi_measurements: List[dev.PiMeasurement] = list()
@@ -347,7 +347,7 @@ class MultiCircuit:
                 dev.StaticGenerator(),
                 dev.ExternalGrid(),
                 dev.Shunt(),
-                dev.LinearShunt(),
+                dev.ControllableShunt(),
                 dev.CurrentInjection()
             ],
             "Branches": [
@@ -651,9 +651,11 @@ class MultiCircuit:
         else:
             return 0
 
-    def \
-    get_time_array(self):
-
+    def get_time_array(self) -> pd.DatetimeIndex:
+        """
+        Get the time array
+        :return: pd.DatetimeIndex
+        """
         return self.time_profile
 
     def get_all_time_indices(self) -> IntVec:
@@ -835,7 +837,7 @@ class MultiCircuit:
                 self.get_external_grids(),
                 self.get_static_generators(),
                 self.get_shunts(),
-                self.get_linear_shunts(),
+                self.get_controllable_shunts(),
                 self.get_current_injections()]
 
     def get_injection_devices(self) -> List[INJECTION_DEVICE_TYPES]:
@@ -857,7 +859,7 @@ class MultiCircuit:
         return [self.get_loads(),
                 self.get_external_grids(),
                 self.get_static_generators(),
-                self.get_linear_shunts(),
+                self.get_controllable_shunts(),
                 self.get_current_injections()]
 
     def get_load_like_devices(self) -> List[INJECTION_DEVICE_TYPES]:
@@ -1287,15 +1289,28 @@ class MultiCircuit:
         """
         return np.array([e.name for e in self.current_injections])
 
-    def add_current_injection(self, obj: dev.CurrentInjection):
+    def add_current_injection(self,
+                              bus: dev.Bus,
+                              api_obj: Union[None, dev.CurrentInjection] = None) -> dev.CurrentInjection:
         """
         Add a CurrentInjection object
-        :param obj: CurrentInjection instance
+        :param bus: Bus
+        :param api_obj: CurrentInjection instance
         """
 
+        if api_obj is None:
+            api_obj = dev.CurrentInjection()
+        api_obj.bus = bus
+
         if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
-        self.current_injections.append(obj)
+            api_obj.create_profiles(self.time_profile)
+
+        if api_obj.name == 'CInj':
+            api_obj.name += '@' + bus.name
+
+        self.current_injections.append(api_obj)
+
+        return api_obj
 
     def delete_current_injection(self, obj: dev.CurrentInjection) -> None:
         """
@@ -1306,55 +1321,68 @@ class MultiCircuit:
         self.current_injections.remove(obj)
 
     # ----------------------------------------------------------------------------------------------------------------------
-    # linear_shunts
+    # controllable_shunts
     # ----------------------------------------------------------------------------------------------------------------------
 
-    def get_linear_shunts(self) -> List[dev.LinearShunt]:
+    def get_controllable_shunts(self) -> List[dev.ControllableShunt]:
         """
-        List of linear_shunts
+        List of controllable_shunts
         :return: List[dev.LinearShunt]
         """
-        return self.linear_shunts
+        return self.controllable_shunts
 
-    def get_linear_shunts_number(self) -> int:
+    def get_controllable_shunts_number(self) -> int:
         """
-        Size of the list of linear_shunts
-        :return: size of linear_shunts
+        Size of the list of controllable_shunts
+        :return: size of controllable_shunts
         """
-        return len(self.linear_shunts)
+        return len(self.controllable_shunts)
 
-    def get_linear_shunt_at(self, i: int) -> dev.LinearShunt:
+    def get_controllable_shunt_at(self, i: int) -> dev.ControllableShunt:
         """
         Get linear_shunt at i
         :param i: index
         :return: LinearShunt
         """
-        return self.linear_shunts[i]
+        return self.controllable_shunts[i]
 
-    def get_linear_shunt_names(self) -> StrVec:
+    def get_controllable_shunt_names(self) -> StrVec:
         """
         Array of linear_shunt names
         :return: StrVec
         """
-        return np.array([e.name for e in self.linear_shunts])
+        return np.array([e.name for e in self.controllable_shunts])
 
-    def add_linear_shunt(self, obj: dev.LinearShunt):
+    def add_controllable_shunt(self,
+                               bus: dev.Bus,
+                               api_obj: Union[None, dev.ControllableShunt] = None) -> dev.ControllableShunt:
         """
-        Add a LinearShunt object
-        :param obj: LinearShunt instance
+        Add a ControllableShunt object
+        :param bus: Bus
+        :param api_obj: ControllableShunt instance
         """
+
+        if api_obj is None:
+            api_obj = dev.ControllableShunt()
+        api_obj.bus = bus
 
         if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
-        self.linear_shunts.append(obj)
+            api_obj.create_profiles(self.time_profile)
 
-    def delete_linear_shunt(self, obj: dev.LinearShunt) -> None:
+        if api_obj.name == 'CShutn':
+            api_obj.name += '@' + bus.name
+
+        self.controllable_shunts.append(api_obj)
+
+        return api_obj
+
+    def delete_controllable_shunt(self, obj: dev.ControllableShunt) -> None:
         """
         Add a LinearShunt object
         :param obj: LinearShunt instance
         """
 
-        self.linear_shunts.remove(obj)
+        self.controllable_shunts.remove(obj)
 
     # ----------------------------------------------------------------------------------------------------------------------
     # pi_measurements
@@ -1690,8 +1718,8 @@ class MultiCircuit:
         elif device_type == DeviceType.CurrentInjectionDevice:
             return self.get_current_injections()
 
-        elif device_type == DeviceType.LinearShuntDevice:
-            return self.get_linear_shunts()
+        elif device_type == DeviceType.ControllableShuntDevice:
+            return self.get_controllable_shunts()
 
         elif device_type == DeviceType.LineDevice:
             return self.lines
@@ -1822,11 +1850,23 @@ class MultiCircuit:
         elif device_type == DeviceType.IfMeasurementDevice:
             return self.get_if_measurements()
 
+        elif device_type == DeviceType.LoadLikeDevice:
+            return self.get_load_like_devices()
+
+        elif device_type == DeviceType.BranchDevice:
+            return self.get_branches_wo_hvdc()
+
+        elif device_type == DeviceType.NoDevice:
+            return list()
+
+        elif device_type == DeviceType.TimeDevice:
+            return self.get_time_array()
+
         else:
             raise Exception('Element type not understood ' + str(device_type))
 
     def set_elements_by_type(self, device_type: DeviceType,
-                             devices: List[dev.EditableDevice],
+                             devices: List[ALL_DEV_TYPES],
                              logger: Logger = Logger()):
         """
         Set a list of elements all at once
@@ -1855,8 +1895,8 @@ class MultiCircuit:
         elif device_type == DeviceType.CurrentInjectionDevice:
             self.current_injections = devices
 
-        elif device_type == DeviceType.LinearShuntDevice:
-            self.linear_shunts = devices
+        elif device_type == DeviceType.ControllableShuntDevice:
+            self.controllable_shunts = devices
 
         elif device_type == DeviceType.LineDevice:
             for d in devices:
@@ -2028,8 +2068,8 @@ class MultiCircuit:
         elif element_type == DeviceType.CurrentInjectionDevice:
             self.current_injections.remove(obj)
 
-        elif element_type == DeviceType.LinearShuntDevice:
-            self.linear_shunts.remove(obj)
+        elif element_type == DeviceType.ControllableShuntDevice:
+            self.controllable_shunts.remove(obj)
 
         elif element_type == DeviceType.LineDevice:
             return self.delete_line(obj)
@@ -2197,66 +2237,6 @@ class MultiCircuit:
         else:
             return {elm.idtag: elm for elm in self.get_elements_by_type(element_type)}
 
-    def get_devices_list(self, result_type: ResultTypes) -> List[ALL_DEV_TYPES]:
-        """
-        Given a result type, get the matching list of devices
-        :param result_type: ResultTypes
-        :return: List of devices
-        """
-        name: str = result_type.value[0]
-        device_tpe: DeviceType = result_type.value[1]
-
-        if device_tpe == DeviceType.BusDevice:
-            return self.get_buses()
-
-        elif device_tpe == DeviceType.BranchDevice:
-            return self.get_branches_wo_hvdc()
-
-        elif device_tpe == DeviceType.Transformer2WDevice:
-            return self.get_transformers2w()
-
-        elif device_tpe == DeviceType.BatteryDevice:
-            return self.get_batteries()
-
-        elif device_tpe == DeviceType.LoadDevice:
-            return self.get_loads()
-
-        elif device_tpe == DeviceType.GeneratorDevice:
-            return self.get_generators()
-
-        elif device_tpe == DeviceType.LinearShuntDevice:
-            return self.get_linear_shunts()
-
-        elif device_tpe == DeviceType.CurrentInjectionDevice:
-            return self.get_current_injections()
-
-        elif device_tpe == DeviceType.FluidNodeDevice:
-            return self.get_fluid_devices()
-
-        elif device_tpe == DeviceType.FluidPathDevice:
-            return self.get_fluid_paths()
-
-        elif device_tpe == DeviceType.FluidInjectionDevice:
-            return self.get_fluid_injections()
-
-        elif device_tpe == DeviceType.FluidTurbineDevice:
-            return self.get_fluid_turbines()
-
-        elif device_tpe == DeviceType.FluidPumpDevice:
-            return self.get_fluid_pumps()
-
-        elif device_tpe == DeviceType.FluidP2XDevice:
-            return self.get_fluid_p2xs()
-
-        elif device_tpe == DeviceType.HVDCLineDevice:
-            return self.get_hvdc()
-
-        elif device_tpe == DeviceType.NoDevice:
-            return list()
-
-        else:
-            raise Exception("Unknown device type")
-
     def copy(self) -> "MultiCircuit":
         """
         Returns a deep (true) copy of this circuit.
@@ -2281,7 +2261,7 @@ class MultiCircuit:
                 'batteries',
                 'static_generators',
                 'current_injections',
-                'linear_shunts',
+                'controllable_shunts',
 
                 'connectivity_nodes',
                 'bus_bars',
@@ -2778,7 +2758,7 @@ class MultiCircuit:
             obj.create_profiles(self.time_profile)
         self.switch_devices.append(obj)
 
-    def add_branch(self, obj: BRANCH_TYPES) -> None:
+    def add_branch(self, obj: Union[BRANCH_TYPES, dev.Branch]) -> None:
         """
         Add any branch object (it's type will be infered here)
         :param obj: any class inheriting from ParentBranch
@@ -3002,22 +2982,12 @@ class MultiCircuit:
 
         return api_obj
 
-    def add_external_grid(self, bus: dev.Bus, api_obj=None):
+    def add_external_grid(self, bus: dev.Bus, api_obj: Union[None, dev.ExternalGrid] = None):
         """
-
-        :param bus:
-        :param api_obj:
+        Add an external grid
+        :param bus: Bus object
+        :param api_obj: api_obj, if None, create a new one
         :return:
-        """
-
-        """
-        Add a :ref:`Load<load>` object to a :ref:`Bus<bus>`.
-
-        Arguments:
-
-            **bus** (:ref:`Bus<bus>`): :ref:`Bus<bus>` object
-
-            **api_obj** (:ref:`Load<load>`): :ref:`Load<load>` object
         """
 
         if api_obj is None:
@@ -4550,6 +4520,33 @@ class MultiCircuit:
 
         return conn.tocsc()
 
+    def get_branch_areas_info(self) -> Tuple[List[str], IntVec, IntVec, IntVec, IntVec, IntVec]:
+        """
+        Get the area-branches information
+        :return: area_names, bus_area_indices, F, T, hvdc_F, hvdc_T
+        """
+        area_dict = {elm: i for i, elm in enumerate(self.get_areas())}
+        bus_dict = self.get_bus_index_dict()
+
+        area_names = [a.name for a in self.get_areas()]
+        bus_area_indices = np.array([area_dict.get(b.area, 0) for b in self.get_buses()])
+
+        branches = self.get_branches_wo_hvdc()
+        F = np.zeros(len(branches), dtype=int)
+        T = np.zeros(len(branches), dtype=int)
+        for k, elm in enumerate(branches):
+            F[k] = bus_dict[elm.bus_from]
+            T[k] = bus_dict[elm.bus_to]
+
+        hvdc = self.get_hvdc()
+        hvdc_F = np.zeros(len(hvdc), dtype=int)
+        hvdc_T = np.zeros(len(hvdc), dtype=int)
+        for k, elm in enumerate(hvdc):
+            hvdc_F[k] = bus_dict[elm.bus_from]
+            hvdc_T[k] = bus_dict[elm.bus_to]
+
+        return area_names, bus_area_indices, F, T, hvdc_F, hvdc_T
+
     def change_base(self, Sbase_new: float):
         """
         Change the elements base impedance
@@ -4574,18 +4571,20 @@ class MultiCircuit:
         """
         groups: Dict[dev.Bus, Dict[DeviceType, List[INJECTION_DEVICE_TYPES]]] = dict()
 
-        for elm in self.get_injection_devices():
+        for lst in self.get_injection_devices_lists():
 
-            devices_by_type = groups.get(elm.bus, None)
+            for elm in lst:
 
-            if devices_by_type is None:
-                groups[elm.bus] = {elm.device_type: [elm]}
-            else:
-                lst = devices_by_type.get(elm.device_type, None)
-                if lst is None:
-                    devices_by_type[elm.device_type] = [elm]
+                devices_by_type = groups.get(elm.bus, None)
+
+                if devices_by_type is None:
+                    groups[elm.bus] = {elm.device_type: [elm]}
                 else:
-                    devices_by_type[elm.device_type].append(elm)
+                    lst = devices_by_type.get(elm.device_type, None)
+                    if lst is None:
+                        devices_by_type[elm.device_type] = [elm]
+                    else:
+                        devices_by_type[elm.device_type].append(elm)
 
         return groups
 
@@ -5141,45 +5140,43 @@ class MultiCircuit:
         """
         Convert from bus/branch to node/breaker network model
         """
-        bbcn = {}
-        for bs in self.buses:
-            bb = dev.BusBar(name='Artificial_BusBar_{}'.format(bs.code), code='{}'.format(bs.code))
-            self.add_bus_bar(bb)
-            bbcn['Artificial_BusBar_{}'.format(bs.code)] = bb.cn
 
-        for l in self.get_branches():
+        bbcn = dict()
+        for bus in self.buses:
+            bus_bar = dev.BusBar(name='Artificial_BusBar_{}'.format(bus.name))
+            self.add_bus_bar(bus_bar)
+            bbcn[bus.idtag] = bus_bar.cn
+            bus_bar.cn.code = bus.code  # for soft checking later
+            # bus_bar.cn.default_bus = bus
+
+        # branches
+        for elm in self.get_branches():
             # Create two new connectivity nodes
-            cnfrom = dev.ConnectivityNode(name='Artificial_CN_from_L{}'.format(l.name.split(' ')[-1]))
-            cnto = dev.ConnectivityNode(name='Artificial_CN_to_L{}'.format(l.name.split(' ')[-1]))
+            cnfrom = dev.ConnectivityNode(name='Artificial_CN_from_L{}'.format(elm.name))
+            cnto = dev.ConnectivityNode(name='Artificial_CN_to_L{}'.format(elm.name))
             self.add_connectivity_node(cnfrom)
             self.add_connectivity_node(cnto)
-            l.cn_to = cnto
-            l.cn_from = cnfrom
+            elm.cn_to = cnto
+            elm.cn_from = cnfrom
             # Create two new switches
-            sw1 = dev.Switch(name='Artificial_SW_from_L{}'.format(l.name.split(' ')[-1]),
-                            cn_from=bbcn['Artificial_BusBar_{}'.format(l.bus_from.code)],
-                            cn_to=cnfrom,
-                            active=True,
-                            code='Artificial_SW_from_L{}'.format(l.name.split(' ')[-1]))
-            sw2 = dev.Switch(name='Artificial_SW_to_L{}'.format(l.name.split(' ')[-1]),
+            sw1 = dev.Switch(name='Artificial_SW_from_L{}'.format(elm.name),
+                             cn_from=bbcn[elm.bus_from.idtag],
+                             cn_to=cnfrom,
+                             active=True)
+            sw2 = dev.Switch(name='Artificial_SW_to_L{}'.format(elm.name),
                              cn_from=cnto,
-                             cn_to=bbcn['Artificial_BusBar_{}'.format(l.bus_to.code)],
-                             active=True,
-                             code='Artificial_SW_to_L{}'.format(l.name.split(' ')[-1]))
+                             cn_to=bbcn[elm.bus_to.idtag],
+                             active=True)
             self.add_switch(sw1)
             self.add_switch(sw2)
 
-        # Generators
-        for g in self.get_generators():
-            g.cn = bbcn['Artificial_BusBar_{}'.format(g.bus.code)]
-        # Loads
-        for ld in self.get_loads():
-            ld.cn = bbcn['Artificial_BusBar_{}'.format(ld.bus.code)]
-        # Shunts
-        for sh in self.get_shunts():
-            sh.cn = bbcn['Artificial_BusBar_{}'.format(sh.bus.code)]
+        # injections
+        for elm in self.get_injection_devices():
+            # TODO: Add the posibbility to add a switch here too
+            elm.cn = bbcn[elm.bus.idtag]
 
         # Removing original buses
+        # if not keep_buses:
         bidx = [b for b in self.get_buses()]
         for b in bidx:
             self.delete_bus(b)

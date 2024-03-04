@@ -89,9 +89,9 @@ if __name__ == '__main__':
          "plural_name": "current_injections",
          "cls_name": "CurrentInjection", },
 
-        {"list_name": "linear_shunts",
+        {"list_name": "controllable_shunts",
          "singular_name": "linear_shunt",
-         "plural_name": "linear_shunts",
+         "plural_name": "controllable_shunts",
          "cls_name": "LinearShunt", },
 
     ]

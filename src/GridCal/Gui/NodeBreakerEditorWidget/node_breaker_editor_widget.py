@@ -951,7 +951,7 @@ class NodeBreakerEditorWidget(QSplitter):
             except:
                 pass
 
-    def remove_element(self, device: EditableDevice,
+    def remove_element(self, device: ALL_DEV_TYPES,
                        graphic_object: Union[QGraphicsItem, None] = None) -> None:
         """
         Remove device from the diagram and the database

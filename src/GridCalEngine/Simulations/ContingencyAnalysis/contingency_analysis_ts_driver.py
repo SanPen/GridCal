@@ -147,6 +147,7 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
             results.std_dev_overload[it, :] = np.abs(res_t.loading).max(axis=0)
 
             results.srap_used_power += res_t.srap_used_power
+            results.report += res_t.report
 
             # TODO: think what to do about this
             # results.report.merge(res_t.report)

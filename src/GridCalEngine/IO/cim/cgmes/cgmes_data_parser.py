@@ -60,6 +60,15 @@ def find_class_name(child: ET.Element):
     return class_name
 
 
+def fix_child_result_datatype(child_result: Dict):
+    for key, val in child_result.items():
+        if val == "true":
+            child_result[key] = True
+        elif val == "false":
+            child_result[key] = False
+    return child_result
+
+
 def parse_xml_to_dict(xml_element: ET.Element):
     """
     Parse element into dictionary
@@ -76,7 +85,7 @@ def parse_xml_to_dict(xml_element: ET.Element):
 
         if len(child) > 0:
             child_result = parse_xml_to_dict(child)
-
+            child_result = fix_child_result_datatype(child_result)
             objects_list = result.get(class_name, None)
 
             if objects_list is None:

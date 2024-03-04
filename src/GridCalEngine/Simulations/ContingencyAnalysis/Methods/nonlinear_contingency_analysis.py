@@ -53,6 +53,8 @@ def nonlinear_contingency_analysis(grid: MultiCircuit,
     else:
         pf_opts = options.pf_options
 
+    area_names, bus_area_indices, F, T, hvdc_F, hvdc_T = grid.get_branch_areas_info()
+
     # declare the results
     results = ContingencyAnalysisResults(ncon=len(grid.contingency_groups),
                                          nbr=numerical_circuit.nbr,
@@ -131,11 +133,15 @@ def nonlinear_contingency_analysis(grid: MultiCircuit,
                                srap_ratings=numerical_circuit.branch_data.protection_rates,
                                srap_max_power=options.srap_max_power,
                                srap_deadband=options.srap_deadband,
-                               srap_rever_to_nominal_rating=options.srap_rever_to_nominal_rating,
+                               contingency_deadband=options.contingency_deadband,
                                multi_contingency=multi_contingency,
                                PTDF=PTDF,
                                available_power=available_power,
                                srap_used_power=results.srap_used_power,
+                               F=F,
+                               T=T,
+                               bus_area_indices=bus_area_indices,
+                               area_names=area_names,
                                top_n=options.srap_top_n)
 
         # set the status

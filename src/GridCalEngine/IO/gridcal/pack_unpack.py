@@ -66,7 +66,7 @@ def get_objects_dictionary() -> Dict[str, dev.EditableDevice]:
 
                     'shunt': dev.Shunt(),
 
-                    'linear_shunt': dev.LinearShunt(),
+                    'linear_shunt': dev.ControllableShunt(),
 
                     'current_injection': dev.CurrentInjection(),
 
@@ -344,11 +344,11 @@ def get_profile_from_dict(data: Dict[str, Union[str, Union[Any, Dict[str, Any]]]
         sp_data = data['sparse_data']
         profile._sparse_array = SparseArray()
         if collection is None:
-            map_data = sp_data['map']
+            map_data = {int(key): val for key, val in sp_data['map'].items()}
 
         else:
             default_value = collection.get(data['default'], default_value)
-            map_data = {key: collection.get(val, default_value) for key, val in sp_data['map'].items()}
+            map_data = {int(key): collection.get(val, default_value) for key, val in sp_data['map'].items()}
 
         profile.sparse_array.create_from_dict(default_value=default_value, size=data['size'], map=map_data)
     else:
@@ -358,7 +358,7 @@ def get_profile_from_dict(data: Dict[str, Union[str, Union[Any, Dict[str, Any]]]
         else:
             arr = [collection.get(i, default_value) for i in data['dense_data']]
         profile._dense_array = np.array(arr)
-
+    profile.set_initialized()
     return profile
 
 

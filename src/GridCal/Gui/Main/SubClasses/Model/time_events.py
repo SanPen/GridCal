@@ -367,7 +367,7 @@ class TimeEventsMain(ObjectsTableMain):
         dlg.setModal(True)
         dlg.exec_()
 
-        if dlg.accepted:
+        if dlg.is_accepted:
             self.circuit.re_index_time2(t0=dlg.date_time_editor.dateTime().toPython(),
                                         step_size=dlg.step_length.value(),
                                         step_unit=dlg.units.currentText())
