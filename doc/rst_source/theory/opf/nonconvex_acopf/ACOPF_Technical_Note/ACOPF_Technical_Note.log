@@ -1,10 +1,10 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 23.5) (preloaded format=pdflatex 2023.9.18)  10 JAN 2024 13:39
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 23.5) (preloaded format=pdflatex 2023.9.18)  20 FEB 2024 10:49
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
  %&-line parsing enabled.
-**c:/Users/eroot/OneDrive/Documents/ACOPF_Technical_Note.tex
-(c:/Users/eroot/OneDrive/Documents/ACOPF_Technical_Note.tex
+**c:/Users/eroot/PycharmProjects/GridCal/doc/rst_source/theory/opf/nonconvex_acopf/ACOPF_Technical_Note/ACOPF_Technical_Note.tex
+(c:/Users/eroot/PycharmProjects/GridCal/doc/rst_source/theory/opf/nonconvex_acopf/ACOPF_Technical_Note/ACOPF_Technical_Note.tex
 LaTeX2e <2023-06-01> patch level 1
 L3 programming layer <2023-08-29>
 (C:\Users\eroot\AppData\Local\Programs\MiKTeX\tex/latex/base\article.cls
@@ -233,14 +233,14 @@ L3 programming layer <2023-08-29>
  ) 
 Here is how much of TeX's memory you used:
  3861 strings out of 475248
- 60645 string characters out of 5757813
+ 61189 string characters out of 5757813
  1941801 words of memory out of 5000000
  25349 multiletter control sequences out of 15000+600000
  571524 words of font info for 85 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 57i,20n,65p,872b,248s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 57i,20n,65p,940b,248s stack positions out of 10000i,1000n,20000p,200000b,200000s
  <C:\Users\eroot\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\tcrm1000.pk><C:/Users/eroot/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbsy10.pfb><C:/Users/eroot/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx10.pfb><C:/Users/eroot/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx12.pfb><C:/Users/eroot/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx7.pfb><C:/Users/eroot/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmex10.pfb><C:/Users/eroot/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Users/eroot/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi5.pfb><C:/Users/eroot/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi7.pfb><C:/Users/eroot/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmib10.pfb><C:/Users/eroot/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cmextra/cmmib7.pfb><C:/Users/eroot/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/eroot/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:/Users/eroot/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr17.pfb><C:/Users/eroot/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr5.pfb><C:/Users/eroot/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr7.pfb><C:/Users/eroot/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/eroot/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy7.pfb><C:/Users/eroot/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmti10.pfb><C:/Users/eroot/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on ACOPF_Technical_Note.pdf (4 pages, 238173 bytes).
+Output written on ACOPF_Technical_Note.pdf (4 pages, 238187 bytes).
 PDF statistics:
  115 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)

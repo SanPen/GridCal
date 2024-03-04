@@ -363,7 +363,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                           pf_options: PowerFlowOptions,
                           debug: bool = False,
                           use_autodiff: bool = False,
-                          pf_init: bool = True,
+                          pf_init: bool = False,
                           plot_error: bool = False) -> NonlinearOPFResults:
     """
 
@@ -448,7 +448,6 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     ntapm = len(k_m)
     ntapt = len(k_tau)
 
-
     ndc = nc.nhvdc
     fdc = nc.hvdc_data.F
     tdc = nc.hvdc_data.T
@@ -487,7 +486,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         vm0 = (Vm_max + Vm_min) / 2
         tapm0 = nc.branch_data.tap_module[k_m]
         tapt0 = nc.branch_data.tap_angle[k_tau]
-        Pfdc0 = np.array([1] * ndc)
+        Pfdc0 = np.array([0] * ndc)
         #Ptdc0 = np.array([1] * ndc)
 
     # compose the initial values
@@ -603,7 +602,7 @@ def run_nonlinear_opf(grid: MultiCircuit,
                       t_idx: Union[None, int] = None,
                       debug: bool = False,
                       use_autodiff: bool = False,
-                      pf_init=True,
+                      pf_init=False,
                       plot_error: bool = False) -> NonlinearOPFResults:
     """
 

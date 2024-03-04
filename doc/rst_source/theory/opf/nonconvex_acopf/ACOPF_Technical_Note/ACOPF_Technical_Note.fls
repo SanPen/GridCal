@@ -1,6 +1,6 @@
-PWD c:\Users\eroot\OneDrive\Documents
+PWD c:\Users\eroot\PycharmProjects\GridCal\doc\rst_source\theory\opf\nonconvex_acopf\ACOPF_Technical_Note
 INPUT C:\Users\eroot\AppData\Local\MiKTeX\miktex\data\le\pdftex\pdflatex.fmt
-INPUT c:\Users\eroot\OneDrive\Documents\ACOPF_Technical_Note.tex
+INPUT c:\Users\eroot\PycharmProjects\GridCal\doc\rst_source\theory\opf\nonconvex_acopf\ACOPF_Technical_Note\ACOPF_Technical_Note.tex
 OUTPUT ACOPF_Technical_Note.log
 INPUT C:\Users\eroot\AppData\Local\Programs\MiKTeX\tex\latex\base\article.cls
 INPUT C:\Users\eroot\AppData\Local\Programs\MiKTeX\tex\latex\base\article.cls
