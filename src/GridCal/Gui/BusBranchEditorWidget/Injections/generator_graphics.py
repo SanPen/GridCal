@@ -513,8 +513,8 @@ class GeneratorGraphicItem(InjectionTemplateGraphicItem):
                                 bus_name=self.api_object.bus.name)
             if dlg.exec_():
                 if dlg.is_accepted:
-                    if len(dlg.P) == len(self.api_object.P_prof):
-                        self.api_object.P_prof = dlg.P
+                    if len(dlg.P) == self.api_object.P_prof.size():
+                        self.api_object.P_prof.set(dlg.P)
 
                         self.plot()
                     else:
@@ -540,9 +540,8 @@ class GeneratorGraphicItem(InjectionTemplateGraphicItem):
                                  bus_name=self.api_object.bus.name)
             if dlg.exec_():
                 if dlg.is_accepted:
-                    if len(dlg.P) == len(self.api_object.P_prof):
-                        self.api_object.P_prof = dlg.P
-
+                    if len(dlg.P) == self.api_object.P_prof.size():
+                        self.api_object.P_prof.set(dlg.P)
                         self.plot()
                     else:
                         raise Exception("Wrong length from the solar photovoltaic wizard")
@@ -550,6 +549,11 @@ class GeneratorGraphicItem(InjectionTemplateGraphicItem):
             info_msg("You need to have time profiles for this function")
 
     def rescale(self, scale: float = 1.0):
+        """
+
+        :param scale:
+        :return:
+        """
         super().rescale(scale)
         pen = QPen(self.color, self.width / scale, self.style)
 
