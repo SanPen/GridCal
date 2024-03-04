@@ -38,7 +38,6 @@ from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf_derivatives import (x
 
 
 def compute_updated_admittances(x, R, X, ig, alltapm, alltapt, k_m, k_tau, Cf, Ct):
-
     M, N = Cf.shape
     Ng = len(ig)
     ntapm = len(k_m)
@@ -62,7 +61,6 @@ def compute_updated_admittances(x, R, X, ig, alltapm, alltapt, k_m, k_tau, Cf, C
     Ybus = Cf.T * Yf + Ct.T * Yt
 
     return Ybus, Yf, Yt
-
 
 
 def compute_autodiff_structures(x, mu, lam, compute_jac: bool, compute_hess: bool,
@@ -145,7 +143,8 @@ def compute_autodiff_structures(x, mu, lam, compute_jac: bool, compute_hess: boo
 def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: bool, admittances, Cg, R, X, F, T, Sd,
                                 slack, no_slack, from_idx, to_idx, fdc, tdc, ndc, pq, pv, Pdcmax, th_max, th_min, V_U,
                                 V_L, P_U, P_L, tanmax, Q_U, Q_L, tapm_max, tapm_min, tapt_max, tapt_min, alltapm,
-                                alltapt, k_m, k_tau, k_mtau, c0, c1, c2, Sbase, rates, il, ig, nig, Sg_undis, ctQ) -> IpsFunctionReturn:
+                                alltapt, k_m, k_tau, k_mtau, c0, c1, c2, Sbase, rates, il, ig, nig, Sg_undis,
+                                ctQ) -> IpsFunctionReturn:
     """
 
     :param x:
@@ -201,7 +200,7 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
     Cf = admittances.Cf
     Ct = admittances.Ct
 
-    f = eval_f(x=x, Cg=Cg,k_m=k_m, k_tau=k_tau, c0=c0, c1=c1, c2=c2, ig=ig, ndc=ndc, Sbase=Sbase)
+    f = eval_f(x=x, Cg=Cg, k_m=k_m, k_tau=k_tau, c0=c0, c1=c1, c2=c2, ig=ig, ndc=ndc, Sbase=Sbase)
     G, Scalc = eval_g(x=x, Ybus=Ybus, Yf=Yf, Cg=Cg, Sd=Sd, ig=ig, nig=nig,
                       pv=pv, fdc=fdc, tdc=tdc, k_m=k_m, k_tau=k_tau, Vm_max=V_U, Sg_undis=Sg_undis, slack=slack)
     H, Sf, St = eval_h(x=x, Yf=Yf, Yt=Yt, from_idx=from_idx, to_idx=to_idx, pq=pq, no_slack=no_slack, k_m=k_m,
@@ -213,10 +212,9 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
                                                        Sbase=Sbase, il=il, ig=ig, nig=nig, slack=slack,
                                                        no_slack=no_slack, pq=pq, pv=pv, tanmax=tanmax, alltapm=alltapm,
                                                        alltapt=alltapt, fdc=fdc, tdc=tdc, k_m=k_m, k_tau=k_tau,
-                                                       k_mtau=k_mtau, mu=mu,lmbda=lmbda, from_idx=from_idx,
+                                                       k_mtau=k_mtau, mu=mu, lmbda=lmbda, from_idx=from_idx,
                                                        to_idx=to_idx, R=R, X=X, F=F, T=T, ctQ=ctQ,
                                                        compute_jac=compute_jac, compute_hess=compute_hess)
-
 
     return IpsFunctionReturn(f=f, G=G, H=H,
                              fx=fx, Gx=Gx, Hx=Hx,
@@ -408,7 +406,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     Vm_max = nc.bus_data.Vmax
     Vm_min = nc.bus_data.Vmin
     pf = nc.generator_data.pf
-    tanmax = ((1 - (pf)**2)**(1/2)) / (pf + 1e-15)
+    tanmax = ((1 - (pf) ** 2) ** (1 / 2)) / (pf + 1e-15)
 
     pv = np.flatnonzero(Vm_max == Vm_min)
     pq = np.flatnonzero(Vm_max != Vm_min)
@@ -440,9 +438,9 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     tapt_max = nc.branch_data.tap_angle_max[k_tau]
     tapt_min = nc.branch_data.tap_angle_min[k_tau]
     alltapm = nc.branch_data.tap_module  # We grab all tapm even they are not variable since the indexing is needed
-                                         # if the tapt of the same trafo is variable.
+    # if the tapt of the same trafo is variable.
     alltapt = nc.branch_data.tap_angle  # We grab all tapt even they are not variable since the indexing is needed if
-                                        # the tapm of the same trafo is variable.
+    # the tapm of the same trafo is variable.
 
     nbr = nc.branch_data.nelm
     nbus = nc.bus_data.nbus
@@ -463,7 +461,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     # Number of inequalities: Line ratings, max and min angle of buses, voltage module range and
     # NI = 2 * nbr + 2 * n_no_slack + 2 * nbus + 4 * ngen
     if pf_options.control_Q == ReactivePowerControlMode.NoControl:
-        NI = 2 * nll + 2 * npq + 4 * ngg + 2 * ntapm + 2 * ntapt + 2 * ndc   # Without Reactive power constraint (power curve)
+        NI = 2 * nll + 2 * npq + 4 * ngg + 2 * ntapm + 2 * ntapt + 2 * ndc  # Without Reactive power constraint (power curve)
     else:
         NI = 2 * nll + 2 * npq + 5 * ngg + 2 * ntapm + 2 * ntapt + 2 * ndc
 
@@ -481,7 +479,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         tapm0 = nc.branch_data.tap_module[k_m]
         tapt0 = nc.branch_data.tap_angle[k_tau]
         Pfdc0 = np.array([0] * ndc)
-        #Ptdc0 = np.array([0] * ndc)
+        # Ptdc0 = np.array([0] * ndc)
     # nc.Vbus  # dummy initialization
     else:
         p0gen = ((nc.generator_data.pmax + nc.generator_data.pmin) / (2 * nc.Sbase))[ig]
@@ -491,7 +489,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         tapm0 = nc.branch_data.tap_module[k_m]
         tapt0 = nc.branch_data.tap_angle[k_tau]
         Pfdc0 = np.array([0] * ndc)
-        #Ptdc0 = np.array([1] * ndc)
+        # Ptdc0 = np.array([1] * ndc)
 
     # compose the initial values
     x0 = var2x(Va=va0,
@@ -551,7 +549,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                                            trust=opf_options.ips_trust_radius)
 
     # convert the solution to the problem variables
-    Va, Vm, Pg_dis, Qg_dis, tapm, tapt, Pfdc = x2var(result.x, nVa=nbus, nVm=nbus, nPg=ngg, nQg=ngg, ntapm=ntapm, ntapt=ntapt, ndc=ndc)
+    Va, Vm, Pg_dis, Qg_dis, tapm, tapt, Pfdc = x2var(result.x, nVa=nbus, nVm=nbus, nPg=ngg, nQg=ngg, ntapm=ntapm,
+                                                     ntapt=ntapt, ndc=ndc)
 
     # Save Results DataFrame for tests
     # pd.DataFrame(Va).transpose().to_csv('pegase89resth.csv')
@@ -625,10 +624,24 @@ def run_nonlinear_opf(grid: MultiCircuit,
     # compile the system
     nc = compile_numerical_circuit_at(circuit=grid, t_idx=t_idx)
 
-    return ac_optimal_power_flow(nc=nc,
-                                 opf_options=opf_options,
-                                 pf_options=pf_options,
-                                 debug=debug,
-                                 use_autodiff=use_autodiff,
-                                 pf_init=pf_init,
-                                 plot_error=plot_error)
+    islands = nc.split_into_islands(ignore_single_node_islands=True,
+                                    consider_hvdc_as_island_links=True)
+
+    results = NonlinearOPFResults()
+    results.initialize(nbus=nc.nbus, nbr=nc.nbr, ng=nc.ngen)
+
+    for island in islands:
+        island_res = ac_optimal_power_flow(nc=island,
+                                           opf_options=opf_options,
+                                           pf_options=pf_options,
+                                           debug=debug,
+                                           use_autodiff=use_autodiff,
+                                           pf_init=pf_init,
+                                           plot_error=plot_error)
+
+        results.merge(other=island_res,
+                      bus_idx=island.bus_data.original_idx,
+                      br_idx=island.branch_data.original_idx,
+                      gen_idx=island.generator_data.original_idx)
+
+    return results
