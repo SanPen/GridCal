@@ -191,7 +191,7 @@ def two_grids_of_3bus():
     grid.add_generator(b11, gce.Generator('G1 (2)', vset=1.00, Cost=1.0, Cost2=1.0))
     grid.add_generator(b21, gce.Generator('G2 (2)', P=10, vset=0.995, Cost=1.0, Cost2=2.0))
 
-    hvdc = gce.HvdcLine(b11, b2, r=0.001, rate=100)
+    hvdc = gce.HvdcLine(b1, b21, r=0.001, rate=100)
     grid.add_hvdc(hvdc)
 
     options = gce.PowerFlowOptions(gce.SolverType.NR, verbose=False)
