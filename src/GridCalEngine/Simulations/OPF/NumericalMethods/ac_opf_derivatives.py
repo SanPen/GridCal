@@ -11,7 +11,8 @@ import GridCalEngine.Utils.NumericalMethods.autodiff as ad
 from typing import Tuple, Union
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at, NumericalCircuit
-from GridCalEngine.enumerations import  ReactivePowerControlMode
+from GridCalEngine.enumerations import ReactivePowerControlMode
+
 
 def x2var(x: Vec, nVa: int, nVm: int, nPg: int,
           nQg: int, ntapm: int, ntapt: int, ndc: int) -> Tuple[Vec, Vec, Vec, Vec, Vec, Vec, Vec, Vec]:
@@ -52,10 +53,10 @@ def x2var(x: Vec, nVa: int, nVm: int, nPg: int,
     b += ndc
 
     Pfdc = x[a: b]
-    #a = b
-    #b += ndc
+    # a = b
+    # b += ndc
 
-    #Ptdc = x[a: b]
+    # Ptdc = x[a: b]
 
     return Va, Vm, Pg, Qg, tapm, tapt, Pfdc
 
@@ -318,6 +319,7 @@ def compute_branch_power_second_derivatives(alltapm, alltapt, vm, va, k_m, k_tau
             dSbusdtdvm, dSfdtdvm, dStdtdvm,
             dSbusdtdva, dSfdtdva, dStdtdva)
 
+
 '''
 def compute_finitediff_admittances(nc, tol=1e-6):
     k_m = nc.k_m
@@ -416,45 +418,6 @@ def compute_analytic_admittances_2dev(alltapm, alltapt, k_m, k_tau, Cf, Ct, R, X
             dYbusdtdm, dYfdtdm, dYtdtdm, dYbusdtdt, dYfdtdt, dYtdtdt)
 
 '''
-def compute_finitediff_admittances_2dev(nc, tol=1e-6):
-    k_m = nc.k_m
-    k_tau = nc.k_tau
-
-    dYb0dm, dYf0dm, dYt0dm, dYb0dt, dYf0dt, dYt0dt = compute_finitediff_admittances(nc)
-
-    nc.branch_data.tap_module[k_m] += tol
-    nc.reset_calculations()
-
-    dYbdm, dYfdm, dYtdm, dYbdt, dYfdt, dYtdt = compute_finitediff_admittances(nc)
-
-    dYfdmdm = (dYfdm - dYf0dm) / tol
-    dYtdmdm = (dYtdm - dYt0dm) / tol
-    dYbusdmdm = (dYbdm - dYb0dm) / tol
-
-    dYfdtdm = (dYfdt - dYf0dt) / tol
-    dYtdtdm = (dYtdt - dYt0dt) / tol
-    dYbusdtdm = (dYbdt - dYb0dt) / tol
-
-    nc.branch_data.tap_module[k_m] -= tol
-
-    nc.branch_data.tap_angle[k_tau] += tol
-    nc.reset_calculations()
-
-    dYbdm, dYfdm, dYtdm, dYbdt, dYfdt, dYtdt = compute_finitediff_admittances(nc)
-
-    dYfdmdt = (dYfdm - dYf0dm) / tol
-    dYtdmdt = (dYtdm - dYt0dm) / tol
-    dYbusdmdt = (dYbdm - dYb0dm) / tol
-
-    dYfdtdt = (dYfdt - dYf0dt) / tol
-    dYtdtdt = (dYtdt - dYt0dt) / tol
-    dYbusdtdt = (dYbdt - dYb0dt) / tol
-
-    nc.branch_data.tap_angle[k_tau] -= tol
-    nc.reset_calculations()
-
-    return (dYbusdmdm, dYfdmdm, dYtdmdm, dYbusdmdt, dYfdmdt, dYtdmdt,
-            dYbusdtdm, dYfdtdm, dYtdtdm, dYbusdtdt, dYfdtdt, dYtdtdt)
 
 
 def eval_f(x: Vec, Cg, k_m: Vec, k_tau: Vec, c0: Vec, c1: Vec, c2: Vec, ig: Vec, ndc: int, Sbase: float) -> Vec:
@@ -462,10 +425,13 @@ def eval_f(x: Vec, Cg, k_m: Vec, k_tau: Vec, c0: Vec, c1: Vec, c2: Vec, ig: Vec,
 
     :param x:
     :param Cg:
+    :param k_m:
+    :param k_tau:
     :param c0:
     :param c1:
     :param c2:
     :param ig:
+    :param ndc:
     :param Sbase:
     :return:
     """
@@ -510,8 +476,7 @@ def eval_g(x, Ybus, Yf, Cg, Sd, ig, nig, pv, fdc, tdc, k_m, k_tau, Vm_max, Sg_un
     dS = S + Sd - S_dispatch - S_undispatch
 
     if ndc != 0:
-
-        #dP_dc = Pfdc + Ptdc  # - (1/R) * (vm[f] - vm[t]) **2
+        # dP_dc = Pfdc + Ptdc  # - (1/R) * (vm[f] - vm[t]) **2
 
         dS[fdc] += Pfdc
         dS[tdc] -= Pfdc
@@ -523,7 +488,7 @@ def eval_g(x, Ybus, Yf, Cg, Sd, ig, nig, pv, fdc, tdc, k_m, k_tau, Vm_max, Sg_un
 
 def eval_h(x, Yf, Yt, from_idx, to_idx, pq, no_slack, k_m, k_tau, k_mtau, Va_max, Va_min, Vm_max, Vm_min,
            Pg_max, Pg_min, Qg_max, Qg_min, tapm_max, tapm_min, tapt_max, tapt_min, Pdcmax, Cg, rates, il, ig, tanmax,
-           ctQ:ReactivePowerControlMode) -> Vec:
+           ctQ: ReactivePowerControlMode) -> Vec:
     """
 
     :param x:
@@ -598,7 +563,7 @@ def eval_h(x, Yf, Yt, from_idx, to_idx, pq, no_slack, k_m, k_tau, k_mtau, Va_max
 
 def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, nig, slack, no_slack, pq, pv, tanmax,
                            alltapm, alltapt, fdc, tdc, k_m, k_tau, k_mtau, mu, lmbda, from_idx, to_idx, R, X, F, T,
-                           ctQ:ReactivePowerControlMode, compute_jac: bool, compute_hess: bool):
+                           ctQ: ReactivePowerControlMode, compute_jac: bool, compute_hess: bool):
     """
 
     :param x:
@@ -657,11 +622,11 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
 
         GTH = lil_matrix((len(slack), len(x)), dtype=float)
         for i, ss in enumerate(slack):
-            GTH[i, ss] = 1.
+            GTH[i, ss] = 1.0
 
         Gvm = lil_matrix((len(pv), len(x)), dtype=float)
         for i, ss in enumerate(pv):
-            Gvm[i, N + ss] = 1.
+            Gvm[i, N + ss] = 1.0
 
         GS = sp.hstack([GSva, GSvm, GSpg, GSqg])
 
@@ -679,7 +644,6 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
                 GS = sp.hstack([GS, Gtapt])
 
         if ndc != 0:
-
             GSpfdc = lil_matrix((N, 1))
             GSpfdc[fdc] = 1
             GSpfdc[tdc] = -1
@@ -689,7 +653,6 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
         Gx = sp.vstack([GS.real, GS.imag, GTH, Gvm])
 
         Gx = Gx.T.tocsc()
-
 
         ######### INEQUALITY CONSTRAINTS GRAD
 
@@ -773,7 +736,6 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
 
             Hx = sp.vstack([HSf, HSt, Hvu, Hpu, Hqu, Hvl, Hpl, Hql])
 
-
         if ctQ != ReactivePowerControlMode.NoControl:
             # tanmax curves (simplified capability curves of generators)
             Hqmaxp = -2 * (tanmax ** 2) * Pg
@@ -784,7 +746,6 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
             Hx = sp.vstack([Hx, Hqmax])
 
         if ndc != 0:
-
             Hx = sp.hstack([Hx, lil_matrix((2 * M + 2 * N + 4 * Ng, 1))])
 
             Hdc1 = lil_matrix((1, NV))
@@ -875,7 +836,6 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
             Gxx = sp.vstack([G1, G2, lil_matrix((2 * Ng, 2 * N + 2 * Ng))])
 
         if ndc != 0:
-
             Gxx = sp.hstack([Gxx, lil_matrix((NV - 1, 1))])
             Gxx = sp.vstack([Gxx, lil_matrix((1, NV))])
 
@@ -967,7 +927,6 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
             Hxx = sp.vstack([H1, H2, H3, H4])
 
         if ndc != 0:
-
             Hxx = sp.hstack([Hxx, lil_matrix((NV - 1, 1))])
             Hxx = sp.vstack([Hxx, lil_matrix((1, NV))])
 
