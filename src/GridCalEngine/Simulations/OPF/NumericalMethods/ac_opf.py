@@ -141,10 +141,10 @@ def compute_autodiff_structures(x, mu, lam, compute_jac: bool, compute_hess: boo
                              S=Scalc, St=St, Sf=Sf)
 
 
-def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: bool, admittances, Cg, R, X, F, T,
-                                Sd, slack, no_slack, from_idx, to_idx, pq, pv, th_max, th_min, V_U, V_L, P_U,
-                                P_L, tanmax, Q_U, Q_L, tapm_max, tapm_min, tapt_max, tapt_min, alltapm, alltapt, k_m,
-                                k_tau, k_mtau, c0, c1, c2, Sbase, rates, il, ig, nig, Sg_undis, ctQ) -> IpsFunctionReturn:
+def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: bool, admittances, Cg, R, X, F, T, Sd,
+                                slack, no_slack, from_idx, to_idx, fdc, tdc, ndc, pq, pv, Pdcmax, th_max, th_min, V_U,
+                                V_L, P_U, P_L, tanmax, Q_U, Q_L, tapm_max, tapm_min, tapt_max, tapt_min, alltapm,
+                                alltapt, k_m, k_tau, k_mtau, c0, c1, c2, Sbase, rates, il, ig, nig, Sg_undis, ctQ) -> IpsFunctionReturn:
     """
 
     :param x:
@@ -187,7 +187,7 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
     alltapm0 = alltapm.copy()
     alltapt0 = alltapt.copy()
 
-    _, _, _, _, tapm, tapt = x2var(x, nVa=N, nVm=N, nPg=Ng, nQg=Ng, ntapm=ntapm, ntapt=ntapt)
+    _, _, _, _, tapm, tapt, _, _ = x2var(x, nVa=N, nVm=N, nPg=Ng, nQg=Ng, ntapm=ntapm, ntapt=ntapt, ndc=ndc)
 
     alltapm[k_m] = tapm
     alltapt[k_tau] = tapt
@@ -200,20 +200,21 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
     Cf = admittances.Cf
     Ct = admittances.Ct
 
-    f = eval_f(x=x, Cg=Cg,k_m=k_m, k_tau=k_tau, c0=c0, c1=c1, c2=c2, ig=ig, Sbase=Sbase)
+    f = eval_f(x=x, Cg=Cg,k_m=k_m, k_tau=k_tau, c0=c0, c1=c1, c2=c2, ig=ig, ndc=ndc, Sbase=Sbase)
     G, Scalc = eval_g(x=x, Ybus=Ybus, Yf=Yf, Cg=Cg, Sd=Sd, ig=ig, nig=nig,
-                      pv=pv, k_m=k_m, k_tau=k_tau, Vm_max=V_U, Sg_undis=Sg_undis, slack=slack)
+                      pv=pv, fdc=fdc, tdc=tdc, k_m=k_m, k_tau=k_tau, Vm_max=V_U, Sg_undis=Sg_undis, slack=slack)
     H, Sf, St = eval_h(x=x, Yf=Yf, Yt=Yt, from_idx=from_idx, to_idx=to_idx, pq=pq, no_slack=no_slack, k_m=k_m,
                        k_tau=k_tau, k_mtau=k_mtau, Va_max=th_max, Va_min=th_min, Vm_max=V_U, Vm_min=V_L, Pg_max=P_U,
                        Pg_min=P_L, Qg_max=Q_U, Qg_min=Q_L, tapm_max=tapm_max, tapm_min=tapm_min, tapt_max=tapt_max,
-                       tapt_min=tapt_min, Cg=Cg, rates=rates, il=il, ig=ig, tanmax=tanmax, ctQ=ctQ)
+                       tapt_min=tapt_min, Pdcmax=Pdcmax, Cg=Cg, rates=rates, il=il, ig=ig, tanmax=tanmax, ctQ=ctQ)
 
     fx, Gx, Hx, fxx, Gxx, Hxx = jacobians_and_hessians(x=x, c1=c1, c2=c2, Cg=Cg, Cf=Cf, Ct=Ct, Yf=Yf, Yt=Yt, Ybus=Ybus,
                                                        Sbase=Sbase, il=il, ig=ig, nig=nig, slack=slack,
                                                        no_slack=no_slack, pq=pq, pv=pv, tanmax=tanmax, alltapm=alltapm,
-                                                       alltapt=alltapt, k_m=k_m, k_tau=k_tau, k_mtau=k_mtau, mu=mu,
-                                                       lmbda=lmbda, from_idx=from_idx, to_idx=to_idx, R=R, X=X, F=F,
-                                                       T=T, ctQ=ctQ, compute_jac=compute_jac, compute_hess=compute_hess)
+                                                       alltapt=alltapt, fdc=fdc, tdc=tdc, k_m=k_m, k_tau=k_tau,
+                                                       k_mtau=k_mtau, mu=mu,lmbda=lmbda, from_idx=from_idx,
+                                                       to_idx=to_idx, R=R, X=X, F=F, T=T, ctQ=ctQ,
+                                                       compute_jac=compute_jac, compute_hess=compute_hess)
 
 
     return IpsFunctionReturn(f=f, G=G, H=H,
@@ -447,15 +448,21 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     ntapm = len(k_m)
     ntapt = len(k_tau)
 
+
+    ndc = nc.nhvdc
+    fdc = nc.hvdc_data.F
+    tdc = nc.hvdc_data.T
+    Pdcmax = nc.hvdc_data.rate
+
     # Number of equalities: Nodal power balances, the voltage module of slack and pv buses and the slack reference
-    NE = 2 * nbus + n_slack + npv
+    NE = 2 * nbus + n_slack + npv + ndc
 
     # Number of inequalities: Line ratings, max and min angle of buses, voltage module range and
     # NI = 2 * nbr + 2 * n_no_slack + 2 * nbus + 4 * ngen
     if pf_options.control_Q == ReactivePowerControlMode.NoControl:
-        NI = 2 * nll + 2 * npq + 4 * ngg + 2 * ntapm + 2 * ntapt  # Without Reactive power constraint (power curve)
+        NI = 2 * nll + 2 * npq + 4 * ngg + 2 * ntapm + 2 * ntapt + 4 * ndc   # Without Reactive power constraint (power curve)
     else:
-        NI = 2 * nll + 2 * npq + 5 * ngg + 2 * ntapm + 2 * ntapt
+        NI = 2 * nll + 2 * npq + 5 * ngg + 2 * ntapm + 2 * ntapt + 4 * ndc
 
     # run power flow to initialize
     pf_results = multi_island_pf_nc(nc=nc, options=pf_options)
@@ -470,6 +477,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         va0 = np.angle(pf_results.voltage)
         tapm0 = nc.branch_data.tap_module[k_m]
         tapt0 = nc.branch_data.tap_angle[k_tau]
+        Pfdc0 = np.array([0] * ndc)
+        Ptdc0 = np.array([0] * ndc)
     # nc.Vbus  # dummy initialization
     else:
         p0gen = ((nc.generator_data.pmax + nc.generator_data.pmin) / (2 * nc.Sbase))[ig]
@@ -478,6 +487,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         vm0 = (Vm_max + Vm_min) / 2
         tapm0 = nc.branch_data.tap_module[k_m]
         tapt0 = nc.branch_data.tap_angle[k_tau]
+        Pfdc0 = np.array([1] * ndc)
+        Ptdc0 = np.array([1] * ndc)
 
     # compose the initial values
     x0 = var2x(Va=va0,
@@ -485,7 +496,9 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                Pg=p0gen,
                Qg=q0gen,
                tapm=tapm0,
-               tapt=tapt0)  # ADD TAPS
+               tapt=tapt0,
+               Pfdc=Pfdc0,
+               Ptdc=Ptdc0) # ADD TAPS
 
     # number of variables
     NV = len(x0)
@@ -525,18 +538,19 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
             # run the solver with the analytic derivatives
             result = interior_point_solver(x0=x0, n_x=NV, n_eq=NE, n_ineq=NI,
                                            func=compute_analytic_structures,
-                                           arg=(admittances, Cg, R, X, F, T, Sd, slack, no_slack, from_idx,
-                                                to_idx, pq, pv, Va_max, Va_min, Vm_max, Vm_min, Pg_max, Pg_min, tanmax,
-                                                Qg_max, Qg_min, tapm_max, tapm_min, tapt_max, tapt_min, alltapm,
-                                                alltapt, k_m, k_tau, k_mtau, c0, c1, c2, Sbase, rates, il, ig, nig,
-                                                Sg_undis, pf_options.control_Q),
+                                           arg=(admittances, Cg, R, X, F, T, Sd, slack, no_slack, from_idx, to_idx,
+                                                fdc, tdc, ndc, pq, pv, Pdcmax, Va_max, Va_min, Vm_max, Vm_min, Pg_max,
+                                                Pg_min, tanmax, Qg_max, Qg_min, tapm_max, tapm_min, tapt_max, tapt_min,
+                                                alltapm, alltapt, k_m, k_tau, k_mtau, c0, c1, c2, Sbase, rates, il, ig,
+                                                nig, Sg_undis, pf_options.control_Q),
                                            verbose=pf_options.verbose,
                                            max_iter=pf_options.max_iter,
                                            tol=pf_options.tolerance,
                                            trust=pf_options.trust_radius)
 
     # convert the solution to the problem variables
-    Va, Vm, Pg_dis, Qg_dis, tapm, tapt = x2var(result.x, nVa=nbus, nVm=nbus, nPg=ngg, nQg=ngg, ntapm=ntapm, ntapt=ntapt)
+    Va, Vm, Pg_dis, Qg_dis, tapm, tapt, Pfdc, Ptdc = x2var(result.x, nVa=nbus, nVm=nbus, nPg=ngg,
+                                                           nQg=ngg, ntapm=ntapm, ntapt=ntapt, ndc=ndc)
 
     # Save Results DataFrame for tests
     # pd.DataFrame(Va).transpose().to_csv('pegase89resth.csv')

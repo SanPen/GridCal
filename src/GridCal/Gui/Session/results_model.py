@@ -68,13 +68,6 @@ class ResultsModel(QtCore.QAbstractTableModel):
 
         self.units = table.units
 
-    def set_devices(self, devices_list: List[ALL_DEV_TYPES]):
-        """
-        Set the list of devices that matches the results for filtering
-        :param devices_list:
-        """
-        self.table.set_devices(devices_list=devices_list)
-
     def flags(self, index):
         if self.table.editable and index.column() > self.table.editable_min_idx:
             return QtCore.Qt.ItemFlag.ItemIsEditable | QtCore.Qt.ItemFlag.ItemIsEnabled | QtCore.Qt.ItemFlag.ItemIsSelectable
@@ -198,7 +191,6 @@ class ResultsModel(QtCore.QAbstractTableModel):
         filter_ = FilterResultsTable(self.table)
         filter_.parse(expression=txt)
         mdl = filter_.apply()
-        # mdl = self.table.search(txt)
 
         if mdl is not None:
             return ResultsModel(mdl)

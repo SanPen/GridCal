@@ -22,7 +22,7 @@ from typing import Union
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Simulations.results_table import ResultsTable
-from GridCalEngine.enumerations import ResultTypes
+from GridCalEngine.enumerations import ResultTypes, DeviceType
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.helm_power_flow import helm_coefficients_josep, \
@@ -170,15 +170,42 @@ class SigmaAnalysisResults:  # TODO: inherit from ResultsTemplate
                 y_label = '(p.u.)'
                 title = 'Sigma distances '
 
+                return ResultsTable(data=y,
+                                    index=labels,
+                                    idx_device_type=DeviceType.BusDevice,
+                                    columns=np.array([result_type.value]),
+                                    cols_device_type=DeviceType.NoDevice,
+                                    title=title,
+                                    ylabel=y_label,
+                                    units=y_label)
+
             elif result_type == ResultTypes.SigmaReal:
                 y = self.sigma_re[indices]
                 y_label = '(deg)'
                 title = 'Real sigma '
 
+                return ResultsTable(data=y,
+                                    index=labels,
+                                    idx_device_type=DeviceType.BusDevice,
+                                    columns=np.array([result_type.value]),
+                                    cols_device_type=DeviceType.NoDevice,
+                                    title=title,
+                                    ylabel=y_label,
+                                    units=y_label)
+
             elif result_type == ResultTypes.SigmaImag:
                 y = self.sigma_im[indices]
                 y_label = '(p.u.)'
                 title = 'Imaginary Sigma '
+
+                return ResultsTable(data=y,
+                                    index=labels,
+                                    idx_device_type=DeviceType.BusDevice,
+                                    columns=np.array([result_type.value]),
+                                    cols_device_type=DeviceType.NoDevice,
+                                    title=title,
+                                    ylabel=y_label,
+                                    units=y_label)
 
             elif result_type == ResultTypes.SigmaPlusDistances:
                 y = np.c_[self.sigma_re[indices], self.sigma_im[indices], self.distances[indices]]
@@ -187,26 +214,16 @@ class SigmaAnalysisResults:  # TODO: inherit from ResultsTemplate
 
                 mdl = ResultsTable(data=y,
                                    index=labels,
+                                   idx_device_type=DeviceType.BusDevice,
                                    columns=np.array(['σ real', 'σ imaginary', 'Distances']),
+                                   cols_device_type=DeviceType.NoDevice,
                                    title=title,
                                    ylabel=y_label,
                                    units=y_label)
                 return mdl
 
             else:
-                n = len(labels)
-                y = np.zeros(n)
-                y_label = ''
-                title = ''
-
-            # assemble model
-            mdl = ResultsTable(data=y,
-                               index=labels,
-                               columns=np.array([result_type.value[0]]),
-                               title=title,
-                               ylabel=y_label,
-                               units=y_label)
-            return mdl
+                raise Exception('Unsupported result type: ' + str(result_type))
 
         else:
             return None

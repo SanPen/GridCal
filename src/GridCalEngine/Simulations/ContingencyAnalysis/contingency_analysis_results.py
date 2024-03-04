@@ -21,7 +21,7 @@ from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.Simulations.ContingencyAnalysis.contingencies_report import ContingencyResultsReport
 from GridCalEngine.basic_structures import IntVec, StrVec, CxMat, Mat
-from GridCalEngine.enumerations import StudyResultsType, ResultTypes
+from GridCalEngine.enumerations import StudyResultsType, ResultTypes, DeviceType
 
 
 class ContingencyAnalysisResults(ResultsTemplate):
@@ -120,64 +120,87 @@ class ContingencyAnalysisResults(ResultsTemplate):
         index = ['# ' + x for x in self.con_names]
 
         if result_type == ResultTypes.BusVoltageModule:
-            data = np.abs(self.voltage)
-            y_label = '(p.u.)'
-            title = 'Bus voltage '
-            labels = self.bus_names
-            # index = self.branch_names
+
+            return ResultsTable(
+                data=np.abs(self.voltage),
+                index=index,
+                columns=self.bus_names,
+                title=result_type.value,
+                units='(p.u.)',
+                cols_device_type=DeviceType.ContingencyDevice,
+                idx_device_type=DeviceType.BusDevice
+            )
 
         elif result_type == ResultTypes.BusVoltageAngle:
-            data = np.angle(self.voltage, deg=True)
-            y_label = '(Deg)'
-            title = 'Bus voltage '
-            labels = self.bus_names
-            # index = self.branch_names
+
+            return ResultsTable(
+                data=np.angle(self.voltage, deg=True),
+                index=index,
+                columns=self.bus_names,
+                title=result_type.value,
+                units='(deg)',
+                cols_device_type=DeviceType.ContingencyDevice,
+                idx_device_type=DeviceType.BusDevice
+            )
 
         elif result_type == ResultTypes.BusActivePower:
-            data = self.Sbus.real
-            y_label = '(MW)'
-            title = 'Bus active power '
-            labels = self.bus_names
-            # index = self.branch_names
+
+            return ResultsTable(
+                data=self.Sbus.real,
+                index=index,
+                columns=self.bus_names,
+                title=result_type.value,
+                units='(MW)',
+                cols_device_type=DeviceType.ContingencyDevice,
+                idx_device_type=DeviceType.BusDevice
+            )
 
         elif result_type == ResultTypes.BranchActivePowerFrom:
-            data = self.Sf.real
-            y_label = 'MW'
-            title = 'Branch active power '
-            labels = self.branch_names
-            # index = self.branch_names
+
+            return ResultsTable(
+                data=self.Sf.real,
+                index=index,
+                columns=self.branch_names,
+                title=result_type.value,
+                units='(MW)',
+                cols_device_type=DeviceType.ContingencyDevice,
+                idx_device_type=DeviceType.BranchDevice
+            )
 
         elif result_type == ResultTypes.BranchLoading:
-            data = self.loading.real * 100
-            y_label = '(%)'
-            title = 'Branch loading '
-            labels = self.branch_names
-            # index = self.branch_names
+
+            return ResultsTable(
+                data=self.loading.real * 100,
+                index=index,
+                columns=self.branch_names,
+                title=result_type.value,
+                units='(%)',
+                cols_device_type=DeviceType.ContingencyDevice,
+                idx_device_type=DeviceType.BranchDevice
+            )
 
         elif result_type == ResultTypes.SrapUsedPower:
-            data = self.srap_used_power
-            y_label = ''
-            title = result_type.value[0]
-            labels = self.bus_names
-            index = self.branch_names
+
+            return ResultsTable(
+                data=self.srap_used_power,
+                index=self.branch_names,
+                columns=self.bus_names,
+                title=result_type.value,
+                units="(MW)",
+                cols_device_type=DeviceType.BusDevice,
+                idx_device_type=DeviceType.BranchDevice
+            )
 
         elif result_type == ResultTypes.ContingencyAnalysisReport:
-            data = self.report.get_data()
-            y_label = ''
-            title = result_type.value[0]
-            labels = self.report.get_headers()
-            index = self.report.get_index()
+
+            return ResultsTable(
+                data=self.report.get_data(),
+                index=self.report.get_index(),
+                columns=self.report.get_headers(),
+                title=result_type.value,
+                cols_device_type=DeviceType.NoDevice,
+                idx_device_type=DeviceType.NoDevice
+            )
 
         else:
             raise Exception('Result type not understood:' + str(result_type))
-
-        # assemble model
-        mdl = ResultsTable(
-            data=data,
-            index=index,
-            columns=labels,
-            title=title,
-            ylabel=y_label
-        )
-
-        return mdl

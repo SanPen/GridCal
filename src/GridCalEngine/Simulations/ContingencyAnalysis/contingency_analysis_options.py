@@ -37,6 +37,7 @@ class ContingencyAnalysisOptions:
                  srap_deadband: float = 10,
                  srap_rever_to_nominal_rating: bool = False,
                  detailed_massive_report: bool = False,
+                 contingency_deadband: float = 0.0,
                  engine=ContingencyMethod.PowerFlow):
         """
         ContingencyAnalysisOptions
@@ -53,6 +54,7 @@ class ContingencyAnalysisOptions:
         :param srap_rever_to_nominal_rating: If checked the SRAP objective solution is the branch nominal rate.
                                              Otherwise the objective rating is the contingency rating.
         :param detailed_massive_report: If checked, a massive posibly intractable report is generated.
+        :param contingency_deadband: Deadband to report contingencies
         :param engine: ContingencyEngine to use (PowerFlow, PTDF, ...)
         """
 
@@ -77,3 +79,5 @@ class ContingencyAnalysisOptions:
         self.srap_rever_to_nominal_rating: bool = srap_rever_to_nominal_rating
 
         self.detailed_massive_report = detailed_massive_report
+
+        self.contingency_deadband = contingency_deadband

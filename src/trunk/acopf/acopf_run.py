@@ -188,8 +188,11 @@ def two_grids_of_3bus():
     grid.add_line(gce.Line(bus_from=b31, bus_to=b11, name='line 3-1 (2)', r=0.001, x=0.05, rate=100))
 
     grid.add_load(b31, gce.Load(name='L3 (2)', P=50, Q=20))
-    grid.add_generator(b11, gce.Generator('G1 (2)', vset=1.00, Cost=1.0, Cost2=2.0))
+    grid.add_generator(b11, gce.Generator('G1 (2)', vset=1.00, Cost=1.0, Cost2=1.0))
     grid.add_generator(b21, gce.Generator('G2 (2)', P=10, vset=0.995, Cost=1.0, Cost2=3.0))
+
+    hvdc = gce.HvdcLine(b11, b2, r=0.01, rate=100)
+    grid.add_hvdc(hvdc)
 
     options = gce.PowerFlowOptions(gce.SolverType.NR, verbose=False)
     power_flow = gce.PowerFlowDriver(grid, options)
@@ -247,18 +250,7 @@ def case14():
     for l in range(len(grid.lines)):
         grid.lines[l].monitor_loading = True
 
-    tr1 = gce.Transformer2W(grid.buses[0], grid.buses[1], 'Trafo 1', control_mode=TransformerControlType.PtQt,
-                            tap_module=0.95, tap_phase=-0.02, r=0.05, x=0.11, tap_phase_max=0.5, tap_module_max=1.1,
-                            tap_phase_min=-0.5, tap_module_min=0.9, rate=1000)
-
-    #grid.add_transformer2w(tr1)
-    tr2 = gce.Transformer2W(grid.buses[0], grid.buses[4], 'Trafo 2', control_mode=TransformerControlType.PtQt,
-                            tap_module=0.95, tap_phase=-0.02, r=0.05, x=0.11, tap_phase_max=0.5, tap_module_max=1.1,
-                            tap_phase_min=-0.5, tap_module_min=0.9, rate=1000)
-
-    #grid.add_transformer2w(tr2)
-
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=2, tolerance=1e-10, max_iter=50)
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, tolerance=1e-10, max_iter=50)
     run_nonlinear_opf(grid=grid, pf_options=pf_options, plot_error=True)
 
 
@@ -290,10 +282,11 @@ def case_pegase89():
     file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case89pegase.m')
 
     grid = gce.FileOpen(file_path).open()
-    nc = compile_numerical_circuit_at(grid)
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, tolerance=1e-8, max_iter=100)
-    ac_optimal_power_flow(nc=nc, pf_options=pf_options, plot_error=True)
 
+    #nc = compile_numerical_circuit_at(grid)
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, tolerance=1e-8, max_iter=100)
+    #ac_optimal_power_flow(nc=nc, pf_options=pf_options, plot_error=True)
+    run_nonlinear_opf(grid=grid, pf_options=pf_options, plot_error=True)
     grid.get_bus_branch_connectivity_matrix()
     nc = compile_numerical_circuit_at(grid)
     print('')
@@ -315,7 +308,6 @@ def case300():
 
     run_nonlinear_opf(grid=grid, pf_options=pf_options, plot_error=True)
 
-
 def case6ww():
     """
     IEEE14
@@ -328,7 +320,7 @@ def case6ww():
     file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case6ww.m')
 
     grid = gce.FileOpen(file_path).open()
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=3)
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=3, max_iter=200)
     run_nonlinear_opf(grid=grid, pf_options=pf_options, plot_error=True)
 
 
@@ -337,9 +329,9 @@ if __name__ == '__main__':
     # case_3bus()
     # linn5bus_example()
     # two_grids_of_3bus()
-    # case9()
-    case14()
+    case9()
+    # case14()
     # case_gb()
     # case6ww()
-    #case_pegase89()
-    #case300()
+    # case_pegase89()
+    # case300()

@@ -146,8 +146,8 @@ class SimulationsMain(TimeEventsMain):
         # reactive power controls
         self.contingency_engines_dict = OrderedDict()
         self.contingency_engines_dict[ContingencyMethod.PowerFlow.value] = ContingencyMethod.PowerFlow
+        self.contingency_engines_dict[ContingencyMethod.OptimalPowerFlow.value] = ContingencyMethod.OptimalPowerFlow
         self.contingency_engines_dict[ContingencyMethod.PTDF.value] = ContingencyMethod.PTDF
-        self.contingency_engines_dict[ContingencyMethod.HELM.value] = ContingencyMethod.HELM
         self.ui.contingencyEngineComboBox.setModel(gf.get_list_model(list(self.contingency_engines_dict.keys())))
 
         # list of stochastic power flow methods
@@ -176,30 +176,28 @@ class SimulationsMain(TimeEventsMain):
         self.ptdf_group_modes = OrderedDict()
 
         # dictionaries for available results
-        self.available_results_dict: Union[Dict[str, List[ResultTypes]], None] = dict()
+        self.available_results_dict: Union[Dict[str, Dict[str, ResultTypes]], None] = dict()
 
         self.buses_for_storage: Union[List[dev.Bus], None] = None
 
         # --------------------------------------------------------------------------------------------------------------
 
-        self.ui.actionPower_flow.triggered.connect(self.run_power_flow)
+        self.ui.actionPower_flow.triggered.connect(self.power_flow_dispatcher)
         self.ui.actionShort_Circuit.triggered.connect(self.run_short_circuit)
         self.ui.actionVoltage_stability.triggered.connect(self.run_continuation_power_flow)
         self.ui.actionPower_Flow_Time_series.triggered.connect(self.run_power_flow_time_series)
         self.ui.actionPower_flow_Stochastic.triggered.connect(self.run_stochastic)
-        # self.ui.actionBlackout_cascade.triggered.connect(self.view_cascade_menu)
-        self.ui.actionOPF.triggered.connect(self.run_opf)
+        self.ui.actionOPF.triggered.connect(self.optimal_power_flow_dispatcher)
         self.ui.actionOPF_time_series.triggered.connect(self.run_opf_time_series)
-        self.ui.actionOptimal_Net_Transfer_Capacity.triggered.connect(self.run_opf_ntc)
+        self.ui.actionOptimal_Net_Transfer_Capacity.triggered.connect(self.optimal_ntc_opf_dispatcher)
         self.ui.actionOptimal_Net_Transfer_Capacity_Time_Series.triggered.connect(self.run_opf_ntc_ts)
         self.ui.actionInputs_analysis.triggered.connect(self.run_inputs_analysis)
         self.ui.actionStorage_location_suggestion.triggered.connect(self.storage_location)
-        self.ui.actionLinearAnalysis.triggered.connect(self.run_linear_analysis)
-        self.ui.actionContingency_analysis.triggered.connect(self.run_contingency_analysis)
+        self.ui.actionLinearAnalysis.triggered.connect(self.linear_pf_dispatcher)
+        self.ui.actionContingency_analysis.triggered.connect(self.contingencies_dispatcher)
         self.ui.actionOTDF_time_series.triggered.connect(self.run_contingency_analysis_ts)
-        self.ui.actionATC.triggered.connect(self.run_available_transfer_capacity)
+        self.ui.actionATC.triggered.connect(self.optimal_ntc_dispatcher)
         self.ui.actionATC_Time_Series.triggered.connect(self.run_available_transfer_capacity_ts)
-        self.ui.actionATC_clustering.triggered.connect(self.run_available_transfer_capacity_clustering)
         self.ui.actionPTDF_time_series.triggered.connect(self.run_linear_analysis_ts)
         self.ui.actionClustering.triggered.connect(self.run_clustering)
         self.ui.actionSigma_analysis.triggered.connect(self.run_sigma_analysis)
@@ -645,6 +643,73 @@ class SimulationsMain(TimeEventsMain):
 
         return opf_time_series_results
 
+    def ts_flag(self) -> bool:
+        """
+        Is the time series flag enabled?
+        :return:
+        """
+        return self.ui.actionactivate_time_series.isChecked()
+
+    def power_flow_dispatcher(self):
+        """
+        Dispatch the power flow action
+        :return:
+        """
+        if self.ts_flag():
+            self.run_power_flow_time_series()
+        else:
+            self.run_power_flow()
+
+    def optimal_power_flow_dispatcher(self):
+        """
+        Dispatch the optimal power flow action
+        :return:
+        """
+        if self.ts_flag():
+            self.run_opf_time_series()
+        else:
+            self.run_opf()
+
+    def optimal_ntc_dispatcher(self):
+        """
+        Dispatch the NTC action
+        :return:
+        """
+        if self.ts_flag():
+            self.run_available_transfer_capacity_ts()
+        else:
+            self.run_available_transfer_capacity()
+
+    def optimal_ntc_opf_dispatcher(self):
+        """
+        Dispatch the optimal NTC action
+        :return:
+        """
+        if self.ts_flag():
+            self.run_opf_ntc_ts()
+        else:
+            self.run_opf_ntc()
+
+    def linear_pf_dispatcher(self):
+        """
+        Dispatch the linear power flow action
+        :return:
+        """
+        if self.ts_flag():
+            self.run_linear_analysis_ts()
+        else:
+            self.run_linear_analysis()
+
+    def contingencies_dispatcher(self):
+        """
+        Dispatch the contingencies action
+        :return:
+        """
+        if self.ts_flag():
+            self.run_contingency_analysis_ts()
+        else:
+            self.run_contingency_analysis()
+
     def run_power_flow(self):
         """
         Run a power flow simulation
@@ -960,6 +1025,7 @@ class SimulationsMain(TimeEventsMain):
             srap_deadband=self.ui.srap_deadband_doubleSpinBox.value(),
             srap_rever_to_nominal_rating=self.ui.srap_revert_to_nominal_rating_checkBox.isChecked(),
             detailed_massive_report=self.ui.contingency_detailed_massive_report_checkBox.isChecked(),
+            contingency_deadband=self.ui.contingency_deadband_SpinBox.value(),
             engine=self.contingency_engines_dict[self.ui.contingencyEngineComboBox.currentText()]
         )
 
@@ -1298,13 +1364,6 @@ class SimulationsMain(TimeEventsMain):
                 error_msg('There are no time series!')
         else:
             pass
-
-    def run_available_transfer_capacity_clustering(self):
-        """
-        Run the ATC time series using clustering
-        :return:
-        """
-        self.run_available_transfer_capacity_ts(use_clustering=True)
 
     def post_available_transfer_capacity_ts(self):
         """
@@ -2585,8 +2644,7 @@ class SimulationsMain(TimeEventsMain):
                 self.ui.progress_label.setText('Running topology processing...')
                 QtGui.QGuiApplication.processEvents()
                 # set power flow object instance
-                drv = sim.TopologyProcessorDriver(self.circuit,
-                                                  time_indices=[None] + list(self.circuit.get_all_time_indices()))
+                drv = sim.TopologyProcessorDriver(self.circuit)
 
                 self.session.run(drv,
                                  post_func=self.post_topology_processor,

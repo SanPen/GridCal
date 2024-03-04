@@ -22,6 +22,7 @@ from GridCalEngine.Utils.Filtering.filtering import (MasterFilter, Filter, Filte
                                                      is_numeric, parse_expression)
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
 
+
 def object_extract(elm: ALL_DEV_TYPES, args: List[str]) -> Any:
     """
     Extract value from object's property chain
@@ -36,6 +37,7 @@ def object_extract(elm: ALL_DEV_TYPES, args: List[str]) -> Any:
         else:
             return None
     return p
+
 
 def compute_results_table_masks(table: ResultsTable, flt: Filter) -> Tuple[BoolVec, BoolVec, Mat]:
     """
@@ -103,13 +105,6 @@ def compute_results_table_masks(table: ResultsTable, flt: Filter) -> Tuple[BoolV
                     col_mask[j] = True
                     data_mask[:, j] = True
 
-        #TODO
-        # Trasladar no solo _devices sino _devices_c y _devices_r a table para poder hacer consulta
-        # como esta ---> colobj.bus_to.name like PAXTON
-        # Pensar como ejemplo PTDF donde se ha de poder filtrar por filar y por columnas objeto
-        # Quizas se deberian definir los tipos para columnas y filas también
-        # Ver results.py -> 114 (2024-02-27)
-
         elif flt.element == FilterSubject.COL_OBJECT:
 
             val = value
@@ -117,32 +112,32 @@ def compute_results_table_masks(table: ResultsTable, flt: Filter) -> Tuple[BoolV
             idx_mask = np.ones(table.r, dtype=bool)
             col_mask = np.zeros(table.c, dtype=bool)
             data_mask = np.zeros((table.r, table.c), dtype=bool)
+            if len(table.idx_devices):
+                for j in range(table.c):
 
-            for j in range(table.c):
+                    if len(flt.element_args):
+                        obj_val = object_extract(elm=table.col_devices[j], args=flt.element_args)
+                    else:
+                        obj_val = str(table.col_devices[j])
 
-                if len(flt.element_args):
-                    obj_val = object_extract(elm=table._devices[j], args=flt.element_args)
-                else:
-                    obj_val = str(table._devices[j])
+                    if obj_val is not None:
 
-                if obj_val is not None:
+                        tpe = type(obj_val)
 
-                    tpe = type(obj_val)
+                        try:
+                            val = tpe(val)
+                        except TypeError:
+                            # if the casting failed, try string comparison
+                            val = str(val)
+                            obj_val = str(obj_val)
 
-                    try:
-                        val = tpe(val)
-                    except TypeError:
-                        # if the casting failed, try string comparison
-                        val = str(val)
-                        obj_val = str(obj_val)
-
-                    if flt.apply_filter_op(obj_val, val):
-                        col_mask[j] = True
-                        data_mask[:, j] = True
-                else:
-                    # the object_val is None
-                    a = ".".join(flt.element_args)
-                    raise ValueError(f"{a} cannot be found for the objects :(")
+                        if flt.apply_filter_op(obj_val, val):
+                            col_mask[j] = True
+                            data_mask[:, j] = True
+                    else:
+                        # the object_val is None
+                        a = ".".join(flt.element_args)
+                        raise ValueError(f"{a} cannot be found for the objects :(")
 
         elif flt.element == FilterSubject.IDX_OBJECT:
 
@@ -152,31 +147,33 @@ def compute_results_table_masks(table: ResultsTable, flt: Filter) -> Tuple[BoolV
             col_mask = np.ones(table.c, dtype=bool)
             data_mask = np.zeros((table.r, table.c), dtype=bool)
 
-            for i in range(table.r):
+            if len(table.idx_devices):
 
-                if len(flt.element_args):
-                    obj_val = object_extract(elm=table._devices[i], args=flt.element_args)
-                else:
-                    obj_val = str(table._devices[i])
+                for i in range(table.r):
 
-                if obj_val is not None:
+                    if len(flt.element_args):
+                        obj_val = object_extract(elm=table.idx_devices[i], args=flt.element_args)
+                    else:
+                        obj_val = str(table.idx_devices[i])
 
-                    tpe = type(obj_val)
+                    if obj_val is not None:
 
-                    try:
-                        val = tpe(val)
-                    except TypeError:
-                        # if the casting failed, try string comparison
-                        val = str(val)
-                        obj_val = str(obj_val)
+                        tpe = type(obj_val)
 
-                    if flt.apply_filter_op(obj_val, val):
-                        idx_mask[i] = True
-                        data_mask[i, :] = True
-                else:
-                    # the object_val is None
-                    a = ".".join(flt.element_args)
-                    raise ValueError(f"{a} cannot be found for the objects :(")
+                        try:
+                            val = tpe(val)
+                        except TypeError:
+                            # if the casting failed, try string comparison
+                            val = str(val)
+                            obj_val = str(obj_val)
+
+                        if flt.apply_filter_op(obj_val, val):
+                            idx_mask[i] = True
+                            data_mask[i, :] = True
+                    else:
+                        # the object_val is None
+                        a = ".".join(flt.element_args)
+                        raise ValueError(f"{a} cannot be found for the objects :(")
 
         else:
             raise Exception("Invalid FilterSubject")
@@ -241,7 +238,6 @@ class FilterResultsTable:
                     else:
                         raise Exception("Unsupported master filter opration")
 
-
             else:
                 raise Exception("Unsupported number of filters. Use and or concatenation")
 
@@ -258,9 +254,19 @@ class FilterResultsTable:
             data = self.table.data_c * nan_mask
 
             # return the sliced table
+
             return ResultsTable(data=data[np.ix_(ii, jj)],
                                 columns=np.array([self.table.cols_c[j] for j in jj]),
-                                index=np.array([self.table.index_c[i] for i in ii]))
+                                index=np.array([self.table.index_c[i] for i in ii]),
+                                title=self.table.title,
+                                xlabel=self.table.x_label,
+                                ylabel=self.table.y_label,
+                                units=self.table.units,
+                                editable=self.table.editable,
+                                editable_min_idx=self.table.editable_min_idx,
+                                decimals=self.table.decimals,
+                                cols_device_type=self.table.cols_device_type,
+                                idx_device_type=self.table.idx_device_type)
 
         else:
             return self.table

@@ -173,6 +173,13 @@ class Profile:
         """
         return self._initialized
 
+    def set_initialized(self) -> None:
+        """
+        Set the profile to initialized
+        :return:
+        """
+        self._initialized = True
+
     @property
     def sparse_array(self) -> Union[SparseArray, None]:
         """
@@ -316,6 +323,30 @@ class Profile:
 
         else:
             raise TypeError("Key must be an integer")
+
+    def __imul__(self, other: Union["Profile", float, int]) -> "Profile":
+        """
+        Incremental multiplication
+        :param other: float or int
+        :return: self
+        """
+
+        if isinstance(other, (int, float)):
+
+            if self._is_sparse:
+
+                # Scale the map
+                self._sparse_array._map = {key: val * other
+                                           for key, val in self._sparse_array.get_map().items()}
+            else:
+
+                # Scale the dense array
+                self._dense_array *= other
+
+        else:
+            raise TypeError("Unsupported type {}".format(type(other)))
+
+        return self
 
     def convert_sparse_to_dense(self) -> None:
         """

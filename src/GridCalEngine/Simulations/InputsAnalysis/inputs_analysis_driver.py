@@ -23,7 +23,7 @@ from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.enumerations import StudyResultsType, ResultTypes
+from GridCalEngine.enumerations import StudyResultsType, ResultTypes, DeviceType
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCalEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults
@@ -304,70 +304,99 @@ class InputsAnalysisResults(ResultsTemplate):
                 (or None if the result was not understood)
         """
 
-        columns = [result_type.value[0]]
-
         if result_type == ResultTypes.ZoneAnalysis:
             df = self.group_by('Zone')
-            columns = df.columns.values
-            labels = df.index.values
-            y = df.values
-            y_label = ''
-            title = result_type.value[0]
+
+            return ResultsTable(data=df.values,
+                                index=df.index.values,
+                                idx_device_type=DeviceType.ZoneDevice,
+                                columns=df.columns.values,
+                                cols_device_type=DeviceType.ZoneDevice,
+                                title=result_type.value)
 
         elif result_type == ResultTypes.AreaAnalysis:
             df = self.group_by('Area')
-            columns = df.columns.values
-            labels = df.index.values
-            y = df.values
-            y_label = ''
-            title = result_type.value[0]
+            return ResultsTable(data=df.values,
+                                index=df.index.values,
+                                idx_device_type=DeviceType.AreaDevice,
+                                columns=df.columns.values,
+                                cols_device_type=DeviceType.AreaDevice,
+                                title=result_type.value)
 
         elif result_type == ResultTypes.CountryAnalysis:
             df = self.group_by('Country')
-            columns = df.columns.values
-            labels = df.index.values
-            y = df.values
-            y_label = ''
-            title = result_type.value[0]
+            return ResultsTable(data=df.values,
+                                index=df.index.values,
+                                idx_device_type=DeviceType.CountryDevice,
+                                columns=df.columns.values,
+                                cols_device_type=DeviceType.CountryDevice,
+                                title=result_type.value)
 
         elif result_type == ResultTypes.AreaGenerationAnalysis:
             generators = self.grid.get_generators() + self.grid.get_batteries() + self.grid.get_static_generators()
             y, columns = self.get_collection_attr_series(generators, 'P_prof', 'Area')
-            labels = pd.to_datetime(self.grid.time_profile)
-            y_label = 'MW'
-            title = result_type.value[0]
+
+            return ResultsTable(data=y,
+                                index=pd.to_datetime(self.grid.time_profile),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.AreaDevice,
+                                title=result_type.value,
+                                units="(MW)")
 
         elif result_type == ResultTypes.ZoneGenerationAnalysis:
             generators = self.grid.get_generators() + self.grid.get_batteries() + self.grid.get_static_generators()
             y, columns = self.get_collection_attr_series(generators, 'P_prof', 'Zone')
-            labels = pd.to_datetime(self.grid.time_profile)
-            y_label = 'MW'
-            title = result_type.value[0]
+
+            return ResultsTable(data=y,
+                                index=pd.to_datetime(self.grid.time_profile),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.ZoneDevice,
+                                title=result_type.value,
+                                units="(MW)")
 
         elif result_type == ResultTypes.CountryGenerationAnalysis:
             generators = self.grid.get_generators() + self.grid.get_batteries() + self.grid.get_static_generators()
             y, columns = self.get_collection_attr_series(generators, 'P_prof', 'Country')
-            labels = pd.to_datetime(self.grid.time_profile)
-            y_label = 'MW'
-            title = result_type.value[0]
+
+            return ResultsTable(data=y,
+                                index=pd.to_datetime(self.grid.time_profile),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.CountryDevice,
+                                title=result_type.value,
+                                units="(MW)")
 
         elif result_type == ResultTypes.AreaLoadAnalysis:
             y, columns = self.get_collection_attr_series(self.grid.get_loads(), 'P_prof', 'Area')
-            labels = pd.to_datetime(self.grid.time_profile)
-            y_label = 'MW'
-            title = result_type.value[0]
+            return ResultsTable(data=y,
+                                index=pd.to_datetime(self.grid.time_profile),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.AreaDevice,
+                                title=result_type.value,
+                                units="(MW)")
 
         elif result_type == ResultTypes.ZoneLoadAnalysis:
             y, columns = self.get_collection_attr_series(self.grid.get_loads(), 'P_prof', 'Zone')
-            labels = pd.to_datetime(self.grid.time_profile)
-            y_label = 'MW'
-            title = result_type.value[0]
+            return ResultsTable(data=y,
+                                index=pd.to_datetime(self.grid.time_profile),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.ZoneDevice,
+                                title=result_type.value,
+                                units="(MW)")
 
         elif result_type == ResultTypes.CountryLoadAnalysis:
             y, columns = self.get_collection_attr_series(self.grid.get_loads(), 'P_prof', 'Country')
-            labels = pd.to_datetime(self.grid.time_profile)
-            y_label = 'MW'
-            title = result_type.value[0]
+            return ResultsTable(data=y,
+                                index=pd.to_datetime(self.grid.time_profile),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.CountryDevice,
+                                title=result_type.value,
+                                units="(MW)")
 
         elif result_type == ResultTypes.AreaBalanceAnalysis:
             generators = self.grid.get_generators() + self.grid.get_batteries() + self.grid.get_static_generators()
@@ -377,9 +406,13 @@ class InputsAnalysisResults(ResultsTemplate):
 
             y = yg - yl
 
-            labels = pd.to_datetime(self.grid.time_profile)
-            y_label = 'MW'
-            title = result_type.value[0]
+            return ResultsTable(data=y,
+                                index=pd.to_datetime(self.grid.time_profile),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.AreaDevice,
+                                title=result_type.value,
+                                units="(MW)")
 
         elif result_type == ResultTypes.ZoneBalanceAnalysis:
             generators = self.grid.get_generators() + self.grid.get_batteries() + self.grid.get_static_generators()
@@ -389,9 +422,13 @@ class InputsAnalysisResults(ResultsTemplate):
 
             y = yg - yl
 
-            labels = pd.to_datetime(self.grid.time_profile)
-            y_label = 'MW'
-            title = result_type.value[0]
+            return ResultsTable(data=y,
+                                index=pd.to_datetime(self.grid.time_profile),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.ZoneDevice,
+                                title=result_type.value,
+                                units="(MW)")
 
         elif result_type == ResultTypes.CountryBalanceAnalysis:
             generators = self.grid.get_generators() + self.grid.get_batteries() + self.grid.get_static_generators()
@@ -401,24 +438,16 @@ class InputsAnalysisResults(ResultsTemplate):
 
             y = yg - yl
 
-            labels = pd.to_datetime(self.grid.time_profile)
-            y_label = 'MW'
-            title = result_type.value[0]
+            return ResultsTable(data=y,
+                                index=pd.to_datetime(self.grid.time_profile),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.CountryDevice,
+                                title=result_type.value,
+                                units="(MW)")
 
         else:
-            labels = []
-            y = np.zeros(0)
-            y_label = '(MW)'
-            title = ''
-
-        mdl = ResultsTable(data=y,
-                           index=labels,
-                           columns=columns,
-                           title=title,
-                           ylabel=y_label,
-                           xlabel='',
-                           units=y_label)
-        return mdl
+            raise Exception('Result type not understood:' + str(result_type))
 
 
 class InputsAnalysisDriver(DriverTemplate):
@@ -452,5 +481,3 @@ class InputsAnalysisDriver(DriverTemplate):
 
     def cancel(self):
         self.__cancel__ = True
-
-
