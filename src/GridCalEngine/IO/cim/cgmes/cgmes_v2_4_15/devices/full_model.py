@@ -22,14 +22,14 @@ class FullModel(IdentifiedObject):
     def __init__(self, rdfid, tpe):
         IdentifiedObject.__init__(self, rdfid, tpe)
 
-        self.scenarioTime = ''
-        self.created = ''
-        self.version = ''
-        self.profile = ''
-        self.modelingAuthoritySet = ''
-        self.DependentOn = ''
-        self.longDependentOnPF = ''
-        self.Supersedes = ''
+        self.scenarioTime: str = None
+        self.created: str = None
+        self.version: str = None
+        self.profile: str = None
+        self.modelingAuthoritySet: str = None
+        self.DependentOn: str = None
+        self.longDependentOnPF: str = None
+        self.Supersedes: str = None
 
         self.register_property(
             name='scenarioTime',

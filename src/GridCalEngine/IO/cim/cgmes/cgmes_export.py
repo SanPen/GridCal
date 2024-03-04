@@ -1,18 +1,15 @@
-from rdflib.plugins.serializers.rdfxml import XMLLANG
-from rdflib.util import first
 from rdflib import OWL, plugin
 import rdflib
 
-from typing import IO, Dict, Optional, Set
-from rdflib.collection import Collection
+from typing import IO, Dict, Optional, Set, List
 from rdflib.graph import Graph
 from rdflib.namespace import RDF, RDFS, Namespace
 from rdflib.plugins.parsers.RDFVOC import RDFVOC
 from rdflib.plugins.serializers.xmlwriter import XMLWriter
 from rdflib.serializer import Serializer
-from rdflib.term import BNode, IdentifiedNode, Identifier, Literal, Node, URIRef
-from rdflib.util import first, more_than
-import xml.dom.minidom
+from rdflib.term import IdentifiedNode, Identifier, Literal, Node
+from rdflib.util import first
+
 import os
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
 import pandas as pd
@@ -24,15 +21,15 @@ about_dict = dict()
 
 class CimSerializer(Serializer):
     def __init__(self, store: Graph):
-        super().__init__(store)
+        super(CimSerializer, self).__init__(store)
         self.about_list = self.get_about_list()
 
     def serialize(
-        self,
-        stream: IO[bytes],
-        base: Optional[str] = None,
-        encoding: Optional[str] = None,
-        **args,
+            self,
+            stream: IO[bytes],
+            base: Optional[str] = None,
+            encoding: Optional[str] = None,
+            **args,
     ):
         self.__serialized: Dict[Identifier, int] = {}
         store = self.store
@@ -65,6 +62,14 @@ class CimSerializer(Serializer):
         writer.namespaces(namespaces.items())
 
         subject: IdentifiedNode
+
+        # Writing the FullModels first than delete them from the graph
+        for subject in store.subjects(predicate=RDF.type,
+                                      object=rdflib.URIRef(
+                                          "http://iec.ch/TC57/61970-552/ModelDescription/1#FullModel")):
+            self.subject(subject, 1)
+            store.remove((subject, None, None))
+
         # Write out subjects that can not be inline
         # type error: Incompatible types in assignment (expression has type "Node", variable has type "IdentifiedNode")
         for subject in store.subjects():  # type: ignore[assignment]
@@ -72,22 +77,6 @@ class CimSerializer(Serializer):
                 if (subject, None, subject) in store:
                     self.subject(subject, 1)
             else:
-                self.subject(subject, 1)
-
-        # write out anything that has not yet been reached
-        # write out BNodes last (to ensure they can be inlined where possible)
-        bnodes = set()
-
-        # type error: Incompatible types in assignment (expression has type "Node", variable has type "IdentifiedNode")
-        for subject in store.subjects():  # type: ignore[assignment]
-            if isinstance(subject, BNode):
-                bnodes.add(subject)
-                continue
-            self.subject(subject, 1)
-
-        # now serialize only those BNodes that have not been serialized yet
-        for bnode in bnodes:
-            if bnode not in self.__serialized:
                 self.subject(subject, 1)
 
         writer.pop(RDFVOC.RDF)
@@ -167,6 +156,50 @@ class CgmesExporter:
     def __init__(self, cgmes_circuit: CgmesCircuit = None):
         self.cgmes_circuit = cgmes_circuit
 
+    def create_graph(self, profile: List[str]):
+        graph = Graph()
+        graph.bind("cim", Namespace("http://iec.ch/TC57/2013/CIM-schema-cim16#"))
+        graph.bind("entsoe", Namespace("http://entsoe.eu/CIM/SchemaExtension/3/1#"))
+        graph.bind("md", Namespace("http://iec.ch/TC57/61970-552/ModelDescription/1#"))
+
+        full_model_list = self.cgmes_circuit.FullModel_list
+
+        filter_props = ["scenarioTime",
+                        "created",
+                        "version",
+                        "profile",
+                        "modelingAuthoritySet",
+                        "DependentOn",
+                        "longDependentOnPF",
+                        "Supersedes",
+                        "description"]
+        # populate graph with header
+        for model in full_model_list:
+            obj_dict = model.__dict__
+            obj_id = rdflib.URIRef("urn:uuid:" + model.rdfid)
+            if obj_dict.get("profile") in profile:
+                for attr_name, attr_value in obj_dict.items():
+                    if attr_name not in filter_props:
+                        continue
+                    if attr_value is None:
+                        continue
+                    if hasattr(attr_value, "rdfid"):
+                        graph.add((rdflib.URIRef(obj_id),
+                                   rdflib.URIRef(RDF.type),
+                                   rdflib.URIRef("http://iec.ch/TC57/61970-552/ModelDescription/1#FullModel")))
+                        graph.add((rdflib.URIRef(obj_id),
+                                   rdflib.URIRef("http://iec.ch/TC57/61970-552/ModelDescription/1#Model." + attr_name),
+                                   rdflib.URIRef("urn:uuid:" + attr_value.rdfid)))
+                    else:
+                        graph.add((rdflib.URIRef(obj_id),
+                                   rdflib.URIRef(RDF.type),
+                                   rdflib.URIRef("http://iec.ch/TC57/61970-552/ModelDescription/1#FullModel")))
+                        graph.add((rdflib.URIRef(obj_id),
+                                   rdflib.URIRef("http://iec.ch/TC57/61970-552/ModelDescription/1#Model." + attr_name),
+                                   rdflib.Literal(str(attr_value))))
+
+        return graph
+
     def export_to_xml(self):
         import time
         start = time.time()
@@ -211,34 +244,12 @@ class CgmesExporter:
         print("Serialization and excel load time: ", endt - start, "sec")
 
         start = time.time()
-        eq_graph = self.create_graph()
-        eq_graph.add((rdflib.URIRef("urn:uuid:7d06cd3f-a6dc-9642-826a-266fc538e942"),
-                      rdflib.URIRef(RDF.type),
-                      rdflib.URIRef("http://iec.ch/TC57/61970-552/ModelDescription/1#FullModel")))
-        eq_graph.add((rdflib.URIRef("urn:uuid:7d06cd3f-a6dc-9642-826a-266fc538e942"),
-                      rdflib.URIRef("http://iec.ch/TC57/61970-552/ModelDescription/1#profile"),
-                      rdflib.Literal("http://entsoe.eu/CIM/EquipmentCore/3/1")))
-        ssh_graph = self.create_graph()
-        ssh_graph.add((rdflib.URIRef("urn:uuid:7d06cd3f-a6dc-9642-826a-266fc538e942"),
-                       rdflib.URIRef(RDF.type),
-                       rdflib.URIRef("http://iec.ch/TC57/61970-552/ModelDescription/1#FullModel")))
-        ssh_graph.add((rdflib.URIRef("urn:uuid:7d06cd3f-a6dc-9642-826a-266fc538e942"),
-                       rdflib.URIRef("http://iec.ch/TC57/61970-552/ModelDescription/1#profile"),
-                       rdflib.Literal("http://entsoe.eu/CIM/SteadyStateHypothesis/1/1")))
-        tp_graph = self.create_graph()
-        tp_graph.add((rdflib.URIRef("urn:uuid:7d06cd3f-a6dc-9642-826a-266fc538e942"),
-                      rdflib.URIRef(RDF.type),
-                      rdflib.URIRef("http://iec.ch/TC57/61970-552/ModelDescription/1#FullModel")))
-        tp_graph.add((rdflib.URIRef("urn:uuid:7d06cd3f-a6dc-9642-826a-266fc538e942"),
-                      rdflib.URIRef("http://iec.ch/TC57/61970-552/ModelDescription/1#profile"),
-                      rdflib.Literal("http://entsoe.eu/CIM/Topology/4/1")))
-        sv_graph = self.create_graph()
-        sv_graph.add((rdflib.URIRef("urn:uuid:7d06cd3f-a6dc-9642-826a-266fc538e942"),
-                      rdflib.URIRef(RDF.type),
-                      rdflib.URIRef("http://iec.ch/TC57/61970-552/ModelDescription/1#FullModel")))
-        sv_graph.add((rdflib.URIRef("urn:uuid:7d06cd3f-a6dc-9642-826a-266fc538e942"),
-                      rdflib.URIRef("http://iec.ch/TC57/61970-552/ModelDescription/1#profile"),
-                      rdflib.Literal("http://entsoe.eu/CIM/StateVariables/4/1")))
+        eq_graph = self.create_graph(["http://entsoe.eu/CIM/EquipmentCore/3/1",
+                                      "http://entsoe.eu/CIM/EquipmentShortCircuit/3/1",
+                                      "http://iec.ch/TC57/2013/61970-452/EquipmentOperation/4"])
+        ssh_graph = self.create_graph(["http://entsoe.eu/CIM/SteadyStateHypothesis/1/1"])
+        tp_graph = self.create_graph(["http://entsoe.eu/CIM/Topology/4/1"])
+        sv_graph = self.create_graph(["http://entsoe.eu/CIM/StateVariables/4/1"])
 
         graphs_dict = {
             "EQ": eq_graph,
@@ -325,10 +336,59 @@ class CgmesExporter:
         endt = time.time()
         print("Serialize time: ", endt - start, "sec")
 
-    def create_graph(self):
-
-        graph_with_ns = Graph()
-        graph_with_ns.bind("cim", Namespace("http://iec.ch/TC57/2013/CIM-schema-cim16#"))
-        graph_with_ns.bind("entsoe", Namespace("http://entsoe.eu/CIM/SchemaExtension/3/1#"))
-        graph_with_ns.bind("md", Namespace("http://iec.ch/TC57/61970-552/ModelDescription/1#"))
-        return graph_with_ns
+# import xml.etree.ElementTree as ET
+#
+# # Define namespaces
+# namespaces = {
+#     "xmlns:cim": "http://iec.ch/TC57/2013/CIM-schema-cim16#",
+#     "xmlns:md": "http://iec.ch/TC57/61970-552/ModelDescription/1#",
+#     "xmlns:entsoe": "http://entsoe.eu/CIM/SchemaExtension/3/1#",
+#     "xmlns:rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+# }
+#
+# # Function to generate XML element for a class instance
+# def generate_xml_for_class_instance(class_instance, namespaces):
+#     class_name = f"cim:{class_instance.__class__.__name__}"  # Get class name
+#     attributes = vars(class_instance)  # Get dictionary of attributes
+#     xml_element = create_xml_element(class_name, attributes, namespaces)
+#     return xml_element
+#
+# # Function to generate XML for all classes
+# def generate_xml_for_all_classes(cgmes_circuit, namespaces):
+#     xml_elements = []
+#     for class_list in cgmes_circuit.values():
+#         for class_instance in class_list:
+#             xml_element = generate_xml_for_class_instance(class_instance, namespaces)
+#             xml_elements.append(xml_element)
+#     return xml_elements
+#
+# # Generate XML element for FullModel class
+# full_model_instance = FullModel(rdfid="urn:uuid:3033b090-6f72-52b6-5a2f-49fb2783f4df", tpe="FullModel")
+# full_model_instance.scenarioTime = "2023-04-21T22:30:00.000Z"
+# full_model_instance.created = "2023-04-20T15:41:04.000Z"
+# full_model_instance.description = "&lt;MDE&gt;&lt;BP&gt;2D&lt;/BP&gt;&lt;TOOL&gt;CIMconverter&lt;/TOOL&gt;&lt;TXT&gt;Created by CIMconverter&lt;/TXT&gt;&lt;/MDE&gt;"
+# full_model_instance.version = "1"
+# full_model_instance.profile = "http://entsoe.eu/CIM/EquipmentCore/3/1"
+# full_model_instance.modelingAuthoritySet = "http://www.ree.es/OperationalPlanning"
+# full_model_instance.DependentOn = "urn:uuid:bf94bcc7-d311-4f7e-881c-989eece2b388"
+#
+# xml_element_full_model = generate_xml_for_class_instance(full_model_instance, namespaces)
+#
+# # Generate XML for all classes
+# xml_elements = generate_xml_for_all_classes(cgmes_circuit, namespaces)
+#
+# # Insert FullModel XML element at the beginning of the list
+# xml_elements.insert(0, xml_element_full_model)
+#
+# # Create root element for the XML tree
+# root = ET.Element("rdf:RDF", namespaces)
+#
+# # Append all XML elements to the root element
+# for xml_element in xml_elements:
+#     root.append(xml_element)
+#
+# # Create XML tree
+# tree = ET.ElementTree(root)
+#
+# # Write XML tree to file
+# tree.write("output.xml", encoding="utf-8", xml_declaration=True)

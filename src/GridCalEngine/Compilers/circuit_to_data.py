@@ -201,7 +201,7 @@ def get_load_data(circuit: MultiCircuit,
         data.C_bus_elm[i, ii] = 1
         ii += 1
 
-    for elm in circuit.get_linear_shunts():
+    for elm in circuit.get_controllable_shunts():
 
         i = bus_dict[elm.bus]
 
@@ -288,7 +288,7 @@ def get_shunt_data(circuit: MultiCircuit,
 
         if time_series:
             data.active[k] = elm.active_prof[t_idx]
-            data.admittance[k] = elm.G_prof[t_idx] + 1j * elm.B_prof[t_idx]
+            data.admittance[k] = complex(elm.G_prof[t_idx], elm.B_prof[t_idx])
         else:
             data.active[k] = elm.active
             data.admittance[k] = complex(elm.G, elm.B)
