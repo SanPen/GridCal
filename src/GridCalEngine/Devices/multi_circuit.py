@@ -651,7 +651,8 @@ class MultiCircuit:
         else:
             return 0
 
-    def get_time_array(self):
+    def \
+    get_time_array(self):
 
         return self.time_profile
 

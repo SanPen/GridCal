@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'MainWindow.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.5.3
+## Created by: Qt User Interface Compiler version 6.6.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -68,6 +68,7 @@ class Ui_mainWindow(object):
         icon5 = QIcon()
         icon5.addFile(u":/Icons/icons/pf.svg", QSize(), QIcon.Normal, QIcon.Off)
         self.actionPower_flow.setIcon(icon5)
+        self.actionPower_flow.setMenuRole(QAction.TextHeuristicRole)
         self.actionPower_Flow_Time_series = QAction(mainWindow)
         self.actionPower_Flow_Time_series.setObjectName(u"actionPower_Flow_Time_series")
         icon6 = QIcon()
@@ -762,6 +763,11 @@ class Ui_mainWindow(object):
         self.device_type_magnitude_comboBox.setMinimumSize(QSize(160, 0))
 
         self.horizontalLayout.addWidget(self.device_type_magnitude_comboBox)
+
+        self.time_series_search = QLineEdit(self.frame)
+        self.time_series_search.setObjectName(u"time_series_search")
+
+        self.horizontalLayout.addWidget(self.time_series_search)
 
         self.new_profiles_structure_pushButton = QPushButton(self.frame)
         self.new_profiles_structure_pushButton.setObjectName(u"new_profiles_structure_pushButton")
@@ -4297,8 +4303,8 @@ class Ui_mainWindow(object):
         self.retranslateUi(mainWindow)
 
         self.tabWidget.setCurrentIndex(0)
-        self.tabWidget_3.setCurrentIndex(0)
-        self.tabWidget_5.setCurrentIndex(0)
+        self.tabWidget_3.setCurrentIndex(1)
+        self.tabWidget_5.setCurrentIndex(1)
         self.tabWidget_4.setCurrentIndex(0)
         self.tabWidget_2.setCurrentIndex(0)
         self.settings_tabWidget.setCurrentIndex(0)
