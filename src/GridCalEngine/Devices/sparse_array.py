@@ -102,19 +102,19 @@ class SparseArray:
             if val != default_value:
                 self._map[i] = val
 
-    def create_from_dict(self, default_value: Numeric, size: int, map: Dict[int, Numeric]):
+    def create_from_dict(self, default_value: Numeric, size: int, map_data: Dict[int, Numeric]):
         """
         Create this array from dict data
         :param default_value:
         :param size:
-        :param map:
+        :param map_data:
         :return:
         """
         self._default_value = default_value
         self._size = size
-        self._map = map
+        self._map = map_data
 
-    def fill(self, value):
+    def fill(self, value: Any):
         """
         Fill the sparse array with the same value
         :param value: any value
@@ -134,7 +134,7 @@ class SparseArray:
 
         return arr
 
-    def at(self, idx: int) -> Numeric:
+    def at(self, idx: int) -> Any:
         """
         Get the array at a position
         :param idx: index
@@ -155,7 +155,7 @@ class SparseArray:
     def __getitem__(self, key: int) -> Any:
         return self.at(idx=key)
 
-    def __setitem__(self, key: int, value: float) -> None:
+    def __setitem__(self, key: int, value: Any) -> None:
 
         if isinstance(key, int):
 

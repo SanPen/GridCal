@@ -560,22 +560,16 @@ class EditableDevice:
                 # set the profile variable associated with the magnitude
                 setattr(self, self.properties_with_profile[magnitude], val2)
 
-    def create_profile(self, magnitude, index, arr=None, arr_in_pu=False):
+    def create_profile(self, magnitude, index):
         """
         Create power profile based on index
         :param magnitude: name of the property
         :param index: pandas time index
-        :param arr: array of values to set
-        :param arr_in_pu: is the array in per-unit?
         """
         # get the value of the magnitude
         snapshot_value = getattr(self, magnitude)
         val = Profile(default_value=snapshot_value)
-        if arr_in_pu:
-            arr = isinstance(arr, np.ndarray)  # you must provide the array as a numpy array if arr_in_pu
-            val.set(arr * snapshot_value)
-        else:
-            val.create_sparse(size=len(index), default_value=snapshot_value)
+        val.create_sparse(size=len(index), default_value=snapshot_value)
 
         # set the profile variable associated with the magnitude
         setattr(self, self.properties_with_profile[magnitude], val)
@@ -586,18 +580,13 @@ class EditableDevice:
         Those properties must be initialized as well
         :param index: Time series index (timestamps)
         """
-        for magnitude, prof_attr in self.properties_with_profile.items():
+        if index is not None:
+            for magnitude, prof_attr in self.properties_with_profile.items():
 
-            if index is not None:
-                # prof_attr = self.properties_with_profile[magnitude]
-
+                # get the profile
                 profile = getattr(self, prof_attr)
 
-                if not profile.is_initialized:
-                    # there is no profile, create a new one with the default values
-                    # print(self.name, ': created profile for ' + prof_attr)
-                    self.create_profile(magnitude=magnitude, index=index)
-                else:
+                if profile.is_initialized:
                     if profile.size() != len(index):
                         # the length of the profile is different from the length of the master profile
                         # print(self.name, ': created profile for ' + prof_attr)
@@ -605,9 +594,13 @@ class EditableDevice:
                     else:
                         # all ok
                         pass
+                else:
+                    # there is no profile, create a new one with the default values
+                    # print(self.name, ': created profile for ' + prof_attr)
+                    self.create_profile(magnitude=magnitude, index=index)
 
-            else:
-                pass
+        else:
+            raise Exception("ensure_profiles_exist: No index provided")
 
     def delete_profiles(self):
         """

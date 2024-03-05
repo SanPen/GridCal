@@ -350,14 +350,14 @@ def get_profile_from_dict(data: Dict[str, Union[str, Union[Any, Dict[str, Any]]]
             default_value = collection.get(data['default'], default_value)
             map_data = {int(key): collection.get(val, default_value) for key, val in sp_data['map'].items()}
 
-        profile.sparse_array.create_from_dict(default_value=default_value, size=data['size'], map=map_data)
+        profile.sparse_array.create_from_dict(default_value=default_value, size=data['size'], map_data=map_data)
     else:
 
         if collection is None:
             arr = data['dense_data']
         else:
             arr = [collection.get(i, default_value) for i in data['dense_data']]
-        profile._dense_array = np.array(arr)
+        profile.set(np.array(arr))
     profile.set_initialized()
     return profile
 
@@ -546,6 +546,9 @@ def parse_object_type_from_dataframe(main_df: pd.DataFrame,
         # ensure the profiles existence
         if time_profile is not None:
             elm.ensure_profiles_exist(index=time_profile)
+            nt = len(time_profile)
+        else:
+            nt = 0
 
         # parse each property of the row
         for property_name_, property_value in row.items():
@@ -558,8 +561,14 @@ def parse_object_type_from_dataframe(main_df: pd.DataFrame,
 
                     if valid_value(property_value):
 
-                        # the property of the file exists, parse it
+                        if gc_prop.has_profile():
+                            prof = elm.get_profile(magnitude=gc_prop.name)
+                            if 0 < nt != prof.size():
+                                prof.resize(nt)
+                        else:
+                            prof = None
 
+                        # the property of the file exists, parse it
                         if isinstance(gc_prop.tpe, DeviceType):
 
                             if gc_prop.tpe == DeviceType.GeneratorQCurve:
@@ -568,7 +577,7 @@ def parse_object_type_from_dataframe(main_df: pd.DataFrame,
                                 elm.set_snapshot_value(gc_prop.name, val)
 
                                 if gc_prop.has_profile():
-                                    elm.get_profile(magnitude=gc_prop.name).fill(val)
+                                    prof.fill(val)
 
                             else:
                                 # we must look for the refference in elements_dict
@@ -582,7 +591,7 @@ def parse_object_type_from_dataframe(main_df: pd.DataFrame,
                                         elm.set_snapshot_value(gc_prop.name, ref_elm)
 
                                         if gc_prop.has_profile():
-                                            elm.get_profile(magnitude=gc_prop.name).fill(ref_elm)
+                                            prof.fill(ref_elm)
 
                                     else:
                                         logger.add_error("Could not locate refference",
@@ -602,28 +611,28 @@ def parse_object_type_from_dataframe(main_df: pd.DataFrame,
                             elm.set_snapshot_value(gc_prop.name, str(property_value))
 
                             if gc_prop.has_profile():
-                                elm.get_profile(magnitude=gc_prop.name).fill(str(property_value))
+                                prof.fill(str(property_value))
 
                         elif gc_prop.tpe == float:
                             # set the value directly
                             elm.set_snapshot_value(gc_prop.name, float(property_value))
 
                             if gc_prop.has_profile():
-                                elm.get_profile(magnitude=gc_prop.name).fill(float(property_value))
+                                prof.fill(float(property_value))
 
                         elif gc_prop.tpe == int:
                             # set the value directly
                             elm.set_snapshot_value(gc_prop.name, int(property_value))
 
                             if gc_prop.has_profile():
-                                elm.get_profile(magnitude=gc_prop.name).fill(int(property_value))
+                                prof.fill(int(property_value))
 
                         elif gc_prop.tpe == bool:
                             # set the value directly
                             elm.set_snapshot_value(gc_prop.name, bool(property_value))
 
                             if gc_prop.has_profile():
-                                elm.get_profile(magnitude=gc_prop.name).fill(bool(property_value))
+                                prof.fill(bool(property_value))
 
                         elif isinstance(gc_prop.tpe, EnumType):
 
@@ -632,7 +641,7 @@ def parse_object_type_from_dataframe(main_df: pd.DataFrame,
                                 elm.set_snapshot_value(gc_prop.name, val)
 
                                 if gc_prop.has_profile():
-                                    elm.get_profile(magnitude=gc_prop.name).fill(val)
+                                    prof.fill(val)
 
                             except ValueError:
                                 logger.add_error(f'Cannot cast value to {gc_prop.tpe}',
