@@ -594,47 +594,33 @@ class ContingencyResultsReport:
                              srap_rating = srap_ratings[m],
                              base_flow=abs(b_flow),
                              post_contingency_flow=abs(c_flow),
-                             post_srap_flow = post_srap_flow,
+                             post_srap_flow = abs(c_flow) - 0,
                              base_loading=abs(base_loading[m] ),
                              post_contingency_loading=abs(contingency_loadings[m]) ,
-                             post_srap_loading = post_srap_flow /(numerical_circuit.rates[m]+ 1e-9),
-                             msg_ov = msg_ov,
-                             msg_srap = msg_srap,
-                             srap_power=abs(max_srap_power),
-                             solved_by_srap=solved_by_srap)
+                             post_srap_loading = (abs(c_flow) - 0) / (numerical_circuit.branch_data.rates[m] + 1e-9),
+                             msg_ov = msg_ov
+                             #msg_srap = msg_srap,
+                             #srap_power=abs(max_srap_power),
+                             #solved_by_srap=solved_by_srap
+                             )
 
-                # else:
-                #
-                #     if detailed_massive_report:
-                #         # self.add(time_index=t if t is not None else 0,
-                #         #          base_name=numerical_circuit.branch_data.names[m],
-                #         #          base_uuid=calc_branches[m].idtag,
-                #         #          base_flow=b_flow,
-                #         #          base_rating=numerical_circuit.branch_data.rates[m],
-                #         #          base_loading=abs(base_loading[m] * 100.0),
-                #         #          contingency_idx=contingency_idx,
-                #         #          contingency_name=contingency_group.name,
-                #         #          contingency_uuid=contingency_group.idtag,
-                #         #          post_contingency_flow=c_flow,
-                #         #          contingency_rating=numerical_circuit.branch_data.contingency_rates[m],
-                #         #          post_contingency_loading=abs(contingency_loadings[m]) * 100.0)
-                #
-                #         self.add(time_index=t if t is not None else 0,  # --------->Convertir a fecha
-                #                  base_uuid=calc_branches[m].idtag,  # --------->Cambiar a CCAA1
-                #                  contingency_uuid=contingency_group.idtag,  # --------->Cambiar a CCAA2
-                #                  base_name=numerical_circuit.branch_data.names[m],
-                #                  contingency_name=contingency_group.name,
-                #                  base_rating=numerical_circuit.branch_data.rates[m],
-                #                  contingency_rating=numerical_circuit.branch_data.contingency_rates[m],
-                #                  srap_rating=srap_ratings[m],
-                #                  base_flow=abs(b_flow),
-                #                  post_contingency_flow=abs(c_flow),
-                #                  post_srap_flow=abs(c_flow) - 0,
-                #                  base_loading=abs(base_loading[m]),
-                #                  post_contingency_loading=abs(contingency_loadings[m]) ,
-                #                  post_srap_loading=(abs(c_flow) - 0)  / (
-                #                              numerical_circuit.rates[m] + 1e-9),
-                #                  msg_ov=msg_ov,
-                #                  msg_srap=msg_srap,
-                #                  srap_power=abs(max_srap_power),
-                #                  solved_by_srap= False)
+            """if detailed_massive_report:
+                self.add(time_index=t if t is not None else datetime.now(),  # Convert to date
+                         base_uuid=calc_branches[m].idtag,  # Change to CCAA1
+                         contingency_uuid=contingency_group.idtag,  # Change to CCAA2
+                         base_name=numerical_circuit.branch_data.names[m],
+                         contingency_name=contingency_group.name,
+                         base_rating=numerical_circuit.branch_data.rates[m],
+                         contingency_rating=numerical_circuit.branch_data.contingency_rates[m],
+                         srap_rating=srap_ratings[m],
+                         base_flow=abs(b_flow),
+                         post_contingency_flow=abs(c_flow),
+                         post_srap_flow=abs(c_flow) - 0,
+                         base_loading=abs(base_loading[m]),
+                         post_contingency_loading=abs(contingency_loadings[m]),
+                         post_srap_loading=(abs(c_flow) - 0) / (numerical_circuit.branch_data.rates[m] + 1e-9),
+                         msg_ov=msg_ov,
+                         msg_srap=msg_srap,
+                         srap_power=abs(max_srap_power),
+                         solved_by_srap=False)"""
+
