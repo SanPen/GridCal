@@ -8807,6 +8807,7 @@ QProgressBar::chunk{
     <addaction name="actionFix_generators_active_based_on_the_power"/>
     <addaction name="actionFix_loads_active_based_on_the_power"/>
     <addaction name="actionDelete_inconsistencies"/>
+    <addaction name="actionClean_database"/>
    </widget>
    <widget class="QMenu" name="menuDiagrams">
     <property name="title">
@@ -9890,6 +9891,18 @@ QProgressBar::chunk{
    </property>
    <property name="shortcut">
     <string>Ctrl+T</string>
+   </property>
+  </action>
+  <action name="actionClean_database">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/clear_runs.svg</normaloff>:/Icons/icons/clear_runs.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Clean database</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+C, Ctrl+D</string>
    </property>
   </action>
  </widget>
