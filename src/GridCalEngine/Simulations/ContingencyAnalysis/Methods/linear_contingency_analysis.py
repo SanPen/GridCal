@@ -51,9 +51,6 @@ def linear_contingency_analysis(grid: MultiCircuit,
 
     area_names, bus_area_indices, F, T, hvdc_F, hvdc_T = grid.get_branch_areas_info()
 
-    # area_names[bus_area_indices[F[m]]]
-    # Tengo que pasar el F, el T, el bus_area_indices y el area_names
-
     # declare the results
     results = ContingencyAnalysisResults(ncon=len(grid.contingency_groups),
                                          nbr=numerical_circuit.nbr,
@@ -124,6 +121,7 @@ def linear_contingency_analysis(grid: MultiCircuit,
                                srap_max_power=options.srap_max_power,
                                srap_deadband=options.srap_deadband,
                                contingency_deadband=options.contingency_deadband,
+                               srap_rever_to_nominal_rating=options.srap_rever_to_nominal_rating,
                                multi_contingency=multi_contingency,
                                PTDF=linear_analysis.PTDF,
                                available_power=numerical_circuit.bus_data.srap_availbale_power,
