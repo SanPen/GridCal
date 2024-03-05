@@ -268,28 +268,32 @@ class ObjectsTableMain(DiagramsMain):
 
             dev_type_text = self.get_db_object_selected_type()
 
-            magnitudes, mag_types = self.circuit.profile_magnitudes[dev_type_text]
+            if dev_type_text is not None:
 
-            if len(magnitudes) > 0:
-                # get the enumeration univoque association with he device text
-                dev_type = self.circuit.device_type_name_dict[dev_type_text]
+                magnitudes, mag_types = self.circuit.profile_magnitudes[dev_type_text]
 
-                idx = self.ui.device_type_magnitude_comboBox.currentIndex()
-                magnitude = magnitudes[idx]
-                mtype = mag_types[idx]
+                if len(magnitudes) > 0:
+                    # get the enumeration univoque association with he device text
+                    dev_type = self.circuit.device_type_name_dict[dev_type_text]
 
-                elements = self.get_current_objects_model_view().objects
+                    idx = self.ui.device_type_magnitude_comboBox.currentIndex()
+                    magnitude = magnitudes[idx]
+                    mtype = mag_types[idx]
 
-                mdl = gf.ProfilesModel(time_array=self.circuit.get_time_array(),
-                                       elements=elements,
-                                       device_type=dev_type,
-                                       magnitude=magnitude,
-                                       data_format=mtype,
-                                       parent=self.ui.profiles_tableView)
+                    elements = self.get_current_objects_model_view().objects
+
+                    mdl = gf.ProfilesModel(time_array=self.circuit.get_time_array(),
+                                           elements=elements,
+                                           device_type=dev_type,
+                                           magnitude=magnitude,
+                                           data_format=mtype,
+                                           parent=self.ui.profiles_tableView)
+                else:
+                    mdl = None
+
+                self.ui.profiles_tableView.setModel(mdl)
             else:
-                mdl = None
-
-            self.ui.profiles_tableView.setModel(mdl)
+                self.ui.profiles_tableView.setModel(None)
 
     def display_objects_filter(self, elements: List[ALL_DEV_TYPES]):
         """
@@ -319,12 +323,17 @@ class ObjectsTableMain(DiagramsMain):
         else:
             warning_msg('There is no data displayed, please display one', 'Copy profile to clipboard')
 
-    def get_db_object_selected_type(self) -> str:
+    def get_db_object_selected_type(self) -> Union[None, str]:
         """
         Get the selected object type in the database tree view
         :return:
         """
-        return self.ui.dataStructuresTreeView.selectedIndexes()[0].data(role=QtCore.Qt.ItemDataRole.DisplayRole)
+        indices = self.ui.dataStructuresTreeView.selectedIndexes()
+
+        if len(indices) > 0:
+            return indices[0].data(role=QtCore.Qt.ItemDataRole.DisplayRole)
+        else:
+            return None
 
     def view_objects_data(self):
         """
@@ -336,18 +345,22 @@ class ObjectsTableMain(DiagramsMain):
 
             elm_type = self.get_db_object_selected_type()
 
-            elements = self.circuit.get_elements_by_type(device_type=DeviceType(elm_type))
+            if elm_type is not None:
 
-            objects_mdl = self.create_objects_model(elements=elements, elm_type=DeviceType(elm_type))
+                elements = self.circuit.get_elements_by_type(device_type=DeviceType(elm_type))
 
-            # update slice-view
-            self.type_objects_list = elements
-            self.ui.dataStructureTableView.setModel(objects_mdl)
+                objects_mdl = self.create_objects_model(elements=elements, elm_type=DeviceType(elm_type))
 
-            # update time series view
-            ts_mdl = gf.get_list_model(self.circuit.profile_magnitudes[elm_type][0])
-            self.ui.device_type_magnitude_comboBox.setModel(ts_mdl)
-            self.ui.device_type_magnitude_comboBox_2.setModel(ts_mdl)
+                # update slice-view
+                self.type_objects_list = elements
+                self.ui.dataStructureTableView.setModel(objects_mdl)
+
+                # update time series view
+                ts_mdl = gf.get_list_model(self.circuit.profile_magnitudes[elm_type][0])
+                self.ui.device_type_magnitude_comboBox.setModel(ts_mdl)
+                self.ui.device_type_magnitude_comboBox_2.setModel(ts_mdl)
+            else:
+                self.ui.dataStructureTableView.setModel(None)
         else:
             self.ui.dataStructureTableView.setModel(None)
 
