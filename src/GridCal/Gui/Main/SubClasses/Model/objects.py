@@ -71,6 +71,7 @@ class ObjectsTableMain(DiagramsMain):
 
         # menu trigger
         self.ui.actionDelete_inconsistencies.triggered.connect(self.delete_inconsistencies)
+        self.ui.actionClean_database.triggered.connect(self.clean_database)
 
         # list click
         self.ui.dataStructuresTreeView.clicked.connect(self.view_objects_data)
@@ -374,7 +375,6 @@ class ObjectsTableMain(DiagramsMain):
                     unique = list(unique)
                     unique.sort(reverse=True)
                     for r in unique:
-
                         self.circuit.delete_elements_by_type(obj=objects[r])
 
                         # TODO: Call the displays to delete the graphic objects
@@ -657,7 +657,7 @@ class ObjectsTableMain(DiagramsMain):
                     if elm.device_type == DeviceType.BusDevice:
                         # buses
                         buses = objects
-                        values = [elm.get_vaule(prop=gc_prop, t_idx=t_idx) for elm in objects]
+                        values = [elm.get_value(prop=gc_prop, t_idx=t_idx) for elm in objects]
 
                     elif elm.device_type in [DeviceType.BranchDevice,
                                              DeviceType.LineDevice,
@@ -674,7 +674,7 @@ class ObjectsTableMain(DiagramsMain):
                             gc_prop = br.registered_properties[attr]
                             buses.append(br.bus_from)
                             buses.append(br.bus_to)
-                            val = elm.get_vaule(prop=gc_prop, t_idx=t_idx)
+                            val = elm.get_value(prop=gc_prop, t_idx=t_idx)
                             values.append(val)
                             values.append(val)
 
@@ -684,7 +684,7 @@ class ObjectsTableMain(DiagramsMain):
                         values = list()
                         for elm in objects:
                             gc_prop = elm.registered_properties[attr]
-                            val = elm.get_vaule(prop=gc_prop, t_idx=t_idx)
+                            val = elm.get_value(prop=gc_prop, t_idx=t_idx)
                             buses.append(elm.bus)
                             values.append(val)
 
@@ -875,7 +875,21 @@ class ObjectsTableMain(DiagramsMain):
             for elm in dev_lst:
                 if not elm.active and not np.any(elm.active_prof.toarray()):
                     self.delete_from_all_diagrams(elements=[elm])
-                    print('Deleted ', elm.device_type.value, elm.name)
                     logger.add_info("Deleted " + str(elm.device_type.value), elm.name)
 
         return logger
+
+    def clean_database(self):
+        """
+        Clean the DataBase
+        """
+
+        ok = yes_no_question("This action may delete unused objects and references, \nAre you sure?",
+                             title="DB clean")
+
+        if ok:
+            logger = self.circuit.clean()
+
+            if len(logger) > 0:
+                dlg = LogsDialogue('DB clean logger', logger)
+                dlg.exec_()

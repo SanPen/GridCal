@@ -481,7 +481,7 @@ class EditableDevice:
                 # the property has no profile, just return it
                 setattr(self, prop.name, value)
 
-    def get_vaule(self, prop: GCProp, t_idx: Union[None, int]) -> Any:
+    def get_value(self, prop: GCProp, t_idx: Union[None, int]) -> Any:
         """
         Return value regardless of the property index
         :param prop: GCProp

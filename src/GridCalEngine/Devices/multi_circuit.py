@@ -21,7 +21,7 @@ import warnings
 import copy
 import numpy as np
 import pandas as pd
-from typing import List, Dict, Tuple, Union, Any, Callable
+from typing import List, Dict, Tuple, Union, Any, Callable, Set
 from uuid import getnode as get_mac, uuid4
 from datetime import timedelta, datetime
 import networkx as nx
@@ -35,7 +35,7 @@ import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.types import ALL_DEV_TYPES, BRANCH_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES
 from GridCalEngine.basic_structures import Logger
 import GridCalEngine.Topology.topology as tp
-from GridCalEngine.enumerations import DeviceType, ResultTypes
+from GridCalEngine.enumerations import DeviceType
 
 
 def get_system_user() -> str:
@@ -2197,7 +2197,7 @@ class MultiCircuit:
         else:
             raise Exception('Element type not understood ' + str(element_type))
 
-    def get_all_elements_dict(self) -> dict[str, EditableDevice]:
+    def get_all_elements_dict(self) -> dict[str, ALL_DEV_TYPES]:
         """
         Get a dictionary of all elements
         :return: Dict[idtag] -> object
@@ -2211,7 +2211,7 @@ class MultiCircuit:
 
         return data
 
-    def gat_all_elements_dict_by_type(self) -> dict[Callable[[], Any], Union[dict[str, EditableDevice], Any]]:
+    def gat_all_elements_dict_by_type(self) -> dict[Callable[[], Any], Union[dict[str, ALL_DEV_TYPES], Any]]:
         """
         Get a dictionary of all elements by type
         :return:
@@ -2224,7 +2224,7 @@ class MultiCircuit:
         return data
 
     def get_elements_dict_by_type(self, element_type: DeviceType,
-                                  use_secondary_key=False) -> Dict[str, dev.EditableDevice]:
+                                  use_secondary_key=False) -> Dict[str, ALL_DEV_TYPES]:
         """
         Get dictionary of elements
         :param element_type: element type (Bus, Line, etc...)
@@ -5136,9 +5136,9 @@ class MultiCircuit:
         # if any error in the logger, bad
         return logger.error_count() == 0, logger
 
-    def convert_to_node_breaker(self):
+    def convert_to_node_breaker(self) -> None:
         """
-        Convert from bus/branch to node/breaker network model
+        Convert this MultiCircuit from bus/branch to node/breaker network model
         """
 
         bbcn = dict()
@@ -5180,3 +5180,213 @@ class MultiCircuit:
         bidx = [b for b in self.get_buses()]
         for b in bidx:
             self.delete_bus(b)
+
+    def clean_branches(self,
+                       nt: int,
+                       bus_set: Set[dev.Bus],
+                       cn_set: Set[dev.ConnectivityNode],
+                       logger: Logger) -> None:
+        """
+        Clean the branch refferences
+        :param nt: number of time steps
+        :param bus_set: Set of Buses
+        :param cn_set: Set of connectivity nodes
+        :param logger: Logger
+        """
+        elements_to_delete = list()
+        for lst in self.get_branch_lists():
+            for elm in lst:
+                if elm.bus_from is not None:
+                    if elm.bus_from not in bus_set:
+                        elm.bus_from = None
+                        logger.add_info("Bus from set to None",
+                                        device=elm.idtag,
+                                        device_class=elm.device_type.value,
+                                        device_property="bus_from")
+
+                if elm.bus_to is not None:
+                    if elm.bus_to not in bus_set:
+                        elm.bus_to = None
+                        logger.add_info("Bus to set to None",
+                                        device=elm.idtag,
+                                        device_class=elm.device_type.value,
+                                        device_property="bus_to")
+
+                if elm.cn_from is not None:
+                    if elm.cn_from not in cn_set:
+                        elm.cn_from = None
+                        logger.add_info("Cn from set to None",
+                                        device=elm.idtag,
+                                        device_class=elm.device_type.value,
+                                        device_property="cn_from")
+
+                if elm.cn_to is not None:
+                    if elm.cn_to not in cn_set:
+                        elm.cn_to = None
+                        logger.add_info("Cn to set to None",
+                                        device=elm.idtag,
+                                        device_class=elm.device_type.value,
+                                        device_property="cn_to")
+
+                all_bus_from_prof_none = True
+                all_bus_to_prof_none = True
+                for t_idx in range(nt):
+                    if elm.bus_from_prof[t_idx] is not None:
+                        if elm.bus_from_prof[t_idx] not in bus_set:
+                            elm.bus_from_prof[t_idx] = None
+                        else:
+                            all_bus_from_prof_none = False
+
+                    if elm.bus_to_prof[t_idx] is not None:
+                        if elm.bus_to_prof[t_idx] not in bus_set:
+                            elm.bus_to_prof[t_idx] = None
+                        else:
+                            all_bus_to_prof_none = False
+
+                # if the element is topologically isolated, delete it
+                if (all_bus_from_prof_none and all_bus_to_prof_none
+                        and elm.bus_from is None and elm.bus_to is None
+                        and elm.cn_from is None and elm.cn_to is None):
+                    elements_to_delete.append(elm)
+
+        for elm in elements_to_delete:
+            self.delete_elements_by_type(obj=elm)
+            logger.add_info("Deleted isolated branch",
+                            device=elm.idtag,
+                            device_class=elm.device_type.value)
+
+    def clean_injections(self,
+                         nt: int,
+                         bus_set: Set[dev.Bus],
+                         cn_set: Set[dev.ConnectivityNode],
+                         logger: Logger) -> None:
+        """
+        Clean the branch refferences
+        :param nt: number of time steps
+        :param bus_set: Set of Buses
+        :param cn_set: Set of connectivity nodes
+        :param logger: Logger
+        """
+        elements_to_delete = list()
+        for lst in self.get_injection_devices_lists():
+            for elm in lst:
+                if elm.bus is not None:
+                    if elm.bus not in bus_set:
+                        elm.bus = None
+                        logger.add_info("Bus set to None",
+                                        device=elm.idtag,
+                                        device_class=elm.device_type.value,
+                                        device_property="bus")
+
+                if elm.cn is not None:
+                    if elm.cn not in cn_set:
+                        elm.cn = None
+                        logger.add_info("Cn set to None",
+                                        device=elm.idtag,
+                                        device_class=elm.device_type.value,
+                                        device_property="cn")
+
+                all_bus_prof_none = True
+                for t_idx in range(nt):
+                    if elm.bus_prof[t_idx] is not None:
+                        if elm.bus_prof[t_idx] not in bus_set:
+                            elm.bus_prof[t_idx] = None
+                        else:
+                            all_bus_prof_none = False
+
+                # if the element is topologically isolated, delete it
+                if all_bus_prof_none and elm.bus is None and elm.cn is None:
+                    elements_to_delete.append(elm)
+
+        for elm in elements_to_delete:
+            self.delete_elements_by_type(obj=elm)
+            logger.add_info("Deleted isolated injection",
+                            device=elm.idtag,
+                            device_class=elm.device_type.value)
+
+    def clean_contingencies(self, all_dev: Dict[str, ALL_DEV_TYPES], logger: Logger) -> None:
+        """
+        Clean the contingencies and contingency groups
+        :param all_dev:
+        :param logger: Logger
+        """
+        contingencies_to_delete = list()
+
+        # pass 1: detect the "null" contingencies
+        for elm in self.contingencies:
+            if elm.device_idtag not in all_dev.keys():
+                contingencies_to_delete.append(elm)
+
+        # pass 2: delete the "null" contingencies
+        for elm in contingencies_to_delete:
+            self.delete_contingency(obj=elm)
+            logger.add_info("Deleted isolated contingency",
+                            device=elm.idtag,
+                            device_class=elm.device_type.value)
+
+        # pass 3: count how many times a group is refferenced
+        group_counter = np.zeros(len(self.contingency_groups), dtype=int)
+        group_dict = {elm: i for i, elm in enumerate(self.contingency_groups)}
+        for elm in self.contingencies:
+            group_idx = group_dict[elm.group]
+            group_counter[group_idx] += 1
+
+        # pass 4: delete unrefferenced groups
+        groups_to_delete = [elm for i, elm in enumerate(self.contingency_groups) if group_counter[i] == 0]
+        for elm in groups_to_delete:
+            self.delete_contingency_group(obj=elm)
+            logger.add_info("Deleted isolated contingency group",
+                            device=elm.idtag,
+                            device_class=elm.device_type.value)
+
+    def clean_investments(self, all_dev: Dict[str, ALL_DEV_TYPES], logger: Logger) -> None:
+        """
+        Clean the investments and investment groups
+        :param all_dev:
+        :param logger: Logger
+        """
+        contingencies_to_delete = list()
+
+        # pass 1: detect the "null" contingencies
+        for elm in self.investments:
+            if elm.device_idtag not in all_dev.keys():
+                contingencies_to_delete.append(elm)
+
+        # pass 2: delete the "null" contingencies
+        for elm in contingencies_to_delete:
+            self.delete_investment(obj=elm)
+            logger.add_info("Deleted isolated investment",
+                            device=elm.idtag,
+                            device_class=elm.device_type.value)
+
+        # pass 3: count how many times a group is refferenced
+        group_counter = np.zeros(len(self.investments_groups), dtype=int)
+        group_dict = {elm: i for i, elm in enumerate(self.investments_groups)}
+        for elm in self.investments:
+            group_idx = group_dict[elm.group]
+            group_counter[group_idx] += 1
+
+        # pass 4: delete unrefferenced groups
+        groups_to_delete = [elm for i, elm in enumerate(self.investments_groups) if group_counter[i] == 0]
+        for elm in groups_to_delete:
+            self.delete_investment_groups(obj=elm)
+            logger.add_info("Deleted isolated investment group",
+                            device=elm.idtag,
+                            device_class=elm.device_type.value)
+
+    def clean(self) -> Logger:
+        """
+        Clean dead references
+        """
+        logger = Logger()
+        bus_set = set(self.buses)
+        cn_set = set(self.connectivity_nodes)
+        all_dev = self.get_all_elements_dict()
+        nt = self.get_time_number()
+
+        self.clean_branches(nt=nt, bus_set=bus_set, cn_set=cn_set, logger=logger)
+        self.clean_injections(nt=nt, bus_set=bus_set, cn_set=cn_set, logger=logger)
+        self.clean_contingencies(all_dev=all_dev, logger=logger)
+        self.clean_investments(all_dev=all_dev, logger=logger)
+
+        return logger

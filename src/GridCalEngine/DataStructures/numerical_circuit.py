@@ -848,8 +848,8 @@ class NumericalCircuit:
         """
         return tp.compute_connectivity(
             branch_active=self.branch_data.active,
-            Cf_=self.branch_data.C_branch_bus_f,
-            Ct_=self.branch_data.C_branch_bus_t
+            Cf_=self.branch_data.C_branch_bus_f.tocsc(),
+            Ct_=self.branch_data.C_branch_bus_t.tocsc()
         )
 
     def get_admittance_matrices(self) -> ycalc.AdmittanceMatrices:
