@@ -14,13 +14,15 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+import time
+
 import numpy as np
 from typing import Dict, List, Tuple
 import GridCalEngine.IO.cim.cgmes.cgmes_enums as cgmes_enums
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 import GridCalEngine.Devices as gcdev
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
-from GridCalEngine.IO.cim.cgmes.cgmes_export import CgmesExporter
+from GridCalEngine.IO.cim.cgmes.cgmes_export import CgmesExporter, CimSerializer
 from GridCalEngine.IO.cim.cgmes.cgmes_utils import (get_nominal_voltage,
                                                     get_pu_values_ac_line_segment,
                                                     get_rate, get_values_shunt,
@@ -868,5 +870,12 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit, logger: DataLogger) -> MultiCirc
     # Export test
     # cgmes_exporter = CgmesExporter(cgmes_model)
     # cgmes_exporter.export_to_xml()
+
+    # Export with ET
+    # start = time.time()
+    # serializer = CimSerializer(cgmes_model)
+    # serializer.export()
+    # end = time.time()
+    # print("ET export time: ", end - start, "sec")
 
     return gc_model

@@ -10,10 +10,11 @@ from rdflib.serializer import Serializer
 from rdflib.term import IdentifiedNode, Identifier, Literal, Node
 from rdflib.util import first
 
-import os
+import os, io
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
 import pandas as pd
 import xml.etree.ElementTree as ET
+import xml.dom.minidom
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.full_model import FullModel
 
 plugin.register("cim_xml", Serializer, "GridCalEngine.IO.cim.cgmes.cgmes_export", "CimSerializer")
@@ -154,9 +155,11 @@ about_dict = dict()
 #         return about_list
 
 
-# class CgmesExporter:
-#     def __init__(self, cgmes_circuit: CgmesCircuit = None):
-#         self.cgmes_circuit = cgmes_circuit
+class CgmesExporter:
+    def __init__(self, cgmes_circuit: CgmesCircuit = None):
+        self.cgmes_circuit = cgmes_circuit
+
+
 #
 #     def create_graph(self, profile: List[str]):
 #         graph = Graph()
@@ -248,7 +251,7 @@ about_dict = dict()
 #         start = time.time()
 #         eq_graph = self.create_graph(["http://entsoe.eu/CIM/EquipmentCore/3/1",
 #                                       "http://entsoe.eu/CIM/EquipmentShortCircuit/3/1",
-#                                       "http://iec.ch/TC57/2013/61970-452/EquipmentOperation/4"])
+#                                       "http://entsoe.eu/CIM/EquipmentOperation/3/1"])
 #         ssh_graph = self.create_graph(["http://entsoe.eu/CIM/SteadyStateHypothesis/1/1"])
 #         tp_graph = self.create_graph(["http://entsoe.eu/CIM/Topology/4/1"])
 #         sv_graph = self.create_graph(["http://entsoe.eu/CIM/StateVariables/4/1"])
@@ -339,14 +342,21 @@ about_dict = dict()
 #         print("Serialize time: ", endt - start, "sec")
 
 class CimSerializer:
-    def __init__(self, cgmes_circuit):
+    def __init__(self, cgmes_circuit: CgmesCircuit):
         self.cgmes_circuit = cgmes_circuit
         self.namespaces = {
             "xmlns:cim": "http://iec.ch/TC57/2013/CIM-schema-cim16#",
             "xmlns:md": "http://iec.ch/TC57/61970-552/ModelDescription/1#",
             "xmlns:entsoe": "http://entsoe.eu/CIM/SchemaExtension/3/1#",
             "xmlns:rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
-            "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+        }
+        self.profile_uris = {
+            "EQ": ["http://entsoe.eu/CIM/EquipmentCore/3/1",
+                   "http://entsoe.eu/CIM/EquipmentShortCircuit/3/1",
+                   "http://entsoe.eu/CIM/EquipmentOperation/3/1"],
+            "SSH": ["http://entsoe.eu/CIM/SteadyStateHypothesis/1/1"],
+            "TP": ["http://entsoe.eu/CIM/Topology/4/1"],
+            "SV": ["http://entsoe.eu/CIM/StateVariables/4/1"]
         }
 
         current_directory = os.path.dirname(__file__)
@@ -357,36 +367,36 @@ class CimSerializer:
         rdf_serialization.parse(source=os.path.join(current_directory, "export_docs\RDFSSerialisation.ttl"),
                                 format="ttl")
 
-        enum_dict = dict()
+        self.enum_dict = dict()
         for s_i, p_i, o_i in rdf_serialization.triples((None, RDF.type, RDFS.Class)):
             if str(s_i).split("#")[1] == "RdfEnum":
                 enum_list_dict = dict()
                 for s, p, o in rdf_serialization.triples((s_i, OWL.members, None)):
                     enum_list_dict[str(o).split("#")[1]] = str(o)
                 if str(s_i).split("#")[0] == "http://entsoe.eu/CIM/EquipmentCore/3/1":
-                    enum_dict["eq"] = enum_list_dict
+                    self.enum_dict["EQ"] = enum_list_dict
                 elif str(s_i).split("#")[0] == "http://entsoe.eu/CIM/StateVariables/4/1":
-                    enum_dict["sv"] = enum_list_dict
+                    self.enum_dict["SV"] = enum_list_dict
                 elif str(s_i).split("#")[0] == "http://entsoe.eu/CIM/SteadyStateHypothesis/1/1":
-                    enum_dict["ssh"] = enum_list_dict
+                    self.enum_dict["SSH"] = enum_list_dict
                 elif str(s_i).split("#")[0] == "http://entsoe.eu/CIM/Topology/4/1":
-                    enum_dict["tp"] = enum_list_dict
+                    self.enum_dict["TP"] = enum_list_dict
             if str(s_i).split("#")[1] == "RdfAbout":
                 about_list = list()
                 for s, p, o in rdf_serialization.triples((s_i, OWL.members, None)):
                     about_list.append(str(o))
                 if str(s_i).split("#")[0] == "http://entsoe.eu/CIM/EquipmentCore/3/1":
-                    about_dict["eq"] = about_list
+                    about_dict["EQ"] = about_list
                 elif str(s_i).split("#")[0] == "http://entsoe.eu/CIM/StateVariables/4/1":
-                    about_dict["sv"] = about_list
+                    about_dict["SV"] = about_list
                 elif str(s_i).split("#")[0] == "http://entsoe.eu/CIM/SteadyStateHypothesis/1/1":
-                    about_dict["ssh"] = about_list
+                    about_dict["SSH"] = about_list
                 elif str(s_i).split("#")[0] == "http://entsoe.eu/CIM/Topology/4/1":
-                    about_dict["tp"] = about_list
+                    about_dict["TP"] = about_list
 
         profiles_info = pd.read_excel(absolute_path_to_excel, sheet_name="Profiles")
 
-        class_filters = {}
+        self.class_filters = {}
         for class_name in self.cgmes_circuit.classes:
             filt_class = profiles_info[profiles_info["ClassSimpleName"] == class_name]
             filters = {}
@@ -400,59 +410,104 @@ class CimSerializer:
                         "Type": row["Type"]
                     }
                 filters[prop]["Profile"].append(row["Profile"])
-            class_filters[class_name] = filters
+            self.class_filters[class_name] = filters
 
     def export(self):
-        with open("eq.xml", 'wb') as f:
+        current_directory = os.path.dirname(__file__)
+        with open(os.path.join(current_directory, "export_docs/eq.xml"), 'wb') as f:
             self.serialize(f, "EQ")
-        with open("ssh.xml", 'wb') as f:
+        with open(os.path.join(current_directory, "export_docs/ssh.xml"), 'wb') as f:
             self.serialize(f, "SSH")
-        with open("sv.xml", 'wb') as f:
+        with open(os.path.join(current_directory, "export_docs/sv.xml"), 'wb') as f:
             self.serialize(f, "SV")
-        with open("tp.xml", 'wb') as f:
+        with open(os.path.join(current_directory, "export_docs/tp.xml"), 'wb') as f:
             self.serialize(f, "TP")
 
     def serialize(self, stream, profile):
-        # Create XML declaration
-        stream.write('<?xml version="1.0" encoding="UTF-8"?>\n')
-        # Create root element
         root = ET.Element("rdf:RDF", self.namespaces)
-        # Write FullModel elements
-        full_model_elements = self.generate_full_model_elements()
+        full_model_elements = self.generate_full_model_elements(profile)
         root.extend(full_model_elements)
-        # Write elements for other subjects
-        other_elements = self.generate_other_elements()
+        other_elements = self.generate_other_elements(profile)
         root.extend(other_elements)
-        # Create XML tree and write to stream
-        tree = ET.ElementTree(root)
-        tree.write(stream, 'utf-8', xml_declaration=False)
 
-    def generate_full_model_elements(self):
+        ET.ElementTree(root).write(stream, encoding="utf-8", xml_declaration=True)
+
+    def generate_full_model_elements(self, profile):
         full_model_elements = []
-        for class_name, class_instances in self.cgmes_circuit.items():
-            for instance in class_instances:
-                if isinstance(instance, FullModel):
-                    element = self.generate_element(instance)
-                    full_model_elements.append(element)
+        filter_props = ["scenarioTime",
+                        "created",
+                        "version",
+                        "profile",
+                        "modelingAuthoritySet",
+                        "DependentOn",
+                        "longDependentOnPF",
+                        "Supersedes",
+                        "description"]
+
+        for instance in self.cgmes_circuit.FullModel_list:
+            instance_dict = instance.__dict__
+            if instance_dict.get("profile") in self.profile_uris[profile]:
+                element = ET.Element("md:FullModel", {"rdf:about": "urn:uuid:" + instance.rdfid})
+                for attr_name, attr_value in instance_dict.items():
+                    if attr_name not in filter_props:
+                        continue
+                    if attr_value is None:
+                        continue
+                    child = ET.Element(f"md:Model.{attr_name}")
+                    if hasattr(attr_value, "rdfid"):
+                        child.attrib = {"rdf:resource": "urn:uuid:" + attr_value.rdfid}
+                    else:
+                        child.text = str(attr_value)
+                    element.append(child)
+                full_model_elements.append(element)
         return full_model_elements
 
-    def generate_other_elements(self):
+    def generate_other_elements(self, profile):
         other_elements = []
-        for class_name, class_instances in self.cgmes_circuit.items():
-            for instance in class_instances:
-                if not isinstance(instance, FullModel):
-                    element = self.generate_element(instance)
-                    other_elements.append(element)
+        for class_name, filters in self.class_filters.items():
+            objects = self.cgmes_circuit.get_objects_list(elm_type=class_name)
+            for obj in objects:
+                obj_dict = obj.__dict__
+                try:
+                    if class_name in about_dict.get(profile):
+                        element = ET.Element("cim:" + class_name, {"rdf:about": "_" + obj.rdfid})
+                    else:
+                        element = ET.Element("cim:" + class_name, {"rdf:ID": "_" + obj.rdfid})
+                except:
+                    element = ET.Element("cim:" + class_name, {"rdf:ID": "_" + obj.rdfid})
+                for attr_name, attr_value in obj_dict.items():
+                    if attr_value is None:
+                        continue
+                    if attr_name not in filters:
+                        continue
+                    attr_filters = filters[attr_name]
+                    if profile not in attr_filters["Profile"]:
+                        continue
+                    attr_type = attr_filters["Type"]
+                    child = ET.Element("cim:"+str(attr_filters["Property-AttributeAssociationFull"]).split('#')[-1])
+                    if attr_type == "Association":
+                        child.attrib = {"rdf:resource": "#_" + attr_value.rdfid}
+                    elif attr_type == "Enumeration":
+                        enum_dict_key = profile
+                        enum_dict_value = self.enum_dict.get(enum_dict_key)
+                        enum_value = enum_dict_value.get(str(attr_value))
+                        child.attrib = {"rdf:resource": enum_value}
+                    elif attr_type == "Attribute":
+                        if isinstance(attr_value, bool):
+                            attr_value = str(attr_value).lower()
+                        child.text = str(attr_value)
+                    element.append(child)
+                other_elements.append(element)
         return other_elements
 
-    def generate_element(self, instance):
-        element = ET.Element("rdf:Description", {RDFVOC.ID: instance.rdfid})
-        for attr, value in instance.__dict__.items():
-            if value is not None:
-                child = ET.Element(attr)
-                child.text = str(value)
-                element.append(child)
-        return element
+    # def generate_element(self, instance):
+    #     element = ET.Element(f"cim:{instance.name}", {RDFVOC.ID: instance.rdfid})
+    #     for attr, value in instance.__dict__.items():
+    #         if value is not None:
+    #             child = ET.Element(attr)
+    #             child.text = str(value)
+    #             element.append(child)
+    #     return element
 
 # # Usage example
 # serializer = CimSerializer(cgmes_circuit)  # Assuming `cgmes_circuit` is a dictionary of class instances
