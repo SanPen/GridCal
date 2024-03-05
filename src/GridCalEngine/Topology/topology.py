@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Union
 import numpy as np
 import numba as nb
 import scipy.sparse as sp
@@ -298,7 +298,9 @@ class ConnectivityMatrices:
         return (self.Cf_ - self.Ct_).tocsc()
 
 
-def compute_connectivity(branch_active, Cf_, Ct_) -> ConnectivityMatrices:
+def compute_connectivity(branch_active: IntVec,
+                         Cf_: csc_matrix,
+                         Ct_: csc_matrix) -> ConnectivityMatrices:
     """
     Compute the from and to connectivity matrices applying the branch states
     :param branch_active: array of branch states
@@ -309,5 +311,29 @@ def compute_connectivity(branch_active, Cf_, Ct_) -> ConnectivityMatrices:
     br_states_diag = sp.diags(branch_active)
     Cf = br_states_diag * Cf_
     Ct = br_states_diag * Ct_
+
+    return ConnectivityMatrices(Cf=Cf.tocsc(), Ct=Ct.tocsc())
+
+
+def compute_connectivity_with_hvdc(branch_active: IntVec,
+                                   Cf_: csc_matrix,
+                                   Ct_: csc_matrix,
+                                   hvdc_active: Union[None, IntVec] = None,
+                                   Cf_hvdc: Union[None, csc_matrix] = None,
+                                   Ct_hvdc: Union[None, csc_matrix] = None) -> ConnectivityMatrices:
+    """
+    Compute the from and to connectivity matrices applying the branch states
+    :param branch_active: array of branch states
+    :param Cf_: Connectivity branch-bus "from"
+    :param Ct_: Connectivity branch-bus "to"
+    :param hvdc_active: array of hvdc states
+    :param Cf_hvdc: Connectivity hvdc-bus "from"
+    :param Ct_hvdc: Connectivity hvdc-bus "to"
+    :return: Final Ct and Cf in CSC format
+    """
+    br_states_diag = sp.diags(branch_active)
+    hvdc_states_diag = sp.diags(hvdc_active)
+    Cf = sp.vstack([br_states_diag * Cf_, hvdc_states_diag * Cf_hvdc])
+    Ct = sp.vstack([br_states_diag * Ct_, hvdc_states_diag * Ct_hvdc])
 
     return ConnectivityMatrices(Cf=Cf.tocsc(), Ct=Ct.tocsc())

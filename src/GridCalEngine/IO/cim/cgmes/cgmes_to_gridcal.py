@@ -30,6 +30,7 @@ from GridCalEngine.IO.cim.cgmes.cgmes_utils import (get_nominal_voltage,
                                                     get_windings,
                                                     get_regulating_control, get_pu_values_power_transformer_end,
                                                     get_slack_id)
+from GridCalEngine.IO.cim.cgmes.gridcal_to_cgmes import gridcal_to_cgmes
 from GridCalEngine.data_logger import DataLogger
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.identified_object import IdentifiedObject
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.terminal import Terminal
@@ -877,5 +878,8 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit, logger: DataLogger) -> MultiCirc
     # serializer.export()
     # end = time.time()
     # print("ET export time: ", end - start, "sec")
+
+    # Gridcal to cgmes
+    exported_cgmes = gridcal_to_cgmes(gc_model,logger)
 
     return gc_model

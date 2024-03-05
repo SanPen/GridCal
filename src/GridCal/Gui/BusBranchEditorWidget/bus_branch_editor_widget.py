@@ -956,10 +956,11 @@ class BusBranchEditorWidget(QSplitter):
         Add item to the diagram and the diagram scene
         :param graphic_object: Graphic object associated
         """
-        if graphic_object.scene() is not None:
-            self.diagram_scene.removeItem(graphic_object)
-        else:
-            warn(f"Null scene for {graphic_object}, was it deleted already?")
+        if graphic_object is not None:
+            if graphic_object.scene() is not None:
+                self.diagram_scene.removeItem(graphic_object)
+            else:
+                warn(f"Null scene for {graphic_object}, was it deleted already?")
 
     def delete_diagram_element(self, device: ALL_DEV_TYPES) -> None:
         """
@@ -981,12 +982,14 @@ class BusBranchEditorWidget(QSplitter):
         :param device: EditableDevice
         :param graphic_object: optionally provide the graphics object associated
         """
-        if graphic_object is None:
-            self.delete_diagram_element(device=device)
-        else:
-            self.remove_from_scene(graphic_object)
 
-        self.circuit.delete_elements_by_type(obj=device)
+        if device is not None:
+            self.delete_diagram_element(device=device)
+            self.circuit.delete_elements_by_type(obj=device)
+        elif graphic_object is not None:
+            self.remove_from_scene(graphic_object)
+        else:
+            warn(f"Graphic object {graphic_object} and device {device} are none")
 
         self.object_editor_table.setModel(None)
 

@@ -848,8 +848,8 @@ class NumericalCircuit:
         """
         return tp.compute_connectivity(
             branch_active=self.branch_data.active,
-            Cf_=self.branch_data.C_branch_bus_f,
-            Ct_=self.branch_data.C_branch_bus_t
+            Cf_=self.branch_data.C_branch_bus_f.tocsc(),
+            Ct_=self.branch_data.C_branch_bus_t.tocsc()
         )
 
     def get_admittance_matrices(self) -> ycalc.AdmittanceMatrices:
@@ -1413,18 +1413,39 @@ class NumericalCircuit:
 
         return get_devices_per_areas(Cgen, buses_in_a1, buses_in_a2)
 
-    def compute_adjacency_matrix(self) -> sp.csc_matrix:
+    def compute_adjacency_matrix(self, consider_hvdc_as_island_links: bool = False) -> sp.csc_matrix:
         """
         Compute the adjacency matrix
+        :param consider_hvdc_as_island_links: Does the HVDCLine works for the topology as a normal line?
         :return: csc_matrix
         """
-        # compute the adjacency matrix
-        return tp.get_adjacency_matrix(
-            C_branch_bus_f=self.Cf,
-            C_branch_bus_t=self.Ct,
-            branch_active=self.branch_data.active,
-            bus_active=self.bus_data.active
-        )
+
+        if consider_hvdc_as_island_links:
+            conn_matrices = tp.compute_connectivity_with_hvdc(
+                branch_active=self.branch_data.active,
+                Cf_=self.branch_data.C_branch_bus_f.tocsc(),
+                Ct_=self.branch_data.C_branch_bus_t.tocsc(),
+                hvdc_active=self.hvdc_data.active,
+                Cf_hvdc=self.hvdc_data.C_hvdc_bus_f.tocsc(),
+                Ct_hvdc=self.hvdc_data.C_hvdc_bus_t.tocsc()
+            )
+
+            # compute the adjacency matrix
+            return tp.get_adjacency_matrix(
+                C_branch_bus_f=conn_matrices.Cf,
+                C_branch_bus_t=conn_matrices.Ct,
+                branch_active=np.r_[self.branch_data.active, self.hvdc_data.active],
+                bus_active=self.bus_data.active
+            )
+        else:
+
+            # compute the adjacency matrix
+            return tp.get_adjacency_matrix(
+                C_branch_bus_f=self.Cf,
+                C_branch_bus_t=self.Ct,
+                branch_active=self.branch_data.active,
+                bus_active=self.bus_data.active
+            )
 
     def get_structure(self, structure_type) -> pd.DataFrame:
         """
@@ -1781,10 +1802,12 @@ class NumericalCircuit:
 
         return df
 
-    def get_island(self, bus_idx) -> "NumericalCircuit":
+    def get_island(self, bus_idx: IntVec,
+                   consider_hvdc_as_island_links: bool = False) -> "NumericalCircuit":
         """
         Get the island corresponding to the given buses
         :param bus_idx: array of bus indices
+        :param consider_hvdc_as_island_links: Does the HVDCLine works for the topology as a normal line?
         :return: SnapshotData
         """
 
@@ -1823,26 +1846,30 @@ class NumericalCircuit:
         nc.bus_data = self.bus_data.slice(elm_idx=bus_idx)
         nc.branch_data = self.branch_data.slice(elm_idx=br_idx, bus_idx=bus_idx)
 
-        # HVDC data does not propagate into islands
-        # nc.hvdc_data = self.hvdc_data.slice(elm_idx=hvdc_idx, bus_idx=bus_idx)
-
         nc.load_data = self.load_data.slice(elm_idx=load_idx, bus_idx=bus_idx)
         nc.battery_data = self.battery_data.slice(elm_idx=batt_idx, bus_idx=bus_idx)
         nc.generator_data = self.generator_data.slice(elm_idx=gen_idx, bus_idx=bus_idx)
         nc.shunt_data = self.shunt_data.slice(elm_idx=shunt_idx, bus_idx=bus_idx)
 
+        # HVDC data does not propagate into islands
+        if consider_hvdc_as_island_links:
+            nc.hvdc_data = self.hvdc_data.slice(elm_idx=hvdc_idx, bus_idx=bus_idx)
+
         return nc
 
-    def split_into_islands(self, ignore_single_node_islands=False) -> List["NumericalCircuit"]:
+    def split_into_islands(self,
+                           ignore_single_node_islands: bool = False,
+                           consider_hvdc_as_island_links: bool = False) -> List["NumericalCircuit"]:
         """
         Split circuit into islands
         :param ignore_single_node_islands: ignore islands composed of only one bus
+        :param consider_hvdc_as_island_links: Does the HVDCLine works for the topology as a normal line?
         :return: List[NumericCircuit]
         """
 
         # find the matching islands
-        idx_islands = tp.find_islands(adj=self.compute_adjacency_matrix(),
-                                      active=self.bus_data.active)
+        adj = self.compute_adjacency_matrix(consider_hvdc_as_island_links=consider_hvdc_as_island_links)
+        idx_islands = tp.find_islands(adj=adj, active=self.bus_data.active)
 
         circuit_islands = list()  # type: List[NumericalCircuit]
 
