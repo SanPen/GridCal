@@ -134,6 +134,7 @@ class Profile:
         return {
             "me": hex(id(self)),
             "initialized": self._initialized,
+            "size": self.size(),
             "is_sparse": self._is_sparse,
             "sparsity_threshold": self._sparsity_threshold,
             "dense_array": {"me": hex(id(self._dense_array)),
@@ -392,7 +393,8 @@ class Profile:
         """
         self.default_value = value
         self._is_sparse = True
-        self._sparse_array = SparseArray()
+        if self._sparse_array is None:
+            self._sparse_array = SparseArray()
         self._sparse_array.fill(value)
         self._dense_array = None
         self._dtype = type(value)

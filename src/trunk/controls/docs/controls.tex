@@ -14,6 +14,8 @@
 \usepackage{colortbl}
 %\usepackage{multirow}
 \usepackage{lettrine}
+\usepackage{csquotes}
+\usepackage{placeins}
 
 \usepackage{amsmath}
 \usepackage{mathtools}
@@ -21,6 +23,8 @@
 \usepackage{nccmath}
 \usepackage{relsize}
 \usepackage{biblatex} %Imports biblatex package
+\usepackage{tikz}
+\usepackage{circuitikz}
 
 \usepackage[colorlinks=true,allcolors=black]{hyperref}
 
@@ -36,7 +40,7 @@
 
 
 
-\title{Controls and buses}
+\title{\textbf{Controls and buses}}
 
 \author{Santiago Pe\~nate Vera \\ 
 		Carlos Alegre Aldeano \\
@@ -104,32 +108,122 @@
 
 
 	\section{Devices controls}
+	This section unveils the controls associated with the most common devices found in power systems.
 
 	\subsection{Load}
 	% ZIP
+	Loads are best represented with their equivalent ZIP model as shown in Figure~\ref{fig:load}.
+
+	\begin{figure}[!htb]
+		\centering
+		\begin{circuitikz}[american]
+			\draw[line width=0.7mm] (0,0) to [short] (7,0);
+			\draw (0.6,0) to[generic, l=$G_i+jB_i$] (0.6,-3);
+			\draw (3.5,0) to [isource, l=$I^\text{re}_i + jI^\text{im}_i$] (3.5,-3);
+			\draw (6.4,0) to [cute european voltage source, l=$P_i+jQ_i$] (6.4,-3);
+			\draw (0,-3) to [short] (7,-3);
+			\end{circuitikz}		
+			\caption{Representation of a load with its ZIP model.}
+			\label{fig:load}
+	\end{figure}
+	\FloatBarrier
 
 
 	\subsection{Generator}
 	% include static gen. as PQ
+	Under GridCal, generators are classified into two categories: controlled generators and static generators. The first category corresponds to the ones that regulate the voltage and the active power, whereas the second class contains generators setting a given active and reactive power.
 
+	Figure~\ref{fig:gen_contr} shows the scheme for a controlled generator.
 
-	\subsection{Battery}
+	\begin{figure}[!htb]
+		\centering
+		\begin{circuitikz}[american]
+			\draw[line width=0.7mm] (2,0) to [short] (5,0);
+			\draw (3.5,0) to [sV, l=$P_i$] (3.5,-3);
+			\draw (2,-3) to [short] (5,-3);
+			\node at (3.5,0.35) {$V_i$};
+			\end{circuitikz}		
+			\caption{Representation of a controlled generator.}
+			\label{fig:gen_contr}
+	\end{figure}
+	\FloatBarrier
 
+	Figure~\ref{fig:gen_stat} shows the scheme for a static generator.
+
+	\begin{figure}[!htb]
+		\centering
+		\begin{circuitikz}[american]
+			\draw[line width=0.7mm] (2,0) to [short] (5,0);
+			\draw (3.5,0) to [sV, l=$P_i+jQ_i$] (3.5,-3);
+			\draw (2,-3) to [short] (5,-3);
+			\end{circuitikz}		
+			\caption{Representation of a static generator.}
+			\label{fig:gen_stat}
+	\end{figure}
+	\FloatBarrier
+	Note that generators have a capability curve that limits their range of operation. Hence, it is common practice to switch a controlled generator to a static one in case the reactive power limits are met.
 	
-	\subsection{Shunt converter}
+	\subsection{Shunt converter}  % a battery can be connected to it
+	A shunt converter is understood as a device that links a resource (renewables, batteries, etc.) into the AC grid. Its model is captured in Figure~\ref{fig:vsc_shunt}.
 
-
-	\subsection{Transformer}
-
+	\begin{figure}[!htb]
+		\centering
+		\begin{circuitikz}[american]
+			\draw[line width=0.7mm] (2,0) to [short] (5,0);
+			\draw (3.5,0) to [sacdc, l=$P_i+jQ_i$] (3.5,-3);
+			\draw (2,-3) to [short] (5,-3);
+			\node at (3.5,0.35) {$V_i \angle \delta_i$};
+			\node at (2.7, -1.5) {$I_i$};
+			\end{circuitikz}		
+			\caption{Representation of a shunt converter.}
+			\label{fig:vsc_shunt}
+	\end{figure}
+	\FloatBarrier
+	Seen from the AC side, a converter can control two magnitudes at a time, including the active and reactive powers, the voltage in magnitude and angle, and also operate at a set current magnitude. The operating mode determines the controlled variables.
 
 	\subsection{Series converter}
-	% as in HVDC
+	We define a series converter as a device of branch type, that is, a link between two buses where none of them is the ground. This kind of converter is found in HVDC links, for example. Figure~\ref{fig:vsc_series} displays its model. 
+
+	\begin{figure}[!htb]
+		\centering
+		\begin{circuitikz}[american]
+			\draw[line width=0.7mm] (2,0) to [short] (2,-3);
+			\draw[line width=0.7mm] (7,0) to [short] (7,-3);
+			\draw (2,-1.5) to [sacdc] (7,-1.5);
+			\draw (4,-1.5) to [short, i_=$P_f+jQ_f$] (2,-1.5);
+			\draw (5,-1.5) to [short, i=$P_t$] (7,-1.5);
+			\node at (2,0.35) {$V_f \angle \delta$};
+			\node at (7,0.35) {$V_t$};
+			\end{circuitikz}		
+			\caption{Representation of a series converter.}
+			\label{fig:vsc_series}
+	\end{figure}
+	\FloatBarrier
+
+	\subsection{Transformer}
+	A transformer is seen as a device where its tap is adjustable, both in terms of magnitude and phase. In a simplified way its model is shown in Figure~\ref{fig:trafo}.
+
+	\begin{figure}[!htb]
+		\centering
+		\begin{circuitikz}[american]
+			\draw[line width=0.7mm] (2,0) to [short] (2,-3);
+			\draw[line width=0.7mm] (7,0) to [short] (7,-3);
+			\draw (2,-1.5) to [cute inductor, l=$m\angle \tau$] (7,-1.5);
+			\draw (4,-1.5) to [short, i_=$P_f+jQ_f$] (2,-1.5);
+			\draw (5,-1.5) to [short, i=$P_t+jQ_t$] (7,-1.5);
+			\node at (2,0.35) {$V_f \angle \delta_f$};
+			\node at (7,0.35) {$V_t \angle \delta_t$};
+			\end{circuitikz}		
+			\caption{Representation of a transformer.}
+			\label{fig:trafo}
+	\end{figure}
+	\FloatBarrier
 
 
 	\section{Fundamental rules}	
 	There are some basic rules to ensure controls are coherent. 
 
-	\section{Bus types}
+	\section{Bus types}  % heuristics?
 
 	\section{Converter coupled AC-DC modeling}
 	

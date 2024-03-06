@@ -314,9 +314,9 @@ class NonlinearOPFResults:
         """
         self.Va: Vec = np.zeros(nbus)
         self.Vm: Vec = np.zeros(nbus)
-        self.S: CxVec = np.zeros(nbus)
-        self.Sf: CxVec = np.zeros(nbr)
-        self.St: CxVec = np.zeros(nbr)
+        self.S: CxVec = np.zeros(nbus, dtype=complex)
+        self.Sf: CxVec = np.zeros(nbr, dtype=complex)
+        self.St: CxVec = np.zeros(nbr, dtype=complex)
         self.loading: Vec = np.zeros(nbr)
         self.Pg: Vec = np.zeros(ng)
         self.Qg: Vec = np.zeros(ng)

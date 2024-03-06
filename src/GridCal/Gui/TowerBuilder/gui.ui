@@ -271,7 +271,7 @@
                <item>
                 <widget class="QLabel" name="label_10">
                  <property name="text">
-                  <string>Wire compisition</string>
+                  <string>Wire composition</string>
                  </property>
                 </widget>
                </item>
