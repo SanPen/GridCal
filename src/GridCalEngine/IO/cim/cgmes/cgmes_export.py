@@ -356,6 +356,7 @@ class CimExporter:
                                 format="ttl")
 
         self.enum_dict = dict()
+        self.about_dict = dict()
         for s_i, p_i, o_i in rdf_serialization.triples((None, RDF.type, RDFS.Class)):
             if str(s_i).split("#")[1] == "RdfEnum":
                 enum_list_dict = dict()
@@ -374,13 +375,13 @@ class CimExporter:
                 for s, p, o in rdf_serialization.triples((s_i, OWL.members, None)):
                     about_list.append(str(o))
                 if str(s_i).split("#")[0] == "http://entsoe.eu/CIM/EquipmentCore/3/1":
-                    about_dict["EQ"] = about_list
+                    self.about_dict["EQ"] = about_list
                 elif str(s_i).split("#")[0] == "http://entsoe.eu/CIM/StateVariables/4/1":
-                    about_dict["SV"] = about_list
+                    self.about_dict["SV"] = about_list
                 elif str(s_i).split("#")[0] == "http://entsoe.eu/CIM/SteadyStateHypothesis/1/1":
-                    about_dict["SSH"] = about_list
+                    self.about_dict["SSH"] = about_list
                 elif str(s_i).split("#")[0] == "http://entsoe.eu/CIM/Topology/4/1":
-                    about_dict["TP"] = about_list
+                    self.about_dict["TP"] = about_list
 
         profiles_info = pd.read_excel(absolute_path_to_excel, sheet_name="Profiles")
 
@@ -423,47 +424,54 @@ class CimExporter:
 
     def generate_full_model_elements(self, profile):
         full_model_elements = []
-        filter_props = ["scenarioTime",
-                        "created",
-                        "version",
-                        "profile",
-                        "modelingAuthoritySet",
-                        "DependentOn",
-                        "longDependentOnPF",
-                        "Supersedes",
-                        "description"]
+        filter_props = {"scenarioTime": "str",
+                        "created": "str",
+                        "version": "str",
+                        "profile": "str",
+                        "modelingAuthoritySet": "str",
+                        "DependentOn": "Association",
+                        "longDependentOnPF": "str",
+                        "Supersedes": "str",
+                        "description": "str"}
 
         for instance in self.cgmes_circuit.FullModel_list:
             instance_dict = instance.__dict__
             if instance_dict.get("profile") in self.profile_uris[profile]:
                 element = ET.Element("md:FullModel", {"rdf:about": "urn:uuid:" + instance.rdfid})
                 for attr_name, attr_value in instance_dict.items():
-                    if attr_name not in filter_props:
-                        continue
-                    if attr_value is None:
+                    if attr_name not in filter_props or attr_value is None:
                         continue
                     child = ET.Element(f"md:Model.{attr_name}")
-                    if hasattr(attr_value, "rdfid"):
-                        child.attrib = {"rdf:resource": "urn:uuid:" + attr_value.rdfid}
+                    if filter_props.get(attr_name) == "Association":
+                        child.attrib = {"rdf:resource": "urn:uuid:" + attr_value}
                     else:
                         child.text = str(attr_value)
                     element.append(child)
                 full_model_elements.append(element)
         return full_model_elements
 
+    def in_profile(self, filters, profile):
+        for k, v in filters.items():
+            if profile in v["Profile"]:
+                return True
+        return False
+
     def generate_other_elements(self, profile):
         other_elements = []
         for class_name, filters in self.class_filters.items():
             objects = self.cgmes_circuit.get_objects_list(elm_type=class_name)
+            if not self.in_profile(filters, profile):
+                continue
             for obj in objects:
                 obj_dict = obj.__dict__
                 try:
-                    if class_name in about_dict.get(profile):
+                    if class_name in self.about_dict.get(profile):
                         element = ET.Element("cim:" + class_name, {"rdf:about": "_" + obj.rdfid})
                     else:
                         element = ET.Element("cim:" + class_name, {"rdf:ID": "_" + obj.rdfid})
                 except:
                     element = ET.Element("cim:" + class_name, {"rdf:ID": "_" + obj.rdfid})
+
                 for attr_name, attr_value in obj_dict.items():
                     if attr_value is None:
                         continue

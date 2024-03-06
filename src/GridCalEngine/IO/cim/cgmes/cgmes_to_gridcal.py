@@ -868,11 +868,11 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit, logger: DataLogger) -> MultiCirc
     print('debug')
 
     # Export test
-    start = time.time()
-    cgmes_exporter = CgmesExporter(cgmes_model)
-    cgmes_exporter.export_to_xml()
-    end = time.time()
-    print("RDFlib export time: ", end - start, "sec")
+    # start = time.time()
+    # cgmes_exporter = CgmesExporter(cgmes_model)
+    # cgmes_exporter.export_to_xml()
+    # end = time.time()
+    # print("RDFlib export time: ", end - start, "sec")
 
     # Export with ET
     start = time.time()
