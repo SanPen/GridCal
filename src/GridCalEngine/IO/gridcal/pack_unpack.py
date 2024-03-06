@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import math
-from typing import Dict, Union, List, Tuple, Any
+from typing import Dict, Union, List, Tuple, Any, Callable
 import pandas as pd
 import numpy as np
 from enum import EnumMeta as EnumType
@@ -697,8 +697,12 @@ def parse_object_type_from_dataframe(main_df: pd.DataFrame,
                                     elif gc_prop.name == 'substation':
 
                                         if str(property_value).strip() != '':
-                                            substation = on_the_fly.get_create_substation(property_value=str(property_value))
+                                            substation = on_the_fly.get_create_substation(
+                                                property_value=str(property_value))
                                             elm.set_snapshot_value(gc_prop.name, substation)
+                                    elif gc_prop.name == 'template' and property_value == 'BranchTemplate':
+                                        # skip this
+                                        pass
                                     else:
 
                                         logger.add_error("No device of the refferenced type",
@@ -773,10 +777,16 @@ def parse_object_type_from_dataframe(main_df: pd.DataFrame,
 
                 else:
                     # the property does not exists, neither in the old names
-                    logger.add_warning("Property in the file is not found in the model",
-                                       device=row.get('idtag', 'not provided'),
-                                       device_class=template_elm.device_type.value,
-                                       device_property=property_name)
+                    skip = False
+                    if template_elm.device_type == DeviceType.ShuntDevice:
+                        if property_name in ['is_controlled', 'Bmin', 'Bmax', 'Vset']:
+                            skip = True
+
+                    if not skip:
+                        logger.add_warning("Property in the file is not found in the model",
+                                           device=row.get('idtag', 'not provided'),
+                                           device_class=template_elm.device_type.value,
+                                           device_property=property_name)
 
         # save the element in the dictionary for later
         devices_dict[elm.idtag] = elm
@@ -997,10 +1007,14 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
 
 
 def parse_gridcal_data(data: Dict[str, Union[str, float, Dict, pd.DataFrame, Dict[str, Any]]],
+                       text_func: Union[Callable, None] = None,
+                       progress_func: Union[Callable, None] = None,
                        logger: Logger = Logger()) -> MultiCircuit:
     """
     Interpret data dictionary
     :param data: dictionary of data frames and other information
+    :param text_func: text callback function
+    :param progress_func: progress callback function
     :param logger: Logger to register events
     :return: MultiCircuit instance
     """
@@ -1047,7 +1061,12 @@ def parse_gridcal_data(data: Dict[str, Union[str, float, Dict, pd.DataFrame, Dic
     # ------------------------------------------------------------------------------------------------------------------
     # Legacy DataFrame processing
     # for each element type...
+    item_count = 0
+    n_data_types = len(data_model_object_types)
     for object_type_key, template_elm in data_model_object_types.items():
+
+        if text_func is not None:
+            text_func(f"Parsing {object_type_key} table data...")
 
         # try to get the DataFrame
         df = data.get(object_type_key, None)
@@ -1090,6 +1109,11 @@ def parse_gridcal_data(data: Dict[str, Union[str, float, Dict, pd.DataFrame, Dic
             # the file does not contain information for the data type (not a problem...)
             pass
 
+        if progress_func is not None:
+            progress_func(float(item_count + 1) / float(n_data_types) * 100)
+
+        item_count += 1
+
     # ------------------------------------------------------------------------------------------------------------------
     # New way of parsing information from .model files.
     # These files are just .json stored in the model_data inside the zip file
@@ -1106,7 +1130,12 @@ def parse_gridcal_data(data: Dict[str, Union[str, float, Dict, pd.DataFrame, Dic
                 circuit.time_profile = None
 
             # for each element type...
+            item_count = 0
+            n_data_types = len(data_model_object_types)
             for object_type_key, template_elm in data_model_object_types.items():
+
+                if text_func is not None:
+                    text_func(f"Parsing {object_type_key} model data...")
 
                 # query the device type into the data set
                 data_list = model_data.get(object_type_key, None)
@@ -1130,7 +1159,14 @@ def parse_gridcal_data(data: Dict[str, Union[str, float, Dict, pd.DataFrame, Dic
                     if object_type_key != 'branch':
                         logger.add_warning(msg=f'No data for {object_type_key}')
 
+                if progress_func is not None:
+                    progress_func(float(item_count + 1) / float(n_data_types) * 100)
+
+                item_count += 1
+
     # fill in wires into towers ----------------------------------------------------------------------------------------
+    if text_func is not None:
+        text_func("Tower wires...")
     if 'tower_wires' in data.keys():
         df = data['tower_wires']
 
@@ -1150,6 +1186,8 @@ def parse_gridcal_data(data: Dict[str, Union[str, float, Dict, pd.DataFrame, Dic
                 tower.add_wire(w)
 
     # create diagrams --------------------------------------------------------------------------------------------------
+    if text_func is not None:
+        text_func("Parsing diagrams...")
     if 'diagrams' in data.keys():
 
         if len(data['diagrams']):
@@ -1173,5 +1211,8 @@ def parse_gridcal_data(data: Dict[str, Union[str, float, Dict, pd.DataFrame, Dic
                     circuit.add_diagram(diagram)
                 else:
                     print('unrecognized diagram', diagram_dict['type'])
+
+    if text_func is not None:
+        text_func("Done!")
 
     return circuit

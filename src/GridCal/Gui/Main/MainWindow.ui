@@ -8808,6 +8808,9 @@ QProgressBar::chunk{
     <addaction name="actionFix_loads_active_based_on_the_power"/>
     <addaction name="actionDelete_inconsistencies"/>
     <addaction name="actionClean_database"/>
+    <addaction name="actionSetSelectedBusCountry"/>
+    <addaction name="actionSetSelectedBusArea"/>
+    <addaction name="actionSetSelectedBusZone"/>
    </widget>
    <widget class="QMenu" name="menuDiagrams">
     <property name="title">
@@ -8817,21 +8820,15 @@ QProgressBar::chunk{
      <property name="title">
       <string>Bus-Branch options</string>
      </property>
-     <widget class="QMenu" name="menuSelect_buses_by_2">
-      <property name="title">
-       <string>Select buses by</string>
-      </property>
-      <addaction name="actionSetSelectedBusCountry"/>
-      <addaction name="actionSetSelectedBusArea"/>
-      <addaction name="actionSetSelectedBusZone"/>
-     </widget>
      <addaction name="actionBigger_nodes"/>
      <addaction name="actionSmaller_nodes"/>
      <addaction name="actionAutoatic_layout"/>
      <addaction name="actionTry_to_fix_buses_location"/>
      <addaction name="actionSet_schematic_positions_from_GPS_coordinates"/>
      <addaction name="separator"/>
-     <addaction name="menuSelect_buses_by_2"/>
+     <addaction name="actionSelect_buses_by_area"/>
+     <addaction name="actionSelect_buses_by_zone"/>
+     <addaction name="actionSelect_buses_by_country"/>
      <addaction name="actionNew_bus_branch_diagram_from_selection"/>
      <addaction name="separator"/>
      <addaction name="actionDelete_selected"/>
@@ -9482,7 +9479,7 @@ QProgressBar::chunk{
      <normaloff>:/Icons/icons/grid_icon.svg</normaloff>:/Icons/icons/grid_icon.svg</iconset>
    </property>
    <property name="text">
-    <string>Area</string>
+    <string>Set selected buses' Area</string>
    </property>
   </action>
   <action name="actionSetSelectedBusZone">
@@ -9491,7 +9488,7 @@ QProgressBar::chunk{
      <normaloff>:/Icons/icons/grid_icon.svg</normaloff>:/Icons/icons/grid_icon.svg</iconset>
    </property>
    <property name="text">
-    <string>Zone</string>
+    <string>Set selected buses' Zone</string>
    </property>
   </action>
   <action name="actionSetSelectedBusCountry">
@@ -9500,7 +9497,7 @@ QProgressBar::chunk{
      <normaloff>:/Icons/icons/map.svg</normaloff>:/Icons/icons/map.svg</iconset>
    </property>
    <property name="text">
-    <string>Country</string>
+    <string>Set seleted buses' Country</string>
    </property>
   </action>
   <action name="actionImport_bus_coordinates">
@@ -9903,6 +9900,33 @@ QProgressBar::chunk{
    </property>
    <property name="shortcut">
     <string>Ctrl+C, Ctrl+D</string>
+   </property>
+  </action>
+  <action name="actionSelect_buses_by_area">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/grid_icon.svg</normaloff>:/Icons/icons/grid_icon.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Select buses by area</string>
+   </property>
+  </action>
+  <action name="actionSelect_buses_by_zone">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/grid_icon.svg</normaloff>:/Icons/icons/grid_icon.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Select buses by zone</string>
+   </property>
+  </action>
+  <action name="actionSelect_buses_by_country">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/map.svg</normaloff>:/Icons/icons/map.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Select buses by country</string>
    </property>
   </action>
  </widget>
