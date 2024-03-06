@@ -282,7 +282,16 @@ class LogEntry:
         Get list representation of this entry
         :return:
         """
-        return [self.time, self.severity.value, self.msg, self.device, self.value, self.expected_value]
+        return [self.time, self.severity.value, self.msg,
+                self.device_class, self.device_property, self.device,
+                self.value, self.expected_value]
+
+    def to_list_reduced(self) -> List[Any]:
+        """
+        Get list representation of this entry
+        :return:
+        """
+        return [self.time, self.device_class, self.device_property,  self.device, self.value, self.expected_value]
 
     def __str__(self):
         return "{0} {1}: {2} {3} {4} {5}".format(self.time,
@@ -411,6 +420,8 @@ class Logger:
         """
         by_severity = dict()
 
+        hdr = ['Time', 'Class', 'Property', 'Device', 'Value', 'Expected value']
+
         for e in self.entries:
 
             if e.severity.value not in by_severity.keys():
@@ -420,10 +431,10 @@ class Logger:
 
             if e.msg in by_msg.keys():
                 # add msg to existing msg list
-                by_msg[e.msg].append((e.time, e.device, e.value, e.expected_value))
+                by_msg[e.msg].append(e.to_list_reduced())
             else:
                 # add msg entry for the first time
-                by_msg[e.msg] = [(e.time, e.device, e.value, e.expected_value)]
+                by_msg[e.msg] = [e.to_list_reduced()]
 
         return by_severity
 
@@ -433,7 +444,8 @@ class Logger:
         :return:
         """
         data = [e.to_list() for e in self.entries]
-        df = pd.DataFrame(data=data, columns=['Time', 'Severity', 'Message', 'Device', 'Value', 'Expected value'])
+        df = pd.DataFrame(data=data, columns=['Time', 'Severity', 'Message', 'Class',
+                                              'Property', 'Device', 'Value', 'Expected value'])
         df.set_index('Time', inplace=True)
         return df
 

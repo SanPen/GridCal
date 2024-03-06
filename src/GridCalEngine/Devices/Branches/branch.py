@@ -476,7 +476,6 @@ class Branch(BranchParent):
                             tap_module=self.tap_module,
                             tap_phase=self.angle,
                             vset=self.vset,
-                            bus_to_regulated=self.bus_to_regulated,
                             temp_base=self.temp_base,
                             temp_oper=self.temp_oper,
                             alpha=self.alpha,

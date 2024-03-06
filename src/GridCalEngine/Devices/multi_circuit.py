@@ -2564,8 +2564,12 @@ class MultiCircuit:
         for elm in self.buses:
             elm.create_profiles(self.time_profile)
 
-        for branch_list in self.get_branch_lists():
-            for elm in branch_list:
+        for lst in self.get_branch_lists():
+            for elm in lst:
+                elm.create_profiles(self.time_profile)
+
+        for lst in self.get_injection_devices_lists():
+            for elm in lst:
                 elm.create_profiles(self.time_profile)
 
     def ensure_profiles_exist(self) -> None:
@@ -2580,6 +2584,10 @@ class MultiCircuit:
 
         for branch_list in self.get_branch_lists():
             for elm in branch_list:
+                elm.ensure_profiles_exist(self.time_profile)
+
+        for lst in self.get_injection_devices_lists():
+            for elm in lst:
                 elm.ensure_profiles_exist(self.time_profile)
 
     def get_bus_dict(self, by_idtag=False) -> Dict[str, dev.Bus]:

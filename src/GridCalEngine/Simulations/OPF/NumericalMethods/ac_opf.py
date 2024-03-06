@@ -364,6 +364,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                           debug: bool = False,
                           use_autodiff: bool = False,
                           pf_init: bool = False,
+                          Sbus_pf: Union[CxVec, None] = None,
+                          voltage_pf: Union[CxVec, None] = None,
                           plot_error: bool = False) -> NonlinearOPFResults:
     """
 
@@ -373,15 +375,14 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     :param debug: if true, the jacobians, hessians, etc are checked against finite difeerence versions of them
     :param use_autodiff: use the autodiff version of the structures
     :param pf_init: Initialize with power flow
+    :param Sbus_pf: PowerFlow bus power
+    :param voltage_pf: PowerFlow voltage
     :param plot_error:
     :return: NonlinearOPFResults
     """
 
     # compile the grid snapshot
     Sbase = nc.Sbase
-    c0 = nc.generator_data.cost_0
-    c1 = nc.generator_data.cost_1
-    c2 = nc.generator_data.cost_2
 
     admittances = nc.get_admittance_matrices()
 
@@ -433,6 +434,10 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     R = nc.branch_data.R
     X = nc.branch_data.X
 
+    c0 = nc.generator_data.cost_0[ig]
+    c1 = nc.generator_data.cost_1[ig]
+    c2 = nc.generator_data.cost_2[ig]
+
     tapm_max = nc.branch_data.tap_module_max[k_m]
     tapm_min = nc.branch_data.tap_module_min[k_m]
     tapt_max = nc.branch_data.tap_angle_max[k_tau]
@@ -466,16 +471,15 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         NI = 2 * nll + 2 * npq + 5 * ngg + 2 * ntapm + 2 * ntapt + 2 * ndc
 
     # run power flow to initialize
-    pf_results = multi_island_pf_nc(nc=nc, options=pf_options)
 
     # ignore power from Z and I of the load
 
     if pf_init:
-        s0gen = (pf_results.Sbus - nc.load_data.get_injections_per_bus()) / nc.Sbase
+        s0gen = (Sbus_pf - nc.load_data.get_injections_per_bus()) / nc.Sbase
         p0gen = nc.generator_data.C_bus_elm.T @ np.real(s0gen)
         q0gen = nc.generator_data.C_bus_elm.T @ np.imag(s0gen)
-        vm0 = np.abs(pf_results.voltage)
-        va0 = np.angle(pf_results.voltage)
+        vm0 = np.abs(voltage_pf)
+        va0 = np.angle(voltage_pf)
         tapm0 = nc.branch_data.tap_module[k_m]
         tapt0 = nc.branch_data.tap_angle[k_tau]
         Pfdc0 = np.array([0] * ndc)
@@ -624,6 +628,14 @@ def run_nonlinear_opf(grid: MultiCircuit,
     # compile the system
     nc = compile_numerical_circuit_at(circuit=grid, t_idx=t_idx)
 
+    if pf_init:
+        pf_results = multi_island_pf_nc(nc=nc, options=pf_options)
+        Sbus_pf = pf_results.Sbus
+        voltage_pf = pf_results.voltage
+    else:
+        Sbus_pf = None
+        voltage_pf = None
+
     islands = nc.split_into_islands(ignore_single_node_islands=True,
                                     consider_hvdc_as_island_links=True)
 
@@ -637,6 +649,8 @@ def run_nonlinear_opf(grid: MultiCircuit,
                                            debug=debug,
                                            use_autodiff=use_autodiff,
                                            pf_init=pf_init,
+                                           Sbus_pf=Sbus_pf,
+                                           voltage_pf=voltage_pf,
                                            plot_error=plot_error)
 
         results.merge(other=island_res,
