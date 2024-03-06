@@ -25,10 +25,11 @@ import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.Parents.editable_device import GCProp
 from GridCalEngine.Devices.profile import Profile
 from GridCalEngine.Devices.sparse_array import SparseArray
+from GridCalEngine.Devices.types import ALL_DEV_TYPES
 from GridCalEngine.enumerations import DiagramType, DeviceType
 
 
-def get_objects_dictionary() -> Dict[str, dev.EditableDevice]:
+def get_objects_dictionary() -> Dict[str, ALL_DEV_TYPES]:
     """
     creates a dictionary with the types and the circuit objects
     :return: Dictionary instance
@@ -137,16 +138,8 @@ def gather_model_as_data_frames(circuit: MultiCircuit, legacy: bool = False) -> 
     dfs['config'] = pd.DataFrame(data=obj, columns=['Property', 'Value'], dtype=str)
 
     # get the master time profile
-    T = circuit.time_profile
-
-    ########################################################################################################
-    # retrieve buses information that is necessary
-    ########################################################################################################
-    # names_count = dict()
-    if len(circuit.buses) > 0:
-        for elm in circuit.buses:
-            # elm.ensure_area_objects(circuit)
-            elm.ensure_profiles_exist(T)
+    time_profile = circuit.time_profile
+    nt = len(time_profile) if time_profile is not None else 0
 
     ########################################################################################################
     # declare objects to iterate  name: [sample object, list of objects, headers]
@@ -177,11 +170,11 @@ def gather_model_as_data_frames(circuit: MultiCircuit, legacy: bool = False) -> 
                     obj.append(elm.get_save_data())
                     object_idtags.append(elm.idtag)
 
-                    if T is not None:
-                        nt = len(T)
+                    if time_profile is not None:
+
                         if nt > 0:
 
-                            elm.ensure_profiles_exist(T)
+                            elm.ensure_profiles_exist(time_profile)
 
                             for property_name, profile_property in object_sample.properties_with_profile.items():
 
@@ -207,9 +200,9 @@ def gather_model_as_data_frames(circuit: MultiCircuit, legacy: bool = False) -> 
 
             # create the profiles' DataFrames
             for prop, data in profiles.items():
-                dfs[object_type_name + '_' + prop] = pd.DataFrame(data=data, columns=object_idtags, index=T)
+                dfs[object_type_name + '_' + prop] = pd.DataFrame(data=data, columns=object_idtags, index=time_profile)
 
-        # towers and wires -------------------------------------------------------------------------------------------------
+        # towers and wires ---------------------------------------------------------------------------------------------
         # because each tower contains a reference to a number of wires, these relations need to be stored as well
         associations = list()
         for tower in circuit.overhead_line_types:
@@ -272,7 +265,7 @@ def profile_todict_idtag(profile: Profile) -> Dict[str, str]:
     Get a dictionary representation of the profile
     :return:
     """
-    default = profile.default_value.idtag if profile.default_value else "None"
+    default = profile.default_value.idtag if hasattr(profile.default_value, 'idtag') else "None"
 
     if profile.is_sparse:
         return {
@@ -362,7 +355,7 @@ def get_profile_from_dict(data: Dict[str, Union[str, Union[Any, Dict[str, Any]]]
     return profile
 
 
-def gridcal_object_to_json(elm: dev.EditableDevice) -> Dict[str, str]:
+def gridcal_object_to_json(elm: ALL_DEV_TYPES) -> Dict[str, str]:
     """
 
     :param elm:
@@ -406,7 +399,7 @@ def gather_model_as_jsons(circuit: MultiCircuit) -> Dict[str, Dict[str, str]]:
     :param circuit:
     :return:
     """
-    data: Dict[str, Dict[str, str]] = dict()
+    data: Dict[str, Union[Dict[str, str], List[Dict[str, str]]]] = dict()
 
     # declare objects to iterate  name: [sample object, list of objects, headers]
     object_types = get_objects_dictionary()
@@ -436,7 +429,7 @@ def gather_model_as_jsons(circuit: MultiCircuit) -> Dict[str, Dict[str, str]]:
     return data
 
 
-def search_property(template_elm: dev.EditableDevice,
+def search_property(template_elm: ALL_DEV_TYPES,
                     old_props_dict: Dict[str, str],
                     property_to_search: str,
                     logger: Logger) -> Union[GCProp, None]:
@@ -473,7 +466,7 @@ def search_property(template_elm: dev.EditableDevice,
         return gc_prop
 
 
-def look_for_property(elm: dev.EditableDevice, property_name) -> Union[GCProp, None]:
+def look_for_property(elm: ALL_DEV_TYPES, property_name) -> Union[GCProp, None]:
     """
 
     :param elm:
@@ -514,12 +507,12 @@ def valid_value(val) -> bool:
 
 
 def parse_object_type_from_dataframe(main_df: pd.DataFrame,
-                                     template_elm: dev.EditableDevice,
-                                     elements_dict_by_type: Dict[DeviceType, Dict[str, dev.EditableDevice]],
+                                     template_elm: ALL_DEV_TYPES,
+                                     elements_dict_by_type: Dict[DeviceType, Dict[str, ALL_DEV_TYPES]],
                                      time_profile: pd.DatetimeIndex,
                                      object_type_key: str,
                                      data: Dict[str, Union[float, str, pd.DataFrame]],
-                                     logger: Logger) -> Tuple[List[dev.EditableDevice], Dict[str, dev.EditableDevice]]:
+                                     logger: Logger) -> Tuple[List[ALL_DEV_TYPES], Dict[str, ALL_DEV_TYPES]]:
     """
     Convert a DataFrame to a list of GridCal devices
     :param main_df: DataFrame to convert
@@ -533,8 +526,8 @@ def parse_object_type_from_dataframe(main_df: pd.DataFrame,
     :return: devices, devices_dict
     """
     # dictionary to be filled with this type of objects
-    devices_dict: Dict[str, dev.EditableDevice] = dict()
-    devices: List[dev.EditableDevice] = list()
+    devices_dict: Dict[str, ALL_DEV_TYPES] = dict()
+    devices: List[ALL_DEV_TYPES] = list()
 
     # parse each object of the dataframe
     for i, row in main_df.iterrows():
@@ -545,8 +538,9 @@ def parse_object_type_from_dataframe(main_df: pd.DataFrame,
 
         # ensure the profiles existence
         if time_profile is not None:
-            elm.ensure_profiles_exist(index=time_profile)
             nt = len(time_profile)
+            if nt > 0:
+                elm.ensure_profiles_exist(index=time_profile)
         else:
             nt = 0
 
@@ -712,9 +706,9 @@ def searc_property_into_json(json_entry: dict, prop: GCProp):
         return property_value
 
 
-def search_and_apply_json_profile(json_entry: dict,
+def search_and_apply_json_profile(json_entry: Dict[str, Dict[str, Union[str, Union[Any, Dict[str, Any]]]]],
                                   gc_prop: GCProp,
-                                  elm: dev.EditableDevice,
+                                  elm: ALL_DEV_TYPES,
                                   property_value: Any,
                                   collection: Union[None, Dict[str, Any]] = None) -> None:
     """
@@ -739,9 +733,9 @@ def search_and_apply_json_profile(json_entry: dict,
             elm.set_profile(prop=gc_prop, arr=profile)
 
 
-def parse_object_type_from_json(template_elm: dev.EditableDevice,
+def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
                                 data_list: List[Dict[str, Dict[str, str]]],
-                                elements_dict_by_type: Dict[DeviceType, Dict[str, dev.EditableDevice]],
+                                elements_dict_by_type: Dict[DeviceType, Dict[str, ALL_DEV_TYPES]],
                                 time_profile: pd.DatetimeIndex,
                                 logger: Logger):
     """
@@ -754,8 +748,8 @@ def parse_object_type_from_json(template_elm: dev.EditableDevice,
     :return:
     """
     # dictionary to be filled with this type of objects
-    devices_dict: Dict[str, dev.EditableDevice] = dict()
-    devices: List[dev.EditableDevice] = list()
+    devices_dict: Dict[str, ALL_DEV_TYPES] = dict()
+    devices: List[ALL_DEV_TYPES] = list()
 
     for json_entry in data_list:
         idtag = json_entry['idtag']
