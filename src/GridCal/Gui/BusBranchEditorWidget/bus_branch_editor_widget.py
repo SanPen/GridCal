@@ -225,7 +225,9 @@ class BusBranchDiagramScene(QGraphicsScene):
         """
         self.parent_.create_branch_on_mouse_release_event(event)
 
-        # call mouseReleaseEvent on "me" (continue with the rest of the actions)
+        # call mouseReleaseEvent on "me" (conti
+        #
+        # nue with the rest of the actions)
         super(BusBranchDiagramScene, self).mouseReleaseEvent(event)
 
 
