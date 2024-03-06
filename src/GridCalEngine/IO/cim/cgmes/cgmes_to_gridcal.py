@@ -14,20 +14,23 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+import time
+
 import numpy as np
 from typing import Dict, List, Tuple
 import GridCalEngine.IO.cim.cgmes.cgmes_enums as cgmes_enums
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 import GridCalEngine.Devices as gcdev
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
-from GridCalEngine.IO.cim.cgmes.cgmes_export import CgmesExporter
+from GridCalEngine.IO.cim.cgmes.cgmes_export import CgmesExporter, CimExporter
 from GridCalEngine.IO.cim.cgmes.cgmes_utils import (get_nominal_voltage,
                                                     get_pu_values_ac_line_segment,
-                                                    get_rate, get_values_shunt,
+                                                    get_values_shunt,
                                                     get_pu_values_power_transformer, get_pu_values_power_transformer3w,
                                                     get_windings,
                                                     get_regulating_control, get_pu_values_power_transformer_end,
                                                     get_slack_id)
+from GridCalEngine.IO.cim.cgmes.gridcal_to_cgmes import gridcal_to_cgmes
 from GridCalEngine.data_logger import DataLogger
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.identified_object import IdentifiedObject
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.terminal import Terminal
@@ -36,7 +39,6 @@ from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.switch import Switch
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.disconnector import Disconnector
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.load_break_switch import LoadBreakSwitch
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.breaker import Breaker
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.power_transformer_end import PowerTransformerEnd
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.conducting_equipment import ConductingEquipment
 
 
@@ -866,7 +868,20 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit, logger: DataLogger) -> MultiCirc
     print('debug')
 
     # Export test
+    # start = time.time()
     # cgmes_exporter = CgmesExporter(cgmes_model)
     # cgmes_exporter.export_to_xml()
+    # end = time.time()
+    # print("RDFlib export time: ", end - start, "sec")
+
+    # Export with ET
+    start = time.time()
+    serializer = CimExporter(cgmes_model)
+    serializer.export()
+    end = time.time()
+    print("ET export time: ", end - start, "sec")
+
+    # Gridcal to cgmes
+    # exported_cgmes = gridcal_to_cgmes(gc_model,logger)
 
     return gc_model
