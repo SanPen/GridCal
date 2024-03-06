@@ -22,10 +22,10 @@ import GridCalEngine.IO.cim.cgmes.cgmes_enums as cgmes_enums
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 import GridCalEngine.Devices as gcdev
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
-from GridCalEngine.IO.cim.cgmes.cgmes_export import CgmesExporter, CimSerializer
+from GridCalEngine.IO.cim.cgmes.cgmes_export import CgmesExporter, CimExporter
 from GridCalEngine.IO.cim.cgmes.cgmes_utils import (get_nominal_voltage,
                                                     get_pu_values_ac_line_segment,
-                                                    get_rate, get_values_shunt,
+                                                    get_values_shunt,
                                                     get_pu_values_power_transformer, get_pu_values_power_transformer3w,
                                                     get_windings,
                                                     get_regulating_control, get_pu_values_power_transformer_end,
@@ -39,7 +39,6 @@ from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.switch import Switch
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.disconnector import Disconnector
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.load_break_switch import LoadBreakSwitch
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.breaker import Breaker
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.power_transformer_end import PowerTransformerEnd
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.conducting_equipment import ConductingEquipment
 
 
@@ -869,17 +868,20 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit, logger: DataLogger) -> MultiCirc
     print('debug')
 
     # Export test
-    # cgmes_exporter = CgmesExporter(cgmes_model)
-    # cgmes_exporter.export_to_xml()
+    start = time.time()
+    cgmes_exporter = CgmesExporter(cgmes_model)
+    cgmes_exporter.export_to_xml()
+    end = time.time()
+    print("RDFlib export time: ", end - start, "sec")
 
     # Export with ET
-    # start = time.time()
-    # serializer = CimSerializer(cgmes_model)
-    # serializer.export()
-    # end = time.time()
-    # print("ET export time: ", end - start, "sec")
+    start = time.time()
+    serializer = CimExporter(cgmes_model)
+    serializer.export()
+    end = time.time()
+    print("ET export time: ", end - start, "sec")
 
     # Gridcal to cgmes
-    exported_cgmes = gridcal_to_cgmes(gc_model,logger)
+    # exported_cgmes = gridcal_to_cgmes(gc_model,logger)
 
     return gc_model
