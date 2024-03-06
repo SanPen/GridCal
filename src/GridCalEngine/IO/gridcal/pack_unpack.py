@@ -273,6 +273,7 @@ def profile_todict_idtag(profile: Profile) -> Dict[str, str]:
     :return:
     """
     default = profile.default_value.idtag if profile.default_value else "None"
+    # default = profile.default_value.idtag if hasattr(profile.default_value, 'idtag') else "None"
 
     if profile.is_sparse:
         return {
