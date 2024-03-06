@@ -498,6 +498,8 @@ def valid_value(val) -> bool:
             return False
         if val == '':
             return False
+        if val == 'None':
+            return False
     if isinstance(val, float):
         if math.isnan(val):
             return False
@@ -682,20 +684,20 @@ def parse_object_type_from_dataframe(main_df: pd.DataFrame,
                                     # legacy operations: this is from when area, zone and substation were strings
                                     if gc_prop.name == 'area':
 
-                                        if property_value.strip() != '':
-                                            area = on_the_fly.get_create_area(property_value=property_value)
+                                        if str(property_value).strip() != '':
+                                            area = on_the_fly.get_create_area(property_value=str(property_value))
                                             elm.set_snapshot_value(gc_prop.name, area)
 
                                     elif gc_prop.name == 'zone':
 
-                                        if property_value.strip() != '':
-                                            zone = on_the_fly.get_create_zone(property_value=property_value)
+                                        if str(property_value).strip() != '':
+                                            zone = on_the_fly.get_create_zone(property_value=str(property_value))
                                             elm.set_snapshot_value(gc_prop.name, zone)
 
                                     elif gc_prop.name == 'substation':
 
-                                        if property_value.strip() != '':
-                                            substation = on_the_fly.get_create_substation(property_value=property_value)
+                                        if str(property_value).strip() != '':
+                                            substation = on_the_fly.get_create_substation(property_value=str(property_value))
                                             elm.set_snapshot_value(gc_prop.name, substation)
                                     else:
 
@@ -1124,7 +1126,9 @@ def parse_gridcal_data(data: Dict[str, Union[str, float, Dict, pd.DataFrame, Dic
                                                  devices=devices,
                                                  logger=logger)
                 else:
-                    logger.add_warning(msg=f'No data for {object_type_key}')
+                    # branch is a legacy structure, so we can avoid reporting its absence
+                    if object_type_key != 'branch':
+                        logger.add_warning(msg=f'No data for {object_type_key}')
 
     # fill in wires into towers ----------------------------------------------------------------------------------------
     if 'tower_wires' in data.keys():
