@@ -2332,7 +2332,7 @@ class SimulationsMain(TimeEventsMain):
 
             colours = viz.get_n_colours(n=len(drv.groups_by_index))
 
-            bus_colours = [QtGui.QColor] * len(self.circuit.buses)
+            bus_colours = np.empty(len(self.circuit.buses), dtype=object)
             tool_tips = [""] * len(self.circuit.buses)
             for c, group in enumerate(drv.groups_by_index):
                 for i in group:

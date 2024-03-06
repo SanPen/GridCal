@@ -257,14 +257,14 @@ def profile_todict(profile: Profile) -> Dict[str, str]:
             }
     else:
         return {
-                'is_sparse': True,
-                'size': s,
-                'default': profile.default_value
-                if profile.sparse_array is None else profile.sparse_array.default_value,
-                'sparse_data': {
-                    'map': dict()
-                }
+            'is_sparse': True,
+            'size': s,
+            'default': profile.default_value
+            if profile.sparse_array is None else profile.sparse_array.default_value,
+            'sparse_data': {
+                'map': dict()
             }
+        }
 
 
 def profile_todict_idtag(profile: Profile) -> Dict[str, str]:
@@ -281,7 +281,7 @@ def profile_todict_idtag(profile: Profile) -> Dict[str, str]:
             'default': default,
             'sparse_data': {
                 'map': {key: val.idtag for key, val in profile.sparse_array.get_map().items()}
-                       if profile.sparse_array else dict()
+                if profile.sparse_array else dict()
             }
         }
     else:
@@ -672,10 +672,10 @@ def parse_object_type_from_dataframe(main_df: pd.DataFrame,
 
                 else:
                     # the property does not exists, neither in the old names
-                    logger.add_error("File property could not be found",
-                                     device=row.get('idtag', 'not provided'),
-                                     device_class=template_elm.device_type.value,
-                                     device_property=property_name)
+                    logger.add_warning("Property in the file is not found in the model",
+                                       device=row.get('idtag', 'not provided'),
+                                       device_class=template_elm.device_type.value,
+                                       device_property=property_name)
 
         # save the element in the dictionary for later
         devices_dict[elm.idtag] = elm
@@ -691,23 +691,23 @@ def searc_property_into_json(json_entry: dict, prop: GCProp):
     :param prop: GCProp
     :return: value or None if not found
     """
-    
+
     # search for the main property
     property_value = json_entry.get(prop.name, None)
 
     if property_value is None:
-        
+
         # if not found, search for an old property
         for p_name in prop.old_names:
             property_value = json_entry.get(p_name, None)
             if property_value is not None:
                 return property_value
-        
+
         # we couldn't find the property or the old names...
         return None
-            
+
     else:
-        
+
         # we found the property at first
         return property_value
 
@@ -727,10 +727,10 @@ def search_and_apply_json_profile(json_entry: dict,
     :return: None
     """
     if gc_prop.has_profile():
-        
+
         # search the profile in the json
         json_profile = json_entry.get(gc_prop.profile_name, None)
-        
+
         if json_profile is None:
             # the profile was not found, so we fill it with the default stuff
             elm.get_profile(magnitude=gc_prop.name).fill(property_value)
@@ -770,18 +770,18 @@ def parse_object_type_from_json(template_elm: dev.EditableDevice,
 
             # search for the property in the json
             property_value = searc_property_into_json(json_entry, gc_prop)
-            
-            if property_value is not None:                
+
+            if property_value is not None:
 
                 if property_name != 'idtag':  # idtag was set already
                     # gc_prop: GCProp = look_for_property(elm=elm, property_name=property_name)
-    
+
                     if gc_prop is not None:
-    
+
                         if valid_value(property_value):
-    
+
                             if isinstance(gc_prop.tpe, DeviceType):
-    
+
                                 if gc_prop.tpe == DeviceType.GeneratorQCurve:
                                     val = dev.GeneratorQCurve()
                                     val.parse(property_value)
@@ -790,15 +790,15 @@ def parse_object_type_from_json(template_elm: dev.EditableDevice,
                                                                   gc_prop=gc_prop,
                                                                   elm=elm,
                                                                   property_value=val)
-    
+
                                 else:
                                     # we must look for the refference in elements_dict
                                     collection = elements_dict_by_type.get(gc_prop.tpe, None)
-    
+
                                     if collection is not None:
                                         ref_idtag = str(property_value)
                                         ref_elm = collection.get(ref_idtag, None)
-    
+
                                         if ref_elm is not None:
                                             elm.set_snapshot_value(gc_prop.name, ref_elm)
                                             search_and_apply_json_profile(json_entry=json_entry,
@@ -806,7 +806,7 @@ def parse_object_type_from_json(template_elm: dev.EditableDevice,
                                                                           elm=elm,
                                                                           property_value=ref_elm,
                                                                           collection=collection)
-    
+
                                         else:
                                             logger.add_error("Could not locate refference",
                                                              device=elm.idtag,
@@ -819,7 +819,7 @@ def parse_object_type_from_json(template_elm: dev.EditableDevice,
                                                          device_class=template_elm.device_type.value,
                                                          device_property=gc_prop.name,
                                                          value=property_value)
-    
+
                             elif gc_prop.tpe == str:
                                 # set the value directly
                                 val = str(property_value)
@@ -837,7 +837,7 @@ def parse_object_type_from_json(template_elm: dev.EditableDevice,
                                                               gc_prop=gc_prop,
                                                               elm=elm,
                                                               property_value=val)
-    
+
                             elif gc_prop.tpe == int:
                                 # set the value directly
                                 val = int(property_value)
@@ -846,7 +846,7 @@ def parse_object_type_from_json(template_elm: dev.EditableDevice,
                                                               gc_prop=gc_prop,
                                                               elm=elm,
                                                               property_value=val)
-    
+
                             elif gc_prop.tpe == bool:
                                 # set the value directly
                                 val = bool(property_value)
@@ -855,9 +855,9 @@ def parse_object_type_from_json(template_elm: dev.EditableDevice,
                                                               gc_prop=gc_prop,
                                                               elm=elm,
                                                               property_value=val)
-    
+
                             elif isinstance(gc_prop.tpe, EnumType):
-    
+
                                 try:
                                     val = gc_prop.tpe(property_value)
                                     elm.set_snapshot_value(gc_prop.name, val)
@@ -865,22 +865,22 @@ def parse_object_type_from_json(template_elm: dev.EditableDevice,
                                                                   gc_prop=gc_prop,
                                                                   elm=elm,
                                                                   property_value=val)
-    
+
                                 except ValueError:
                                     logger.add_error(f'Cannot cast value to {gc_prop.tpe}',
                                                      device=elm.name,
                                                      value=property_value)
-    
+
                             else:
                                 raise Exception(f'Unsupported property type: {gc_prop.tpe}')
-    
+
                         else:
                             # invalid property value
                             pass
                     else:
                         # property not found
                         pass
-    
+
                 else:
                     # the property is idtag
                     pass

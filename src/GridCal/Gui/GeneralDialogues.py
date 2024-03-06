@@ -113,7 +113,7 @@ def fill_tree_from_logs(logger: Logger):
     d = logger.to_dict()
     editable = False
     model = QtGui.QStandardItemModel()
-    model.setHorizontalHeaderLabels(['Time', 'Element', 'Value', 'Expected value'])
+    model.setHorizontalHeaderLabels(['Time', 'Class', 'Property', 'Device', 'Value', 'Expected value'])
     parent = model.invisibleRootItem()
 
     for severity, messages_dict in d.items():
@@ -126,11 +126,17 @@ def fill_tree_from_logs(logger: Logger):
 
             # print('\t', message)
             try:
-                for time, elm, value, expected_value in data_list:
+                for time, cls, prop, elm, value, expected_value in data_list:
                     # print('\t', '\t', time, elm, value, expected_value)
 
                     time_child = QtGui.QStandardItem(time)
                     time_child.setEditable(editable)
+
+                    elm_cls = QtGui.QStandardItem(cls)
+                    elm_cls.setEditable(editable)
+
+                    elm_prop = QtGui.QStandardItem(prop)
+                    elm_prop.setEditable(editable)
 
                     elm_child = QtGui.QStandardItem(elm)
                     elm_child.setEditable(editable)
@@ -141,7 +147,7 @@ def fill_tree_from_logs(logger: Logger):
                     expected_val_child = QtGui.QStandardItem(expected_value)
                     expected_val_child.setEditable(editable)
 
-                    message_child.appendRow([time_child, elm_child, value_child, expected_val_child])
+                    message_child.appendRow([time_child, elm_cls, elm_prop, elm_child, value_child, expected_val_child])
             except OverflowError as e:
                 print(e)
 
@@ -189,13 +195,13 @@ class LogsDialogue(QtWidgets.QDialog):
     New profile dialogue window
     """
 
-    def __init__(self, name, logger: Logger(), expand_all=True):
+    def __init__(self, name: str, logger: Logger(), expand_all=True):
         super(LogsDialogue, self).__init__()
         self.setObjectName("self")
         self.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.NoContextMenu)
         self.main_layout = QtWidgets.QVBoxLayout(self)
 
-        self.logger = logger
+        self.logger: Logger = logger
 
         # logs_list
         self.logs_table = QtWidgets.QTreeView()
@@ -242,7 +248,7 @@ class LogsDialogue(QtWidgets.QDialog):
         h = 400
         self.resize(int(1.61 * h), h)
 
-    def accept_click(self):
+    def accept_click(self) -> None:
         """
         Accept and close
         """
