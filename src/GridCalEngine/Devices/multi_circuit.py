@@ -21,7 +21,7 @@ import warnings
 import copy
 import numpy as np
 import pandas as pd
-from typing import List, Dict, Tuple, Union, Any, Callable
+from typing import List, Dict, Tuple, Union, Any, Callable, Set
 from uuid import getnode as get_mac, uuid4
 from datetime import timedelta, datetime
 import networkx as nx
@@ -244,7 +244,7 @@ class MultiCircuit:
         self.current_injections: List[dev.CurrentInjection] = list()
 
         # List of linear shunt devices
-        self.linear_shunts: List[dev.ControllableShunt] = list()
+        self.controllable_shunts: List[dev.ControllableShunt] = list()
 
         # Lists of measurements
         self.pi_measurements: List[dev.PiMeasurement] = list()
@@ -837,7 +837,7 @@ class MultiCircuit:
                 self.get_external_grids(),
                 self.get_static_generators(),
                 self.get_shunts(),
-                self.get_linear_shunts(),
+                self.get_controllable_shunts(),
                 self.get_current_injections()]
 
     def get_injection_devices(self) -> List[INJECTION_DEVICE_TYPES]:
@@ -859,7 +859,7 @@ class MultiCircuit:
         return [self.get_loads(),
                 self.get_external_grids(),
                 self.get_static_generators(),
-                self.get_linear_shunts(),
+                self.get_controllable_shunts(),
                 self.get_current_injections()]
 
     def get_load_like_devices(self) -> List[INJECTION_DEVICE_TYPES]:
@@ -1289,15 +1289,28 @@ class MultiCircuit:
         """
         return np.array([e.name for e in self.current_injections])
 
-    def add_current_injection(self, obj: dev.CurrentInjection):
+    def add_current_injection(self,
+                              bus: dev.Bus,
+                              api_obj: Union[None, dev.CurrentInjection] = None) -> dev.CurrentInjection:
         """
         Add a CurrentInjection object
-        :param obj: CurrentInjection instance
+        :param bus: Bus
+        :param api_obj: CurrentInjection instance
         """
 
+        if api_obj is None:
+            api_obj = dev.CurrentInjection()
+        api_obj.bus = bus
+
         if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
-        self.current_injections.append(obj)
+            api_obj.create_profiles(self.time_profile)
+
+        if api_obj.name == 'CInj':
+            api_obj.name += '@' + bus.name
+
+        self.current_injections.append(api_obj)
+
+        return api_obj
 
     def delete_current_injection(self, obj: dev.CurrentInjection) -> None:
         """
@@ -1308,55 +1321,68 @@ class MultiCircuit:
         self.current_injections.remove(obj)
 
     # ----------------------------------------------------------------------------------------------------------------------
-    # linear_shunts
+    # controllable_shunts
     # ----------------------------------------------------------------------------------------------------------------------
 
-    def get_linear_shunts(self) -> List[dev.ControllableShunt]:
+    def get_controllable_shunts(self) -> List[dev.ControllableShunt]:
         """
-        List of linear_shunts
+        List of controllable_shunts
         :return: List[dev.LinearShunt]
         """
-        return self.linear_shunts
+        return self.controllable_shunts
 
-    def get_linear_shunts_number(self) -> int:
+    def get_controllable_shunts_number(self) -> int:
         """
-        Size of the list of linear_shunts
-        :return: size of linear_shunts
+        Size of the list of controllable_shunts
+        :return: size of controllable_shunts
         """
-        return len(self.linear_shunts)
+        return len(self.controllable_shunts)
 
-    def get_linear_shunt_at(self, i: int) -> dev.ControllableShunt:
+    def get_controllable_shunt_at(self, i: int) -> dev.ControllableShunt:
         """
         Get linear_shunt at i
         :param i: index
         :return: LinearShunt
         """
-        return self.linear_shunts[i]
+        return self.controllable_shunts[i]
 
-    def get_linear_shunt_names(self) -> StrVec:
+    def get_controllable_shunt_names(self) -> StrVec:
         """
         Array of linear_shunt names
         :return: StrVec
         """
-        return np.array([e.name for e in self.linear_shunts])
+        return np.array([e.name for e in self.controllable_shunts])
 
-    def add_linear_shunt(self, obj: dev.ControllableShunt):
+    def add_controllable_shunt(self,
+                               bus: dev.Bus,
+                               api_obj: Union[None, dev.ControllableShunt] = None) -> dev.ControllableShunt:
         """
-        Add a LinearShunt object
-        :param obj: LinearShunt instance
+        Add a ControllableShunt object
+        :param bus: Bus
+        :param api_obj: ControllableShunt instance
         """
+
+        if api_obj is None:
+            api_obj = dev.ControllableShunt()
+        api_obj.bus = bus
 
         if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
-        self.linear_shunts.append(obj)
+            api_obj.create_profiles(self.time_profile)
 
-    def delete_linear_shunt(self, obj: dev.ControllableShunt) -> None:
+        if api_obj.name == 'CShutn':
+            api_obj.name += '@' + bus.name
+
+        self.controllable_shunts.append(api_obj)
+
+        return api_obj
+
+    def delete_controllable_shunt(self, obj: dev.ControllableShunt) -> None:
         """
         Add a LinearShunt object
         :param obj: LinearShunt instance
         """
 
-        self.linear_shunts.remove(obj)
+        self.controllable_shunts.remove(obj)
 
     # ----------------------------------------------------------------------------------------------------------------------
     # pi_measurements
@@ -1693,7 +1719,7 @@ class MultiCircuit:
             return self.get_current_injections()
 
         elif device_type == DeviceType.ControllableShuntDevice:
-            return self.get_linear_shunts()
+            return self.get_controllable_shunts()
 
         elif device_type == DeviceType.LineDevice:
             return self.lines
@@ -1870,7 +1896,7 @@ class MultiCircuit:
             self.current_injections = devices
 
         elif device_type == DeviceType.ControllableShuntDevice:
-            self.linear_shunts = devices
+            self.controllable_shunts = devices
 
         elif device_type == DeviceType.LineDevice:
             for d in devices:
@@ -2043,7 +2069,7 @@ class MultiCircuit:
             self.current_injections.remove(obj)
 
         elif element_type == DeviceType.ControllableShuntDevice:
-            self.linear_shunts.remove(obj)
+            self.controllable_shunts.remove(obj)
 
         elif element_type == DeviceType.LineDevice:
             return self.delete_line(obj)
@@ -2171,7 +2197,7 @@ class MultiCircuit:
         else:
             raise Exception('Element type not understood ' + str(element_type))
 
-    def get_all_elements_dict(self) -> dict[str, EditableDevice]:
+    def get_all_elements_dict(self) -> dict[str, ALL_DEV_TYPES]:
         """
         Get a dictionary of all elements
         :return: Dict[idtag] -> object
@@ -2185,7 +2211,7 @@ class MultiCircuit:
 
         return data
 
-    def gat_all_elements_dict_by_type(self) -> dict[Callable[[], Any], Union[dict[str, EditableDevice], Any]]:
+    def gat_all_elements_dict_by_type(self) -> dict[Callable[[], Any], Union[dict[str, ALL_DEV_TYPES], Any]]:
         """
         Get a dictionary of all elements by type
         :return:
@@ -2198,7 +2224,7 @@ class MultiCircuit:
         return data
 
     def get_elements_dict_by_type(self, element_type: DeviceType,
-                                  use_secondary_key=False) -> Dict[str, dev.EditableDevice]:
+                                  use_secondary_key=False) -> Dict[str, ALL_DEV_TYPES]:
         """
         Get dictionary of elements
         :param element_type: element type (Bus, Line, etc...)
@@ -2235,7 +2261,7 @@ class MultiCircuit:
                 'batteries',
                 'static_generators',
                 'current_injections',
-                'linear_shunts',
+                'controllable_shunts',
 
                 'connectivity_nodes',
                 'bus_bars',
@@ -2956,22 +2982,12 @@ class MultiCircuit:
 
         return api_obj
 
-    def add_external_grid(self, bus: dev.Bus, api_obj=None):
+    def add_external_grid(self, bus: dev.Bus, api_obj: Union[None, dev.ExternalGrid] = None):
         """
-
-        :param bus:
-        :param api_obj:
+        Add an external grid
+        :param bus: Bus object
+        :param api_obj: api_obj, if None, create a new one
         :return:
-        """
-
-        """
-        Add a :ref:`Load<load>` object to a :ref:`Bus<bus>`.
-
-        Arguments:
-
-            **bus** (:ref:`Bus<bus>`): :ref:`Bus<bus>` object
-
-            **api_obj** (:ref:`Load<load>`): :ref:`Load<load>` object
         """
 
         if api_obj is None:
@@ -3329,7 +3345,6 @@ class MultiCircuit:
         Delete zone
         :param obj: index
         """
-        # TODO: remove dependencies
         self.investments_groups.remove(obj)
 
     def add_investment(self, obj: dev.Investment):
@@ -3344,7 +3359,6 @@ class MultiCircuit:
         Delete zone
         :param obj: index
         """
-        # TODO: remove dependencies
         self.investments.remove(obj)
 
     def add_technology(self, obj: dev.Technology):
@@ -4557,18 +4571,20 @@ class MultiCircuit:
         """
         groups: Dict[dev.Bus, Dict[DeviceType, List[INJECTION_DEVICE_TYPES]]] = dict()
 
-        for elm in self.get_injection_devices():
+        for lst in self.get_injection_devices_lists():
 
-            devices_by_type = groups.get(elm.bus, None)
+            for elm in lst:
 
-            if devices_by_type is None:
-                groups[elm.bus] = {elm.device_type: [elm]}
-            else:
-                lst = devices_by_type.get(elm.device_type, None)
-                if lst is None:
-                    devices_by_type[elm.device_type] = [elm]
+                devices_by_type = groups.get(elm.bus, None)
+
+                if devices_by_type is None:
+                    groups[elm.bus] = {elm.device_type: [elm]}
                 else:
-                    devices_by_type[elm.device_type].append(elm)
+                    lst = devices_by_type.get(elm.device_type, None)
+                    if lst is None:
+                        devices_by_type[elm.device_type] = [elm]
+                    else:
+                        devices_by_type[elm.device_type].append(elm)
 
         return groups
 
@@ -5120,9 +5136,9 @@ class MultiCircuit:
         # if any error in the logger, bad
         return logger.error_count() == 0, logger
 
-    def convert_to_node_breaker(self):
+    def convert_to_node_breaker(self) -> None:
         """
-        Convert from bus/branch to node/breaker network model
+        Convert this MultiCircuit from bus/branch to node/breaker network model
         """
 
         bbcn = dict()
@@ -5164,3 +5180,213 @@ class MultiCircuit:
         bidx = [b for b in self.get_buses()]
         for b in bidx:
             self.delete_bus(b)
+
+    def clean_branches(self,
+                       nt: int,
+                       bus_set: Set[dev.Bus],
+                       cn_set: Set[dev.ConnectivityNode],
+                       logger: Logger) -> None:
+        """
+        Clean the branch refferences
+        :param nt: number of time steps
+        :param bus_set: Set of Buses
+        :param cn_set: Set of connectivity nodes
+        :param logger: Logger
+        """
+        elements_to_delete = list()
+        for lst in self.get_branch_lists():
+            for elm in lst:
+                if elm.bus_from is not None:
+                    if elm.bus_from not in bus_set:
+                        elm.bus_from = None
+                        logger.add_info("Bus from set to None",
+                                        device=elm.idtag,
+                                        device_class=elm.device_type.value,
+                                        device_property="bus_from")
+
+                if elm.bus_to is not None:
+                    if elm.bus_to not in bus_set:
+                        elm.bus_to = None
+                        logger.add_info("Bus to set to None",
+                                        device=elm.idtag,
+                                        device_class=elm.device_type.value,
+                                        device_property="bus_to")
+
+                if elm.cn_from is not None:
+                    if elm.cn_from not in cn_set:
+                        elm.cn_from = None
+                        logger.add_info("Cn from set to None",
+                                        device=elm.idtag,
+                                        device_class=elm.device_type.value,
+                                        device_property="cn_from")
+
+                if elm.cn_to is not None:
+                    if elm.cn_to not in cn_set:
+                        elm.cn_to = None
+                        logger.add_info("Cn to set to None",
+                                        device=elm.idtag,
+                                        device_class=elm.device_type.value,
+                                        device_property="cn_to")
+
+                all_bus_from_prof_none = True
+                all_bus_to_prof_none = True
+                for t_idx in range(nt):
+                    if elm.bus_from_prof[t_idx] is not None:
+                        if elm.bus_from_prof[t_idx] not in bus_set:
+                            elm.bus_from_prof[t_idx] = None
+                        else:
+                            all_bus_from_prof_none = False
+
+                    if elm.bus_to_prof[t_idx] is not None:
+                        if elm.bus_to_prof[t_idx] not in bus_set:
+                            elm.bus_to_prof[t_idx] = None
+                        else:
+                            all_bus_to_prof_none = False
+
+                # if the element is topologically isolated, delete it
+                if (all_bus_from_prof_none and all_bus_to_prof_none
+                        and elm.bus_from is None and elm.bus_to is None
+                        and elm.cn_from is None and elm.cn_to is None):
+                    elements_to_delete.append(elm)
+
+        for elm in elements_to_delete:
+            self.delete_elements_by_type(obj=elm)
+            logger.add_info("Deleted isolated branch",
+                            device=elm.idtag,
+                            device_class=elm.device_type.value)
+
+    def clean_injections(self,
+                         nt: int,
+                         bus_set: Set[dev.Bus],
+                         cn_set: Set[dev.ConnectivityNode],
+                         logger: Logger) -> None:
+        """
+        Clean the branch refferences
+        :param nt: number of time steps
+        :param bus_set: Set of Buses
+        :param cn_set: Set of connectivity nodes
+        :param logger: Logger
+        """
+        elements_to_delete = list()
+        for lst in self.get_injection_devices_lists():
+            for elm in lst:
+                if elm.bus is not None:
+                    if elm.bus not in bus_set:
+                        elm.bus = None
+                        logger.add_info("Bus set to None",
+                                        device=elm.idtag,
+                                        device_class=elm.device_type.value,
+                                        device_property="bus")
+
+                if elm.cn is not None:
+                    if elm.cn not in cn_set:
+                        elm.cn = None
+                        logger.add_info("Cn set to None",
+                                        device=elm.idtag,
+                                        device_class=elm.device_type.value,
+                                        device_property="cn")
+
+                all_bus_prof_none = True
+                for t_idx in range(nt):
+                    if elm.bus_prof[t_idx] is not None:
+                        if elm.bus_prof[t_idx] not in bus_set:
+                            elm.bus_prof[t_idx] = None
+                        else:
+                            all_bus_prof_none = False
+
+                # if the element is topologically isolated, delete it
+                if all_bus_prof_none and elm.bus is None and elm.cn is None:
+                    elements_to_delete.append(elm)
+
+        for elm in elements_to_delete:
+            self.delete_elements_by_type(obj=elm)
+            logger.add_info("Deleted isolated injection",
+                            device=elm.idtag,
+                            device_class=elm.device_type.value)
+
+    def clean_contingencies(self, all_dev: Dict[str, ALL_DEV_TYPES], logger: Logger) -> None:
+        """
+        Clean the contingencies and contingency groups
+        :param all_dev:
+        :param logger: Logger
+        """
+        contingencies_to_delete = list()
+
+        # pass 1: detect the "null" contingencies
+        for elm in self.contingencies:
+            if elm.device_idtag not in all_dev.keys():
+                contingencies_to_delete.append(elm)
+
+        # pass 2: delete the "null" contingencies
+        for elm in contingencies_to_delete:
+            self.delete_contingency(obj=elm)
+            logger.add_info("Deleted isolated contingency",
+                            device=elm.idtag,
+                            device_class=elm.device_type.value)
+
+        # pass 3: count how many times a group is refferenced
+        group_counter = np.zeros(len(self.contingency_groups), dtype=int)
+        group_dict = {elm: i for i, elm in enumerate(self.contingency_groups)}
+        for elm in self.contingencies:
+            group_idx = group_dict[elm.group]
+            group_counter[group_idx] += 1
+
+        # pass 4: delete unrefferenced groups
+        groups_to_delete = [elm for i, elm in enumerate(self.contingency_groups) if group_counter[i] == 0]
+        for elm in groups_to_delete:
+            self.delete_contingency_group(obj=elm)
+            logger.add_info("Deleted isolated contingency group",
+                            device=elm.idtag,
+                            device_class=elm.device_type.value)
+
+    def clean_investments(self, all_dev: Dict[str, ALL_DEV_TYPES], logger: Logger) -> None:
+        """
+        Clean the investments and investment groups
+        :param all_dev:
+        :param logger: Logger
+        """
+        contingencies_to_delete = list()
+
+        # pass 1: detect the "null" contingencies
+        for elm in self.investments:
+            if elm.device_idtag not in all_dev.keys():
+                contingencies_to_delete.append(elm)
+
+        # pass 2: delete the "null" contingencies
+        for elm in contingencies_to_delete:
+            self.delete_investment(obj=elm)
+            logger.add_info("Deleted isolated investment",
+                            device=elm.idtag,
+                            device_class=elm.device_type.value)
+
+        # pass 3: count how many times a group is refferenced
+        group_counter = np.zeros(len(self.investments_groups), dtype=int)
+        group_dict = {elm: i for i, elm in enumerate(self.investments_groups)}
+        for elm in self.investments:
+            group_idx = group_dict[elm.group]
+            group_counter[group_idx] += 1
+
+        # pass 4: delete unrefferenced groups
+        groups_to_delete = [elm for i, elm in enumerate(self.investments_groups) if group_counter[i] == 0]
+        for elm in groups_to_delete:
+            self.delete_investment_groups(obj=elm)
+            logger.add_info("Deleted isolated investment group",
+                            device=elm.idtag,
+                            device_class=elm.device_type.value)
+
+    def clean(self) -> Logger:
+        """
+        Clean dead references
+        """
+        logger = Logger()
+        bus_set = set(self.buses)
+        cn_set = set(self.connectivity_nodes)
+        all_dev = self.get_all_elements_dict()
+        nt = self.get_time_number()
+
+        self.clean_branches(nt=nt, bus_set=bus_set, cn_set=cn_set, logger=logger)
+        self.clean_injections(nt=nt, bus_set=bus_set, cn_set=cn_set, logger=logger)
+        self.clean_contingencies(all_dev=all_dev, logger=logger)
+        self.clean_investments(all_dev=all_dev, logger=logger)
+
+        return logger

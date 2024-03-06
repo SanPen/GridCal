@@ -24,6 +24,7 @@ from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg
 from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Devices.Parents.injection_parent import InjectionParent
 from GridCalEngine.Devices.Fluid.fluid_injection_template import FluidInjectionTemplate
+from GridCalEngine.Devices.types import INJECTION_DEVICE_TYPES
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
@@ -36,7 +37,7 @@ class InjectionTemplateGraphicItem(QGraphicsItemGroup):
 
     def __init__(self,
                  parent,
-                 api_obj: Union[InjectionParent, FluidInjectionTemplate],
+                 api_obj: INJECTION_DEVICE_TYPES,
                  device_type_name: str,
                  w: int,
                  h: int,

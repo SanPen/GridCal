@@ -80,7 +80,6 @@ if __name__ == "__main__":
     lb = np.zeros(30)
     ub = np.ones(30)
     f_obj = zdt3
-    ax_lim = True
 
     values0 = []
     for i in range(0, 100, 1):
@@ -95,15 +94,8 @@ if __name__ == "__main__":
     # print(x0)
     values0 = np.array(values0)
 
-    xprova = [0.12315956, 0.00077414, 0.06628864, 0.00001940, 0.04370104, 0.01913375, 0.01766757, 0.01171782,
-              0.04128205, 0.00562232, 0.02190583, 0.00527179, 0.02357683, 0.01934453, 0.00342066, 0.02134773,
-              0.00187768, 0.00386075, 0.05118619, 0.00269208, 0.09435962, 0.00020367, 0.01495498, 0.00064205,
-              0.01402580, 0.02566501, 0.00496778, 0.00477290, 0.01687044, 0.03612017]
-
-    yprova = zdt3(xprova)
 
     '''
-
     # Schaffer test function
     x0 = np.array([0.])
     lb = np.array([-5.])
@@ -129,12 +121,14 @@ if __name__ == "__main__":
                                                                                           rand_evals=rand_evals,
                                                                                           n_objectives=2)
 
+    ax_lim = True
     plot_everything(y=y_population_,
                     initial_value=y0,
                     pareto=values0,
                     random_evals=rand_evals,
                     figure_num=1,
                     title='Multi-objective')
+
     plot_everything(y=y_population_2,
                     initial_value=y0,
                     pareto=values0,

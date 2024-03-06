@@ -306,7 +306,7 @@ class ResultsMain(SimulationsMain):
 
             if reply == QtWidgets.QMessageBox.StandardButton.Yes.value:
                 for i, gen in enumerate(self.circuit.get_generators()):
-                    gen.P_prof = results.generator_power[:, i]
+                    gen.P_prof.set(results.generator_power[:, i])
 
         else:
             warning_msg('The OPF time series has no results :(')

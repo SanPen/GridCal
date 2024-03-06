@@ -183,6 +183,7 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
         elif self.options.solver == SolverType.NONLINEAR_OPF:
 
             res = run_nonlinear_opf(grid=self.grid,
+                                    opf_options=self.options,
                                     pf_options=self.pf_options,
                                     t_idx=None)
             Sbase = self.grid.Sbase

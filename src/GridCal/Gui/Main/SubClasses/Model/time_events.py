@@ -70,9 +70,11 @@ class TimeEventsMain(ObjectsTableMain):
         profile_device_type_changed
         """
         dev_type = self.get_db_object_selected_type()
-        mdl = gf.get_list_model(self.circuit.profile_magnitudes[dev_type][0])
-        self.ui.device_type_magnitude_comboBox.setModel(mdl)
-        self.ui.device_type_magnitude_comboBox_2.setModel(mdl)
+
+        if dev_type is not None:
+            mdl = gf.get_list_model(self.circuit.profile_magnitudes[dev_type][0])
+            self.ui.device_type_magnitude_comboBox.setModel(mdl)
+            self.ui.device_type_magnitude_comboBox_2.setModel(mdl)
 
     def new_profiles_structure(self):
         """
@@ -121,78 +123,80 @@ class TimeEventsMain(ObjectsTableMain):
         Profile importer
         """
         dev_type_text = self.get_db_object_selected_type()
-        magnitudes, mag_types = self.circuit.profile_magnitudes[dev_type_text]
 
-        idx = self.ui.device_type_magnitude_comboBox.currentIndex()
-        magnitude = magnitudes[idx]
+        if dev_type_text is not None:
+            magnitudes, mag_types = self.circuit.profile_magnitudes[dev_type_text]
 
-        dev_type = self.circuit.device_type_name_dict[dev_type_text]
-        objects = self.circuit.get_elements_by_type(dev_type)
+            idx = self.ui.device_type_magnitude_comboBox.currentIndex()
+            magnitude = magnitudes[idx]
 
-        if len(objects) > 0:
-            self.profile_input_dialogue = ProfileInputGUI(parent=self,
-                                                          list_of_objects=objects,
-                                                          magnitudes=[magnitude])
+            dev_type = self.circuit.device_type_name_dict[dev_type_text]
+            objects = self.circuit.get_elements_by_type(dev_type)
 
-            self.profile_input_dialogue.resize(int(1.61 * 600.0), 550)  # golden ratio
-            self.profile_input_dialogue.exec_()  # exec leaves the parent on hold
+            if len(objects) > 0:
+                self.profile_input_dialogue = ProfileInputGUI(parent=self,
+                                                              list_of_objects=objects,
+                                                              magnitudes=[magnitude])
 
-            if self.profile_input_dialogue.time is not None:
+                self.profile_input_dialogue.resize(int(1.61 * 600.0), 550)  # golden ratio
+                self.profile_input_dialogue.exec_()  # exec leaves the parent on hold
 
-                # if there are no profiles:
-                if self.circuit.time_profile is None:
-                    self.circuit.format_profiles(self.profile_input_dialogue.time)
+                if self.profile_input_dialogue.time is not None:
 
-                elif len(self.profile_input_dialogue.time) != len(self.circuit.time_profile):
-                    warning_msg("The imported profile length does not match the existing one.\n"
-                                "Delete the existing profiles before continuing.\n"
-                                "The import action will not be performed")
-                    return False
+                    # if there are no profiles:
+                    if self.circuit.time_profile is None:
+                        self.circuit.format_profiles(self.profile_input_dialogue.time)
 
-                # Assign profiles
-                for i, elm in enumerate(objects):
-                    if not self.profile_input_dialogue.zeroed[i]:
+                    elif len(self.profile_input_dialogue.time) != len(self.circuit.time_profile):
+                        warning_msg("The imported profile length does not match the existing one.\n"
+                                    "Delete the existing profiles before continuing.\n"
+                                    "The import action will not be performed")
+                        return False
 
-                        if self.profile_input_dialogue.normalized:
-                            base_value = elm.get_snapshot_value_by_name(magnitude)
-                            data = self.profile_input_dialogue.data[:, i] * base_value
+                    # Assign profiles
+                    for i, elm in enumerate(objects):
+                        if not self.profile_input_dialogue.zeroed[i]:
+
+                            if self.profile_input_dialogue.normalized:
+                                base_value = elm.get_snapshot_value_by_name(magnitude)
+                                data = self.profile_input_dialogue.data[:, i] * base_value
+                            else:
+                                data = self.profile_input_dialogue.data[:, i]
+
+                            # assign the profile to the object
+                            elm.set_profile_array(magnitude=magnitude, arr=data)
                         else:
-                            data = self.profile_input_dialogue.data[:, i]
+                            pass
 
-                        # assign the profile to the object
-                        elm.set_profile_array(magnitude=magnitude, arr=data)
-                    else:
-                        pass
+                    # set up sliders
+                    # self.set_up_profile_sliders()
+                    self.update_date_dependent_combos()
+                    self.display_profiles()
 
-                # set up sliders
-                # self.set_up_profile_sliders()
-                self.update_date_dependent_combos()
-                self.display_profiles()
+                    # ask to update active profile when magnitude is P for generators and loads
+                    if len(objects) > 0:
+                        if magnitude == 'P':
+                            if objects[0].device_type == DeviceType.GeneratorDevice:
+                                ok = yes_no_question(
+                                    "Do you want to correct the generators active "
+                                    "profile based on the active power profile?",
+                                    "Match")
+                                if ok:
+                                    self.fix_generators_active_based_on_the_power(ask_before=False)
+                            elif objects[0].device_type == DeviceType.LoadDevice:
+                                ok = yes_no_question(
+                                    "Do you want to correct the loads active profile "
+                                    "based on the active power profile?",
+                                    "Match")
+                                if ok:
+                                    self.fix_loads_active_based_on_the_power(ask_before=False)
 
-                # ask to update active profile when magnitude is P for generators and loads
-                if len(objects) > 0:
-                    if magnitude == 'P':
-                        if objects[0].device_type == DeviceType.GeneratorDevice:
-                            ok = yes_no_question(
-                                "Do you want to correct the generators active "
-                                "profile based on the active power profile?",
-                                "Match")
-                            if ok:
-                                self.fix_generators_active_based_on_the_power(ask_before=False)
-                        elif objects[0].device_type == DeviceType.LoadDevice:
-                            ok = yes_no_question(
-                                "Do you want to correct the loads active profile "
-                                "based on the active power profile?",
-                                "Match")
-                            if ok:
-                                self.fix_loads_active_based_on_the_power(ask_before=False)
+                else:
+                    pass  # the dialogue was closed
 
             else:
-                pass  # the dialogue was closed
-
-        else:
-            warning_msg("There are no objects to which to assign a profile. "
-                        "\nYou need to load or create a grid!")
+                warning_msg("There are no objects to which to assign a profile. "
+                            "\nYou need to load or create a grid!")
 
     def modify_profiles(self, operation='+'):
         """
@@ -205,107 +209,109 @@ class TimeEventsMain(ObjectsTableMain):
         value = self.ui.profile_factor_doubleSpinBox.value()
 
         dev_type_text = self.get_db_object_selected_type()
-        magnitudes, mag_types = self.circuit.profile_magnitudes[dev_type_text]
-        idx = self.ui.device_type_magnitude_comboBox.currentIndex()
-        magnitude = magnitudes[idx]
 
-        dev_type = self.circuit.device_type_name_dict[dev_type_text]
-        objects = self.circuit.get_elements_by_type(dev_type)
-        # Assign profiles
-        if len(objects) > 0:
+        if dev_type_text is not None:
+            magnitudes, mag_types = self.circuit.profile_magnitudes[dev_type_text]
+            idx = self.ui.device_type_magnitude_comboBox.currentIndex()
+            magnitude = magnitudes[idx]
 
-            indices = self.ui.profiles_tableView.selectedIndexes()
+            dev_type = self.circuit.device_type_name_dict[dev_type_text]
+            objects = self.circuit.get_elements_by_type(dev_type)
+            # Assign profiles
+            if len(objects) > 0:
 
-            # attr = objects[0].properties_with_profile[magnitude]
+                indices = self.ui.profiles_tableView.selectedIndexes()
 
-            model = self.ui.profiles_tableView.model()
+                # attr = objects[0].properties_with_profile[magnitude]
 
-            mod_cols = list()
+                model = self.ui.profiles_tableView.model()
 
-            if len(indices) == 0:
-                # no index was selected
-                for i, elm in enumerate(objects):
+                mod_cols = list()
 
-                    # get the property object
-                    gc_prop = elm.registered_properties[magnitude]
+                if len(indices) == 0:
+                    # no index was selected
+                    for i, elm in enumerate(objects):
 
-                    # get the profile
-                    profile = elm.get_profile_by_prop(prop=gc_prop)
+                        # get the property object
+                        gc_prop = elm.registered_properties[magnitude]
 
-                    # compute the dense array (this is the simple way of doing this)
-                    array = profile.toarray()
+                        # get the profile
+                        profile = elm.get_profile_by_prop(prop=gc_prop)
 
-                    if operation == '+':
-                        mod_array = (gc_prop + value).astype(gc_prop.tpe)
-                        mod_cols.append(i)
+                        # compute the dense array (this is the simple way of doing this)
+                        array = profile.toarray()
 
-                    elif operation == '-':
-                        mod_array = (gc_prop - value).astype(gc_prop.tpe)
-                        mod_cols.append(i)
+                        if operation == '+':
+                            mod_array = (gc_prop + value).astype(gc_prop.tpe)
+                            mod_cols.append(i)
 
-                    elif operation == '*':
-                        mod_array = (gc_prop * value).astype(gc_prop.tpe)
-                        mod_cols.append(i)
+                        elif operation == '-':
+                            mod_array = (gc_prop - value).astype(gc_prop.tpe)
+                            mod_cols.append(i)
 
-                    elif operation == '/':
-                        mod_array = (gc_prop / value).astype(gc_prop.tpe)
-                        mod_cols.append(i)
+                        elif operation == '*':
+                            mod_array = (gc_prop * value).astype(gc_prop.tpe)
+                            mod_cols.append(i)
 
-                    elif operation == 'set':
-                        mod_array = (np.ones(len(array)) * value).astype(gc_prop.tpe)
-                        mod_cols.append(i)
+                        elif operation == '/':
+                            mod_array = (gc_prop / value).astype(gc_prop.tpe)
+                            mod_cols.append(i)
 
-                    else:
-                        raise Exception('Operation not supported: ' + str(operation))
+                        elif operation == 'set':
+                            mod_array = (np.ones(len(array)) * value).astype(gc_prop.tpe)
+                            mod_cols.append(i)
 
-                    # apply the newly computed array
-                    profile.set(arr=mod_array)
+                        else:
+                            raise Exception('Operation not supported: ' + str(operation))
 
-            else:
-                # indices were selected ...
+                        # apply the newly computed array
+                        profile.set(arr=mod_array)
 
-                for idx in indices:
+                else:
+                    # indices were selected ...
 
-                    # get the device
-                    elm = objects[idx.column()]
+                    for idx in indices:
 
-                    # get the property object
-                    gc_prop = elm.registered_properties[magnitude]
+                        # get the device
+                        elm = objects[idx.column()]
 
-                    # get the profile
-                    profile = elm.get_profile_by_prop(prop=gc_prop)
+                        # get the property object
+                        gc_prop = elm.registered_properties[magnitude]
 
-                    # compute the dense array (this is the simple way of doing this)
-                    array = profile.toarray().copy()
+                        # get the profile
+                        profile = elm.get_profile_by_prop(prop=gc_prop)
 
-                    if operation == '+':
-                        array[idx.row()] += value
-                        mod_cols.append(idx.column())
+                        # compute the dense array (this is the simple way of doing this)
+                        array = profile.toarray().copy()
 
-                    elif operation == '-':
-                        array[idx.row()] -= value
-                        mod_cols.append(idx.column())
+                        if operation == '+':
+                            array[idx.row()] += value
+                            mod_cols.append(idx.column())
 
-                    elif operation == '*':
-                        array[idx.row()] *= value
-                        mod_cols.append(idx.column())
+                        elif operation == '-':
+                            array[idx.row()] -= value
+                            mod_cols.append(idx.column())
 
-                    elif operation == '/':
-                        array[idx.row()] /= value
-                        mod_cols.append(idx.column())
+                        elif operation == '*':
+                            array[idx.row()] *= value
+                            mod_cols.append(idx.column())
 
-                    elif operation == 'set':
-                        array[idx.row()] = value
-                        mod_cols.append(idx.column())
+                        elif operation == '/':
+                            array[idx.row()] /= value
+                            mod_cols.append(idx.column())
 
-                    else:
-                        raise Exception('Operation not supported: ' + str(operation))
+                        elif operation == 'set':
+                            array[idx.row()] = value
+                            mod_cols.append(idx.column())
 
-                    # apply the newly computed array
-                    profile.set(arr=array)
+                        else:
+                            raise Exception('Operation not supported: ' + str(operation))
 
-            # update model
-            model.update()
+                        # apply the newly computed array
+                        profile.set(arr=array)
+
+                # update model
+                model.update()
 
     def set_profile_as_linear_combination(self):
         """
@@ -316,46 +322,47 @@ class TimeEventsMain(ObjectsTableMain):
         # value = self.ui.profile_factor_doubleSpinBox.value()
 
         dev_type_text = self.get_db_object_selected_type()
-        magnitudes, mag_types = self.circuit.profile_magnitudes[dev_type_text]
-        idx_from = self.ui.device_type_magnitude_comboBox.currentIndex()
-        magnitude_from = magnitudes[idx_from]
+        if dev_type_text is not None:
+            magnitudes, mag_types = self.circuit.profile_magnitudes[dev_type_text]
+            idx_from = self.ui.device_type_magnitude_comboBox.currentIndex()
+            magnitude_from = magnitudes[idx_from]
 
-        idx_to = self.ui.device_type_magnitude_comboBox_2.currentIndex()
-        magnitude_to = magnitudes[idx_to]
+            idx_to = self.ui.device_type_magnitude_comboBox_2.currentIndex()
+            magnitude_to = magnitudes[idx_to]
 
-        if len(self.circuit.buses) > 0 and magnitude_from != magnitude_to:
+            if len(self.circuit.buses) > 0 and magnitude_from != magnitude_to:
 
-            msg = "Are you sure that you want to overwrite the values " + magnitude_to + \
-                  " with the values of " + magnitude_from + "?"
+                msg = "Are you sure that you want to overwrite the values " + magnitude_to + \
+                      " with the values of " + magnitude_from + "?"
 
-            reply = QtWidgets.QMessageBox.question(self, 'Message', msg,
-                                                   QtWidgets.QMessageBox.StandardButton.Yes,
-                                                   QtWidgets.QMessageBox.StandardButton.No)
+                reply = QtWidgets.QMessageBox.question(self, 'Message', msg,
+                                                       QtWidgets.QMessageBox.StandardButton.Yes,
+                                                       QtWidgets.QMessageBox.StandardButton.No)
 
-            if reply == QtWidgets.QMessageBox.StandardButton.Yes.value:
+                if reply == QtWidgets.QMessageBox.StandardButton.Yes.value:
 
-                dev_type = self.circuit.device_type_name_dict[dev_type_text]
-                objects = self.circuit.get_elements_by_type(dev_type)
+                    dev_type = self.circuit.device_type_name_dict[dev_type_text]
+                    objects = self.circuit.get_elements_by_type(dev_type)
 
-                # Assign profiles
-                if len(objects) > 0:
-                    attr_from = objects[0].properties_with_profile[magnitude_from]
-                    attr_to = objects[0].properties_with_profile[magnitude_to]
+                    # Assign profiles
+                    if len(objects) > 0:
+                        attr_from = objects[0].properties_with_profile[magnitude_from]
+                        attr_to = objects[0].properties_with_profile[magnitude_to]
 
-                    for i, elm in enumerate(objects):
-                        profile_from = elm.get_profile(magnitude=attr_from)
-                        profile_to = elm.get_profile(magnitude=attr_to)
-                        profile_to.set(profile_from.toarray())
+                        for i, elm in enumerate(objects):
+                            profile_from = elm.get_profile(magnitude=attr_from)
+                            profile_to = elm.get_profile(magnitude=attr_to)
+                            profile_to.set(profile_from.toarray())
 
-                    self.display_profiles()
+                        self.display_profiles()
+
+                else:
+                    # rejected the operation
+                    pass
 
             else:
-                # rejected the operation
+                # no buses or no actual change
                 pass
-
-        else:
-            # no buses or no actual change
-            pass
 
     def re_index_time(self):
         """
@@ -367,7 +374,7 @@ class TimeEventsMain(ObjectsTableMain):
         dlg.setModal(True)
         dlg.exec_()
 
-        if dlg.accepted:
+        if dlg.is_accepted:
             self.circuit.re_index_time2(t0=dlg.date_time_editor.dateTime().toPython(),
                                         step_size=dlg.step_length.value(),
                                         step_unit=dlg.units.currentText())
@@ -379,42 +386,44 @@ class TimeEventsMain(ObjectsTableMain):
         Plot profiles from the time events
         """
         dev_type_text = self.get_db_object_selected_type()
-        magnitudes, mag_types = self.circuit.profile_magnitudes[dev_type_text]
-        idx = self.ui.device_type_magnitude_comboBox.currentIndex()
-        magnitude = magnitudes[idx]
 
-        dev_type = self.circuit.device_type_name_dict[dev_type_text]
-        objects = self.circuit.get_elements_by_type(dev_type)
+        if dev_type_text is not None:
+            magnitudes, mag_types = self.circuit.profile_magnitudes[dev_type_text]
+            idx = self.ui.device_type_magnitude_comboBox.currentIndex()
+            magnitude = magnitudes[idx]
 
-        # get the selected element
-        obj_idx = self.ui.profiles_tableView.selectedIndexes()
+            dev_type = self.circuit.device_type_name_dict[dev_type_text]
+            objects = self.circuit.get_elements_by_type(dev_type)
 
-        t = self.circuit.time_profile
+            # get the selected element
+            obj_idx = self.ui.profiles_tableView.selectedIndexes()
 
-        # Assign profiles
-        if len(obj_idx):
-            fig = plt.figure(figsize=(12, 8))
-            ax = fig.add_subplot(111)
+            t = self.circuit.time_profile
 
-            k = obj_idx[0].column()
-            units_dict = {attr: pair.units for attr, pair in objects[k].registered_properties.items()}
+            # Assign profiles
+            if len(obj_idx):
+                fig = plt.figure(figsize=(12, 8))
+                ax = fig.add_subplot(111)
 
-            unit = units_dict[magnitude]
-            ax.set_ylabel(unit)
+                k = obj_idx[0].column()
+                units_dict = {attr: pair.units for attr, pair in objects[k].registered_properties.items()}
 
-            # get the unique columns in the selected cells
-            cols = set()
-            for i in range(len(obj_idx)):
-                cols.add(obj_idx[i].column())
+                unit = units_dict[magnitude]
+                ax.set_ylabel(unit)
 
-            # plot every column
-            dta = dict()
-            for k in cols:
-                dta[objects[k].name] = objects[k].get_profile(magnitude=magnitude).toarray()
-            df = pd.DataFrame(data=dta, index=t)
-            df.plot(ax=ax)
+                # get the unique columns in the selected cells
+                cols = set()
+                for i in range(len(obj_idx)):
+                    cols.add(obj_idx[i].column())
 
-            plt.show()
+                # plot every column
+                dta = dict()
+                for k in cols:
+                    dta[objects[k].name] = objects[k].get_profile(magnitude=magnitude).toarray()
+                df = pd.DataFrame(data=dta, index=t)
+                df.plot(ax=ax)
+
+                plt.show()
 
     def import_profiles_from_models(self):
         """

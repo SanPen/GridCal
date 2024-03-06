@@ -956,10 +956,11 @@ class BusBranchEditorWidget(QSplitter):
         Add item to the diagram and the diagram scene
         :param graphic_object: Graphic object associated
         """
-        if graphic_object.scene() is not None:
-            self.diagram_scene.removeItem(graphic_object)
-        else:
-            warn(f"Null scene for {graphic_object}, was it deleted already?")
+        if graphic_object is not None:
+            if graphic_object.scene() is not None:
+                self.diagram_scene.removeItem(graphic_object)
+            else:
+                warn(f"Null scene for {graphic_object}, was it deleted already?")
 
     def delete_diagram_element(self, device: ALL_DEV_TYPES) -> None:
         """
@@ -981,12 +982,14 @@ class BusBranchEditorWidget(QSplitter):
         :param device: EditableDevice
         :param graphic_object: optionally provide the graphics object associated
         """
-        if graphic_object is None:
-            self.delete_diagram_element(device=device)
-        else:
-            self.remove_from_scene(graphic_object)
 
-        self.circuit.delete_elements_by_type(obj=device)
+        if device is not None:
+            self.delete_diagram_element(device=device)
+            self.circuit.delete_elements_by_type(obj=device)
+        elif graphic_object is not None:
+            self.remove_from_scene(graphic_object)
+        else:
+            warn(f"Graphic object {graphic_object} and device {device} are none")
 
         self.object_editor_table.setModel(None)
 
@@ -3012,21 +3015,6 @@ class BusBranchEditorWidget(QSplitter):
 
         return min_x, max_x, min_y, max_y
 
-    def average_separation(self):
-        """
-        Average separation of the buses
-        :return: average separation
-        """
-        separation = 0.0
-        branch_lists = self.get_branch_lists()
-        n = 0
-        for branch_lst in branch_lists:
-            for branch in branch_lst:
-                s = np.sqrt((branch.bus_from.x - branch.bus_to.x) ** 2 + (branch.bus_from.y - branch.bus_to.y) ** 2)
-                separation += s
-                n += 1
-        return separation / n
-
     def set_results_to_plot(self, all_threads: List[DriverTemplate]):
         """
 
@@ -3046,7 +3034,7 @@ class BusBranchEditorWidget(QSplitter):
         ax_1 = fig.add_subplot(211)
 
         # set time
-        x = self.circuit.time_profile
+        x = self.circuit.get_time_array()
 
         if x is not None:
             if len(x) > 0:
@@ -3121,7 +3109,7 @@ class BusBranchEditorWidget(QSplitter):
         ax_2 = fig.add_subplot(212)
 
         # set time
-        x = self.circuit.time_profile
+        x = self.circuit.get_time_array()
         x_cl = x
 
         if x is not None:
@@ -3303,8 +3291,8 @@ class BusBranchEditorWidget(QSplitter):
                     ax_2.set_title('Power', fontsize=14)
                     ax_2.set_ylabel('Power [MW]', fontsize=11)
                     df.plot(ax=ax_2)
-                    ax_2.plot(x, api_object.rate_prof, c='gray', linestyle='dashed', linewidth=1)
-                    ax_2.plot(x, -api_object.rate_prof, c='gray', linestyle='dashed', linewidth=1)
+                    ax_2.plot(x, api_object.rate_prof.toarray(), c='gray', linestyle='dashed', linewidth=1)
+                    ax_2.plot(x, -api_object.rate_prof.toarray(), c='gray', linestyle='dashed', linewidth=1)
 
                 if power_clustering_data is not None:
                     df = pd.DataFrame(data=power_clustering_data,
@@ -3326,15 +3314,14 @@ class BusBranchEditorWidget(QSplitter):
         :param api_object:
         """
         if api_object is not None:
-            if api_object.rate_prof is not None:
-                quit_msg = str(api_object.name) + \
-                           "\nAre you sure that you want to overwrite the rates profile with the snapshot value?"
+            if api_object.rate_prof.size():
+                quit_msg = (f"{api_object.name}\nAre you sure that you want to overwrite the "
+                            f"rates profile with the snapshot value?")
                 reply = QMessageBox.question(self, 'Overwrite the profile', quit_msg,
                                              QMessageBox.StandardButton.Yes, QMessageBox.StandardButton.No)
 
                 if reply == QMessageBox.StandardButton.Yes.value:
-                    api_object.rate_prof *= 0
-                    api_object.rate_prof += api_object.rate
+                    api_object.rate_prof.fill(api_object.rate)
 
     def set_active_status_to_profile(self, api_object, override_question=False):
         """
@@ -3344,10 +3331,10 @@ class BusBranchEditorWidget(QSplitter):
         :return:
         """
         if api_object is not None:
-            if api_object.active_prof is not None:
+            if api_object.active_prof.size():
                 if not override_question:
-                    quit_msg = str(api_object.name) + \
-                               "\nAre you sure that you want to overwrite the active profile with the snapshot value?"
+                    quit_msg = (f"{api_object.name}\nAre you sure that you want to overwrite the "
+                                f"active profile with the snapshot value?")
                     reply = QMessageBox.question(self, 'Overwrite the active profile', quit_msg,
                                                  QMessageBox.StandardButton.Yes, QMessageBox.StandardButton.No)
                     ok = reply == QMessageBox.StandardButton.Yes
@@ -3355,11 +3342,10 @@ class BusBranchEditorWidget(QSplitter):
                     ok = True
 
                 if ok:
-                    shape = api_object.active_prof.shape
                     if api_object.active:
-                        api_object.active_prof = np.ones(shape, dtype=bool)
+                        api_object.active_prof.fill(True)
                     else:
-                        api_object.active_prof = np.zeros(shape, dtype=bool)
+                        api_object.active_prof.fill(False)
 
 
 def generate_bus_branch_diagram(buses: List[Bus],
@@ -3384,6 +3370,7 @@ def generate_bus_branch_diagram(buses: List[Bus],
     :param dc_lines: list of DcLine objects
     :param transformers2w: list of Transformer Objects
     :param transformers3w: list of Transformer3W Objects
+    :param windings: list of Winding objects
     :param hvdc_lines: list of HvdcLine objects
     :param vsc_devices: list Vsc objects
     :param upfc_devices: List of UPFC devices

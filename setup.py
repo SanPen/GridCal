@@ -27,8 +27,8 @@ here = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
-with open(os.path.join(here, 'doc', 'about.rst'), encoding='utf-8') as f:
-    description = f.read()
+#with open(os.path.join(here, 'doc', 'about.rst'), encoding='utf-8') as f:
+   # description = f.read()
 
 # create the file MANIFEST.in
 # f = open("MANIFEST.in", "w")
@@ -100,7 +100,7 @@ setup(
     # This is a one-line description or tag-line of what your project does. This
     # corresponds to the "Summary" metadata field:
     # https://packaging.python.org/specifications/core-metadata/#summary
-    description=description,  # Optional
+    #description=description,  # Optional
 
     # This is an optional longer description of your project that represents
     # the body of text which users will see when they visit PyPI.

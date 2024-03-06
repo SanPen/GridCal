@@ -1242,9 +1242,9 @@ class ObjectsModel(QtCore.QAbstractTableModel):
         prop = self.property_list[attr_idx]
 
         if prop.tpe is Bus:
-            return self.objects[obj_idx].get_vaule(prop=prop, t_idx=self.time_index_).name
+            return self.objects[obj_idx].get_value(prop=prop, t_idx=self.time_index_).name
         else:
-            return self.objects[obj_idx].get_vaule(prop=prop, t_idx=self.time_index_)
+            return self.objects[obj_idx].get_value(prop=prop, t_idx=self.time_index_)
 
     def data_with_type(self, index: QtCore.QModelIndex):
         """
@@ -1262,9 +1262,9 @@ class ObjectsModel(QtCore.QAbstractTableModel):
         prop = self.property_list[attr_idx]
 
         if prop.tpe is Bus:
-            return self.objects[obj_idx].get_vaule(prop=prop, t_idx=self.time_index_).name
+            return self.objects[obj_idx].get_value(prop=prop, t_idx=self.time_index_).name
         else:
-            return self.objects[obj_idx].get_vaule(prop=prop, t_idx=self.time_index_)
+            return self.objects[obj_idx].get_value(prop=prop, t_idx=self.time_index_)
 
     def data(self, index: QtCore.QModelIndex, role=None):
         """
@@ -2117,7 +2117,8 @@ class ProfilesModel(QtCore.QAbstractTableModel):
             values = [None] * n
             for c in range(n):
                 names[c] = self.elements[c].name
-                values[c] = getattr(self.elements[c], profile_property)
+                # values[c] = getattr(self.elements[c], profile_property)
+                values[c] = getattr(self.elements[c], profile_property, "N/A")
             values = np.array(values).transpose().astype(str)
 
             # header first

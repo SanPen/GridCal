@@ -3,7 +3,7 @@ Investments evaluation
 ======================
 
 Introduction
-_______
+_____________________
 
 Planning power grids involves determining an appropriate set of assets that makes sense from both
 technical and economical optics. This challenge can be understood as an optimization problem, where one tries to
@@ -26,7 +26,7 @@ the curse of dimensionality. The methodology we have adopted here consists of:
 #. Optimizing such a model in a matter of a few seconds.
 
 Formulation
-_______
+_____________________
 
 1. **Basic objective function**
 
@@ -86,7 +86,7 @@ the model outputs the optimal point.
 
 
 Testing on Grid
-_______________
+_____________________
 1. **Grid**
 
 In order to test the algorithm for different variations of the objective function, a 130-bus grid has been prepared with
@@ -258,7 +258,7 @@ It is worth mentioning that because the objective function can now take negative
 used in the colors visualization can no longer be LogNorm() and has been changed to Normalize().
 
 Random evaluations process
----------------------------
+--------------------------------------
 Given that all previous figures share a similar shape in terms of point distribution, with two separated regions,
 it is questioned that the algorithm is exploring all the possible solutions, especially during the random evaluation iterations.
 One would expect a continuous Pareto front, whereas the obtained results show no solutions at the intermediate points.
@@ -278,7 +278,7 @@ The results obtained with the scaled algorithm show a clear Pareto front as seen
 
 
 Multi-objective optimization
-----------------------------
+--------------------------------------
 Another line of research includes modifying the MVRSM model to support multi-objective minimization. This way, the
 scaling process after the random evaluations is not necessary, instead, the model works directly with the values obtained
 for each cost computation (losses cost, overload cost, CAPEX,...). Hence, the problem becomes a 6-objective minimization problem.
@@ -303,7 +303,7 @@ the curve and closer to the optimal point (0,0).
     Figure 12: Results obtained for the multi objective optimization.
 
 Testing on ZDT3
-_______________
+____________________________
 
 This section covers the testing of both the multi-objective and single-objective with normalization algorithms on a
 typical test function for multi-objective optimization.
