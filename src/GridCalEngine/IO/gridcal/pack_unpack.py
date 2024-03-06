@@ -506,13 +506,76 @@ def valid_value(val) -> bool:
     return True
 
 
+def look_in_collection_by_name(key: str, collection: Dict[str, ALL_DEV_TYPES]) -> Union[ALL_DEV_TYPES, None]:
+    """
+    Look in a collection for an element by its name instead of by Idtag
+    :param key: name of the element
+    :param collection: Collection to look into
+    :return: Device or None if not found
+    """
+    for idtag, elm in collection.items():
+        if elm.name == key:
+            return elm
+    return None
+
+
+class CreatedOnTheFly:
+    """
+    This class is to pack all those devices that are created "on the fly" to support legacy formats
+    """
+
+    def __init__(self):
+        # legacy operations: this is from when area, zone and substation were strings,
+        # now we create those objects on the fly
+        self.legacy_area_dict: Dict[str, dev.Area] = dict()
+        self.legacy_zone_dict: Dict[str, dev.Zone] = dict()
+        self.legacy_substation_dict: Dict[str, dev.Substation] = dict()
+
+    def get_create_area(self, property_value):
+        """
+
+        :param property_value:
+        :return:
+        """
+        area = self.legacy_area_dict.get(property_value, None)
+        if area is None:
+            area = dev.Area(name=str(property_value))
+            self.legacy_area_dict[property_value] = area
+        return area
+
+    def get_create_zone(self, property_value):
+        """
+
+        :param property_value:
+        :return:
+        """
+        zone = self.legacy_zone_dict.get(property_value, None)
+        if zone is None:
+            zone = dev.Zone(name=str(property_value))
+            self.legacy_zone_dict[property_value] = zone
+        return zone
+
+    def get_create_substation(self, property_value):
+        """
+
+        :param property_value:
+        :return:
+        """
+        substation = self.legacy_substation_dict.get(property_value, None)
+        if substation is None:
+            substation = dev.Substation(name=str(property_value))
+            self.legacy_substation_dict[property_value] = substation
+        return substation
+
+
 def parse_object_type_from_dataframe(main_df: pd.DataFrame,
                                      template_elm: ALL_DEV_TYPES,
                                      elements_dict_by_type: Dict[DeviceType, Dict[str, ALL_DEV_TYPES]],
                                      time_profile: pd.DatetimeIndex,
                                      object_type_key: str,
                                      data: Dict[str, Union[float, str, pd.DataFrame]],
-                                     logger: Logger) -> Tuple[List[ALL_DEV_TYPES], Dict[str, ALL_DEV_TYPES]]:
+                                     logger: Logger) -> Tuple[
+    List[ALL_DEV_TYPES], Dict[str, ALL_DEV_TYPES], CreatedOnTheFly]:
     """
     Convert a DataFrame to a list of GridCal devices
     :param main_df: DataFrame to convert
@@ -528,6 +591,10 @@ def parse_object_type_from_dataframe(main_df: pd.DataFrame,
     # dictionary to be filled with this type of objects
     devices_dict: Dict[str, ALL_DEV_TYPES] = dict()
     devices: List[ALL_DEV_TYPES] = list()
+
+    # legacy operations: this is from when area, zone and substation were strings,
+    # now we create those objects on the fly
+    on_the_fly = CreatedOnTheFly()
 
     # parse each object of the dataframe
     for i, row in main_df.iterrows():
@@ -588,17 +655,55 @@ def parse_object_type_from_dataframe(main_df: pd.DataFrame,
                                             prof.fill(ref_elm)
 
                                     else:
-                                        logger.add_error("Could not locate refference",
+
+                                        # legacy operations: this is from when grids referenced buses by name
+                                        if gc_prop.name in ['bus_from', 'bus_to', 'bus']:
+                                            ref_elm = look_in_collection_by_name(key=ref_idtag, collection=collection)
+                                            if ref_elm is None:
+                                                could_not_fix_it = True
+                                            else:
+                                                could_not_fix_it = False
+
+                                                elm.set_snapshot_value(gc_prop.name, ref_elm)
+
+                                                if gc_prop.has_profile():
+                                                    prof.fill(ref_elm)
+                                        else:
+                                            could_not_fix_it = True
+
+                                        if could_not_fix_it:
+                                            logger.add_error("Could not locate refference",
+                                                             device=row.get('idtag', 'not provided'),
+                                                             device_class=template_elm.device_type.value,
+                                                             device_property=gc_prop.name,
+                                                             value=ref_idtag)
+                                else:
+
+                                    # legacy operations: this is from when area, zone and substation were strings
+                                    if gc_prop.name == 'area':
+
+                                        if property_value.strip() != '':
+                                            area = on_the_fly.get_create_area(property_value=property_value)
+                                            elm.set_snapshot_value(gc_prop.name, area)
+
+                                    elif gc_prop.name == 'zone':
+
+                                        if property_value.strip() != '':
+                                            zone = on_the_fly.get_create_zone(property_value=property_value)
+                                            elm.set_snapshot_value(gc_prop.name, zone)
+
+                                    elif gc_prop.name == 'substation':
+
+                                        if property_value.strip() != '':
+                                            substation = on_the_fly.get_create_substation(property_value=property_value)
+                                            elm.set_snapshot_value(gc_prop.name, substation)
+                                    else:
+
+                                        logger.add_error("No device of the refferenced type",
                                                          device=row.get('idtag', 'not provided'),
                                                          device_class=template_elm.device_type.value,
                                                          device_property=gc_prop.name,
-                                                         value=ref_idtag)
-                                else:
-                                    logger.add_error("No device of the refferenced type",
-                                                     device=row.get('idtag', 'not provided'),
-                                                     device_class=template_elm.device_type.value,
-                                                     device_property=gc_prop.name,
-                                                     value=property_value)
+                                                         value=property_value)
 
                         elif gc_prop.tpe == str:
                             # set the value directly
@@ -675,7 +780,7 @@ def parse_object_type_from_dataframe(main_df: pd.DataFrame,
         devices_dict[elm.idtag] = elm
         devices.append(elm)
 
-    return devices, devices_dict
+    return devices, devices_dict, on_the_fly
 
 
 def searc_property_into_json(json_entry: dict, prop: GCProp):
@@ -950,13 +1055,23 @@ def parse_gridcal_data(data: Dict[str, Union[str, float, Dict, pd.DataFrame, Dic
             # fill in the objects
             if df.shape[0] > 0:
 
-                devices, devices_dict = parse_object_type_from_dataframe(main_df=df,
-                                                                         template_elm=template_elm,
-                                                                         elements_dict_by_type=elements_dict_by_type,
-                                                                         time_profile=circuit.time_profile,
-                                                                         object_type_key=object_type_key,
-                                                                         data=data,
-                                                                         logger=logger)
+                devices, devices_dict, on_the_fly = parse_object_type_from_dataframe(
+                    main_df=df,
+                    template_elm=template_elm,
+                    elements_dict_by_type=elements_dict_by_type,
+                    time_profile=circuit.time_profile,
+                    object_type_key=object_type_key,
+                    data=data,
+                    logger=logger
+                )
+
+                # add the elements that were created on the fly...
+                for name, on_the_fly_elm in on_the_fly.legacy_area_dict.items():
+                    circuit.add_area(obj=on_the_fly_elm)
+                for name, on_the_fly_elm in on_the_fly.legacy_zone_dict.items():
+                    circuit.add_zone(obj=on_the_fly_elm)
+                for name, on_the_fly_elm in on_the_fly.legacy_substation_dict.items():
+                    circuit.add_substation(obj=on_the_fly_elm)
 
                 # set the dictionary per type for later
                 elements_dict_by_type[template_elm.device_type] = devices_dict
