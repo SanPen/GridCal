@@ -238,7 +238,7 @@
 		\item Buses can have from 0 to 4 controlled magnitudes. In the most extreme case, a device connected to a given bus may be controlling two magnitudes of a nearby bus (hence one bus has zero controlled magnitudes and the other four). Controlling 5 magnitudes is deemed impossible.
 	\end{itemize}
 
-	\section{Bus types}  
+	\section{Combinations}  
 
 	\subsection{Load}
 	\begin{table}[!htb]\centering
@@ -295,21 +295,21 @@
 
 	\begin{table}[!htb]\centering
 		\caption{Series converter specified magnitudes and resulting bus types.}
-			\begin{tabular}{ccp{12cm}}
+			\begin{tabular}{cp{12cm}}
 				\hline
-				\textbf{Controlled} & \textbf{Bus type} & \textbf{Description} \\
+				\textbf{Controlled} & \textbf{Description} \\
 				\hline
 				\hline
-				$P_f$, $P_t$ & PP & Active power controlled on the AC and DC side \\
-				$Q_f$, $P_t$ & QP & Reactive power controlled on the AC and DC side \\
-				$V_f$, $P_t$ & VP & Voltage magnitude on the AC and active power on the DC side \\
-				$\delta_f$, $P_t$ & DP & Voltage angle controlled on the AC and active power on the DC side \\
-				$P_f$, $V_t$ & PV & Active power controlled on the AC and voltage on the DC side \\
-				$Q_f$, $V_t$ & PV & Reactive power controlled on the AC and voltage on the DC side \\
-				$V_f$, $V_t$ & VV & Voltage magnitude controlled on the AC and DC side \\
-				$\delta_f$, $V_t$ & DV & Voltage angle controlled on the AC and voltage DC side \\
-				$I_f$, $P_t$ & IP & Maximum current on the AC and active power on the DC side \\
-				$I_f$, $V_t$ & IV & Maximum current on the AC and voltage on the DC side \\
+				$P_f$, $P_t$ & Active power controlled on the AC and DC side \\
+				$Q_f$, $P_t$ & Reactive power controlled on the AC and DC side \\
+				$V_f$, $P_t$ & Voltage magnitude on the AC and active power on the DC side \\
+				$\delta_f$, $P_t$ & Voltage angle controlled on the AC and active power on the DC side \\
+				$P_f$, $V_t$ & Active power controlled on the AC and voltage on the DC side \\
+				$Q_f$, $V_t$ & Reactive power controlled on the AC and voltage on the DC side \\
+				$V_f$, $V_t$ & Voltage magnitude controlled on the AC and DC side \\
+				$\delta_f$, $V_t$ & Voltage angle controlled on the AC and voltage DC side \\
+				$I_f$, $P_t$ & Maximum current on the AC and active power on the DC side \\
+				$I_f$, $V_t$ & Maximum current on the AC and voltage on the DC side \\
 				\hline
 			\end{tabular}
 	\end{table}
@@ -319,35 +319,35 @@
 
 	\begin{table}[!htb]\centering
 		\caption{Transformer specified magnitudes and resulting bus types.}
-			\begin{tabular}{ccp{12cm}}
+			\begin{tabular}{cp{12cm}}
 				\hline
-				\textbf{Controlled} & \textbf{Bus type} & \textbf{Description} \\
+				\textbf{Controlled} & \textbf{Description} \\
 				\hline
 				\hline
-				$P_f$, $P_t$ & PP & Active power controlled on the from and to sides \\
-				$Q_f$, $P_t$ & QP & Reactive power controlled on the from and to sides \\
-				$V_f$, $P_t$ & VP & Voltage magnitude on the from and active power on the to side \\
-				$\delta_f$, $P_t$ & DP & Voltage angle controlled on the from and active power on the to side \\
-				$P_f$, $Q_t$ & PQ & Active power controlled on the from and reactive power on the to side \\
-				$Q_f$, $Q_t$ & QQ & Reactive power controlled on the from and to sides \\
-				$V_f$, $Q_t$ & VQ & Voltage magnitude on the from and reactive power on the to side \\
-				$\delta_f$, $Q_t$ & DQ & Voltage angle controlled on the from and reactive power on the to side \\
-				$P_f$, $V_t$ & PV & Active power controlled on the from and voltage on the to side \\
-				$Q_f$, $V_t$ & PV & Reactive power controlled on the from and voltage on the to side \\
-				$V_f$, $V_t$ & VV & Voltage magnitude controlled on the from and to sides \\
-				$\delta_f$, $V_t$ & DV & Voltage angle controlled on the from and voltage on the to side \\
-				$P_f$, $\delta_t$ & PD & Active power controlled on the from and voltage angle on the to side \\
-				$Q_f$, $\delta_t$ & QD & Reactive power controlled on the from and voltage angle on the to side \\
-				$V_f$, $\delta_t$ & VD & Voltage magnitude on the from and voltage angle on the to side \\
-				$\delta_f$, $\delta_t$ & DD & Voltage angle controlled on the from and to sides \\
-				$P_f$ & P & Active power controlled on the from side \\
-				$Q_f$ & Q & Reactive power controlled on the from side \\
-				$V_f$ & V & Voltage magnitude controlled on the from side \\
-				$\delta_f$ & D & Voltage angle controlled on the from side \\
-				$P_t$ & P & Active power controlled on the to side \\
-				$Q_t$ & Q & Reactive power controlled on the to side \\
-				$V_t$ & V & Voltage magnitude controlled on the to side \\
-				$\delta_t$ & D & Voltage angle controlled on the to side \\
+				$P_f$, $P_t$ & Active power controlled on the from and to sides \\
+				$Q_f$, $P_t$ & Reactive power controlled on the from and to sides \\
+				$V_f$, $P_t$ & Voltage magnitude on the from and active power on the to side \\
+				$\delta_f$, $P_t$ & Voltage angle controlled on the from and active power on the to side \\
+				$P_f$, $Q_t$ & Active power controlled on the from and reactive power on the to side \\
+				$Q_f$, $Q_t$ & Reactive power controlled on the from and to sides \\
+				$V_f$, $Q_t$ & Voltage magnitude on the from and reactive power on the to side \\
+				$\delta_f$, $Q_t$ & Voltage angle controlled on the from and reactive power on the to side \\
+				$P_f$, $V_t$ & Active power controlled on the from and voltage on the to side \\
+				$Q_f$, $V_t$ & Reactive power controlled on the from and voltage on the to side \\
+				$V_f$, $V_t$ & Voltage magnitude controlled on the from and to sides \\
+				$\delta_f$, $V_t$ & Voltage angle controlled on the from and voltage on the to side \\
+				$P_f$, $\delta_t$ & Active power controlled on the from and voltage angle on the to side \\
+				$Q_f$, $\delta_t$ & Reactive power controlled on the from and voltage angle on the to side \\
+				$V_f$, $\delta_t$ & Voltage magnitude on the from and voltage angle on the to side \\
+				$\delta_f$, $\delta_t$ & Voltage angle controlled on the from and to sides \\
+				$P_f$ & Active power controlled on the from side \\
+				$Q_f$ & Reactive power controlled on the from side \\
+				$V_f$ & Voltage magnitude controlled on the from side \\
+				$\delta_f$ & Voltage angle controlled on the from side \\
+				$P_t$ & Active power controlled on the to side \\
+				$Q_t$ & Reactive power controlled on the to side \\
+				$V_t$ & Voltage magnitude controlled on the to side \\
+				$\delta_t$ & Voltage angle controlled on the to side \\
 				\hline
 			\end{tabular}
 	\end{table}
