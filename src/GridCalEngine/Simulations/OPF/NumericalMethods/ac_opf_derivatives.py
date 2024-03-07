@@ -424,9 +424,8 @@ def eval_g(x, Ybus, Yf, Cg, Sd, ig, nig, pv, fdc, tdc, k_m, k_tau, Vm_max, Sg_un
     return gval, S
 
 
-def eval_h(x, Yf, Yt, from_idx, to_idx, pq, no_slack, k_m, k_tau, k_mtau, Va_max, Va_min, Vm_max, Vm_min,
-           Pg_max, Pg_min, Qg_max, Qg_min, tapm_max, tapm_min, tapt_max, tapt_min, Pdcmax, Cg, rates, il, ig, tanmax,
-           ctQ:ReactivePowerControlMode) -> Vec:
+def eval_h(x, Yf, Yt, from_idx, to_idx, pq, k_m, k_tau, Vm_max, Vm_min, Pg_max, Pg_min, Qg_max, Qg_min,
+           tapm_max, tapm_min, tapt_max, tapt_min, Pdcmax, rates, il, ig, tanmax, ctQ:ReactivePowerControlMode) -> Vec:
     """
 
     :param x:
