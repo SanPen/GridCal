@@ -115,9 +115,9 @@ def compute_autodiff_structures(x, mu, lam, compute_jac: bool, compute_hess: boo
 
 
 def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: bool, admittances, Cg, R, X, F, T, Sd,
-                                slack, no_slack, from_idx, to_idx, fdc, tdc, ndc, pq, pv, Pdcmax, th_max, th_min, V_U,
+                                slack, fdc, tdc, ndc, pq, pv, Pdcmax, V_U,
                                 V_L, P_U, P_L, tanmax, Q_U, Q_L, tapm_max, tapm_min, tapt_max, tapt_min, alltapm,
-                                alltapt, k_m, k_tau, k_mtau, c0, c1, c2, Sbase, rates, il, ig, nig, Sg_undis,
+                                alltapt, k_m, k_tau, c0, c1, c2, Sbase, rates, il, ig, nig, Sg_undis,
                                 ctQ) -> IpsFunctionReturn:
     """
 
@@ -177,17 +177,16 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
     f = eval_f(x=x, Cg=Cg, k_m=k_m, k_tau=k_tau, c0=c0, c1=c1, c2=c2, ig=ig, ndc=ndc, Sbase=Sbase)
     G, Scalc = eval_g(x=x, Ybus=Ybus, Yf=Yf, Cg=Cg, Sd=Sd, ig=ig, nig=nig,
                       pv=pv, fdc=fdc, tdc=tdc, k_m=k_m, k_tau=k_tau, Vm_max=V_U, Sg_undis=Sg_undis, slack=slack)
-    H, Sf, St = eval_h(x=x, Yf=Yf, Yt=Yt, from_idx=from_idx, to_idx=to_idx, pq=pq, no_slack=no_slack, k_m=k_m,
-                       k_tau=k_tau, k_mtau=k_mtau, Va_max=th_max, Va_min=th_min, Vm_max=V_U, Vm_min=V_L, Pg_max=P_U,
-                       Pg_min=P_L, Qg_max=Q_U, Qg_min=Q_L, tapm_max=tapm_max, tapm_min=tapm_min, tapt_max=tapt_max,
-                       tapt_min=tapt_min, Pdcmax=Pdcmax, Cg=Cg, rates=rates, il=il, ig=ig, tanmax=tanmax, ctQ=ctQ)
+    H, Sf, St = eval_h(x=x, Yf=Yf, Yt=Yt, from_idx=F, to_idx=T, pq=pq, k_m=k_m, k_tau=k_tau, Vm_max=V_U, Vm_min=V_L,
+                       Pg_max=P_U, Pg_min=P_L, Qg_max=Q_U, Qg_min=Q_L, tapm_max=tapm_max, tapm_min=tapm_min,
+                       tapt_max=tapt_max, tapt_min=tapt_min, Pdcmax=Pdcmax, rates=rates,
+                       il=il, ig=ig, tanmax=tanmax, ctQ=ctQ)
 
     fx, Gx, Hx, fxx, Gxx, Hxx = jacobians_and_hessians(x=x, c1=c1, c2=c2, Cg=Cg, Cf=Cf, Ct=Ct, Yf=Yf, Yt=Yt, Ybus=Ybus,
-                                                       Sbase=Sbase, il=il, ig=ig, nig=nig, slack=slack,
-                                                       no_slack=no_slack, pq=pq, pv=pv, tanmax=tanmax, alltapm=alltapm,
+                                                       Sbase=Sbase, il=il, ig=ig, slack=slack,
+                                                       pq=pq, pv=pv, tanmax=tanmax, alltapm=alltapm,
                                                        alltapt=alltapt, fdc=fdc, tdc=tdc, k_m=k_m, k_tau=k_tau,
-                                                       k_mtau=k_mtau, mu=mu, lmbda=lmbda, from_idx=from_idx,
-                                                       to_idx=to_idx, R=R, X=X, F=F, T=T, ctQ=ctQ,
+                                                       mu=mu, lmbda=lmbda, R=R, X=X, F=F, T=T, ctQ=ctQ,
                                                        compute_jac=compute_jac, compute_hess=compute_hess)
 
     return IpsFunctionReturn(f=f, G=G, H=H,
@@ -362,8 +361,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     # Compute the admittance elements, including the Ybus, Yf, Yt and connectivity matrices
     admittances = nc.get_admittance_matrices()
     Cg = nc.generator_data.C_bus_elm
-    from_idx = nc.F
-    to_idx = nc.T
+    F = nc.F
+    T = nc.T
 
     # Bus and line parameters
     Sd = - nc.load_data.get_injections_per_bus() / Sbase
@@ -509,7 +508,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
             # run the solver with the analytic derivatives
             result = interior_point_solver(x0=x0, n_x=NV, n_eq=NE, n_ineq=NI,
                                            func=compute_analytic_structures,
-                                           arg=(admittances, Cg, R, X, Sd, slack, from_idx, to_idx,
+                                           arg=(admittances, Cg, R, X, F, T, Sd, slack,
                                                 fdc, tdc, ndc, pq, pv, Pdcmax, Vm_max, Vm_min, Pg_max,
                                                 Pg_min, tanmax, Qg_max, Qg_min, tapm_max, tapm_min, tapt_max, tapt_min,
                                                 alltapm, alltapt, k_m, k_tau, c0, c1, c2, Sbase, rates, il, ig,
