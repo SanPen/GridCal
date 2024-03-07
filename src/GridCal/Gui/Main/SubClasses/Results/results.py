@@ -259,6 +259,9 @@ class ResultsMain(SimulationsMain):
             except ValueError as e:
                 error_msg(str(e), "Fiter parse")
                 return None
+            except Exception as e:
+                error_msg(str(e), "Fiter parse")
+                return None
 
             self.results_mdl = ResultsModel(filtered_table)
             self.ui.resultsTableView.setModel(self.results_mdl)
