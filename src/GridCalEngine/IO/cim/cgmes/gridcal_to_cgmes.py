@@ -24,10 +24,12 @@ def get_cgmes_loads(cgmes_model: CgmesCircuit,
         cgmes_model.EnergyConsumer_list.append(ec)
         # load.bus contains the Terminal connections
 
+
 def gridcal_to_cgmes(gc_model: MultiCircuit, logger: DataLogger) -> CgmesCircuit:
     cgmes_circuit = CgmesCircuit()  # TODO: Define which object to fill up with data. This may become a function parameter later.
 
-    #TODO How to determine the device_to_terminal_dict, calc_node_dict, and cn_dict dictionaries? What are the appropriate data types in MultiCircuit that provide the connectivity?
+    #TODO How to determine the device_to_terminal_dict, calc_node_dict, and cn_dict dictionaries?
+    # What are the appropriate data types in MultiCircuit that provide the connectivity?
 
     #TODO Determine multicircuit terminals here to be able to define connections
     get_cgmes_loads(cgmes_model=cgmes_circuit, multicircuit_model=gc_model, logger=logger) # Fill up loads in cgmes_object
