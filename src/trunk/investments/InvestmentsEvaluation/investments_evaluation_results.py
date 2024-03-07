@@ -148,7 +148,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
             ax3 = plt.subplot(1, 1, 1)
             sc3 = ax3.scatter(x, y, c=range(len(x)), norm=color_norm)
             ax3.set_xlabel('Investment cost (M€)')
-            ax3.set_ylabel('Total cost of losses (M€)')
+            ax3.set_ylabel('Technical cost (M€)')
             plt.colorbar(sc3, fraction=0.05, label='Objective function')
             fig.suptitle(result_type.value[0])
             plt.tight_layout()

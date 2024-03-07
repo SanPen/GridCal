@@ -1426,7 +1426,7 @@ class ResultTypes(Enum):
     # investments evaluation
     InvestmentsReportResults = 'Investments evaluation report'
     InvestmentsParetoPlot = 'Pareto plot'
-    InvestmentsIterationsPlot = 'Itertions plot'
+    InvestmentsIterationsPlot = 'Iterations plot'
 
     def __str__(self):
         return self.value[0]

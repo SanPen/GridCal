@@ -3,12 +3,11 @@ from GridCalEngine.api import *
 
 np.set_printoptions(linewidth=10000)
 
-
-fname = os.path.join('Estabanell.gridcal')
+fname = os.path.join('Estabanell2.gridcal')
 main_circuit = FileOpen(fname).open()
 
-main_circuit.investments.clear()
-main_circuit.investments_groups.clear()
-FileSave(main_circuit, 'Estabanell2.gridcal').save()
+main_circuit.loads.clear()
+
+FileSave(main_circuit, 'Estabanell3.gridcal').save()
 print()
 
