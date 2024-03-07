@@ -173,7 +173,8 @@ if __name__ == "__main__":
     grid = FileOpen(absolute_path).open()
 
     pf_options = sim.PowerFlowOptions()
-    mvrsm = InvestmentEvaluationMethod.MVRSM_multi
+    # mvrsm = InvestmentEvaluationMethod.MVRSM_multi
+    mvrsm = InvestmentEvaluationMethod.MVRSM
 
     print(4*len(grid.investments))
     options = invsim.InvestmentsEvaluationOptions(solver=mvrsm, max_eval=4*len(grid.investments), pf_options=pf_options)

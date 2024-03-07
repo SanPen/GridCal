@@ -20,7 +20,7 @@ import matplotlib.colors as plt_colors
 from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.basic_structures import IntVec, Vec, StrVec
-from GridCalEngine.enumerations import StudyResultsType, ResultTypes
+from GridCalEngine.enumerations import StudyResultsType, ResultTypes, DeviceType
 
 
 class InvestmentsEvaluationResults(ResultsTemplate):
@@ -121,12 +121,12 @@ class InvestmentsEvaluationResults(ResultsTemplate):
                        "Voltage deviations cost (€)",
                        "Objective function"] + list(self.investment_groups_names)
             data = np.c_[self._capex,
-                         self._opex,
-                         self._losses,
-                         self._overload_score,
-                         self._voltage_score,
-                         self._f_obj,
-                         self._combinations]
+            self._opex,
+            self._losses,
+            self._overload_score,
+            self._voltage_score,
+            self._f_obj,
+            self._combinations]
             y_label = ''
             title = ''
 
@@ -143,7 +143,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
             y_label = ''
             title = ''
 
-            #plt.ion()
+            # plt.ion()
             fig = plt.figure(figsize=(8, 6))
             ax3 = plt.subplot(1, 1, 1)
             sc3 = ax3.scatter(x, y, c=range(len(x)), norm=color_norm)
@@ -185,6 +185,8 @@ class InvestmentsEvaluationResults(ResultsTemplate):
                            index=np.array(labels),
                            columns=np.array(columns),
                            title=title,
+                           cols_device_type=DeviceType.CircuitDevice,
+                           idx_device_type=DeviceType.NoDevice,
                            ylabel=y_label,
                            xlabel='',
                            units=y_label)

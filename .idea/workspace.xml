@@ -28,8 +28,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Update controls for all devices">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Rename axis MVRSM plots">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/trunk/investments/InvestmentsEvaluation/investments_evaluation_results.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/investments/InvestmentsEvaluation/investments_evaluation_results.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/trunk/investments/estabanell_debug.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/investments/estabanell_debug.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/trunk/investments/try_investment_optimization.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/investments/try_investment_optimization.py" afterDir="false" />
     </list>
@@ -138,8 +139,8 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "Shell Script.make.sh.executor": "Run",
     "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "205__ACOPF",
-    "last_opened_file_path": "D:/SIROCO/GridCal/src/trunk/qt_related",
+    "git-widget-placeholder": "204__investments__evaluation",
+    "last_opened_file_path": "C:/Users/a1003/Downloads/github-copilot-intellij-1.4.19.4986.zip",
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
@@ -1888,7 +1889,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="468" />
+    <option name="localTasksCounter" value="469" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1934,7 +1935,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="replaced the progress functions by wrapper functions of the driver_template class" />
     <MESSAGE value="Slightly improved contingency report adding SRAP" />
     <MESSAGE value="added missing picture" />
     <MESSAGE value="Fixed bug with SRAP parameters" />
@@ -1959,7 +1959,8 @@
     <MESSAGE value="Fixed a parsing bug when dealing with legacy data&#10;Improved the profile testing&#10;Added the sparsity property to the profile" />
     <MESSAGE value="Small fix in the dtau for G" />
     <MESSAGE value="Minimal change investments rst" />
-    <option name="LAST_COMMIT_MESSAGE" value="Minimal change investments rst" />
+    <MESSAGE value="Rename axis MVRSM plots" />
+    <option name="LAST_COMMIT_MESSAGE" value="Rename axis MVRSM plots" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2471,6 +2472,11 @@
           <url>file://$PROJECT_DIR$/src/trunk/investments/benchmarks.py</url>
           <line>57</line>
           <option name="timeStamp" value="1362" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/investments_evaluation_results.py</url>
+          <line>111</line>
+          <option name="timeStamp" value="1363" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
