@@ -185,7 +185,8 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
             res = run_nonlinear_opf(grid=self.grid,
                                     opf_options=self.options,
                                     pf_options=self.pf_options,
-                                    t_idx=None)
+                                    t_idx=None,
+                                    logger=self.logger)
             Sbase = self.grid.Sbase
             self.results.voltage = res.V
             self.results.Sbus = res.S * Sbase
