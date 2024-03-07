@@ -2953,6 +2953,13 @@ class BusBranchEditorWidget(QSplitter):
                             diagram.set_point(device=bus, location=location)
                             bus_dict[bus.idtag] = location.graphic_object
 
+        # third pass: we must also add all those branches connecting the selected buses
+        for lst in self.circuit.get_branch_lists():
+            for api_object in lst:
+                if api_object.bus_from.idtag in bus_dict or api_object.bus_to.idtag in bus_dict:
+                    diagram.set_point(device=api_object,
+                                      location=GraphicLocation(api_object=api_object))
+
         return diagram
 
     def try_to_fix_buses_location(self, buses_selection: List[Tuple[int, Bus, BusGraphicItem]]):

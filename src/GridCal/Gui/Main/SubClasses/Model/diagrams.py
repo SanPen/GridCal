@@ -123,6 +123,9 @@ class DiagramsMain(CompiledArraysMain):
         self.ui.actionSetSelectedBusCountry.triggered.connect(lambda: self.set_selected_bus_property('country'))
         self.ui.actionSetSelectedBusArea.triggered.connect(lambda: self.set_selected_bus_property('area'))
         self.ui.actionSetSelectedBusZone.triggered.connect(lambda: self.set_selected_bus_property('zone'))
+        self.ui.actionSelect_buses_by_area.triggered.connect(lambda: self.select_buses_by_property('area'))
+        self.ui.actionSelect_buses_by_zone.triggered.connect(lambda: self.select_buses_by_property('zone'))
+        self.ui.actionSelect_buses_by_country.triggered.connect(lambda: self.select_buses_by_property('country'))
         self.ui.actionAdd_selected_to_contingency.triggered.connect(self.add_selected_to_contingency)
         self.ui.actionAdd_selected_as_new_investment.triggered.connect(self.add_selected_to_investment)
         self.ui.actionZoom_in.triggered.connect(self.zoom_in)
@@ -237,6 +240,17 @@ class DiagramsMain(CompiledArraysMain):
         diagram_widget = self.get_selected_diagram_widget()
         if isinstance(diagram_widget, BusBranchEditorWidget):
             return diagram_widget.get_selected_buses()
+        else:
+            return list()
+
+    def get_current_buses(self) -> List[Tuple[int, dev.Bus, BusGraphicItem]]:
+        """
+        Get the selected buses
+        :return: list of (bus position, bus object, bus_graphics object)
+        """
+        diagram_widget = self.get_selected_diagram_widget()
+        if isinstance(diagram_widget, BusBranchEditorWidget):
+            return diagram_widget.get_buses()
         else:
             return list()
 
@@ -1335,6 +1349,51 @@ class DiagramsMain(CompiledArraysMain):
                         self.circuit.add_investment(con)
             else:
                 info_msg("Select some elements in the schematic first", "Add selected to investment")
+
+    def select_buses_by_property(self, prop: str):
+        """
+        Select the current diagram buses by prop
+        :param prop: area, zone, country
+        """
+        if prop == 'area':
+            self.object_select_window = ObjectSelectWindow(title='Area',
+                                                           object_list=self.circuit.areas,
+                                                           parent=self)
+            self.object_select_window.setModal(True)
+            self.object_select_window.exec_()
+
+            if self.object_select_window.selected_object is not None:
+
+                for k, bus, graphic_obj in self.get_current_buses():
+                    if bus.area == self.object_select_window.selected_object:
+                        graphic_obj.setSelected(True)
+
+        elif prop == 'country':
+            self.object_select_window = ObjectSelectWindow(title='country',
+                                                           object_list=self.circuit.countries,
+                                                           parent=self)
+            self.object_select_window.setModal(True)
+            self.object_select_window.exec_()
+
+            if self.object_select_window.selected_object is not None:
+                for k, bus, graphic_obj in self.get_current_buses():
+                    if bus.country == self.object_select_window.selected_object:
+                        graphic_obj.setSelected(True)
+
+        elif prop == 'zone':
+            self.object_select_window = ObjectSelectWindow(title='Zones',
+                                                           object_list=self.circuit.zones,
+                                                           parent=self)
+            self.object_select_window.setModal(True)
+            self.object_select_window.exec_()
+
+            if self.object_select_window.selected_object is not None:
+                for k, bus, graphic_obj in self.get_current_buses():
+                    if bus.zone == self.object_select_window.selected_object:
+                        graphic_obj.setSelected(True)
+        else:
+            error_msg('Unrecognized option' + str(prop))
+            return
 
     def set_selected_bus_property(self, prop):
         """

@@ -199,36 +199,82 @@ class Filter:
 
         return lst
 
+    def try_numeric(self, value):
+        try:
+            float(value)
+            return True
+        except ValueError:
+            return False
+
     def apply_filter_op(self, obj_val, val):
 
+        ok = True
+
         if self.op == CompOps.GT:
-            ok = obj_val > val
+            if (self.try_numeric(obj_val) and self.try_numeric(val)):
+                obj_val = float(obj_val)
+                val = float(val)
+                ok = obj_val > val
+            else:
+                ok = False
 
         elif self.op == CompOps.LT:
-            ok = obj_val < val
+            if (self.try_numeric(obj_val) and self.try_numeric(val)):
+                obj_val = float(obj_val)
+                val = float(val)
+                ok = obj_val < val
+            else:
+                ok = False
 
         elif self.op == CompOps.GEQ:
-            ok = obj_val >= val
+            if (self.try_numeric(obj_val) and self.try_numeric(val)):
+                obj_val = float(obj_val)
+                val = float(val)
+                ok = obj_val >= val
+            else:
+                ok = False
 
         elif self.op == CompOps.LEQ:
-            ok = obj_val <= val
+            if (self.try_numeric(obj_val) and self.try_numeric(val)):
+                obj_val = float(obj_val)
+                val = float(val)
+                ok = obj_val <= val
+            else:
+                ok = False
 
         elif self.op == CompOps.NOT_EQ:
+            obj_val = str(obj_val)
+            val = str(val)
             ok = obj_val != val
 
         elif self.op == CompOps.EQ:
-            ok = obj_val == val
+            if (self.try_numeric(obj_val) and self.try_numeric(val)):
+                obj_val = float(obj_val)
+                val = float(val)
+                ok = obj_val == val
+            else:
+                obj_val = str(obj_val)
+                val = str(val)
+                ok = obj_val == val
 
         elif self.op == CompOps.LIKE:
-            ok = val in str(obj_val)
+            obj_val = str(obj_val)
+            val = str(val)
+            ok = str(val) in str(obj_val)
 
         elif self.op == CompOps.NOT_LIKE:
+            obj_val = str(obj_val)
+            val = str(val)
             ok = val not in str(obj_val)
 
         elif self.op == CompOps.STARTS:
+            obj_val = str(obj_val)
+            val = str(val)
             ok = str(obj_val).startswith(val)
 
         elif self.op == CompOps.ENDS:
+            obj_val = str(obj_val)
+            val = str(val)
             ok = str(obj_val).endswith(val)
 
         else:
