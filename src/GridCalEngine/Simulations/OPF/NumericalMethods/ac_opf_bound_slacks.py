@@ -157,12 +157,13 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
     Ng = len(ig)
     ntapm = len(k_m)
     ntapt = len(k_tau)
-    npq=len(pq)
+    npq = len(pq)
 
     alltapm0 = alltapm.copy()
     alltapt0 = alltapt.copy()
 
-    _, _, _, _, _, tapm, tapt, _ = x2var(x, nVa=N, nVm=N, nPg=Ng, nQg=Ng, npq=npq, M=nll, ntapm=ntapm, ntapt=ntapt, ndc=ndc)
+    _, _, _, _, _, tapm, tapt, _ = x2var(x, nVa=N, nVm=N, nPg=Ng, nQg=Ng, npq=npq, M=nll, ntapm=ntapm, ntapt=ntapt,
+                                         ndc=ndc)
 
     alltapm[k_m] = tapm
     alltapt[k_tau] = tapt
@@ -185,7 +186,7 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
                        rates=rates, il=il, ig=ig, tanmax=tanmax, ctQ=ctQ)
 
     fx, Gx, Hx, fxx, Gxx, Hxx = jacobians_and_hessians(x=x, c1=c1, c2=c2, c_s=c_s, c_v=c_v, Cg=Cg, Cf=Cf, Ct=Ct, Yf=Yf,
-                                                       Yt=Yt, Ybus=Ybus, Sbase=Sbase, il=il, ig=ig,  slack=slack, pq=pq,
+                                                       Yt=Yt, Ybus=Ybus, Sbase=Sbase, il=il, ig=ig, slack=slack, pq=pq,
                                                        pv=pv, tanmax=tanmax, alltapm=alltapm, alltapt=alltapt, fdc=fdc,
                                                        tdc=tdc, k_m=k_m, k_tau=k_tau, mu=mu, lmbda=lmbda, R=R, X=X,
                                                        F=from_idx, T=to_idx, ctQ=ctQ, compute_jac=compute_jac,
@@ -339,6 +340,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                           debug: bool = False,
                           use_autodiff: bool = False,
                           pf_init: bool = False,
+                          Sbus_pf: Union[CxVec, None] = None,
+                          voltage_pf: Union[CxVec, None] = None,
                           plot_error: bool = False,
                           logger: Logger = Logger()) -> NonlinearOPFResults:
     """
@@ -349,15 +352,15 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     :param debug: if true, the jacobians, hessians, etc are checked against finite difeerence versions of them
     :param use_autodiff: use the autodiff version of the structures
     :param pf_init: Initialize with power flow
-    :param plot_error:
+    :param Sbus_pf: Sbus initial solution
+    :param voltage_pf: Voltage initl solution
+    :param plot_error: Plot the error?
+    :param logger: Logger
     :return: NonlinearOPFResults
     """
 
     # Grab the base power and the costs associated to generation
     Sbase = nc.Sbase
-    c0 = nc.generator_data.cost_0
-    c1 = nc.generator_data.cost_1
-    c2 = nc.generator_data.cost_2
 
     # Compute the admittance elements, including the Ybus, Yf, Yt and connectivity matrices
     admittances = nc.get_admittance_matrices()
@@ -374,7 +377,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     Vm_max = nc.bus_data.Vmax
     Vm_min = nc.bus_data.Vmin
     pf = nc.generator_data.pf
-    tanmax = ((1 - (pf) ** 2) ** (1 / 2)) / (pf + 1e-15)
+    tanmax = ((1 - pf ** 2) ** (1 / 2)) / (pf + 1e-15)
 
     # PV buses are identified by those who have the same upper and lower limits for the voltage. Slack obtained from nc
     pv = np.flatnonzero(Vm_max == Vm_min)
@@ -397,6 +400,10 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     k_mtau = nc.k_mtau
     R = nc.branch_data.R
     X = nc.branch_data.X
+
+    c0 = nc.generator_data.cost_0[ig]
+    c1 = nc.generator_data.cost_1[ig]
+    c2 = nc.generator_data.cost_2[ig]
 
     # Transformer operational limits
     tapm_max = nc.branch_data.tap_module_max[k_m]
@@ -423,7 +430,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     tdc = nc.hvdc_data.T
     Pdcmax = nc.hvdc_data.rate
 
-    #Slack relaxations for constraints
+    # Slack relaxations for constraints
     c_s = nc.branch_data.overload_cost[il]
     c_v = nc.bus_data.cost_v[pq]
 
@@ -439,20 +446,17 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     else:
         NI = 2 * nll + 2 * npq + 5 * ngg + 2 * ntapm + 2 * ntapt + 2 * ndc + nsl
 
-    # run power flow to initialize
-    pf_results = multi_island_pf_nc(nc=nc, options=pf_options)
-
     # ignore power from Z and I of the load
 
     if pf_init:
-        s0gen = (pf_results.Sbus - nc.load_data.get_injections_per_bus()) / nc.Sbase
-        p0gen = nc.generator_data.C_bus_elm.T @ np.real(s0gen)
-        q0gen = nc.generator_data.C_bus_elm.T @ np.imag(s0gen)
-        vm0 = np.abs(pf_results.voltage)
-        va0 = np.angle(pf_results.voltage)
+        s0gen = (Sbus_pf - nc.load_data.get_injections_per_bus()) / nc.Sbase
+        p0gen = (nc.generator_data.C_bus_elm.T @ np.real(s0gen))[ig]
+        q0gen = (nc.generator_data.C_bus_elm.T @ np.imag(s0gen))[ig]
+        vm0 = np.abs(voltage_pf)
+        va0 = np.angle(voltage_pf)
         tapm0 = nc.branch_data.tap_module[k_m]
         tapt0 = nc.branch_data.tap_angle[k_tau]
-        Pfdc0 = np.array([0] * ndc)
+        Pfdc0 = np.zeros(ndc)
 
     # nc.Vbus  # dummy initialization
     else:
@@ -462,7 +466,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         vm0 = (Vm_max + Vm_min) / 2
         tapm0 = nc.branch_data.tap_module[k_m]
         tapt0 = nc.branch_data.tap_angle[k_tau]
-        Pfdc0 = np.array([0] * ndc)
+        Pfdc0 = np.zeros(ndc)
 
     # compose the initial values
     x0 = var2x(Va=va0,
@@ -523,8 +527,9 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                                            trust=opf_options.ips_trust_radius)
 
     # convert the solution to the problem variables
-    Va, Vm, Pg_dis, Qg_dis, sl, tapm, tapt, Pfdc = x2var(result.x, nVa=nbus, nVm=nbus, nPg=ngg, nQg=ngg,
-                                                          M=nll, npq=npq, ntapm=ntapm, ntapt=ntapt, ndc=ndc)
+    Va, Vm, Pg_dis, Qg_dis, sl, tapm, tapt, Pfdc = x2var(result.x,
+                                                         nVa=nbus, nVm=nbus, nPg=ngg, nQg=ngg,
+                                                         M=nll, npq=npq, ntapm=ntapm, ntapt=ntapt, ndc=ndc)
 
     # Save Results DataFrame for tests
     # pd.DataFrame(Va).transpose().to_csv('pegase89resth.csv')
@@ -596,12 +601,12 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                 logger.add_warning('DC Link rating constraint violated', device=str(link),
                                    value=str((muz_f, muz_t)), expected_value='< 1e-3')
 
-
-
     logger.print()
     return NonlinearOPFResults(Va=Va, Vm=Vm, S=S, Sf=Sf, St=St, loading=loading,
                                Pg=Pg, Qg=Qg, lam_p=lam_p, lam_q=lam_q,
-                               error=result.error, converged=result.converged, iterations=result.iterations)
+                               error=result.error,
+                               converged=result.converged,
+                               iterations=result.iterations)
 
 
 def run_nonlinear_opf(grid: MultiCircuit,
@@ -612,7 +617,7 @@ def run_nonlinear_opf(grid: MultiCircuit,
                       use_autodiff: bool = False,
                       pf_init=False,
                       plot_error: bool = False,
-                      logger: Logger=Logger()) -> NonlinearOPFResults:
+                      logger: Logger = Logger()) -> NonlinearOPFResults:
     """
     Run optimal power flow for a MultiCircuit
     :param grid: MultiCircuit
@@ -623,18 +628,28 @@ def run_nonlinear_opf(grid: MultiCircuit,
     :param use_autodiff: Use autodiff?
     :param pf_init: Initialize with a power flow?
     :param plot_error: Plot the error?
+    :param logger: Logger object
     :return: NonlinearOPFResults
     """
 
     # compile the system
     nc = compile_numerical_circuit_at(circuit=grid, t_idx=t_idx)
 
+    # run power flow to initialize
+    if pf_init:
+        pf_results = multi_island_pf_nc(nc=nc, options=pf_options)
+        Sbus_pf = pf_results.Sbus
+        voltage_pf = pf_results.voltage
+    else:
+        Sbus_pf = None
+        voltage_pf = None
+
     islands = nc.split_into_islands(ignore_single_node_islands=True,
                                     consider_hvdc_as_island_links=True)
 
     results = NonlinearOPFResults()
     results.initialize(nbus=nc.nbus, nbr=nc.nbr, ng=nc.ngen)
-
+    results.converged = True  # we assume this so that the "and" works later
     for island in islands:
         island_res = ac_optimal_power_flow(nc=island,
                                            opf_options=opf_options,
@@ -642,6 +657,8 @@ def run_nonlinear_opf(grid: MultiCircuit,
                                            debug=debug,
                                            use_autodiff=use_autodiff,
                                            pf_init=pf_init,
+                                           Sbus_pf=Sbus_pf[island.original_bus_idx],
+                                           voltage_pf=voltage_pf[island.original_bus_idx],
                                            plot_error=plot_error,
                                            logger=logger)
 
@@ -649,5 +666,8 @@ def run_nonlinear_opf(grid: MultiCircuit,
                       bus_idx=island.bus_data.original_idx,
                       br_idx=island.branch_data.original_idx,
                       gen_idx=island.generator_data.original_idx)
+        results.error = max(results.error, island_res.error)
+        results.iterations = max(results.iterations, island_res.iterations)
+        results.converged = results.converged and island_res.converged
 
     return results

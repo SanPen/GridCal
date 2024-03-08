@@ -1797,7 +1797,7 @@ class SimulationsMain(TimeEventsMain):
             areas_to = None
 
         ips_method = self.ips_solvers_dict[self.ui.ips_method_comboBox.currentText()]
-        ips_tolerance = self.ui.ips_tolerance_spinBox.value()
+        ips_tolerance = 1.0 / (10.0 ** self.ui.ips_tolerance_spinBox.value())
         ips_iterations = self.ui.ips_iterations_spinBox.value()
         ips_trust_radius = self.ui.ips_trust_radius_doubleSpinBox.value()
         ips_init_with_pf = self.ui.ips_initialize_with_pf_checkBox.isChecked()
