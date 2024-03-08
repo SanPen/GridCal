@@ -385,8 +385,8 @@ def eval_f(x: Vec, Cg, k_m: Vec, k_tau: Vec, nll: int, c0: Vec, c1: Vec, c2: Vec
     sl_vmax = sl[2 * nll: 2 * nll + npq]
     sl_vmin = sl[2 * nll + npq: 2 * nll + 2 * npq]
 
-    fval = (np.sum((c0 + c1 * Pg * Sbase + c2 * np.power(Pg * Sbase, 2))) * 1e-4
-            + np.sum(c_s * (sl_sf + sl_st)) + np.sum(c_v * (sl_vmax + sl_vmin)))
+    fval = 1e-4 * (np.sum((c0 + c1 * Pg * Sbase + c2 * np.power(Pg * Sbase, 2)))
+                   + np.sum(c_s * (sl_sf + sl_st)) + np.sum(c_v * (sl_vmax + sl_vmin)))
 
     return fval
 

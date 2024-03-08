@@ -33,8 +33,9 @@ from GridCalEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
 from GridCalEngine.enumerations import TransformerControlType, ReactivePowerControlMode
 from typing import Tuple, Union
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec, Logger
-from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf_derivatives import (x2var, var2x, eval_f, eval_g, eval_h,
-                                                                               jacobians_and_hessians)
+from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf_derivatives_bound_slacks import (x2var, var2x, eval_f,
+                                                                                            eval_g, eval_h,
+                                                                                            jacobians_and_hessians)
 
 
 def compute_autodiff_structures(x, mu, lam, compute_jac: bool, compute_hess: bool,
@@ -424,7 +425,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
 
     #Slack relaxations for constraints
     c_s = nc.branch_data.overload_cost[il]
-    c_v = np.ones(npq)
+    c_v = nc.bus_data.cost_v[pq]
 
     nsl = 2 * npq + 2 * nll
 

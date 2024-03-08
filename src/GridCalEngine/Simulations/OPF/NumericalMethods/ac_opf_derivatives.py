@@ -560,7 +560,7 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, s
         if ntapm + ntapt != 0:  # Check if there are tap variables that can affect the admittances
 
             (dSbusdm, dSfdm, dStdm,
-             dSbusdt, dSfdt, dStdt) = compute_branch_power_derivatives(alltapm, alltapt, V, k_m, k_tau, k_mtau,
+             dSbusdt, dSfdt, dStdt) = compute_branch_power_derivatives(alltapm, alltapt, V, k_m, k_tau,
                                                                        Cf, Ct, Yf, Yt, R, X)
 
             if ntapm != 0:
