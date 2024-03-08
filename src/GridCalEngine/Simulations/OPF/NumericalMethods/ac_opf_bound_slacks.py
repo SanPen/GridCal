@@ -657,8 +657,8 @@ def run_nonlinear_opf(grid: MultiCircuit,
                                            debug=debug,
                                            use_autodiff=use_autodiff,
                                            pf_init=pf_init,
-                                           Sbus_pf=Sbus_pf[island.original_bus_idx],
-                                           voltage_pf=voltage_pf[island.original_bus_idx],
+                                           Sbus_pf=Sbus_pf[island.original_bus_idx] if Sbus_pf is not None else None,
+                                           voltage_pf=voltage_pf[island.original_bus_idx] if Sbus_pf is not None else None,
                                            plot_error=plot_error,
                                            logger=logger)
 
