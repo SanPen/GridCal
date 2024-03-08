@@ -30,7 +30,7 @@ class BusBar(EditableDevice):
         Constructor
         :param name: Name of the bus bar
         :param idtag: unique identifier of the device
-        :param code: secondary identifyer
+        :param code: secondary identifier
         :param substation: Substation of this bus bar (optional)
         :param cn: internal Connectivity node, if none a new one is created
         """
