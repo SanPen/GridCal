@@ -107,13 +107,3 @@ class SyncDialogueWindow(QtWidgets.QDialog):
 
         self.file_sync_thread.process_issues()
         self.close()
-
-
-if __name__ == "__main__":
-
-    app = QtWidgets.QApplication(sys.argv)
-    window = SyncDialogueWindow()
-    window.resize(1.61 * 500.0, 500.0)  # golden ratio
-    window.show()
-    sys.exit(app.exec_())
-

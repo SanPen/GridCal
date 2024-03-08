@@ -523,9 +523,10 @@ def parse_branches_data(circuit: MultiCircuit, data, bus_idx_dict, logger: Logge
                                  name=line.name,
                                  active=line.active,
                                  rate=line.rate,
-                                 r=line.R,
-                                 active_prof=line.active_prof,
-                                 rate_prof=line.rate_prof)
+                                 r=line.R)
+
+            dc_line.active_prof = line.active_prof
+            dc_line.rate_prof = line.rate_prof
 
             # add device to the circuit
             circuit.add_dc_line(obj=dc_line)

@@ -389,7 +389,7 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         else:
             self.symbol = None
 
-        self.scale = 1.0;
+        self.scale = 1.0
         self.pen_style = Qt.SolidLine
         self.pen_color = Qt.black
         self.pen_width = width
@@ -639,7 +639,7 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         self.pen_style = pen.style()
         self.pen_color = pen.color()
         self.pen_width = pen.width()
-        self.scale = scale;
+        self.scale = scale
 
         pen.setWidth(self.pen_width / scale)
 
