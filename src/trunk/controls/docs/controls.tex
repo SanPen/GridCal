@@ -354,12 +354,57 @@
 
 	(Think about controlling nodal vs branch magnitudes, as here we are controlling branch magnitudes)
 
-	
+\section{Generalized power flow}
+Adopting the common methodology of assuming each node on the system belongs to a given bus category, where traditionally we only have PQ, PV and slack buses, we can extend this concept to include all the possible combinations of controlled magnitudes. This is a generalization of the power flow problem as the bus type will not be predefined, but rather it will be determined by the controlled magnitudes. To start this generalization, four sets of indices are stored:
 
-	\section{Switching rules}
+\begin{itemize}
+	\item $i_p$: set of buses with controlled $P$.
+	\item $i_q$: set of buses with controlled $Q$.
+	\item $i_\delta$: set of buses with controlled $\delta$.
+	\item $i_v$: set of buses with controlled $V$.
+\end{itemize}
+Following this logic, the sets where the magnitudes are not controlled can also be defined:
+\begin{itemize}
+	\item $\overline{i}_p$: set of buses with unknown $P$.
+	\item $\overline{i}_q$: set of buses with unknown $Q$.
+	\item $\overline{i}_\delta$: set of buses with unknown $\delta$.
+	\item $\overline{i}_v$: set of buses with unknown $V$.
+\end{itemize}
+
+The power flow problem is then solved by iterating over the buses and applying the corresponding equations. Eventually, the bus type can be determined by the intersection of the sets. For example, if a bus has controlled $P$ and $Q$, then it belongs to the set $i_p \cap i_q$. The same applies to the rest of the combinations. However, the bus type is not really needed in the formulation that follows.
+
+Then, the indexing works as indicated below:
+\begin{itemize}
+	\item $P$ equations are to be applied to the set $i_p$.
+	\item $Q$ equations are to be applied to the set $i_q$.
+	\item The algorithm solves for the set of $\delta \in i_\delta$ and $V \in i_v$.
+	\item It has to be guaranteed that $\text{len}(i_p) + \text{len}(i_q) = \text{len}(\overline{i}_\delta) + \text{len}(\overline{i}_v)$, that is, the number of controlled $P$ and $Q$ equations matches with the total voltage unknowns.
+\end{itemize}
+It is also important to note that remote controls are possible. For example, a generator can control the voltage of a bus where it is not directly connected to. This is a common practice in power systems, where the voltage of a bus is regulated by a generator located in a nearby bus. Figure~\ref{fig:remote} exemplifies this situation.
+
+% expand the generators for ZIP model also
+\begin{figure}[!htb]
+	\centering
+	\begin{circuitikz}[american]
+		\draw[line width=0.7mm] (2,0) to [short] (5,0);
+		\draw (3.5,0) to [sV, l=$P_i$] (3.5,-3);
+		\draw (2,-3) to [short] (5,-3);
+		\node at (3.5,0.35) {$V_i$};
+		\draw[line width=0.7mm] (7,0) to [short] (10,0);
+		\draw (8.5,0) to [sV, l=$P_j$] (8.5,-3);
+		\draw (7,-3) to [short] (10,-3);
+		\node at (8.5,0.35) {$V_j$};
+		% \draw (3.5,-3) to [short] (8.5,-3);
+		\end{circuitikz}		
+		\caption{Representation of a remote control.}
+		\label{fig:remote}
+\end{figure}
+
+
+\section{Switching rules}
 
 	
-	\section{Bibliography}
+\section{Bibliography}
 	\printbibliography
 	
 \end{document}
