@@ -571,7 +571,6 @@ def convert_branch(branch: Branch):
                             tap_module=branch.tap_module,
                             tap_phase=branch.angle,
                             vset=branch.vset,
-                            bus_to_regulated=branch.bus_to_regulated,
                             temp_base=branch.temp_base,
                             temp_oper=branch.temp_oper,
                             alpha=branch.alpha,

@@ -113,6 +113,9 @@ def get_pgm_loads(circuit: MultiCircuit, bus_dict, idx0, n_time=None):
     if n_time:
         P = np.zeros((n_time, ndev))
         Q = np.zeros((n_time, ndev))
+    else:
+        P = np.zeros((0, ndev))
+        Q = np.zeros((0, ndev))
 
     idx = idx0
     for k, elm in enumerate(devices):

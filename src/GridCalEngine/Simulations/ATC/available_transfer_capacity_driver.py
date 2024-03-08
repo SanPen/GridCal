@@ -25,7 +25,7 @@ from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.Simulations.driver_template import DriverTemplate
-from GridCalEngine.enumerations import StudyResultsType, AvailableTransferMode, ResultTypes
+from GridCalEngine.enumerations import StudyResultsType, AvailableTransferMode, ResultTypes, DeviceType
 
 
 @nb.njit()
@@ -453,24 +453,23 @@ class AvailableTransferCapacityResults(ResultsTemplate):
             data = np.array(self.report)
             y_label = ''
             title, _ = result_type.value
-            index = self.report_indices
-            labels = self.report_headers
+
+            return ResultsTable(data=np.array(self.report),
+                                index=self.report_indices,
+                                columns=self.report_headers,
+                                title=title,
+                                ylabel=y_label,
+                                cols_device_type=DeviceType.NoDevice,
+                                idx_device_type=DeviceType.NoDevice)
         else:
             raise Exception('Result type not understood:' + str(result_type))
-
-        # assemble model
-        mdl = ResultsTable(data=data,
-                           index=index,
-                           columns=labels,
-                           title=title,
-                           ylabel=y_label)
-        return mdl
 
 
 class AvailableTransferCapacityOptions:
     """
     AvailableTransferCapacityOptions
     """
+
     def __init__(self, distributed_slack=True, correct_values=True, use_provided_flows=False,
                  bus_idx_from=list(), bus_idx_to=list(), idx_br=list(), sense_br=list(), Pf=None,
                  idx_hvdc_br=list(), sense_hvdc_br=list(), Pf_hvdc=None,

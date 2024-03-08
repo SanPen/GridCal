@@ -324,9 +324,6 @@ class OverheadLineType(EditableDevice):
 
         z2 = self.z2_series() * length / Zbase
         y2 = self.y2_shunt() * length * -1e6 / Ybase
-        R2 = np.round(z2.real, 6)
-        X2 = np.round(z2.imag, 6)
-        B2 = np.round(y2.imag, 6)
 
         # get the rating in MVA = kA * kV
         rate = self.Imax * Vn * np.sqrt(3)

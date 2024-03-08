@@ -91,7 +91,12 @@ class ContingencyAnalysisResults(ResultsTemplate):
         rates = nc.Rates
         self.loading = self.Sf / (rates + 1e-9)
 
-    def get_steps(self):
+    @staticmethod
+    def get_steps():
+        """
+        Get the simulation steps
+        :return:
+        """
         return list()
 
     def get_results_dict(self):

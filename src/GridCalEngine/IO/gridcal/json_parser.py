@@ -574,10 +574,7 @@ def parse_json_data_v3(data: dict, logger: Logger):
                                 idtag=str(jentry['id']),
                                 G=float(jentry['g']),
                                 B=float(jentry['b']),
-                                Bmax=Bmax,
-                                Bmin=Bmin,
-                                active=bool(jentry['active']),
-                                controlled=bool(jentry['controlled'])
+                                active=bool(jentry['active'])
                                 )
 
                 if has_profiles:
@@ -739,8 +736,6 @@ def parse_json_data_v3(data: dict, logger: Logger):
                                         active=bool(entry['active']),
                                         tap_module=float(entry['tap_module']),
                                         tap_phase=float(entry['tap_angle']),
-                                        bus_to_regulated=bool(
-                                            entry['bus_to_regulated']) if 'bus_to_regulated' in entry else False,
                                         vset=float(entry['vset']),
                                         temp_base=float(entry['base_temperature']),
                                         temp_oper=float(entry['operational_temperature']),

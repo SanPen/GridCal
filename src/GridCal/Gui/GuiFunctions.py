@@ -2089,10 +2089,11 @@ class ProfilesModel(QtCore.QAbstractTableModel):
                     except:
                         warn("could not parse '" + str(val) + "'")
                         parsed = False
+                        val2 = ''
 
                     if parsed:
                         if c2 < n and r2 < nt:
-                            mod_cols.append((c2))
+                            mod_cols.append(c2)
                             getattr(self.elements[c2], profile_property)[r2] = val2
                         else:
                             print('Out of profile bounds')
