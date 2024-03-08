@@ -1,7 +1,7 @@
 import os
 import GridCalEngine.api as gce
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
-from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import run_nonlinear_opf, ac_optimal_power_flow
+from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf_bound_slacks import run_nonlinear_opf, ac_optimal_power_flow
 from GridCalEngine.enumerations import TransformerControlType
 
 
@@ -32,7 +32,7 @@ def example_3bus_acopf():
     grid.add_generator(b1, gce.Generator('G1', vset=1.00, Cost=1.0, Cost2=2.0))
     grid.add_generator(b2, gce.Generator('G2', P=10, vset=0.995, Cost=1.0, Cost2=3.0))
 
-    opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, verbose=1, ips_iterations=25)
+    opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, verbose=1, ips_tolerance=1e-8, ips_iterations=25)
     options = gce.PowerFlowOptions(gce.SolverType.NR, verbose=False)
     power_flow = gce.PowerFlowDriver(grid, options)
     power_flow.run()
@@ -246,17 +246,18 @@ def case14():
 
     grid = gce.FileOpen(file_path).open()
 
-    grid.transformers2w[0].control_mode = TransformerControlType.PtQt
-    grid.transformers2w[1].control_mode = TransformerControlType.Pf
-    grid.transformers2w[2].control_mode = TransformerControlType.V
+    #grid.transformers2w[0].control_mode = TransformerControlType.PtQt
+    #grid.transformers2w[1].control_mode = TransformerControlType.Pf
+    #grid.transformers2w[2].control_mode = TransformerControlType.V
 
     #grid.delete_line(grid.lines[0])
     #grid.delete_line(grid.lines[1])
     for l in range(len(grid.lines)):
         grid.lines[l].monitor_loading = True
 
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, tolerance=1e-10, max_iter=50)
-    opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, verbose=1)
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR)
+    opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, ips_tolerance=1e-8,
+                                              ips_iterations=50, verbose=1)
     run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True)
 
 
@@ -316,27 +317,6 @@ def case300():
     opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, verbose=1, ips_iterations=100)
     run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True)
 
-def case6ww():
-    """
-    IEEE14
-    """
-    cwd = os.getcwd()
-
-    # Go back two directories
-    new_directory = os.path.abspath(os.path.join(cwd, '..', '..', '..'))
-
-    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'ESPGRID.gridcal')
-
-    grid = gce.FileOpen(file_path).open()
-
-    options = gce.PowerFlowOptions(gce.SolverType.NR, verbose=False)
-    power_flow = gce.PowerFlowDriver(grid, options)
-    power_flow.run()
-
-    opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, verbose=1, ips_iterations=20)
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=3, max_iter=100)
-    run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True)
-
 
 def casepegase13k():
     """
@@ -377,12 +357,12 @@ def casehvdc():
     power_flow = gce.PowerFlowDriver(grid, options)
     power_flow.run()
 
-    opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, verbose=1, ips_iterations=400, ips_tolerance=1e-6)
+    opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, verbose=1, ips_iterations=800, ips_tolerance=1e-6)
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=3)
     run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=False)
 
 if __name__ == '__main__':
-    # example_3bus_acopf()
+    example_3bus_acopf()
     # case_3bus()
     # linn5bus_example()
     # two_grids_of_3bus()
@@ -392,5 +372,5 @@ if __name__ == '__main__':
     # case6ww()
     # case_pegase89()
     # case300()
-    casepegase13k()
-    #  casehvdc()
+    # casepegase13k()
+    # casehvdc()
