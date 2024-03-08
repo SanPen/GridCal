@@ -259,7 +259,7 @@ class SimulationSession:
 
         # dictionary of drivers
         self.drivers: Dict[SimulationTypes, DriverTemplate] = dict()
-        self.threads: Dict[GcThread] = dict()
+        self.threads: Dict[SimulationTypes, GcThread] = dict()
 
     def __str__(self):
         return self.name
