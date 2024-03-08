@@ -15,6 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from uuid import uuid4
+import numpy as np
 from PySide6.QtCore import QThread, Signal
 from typing import Dict, Union
 from collections.abc import Callable
@@ -40,7 +41,7 @@ from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.enumerations import ResultTypes
 from GridCalEngine.basic_structures import Logger
-from GridCal.Gui.Session.results_model import ResultsModel
+from GridCal.Session.results_model import ResultsModel
 
 
 def get_results_object_dictionary():
@@ -48,22 +49,134 @@ def get_results_object_dictionary():
     Get dictionary of recognizable result types in order to be able to load a driver from disk
     :return: dictionary[driver name: empty results object]
     """
-    lst = [(AvailableTransferCapacityResults([], [], [], [], clustering_results=None), SimulationTypes.NetTransferCapacity_run),
-           (AvailableTransferCapacityTimeSeriesResults([], [], [], [], [], clustering_results=None), SimulationTypes.NetTransferCapacityTS_run),
-           (ContingencyAnalysisResults(0, 0, 0, [], [], [], []), SimulationTypes.ContingencyAnalysis_run),
-           (ContingencyAnalysisTimeSeriesResults(0, 0, 0, [], [], [], [], [], clustering_results=None),
+    lst = [(AvailableTransferCapacityResults(br_names=[],
+                                             bus_names=[],
+                                             rates=[],
+                                             contingency_rates=[],
+                                             clustering_results=None),
+            SimulationTypes.NetTransferCapacity_run),
+
+           (AvailableTransferCapacityTimeSeriesResults(br_names=[],
+                                                       bus_names=[],
+                                                       rates=[],
+                                                       contingency_rates=[],
+                                                       time_array=[],
+                                                       clustering_results=None),
+            SimulationTypes.NetTransferCapacityTS_run),
+
+           (ContingencyAnalysisResults(ncon=0,
+                                       nbus=0,
+                                       nbr=0,
+                                       bus_names=[],
+                                       branch_names=[],
+                                       bus_types=[],
+                                       con_names=[]),
+            SimulationTypes.ContingencyAnalysis_run),
+
+           (ContingencyAnalysisTimeSeriesResults(n=0,
+                                                 nbr=0,
+                                                 nc=0,
+                                                 time_array=[],
+                                                 bus_names=[],
+                                                 branch_names=[],
+                                                 bus_types=[],
+                                                 con_names=[],
+                                                 clustering_results=None),
             SimulationTypes.ContingencyAnalysisTS_run),
-           (ContinuationPowerFlowResults(0, 0, 0, [], [], []), SimulationTypes.ContinuationPowerFlow_run),
-           (LinearAnalysisResults(0, 0, (), (), ()), SimulationTypes.LinearAnalysis_run),
-           (LinearAnalysisTimeSeriesResults(0, 0, (), (), (), (), clustering_results=None), SimulationTypes.LinearAnalysis_TS_run),
+
+           (ContinuationPowerFlowResults(nval=0,
+                                         nbus=0,
+                                         nbr=0,
+                                         bus_names=[],
+                                         branch_names=[],
+                                         bus_types=[]),
+            SimulationTypes.ContinuationPowerFlow_run),
+
+           (LinearAnalysisResults(n_br=0,
+                                  n_bus=0,
+                                  br_names=(),
+                                  bus_names=(),
+                                  bus_types=()), SimulationTypes.LinearAnalysis_run),
+
+           (LinearAnalysisTimeSeriesResults(n=0,
+                                            m=0,
+                                            time_array=(),
+                                            bus_names=(),
+                                            bus_types=(),
+                                            branch_names=(),
+                                            clustering_results=None),
+            SimulationTypes.LinearAnalysis_TS_run),
+
            (OptimalPowerFlowResults(bus_names=(), branch_names=(), load_names=(), generator_names=(), battery_names=(),
-                                    hvdc_names=(), bus_types=(), area_names=(), F=(), T=(), F_hvdc=(), T_hvdc=(), bus_area_indices=()),
-                                    SimulationTypes.OPF_run),
-           (OptimalPowerFlowTimeSeriesResults((), (), (), (), (), (), 0, 0, 0, clustering_results=None), SimulationTypes.OPFTimeSeries_run),
-           (PowerFlowResults(0, 0, 0, 0, (), (), (), (), ()), SimulationTypes.PowerFlow_run),
-           (PowerFlowTimeSeriesResults(0, 0, 0, 0, (), (), (), (), (), ()), SimulationTypes.TimeSeries_run),
-           (ShortCircuitResults(0, 0, 0, 0, (), (), (), (), ()), SimulationTypes.ShortCircuit_run),
-           (StochasticPowerFlowResults(0, 0, 0, (), (), ()), SimulationTypes.StochasticPowerFlow)
+                                    hvdc_names=(), bus_types=(), area_names=(), F=(), T=(), F_hvdc=(), T_hvdc=(),
+                                    bus_area_indices=()),
+            SimulationTypes.OPF_run),
+
+           (OptimalPowerFlowTimeSeriesResults(bus_names=[],
+                                              branch_names=[],
+                                              load_names=[],
+                                              generator_names=[],
+                                              battery_names=[],
+                                              hvdc_names=[],
+                                              fuel_names=[],
+                                              emission_names=[],
+                                              fluid_node_names=[],
+                                              fluid_path_names=[],
+                                              fluid_injection_names=[],
+                                              n=0,
+                                              m=0,
+                                              nt=0,
+                                              ngen=0,
+                                              nbat=0,
+                                              nload=0,
+                                              nhvdc=0,
+                                              n_fluid_node=0,
+                                              n_fluid_path=0,
+                                              n_fluid_injection=0,
+                                              time_array=None,
+                                              bus_types=(),
+                                              clustering_results=None),
+            SimulationTypes.OPFTimeSeries_run),
+
+           (PowerFlowResults(n=0,
+                             m=0,
+                             n_hvdc=0,
+                             bus_names=np.empty(0),
+                             branch_names=np.empty(0),
+                             hvdc_names=np.empty(0),
+                             bus_types=np.empty(0),
+                             clustering_results=None),
+            SimulationTypes.PowerFlow_run),
+
+           (PowerFlowTimeSeriesResults(n=0,
+                                       m=0,
+                                       n_hvdc=0,
+                                       bus_names=np.empty(0),
+                                       branch_names=np.empty(0),
+                                       hvdc_names=np.empty(0),
+                                       time_array=np.empty(0),
+                                       bus_types=np.empty(0),
+                                       area_names=None,
+                                       clustering_results=None),
+            SimulationTypes.TimeSeries_run),
+
+           (ShortCircuitResults(n=0,
+                                m=0,
+                                n_hvdc=0,
+                                bus_names=np.empty(0),
+                                branch_names=np.empty(0),
+                                hvdc_names=np.empty(0),
+                                bus_types=np.empty(0),
+                                area_names=None),
+            SimulationTypes.ShortCircuit_run),
+
+           (StochasticPowerFlowResults(n=0,
+                                       m=0,
+                                       p=0,
+                                       bus_names=np.empty(0),
+                                       branch_names=np.empty(0),
+                                       bus_types=np.empty(0)),
+            SimulationTypes.StochasticPowerFlow)
            ]
 
     return {tpe.value: (elm, tpe) for elm, tpe in lst}

@@ -22,7 +22,7 @@ import GridCalEngine.Simulations as sim
 import GridCal.Gui.GuiFunctions as gf
 from GridCal.Gui.messages import error_msg, warning_msg
 from GridCal.Gui.Main.SubClasses.simulations import SimulationsMain
-from GridCal.Gui.Session.session import ResultsModel
+from GridCal.Session.results_model import ResultsModel
 from GridCal.Gui.GeneralDialogues import fill_tree_from_logs
 import GridCalEngine.Utils.Filtering as flt
 from GridCalEngine.basic_structures import Logger

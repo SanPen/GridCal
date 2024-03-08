@@ -3,7 +3,7 @@ import numpy as np
 from PySide6 import QtWidgets
 
 from GridCal.Gui.SigmaAnalysis.gui import Ui_MainWindow
-from GridCal.Gui.Session.results_model import ResultsModel
+from GridCal.Session.results_model import ResultsModel
 from GridCalEngine.enumerations import ResultTypes
 from GridCalEngine.Simulations.SigmaAnalysis.sigma_analysis_driver import SigmaAnalysisResults
 

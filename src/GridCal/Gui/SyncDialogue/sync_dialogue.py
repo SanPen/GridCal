@@ -1,13 +1,15 @@
 
 import sys
-from PySide6 import QtWidgets, QtGui
+from PySide6 import QtWidgets
 from PySide6.QtCore import Qt
 from GridCal.Gui.SyncDialogue.gui import Ui_Dialog
-from GridCal.Gui.Session.synchronization_driver import get_issues_tree_view_model, FileSyncThread
+from GridCal.Session.synchronization_driver import get_issues_tree_view_model, FileSyncThread
 
 
 class SyncDialogueWindow(QtWidgets.QDialog):
-
+    """
+    SyncDialogueWindow
+    """
     def __init__(self, file_sync_thread: FileSyncThread, parent=None):
         """
 
