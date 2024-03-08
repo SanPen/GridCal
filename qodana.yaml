@@ -27,3 +27,8 @@ profile:
 
 #Specify Qodana linter for analysis (Applied in CI/CD pipeline)
 linter: jetbrains/qodana-python:latest
+exclude:
+  - name: HttpUrlsUsage
+  - name: All
+    paths:
+      - examples/gurobipy_example.py

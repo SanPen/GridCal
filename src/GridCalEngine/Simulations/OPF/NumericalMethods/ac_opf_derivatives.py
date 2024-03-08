@@ -116,7 +116,23 @@ def compute_analytic_admittances(alltapm, alltapt, k_m, k_tau, k_mtau, Cf, Ct, R
     return dYbusdm, dYfdm, dYtdm, dYbusdt, dYfdt, dYtdt
 
 
-def compute_branch_power_derivatives(alltapm, alltapt, V, k_m, k_tau, k_mtau, Cf, Ct, Yf, Yt, R, X):
+def compute_branch_power_derivatives(alltapm, alltapt, V, k_m, k_tau, Cf, Ct, R, X):
+    """
+
+    :param alltapm:
+    :param alltapt:
+    :param V:
+    :param k_m:
+    :param k_tau:
+    :param k_mtau:
+    :param Cf:
+    :param Ct:
+    :param Yf:
+    :param Yt:
+    :param R:
+    :param X:
+    :return:
+    """
     ys = 1.0 / (R + 1.0j * X + 1e-20)
 
     Vf = Cf @ V
@@ -560,8 +576,15 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, s
         if ntapm + ntapt != 0:  # Check if there are tap variables that can affect the admittances
 
             (dSbusdm, dSfdm, dStdm,
-             dSbusdt, dSfdt, dStdt) = compute_branch_power_derivatives(alltapm, alltapt, V, k_m, k_tau,
-                                                                       Cf, Ct, Yf, Yt, R, X)
+             dSbusdt, dSfdt, dStdt) = compute_branch_power_derivatives(alltapm=alltapm,
+                                                                       alltapt=alltapt,
+                                                                       V=V,
+                                                                       k_m=k_m,
+                                                                       k_tau=k_tau,
+                                                                       Cf=Cf,
+                                                                       Ct=Ct,
+                                                                       R=R,
+                                                                       X=X)
 
             if ntapm != 0:
                 Gtapm = dSbusdm.copy()

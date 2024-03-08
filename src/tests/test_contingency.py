@@ -45,7 +45,7 @@ def test_contingency():
         pf_driver.run()
 
         # assert that the power flow matches whatevet it was done with the contingencies
-        assert (np.isclose(cont_analysis_driver.results.Sf[i, :], pf_driver.results.Sf).all())
+        assert (np.allclose(cont_analysis_driver.results.Sf[i, :], pf_driver.results.Sf))
 
         assert cont_analysis_driver.results.Sf[i, i] == complex(0, 0)
 

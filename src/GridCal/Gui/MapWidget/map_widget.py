@@ -441,16 +441,16 @@ class MapWidget(QWidget):
                         if result:
                             (sel, data, relsel) = result
 
-                            BoxSelectEvent(mposn=None,
-                                           vposn=None,
+                            BoxSelectEvent(mposn=(None, None),
+                                           vposn=(0, 0),
                                            layer_id=lid,
                                            selection=sel,
                                            relsel=relsel).emit_event()
 
                         else:
                             # raise an empty EVT_PYSLIPQT_BOXSELECT event
-                            BoxSelectEvent(mposn=None,
-                                           vposn=None,
+                            BoxSelectEvent(mposn=(None, None),
+                                           vposn=(0, 0),
                                            layer_id=lid,
                                            selection=None,
                                            relsel=None).emit_event()

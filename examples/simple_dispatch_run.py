@@ -1,4 +1,5 @@
 from GridCalEngine.api import *
+import pandas as pd
 
 # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/Lynn 5 Bus pv.gridcal'
 fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE39_1W.gridcal'
@@ -17,15 +18,11 @@ options = OptimalPowerFlowOptions(solver=solver,
                                   mip_solver=mip_solver,
                                   power_flow_options=pf_options)
 
-start = 0
-end = len(main_circuit.time_profile)
-
 # create the OPF time series instance
 # if non_sequential:
 optimal_power_flow_time_series = OptimalPowerFlowTimeSeriesDriver(grid=main_circuit,
                                                                   options=options,
-                                                                  start_=start,
-                                                                  end_=end)
+                                                                  time_indices=main_circuit.get_all_time_indices())
 
 optimal_power_flow_time_series.run()
 
@@ -38,8 +35,7 @@ print('Branch loading\n', l)
 g = optimal_power_flow_time_series.results.generator_power
 print('Gen power\n', g)
 
-pr = optimal_power_flow_time_series.results.shadow_prices
+pr = optimal_power_flow_time_series.results.bus_shadow_prices
 print('Nodal prices \n', pr)
 
-import pandas as pd
 pd.DataFrame(optimal_power_flow_time_series.results.loading).to_excel('opf_loading.xlsx')

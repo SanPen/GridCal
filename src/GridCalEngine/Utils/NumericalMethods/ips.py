@@ -293,6 +293,7 @@ def interior_point_solver(x0: Vec,
     :param arg: Tuple of arguments to call func: func(x, mu, lmbda, *arg)
     :param max_iter: Maximum number of iterations
     :param tol: Expected tolerance
+    :param pf_init:
     :param trust: Amount of trust in the initial newton deriavtive length estimation
     :param verbose: 0 to 3 (the larger, the more verbose)
     :param step_control: Use step control to improve the solution process control
@@ -350,9 +351,11 @@ def interior_point_solver(x0: Vec,
 
     ret = func(x, mu, lam, True, False, *arg)
 
+    dlam = np.zeros(len(lam))  # define dlam so it may not be undefined at the return state
+
     Lx = ret.fx + ret.Gx @ lam + ret.Hx @ mu
-    feascond = calc_feascond(g=ret.G, h=ret.H, x=x, z=z)  # max(max(abs(ret.G)), max(ret.H)) / (1 + max(max(abs(x)), max(abs(z))))
-    gradcond = calc_gradcond(Lx=Lx, lam=lam, mu=mu)  # max(abs(Lx)) / (1 + max(max(abs(lam)), max(abs(mu))))
+    feascond = calc_feascond(g=ret.G, h=ret.H, x=x, z=z)
+    # gradcond = calc_gradcond(Lx=Lx, lam=lam, mu=mu)
     converged = error <= gamma
 
     error_evolution = np.zeros(max_iter + 1)
@@ -438,14 +441,14 @@ def interior_point_solver(x0: Vec,
             alpha = 1.0
             for j in range(20):
                 dx1 = alpha * dx
-                #dlam1 = alpha * lam
-                #dmu1 = alpha * mu
+                # dlam1 = alpha * lam
+                # dmu1 = alpha * mu
 
                 x1 = x + dx1
-                #lam1 = lam + dlam1
-                #mu1 = mu + dmu1
+                # lam1 = lam + dlam1
+                # mu1 = mu + dmu1
 
-                #ret1 = func(x1, mu1, lam1, False, False, *arg)
+                # ret1 = func(x1, mu1, lam1, False, False, *arg)
                 ret1 = func(x1, mu, lam, False, False, *arg)
 
                 L1 = ret1.f + lam.T @ ret1.G + mu.T @ (ret1.H + z) - gamma * np.sum(np.log(z))
@@ -455,8 +458,6 @@ def interior_point_solver(x0: Vec,
                     break
                 else:
                     alpha = alpha / 2.0
-                    ssc = 1
-                    print('Use step control!')
 
             dx = alpha * dx
             dz = alpha * dz
