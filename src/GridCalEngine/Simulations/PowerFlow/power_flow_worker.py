@@ -605,7 +605,7 @@ def multi_island_pf_nc(nc: NumericalCircuit,
                 if Sbus_input is None:
                     Sbus = island.Sbus + Shvdc[island.original_bus_idx]
                 else:
-                    Sbus = Sbus_input + Shvdc[island.original_bus_idx]
+                    Sbus = (Sbus_input + Shvdc)[island.original_bus_idx]
 
                 res = single_island_pf(
                     circuit=island,

@@ -41,6 +41,7 @@ class StochasticPowerFlowInput:
         Sprof_dispatcheable = grid.get_Sbus_prof_dispatchable()
 
         # build the CFD for the dispatchable values
+        assert Sprof_fixed.shape[1] == self.n  # this was a bug before, so check this!
         self.Scdf_fixed = [CDF(Sprof_fixed[:, i]) for i in range(self.n)]
 
         # build the relationship of the dispatchable devices to the fixed ones for later
