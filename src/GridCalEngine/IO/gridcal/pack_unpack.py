@@ -43,6 +43,8 @@ def get_objects_dictionary() -> Dict[str, ALL_DEV_TYPES]:
 
                     'substation': dev.Substation(),
 
+                    'voltage_level': dev.VoltageLevel(),
+
                     'country': dev.Country(),
 
                     'technology': dev.Technology(),

@@ -158,6 +158,10 @@ class ObjectsTableMain(DiagramsMain):
 
         elif elm_type == DeviceType.BusBarDevice:
             elm = dev.BusBar()
+            dictionary_of_lists = {DeviceType.VoltageLevelDevice.value: self.circuit.get_voltage_levels(), }
+
+        elif elm_type == DeviceType.VoltageLevelDevice:
+            elm = dev.VoltageLevel()
             dictionary_of_lists = {DeviceType.SubstationDevice.value: self.circuit.get_substations(), }
 
         elif elm_type == DeviceType.ZoneDevice:
@@ -710,7 +714,7 @@ class ObjectsTableMain(DiagramsMain):
 
                     if mx != 0:
 
-                        colors = [None] * len(values)
+                        colors = np.zeros(len(values), dtype=object)
                         for i, value in enumerate(values):
                             r, g, b, a = cmap(value / mx)
                             colors[i] = QtGui.QColor(r * 255, g * 255, b * 255, a * 255)

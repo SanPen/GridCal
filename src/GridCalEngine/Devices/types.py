@@ -58,7 +58,8 @@ SUBSTATION_TYPES = Union[
     Substation,
     Bus,
     ConnectivityNode,
-    BusBar
+    BusBar,
+    VoltageLevel
 ]
 
 MEASUREMENT_TYPES = Union[

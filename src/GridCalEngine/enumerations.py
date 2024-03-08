@@ -908,6 +908,7 @@ class DeviceType(Enum):
     ZoneDevice = 'Zone'
     CountryDevice = 'Country'
     BusBarDevice = 'BusBar'
+    VoltageLevelDevice = 'VoltageLevel'
 
     Technology = 'Technology'
     TechnologyGroup = 'Technology Group'
