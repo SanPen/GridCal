@@ -41,7 +41,7 @@ class StochasticPowerFlowInput:
         Sprof_dispatcheable = grid.get_Sbus_prof_dispatchable()
 
         # build the CFD for the dispatchable values
-        self.Scdf_fixed = [CDF(Sprof_fixed[i, :]) for i in range(self.n)]
+        self.Scdf_fixed = [CDF(Sprof_fixed[:, i]) for i in range(self.n)]
 
         # build the relationship of the dispatchable devices to the fixed ones for later
         self.regression_model = KNeighborsRegressor(n_neighbors=4)
