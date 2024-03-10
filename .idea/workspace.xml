@@ -29,9 +29,18 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Minor update in controls buses for series elements">
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/figures/investments/ZDT3_pareto.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/figures/investments/multi_pareto_iterations.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/figures/investments/single_pareto_iterations.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/figures/investments/single_pareto_iterations_2.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/figures/investments/zdt3_multi_1.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/figures/investments/zdt3_multi_2.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/figures/investments/zdt3_multi_3.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/figures/investments/zdt3_single_1.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/figures/investments/zdt3_single_2.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/figures/investments/zdt3_single_3.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/investments_evaluation_results.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/investments_evaluation_results.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/investments/estabanell_debug.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/rst_source/theory/investments_evaluation.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/theory/investments_evaluation.rst" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -72,7 +81,7 @@
     </favorite-branches>
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="204_investments_evaluation" />
+        <entry key="$PROJECT_DIR$" value="devel" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -163,11 +172,11 @@
       <recent name="$PROJECT_DIR$/examples/trunk/acdc_pf" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\a1003\Desktop\GridCal\doc\rst_source\figures\investments" />
+      <recent name="C:\Users\a1003\Desktop\GridCal\doc\rst_source\theory" />
       <recent name="D:\SIROCO\GridCal\src\GridCal\Gui\NodeBreakerEditorWidget" />
       <recent name="$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/Methods" />
       <recent name="$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis" />
-      <recent name="$PROJECT_DIR$/doc/rst_source/figures/opf" />
-      <recent name="$PROJECT_DIR$/doc/rst_source/theory/linear" />
     </key>
   </component>
   <component name="RunManager" selected="Python.ExecuteGridCal">
@@ -2364,16 +2373,6 @@
           <option name="timeStamp" value="1471" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/contingencies_report.py</url>
-          <line>532</line>
-          <option name="timeStamp" value="1476" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/contingencies_report.py</url>
-          <line>576</line>
-          <option name="timeStamp" value="1478" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Devices/Parents/editable_device.py</url>
           <line>592</line>
           <option name="timeStamp" value="1484" />
@@ -2399,26 +2398,6 @@
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Devices/Parents/editable_device.py</url>
           <line>602</line>
           <option name="timeStamp" value="1492" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/pack_unpack.py</url>
-          <line>921</line>
-          <option name="timeStamp" value="1503" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/pack_unpack.py</url>
-          <line>785</line>
-          <option name="timeStamp" value="1504" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/pack_unpack.py</url>
-          <line>927</line>
-          <option name="timeStamp" value="1505" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/pack_unpack.py</url>
-          <line>707</line>
-          <option name="timeStamp" value="1507" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
