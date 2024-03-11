@@ -2619,6 +2619,7 @@ class MultiCircuit:
         try:
             self.time_profile = pd.to_datetime(np.array(unix_data), unit='s', origin='unix')
         except Exception as e:
+            print("Error", e)
             # it may come in nanoseconds instead of seconds...
             self.time_profile = pd.to_datetime(np.array(unix_data) / 1e9, unit='s', origin='unix')
 

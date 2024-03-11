@@ -34,8 +34,6 @@ def kmeans_sampling(x_input: Mat, n_points: int = 10) -> Tuple[IntVec, Vec, IntV
     """
     os.environ['OPENBLAS_NUM_THREADS'] = '12'
 
-    tm0 = time.time()
-
     # declare the model
     model = KMeans(n_clusters=n_points, random_state=0, n_init=10)
 
@@ -121,7 +119,7 @@ def spectral_approximate_sampling(x_input: Mat, n_points: int = 10) -> Tuple[Int
     labels = model.labels_
 
     # categorize labels
-    label_indices_init: List[List[int]] = [list() for i in range(n_points)]
+    label_indices_init: List[List[int]] = [list() for _ in range(n_points)]
     for i, k in enumerate(labels):
         label_indices_init[k].append(i)
 
