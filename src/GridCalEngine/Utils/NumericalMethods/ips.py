@@ -28,35 +28,26 @@ from GridCalEngine.Utils.Sparse.csc import pack_3_by_4, diags
 from GridCalEngine.Utils.NumericalMethods.sparse_solve import get_linear_solver
 from GridCalEngine.enumerations import SparseSolver
 
-
 linear_solver = get_linear_solver(SparseSolver.Pardiso)
 
-#@nb.njit(cache=True)
-def step_calculation(V: Vec, dV: Vec, tau:float=0.99995):
+
+def step_calculation(v: Vec, dv: Vec, tau: float = 0.99995):
     """
     This function calculates for each Lambda multiplier or its associated Slack variable
     the maximum allowed step in order to not violate the KKT condition Lambda > 0 and S > 0
-    :param V: Array of multipliers or slack variables
-    :param dV: Variation calculated in the Newton step
+    :param v: Array of multipliers or slack variables
+    :param dv: Variation calculated in the Newton step
     :param tau: Factor to be not exactly 1
     :return:
     """
-    k = np.flatnonzero(dV < 0.0)
-    if len(k)>0:
-        alpha = min([tau * min(V[k] / (-dV[k] + 1e-15)), 1])
+    k = np.flatnonzero(dv < 0.0)
+    if len(k) > 0:
+        alpha = min([tau * min(v[k] / (-dv[k] + 1e-15)), 1])
     else:
         alpha = 1
-    #
-    # alpha = 1.0
-    #
-    # for i in range(len(V)):
-    #     if dV[i] < 0:
-    #         alpha = min(alpha, -V[i] / dV[i])
-    #
-    # # return min(0.9999995 * alpha, 1.0)
-    # return min(0.99995 * alpha, 1.0)
 
     return alpha
+
 
 @nb.njit(cache=True)
 def split(sol: Vec, n: int):
@@ -118,15 +109,15 @@ def calc_feascond(g: Vec, h: Vec, x: Vec, z: Vec):
     return max(max_abs(g), np.max(h)) / (1.0 + max(max_abs(x), max_abs(z)))
 
 
-def calc_gradcond(Lx: Vec, lam: Vec, mu: Vec):
+def calc_gradcond(lx: Vec, lam: Vec, mu: Vec):
     """
     calculate the gradient conditions
-    :param Lx:
+    :param lx:
     :param lam:
     :param mu:
     :return:
     """
-    return max_abs(Lx) / (1 + max(max_abs(lam), max_abs(mu)))
+    return max_abs(lx) / (1 + max(max_abs(lam), max_abs(mu)))
 
 
 def calc_ccond(mu: Vec, z: Vec, x: Vec):
@@ -293,13 +284,13 @@ def interior_point_solver(x0: Vec,
     :param arg: Tuple of arguments to call func: func(x, mu, lmbda, *arg)
     :param max_iter: Maximum number of iterations
     :param tol: Expected tolerance
-    :param pf_init:
-    :param trust: Amount of trust in the initial newton deriavtive length estimation
+    :param pf_init: Use the power flow solution as initial values
+    :param trust: Amount of trust in the initial Newton derivative length estimation
     :param verbose: 0 to 3 (the larger, the more verbose)
     :param step_control: Use step control to improve the solution process control
     :return: IpsSolution
     """
-    START = timeit.default_timer()
+    t_start = timeit.default_timer()
 
     # Init iteration values
     error = 1e6
@@ -309,17 +300,7 @@ def interior_point_solver(x0: Vec,
     nabla = 0.05
     rho_lower = 1.0 - nabla
     rho_upper = 1.0 + nabla
-    max_backtrack_iters = 20
     e = np.ones(n_ineq)
-
-    # Init multiplier values. Defaulted at 1.
-    # lam = np.ones(n_eq)
-
-    # z0 = 1.0  # TODO check what about this
-    # z = z0 * np.ones(n_ineq)
-    # mu = z.copy()
-    # z_inv = diags(1.0 / z)
-    # mu_diag = diags(mu)
 
     # Our init
     if pf_init:
@@ -351,11 +332,7 @@ def interior_point_solver(x0: Vec,
 
     ret = func(x, mu, lam, True, False, *arg)
 
-    dlam = np.zeros(len(lam))  # define dlam so it may not be undefined at the return state
-
-    Lx = ret.fx + ret.Gx @ lam + ret.Hx @ mu
     feascond = calc_feascond(g=ret.G, h=ret.H, x=x, z=z)
-    # gradcond = calc_gradcond(Lx=Lx, lam=lam, mu=mu)
     converged = error <= gamma
 
     error_evolution = np.zeros(max_iter + 1)
@@ -364,100 +341,48 @@ def interior_point_solver(x0: Vec,
     # record initial values
     feascond_evolution[iter_counter] = feascond
     error_evolution[0] = error
-    N = np.zeros(n_x + n_eq)
+    n = np.zeros(n_x + n_eq)
+    dlam = None
     while not converged and iter_counter < max_iter:
 
         # Evaluate the functions, gradients and hessians at the current iteration.
         ret = func(x, mu, lam, True, True, *arg)
 
         # compose the Jacobian
-        Lxx = ret.fxx + ret.Gxx + ret.Hxx
-        M = Lxx + ret.Hx @ z_inv @ mu_diag @ ret.Hx.T
-        J = pack_3_by_4(M.tocsc(), ret.Gx.tocsc(), ret.Gx.T.tocsc())
+        lxx = ret.fxx + ret.Gxx + ret.Hxx
+        m = lxx + ret.Hx @ z_inv @ mu_diag @ ret.Hx.T
+        jac = pack_3_by_4(m.tocsc(), ret.Gx.tocsc(), ret.Gx.T.tocsc())
 
         # compose the residual
-        Lx = ret.fx + ret.Gx @ lam + ret.Hx @ mu
-        N = Lx + ret.Hx @ z_inv @ (gamma * e + mu * ret.H)
-        r = - np.r_[N, ret.G]
+        lx = ret.fx + ret.Gx @ lam + ret.Hx @ mu
+        n = lx + ret.Hx @ z_inv @ (gamma * e + mu * ret.H)
+        r = - np.r_[n, ret.G]
 
         # Find the reduced problem residuals and split them
-        dx, dlam = split(linear_solver(J, r), n_x)
+        dx, dlam = split(linear_solver(jac, r), n_x)
 
         # Calculate the inequalities residuals using the reduced problem residuals
         dz = - ret.H - z - ret.Hx.T @ dx
         dmu = - mu + z_inv @ (gamma * e - mu * dz)
 
-        # # Step control
-        # if step_control:
-        #
-        #     x1 = x + dx
-        #     ret1 = func(x1, mu, lam, True, False, *arg)
-        #     Lx1 = ret1.fx + ret1.Hx @ mu + ret1.Gx @ lam
-        #
-        #     feascond1 = calc_feascond(g=ret1.G, h=ret1.H, x=x1, z=z)
-        #     gradcond1 = calc_gradcond(Lx=Lx1, lam=lam, mu=mu)
-        #
-        #     if feascond1 > feascond and gradcond1 > gradcond:
-        #
-        #         alpha = trust  # 1.0 for a 100%, 0.9 for 95% etc...
-        #         back_track_iter = 0
-        #         rho = rho_lower - 1.0  # any number outside the interval
-        #         back_track_cond = rho_lower < rho < rho_upper
-        #         L = ret.f + lam.T @ ret.G + mu.T @ (ret.H + z) - gamma * np.sum(np.log(z))
-        #
-        #         while not back_track_cond and (back_track_iter < max_backtrack_iters):
-        #
-        #             # compute new increments
-        #             dx1 = alpha * dx
-        #             dlam1 = alpha * dlam
-        #             dmu1 = alpha * dmu
-        #
-        #             # compute variables
-        #             x1 = x + dx1
-        #             lam1 = lam + dlam1
-        #             mu1 = mu + dmu1
-        #
-        #             ret1 = func(x1, mu1, lam1, True, False, *arg)
-        #
-        #             L1 = ret1.f + lam.T @ ret1.G + mu.T @ (ret1.H + z) - gamma * np.sum(np.log(z))
-        #             rho = (L1 - L) / (Lx.T @ dx1 + 0.5 * dx1.T @ Lxx @ dx1)
-        #
-        #             alpha = alpha / 2.0
-        #
-        #             back_track_cond = rho_lower < rho < rho_upper
-        #
-        #             back_track_iter += 1
-        #
-        #         if back_track_cond:
-        #             # update with an alpha value
-        #             dx *= alpha
-        #             dz *= alpha
-        #             dlam *= alpha
-        #             dmu *= alpha
-
         # Step control as in PyPower
         if step_control:
-            L = ret.f + np.dot(lam, ret.G) + np.dot(mu, ret.H + z) - gamma * np.sum(np.log(z))
-            alpha = 1.0
+            l0 = ret.f + np.dot(lam, ret.G) + np.dot(mu, ret.H + z) - gamma * np.sum(np.log(z))
+            alpha = trust
             for j in range(20):
                 dx1 = alpha * dx
-                # dlam1 = alpha * lam
-                # dmu1 = alpha * mu
-
                 x1 = x + dx1
-                # lam1 = lam + dlam1
-                # mu1 = mu + dmu1
 
-                # ret1 = func(x1, mu1, lam1, False, False, *arg)
                 ret1 = func(x1, mu, lam, False, False, *arg)
 
-                L1 = ret1.f + lam.T @ ret1.G + mu.T @ (ret1.H + z) - gamma * np.sum(np.log(z))
-                rho = (L1 - L) / (Lx @ dx1 + 0.5 * dx1.T @ Lxx @ dx1)
+                l1 = ret1.f + lam.T @ ret1.G + mu.T @ (ret1.H + z) - gamma * np.sum(np.log(z))
+                rho = (l1 - l0) / (lx @ dx1 + 0.5 * dx1.T @ lxx @ dx1)
 
                 if rho_lower < rho < rho_upper:
                     break
                 else:
                     alpha = alpha / 2.0
+                    print('Use step control!')
 
             dx = alpha * dx
             dz = alpha * dz
@@ -473,12 +398,7 @@ def interior_point_solver(x0: Vec,
         z += dz * alpha_p
         lam += dlam * alpha_d
         mu += dmu * alpha_d
-        # gamma = max(min(0.1 * (mu @ z) / n_ineq, 0.5*gamma), 1e-5)  # Maximum tolerance requested.
         gamma = 0.1 * mu @ z / n_ineq
-
-        # Compute the maximum error and the new gamma value
-        # error = calc_error(dx, dz, dmu, dlam)
-        # error = np.max(np.abs(r))
 
         # Update fobj, g, h
         ret = func(x, mu, lam, True, False, *arg)
@@ -488,12 +408,9 @@ def interior_point_solver(x0: Vec,
         mu_norm = np.linalg.norm(mu, np.Inf)
         z_norm = np.linalg.norm(z, np.Inf)
 
-        Lx = ret.fx + ret.Hx @ mu + ret.Gx @ lam
+        lx = ret.fx + ret.Hx @ mu + ret.Gx @ lam
         feascond = max([g_norm, max(ret.H)]) / (1 + max([np.linalg.norm(x, np.Inf), z_norm]))
-        gradcond = np.linalg.norm(Lx, np.Inf) / (1 + max([lam_norm, mu_norm]))
-
-        # feascond = calc_feascond(g=ret.G, h=ret.H, x=x, z=z)
-        # gradcond = calc_gradcond(Lx=Lx, lam=lam, mu=mu)
+        gradcond = np.linalg.norm(lx, np.Inf) / (1 + max([lam_norm, mu_norm]))
         error = np.max([feascond, gradcond])
 
         z_inv = diags(1.0 / z)
@@ -521,7 +438,7 @@ def interior_point_solver(x0: Vec,
         feascond_evolution[iter_counter] = feascond
         error_evolution[iter_counter] = error
 
-    END = timeit.default_timer()
+    t_end = timeit.default_timer()
 
     if verbose > 0:
         print(f'SOLUTION', "-" * 80)
@@ -530,8 +447,8 @@ def interior_point_solver(x0: Vec,
         print(f"\tF.obj: {ret.f * 1e4}")
         print(f"\tErr: {error}")
         print(f'\tIterations: {iter_counter}')
-        print(f'\tTime elapsed (s): {END - START}')
+        print(f'\tTime elapsed (s): {t_end - t_start}')
         print(f'\tFeas cond: ', feascond)
 
-    return IpsSolution(x=x, error=error, gamma=gamma, lam=lam, dlam=dlam, mu=mu, z=z, residuals=N, structs=ret,
+    return IpsSolution(x=x, error=error, gamma=gamma, lam=lam, dlam=dlam, mu=mu, z=z, residuals=n, structs=ret,
                        converged=converged, iterations=iter_counter, error_evolution=error_evolution)
