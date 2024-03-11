@@ -429,6 +429,7 @@ def test_mlodf() -> None:
 
         assert np.allclose(Sfmlodf, Sfnr, atol=1e-5)
 
+
 def test_mlodf_sanpen():
     """
     Compare power flow per branches in N-2 contingencies using theoretical methodology and MLODF
@@ -478,12 +479,12 @@ def test_ptdf_generation_contingencies():
     later with a PTDF driver and both should provide the same values
     """
     for fname in [
-        #os.path.join('data', 'grids', 'IEEE14-gen120.gridcal'),
+        os.path.join('data', 'grids', 'IEEE14-gen120.gridcal'),
         os.path.join('data', 'grids', 'IEEE14-gen80.gridcal'),
-        #os.path.join('data', 'grids', 'IEEE30-gen80.gridcal'),
-        #os.path.join('data', 'grids', 'IEEE30-gen120.gridcal'),
-        #os.path.join('data', 'grids', 'IEEE118-gen80.gridcal'),
-        #os.path.join('data', 'grids', 'IEEE118-gen120.gridcal'),
+        os.path.join('data', 'grids', 'IEEE30-gen80.gridcal'),
+        os.path.join('data', 'grids', 'IEEE30-gen120.gridcal'),
+        os.path.join('data', 'grids', 'IEEE118-gen80.gridcal'),
+        os.path.join('data', 'grids', 'IEEE118-gen120.gridcal'),
 
     ]:
         main_circuit = FileOpen(fname).open()
@@ -501,8 +502,7 @@ def test_ptdf_generation_contingencies():
                                                           linear_multiple_contingencies=None)
         cont_analysis_driver1.run()
 
-
-        #PTDF METHOD
+        # PTDF METHOD
         linear_analysis = LinearAnalysisDriver(grid=main_circuit)
         linear_analysis.run()
         linear_multi_contingency = LinearMultiContingencies(grid=main_circuit)
@@ -513,7 +513,6 @@ def test_ptdf_generation_contingencies():
 
         ok = np.allclose(cont_analysis_driver1.results.Sf, cont_analysis_driver2.results.Sf, atol=1e-4)
         assert ok
-
 
 
 def test_lodf_single_contingencies():
@@ -596,7 +595,6 @@ def test_generation_contingencies_powerflow():
                                       control_q=ReactivePowerControlMode.NoControl,
                                       control_p=False)
 
-
         # DC power flow method with ContingencyAnalysisDriver
         pf_options = PowerFlowOptions(SolverType.DC,
                                       verbose=False,
@@ -621,6 +619,7 @@ def test_generation_contingencies_powerflow():
 
         ok = np.allclose(cont_analysis_driver1.results.Sf, power_flow.results.Sf)
         assert ok
+
 
 def test_compensated_ptdf():
     """
@@ -654,17 +653,17 @@ def test_compensated_ptdf():
         linear_multi_contingency.compute(ptdf=linear_analysis.results.PTDF, lodf=linear_analysis.results.LODF)
 
         main_circuit_raw = FileOpen(case['orig']).open()
-        #main_circuit_raw.delete_line(main_circuit_raw.get_lines()[0]) # Disable branch 1_2
+        # main_circuit_raw.delete_line(main_circuit_raw.get_lines()[0]) # Disable branch 1_2
         line = main_circuit.contingencies[0].code
         for l in main_circuit_raw.lines:
             if l.code == line:
                 l.active = False
 
-
         linear_analysis_raw = LinearAnalysisDriver(grid=main_circuit_raw)
         linear_analysis_raw.run()
 
-        ok = np.allclose(linear_multi_contingency.multi_contingencies[0].compensated_ptdf_factors.todense(), linear_analysis_raw.results.PTDF, atol=1e-3)
+        ok = np.allclose(linear_multi_contingency.multi_contingencies[0].compensated_ptdf_factors.todense(),
+                         linear_analysis_raw.results.PTDF, atol=1e-3)
         assert ok
 
 
