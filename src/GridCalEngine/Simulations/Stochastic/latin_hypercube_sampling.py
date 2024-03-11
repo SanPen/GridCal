@@ -31,9 +31,6 @@ def lhs(n: int,
     ----------
     n : int
         The number of factors to generate samples for
-
-    Optional
-    --------
     samples : int
         The number of samples to generate for each factor (Default: n)
     criterion : str

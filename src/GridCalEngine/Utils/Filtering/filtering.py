@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from typing import List, Any, Union, Tuple
+from typing import List, Union
 from enum import Enum
 import re
 import numpy as np
@@ -54,6 +54,11 @@ class CompOps(Enum):
 
     @staticmethod
     def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
         try:
             return CompOps[s]
         except KeyError:
@@ -61,6 +66,10 @@ class CompOps(Enum):
 
     @classmethod
     def list(cls):
+        """
+
+        :return:
+        """
         return list(map(lambda c: c.value, cls))
 
 
@@ -199,7 +208,13 @@ class Filter:
 
         return lst
 
-    def try_numeric(self, value):
+    @staticmethod
+    def try_numeric(value):
+        """
+        Try to convert a value to a numeric type
+        :param value:
+        :return: float
+        """
         try:
             float(value)
             return True
@@ -207,11 +222,16 @@ class Filter:
             return False
 
     def apply_filter_op(self, obj_val, val):
-
+        """
+        Apply the filter operation
+        :param obj_val:
+        :param val:
+        :return:
+        """
         ok = True
 
         if self.op == CompOps.GT:
-            if (self.try_numeric(obj_val) and self.try_numeric(val)):
+            if self.try_numeric(obj_val) and self.try_numeric(val):
                 obj_val = float(obj_val)
                 val = float(val)
                 ok = obj_val > val
@@ -219,7 +239,7 @@ class Filter:
                 ok = False
 
         elif self.op == CompOps.LT:
-            if (self.try_numeric(obj_val) and self.try_numeric(val)):
+            if self.try_numeric(obj_val) and self.try_numeric(val):
                 obj_val = float(obj_val)
                 val = float(val)
                 ok = obj_val < val
@@ -227,7 +247,7 @@ class Filter:
                 ok = False
 
         elif self.op == CompOps.GEQ:
-            if (self.try_numeric(obj_val) and self.try_numeric(val)):
+            if self.try_numeric(obj_val) and self.try_numeric(val):
                 obj_val = float(obj_val)
                 val = float(val)
                 ok = obj_val >= val
@@ -235,7 +255,7 @@ class Filter:
                 ok = False
 
         elif self.op == CompOps.LEQ:
-            if (self.try_numeric(obj_val) and self.try_numeric(val)):
+            if self.try_numeric(obj_val) and self.try_numeric(val):
                 obj_val = float(obj_val)
                 val = float(val)
                 ok = obj_val <= val
@@ -248,7 +268,7 @@ class Filter:
             ok = obj_val != val
 
         elif self.op == CompOps.EQ:
-            if (self.try_numeric(obj_val) and self.try_numeric(val)):
+            if self.try_numeric(obj_val) and self.try_numeric(val):
                 obj_val = float(obj_val)
                 val = float(val)
                 ok = obj_val == val
@@ -281,6 +301,7 @@ class Filter:
             ok = False
 
         return ok
+
 
 class MasterFilter:
     """
@@ -377,5 +398,3 @@ def is_numeric(obj):
     """
     attrs = ['__add__', '__sub__', '__mul__', '__truediv__', '__pow__']
     return all(hasattr(obj, attr) for attr in attrs)
-
-

@@ -173,7 +173,8 @@ class RpgAlgorithm(object):
             for u in range(v):
                 self.distance[(u, v)] = self._get_distance(u, v)
 
-    def _uniformunitsquare(self):
+    @staticmethod
+    def _uniformunitsquare():
         """
         return point drawn uniformly at random
         from unit square -> 2D coordinates
@@ -342,8 +343,14 @@ class RpgAlgorithm(object):
             # check that update went well
             assert ((self.dGmatrix[:(node + 1), :(node + 1)] - self._get_graph_distances())**2).sum() == 0
 
+    @staticmethod
+    def _validation(attr, value):
+        """
 
-    def _validation(self, attr, value):
+        :param attr:
+        :param value:
+        :return:
+        """
         if attr == "n0" or attr == "n":
             if value < 1:
                 return False
@@ -417,7 +424,7 @@ class RpgAlgorithm(object):
     def _get_closest_connected_node(self, source, connected):
         # vertices need to be properly ordered for this to work, i.e. nodes in the connected component
         # should be labeled from 0 to connected-1
-        min = np.inf
+        min_ = np.inf
         target = source
         for node in range(connected):
             if source == node:
@@ -425,16 +432,22 @@ class RpgAlgorithm(object):
                 continue
             elif self.adjacency[source, node] == 0:
                 d = self._get_distance(node, source) if self.low_memory else self.distance[(node, source)]
-                if d < min:
-                    min = d
+                if d < min_:
+                    min_ = d
                     target = node
         return target
 
-    def _s(self, tuple):
-        if tuple[0] < tuple[1]:
-            return tuple
+    @staticmethod
+    def _s(tuple_: tuple) -> tuple:
+        """
+
+        :param tuple_:
+        :return:
+        """
+        if tuple_[0] < tuple_[1]:
+            return tuple_
         else:
-            return (tuple[1], tuple[0])
+            return tuple_[1], tuple_[0]
 
 
 #######################################################################################################################

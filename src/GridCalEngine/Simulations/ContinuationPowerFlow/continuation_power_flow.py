@@ -20,7 +20,9 @@ np.set_printoptions(precision=8, suppress=True, linewidth=320)
 
 
 class CpfNumericResults:
-
+    """
+    CpfNumericResults
+    """
     def __init__(self):
         self.V = list()
         self.Sbus = list()
@@ -329,6 +331,8 @@ def corrector(Ybus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, paramet
     :param tol: Tolerance (p.u.)
     :param max_it: max iterations
     :param verbose: print information?
+    :param mu_0:
+    :param acceleration_parameter:
     :return: Voltage, converged, iterations, lambda, power error, calculated power
     """
 
@@ -481,6 +485,7 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Ibus_base, Ibus_t
     :param Yf: Admittance matrix of the "from" nodes
     :param Yt: Admittance matrix of the "to" nodes
     :param branch_rates: array of branch rates to check the overload condition
+    :param Sbase:
     :param Ibus_base:
     :param Ibus_target:
     :param Sbus_base: Power array of the base solvable case

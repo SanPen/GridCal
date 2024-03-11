@@ -7,6 +7,28 @@ def get_psse_transformer_impedances(CW, CZ, CM, V1, V2, sbase, logger, code,
                                     R1_2, X1_2, SBASE1_2):
     """
 
+    :param CW:
+    :param CZ:
+    :param CM:
+    :param V1:
+    :param V2:
+    :param sbase:
+    :param logger:
+    :param code:
+    :param MAG1:
+    :param MAG2:
+    :param WINDV1:
+    :param WINDV2:
+    :param ANG1:
+    :param NOMV1:
+    :param NOMV2:
+    :param R1_2:
+    :param X1_2:
+    :param SBASE1_2:
+    :return:
+    """
+
+    """
     CW	Winding I/O code
     1	Turns ratio (pu on bus base kV)
     2	Winding voltage kV
@@ -20,12 +42,6 @@ def get_psse_transformer_impedances(CW, CZ, CM, V1, V2, sbase, logger, code,
     CM	Admittance I/O code
     1	Y pu (system base)
     2	No load loss (W) & Exciting I (pu)
-
-
-    :param CW:
-    :param CZ:
-    :param CM:
-    :return:
     """
 
     g = MAG1

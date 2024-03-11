@@ -322,7 +322,7 @@ def publish(pkg_name: str,
             description_content_type: str,
             provides_extra: str,
             long_description: str,
-            ext_filter=['.py', '.csv', '.txt']):
+            ext_filter=('.py', '.csv', '.txt')):
     """
     Publish package to Pypi using twine
     :param pkg_name: name of the package (i.e GridCal)

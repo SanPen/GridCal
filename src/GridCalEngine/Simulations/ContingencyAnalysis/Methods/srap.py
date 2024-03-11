@@ -73,7 +73,7 @@ def vector_sum_used_power_srap(p_available3: Vec, sensitivities3: Vec, max_srap_
 
     :param p_available3:
     :param sensitivities3:
-    :param srap_pmax_mw:
+    :param max_srap_power:
     :return:
     """
     # inicializar la suma parcial

@@ -488,6 +488,7 @@ def get_hvdc_from_vscdc(psse_elm: RawVscDCLine, psse_bus_dict, Sbase, logger: Lo
     Get equivalent object
     :param psse_elm:
     :param psse_bus_dict:
+    :param Sbase: Base power in MVA
     :param logger:
     :return:
     """
@@ -593,7 +594,9 @@ def get_hvdc_from_twotermdc(psse_elm: RawTwoTerminalDCLine, psse_bus_dict, Sbase
 def get_upfc_from_facts(psse_elm: RawFACTS, psse_bus_dict, Sbase, logger: Logger, circuit: MultiCircuit):
     """
     Get equivalent object
+    :param psse_elm:
     :param psse_bus_dict:
+    :param Sbase:
     :param logger:
     :param circuit:
     :return:

@@ -808,6 +808,7 @@ def get_st_node_load(plexos_results_folder, parse_dates=False):
     """
     Get the node load use from a PLEXOS results folder
     :param plexos_results_folder: PLEXOS results folder
+    :param parse_dates: Parse the dates?
     :return: pandas DataFrame with the node load
     """
     fname = os.path.join(plexos_results_folder, 'Interval', 'ST Node.Load.csv')

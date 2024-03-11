@@ -29,22 +29,28 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="More types in the power flow worker">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/hydro_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/examples/hydro_opf.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/nonlinear_analysis_run.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/sparse_solvers.py" beforeDir="false" afterPath="$PROJECT_DIR$/examples/sparse_solvers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/state_estimation_run.py" beforeDir="false" afterPath="$PROJECT_DIR$/examples/state_estimation_run.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/try_investment_optimization.py" beforeDir="false" afterPath="$PROJECT_DIR$/examples/try_investment_optimization.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/setup.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/MapWidget/map_widget.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/MapWidget/map_widget.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/hvdc_line.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/hvdc_line.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/matpower/matpower_bus_definitions.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/matpower/matpower_bus_definitions.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/matpower/matpower_parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/matpower/matpower_parser.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/others/dpx_parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/others/dpx_parser.py" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Improved types">
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/others/plx_parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/others/plx_parser.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/raw/raw_functions.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/raw/raw_functions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/raw/raw_parser_legacy.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/raw/raw_parser_legacy.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/raw/raw_to_gridcal.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/raw/raw_to_gridcal.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/raw/rawx_parser_legacy.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/raw/rawx_parser_legacy.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/Methods/srap.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/Methods/srap.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ContinuationPowerFlow/continuation_power_flow.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ContinuationPowerFlow/continuation_power_flow.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/NumericalMethods/MVRSM_mo_pareto.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/NumericalMethods/MVRSM_mo_pareto.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/derivatives.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/derivatives.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/helm_power_flow.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/helm_power_flow.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/iwamoto_newton_raphson.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/iwamoto_newton_raphson.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/linearized_power_flow.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/linearized_power_flow.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/newton_raphson_decoupled.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/newton_raphson_decoupled.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/newton_raphson_ode.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/newton_raphson_ode.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/Stochastic/latin_hypercube_sampling.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/Stochastic/latin_hypercube_sampling.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/setup.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/Topology/topology_reduction_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/Topology/topology_reduction_driver.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Topology/topology_substation_reduction.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Topology/topology_substation_reduction.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/Filtering/filtering.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/Filtering/filtering.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/ThirdParty/SyntheticNetworks/rpgm_algo.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/ThirdParty/SyntheticNetworks/rpgm_algo.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/basic_structures.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/basic_structures.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/data_logger.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/data_logger.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/gridcal_packaging.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/gridcal_packaging.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -1367,7 +1373,7 @@
       <workItem from="1709917964440" duration="6867000" />
       <workItem from="1709929117696" duration="369000" />
       <workItem from="1709985759414" duration="22000" />
-      <workItem from="1710144790546" duration="5496000" />
+      <workItem from="1710144790546" duration="8551000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1712,7 +1718,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="503" />
+    <option name="localTasksCounter" value="504" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1758,7 +1764,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Refactored the acopf to take opf options" />
     <MESSAGE value="Added the ability to split into islands but using the HVDC links as actual links" />
     <MESSAGE value="Fixed #266" />
     <MESSAGE value="Fixed bug with deleted elements not being de-referenced from the diagram" />
@@ -1783,7 +1788,8 @@
     <MESSAGE value="Global type fixes from the Qodana report" />
     <MESSAGE value="Further fixing of the stochastic PF" />
     <MESSAGE value="More types in the power flow worker" />
-    <option name="LAST_COMMIT_MESSAGE" value="More types in the power flow worker" />
+    <MESSAGE value="Improved types" />
+    <option name="LAST_COMMIT_MESSAGE" value="Improved types" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
