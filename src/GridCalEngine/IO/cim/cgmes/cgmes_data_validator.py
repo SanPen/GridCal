@@ -22,14 +22,15 @@ from rdflib.namespace import RDF, RDFS, Namespace
 
 from typing import List
 
-
 import os
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
 import pandas as pd
 
+
 class CgmesDataValidator:
     def __init__(self, cgmes_circuit: CgmesCircuit = None):
         self.cgmes_circuit = cgmes_circuit
+
     def create_graph(self, profile: List[str]):
         graph = Graph()
         graph.bind("cim", Namespace("http://iec.ch/TC57/2013/CIM-schema-cim16#"))
