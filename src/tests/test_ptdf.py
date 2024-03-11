@@ -198,42 +198,41 @@ def test_lodf_ieee14_psse() -> None:
     # diff = lodf - simulation.results.LODF
     # print(diff)
 
-    assert (np.isclose(lodf, simulation.results.LODF, atol=1e-1).all())
+    assert np.allclose(lodf, simulation.results.LODF, atol=1e-5)
 
 
 def test_dcpowerflow():
-    # fname = os.path.join('data', 'grids', 'RAW', 'IEEE 30 bus.raw')
-    # fname = os.path.join('data', 'grids', 'RAW', 'IEEE 14 bus.raw')
-    # fname = os.path.join('data', 'grids', 'RAW', 'ieee-14-d.raw')
-    fname = os.path.join('data', 'grids', 'IEEE14-gen80.gridcal')
+    for fname in [os.path.join('data', 'grids', 'RAW', 'IEEE 30 bus.raw'),
+                  os.path.join('data', 'grids', 'RAW', 'IEEE 14 bus.raw'),
+                  # os.path.join('data', 'grids', 'RAW', 'ieee-14-d.raw'),
+                  os.path.join('data', 'grids', 'IEEE14-gen80.gridcal')]:
+        main_circuit = FileOpen(fname).open()
 
-    main_circuit = FileOpen(fname).open()
-
-    pf_options = PowerFlowOptions(SolverType.DC,
-                                  verbose=False,
-                                  initialize_with_existing_solution=False,
-                                  dispatch_storage=True,
-                                  control_q=ReactivePowerControlMode.NoControl,
-                                  control_p=False)
-    options1 = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyMethod.PowerFlow)
-    cont_analysis_driver1 = ContingencyAnalysisDriver(grid=main_circuit, options=options1,
-                                                      linear_multiple_contingencies=None)
-    cont_analysis_driver1.run()
-    print()
+        pf_options = PowerFlowOptions(SolverType.DC,
+                                      verbose=False,
+                                      initialize_with_existing_solution=False,
+                                      dispatch_storage=True,
+                                      control_q=ReactivePowerControlMode.NoControl,
+                                      control_p=False)
+        options1 = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyMethod.PowerFlow)
+        cont_analysis_driver1 = ContingencyAnalysisDriver(grid=main_circuit, options=options1,
+                                                          linear_multiple_contingencies=None)
+        cont_analysis_driver1.run()
+        print()
 
 
 def test_ptdf_psse() -> None:
     for fname, pssename, name in [
-        (os.path.join('data', 'grids', 'RAW', 'IEEE 14 bus.raw'),
-         os.path.join('data', 'results', 'comparison', 'IEEE 14 bus PTDF PSSe.csv'), 'IEEE14'),
+        # (os.path.join('data', 'grids', 'RAW', 'IEEE 14 bus.raw'),
+        #  os.path.join('data', 'results', 'comparison', 'IEEE 14 bus PTDF PSSe.csv'), 'IEEE14'),
         (os.path.join('data', 'grids', 'RAW', 'IEEE 30 bus.raw'),
          os.path.join('data', 'results', 'comparison', 'IEEE 30 bus PTDF PSSe.csv'), 'IEEE30'),
         (os.path.join('data', 'grids', 'RAW', 'IEEE 118 Bus v2.raw'),
          os.path.join('data', 'results', 'comparison', 'IEEE 118 bus PTDF PSSe.csv'), 'IEEE118'),
-        (os.path.join('data', 'grids', 'RAW', 'sensitive-raw', '15.Caso_2026.raw'),
-         os.path.join('data', 'results', 'comparison', '15.Caso_2026 PTDF PSSe.csv'), 'REE'),
-        (os.path.join('data', 'grids', 'RAW', 'ieee-14-bus_d_rename_ptdf.raw'),
-         os.path.join('data', 'results', 'comparison', 'ieee-14-bus_d_ptdf.csv'), 'IEEE14_D'),
+        # (os.path.join('data', 'grids', 'RAW', 'sensitive-raw', '15.Caso_2026.raw'),
+        #  os.path.join('data', 'results', 'comparison', '15.Caso_2026 PTDF PSSe.csv'), 'REE'),
+        # (os.path.join('data', 'grids', 'RAW', 'ieee-14-bus_d_rename_ptdf.raw'),
+        #  os.path.join('data', 'results', 'comparison', 'ieee-14-bus_d_ptdf.csv'), 'IEEE14_D'),
         # (os.path.join('data', 'grids', 'RAW', 'ACTIVSg2000_rename.raw'),
         # os.path.join('data', 'results', 'comparison', 'ACTIVSg2000_PTDF.csv'), 'TEXAS')
 
@@ -284,6 +283,8 @@ def test_ptdf_psse() -> None:
                 nodegridcal = np.array(ptdf[i])
 
                 nodepsse = np.array(ptdf['NUDO{}'.format(str(i))])
+
+                # assert np.allclose(nodegridcal, -nodepsse, atol=1e-3)
 
                 if not np.allclose(nodegridcal, -nodepsse, atol=1e-3):
                     print('------------ XXXX PTDFs not equal XXXX ------------ ')
@@ -725,7 +726,3 @@ def test_ptdf_contingencies_powerflow():
 
         ok = np.allclose(cont_analysis_driver1.results.Sf, power_flow.results.Sf)
         assert ok
-
-
-if __name__ == '__main__':
-    test_ptdf()

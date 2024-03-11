@@ -410,7 +410,6 @@ class LinearMultiContingency:
             injection_delta = injections[self.bus_indices]
 
             # (MLODF[k, βδ] x PTDF[βδ, i] + PTDF[k, i]) x ΔP[i]
-            # flow += self.compensated_ptdf_factors @ (injection_delta - Btau @ tau)
             flow += self.compensated_ptdf_factors @ injection_delta
 
         return flow
@@ -609,9 +608,12 @@ class LinearMultiContingencies:
                     ptdf_k_i = dense_to_csc(mat=ptdf[:, contingency_indices.bus_contingency_indices],
                                             threshold=ptdf_threshold)
                     # PTDF[βδ, i]
-                    ptdf_bd_i = dense_to_csc(mat=ptdf[contingency_indices.branch_contingency_indices,
-                    contingency_indices.bus_contingency_indices],
-                                             threshold=ptdf_threshold)
+                    ptdf_bd_i = dense_to_csc(
+                        mat=ptdf[
+                            contingency_indices.branch_contingency_indices, contingency_indices.bus_contingency_indices],
+                        threshold=ptdf_threshold
+                    )
+
                 else:
                     ptdf_k_i = sp.csc_matrix((ptdf.shape[0], ptdf.shape[1]))
 
