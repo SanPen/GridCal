@@ -16,13 +16,8 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
 import pandas as pd
-from scipy import sparse as sp
-from scipy.sparse import csc_matrix as csc
-from scipy.sparse import csr_matrix as csr
 from dataclasses import dataclass
-from scipy.sparse import lil_matrix
 
-from GridCalEngine.Utils.Sparse.csc import diags
 from GridCalEngine.Utils.NumericalMethods.ips import interior_point_solver, IpsFunctionReturn
 import GridCalEngine.Utils.NumericalMethods.autodiff as ad
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
@@ -30,48 +25,52 @@ from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_cir
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
-from GridCalEngine.enumerations import TransformerControlType, ReactivePowerControlMode
-from typing import Tuple, Union
-from GridCalEngine.basic_structures import Vec, CxVec, IntVec, Logger
+from GridCalEngine.enumerations import ReactivePowerControlMode
+from typing import Union
+from GridCalEngine.basic_structures import Vec, CxVec, IntVec, Logger, CscMat
 from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf_derivatives import (x2var, var2x, eval_f, eval_g, eval_h,
                                                                                jacobians_and_hessians)
 
 
-def compute_autodiff_structures(x, mu, lam, compute_jac: bool, compute_hess: bool,
-                                Ybus, Yf, Cg, Sd, slack, no_slack, Yt, from_idx, to_idx, pq, pv,
-                                Va_max, Va_min, Vm_max, Vm_min, Pg_max, Pg_min, Qg_max, Qg_min,
-                                c0, c1, c2, Sbase, rates, ig, nig, Sg_undis, h=1e-5) -> IpsFunctionReturn:
+def compute_autodiff_structures(x: Vec, mu: Vec, lam: Vec, compute_jac: bool, compute_hess: bool,
+                                Ybus: CscMat, Yf: CscMat, Cg: CscMat, Sd: CxVec, slack: Vec, no_slack: Vec,
+                                Yt: CscMat, from_idx: Vec, to_idx: Vec, Va_max: Vec, Va_min: Vec, Vm_max: Vec,
+                                Vm_min: Vec, Pg_max: Vec, Pg_min: Vec, Qg_max: Vec, Qg_min: Vec,
+                                c0: Vec, c1: Vec, c2: Vec, Sbase: float, rates: Vec, ig: Vec, nig: Vec,
+                                Sg_undis: CxVec, h: float = 1e-5) -> IpsFunctionReturn:
     """
 
-    :param x:
-    :param mu:
-    :param lmbda:
-    :param Ybus:
-    :param Yf:
-    :param Cg:
-    :param Sd:
-    :param slack:
-    :param no_slack:
-    :param Yt:
-    :param from_idx:
-    :param to_idx:
-    :param Va_max:
-    :param Va_min:
-    :param Vm_max:
-    :param Vm_min:
-    :param Pg_max:
-    :param Pg_min:
-    :param Qg_max:
-    :param Qg_min:
-    :param c0:
-    :param c1:
-    :param c2:
-    :param Sbase:
-    :param rates:
-    :param ig:
-    :param nig:
-    :param Sg_undis:
-    :param h:
+    :param x: array of unknowns
+    :param mu: Lagrange multipliers for inequalities
+    :param lam: Lagrange multipliers for equalities
+    :param compute_jac: boolean to calculate the Jacobian
+    :param compute_hess: boolean to calculate the Hessian
+    :param Ybus: bus admittance matrix
+    :param Yf: Yfrom matrix
+    :param Cg: connectivity matrix for generators
+    :param Sd: demand complex power
+    :param slack: indices of the slack buses
+    :param no_slack: indices of the non-slack buses
+    :param Yt: Yto matrix
+    :param from_idx: from bus indices for branches
+    :param to_idx: from bus indices for branches
+    :param Va_max: maximum voltage angle
+    :param Va_min: minimum voltage angle
+    :param Vm_max: maximum voltage magnitude
+    :param Vm_min: minimum voltage magnitude
+    :param Pg_max: maximum generation active power
+    :param Pg_min: minimum generation active power
+    :param Qg_max: maximum generation reactive power
+    :param Qg_min: minimum generation reactive power
+    :param c0: cost function constant
+    :param c1: cost function linear coefficient
+    :param c2: cost function quadratic coefficient
+    :param Sbase: base power
+    :param rates: line loading limits
+    :param ig: indices of dispatchable generators
+    :param nig: indices of non-dispatchable generators
+    :param Sg_undis: complex powers of undispatched generators
+    :param h: increment difference to compute the derivatives
     :return:
     """
     f = eval_f(x=x, Cg=Cg, c0=c0, c1=c1, c2=c2, ig=ig, Sbase=Sbase)
@@ -104,10 +103,6 @@ def compute_autodiff_structures(x, mu, lam, compute_jac: bool, compute_hess: boo
         Gxx = None
         Hxx = None
 
-    # approximate the Hessian using the Gauss-Newton matrix
-    # Gxx = Gx @ Gx.T
-    # Hxx = Hx @ Hx.T
-
     return IpsFunctionReturn(f=f, G=G, H=H,
                              fx=fx, Gx=Gx, Hx=Hx,
                              fxx=fxx, Gxx=Gxx, Hxx=Hxx,
@@ -124,26 +119,37 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
     :param x:
     :param mu:
     :param lmbda:
-    :param compute_jac
-    :param Ybus:
-    :param Yf:
+    :param compute_jac:
+    :param compute_hess:
+    :param admittances:
     :param Cg:
-    :param Cf:
-    :param Ct:
+    :param R:
+    :param X:
+    :param F:
+    :param T:
     :param Sd:
     :param slack:
-    :param no_slack:
-    :param Yt:
-    :param from_idx:
-    :param to_idx:
-    :param th_max:
-    :param th_min:
+    :param fdc:
+    :param tdc:
+    :param ndc:
+    :param pq:
+    :param pv:
+    :param Pdcmax:
     :param V_U:
     :param V_L:
     :param P_U:
     :param P_L:
+    :param tanmax:
     :param Q_U:
     :param Q_L:
+    :param tapm_max:
+    :param tapm_min:
+    :param tapt_max:
+    :param tapt_min:
+    :param alltapm:
+    :param alltapt:
+    :param k_m:
+    :param k_tau:
     :param c0:
     :param c1:
     :param c2:
@@ -151,6 +157,9 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
     :param rates:
     :param il:
     :param ig:
+    :param nig:
+    :param Sg_undis:
+    :param ctQ:
     :return:
     """
     M, N = admittances.Cf.shape
@@ -196,7 +205,7 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
 
 
 def evaluate_power_flow_debug(x, mu, lmbda, compute_jac: bool, compute_hess: bool,
-                              Ybus, Yf, Cg, Cf, Ct, Sd, slack, no_slack, Yt, from_idx, to_idx, pq, pv,
+                              Ybus, Yf, Cg, Cf, Ct, Sd, slack, no_slack, Yt, from_idx, to_idx,
                               th_max, th_min, V_U, V_L, P_U, P_L, Q_U, Q_L,
                               c0, c1, c2, Sbase, rates, il, ig, nig, Sg_undis, h=1e-5) -> IpsFunctionReturn:
     """
@@ -204,6 +213,8 @@ def evaluate_power_flow_debug(x, mu, lmbda, compute_jac: bool, compute_hess: boo
     :param x:
     :param mu:
     :param lmbda:
+    :param compute_jac:
+    :param compute_hess:
     :param Ybus:
     :param Yf:
     :param Cg:
@@ -245,7 +256,7 @@ def evaluate_power_flow_debug(x, mu, lmbda, compute_jac: bool, compute_hess: boo
     mats_finite = compute_autodiff_structures(x, mu, lmbda, compute_jac, compute_hess,
                                               Ybus, Yf, Cg, Sd, slack, no_slack, Yt, from_idx, to_idx,
                                               th_max, th_min, V_U, V_L, P_U, P_L, Q_U, Q_L, c0, c1, c2, Sbase, rates,
-                                              il, ig, nig, Sg_undis, h=h)
+                                              ig, nig, Sg_undis, h=h)
 
     errors = mats_finite.compare(mats_analytic, h=h)
 
@@ -387,7 +398,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     nig = np.where(~np.isin(ind_gens, ig))[0]
     Sg_undis = (nc.generator_data.get_injections() / nc.Sbase)[nig]
     rates = nc.rates / Sbase  # Line loading limits. If the grid is not well conditioned, add constant value (i.e. +100)
-    Va_max = nc.bus_data.angle_max  # This limits are not really used as of right now.
+    Va_max = nc.bus_data.angle_max  # These limits are not really used as of right now.
     Va_min = nc.bus_data.angle_min
 
     # Transformer control modes and line parameters to calculate the associated derivatives w.r.t the tap variables.
@@ -432,7 +443,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     # Number of inequalities: Line ratings, max and min angle of buses, voltage module range and
 
     if pf_options.control_Q == ReactivePowerControlMode.NoControl:
-        NI = 2 * nll + 2 * npq + 4 * ngg + 2 * ntapm + 2 * ntapt + 2 * ndc  # Without Reactive power constraint (power curve)
+        NI = 2 * nll + 2 * npq + 4 * ngg + 2 * ntapm + 2 * ntapt + 2 * ndc  # Without Reactive power constraint
     else:
         NI = 2 * nll + 2 * npq + 5 * ngg + 2 * ntapm + 2 * ntapt + 2 * ndc
 
@@ -522,12 +533,6 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     Va, Vm, Pg_dis, Qg_dis, tapm, tapt, Pfdc = x2var(result.x, nVa=nbus, nVm=nbus, nPg=ngg, nQg=ngg, ntapm=ntapm,
                                                      ntapt=ntapt, ndc=ndc)
 
-    # Save Results DataFrame for tests
-    # pd.DataFrame(Va).transpose().to_csv('pegase89resth.csv')
-    # pd.DataFrame(Vm).transpose().to_csv('pegase89resV.csv')
-    # pd.DataFrame(Pg_dis).transpose().to_csv('pegase89resP.csv')
-    # pd.DataFrame(Qg_dis).transpose().to_csv('pegase89resQ.csv')
-
     Pg = np.zeros(len(ind_gens))
     Qg = np.zeros(len(ind_gens))
 
@@ -589,8 +594,6 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                 logger.add_warning('DC Link rating constraint violated', device=str(link),
                                    value=str((muz_f, muz_t)), expected_value='< 1e-3')
 
-
-
     logger.print()
     return NonlinearOPFResults(Va=Va, Vm=Vm, S=S, Sf=Sf, St=St, loading=loading,
                                Pg=Pg, Qg=Qg, lam_p=lam_p, lam_q=lam_q,
@@ -605,9 +608,9 @@ def run_nonlinear_opf(grid: MultiCircuit,
                       use_autodiff: bool = False,
                       pf_init=False,
                       plot_error: bool = False,
-                      logger: Logger=Logger()) -> NonlinearOPFResults:
+                      logger: Logger = Logger()) -> NonlinearOPFResults:
     """
-    Run optimal power flow for a MultiCircuit
+    Run optimal power flow for a multicircuit
     :param grid: MultiCircuit
     :param opf_options: OptimalPowerFlowOptions
     :param pf_options: PowerFlowOptions
@@ -616,6 +619,7 @@ def run_nonlinear_opf(grid: MultiCircuit,
     :param use_autodiff: Use autodiff?
     :param pf_init: Initialize with a power flow?
     :param plot_error: Plot the error?
+    :param logger: Logger
     :return: NonlinearOPFResults
     """
 

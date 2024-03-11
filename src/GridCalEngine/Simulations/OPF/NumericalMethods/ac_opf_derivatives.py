@@ -429,9 +429,6 @@ def eval_g(x, Ybus, Yf, Cg, Sd, ig, nig, pv, fdc, tdc, k_m, k_tau, Vm_max, Sg_un
     dS = S + Sd - S_dispatch - S_undispatch
 
     if ndc != 0:
-
-        #dP_dc = Pfdc + Ptdc  # - (1/R) * (vm[f] - vm[t]) **2
-
         dS[fdc] += Pfdc
         dS[tdc] -= Pfdc
 
