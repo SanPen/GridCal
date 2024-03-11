@@ -203,11 +203,11 @@ if __name__ == '__main__':
         # write times per iteration to log
         logHOtimeperiteration = os.path.join(folder, 'HO_timeperiteration.txt')
         with open(logHOtimeperiteration, 'a') as f:
-            for i in range(0, max_evals):
-                if i == 0:
-                    print(trials_HO.trials[i]['book_time'].timestamp() - time_start, file=f)  # no 1 hour difference
+            for ii in range(0, max_evals):
+                if ii == 0:
+                    print(trials_HO.trials[ii]['book_time'].timestamp() - time_start, file=f)  # no 1 hour difference
                 else:
-                    print((trials_HO.trials[i]['book_time'] - trials_HO.trials[i - 1]['book_time']).total_seconds(),
+                    print((trials_HO.trials[ii]['book_time'] - trials_HO.trials[ii - 1]['book_time']).total_seconds(),
                           file=f)
 
     ###################

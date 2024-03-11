@@ -183,7 +183,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
 
         elif result_type == ResultTypes.InvestmentsIterationsPlot:
             labels = self._index_names
-            columns = ["CAPEX (M€) + OPEX (M€)", "Objective function"]
+            columns = ["Iteration", "Objective function"]
             x = np.arange(self.max_eval)
             y = self._f_obj
             data = np.c_[x, y]

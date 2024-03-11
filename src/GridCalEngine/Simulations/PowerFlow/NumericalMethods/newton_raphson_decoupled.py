@@ -65,13 +65,15 @@ def NRD_LS(Ybus, S0, V0, I0, Y0, pv, pq, tol, max_it=15,
     :param S0: Array of nodal power Injections
     :param V0: Array of nodal voltages (initial solution)
     :param I0: Array of nodal current Injections
+    :param Y0: Array of nodal admittance Injections
     :param pv: Array with the indices of the PV buses
     :param pq: Array with the indices of the PQ buses
     :param tol: Tolerance
     :param max_it: Maximum number of iterations
     :param acceleration_parameter: parameter used to correct the "bad" iterations, typically 0.5
     :param error_registry: list to store the error for plotting
-    :return: Voltage solution, converged?, error, calculated power Injections
+    :param verbose: Verbose?
+    :return: NumericPowerFlowResults
     """
 
     start = time.time()

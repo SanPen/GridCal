@@ -75,6 +75,9 @@ def compute_autodiff_structures(x, mu, lam, compute_jac: bool, compute_hess: boo
     :param h:
     :return:
     """
+
+    # TODO: Fix this
+
     f = eval_f(x=x, Cg=Cg, c0=c0, c1=c1, c2=c2, ig=ig, Sbase=Sbase)
     G, Scalc = eval_g(x=x, Ybus=Ybus, Yf=Yf, Cg=Cg, Sd=Sd, ig=ig, nig=nig, Sg_undis=Sg_undis, slack=slack)
     H, Sf, St = eval_h(x=x, Yf=Yf, Yt=Yt, from_idx=from_idx, to_idx=to_idx, no_slack=no_slack, Va_max=Va_max,
@@ -124,33 +127,50 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
     :param x:
     :param mu:
     :param lmbda:
-    :param compute_jac
-    :param Ybus:
-    :param Yf:
+    :param compute_jac:
+    :param compute_hess:
+    :param admittances:
     :param Cg:
-    :param Cf:
-    :param Ct:
+    :param R:
+    :param X:
     :param Sd:
     :param slack:
-    :param no_slack:
-    :param Yt:
     :param from_idx:
     :param to_idx:
-    :param th_max:
-    :param th_min:
+    :param fdc:
+    :param tdc:
+    :param ndc:
+    :param pq:
+    :param pv:
+    :param Pdcmax:
     :param V_U:
     :param V_L:
     :param P_U:
     :param P_L:
+    :param tanmax:
     :param Q_U:
     :param Q_L:
+    :param tapm_max:
+    :param tapm_min:
+    :param tapt_max:
+    :param tapt_min:
+    :param alltapm:
+    :param alltapt:
+    :param k_m:
+    :param k_tau:
     :param c0:
     :param c1:
     :param c2:
+    :param c_s:
+    :param c_v:
     :param Sbase:
     :param rates:
     :param il:
+    :param nll:
     :param ig:
+    :param nig:
+    :param Sg_undis:
+    :param ctQ:
     :return:
     """
     M, N = admittances.Cf.shape
@@ -162,7 +182,7 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
     alltapm0 = alltapm.copy()
     alltapt0 = alltapt.copy()
 
-    _, _, _, _, _, tapm, tapt, _ = x2var(x, nVa=N, nVm=N, nPg=Ng, nQg=Ng, npq=npq, M=nll, ntapm=ntapm, ntapt=ntapt,
+    _, _, _, _, _, tapm, tapt, _ = x2var(x=x, nVa=N, nVm=N, nPg=Ng, nQg=Ng, npq=npq, M=nll, ntapm=ntapm, ntapt=ntapt,
                                          ndc=ndc)
 
     alltapm[k_m] = tapm
@@ -239,6 +259,8 @@ def evaluate_power_flow_debug(x, mu, lmbda, compute_jac: bool, compute_hess: boo
     :return:
     """
 
+    # TODO: Fix missing parameters
+
     mats_analytic = compute_analytic_structures(x, mu, lmbda, compute_jac, compute_hess,
                                                 Ybus, Yf, Cg, Cf, Ct, Sd, slack, no_slack, Yt, from_idx,
                                                 to_idx,
@@ -280,7 +302,7 @@ class NonlinearOPFResults:
     converged: bool = None
     iterations: int = None
 
-    def initialize(self, nbus, nbr, ng):
+    def initialize(self, nbus: int, nbr: int, ng: int) -> None:
         """
         Initialize the arrays
         :param nbus:
@@ -442,7 +464,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     # Number of inequalities: Line ratings, max and min angle of buses, voltage module range and
 
     if pf_options.control_Q == ReactivePowerControlMode.NoControl:
-        NI = 2 * nll + 2 * npq + 4 * ngg + 2 * ntapm + 2 * ntapt + 2 * ndc + nsl  # Without Reactive power constraint (power curve)
+        # Without Reactive power constraint (power curve)
+        NI = 2 * nll + 2 * npq + 4 * ngg + 2 * ntapm + 2 * ntapt + 2 * ndc + nsl
     else:
         NI = 2 * nll + 2 * npq + 5 * ngg + 2 * ntapm + 2 * ntapt + 2 * ndc + nsl
 
@@ -651,14 +674,22 @@ def run_nonlinear_opf(grid: MultiCircuit,
     results.initialize(nbus=nc.nbus, nbr=nc.nbr, ng=nc.ngen)
     results.converged = True  # we assume this so that the "and" works later
     for island in islands:
+
+        if pf_init:
+            island_Sbus_pf = Sbus_pf[island.original_bus_idx]
+            island_voltage_pf = voltage_pf[island.original_bus_idx]
+        else:
+            island_Sbus_pf = None
+            island_voltage_pf = None
+
         island_res = ac_optimal_power_flow(nc=island,
                                            opf_options=opf_options,
                                            pf_options=pf_options,
                                            debug=debug,
                                            use_autodiff=use_autodiff,
                                            pf_init=pf_init,
-                                           Sbus_pf=Sbus_pf[island.original_bus_idx],
-                                           voltage_pf=voltage_pf[island.original_bus_idx],
+                                           Sbus_pf=island_Sbus_pf,
+                                           voltage_pf=island_voltage_pf,
                                            plot_error=plot_error,
                                            logger=logger)
 

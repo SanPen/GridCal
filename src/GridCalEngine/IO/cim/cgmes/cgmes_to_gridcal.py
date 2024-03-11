@@ -791,7 +791,7 @@ def get_gcdev_switch(cgmes_model: CgmesCircuit,
                     bus_to=calc_node_t,
                     rate=op_rate,
                     rated_current=rated_current,
-                    open=cgmes_elm.open,
+                    is_open=cgmes_elm.open,
                     retained=cgmes_elm.retained,
                     normal_open=cgmes_elm.normalOpen
                 )

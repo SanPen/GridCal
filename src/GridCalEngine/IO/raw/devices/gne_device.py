@@ -25,7 +25,8 @@ class RawGneDevice(RawObject):
     def __init__(self):
         RawObject.__init__(self, "GNE")
 
-    def parse(self, data, version, logger: Logger):
+    @staticmethod
+    def parse(data, version, logger: Logger):
         """
 
         :param data:

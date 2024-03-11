@@ -70,10 +70,8 @@ def load_iPA(file_name) -> MultiCircuit:
         n2_id = entry['Nudo2']
 
         # get the Bus objects associated to the bus indices
-        if n1_id in buses_dict.keys():
-            bus1 = buses_dict[n1_id]
-        if n2_id in buses_dict.keys():
-            bus2 = buses_dict[n2_id]
+        bus1 = buses_dict.get(n1_id, None)
+        bus2 = buses_dict.get(n2_id, None)
 
         if tpe == 0:  # Fuente de  Tensión(elemento  Ptheta)
 

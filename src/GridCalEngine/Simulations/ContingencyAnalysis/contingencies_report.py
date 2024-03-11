@@ -328,7 +328,7 @@ class ContingencyResultsReport:
         """
         return np.arange(0, self.size())
 
-    def get_data(self, time_array: Union[pd.DatetimeIndex, None], time_format='%Y/%m/%d  %H:%M.%S') -> StrMat:
+    def get_data(self, time_array: Union[pd.DatetimeIndex, None] = None, time_format='%Y/%m/%d  %H:%M.%S') -> StrMat:
         """
         Get data as list of lists of strings
         :return: List[List[str]]

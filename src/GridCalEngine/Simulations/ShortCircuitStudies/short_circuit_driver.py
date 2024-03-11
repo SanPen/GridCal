@@ -189,8 +189,8 @@ class ShortCircuitDriver(DriverTemplate):
 
         return br1, br2, middle_bus
 
-    def single_short_circuit(self,
-                             calculation_inputs: NumericalCircuit,
+    @staticmethod
+    def single_short_circuit(calculation_inputs: NumericalCircuit,
                              Vpf: CxVec,
                              Zf: complex,
                              island_bus_index: int,

@@ -1,11 +1,11 @@
 # Fdb version 4
-["biber controls"] 1709837299 "controls.bcf" "controls.bbl" "controls" 1709837439 0
-  "controls.bcf" 1709837438 107695 ef85acc79ab0b365d3ce8566bf1d5856 "pdflatex"
+["biber controls"] 1709919482 "controls.bcf" "controls.bbl" "controls" 1709920057 0
+  "controls.bcf" 1709920056 107695 ef85acc79ab0b365d3ce8566bf1d5856 "pdflatex"
   (generated)
   "controls.bbl"
   "controls.blg"
   (rewritten before read)
-["pdflatex"] 1709837435 "c:/Users/a1003/Desktop/GridCal/src/trunk/controls/docs/controls.tex" "controls.pdf" "controls" 1709837439 0
+["pdflatex"] 1709920053 "c:/Users/a1003/Desktop/GridCal/src/trunk/controls/docs/controls.tex" "controls.pdf" "controls" 1709920057 0
   "C:/Users/a1003/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map" 1709753733 157773 9822ecd8e05a3cb006776caa6aa9bbf3 ""
   "C:/Users/a1003/AppData/Local/MiKTeX/fonts/pk/ljfour/jknappen/ec/dpi600/tcrm1095.pk" 1702917997 12668 dacdcaeb12c9a4d48c86d9b3b170feea ""
   "C:/Users/a1003/AppData/Local/MiKTeX/miktex/data/le/pdftex/pdflatex.fmt" 1680368863 23176373 5b3bde6f669750772f4652ecec661e21 ""
@@ -46,6 +46,7 @@
   "C:/Users/a1003/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr6.pfb" 1247593067 32734 69e00a6b65cedb993666e42eedb3d48f ""
   "C:/Users/a1003/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr8.pfb" 1247593067 32726 39f0f9e62e84beb801509898a605dbd5 ""
   "C:/Users/a1003/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr9.pfb" 1247593066 33993 9b89b85fd2d9df0482bd47194d1d3bf3 ""
+  "C:/Users/a1003/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb" 1247593067 32569 5e5ddc8df908dea60932f3c484a54c0d ""
   "C:/Users/a1003/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/symbols/msam10.pfb" 1247593073 31764 459c573c03a4949a528c2cc7f557e217 ""
   "C:/Users/a1003/AppData/Local/Programs/MiKTeX/tex/context/base/mkii/supp-pdf.mkii" 1580390158 71627 94eb9990bed73c364d7f53f960cc8c5b ""
   "C:/Users/a1003/AppData/Local/Programs/MiKTeX/tex/generic/atbegshi/atbegshi.sty" 1575571100 24708 5584a51a7101caf7e6bbf1fc27d8f7b1 ""
@@ -233,12 +234,12 @@
   "C:/Users/a1003/AppData/Local/Programs/MiKTeX/tex/latex/tools/tabularx.sty" 1667242266 7147 be6981d9f5d866a5634048c4a11814a9 ""
   "C:/Users/a1003/AppData/Local/Programs/MiKTeX/tex/latex/url/url.sty" 1388490452 12796 8edb7d69a20b857904dd0ea757c14ec9 ""
   "C:/Users/a1003/AppData/Local/Programs/MiKTeX/tex/latex/xcolor/xcolor.sty" 1656233290 56148 51a9a8571c07b9921892ae11063ae853 ""
-  "c:/Users/a1003/Desktop/GridCal/src/trunk/controls/docs/controls.tex" 1709837431 15656 8d98a3f8a14dc9b52a2bbcfebe819c17 ""
-  "controls.aux" 1709837438 4824 70daa808919b17dc6b6ca6b4a87ff8e7 "pdflatex"
-  "controls.bbl" 1709837302 486 ee04f40f768daeed26442158e95aba61 "biber controls"
-  "controls.out" 1709837438 1806 596321993725eb52bffb5749354a6429 "pdflatex"
-  "controls.run.xml" 1709837438 2327 3125d5776cdacad35d1ea92aeca62e23 "pdflatex"
-  "controls.tex" 1709837431 15656 8d98a3f8a14dc9b52a2bbcfebe819c17 ""
+  "c:/Users/a1003/Desktop/GridCal/src/trunk/controls/docs/controls.tex" 1709920053 18603 0008eb2789071680effebc450f1e7273 ""
+  "controls.aux" 1709920056 5167 356c83ac15c44587e426b9db3caf5065 "pdflatex"
+  "controls.bbl" 1709919484 486 ee04f40f768daeed26442158e95aba61 "biber controls"
+  "controls.out" 1709920056 1966 18f04bdbb546ddb7a5c5d517d0d62cb2 "pdflatex"
+  "controls.run.xml" 1709920056 2327 3125d5776cdacad35d1ea92aeca62e23 "pdflatex"
+  "controls.tex" 1709920053 18603 0008eb2789071680effebc450f1e7273 ""
   (generated)
   "controls.aux"
   "controls.bcf"

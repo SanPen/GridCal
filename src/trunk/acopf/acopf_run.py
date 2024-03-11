@@ -361,13 +361,14 @@ def casehvdc():
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=3)
     run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=False)
 
+
 if __name__ == '__main__':
-    example_3bus_acopf()
+    # example_3bus_acopf()
     # case_3bus()
     # linn5bus_example()
     # two_grids_of_3bus()
     # case9()
-    # case14()
+    case14()
     # case_gb()
     # case6ww()
     # case_pegase89()

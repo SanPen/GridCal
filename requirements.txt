@@ -17,7 +17,7 @@ numba>=0.46
 PySide6 >= 6.5.0
 Cython
 pyproj
-pyarrow
+pyarrow >= 15
 fastparquet
 darkdetect
 pyqtdarktheme

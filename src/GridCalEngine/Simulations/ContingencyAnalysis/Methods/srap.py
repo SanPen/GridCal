@@ -33,7 +33,8 @@ def get_valid_negatives(sensitivities: Vec, p_available: Vec):
     idx = np.empty(n, nb.int32)
     k = 0
     for i in range(n):
-        if sensitivities[i] < 0 and p_available[i] > 0:
+        # if sensitivities[i] < 0 and p_available[i] > 0:
+        if sensitivities[i] < 0 < p_available[i]:
             idx[k] = i
             k += 1
 
@@ -72,7 +73,7 @@ def vector_sum_used_power_srap(p_available3: Vec, sensitivities3: Vec, max_srap_
 
     :param p_available3:
     :param sensitivities3:
-    :param srap_pmax_mw:
+    :param max_srap_power:
     :return:
     """
     # inicializar la suma parcial

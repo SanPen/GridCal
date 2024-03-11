@@ -37,7 +37,7 @@ import GridCalEngine.Simulations as sim
 from GridCalEngine.enumerations import EngineType
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit, compile_numerical_circuit_at
 import GridCal.Gui.GuiFunctions as gf
-import GridCal.Gui.Session.synchronization_driver as syncdrv
+import GridCal.Session.synchronization_driver as syncdrv
 from GridCalEngine.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE
 from GridCalEngine.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE
 from GridCalEngine.Compilers.circuit_to_pgm import PGM_AVAILABLE
@@ -52,7 +52,7 @@ from GridCal.Gui.Main.MainWindow import Ui_mainWindow, QMainWindow
 from GridCal.Gui.Main.object_select_window import ObjectSelectWindow
 from GridCal.Gui.ProfilesInput.models_dialogue import ModelsInputGUI
 from GridCal.Gui.ProfilesInput.profile_dialogue import ProfileInputGUI
-from GridCal.Gui.Session.session import SimulationSession, GcThread
+from GridCal.Session.session import SimulationSession, GcThread
 from GridCal.Gui.SigmaAnalysis.sigma_analysis_dialogue import SigmaAnalysisGUI
 from GridCal.Gui.SyncDialogue.sync_dialogue import SyncDialogueWindow
 from GridCal.Gui.TowerBuilder.LineBuilderDialogue import TowerBuilderGUI
