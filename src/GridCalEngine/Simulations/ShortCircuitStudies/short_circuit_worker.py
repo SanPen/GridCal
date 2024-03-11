@@ -19,9 +19,9 @@ from typing import Tuple
 import numpy as np
 import scipy.sparse as sp
 from scipy.sparse.linalg import inv
-from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit
+from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Simulations.ShortCircuitStudies.short_circuit import short_circuit_3p, short_circuit_unbalance
-from GridCalEngine.Core.admittance_matrices import compute_admittances
+from GridCalEngine.Topology.admittance_matrices import compute_admittances
 from GridCalEngine.Simulations.ShortCircuitStudies.short_circuit_results import ShortCircuitResults
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import polar_to_rect
 from GridCalEngine.enumerations import FaultType

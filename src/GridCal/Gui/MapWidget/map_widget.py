@@ -27,7 +27,7 @@ Some semantics:
 
 from typing import List, Dict, Union, Tuple, Callable
 from PySide6.QtCore import Qt, QTimer, QPoint, QPointF, QEvent
-from PySide6.QtWidgets import QSizePolicy, QWidget, QMessageBox
+from PySide6.QtWidgets import QSizePolicy, QWidget, QMessageBox, QGraphicsScene, QGraphicsView, QVBoxLayout
 from PySide6.QtGui import QPainter, QColor, QPixmap, QPen, QFont, QFontMetrics, QPolygon, QBrush, QCursor, \
     QMouseEvent, QKeyEvent, QWheelEvent, QResizeEvent, QEnterEvent, QPaintEvent
 
@@ -286,6 +286,41 @@ class MapWidget(QWidget):
         self.zoom_callback: Callable[[int], None] = zoom_callback
         self.position_callback: Callable[[float, float], None] = position_callback
 
+        # Create a QGraphicsScene
+        self.scene = QGraphicsScene(self)
+        self.scene.setSceneRect(0, 0, 800, 600)  # Set the scene rect as per your requirements
+
+        # Create a QGraphicsView and set the scene
+        self.view = QGraphicsView(self.scene)
+        self.view.setAlignment(Qt.AlignLeft | Qt.AlignTop)
+
+        # Create a layout for the MapWidget
+        layout = QVBoxLayout()
+        layout.addWidget(self.view)  # Add the QGraphicsView to the layout
+        self.setLayout(layout)  # Set the layout for the MapWidget
+
+        # Install an event filter on the QGraphicsView
+        self.view.installEventFilter(self)
+
+        # Make the layout transparent
+        self.layout().setContentsMargins(0, 0, 0, 0)
+        self.layout().setSpacing(0)
+        self.setStyleSheet("background-color: transparent;")
+
+        # You can add more QGraphicsItems to the scene here
+        rect_item = self.scene.addRect(50, 50, 100, 100)  # Example rectangle
+        ellipse_item = self.scene.addEllipse(200, 200, 100, 100)  # Example ellipse
+
+    def eventFilter(self, obj, event):
+        if obj == self.view and event.type() == QEvent.MouseButtonPress:
+            # Convert the mouse event coordinates to scene coordinates
+            view_pos = event.pos()
+            scene_pos = self.view.mapToScene(view_pos)
+            print("Mouse pressed at scene position:", scene_pos)
+
+        # Pass the event to the base class
+        return super().eventFilter(obj, event)
+
     def on_tile_available(self, level: int, x: float, y: float, image: QPixmap, error: bool):
         """Called when a new 'net tile is available.
 
@@ -406,16 +441,16 @@ class MapWidget(QWidget):
                         if result:
                             (sel, data, relsel) = result
 
-                            BoxSelectEvent(mposn=None,
-                                           vposn=None,
+                            BoxSelectEvent(mposn=(None, None),
+                                           vposn=(0, 0),
                                            layer_id=lid,
                                            selection=sel,
                                            relsel=relsel).emit_event()
 
                         else:
                             # raise an empty EVT_PYSLIPQT_BOXSELECT event
-                            BoxSelectEvent(mposn=None,
-                                           vposn=None,
+                            BoxSelectEvent(mposn=(None, None),
+                                           vposn=(0, 0),
                                            layer_id=lid,
                                            selection=None,
                                            relsel=None).emit_event()
@@ -608,6 +643,12 @@ class MapWidget(QWidget):
 
         # recalculate the "key" tile stuff
         self.rectify_key_tile()
+
+        # Resize the view to match the widget's size
+        self.view.setGeometry(0, 0, self.width(), self.height())
+
+        # Adjust the scene rect if needed
+        self.scene.setSceneRect(0, 0, self.width(), self.height())
 
     def enterEvent(self, event: QEnterEvent):
         self.setFocus()
@@ -2719,6 +2760,9 @@ class MapWidget(QWidget):
                     if x <= max(p1x, p2x):
                         if p1y != p2y:
                             xinters = (y - p1y) * (p2x - p1x) / (p2y - p1y) + p1x
+                        else:
+                            xinters = x + 1  # value so that the later comparison is false
+
                         if p1x == p2x or x <= xinters:
                             inside = not inside
             (p1x, p1y) = (p2x, p2y)
@@ -2727,7 +2771,8 @@ class MapWidget(QWidget):
 
     def point_in_polygon_geo(self, poly: List[Tuple[float, float]], geo: Tuple[float, float],
                              placement: Place, offset_x: float, offset_y: float):
-        """Decide if a point is inside a map-relative polygon.
+        """
+        Decide if a point is inside a map-relative polygon.
 
         poly       an iterable of (x,y) where x,y are in geo coordinates
         geo        tuple (xgeo, ygeo) of point position
@@ -2745,7 +2790,8 @@ class MapWidget(QWidget):
 
     def point_in_polygon_view(self, poly: List[Tuple[float, float]], view: Tuple[float, float], place: Place,
                               x_off: float, y_off: float):
-        """Decide if a point is inside a view-relative polygon.
+        """
+        Decide if a point is inside a view-relative polygon.
 
         poly      an iterable of (x,y) where x,y are in view (pixel) coordinates
         ptx       point X coordinate (view)
@@ -2768,7 +2814,8 @@ class MapWidget(QWidget):
 
     def point_near_polyline_geo(self, point: Tuple[float, float], poly: List[Tuple[float, float]],
                                 placement: Place, offset_x: float, offset_y: float, delta: int):
-        """Decide if a point is near a map-relative polyline.
+        """
+        Decide if a point is near a map-relative polyline.
 
         point      tuple (xgeo, ygeo) of point position
         poly       an iterable of (x,y) where x,y are in geo coordinates
@@ -2788,7 +2835,8 @@ class MapWidget(QWidget):
 
     def point_near_polyline_view(self, point: Tuple[float, float], polyline: List[Tuple[float, float]],
                                  place: Place, x_off: float, y_off: float, delta: int):
-        """Decide if a point is near a view-relative polyline.
+        """
+        Decide if a point is near a view-relative polyline.
 
         point     a tuple (viewx, viewy) of selection point in view coordinates
         polyline  an iterable of (x,y) where x,y are in view (pixel) coordinates

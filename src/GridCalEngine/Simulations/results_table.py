@@ -15,12 +15,13 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from typing import Union
+from typing import Union, List
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
-from GridCalEngine.Simulations.result_types import ResultTypes
+from GridCalEngine.enumerations import ResultTypes, DeviceType
 from GridCalEngine.basic_structures import StrVec, Mat, Vec
+from GridCalEngine.Devices.types import ALL_DEV_TYPES
 
 
 class ResultsTable:
@@ -32,14 +33,16 @@ class ResultsTable:
                  data: Union[Mat, Vec],
                  columns: StrVec,
                  index: StrVec,
-                 palette=None,
-                 title: str = '',
-                 xlabel: str = '',
-                 ylabel: str = '',
-                 units: str = '',
+                 title: str,
+                 cols_device_type: DeviceType,
+                 idx_device_type: DeviceType,
+                 units: str = "",
+                 xlabel: str = "",
+                 ylabel: str = "",
                  editable=False,
+                 palette=None,
                  editable_min_idx: int = -1,
-                 decimals: float = 6):
+                 decimals: int = 6):
         """
         ResultsTable constructor
         :param data:
@@ -85,9 +88,46 @@ class ResultsTable:
                 self.index_c = pd.to_datetime(self.index_c)
                 self.isDate = True
 
+        self.decimals: int = decimals
         self.format_string = '.' + str(decimals) + 'f'
+        self.formatter = lambda x: self.format_string % x
 
-        self.formatter = lambda x: "%.2f" % x
+        self.cols_device_type: DeviceType = cols_device_type
+        self.idx_device_type: DeviceType = idx_device_type
+
+        # list of devices that match the columns or rows for filtering
+        self._col_devices = list()
+        self._idx_devices = list()
+
+    @property
+    def col_devices(self):
+        """
+
+        :return:
+        """
+        return self._col_devices
+
+    @property
+    def idx_devices(self):
+        """
+
+        :return:
+        """
+        return self._idx_devices
+
+    def set_col_devices(self, devices_list: List[ALL_DEV_TYPES]):
+        """
+        Set the list of devices that matches the results for filtering
+        :param devices_list:
+        """
+        self._col_devices = devices_list
+
+    def set_idx_devices(self, devices_list: List[ALL_DEV_TYPES]):
+        """
+        Set the list of devices that matches the results for filtering
+        :param devices_list:
+        """
+        self._idx_devices = devices_list
 
     def transpose(self):
         """
@@ -97,8 +137,9 @@ class ResultsTable:
         self.r, self.c = self.data_c.shape
         self.x_label, self.y_label = self.y_label, self.x_label
         self.cols_c, self.index_c = self.index_c, self.cols_c
+        self._col_devices, self._idx_devices = self._idx_devices, self._col_devices
 
-    def slice_cols(self, col_idx):
+    def slice_cols(self, col_idx) -> "ResultsTable":
         """
         Make column slicing
         :param col_idx: indices of the columns
@@ -114,12 +155,13 @@ class ResultsTable:
                                     units=self.units,
                                     editable=self.editable,
                                     editable_min_idx=self.editable_min_idx,
-                                    decimals=6)
+                                    decimals=self.decimals,
+                                    cols_device_type=self.cols_device_type,
+                                    idx_device_type=self.idx_device_type)
 
-        sliced_model.format_string = self.format_string
         return sliced_model
 
-    def slice_rows(self, idx):
+    def slice_rows(self, idx) -> "ResultsTable":
         """
         Make rows slicing
         :param idx: indices of the columns
@@ -135,17 +177,18 @@ class ResultsTable:
                                     units=self.units,
                                     editable=self.editable,
                                     editable_min_idx=self.editable_min_idx,
-                                    decimals=6)
+                                    decimals=self.decimals,
+                                    cols_device_type=self.cols_device_type,
+                                    idx_device_type=self.idx_device_type)
 
-        sliced_model.format_string = self.format_string
         return sliced_model
 
-    def slice_all(self, row_idx, col_idx):
+    def slice_all(self, row_idx, col_idx) -> "ResultsTable":
         """
         Make rows slicing
         :param row_idx: indices of the rows
         :param col_idx: indices of the columns
-        :return: Nothing
+        :return: ResultsTable
         """
         sliced_model = ResultsTable(data=self.data_c[row_idx, :][:, col_idx],
                                     columns=np.array([self.cols_c[i] for i in col_idx]),
@@ -157,9 +200,9 @@ class ResultsTable:
                                     units=self.units,
                                     editable=self.editable,
                                     editable_min_idx=self.editable_min_idx,
-                                    decimals=6)
-
-        sliced_model.format_string = self.format_string
+                                    decimals=self.decimals,
+                                    cols_device_type=self.cols_device_type,
+                                    idx_device_type=self.idx_device_type)
         return sliced_model
 
     def search_in_columns(self, txt):
@@ -188,102 +231,13 @@ class ResultsTable:
         idx = list()
         txt2 = str(txt).lower()
         for i, val in enumerate(self.index_c):
-            if txt2 in val.lower():
+            if txt2 in str(val).lower():
                 idx.append(i)
         idx = np.array(idx, dtype=int)
         if len(idx) > 0:
             return self.slice_rows(idx)
         else:
             return None
-
-    def search(self, txt: str) -> Union[None, "ResultsTable"]:
-        """
-        Search stuff
-        :param txt:
-        :return:
-        """
-        txt = txt.strip()
-        cols = np.array(self.cols_c).astype(str)
-        index = np.array(self.index_c).astype(str)
-
-        if txt.startswith('<'):
-
-            txt = txt.replace(' ', '')
-            try:
-                val = float(txt[1:])
-                row_idx, col_idx = np.where(self.data_c < val)
-
-                if len(self.cols_c) == 1:
-                    return self.slice_rows(row_idx)
-                else:
-                    row_idx = np.unique(row_idx)
-                    col_idx = np.unique(col_idx)
-                    return self.slice_all(row_idx, col_idx)
-
-            except ValueError:
-                return None
-
-        elif txt.startswith('>'):
-
-            txt = txt.replace(' ', '')
-            try:
-                val = float(txt[1:])
-                row_idx, col_idx = np.where(self.data_c > val)
-
-                if len(self.cols_c) == 1:
-                    return self.slice_rows(row_idx)
-                else:
-                    row_idx = np.unique(row_idx)
-                    col_idx = np.unique(col_idx)
-                    return self.slice_all(row_idx, col_idx)
-
-            except ValueError:
-                return None
-
-        elif txt.startswith('!='):
-
-            txt = txt.replace(' ', '')
-            try:
-                val = float(txt[2:])
-                row_idx, col_idx = np.where(self.data_c != val)
-
-                if len(self.cols_c) == 1:
-                    return self.slice_rows(row_idx)
-                else:
-                    row_idx = np.unique(row_idx)
-                    col_idx = np.unique(col_idx)
-                    return self.slice_all(row_idx, col_idx)
-
-            except ValueError:
-                return None
-        else:
-            # search by similar text
-            row_idx = list()
-            txt2 = str(txt).lower()
-            for i, val in enumerate(index):
-                if txt2 in val.lower():
-                    row_idx.append(i)
-            row_idx = np.array(row_idx, dtype=int)
-
-            col_idx = list()
-            txt2 = str(txt).lower()
-            for i, val in enumerate(cols):
-                if txt2 in val.lower():
-                    col_idx.append(i)
-            col_idx = np.array(col_idx, dtype=int)
-
-            if len(col_idx) > 0:
-
-                if len(row_idx) == 0:
-                    # if some col was found but no row, pick all
-                    row_idx = np.arange(len(self.index_c))
-
-            else:
-                if len(row_idx) > 0:
-                    # if some row was found, but no column, pick all
-                    col_idx = np.arange(len(self.cols_c))
-
-            return self.slice_all(row_idx, col_idx)
 
     def copy_to_column(self, row: int, col: int):
         """
@@ -295,6 +249,10 @@ class ResultsTable:
         self.data_c[:, col] = self.data_c[row, col]
 
     def is_complex(self) -> bool:
+        """
+        Is the data complex?
+        :return:
+        """
         return self.data_c.dtype == complex
 
     def get_data(self):
@@ -349,7 +307,7 @@ class ResultsTable:
         except TypeError:
             print('Could not convert to abs :/')
 
-    def to_df(self):
+    def to_df(self) -> pd.DataFrame:
         """
         get DataFrame
         """

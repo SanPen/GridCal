@@ -20,14 +20,14 @@ import numpy as np
 import pandas as pd
 from typing import Union
 
-from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
-from GridCalEngine.Simulations.result_types import ResultTypes
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.basic_structures import DateVec, IntVec, StrVec, CxMat, Mat
-from GridCalEngine.enumerations import StudyResultsType
+from GridCalEngine.enumerations import StudyResultsType, ResultTypes, DeviceType
+from GridCalEngine.Simulations.Clustering.clustering_results import ClusteringResults
 
 
 class PowerFlowTimeSeriesResults(ResultsTemplate):
@@ -42,7 +42,7 @@ class PowerFlowTimeSeriesResults(ResultsTemplate):
                  time_array: np.ndarray,
                  bus_types: np.ndarray,
                  area_names: Union[np.ndarray, None] = None,
-                 clustering_results=None):
+                 clustering_results: Union[ClusteringResults, None] = None):
         """
 
         :param n:
@@ -287,7 +287,7 @@ class PowerFlowTimeSeriesResults(ResultsTemplate):
         x = [''] * (na * na)
         for i, a in enumerate(self.area_names):
             for j, b in enumerate(self.area_names):
-                x[i * na + j] = a + '->' + b
+                x[i * na + j] = f"{a} -> {b}"
         return x
 
     def get_inter_area_flows(self):
@@ -349,7 +349,7 @@ class PowerFlowTimeSeriesResults(ResultsTemplate):
 
         return x
 
-    def mdl(self, result_type: ResultTypes) -> "ResultsTable":
+    def mdl(self, result_type: ResultTypes) -> ResultsTable:
         """
 
         :param result_type:
@@ -357,181 +357,292 @@ class PowerFlowTimeSeriesResults(ResultsTemplate):
         """
 
         if result_type == ResultTypes.BusVoltageModule:
-            labels = self.bus_names
-            data = np.abs(self.voltage)
-            y_label = '(p.u.)'
-            title = 'Bus voltage '
+
+            return ResultsTable(data=np.abs(self.voltage),
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.bus_names,
+                                cols_device_type=DeviceType.BusDevice,
+                                title=result_type.value,
+                                ylabel='(p.u.)',
+                                units='(p.u.)')
 
         elif result_type == ResultTypes.BusVoltageAngle:
-            labels = self.bus_names
-            data = np.angle(self.voltage, deg=True)
-            y_label = '(Deg)'
-            title = 'Bus voltage '
+
+            return ResultsTable(data=np.angle(self.voltage, deg=True),
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.bus_names,
+                                cols_device_type=DeviceType.BusDevice,
+                                title=result_type.value,
+                                ylabel='(deg)',
+                                units='(deg)')
 
         elif result_type == ResultTypes.BusActivePower:
-            labels = self.bus_names
-            data = self.S.real
-            y_label = '(MW)'
-            title = 'Bus active power '
+
+            return ResultsTable(data=self.S.real,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.bus_names,
+                                cols_device_type=DeviceType.BusDevice,
+                                title=result_type.value,
+                                ylabel='(MW)',
+                                units='(MW)')
 
         elif result_type == ResultTypes.BusReactivePower:
-            labels = self.bus_names
-            data = self.S.imag
-            y_label = '(MVAr)'
-            title = 'Bus reactive power '
 
-        elif result_type == ResultTypes.BranchPower:
-            labels = self.branch_names
-            data = self.Sf
-            y_label = '(MVA)'
-            title = 'Branch power '
+            return ResultsTable(data=self.S.imag,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.bus_names,
+                                cols_device_type=DeviceType.BusDevice,
+                                title=result_type.value,
+                                ylabel='(MVAr)',
+                                units='(MVAr)')
 
         elif result_type == ResultTypes.BranchActivePowerFrom:
-            labels = self.branch_names
-            data = self.Sf.real
-            y_label = '(MW)'
-            title = 'Branch power '
+
+            return ResultsTable(data=self.Sf.real,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.branch_names,
+                                cols_device_type=DeviceType.BranchDevice,
+                                title=result_type.value,
+                                ylabel='(MW)',
+                                units='(MW)')
 
         elif result_type == ResultTypes.BranchReactivePowerFrom:
-            labels = self.branch_names
-            data = self.Sf.imag
-            y_label = '(MVAr)'
-            title = 'Branch power '
+
+            return ResultsTable(data=self.Sf.imag,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.branch_names,
+                                cols_device_type=DeviceType.BranchDevice,
+                                title=result_type.value,
+                                ylabel='(MVAr)',
+                                units='(MVAr)')
 
         elif result_type == ResultTypes.BranchActivePowerTo:
-            labels = self.branch_names
-            data = self.St.real
-            y_label = '(MW)'
-            title = 'Branch power '
+
+            return ResultsTable(data=self.St.real,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.branch_names,
+                                cols_device_type=DeviceType.BranchDevice,
+                                title=result_type.value,
+                                ylabel='(MW)',
+                                units='(MW)')
 
         elif result_type == ResultTypes.BranchReactivePowerTo:
-            labels = self.branch_names
-            data = self.St.imag
-            y_label = '(MVAr)'
-            title = 'Branch power '
+
+            return ResultsTable(data=self.St.imag,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.branch_names,
+                                cols_device_type=DeviceType.BranchDevice,
+                                title=result_type.value,
+                                ylabel='(MVAr)',
+                                units='(MVAr)')
 
         elif result_type == ResultTypes.BranchActiveCurrentFrom:
-            labels = self.branch_names
-            data = self.If.real
-            y_label = '(p.u.)'
-            title = 'Branch power '
+
+            return ResultsTable(data=self.If.real,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.branch_names,
+                                cols_device_type=DeviceType.BranchDevice,
+                                title=result_type.value,
+                                ylabel='(p.u.)',
+                                units='(p.u.)')
 
         elif result_type == ResultTypes.BranchReactiveCurrentFrom:
-            labels = self.branch_names
-            data = self.If.imag
-            y_label = '(p.u.)'
-            title = 'Branch power '
+
+            return ResultsTable(data=self.If.imag,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.branch_names,
+                                cols_device_type=DeviceType.BranchDevice,
+                                title=result_type.value,
+                                ylabel='(p.u.)',
+                                units='(p.u.)')
 
         elif result_type == ResultTypes.BranchActiveCurrentTo:
-            labels = self.branch_names
-            data = self.It.real
-            y_label = '(p.u.)'
-            title = 'Branch power '
+
+            return ResultsTable(data=self.It.real,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.branch_names,
+                                cols_device_type=DeviceType.BranchDevice,
+                                title=result_type.value,
+                                ylabel='(p.u.)',
+                                units='(p.u.)')
 
         elif result_type == ResultTypes.BranchReactiveCurrentTo:
-            labels = self.branch_names
-            data = self.It.imag
-            y_label = '(p.u.)'
-            title = 'Branch power '
+
+            return ResultsTable(data=self.It.imag,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.branch_names,
+                                cols_device_type=DeviceType.BranchDevice,
+                                title=result_type.value,
+                                ylabel='(p.u.)',
+                                units='(p.u.)')
 
         elif result_type == ResultTypes.BranchTapModule:
-            labels = self.branch_names
-            data = self.tap_module
-            y_label = '(p.u.)'
-            title = 'Branch tap modules '
+
+            return ResultsTable(data=self.tap_module,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.branch_names,
+                                cols_device_type=DeviceType.BranchDevice,
+                                title=result_type.value,
+                                ylabel='(p.u.)',
+                                units='(p.u.)')
 
         elif result_type == ResultTypes.BranchTapAngle:
-            labels = self.branch_names
-            data = self.tap_angle
-            y_label = '(rad)'
-            title = 'Branch power '
+
+            return ResultsTable(data=np.rad2deg(self.tap_angle),
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.branch_names,
+                                cols_device_type=DeviceType.BranchDevice,
+                                title=result_type.value,
+                                ylabel='(deg)',
+                                units='(deg)')
 
         elif result_type == ResultTypes.BranchBeq:
-            labels = self.branch_names
-            data = self.Beq
-            y_label = '(p.u.)'
-            title = 'Branch equivalent susceptance '
+
+            return ResultsTable(data=self.Beq,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.branch_names,
+                                cols_device_type=DeviceType.BranchDevice,
+                                title=result_type.value,
+                                ylabel='(p.u.)',
+                                units='(p.u.)')
 
         elif result_type == ResultTypes.BranchLoading:
-            labels = self.branch_names
-            data = np.abs(self.loading) * 100
-            y_label = '(%)'
-            title = 'Branch loading '
 
-        elif result_type == ResultTypes.BranchLosses:
-            labels = self.branch_names
-            data = self.losses
-            y_label = '(MVA)'
-            title = 'Branch losses'
+            return ResultsTable(data=np.abs(self.loading) * 100,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.branch_names,
+                                cols_device_type=DeviceType.BranchDevice,
+                                title=result_type.value,
+                                ylabel='(%)',
+                                units='(%)')
 
         elif result_type == ResultTypes.BranchActiveLosses:
-            labels = self.branch_names
-            data = self.losses.real
-            y_label = '(MW)'
-            title = 'Branch losses'
+
+            return ResultsTable(data=self.losses.real,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.branch_names,
+                                cols_device_type=DeviceType.BranchDevice,
+                                title=result_type.value,
+                                ylabel='(MW)',
+                                units='(MW)')
 
         elif result_type == ResultTypes.BranchReactiveLosses:
-            labels = self.branch_names
-            data = self.losses.imag
-            y_label = '(MVAr)'
-            title = 'Branch losses'
+
+            return ResultsTable(data=self.losses.imag,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.branch_names,
+                                cols_device_type=DeviceType.BranchDevice,
+                                title=result_type.value,
+                                ylabel='(MVAr)',
+                                units='(MVAr)')
 
         elif result_type == ResultTypes.BranchActiveLossesPercentage:
-            labels = self.branch_names
-            data = np.abs(self.losses.real) / np.abs(self.Sf.real + 1e-20) * 100.0
-            y_label = '(%)'
-            title = 'Branch losses percentage'
+
+            return ResultsTable(data=np.abs(self.losses.real) / np.abs(self.Sf.real + 1e-20) * 100.0,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.branch_names,
+                                cols_device_type=DeviceType.BranchDevice,
+                                title=result_type.value,
+                                ylabel='(%)',
+                                units='(%)')
 
         elif result_type == ResultTypes.BranchVoltage:
-            labels = self.branch_names
-            data = np.abs(self.Vbranch)
-            y_label = '(p.u.)'
-            title = result_type.value[0]
+
+            return ResultsTable(data=np.abs(self.Vbranch),
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.branch_names,
+                                cols_device_type=DeviceType.BranchDevice,
+                                title=result_type.value,
+                                ylabel='(p.u.)',
+                                units='(p.u.)')
 
         elif result_type == ResultTypes.BranchAngles:
-            labels = self.branch_names
-            data = np.angle(self.Vbranch, deg=True)
-            y_label = '(deg)'
-            title = result_type.value[0]
 
-        elif result_type == ResultTypes.BatteryPower:
-            labels = self.branch_names
-            data = np.zeros_like(self.losses)
-            y_label = '$\Delta$ (MVA)'
-            title = 'Battery power'
+            return ResultsTable(data=np.angle(self.Vbranch, deg=True),
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.branch_names,
+                                cols_device_type=DeviceType.BranchDevice,
+                                title=result_type.value,
+                                ylabel='(deg)',
+                                units='(deg)')
 
         elif result_type == ResultTypes.SimulationError:
-            data = self.error_values.reshape(-1, 1)
-            y_label = 'p.u.'
-            labels = ['Error']
-            title = 'Error'
+
+            return ResultsTable(data=self.error_values.reshape(-1, 1),
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=['Error'],
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(p.u.)',
+                                units='(p.u.)')
 
         elif result_type == ResultTypes.HvdcLosses:
-            labels = self.hvdc_names
-            data = self.hvdc_losses
-            y_label = '(MW)'
-            title = result_type.value[0]
+
+            return ResultsTable(data=self.hvdc_losses,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.hvdc_names,
+                                cols_device_type=DeviceType.HVDCLineDevice,
+                                title=result_type.value,
+                                ylabel='(MW)',
+                                units='(MW)')
 
         elif result_type == ResultTypes.HvdcPowerFrom:
-            labels = self.hvdc_names
-            data = self.hvdc_Pf
-            y_label = '(MW)'
-            title = result_type.value[0]
+
+            return ResultsTable(data=self.hvdc_Pf,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.hvdc_names,
+                                cols_device_type=DeviceType.HVDCLineDevice,
+                                title=result_type.value,
+                                ylabel='(MW)',
+                                units='(MW)')
 
         elif result_type == ResultTypes.HvdcPowerTo:
-            labels = self.hvdc_names
-            data = self.hvdc_Pt
-            y_label = '(MW)'
-            title = result_type.value[0]
+
+            return ResultsTable(data=self.hvdc_Pt,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.hvdc_names,
+                                cols_device_type=DeviceType.HVDCLineDevice,
+                                title=result_type.value,
+                                ylabel='(MW)',
+                                units='(MW)')
 
         elif result_type == ResultTypes.InterAreaExchange:
-            labels = self.get_ordered_area_names()
-            data = self.get_inter_area_flows().real
-            y_label = '(MW)'
-            title = result_type.value[0]
+
+            return ResultsTable(data=self.get_inter_area_flows().real,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.get_ordered_area_names(),
+                                cols_device_type=DeviceType.AreaDevice,
+                                title=result_type.value,
+                                ylabel='(MW)',
+                                units='(MW)')
 
         elif result_type == ResultTypes.LossesPercentPerArea:
-            labels = self.get_ordered_area_names()
             Pf = (self.get_branch_values_per_area(np.abs(self.Sf.real))
                   + self.get_hvdc_values_per_area(np.abs(self.hvdc_Pf)))
 
@@ -539,32 +650,43 @@ class PowerFlowTimeSeriesResults(ResultsTemplate):
                   + self.get_hvdc_values_per_area(np.abs(self.hvdc_losses)))
 
             data = Pl / (Pf + 1e-20) * 100.0
-            y_label = '(%)'
-            title = result_type.value[0]
+
+            return ResultsTable(data=data,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.get_ordered_area_names(),
+                                cols_device_type=DeviceType.AreaDevice,
+                                title=result_type.value,
+                                ylabel='(%)',
+                                units='(%)')
 
         elif result_type == ResultTypes.LossesPerArea:
-            labels = self.get_ordered_area_names()
+
             data = (self.get_branch_values_per_area(np.abs(self.losses.real))
                     + self.get_hvdc_values_per_area(np.abs(self.hvdc_losses)))
 
-            y_label = '(MW)'
-            title = result_type.value[0]
+            return ResultsTable(data=data,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.get_ordered_area_names(),
+                                cols_device_type=DeviceType.AreaDevice,
+                                title=result_type.value,
+                                ylabel='(MW)',
+                                units='(MW)')
 
         elif result_type == ResultTypes.ActivePowerFlowPerArea:
-            labels = self.get_ordered_area_names()
+
             data = (self.get_branch_values_per_area(np.abs(self.Sf.real))
                     + self.get_hvdc_values_per_area(np.abs(self.hvdc_Pf)))
 
-            y_label = '(MW)'
-            title = result_type.value[0]
+            return ResultsTable(data=data,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.get_ordered_area_names(),
+                                cols_device_type=DeviceType.AreaDevice,
+                                title=result_type.value,
+                                ylabel='(MW)',
+                                units='(MW)')
 
         else:
             raise Exception('Result type not understood:' + str(result_type))
-
-        if self.time_array is not None:
-            index = pd.to_datetime(self.time_array)
-        else:
-            index = np.array(list(range(data.shape[0])))
-
-        # assemble model
-        return ResultsTable(data=data, index=index, columns=labels, title=title, ylabel=y_label, units=y_label)

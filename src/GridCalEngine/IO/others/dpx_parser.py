@@ -14,17 +14,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from typing import Tuple, Any, Union
+from typing import Any, Union
 
 import chardet
 
 import numpy as np
 import pandas as pd
 
-from GridCalEngine.Core import MultiCircuit
 from GridCalEngine.basic_structures import Logger
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-import GridCalEngine.Core.Devices as dev
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
+import GridCalEngine.Devices as dev
 
 pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)

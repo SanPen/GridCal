@@ -48,12 +48,18 @@ class BusMode(Enum):
 
 
 class CpfStopAt(Enum):
+    """
+    CpfStopAt
+    """
     Nose = 'Nose'
     ExtraOverloads = 'Extra overloads'
     Full = 'Full curve'
 
 
 class CpfParametrization(Enum):
+    """
+    CpfParametrization
+    """
     Natural = 'Natural'
     ArcLength = 'Arc Length'
     PseudoArcLength = 'Pseudo Arc Length'
@@ -93,6 +99,7 @@ class InvestmentEvaluationMethod(Enum):
     Independent = "Independent"
     Hyperopt = "Hyperopt"
     MVRSM = "MVRSM"
+    MVRSM_multi = "MVRSM_multi"
 
     def __str__(self):
         return self.value
@@ -174,8 +181,12 @@ class SolverType(Enum):
     Constant_Impedance_linear = 'Constant impedance linear'
     NoSolver = 'No Solver'
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """
+
+        :return:
+        """
+        return str(self.value)
 
     def __repr__(self):
         return str(self)
@@ -493,6 +504,7 @@ class ContingencyMethod(Enum):
     Enumeratio of contingency calculation engines
     """
     PowerFlow = 'Power flow'
+    OptimalPowerFlow = 'Optimal power flow'
     HELM = 'HELM'
     PTDF = 'PTDF'
 
@@ -531,6 +543,11 @@ class DiagramType(Enum):
 
     @staticmethod
     def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
         try:
             return DiagramType[s]
         except KeyError:
@@ -538,6 +555,10 @@ class DiagramType(Enum):
 
     @classmethod
     def list(cls):
+        """
+
+        :return:
+        """
         return list(map(lambda c: c.value, cls))
 
 
@@ -546,13 +567,13 @@ class TransformerControlType(Enum):
     Transformer control types
     """
     fixed = '0:Fixed'
-    Pt = '1:Pt'
+    Pf = '1:Pf'
     Qt = '2:Qt'
     PtQt = '3:Pt+Qt'
-    Vt = '4:Vt'
-    PtVt = '5:Pt+Vt'
+    V = '4:V'
+    PtV = '5:Pt+V'
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.value)
 
     def __repr__(self):
@@ -560,6 +581,11 @@ class TransformerControlType(Enum):
 
     @staticmethod
     def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
         try:
             return TransformerControlType[s]
         except KeyError:
@@ -567,6 +593,81 @@ class TransformerControlType(Enum):
 
     @classmethod
     def list(cls):
+        """
+
+        :return:
+        """
+        return list(map(lambda c: c.value, cls))
+
+
+class TapModuleControl(Enum):
+    """
+    Tap module control types
+    """
+    fixed = 'Fixed'
+    Vm = 'Vm'
+    Qf = 'Qf'
+    Qt = 'Qt'
+
+    def __str__(self) -> str:
+        return str(self.value)
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
+        try:
+            return TapModuleControl[s]
+        except KeyError:
+            return s
+
+    @classmethod
+    def list(cls):
+        """
+
+        :return:
+        """
+        return list(map(lambda c: c.value, cls))
+
+
+class TapAngleControl(Enum):
+    """
+    Tap angle control types
+    """
+    fixed = 'Fixed'
+    Pf = 'Pf'
+    Pt = 'Pt'
+
+    def __str__(self) -> str:
+        return str(self.value)
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
+        try:
+            return TapAngleControl[s]
+        except KeyError:
+            return s
+
+    @classmethod
+    def list(cls):
+        """
+
+        :return:
+        """
         return list(map(lambda c: c.value, cls))
 
 
@@ -602,7 +703,7 @@ class ConverterControlType(Enum):
     type_IV_I = '8:Vdc'
     type_IV_II = '9:Pdc'
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.value)
 
     def __repr__(self):
@@ -610,6 +711,11 @@ class ConverterControlType(Enum):
 
     @staticmethod
     def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
         try:
             return ConverterControlType[s]
         except KeyError:
@@ -617,6 +723,10 @@ class ConverterControlType(Enum):
 
     @classmethod
     def list(cls):
+        """
+
+        :return:
+        """
         return list(map(lambda c: c.value, cls))
 
 
@@ -627,7 +737,7 @@ class HvdcControlType(Enum):
     type_0_free = '0:Free'
     type_1_Pset = '1:Pdc'
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.value)
 
     def __repr__(self):
@@ -635,6 +745,11 @@ class HvdcControlType(Enum):
 
     @staticmethod
     def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
         try:
             return ConverterControlType[s]
         except KeyError:
@@ -642,6 +757,10 @@ class HvdcControlType(Enum):
 
     @classmethod
     def list(cls):
+        """
+
+        :return:
+        """
         return list(map(lambda c: c.value, cls))
 
 
@@ -677,6 +796,11 @@ class FaultType(Enum):
 
     @staticmethod
     def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
         try:
             return FaultType[s]
         except KeyError:
@@ -684,6 +808,10 @@ class FaultType(Enum):
 
     @classmethod
     def list(cls):
+        """
+
+        :return:
+        """
         return list(map(lambda c: c.value, cls))
 
 
@@ -701,7 +829,7 @@ class WindingsConnection(Enum):
     SD = 'SD'
     DD = 'DD'
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.value)
 
     def __repr__(self):
@@ -709,6 +837,11 @@ class WindingsConnection(Enum):
 
     @staticmethod
     def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
         try:
             return WindingsConnection[s]
         except KeyError:
@@ -716,6 +849,10 @@ class WindingsConnection(Enum):
 
     @classmethod
     def list(cls):
+        """
+
+        :return:
+        """
         return list(map(lambda c: c.value, cls))
 
 
@@ -724,6 +861,7 @@ class DeviceType(Enum):
     Device types
     """
     NoDevice = "NoDevice"
+    TimeDevice = "Time"
     CircuitDevice = 'Circuit'
     BusDevice = 'Bus'
     BranchDevice = 'Branch'
@@ -738,11 +876,24 @@ class DeviceType(Enum):
     VscDevice = 'VSC'
     BatteryDevice = 'Battery'
     LoadDevice = 'Load'
+    CurrentInjectionDevice = 'Current injection'
+    ControllableShuntDevice = 'Controllable shunt'
     GeneratorDevice = 'Generator'
     StaticGeneratorDevice = 'Static Generator'
     ShuntDevice = 'Shunt'
     UpfcDevice = 'UPFC'  # unified power flow controller
     ExternalGridDevice = 'External grid'
+    LoadLikeDevice = 'Load like'
+
+    LambdaDevice = "Loading from the base situation ($\lambda$)"
+
+    PiMeasurementDevice = 'Pi Measurement'
+    QiMeasurementDevice = 'Qi Measurement'
+    PfMeasurementDevice = 'Pf Measurement'
+    QfMeasurementDevice = 'Qf Measurement'
+    VmMeasurementDevice = 'Vm Measurement'
+    IfMeasurementDevice = 'If Measurement'
+
     WireDevice = 'Wire'
     SequenceLineDevice = 'Sequence line'
     UnderGroundLineDevice = 'Underground line'
@@ -757,6 +908,7 @@ class DeviceType(Enum):
     ZoneDevice = 'Zone'
     CountryDevice = 'Country'
     BusBarDevice = 'BusBar'
+    VoltageLevelDevice = 'VoltageLevel'
 
     Technology = 'Technology'
     TechnologyGroup = 'Technology Group'
@@ -786,14 +938,19 @@ class DeviceType(Enum):
     FluidPathDevice = 'Fluid path'
     FluidNodeDevice = 'Fluid node'
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        return str(self.value)
 
     def __repr__(self):
         return str(self)
 
     @staticmethod
     def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
         try:
             return DeviceType[s]
         except KeyError:
@@ -801,6 +958,10 @@ class DeviceType(Enum):
 
     @classmethod
     def list(cls):
+        """
+
+        :return:
+        """
         return list(map(lambda c: c.value, cls))
 
 
@@ -814,14 +975,19 @@ class BuildStatus(Enum):
     Candidate = 'Candidate'  # Candidate for commissioning, does not exist yet, might be selected for commissioning
     PlannedDecommission = 'PlannedDecommission'  # Already there, but it has been selected for decommissioning
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        return str(self.value)
 
     def __repr__(self):
         return str(self)
 
     @staticmethod
     def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
         try:
             return BuildStatus[s]
         except KeyError:
@@ -829,6 +995,10 @@ class BuildStatus(Enum):
 
     @classmethod
     def list(cls):
+        """
+
+        :return:
+        """
         return list(map(lambda c: c.value, cls))
 
 
@@ -865,6 +1035,11 @@ class StudyResultsType(Enum):
 
     @staticmethod
     def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
         try:
             return StudyResultsType[s]
         except KeyError:
@@ -872,6 +1047,10 @@ class StudyResultsType(Enum):
 
     @classmethod
     def list(cls):
+        """
+
+        :return:
+        """
         return list(map(lambda c: c.value, cls))
 
 
@@ -893,6 +1072,11 @@ class AvailableTransferMode(Enum):
 
     @staticmethod
     def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
         try:
             return AvailableTransferMode[s]
         except KeyError:
@@ -900,6 +1084,10 @@ class AvailableTransferMode(Enum):
 
     @classmethod
     def list(cls):
+        """
+
+        :return:
+        """
         return list(map(lambda c: c.value, cls))
 
 
@@ -920,6 +1108,11 @@ class InvestmentsEvaluationObjectives(Enum):
 
     @staticmethod
     def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
         try:
             return InvestmentsEvaluationObjectives[s]
         except KeyError:
@@ -927,6 +1120,10 @@ class InvestmentsEvaluationObjectives(Enum):
 
     @classmethod
     def list(cls):
+        """
+
+        :return:
+        """
         return list(map(lambda c: c.value, cls))
 
 
@@ -954,5 +1151,298 @@ class LogSeverity(Enum):
         """
         try:
             return LogSeverity[s]
+        except KeyError:
+            return s
+
+
+class SparseSolver(Enum):
+    """
+    Sparse solvers to use
+    """
+    ILU = 'ILU'
+    KLU = 'KLU'
+    SuperLU = 'SuperLU'
+    Pardiso = 'Pardiso'
+    GMRES = 'GMRES'
+    UMFPACK = 'UmfPack'
+    UMFPACKTriangular = 'UmfPackTriangular'
+
+    def __str__(self):
+        return self.value
+
+
+class ResultTypes(Enum):
+    """
+    ResultTypes
+    """
+    # Power flow
+    BusVoltage = 'Voltage'
+    BusVoltagePolar = 'Voltage (polar)'
+    BusActivePower = 'P: Active power'
+    BusReactivePower = 'Q: Reactive power'
+    BranchPower = 'Sf: Power'
+    BranchActivePowerFrom = 'Pf: Active power "from"'
+    BranchReactivePowerFrom = 'Qf: Reactive power "from"'
+    BranchActivePowerTo = 'Pt: Active power "to"'
+    BranchReactivePowerTo = 'Qt: Reactive power "to"'
+
+    BranchCurrent = 'I: Current'
+    BranchActiveCurrentFrom = 'Irf: Active current "from"'
+    BranchReactiveCurrentFrom = 'Iif: Reactive current "from"'
+    BranchActiveCurrentTo = 'Irt: Active current "to"'
+    BranchReactiveCurrentTo = 'Iit: Reactive current "to"'
+
+    BranchTapModule = 'm: Tap module'
+    BranchTapAngle = '𝜏: Tap angle'
+    BranchBeq = 'Beq: Equivalent susceptance'
+
+    BranchLoading = 'Branch Loading'
+    Transformer2WTapModule = 'Transformer tap module'
+    BranchVoltage = 'ΔV: Voltage modules drop'
+    BranchAngles = 'Δθ: Voltage angles drop'
+    BranchLosses = 'Branch losses'
+    BranchActiveLosses = 'Pl: Active losses'
+    BranchReactiveLosses = 'Ql: Reactive losses'
+    BranchActiveLossesPercentage = 'Pl: Active losses (%)'
+    BatteryPower = 'Battery power'
+    BatteryEnergy = 'Battery energy'
+
+    HvdcLosses = 'HVDC losses'
+    HvdcPowerFrom = 'HVDC power "from"'
+    HvdcLoading = 'HVDC loading'
+    HvdcPowerTo = 'HVDC power "to"'
+
+    # StochasticPowerFlowDriver
+    BusVoltageAverage = 'Bus voltage avg'
+    BusVoltageStd = 'Bus voltage std'
+    BusVoltageCDF = 'Bus voltage CDF'
+    BusPowerCDF = 'Bus power CDF'
+    BranchPowerAverage = 'Branch power avg'
+    BranchPowerStd = 'Branch power std'
+    BranchPowerCDF = 'Branch power CDF'
+    BranchLoadingAverage = 'loading avg'
+    BranchLoadingStd = 'Loading std'
+    BranchLoadingCDF = 'Loading CDF'
+    BranchLossesAverage = 'Losses avg'
+    BranchLossesStd = 'Losses std'
+    BranchLossesCDF = 'Losses CDF'
+
+    # PF
+    BusVoltageModule = 'V: Voltage module'
+    BusVoltageAngle = 'θ: Voltage angle'
+    BusPower = 'Bus power'
+    BusShadowPrices = 'Nodal shadow prices'
+    BranchOverloads = 'Branch overloads'
+    LoadShedding = 'Load shedding'
+    GeneratorShedding = 'Generator shedding'
+    GeneratorPower = 'Generator power'
+    GeneratorCost = 'Generator cost'
+    GeneratorFuels = 'Generator fuels'
+    GeneratorEmissions = 'Generator emissions'
+    GeneratorProducing = 'Generator producing'
+    GeneratorStartingUp = 'Generator starting up'
+    GeneratorShuttingDown = 'Generator shutting down'
+    BusVoltagePolarPlot = 'Voltage plot'
+
+    # OPF-NTC
+    HvdcOverloads = 'HVDC overloads'
+    NodeSlacks = 'Nodal slacks'
+    GenerationDelta = 'Generation deltas'
+    GenerationDeltaSlacks = 'Generation delta slacks'
+    InterAreaExchange = 'Inter-Area exchange'
+    LossesPercentPerArea = 'Losses % per area'
+    LossesPerArea = 'Losses per area'
+    ActivePowerFlowPerArea = 'Active power flow per area'
+    LossesPerGenPerArea = 'Losses per generation unit in area'
+
+    SystemFuel = 'System fuel consumption'
+    SystemEmissions = 'System emissions'
+    SystemEnergyCost = 'System energy cost'
+
+    # NTC TS
+    OpfNtcTsContingencyReport = 'Contingency flow report'
+    OpfNtcTsBaseReport = 'Base flow report'
+
+    # Short-circuit
+    BusShortCircuitActivePower = 'Short circuit active power'
+    BusShortCircuitReactivePower = 'Short circuit reactive power'
+
+    # PTDF
+    PTDF = 'PTDF'
+    PTDFBusVoltageSensitivity = 'Bus voltage sensitivity'
+    LODF = 'LODF'
+
+    MaxOverloads = 'Maximum contingency flow'
+    ContingencyFlows = 'Contingency flow'
+    ContingencyLoading = 'Contingency loading'
+    MaxContingencyFlows = 'Max contingency flow'
+    MaxContingencyLoading = 'Max contingency loading'
+
+    ContingencyOverloadSum = 'Contingency overload sum'
+    MeanContingencyOverLoading = 'Mean contingency overloading'
+    StdDevContingencyOverLoading = 'Std-dev contingency overloading'
+
+    ContingencyFrequency = 'Contingency frequency'
+    ContingencyRelativeFrequency = 'Contingency relative frequency'
+
+    SimulationError = 'Error'
+
+    OTDFSimulationError = 'Error'
+
+    # contingency analysis
+    ContingencyAnalysisReport = 'Contingencies report'
+    ContingencyStatisticalAnalysisReport = 'Contingencies statistical report'
+
+    # Srap
+    SrapUsedPower = 'Srap used power'
+
+    # Hydro OPF
+    FluidCurrentLevel = 'Reservoir fluid level'
+    FluidFlowIn = 'Flow entering the node'
+    FluidFlowOut = 'Flow exiting the node'
+    FluidP2XFlow = 'Flow from the P2X'
+    FluidSpillage = 'Spillage flow leaving'
+
+    FluidFlowPath = 'Flow in the river'
+    FluidFlowInjection = 'Flow circulating in the device'
+
+    # sigma
+    SigmaReal = 'Sigma real'
+    SigmaImag = 'Sigma imaginary'
+    SigmaDistances = 'Sigma distances'
+    SigmaPlusDistances = 'Sigma + distances'
+
+    # ATC
+    AvailableTransferCapacityMatrix = 'Available transfer capacity'
+    AvailableTransferCapacity = 'Available transfer capacity (final)'
+    AvailableTransferCapacityN = 'Available transfer capacity (N)'
+    AvailableTransferCapacityAlpha = 'Sensitivity to the exchange'
+    AvailableTransferCapacityAlphaN1 = 'Sensitivity to the exchange (N-1)'
+    NetTransferCapacity = 'Net transfer capacity'
+    AvailableTransferCapacityReport = 'ATC Report'
+
+    BaseFlowReport = 'Ntc: Base flow report'
+    ContingencyFlowsReport = 'Ntc: Contingency flow report'
+    ContingencyFlowsBranchReport = 'Ntc: Contingency flow report. (Branch)'
+    ContingencyFlowsGenerationReport = 'Ntc: Contingency flow report. (Generation)'
+    ContingencyFlowsHvdcReport = 'Ntc: Contingency flow report. (Hvdc)'
+
+    # Time series
+    TsBaseFlowReport = 'Time series base flow report'
+    TsContingencyFlowReport = 'Time series contingency flow report'
+    TsContingencyFlowBranchReport = 'Time series Contingency flow report (Branches)'
+    TsContingencyFlowGenerationReport = 'Time series contingency flow report. (Generation)'
+    TsContingencyFlowHvdcReport = 'Time series contingency flow report. (Hvdc)'
+    TsGenerationPowerReport = 'Time series generation power report'
+    TsGenerationDeltaReport = 'Time series generation delta power report'
+    TsAlphaReport = 'Time series sensitivity to the exchange report'
+    TsWorstAlphaN1Report = 'Time series worst sensitivity to the exchange report (N-1)'
+    TsBranchMonitoring = 'Time series branch monitoring logic report'
+    TsCriticalBranches = 'Time series critical Branches report'
+    TsContingencyBranches = 'Time series contingency Branches report'
+
+    # Clustering
+    ClusteringReport = 'Clustering time series report'
+
+    # inputs analysis
+    ZoneAnalysis = 'Zone analysis'
+    CountryAnalysis = 'Country analysis'
+    AreaAnalysis = 'Area analysis'
+
+    AreaGenerationAnalysis = 'Area generation analysis'
+    ZoneGenerationAnalysis = 'Zone generation analysis'
+    CountryGenerationAnalysis = 'Country generation analysis'
+
+    AreaLoadAnalysis = 'Area load analysis'
+    ZoneLoadAnalysis = 'Zone load analysis'
+    CountryLoadAnalysis = 'Country load analysis'
+
+    AreaBalanceAnalysis = 'Area balance analysis'
+    ZoneBalanceAnalysis = 'Zone balance analysis'
+    CountryBalanceAnalysis = 'Country balance analysis'
+
+    # Short circuit
+    BusVoltageModule0 = 'Voltage module (0)'
+    BusVoltageAngle0 = 'Voltage angle (0)'
+    BranchActivePowerFrom0 = 'Branch active power "from" (0)'
+    BranchReactivePowerFrom0 = 'Branch reactive power "from" (0)'
+    BranchActiveCurrentFrom0 = 'Branch active current "from" (0)'
+    BranchReactiveCurrentFrom0 = 'Branch reactive current "from" (0)'
+    BranchLoading0 = 'Branch loading (0)'
+    BranchActiveLosses0 = 'Branch active losses (0)'
+    BranchReactiveLosses0 = 'Branch reactive losses (0)'
+
+    BusVoltageModule1 = 'Voltage module (1)'
+    BusVoltageAngle1 = 'Voltage angle (1)'
+    BranchActivePowerFrom1 = 'Branch active power "from" (1)'
+    BranchReactivePowerFrom1 = 'Branch reactive power "from" (1)'
+    BranchActiveCurrentFrom1 = 'Branch active current "from" (1)'
+    BranchReactiveCurrentFrom1 = 'Branch reactive current "from" (1)'
+    BranchLoading1 = 'Branch loading (1)'
+    BranchActiveLosses1 = 'Branch active losses (1)'
+    BranchReactiveLosses1 = 'Branch reactive losses (1)'
+
+    BusVoltageModule2 = 'Voltage module (2)'
+    BusVoltageAngle2 = 'Voltage angle (2)'
+    BranchActivePowerFrom2 = 'Branch active power "from" (2)'
+    BranchReactivePowerFrom2 = 'Branch reactive power "from" (2)'
+    BranchActiveCurrentFrom2 = 'Branch active current "from" (2)'
+    BranchReactiveCurrentFrom2 = 'Branch reactive current "from" (2)'
+    BranchLoading2 = 'Branch loading (2)'
+    BranchActiveLosses2 = 'Branch active losses (2)'
+    BranchReactiveLosses2 = 'Branch reactive losses (2)'
+    BranchMonitoring = 'Branch monitoring logic'
+
+    ShortCircuitInfo = 'Short-circuit information'
+
+    # classifiers
+    SystemResults = 'System'
+    BusResults = 'Bus'
+    BranchResults = 'Branch'
+    HvdcResults = 'Hvdc'
+    AreaResults = 'Area'
+    InfoResults = 'Information'
+    ReportsResults = 'Reports'
+    SlacksResults = 'Slacks'
+    DispatchResults = 'Dispatch'
+    FlowReports = 'Flow Reports'
+    Sensibilities = 'Sensibilities'
+    SeriesResults = 'Series'
+    SnapshotResults = 'Snapshot'
+    NTCResults = 'NTC'
+    SpecialPlots = 'Special plots'
+    GeneratorResults = 'Generators'
+    LoadResults = 'Loads'
+    BatteryResults = 'Batteries'
+    StatisticResults = 'Statistics'
+
+    # fluid
+    FluidNodeResults = 'Fluid nodes'
+    FluidPathResults = 'Fluid paths'
+    FluidInjectionResults = 'Fluid injections'
+    FluidTurbineResults = 'Fluid turbines'
+    FluidPumpResults = 'Fluid pumps'
+    FluidP2XResults = 'Fluid P2Xs'
+
+    # investments evaluation
+    InvestmentsReportResults = 'Investments evaluation report'
+    InvestmentsParetoPlot = 'Pareto plot'
+    InvestmentsIterationsPlot = 'Iterations plot'
+
+    def __str__(self):
+        return self.value[0]
+
+    def __repr__(self):
+        return str(self.value[0])
+
+    @staticmethod
+    def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
+        try:
+            return ResultTypes[s]
         except KeyError:
             return s

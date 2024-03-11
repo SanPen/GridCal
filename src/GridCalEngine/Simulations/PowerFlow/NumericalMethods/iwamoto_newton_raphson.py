@@ -31,22 +31,20 @@ scipy.ALLOW_THREADS = True
 np.set_printoptions(precision=8, suppress=True, linewidth=320)
 
 
-def mu(Ybus, J, incS, dV, dx, pvpq, pq, npv, npq):
+def mu(Ybus, J, incS, dV, dx, pvpq, pq):
     """
     Calculate the Iwamoto acceleration parameter as described in:
     "A Load Flow Calculation Method for Ill-Conditioned Power Systems" by Iwamoto, S. and Tamura, Y."
-    Args:
-        Ybus: Admittance matrix
-        J: Jacobian matrix
-        incS: mismatch vector
-        dV: voltage increment (in complex form)
-        dx: solution vector as calculated dx = solve(J, incS)
-        pvpq: array of the pq and pv indices
-        pq: array of the pq indices
-
-    Returns:
-        the Iwamoto's optimal multiplier for ill conditioned systems
+    :param Ybus: Admittance matrix
+    :param J: Jacobian matrix
+    :param incS: mismatch vector
+    :param dV: voltage increment (in complex form)
+    :param dx: solution vector as calculated dx = solve(J, incS)
+    :param pvpq: array of the pq and pv indices
+    :param pq: array of the pq indices
+    :return: the Iwamoto's optimal multiplier for ill conditioned systems
     """
+
     # evaluate the Jacobian of the voltage derivative
     # theoretically this is the second derivative matrix
     # since the Jacobian (J2) has been calculated with dV instead of V
@@ -71,20 +69,20 @@ def IwamotoNR(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15,
               control_q=ReactivePowerControlMode.NoControl, robust=False) -> NumericPowerFlowResults:
     """
     Solves the power flow using a full Newton's method with the Iwamoto optimal step factor.
-    Args:
-        Ybus: Admittance matrix
-        S0: Array of nodal power Injections
-        V0: Array of nodal voltages (initial solution)
-        I0: Array of nodal current Injections
-        pv_: Array with the indices of the PV buses
-        pq_: Array with the indices of the PQ buses
-        tol: Tolerance
-        max_it: Maximum number of iterations
-        robust: use of the Iwamoto optimal step factor?.
-    Returns:
-        Voltage solution, converged?, error, calculated power Injections
-
-    @Author: Santiago Penate Vera
+    :param Ybus: Admittance matrix
+    :param S0: Array of nodal power Injections
+    :param V0: Array of nodal voltages (initial solution)
+    :param I0: Array of nodal current Injections
+    :param Y0: Array of nodal admittance Injections
+    :param pv_: Array with the indices of the PV buses
+    :param pq_: Array with the indices of the PQ buses
+    :param Qmin: Array of nodal minimum reactive power injections
+    :param Qmax: Array of nodal maximum reactive power injections
+    :param tol: Tolerance
+    :param max_it: Maximum number of iterations
+    :param control_q: ReactivePowerControlMode
+    :param robust: use of the Iwamoto optimal step factor?.
+    :return: Voltage solution, converged?, error, calculated power Injections
     """
     start = time.time()
 
@@ -148,7 +146,7 @@ def IwamotoNR(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15,
                 # if dV contains zeros will crash the second Jacobian derivative
                 if not (dV == 0.0).any():
                     # calculate the optimal multiplier for enhanced convergence
-                    mu_ = mu(Ybus, J, f, dV, dx, pvpq, pq, npv, npq)
+                    mu_ = mu(Ybus, J, f, dV, dx, pvpq, pq)
                 else:
                     mu_ = 1.0
             else:

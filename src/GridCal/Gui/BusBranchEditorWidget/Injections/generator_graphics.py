@@ -18,11 +18,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 import numpy as np
 from PySide6.QtCore import Qt, QAbstractTableModel, QModelIndex, QPointF
-from PySide6.QtGui import QPen, QIcon, QPixmap
+from PySide6.QtGui import QPen, QIcon, QPixmap, QFont
 from PySide6.QtWidgets import (QMenu, QGraphicsTextItem, QDialog, QTableView, QVBoxLayout, QHBoxLayout,
                                QPushButton, QSplitter, QFrame, QSpacerItem, QSizePolicy)
-from GridCalEngine.Core.Devices.Injections.generator import Generator
-from GridCalEngine.Core.Devices.Injections.generator_q_curve import GeneratorQCurve
+from GridCalEngine.Devices.Injections.generator import Generator
+from GridCalEngine.Devices.Injections.generator_q_curve import GeneratorQCurve
 from GridCalEngine.basic_structures import Mat, Vec
 from GridCal.Gui.BusBranchEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Circle
 from GridCal.Gui.BusBranchEditorWidget.matplotlibwidget import MatplotlibWidget
@@ -419,22 +419,6 @@ class GeneratorGraphicItem(InjectionTemplateGraphicItem):
         if ok:
             self.editor.convert_generator_to_battery(gen=self.api_object, graphic_object=self)
 
-    def remove(self, ask=True):
-        """
-        Remove this element
-        @return:
-        """
-        if ask:
-            ok = yes_no_question('Are you sure that you want to remove this generator', 'Remove generator')
-        else:
-            ok = True
-
-        if ok:
-            self.editor.remove_from_scene(self.nexus)
-            self.editor.remove_from_scene(self)
-            if self.api_object in self.api_object.bus.generators:
-                self.api_object.bus.generators.remove(self.api_object)
-
     def enable_disable_toggle(self):
         """
 
@@ -529,8 +513,8 @@ class GeneratorGraphicItem(InjectionTemplateGraphicItem):
                                 bus_name=self.api_object.bus.name)
             if dlg.exec_():
                 if dlg.is_accepted:
-                    if len(dlg.P) == len(self.api_object.P_prof):
-                        self.api_object.P_prof = dlg.P
+                    if len(dlg.P) == self.api_object.P_prof.size():
+                        self.api_object.P_prof.set(dlg.P)
 
                         self.plot()
                     else:
@@ -556,11 +540,35 @@ class GeneratorGraphicItem(InjectionTemplateGraphicItem):
                                  bus_name=self.api_object.bus.name)
             if dlg.exec_():
                 if dlg.is_accepted:
-                    if len(dlg.P) == len(self.api_object.P_prof):
-                        self.api_object.P_prof = dlg.P
-
+                    if len(dlg.P) == self.api_object.P_prof.size():
+                        self.api_object.P_prof.set(dlg.P)
                         self.plot()
                     else:
                         raise Exception("Wrong length from the solar photovoltaic wizard")
         else:
             info_msg("You need to have time profiles for this function")
+
+    def rescale(self, scale: float = 1.0):
+        """
+
+        :param scale:
+        :return:
+        """
+        super().rescale(scale)
+        pen = QPen(self.color, self.width / scale, self.style)
+
+        self.glyph.setRect(0, 0, self.h / scale, self.w / scale)
+        self.glyph.setPen(pen)
+
+        font = QFont()
+        scaleFt = 12 / scale
+        if scaleFt < 1:
+            scaleFt = 1
+        font.setPointSize(scaleFt)  # Set the desired font size here
+
+        # Set the font for the QGraphicsTextItem
+
+        self.label.setFont(font)
+        self.label.setPos((self.h / scale) / 4, (self.w / scale) / 5)
+        # self.setRect(self.h / scale, self.w / scale)
+        self.setPos(0, (100 / scale))

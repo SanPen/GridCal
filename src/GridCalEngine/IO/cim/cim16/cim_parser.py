@@ -19,8 +19,8 @@ from math import sqrt
 from typing import Dict
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.IO.gridcal.zip_interface import get_xml_from_zip, get_xml_content
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-import GridCalEngine.Core.Devices as gcdev
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
+import GridCalEngine.Devices as gcdev
 import GridCalEngine.IO.cim.cim16.cim_devices as cimdev
 from GridCalEngine.IO.cim.cim16.cim_circuit import CIMCircuit
 from GridCalEngine.data_logger import DataLogger
@@ -161,8 +161,8 @@ class CIMExport:
 
         # header
         text_file.write('<?xml version="1.0" encoding="UTF-8"?>\n')
-        text_file.write(
-            '<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:cim="http://iec.ch/TC57/2009/CIM-schema-cim14#">\n')
+        text_file.write('<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" '
+                        'xmlns:cim="http://iec.ch/TC57/2009/CIM-schema-cim14#">\n')
 
         # Model
         model = cimdev.IdentifiedObject(rdfid=self.circuit.idtag, tpe='Model')
@@ -213,6 +213,8 @@ class CIMExport:
         bus_idx = 0
         terminal_resources = ['TopologicalNode', 'ConductingEquipment']
 
+        bus_to_voltage_level_dict = dict()
+
         for substation in substation_bus.keys():
 
             substation_id = substation.idtag
@@ -256,6 +258,8 @@ class CIMExport:
 
                     base_voltage = base_voltages_dict[Vnom]
 
+                    bus_to_voltage_level_dict[bus] = (voltage_level_id, base_voltage)
+
                     if bus.Vnom <= 0.0:
                         self.logger.add_error('Zero nominal voltage', bus.name)
 
@@ -273,165 +277,6 @@ class CIMExport:
                     # model.parsed_properties['VoltageLevel'] = voltage_level_id
                     model.parsed_properties['ConnectivityNodeContainer'] = voltage_level_id
                     text_file.write(model.get_xml(1))
-
-                    for il, elm in enumerate(bus.loads):
-                        id2 = elm.idtag + '_LOAD_' + str(il)
-                        id3 = id2 + '_LRC'
-
-                        model = cimdev.IdentifiedObject(rdfid=id2, tpe='ConformLoad',
-                                                        resources=['BaseVoltage',
-                                                                   'LoadResponse',
-                                                                   'VoltageLevel'],
-                                                        class_replacements={'name': 'IdentifiedObject',
-                                                                            'aliasName': 'IdentifiedObject',
-                                                                            'EquipmentContainer': 'Equipment'})
-                        model.parsed_properties['name'] = elm.name
-                        model.parsed_properties['aliasName'] = elm.name
-                        model.parsed_properties['BaseVoltage'] = base_voltage
-                        model.parsed_properties['EquipmentContainer'] = voltage_level_id
-                        model.parsed_properties['LoadResponse'] = id3
-                        model.parsed_properties['pfixed'] = elm.P
-                        model.parsed_properties['qfixed'] = elm.Q
-                        model.parsed_properties['normallyInService'] = elm.active
-                        text_file.write(model.get_xml(1))
-
-                        model = cimdev.IdentifiedObject(rdfid=id3, tpe='LoadResponseCharacteristic', resources=[])
-                        model.parsed_properties['name'] = elm.name
-                        model.parsed_properties['exponentModel'] = 'false'
-                        model.parsed_properties['pConstantCurrent'] = elm.Ir
-                        model.parsed_properties['pConstantImpedance'] = 1 / (elm.G + 1e-20)
-                        model.parsed_properties['pConstantPower'] = elm.P
-                        model.parsed_properties['pVoltageExponent'] = 0.0
-                        model.parsed_properties['pFrequencyExponent'] = 0.0
-                        model.parsed_properties['qConstantCurrent'] = elm.Ir
-                        model.parsed_properties['qConstantImpedance'] = 1 / (elm.B + 1e-20)
-                        model.parsed_properties['qConstantPower'] = elm.Q
-                        model.parsed_properties['qVoltageExponent'] = 0.0
-                        model.parsed_properties['qFrequencyExponent'] = 0.0
-                        text_file.write(model.get_xml(1))
-
-                        # Terminal 1 (from)
-                        model = cimdev.IdentifiedObject(rdfid=id2 + '_T', tpe='Terminal',
-                                                        resources=terminal_resources,
-                                                        class_replacements={'name': 'IdentifiedObject',
-                                                                            'aliasName': 'IdentifiedObject'})
-                        model.parsed_properties['name'] = elm.name
-                        model.parsed_properties['TopologicalNode'] = bus_id_dict[bus]
-                        model.parsed_properties['ConductingEquipment'] = id2
-                        model.parsed_properties['connected'] = 'true'
-                        model.parsed_properties['sequenceNumber'] = '1'
-                        text_file.write(model.get_xml(1))
-
-                    for il, elm in enumerate(bus.static_generators):
-                        id2 = elm.idtag + '_StatGen_' + str(il)
-
-                        model = cimdev.IdentifiedObject(rdfid=id2, tpe='ConformLoad',
-                                                        resources=['BaseVoltage', 'LoadResponse', 'VoltageLevel'],
-                                                        class_replacements={'name': 'IdentifiedObject',
-                                                                            'aliasName': 'IdentifiedObject',
-                                                                            'EquipmentContainer': 'Equipment'}
-                                                        )
-                        model.parsed_properties['name'] = elm.name
-                        model.parsed_properties['aliasName'] = elm.name
-                        model.parsed_properties['BaseVoltage'] = base_voltage
-                        model.parsed_properties['EquipmentContainer'] = voltage_level_id
-                        model.parsed_properties['pfixed'] = -elm.P
-                        model.parsed_properties['qfixed'] = -elm.Q
-                        model.parsed_properties['normallyInService'] = elm.active
-                        text_file.write(model.get_xml(1))
-
-                        # Terminal 1 (from)
-                        model = cimdev.IdentifiedObject(rdfid=id2 + '_T', tpe='Terminal',
-                                                        resources=terminal_resources,
-                                                        class_replacements={'name': 'IdentifiedObject',
-                                                                            'aliasName': 'IdentifiedObject'}
-                                                        )
-                        model.parsed_properties['name'] = elm.name
-                        model.parsed_properties['TopologicalNode'] = bus_id_dict[bus]
-                        model.parsed_properties['ConductingEquipment'] = id2
-                        model.parsed_properties['connected'] = 'true'
-                        model.parsed_properties['sequenceNumber'] = '1'
-                        text_file.write(model.get_xml(1))
-
-                    for il, elm in enumerate(bus.generators):
-                        id2 = elm.idtag + '_SyncGen_' + str(il)
-                        id3 = id2 + '_GU'
-                        id4 = id2 + '_RC'
-
-                        model = cimdev.IdentifiedObject(rdfid=id2, tpe='SynchronousMachine',
-                                                        resources=['BaseVoltage', 'RegulatingControl',
-                                                                   'GeneratingUnit', 'VoltageLevel'],
-                                                        class_replacements={'name': 'IdentifiedObject',
-                                                                            'aliasName': 'IdentifiedObject',
-                                                                            'EquipmentContainer': 'Equipment'}
-                                                        )
-                        model.parsed_properties['name'] = elm.name
-                        model.parsed_properties['aliasName'] = elm.name
-                        model.parsed_properties['BaseVoltage'] = base_voltage
-                        model.parsed_properties['EquipmentContainer'] = voltage_level_id
-                        model.parsed_properties['RegulatingControl'] = id3
-                        model.parsed_properties['GeneratingUnit'] = id4
-                        model.parsed_properties['maxQ'] = elm.Qmax
-                        model.parsed_properties['minQ'] = elm.Qmin
-                        model.parsed_properties['ratedS'] = elm.Snom
-                        model.parsed_properties['normallyInService'] = elm.active
-                        text_file.write(model.get_xml(1))
-
-                        model = cimdev.IdentifiedObject(rdfid=id3, tpe='RegulatingControl', resources=[])
-                        model.parsed_properties['name'] = elm.name
-                        model.parsed_properties['targetValue'] = elm.Vset * bus.Vnom
-                        text_file.write(model.get_xml(1))
-
-                        model = cimdev.IdentifiedObject(rdfid=id4, tpe='GeneratingUnit', resources=[])
-                        model.parsed_properties['name'] = elm.name
-                        model.parsed_properties['initialP'] = elm.P
-                        text_file.write(model.get_xml(1))
-
-                        # Terminal 1 (from)
-                        model = cimdev.IdentifiedObject(rdfid=id2 + '_T', tpe='Terminal',
-                                                        resources=terminal_resources,
-                                                        class_replacements={'name': 'IdentifiedObject',
-                                                                            'aliasName': 'IdentifiedObject'}
-                                                        )
-                        model.parsed_properties['name'] = elm.name
-                        model.parsed_properties['TopologicalNode'] = bus_id_dict[bus]
-                        model.parsed_properties['ConductingEquipment'] = id2
-                        model.parsed_properties['connected'] = 'true'
-                        model.parsed_properties['sequenceNumber'] = '1'
-                        text_file.write(model.get_xml(1))
-
-                    for il, elm in enumerate(bus.shunts):
-                        id2 = elm.idtag + '_Shunt_' + str(il)
-
-                        model = cimdev.IdentifiedObject(rdfid=id2, tpe='ShuntCompensator',
-                                                        resources=['BaseVoltage', 'VoltageLevel'],
-                                                        class_replacements={'name': 'IdentifiedObject',
-                                                                            'aliasName': 'IdentifiedObject',
-                                                                            'EquipmentContainer': 'Equipment'}
-                                                        )
-                        model.parsed_properties['name'] = elm.name
-                        model.parsed_properties['aliasName'] = elm.name
-                        model.parsed_properties['BaseVoltage'] = base_voltage
-                        model.parsed_properties['EquipmentContainer'] = voltage_level_id
-                        model.parsed_properties['gPerSection'] = elm.G
-                        model.parsed_properties['bPerSection'] = elm.B
-                        model.parsed_properties['g0PerSection'] = 0.0
-                        model.parsed_properties['b0PerSection'] = 0.0
-                        model.parsed_properties['normallyInService'] = elm.active
-                        text_file.write(model.get_xml(1))
-
-                        # Terminal 1 (from)
-                        model = cimdev.IdentifiedObject(rdfid=id2 + '_T', tpe='Terminal',
-                                                        resources=terminal_resources,
-                                                        class_replacements={'name': 'IdentifiedObject',
-                                                                            'aliasName': 'IdentifiedObject'}
-                                                        )
-                        model.parsed_properties['name'] = elm.name
-                        model.parsed_properties['TopologicalNode'] = bus_id_dict[bus]
-                        model.parsed_properties['ConductingEquipment'] = id2
-                        model.parsed_properties['connected'] = 'true'
-                        model.parsed_properties['sequenceNumber'] = '1'
-                        text_file.write(model.get_xml(1))
 
                     if bus.is_slack:
                         equivalent_network_id = conn_node_id + '_EqNetwork'
@@ -461,6 +306,177 @@ class CIMExport:
 
                     # increment the bus index
                     bus_idx += 1
+
+        for il, elm in enumerate(self.circuit.loads):
+            id2 = elm.idtag + '_LOAD_' + str(il)
+            id3 = id2 + '_LRC'
+
+            model = cimdev.IdentifiedObject(rdfid=id2, tpe='ConformLoad',
+                                            resources=['BaseVoltage',
+                                                       'LoadResponse',
+                                                       'VoltageLevel'],
+                                            class_replacements={'name': 'IdentifiedObject',
+                                                                'aliasName': 'IdentifiedObject',
+                                                                'EquipmentContainer': 'Equipment'})
+
+            voltage_level_id, base_voltage = bus_to_voltage_level_dict.get(elm.bus, ("", 0))
+
+            model.parsed_properties['name'] = elm.name
+            model.parsed_properties['aliasName'] = elm.name
+            model.parsed_properties['BaseVoltage'] = base_voltage
+            model.parsed_properties['EquipmentContainer'] = voltage_level_id
+            model.parsed_properties['LoadResponse'] = id3
+            model.parsed_properties['pfixed'] = elm.P
+            model.parsed_properties['qfixed'] = elm.Q
+            model.parsed_properties['normallyInService'] = elm.active
+            text_file.write(model.get_xml(1))
+
+            model = cimdev.IdentifiedObject(rdfid=id3, tpe='LoadResponseCharacteristic', resources=[])
+            model.parsed_properties['name'] = elm.name
+            model.parsed_properties['exponentModel'] = 'false'
+            model.parsed_properties['pConstantCurrent'] = elm.Ir
+            model.parsed_properties['pConstantImpedance'] = 1 / (elm.G + 1e-20)
+            model.parsed_properties['pConstantPower'] = elm.P
+            model.parsed_properties['pVoltageExponent'] = 0.0
+            model.parsed_properties['pFrequencyExponent'] = 0.0
+            model.parsed_properties['qConstantCurrent'] = elm.Ir
+            model.parsed_properties['qConstantImpedance'] = 1 / (elm.B + 1e-20)
+            model.parsed_properties['qConstantPower'] = elm.Q
+            model.parsed_properties['qVoltageExponent'] = 0.0
+            model.parsed_properties['qFrequencyExponent'] = 0.0
+            text_file.write(model.get_xml(1))
+
+            # Terminal 1 (from)
+            model = cimdev.IdentifiedObject(rdfid=id2 + '_T', tpe='Terminal',
+                                            resources=terminal_resources,
+                                            class_replacements={'name': 'IdentifiedObject',
+                                                                'aliasName': 'IdentifiedObject'})
+            model.parsed_properties['name'] = elm.name
+            model.parsed_properties['TopologicalNode'] = bus_id_dict[elm.bus]
+            model.parsed_properties['ConductingEquipment'] = id2
+            model.parsed_properties['connected'] = 'true'
+            model.parsed_properties['sequenceNumber'] = '1'
+            text_file.write(model.get_xml(1))
+
+        for il, elm in enumerate(self.circuit.static_generators):
+            id2 = elm.idtag + '_StatGen_' + str(il)
+
+            model = cimdev.IdentifiedObject(rdfid=id2, tpe='ConformLoad',
+                                            resources=['BaseVoltage', 'LoadResponse', 'VoltageLevel'],
+                                            class_replacements={'name': 'IdentifiedObject',
+                                                                'aliasName': 'IdentifiedObject',
+                                                                'EquipmentContainer': 'Equipment'}
+                                            )
+
+            voltage_level_id, base_voltage = bus_to_voltage_level_dict.get(elm.bus, ("", 0))
+
+            model.parsed_properties['name'] = elm.name
+            model.parsed_properties['aliasName'] = elm.name
+            model.parsed_properties['BaseVoltage'] = base_voltage
+            model.parsed_properties['EquipmentContainer'] = voltage_level_id
+            model.parsed_properties['pfixed'] = -elm.P
+            model.parsed_properties['qfixed'] = -elm.Q
+            model.parsed_properties['normallyInService'] = elm.active
+            text_file.write(model.get_xml(1))
+
+            # Terminal 1 (from)
+            model = cimdev.IdentifiedObject(rdfid=id2 + '_T', tpe='Terminal',
+                                            resources=terminal_resources,
+                                            class_replacements={'name': 'IdentifiedObject',
+                                                                'aliasName': 'IdentifiedObject'}
+                                            )
+            model.parsed_properties['name'] = elm.name
+            model.parsed_properties['TopologicalNode'] = bus_id_dict[elm.bus]
+            model.parsed_properties['ConductingEquipment'] = id2
+            model.parsed_properties['connected'] = 'true'
+            model.parsed_properties['sequenceNumber'] = '1'
+            text_file.write(model.get_xml(1))
+
+        for il, elm in enumerate(self.circuit.generators):
+            id2 = elm.idtag + '_SyncGen_' + str(il)
+            id3 = id2 + '_GU'
+            id4 = id2 + '_RC'
+
+            model = cimdev.IdentifiedObject(rdfid=id2, tpe='SynchronousMachine',
+                                            resources=['BaseVoltage', 'RegulatingControl',
+                                                       'GeneratingUnit', 'VoltageLevel'],
+                                            class_replacements={'name': 'IdentifiedObject',
+                                                                'aliasName': 'IdentifiedObject',
+                                                                'EquipmentContainer': 'Equipment'}
+                                            )
+
+            voltage_level_id, base_voltage = bus_to_voltage_level_dict.get(elm.bus, ("", 0))
+
+            model.parsed_properties['name'] = elm.name
+            model.parsed_properties['aliasName'] = elm.name
+            model.parsed_properties['BaseVoltage'] = base_voltage
+            model.parsed_properties['EquipmentContainer'] = voltage_level_id
+            model.parsed_properties['RegulatingControl'] = id3
+            model.parsed_properties['GeneratingUnit'] = id4
+            model.parsed_properties['maxQ'] = elm.Qmax
+            model.parsed_properties['minQ'] = elm.Qmin
+            model.parsed_properties['ratedS'] = elm.Snom
+            model.parsed_properties['normallyInService'] = elm.active
+            text_file.write(model.get_xml(1))
+
+            model = cimdev.IdentifiedObject(rdfid=id3, tpe='RegulatingControl', resources=[])
+            model.parsed_properties['name'] = elm.name
+            model.parsed_properties['targetValue'] = elm.Vset * elm.bus.Vnom
+            text_file.write(model.get_xml(1))
+
+            model = cimdev.IdentifiedObject(rdfid=id4, tpe='GeneratingUnit', resources=[])
+            model.parsed_properties['name'] = elm.name
+            model.parsed_properties['initialP'] = elm.P
+            text_file.write(model.get_xml(1))
+
+            # Terminal 1 (from)
+            model = cimdev.IdentifiedObject(rdfid=id2 + '_T', tpe='Terminal',
+                                            resources=terminal_resources,
+                                            class_replacements={'name': 'IdentifiedObject',
+                                                                'aliasName': 'IdentifiedObject'}
+                                            )
+            model.parsed_properties['name'] = elm.name
+            model.parsed_properties['TopologicalNode'] = bus_id_dict[elm.bus]
+            model.parsed_properties['ConductingEquipment'] = id2
+            model.parsed_properties['connected'] = 'true'
+            model.parsed_properties['sequenceNumber'] = '1'
+            text_file.write(model.get_xml(1))
+
+        for il, elm in enumerate(self.circuit.shunts):
+            id2 = elm.idtag + '_Shunt_' + str(il)
+
+            model = cimdev.IdentifiedObject(rdfid=id2, tpe='ShuntCompensator',
+                                            resources=['BaseVoltage', 'VoltageLevel'],
+                                            class_replacements={'name': 'IdentifiedObject',
+                                                                'aliasName': 'IdentifiedObject',
+                                                                'EquipmentContainer': 'Equipment'}
+                                            )
+
+            voltage_level_id, base_voltage = bus_to_voltage_level_dict.get(elm.bus, ("", 0))
+
+            model.parsed_properties['name'] = elm.name
+            model.parsed_properties['aliasName'] = elm.name
+            model.parsed_properties['BaseVoltage'] = base_voltage
+            model.parsed_properties['EquipmentContainer'] = voltage_level_id
+            model.parsed_properties['gPerSection'] = elm.G
+            model.parsed_properties['bPerSection'] = elm.B
+            model.parsed_properties['g0PerSection'] = 0.0
+            model.parsed_properties['b0PerSection'] = 0.0
+            model.parsed_properties['normallyInService'] = elm.active
+            text_file.write(model.get_xml(1))
+
+            # Terminal 1 (from)
+            model = cimdev.IdentifiedObject(rdfid=id2 + '_T', tpe='Terminal',
+                                            resources=terminal_resources,
+                                            class_replacements={'name': 'IdentifiedObject',
+                                                                'aliasName': 'IdentifiedObject'}
+                                            )
+            model.parsed_properties['name'] = elm.name
+            model.parsed_properties['TopologicalNode'] = bus_id_dict[elm.bus]
+            model.parsed_properties['ConductingEquipment'] = id2
+            model.parsed_properties['connected'] = 'true'
+            model.parsed_properties['sequenceNumber'] = '1'
+            text_file.write(model.get_xml(1))
 
         # Branches
         winding_resources = ['connectionType', 'windingType', 'PowerTransformer']

@@ -17,16 +17,16 @@
 
 import numpy as np
 import pandas as pd
-from GridCalEngine.Simulations.result_types import ResultTypes
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.basic_structures import DateVec, IntVec, Vec
-from GridCalEngine.enumerations import StudyResultsType
+from GridCalEngine.enumerations import StudyResultsType, ResultTypes, DeviceType
 
 
 class ClusteringResults(ResultsTemplate):
 
-    def __init__(self, time_indices: IntVec, sampled_probabilities: Vec, time_array: DateVec, original_sample_idx: IntVec):
+    def __init__(self, time_indices: IntVec, sampled_probabilities: Vec, time_array: DateVec,
+                 original_sample_idx: IntVec):
         """
         Clustering Results constructor
         :param time_indices: number of Branches
@@ -61,26 +61,14 @@ class ClusteringResults(ResultsTemplate):
         """
 
         if result_type == ResultTypes.ClusteringReport:
-            index = pd.to_datetime(self.time_array[self.time_indices])
-            labels = ['Probability']
-            y = np.array(self.sampled_probabilities)
-            y_label = ''
-            title = 'Clustering report'
+
+            return ResultsTable(data=np.array(self.sampled_probabilities),
+                                index=pd.to_datetime(self.time_array[self.time_indices]),
+                                columns=['Probability'],
+                                title=result_type.value,
+                                units="p.u.",
+                                idx_device_type=DeviceType.TimeDevice,
+                                cols_device_type=DeviceType.NoDevice)
 
         else:
-            index = np.array([])
-            labels = np.array([])
-            y = np.zeros(0)
-            y_label = ''
-            title = ''
-
-        # assemble model
-        mdl = ResultsTable(data=y,
-                           index=index,
-                           columns=labels,
-                           title=title,
-                           ylabel=y_label,
-                           units=y_label)
-
-        return mdl
-
+            raise Exception('Result type not understood:' + str(result_type))

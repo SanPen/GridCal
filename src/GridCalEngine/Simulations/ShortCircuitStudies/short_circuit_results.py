@@ -17,12 +17,11 @@
 
 import numpy as np
 import pandas as pd
-from GridCalEngine.Simulations.result_types import ResultTypes
 from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.enumerations import FaultType
 from GridCalEngine.basic_structures import DateVec, IntVec, Vec, StrVec, CxMat, Mat, BoolVec, CxVec
-from GridCalEngine.enumerations import StudyResultsType
+from GridCalEngine.enumerations import StudyResultsType, ResultTypes, DeviceType
 
 
 class ShortCircuitResults(ResultsTemplate):
@@ -228,173 +227,438 @@ class ShortCircuitResults(ResultsTemplate):
 
         return x
 
-    def mdl(self, result_type: ResultTypes) -> "ResultsTable":
+    def mdl(self, result_type: ResultTypes) -> ResultsTable:
         """
 
         :param result_type:
         :return:
         """
 
-        columns = [result_type.value[0]]
-        title = result_type.value[0]
+        columns = [result_type.value]
+        title = result_type.value
 
         if result_type == ResultTypes.BusVoltageModule0:
             labels = self.bus_names
             y = np.abs(self.voltage0)
             y_label = '(p.u.)'
 
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BusDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
         elif result_type == ResultTypes.BusVoltageAngle0:
             labels = self.bus_names
             y = np.angle(self.voltage0)
             y_label = '(p.u.)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BusDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
 
         elif result_type == ResultTypes.BusShortCircuitActivePower:
             labels = self.bus_names
             y = np.real(self.SCpower)
             y_label = '(MW)'
 
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BusDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
         elif result_type == ResultTypes.BusShortCircuitReactivePower:
             labels = self.bus_names
             y = np.imag(self.SCpower)
             y_label = '(MVAr)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BusDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
 
         elif result_type == ResultTypes.BranchActivePowerFrom0:
             labels = self.branch_names
             y = self.Sf0.real
             y_label = '(MW)'
 
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
         elif result_type == ResultTypes.BranchReactivePowerFrom0:
             labels = self.branch_names
             y = self.Sf0.imag
             y_label = '(MVAr)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
 
         elif result_type == ResultTypes.BranchActiveCurrentFrom0:
             labels = self.branch_names
             y = self.If0.real
             y_label = '(p.u.)'
 
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
         elif result_type == ResultTypes.BranchReactiveCurrentFrom0:
             labels = self.branch_names
             y = self.If0.imag
             y_label = '(p.u.)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
 
         elif result_type == ResultTypes.BranchLoading0:
             labels = self.branch_names
             y = self.loading0.real * 100.0
             y_label = '(%)'
 
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
         elif result_type == ResultTypes.BranchActiveLosses0:
             labels = self.branch_names
             y = self.losses0.real
             y_label = '(MW)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
 
         elif result_type == ResultTypes.BranchReactiveLosses0:
             labels = self.branch_names
             y = self.losses0.imag
             y_label = '(MW)'
 
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
         elif result_type == ResultTypes.BusVoltageModule1:
             labels = self.bus_names
             y = np.abs(self.voltage1)
             y_label = '(p.u.)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BusDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
 
         elif result_type == ResultTypes.BusVoltageAngle1:
             labels = self.bus_names
             y = np.angle(self.voltage1)
             y_label = '(p.u.)'
 
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BusDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
         elif result_type == ResultTypes.BranchActivePowerFrom1:
             labels = self.branch_names
             y = self.Sf1.real
             y_label = '(MW)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
 
         elif result_type == ResultTypes.BranchReactivePowerFrom1:
             labels = self.branch_names
             y = self.Sf1.imag
             y_label = '(MVAr)'
 
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
         elif result_type == ResultTypes.BranchActiveCurrentFrom1:
             labels = self.branch_names
             y = self.If1.real
             y_label = '(p.u.)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
 
         elif result_type == ResultTypes.BranchReactiveCurrentFrom1:
             labels = self.branch_names
             y = self.If1.imag
             y_label = '(p.u.)'
 
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
         elif result_type == ResultTypes.BranchLoading1:
             labels = self.branch_names
             y = self.loading1.real * 100.0
             y_label = '(%)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
 
         elif result_type == ResultTypes.BranchActiveLosses1:
             labels = self.branch_names
             y = self.losses1.real
             y_label = '(MW)'
 
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
         elif result_type == ResultTypes.BranchReactiveLosses1:
             labels = self.branch_names
             y = self.losses1.imag
             y_label = '(MW)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
 
         elif result_type == ResultTypes.BusVoltageModule2:
             labels = self.bus_names
             y = np.abs(self.voltage2)
             y_label = '(p.u.)'
 
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BusDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
         elif result_type == ResultTypes.BusVoltageAngle2:
             labels = self.bus_names
             y = np.angle(self.voltage2)
             y_label = '(p.u.)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BusDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
 
         elif result_type == ResultTypes.BranchActivePowerFrom2:
             labels = self.branch_names
             y = self.Sf2.real
             y_label = '(MW)'
 
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
         elif result_type == ResultTypes.BranchReactivePowerFrom2:
             labels = self.branch_names
             y = self.Sf2.imag
             y_label = '(MVAr)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
 
         elif result_type == ResultTypes.BranchActiveCurrentFrom2:
             labels = self.branch_names
             y = self.If2.real
             y_label = '(p.u.)'
 
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
         elif result_type == ResultTypes.BranchReactiveCurrentFrom2:
             labels = self.branch_names
             y = self.If2.imag
             y_label = '(p.u.)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
 
         elif result_type == ResultTypes.BranchLoading2:
             labels = self.branch_names
             y = self.loading2.real * 100.0
             y_label = '(%)'
 
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
         elif result_type == ResultTypes.BranchActiveLosses2:
             labels = self.branch_names
             y = self.losses2.real
             y_label = '(MW)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
 
         elif result_type == ResultTypes.BranchReactiveLosses2:
             labels = self.branch_names
             y = self.losses2.imag
             y_label = '(MW)'
 
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
         elif result_type == ResultTypes.ShortCircuitInfo:
             labels = np.array(['Type', 'Bus name'])
             y = np.array([self.sc_type.value, self.bus_names[self.sc_bus_index]])
             y_label = ''
 
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BusDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
         else:
             raise Exception('Unsupported result type: ' + str(result_type))
-
-        # assemble model
-        mdl = ResultsTable(data=y, index=labels, columns=columns,
-                           title=title, ylabel=y_label, units=y_label)
-        return mdl
 
     def export_all(self):
         """

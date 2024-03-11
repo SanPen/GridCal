@@ -34,10 +34,10 @@ def test_ieee_grids():
     """
 
     files = [
-             ('IEEE 14 bus.raw', 'IEEE 14 bus.sav.xlsx'),
-             ('IEEE 30 bus.raw', 'IEEE 30 bus.sav.xlsx'),
-             ('IEEE 118 Bus v2.raw', 'IEEE 118 Bus.sav.xlsx'),
-            ]
+        ('IEEE 14 bus.raw', 'IEEE 14 bus.sav.xlsx'),
+        ('IEEE 30 bus.raw', 'IEEE 30 bus.sav.xlsx'),
+        ('IEEE 118 Bus v2.raw', 'IEEE 118 Bus.sav.xlsx'),
+    ]
 
     for solver_type in [SolverType.NR, SolverType.IWAMOTO, SolverType.LM, SolverType.FASTDECOUPLED]:
 
@@ -61,7 +61,7 @@ def test_ieee_grids():
             power_flow.run()
 
             # load the associated results file
-            df_v = pd.read_excel(os.path.join('data', 'results',  f2), sheet_name='Vabs', index_col=0)
+            df_v = pd.read_excel(os.path.join('data', 'results', f2), sheet_name='Vabs', index_col=0)
             df_p = pd.read_excel(os.path.join('data', 'results', f2), sheet_name='Pbranch', index_col=0)
 
             v_gc = np.abs(power_flow.results.voltage)
@@ -88,5 +88,113 @@ def test_ieee_grids():
         print(solver_type, 'ok')
 
 
-if __name__ == '__main__':
-    test_ieee_grids()
+def test_dc_pf_ieee14():
+    """
+    Test the DC power flow with tap module
+    :return:
+    """
+    options = PowerFlowOptions(SolverType.DC,
+                               verbose=False,
+                               initialize_with_existing_solution=False,
+                               multi_core=False,
+                               dispatch_storage=True,
+                               control_q=ReactivePowerControlMode.NoControl,
+                               control_p=True,
+                               retry_with_other_methods=False)
+
+    fname = os.path.join('data', 'grids', 'case14.m')
+    main_circuit = FileOpen(fname).open()
+    power_flow = PowerFlowDriver(main_circuit, options)
+    power_flow.run()
+
+    # Data from Matpower 8
+    Pf_test = np.array([147.8386,
+                        71.1614,
+                        70.0146,
+                        55.1519,
+                        40.9721,
+                        -24.1854,
+                        -61.7465,
+                        6.7283,
+                        7.6074,
+                        17.2513,
+                        0,
+                        28.3612,
+                        5.7717,
+                        9.6413,
+                        -3.2283,
+                        1.5074,
+                        5.2587,
+                        28.3612,
+                        16.5518,
+                        42.7870,
+                        ])
+
+    assert np.allclose(power_flow.results.Sf.real, Pf_test, atol=1e-3)
+
+
+def test_dc_pf_ieee14_ps():
+    """
+    Test the DC power flow with phase shifter and tap module
+    :return:
+    """
+    options = PowerFlowOptions(SolverType.DC,
+                               verbose=False,
+                               initialize_with_existing_solution=False,
+                               multi_core=False,
+                               dispatch_storage=True,
+                               control_q=ReactivePowerControlMode.NoControl,
+                               control_p=True,
+                               retry_with_other_methods=False)
+
+    fname = os.path.join('data', 'grids', 'case14_ps.m')
+    main_circuit = FileOpen(fname).open()
+    power_flow = PowerFlowDriver(main_circuit, options)
+    power_flow.run()
+
+    # Data from Matpower 8
+    Pf_test = np.array([141.7788,
+                        77.2212,
+                        64.8753,
+                        44.3963,
+                        50.8072,
+                        -29.3247,
+                        23.8991,
+                        67.8736,
+                        16.5880,
+                        48.6659,
+                        0,
+                        -97.1080,
+                        -55.3736,
+                        -30.7538,
+                        -64.3736,
+                        10.4880,
+                        45.6538,
+                        -97.1080,
+                        40.4806,
+                        144.3275,
+                        ])
+
+    assert np.allclose(power_flow.results.Sf.real, Pf_test, atol=1e-3)
+
+
+def test_zip() -> None:
+    """
+    Test the power flow with ZIP loads compared to PSSe
+    """
+    options = PowerFlowOptions()
+
+    fname = os.path.join('data', 'grids', 'ZIP_load_example.raw')
+    main_circuit = FileOpen(fname).open()
+    power_flow = PowerFlowDriver(main_circuit, options)
+    power_flow.run()
+
+    # Data from Matpower 8
+    Vm_psse = np.array([1.00000, 0.98933, 0.98560, 0.98579])
+    Va_psse = np.deg2rad(np.array([0.00000, -5.1287, -9.1535, -11.4464]))
+
+    Vm = np.abs(power_flow.results.voltage)
+    Va = np.angle(power_flow.results.voltage, deg=False)
+
+    assert np.allclose(Vm_psse, Vm, atol=1e-3)
+    assert np.allclose(Va_psse, Va, atol=1e-3)

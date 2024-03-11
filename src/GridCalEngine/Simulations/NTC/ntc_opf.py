@@ -22,13 +22,13 @@ That means that solves the OPF problem for a complete time series at once
 import numpy as np
 from typing import List, Union, Tuple, Callable
 from GridCalEngine.enumerations import MIPSolvers, ZonalGrouping
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit, compile_numerical_circuit_at
-from GridCalEngine.Core.DataStructures.generator_data import GeneratorData
-from GridCalEngine.Core.DataStructures.load_data import LoadData
-from GridCalEngine.Core.DataStructures.branch_data import BranchData
-from GridCalEngine.Core.DataStructures.hvdc_data import HvdcData
-from GridCalEngine.Core.DataStructures.bus_data import BusData
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit, compile_numerical_circuit_at
+from GridCalEngine.DataStructures.generator_data import GeneratorData
+from GridCalEngine.DataStructures.load_data import LoadData
+from GridCalEngine.DataStructures.branch_data import BranchData
+from GridCalEngine.DataStructures.hvdc_data import HvdcData
+from GridCalEngine.DataStructures.bus_data import BusData
 from GridCalEngine.basic_structures import Logger, Vec, IntVec, BoolVec, StrVec, CxMat
 from GridCalEngine.Utils.MIP.selected_interface import LpExp, LpVar, LpModel, lpDot, set_var_bounds, join
 from GridCalEngine.enumerations import TransformerControlType, HvdcControlType, AvailableTransferMode
@@ -666,7 +666,7 @@ def add_linear_branches_formulation(t_idx: int,
                 bk = 1.0 / branch_data_t.X[m]
 
             # compute the flow
-            if branch_data_t.control_mode[m] == TransformerControlType.Pt:
+            if branch_data_t.control_mode[m] == TransformerControlType.Pf:
 
                 # add angle
                 branch_vars.tap_angles[t_idx, m] = prob.add_var(
@@ -1022,7 +1022,7 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
     nbr = grid.get_branch_number_wo_hvdc()
     ng = grid.get_generators_number()
     nb = grid.get_batteries_number()
-    nl = grid.get_calculation_loads_number()
+    nl = grid.get_load_like_device_number()
     n_hvdc = grid.get_hvdc_number()
 
     lp_model: LpModel = LpModel(solver_type)

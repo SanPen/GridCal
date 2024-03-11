@@ -23,6 +23,7 @@ from GridCal.Gui.BusBranchEditorWidget.generic_graphics import ACTIVE, DEACTIVAT
 from GridCal.Gui.BusBranchEditorWidget.Injections.injections_template_graphics import InjectionTemplateGraphicItem
 from GridCal.Gui.messages import yes_no_question
 from GridCal.Gui.BusBranchEditorWidget.generic_graphics import Polygon
+from GridCalEngine.Devices.Injections.load import Load
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
@@ -30,7 +31,7 @@ if TYPE_CHECKING:  # Only imports the below statements during type checking
 
 class LoadGraphicItem(InjectionTemplateGraphicItem):
 
-    def __init__(self, parent, api_obj, editor: BusBranchEditorWidget):
+    def __init__(self, parent, api_obj: Load, editor: BusBranchEditorWidget):
         """
 
         :param parent:
@@ -40,7 +41,7 @@ class LoadGraphicItem(InjectionTemplateGraphicItem):
                                               parent=parent,
                                               api_obj=api_obj,
                                               editor=editor,
-                                              device_type_name='generator',
+                                              device_type_name='load',
                                               w=20,
                                               h=20)
 
@@ -121,20 +122,6 @@ class LoadGraphicItem(InjectionTemplateGraphicItem):
         rabf.triggered.connect(self.change_bus)
 
         menu.exec_(event.screenPos())
-
-    def remove(self, ask=True):
-        """
-        Remove this element
-        @return:
-        """
-        if ask:
-            ok = yes_no_question('Are you sure that you want to remove this load', 'Remove load')
-        else:
-            ok = True
-
-        if ok:
-            self.editor.removeItem(self.nexus)
-            self.editor.remove_element(device=self.api_object, graphic_object=self)
 
     def enable_disable_toggle(self):
         """

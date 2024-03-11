@@ -31,6 +31,5 @@ from GridCalEngine.Simulations.InputsAnalysis import *
 from GridCalEngine.Simulations.NTC import *
 from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.results_table import ResultsTable
-from GridCalEngine.Simulations.result_types import ResultTypes
 from GridCalEngine.Simulations.Clustering import *
 from GridCalEngine.Simulations.InvestmentsEvaluation import *

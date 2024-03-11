@@ -17,11 +17,10 @@
 
 import numpy as np
 import pandas as pd
-from GridCalEngine.Simulations.result_types import ResultTypes
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.basic_structures import IntVec, Vec, StrVec, Mat, CxVec
-from GridCalEngine.enumerations import StudyResultsType
+from GridCalEngine.enumerations import StudyResultsType, ResultTypes, DeviceType
 
 
 class LinearAnalysisResults(ResultsTemplate):
@@ -72,10 +71,18 @@ class LinearAnalysisResults(ResultsTemplate):
 
     @property
     def n_br(self):
+        """
+        Branch number
+        :return:
+        """
         return self.PTDF.shape[0]
 
     @property
     def n_bus(self):
+        """
+        Bus number
+        :return:
+        """
         return self.PTDF.shape[1]
 
     def get_bus_df(self) -> pd.DataFrame:
@@ -110,40 +117,51 @@ class LinearAnalysisResults(ResultsTemplate):
         """
 
         if result_type == ResultTypes.PTDF:
-            labels = self.bus_names
-            y = self.PTDF
-            y_label = '(p.u.)'
             title = 'Branches sensitivity'
 
+            return ResultsTable(data=self.PTDF,
+                                index=self.branch_names,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=self.bus_names,
+                                cols_device_type=DeviceType.BusDevice,
+                                title=title,
+                                ylabel='(p.u.)',
+                                units='(p.u.)')
+
         elif result_type == ResultTypes.LODF:
-            labels = self.branch_names
-            y = self.LODF
-            y_label = '(p.u.)'
             title = 'Branch failure sensitivity'
 
+            return ResultsTable(data=self.LODF,
+                                index=self.branch_names,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=self.branch_names,
+                                cols_device_type=DeviceType.BranchDevice,
+                                title=title,
+                                ylabel='(p.u.)',
+                                units='(p.u.)')
+
         elif result_type == ResultTypes.BranchActivePowerFrom:
-            title = 'Branch Sf'
-            labels = [title]
-            y = self.Sf
-            y_label = '(MW)'
+
+            return ResultsTable(data=self.Sf,
+                                index=self.branch_names,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=[result_type.value],
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(MW)',
+                                units='(MW)')
 
         elif result_type == ResultTypes.BranchLoading:
-            title = 'Branch loading'
-            labels = [title]
-            y = self.loading * 100.0
-            y_label = '(%)'
+
+            return ResultsTable(data=self.loading * 100.0,
+                                index=self.branch_names,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=[result_type.value],
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(%)',
+                                units='(%)')
 
         else:
-            labels = []
-            y = np.zeros(0)
-            y_label = ''
-            title = ''
+            raise Exception('Result type not understood:' + str(result_type))
 
-        # assemble model
-        mdl = ResultsTable(data=y,
-                           index=self.branch_names,
-                           columns=labels,
-                           title=title,
-                           ylabel=y_label,
-                           units=y_label)
-        return mdl

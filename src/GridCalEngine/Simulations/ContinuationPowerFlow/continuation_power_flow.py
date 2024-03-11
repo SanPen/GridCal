@@ -1,17 +1,31 @@
-# This file is a python port of the routines included in MATPOWER to perform continuation power flow.
-# The license is the same BSD-style that is provided in LICENSE_MATPOWER
+# GridCal
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 3 of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import numpy as np
 import scipy
 import scipy.sparse as sp
 
 from GridCalEngine.enumerations import ReactivePowerControlMode, CpfParametrization, CpfStopAt
-from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_direct
-from GridCalEngine.Core.topology import compile_types
+from GridCalEngine.Topology.simulation_indices import compile_types
 import GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions as cf
 from GridCalEngine.Utils.NumericalMethods.sparse_solve import get_sparse_type, get_linear_solver
+from GridCalEngine.basic_structures import Vec, CxVec, IntVec
 
 linear_solver = get_linear_solver()
 sparse = get_sparse_type()
@@ -20,6 +34,9 @@ np.set_printoptions(precision=8, suppress=True, linewidth=320)
 
 
 class CpfNumericResults:
+    """
+    CpfNumericResults
+    """
 
     def __init__(self):
         self.V = list()
@@ -32,7 +49,21 @@ class CpfNumericResults:
         self.normF = list()
         self.success = list()
 
-    def add(self, v, sbus, Sf, St, lam, losses, loading, normf, converged):
+    def add(self, v: CxVec, sbus: CxVec, Sf: CxVec, St: CxVec, lam: float,
+            losses: CxVec, loading: CxVec, normf: float, converged: bool):
+        """
+
+        :param v:
+        :param sbus:
+        :param Sf:
+        :param St:
+        :param lam:
+        :param losses:
+        :param loading:
+        :param normf:
+        :param converged:
+        :return:
+        """
         self.V.append(v)
         self.Sbus.append(sbus)
         self.lmbda.append(lam)
@@ -47,7 +78,8 @@ class CpfNumericResults:
         return len(self.V)
 
 
-def cpf_p(parametrization: CpfParametrization, step, z, V, lam, V_prev, lamprv, pv, pq, pvpq):
+def cpf_p(parametrization: CpfParametrization, step: float, z: Vec, V: CxVec, lam: Vec,
+          V_prev: CxVec, lamprv: Vec, pv: IntVec, pq: IntVec, pvpq: IntVec):
     """
     Computes the value of the Current Parametrization Function
     :param parametrization: Value of  option (1: Natural, 2:Arc-length, 3: pseudo arc-length)
@@ -100,13 +132,13 @@ def cpf_p(parametrization: CpfParametrization, step, z, V, lam, V_prev, lamprv, 
 
     ## evaluate P(x0, lambda0)
     """
-    if parametrization == CpfParametrization.Natural:        # natural
+    if parametrization == CpfParametrization.Natural:  # natural
         if lam >= lamprv:
             P = lam - lamprv - step
         else:
             P = lamprv - lam - step
 
-    elif parametrization == CpfParametrization.ArcLength:    # arc length
+    elif parametrization == CpfParametrization.ArcLength:  # arc length
         Va = np.angle(V)
         Vm = np.abs(V)
         Va_prev = np.angle(V_prev)
@@ -115,7 +147,7 @@ def cpf_p(parametrization: CpfParametrization, step, z, V, lam, V_prev, lamprv, 
         b = np.r_[Va_prev[pvpq], Vm_prev[pq], lamprv]
         P = np.sum(np.power(a - b, 2)) - np.power(step, 2)
 
-    elif parametrization == CpfParametrization.PseudoArcLength:    # pseudo arc length
+    elif parametrization == CpfParametrization.PseudoArcLength:  # pseudo arc length
         nb = len(V)
         Va = np.angle(V)
         Vm = np.abs(V)
@@ -135,7 +167,8 @@ def cpf_p(parametrization: CpfParametrization, step, z, V, lam, V_prev, lamprv, 
     return P
 
 
-def cpf_p_jac(parametrization: CpfParametrization, z, V, lam, Vprv, lamprv, pv, pq, pvpq):
+def cpf_p_jac(parametrization: CpfParametrization, z, V, lam, Vprv, lamprv,
+              pv: IntVec, pq: IntVec, pvpq: IntVec):
     """
     Computes partial derivatives of Current Parametrization Function (CPF).
     :param parametrization:
@@ -189,7 +222,7 @@ def cpf_p_jac(parametrization: CpfParametrization, z, V, lam, Vprv, lamprv, pv, 
     #   See http://www.pserc.cornell.edu/matpower/ for more info.
     """
 
-    if parametrization == CpfParametrization.Natural:   # natural
+    if parametrization == CpfParametrization.Natural:  # natural
         npv = len(pv)
         npq = len(pq)
         dP_dV = np.zeros(npv + 2 * npq)
@@ -205,8 +238,8 @@ def cpf_p_jac(parametrization: CpfParametrization, z, V, lam, Vprv, lamprv, pv, 
         Vmprv = np.abs(Vprv)
         dP_dV = 2.0 * (np.r_[Va[pvpq], Vm[pq]] - np.r_[Vaprv[pvpq], Vmprv[pq]])
 
-        if lam == lamprv:   # first step
-            dP_dlam = 1.0   # avoid singular Jacobian that would result from [dP_dV, dP_dlam] = 0
+        if lam == lamprv:  # first step
+            dP_dlam = 1.0  # avoid singular Jacobian that would result from [dP_dV, dP_dlam] = 0
         else:
             dP_dlam = 2.0 * (lam - lamprv)
 
@@ -224,7 +257,7 @@ def cpf_p_jac(parametrization: CpfParametrization, z, V, lam, Vprv, lamprv, pv, 
     return dP_dV, dP_dlam
 
 
-def predictor(V, lam, Ybus, Sxfr, pv, pq, step, z, Vprv, lamprv,
+def predictor(V, lam, Ybus, Sxfr, pv: IntVec, pq: IntVec, step: float, z, Vprv, lamprv,
               parametrization: CpfParametrization):
     """
     Computes a prediction (approximation) to the next solution of the
@@ -295,7 +328,7 @@ def predictor(V, lam, Ybus, Sxfr, pv, pq, step, z, Vprv, lamprv,
     return V0, lam0, z
 
 
-def corrector(Ybus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, parametrization, tol, max_it,
+def corrector(Ybus, Sbus, V0, pv: IntVec, pq: IntVec, lam0, Sxfr, Vprv, lamprv, z, step, parametrization, tol, max_it,
               verbose, mu_0=1.0, acceleration_parameter=0.5):
     """
     Solves the corrector step of a continuation power flow using a full Newton method
@@ -329,6 +362,8 @@ def corrector(Ybus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, paramet
     :param tol: Tolerance (p.u.)
     :param max_it: max iterations
     :param verbose: print information?
+    :param mu_0:
+    :param acceleration_parameter:
     :return: Voltage, converged, iterations, lambda, power error, calculated power
     """
 
@@ -337,10 +372,10 @@ def corrector(Ybus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, paramet
     V = V0
     Va = np.angle(V)
     Vm = np.abs(V)
-    lam = lam0             # set lam to initial lam0
+    lam = lam0  # set lam to initial lam0
     dVa = np.zeros_like(Va)
     dVm = np.zeros_like(Vm)
-    dlam = 0
+    # dlam = 0
 
     # set up indexing for updating V
     npv = len(pv)
@@ -358,13 +393,13 @@ def corrector(Ybus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, paramet
     Scalc = V * np.conj(Ybus * V)
     mismatch = Scalc - Sbus - lam * Sxfr
     # F = np.r_[mismatch[pvpq].real, mismatch[pq].imag]
-    
+
     # evaluate P(x0, lambda0)
     P = cpf_p(parametrization, step, z, V, lam, Vprv, lamprv, pv, pq, pvpq)
-    
+
     # augment F(x,lambda) with P(x,lambda)
     F = np.r_[mismatch[pvpq].real, mismatch[pq].imag, P]
-    
+
     # check tolerance
     normF = np.linalg.norm(F, np.Inf)
     converged = normF < tol
@@ -378,12 +413,12 @@ def corrector(Ybus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, paramet
 
         # update iteration counter
         i += 1
-        
+
         # evaluate Jacobian
         J = AC_jacobian(Ybus, V, pvpq, pq)
 
         dP_dV, dP_dlam = cpf_p_jac(parametrization, z, V, lam, Vprv, lamprv, pv, pq, pvpq)
-    
+
         # augment J with real/imag - Sxfr and z^T
         '''
         J = [   J   dF_dlam 
@@ -391,7 +426,7 @@ def corrector(Ybus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, paramet
         '''
         J = sp.vstack([sp.hstack([J, dF_dlam.reshape(nj, 1)]),
                        sp.hstack([dP_dV, dP_dlam])], format="csc")
-    
+
         # compute update step
         dx = linear_solver(J, F)
         dVa[pvpq] = dx[j1:j2]
@@ -415,7 +450,7 @@ def corrector(Ybus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, paramet
                 Va = prev_Va.copy()
                 Vm = prev_Vm.copy()
                 lam = prev_lam
-    
+
             # update the variables from the solution
             Va -= mu * dVa
             Vm -= mu * dVm
@@ -465,13 +500,13 @@ def corrector(Ybus, Sbus, V0, pv, pq, lam0, Sxfr, Vprv, lamprv, z, step, paramet
     return V, converged, i, lam, normF, Scalc
 
 
-def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Ibus_base, Ibus_target, Sbus_base, Sbus_target,
+def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Sbus_base, Sbus_target,
                     V, distributed_slack, bus_installed_power,
-                    vd, pv, pq, step, approximation_order: CpfParametrization,
+                    vd, pv: IntVec, pq: IntVec, step, approximation_order: CpfParametrization,
                     adapt_step, step_min, step_max, error_tol=1e-3, tol=1e-6, max_it=20,
                     stop_at=CpfStopAt.Nose, control_q=ReactivePowerControlMode.NoControl,
                     qmax_bus=None, qmin_bus=None, original_bus_types=None, base_overload_number=0,
-                    verbose=False, call_back_fx=None, logger=Logger()) -> CpfNumericResults:
+                    verbose=False, call_back_fx=None) -> CpfNumericResults:
     """
     Runs a full AC continuation power flow using a normalized tangent
     predictor and selected approximation_order scheme.
@@ -481,8 +516,7 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Ibus_base, Ibus_t
     :param Yf: Admittance matrix of the "from" nodes
     :param Yt: Admittance matrix of the "to" nodes
     :param branch_rates: array of branch rates to check the overload condition
-    :param Ibus_base:
-    :param Ibus_target:
+    :param Sbase:
     :param Sbus_base: Power array of the base solvable case
     :param Sbus_target: Power array of the case to be solved
     :param V: Voltage array of the base solved case
@@ -507,7 +541,6 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Ibus_base, Ibus_t
     :param base_overload_number: number of overloads in the base situation (used when stop_at=CpfStopAt.ExtraOverloads)
     :param verbose: Display additional intermediate information?
     :param call_back_fx: Function to call on every iteration passing the lambda parameter
-    :param logger: Logger instance
     :return: CpfNumericResults instance
 
 
@@ -530,8 +563,8 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Ibus_base, Ibus_t
     Sxfr = Sbus_target - Sbus_base
     nb = len(Sbus_base)
     lam = 0
-    lam_prev = lam   # lam at previous step
-    V_prev = V       # V at previous step
+    lam_prev = lam  # lam at previous step
+    V_prev = V  # V at previous step
     continuation = True
     cont_steps = 0
     pvpq = np.r_[pv, pq]
@@ -637,20 +670,19 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Ibus_base, Ibus_t
             # Check controls
             if control_q == ReactivePowerControlMode.Direct:
 
-
                 Vm = np.abs(V)
-                V, \
-                Qnew, \
-                types_new, \
-                any_q_control_issue = control_q_direct(V=V,
-                                                       Vm=Vm,
-                                                       Vset=Vm,
-                                                       Q=Scalc.imag,
-                                                       Qmax=qmax_bus,
-                                                       Qmin=qmin_bus,
-                                                       types=bus_types,
-                                                       original_types=original_bus_types,
-                                                       verbose=verbose)
+                (V,
+                 Qnew,
+                 types_new,
+                 any_q_control_issue) = control_q_direct(V=V,
+                                                         Vm=Vm,
+                                                         Vset=Vm,
+                                                         Q=Scalc.imag,
+                                                         Qmax=qmax_bus,
+                                                         Qmin=qmin_bus,
+                                                         types=bus_types,
+                                                         original_types=original_bus_types,
+                                                         verbose=verbose)
             else:
                 # did not check Q limits
                 any_q_control_issue = False
@@ -737,4 +769,3 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Ibus_base, Ibus_t
                 print('step ', cont_steps, ' : lambda = ', lam, ', corrector did not converge in ', i, ' iterations\n')
 
     return results
-

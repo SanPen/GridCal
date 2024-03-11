@@ -17,7 +17,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 from PySide6 import QtWidgets, QtGui
-from GridCalEngine.Core.Devices.Injections.battery import Battery, DeviceType
+from GridCalEngine.Devices.Injections.battery import Battery, DeviceType
 from GridCal.Gui.BusBranchEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Square
 from GridCal.Gui.BusBranchEditorWidget.Injections.injections_template_graphics import InjectionTemplateGraphicItem
 from GridCal.Gui.GuiFunctions import ObjectsModel
@@ -127,21 +127,6 @@ class BatteryGraphicItem(InjectionTemplateGraphicItem):
         rabf.triggered.connect(self.change_bus)
 
         menu.exec_(event.screenPos())
-
-    def remove(self, ask=True):
-        """
-        Remove this element
-        @return:
-        """
-        if ask:
-            ok = yes_no_question('Are you sure that you want to remove this battery', 'Remove battery')
-        else:
-            ok = True
-
-        if ok:
-            self.editor.remove_from_scene(self.nexus)
-            self.editor.remove_from_scene(self)
-            self.api_object.bus.batteries.remove(self.api_object)
 
     def enable_disable_toggle(self):
         """

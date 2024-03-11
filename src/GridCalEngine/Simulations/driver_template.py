@@ -15,15 +15,14 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import time
-from typing import Union
 import numpy as np
 from typing import List, Dict, Union
 from GridCalEngine.basic_structures import IntVec, Vec
 from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.enumerations import EngineType
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-import GridCalEngine.Core.topology as tp
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
+import GridCalEngine.Topology.topology as tp
 
 
 class DummySignal:
@@ -64,7 +63,7 @@ class DriverTemplate:
         self.progress_text = DummySignal(str)
         self.done_signal = DummySignal()
 
-        self.grid = grid
+        self.grid: MultiCircuit = grid
 
         self.results = None
 

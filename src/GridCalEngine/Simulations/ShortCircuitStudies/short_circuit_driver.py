@@ -18,15 +18,15 @@
 import numpy as np
 from typing import Union
 from GridCalEngine.basic_structures import Logger
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.basic_structures import CxVec
 from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowResults, PowerFlowOptions
 from GridCalEngine.Simulations.ShortCircuitStudies.short_circuit_worker import (short_circuit_ph3,
                                                                                 short_circuit_unbalanced)
 from GridCalEngine.Simulations.ShortCircuitStudies.short_circuit_results import ShortCircuitResults
-from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit
-from GridCalEngine.Core.Devices import Branch, Bus
-from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
+from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
+from GridCalEngine.Devices import Branch, Bus
+from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.enumerations import FaultType, BranchImpedanceMode
@@ -189,8 +189,8 @@ class ShortCircuitDriver(DriverTemplate):
 
         return br1, br2, middle_bus
 
-    def single_short_circuit(self,
-                             calculation_inputs: NumericalCircuit,
+    @staticmethod
+    def single_short_circuit(calculation_inputs: NumericalCircuit,
                              Vpf: CxVec,
                              Zf: complex,
                              island_bus_index: int,

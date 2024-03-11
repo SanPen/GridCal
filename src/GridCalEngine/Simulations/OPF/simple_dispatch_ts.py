@@ -21,7 +21,7 @@ That means that solves the OPF problem for a complete time series at once
 """
 import numpy as np
 from typing import Tuple
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.basic_structures import Vec
 
 
@@ -42,7 +42,7 @@ def run_simple_dispatch(grid: MultiCircuit,
         prog_func(0.0)
 
     ng = grid.get_generators_number()
-    nl = grid.get_calculation_loads_number()
+    nl = grid.get_load_like_device_number()
     Sbase = grid.Sbase
 
     Pl = np.zeros(nl)
@@ -84,7 +84,7 @@ def run_simple_dispatch_ts(grid: MultiCircuit,
 
     nt = len(time_indices)
     ng = grid.get_generators_number()
-    nl = grid.get_calculation_loads_number()
+    nl = grid.get_load_like_device_number()
 
     Pg = np.zeros((nt, ng))  # dispatched generation (to be filled)
     dispatchable_indices = list()  # generator indices that are available for beign dispatched

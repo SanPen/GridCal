@@ -22,9 +22,11 @@ import GridCalEngine.Simulations as sim
 import GridCal.Gui.GuiFunctions as gf
 from GridCal.Gui.messages import error_msg, warning_msg
 from GridCal.Gui.Main.SubClasses.simulations import SimulationsMain
-from GridCal.Gui.Session.session import ResultsModel
+from GridCal.Session.results_model import ResultsModel
 from GridCal.Gui.GeneralDialogues import fill_tree_from_logs
+import GridCalEngine.Utils.Filtering as flt
 from GridCalEngine.basic_structures import Logger
+from GridCalEngine.enumerations import ResultTypes
 
 
 class ResultsMain(SimulationsMain):
@@ -41,9 +43,7 @@ class ResultsMain(SimulationsMain):
         # create main window
         SimulationsMain.__init__(self, parent)
 
-        self.results_mdl: sim.ResultsTable = sim.ResultsTable(data=np.zeros((0, 0)),
-                                                              columns=np.zeros(0),
-                                                              index=np.zeros(0))
+        self.results_mdl: Union[None, ResultsModel] = None
 
         self.current_results_logger: Union[None, Logger] = None
 
@@ -98,18 +98,26 @@ class ResultsMain(SimulationsMain):
                 else:
                     raise Exception('Path len ' + str(len(path)) + ' not supported')
 
-                if study_name in self.available_results_dict.keys():
+                study_results = self.available_results_dict.get(study_name, None)
 
-                    if result_name in self.available_results_dict[study_name].keys():
+                if study_results is not None:
 
-                        study_type = self.available_results_dict[study_name][result_name]
+                    study_type: ResultTypes = study_results.get(result_name, None)
 
-                        self.results_mdl = None
+                    if study_type is not None:
 
                         self.results_mdl = self.session.get_results_model_by_name(study_name=study_name,
                                                                                   study_type=study_type)
 
                         if self.results_mdl is not None:
+
+                            # pass the matching list of devices to the ResultsModel and ResultsTable for filtering
+                            self.results_mdl.table.set_col_devices(
+                                devices_list=self.circuit.get_elements_by_type(self.results_mdl.table.cols_device_type)
+                            )
+                            self.results_mdl.table.set_idx_devices(
+                                devices_list=self.circuit.get_elements_by_type(self.results_mdl.table.idx_device_type)
+                            )
 
                             if self.ui.results_traspose_checkBox.isChecked():
                                 self.results_mdl.transpose()
@@ -240,14 +248,25 @@ class ResultsMain(SimulationsMain):
         """
 
         if self.results_mdl is not None:
-            text = self.ui.sear_results_lineEdit.text().strip()
 
-            if text != '':
-                mdl = self.results_mdl.search(text)
-            else:
-                mdl = None
+            txt = self.ui.sear_results_lineEdit.text().strip()
 
-            self.ui.resultsTableView.setModel(mdl)
+            filter_ = flt.FilterResultsTable(self.results_mdl.table)
+
+            try:
+                filter_.parse(expression=txt)
+                filtered_table = filter_.apply()
+            except ValueError as e:
+                error_msg(str(e), "Fiter parse")
+                return None
+            except Exception as e:
+                error_msg(str(e), "Fiter parse")
+                return None
+
+            self.results_mdl = ResultsModel(filtered_table)
+            self.ui.resultsTableView.setModel(self.results_mdl)
+        else:
+            return None
 
     def delete_results_driver(self):
         """
@@ -290,7 +309,7 @@ class ResultsMain(SimulationsMain):
 
             if reply == QtWidgets.QMessageBox.StandardButton.Yes.value:
                 for i, gen in enumerate(self.circuit.get_generators()):
-                    gen.P_prof = results.generator_power[:, i]
+                    gen.P_prof.set(results.generator_power[:, i])
 
         else:
             warning_msg('The OPF time series has no results :(')

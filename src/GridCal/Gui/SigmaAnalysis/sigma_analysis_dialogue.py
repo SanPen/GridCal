@@ -1,14 +1,33 @@
+# GridCal
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 3 of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import sys
 import numpy as np
 from PySide6 import QtWidgets
 
 from GridCal.Gui.SigmaAnalysis.gui import Ui_MainWindow
-from GridCal.Gui.Session.results_model import ResultsModel
-from GridCalEngine.Simulations.result_types import ResultTypes
+from GridCal.Session.results_model import ResultsModel
+from GridCalEngine.enumerations import ResultTypes
 from GridCalEngine.Simulations.SigmaAnalysis.sigma_analysis_driver import SigmaAnalysisResults
 
 
 class SigmaAnalysisGUI(QtWidgets.QMainWindow):
+    """
+    SigmaAnalysisGUI
+    """
 
     def __init__(self, parent=None, results: SigmaAnalysisResults = None, bus_names=None,
                  good_coefficients=True):

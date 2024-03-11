@@ -1,0 +1,410 @@
+\documentclass[11pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage[english]{isodate}
+\usepackage[parfill]{parskip}
+
+\usepackage{graphicx}
+%%
+% Just some sample text
+\usepackage{lipsum}
+\usepackage{tabularx}
+\usepackage{xcolor} % for colour
+\usepackage{colortbl}
+%\usepackage{multirow}
+\usepackage{lettrine}
+\usepackage{csquotes}
+\usepackage{placeins}
+
+\usepackage{amsmath}
+\usepackage{mathtools}
+\usepackage{amssymb}
+\usepackage{nccmath}
+\usepackage{relsize}
+\usepackage{biblatex} %Imports biblatex package
+\usepackage{tikz}
+\usepackage{circuitikz}
+
+\usepackage[colorlinks=true,allcolors=black]{hyperref}
+
+\addbibresource{refs.bib} %Import the bibliography file
+
+\usepackage{geometry}
+ \geometry{
+	a4paper,
+	total={170mm,257mm},
+	left=20mm,
+	top=20mm,
+}
+
+
+
+\title{\textbf{Controls and buses}}
+
+\author{Santiago Pe\~nate Vera \\ 
+		Carlos Alegre Aldeano \\
+		Josep Fanals i Batllori}
+
+
+
+\begin{document}
+	
+	\maketitle
+	
+	Controls are becoming much more prevalent as years go by. Compared to decades ago when synchronous generators dominated power networks and there was zero to little controllability, nowadays devices based on power electronics are increasing in popularity. Thus, there is a need to list all the possible controls that derive from each element. This document contains an exhaustive list of all devices and their controllable magnitudes, which are then mapped to the corresponding types of buses. It is taken into account that a power grid, as we understand it, can be composed of multiple interconnected AC and DC grids.  
+
+
+	\section{Glossary}
+	\begin{itemize}
+		\item General:
+		\begin{itemize}
+		\item $\delta$: voltage angle.
+		\item $V$: voltage magnitude.
+		\item $\tau$: transformer tap angle.
+		\item $m$: transformer tap magnitude.
+		\item $P$: active power.
+		\item $Q$: reactive power.
+		\item $I$: current magnitude.
+		\item $f$: from side of a branch, representing the AC side.
+		\item $t$: to side of a branch, representing the DC side.
+		\end{itemize}
+		\item 1 magnitude:
+		\begin{itemize}
+			\item P: bus with controlled $P$.
+			\item Q: bus with controlled $Q$.
+			\item V: bus with controlled $V$.
+			\item D: bus with controlled $\delta$.
+			\item I: bus with controlled $I$.
+		\end{itemize}
+		\item 2 magnitudes:
+		\begin{itemize}
+			\item VD: bus with controlled $V$ and $\delta$.
+			\item PQ: bus with controlled $P$ and $Q$.
+			\item PV: bus with controlled $P$ and $V$.
+			\item PD: bus with controlled $P$ and $\delta$.
+			\item QV: bus with controlled $Q$ and $V$.
+			\item QD: bus with controlled $Q$ and $\delta$.
+			\item PI: bus with controlled $P$ and $I$.
+			\item QI: bus with controlled $Q$ and $I$.
+			\item VI: bus with controlled $V$ and $I$.
+			\item DI: bus with controlled $\delta$ and $I$. 
+		\end{itemize}
+		\item 3 magnitudes:
+		\begin{itemize}
+			\item PVD: bus with controlled $P$, $V$ and $\delta$.
+			\item QVD: bus with controlled $Q$, $V$ and $\delta$.
+			\item VDI: bus with controlled $V$, $\delta$ and $I$.
+			\item PQD: bus with controlled $P$, $Q$ and $\delta$.
+			\item PID: bus with controlled $P$, $I$ and $\delta$.
+			\item QID: bus with controlled $Q$, $I$ and $\delta$.
+			\item PQV: bus with controlled $P$, $Q$ and $V$.
+			\item PIV: bus with controlled $P$, $I$ and $V$.
+			\item QIV: bus with controlled $Q$, $I$ and $V$.
+			\item PQI: bus with controlled $P$, $Q$ and $I$.
+		\end{itemize}
+		\item 4 magnitudes:
+		\begin{itemize}
+			\item PQVD: bus with controlled $P$, $Q$, $V$ and $\delta$.
+			\item PVDI: bus with controlled $P$, $V$, $D$ and $I$.
+			\item QVDI: bus with controlled $Q$, $V$, $D$ and $I$.
+			\item PQDI: bus with controlled $P$, $Q$, $\delta$ and $I$.
+			\item PQVI: bus with controlled $P$, $Q$, $V$ and $I$.
+		\end{itemize}
+	\end{itemize}
+
+
+
+	\section{Devices controls}
+	This section unveils the controls associated with the most common devices found in power systems.
+
+	\subsection{Load}
+	% ZIP
+	Loads are best represented with their equivalent ZIP model as shown in Figure~\ref{fig:load}.
+
+	\begin{figure}[!htb]
+		\centering
+		\begin{circuitikz}[american]
+			\draw[line width=0.7mm] (0,0) to [short] (7,0);
+			\draw (0.6,0) to[generic, l=$G_i+jB_i$] (0.6,-3);
+			\draw (3.5,0) to [isource, l=$I^\text{re}_i + jI^\text{im}_i$] (3.5,-3);
+			\draw (6.4,0) to [cute european voltage source, l=$P_i+jQ_i$] (6.4,-3);
+			\draw (0,-3) to [short] (7,-3);
+			\end{circuitikz}		
+			\caption{Representation of a load with its ZIP model.}
+			\label{fig:load}
+	\end{figure}
+	\FloatBarrier
+
+
+	\subsection{Generator}
+	% include static gen. as PQ
+	Under GridCal, generators are classified into two categories: controlled generators and static generators. The first category corresponds to the ones that regulate the voltage and the active power, whereas the second class contains generators setting a given active and reactive power.
+
+	Figure~\ref{fig:gen_contr} shows the scheme for a controlled generator.
+
+	\begin{figure}[!htb]
+		\centering
+		\begin{circuitikz}[american]
+			\draw[line width=0.7mm] (2,0) to [short] (5,0);
+			\draw (3.5,0) to [sV, l=$P_i$] (3.5,-3);
+			\draw (2,-3) to [short] (5,-3);
+			\node at (3.5,0.35) {$V_i$};
+			\end{circuitikz}		
+			\caption{Representation of a controlled generator.}
+			\label{fig:gen_contr}
+	\end{figure}
+	\FloatBarrier
+
+	Figure~\ref{fig:gen_stat} shows the scheme for a static generator.
+
+	\begin{figure}[!htb]
+		\centering
+		\begin{circuitikz}[american]
+			\draw[line width=0.7mm] (2,0) to [short] (5,0);
+			\draw (3.5,0) to [sV, l=$P_i+jQ_i$] (3.5,-3);
+			\draw (2,-3) to [short] (5,-3);
+			\end{circuitikz}		
+			\caption{Representation of a static generator.}
+			\label{fig:gen_stat}
+	\end{figure}
+	\FloatBarrier
+	Note that generators have a capability curve that limits their range of operation. Hence, it is common practice to switch a controlled generator to a static one in case the reactive power limits are met.
+	
+	\subsection{Shunt converter}  % a battery can be connected to it
+	A shunt converter is understood as a device that links a resource (renewables, batteries, etc.) into the AC grid. Its model is captured in Figure~\ref{fig:vsc_shunt}.
+
+	\begin{figure}[!htb]
+		\centering
+		\begin{circuitikz}[american]
+			\draw[line width=0.7mm] (2,0) to [short] (5,0);
+			\draw (3.5,0) to [sacdc, l=$P_i+jQ_i$] (3.5,-3);
+			\draw (2,-3) to [short] (5,-3);
+			\node at (3.5,0.35) {$V_i \angle \delta_i$};
+			\node at (2.7, -1.5) {$I_i$};
+			\end{circuitikz}		
+			\caption{Representation of a shunt converter.}
+			\label{fig:vsc_shunt}
+	\end{figure}
+	\FloatBarrier
+	Seen from the AC side, a converter can control two magnitudes at a time, including the active and reactive powers, the voltage in magnitude and angle, and also operate at a set current magnitude. The operating mode determines the controlled variables.
+
+	\subsection{Series converter}
+	We define a series converter as a device of branch type, that is, a link between two buses where none of them is the ground. This kind of converter is found in HVDC links, for example. Figure~\ref{fig:vsc_series} displays its model. 
+
+	\begin{figure}[!htb]
+		\centering
+		\begin{circuitikz}[american]
+			\draw[line width=0.7mm] (2,0) to [short] (2,-3);
+			\draw[line width=0.7mm] (7,0) to [short] (7,-3);
+			\draw (2,-1.5) to [sacdc] (7,-1.5);
+			\draw (4,-1.5) to [short, i_=$P_f+jQ_f$] (2,-1.5);
+			\draw (5,-1.5) to [short, i=$P_t$] (7,-1.5);
+			\node at (2,0.35) {$V_f \angle \delta_f$};
+			\node at (7,0.35) {$V_t$};
+			\node at (3,-2.0) {$I_f$};
+			\end{circuitikz}		
+			\caption{Representation of a series converter.}
+			\label{fig:vsc_series}
+	\end{figure}
+	\FloatBarrier
+
+	\subsection{Transformer}
+	A transformer is seen as a device where its tap is adjustable, both in terms of magnitude and phase. In a simplified way its model is shown in Figure~\ref{fig:trafo}.
+
+	\begin{figure}[!htb]
+		\centering
+		\begin{circuitikz}[american]
+			\draw[line width=0.7mm] (2,0) to [short] (2,-3);
+			\draw[line width=0.7mm] (7,0) to [short] (7,-3);
+			\draw (2,-1.5) to [cute inductor, l=$m\angle \tau$] (7,-1.5);
+			\draw (4,-1.5) to [short, i_=$P_f+jQ_f$] (2,-1.5);
+			\draw (5,-1.5) to [short, i=$P_t+jQ_t$] (7,-1.5);
+			\node at (2,0.35) {$V_f \angle \delta_f$};
+			\node at (7,0.35) {$V_t \angle \delta_t$};
+			\end{circuitikz}		
+			\caption{Representation of a transformer.}
+			\label{fig:trafo}
+	\end{figure}
+	\FloatBarrier
+
+
+	\section{Fundamental rules}	
+	There are some basic rules to ensure controls are coherent:
+
+	\begin{itemize}
+		\item Each grid has to have only 1 slack bus~\footnote{The only exception being distributed slacks, which are simply slack buses with coordination rules.}. This applies to both AC and DC grids. In AC grids the magnitude $V$ and angle $\delta$ have to be specified, whereas in DC grids only the magnitude $V$.
+		\item It is not possible to have two devices controlling the same nodal voltage. In case it happens, there has to be a dominant device that governs it and the non-dominant device must switch its state.
+		\item Buses can have from 0 to 4 controlled magnitudes. In the most extreme case, a device connected to a given bus may be controlling two magnitudes of a nearby bus (hence one bus has zero controlled magnitudes and the other four). Controlling 5 magnitudes is deemed impossible.
+	\end{itemize}
+
+	\section{Combinations}  
+
+	\subsection{Load}
+	\begin{table}[!htb]\centering
+		\caption{Load specified magnitudes and resulting bus types.}
+			\begin{tabular}{ccp{12cm}}
+				\hline
+				\textbf{Controlled} & \textbf{Bus type} & \textbf{Description} \\
+				\hline
+				\hline
+				$P$, $Q$ & PQ & Regular load forcing a PQ bus at its node \\
+				\hline
+			\end{tabular}
+	\end{table}
+
+	\subsection{Generator}
+	It is worth mentioning that a generator can be controlled in two different ways: by setting the voltage and active power, or by specifying the active and reactive power. Generators operate in this last mode if reactive powers are met or if it is a static generator. The controlled magnitudes can be specified in remote buses, not necessarily the one where the generator is connected to.
+
+	\begin{table}[!htb]\centering
+		\caption{Generator specified magnitudes and resulting bus types.}
+			\begin{tabular}{ccp{12cm}}
+				\hline
+				\textbf{Controlled} & \textbf{Bus type} & \textbf{Description} \\
+				\hline
+				\hline
+				$P$, $V$ & PV & Typical PV bus\\
+				$P$, $Q$ & PQ & PQ bus for static generators or if reactive limits are met \\
+				\hline
+			\end{tabular}
+	\end{table}
+
+	\subsection{Shunt converter}
+	The absolute value of the current $I$ is set to the device, that is, it cannot be associated to a remote bus. The rest of the magnitudes can be linked to a bus where the converter is not directly connected. 
+
+	\begin{table}[!htb]\centering
+		\caption{Shunt converter specified magnitudes and resulting bus types.}
+			\begin{tabular}{ccp{12cm}}
+				\hline
+				\textbf{Controlled} & \textbf{Bus type} & \textbf{Description} \\
+				\hline
+				\hline
+				$P$, $Q$ & PQ & Unsaturated PQ converter \\
+				$P$, $V$ & PV & Unsaturated PV converter \\
+				$Q$, $I$ & QI & Partially saturated PQ converter \\
+				$P$, $I$ & PI & Fully saturated PQ converter \\
+				$V$, $I$ & VI & Partially saturated PV converter \\
+				$V$, $D$ & VD & Unsaturated grid-forming converter \\
+				$D$, $I$ & DI & Saturated grid-forming converter \\
+				\hline
+			\end{tabular}
+	\end{table}
+
+	\subsection{Series converter}
+	The absolute value of the current $I$ is set to the device, that is, it cannot be associated to a remote bus. The rest of the magnitudes can be linked to a bus where the converter is not directly connected. 
+
+	\begin{table}[!htb]\centering
+		\caption{Series converter specified magnitudes and resulting bus types.}
+			\begin{tabular}{cp{12cm}}
+				\hline
+				\textbf{Controlled} & \textbf{Description} \\
+				\hline
+				\hline
+				$P_f$, $P_t$ & Active power controlled on the AC and DC side \\
+				$Q_f$, $P_t$ & Reactive power controlled on the AC and DC side \\
+				$V_f$, $P_t$ & Voltage magnitude on the AC and active power on the DC side \\
+				$\delta_f$, $P_t$ & Voltage angle controlled on the AC and active power on the DC side \\
+				$P_f$, $V_t$ & Active power controlled on the AC and voltage on the DC side \\
+				$Q_f$, $V_t$ & Reactive power controlled on the AC and voltage on the DC side \\
+				$V_f$, $V_t$ & Voltage magnitude controlled on the AC and DC side \\
+				$\delta_f$, $V_t$ & Voltage angle controlled on the AC and voltage DC side \\
+				$I_f$, $P_t$ & Maximum current on the AC and active power on the DC side \\
+				$I_f$, $V_t$ & Maximum current on the AC and voltage on the DC side \\
+				\hline
+			\end{tabular}
+	\end{table}
+
+	\subsection{Transformer}
+	The values of $m$ and $\tau$ are set to the device, that is, they cannot be associated to a remote bus. The rest of the magnitudes can be linked to a bus where the transformer is not directly connected. In this sense, the transformer parameters are adjusted to control the voltage and power flow in the AC and DC sides. 
+
+	\begin{table}[!htb]\centering
+		\caption{Transformer specified magnitudes and resulting bus types.}
+			\begin{tabular}{cp{12cm}}
+				\hline
+				\textbf{Controlled} & \textbf{Description} \\
+				\hline
+				\hline
+				$P_f$, $P_t$ & Active power controlled on the from and to sides \\
+				$Q_f$, $P_t$ & Reactive power controlled on the from and to sides \\
+				$V_f$, $P_t$ & Voltage magnitude on the from and active power on the to side \\
+				$\delta_f$, $P_t$ & Voltage angle controlled on the from and active power on the to side \\
+				$P_f$, $Q_t$ & Active power controlled on the from and reactive power on the to side \\
+				$Q_f$, $Q_t$ & Reactive power controlled on the from and to sides \\
+				$V_f$, $Q_t$ & Voltage magnitude on the from and reactive power on the to side \\
+				$\delta_f$, $Q_t$ & Voltage angle controlled on the from and reactive power on the to side \\
+				$P_f$, $V_t$ & Active power controlled on the from and voltage on the to side \\
+				$Q_f$, $V_t$ & Reactive power controlled on the from and voltage on the to side \\
+				$V_f$, $V_t$ & Voltage magnitude controlled on the from and to sides \\
+				$\delta_f$, $V_t$ & Voltage angle controlled on the from and voltage on the to side \\
+				$P_f$, $\delta_t$ & Active power controlled on the from and voltage angle on the to side \\
+				$Q_f$, $\delta_t$ & Reactive power controlled on the from and voltage angle on the to side \\
+				$V_f$, $\delta_t$ & Voltage magnitude on the from and voltage angle on the to side \\
+				$\delta_f$, $\delta_t$ & Voltage angle controlled on the from and to sides \\
+				$P_f$ & Active power controlled on the from side \\
+				$Q_f$ & Reactive power controlled on the from side \\
+				$V_f$ & Voltage magnitude controlled on the from side \\
+				$\delta_f$ & Voltage angle controlled on the from side \\
+				$P_t$ & Active power controlled on the to side \\
+				$Q_t$ & Reactive power controlled on the to side \\
+				$V_t$ & Voltage magnitude controlled on the to side \\
+				$\delta_t$ & Voltage angle controlled on the to side \\
+				\hline
+			\end{tabular}
+	\end{table}
+
+	(Think about controlling nodal vs branch magnitudes, as here we are controlling branch magnitudes)
+
+\section{Generalized power flow}
+Adopting the common methodology of assuming each node on the system belongs to a given bus category, where traditionally we only have PQ, PV and slack buses, we can extend this concept to include all the possible combinations of controlled magnitudes. This is a generalization of the power flow problem as the bus type will not be predefined, but rather it will be determined by the controlled magnitudes. To start this generalization, four sets of indices are stored:
+
+\begin{itemize}
+	\item $i_p$: set of buses with controlled $P$.
+	\item $i_q$: set of buses with controlled $Q$.
+	\item $i_\delta$: set of buses with controlled $\delta$.
+	\item $i_v$: set of buses with controlled $V$.
+\end{itemize}
+Following this logic, the sets where the magnitudes are not controlled can also be defined:
+\begin{itemize}
+	\item $\overline{i}_p$: set of buses with unknown $P$.
+	\item $\overline{i}_q$: set of buses with unknown $Q$.
+	\item $\overline{i}_\delta$: set of buses with unknown $\delta$.
+	\item $\overline{i}_v$: set of buses with unknown $V$.
+\end{itemize}
+
+The power flow problem is then solved by iterating over the buses and applying the corresponding equations. Eventually, the bus type can be determined by the intersection of the sets. For example, if a bus has controlled $P$ and $Q$, then it belongs to the set $i_p \cap i_q$. The same applies to the rest of the combinations. However, the bus type is not really needed in the formulation that follows.
+
+Then, the indexing works as indicated below:
+\begin{itemize}
+	\item $P$ equations are to be applied to the set $i_p$.
+	\item $Q$ equations are to be applied to the set $i_q$.
+	\item The algorithm solves for the set of $\delta \in i_\delta$ and $V \in i_v$.
+	\item It has to be guaranteed that $\text{len}(i_p) + \text{len}(i_q) = \text{len}(\overline{i}_\delta) + \text{len}(\overline{i}_v)$, that is, the number of controlled $P$ and $Q$ equations matches with the total voltage unknowns.
+\end{itemize}
+It is also important to note that remote controls are possible. For example, a generator can control the voltage of a bus where it is not directly connected to. This is a common practice in power systems, where the voltage of a bus is regulated by a generator located in a nearby bus. Figure~\ref{fig:remote} exemplifies this situation.
+
+% expand the generators for ZIP model also
+\begin{figure}[!htb]
+	\centering
+	\begin{circuitikz}[american]
+		\draw[line width=0.7mm] (2,0) to [short] (5,0);
+		\draw (3.5,0) to [sV, l=$P_i$] (3.5,-3);
+		\draw (2,-3) to [short] (5,-3);
+		\node at (3.5,0.35) {$V_i$};
+		\draw[line width=0.7mm] (7,0) to [short] (10,0);
+		\draw (8.5,0) to [sV, l=$P_j$] (8.5,-3);
+		\draw (7,-3) to [short] (10,-3);
+		\node at (8.5,0.35) {$V_j$};
+		% \draw (3.5,-3) to [short] (8.5,-3);
+		\end{circuitikz}		
+		\caption{Representation of a remote control.}
+		\label{fig:remote}
+\end{figure}
+
+
+\section{Switching rules}
+
+	
+\section{Bibliography}
+	\printbibliography
+	
+\end{document}

@@ -24,12 +24,12 @@ from GridCalEngine.basic_structures import Logger, ConvergenceReport
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
-from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
-from GridCalEngine.Core.Devices.Substation.bus import Bus
-from GridCalEngine.Core.Devices.Aggregation.area import Area
-from GridCalEngine.basic_structures import CxVec, Vec, IntVec
+from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
+from GridCalEngine.Devices.Substation.bus import Bus
+from GridCalEngine.Devices.Aggregation.area import Area
+from GridCalEngine.basic_structures import CxVec, Vec, IntVec, CscMat
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCalEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults
@@ -38,19 +38,19 @@ if TYPE_CHECKING:  # Only imports the below statements during type checking
 def solve(circuit: NumericalCircuit,
           options: PowerFlowOptions,
           report: ConvergenceReport,
-          V0: CxVec, 
-          S0: CxVec, 
-          I0: CxVec, 
+          V0: CxVec,
+          S0: CxVec,
+          I0: CxVec,
           Y0: CxVec,
-          tap_modules: Vec, 
-          tap_angles: Vec, 
+          tap_modules: Vec,
+          tap_angles: Vec,
           Beq: Vec,
-          pq: IntVec, 
-          pv: IntVec, 
-          ref: IntVec, 
+          pq: IntVec,
+          pv: IntVec,
+          ref: IntVec,
           pqpv: IntVec,
-          Qmin: Vec, 
-          Qmax: Vec, 
+          Qmin: Vec,
+          Qmax: Vec,
           logger=Logger()) -> NumericPowerFlowResults:
     """
     Run a power flow simulation using the selected method (no outer loop controls).
@@ -140,7 +140,7 @@ def solve(circuit: NumericalCircuit,
             solution = pflw.dcpf(Ybus=circuit.Ybus,
                                  Bpqpv=circuit.Bpqpv,
                                  Bref=circuit.Bref,
-                                 Btau=circuit.Btau,
+                                 Bf=circuit.Bf,
                                  S0=S0,
                                  I0=I0,
                                  Y0=Y0,
@@ -330,8 +330,20 @@ def solve(circuit: NumericalCircuit,
 
 
 def single_island_pf(circuit: NumericalCircuit, options: PowerFlowOptions,
-                     voltage_solution, S0, I0, Y0, tap_modules, tap_angles, Beq, branch_rates,
-                     pq, pv, vd, pqpv, Qmin, Qmax, logger=Logger()) -> "PowerFlowResults":
+                     voltage_solution: CxVec,
+                     S0: CxVec,
+                     I0: CxVec,
+                     Y0: CxVec,
+                     tap_modules: Vec,
+                     tap_angles: Vec,
+                     Beq: Vec,
+                     branch_rates: Vec,
+                     pq: IntVec,
+                     pv: IntVec,
+                     vd: IntVec,
+                     pqpv: IntVec,
+                     Qmin: Vec,
+                     Qmax: Vec, logger=Logger()) -> "PowerFlowResults":
     """
     Run a power flow simulation for a single circuit using the
     selected outer loop controls.
@@ -464,12 +476,15 @@ def single_island_pf(circuit: NumericalCircuit, options: PowerFlowOptions,
     return results
 
 
-def power_flow_post_process(calculation_inputs: NumericalCircuit,
-                            Sbus: CxVec,
-                            V: CxVec,
-                            branch_rates: CxVec,
-                            Yf=None, Yt=None,
-                            method: SolverType = None) -> Tuple[CxVec, CxVec, CxVec, CxVec, CxVec, CxVec, CxVec, CxVec]:
+def power_flow_post_process(
+        calculation_inputs: NumericalCircuit,
+        Sbus: CxVec,
+        V: CxVec,
+        branch_rates: CxVec,
+        Yf: Union[CscMat, None] = None,
+        Yt: Union[CscMat, None] = None,
+        method: Union[None, SolverType] = None
+) -> Tuple[CxVec, CxVec, CxVec, CxVec, CxVec, CxVec, CxVec, CxVec]:
     """
     Compute the power Sf trough the Branches.
     :param calculation_inputs: NumericalCircuit
@@ -484,9 +499,6 @@ def power_flow_post_process(calculation_inputs: NumericalCircuit,
     # Compute the slack and pv buses power
     vd = calculation_inputs.vd
     pv = calculation_inputs.pv
-
-    Vf = calculation_inputs.Cf * V
-    Vt = calculation_inputs.Ct * V
 
     if method not in [SolverType.DC]:
         # power at the slack nodes
@@ -503,6 +515,8 @@ def power_flow_post_process(calculation_inputs: NumericalCircuit,
             Yt = calculation_inputs.Yt
 
         # Branches current, loading, etc
+        Vf = V[calculation_inputs.branch_data.F]
+        Vt = V[calculation_inputs.branch_data.T]
         If = Yf * V
         It = Yt * V
         Sf = Vf * np.conj(If)
@@ -520,16 +534,25 @@ def power_flow_post_process(calculation_inputs: NumericalCircuit,
 
     else:
         # DC power flow
-        theta_f = np.angle(Vf, deg=False)
-        theta_t = np.angle(Vt, deg=False)
-        Vbranch = theta_f - theta_t
-        Sf = (1.0 / calculation_inputs.branch_data.X) * Vbranch
-        Sfb = Sf * calculation_inputs.Sbase
-        Stb = -Sf * calculation_inputs.Sbase
-        If = Sf / (Vf + 1e-20)
+        theta = np.angle(V, deg=False)
+        theta_f = theta[calculation_inputs.F]
+        theta_t = theta[calculation_inputs.T]
+
+        b = 1.0 / (calculation_inputs.branch_data.X * calculation_inputs.branch_data.tap_module)
+        # Pf = calculation_inputs.Bf @ theta - b * calculation_inputs.branch_data.tap_angle
+
+        Pf = b * (theta_f - theta_t - calculation_inputs.branch_data.tap_angle)
+
+        Sfb = Pf * calculation_inputs.Sbase
+        Stb = -Pf * calculation_inputs.Sbase
+
+        Vf = V[calculation_inputs.branch_data.F]
+        Vt = V[calculation_inputs.branch_data.T]
+        Vbranch = Vf - Vt
+        If = Pf / (Vf + 1e-20)
         It = -If
         # losses are not considered in the power flow computation
-        losses = np.zeros(Sf.shape)  # If * If * calculation_inputs.branch_data.R * calculation_inputs.Sbase
+        losses = np.zeros(calculation_inputs.nbr)
 
     # Branch loading in p.u.
     loading = Sfb / (branch_rates + 1e-9)
@@ -541,7 +564,7 @@ def multi_island_pf_nc(nc: NumericalCircuit,
                        options: PowerFlowOptions,
                        logger=Logger(),
                        V_guess: Union[CxVec, None] = None,
-                       Sbus_input: Union[CxVec, None] = None) -> "PowerFlowResults":
+                       Sbus_input: Union[CxVec, None] = None) -> PowerFlowResults:
     """
     Multiple islands power flow (this is the most generic power flow function)
     :param nc: SnapshotData instance
@@ -597,7 +620,7 @@ def multi_island_pf_nc(nc: NumericalCircuit,
                 if Sbus_input is None:
                     Sbus = island.Sbus + Shvdc[island.original_bus_idx]
                 else:
-                    Sbus = Sbus_input + Shvdc[island.original_bus_idx]
+                    Sbus = (Sbus_input + Shvdc)[island.original_bus_idx]
 
                 res = single_island_pf(
                     circuit=island,
@@ -616,7 +639,8 @@ def multi_island_pf_nc(nc: NumericalCircuit,
                     pqpv=island.pqpv,
                     Qmin=island.Qmin_bus,
                     Qmax=island.Qmax_bus,
-                    logger=logger)
+                    logger=logger
+                )
 
                 # merge the results from this island
                 results.apply_from_island(

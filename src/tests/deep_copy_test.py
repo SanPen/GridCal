@@ -51,9 +51,9 @@ def test_multi_circuit_deep_copy() -> bool:
         assert elm.active != elm_copy.active
 
     for elm, elm_copy in zip(main_circuit.get_loads(), main_circuit_cpy.get_loads()):
-        assert np.all(np.isclose(elm.P_prof * 2.0, elm_copy.P_prof))
+        assert np.all(np.isclose(elm.P_prof.toarray() * 2.0, elm_copy.P_prof.toarray()))
 
     for elm, elm_copy in zip(main_circuit.get_generators(), main_circuit_cpy.get_generators()):
-        assert np.all(np.isclose(elm.P_prof * 3.0, elm_copy.P_prof))
+        assert np.all(np.isclose(elm.P_prof.toarray() * 3.0, elm_copy.P_prof.toarray()))
 
     return True

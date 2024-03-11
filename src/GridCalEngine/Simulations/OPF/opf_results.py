@@ -17,11 +17,10 @@
 
 import numpy as np
 import pandas as pd
-from GridCalEngine.Simulations.result_types import ResultTypes
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.basic_structures import IntVec, Vec, StrVec, CxVec
-from GridCalEngine.enumerations import StudyResultsType
+from GridCalEngine.enumerations import StudyResultsType, ResultTypes, DeviceType
 
 
 class OptimalPowerFlowResults(ResultsTemplate):
@@ -196,39 +195,6 @@ class OptimalPowerFlowResults(ResultsTemplate):
 
         self.plot_bars_limit = 100
 
-    def apply_new_rates(self, nc: "NumericalCircuit"):
-        """
-
-        :param nc:
-        """
-        rates = nc.Rates
-        self.loading = self.Sf / (rates + 1e-9)
-
-    def fill_circuit_info(self, grid: "MultiCircuit"):
-        """
-
-        :param grid:
-        """
-        area_dict = {elm: i for i, elm in enumerate(grid.get_areas())}
-        bus_dict = grid.get_bus_index_dict()
-
-        self.area_names = [a.name for a in grid.get_areas()]
-        self.bus_area_indices = np.array([area_dict[b.area] for b in grid.buses])
-
-        branches = grid.get_branches_wo_hvdc()
-        self.F = np.zeros(len(branches), dtype=int)
-        self.T = np.zeros(len(branches), dtype=int)
-        for k, elm in enumerate(branches):
-            self.F[k] = bus_dict[elm.bus_from]
-            self.T[k] = bus_dict[elm.bus_to]
-
-        hvdc = grid.get_hvdc()
-        self.hvdc_F = np.zeros(len(hvdc), dtype=int)
-        self.hvdc_T = np.zeros(len(hvdc), dtype=int)
-        for k, elm in enumerate(hvdc):
-            self.hvdc_F[k] = bus_dict[elm.bus_from]
-            self.hvdc_T[k] = bus_dict[elm.bus_to]
-
     def get_bus_df(self) -> pd.DataFrame:
         """
         Get a DataFrame with the buses results
@@ -282,114 +248,214 @@ class OptimalPowerFlowResults(ResultsTemplate):
         :param result_type: type of results (string)
         :return: DataFrame of the results (or None if the result was not understood)
         """
-        columns = [result_type.value[0]]
-
         if result_type == ResultTypes.BusVoltageModule:
-            labels = self.bus_names
-            y = np.abs(self.voltage)
-            y_label = '(p.u.)'
-            title = 'Bus voltage module'
+
+            return ResultsTable(data=np.abs(self.voltage),
+                                index=self.bus_names,
+                                idx_device_type=DeviceType.BusDevice,
+                                columns=[result_type.value],
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(p.u.)',
+                                xlabel='',
+                                units='(p.u.)')
 
         elif result_type == ResultTypes.BusVoltageAngle:
-            labels = self.bus_names
-            y = np.angle(self.voltage)
-            y_label = '(Radians)'
-            title = 'Bus voltage angle'
+
+            return ResultsTable(data=np.angle(self.voltage, deg=True),
+                                index=self.bus_names,
+                                idx_device_type=DeviceType.BusDevice,
+                                columns=[result_type.value],
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(deg)',
+                                xlabel='',
+                                units='(deg)')
 
         elif result_type == ResultTypes.BusShadowPrices:
-            labels = self.bus_names
-            y = self.bus_shadow_prices
-            y_label = '(Currency/MW)'
-            title = 'Bus shadow prices'
 
-        elif result_type == ResultTypes.BranchActivePowerFrom:
-            labels = self.branch_names
-            y = self.Sf.real
-            y_label = '(MW)'
-            title = 'Branch power from'
-
-        elif result_type == ResultTypes.BranchActivePowerTo:
-            labels = self.branch_names
-            y = self.St.real
-            y_label = '(MW)'
-            title = 'Branch power to'
+            return ResultsTable(data=self.bus_shadow_prices,
+                                index=self.bus_names,
+                                idx_device_type=DeviceType.BusDevice,
+                                columns=[result_type.value],
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(Currency/MW)',
+                                xlabel='',
+                                units='(Currency/MW)')
 
         elif result_type == ResultTypes.BusActivePower:
-            labels = self.bus_names
-            y = self.Sbus.real
-            y_label = '(MW)'
-            title = 'Bus active power'
+
+            return ResultsTable(data=self.Sbus.real,
+                                index=self.bus_names,
+                                idx_device_type=DeviceType.BusDevice,
+                                columns=[result_type.value],
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(MW)',
+                                xlabel='',
+                                units='(MW)')
 
         elif result_type == ResultTypes.BusReactivePower:
-            labels = self.bus_names
-            y = self.Sbus.imag
-            y_label = '(MVAr)'
-            title = 'Bus reactive power'
+
+            return ResultsTable(data=self.Sbus.imag,
+                                index=self.bus_names,
+                                idx_device_type=DeviceType.BusDevice,
+                                columns=[result_type.value],
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(MVAr)',
+                                xlabel='',
+                                units='(MVAr)')
+
+        elif result_type == ResultTypes.BranchActivePowerFrom:
+
+            return ResultsTable(data=self.Sf.real,
+                                index=self.branch_names,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=[result_type.value],
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(MW)',
+                                xlabel='',
+                                units='(MW)')
+
+        elif result_type == ResultTypes.BranchActivePowerTo:
+
+            return ResultsTable(data=self.St.real,
+                                index=self.branch_names,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=[result_type.value],
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(MW)',
+                                xlabel='',
+                                units='(MW)')
 
         elif result_type == ResultTypes.BranchLoading:
-            labels = self.branch_names
-            y = self.loading * 100.0
-            y_label = '(%)'
-            title = 'Branch loading'
+
+            return ResultsTable(data=self.loading * 100.0,
+                                index=self.branch_names,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=[result_type.value],
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(%)',
+                                xlabel='',
+                                units='(%)')
 
         elif result_type == ResultTypes.BranchOverloads:
-            labels = self.branch_names
-            y = np.abs(self.overloads)
-            y_label = '(MW)'
-            title = 'Branch overloads'
+
+            return ResultsTable(data=np.abs(self.overloads),
+                                index=self.branch_names,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=[result_type.value],
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(MW)',
+                                xlabel='',
+                                units='(MW)')
 
         elif result_type == ResultTypes.BranchLosses:
-            labels = self.branch_names
-            y = self.losses.real
-            y_label = '(MW)'
-            title = 'Branch losses'
+
+            return ResultsTable(data=self.losses.real,
+                                index=self.branch_names,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=[result_type.value],
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(MW)',
+                                xlabel='',
+                                units='(MW)')
 
         elif result_type == ResultTypes.BranchTapAngle:
-            labels = self.branch_names
-            y = np.rad2deg(self.phase_shift)
-            y_label = '(deg)'
-            title = result_type.value[0]
+
+            return ResultsTable(data=np.rad2deg(self.phase_shift),
+                                index=self.branch_names,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=[result_type.value],
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(deg)',
+                                xlabel='',
+                                units='(deg)')
 
         elif result_type == ResultTypes.LoadShedding:
-            labels = self.load_names
-            y = self.load_shedding
-            y_label = '(MW)'
-            title = 'Load shedding'
+
+            return ResultsTable(data=self.load_shedding,
+                                index=self.load_names,
+                                idx_device_type=DeviceType.LoadLikeDevice,
+                                columns=[result_type.value],
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(MW)',
+                                xlabel='',
+                                units='(MW)')
 
         elif result_type == ResultTypes.GeneratorShedding:
-            labels = self.generator_names
-            y = self.generator_shedding
-            y_label = '(MW)'
-            title = 'Controlled generator shedding'
+
+            return ResultsTable(data=self.generator_shedding,
+                                index=self.generator_names,
+                                idx_device_type=DeviceType.GeneratorDevice,
+                                columns=[result_type.value],
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(MW)',
+                                xlabel='',
+                                units='(MW)')
 
         elif result_type == ResultTypes.GeneratorPower:
-            labels = self.generator_names
-            y = self.generator_power
-            y_label = '(MW)'
-            title = 'Controlled generators power'
+
+            return ResultsTable(data=self.generator_power,
+                                index=self.generator_names,
+                                idx_device_type=DeviceType.GeneratorDevice,
+                                columns=[result_type.value],
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(MW)',
+                                xlabel='',
+                                units='(MW)')
 
         elif result_type == ResultTypes.BatteryPower:
-            labels = self.battery_names
-            y = self.battery_power
-            y_label = '(MW)'
-            title = 'Battery power'
+
+            return ResultsTable(data=self.battery_power,
+                                index=self.battery_names,
+                                idx_device_type=DeviceType.BatteryDevice,
+                                columns=[result_type.value],
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(MW)',
+                                xlabel='',
+                                units='(MW)')
 
         elif result_type == ResultTypes.HvdcPowerFrom:
-            labels = self.hvdc_names
-            y = self.hvdc_Pf
-            y_label = '(MW)'
-            title = 'HVDC power'
+
+            return ResultsTable(data=self.hvdc_Pf,
+                                index=self.hvdc_names,
+                                idx_device_type=DeviceType.HVDCLineDevice,
+                                columns=[result_type.value],
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(MW)',
+                                xlabel='',
+                                units='(MW)')
 
         elif result_type == ResultTypes.HvdcLoading:
-            labels = self.hvdc_names
-            y = self.hvdc_loading * 100.0
-            y_label = '(%)'
-            title = 'HVDC loading'
+
+            return ResultsTable(data=self.hvdc_loading * 100.0,
+                                index=self.hvdc_names,
+                                idx_device_type=DeviceType.HVDCLineDevice,
+                                columns=[result_type.value],
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(%)',
+                                xlabel='',
+                                units='(%)')
 
         elif result_type == ResultTypes.ContingencyFlowsReport:
 
             y = list()
-            labels = list()
+            index = list()
             for i in range(len(self.contingency_flows_list)):
                 if self.contingency_flows_list[i] != 0.0:
                     m, c = self.contingency_indices_list[i]
@@ -398,18 +464,22 @@ class OptimalPowerFlowResults(ResultsTemplate):
                               self.contingency_flows_list[i], self.Sf[m],
                               self.contingency_flows_list[i] / self.contingency_rates[c] * 100,
                               self.Sf[m] / self.rates[m] * 100))
-                    labels.append(i)
+                    index.append(i)
 
             columns = ['Monitored idx ', 'Contingency idx',
                        'Monitored', 'Contingency',
                        'ContingencyFlow (MW)', 'Base flow (MW)',
                        'ContingencyFlow (%)', 'Base flow (%)']
-            y = np.array(y, dtype=object)
-            y_label = ''
-            title = result_type.value[0]
+
+            return ResultsTable(data=np.array(y, dtype=object),
+                                index=index,
+                                idx_device_type=DeviceType.NoDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value)
 
         elif result_type == ResultTypes.InterAreaExchange:
-            labels = [a + '->' for a in self.area_names]
+            index = [a + '->' for a in self.area_names]
             columns = ['->' + a for a in self.area_names]
             y = self.get_inter_area_flows(area_names=self.area_names,
                                           F=self.F,
@@ -419,14 +489,20 @@ class OptimalPowerFlowResults(ResultsTemplate):
                                           hvdc_T=self.hvdc_T,
                                           hvdc_Pf=self.hvdc_Pf,
                                           bus_area_indices=self.bus_area_indices).real
-            y_label = '(MW)'
-            title = result_type.value[0]
+
+            return ResultsTable(data=np.array(y, dtype=object),
+                                index=index,
+                                idx_device_type=DeviceType.AreaDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.AreaDevice,
+                                title=result_type.value,
+                                units='(MW)')
 
         elif result_type == ResultTypes.LossesPercentPerArea:
-            labels = [a + '->' for a in self.area_names]
+            index = [a + '->' for a in self.area_names]
             columns = ['->' + a for a in self.area_names]
-            Pf = self.get_branch_values_per_area(np.abs(self.Sf.real), self.area_names, self.bus_area_indices, self.F,
-                                                 self.T)
+            Pf = self.get_branch_values_per_area(np.abs(self.Sf.real), self.area_names,
+                                                 self.bus_area_indices, self.F, self.T)
             Pf += self.get_hvdc_values_per_area(np.abs(self.hvdc_Pf), self.area_names, self.bus_area_indices,
                                                 self.hvdc_F, self.hvdc_T)
             Pl = self.get_branch_values_per_area(np.abs(self.losses.real), self.area_names, self.bus_area_indices,
@@ -434,12 +510,18 @@ class OptimalPowerFlowResults(ResultsTemplate):
             # Pl += self.get_hvdc_values_per_area(np.abs(self.hvdc_losses))
 
             y = Pl / (Pf + 1e-20) * 100.0
-            y_label = '(%)'
-            title = result_type.value[0]
+
+            return ResultsTable(data=np.array(y, dtype=object),
+                                index=index,
+                                idx_device_type=DeviceType.AreaDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.AreaDevice,
+                                title=result_type.value,
+                                units='(%)')
 
         elif result_type == ResultTypes.LossesPerGenPerArea:
-            labels = [a for a in self.area_names]
-            columns = [result_type.value[0]]
+            index = [a for a in self.area_names]
+            columns = [result_type.value]
             gen_bus = self.Sbus.copy().real
             gen_bus[gen_bus < 0] = 0
             Gf = self.get_bus_values_per_area(gen_bus, self.area_names, self.bus_area_indices)
@@ -452,42 +534,45 @@ class OptimalPowerFlowResults(ResultsTemplate):
             for i in range(len(self.area_names)):
                 y[i] = Pl[i, i] / (Gf[i] + 1e-20) * 100.0
 
-            y_label = '(%)'
-            title = result_type.value[0]
+            return ResultsTable(data=np.array(y, dtype=object),
+                                index=index,
+                                idx_device_type=DeviceType.AreaDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                units='(%)')
 
         elif result_type == ResultTypes.LossesPerArea:
-            labels = [a + '->' for a in self.area_names]
+            index = [a + '->' for a in self.area_names]
             columns = ['->' + a for a in self.area_names]
             y = self.get_branch_values_per_area(np.abs(self.losses.real), self.area_names, self.bus_area_indices,
                                                 self.F, self.T)
             y += self.get_hvdc_values_per_area(np.abs(self.hvdc_losses), self.area_names, self.bus_area_indices,
                                                self.hvdc_F, self.hvdc_T)
 
-            y_label = '(MW)'
-            title = result_type.value[0]
+            return ResultsTable(data=np.array(y, dtype=object),
+                                index=index,
+                                idx_device_type=DeviceType.AreaDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.AreaDevice,
+                                title=result_type.value,
+                                units='(%)')
 
         elif result_type == ResultTypes.ActivePowerFlowPerArea:
-            labels = [a + '->' for a in self.area_names]
+            index = [a + '->' for a in self.area_names]
             columns = ['->' + a for a in self.area_names]
-            y = self.get_branch_values_per_area(np.abs(self.Sf.real), self.area_names, self.bus_area_indices, self.F,
-                                                self.T)
+            y = self.get_branch_values_per_area(np.abs(self.Sf.real), self.area_names, self.bus_area_indices,
+                                                self.F, self.T)
             y += self.get_hvdc_values_per_area(np.abs(self.hvdc_Pf), self.area_names, self.bus_area_indices,
                                                self.hvdc_F, self.hvdc_T)
 
-            y_label = '(MW)'
-            title = result_type.value[0]
+            return ResultsTable(data=np.array(y, dtype=object),
+                                index=index,
+                                idx_device_type=DeviceType.AreaDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.AreaDevice,
+                                title=result_type.value,
+                                units='(MW)')
 
         else:
-            labels = []
-            y = np.zeros(0)
-            y_label = '(MW)'
-            title = 'Battery power'
-
-        mdl = ResultsTable(data=y,
-                           index=np.array(labels),
-                           columns=np.array(columns),
-                           title=title,
-                           ylabel=y_label,
-                           xlabel='',
-                           units=y_label)
-        return mdl
+            raise Exception('Result type not understood:' + str(result_type))

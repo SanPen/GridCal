@@ -133,7 +133,7 @@ def newton_raphson(func: Callable[[Vec, bool, Any], ConvexFunctionResult],
             if back_track_condition:
                 # this means that not even the backtracking was able to correct
                 # the solution, so terminate
-
+                logger.add_warning(f"Newton-Raphson's stagnated @iter {iteration}:")
                 return ConvexMethodResult(x=x,
                                           error=error,
                                           converged=converged,

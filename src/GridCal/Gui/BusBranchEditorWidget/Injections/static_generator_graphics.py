@@ -18,7 +18,7 @@ from __future__ import annotations
 from typing import Union, TYPE_CHECKING
 from PySide6.QtGui import QPen, QIcon, QPixmap
 from PySide6.QtWidgets import QMenu, QGraphicsTextItem
-from GridCalEngine.Core.Devices.Injections.static_generator import StaticGenerator, DeviceType
+from GridCalEngine.Devices.Injections.static_generator import StaticGenerator, DeviceType
 from GridCal.Gui.BusBranchEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Square
 from GridCal.Gui.BusBranchEditorWidget.Injections.injections_template_graphics import InjectionTemplateGraphicItem
 from GridCal.Gui.GuiFunctions import ObjectsModel
@@ -128,20 +128,6 @@ class StaticGeneratorGraphicItem(InjectionTemplateGraphicItem):
 
         menu.exec_(event.screenPos())
 
-    def remove(self, ask=True):
-        """
-        Remove this element
-        @return:
-        """
-        if ask:
-            ok = yes_no_question('Are you sure that you want to remove this static generator', 'Remove static generator')
-        else:
-            ok = True
-
-        if ok:
-            self.editor.remove_from_scene(self.nexus)
-            self.editor.remove_element(device=self.api_object, graphic_object=self)
-
     def enable_disable_toggle(self):
         """
 
@@ -181,15 +167,15 @@ class StaticGeneratorGraphicItem(InjectionTemplateGraphicItem):
         self.glyph.setPen(QPen(self.color, self.width, self.style))
         self.label.setDefaultTextColor(self.color)
 
-    # def plot(self):
-    #     """
-    #     Plot API objects profiles
-    #     """
-    #     # time series object from the last simulation
-    #     ts = self.editor.circuit.time_profile
-    #
-    #     # plot the profiles
-    #     self.api_object.plot_profiles(time=ts)
+    def plot(self):
+        """
+        Plot API objects profiles
+        """
+        # time series object from the last simulation
+        ts = self.editor.circuit.time_profile
+
+        # plot the profiles
+        self.api_object.plot_profiles(time=ts)
 
     def mousePressEvent(self, QGraphicsSceneMouseEvent):
         """
@@ -197,7 +183,7 @@ class StaticGeneratorGraphicItem(InjectionTemplateGraphicItem):
         :param QGraphicsSceneMouseEvent:
         :return:
         """
-        mdl = ObjectsModel([self.api_object], self.api_object.registered_properties,
-                           parent=self.editor.object_editor_table, editable=True, transposed=True,
-                           dictionary_of_lists={DeviceType.Technology.value: self.editor.circuit.technologies, })
-        self.editor.object_editor_table.setModel(mdl)
+        self.editor.set_editor_model(api_object=self.api_object,
+                                     dictionary_of_lists={
+                                         DeviceType.Technology.value: self.editor.circuit.technologies,
+                                     })

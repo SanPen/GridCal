@@ -1,5 +1,9 @@
 <RCC>
   <qresource prefix="Icons">
+    <file>icons/time_series set.svg</file>
+    <file>icons/time_series span.svg</file>
+    <file>icons/time_series.svg</file>
+    <file>icons/new (delete).svg</file>
     <file>icons/transpose.svg</file>
     <file>icons/schematicadd_to.svg</file>
     <file>icons/bug.svg</file>

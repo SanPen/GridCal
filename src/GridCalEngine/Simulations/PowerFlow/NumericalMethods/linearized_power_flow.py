@@ -28,7 +28,7 @@ linear_solver = get_linear_solver()
 sparse = get_sparse_type()
 
 
-def dcpf(Ybus: sp.csc_matrix, Bpqpv: sp.csc_matrix, Bref: sp.csc_matrix, Btau: sp.csc_matrix,
+def dcpf(Ybus: sp.csc_matrix, Bpqpv: sp.csc_matrix, Bref: sp.csc_matrix, Bf: sp.csc_matrix,
          S0: CxVec, I0: CxVec, Y0: CxVec, V0: CxVec, tau: Vec,
          vd: IntVec, pvpq: IntVec, pq: IntVec, pv: IntVec) -> NumericPowerFlowResults:
     """
@@ -36,7 +36,7 @@ def dcpf(Ybus: sp.csc_matrix, Bpqpv: sp.csc_matrix, Bref: sp.csc_matrix, Btau: s
     :param Ybus: Normal circuit admittance matrix
     :param Bpqpv: Susceptance matrix reduced
     :param Bref: Susceptane matrix sliced for the slack node
-    :param Btau: Susceptance matrix of the Branches to nodes (used to include the phase shifters)
+    :param Bf: Susceptance matrix of the Branches to nodes (used to include the phase shifters)
     :param S0: Complex power Injections at all the nodes
     :param I0: Complex current Injections at all the nodes
     :param Y0: Complex admittance Injections at all the nodes
@@ -63,11 +63,11 @@ def dcpf(Ybus: sp.csc_matrix, Bpqpv: sp.csc_matrix, Bref: sp.csc_matrix, Btau: s
         # compute the power injection
         Sbus = cf.compute_zip_power(S0, I0, Y0, Vm)
 
-        # compose the reduced power Injections
+        # compose the reduced power injections (Pinj)
         # Since we have removed the slack nodes, we must account their influence as Injections Bref * Va_ref
-        # We also need to account for the effect of the phase shifters
-        Pps = Btau @ tau
-        Pinj = Sbus[pvpq].real - (Bref @ Va_ref) * Vm[pvpq] + Pps[pvpq]
+        # We also need to account for the effect of the phase shifters (Pps)
+        Pps = Bf.T @ tau
+        Pinj = Sbus[pvpq].real - (Bref @ Va_ref) * Vm[pvpq] + Pps[pvpq]  # TODO: add G from shunts
 
         # update angles for non-reference buses
         Va[pvpq] = linear_solver(Bpqpv, Pinj)
@@ -107,15 +107,14 @@ def lacpf(Ybus, Ys, S0: CxVec, I0: CxVec, V0: CxVec, pq: IntVec, pv: IntVec) -> 
 
     Linearized AC Load Flow Applied to Analysis in Electric Power Systems
         by: P. Rossoni, W. M da Rosa and E. A. Belati
-    Args:
-        Ybus: Admittance matrix
-        Ys: Admittance matrix of the series elements
-        S0: Power Injections vector of all the nodes
-        V0: Set voltages of all the nodes (used for the slack and PV nodes)
-        pq: list of indices of the pq nodes
-        pv: list of indices of the pv nodes
-
-    Returns: Voltage vector, converged?, error, calculated power and elapsed time
+    :param Ybus: Admittance matrix
+    :param Ys: Admittance matrix of the series elements
+    :param S0: Power Injections vector of all the nodes
+    :param I0: Current Injections vector of all the nodes
+    :param V0: Set voltages of all the nodes (used for the slack and PV nodes)
+    :param pq: list of indices of the pq nodes
+    :param pv: list of indices of the pv nodes
+    :return: NumericPowerFlowResults
     """
 
     start = time.time()

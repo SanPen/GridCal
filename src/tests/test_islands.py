@@ -22,9 +22,9 @@ from GridCalEngine.IO.file_handler import FileOpen
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import ReactivePowerControlMode, SolverType
 from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
-from GridCalEngine.api import compile_numerical_circuit_at, FileOpen, find_islands
-
-
+from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
+from GridCalEngine.Topology.topology import find_islands
+from GridCalEngine.api import FileOpen
 
 
 def test_ieee14_islands():

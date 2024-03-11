@@ -15,7 +15,7 @@ def test_v_control_true():
 
     tr = main_circuit.transformers2w[5]
 
-    tr.control_mode = TransformerControlType.Vt
+    tr.control_mode = TransformerControlType.V
     tr.vset = 1.0
 
     power_flow = PowerFlowDriver(main_circuit, options)

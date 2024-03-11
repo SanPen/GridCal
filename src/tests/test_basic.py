@@ -15,11 +15,11 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.basic_structures import Logger
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.Core.Devices.Substation import Bus
-from GridCalEngine.Core.Devices.Injections.generator import Generator
-from GridCalEngine.Core.Devices.Injections.static_generator import StaticGenerator
-from GridCalEngine.Core.Devices.Branches.transformer import TransformerType, Transformer2W
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Devices.Substation import Bus
+from GridCalEngine.Devices.Injections.generator import Generator
+from GridCalEngine.Devices.Injections.static_generator import StaticGenerator
+from GridCalEngine.Devices.Branches.transformer import TransformerType, Transformer2W
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import ReactivePowerControlMode, SolverType
 from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver

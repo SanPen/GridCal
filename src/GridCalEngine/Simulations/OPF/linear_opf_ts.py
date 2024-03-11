@@ -23,21 +23,20 @@ import numpy as np
 from typing import List, Union, Tuple, Callable
 from scipy.sparse import csc_matrix
 
-import GridCalEngine.enumerations
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.Core.Devices.Aggregation.area import Area
-from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit, compile_numerical_circuit_at
-from GridCalEngine.Core.DataStructures.generator_data import GeneratorData
-from GridCalEngine.Core.DataStructures.battery_data import BatteryData
-from GridCalEngine.Core.DataStructures.load_data import LoadData
-from GridCalEngine.Core.DataStructures.branch_data import BranchData
-from GridCalEngine.Core.DataStructures.hvdc_data import HvdcData
-from GridCalEngine.Core.DataStructures.bus_data import BusData
-from GridCalEngine.Core.DataStructures.fluid_node_data import FluidNodeData
-from GridCalEngine.Core.DataStructures.fluid_path_data import FluidPathData
-from GridCalEngine.Core.DataStructures.fluid_turbine_data import FluidTurbineData
-from GridCalEngine.Core.DataStructures.fluid_pump_data import FluidPumpData
-from GridCalEngine.Core.DataStructures.fluid_p2x_data import FluidP2XData
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Devices.Aggregation.area import Area
+from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit, compile_numerical_circuit_at
+from GridCalEngine.DataStructures.generator_data import GeneratorData
+from GridCalEngine.DataStructures.battery_data import BatteryData
+from GridCalEngine.DataStructures.load_data import LoadData
+from GridCalEngine.DataStructures.branch_data import BranchData
+from GridCalEngine.DataStructures.hvdc_data import HvdcData
+from GridCalEngine.DataStructures.bus_data import BusData
+from GridCalEngine.DataStructures.fluid_node_data import FluidNodeData
+from GridCalEngine.DataStructures.fluid_path_data import FluidPathData
+from GridCalEngine.DataStructures.fluid_turbine_data import FluidTurbineData
+from GridCalEngine.DataStructures.fluid_pump_data import FluidPumpData
+from GridCalEngine.DataStructures.fluid_p2x_data import FluidP2XData
 from GridCalEngine.basic_structures import Logger, Vec, IntVec, DateVec, Mat
 from GridCalEngine.Utils.MIP.selected_interface import LpExp, LpVar, LpModel, lpDot, set_var_bounds, join
 from GridCalEngine.enumerations import TransformerControlType, HvdcControlType, ZonalGrouping, MIPSolvers
@@ -70,7 +69,8 @@ def get_contingency_flow_with_filter(multi_contingency: LinearMultiContingency,
     if len(multi_contingency.bus_indices):
         for i, c in enumerate(multi_contingency.bus_indices):
             if abs(multi_contingency.compensated_ptdf_factors[m, i]) >= threshold:
-                res += multi_contingency.compensated_ptdf_factors[m, i] * multi_contingency.injections_factor[i] * injections[c]
+                res += multi_contingency.compensated_ptdf_factors[m, i] * multi_contingency.injections_factor[i] * \
+                       injections[c]
 
     return res
 
@@ -630,7 +630,8 @@ def add_linear_generation_formulation(t: Union[int, None],
                                       prob: LpModel,
                                       unit_commitment: bool,
                                       ramp_constraints: bool,
-                                      skip_generation_limits: bool):
+                                      skip_generation_limits: bool,
+                                      all_generators_fixed: bool):
     """
     Add MIP generation formulation
     :param t: time step
@@ -642,6 +643,8 @@ def add_linear_generation_formulation(t: Union[int, None],
     :param unit_commitment: formulate unit commitment?
     :param ramp_constraints: formulate ramp constraints?
     :param skip_generation_limits: skip the generation limits?
+    :param all_generators_fixed: All generators take their snapshot or profile values
+                                 instead of resorting to dispatcheable status
     :return objective function
     """
     f_obj = 0.0
@@ -656,7 +659,7 @@ def add_linear_generation_formulation(t: Union[int, None],
             # declare active power var (limits will be applied later)
             gen_vars.p[t, k] = prob.add_var(-1e20, 1e20, join("gen_p_", [t, k], "_"))
 
-            if gen_data_t.dispatchable[k]:
+            if gen_data_t.dispatchable[k] and not all_generators_fixed:
 
                 if unit_commitment:
 
@@ -669,8 +672,8 @@ def add_linear_generation_formulation(t: Union[int, None],
                                                                 join("gen_shutting_down_", [t, k], "_"))
 
                     # operational cost (linear...)
-                    gen_vars.cost[t, k] += gen_data_t.cost_1[k] * gen_vars.p[t, k] + gen_data_t.cost_0[k] * \
-                                           gen_vars.producing[t, k]
+                    gen_vars.cost[t, k] += (gen_data_t.cost_1[k] * gen_vars.p[t, k]
+                                            + gen_data_t.cost_0[k] * gen_vars.producing[t, k])
 
                     # start-up cost
                     gen_vars.cost[t, k] += gen_data_t.startup_cost[k] * gen_vars.starting_up[t, k]
@@ -678,25 +681,21 @@ def add_linear_generation_formulation(t: Union[int, None],
                     # power boundaries of the generator
                     if not skip_generation_limits:
                         prob.add_cst(
-                            cst=gen_vars.p[t, k] >= (
-                                    gen_data_t.availability[k] * gen_data_t.pmin[k] / Sbase * gen_vars.producing[t, k]),
+                            cst=gen_vars.p[t, k] >= (gen_data_t.availability[k] * gen_data_t.pmin[k] /
+                                                     Sbase * gen_vars.producing[t, k]),
                             name=join("gen>=Pmin", [t, k], "_"))
                         prob.add_cst(
-                            cst=gen_vars.p[t, k] <= (
-                                    gen_data_t.availability[k] * gen_data_t.pmax[k] / Sbase * gen_vars.producing[t, k]),
+                            cst=gen_vars.p[t, k] <= (gen_data_t.availability[k] * gen_data_t.pmax[k] /
+                                                     Sbase * gen_vars.producing[t, k]),
                             name=join("gen<=Pmax", [t, k], "_"))
 
                     if t is not None:
                         if t == 0:
-                            prob.add_cst(
-                                cst=gen_vars.starting_up[t, k] - gen_vars.shutting_down[t, k] ==
-                                    gen_vars.producing[t, k] - float(gen_data_t.active[k]),
-                                name=join("binary_alg1_", [t, k], "_")
-                            )
-                            prob.add_cst(
-                                cst=gen_vars.starting_up[t, k] + gen_vars.shutting_down[t, k] <= 1,
-                                name=join("binary_alg2_", [t, k], "_")
-                            )
+                            prob.add_cst(cst=gen_vars.starting_up[t, k] - gen_vars.shutting_down[t, k] ==
+                                             gen_vars.producing[t, k] - float(gen_data_t.active[k]),
+                                         name=join("binary_alg1_", [t, k], "_"))
+                            prob.add_cst(cst=gen_vars.starting_up[t, k] + gen_vars.shutting_down[t, k] <= 1,
+                                         name=join("binary_alg2_", [t, k], "_"))
                         else:
                             prob.add_cst(
                                 cst=(gen_vars.starting_up[t, k] - gen_vars.shutting_down[t, k] ==
@@ -745,9 +744,8 @@ def add_linear_generation_formulation(t: Union[int, None],
 
                     gen_vars.shedding[t, k] = prob.add_var(0, p, join("gen_shedding_", [t, k], "_"))
 
-                    prob.add_cst(
-                        cst=gen_vars.p[t, k] == gen_data_t.p[k] / Sbase - gen_vars.shedding[t, k],
-                        name=join("gen==PG-PGslack", [t, k], "_"))
+                    prob.add_cst(cst=gen_vars.p[t, k] == gen_data_t.p[k] / Sbase - gen_vars.shedding[t, k],
+                                 name=join("gen==PG-PGslack", [t, k], "_"))
 
                     gen_vars.cost[t, k] += gen_data_t.cost_1[k] * gen_vars.shedding[t, k]
 
@@ -755,9 +753,8 @@ def add_linear_generation_formulation(t: Union[int, None],
                     # the negative sign is because P is already negative here, to make it positive
                     gen_vars.shedding[t, k] = prob.add_var(0, -p, join("gen_shedding_", [t, k], "_"))
 
-                    prob.add_cst(
-                        cst=gen_vars.p[t, k] == p + gen_vars.shedding[t, k],
-                        name=join("gen==PG+PGslack", [t, k], "_"))
+                    prob.add_cst(cst=gen_vars.p[t, k] == p + gen_vars.shedding[t, k],
+                                 name=join("gen==PG+PGslack", [t, k], "_"))
 
                     gen_vars.cost[t, k] += gen_data_t.cost_1[k] * gen_vars.shedding[t, k]
 
@@ -1033,7 +1030,7 @@ def add_linear_branches_formulation(t: int,
                 bk = 1.0 / branch_data_t.X[m]
 
             # compute the flow
-            if branch_data_t.control_mode[m] == TransformerControlType.Pt:
+            if branch_data_t.control_mode[m] == TransformerControlType.Pf:
 
                 # add angle
                 branch_vars.tap_angles[t, m] = prob.add_var(lb=branch_data_t.tap_angle_min[m],
@@ -1263,7 +1260,7 @@ def add_linear_node_balance(t_idx: int,
                 name=join("island_bus_", [t_idx, k], "_")
             )
             logger.add_warning("bus isolated",
-                               device=bus_data.names[k]+f'@t={t_idx}')
+                               device=bus_data.names[k] + f'@t={t_idx}')
         else:
             bus_vars.kirchhoff[t_idx, k] = prob.add_cst(
                 cst=bus_vars.Pcalc[t_idx, k] == P_esp[k],
@@ -1441,6 +1438,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
                       consider_contingencies: bool = False,
                       unit_Commitment: bool = False,
                       ramp_constraints: bool = False,
+                      all_generators_fixed: bool = False,
                       lodf_threshold: float = 0.001,
                       maximize_inter_area_flow: bool = False,
                       areas_from: List[Area] = None,
@@ -1460,6 +1458,8 @@ def run_linear_opf_ts(grid: MultiCircuit,
     :param consider_contingencies: Consider the contingencies?
     :param unit_Commitment: Formulate unit commitment?
     :param ramp_constraints: Formulate ramp constraints?
+    :param all_generators_fixed: All generators take their snapshot or profile values
+                                 instead of resorting to dispatcheable status
     :param lodf_threshold:
     :param maximize_inter_area_flow:
     :param areas_from:
@@ -1488,7 +1488,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
     nbr = grid.get_branch_number_wo_hvdc()
     ng = grid.get_generators_number()
     nb = grid.get_batteries_number()
-    nl = grid.get_calculation_loads_number()
+    nl = grid.get_load_like_device_number()
     n_hvdc = grid.get_hvdc_number()
     n_fluid_node = grid.get_fluid_nodes_number()
     n_fluid_path = grid.get_fluid_paths_number()
@@ -1556,7 +1556,8 @@ def run_linear_opf_ts(grid: MultiCircuit,
                                                    prob=lp_model,
                                                    unit_commitment=unit_Commitment,
                                                    ramp_constraints=ramp_constraints,
-                                                   skip_generation_limits=skip_generation_limits)
+                                                   skip_generation_limits=skip_generation_limits,
+                                                   all_generators_fixed=all_generators_fixed)
 
         # formulate batteries --------------------------------------------------------------------------------------
         if local_t_idx == 0 and energy_0 is None:

@@ -50,6 +50,7 @@ class SimulationTypes(Enum):
     InputsAnalysis_run = 'Inputs Analysis'
     OptimalNetTransferCapacityTimeSeries_run = 'Optimal net transfer capacity time series'
     InvestmestsEvaluation_run = 'Investments evaluation'
+    TopologyProcessor_run = 'Topology Processor'
 
     def __str__(self):
         return self.value

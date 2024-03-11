@@ -14,17 +14,18 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from typing import List, Dict, Any
 from warnings import warn
 import numpy as np
 import pandas as pd
 from GridCalEngine.basic_structures import Logger
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-import GridCalEngine.Core.Devices as dev
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
+import GridCalEngine.Devices as dev
 from GridCalEngine.enumerations import DeviceType
-from GridCalEngine.IO.gridcal.pack_unpack import create_data_frames, get_objects_dictionary
+from GridCalEngine.IO.gridcal.pack_unpack import gather_model_as_data_frames, get_objects_dictionary
 
 
-def check_names(names):
+def check_names(names: List[str]) -> None:
     """
     Check that the names are allowed
     :param names:
@@ -35,38 +36,12 @@ def check_names(names):
     for name in names:
         if name not in allowed_data_sheets.keys():
             raise Exception('The file sheet ' + name + ' is not allowed.\n'
-                            'Did you create this file manually? Use GridCal instead.')
+                                                       'Did you create this file manually? Use GridCal instead.')
 
 
-# def get_objects_dictionary(circuit=MultiCircuit()):
-#     """
-#
-#     :param circuit:
-#     :return:
-#     """
-#     object_types = {'bus': [Bus(),
-#                             circuit.get_buses()],
-#                     'branch': [Branch(None, None),
-#                                circuit.get_branches()],
-#                     'load': [Load(),
-#                              circuit.get_loads()],
-#                     'static_generator': [StaticGenerator(),
-#                                          circuit.get_static_generators()],
-#                     'battery': [Battery(),
-#                                 circuit.get_batteries()],
-#                     'generator': [Generator(),
-#                                   circuit.get_generators()],
-#                     'shunt': [Shunt(),
-#                               circuit.get_shunts()]
-#                     }
-#
-#     return object_types
-
-
-def get_allowed_sheets():
+def get_allowed_sheets() -> Dict[str, Any]:
     """
-
-    :param circuit:
+    Get the allowed sheets in the excel file
     :return:
     """
     ########################################################################################################
@@ -108,7 +83,8 @@ def get_allowed_sheets():
 
             if profile_property not in allowed_data_sheets.keys():
                 # create the profile
-                allowed_data_sheets[object_type_name + '_' + profile_property] = object_sample.registered_properties[main_property].tpe
+                allowed_data_sheets[object_type_name + '_' + profile_property] = object_sample.registered_properties[
+                    main_property].tpe
 
         # declare the DataFrames for the normal data
         allowed_data_sheets[object_type_name] = None
@@ -116,7 +92,7 @@ def get_allowed_sheets():
     return allowed_data_sheets
 
 
-def load_from_xls(filename):
+def load_from_xls(filename: str) -> Dict[str, pd.DataFrame]:
     """
     Loads the excel file content to a dictionary for parsing the data
     """
@@ -363,28 +339,28 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
 
                 # create the power profiles
                 val = np.array([complex(v) for v in data['load_Sprof'].values[:, i]])
-                obj.create_profile(magnitude='P', index=idx, arr=val.real)
-                obj.create_profile(magnitude='Q', index=idx, arr=val.imag)
+                obj.set_profile_array(magnitude='P', arr=val.real)
+                obj.set_profile_array(magnitude='Q', arr=val.imag)
 
-                if circuit.time_profile is None or len(circuit.time_profile) < len(idx):
+                if circuit.time_profile is None or circuit.get_time_number() < len(idx):
                     circuit.time_profile = idx
 
             if 'load_Iprof' in data.keys():
                 val = np.array([complex(v) for v in data['load_Iprof'].values[:, i]])
                 idx = data['load_Iprof'].index
-                obj.create_profile(magnitude='Ir', index=idx, arr=val.real)
-                obj.create_profile(magnitude='Ii', index=idx, arr=val.imag)
+                obj.set_profile_array(magnitude='Ir', arr=val.real)
+                obj.set_profile_array(magnitude='Ii', arr=val.imag)
 
-                if circuit.time_profile is None or len(circuit.time_profile) < len(idx):
+                if circuit.time_profile is None or circuit.get_time_number() < len(idx):
                     circuit.time_profile = idx
 
             if 'load_Zprof' in data.keys():
                 val = np.array([complex(v) for v in data['load_Zprof'].values[:, i]])
                 idx = data['load_Zprof'].index
-                obj.create_profile(magnitude='G', index=idx, arr=val.real)
-                obj.create_profile(magnitude='B', index=idx, arr=val.imag)
+                obj.set_profile_array(magnitude='G', arr=val.real)
+                obj.set_profile_array(magnitude='B', arr=val.imag)
 
-                if circuit.time_profile is None or len(circuit.time_profile) < len(idx):
+                if circuit.time_profile is None or circuit.get_time_number() < len(idx):
                     circuit.time_profile = idx
 
             try:
@@ -393,10 +369,9 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
                 raise Exception(str(i) + ': Load bus is not in the buses list.\n' + str(ex))
 
             if obj.name == 'Load':
-                obj.name += str(len(bus.loads) + 1) + '@' + bus.name
+                obj.name += f"{circuit.get_loads_number()} @{bus.name}"
 
-            obj.bus = bus
-            bus.loads.append(obj)
+            circuit.add_load(bus, api_obj=obj)
             obj.ensure_profiles_exist(circuit.time_profile)
     else:
         circuit.logger.add_warning('No loads in the file!')
@@ -415,19 +390,19 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
             if 'CtrlGen_P_profiles' in data.keys():
                 val = data['CtrlGen_P_profiles'].values[:, i]
                 idx = data['CtrlGen_P_profiles'].index
-                obj.create_profile(magnitude='P', index=idx, arr=val)
+                obj.set_profile_array(magnitude='P', arr=val)
                 # also create the Pf array because there might not be values in the file
-                obj.create_profile(magnitude='Pf', index=idx)
+                # obj.set_profile_array(magnitude='Pf', index=idx)
 
             if 'CtrlGen_Pf_profiles' in data.keys():
                 val = data['CtrlGen_Pf_profiles'].values[:, i]
                 idx = data['CtrlGen_Pf_profiles'].index
-                obj.create_profile(magnitude='Pf', index=idx, arr=val)
+                obj.set_profile_array(magnitude='Pf', arr=val)
 
             if 'CtrlGen_Vset_profiles' in data.keys():
                 val = data['CtrlGen_Vset_profiles'].values[:, i]
                 idx = data['CtrlGen_Vset_profiles'].index
-                obj.create_profile(magnitude='Vset', index=idx, arr=val)
+                obj.set_profile_array(magnitude='Vset', arr=val)
 
             try:
                 bus = bus_dict[str(bus_from[i])]
@@ -435,10 +410,10 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
                 raise Exception(str(i) + ': Controlled generator bus is not in the buses list.\n' + str(ex))
 
             if obj.name == 'gen':
-                obj.name += str(len(bus.generators) + 1) + '@' + bus.name
+                obj.name += str(circuit.get_generators_number() + 1) + '@' + bus.name
 
             obj.bus = bus
-            bus.generators.append(obj)
+            circuit.add_generator(bus=bus, api_obj=obj)
             obj.ensure_profiles_exist(circuit.time_profile)
     else:
         circuit.logger.add_warning('No controlled generator in the file!')
@@ -457,18 +432,18 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
             if 'battery_P_profiles' in data.keys():
                 val = data['battery_P_profiles'].values[:, i]
                 idx = data['battery_P_profiles'].index
-                obj.create_profile(magnitude='P', index=idx, arr=val)
-                obj.create_profile(magnitude='Pf', index=idx)
+                obj.set_profile_array(magnitude='P', arr=val)
+                # obj.set_profile_array(magnitude='Pf', index=idx)
 
             if 'battery_Pf_profiles' in data.keys():
                 val = data['battery_Pf_profiles'].values[:, i]
                 idx = data['battery_Pf_profiles'].index
-                obj.create_profile(magnitude='Pf', index=idx, arr=val)
+                obj.set_profile_array(magnitude='Pf', arr=val)
 
             if 'battery_Vset_profiles' in data.keys():
                 val = data['battery_Vset_profiles'].values[:, i]
                 idx = data['battery_Vset_profiles'].index
-                obj.create_profile(magnitude='Vset', index=idx, arr=val)
+                obj.set_profile_array(magnitude='Vset', arr=val)
 
             try:
                 bus = bus_dict[str(bus_from[i])]
@@ -476,10 +451,9 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
                 raise Exception(str(i) + ': Battery bus is not in the buses list.\n' + str(ex))
 
             if obj.name == 'batt':
-                obj.name += str(len(bus.batteries) + 1) + '@' + bus.name
+                obj.name += str(circuit.get_batteries_number() + 1) + '@' + bus.name
 
-            obj.bus = bus
-            bus.batteries.append(obj)
+            circuit.add_battery(bus=bus, api_obj=obj)
             obj.ensure_profiles_exist(circuit.time_profile)
     else:
         circuit.logger.add_warning('No battery in the file!')
@@ -498,18 +472,18 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
             if 'static_generator_Sprof' in data.keys():
                 val = data['static_generator_Sprof'].values[:, i]
                 idx = data['static_generator_Sprof'].index
-                obj.create_profile(magnitude='P', index=idx, arr=val.real)
-                obj.create_profile(magnitude='Q', index=idx, arr=val.imag)
+                obj.set_profile_array(magnitude='P', arr=val.real)
+                obj.set_profile_array(magnitude='Q', arr=val.imag)
 
             if 'static_generator_P_prof' in data.keys():
                 val = data['static_generator_P_prof'].values[:, i]
                 idx = data['static_generator_P_prof'].index
-                obj.create_profile(magnitude='P', index=idx, arr=val)
+                obj.set_profile_array(magnitude='P', arr=val)
 
             if 'static_generator_Q_prof' in data.keys():
                 val = data['static_generator_Q_prof'].values[:, i]
                 idx = data['static_generator_Q_prof'].index
-                obj.create_profile(magnitude='Q', index=idx, arr=val)
+                obj.set_profile_array(magnitude='Q', arr=val)
 
             try:
                 bus = bus_dict[str(bus_from[i])]
@@ -517,10 +491,10 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
                 raise Exception(str(i) + ': Static generator bus is not in the buses list.\n' + str(ex))
 
             if obj.name == 'StaticGen':
-                obj.name += str(len(bus.static_generators) + 1) + '@' + bus.name
+                obj.name += str(circuit.get_static_generators_number() + 1) + '@' + bus.name
 
             obj.bus = bus
-            bus.static_generators.append(obj)
+            circuit.add_static_generator(bus=bus, api_obj=obj)
             obj.ensure_profiles_exist(circuit.time_profile)
     else:
         circuit.logger.add_warning('No static generator in the file!')
@@ -539,18 +513,18 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
             if 'shunt_Y_profiles' in data.keys():
                 val = data['shunt_Y_profiles'].values[:, i]
                 idx = data['shunt_Y_profiles'].index
-                obj.create_profile(magnitude='G', index=idx, arr=val.real)
-                obj.create_profile(magnitude='B', index=idx, arr=val.imag)
+                obj.set_profile_array(magnitude='G', arr=val.real)
+                obj.set_profile_array(magnitude='B', arr=val.imag)
             try:
                 bus = bus_dict[str(bus_from[i])]
             except KeyError as ex:
                 raise Exception(str(i) + ': Shunt bus is not in the buses list.\n' + str(ex))
 
             if obj.name == 'shunt':
-                obj.name += str(len(bus.shunts) + 1) + '@' + bus.name
+                obj.name += str(circuit.get_shunts_number() + 1) + '@' + bus.name
 
             obj.bus = bus
-            bus.shunts.append(obj)
+            circuit.add_shunt(bus=bus, api_obj=obj)
             obj.ensure_profiles_exist(circuit.time_profile)
     else:
         circuit.logger.add_warning('No shunt in the file!')
@@ -582,7 +556,7 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
                 for i in range(vals.shape[0]):
                     wire = dev.Wire()
                     set_object_attributes(wire, tower.get_wire_properties(), vals[i, len(tower.registered_properties):])
-                    tower.wires_in_tower.append(wire)
+                    tower.add_wire(wire)
 
                 circuit.add_overhead_line(tower)
                 branch_types[str(tower)] = tower
@@ -800,10 +774,10 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
                 raise Exception(str(i) + ': Load bus is not in the buses list.\n' + str(ex))
 
             if obj.name == 'Load':
-                obj.name += str(len(bus.loads) + 1) + '@' + bus.name
+                obj.name += f"{circuit.get_loads_number()} @{bus.name}"
 
             obj.bus = bus
-            bus.loads.append(obj)
+            circuit.add_load(bus=bus, api_obj=obj)
             obj.ensure_profiles_exist(circuit.time_profile)
     else:
         circuit.logger.add_warning('No loads in the file!')
@@ -822,9 +796,9 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
             if 'generator_P_prof' in data.keys():
                 val = data['generator_P_prof'].values[:, i]
                 idx = data['generator_P_prof'].index
-                obj.create_profile(magnitude='P', index=idx, arr=val)
+                obj.set_profile_array(magnitude='P', arr=val)
                 # also create the Pf array because there might not be values in the file
-                obj.create_profile(magnitude='Pf', index=idx, arr=None)
+                # obj.set_profile_array(magnitude='Pf', arr=None)
 
                 if circuit.time_profile is None or len(circuit.time_profile) < len(idx):
                     circuit.time_profile = idx
@@ -832,22 +806,22 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
             if 'generator_Pf_prof' in data.keys():
                 val = data['generator_Pf_prof'].values[:, i]
                 idx = data['generator_Pf_prof'].index
-                obj.create_profile(magnitude='Pf', index=idx, arr=val)
+                obj.set_profile_array(magnitude='Pf', arr=val)
 
             if 'generator_Vset_prof' in data.keys():
                 val = data['generator_Vset_prof'].values[:, i]
                 idx = data['generator_Vset_prof'].index
-                obj.create_profile(magnitude='Vset', index=idx, arr=val)
+                obj.set_profile_array(magnitude='Vset', arr=val)
 
             if 'generator_active_prof' in data.keys():
                 val = data['generator_active_prof'].values[:, i]
                 idx = data['generator_active_prof'].index
-                obj.create_profile(magnitude='active', index=idx, arr=val)
+                obj.set_profile_array(magnitude='active', arr=val)
 
             if 'generator_Cost_prof' in data.keys():
                 val = data['generator_Cost_prof'].values[:, i]
                 idx = data['generator_Cost_prof'].index
-                obj.create_profile(magnitude='Cost', index=idx, arr=val)
+                obj.set_profile_array(magnitude='Cost', arr=val)
 
             try:
                 bus = bus_dict[str(bus_from[i])]
@@ -855,10 +829,10 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
                 raise Exception(str(i) + ': Controlled generator bus is not in the buses list.\n' + str(ex))
 
             if obj.name == 'gen':
-                obj.name += str(len(bus.generators) + 1) + '@' + bus.name
+                obj.name += str(circuit.get_generators_number() + 1) + '@' + bus.name
 
             obj.bus = bus
-            bus.generators.append(obj)
+            circuit.add_generator(bus=bus, api_obj=obj)
             obj.ensure_profiles_exist(circuit.time_profile)
     else:
         circuit.logger.add_warning('No controlled generator in the file!')
@@ -877,24 +851,24 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
             if 'battery_P_prof' in data.keys():
                 val = data['battery_P_prof'].values[:, i]
                 idx = data['battery_P_prof'].index
-                obj.create_profile(magnitude='P', index=idx, arr=val)
+                obj.set_profile_array(magnitude='P', arr=val)
                 # also create the Pf array because there might not be values in the file
-                obj.create_profile(magnitude='Pf', index=idx, arr=None)
+                # obj.set_profile_array(magnitude='Pf', index=idx, arr=None)
 
             if 'battery_Vset_prof' in data.keys():
                 val = data['battery_Vset_prof'].values[:, i]
                 idx = data['battery_Vset_prof'].index
-                obj.create_profile(magnitude='Vset', index=idx, arr=val)
+                obj.set_profile_array(magnitude='Vset', arr=val)
 
             if 'battery_active_prof' in data.keys():
                 val = data['battery_active_prof'].values[:, i]
                 idx = data['battery_active_prof'].index
-                obj.create_profile(magnitude='active', index=idx, arr=val)
+                obj.set_profile_array(magnitude='active', arr=val)
 
             if 'battery_Cost_prof' in data.keys():
                 val = data['battery_Cost_prof'].values[:, i]
                 idx = data['battery_Cost_prof'].index
-                obj.create_profile(magnitude='Cost', index=idx, arr=val)
+                obj.set_profile_array(magnitude='Cost', arr=val)
 
             try:
                 bus = bus_dict[str(bus_from[i])]
@@ -902,10 +876,10 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
                 raise Exception(str(i) + ': Battery bus is not in the buses list.\n' + str(ex))
 
             if obj.name == 'batt':
-                obj.name += str(len(bus.batteries) + 1) + '@' + bus.name
+                obj.name += str(circuit.get_batteries_number() + 1) + '@' + bus.name
 
             obj.bus = bus
-            bus.batteries.append(obj)
+            circuit.add_battery(bus=bus, api_obj=obj)
             obj.ensure_profiles_exist(circuit.time_profile)
     else:
         circuit.logger.add_warning('No battery in the file!')
@@ -924,28 +898,28 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
             if 'static_generator_Sprof' in data.keys():
                 val = data['static_generator_Sprof'].values[:, i]
                 idx = data['static_generator_Sprof'].index
-                obj.create_profile(magnitude='P', index=idx, arr=val.real)
-                obj.create_profile(magnitude='Q', index=idx, arr=val.imag)
+                obj.set_profile_array(magnitude='P', arr=val.real)
+                obj.set_profile_array(magnitude='Q', arr=val.imag)
 
             if 'static_generator_P_prof' in data.keys():
                 val = data['static_generator_P_prof'].values[:, i]
                 idx = data['static_generator_P_prof'].index
-                obj.create_profile(magnitude='P', index=idx, arr=val)
+                obj.set_profile_array(magnitude='P', arr=val)
 
             if 'static_generator_Q_prof' in data.keys():
                 val = data['static_generator_Q_prof'].values[:, i]
                 idx = data['static_generator_Q_prof'].index
-                obj.create_profile(magnitude='Q', index=idx, arr=val)
+                obj.set_profile_array(magnitude='Q', arr=val)
 
             if 'static_generator_active_prof' in data.keys():
                 val = data['static_generator_active_prof'].values[:, i]
                 idx = data['static_generator_active_prof'].index
-                obj.create_profile(magnitude='active', index=idx, arr=val)
+                obj.set_profile_array(magnitude='active', arr=val)
 
             if 'static_generator_Cost_prof' in data.keys():
                 val = data['static_generator_Cost_prof'].values[:, i]
                 idx = data['static_generator_Cost_prof'].index
-                obj.create_profile(magnitude='Cost', index=idx, arr=val)
+                obj.set_profile_array(magnitude='Cost', arr=val)
 
             try:
                 bus = bus_dict[str(bus_from[i])]
@@ -953,10 +927,10 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
                 raise Exception(str(i) + ': Static generator bus is not in the buses list.\n' + str(ex))
 
             if obj.name == 'StaticGen':
-                obj.name += str(len(bus.static_generators) + 1) + '@' + bus.name
+                obj.name += str(circuit.get_static_generators_number() + 1) + '@' + bus.name
 
             obj.bus = bus
-            bus.static_generators.append(obj)
+            circuit.add_static_generator(bus=bus, api_obj=obj)
             obj.ensure_profiles_exist(circuit.time_profile)
     else:
         circuit.logger.add_warning('No static generator in the file!')
@@ -975,28 +949,28 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
             if 'shunt_Y_profiles' in data.keys():
                 val = data['shunt_Y_profiles'].values[:, i]
                 idx = data['shunt_Y_profiles'].index
-                obj.create_profile(magnitude='G', index=idx, arr=val.real)
-                obj.create_profile(magnitude='B', index=idx, arr=val.imag)
+                obj.set_profile_array(magnitude='G', arr=val.real)
+                obj.set_profile_array(magnitude='B', arr=val.imag)
 
             if 'shunt_G_prof' in data.keys():
                 val = data['shunt_G_prof'].values[:, i]
                 idx = data['shunt_G_prof'].index
-                obj.create_profile(magnitude='G', index=idx, arr=val)
+                obj.set_profile_array(magnitude='G', arr=val)
 
             if 'shunt_B_prof' in data.keys():
                 val = data['shunt_B_prof'].values[:, i]
                 idx = data['shunt_B_prof'].index
-                obj.create_profile(magnitude='B', index=idx, arr=val)
+                obj.set_profile_array(magnitude='B', arr=val)
 
             if 'shunt_active_prof' in data.keys():
                 val = data['shunt_active_prof'].values[:, i]
                 idx = data['shunt_active_prof'].index
-                obj.create_profile(magnitude='active', index=idx, arr=val)
+                obj.set_profile_array(magnitude='active', arr=val)
 
             if 'shunt_Cost_prof' in data.keys():
                 val = data['shunt_Cost_prof'].values[:, i]
                 idx = data['shunt_Cost_prof'].index
-                obj.create_profile(magnitude='Cost', index=idx, arr=val)
+                obj.set_profile_array(magnitude='Cost', arr=val)
 
             try:
                 bus = bus_dict[str(bus_from[i])]
@@ -1004,10 +978,10 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
                 raise Exception(str(i) + ': Shunt bus is not in the buses list.\n' + str(ex))
 
             if obj.name == 'shunt':
-                obj.name += str(len(bus.shunts) + 1) + '@' + bus.name
+                obj.name += str(circuit.get_shunts_number() + 1) + '@' + bus.name
 
             obj.bus = bus
-            bus.shunts.append(obj)
+            circuit.add_shunt(bus=bus, api_obj=obj)
             obj.ensure_profiles_exist(circuit.time_profile)
     else:
         circuit.logger.add_warning('No shunt in the file!')
@@ -1041,7 +1015,6 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
                 # add the wires
                 if len(wire_prop) == 7:
                     for i in range(vals.shape[0]):
-
                         # ['wire_name' 'xpos' 'ypos' 'phase' 'r' 'x' 'gmr']
                         name = dft['wire_name'].values[i]
                         gmr = dft['gmr'].values[i]
@@ -1053,7 +1026,7 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
 
                         wire = dev.Wire(name=name, gmr=gmr, r=r, x=x)
                         w = dev.WireInTower(wire=wire, xpos=xpos, ypos=ypos, phase=phase)
-                        obj.wires_in_tower.append(w)
+                        obj.add_wire(w)
 
                 circuit.add_overhead_line(obj)
                 branch_types[str(obj)] = obj
@@ -1131,17 +1104,17 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
             if 'branch_active_prof' in data.keys():
                 val = data['branch_active_prof'].values[:, i]
                 idx = data['branch_active_prof'].index
-                obj.create_profile(magnitude='active', index=idx, arr=val)
+                obj.set_profile_array(magnitude='active', arr=val)
 
             if 'branch_Cost_prof' in data.keys():
                 val = data['branch_Cost_prof'].values[:, i]
                 idx = data['branch_Cost_prof'].index
-                obj.create_profile(magnitude='Cost', index=idx, arr=val)
+                obj.set_profile_array(magnitude='Cost', arr=val)
 
             if 'branch_temp_oper_prof' in data.keys():
                 val = data['branch_temp_oper_prof'].values[:, i]
                 idx = data['branch_temp_oper_prof'].index
-                obj.create_profile(magnitude='temp_oper', index=idx, arr=val)
+                obj.set_profile_array(magnitude='temp_oper', arr=val)
 
             # correct the branch template object
             template_name = str(obj.template)
@@ -1165,7 +1138,7 @@ def save_excel(circuit: MultiCircuit, file_path):
     """
     logger = Logger()
 
-    dfs = create_data_frames(circuit=circuit)
+    dfs = gather_model_as_data_frames(circuit=circuit)
 
     # flush-save ###################################################################################################
     with pd.ExcelWriter(file_path) as writer:

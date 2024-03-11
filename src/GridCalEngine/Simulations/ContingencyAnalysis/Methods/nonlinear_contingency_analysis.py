@@ -17,8 +17,8 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 import numpy as np
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_results import ContingencyAnalysisResults
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions, SolverType
@@ -52,6 +52,8 @@ def nonlinear_contingency_analysis(grid: MultiCircuit,
 
     else:
         pf_opts = options.pf_options
+
+    area_names, bus_area_indices, F, T, hvdc_F, hvdc_T = grid.get_branch_areas_info()
 
     # declare the results
     results = ContingencyAnalysisResults(ncon=len(grid.contingency_groups),
@@ -90,6 +92,8 @@ def nonlinear_contingency_analysis(grid: MultiCircuit,
     else:
         PTDF = None
 
+    available_power = numerical_circuit.generator_data.get_injections_per_bus().real
+
     # for each contingency group
     for ic, contingency_group in enumerate(grid.contingency_groups):
 
@@ -126,10 +130,19 @@ def nonlinear_contingency_analysis(grid: MultiCircuit,
                                contingency_idx=ic,
                                contingency_group=contingency_group,
                                using_srap=options.use_srap,
-                               srap_max_loading=options.srap_max_loading,
+                               srap_ratings=numerical_circuit.branch_data.protection_rates,
                                srap_max_power=options.srap_max_power,
+                               srap_deadband=options.srap_deadband,
+                               contingency_deadband=options.contingency_deadband,
                                multi_contingency=multi_contingency,
-                               PTDF=PTDF)
+                               PTDF=PTDF,
+                               available_power=available_power,
+                               srap_used_power=results.srap_used_power,
+                               F=F,
+                               T=T,
+                               bus_area_indices=bus_area_indices,
+                               area_names=area_names,
+                               top_n=options.srap_top_n)
 
         # set the status
         numerical_circuit.set_contingency_status(contingencies, revert=True)

@@ -22,10 +22,10 @@ from typing import Union, List, Tuple
 from scipy.sparse.linalg import spsolve
 
 from GridCalEngine.basic_structures import Logger, Vec, IntVec, CxVec, Mat, ObjVec, CxMat
-from GridCalEngine.Core.DataStructures.numerical_circuit import NumericalCircuit
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.Core.Devices.Aggregation.contingency_group import ContingencyGroup
-from GridCalEngine.Core.Devices.Aggregation.contingency import Contingency
+from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Devices.Aggregation.contingency_group import ContingencyGroup
+from GridCalEngine.Devices.Aggregation.contingency import Contingency
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.derivatives import dSf_dV_csc
 from GridCalEngine.Utils.Sparse.csc import dense_to_csc
@@ -142,12 +142,11 @@ def make_acptdf(Ybus: sp.csc_matrix,
 
 def make_ptdf(Bpqpv: sp.csc_matrix,
               Bf: sp.csc_matrix,
-              Btheta: Vec,
               pqpv: IntVec,
               distribute_slack: bool = True) -> Mat:
     """
     Build the PTDF matrix
-    :param Bbus: DC-linear susceptance matrix
+    :param Bpqpv: DC-linear susceptance matrix already sliced
     :param Bf: Bus-branch "from" susceptance matrix
     :param pqpv: array of sorted pq and pv node indices
     :param distribute_slack: distribute the slack?
@@ -408,10 +407,9 @@ class LinearMultiContingency:
             flow += self.mlodf_factors @ base_flow[self.branch_indices]
 
         if len(self.bus_indices):
-            injection_delta = self.injections_factor * injections[self.bus_indices]
+            injection_delta = injections[self.bus_indices]
 
             # (MLODF[k, βδ] x PTDF[βδ, i] + PTDF[k, i]) x ΔP[i]
-            # flow += self.compensated_ptdf_factors @ (injection_delta - Btau @ tau)
             flow += self.compensated_ptdf_factors @ injection_delta
 
         return flow
@@ -587,40 +585,69 @@ class LinearMultiContingencies:
 
             if len(contingency_indices.branch_contingency_indices) > 1:
 
+                # Flow =
+                #   Pf0[k]
+                # + MLODF[k, bd] * Pf0[bd]
+                # + MLODF[k, bd] * PTDF[bd, i] * dP[i]
+                # + PTDF[k, i] * dPi
+
                 # Compute M matrix [n, n] (lodf relating the outaged lines to each other)
-                M = create_M_numba(lodf=lodf, branch_contingency_indices=contingency_indices.branch_contingency_indices)
+                M = create_M_numba(lodf=lodf,
+                                   branch_contingency_indices=contingency_indices.branch_contingency_indices)
                 L = lodf[:, contingency_indices.branch_contingency_indices]
 
                 # Compute LODF for the multiple failure MLODF[k, βδ]
-                mlodf_factors = dense_to_csc(mat=L @ np.linalg.inv(M),
+                MLODF = L @ np.linalg.inv(M)
+
+                # MLODF filtered
+                mlodf_factors = dense_to_csc(mat=MLODF,
                                              threshold=lodf_threshold)
 
+                if len(contingency_indices.bus_contingency_indices) > 0:
+                    # this is PTDF[k, i]
+                    ptdf_k_i = dense_to_csc(mat=ptdf[:, contingency_indices.bus_contingency_indices],
+                                            threshold=ptdf_threshold)
+                    # PTDF[βδ, i]
+                    ptdf_bd_i = dense_to_csc(
+                        mat=ptdf[
+                            contingency_indices.branch_contingency_indices, contingency_indices.bus_contingency_indices],
+                        threshold=ptdf_threshold
+                    )
+
+                else:
+                    ptdf_k_i = sp.csc_matrix((ptdf.shape[0], ptdf.shape[1]))
+
+                    # PTDF[βδ, i]
+                    ptdf_bd_i = dense_to_csc(mat=ptdf[contingency_indices.branch_contingency_indices, :],
+                                             threshold=ptdf_threshold)
+
+                # must compute: MLODF[k, βδ] x PTDF[βδ, i] + PTDF[k, i]
+                compensated_ptdf_factors = mlodf_factors @ ptdf_bd_i + ptdf_k_i
+
             elif len(contingency_indices.branch_contingency_indices) == 1:
+
+                # Pf0[k]
+                # + LODF[k, c] * Pf0[c]
+                # + LODF[k, c] * PTDF[c, i] * dPi
+                # + PTDF[k, i] * dPi
+
                 # append values
                 mlodf_factors = dense_to_csc(mat=lodf[:, contingency_indices.branch_contingency_indices],
                                              threshold=lodf_threshold)
 
+                # this is PTDF[k, i]
+                ptdf_k_i = dense_to_csc(mat=ptdf, threshold=ptdf_threshold)
+
+                # PTDF[βδ, i]
+                ptdf_bd_i = dense_to_csc(mat=ptdf[contingency_indices.branch_contingency_indices, :],
+                                         threshold=ptdf_threshold)
+
+                # must compute: MLODF[k, βδ] x PTDF[βδ, i] + PTDF[k, i]
+                compensated_ptdf_factors = mlodf_factors @ ptdf_bd_i + ptdf_k_i
+
             else:
                 mlodf_factors = sp.csc_matrix(([], [], [0]), shape=(lodf.shape[0], 0))
-
-            if len(contingency_indices.bus_contingency_indices):
-
-                # this is PTDF[k, i]
-                ptdf_k_i = dense_to_csc(mat=ptdf[:, contingency_indices.bus_contingency_indices],
-                                        threshold=ptdf_threshold)
-
-                if len(contingency_indices.branch_contingency_indices):
-                    # this is PTDF[βδ, i]
-                    ptdf_bd_i = dense_to_csc(mat=ptdf[
-                        contingency_indices.branch_contingency_indices, contingency_indices.bus_contingency_indices],
-                                             threshold=ptdf_threshold)
-
-                    # must compute             MLODF[k, βδ] x PTDF[βδ, i] + PTDF[k, i]
-                    compensated_ptdf_factors = mlodf_factors @ ptdf_bd_i + ptdf_k_i
-                else:
-                    compensated_ptdf_factors = ptdf_k_i  #TODO Comprobar con Jesús
-            else:
-                compensated_ptdf_factors = sp.csc_matrix(([], [], [0]), shape=(lodf.shape[0], 0))
+                compensated_ptdf_factors = ptdf[:, contingency_indices.bus_contingency_indices]
 
             # append values
             self.multi_contingencies.append(
@@ -683,7 +710,6 @@ class LinearAnalysis:
                         # compute the PTDF of the island
                         ptdf_island = make_ptdf(Bpqpv=island.Bpqpv,
                                                 Bf=island.Bf,
-                                                Btheta=island.Btau,
                                                 pqpv=island.pqpv,
                                                 distribute_slack=self.distributed_slack)
 
@@ -711,7 +737,6 @@ class LinearAnalysis:
             # there is only 1 island, compute the PTDF
             self.PTDF = make_ptdf(Bpqpv=islands[0].Bpqpv,
                                   Bf=islands[0].Bf,
-                                  Btheta=islands[0].Btau,
                                   pqpv=islands[0].pqpv,
                                   distribute_slack=self.distributed_slack)
 

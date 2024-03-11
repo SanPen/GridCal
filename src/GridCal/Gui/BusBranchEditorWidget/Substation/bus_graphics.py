@@ -16,25 +16,30 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 import numpy as np
-from typing import Union, TYPE_CHECKING
+from typing import Union, TYPE_CHECKING, List, Dict
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, QPoint, QRectF, QRect
 from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor
 from PySide6.QtWidgets import QMenu, QGraphicsSceneMouseEvent
-from GridCalEngine.Core.Devices.Substation import Bus
+from GridCalEngine.Devices.Substation import Bus
 from GridCal.Gui.BusBranchEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, FONT_SCALE, EMERGENCY
-from GridCal.Gui.GuiFunctions import ObjectsModel
-from GridCalEngine.Simulations.Topology.topology_driver import reduce_buses
+from GridCalEngine.Simulations.Topology.topology_reduction_driver import reduce_buses
 from GridCal.Gui.BusBranchEditorWidget.terminal_item import TerminalItem, HandleItem
-from GridCal.Gui.BusBranchEditorWidget.Injections.load_graphics import LoadGraphicItem
-from GridCal.Gui.BusBranchEditorWidget.Injections.generator_graphics import GeneratorGraphicItem
-from GridCal.Gui.BusBranchEditorWidget.Injections.static_generator_graphics import StaticGeneratorGraphicItem
-from GridCal.Gui.BusBranchEditorWidget.Injections.battery_graphics import BatteryGraphicItem
-from GridCal.Gui.BusBranchEditorWidget.Injections.shunt_graphics import ShuntGraphicItem
-from GridCal.Gui.BusBranchEditorWidget.Injections.external_grid_graphics import ExternalGridGraphicItem
+from GridCal.Gui.BusBranchEditorWidget.Injections.load_graphics import LoadGraphicItem, Load
+from GridCal.Gui.BusBranchEditorWidget.Injections.generator_graphics import GeneratorGraphicItem, Generator
+from GridCal.Gui.BusBranchEditorWidget.Injections.static_generator_graphics import (StaticGeneratorGraphicItem,
+                                                                                    StaticGenerator)
+from GridCal.Gui.BusBranchEditorWidget.Injections.battery_graphics import (BatteryGraphicItem, Battery)
+from GridCal.Gui.BusBranchEditorWidget.Injections.shunt_graphics import (ShuntGraphicItem, Shunt)
+from GridCal.Gui.BusBranchEditorWidget.Injections.external_grid_graphics import (ExternalGridGraphicItem, ExternalGrid)
+from GridCal.Gui.BusBranchEditorWidget.Injections.current_injection_graphics import (CurrentInjectionGraphicItem,
+                                                                                     CurrentInjection)
+from GridCal.Gui.BusBranchEditorWidget.Injections.controllable_shunt_graphics import (ControllableShuntGraphicItem,
+                                                                                      ControllableShunt)
 from GridCal.Gui.messages import yes_no_question
 from GridCalEngine.enumerations import DeviceType, FaultType
-from GridCalEngine.Core.Devices.editable_device import EditableDevice
+# from GridCalEngine.Devices.Parents.editable_device import EditableDevice
+from GridCalEngine.Devices.types import INJECTION_DEVICE_TYPES
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
@@ -170,7 +175,6 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
             event: QGraphicsSceneMouseEvent inherited
         """
         super().mouseMoveEvent(event)
-
         self.editor.update_diagram_element(device=self.api_object,
                                            x=self.pos().x(),
                                            y=self.pos().y(),
@@ -179,20 +183,21 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
                                            r=self.rotation(),
                                            graphic_object=self)
 
-    def add_big_marker(self, color=Qt.red, tool_tip_text=""):
+    def add_big_marker(self, color: Union[None, QColor] = Qt.red, tool_tip_text: str = ""):
         """
         Add a big marker to the bus
         :param color: Qt Color ot the marker
         :param tool_tip_text: tool tip text to display
-        :return:
         """
-        if self.big_marker is None:
-            self.big_marker = QtWidgets.QGraphicsEllipseItem(0, 0, 180, 180, parent=self)
+        if color is not None:
+            if self.big_marker is None:
+                self.big_marker = QtWidgets.QGraphicsEllipseItem(0, 0, 180, 180, parent=self)
+
             self.big_marker.setBrush(color)
             self.big_marker.setOpacity(0.5)
             self.big_marker.setToolTip(tool_tip_text)
 
-    def delete_big_marker(self):
+    def delete_big_marker(self) -> None:
         """
         Delete the big marker
         """
@@ -200,7 +205,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
             self.editor.remove_from_scene(self.big_marker)
             self.big_marker = None
 
-    def set_position(self, x, y):
+    def set_position(self, x: int, y: int) -> None:
         """
         Set the bus x, y position
         :param x: x in pixels
@@ -212,7 +217,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
             y = 0
         self.setPos(QPoint(int(x), int(y)))
 
-    def set_tile_color(self, brush):
+    def set_tile_color(self, brush: QBrush) -> None:
         """
         Set the color of the title
         Args:
@@ -221,8 +226,11 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         self.tile.setBrush(brush)
         self.terminal.setBrush(brush)
 
-    def merge(self, other_bus_graphic):
-
+    def merge(self, other_bus_graphic: "BusGraphicItem") -> None:
+        """
+        Merge another BusGraphicItem into this
+        :param other_bus_graphic: BusGraphicItem
+        """
         self.shunt_children += other_bus_graphic.shunt_children
 
     def update(self, rect: Union[QRectF, QRect] = ...):
@@ -232,17 +240,21 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         """
         self.change_size(self.w, self.h)
 
-    def set_height(self, h):
-
+    def set_height(self, h: int):
+        """
+        Set the height of the
+        :param h:
+        :return:
+        """
         self.setRect(0.0, 0.0, self.w, h)
         self.h = h
 
     def change_size(self, w: int, h: Union[None, int] = None):
         """
         Resize block function
-        @param w:
-        @param h:
-        @return:
+        :param w:
+        :param h:
+        :return:
         """
         # Limit the block size to the minimum size:
         if h is None:
@@ -285,7 +297,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
 
         return w, h
 
-    def arrange_children(self):
+    def arrange_children(self) -> None:
         """
         This function sorts the load and generators icons
         Returns:
@@ -302,30 +314,53 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         # Arrange line positions
         self.terminal.process_callbacks(self.pos() + self.terminal.pos())
 
-    def create_children_widgets(self):
+    def create_children_widgets(self, injections_by_tpe: Dict[DeviceType, List[INJECTION_DEVICE_TYPES]]):
         """
         Create the icons of the elements that are attached to the API bus object
         Returns:
             Nothing
         """
-        for elm in self.api_object.loads:
-            self.add_load(elm)
 
-        for elm in self.api_object.static_generators:
-            self.add_static_generator(elm)
+        for tpe, dev_list in injections_by_tpe.items():
 
-        for elm in self.api_object.generators:
-            self.add_generator(elm)
+            if tpe == DeviceType.LoadDevice:
+                for elm in dev_list:
+                    self.add_load(elm)
 
-        for elm in self.api_object.shunts:
-            self.add_shunt(elm)
+            elif tpe == DeviceType.StaticGeneratorDevice:
+                for elm in dev_list:
+                    self.add_static_generator(elm)
 
-        for elm in self.api_object.batteries:
-            self.add_battery(elm)
+            elif tpe == DeviceType.GeneratorDevice:
+                for elm in dev_list:
+                    self.add_generator(elm)
+
+            elif tpe == DeviceType.ShuntDevice:
+                for elm in dev_list:
+                    self.add_shunt(elm)
+
+            elif tpe == DeviceType.BatteryDevice:
+                for elm in dev_list:
+                    self.add_battery(elm)
+
+            elif tpe == DeviceType.ExternalGridDevice:
+                for elm in dev_list:
+                    self.add_external_grid(elm)
+
+            elif tpe == DeviceType.CurrentInjectionDevice:
+                for elm in dev_list:
+                    self.add_current_injection(elm)
+
+            elif tpe == DeviceType.ControllableShuntDevice:
+                for elm in dev_list:
+                    self.add_controllable_shunt(elm)
+
+            else:
+                raise Exception("Unknown device type:" + str(tpe))
 
         self.arrange_children()
 
-    def contextMenuEvent(self, event):
+    def contextMenuEvent(self, event: QtWidgets.QGraphicsSceneContextMenuEvent):
         """
         Display context menu
         @param event:
@@ -445,11 +480,23 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         al.setIcon(al_icon)
         al.triggered.connect(self.add_load)
 
+        ac_i = menu.addAction('Current injection')
+        ac_i_icon = QIcon()
+        ac_i_icon.addPixmap(QPixmap(":/Icons/icons/add_load.svg"))
+        ac_i.setIcon(ac_i_icon)
+        ac_i.triggered.connect(self.add_current_injection)
+
         ash = menu.addAction('Shunt')
         ash_icon = QIcon()
         ash_icon.addPixmap(QPixmap(":/Icons/icons/add_shunt.svg"))
         ash.setIcon(ash_icon)
         ash.triggered.connect(self.add_shunt)
+
+        acsh = menu.addAction('Controllable shunt')
+        acsh_icon = QIcon()
+        acsh_icon.addPixmap(QPixmap(":/Icons/icons/add_shunt.svg"))
+        acsh.setIcon(acsh_icon)
+        acsh.triggered.connect(self.add_controllable_shunt)
 
         acg = menu.addAction('Generator')
         acg_icon = QIcon()
@@ -483,7 +530,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         """
         self.editor.set_active_status_to_profile(self.api_object)
 
-    def delete_all_connections(self):
+    def delete_all_connections(self) -> None:
         """
         Delete all bus connections
         """
@@ -499,7 +546,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
             reduce_buses(self.editor.circuit, [self.api_object])
             self.remove()
 
-    def remove(self, ask=True):
+    def remove(self, ask: bool = True) -> None:
         """
         Remove this element
         @return:
@@ -518,6 +565,9 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
             self.editor.remove_element(device=self.api_object, graphic_object=self)
 
     def update_color(self):
+        """
+        Update the colour
+        """
         if self.api_object.active:
             self.set_tile_color(QBrush(ACTIVE['color']))
         else:
@@ -553,46 +603,58 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
                         if host.api_object is not None:
                             self.editor.set_active_status_to_profile(host.api_object, override_question=True)
 
-    def any_short_circuit(self):
+    def any_short_circuit(self) -> bool:
+        """
+        Determine if there are short circuits enabled
+        :return:
+        """
         for t in self.sc_enabled:
             if t:
                 return True
         return False
 
-    def enable_sc(self):
+    def enable_sc(self) -> None:
         """
-
-        Returns:
-
+        Enable the short circuit
         """
         self.tile.setPen(QPen(QColor(EMERGENCY['color']), self.pen_width))
 
     def disable_sc(self):
         """
-
-        Returns:
-
+        Disable short circuit
         """
         # self.tile.setPen(QPen(QColor(ACTIVE['color']), self.pen_width))
         self.tile.setPen(QPen(Qt.transparent, self.pen_width))
         self.sc_enabled = [False, False, False, False]
 
     def enable_disable_sc_3p(self):
+        """
+        Enable 3-phase short circuit
+        """
         self.sc_enabled = [True, False, False, False]
         self.sc_type = FaultType.ph3
         self.enable_sc()
 
     def enable_disable_sc_lg(self):
+        """
+        Enable line ground short circuit
+        """
         self.sc_enabled = [False, True, False, False]
         self.sc_type = FaultType.LG
         self.enable_sc()
 
     def enable_disable_sc_ll(self):
+        """
+        Enable line-line short circuit
+        """
         self.sc_enabled = [False, False, True, False]
         self.sc_type = FaultType.LL
         self.enable_sc()
 
     def enable_disable_sc_llg(self):
+        """
+        Enable line-line-ground short circuit
+        """
         self.sc_enabled = [False, False, False, True]
         self.sc_type = FaultType.LLG
         self.enable_sc()
@@ -606,21 +668,19 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         else:
             self.api_object.is_dc = True
 
-    def plot_profiles(self):
+    def plot_profiles(self) -> None:
         """
-
-        @return:
+        Plot profiles
         """
         # get the index of this object
-        i = self.editor.circuit.buses.index(self.api_object)
+        i = self.editor.circuit.get_buses().index(self.api_object)
         self.editor.plot_bus(i, self.api_object)
 
-    def mousePressEvent(self, event):
+    def mousePressEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent):
         """
         mouse press: display the editor
         :param event: QGraphicsSceneMouseEvent
         """
-        dictionary_of_lists = dict()
 
         if self.api_object.device_type == DeviceType.BusDevice:
             dictionary_of_lists = {DeviceType.AreaDevice.value: self.editor.circuit.areas,
@@ -628,23 +688,17 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
                                    DeviceType.SubstationDevice.value: self.editor.circuit.substations,
                                    DeviceType.CountryDevice.value: self.editor.circuit.countries}
 
-        mdl = ObjectsModel([self.api_object],
-                           self.api_object.registered_properties,
-                           parent=self.editor.object_editor_table,
-                           editable=True,
-                           transposed=True,
-                           dictionary_of_lists=dictionary_of_lists)
+            self.editor.set_editor_model(api_object=self.api_object,
+                                         dictionary_of_lists=dictionary_of_lists)
 
-        self.editor.object_editor_table.setModel(mdl)
-
-    def mouseDoubleClickEvent(self, event):
+    def mouseDoubleClickEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent):
         """
         Mouse double click
         :param event: event object
         """
         self.adapt()
 
-    def adapt(self):
+    def adapt(self) -> None:
         """
         Set the bus width according to the label text
         """
@@ -670,7 +724,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         """
         self.terminal.hosting_connections.remove(graphic_obj)
 
-    def add_object(self, api_obj: Union[None, EditableDevice] = None):
+    def add_object(self, api_obj: Union[None, INJECTION_DEVICE_TYPES] = None):
         """
         Add any recognized object
         :param api_obj: EditableDevice
@@ -694,10 +748,16 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         elif api_obj.device_type == DeviceType.ExternalGridDevice:
             self.add_external_grid(api_obj=api_obj)
 
+        elif api_obj.device_type == DeviceType.CurrentInjectionDevice:
+            self.add_current_injection(api_obj=api_obj)
+
+        elif api_obj.device_type == DeviceType.ControllableShuntDevice:
+            self.add_controllable_shunt(api_obj=api_obj)
+
         else:
             raise Exception("Cannot add device of type {}".format(api_obj.device_type.value))
 
-    def add_load(self, api_obj=None):
+    def add_load(self, api_obj: Union[Load, None] = None):
         """
         Add load object to bus
         :param api_obj:
@@ -711,7 +771,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         self.arrange_children()
         return _grph
 
-    def add_shunt(self, api_obj=None):
+    def add_shunt(self, api_obj: Union[Shunt, None] = None):
         """
         Add shunt device
         :param api_obj: If None, a new shunt is created
@@ -724,7 +784,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         self.arrange_children()
         return _grph
 
-    def add_generator(self, api_obj=None):
+    def add_generator(self, api_obj: Union[Generator, None] = None):
         """
         Add generator
         :param api_obj: if None, a new generator is created
@@ -737,7 +797,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         self.arrange_children()
         return _grph
 
-    def add_static_generator(self, api_obj=None):
+    def add_static_generator(self, api_obj: Union[StaticGenerator, None] = None):
         """
         Add static generator
         :param api_obj: If none, a new static generator is created
@@ -752,7 +812,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
 
         return _grph
 
-    def add_battery(self, api_obj=None):
+    def add_battery(self, api_obj: Union[Battery, None] = None):
         """
 
         :param api_obj:
@@ -767,7 +827,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
 
         return _grph
 
-    def add_external_grid(self, api_obj=None):
+    def add_external_grid(self, api_obj: Union[ExternalGrid, None] = None):
         """
 
         :param api_obj:
@@ -777,6 +837,36 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
             api_obj = self.editor.circuit.add_external_grid(bus=self.api_object)
 
         _grph = ExternalGridGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
+        self.shunt_children.append(_grph)
+        self.arrange_children()
+
+        return _grph
+
+    def add_current_injection(self, api_obj: Union[CurrentInjection, None] = None):
+        """
+
+        :param api_obj:
+        :return:
+        """
+        if api_obj is None or type(api_obj) is bool:
+            api_obj = self.editor.circuit.add_current_injection(bus=self.api_object)
+
+        _grph = CurrentInjectionGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
+        self.shunt_children.append(_grph)
+        self.arrange_children()
+
+        return _grph
+
+    def add_controllable_shunt(self, api_obj: Union[ControllableShunt, None] = None):
+        """
+
+        :param api_obj:
+        :return:
+        """
+        if api_obj is None or type(api_obj) is bool:
+            api_obj = self.editor.circuit.add_controllable_shunt(bus=self.api_object)
+
+        _grph = ControllableShuntGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
         self.shunt_children.append(_grph)
         self.arrange_children()
 

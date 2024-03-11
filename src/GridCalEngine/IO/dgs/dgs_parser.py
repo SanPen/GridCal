@@ -18,8 +18,8 @@ GridCal
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """
 
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-import GridCalEngine.Core.Devices as dev
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
+import GridCalEngine.Devices as dev
 import math
 import numpy as np
 from numpy import array
@@ -683,21 +683,6 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
             # create the slack entry on buses
             bus_obj.is_slack = True
 
-            # BUSES[bus1, bd.BUS_TYPE] = 3
-            # BUSES[bus1, bd.VA] = va
-            # BUSES[bus1, bd.VM] = vm
-            #
-            # # create the slack entry on generators (add the slack generator)
-            # gen_ = gen_line.copy()
-            # gen_[gd.GEN_BUS] = bus1
-            # gen_[gd.MBASE] = baseMVA
-            # gen_[gd.VG] = vm
-            # gen_[gd.GEN_STATUS] = 1
-            # gen_[gd.PG] += external['pgini'].values[i]
-            #
-            # GEN.append(gen_)
-            # GEN_NAMES.append(external['loc_name'][i])
-
         elif external['bustp'].values[i] == b'PV':
 
             if 'pgini' in external.columns.values:
@@ -708,8 +693,7 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
             # add a generator to the bus
             gen = dev.Generator(name=external['loc_name'][i].decode(codification),
                                 P=p,
-                                vset=vm, Qmin=-9999, Qmax=9999, Snom=9999,
-                                P_prof=None, vset_prof=None)
+                                vset=vm, Qmin=-9999, Qmax=9999, Snom=9999)
             circuit.add_generator(bus_obj, gen)
 
             # # mark the bus as pv
@@ -1121,9 +1105,7 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
                             vset=vnom,
                             Qmin=synchronous_machine['q_min'][i] * num_machines * snom,
                             Qmax=synchronous_machine['q_max'][i] * num_machines * snom,
-                            Snom=snom,
-                            P_prof=None,
-                            vset_prof=None)
+                            Snom=snom)
         circuit.add_generator(bus_obj, gen)
 
         # if synchronous_machine['pgini'][i] != 0:

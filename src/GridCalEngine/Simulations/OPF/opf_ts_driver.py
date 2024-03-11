@@ -19,7 +19,7 @@ import datetime
 import numpy as np
 import pandas as pd
 from typing import Union
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.enumerations import SolverType, TimeGrouping, EngineType
 from GridCalEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
 from GridCalEngine.Simulations.OPF.linear_opf_ts import run_linear_opf_ts
@@ -28,7 +28,7 @@ from GridCalEngine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSer
 from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Simulations.driver_template import TimeSeriesDriverTemplate
-from GridCalEngine.Core.Compilers.circuit_to_newton_pa import newton_pa_linear_opf, newton_pa_nonlinear_opf
+from GridCalEngine.Compilers.circuit_to_newton_pa import newton_pa_linear_opf, newton_pa_nonlinear_opf
 from GridCalEngine.Simulations.Clustering.clustering_results import ClusteringResults
 from GridCalEngine.basic_structures import IntVec, Vec, get_time_groups
 
@@ -86,7 +86,8 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
             n_fluid_node=self.grid.get_fluid_nodes_number(),
             n_fluid_path=self.grid.get_fluid_paths_number(),
             n_fluid_injection=self.grid.get_fluid_injection_number(),
-            time_array=self.grid.time_profile[self.time_indices] if self.time_indices is not None else [datetime.datetime.now()],
+            time_array=self.grid.time_profile[self.time_indices] if self.time_indices is not None else [
+                datetime.datetime.now()],
             bus_types=np.ones(self.grid.get_bus_number(), dtype=int),
             clustering_results=clustering_results)
 
@@ -127,6 +128,9 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                                          zonal_grouping=self.options.zonal_grouping,
                                          skip_generation_limits=self.options.skip_generation_limits,
                                          consider_contingencies=self.options.consider_contingencies,
+                                         unit_Commitment=self.options.unit_commitment,
+                                         ramp_constraints=self.options.unit_commitment,
+                                         all_generators_fixed=False,
                                          lodf_threshold=self.options.lodf_tolerance,
                                          maximize_inter_area_flow=self.options.maximize_flows,
                                          areas_from=self.options.areas_from,
@@ -198,7 +202,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         return self.results
 
-    def opf_by_groups(self):
+    def opf_by_groups(self) -> None:
         """
         Run the OPF by groups
         """
@@ -220,7 +224,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
             # show progress message
             print(start_, ':', end_, ' [', end_ - start_, ']')
             self.report_text('Running OPF for the time group {0} '
-                                    'start {1} - end {2} in external solver...'.format(i, start_, end_))
+                             'start {1} - end {2} in external solver...'.format(i, start_, end_))
 
             # run an opf for the group interval only if the group is within the start:end boundaries
             # DC optimal power flow
@@ -230,6 +234,9 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                                          zonal_grouping=self.options.zonal_grouping,
                                          skip_generation_limits=self.options.skip_generation_limits,
                                          consider_contingencies=self.options.consider_contingencies,
+                                         unit_Commitment=self.options.unit_commitment,
+                                         ramp_constraints=self.options.unit_commitment,
+                                         all_generators_fixed=False,
                                          lodf_threshold=self.options.lodf_tolerance,
                                          maximize_inter_area_flow=self.options.maximize_flows,
                                          areas_from=self.options.areas_from,
@@ -238,7 +245,8 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                                          logger=self.logger,
                                          export_model_fname=self.options.export_model_fname)
 
-            self.results.voltage[time_indices, :] = np.ones((opf_vars.nt, opf_vars.nbus)) * np.exp(1j * opf_vars.bus_vars.theta)
+            self.results.voltage[time_indices, :] = (np.ones((opf_vars.nt, opf_vars.nbus))
+                                                     * np.exp(1j * opf_vars.bus_vars.theta))
             self.results.bus_shadow_prices[time_indices, :] = opf_vars.bus_vars.shadow_prices
 
             self.results.load_shedding[time_indices, :] = opf_vars.load_vars.shedding
@@ -249,15 +257,14 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
             self.results.generator_power[time_indices, :] = opf_vars.gen_vars.p
             self.results.generator_shedding[time_indices, :] = opf_vars.gen_vars.shedding
             self.results.generator_cost[time_indices, :] = opf_vars.gen_vars.cost
-            # self.results.generator_fuel[time_indices, :] = opf_vars.gen_vars.fuel
-            # self.results.generator_emissions[time_indices, :] = opf_vars.gen_vars.emissions
             self.results.generator_producing[time_indices, :] = opf_vars.gen_vars.producing
             self.results.generator_starting_up[time_indices, :] = opf_vars.gen_vars.starting_up
             self.results.generator_shutting_down[time_indices, :] = opf_vars.gen_vars.shedding
 
             self.results.Sf[time_indices, :] = opf_vars.branch_vars.flows
             self.results.St[time_indices, :] = -opf_vars.branch_vars.flows
-            self.results.overloads[time_indices, :] = opf_vars.branch_vars.flow_slacks_pos - opf_vars.branch_vars.flow_slacks_neg
+            self.results.overloads[time_indices, :] = (opf_vars.branch_vars.flow_slacks_pos
+                                                       - opf_vars.branch_vars.flow_slacks_neg)
             self.results.loading[time_indices, :] = opf_vars.branch_vars.loading
             self.results.phase_shift[time_indices, :] = opf_vars.branch_vars.tap_angles
 
@@ -286,7 +293,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
 
             i += 1
 
-    def add_report(self):
+    def add_report(self, eps: float = 1e-6) -> None:
         """
         Add a report of the results (in-place)
         """
@@ -301,14 +308,14 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
             t_name = str(self.results.time_array[t])
 
             for gen_name, gen_shedding in zip(self.results.generator_names, self.results.generator_shedding[t, :]):
-                if gen_shedding > 0:
+                if gen_shedding > eps:
                     self.logger.add_warning("Generation shedding {}".format(t_name),
                                             device=gen_name,
                                             value=gen_shedding,
                                             expected_value=0.0)
 
             for load_name, load_shedding in zip(self.results.load_names, self.results.load_shedding[t, :]):
-                if load_shedding > 0:
+                if load_shedding > eps:
                     self.logger.add_warning("Load shedding {}".format(t_name),
                                             device=load_name,
                                             value=load_shedding,
@@ -316,14 +323,14 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
 
             for fluid_node_name, fluid_node_spillage in zip(self.results.fluid_node_names,
                                                             self.results.fluid_node_spillage[t, :]):
-                if fluid_node_spillage != 0:
+                if fluid_node_spillage > eps:
                     self.logger.add_warning("Fluid node spillage {}".format(t_name),
                                             device=fluid_node_name,
                                             value=fluid_node_spillage,
                                             expected_value=0.0)
 
             for name, val in zip(self.results.branch_names, self.results.loading[t, :]):
-                if val > 1:
+                if val > (1.0 + eps):
                     self.logger.add_warning("Overload {}".format(t_name),
                                             device=name,
                                             value=val * 100,

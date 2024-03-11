@@ -55,6 +55,14 @@ def compute_fx(x, Ybus, S, I, pq, pv, pvpq, j1, j2, j3, j4, j5, j6, Va, Vm):
     :param pq:
     :param pv:
     :param pvpq:
+    :param j1:
+    :param j2:
+    :param j3:
+    :param j4:
+    :param j5:
+    :param j6:
+    :param Va:
+    :param Vm:
     :return:
     """
     n = len(S)

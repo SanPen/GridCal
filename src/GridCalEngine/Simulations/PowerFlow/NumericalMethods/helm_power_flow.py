@@ -212,7 +212,6 @@ def conv1(A, B, c):
     :param A: Coefficients matrix 1 (orders, buses)
     :param B: Coefficients matrix 2 (orders, buses)
     :param c: order of the coefficients
-    :param indices: bus indices array
     :return: Array with the convolution for the buses given by "indices"
     """
     suma = np.zeros(A.shape[1], dtype=nb.complex128)

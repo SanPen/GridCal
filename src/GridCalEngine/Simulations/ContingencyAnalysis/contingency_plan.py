@@ -18,10 +18,11 @@ from itertools import combinations
 import numpy as np
 from typing import List, Tuple
 
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.Core.Devices.Aggregation.contingency import Contingency, ContingencyGroup
-from GridCalEngine.Core.Devices.editable_device import DeviceType
-import GridCalEngine.Core.Devices as dev
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Devices.Aggregation.contingency import Contingency, ContingencyGroup
+from GridCalEngine.Devices.Parents.editable_device import DeviceType
+from GridCalEngine.Devices.types import BRANCH_TYPES
+import GridCalEngine.Devices as dev
 
 
 def enumerate_states_n_k(m: int, k: int = 1):
@@ -49,7 +50,7 @@ def enumerate_states_n_k(m: int, k: int = 1):
     return np.array(states), indices
 
 
-def add_n1_contingencies(branches: List[dev.BranchTemplate],
+def add_n1_contingencies(branches: List[BRANCH_TYPES],
                          vmin: float,
                          vmax: float,
                          filter_branches_by_voltage: bool,
@@ -205,7 +206,8 @@ def generate_automatic_contingency_plan(
         contingency_perc=100.0,
         pmin=0,
         pmax=10000,
-        injection_types: List[DeviceType] = list()) -> Tuple[List[Contingency], List[ContingencyGroup]]:
+        injection_types: List[DeviceType] = list()
+) -> Tuple[List[Contingency], List[ContingencyGroup]]:
     """
 
     :param grid: MultiCircuit instance

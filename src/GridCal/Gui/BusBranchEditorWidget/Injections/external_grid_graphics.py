@@ -17,7 +17,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 from PySide6 import QtWidgets, QtGui, QtCore
-from GridCalEngine.Core.Devices.Injections.battery import Battery, DeviceType
+from GridCalEngine.Devices.Injections.external_grid import ExternalGrid, DeviceType
 from GridCal.Gui.BusBranchEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Square
 from GridCal.Gui.BusBranchEditorWidget.Injections.injections_template_graphics import InjectionTemplateGraphicItem
 from GridCal.Gui.GuiFunctions import ObjectsModel
@@ -31,7 +31,7 @@ class ExternalGridGraphicItem(InjectionTemplateGraphicItem):
     """
     ExternalGrid graphic item
     """
-    def __init__(self, parent, api_obj: Battery, editor: BusBranchEditorWidget):
+    def __init__(self, parent, api_obj: ExternalGrid, editor: BusBranchEditorWidget):
         """
 
         :param parent:
@@ -42,7 +42,7 @@ class ExternalGridGraphicItem(InjectionTemplateGraphicItem):
                                               parent=parent,
                                               api_obj=api_obj,
                                               editor=editor,
-                                              device_type_name='generator',
+                                              device_type_name='external grid',
                                               w=40,
                                               h=40)
 
@@ -130,21 +130,6 @@ class ExternalGridGraphicItem(InjectionTemplateGraphicItem):
 
         menu.exec_(event.screenPos())
 
-    def remove(self, ask=True):
-        """
-        Remove this element
-        @return:
-        """
-        if ask:
-            ok = yes_no_question('Are you sure that you want to remove this external grid', 'Remove external grid')
-        else:
-            ok = True
-
-        if ok:
-            self.editor.remove_from_scene(self.nexus)
-            self.editor.remove_from_scene(self)
-            self.api_object.bus.batteries.remove(self.api_object)
-
     def enable_disable_toggle(self):
         """
 
@@ -200,8 +185,6 @@ class ExternalGridGraphicItem(InjectionTemplateGraphicItem):
         :param QGraphicsSceneMouseEvent:
         :return:
         """
-        mdl = ObjectsModel([self.api_object], self.api_object.registered_properties,
-                           parent=self.editor.object_editor_table, editable=True, transposed=True,
-                           dictionary_of_lists={DeviceType.Technology.value: self.editor.circuit.technologies, })
-        self.editor.object_editor_table.setModel(mdl)
+        dictionary_of_lists = {DeviceType.Technology.value: self.editor.circuit.technologies}
+        self.editor.set_editor_model(api_object=self.api_object, dictionary_of_lists=dictionary_of_lists)
 

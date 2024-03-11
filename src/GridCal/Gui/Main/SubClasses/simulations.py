@@ -24,15 +24,14 @@ from PySide6 import QtGui, QtWidgets
 from matplotlib.colors import LinearSegmentedColormap
 
 # Engine imports
-import GridCalEngine.Core.Devices as dev
+import GridCalEngine.Devices as dev
 import GridCalEngine.Simulations as sim
-import GridCalEngine.grid_analysis as grid_analysis
+import GridCalEngine.Simulations.PowerFlow.grid_analysis as grid_analysis
 import GridCal.Gui.GuiFunctions as gf
 import GridCal.Gui.Visualization.visualization as viz
 from GridCal.Gui.BusBranchEditorWidget import BusBranchEditorWidget
-from GridCalEngine.Core.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE, get_newton_mip_solvers_list
+from GridCalEngine.Compilers.circuit_to_newton_pa import get_newton_mip_solvers_list
 from GridCalEngine.Simulations.driver_types import SimulationTypes
-from GridCal.Gui.GeneralDialogues import LogsDialogue, ElementsDialogue
 from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_msg
 from GridCal.Gui.Main.SubClasses.Model.time_events import TimeEventsMain
 from GridCal.Gui.SigmaAnalysis.sigma_analysis_dialogue import SigmaAnalysisGUI
@@ -41,7 +40,7 @@ from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCalEngine.enumerations import (DeviceType, AvailableTransferMode, GenerationNtcFormulation, SolverType,
                                         ReactivePowerControlMode, TapsControlMode, MIPSolvers, TimeGrouping,
                                         ZonalGrouping, ContingencyMethod, InvestmentEvaluationMethod, EngineType,
-                                        BranchImpedanceMode)
+                                        BranchImpedanceMode, ResultTypes)
 
 
 class SimulationsMain(TimeEventsMain):
@@ -104,6 +103,11 @@ class SimulationsMain(TimeEventsMain):
         self.lp_solvers_dict[SolverType.SIMPLE_OPF.value] = SolverType.SIMPLE_OPF
         self.ui.lpf_solver_comboBox.setModel(gf.get_list_model(list(self.lp_solvers_dict.keys())))
 
+        # ips solvers dictionary
+        self.ips_solvers_dict = OrderedDict()
+        self.ips_solvers_dict[SolverType.NR.value] = SolverType.NR
+        self.ui.ips_method_comboBox.setModel(gf.get_list_model(list(self.ips_solvers_dict.keys())))
+
         # the MIP combobox models assigning is done in modify_ui_options_according_to_the_engine
         self.mip_solvers_dict = OrderedDict()
         self.mip_solvers_dict[MIPSolvers.CBC.value] = MIPSolvers.CBC
@@ -142,8 +146,8 @@ class SimulationsMain(TimeEventsMain):
         # reactive power controls
         self.contingency_engines_dict = OrderedDict()
         self.contingency_engines_dict[ContingencyMethod.PowerFlow.value] = ContingencyMethod.PowerFlow
+        self.contingency_engines_dict[ContingencyMethod.OptimalPowerFlow.value] = ContingencyMethod.OptimalPowerFlow
         self.contingency_engines_dict[ContingencyMethod.PTDF.value] = ContingencyMethod.PTDF
-        self.contingency_engines_dict[ContingencyMethod.HELM.value] = ContingencyMethod.HELM
         self.ui.contingencyEngineComboBox.setModel(gf.get_list_model(list(self.contingency_engines_dict.keys())))
 
         # list of stochastic power flow methods
@@ -157,9 +161,14 @@ class SimulationsMain(TimeEventsMain):
 
         # investment evaluation methods
         self.investment_evaluation_method_dict = OrderedDict()
-        self.investment_evaluation_method_dict[InvestmentEvaluationMethod.Independent.value] = InvestmentEvaluationMethod.Independent
-        self.investment_evaluation_method_dict[InvestmentEvaluationMethod.Hyperopt.value] = InvestmentEvaluationMethod.Hyperopt
-        self.investment_evaluation_method_dict[InvestmentEvaluationMethod.MVRSM.value] = InvestmentEvaluationMethod.MVRSM
+        self.investment_evaluation_method_dict[
+            InvestmentEvaluationMethod.Independent.value] = InvestmentEvaluationMethod.Independent
+        self.investment_evaluation_method_dict[
+            InvestmentEvaluationMethod.Hyperopt.value] = InvestmentEvaluationMethod.Hyperopt
+        self.investment_evaluation_method_dict[
+            InvestmentEvaluationMethod.MVRSM.value] = InvestmentEvaluationMethod.MVRSM
+        self.investment_evaluation_method_dict[
+            InvestmentEvaluationMethod.MVRSM_multi.value] = InvestmentEvaluationMethod.MVRSM_multi
         lst = list(self.investment_evaluation_method_dict.keys())
         self.ui.investment_evaluation_method_ComboBox.setModel(gf.get_list_model(lst))
 
@@ -167,39 +176,35 @@ class SimulationsMain(TimeEventsMain):
         self.ptdf_group_modes = OrderedDict()
 
         # dictionaries for available results
-        self.available_results_dict: Union[Dict[str, List[sim.ResultTypes]], None] = dict()
+        self.available_results_dict: Union[Dict[str, Dict[str, ResultTypes]], None] = dict()
 
         self.buses_for_storage: Union[List[dev.Bus], None] = None
 
         # --------------------------------------------------------------------------------------------------------------
 
-        self.ui.actionPower_flow.triggered.connect(self.run_power_flow)
+        self.ui.actionPower_flow.triggered.connect(self.power_flow_dispatcher)
         self.ui.actionShort_Circuit.triggered.connect(self.run_short_circuit)
         self.ui.actionVoltage_stability.triggered.connect(self.run_continuation_power_flow)
         self.ui.actionPower_Flow_Time_series.triggered.connect(self.run_power_flow_time_series)
         self.ui.actionPower_flow_Stochastic.triggered.connect(self.run_stochastic)
-        # self.ui.actionBlackout_cascade.triggered.connect(self.view_cascade_menu)
-        self.ui.actionOPF.triggered.connect(self.run_opf)
+        self.ui.actionOPF.triggered.connect(self.optimal_power_flow_dispatcher)
         self.ui.actionOPF_time_series.triggered.connect(self.run_opf_time_series)
-        self.ui.actionOptimal_Net_Transfer_Capacity.triggered.connect(self.run_opf_ntc)
+        self.ui.actionOptimal_Net_Transfer_Capacity.triggered.connect(self.optimal_ntc_opf_dispatcher)
         self.ui.actionOptimal_Net_Transfer_Capacity_Time_Series.triggered.connect(self.run_opf_ntc_ts)
-        self.ui.actionOptimal_NTC_time_series_clustering.triggered.connect(self.run_opf_ntc_ts)
-        self.ui.actionGrid_Reduction.triggered.connect(self.reduce_grid)
         self.ui.actionInputs_analysis.triggered.connect(self.run_inputs_analysis)
         self.ui.actionStorage_location_suggestion.triggered.connect(self.storage_location)
-        self.ui.actionLinearAnalysis.triggered.connect(self.run_linear_analysis)
-        self.ui.actionContingency_analysis.triggered.connect(self.run_contingency_analysis)
+        self.ui.actionLinearAnalysis.triggered.connect(self.linear_pf_dispatcher)
+        self.ui.actionContingency_analysis.triggered.connect(self.contingencies_dispatcher)
         self.ui.actionOTDF_time_series.triggered.connect(self.run_contingency_analysis_ts)
-        self.ui.actionATC.triggered.connect(self.run_available_transfer_capacity)
+        self.ui.actionATC.triggered.connect(self.optimal_ntc_dispatcher)
         self.ui.actionATC_Time_Series.triggered.connect(self.run_available_transfer_capacity_ts)
-        self.ui.actionATC_clustering.triggered.connect(self.run_available_transfer_capacity_clustering)
         self.ui.actionPTDF_time_series.triggered.connect(self.run_linear_analysis_ts)
         self.ui.actionClustering.triggered.connect(self.run_clustering)
         self.ui.actionSigma_analysis.triggered.connect(self.run_sigma_analysis)
         self.ui.actionFind_node_groups.triggered.connect(self.run_find_node_groups)
         self.ui.actionFuse_devices.triggered.connect(self.fuse_devices)
         self.ui.actionInvestments_evaluation.triggered.connect(self.run_investments_evaluation)
-        self.ui.delete_and_reduce_pushButton.clicked.connect(self.delete_and_reduce_selected_objects)
+        self.ui.actionProcess_topology.triggered.connect(self.run_topology_processor)
 
         # combobox change
         self.ui.engineComboBox.currentTextChanged.connect(self.modify_ui_options_according_to_the_engine)
@@ -258,10 +263,6 @@ class SimulationsMain(TimeEventsMain):
 
         if eng == EngineType.NewtonPA:
             self.ui.opfUnitCommitmentCheckBox.setVisible(True)
-            self.ui.maxVoltageModuleStepSpinBox.setVisible(True)
-            self.ui.maxVoltageAngleStepSpinBox.setVisible(True)
-            self.ui.maxVoltageModuleStepLabel.setVisible(True)
-            self.ui.maxVoltageAngleStepLabel.setVisible(True)
 
             # add the AC_OPF option
             self.lp_solvers_dict = OrderedDict()
@@ -289,10 +290,6 @@ class SimulationsMain(TimeEventsMain):
 
         elif eng == EngineType.GridCal:
             self.ui.opfUnitCommitmentCheckBox.setVisible(True)
-            self.ui.maxVoltageModuleStepSpinBox.setVisible(False)
-            self.ui.maxVoltageAngleStepSpinBox.setVisible(False)
-            self.ui.maxVoltageModuleStepLabel.setVisible(False)
-            self.ui.maxVoltageAngleStepLabel.setVisible(False)
 
             # no AC opf option
             self.lp_solvers_dict = OrderedDict()
@@ -322,10 +319,6 @@ class SimulationsMain(TimeEventsMain):
 
         elif eng == EngineType.Bentayga:
             self.ui.opfUnitCommitmentCheckBox.setVisible(False)
-            self.ui.maxVoltageModuleStepSpinBox.setVisible(False)
-            self.ui.maxVoltageAngleStepSpinBox.setVisible(False)
-            self.ui.maxVoltageModuleStepLabel.setVisible(False)
-            self.ui.maxVoltageAngleStepLabel.setVisible(False)
 
             # no AC opf option
             self.lp_solvers_dict = OrderedDict()
@@ -350,10 +343,6 @@ class SimulationsMain(TimeEventsMain):
 
         elif eng == EngineType.PGM:
             self.ui.opfUnitCommitmentCheckBox.setVisible(False)
-            self.ui.maxVoltageModuleStepSpinBox.setVisible(False)
-            self.ui.maxVoltageAngleStepSpinBox.setVisible(False)
-            self.ui.maxVoltageModuleStepLabel.setVisible(False)
-            self.ui.maxVoltageAngleStepLabel.setVisible(False)
 
             # no AC opf option
             self.lp_solvers_dict = OrderedDict()
@@ -415,9 +404,7 @@ class SimulationsMain(TimeEventsMain):
         self.ui.available_results_to_color_comboBox.model().clear()
         self.ui.results_treeView.setModel(None)
 
-        self.ui.schematic_step_label.setText("")
-        self.ui.simulation_results_step_slider.setMinimum(0)
-        self.ui.simulation_results_step_slider.setMaximum(0)
+        self.setup_time_sliders()
 
         self.ui.simulationDataStructureTableView.setModel(None)
         self.ui.profiles_tableView.setModel(None)
@@ -656,12 +643,79 @@ class SimulationsMain(TimeEventsMain):
 
         return opf_time_series_results
 
+    def ts_flag(self) -> bool:
+        """
+        Is the time series flag enabled?
+        :return:
+        """
+        return self.ui.actionactivate_time_series.isChecked()
+
+    def power_flow_dispatcher(self):
+        """
+        Dispatch the power flow action
+        :return:
+        """
+        if self.ts_flag():
+            self.run_power_flow_time_series()
+        else:
+            self.run_power_flow()
+
+    def optimal_power_flow_dispatcher(self):
+        """
+        Dispatch the optimal power flow action
+        :return:
+        """
+        if self.ts_flag():
+            self.run_opf_time_series()
+        else:
+            self.run_opf()
+
+    def optimal_ntc_dispatcher(self):
+        """
+        Dispatch the NTC action
+        :return:
+        """
+        if self.ts_flag():
+            self.run_available_transfer_capacity_ts()
+        else:
+            self.run_available_transfer_capacity()
+
+    def optimal_ntc_opf_dispatcher(self):
+        """
+        Dispatch the optimal NTC action
+        :return:
+        """
+        if self.ts_flag():
+            self.run_opf_ntc_ts()
+        else:
+            self.run_opf_ntc()
+
+    def linear_pf_dispatcher(self):
+        """
+        Dispatch the linear power flow action
+        :return:
+        """
+        if self.ts_flag():
+            self.run_linear_analysis_ts()
+        else:
+            self.run_linear_analysis()
+
+    def contingencies_dispatcher(self):
+        """
+        Dispatch the contingencies action
+        :return:
+        """
+        if self.ts_flag():
+            self.run_contingency_analysis_ts()
+        else:
+            self.run_contingency_analysis()
+
     def run_power_flow(self):
         """
         Run a power flow simulation
         :return:
         """
-        if len(self.circuit.buses) > 0:
+        if self.circuit.get_bus_number():
 
             if not self.session.is_this_running(sim.SimulationTypes.PowerFlow_run):
 
@@ -932,7 +986,6 @@ class SimulationsMain(TimeEventsMain):
         self.remove_simulation(sim.SimulationTypes.LinearAnalysis_TS_run)
 
         # update the results in the circuit structures
-        # if not drv.__cancel__:
         if results is not None:
 
             # expand the clusters
@@ -967,8 +1020,12 @@ class SimulationsMain(TimeEventsMain):
             pf_options=pf_options,
             lin_options=self.get_linear_options(),
             use_srap=self.ui.use_srap_checkBox.isChecked(),
-            srap_max_loading=self.ui.srap_loading_limit_doubleSpinBox.value(),
             srap_max_power=self.ui.srap_limit_doubleSpinBox.value(),
+            srap_top_n=self.ui.srap_top_n_SpinBox.value(),
+            srap_deadband=self.ui.srap_deadband_doubleSpinBox.value(),
+            srap_rever_to_nominal_rating=self.ui.srap_revert_to_nominal_rating_checkBox.isChecked(),
+            detailed_massive_report=self.ui.contingency_detailed_massive_report_checkBox.isChecked(),
+            contingency_deadband=self.ui.contingency_deadband_SpinBox.value(),
             engine=self.contingency_engines_dict[self.ui.contingencyEngineComboBox.currentText()]
         )
 
@@ -1308,13 +1365,6 @@ class SimulationsMain(TimeEventsMain):
         else:
             pass
 
-    def run_available_transfer_capacity_clustering(self):
-        """
-        Run the ATC time series using clustering
-        :return:
-        """
-        self.run_available_transfer_capacity_ts(use_clustering=True)
-
     def post_available_transfer_capacity_ts(self):
         """
         Action performed after the short circuit.
@@ -1401,7 +1451,8 @@ class SimulationsMain(TimeEventsMain):
                     end_idx = self.ui.vs_target_comboBox.currentIndex()
 
                     if len(sel_bus_idx) > 0:
-                        if sum([self.circuit.buses[i].get_device_number() for i in sel_bus_idx]) == 0:
+                        S = self.circuit.get_Sbus()
+                        if S[sel_bus_idx].sum() == 0:
                             warning_msg('You have selected a group of buses with no power injection.\n'
                                         'this will result in an infinite continuation, since the loading variation '
                                         'of buses with zero injection will be infinite.', 'Continuation Power Flow')
@@ -1745,6 +1796,13 @@ class SimulationsMain(TimeEventsMain):
             areas_from = None
             areas_to = None
 
+        ips_method = self.ips_solvers_dict[self.ui.ips_method_comboBox.currentText()]
+        ips_tolerance = 1.0 / (10.0 ** self.ui.ips_tolerance_spinBox.value())
+        ips_iterations = self.ui.ips_iterations_spinBox.value()
+        ips_trust_radius = self.ui.ips_trust_radius_doubleSpinBox.value()
+        ips_init_with_pf = self.ui.ips_initialize_with_pf_checkBox.isChecked()
+        pf_results = self.session.get_driver_results(SimulationTypes.PowerFlow_run)
+
         options = sim.OptimalPowerFlowOptions(solver=solver,
                                               time_grouping=time_grouping,
                                               zonal_grouping=zonal_grouping,
@@ -1760,10 +1818,13 @@ class SimulationsMain(TimeEventsMain):
                                               areas_to=areas_to,
                                               unit_commitment=unit_commitment,
                                               export_model_fname=export_model_fname,
-                                              generate_report=generate_report)
-
-        options.max_vm = self.ui.maxVoltageModuleStepSpinBox.value()
-        options.max_va = self.ui.maxVoltageAngleStepSpinBox.value()
+                                              generate_report=generate_report,
+                                              ips_method=ips_method,
+                                              ips_tolerance=ips_tolerance,
+                                              ips_iterations=ips_iterations,
+                                              ips_trust_radius=ips_trust_radius,
+                                              ips_init_with_pf=ips_init_with_pf,
+                                              pf_results=pf_results)
 
         return options
 
@@ -2224,92 +2285,6 @@ class SimulationsMain(TimeEventsMain):
         if not self.session.is_anything_running():
             self.UNLOCK()
 
-    def reduce_grid(self):
-        """
-        Reduce grid by removing Branches and nodes according to the selected options
-        """
-
-        if len(self.circuit.buses) > 0:
-
-            if not self.session.is_this_running(sim.SimulationTypes.TopologyReduction_run):
-
-                # compute the options
-                rx_criteria = self.ui.rxThresholdCheckBox.isChecked()
-                exponent = self.ui.rxThresholdSpinBox.value()
-                rx_threshold = 1.0 / (10.0 ** exponent)
-
-                # get the selected indices
-                checked = gf.get_checked_indices(self.ui.removeByTypeListView.model())
-
-                if len(checked) > 0:
-
-                    selected_types = list()
-                    for i in checked:
-                        selected_type_txt = self.ui.removeByTypeListView.model().item(i).text()
-                        selected_type = DeviceType(selected_type_txt)
-                        selected_types.append(selected_type)
-
-                    # compose options
-                    options = sim.TopologyReductionOptions(rx_criteria=rx_criteria,
-                                                           rx_threshold=rx_threshold,
-                                                           selected_types=selected_types)
-
-                    # find which Branches to remove
-                    # TODO: Fix this
-                    br_to_remove = sim.select_branches_to_reduce(circuit=self.circuit,
-                                                                 rx_criteria=options.rx_criteria,
-                                                                 rx_threshold=options.rx_threshold,
-                                                                 selected_types=options.selected_type)
-                    if len(br_to_remove) > 0:
-                        # raise dialogue
-                        branches = self.circuit.get_branches()
-                        elms = [branches[i] for i in br_to_remove]
-                        diag = ElementsDialogue('Elements to be reduced', elms)
-                        diag.show()
-                        diag.exec_()
-
-                        if diag.accepted:
-
-                            self.LOCK()
-
-                            self.add_simulation(sim.SimulationTypes.TopologyReduction_run)
-
-                            # reduce the grid
-                            self.topology_reduction = sim.TopologyReduction(grid=self.circuit,
-                                                                            branch_indices=br_to_remove)
-
-                            # Set the time series run options
-                            self.topology_reduction.progress_signal.connect(self.ui.progressBar.setValue)
-                            self.topology_reduction.progress_text.connect(self.ui.progress_label.setText)
-                            self.topology_reduction.done_signal.connect(self.post_reduce_grid)
-
-                            self.topology_reduction.start()
-                        else:
-                            pass
-                    else:
-                        info_msg('There were no Branches identified', 'Topological grid reduction')
-                else:
-                    warning_msg('Select at least one reduction option in the topology settings',
-                                'Topological grid reduction')
-            else:
-                warning_msg('Another topological reduction is being conducted...', 'Topological grid reduction')
-        else:
-            pass
-
-    def post_reduce_grid(self):
-        """
-        Actions after reducing
-        """
-
-        self.remove_simulation(sim.SimulationTypes.TopologyReduction_run)
-
-        self.redraw_current_diagram()
-
-        self.clear_results()
-
-        if not self.session.is_anything_running():
-            self.UNLOCK()
-
     def run_find_node_groups(self):
         """
         Run the node groups algorithm
@@ -2357,7 +2332,7 @@ class SimulationsMain(TimeEventsMain):
 
             colours = viz.get_n_colours(n=len(drv.groups_by_index))
 
-            bus_colours = [QtGui.QColor] * len(self.circuit.buses)
+            bus_colours = np.empty(len(self.circuit.buses), dtype=object)
             tool_tips = [""] * len(self.circuit.buses)
             for c, group in enumerate(drv.groups_by_index):
                 for i in group:
@@ -2367,7 +2342,9 @@ class SimulationsMain(TimeEventsMain):
                         bus_colours[i] = QtGui.QColor(r * 255, g * 255, b * 255, a * 255)
                         tool_tips[i] = 'Group ' + str(c)
 
-            self.set_big_bus_marker_colours(buses=self.circuit.buses, colors=bus_colours, tool_tips=tool_tips)
+            self.set_big_bus_marker_colours(buses=self.circuit.buses,
+                                            colors=bus_colours,
+                                            tool_tips=tool_tips)
 
     def run_inputs_analysis(self):
         """
@@ -2442,12 +2419,17 @@ class SimulationsMain(TimeEventsMain):
 
                         self.buses_for_storage = list()
                         colors = list()
+
+                        # get all batteries grouped by bus
+                        batt_by_bus = self.circuit.get_batteries_by_bus()
+
                         for i, freq in zip(idx, frequencies):
 
                             bus = self.circuit.buses[i]
+                            batts = batt_by_bus.get(bus, None)
 
                             # add a marker to the bus if there are no batteries in it
-                            if len(bus.batteries) == 0:
+                            if batts is None:
                                 self.buses_for_storage.append(bus)
                                 r, g, b, a = cmap(freq / fmax)
                                 color = QtGui.QColor(r * 255, g * 255, b * 255, a * 255)
@@ -2509,8 +2491,8 @@ class SimulationsMain(TimeEventsMain):
                         self.circuit.investments_groups)
 
                     options = sim.InvestmentsEvaluationOptions(solver=method,
-                                                            max_eval=max_eval,
-                                                            pf_options=self.get_selected_power_flow_options())
+                                                               max_eval=max_eval,
+                                                               pf_options=self.get_selected_power_flow_options())
                     drv = sim.InvestmentsEvaluationDriver(grid=self.circuit,
                                                           options=options)
 
@@ -2634,89 +2616,6 @@ class SimulationsMain(TimeEventsMain):
         if not self.session.is_anything_running():
             self.UNLOCK()
 
-    def delete_and_reduce_selected_objects(self):
-        """
-        Delete and reduce the buses
-        This function removes the buses but whenever a bus is removed, the devices connected to it
-        are inherited by the bus of higher voltage that is connected.
-        If the bus is isolated, those devices are lost.
-        """
-        model = self.ui.dataStructureTableView.model()
-
-        if model is not None:
-            sel_idx = self.ui.dataStructureTableView.selectedIndexes()
-            objects = model.objects
-
-            if len(objects) > 0:
-
-                if objects[0].device_type == DeviceType.BusDevice:
-
-                    if len(sel_idx) > 0:
-
-                        reply = QtWidgets.QMessageBox.question(self, 'Message',
-                                                               'Do you want to reduce and delete the selected elements?',
-                                                               QtWidgets.QMessageBox.StandardButton.Yes,
-                                                               QtWidgets.QMessageBox.StandardButton.No)
-
-                        if reply == QtWidgets.QMessageBox.StandardButton.Yes:
-
-                            self.LOCK()
-
-                            self.add_simulation(sim.SimulationTypes.Delete_and_reduce_run)
-
-                            self.delete_and_reduce_driver = sim.DeleteAndReduce(grid=self.circuit,
-                                                                                objects=objects,
-                                                                                sel_idx=sel_idx)
-
-                            self.delete_and_reduce_driver.progress_signal.connect(self.ui.progressBar.setValue)
-                            self.delete_and_reduce_driver.progress_text.connect(self.ui.progress_label.setText)
-                            self.delete_and_reduce_driver.done_signal.connect(self.UNLOCK)
-                            self.delete_and_reduce_driver.done_signal.connect(
-                                self.post_delete_and_reduce_selected_objects)
-
-                            self.delete_and_reduce_driver.start()
-
-                        else:
-                            # selected QMessageBox.No
-                            pass
-
-                    else:
-                        # no selection
-                        pass
-
-                else:
-                    info_msg('This function is only applicable to buses')
-
-            else:
-                # no objects
-                pass
-        else:
-            pass
-
-    def post_delete_and_reduce_selected_objects(self):
-        """
-        POst delete and merge buses
-        """
-        if self.delete_and_reduce_driver is not None:
-
-            for diagram_widget in self.diagram_widgets_list:
-                if isinstance(diagram_widget, BusBranchEditorWidget):
-                    for bus in self.delete_and_reduce_driver.buses_merged:
-
-                        graphic_object = diagram_widget.diagram.query_point(bus)
-
-                        if graphic_object is not None:
-                            graphic_object.create_children_widgets()
-                            graphic_object.arrange_children()
-
-            self.redraw_current_diagram()
-
-            self.clear_results()
-
-            self.remove_simulation(sim.SimulationTypes.Delete_and_reduce_run)
-
-            self.UNLOCK()
-
     def fuse_devices(self):
         """
         Fuse the devices per node into a single device per category
@@ -2725,5 +2624,46 @@ class SimulationsMain(TimeEventsMain):
                              "Fuse devices")
 
         if ok:
-            self.circuit.fuse_devices()
-            self.redraw_current_diagram()
+            deleted_devices = self.circuit.fuse_devices()
+
+            for diagram_widget in self.diagram_widgets_list:
+                diagram_widget.delete_diagram_elements(elements=deleted_devices)
+
+    def run_topology_processor(self):
+        """
+        Run the topology processor on the grid completelly
+        """
+        if self.circuit.get_bus_number():
+
+            if not self.session.is_this_running(sim.SimulationTypes.PowerFlow_run):
+
+                self.LOCK()
+
+                self.add_simulation(sim.SimulationTypes.TopologyProcessor_run)
+
+                self.ui.progress_label.setText('Running topology processing...')
+                QtGui.QGuiApplication.processEvents()
+                # set power flow object instance
+                drv = sim.TopologyProcessorDriver(self.circuit)
+
+                self.session.run(drv,
+                                 post_func=self.post_topology_processor,
+                                 prog_func=self.ui.progressBar.setValue,
+                                 text_func=self.ui.progress_label.setText)
+
+            else:
+                warning_msg('Another simulation of the same type is running...')
+        else:
+            pass
+
+    def post_topology_processor(self):
+        """
+        Actions after the topology processor is done
+        """
+
+        self.remove_simulation(sim.SimulationTypes.TopologyProcessor_run)
+        # self.update_available_results()
+        # self.colour_diagrams()
+
+        if not self.session.is_anything_running():
+            self.UNLOCK()

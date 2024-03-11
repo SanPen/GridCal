@@ -17,16 +17,14 @@
 import numpy as np
 from sklearn.ensemble import RandomForestRegressor
 from GridCalEngine.basic_structures import CDF
-from GridCalEngine.Simulations.result_types import ResultTypes
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.results_template import ResultsTemplate
-from GridCalEngine.basic_structures import DateVec, IntVec, Vec, StrVec, CxMat, Mat, BoolVec, CxVec
-from GridCalEngine.enumerations import StudyResultsType
+from GridCalEngine.enumerations import StudyResultsType, ResultTypes, DeviceType
 
 
 class StochasticPowerFlowResults(ResultsTemplate):
 
-    def __init__(self, n, m, p, bus_names, branch_names, bus_types, name='Monte Carlo'):
+    def __init__(self, n, m, p, bus_names, branch_names, bus_types):
         """
         Constructor
         @param n: number of nodes
@@ -259,116 +257,202 @@ class StochasticPowerFlowResults(ResultsTemplate):
         :param result_type:
         :return:
         """
-        cdf_result_types = [ResultTypes.BusVoltageCDF,
-                            ResultTypes.BusPowerCDF,
-                            ResultTypes.BranchPowerCDF,
-                            ResultTypes.BranchLoadingCDF,
-                            ResultTypes.BranchLossesCDF]
-
         if result_type == ResultTypes.BusVoltageAverage:
             labels = self.bus_names
             y = self.v_avg_conv[1:-1, :]
             y_label = '(p.u.)'
             x_label = 'Sampling points'
-            title = 'Bus voltage \naverage convergence'
+
+            return ResultsTable(data=y,
+                                index=np.arange(0, y.shape[0], 1),
+                                idx_device_type=DeviceType.NoDevice,
+                                columns=labels,
+                                cols_device_type=DeviceType.BusDevice,
+                                title=result_type.value,
+                                ylabel=y_label,
+                                xlabel=x_label,
+                                units=y_label)
 
         elif result_type == ResultTypes.BranchPowerAverage:
             labels = self.branch_names
             y = self.s_avg_conv[1:-1, :]
             y_label = '(MW)'
             x_label = 'Sampling points'
-            title = 'Branch power \naverage convergence'
+            return ResultsTable(data=y,
+                                index=np.arange(0, y.shape[0], 1),
+                                idx_device_type=DeviceType.NoDevice,
+                                columns=labels,
+                                cols_device_type=DeviceType.BranchDevice,
+                                title=result_type.value,
+                                ylabel=y_label,
+                                xlabel=x_label,
+                                units=y_label)
 
         elif result_type == ResultTypes.BranchLoadingAverage:
             labels = self.branch_names
             y = self.l_avg_conv[1:-1, :] * 100.0
             y_label = '(%)'
             x_label = 'Sampling points'
-            title = 'Branch loading \naverage convergence'
+            return ResultsTable(data=y,
+                                index=np.arange(0, y.shape[0], 1),
+                                idx_device_type=DeviceType.NoDevice,
+                                columns=labels,
+                                cols_device_type=DeviceType.BranchDevice,
+                                title=result_type.value,
+                                ylabel=y_label,
+                                xlabel=x_label,
+                                units=y_label)
 
         elif result_type == ResultTypes.BranchLossesAverage:
             labels = self.branch_names
             y = self.loss_avg_conv[1:-1, :]
             y_label = '(MVA)'
             x_label = 'Sampling points'
-            title = 'Branch losses \naverage convergence'
+            return ResultsTable(data=y,
+                                index=np.arange(0, y.shape[0], 1),
+                                idx_device_type=DeviceType.NoDevice,
+                                columns=labels,
+                                cols_device_type=DeviceType.BranchDevice,
+                                title=result_type.value,
+                                ylabel=y_label,
+                                xlabel=x_label,
+                                units=y_label)
 
         elif result_type == ResultTypes.BusVoltageStd:
             labels = self.bus_names
             y = self.v_std_conv[1:-1, :]
             y_label = '(p.u.)'
             x_label = 'Sampling points'
-            title = 'Bus voltage standard \ndeviation convergence'
+            return ResultsTable(data=y,
+                                index=np.arange(0, y.shape[0], 1),
+                                idx_device_type=DeviceType.NoDevice,
+                                columns=labels,
+                                cols_device_type=DeviceType.BusDevice,
+                                title=result_type.value,
+                                ylabel=y_label,
+                                xlabel=x_label,
+                                units=y_label)
 
         elif result_type == ResultTypes.BranchPowerStd:
             labels = self.branch_names
             y = self.s_std_conv[1:-1, :]
             y_label = '(MW)'
             x_label = 'Sampling points'
-            title = 'Branch power standard \ndeviation convergence'
+            return ResultsTable(data=y,
+                                index=np.arange(0, y.shape[0], 1),
+                                idx_device_type=DeviceType.NoDevice,
+                                columns=labels,
+                                cols_device_type=DeviceType.BranchDevice,
+                                title=result_type.value,
+                                ylabel=y_label,
+                                xlabel=x_label,
+                                units=y_label)
 
         elif result_type == ResultTypes.BranchLoadingStd:
             labels = self.branch_names
             y = self.l_std_conv[1:-1, :] * 100.0
             y_label = '(%)'
             x_label = 'Sampling points'
-            title = 'Branch loading standard \ndeviation convergence'
+            return ResultsTable(data=y,
+                                index=np.arange(0, y.shape[0], 1),
+                                idx_device_type=DeviceType.NoDevice,
+                                columns=labels,
+                                cols_device_type=DeviceType.BranchDevice,
+                                title=result_type.value,
+                                ylabel=y_label,
+                                xlabel=x_label,
+                                units=y_label)
 
         elif result_type == ResultTypes.BranchLossesStd:
             labels = self.branch_names
             y = self.loss_std_conv[1:-1, :]
             y_label = '(MVA)'
             x_label = 'Sampling points'
-            title = 'Branch losses standard \ndeviation convergence'
+            return ResultsTable(data=y,
+                                index=np.arange(0, y.shape[0], 1),
+                                idx_device_type=DeviceType.NoDevice,
+                                columns=labels,
+                                cols_device_type=DeviceType.BranchDevice,
+                                title=result_type.value,
+                                ylabel=y_label,
+                                xlabel=x_label,
+                                units=y_label)
 
         elif result_type == ResultTypes.BusVoltageCDF:
             labels = self.bus_names
             cdf = CDF(np.abs(self.V_points))
             y_label = '(p.u.)'
             x_label = 'Probability $P(X \leq x)$'
-            title = result_type.value[0]
+            return ResultsTable(data=cdf.arr,
+                                index=cdf.prob,
+                                idx_device_type=DeviceType.NoDevice,
+                                columns=labels,
+                                cols_device_type=DeviceType.BusDevice,
+                                title=result_type.value,
+                                ylabel=y_label,
+                                xlabel=x_label,
+                                units=y_label)
 
         elif result_type == ResultTypes.BranchLoadingCDF:
             labels = self.branch_names
             cdf = CDF(np.abs(self.loading_points.real * 100.0))
             y_label = '(%)'
             x_label = 'Probability $P(X \leq x)$'
-            title = result_type.value[0]
+            return ResultsTable(data=cdf.arr,
+                                index=cdf.prob,
+                                idx_device_type=DeviceType.NoDevice,
+                                columns=labels,
+                                cols_device_type=DeviceType.BranchDevice,
+                                title=result_type.value,
+                                ylabel=y_label,
+                                xlabel=x_label,
+                                units=y_label)
 
         elif result_type == ResultTypes.BranchLossesCDF:
             labels = self.branch_names
             cdf = CDF(np.abs(self.losses_points))
             y_label = '(MVA)'
             x_label = 'Probability $P(X \leq x)$'
-            title = result_type.value[0]
+
+            return ResultsTable(data=cdf.arr,
+                                index=cdf.prob,
+                                idx_device_type=DeviceType.NoDevice,
+                                columns=labels,
+                                cols_device_type=DeviceType.BranchDevice,
+                                title=result_type.value,
+                                ylabel=y_label,
+                                xlabel=x_label,
+                                units=y_label)
 
         elif result_type == ResultTypes.BranchPowerCDF:
             labels = self.branch_names
             cdf = CDF(self.Sbr_points.real)
             y_label = '(MW)'
             x_label = 'Probability $P(X \leq x)$'
-            title = result_type.value[0]
+            return ResultsTable(data=cdf.arr,
+                                index=cdf.prob,
+                                idx_device_type=DeviceType.NoDevice,
+                                columns=labels,
+                                cols_device_type=DeviceType.BranchDevice,
+                                title=result_type.value,
+                                ylabel=y_label,
+                                xlabel=x_label,
+                                units=y_label)
 
         elif result_type == ResultTypes.BusPowerCDF:
             labels = self.bus_names
             cdf = CDF(self.S_points.real)
             y_label = '(p.u.)'
             x_label = 'Probability $P(X \leq x)$'
-            title = result_type.value[0]
+            return ResultsTable(data=cdf.arr,
+                                index=cdf.prob,
+                                idx_device_type=DeviceType.NoDevice,
+                                columns=labels,
+                                cols_device_type=DeviceType.BusDevice,
+                                title=result_type.value,
+                                ylabel=y_label,
+                                xlabel=x_label,
+                                units=y_label)
 
         else:
-            x_label = ''
-            y_label = ''
-            title = ''
-
-        if result_type not in cdf_result_types:
-
-            # assemble model
-            index = np.arange(0, y.shape[0], 1)
-            mdl = ResultsTable(data=np.abs(y), index=index, columns=labels, title=title,
-                               ylabel=y_label, xlabel=x_label, units=y_label)
-
-        else:
-            mdl = ResultsTable(data=cdf.arr, index=cdf.prob, columns=labels, title=title,
-                               ylabel=y_label, xlabel=x_label, units=y_label)
-        return mdl
+            raise Exception('Unsupported result type: ' + str(result_type))

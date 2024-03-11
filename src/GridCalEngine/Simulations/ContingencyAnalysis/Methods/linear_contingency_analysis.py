@@ -16,8 +16,8 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 from typing import TYPE_CHECKING
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_results import ContingencyAnalysisResults
 from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearAnalysis, LinearMultiContingencies
 from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_options import ContingencyAnalysisOptions
@@ -48,6 +48,8 @@ def linear_contingency_analysis(grid: MultiCircuit,
     numerical_circuit = compile_numerical_circuit_at(grid, t_idx=t)
 
     calc_branches = grid.get_branches_wo_hvdc()
+
+    area_names, bus_area_indices, F, T, hvdc_F, hvdc_T = grid.get_branch_areas_info()
 
     # declare the results
     results = ContingencyAnalysisResults(ncon=len(grid.contingency_groups),
@@ -89,18 +91,17 @@ def linear_contingency_analysis(grid: MultiCircuit,
     if calling_class is not None:
         calling_class.report_text('Computing loading...')
 
-    available_power = numerical_circuit.generator_data.get_injections_per_bus().real
-
     # for each contingency group
     for ic, multi_contingency in enumerate(linear_multiple_contingencies.multi_contingencies):
 
         if multi_contingency.has_injection_contingencies():
-            injections = numerical_circuit.generator_data.get_injections().real
+            cnt = grid.contingencies
+            injections = numerical_circuit.set_linear_contingency_status(contingencies_list=cnt)
         else:
             injections = None
 
         c_flow = multi_contingency.get_contingency_flows(base_flow=flows_n, injections=injections)
-        c_loading = c_flow / (numerical_circuit.ContingencyRates + 1e-9)
+        c_loading = c_flow / (numerical_circuit.rates + 1e-9)
 
         results.Sf[ic, :] = c_flow  # already in MW
         results.Sbus[ic, :] = Pbus
@@ -116,11 +117,20 @@ def linear_contingency_analysis(grid: MultiCircuit,
                                contingency_idx=ic,
                                contingency_group=grid.contingency_groups[ic],
                                using_srap=options.use_srap,
-                               srap_max_loading=options.srap_max_loading,
+                               srap_ratings=numerical_circuit.branch_data.protection_rates,
                                srap_max_power=options.srap_max_power,
+                               srap_deadband=options.srap_deadband,
+                               contingency_deadband=options.contingency_deadband,
+                               srap_rever_to_nominal_rating=options.srap_rever_to_nominal_rating,
                                multi_contingency=multi_contingency,
                                PTDF=linear_analysis.PTDF,
-                               available_power=available_power)
+                               available_power=numerical_circuit.bus_data.srap_availbale_power,
+                               srap_used_power=results.srap_used_power,
+                               F=F,
+                               T=T,
+                               bus_area_indices=bus_area_indices,
+                               area_names=area_names,
+                               top_n=options.srap_top_n)
 
         # report progress
         if t is None:

@@ -20,7 +20,7 @@ import numpy as np
 from typing import Dict, Union
 
 from GridCalEngine.Simulations.results_template import ResultsTemplate
-from GridCalEngine.Simulations.result_types import ResultTypes
+from GridCalEngine.enumerations import ResultTypes
 from GridCalEngine.Simulations.results_table import ResultsTable
 
 
@@ -124,7 +124,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
     def get_alpha_report(self):
 
-        title = ResultTypes.TsAlphaReport.value[0]
+        title = ResultTypes.TsAlphaReport.value
 
         if title not in self.reports.keys():
             self.create_alpha_report()
@@ -133,7 +133,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
     def get_alphan1_report(self):
 
-        title = ResultTypes.TsWorstAlphaN1Report.value[0]
+        title = ResultTypes.TsWorstAlphaN1Report.value
 
         if title not in self.reports.keys():
             self.create_worst_alpha_n1_report()
@@ -142,7 +142,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
     def get_generation_power_report(self):
 
-        title = ResultTypes.TsGenerationPowerReport.value[0]
+        title = ResultTypes.TsGenerationPowerReport.value
 
         if title not in self.reports.keys():
             self.create_generation_power_report()
@@ -151,7 +151,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
     def get_generation_delta_report(self):
 
-        title = ResultTypes.TsGenerationDeltaReport.value[0]
+        title = ResultTypes.TsGenerationDeltaReport.value
 
         if title not in self.reports.keys():
             self.create_generation_delta_report()
@@ -160,7 +160,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
     def get_base_report(self, loading_threshold=0.0, reverse=True):
 
-        title = f'{ResultTypes.TsBaseFlowReport.value[0]}. ' \
+        title = f'{ResultTypes.TsBaseFlowReport.value}. ' \
                 f'Loading threshold: {str(loading_threshold)}. ' \
                 f'Reverse: {str(reverse)}'
 
@@ -174,7 +174,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
     def get_contingency_full_report(self, loading_threshold, reverse=True):
 
-        title = f'{ResultTypes.TsContingencyFlowReport.value[0]}. ' \
+        title = f'{ResultTypes.TsContingencyFlowReport.value}. ' \
                 f'Loading threshold: {str(loading_threshold)}. ' \
                 f'Reverse: {str(reverse)}'
 
@@ -187,7 +187,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
     def get_branch_monitoring_report(self):
 
-        title = ResultTypes.TsBranchMonitoring.value[0]
+        title = ResultTypes.TsBranchMonitoring.value
 
         if title not in self.reports.keys():
             self.create_branch_monitoring_report()
@@ -196,7 +196,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
     def get_critical_branches_report(self, loading_threshold=100, reverse=True):
 
-        title = f'{ResultTypes.TsCriticalBranches.value[0]}. ' \
+        title = f'{ResultTypes.TsCriticalBranches.value}. ' \
                 f'Loading threshold: {str(loading_threshold)}. ' \
                 f'Reverse: {str(reverse)}'
 
@@ -210,7 +210,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
     def get_contingency_branches_report(self, loading_threshold=100, reverse=True):
 
-        title = f'{ResultTypes.TsContingencyBranches.value[0]}. ' \
+        title = f'{ResultTypes.TsContingencyBranches.value}. ' \
                 f'Loading threshold: {str(loading_threshold)}. ' \
                 f'Reverse: {str(reverse)}'
 
@@ -407,7 +407,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
     def create_alpha_report(self):
 
-        title = ResultTypes.TsAlphaReport.value[0]
+        title = ResultTypes.TsAlphaReport.value
 
         result = list(self.results_dict.values())[0]
         columns = ['Time index', 'Time'] + list(result.branch_names)
@@ -429,7 +429,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
     def create_worst_alpha_n1_report(self):
 
-        title = ResultTypes.TsWorstAlphaN1Report.value[0]
+        title = ResultTypes.TsWorstAlphaN1Report.value
 
         result = list(self.results_dict.values())[0]
         columns = ['Time index', 'Time'] + list(result.branch_names)
@@ -451,7 +451,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
     def create_generation_power_report(self):
 
-        title = ResultTypes.TsGenerationPowerReport.value[0]
+        title = ResultTypes.TsGenerationPowerReport.value
 
         labels = self.time_array
         columns = self.generator_names
@@ -471,7 +471,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
     def create_generation_delta_report(self):
 
-        title = ResultTypes.TsGenerationDeltaReport.value[0]
+        title = ResultTypes.TsGenerationDeltaReport.value
 
         labels = self.time_array
         columns = self.generator_names
@@ -491,7 +491,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
     def create_base_report(self, loading_threshold, reverse):
 
-        title = f'{ResultTypes.TsBaseFlowReport.value[0]}. ' \
+        title = f'{ResultTypes.TsBaseFlowReport.value}. ' \
                 f'Loading threshold: {str(loading_threshold)}. ' \
                 f'Reverse: {str(reverse)}'
 
@@ -538,7 +538,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
     def create_contingency_full_report(self, loading_threshold=0.0, reverse=True):
 
-        title = f'{ResultTypes.TsContingencyFlowReport.value[0]}. ' \
+        title = f'{ResultTypes.TsContingencyFlowReport.value}. ' \
                 f'Loading threshold: {str(loading_threshold)}. ' \
                 f'Reverse: {str(reverse)}'
 
@@ -597,7 +597,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
     def create_contingency_branch_report(self, loading_threshold=0.0, reverse=True):
 
-        title = f'{ResultTypes.TsContingencyFlowBranchReport.value[0]}. ' \
+        title = f'{ResultTypes.TsContingencyFlowBranchReport.value}. ' \
                 f'Loading threshold: {str(self.loading_threshold_to_report)}. ' \
                 f'Reverse: {str(reverse)}'
 
@@ -652,7 +652,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
     def create_contingency_generation_report(self, loading_threshold=0.0, reverse=True):
 
-        title = f'{ResultTypes.TsContingencyFlowGenerationReport.value[0]}. ' \
+        title = f'{ResultTypes.TsContingencyFlowGenerationReport.value}. ' \
                 f'Loading threshold: {str(loading_threshold)}. ' \
                 f'Reverse: {str(reverse)}'
 
@@ -708,7 +708,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
     def create_contingency_hvdc_report(self, loading_threshold=0.0, reverse=True):
 
-        title = f'{ResultTypes.TsContingencyFlowHvdcReport.value[0]}. ' \
+        title = f'{ResultTypes.TsContingencyFlowHvdcReport.value}. ' \
                 f'Loading threshold: {str(loading_threshold)}. ' \
                 f'Reverse: {str(reverse)}'
 
@@ -763,7 +763,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
     def create_branch_monitoring_report(self):
 
-        title = ResultTypes.TsBranchMonitoring.value[0]
+        title = ResultTypes.TsBranchMonitoring.value
 
         if len(self.results_dict.values()) == 0:
             return
@@ -797,7 +797,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
     def create_contingency_branches_report(self, loading_threshold=100.0, reverse=True):
 
-        title = f'{ResultTypes.TsContingencyBranches.value[0]}. ' \
+        title = f'{ResultTypes.TsContingencyBranches.value}. ' \
                 f'Loading threshold: {str(loading_threshold)}. ' \
                 f'Reverse: {str(reverse)}'
 
@@ -839,7 +839,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
     def create_critical_branches_report(self, loading_threshold=100.0, reverse=True):
 
-        title = f'{ResultTypes.TsCriticalBranches.value[0]}. ' \
+        title = f'{ResultTypes.TsCriticalBranches.value}. ' \
                 f'Loading threshold: {str(loading_threshold)}. ' \
                 f'Reverse: {str(reverse)}'
 

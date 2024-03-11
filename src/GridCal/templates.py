@@ -17,9 +17,9 @@
 
 import os
 import pandas as pd
-from GridCalEngine.Core.Devices.Branches.line import SequenceLineType, UndergroundLineType
-from GridCalEngine.Core.Devices.Branches.transformer import TransformerType
-from GridCalEngine.Core.Devices.Branches.wire import Wire
+from GridCalEngine.Devices.Branches.line import SequenceLineType, UndergroundLineType
+from GridCalEngine.Devices.Branches.transformer import TransformerType
+from GridCalEngine.Devices.Branches.wire import Wire
 
 
 def get_transformer_catalogue():

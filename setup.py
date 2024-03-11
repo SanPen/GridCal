@@ -27,8 +27,8 @@ here = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
-with open(os.path.join(here, 'doc', 'about.rst'), encoding='utf-8') as f:
-    description = f.read()
+#with open(os.path.join(here, 'doc', 'about.rst'), encoding='utf-8') as f:
+   # description = f.read()
 
 # create the file MANIFEST.in
 # f = open("MANIFEST.in", "w")
@@ -56,8 +56,6 @@ dependencies = ["PySide6>=6.5.0",  # for now, 5.14 breaks the UI generation for 
                 "xlrd>=1.1.0",
                 "matplotlib>=2.1.1",
                 "qtconsole>=4.5.4",
-                "pyDOE>=0.3.8",
-                "pySOT>=0.2.1",
                 "openpyxl>=2.4.9",
                 "smopy>=0.0.6",
                 "chardet>=3.0.4",
@@ -66,7 +64,7 @@ dependencies = ["PySide6>=6.5.0",  # for now, 5.14 breaks the UI generation for 
                 "pytest>=3.8",
                 "h5py>=2.9.0",
                 "numba>=0.54",
-                "pyarrow",
+                "pyarrow>=15",
                 "fastparquet",
                 "pyqtdarktheme",
                 "ortools",
@@ -102,7 +100,7 @@ setup(
     # This is a one-line description or tag-line of what your project does. This
     # corresponds to the "Summary" metadata field:
     # https://packaging.python.org/specifications/core-metadata/#summary
-    description=description,  # Optional
+    #description=description,  # Optional
 
     # This is an optional longer description of your project that represents
     # the body of text which users will see when they visit PyPI.

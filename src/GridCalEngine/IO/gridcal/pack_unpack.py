@@ -15,18 +15,21 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import math
-from typing import Dict, Union, List, Tuple
+from typing import Dict, Union, List, Tuple, Any, Callable
 import pandas as pd
 import numpy as np
 from enum import EnumMeta as EnumType
 from GridCalEngine.basic_structures import Logger
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-import GridCalEngine.Core.Devices as dev
-from GridCalEngine.Core.Devices.editable_device import GCProp
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
+import GridCalEngine.Devices as dev
+from GridCalEngine.Devices.Parents.editable_device import GCProp
+from GridCalEngine.Devices.profile import Profile
+from GridCalEngine.Devices.sparse_array import SparseArray
+from GridCalEngine.Devices.types import ALL_DEV_TYPES
 from GridCalEngine.enumerations import DiagramType, DeviceType
 
 
-def get_objects_dictionary() -> Dict[str, dev.EditableDevice]:
+def get_objects_dictionary() -> Dict[str, ALL_DEV_TYPES]:
     """
     creates a dictionary with the types and the circuit objects
     :return: Dictionary instance
@@ -39,6 +42,8 @@ def get_objects_dictionary() -> Dict[str, dev.EditableDevice]:
                     'zone': dev.Zone(),
 
                     'substation': dev.Substation(),
+
+                    'voltage_level': dev.VoltageLevel(),
 
                     'country': dev.Country(),
 
@@ -63,6 +68,10 @@ def get_objects_dictionary() -> Dict[str, dev.EditableDevice]:
                     'generator': dev.Generator(),
 
                     'shunt': dev.Shunt(),
+
+                    'linear_shunt': dev.ControllableShunt(),
+
+                    'current_injection': dev.CurrentInjection(),
 
                     'wires': dev.Wire(),
                     'overhead_line_types': dev.OverheadLineType(),
@@ -105,10 +114,11 @@ def get_objects_dictionary() -> Dict[str, dev.EditableDevice]:
     return object_types
 
 
-def create_data_frames(circuit: MultiCircuit):
+def gather_model_as_data_frames(circuit: MultiCircuit, legacy: bool = False) -> Dict[str, pd.DataFrame]:
     """
     Pack the circuit information into tables (DataFrames)
     :param circuit: MultiCircuit instance
+    :param legacy: Generate the legacy object DataFrames
     :return: dictionary of DataFrames
     """
     dfs = dict()
@@ -116,7 +126,7 @@ def create_data_frames(circuit: MultiCircuit):
     # configuration ################################################################################################
     obj = list()
     obj.append(['BaseMVA', circuit.Sbase])
-    obj.append(['Version', 4])
+    obj.append(['Version', 5])
     obj.append(['Name', str(circuit.name)])
     obj.append(['Comments', str(circuit.comments)])
 
@@ -130,16 +140,8 @@ def create_data_frames(circuit: MultiCircuit):
     dfs['config'] = pd.DataFrame(data=obj, columns=['Property', 'Value'], dtype=str)
 
     # get the master time profile
-    T = circuit.time_profile
-
-    ########################################################################################################
-    # retrieve buses information that is necessary
-    ########################################################################################################
-    # names_count = dict()
-    if len(circuit.buses) > 0:
-        for elm in circuit.buses:
-            # elm.ensure_area_objects(circuit)
-            elm.ensure_profiles_exist(T)
+    time_profile = circuit.time_profile
+    nt = len(time_profile) if time_profile is not None else 0
 
     ########################################################################################################
     # declare objects to iterate  name: [sample object, list of objects, headers]
@@ -152,76 +154,284 @@ def create_data_frames(circuit: MultiCircuit):
     ########################################################################################################
     # generic object iteration
     ########################################################################################################
-    for object_type_name, object_sample in object_types.items():
+    if legacy:
+        for object_type_name, object_sample in object_types.items():
 
-        headers = object_sample.registered_properties.keys()
+            headers = object_sample.registered_properties.keys()
 
-        lists_of_objects = circuit.get_elements_by_type(object_sample.device_type)
+            lists_of_objects = circuit.get_elements_by_type(object_sample.device_type)
 
-        obj = list()
-        profiles = dict()
-        object_idtags = list()
-        if len(lists_of_objects) > 0:
+            obj = list()
+            profiles = dict()
+            object_idtags = list()
+            if len(lists_of_objects) > 0:
 
-            for k, elm in enumerate(lists_of_objects):
+                for k, elm in enumerate(lists_of_objects):
 
-                # get the object normal information
-                obj.append(elm.get_save_data())
-                object_idtags.append(elm.idtag)
+                    # get the object normal information
+                    obj.append(elm.get_save_data())
+                    object_idtags.append(elm.idtag)
 
-                if T is not None:
-                    nt = len(T)
-                    if nt > 0:
+                    if time_profile is not None:
 
-                        elm.ensure_profiles_exist(T)
+                        if nt > 0:
 
-                        for profile_property in object_sample.properties_with_profile.values():
+                            elm.ensure_profiles_exist(time_profile)
 
-                            # get the array
-                            arr = getattr(elm, profile_property)
+                            for property_name, profile_property in object_sample.properties_with_profile.items():
 
-                            if profile_property not in profiles.keys():
-                                # create the profile
-                                profiles[profile_property] = np.zeros((nt, len(lists_of_objects)), dtype=arr.dtype)
+                                # get the array
+                                profile = elm.get_profile(magnitude=property_name)
 
-                            # copy the object profile to the array of profiles
-                            profiles[profile_property][:, k] = arr
+                                if profile_property not in profiles.keys():
+                                    # create the profile
+                                    profiles[profile_property] = np.zeros(shape=(nt, len(lists_of_objects)),
+                                                                          dtype=profile.dtype)
 
-            # convert the objects' list to an array
-            dta = np.array(obj)
-        else:
-            # declare an empty array
-            dta = np.zeros((0, len(headers)))
+                                # copy the object profile to the array of profiles
+                                profiles[profile_property][:, k] = profile.toarray()
 
-        # declare the DataFrames for the normal data
-        dfs[object_type_name] = pd.DataFrame(data=dta, columns=list(headers))
+                # convert the objects' list to an array
+                dta = np.array(obj)
+            else:
+                # declare an empty array
+                dta = np.zeros((0, len(headers)))
 
-        # create the profiles' DataFrames
-        for prop, data in profiles.items():
-            dfs[object_type_name + '_' + prop] = pd.DataFrame(data=data, columns=object_idtags, index=T)
+            # declare the DataFrames for the normal data
+            dfs[object_type_name] = pd.DataFrame(data=dta, columns=list(headers))
 
-    # towers and wires -------------------------------------------------------------------------------------------------
-    # because each tower contains a reference to a number of wires, these relations need to be stored as well
-    associations = list()
-    for tower in circuit.overhead_line_types:
-        for wire in tower.wires_in_tower:
-            associations.append([tower.name, wire.name, wire.xpos, wire.ypos, wire.phase])
+            # create the profiles' DataFrames
+            for prop, data in profiles.items():
+                dfs[object_type_name + '_' + prop] = pd.DataFrame(data=data, columns=object_idtags, index=time_profile)
 
-    dfs['tower_wires'] = pd.DataFrame(data=associations, columns=['tower_name', 'wire_name', 'xpos', 'ypos', 'phase'])
+        # towers and wires ---------------------------------------------------------------------------------------------
+        # because each tower contains a reference to a number of wires, these relations need to be stored as well
+        associations = list()
+        for tower in circuit.overhead_line_types:
+            for wire in tower.wires_in_tower:
+                associations.append([tower.name, wire.name, wire.xpos, wire.ypos, wire.phase])
 
-    # Time -------------------------------------------------------------------------------------------------------------
+        dfs['tower_wires'] = pd.DataFrame(data=associations,
+                                          columns=['tower_name', 'wire_name', 'xpos', 'ypos', 'phase'])
 
-    if circuit.time_profile is not None:
-        if isinstance(circuit.time_profile, pd.DatetimeIndex):
-            time_df = pd.DataFrame(data=circuit.time_profile.values, columns=['Time'])
-        else:
-            time_df = pd.DataFrame(data=circuit.time_profile, columns=['Time'])
-        dfs['time'] = time_df
+        # Time ---------------------------------------------------------------------------------------------------------
+
+        if circuit.time_profile is not None:
+            if isinstance(circuit.time_profile, pd.DatetimeIndex):
+                time_df = pd.DataFrame(data=circuit.time_profile.values, columns=['Time'])
+            else:
+                time_df = pd.DataFrame(data=circuit.time_profile, columns=['Time'])
+            dfs['time'] = time_df
 
     return dfs
 
 
-def search_property(template_elm: dev.EditableDevice,
+def profile_todict(profile: Profile) -> Dict[str, str]:
+    """
+    Get a dictionary representation of the profile
+    :return:
+    """
+    s = profile.size()
+
+    if s > 0:
+        if profile.is_sparse:
+            return {
+                'is_sparse': True,
+                'size': s,
+                'default': profile.sparse_array.default_value,
+                'sparse_data': {
+                    'map': profile.sparse_array.get_map()
+                }
+            }
+        else:
+            return {
+                'is_sparse': False,
+                'size': s,
+                'default': profile.default_value,
+                'dense_data': profile.dense_array.tolist(),
+            }
+    else:
+        return {
+            'is_sparse': True,
+            'size': s,
+            'default': profile.default_value
+            if profile.sparse_array is None else profile.sparse_array.default_value,
+            'sparse_data': {
+                'map': dict()
+            }
+        }
+
+
+def profile_todict_idtag(profile: Profile) -> Dict[str, str]:
+    """
+    Get a dictionary representation of the profile
+    :return:
+    """
+    default = profile.default_value.idtag if hasattr(profile.default_value, 'idtag') else "None"
+
+    if profile.is_sparse:
+        return {
+            'is_sparse': profile.is_sparse,
+            'size': profile.size(),
+            'default': default,
+            'sparse_data': {
+                'map': {key: val.idtag for key, val in profile.sparse_array.get_map().items()}
+                if profile.sparse_array else dict()
+            }
+        }
+    else:
+        return {
+            'is_sparse': profile.is_sparse,
+            'size': profile.size(),
+            'default': default,
+            'dense_data': [e.idtag for e in profile.dense_array] if profile.dense_array else list(),
+        }
+
+
+def profile_todict_str(profile: Profile) -> Dict[str, str]:
+    """
+    Get a dictionary representation of the profile
+    :return:
+    """
+    s = profile.size()
+
+    if s > 0:
+        if profile.is_sparse:
+            return {
+                'is_sparse': True,
+                'size': s,
+                'default': str(profile.default_value),
+                'sparse_data': {
+                    'map': {key: str(val) for key, val in profile.sparse_array.get_map().items()}
+                }
+            }
+        else:
+            return {
+                'is_sparse': False,
+                'size': s,
+                'default': str(profile.default_value),
+                'dense_data': [str(e) for e in profile.dense_array],
+            }
+    else:
+        # empty profile
+        return {
+            'is_sparse': True,
+            'size': s,
+            'default': str(profile.default_value),
+            'sparse_data': {
+                'map': dict()
+            }
+        }
+
+
+def get_profile_from_dict(data: Dict[str, Union[str, Union[Any, Dict[str, Any]]]],
+                          collection: Union[None, Dict[str, Any]] = None) -> Profile:
+    """
+    Create a profile from json dict data
+    :param data: Json dict data
+    :param collection: if the collection is provided, it will be used to convert idtags into objects
+    :return: Profile
+    """
+    default_value = data['default']
+    profile = Profile(default_value=default_value, is_sparse=bool(data['is_sparse']))
+
+    if profile.is_sparse:
+        sp_data = data['sparse_data']
+        profile._sparse_array = SparseArray()
+        if collection is None:
+            map_data = {int(key): val for key, val in sp_data['map'].items()}
+
+        else:
+            default_value = collection.get(data['default'], default_value)
+            map_data = {int(key): collection.get(val, default_value) for key, val in sp_data['map'].items()}
+
+        profile.sparse_array.create_from_dict(default_value=default_value, size=data['size'], map_data=map_data)
+    else:
+
+        if collection is None:
+            arr = data['dense_data']
+        else:
+            arr = [collection.get(i, default_value) for i in data['dense_data']]
+        profile.set(np.array(arr))
+    profile.set_initialized()
+    return profile
+
+
+def gridcal_object_to_json(elm: ALL_DEV_TYPES) -> Dict[str, str]:
+    """
+
+    :param elm:
+    :return:
+    """
+
+    data = dict()
+    for name, prop in elm.registered_properties.items():
+        obj = elm.get_snapshot_value(prop=prop)
+
+        if prop.tpe in [str, float, int, bool]:
+            data[name] = obj
+
+            if prop.has_profile():
+                data[name + '_prof'] = profile_todict(elm.get_profile_by_prop(prop=prop))
+
+        elif prop.tpe == DeviceType.GeneratorQCurve:
+            data[name] = obj.str()
+
+        else:
+            # if the object is not of a primary type, get the idtag instead
+            if hasattr(obj, 'idtag'):
+                data[name] = obj.idtag
+
+                if prop.has_profile():
+                    data[name + '_prof'] = profile_todict_idtag(elm.get_profile_by_prop(prop=prop))
+
+            else:
+                # some data types might not have the idtag, ten just use the str method
+                data[name] = str(obj)
+
+                if prop.has_profile():
+                    data[name + '_prof'] = profile_todict_str(elm.get_profile_by_prop(prop=prop))
+
+    return data
+
+
+def gather_model_as_jsons(circuit: MultiCircuit) -> Dict[str, Dict[str, str]]:
+    """
+
+    :param circuit:
+    :return:
+    """
+    data: Dict[str, Union[Dict[str, str], List[Dict[str, str]]]] = dict()
+
+    # declare objects to iterate  name: [sample object, list of objects, headers]
+    object_types = get_objects_dictionary()
+
+    del object_types['branch']
+
+    # generic object iteration
+    for object_type_name, object_sample in object_types.items():
+
+        object_json = list()
+
+        lists_of_objects = circuit.get_elements_by_type(object_sample.device_type)
+
+        if len(lists_of_objects) > 0:
+
+            for k, elm in enumerate(lists_of_objects):
+                obj_data = gridcal_object_to_json(elm)
+                object_json.append(obj_data)
+
+        data[object_type_name] = object_json
+
+    # time
+    unix_time = circuit.get_unix_time()
+    data['time'] = {'unix': unix_time.tolist(),
+                    'prob': list(np.ones(len(unix_time)))}
+
+    return data
+
+
+def search_property(template_elm: ALL_DEV_TYPES,
                     old_props_dict: Dict[str, str],
                     property_to_search: str,
                     logger: Logger) -> Union[GCProp, None]:
@@ -258,7 +468,7 @@ def search_property(template_elm: dev.EditableDevice,
         return gc_prop
 
 
-def look_for_property(elm: dev.EditableDevice, property_name) -> Union[GCProp, None]:
+def look_for_property(elm: ALL_DEV_TYPES, property_name) -> Union[GCProp, None]:
     """
 
     :param elm:
@@ -290,6 +500,8 @@ def valid_value(val) -> bool:
             return False
         if val == '':
             return False
+        if val == 'None':
+            return False
     if isinstance(val, float):
         if math.isnan(val):
             return False
@@ -298,30 +510,98 @@ def valid_value(val) -> bool:
     return True
 
 
-def parse_df(df: pd.DataFrame,
-             template_elm: dev.EditableDevice,
-             elements_dict_by_type,
-             time_profile,
-             object_type_key: str,
-             data: Dict[str, Union[float, str, pd.DataFrame]],
-             logger: Logger) -> Tuple[List[dev.EditableDevice], Dict[str, dev.EditableDevice]]:
+def look_in_collection_by_name(key: str, collection: Dict[str, ALL_DEV_TYPES]) -> Union[ALL_DEV_TYPES, None]:
     """
-    
-    :param df: 
-    :param template_elm: 
-    :param elements_dict_by_type: 
-    :param time_profile: 
-    :param object_type_key: 
-    :param data: 
-    :param logger: 
-    :return: 
+    Look in a collection for an element by its name instead of by Idtag
+    :param key: name of the element
+    :param collection: Collection to look into
+    :return: Device or None if not found
+    """
+    for idtag, elm in collection.items():
+        if elm.name == key:
+            return elm
+    return None
+
+
+class CreatedOnTheFly:
+    """
+    This class is to pack all those devices that are created "on the fly" to support legacy formats
+    """
+
+    def __init__(self):
+        # legacy operations: this is from when area, zone and substation were strings,
+        # now we create those objects on the fly
+        self.legacy_area_dict: Dict[str, dev.Area] = dict()
+        self.legacy_zone_dict: Dict[str, dev.Zone] = dict()
+        self.legacy_substation_dict: Dict[str, dev.Substation] = dict()
+
+    def get_create_area(self, property_value):
+        """
+
+        :param property_value:
+        :return:
+        """
+        area = self.legacy_area_dict.get(property_value, None)
+        if area is None:
+            area = dev.Area(name=str(property_value))
+            self.legacy_area_dict[property_value] = area
+        return area
+
+    def get_create_zone(self, property_value):
+        """
+
+        :param property_value:
+        :return:
+        """
+        zone = self.legacy_zone_dict.get(property_value, None)
+        if zone is None:
+            zone = dev.Zone(name=str(property_value))
+            self.legacy_zone_dict[property_value] = zone
+        return zone
+
+    def get_create_substation(self, property_value):
+        """
+
+        :param property_value:
+        :return:
+        """
+        substation = self.legacy_substation_dict.get(property_value, None)
+        if substation is None:
+            substation = dev.Substation(name=str(property_value))
+            self.legacy_substation_dict[property_value] = substation
+        return substation
+
+
+def parse_object_type_from_dataframe(main_df: pd.DataFrame,
+                                     template_elm: ALL_DEV_TYPES,
+                                     elements_dict_by_type: Dict[DeviceType, Dict[str, ALL_DEV_TYPES]],
+                                     time_profile: pd.DatetimeIndex,
+                                     object_type_key: str,
+                                     data: Dict[str, Union[float, str, pd.DataFrame]],
+                                     logger: Logger) -> Tuple[
+    List[ALL_DEV_TYPES], Dict[str, ALL_DEV_TYPES], CreatedOnTheFly]:
+    """
+    Convert a DataFrame to a list of GridCal devices
+    :param main_df: DataFrame to convert
+    :param template_elm: Element to use as template for conversion
+    :param elements_dict_by_type: Dictionary of devices grouped by type used to look for referenced objects
+                                    elements_dict_by_type[DeviceType][idtag] -> device
+    :param time_profile: Master time profile
+    :param object_type_key: Object type naming to find the profile
+    :param data: Complete data collection to find the profiles
+    :param logger: Logger instance
+    :return: devices, devices_dict
     """
     # dictionary to be filled with this type of objects
-    devices_dict: Dict[str, dev.EditableDevice] = dict()
-    devices: List[dev.EditableDevice] = list()
+    devices_dict: Dict[str, ALL_DEV_TYPES] = dict()
+    devices: List[ALL_DEV_TYPES] = list()
+
+    # legacy operations: this is from when area, zone and substation were strings,
+    # now we create those objects on the fly
+    on_the_fly = CreatedOnTheFly()
 
     # parse each object of the dataframe
-    for i, row in df.iterrows():
+    for i, row in main_df.iterrows():
 
         # create device
         idtag = row.get('idtag', None)
@@ -329,7 +609,11 @@ def parse_df(df: pd.DataFrame,
 
         # ensure the profiles existence
         if time_profile is not None:
-            elm.ensure_profiles_exist(time_profile)
+            nt = len(time_profile)
+            if nt > 0:
+                elm.ensure_profiles_exist(index=time_profile)
+        else:
+            nt = 0
 
         # parse each property of the row
         for property_name_, property_value in row.items():
@@ -342,14 +626,23 @@ def parse_df(df: pd.DataFrame,
 
                     if valid_value(property_value):
 
-                        # the property of the file exists, parse it
+                        if gc_prop.has_profile():
+                            prof = elm.get_profile(magnitude=gc_prop.name)
+                            if 0 < nt != prof.size():
+                                prof.resize(nt)
+                        else:
+                            prof = None
 
+                        # the property of the file exists, parse it
                         if isinstance(gc_prop.tpe, DeviceType):
 
                             if gc_prop.tpe == DeviceType.GeneratorQCurve:
                                 val = dev.GeneratorQCurve()
                                 val.parse(property_value)
-                                setattr(elm, property_name, val)
+                                elm.set_snapshot_value(gc_prop.name, val)
+
+                                if gc_prop.has_profile():
+                                    prof.fill(val)
 
                             else:
                                 # we must look for the refference in elements_dict
@@ -360,41 +653,103 @@ def parse_df(df: pd.DataFrame,
                                     ref_elm = collection.get(ref_idtag, None)
 
                                     if ref_elm is not None:
-                                        setattr(elm, property_name, ref_elm)
+                                        elm.set_snapshot_value(gc_prop.name, ref_elm)
+
+                                        if gc_prop.has_profile():
+                                            prof.fill(ref_elm)
+
                                     else:
-                                        logger.add_error("Could not locate refference",
+
+                                        # legacy operations: this is from when grids referenced buses by name
+                                        if gc_prop.name in ['bus_from', 'bus_to', 'bus']:
+                                            ref_elm = look_in_collection_by_name(key=ref_idtag, collection=collection)
+                                            if ref_elm is None:
+                                                could_not_fix_it = True
+                                            else:
+                                                could_not_fix_it = False
+
+                                                elm.set_snapshot_value(gc_prop.name, ref_elm)
+
+                                                if gc_prop.has_profile():
+                                                    prof.fill(ref_elm)
+                                        else:
+                                            could_not_fix_it = True
+
+                                        if could_not_fix_it:
+                                            logger.add_error("Could not locate refference",
+                                                             device=row.get('idtag', 'not provided'),
+                                                             device_class=template_elm.device_type.value,
+                                                             device_property=gc_prop.name,
+                                                             value=ref_idtag)
+                                else:
+
+                                    # legacy operations: this is from when area, zone and substation were strings
+                                    if gc_prop.name == 'area':
+
+                                        if str(property_value).strip() != '':
+                                            area = on_the_fly.get_create_area(property_value=str(property_value))
+                                            elm.set_snapshot_value(gc_prop.name, area)
+
+                                    elif gc_prop.name == 'zone':
+
+                                        if str(property_value).strip() != '':
+                                            zone = on_the_fly.get_create_zone(property_value=str(property_value))
+                                            elm.set_snapshot_value(gc_prop.name, zone)
+
+                                    elif gc_prop.name == 'substation':
+
+                                        if str(property_value).strip() != '':
+                                            substation = on_the_fly.get_create_substation(
+                                                property_value=str(property_value))
+                                            elm.set_snapshot_value(gc_prop.name, substation)
+                                    elif gc_prop.name == 'template' and property_value == 'BranchTemplate':
+                                        # skip this
+                                        pass
+                                    else:
+
+                                        logger.add_error("No device of the refferenced type",
                                                          device=row.get('idtag', 'not provided'),
                                                          device_class=template_elm.device_type.value,
-                                                         device_property=property_name,
-                                                         value=ref_idtag)
-                                else:
-                                    logger.add_error("No device of the refferenced type",
-                                                     device=row.get('idtag', 'not provided'),
-                                                     device_class=template_elm.device_type.value,
-                                                     device_property=property_name,
-                                                     value=property_value)
+                                                         device_property=gc_prop.name,
+                                                         value=property_value)
 
                         elif gc_prop.tpe == str:
                             # set the value directly
-                            setattr(elm, property_name, property_value)
+                            elm.set_snapshot_value(gc_prop.name, str(property_value))
+
+                            if gc_prop.has_profile():
+                                prof.fill(str(property_value))
 
                         elif gc_prop.tpe == float:
                             # set the value directly
-                            setattr(elm, property_name, float(property_value))
+                            elm.set_snapshot_value(gc_prop.name, float(property_value))
+
+                            if gc_prop.has_profile():
+                                prof.fill(float(property_value))
 
                         elif gc_prop.tpe == int:
                             # set the value directly
-                            setattr(elm, property_name, int(property_value))
+                            elm.set_snapshot_value(gc_prop.name, int(property_value))
+
+                            if gc_prop.has_profile():
+                                prof.fill(int(property_value))
 
                         elif gc_prop.tpe == bool:
                             # set the value directly
-                            setattr(elm, property_name, bool(property_value))
+                            elm.set_snapshot_value(gc_prop.name, bool(property_value))
+
+                            if gc_prop.has_profile():
+                                prof.fill(bool(property_value))
 
                         elif isinstance(gc_prop.tpe, EnumType):
 
                             try:
                                 val = gc_prop.tpe(property_value)
-                                setattr(elm, property_name, val)
+                                elm.set_snapshot_value(gc_prop.name, val)
+
+                                if gc_prop.has_profile():
+                                    prof.fill(val)
+
                             except ValueError:
                                 logger.add_error(f'Cannot cast value to {gc_prop.tpe}',
                                                  device=elm.name,
@@ -417,18 +772,234 @@ def parse_df(df: pd.DataFrame,
                         dfp = data.get(profile_key, None)
 
                         if dfp is not None:
-                            profile = dfp.values[:, i].astype(gc_prop.tpe)
-                            setattr(elm, gc_prop.profile_name, profile)
+                            elm.set_profile(gc_prop, arr=dfp.values[:, i].astype(gc_prop.tpe))
 
                         else:
                             logger.add_info('No profile for the property', value=gc_prop.name)
 
                 else:
                     # the property does not exists, neither in the old names
-                    logger.add_error("File property could not be found",
-                                     device=row.get('idtag', 'not provided'),
-                                     device_class=template_elm.device_type.value,
-                                     device_property=property_name)
+                    skip = False
+                    if template_elm.device_type == DeviceType.ShuntDevice:
+                        if property_name in ['is_controlled', 'Bmin', 'Bmax', 'Vset']:
+                            skip = True
+
+                    if not skip:
+                        logger.add_warning("Property in the file is not found in the model",
+                                           device=row.get('idtag', 'not provided'),
+                                           device_class=template_elm.device_type.value,
+                                           device_property=property_name)
+
+        # save the element in the dictionary for later
+        devices_dict[elm.idtag] = elm
+        devices.append(elm)
+
+    return devices, devices_dict, on_the_fly
+
+
+def searc_property_into_json(json_entry: dict, prop: GCProp):
+    """
+    Find property in Json entry
+    :param json_entry: json of an object
+    :param prop: GCProp
+    :return: value or None if not found
+    """
+
+    # search for the main property
+    property_value = json_entry.get(prop.name, None)
+
+    if property_value is None:
+
+        # if not found, search for an old property
+        for p_name in prop.old_names:
+            property_value = json_entry.get(p_name, None)
+            if property_value is not None:
+                return property_value
+
+        # we couldn't find the property or the old names...
+        return None
+
+    else:
+
+        # we found the property at first
+        return property_value
+
+
+def search_and_apply_json_profile(json_entry: Dict[str, Dict[str, Union[str, Union[Any, Dict[str, Any]]]]],
+                                  gc_prop: GCProp,
+                                  elm: ALL_DEV_TYPES,
+                                  property_value: Any,
+                                  collection: Union[None, Dict[str, Any]] = None) -> None:
+    """
+    Search fro the property profiles into the json and apply it
+    :param json_entry: Json entry of an object
+    :param gc_prop: GCProp
+    :param elm: THe device to set the profile into
+    :param property_value: The snapshot value
+    :param collection: if the collection is provided, it will be used to convert idtags into objects
+    :return: None
+    """
+    if gc_prop.has_profile():
+
+        # search the profile in the json
+        json_profile = json_entry.get(gc_prop.profile_name, None)
+
+        if json_profile is None:
+            # the profile was not found, so we fill it with the default stuff
+            elm.get_profile(magnitude=gc_prop.name).fill(property_value)
+        else:
+            profile = get_profile_from_dict(data=json_profile, collection=collection)
+            elm.set_profile(prop=gc_prop, arr=profile)
+
+
+def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
+                                data_list: List[Dict[str, Dict[str, str]]],
+                                elements_dict_by_type: Dict[DeviceType, Dict[str, ALL_DEV_TYPES]],
+                                time_profile: pd.DatetimeIndex,
+                                logger: Logger):
+    """
+
+    :param template_elm:
+    :param data_list:
+    :param elements_dict_by_type:
+    :param time_profile:
+    :param logger:
+    :return:
+    """
+    # dictionary to be filled with this type of objects
+    devices_dict: Dict[str, ALL_DEV_TYPES] = dict()
+    devices: List[ALL_DEV_TYPES] = list()
+
+    for json_entry in data_list:
+        idtag = json_entry['idtag']
+        elm = type(template_elm)(idtag=idtag)
+
+        # ensure the profiles existence
+        if time_profile is not None:
+            elm.ensure_profiles_exist(index=time_profile)
+
+        # for property_name_, property_value in json_entry.items():
+        for property_name, gc_prop in template_elm.registered_properties.items():
+
+            # search for the property in the json
+            property_value = searc_property_into_json(json_entry, gc_prop)
+
+            if property_value is not None:
+
+                if property_name != 'idtag':  # idtag was set already
+                    # gc_prop: GCProp = look_for_property(elm=elm, property_name=property_name)
+
+                    if gc_prop is not None:
+
+                        if valid_value(property_value):
+
+                            if isinstance(gc_prop.tpe, DeviceType):
+
+                                if gc_prop.tpe == DeviceType.GeneratorQCurve:
+                                    val = dev.GeneratorQCurve()
+                                    val.parse(property_value)
+                                    elm.set_snapshot_value(gc_prop.name, val)
+                                    search_and_apply_json_profile(json_entry=json_entry,
+                                                                  gc_prop=gc_prop,
+                                                                  elm=elm,
+                                                                  property_value=val)
+
+                                else:
+                                    # we must look for the refference in elements_dict
+                                    collection = elements_dict_by_type.get(gc_prop.tpe, None)
+
+                                    if collection is not None:
+                                        ref_idtag = str(property_value)
+                                        ref_elm = collection.get(ref_idtag, None)
+
+                                        if ref_elm is not None:
+                                            elm.set_snapshot_value(gc_prop.name, ref_elm)
+                                            search_and_apply_json_profile(json_entry=json_entry,
+                                                                          gc_prop=gc_prop,
+                                                                          elm=elm,
+                                                                          property_value=ref_elm,
+                                                                          collection=collection)
+
+                                        else:
+                                            logger.add_error("Could not locate refference",
+                                                             device=elm.idtag,
+                                                             device_class=template_elm.device_type.value,
+                                                             device_property=gc_prop.name,
+                                                             value=ref_idtag)
+                                    else:
+                                        logger.add_error("No device of the refferenced type",
+                                                         device=elm.idtag,
+                                                         device_class=template_elm.device_type.value,
+                                                         device_property=gc_prop.name,
+                                                         value=property_value)
+
+                            elif gc_prop.tpe == str:
+                                # set the value directly
+                                val = str(property_value)
+                                elm.set_snapshot_value(gc_prop.name, val)
+                                search_and_apply_json_profile(json_entry=json_entry,
+                                                              gc_prop=gc_prop,
+                                                              elm=elm,
+                                                              property_value=val)
+
+                            elif gc_prop.tpe == float:
+                                # set the value directly
+                                val = float(property_value)
+                                elm.set_snapshot_value(gc_prop.name, val)
+                                search_and_apply_json_profile(json_entry=json_entry,
+                                                              gc_prop=gc_prop,
+                                                              elm=elm,
+                                                              property_value=val)
+
+                            elif gc_prop.tpe == int:
+                                # set the value directly
+                                val = int(property_value)
+                                elm.set_snapshot_value(gc_prop.name, val)
+                                search_and_apply_json_profile(json_entry=json_entry,
+                                                              gc_prop=gc_prop,
+                                                              elm=elm,
+                                                              property_value=val)
+
+                            elif gc_prop.tpe == bool:
+                                # set the value directly
+                                val = bool(property_value)
+                                elm.set_snapshot_value(gc_prop.name, val)
+                                search_and_apply_json_profile(json_entry=json_entry,
+                                                              gc_prop=gc_prop,
+                                                              elm=elm,
+                                                              property_value=val)
+
+                            elif isinstance(gc_prop.tpe, EnumType):
+
+                                try:
+                                    val = gc_prop.tpe(property_value)
+                                    elm.set_snapshot_value(gc_prop.name, val)
+                                    search_and_apply_json_profile(json_entry=json_entry,
+                                                                  gc_prop=gc_prop,
+                                                                  elm=elm,
+                                                                  property_value=val)
+
+                                except ValueError:
+                                    logger.add_error(f'Cannot cast value to {gc_prop.tpe}',
+                                                     device=elm.name,
+                                                     value=property_value)
+
+                            else:
+                                raise Exception(f'Unsupported property type: {gc_prop.tpe}')
+
+                        else:
+                            # invalid property value
+                            pass
+                    else:
+                        # property not found
+                        pass
+
+                else:
+                    # the property is idtag
+                    pass
+            else:
+                # the object property was not found in the json entry
+                pass
 
         # save the element in the dictionary for later
         devices_dict[elm.idtag] = elm
@@ -437,11 +1008,15 @@ def parse_df(df: pd.DataFrame,
     return devices, devices_dict
 
 
-def data_frames_to_circuit(data: Dict[str, Union[str, float, Dict, pd.DataFrame]],
-                           logger: Logger = Logger()) -> MultiCircuit:
+def parse_gridcal_data(data: Dict[str, Union[str, float, Dict, pd.DataFrame, Dict[str, Any]]],
+                       text_func: Union[Callable, None] = None,
+                       progress_func: Union[Callable, None] = None,
+                       logger: Logger = Logger()) -> MultiCircuit:
     """
     Interpret data dictionary
     :param data: dictionary of data frames and other information
+    :param text_func: text callback function
+    :param progress_func: progress callback function
     :param logger: Logger to register events
     :return: MultiCircuit instance
     """
@@ -486,8 +1061,14 @@ def data_frames_to_circuit(data: Dict[str, Union[str, float, Dict, pd.DataFrame]
     elements_dict_by_type = dict()
 
     # ------------------------------------------------------------------------------------------------------------------
+    # Legacy DataFrame processing
     # for each element type...
+    item_count = 0
+    n_data_types = len(data_model_object_types)
     for object_type_key, template_elm in data_model_object_types.items():
+
+        if text_func is not None:
+            text_func(f"Parsing {object_type_key} table data...")
 
         # try to get the DataFrame
         df = data.get(object_type_key, None)
@@ -497,13 +1078,23 @@ def data_frames_to_circuit(data: Dict[str, Union[str, float, Dict, pd.DataFrame]
             # fill in the objects
             if df.shape[0] > 0:
 
-                devices, devices_dict = parse_df(df=df,
-                                                 template_elm=template_elm,
-                                                 elements_dict_by_type=elements_dict_by_type,
-                                                 time_profile=circuit.time_profile,
-                                                 object_type_key=object_type_key,
-                                                 data=data,
-                                                 logger=logger)
+                devices, devices_dict, on_the_fly = parse_object_type_from_dataframe(
+                    main_df=df,
+                    template_elm=template_elm,
+                    elements_dict_by_type=elements_dict_by_type,
+                    time_profile=circuit.time_profile,
+                    object_type_key=object_type_key,
+                    data=data,
+                    logger=logger
+                )
+
+                # add the elements that were created on the fly...
+                for name, on_the_fly_elm in on_the_fly.legacy_area_dict.items():
+                    circuit.add_area(obj=on_the_fly_elm)
+                for name, on_the_fly_elm in on_the_fly.legacy_zone_dict.items():
+                    circuit.add_zone(obj=on_the_fly_elm)
+                for name, on_the_fly_elm in on_the_fly.legacy_substation_dict.items():
+                    circuit.add_substation(obj=on_the_fly_elm)
 
                 # set the dictionary per type for later
                 elements_dict_by_type[template_elm.device_type] = devices_dict
@@ -520,7 +1111,64 @@ def data_frames_to_circuit(data: Dict[str, Union[str, float, Dict, pd.DataFrame]
             # the file does not contain information for the data type (not a problem...)
             pass
 
+        if progress_func is not None:
+            progress_func(float(item_count + 1) / float(n_data_types) * 100)
+
+        item_count += 1
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # New way of parsing information from .model files.
+    # These files are just .json stored in the model_data inside the zip file
+    model_data = data.get('model_data', None)
+    if model_data is not None:
+
+        if len(model_data) > 0:
+
+            tdata = model_data.get('time', None)
+            if tdata is not None:
+                circuit.set_unix_time(arr=tdata['unix'])
+            else:
+                logger.add_error(msg=f'The file must have time data regardless of the profiles existance')
+                circuit.time_profile = None
+
+            # for each element type...
+            item_count = 0
+            n_data_types = len(data_model_object_types)
+            for object_type_key, template_elm in data_model_object_types.items():
+
+                if text_func is not None:
+                    text_func(f"Parsing {object_type_key} model data...")
+
+                # query the device type into the data set
+                data_list = model_data.get(object_type_key, None)
+
+                if data_list is not None:
+                    devices, devices_dict = parse_object_type_from_json(template_elm=template_elm,
+                                                                        data_list=data_list,
+                                                                        elements_dict_by_type=elements_dict_by_type,
+                                                                        time_profile=circuit.time_profile,
+                                                                        logger=logger)
+
+                    # set the dictionary per type for later
+                    elements_dict_by_type[template_elm.device_type] = devices_dict
+
+                    # add the devices to the circuit
+                    circuit.set_elements_by_type(device_type=template_elm.device_type,
+                                                 devices=devices,
+                                                 logger=logger)
+                else:
+                    # branch is a legacy structure, so we can avoid reporting its absence
+                    if object_type_key != 'branch':
+                        logger.add_warning(msg=f'No data for {object_type_key}')
+
+                if progress_func is not None:
+                    progress_func(float(item_count + 1) / float(n_data_types) * 100)
+
+                item_count += 1
+
     # fill in wires into towers ----------------------------------------------------------------------------------------
+    if text_func is not None:
+        text_func("Tower wires...")
     if 'tower_wires' in data.keys():
         df = data['tower_wires']
 
@@ -530,7 +1178,6 @@ def data_frames_to_circuit(data: Dict[str, Union[str, float, Dict, pd.DataFrame]
 
             if ((tower_name in elements_dict_by_type[DeviceType.OverheadLineTypeDevice].keys()) and
                     (wire_name in elements_dict_by_type[DeviceType.WireDevice].keys())):
-
                 tower: dev.OverheadLineType = elements_dict_by_type[DeviceType.OverheadLineTypeDevice][tower_name]
                 wire: dev.Wire = elements_dict_by_type[DeviceType.WireDevice][wire_name]
                 xpos = df['xpos'].values[i]
@@ -541,6 +1188,8 @@ def data_frames_to_circuit(data: Dict[str, Union[str, float, Dict, pd.DataFrame]
                 tower.add_wire(w)
 
     # create diagrams --------------------------------------------------------------------------------------------------
+    if text_func is not None:
+        text_func("Parsing diagrams...")
     if 'diagrams' in data.keys():
 
         if len(data['diagrams']):
@@ -564,5 +1213,8 @@ def data_frames_to_circuit(data: Dict[str, Union[str, float, Dict, pd.DataFrame]
                     circuit.add_diagram(diagram)
                 else:
                     print('unrecognized diagram', diagram_dict['type'])
+
+    if text_func is not None:
+        text_func("Done!")
 
     return circuit

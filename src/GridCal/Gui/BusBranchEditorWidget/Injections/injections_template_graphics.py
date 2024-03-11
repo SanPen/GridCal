@@ -20,11 +20,11 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QPen, QCursor
 from PySide6.QtWidgets import QGraphicsLineItem, QGraphicsItemGroup
 from GridCal.Gui.BusBranchEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER
-from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg
 from GridCalEngine.enumerations import DeviceType
-from GridCalEngine.Core.Devices.Injections.injection_template import InjectionTemplate
-from GridCalEngine.Core.Devices.Fluid.fluid_injection_template import FluidInjectionTemplate
+from GridCalEngine.Devices.Parents.injection_parent import InjectionParent
+from GridCalEngine.Devices.Fluid.fluid_injection_template import FluidInjectionTemplate
+from GridCalEngine.Devices.types import INJECTION_DEVICE_TYPES
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
@@ -37,7 +37,7 @@ class InjectionTemplateGraphicItem(QGraphicsItemGroup):
 
     def __init__(self,
                  parent,
-                 api_obj: Union[InjectionTemplate, FluidInjectionTemplate],
+                 api_obj: INJECTION_DEVICE_TYPES,
                  device_type_name: str,
                  w: int,
                  h: int,
@@ -54,6 +54,8 @@ class InjectionTemplateGraphicItem(QGraphicsItemGroup):
 
         self.w = w
         self.h = h
+
+        self.scale = 1.0
 
         self.parent = parent
 
@@ -122,13 +124,13 @@ class InjectionTemplateGraphicItem(QGraphicsItemGroup):
         """
         if ask:
             ok = yes_no_question('Are you sure that you want to remove this ' + self.device_type_name + '?',
-                                 'Remove load')
+                                 'Remove ' + self.api_object.name)
         else:
             ok = True
 
         if ok:
             self.editor.remove_from_scene(self.nexus)
-            self.editor.remove_element(device=self, graphic_object=self.api_object)
+            self.editor.remove_element(device=self.api_object, graphic_object=self)
 
     def mousePressEvent(self, QGraphicsSceneMouseEvent):
         """
@@ -136,15 +138,10 @@ class InjectionTemplateGraphicItem(QGraphicsItemGroup):
         :param QGraphicsSceneMouseEvent:
         :return:
         """
-        mdl = ObjectsModel(objects=[self.api_object],
-                           editable_headers=self.api_object.registered_properties,
-                           parent=self.editor.object_editor_table,
-                           editable=True,
-                           transposed=True,
-                           dictionary_of_lists={
-                               DeviceType.GeneratorDevice.value: self.editor.circuit.get_generators(),
-                           })
-        self.editor.object_editor_table.setModel(mdl)
+        self.editor.set_editor_model(api_object=self.api_object,
+                                     dictionary_of_lists={
+                                         DeviceType.GeneratorDevice.value: self.editor.circuit.get_generators(),
+                                     })
 
     def change_bus(self):
         """
@@ -178,3 +175,6 @@ class InjectionTemplateGraphicItem(QGraphicsItemGroup):
         else:
             warning_msg("you have to select the origin and destination buses!",
                         title='Change bus')
+
+    def rescale(self, scale: float = 1.0):
+        self.scale = scale

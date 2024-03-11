@@ -1,41 +1,37 @@
 import os
-import sys
-import time
 import random
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.colors import to_rgba
-from GridCalEngine import *
+
 from GridCalEngine.IO.file_handler import FileOpen
-import GridCalEngine.Core.Devices as dev
+import GridCalEngine.Devices as dev
 import GridCalEngine.Simulations as sim
-from GridCalEngine.basic_structures import InvestmentEvaluationMethod
-from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
-from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions, multi_island_pf_nc
+from GridCalEngine.enumerations import InvestmentEvaluationMethod, ResultTypes
+from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
+from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
+
 
 # Define investment power lines in the grid
 def add_investments_to_grid(grid):
-
-
-    line1 = dev.Line(grid.get_buses()[23], grid.get_buses()[71], 'Line_inv_1', r=0.0488, x=0.196, b=0.0488, rate=4.3,
-                     cost=2)
-    line2 = dev.Line(grid.get_buses()[23], grid.get_buses()[69], 'Line_inv_2', r=0.00221, x=0.4115, b=0.10198, rate=9.4,
-                     cost=2)
-    line3 = dev.Line(grid.get_buses()[71], grid.get_buses()[70], 'Line_inv_3', r=0.0446, x=0.18, b=0.04444, rate=13,
-                     cost=2)
-    line4_1 = dev.Line(grid.get_buses()[71], grid.get_buses()[69], 'Line_inv_41', r=0.02, x=0.2, b=0.08, rate=10,
-                       cost=2)
-    line5_1 = dev.Line(grid.get_buses()[23], grid.get_buses()[66], 'Line_inv_51', r=0.02, x=0.2, b=0.02, rate=10,
-                       cost=2)
-    line6_1 = dev.Line(grid.get_buses()[71], grid.get_buses()[22], 'Line_inv_61', r=0.02, x=0.2, b=0.02, rate=10,
-                       cost=2)
-    line4_2 = dev.Line(grid.get_buses()[71], grid.get_buses()[69], 'Line_inv_42', r=0.02, x=0.2, b=0.08, rate=10,
-                       cost=2)
-    line5_2 = dev.Line(grid.get_buses()[23], grid.get_buses()[66], 'Line_inv_52', r=0.02, x=0.2, b=0.02, rate=10,
-                       cost=2)
-    line6_2 = dev.Line(grid.get_buses()[71], grid.get_buses()[22], 'Line_inv_62', r=0.02, x=0.2, b=0.02, rate=10,
-                       cost=2)
+    line1 = dev.Line(grid.get_buses()[23], grid.get_buses()[71], name='Line_inv_1',
+                     r=0.0488, x=0.196, b=0.0488, rate=4.3, cost=2)
+    line2 = dev.Line(grid.get_buses()[23], grid.get_buses()[69], name='Line_inv_2',
+                     r=0.00221, x=0.4115, b=0.10198, rate=9.4, cost=2)
+    line3 = dev.Line(grid.get_buses()[71], grid.get_buses()[70], name='Line_inv_3',
+                     r=0.0446, x=0.18, b=0.04444, rate=13, cost=2)
+    line4_1 = dev.Line(grid.get_buses()[71], grid.get_buses()[69], name='Line_inv_41',
+                       r=0.02, x=0.2, b=0.08, rate=10, cost=2)
+    line5_1 = dev.Line(grid.get_buses()[23], grid.get_buses()[66], name='Line_inv_51',
+                       r=0.02, x=0.2, b=0.02, rate=10, cost=2)
+    line6_1 = dev.Line(grid.get_buses()[71], grid.get_buses()[22], name='Line_inv_61',
+                       r=0.02, x=0.2, b=0.02, rate=10, cost=2)
+    line4_2 = dev.Line(grid.get_buses()[71], grid.get_buses()[69], name='Line_inv_42',
+                       r=0.02, x=0.2, b=0.08, rate=10, cost=2)
+    line5_2 = dev.Line(grid.get_buses()[23], grid.get_buses()[66], name='Line_inv_52',
+                       r=0.02, x=0.2, b=0.02, rate=10, cost=2)
+    line6_2 = dev.Line(grid.get_buses()[71], grid.get_buses()[22], name='Line_inv_62',
+                       r=0.02, x=0.2, b=0.02, rate=10, cost=2)
 
     lines_list = [line1, line2, line3, line4_1, line5_1, line6_1, line4_2, line5_2, line6_2]
 
@@ -78,7 +74,7 @@ def add_random_lines_investments(grid, num_lines):
             bus_t = random.randint(0, len(buses) - 1)
 
         # Create a new line and corresponding investment
-        line = dev.Line(grid.get_buses()[bus_f], grid.get_buses()[bus_t], f'Line_inv_rand_{i}',
+        line = dev.Line(grid.get_buses()[bus_f], grid.get_buses()[bus_t], name=f'Line_inv_rand_{i}',
                         r=0.02, x=0.2, b=0.02, rate=10, cost=2)
 
         inv_group = dev.InvestmentsGroup(name=f'Ig_rand_{i}')
@@ -117,8 +113,8 @@ def obtain_random_points(grid, num_random_combinations, pf_options):
         res = multi_island_pf_nc(nc=nc, options=pf_options)
         total_losses = np.sum(res.losses.real)
         overload_score = res.get_overload_score(branch_prices=nc.branch_data.overload_cost)
-        voltage_score = res.get_undervoltage_overvoltage_score(undervoltage_prices=nc.bus_data.undervoltage_cost,
-                                                               overvoltage_prices=nc.bus_data.overvoltage_cost,
+        voltage_score = res.get_undervoltage_overvoltage_score(undervoltage_prices=nc.bus_data.cost_v,
+                                                               overvoltage_prices=nc.bus_data.cost_v,
                                                                vmin=nc.bus_data.Vmin,
                                                                vmax=nc.bus_data.Vmax)
 
@@ -138,16 +134,18 @@ def plot_scatter_plot(df1, df2, title, plot_df2=True):
     df1['color_category'] = pd.Categorical(df1.index)
 
     # Scatter plot for the first DataFrame (df1) with colors based on the original order
-    scatter = plt.scatter(df1['CAPEX (M€)'], df1['Technical criterion'], marker='o', alpha=0.5, label='Optimization algorithm',
+    scatter = plt.scatter(df1['CAPEX (M€)'], df1['Technical criterion'], marker='o', alpha=0.5,
+                          label='Optimization algorithm',
                           c=df1['color_category'].cat.codes, cmap='viridis')
 
     # Add colorbar for the association between index numbers and colors
     cbar = plt.colorbar(scatter, label='Index Numbers')
-    #cbar.set_ticks([])  # Remove ticks from the colorbar
+    # cbar.set_ticks([])  # Remove ticks from the colorbar
 
     # Scatter plot for the second DataFrame (df2) if plot_df2 is True
     if plot_df2:
-        plt.scatter(df2['CAPEX (M€)'], df2['Technical criterion'], marker='o', alpha=0.5, label='Random points', color='green')
+        plt.scatter(df2['CAPEX (M€)'], df2['Technical criterion'], marker='o', alpha=0.5, label='Random points',
+                    color='green')
 
     # Set axis labels and title
     plt.xlabel('CAPEX + OPEX (M€)')
@@ -162,7 +160,6 @@ def plot_scatter_plot(df1, df2, title, plot_df2=True):
 
 
 if __name__ == "__main__":
-
     absolute_path = os.path.abspath(
         os.path.join(os.getcwd(), 'Grids_and_profiles', 'grids', 'ding0_test_network_2_mvlv.gridcal'))
     grid = FileOpen(absolute_path).open()
@@ -170,14 +167,14 @@ if __name__ == "__main__":
     pf_options = sim.PowerFlowOptions()
     mvrsm = InvestmentEvaluationMethod.MVRSM
 
-    print(4*len(grid.investments))
-    options = sim.InvestmentsEvaluationOptions(solver=mvrsm, max_eval=4*len(grid.investments), pf_options=pf_options)
+    print(6 * len(grid.investments))
+    options = sim.InvestmentsEvaluationOptions(solver=mvrsm, max_eval=6 * len(grid.investments), pf_options=pf_options)
     inv = sim.InvestmentsEvaluationDriver(grid, options=options)
     inv.run()
 
     inv_results = inv.results
-    results_tpe_report = sim.result_types.ResultTypes.InvestmentsReportResults
-    results_tpe_plot = sim.result_types.ResultTypes.InvestmentsParetoPlot
+    results_tpe_report = ResultTypes.InvestmentsReportResults
+    results_tpe_plot = ResultTypes.InvestmentsParetoPlot
 
     print('Before plot')
     mdl = inv_results.mdl(results_tpe_plot)

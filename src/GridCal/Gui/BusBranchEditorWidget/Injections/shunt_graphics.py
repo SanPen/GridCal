@@ -22,6 +22,7 @@ from PySide6.QtGui import QPen, QIcon, QPixmap
 from GridCal.Gui.BusBranchEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Line
 from GridCal.Gui.BusBranchEditorWidget.Injections.injections_template_graphics import InjectionTemplateGraphicItem
 from GridCal.Gui.messages import yes_no_question
+from GridCalEngine.Devices.Injections.shunt import Shunt
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
@@ -29,7 +30,7 @@ if TYPE_CHECKING:  # Only imports the below statements during type checking
 
 class ShuntGraphicItem(InjectionTemplateGraphicItem):
 
-    def __init__(self, parent, api_obj, editor: "BusBranchEditorWidget"):
+    def __init__(self, parent, api_obj: Shunt, editor: "BusBranchEditorWidget"):
         """
 
         :param parent:
@@ -139,20 +140,6 @@ class ShuntGraphicItem(InjectionTemplateGraphicItem):
         rabf.triggered.connect(self.change_bus)
 
         menu.exec_(event.screenPos())
-
-    def remove(self, ask=True):
-        """
-        Remove this element
-        @return:
-        """
-        if ask:
-            ok = yes_no_question('Are you sure that you want to remove this shunt', 'Remove shunt')
-        else:
-            ok = True
-
-        if ok:
-            self.editor.remove_from_scene(self.nexus)
-            self.editor.remove_element(device=self.api_object, graphic_object=self)
 
     def enable_disable_toggle(self):
         """

@@ -20,10 +20,10 @@ from PySide6 import QtWidgets
 from typing import List, Union
 from GridCal.Gui.BusViewer.gui import Ui_BusViewerWindow, QMainWindow
 from GridCal.Gui.BusBranchEditorWidget import BusBranchEditorWidget, generate_bus_branch_diagram
-import GridCalEngine.Core.Devices as dev
+import GridCalEngine.Devices as dev
 from GridCalEngine.enumerations import DeviceType
-from GridCalEngine.Core.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.Core.Devices.Substation import Bus
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Devices.Substation import Bus
 
 
 class BusViewerWidget(QMainWindow):
@@ -234,6 +234,7 @@ class BusViewerWidget(QMainWindow):
         dc_lines = list()
         transformers2w = list()
         transformers3w = list()
+        windings = list()
         hvdc_lines = list()
         vsc_converters = list()
         upfc_devices = list()
@@ -254,6 +255,9 @@ class BusViewerWidget(QMainWindow):
 
             elif obj.device_type == DeviceType.Transformer3WDevice:
                 transformers3w.append(obj)
+
+            elif obj.device_type == DeviceType.WindingDevice:
+                windings.append(obj)
 
             elif obj.device_type == DeviceType.HVDCLineDevice:
                 hvdc_lines.append(obj)
@@ -277,10 +281,11 @@ class BusViewerWidget(QMainWindow):
                                               dc_lines=dc_lines,
                                               transformers2w=transformers2w,
                                               transformers3w=transformers3w,
+                                              windings=windings,
                                               hvdc_lines=hvdc_lines,
                                               vsc_devices=vsc_converters,
                                               upfc_devices=upfc_devices,
-                                              fluid_nodes=fluid_nodes,
+                                              fluid_nodes=list(fluid_nodes),
                                               fluid_paths=fluid_paths,
                                               explode_factor=1.0,
                                               prog_func=None,
@@ -296,7 +301,7 @@ if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     circuit_ = MultiCircuit()
     circuit_.add_bus(dev.Bus('bus1'))
-    window = BusViewerWidget(circuit=circuit_, root_bus=circuit_.buses[0])
+    window = BusViewerWidget(circuit=circuit_, root_bus=circuit_.get_bus_at(0))
     window.resize(int(1.61 * 700.0), 600)  # golden ratio
     window.show()
     sys.exit(app.exec())

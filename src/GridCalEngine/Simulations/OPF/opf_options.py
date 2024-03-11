@@ -17,6 +17,7 @@
 
 from typing import List, Union
 from GridCalEngine.enumerations import SolverType, MIPSolvers, ZonalGrouping, TimeGrouping
+from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 
 
 class OptimalPowerFlowOptions:
@@ -43,7 +44,13 @@ class OptimalPowerFlowOptions:
                  areas_to: List = None,
                  unit_commitment=False,
                  export_model_fname: Union[None, str] = None,
-                 generate_report=False, ):
+                 generate_report=False,
+                 ips_method: SolverType = SolverType.NR,
+                 ips_tolerance: float = 1e-4,
+                 ips_iterations: int = 100,
+                 ips_trust_radius: float = 1.0,
+                 ips_init_with_pf: bool = False,
+                 pf_results: PowerFlowResults = None):
         """
         Optimal power flow options
         :param verbose:
@@ -106,3 +113,11 @@ class OptimalPowerFlowOptions:
         self.export_model_fname: Union[None, str] = export_model_fname
 
         self.generate_report = generate_report
+
+        # IPS settings
+        self.ips_method: SolverType = ips_method
+        self.ips_tolerance = ips_tolerance
+        self.ips_iterations = ips_iterations
+        self.ips_trust_radius = ips_trust_radius
+        self.ips_init_with_pf = ips_init_with_pf
+        self.pf_results = pf_results

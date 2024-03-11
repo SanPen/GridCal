@@ -19,7 +19,7 @@ from typing import TYPE_CHECKING
 from PySide6.QtCore import QPointF
 from PySide6.QtGui import QPen, QIcon, QPixmap
 from PySide6.QtWidgets import (QMenu, QGraphicsTextItem)
-from GridCalEngine.Core.Devices.Fluid.fluid_p2x import FluidP2x
+from GridCalEngine.Devices.Fluid.fluid_p2x import FluidP2x
 from GridCal.Gui.BusBranchEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Circle
 from GridCal.Gui.messages import yes_no_question
 from GridCal.Gui.BusBranchEditorWidget.Injections.injections_template_graphics import InjectionTemplateGraphicItem
@@ -132,22 +132,6 @@ class FluidP2xGraphicItem(InjectionTemplateGraphicItem):
         rabf.triggered.connect(self.change_bus)
 
         menu.exec_(event.screenPos())
-
-    def remove(self, ask=True):
-        """
-        Remove this element
-        @return:
-        """
-        if ask:
-            ok = yes_no_question('Are you sure that you want to remove this generator', 'Remove generator')
-        else:
-            ok = True
-
-        if ok:
-            self.editor.remove_from_scene(self.nexus)
-            self.editor.remove_from_scene(self)
-            if self.api_object in self.api_object.bus.generators:
-                self.api_object.bus.generators.remove(self.api_object)
 
     def enable_disable_toggle(self):
         """

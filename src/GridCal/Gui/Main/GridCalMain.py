@@ -47,12 +47,15 @@ class MainGUI(ScriptingMain):
 
         # create main window
         ScriptingMain.__init__(self, parent=None)
-
         self.setWindowTitle('GridCal ' + __GridCal_VERSION__)
         self.setAcceptDrops(True)
 
+        ################################################################################################################
+        # Set splitters
+        ################################################################################################################
+
         # 1:4
-        self.ui.dataStructuresSplitter.setStretchFactor(0, 2)
+        self.ui.dataStructuresSplitter.setStretchFactor(0, 3)
         self.ui.dataStructuresSplitter.setStretchFactor(1, 4)
 
         self.ui.simulationDataSplitter.setStretchFactor(1, 15)
@@ -90,7 +93,7 @@ class MainGUI(ScriptingMain):
         :param event:
         :return:
         """
-        if len(self.circuit.buses) > 0:
+        if self.circuit.get_bus_number() > 0:
             quit_msg = "Are you sure that you want to exit GridCal?"
             reply = QtWidgets.QMessageBox.question(self, 'Close', quit_msg,
                                                    QtWidgets.QMessageBox.StandardButton.Yes,
