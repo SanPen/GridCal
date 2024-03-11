@@ -19,10 +19,10 @@ from rdflib import OWL
 from rdflib.graph import Graph
 from rdflib.namespace import RDF, RDFS
 
+import json
 import os
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
-import pandas as pd
-import xml.etree.ElementTree as ET
+import xml.etree.ElementTree as Et
 import xml.dom.minidom
 
 
@@ -45,8 +45,6 @@ class CimExporter:
         }
 
         current_directory = os.path.dirname(__file__)
-        relative_path_to_excel = "export_docs/CGMES_2_4_EQ_SSH_TP_SV_ConcreteClassesAllProperties.xlsx"
-        absolute_path_to_excel = os.path.join(current_directory, relative_path_to_excel)
 
         rdf_serialization = Graph()
         rdf_serialization.parse(source=os.path.join(current_directory, "export_docs\RDFSSerialisation.ttl"),
@@ -58,7 +56,7 @@ class CimExporter:
             if str(s_i).split("#")[1] == "RdfEnum":
                 enum_list_dict = dict()
                 for s, p, o in rdf_serialization.triples((s_i, OWL.members, None)):
-                    enum_list_dict[str(o).split("#")[1]] = str(o)
+                    enum_list_dict[str(o).split("#")[-1]] = str(o)
                 if str(s_i).split("#")[0] == "http://entsoe.eu/CIM/EquipmentCore/3/1":
                     self.enum_dict["EQ"] = enum_list_dict
                 elif str(s_i).split("#")[0] == "http://entsoe.eu/CIM/StateVariables/4/1":
@@ -70,7 +68,7 @@ class CimExporter:
             if str(s_i).split("#")[1] == "RdfAbout":
                 about_list = list()
                 for s, p, o in rdf_serialization.triples((s_i, OWL.members, None)):
-                    about_list.append(str(o))
+                    about_list.append(str(o).split("#")[-1])
                 if str(s_i).split("#")[0] == "http://entsoe.eu/CIM/EquipmentCore/3/1":
                     self.about_dict["EQ"] = about_list
                 elif str(s_i).split("#")[0] == "http://entsoe.eu/CIM/StateVariables/4/1":
@@ -80,23 +78,25 @@ class CimExporter:
                 elif str(s_i).split("#")[0] == "http://entsoe.eu/CIM/Topology/4/1":
                     self.about_dict["TP"] = about_list
 
-        profiles_info = pd.read_excel(absolute_path_to_excel, sheet_name="Profiles")
-
         self.class_filters = {}
-        for class_name in self.cgmes_circuit.classes:
-            filt_class = profiles_info[profiles_info["ClassSimpleName"] == class_name]
-            filters = {}
-            for _, row in filt_class.iterrows():
-                prop = row["Property-AttributeAssociationSimple"]
-                if prop not in filters:
-                    filters[prop] = {
-                        "Profile": [],
-                        "ClassFullName": row["ClassFullName"],
-                        "Property-AttributeAssociationFull": row["Property-AttributeAssociationFull"],
-                        "Type": row["Type"]
-                    }
-                filters[prop]["Profile"].append(row["Profile"])
-            self.class_filters[class_name] = filters
+        with open(os.path.join(current_directory, "export_docs/rdfs_info_CGMES2415.json"), "r") as json_file:
+            json_dict = json.load(json_file)
+            for class_name in self.cgmes_circuit.classes:
+                self.class_filters[class_name] = {}
+            for i, prop_name in enumerate(json_dict['Property-AttributeAssociation']):
+                if json_dict["Class Name"][i] in self.cgmes_circuit.classes:
+                    p_key = str(prop_name).split('.')[-1]
+                    if p_key not in self.class_filters[json_dict["Class Name"][i]]:
+                        temp_dict = {
+                            "Profile": json_dict['ProfileKeyword'][i].strip('[]').split(','),
+                            "ClassFullName": json_dict["Class"][i],
+                            "Property-AttributeAssociationFull": json_dict["Property-AttributeAssociation"][i],
+                            "Type": json_dict["Type"][i]
+                        }
+                        self.class_filters[json_dict["Class Name"][i]][p_key] = temp_dict
+                    else:
+                        new_prof = json_dict['ProfileKeyword'][i].strip('[]').split(',')
+                        self.class_filters[json_dict["Class Name"][i]][p_key]["Profile"].extend(new_prof)
 
     def export(self):
         current_directory = os.path.dirname(__file__)
@@ -110,13 +110,13 @@ class CimExporter:
             self.serialize(f, "TP")
 
     def serialize(self, stream, profile):
-        root = ET.Element("rdf:RDF", self.namespaces)
+        root = Et.Element("rdf:RDF", self.namespaces)
         full_model_elements = self.generate_full_model_elements(profile)
         root.extend(full_model_elements)
         other_elements = self.generate_other_elements(profile)
         root.extend(other_elements)
 
-        xmlstr = xml.dom.minidom.parseString(ET.tostring(root)).toprettyxml(indent="   ")
+        xmlstr = xml.dom.minidom.parseString(Et.tostring(root)).toprettyxml(indent="   ")
         stream.write(xmlstr.encode('utf-8'))
 
     def generate_full_model_elements(self, profile):
@@ -134,11 +134,11 @@ class CimExporter:
         for instance in self.cgmes_circuit.FullModel_list:
             instance_dict = instance.__dict__
             if instance_dict.get("profile") in self.profile_uris[profile]:
-                element = ET.Element("md:FullModel", {"rdf:about": "urn:uuid:" + instance.rdfid})
+                element = Et.Element("md:FullModel", {"rdf:about": "urn:uuid:" + instance.rdfid})
                 for attr_name, attr_value in instance_dict.items():
                     if attr_name not in filter_props or attr_value is None:
                         continue
-                    child = ET.Element(f"md:Model.{attr_name}")
+                    child = Et.Element(f"md:Model.{attr_name}")
                     if filter_props.get(attr_name) == "Association":
                         child.attrib = {"rdf:resource": "urn:uuid:" + attr_value}
                     else:
@@ -147,7 +147,8 @@ class CimExporter:
                 full_model_elements.append(element)
         return full_model_elements
 
-    def in_profile(self, filters, profile):
+    @staticmethod
+    def in_profile(filters, profile):
         for k, v in filters.items():
             if profile in v["Profile"]:
                 return True
@@ -161,13 +162,10 @@ class CimExporter:
                 continue
             for obj in objects:
                 obj_dict = obj.__dict__
-                try:
-                    if class_name in self.about_dict.get(profile):
-                        element = ET.Element("cim:" + class_name, {"rdf:about": "_" + obj.rdfid})
-                    else:
-                        element = ET.Element("cim:" + class_name, {"rdf:ID": "_" + obj.rdfid})
-                except:
-                    element = ET.Element("cim:" + class_name, {"rdf:ID": "_" + obj.rdfid})
+                if self.about_dict.get(profile) is not None and class_name in self.about_dict.get(profile):
+                    element = Et.Element("cim:" + class_name, {"rdf:about": "_" + obj.rdfid})
+                else:
+                    element = Et.Element("cim:" + class_name, {"rdf:ID": "_" + obj.rdfid})
 
                 for attr_name, attr_value in obj_dict.items():
                     if attr_value is None:
@@ -183,7 +181,7 @@ class CimExporter:
                         prop_text = "entsoe:" + prop_split[-1]
                     else:
                         prop_text = "cim:" + prop_split[-1]
-                    child = ET.Element(prop_text)
+                    child = Et.Element(prop_text)
                     if attr_type == "Association":
                         child.attrib = {"rdf:resource": "#_" + attr_value.rdfid}
                     elif attr_type == "Enumeration":

@@ -14,17 +14,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
+
 from rdflib import OWL
 import rdflib
 from rdflib.graph import Graph
 from rdflib.namespace import RDF, RDFS, Namespace
 
 from typing import List
-
+import json
 import os
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
-import pandas as pd
 
 
 class CgmesDataValidator:
@@ -77,8 +76,6 @@ class CgmesDataValidator:
 
     def load_graph(self):
         current_directory = os.path.dirname(__file__)
-        relative_path_to_excel = "export_docs/CGMES_2_4_EQ_SSH_TP_SV_ConcreteClassesAllProperties.xlsx"
-        absolute_path_to_excel = os.path.join(current_directory, relative_path_to_excel)
 
         rdf_serialization = Graph()
         rdf_serialization.parse(source=os.path.join(current_directory, "export_docs\RDFSSerialisation.ttl"),
@@ -99,8 +96,6 @@ class CgmesDataValidator:
                 elif str(s_i).split("#")[0] == "http://entsoe.eu/CIM/Topology/4/1":
                     enum_dict["tp"] = enum_list_dict
 
-        profiles_info = pd.read_excel(absolute_path_to_excel, sheet_name="Profiles")
-
         eq_graph = self.create_graph(["http://entsoe.eu/CIM/EquipmentCore/3/1",
                                       "http://entsoe.eu/CIM/EquipmentShortCircuit/3/1",
                                       "http://entsoe.eu/CIM/EquipmentOperation/3/1"])
@@ -116,22 +111,24 @@ class CgmesDataValidator:
         }
 
         class_filters = {}
-        for class_name in self.cgmes_circuit.classes:
-            filt_class = profiles_info[profiles_info["ClassSimpleName"] == class_name]
-            filters = {}
-
-            for _, row in filt_class.iterrows():
-                prop = row["Property-AttributeAssociationSimple"]
-                if prop not in filters:
-                    filters[prop] = {
-                        "Profile": [],
-                        "ClassFullName": row["ClassFullName"],
-                        "Property-AttributeAssociationFull": row["Property-AttributeAssociationFull"],
-                        "Type": row["Type"]
-                    }
-                filters[prop]["Profile"].append(row["Profile"])
-
-            class_filters[class_name] = filters
+        with open(os.path.join(current_directory, "export_docs/rdfs_info_CGMES2415.json"), "r") as json_file:
+            json_dict = json.load(json_file)
+            for class_name in self.cgmes_circuit.classes:
+                class_filters[class_name] = {}
+            for i, prop_name in enumerate(json_dict['Property-AttributeAssociation']):
+                if json_dict["Class Name"][i] in self.cgmes_circuit.classes:
+                    p_key = str(prop_name).split('.')[-1]
+                    if p_key not in self.class_filters[json_dict["Class Name"][i]]:
+                        temp_dict = {
+                            "Profile": json_dict['ProfileKeyword'][i].strip('[]').split(','),
+                            "ClassFullName": json_dict["Class"][i],
+                            "Property-AttributeAssociationFull": json_dict["Property-AttributeAssociation"][i],
+                            "Type": json_dict["Type"][i]
+                        }
+                        class_filters[json_dict["Class Name"][i]][p_key] = temp_dict
+                    else:
+                        new_prof = json_dict['ProfileKeyword'][i].strip('[]').split(',')
+                        class_filters[json_dict["Class Name"][i]][p_key]["Profile"].extend(new_prof)
 
         for class_name, filters in class_filters.items():
             objects = self.cgmes_circuit.get_objects_list(elm_type=class_name)
