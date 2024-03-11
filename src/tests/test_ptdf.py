@@ -1,15 +1,17 @@
 import os
-from GridCalEngine.api import *
+import numpy as np
+import pandas as pd
+import GridCalEngine.api as gce
 from GridCalEngine.Simulations.ContingencyAnalysis.contingency_plan import add_n1_contingencies
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
 
 
 def test_ptdf():
     fname = os.path.join('data', 'grids', 'PGOC_6bus.gridcal')
-    main_circuit = FileOpen(fname).open()
+    main_circuit = gce.FileOpen(fname).open()
 
-    options = LinearAnalysisOptions(distribute_slack=False, correct_values=False)
-    simulation = LinearAnalysisDriver(grid=main_circuit, options=options)
+    options = gce.LinearAnalysisOptions(distribute_slack=False, correct_values=False)
+    simulation = gce.LinearAnalysisDriver(grid=main_circuit, options=options)
     simulation.run()
     # ptdf_df = simulation.results.mdl(result_type=ResultTypes.PTDFBranchesSensitivity)
 
@@ -76,22 +78,22 @@ def test_ptdf_ieee14_definition():
         os.path.join('data', 'grids', 'RAW', 'IEEE 30 bus.raw'),
         os.path.join('data', 'grids', 'RAW', 'IEEE 118 Bus v2.raw')
     ]:
-        main_circuit = FileOpen(fname).open()
+        main_circuit = gce.FileOpen(fname).open()
 
         # add all branch contingencies
         add_n1_contingencies(branches=main_circuit.get_branches(),
                              vmax=1e20, vmin=0,
                              filter_branches_by_voltage=False,
-                             branch_types=[DeviceType.LineDevice, DeviceType.Transformer2WDevice])
+                             branch_types=[gce.DeviceType.LineDevice, gce.DeviceType.Transformer2WDevice])
 
         # run the linear analysis
-        options = LinearAnalysisOptions(distribute_slack=False, correct_values=False)
-        simulation = LinearAnalysisDriver(grid=main_circuit, options=options)
+        options = gce.LinearAnalysisOptions(distribute_slack=False, correct_values=False)
+        simulation = gce.LinearAnalysisDriver(grid=main_circuit, options=options)
         simulation.run()
 
         # compute the PTDF by the definition: PTDF(i, j) = (flow base(i) - modified flow(i)) / bus power increase(j)
-        nc = compile_numerical_circuit_at(main_circuit, t_idx=None)
-        options = PowerFlowOptions(solver_type=SolverType.DC)
+        nc = gce.compile_numerical_circuit_at(main_circuit, t_idx=None)
+        options = gce.PowerFlowOptions(solver_type=gce.SolverType.DC)
         base_res = multi_island_pf_nc(nc=nc, options=options)
         S = nc.Sbus.copy()
         ptdf = np.zeros((nc.nbr, nc.nbus))
@@ -118,22 +120,22 @@ def test_lodf_ieee14_definition() -> None:
         (os.path.join('data', 'grids', 'RAW', 'IEEE 30 bus.raw'), [29]),
         (os.path.join('data', 'grids', 'RAW', 'IEEE 118 Bus v2.raw'), [11, 13, 18, 103, 111, 131, 134, 167, 168])
     ]:
-        main_circuit = FileOpen(fname).open()
+        main_circuit = gce.FileOpen(fname).open()
 
         # add all branch contingencies
         add_n1_contingencies(branches=main_circuit.get_branches(),
                              vmax=1e20, vmin=0,
                              filter_branches_by_voltage=False,
-                             branch_types=[DeviceType.LineDevice, DeviceType.Transformer2WDevice])
+                             branch_types=[gce.DeviceType.LineDevice, gce.DeviceType.Transformer2WDevice])
 
         # run the linear analysis
-        options = LinearAnalysisOptions(distribute_slack=False, correct_values=False)
-        simulation = LinearAnalysisDriver(grid=main_circuit, options=options)
+        options = gce.LinearAnalysisOptions(distribute_slack=False, correct_values=False)
+        simulation = gce.LinearAnalysisDriver(grid=main_circuit, options=options)
         simulation.run()
 
         # compute the LODF by the definition: PTDF(i, j) = (flow base(i) - modified flow(i)) / flow base(i)
-        nc = compile_numerical_circuit_at(main_circuit, t_idx=None)
-        options = PowerFlowOptions(solver_type=SolverType.DC)
+        nc = gce.compile_numerical_circuit_at(main_circuit, t_idx=None)
+        options = gce.PowerFlowOptions(solver_type=gce.SolverType.DC)
         base_res = multi_island_pf_nc(nc=nc, options=options)
 
         lodf = np.zeros((nc.nbr, nc.nbr))
@@ -163,17 +165,17 @@ def test_lodf_ieee14_psse() -> None:
     Compare the PSSE LODF and the GridCal LODF for the IEEE14
     """
     fname = os.path.join('data', 'grids', 'RAW', 'IEEE 14 bus.raw')
-    main_circuit = FileOpen(fname).open()
+    main_circuit = gce.FileOpen(fname).open()
 
     # add all branch contingencies
     add_n1_contingencies(branches=main_circuit.get_branches(),
                          vmax=1e20, vmin=0,
                          filter_branches_by_voltage=False,
-                         branch_types=[DeviceType.LineDevice, DeviceType.Transformer2WDevice])
+                         branch_types=[gce.DeviceType.LineDevice, gce.DeviceType.Transformer2WDevice])
 
     # run the linear analysis
-    options = LinearAnalysisOptions(distribute_slack=False, correct_values=False)
-    simulation = LinearAnalysisDriver(grid=main_circuit, options=options)
+    options = gce.LinearAnalysisOptions(distribute_slack=False, correct_values=False)
+    simulation = gce.LinearAnalysisDriver(grid=main_circuit, options=options)
     simulation.run()
 
     # load the PSSE "OTDF" which is the same as the LODF concept
@@ -202,26 +204,33 @@ def test_lodf_ieee14_psse() -> None:
 
 
 def test_dcpowerflow():
+    """
+
+    :return:
+    """
     for fname in [os.path.join('data', 'grids', 'RAW', 'IEEE 30 bus.raw'),
                   os.path.join('data', 'grids', 'RAW', 'IEEE 14 bus.raw'),
                   # os.path.join('data', 'grids', 'RAW', 'ieee-14-d.raw'),
                   os.path.join('data', 'grids', 'IEEE14-gen80.gridcal')]:
-        main_circuit = FileOpen(fname).open()
+        main_circuit = gce.FileOpen(fname).open()
 
-        pf_options = PowerFlowOptions(SolverType.DC,
-                                      verbose=False,
-                                      initialize_with_existing_solution=False,
-                                      dispatch_storage=True,
-                                      control_q=ReactivePowerControlMode.NoControl,
-                                      control_p=False)
-        options1 = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyMethod.PowerFlow)
-        cont_analysis_driver1 = ContingencyAnalysisDriver(grid=main_circuit, options=options1,
-                                                          linear_multiple_contingencies=None)
+        pf_options = gce.PowerFlowOptions(gce.SolverType.DC,
+                                          verbose=False,
+                                          initialize_with_existing_solution=False,
+                                          dispatch_storage=True,
+                                          control_q=gce.ReactivePowerControlMode.NoControl,
+                                          control_p=False)
+        options1 = gce.ContingencyAnalysisOptions(pf_options=pf_options, engine=gce.ContingencyMethod.PowerFlow)
+        cont_analysis_driver1 = gce.ContingencyAnalysisDriver(grid=main_circuit, options=options1,
+                                                              linear_multiple_contingencies=None)
         cont_analysis_driver1.run()
         print()
 
 
 def test_ptdf_psse() -> None:
+    """
+    Compare the PSSE PTDF and the GridCal PTDF for IEEE14, IEEE30, IEEE118 and REE networks
+    """
     for fname, pssename, name in [
         # (os.path.join('data', 'grids', 'RAW', 'IEEE 14 bus.raw'),
         #  os.path.join('data', 'results', 'comparison', 'IEEE 14 bus PTDF PSSe.csv'), 'IEEE14'),
@@ -241,7 +250,7 @@ def test_ptdf_psse() -> None:
         if os.path.exists(fname):
 
             counter = 0  # Amount of failures
-            main_circuit = FileOpen(fname).open()
+            main_circuit = gce.FileOpen(fname).open()
 
             # Network ordering
             branches = main_circuit.get_branches()
@@ -250,8 +259,8 @@ def test_ptdf_psse() -> None:
             nodes_id = [x.code for x in nodes]
 
             # Calculate GridCal PTDF
-            linear_analysis_opt = LinearAnalysisOptions(distribute_slack=False, correct_values=False)
-            linear_analysis = LinearAnalysisDriver(grid=main_circuit, options=linear_analysis_opt)
+            linear_analysis_opt = gce.LinearAnalysisOptions(distribute_slack=False, correct_values=False)
+            linear_analysis = gce.LinearAnalysisDriver(grid=main_circuit, options=linear_analysis_opt)
             linear_analysis.run()
 
             ptdf_gridcal = pd.DataFrame(linear_analysis.results.PTDF, columns=nodes_id)
@@ -296,9 +305,6 @@ def test_ptdf_psse() -> None:
             print(' ')
         else:
             print(fname, "does not exists...")
-    """
-    Compare the PSSE PTDF and the GridCal PTDF for IEEE14, IEEE30, IEEE118 and REE networks
-    """
 
 
 def test_lodf_psse() -> None:
@@ -323,15 +329,15 @@ def test_lodf_psse() -> None:
 
         if os.path.exists(fname):
             counter = 0  # Amount of failures
-            main_circuit = FileOpen(fname).open()
+            main_circuit = gce.FileOpen(fname).open()
 
             # Network ordering
             branches = main_circuit.get_branches()
             branches_id = [x.code for x in branches]
 
             # Calculate GridCal LODF
-            linear_analysis_opt = LinearAnalysisOptions(distribute_slack=False, correct_values=False)
-            linear_analysis = LinearAnalysisDriver(grid=main_circuit, options=linear_analysis_opt)
+            linear_analysis_opt = gce.LinearAnalysisOptions(distribute_slack=False, correct_values=False)
+            linear_analysis = gce.LinearAnalysisDriver(grid=main_circuit, options=linear_analysis_opt)
             linear_analysis.run()
 
             lodf_gridcal = pd.DataFrame(linear_analysis.results.LODF, columns=branches_id)
@@ -393,7 +399,7 @@ def test_mlodf() -> None:
         os.path.join('data', 'grids', 'IEEE14-bus_d-7_8-9_10.gridcal'),
     ]:
 
-        main_circuit = FileOpen(fname).open()
+        main_circuit = gce.FileOpen(fname).open()
 
         # Branches ordering
         branchdict = {}
@@ -401,13 +407,13 @@ def test_mlodf() -> None:
             branchdict[t.code] = i
 
         # Power flow initial using linear method
-        linear_analysis = LinearAnalysisDriver(grid=main_circuit)
+        linear_analysis = gce.LinearAnalysisDriver(grid=main_circuit)
         linear_analysis.run()
 
         Sf0 = linear_analysis.results.Sf
         Sf0red = np.array([Sf0[branchdict[t.code]] for t in main_circuit.contingencies])
 
-        linear_multi_contingency = LinearMultiContingencies(grid=main_circuit)
+        linear_multi_contingency = gce.LinearMultiContingencies(grid=main_circuit)
         linear_multi_contingency.compute(ptdf=linear_analysis.results.PTDF, lodf=linear_analysis.results.LODF)
         mlodf = linear_multi_contingency.multi_contingencies[0].mlodf_factors.A  # TODO: Suponemos que son los MLODF
 
@@ -415,16 +421,16 @@ def test_mlodf() -> None:
         Sfmlodf = Sf0 + np.matmul(mlodf, Sf0red)
 
         # Theoretical method
-        pf_options = PowerFlowOptions(SolverType.NR,
-                                      verbose=False,
-                                      initialize_with_existing_solution=False,
-                                      dispatch_storage=True,
-                                      control_q=ReactivePowerControlMode.NoControl,
-                                      control_p=False)
+        pf_options = gce.PowerFlowOptions(gce.SolverType.NR,
+                                          verbose=False,
+                                          initialize_with_existing_solution=False,
+                                          dispatch_storage=True,
+                                          control_q=gce.ReactivePowerControlMode.NoControl,
+                                          control_p=False)
 
-        options = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyMethod.PTDF)
-        cont_analysis_driver = ContingencyAnalysisDriver(grid=main_circuit, options=options,
-                                                         linear_multiple_contingencies=linear_multi_contingency)
+        options = gce.ContingencyAnalysisOptions(pf_options=pf_options, engine=gce.ContingencyMethod.PTDF)
+        cont_analysis_driver = gce.ContingencyAnalysisDriver(grid=main_circuit, options=options,
+                                                             linear_multiple_contingencies=linear_multi_contingency)
         cont_analysis_driver.run()
         Sfnr = cont_analysis_driver.results.Sf.real * 1e-2  # TODO: pensamos que las unidades son erróneas
 
@@ -441,28 +447,28 @@ def test_mlodf_sanpen():
         # os.path.join('data', 'grids', 'IEEE14-bus_d-6_11-6_13.gridcal'),  # TODO: SANPEN: this fails, is this a conceptual failure?
         # os.path.join('data', 'grids', 'IEEE14-bus_d-7_8-9_10.gridcal')  # TODO: SANPEN: this fails, is this a conceptual failure?
     ]:
-        main_circuit = FileOpen(fname).open()
+        main_circuit = gce.FileOpen(fname).open()
 
         # DC power flow method
-        pf_options = PowerFlowOptions(SolverType.DC,
-                                      verbose=False,
-                                      initialize_with_existing_solution=False,
-                                      dispatch_storage=True,
-                                      control_q=ReactivePowerControlMode.NoControl,
-                                      control_p=False)
-        options1 = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyMethod.PowerFlow)
-        cont_analysis_driver1 = ContingencyAnalysisDriver(grid=main_circuit, options=options1,
-                                                          linear_multiple_contingencies=None)
+        pf_options = gce.PowerFlowOptions(gce.SolverType.DC,
+                                          verbose=False,
+                                          initialize_with_existing_solution=False,
+                                          dispatch_storage=True,
+                                          control_q=gce.ReactivePowerControlMode.NoControl,
+                                          control_p=False)
+        options1 = gce.ContingencyAnalysisOptions(pf_options=pf_options, engine=gce.ContingencyMethod.PowerFlow)
+        cont_analysis_driver1 = gce.ContingencyAnalysisDriver(grid=main_circuit, options=options1,
+                                                              linear_multiple_contingencies=None)
         cont_analysis_driver1.run()
 
         # MLODF method
-        linear_analysis = LinearAnalysisDriver(grid=main_circuit)
+        linear_analysis = gce.LinearAnalysisDriver(grid=main_circuit)
         linear_analysis.run()
-        linear_multi_contingency = LinearMultiContingencies(grid=main_circuit)
+        linear_multi_contingency = gce.LinearMultiContingencies(grid=main_circuit)
         linear_multi_contingency.compute(ptdf=linear_analysis.results.PTDF, lodf=linear_analysis.results.LODF)
-        options2 = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyMethod.PTDF)
-        cont_analysis_driver2 = ContingencyAnalysisDriver(grid=main_circuit, options=options2,
-                                                          linear_multiple_contingencies=linear_multi_contingency)
+        options2 = gce.ContingencyAnalysisOptions(pf_options=pf_options, engine=gce.ContingencyMethod.PTDF)
+        cont_analysis_driver2 = gce.ContingencyAnalysisDriver(grid=main_circuit, options=options2,
+                                                              linear_multiple_contingencies=linear_multi_contingency)
         cont_analysis_driver2.run()
 
         ok = np.allclose(cont_analysis_driver1.results.Sf, cont_analysis_driver2.results.Sf)
@@ -488,28 +494,28 @@ def test_ptdf_generation_contingencies():
         os.path.join('data', 'grids', 'IEEE118-gen120.gridcal'),
 
     ]:
-        main_circuit = FileOpen(fname).open()
+        main_circuit = gce.FileOpen(fname).open()
 
-        pf_options = PowerFlowOptions(SolverType.DC,
-                                      verbose=False,
-                                      initialize_with_existing_solution=False,
-                                      dispatch_storage=True,
-                                      control_q=ReactivePowerControlMode.NoControl,
-                                      control_p=False)
+        pf_options = gce.PowerFlowOptions(gce.SolverType.DC,
+                                          verbose=False,
+                                          initialize_with_existing_solution=False,
+                                          dispatch_storage=True,
+                                          control_q=gce.ReactivePowerControlMode.NoControl,
+                                          control_p=False)
         # DC power flow method
 
-        options1 = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyMethod.PowerFlow)
-        cont_analysis_driver1 = ContingencyAnalysisDriver(grid=main_circuit, options=options1,
-                                                          linear_multiple_contingencies=None)
+        options1 = gce.ContingencyAnalysisOptions(pf_options=pf_options, engine=gce.ContingencyMethod.PowerFlow)
+        cont_analysis_driver1 = gce.ContingencyAnalysisDriver(grid=main_circuit, options=options1,
+                                                              linear_multiple_contingencies=None)
         cont_analysis_driver1.run()
 
         # PTDF METHOD
-        linear_analysis = LinearAnalysisDriver(grid=main_circuit)
+        linear_analysis = gce.LinearAnalysisDriver(grid=main_circuit)
         linear_analysis.run()
-        linear_multi_contingency = LinearMultiContingencies(grid=main_circuit)
+        linear_multi_contingency = gce.LinearMultiContingencies(grid=main_circuit)
         linear_multi_contingency.compute(ptdf=linear_analysis.results.PTDF, lodf=linear_analysis.results.LODF)
-        options2 = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyMethod.PTDF)
-        cont_analysis_driver2 = ContingencyAnalysisDriver(grid=main_circuit, options=options2)
+        options2 = gce.ContingencyAnalysisOptions(pf_options=pf_options, engine=gce.ContingencyMethod.PTDF)
+        cont_analysis_driver2 = gce.ContingencyAnalysisDriver(grid=main_circuit, options=options2)
         cont_analysis_driver2.run()
 
         ok = np.allclose(cont_analysis_driver1.results.Sf, cont_analysis_driver2.results.Sf, atol=1e-4)
@@ -531,32 +537,32 @@ def test_lodf_single_contingencies():
         os.path.join('data', 'grids', 'IEEE118-80_96.gridcal'),
 
     ]:
-        main_circuit = FileOpen(fname).open()
+        main_circuit = gce.FileOpen(fname).open()
 
         # DC power flow method
-        pf_options = PowerFlowOptions(SolverType.DC,
-                                      verbose=False,
-                                      initialize_with_existing_solution=False,
-                                      dispatch_storage=True,
-                                      control_q=ReactivePowerControlMode.NoControl,
-                                      control_p=False)
+        pf_options = gce.PowerFlowOptions(gce.SolverType.DC,
+                                          verbose=False,
+                                          initialize_with_existing_solution=False,
+                                          dispatch_storage=True,
+                                          control_q=gce.ReactivePowerControlMode.NoControl,
+                                          control_p=False)
 
-        options1 = ContingencyAnalysisOptions(pf_options=pf_options,
-                                              engine=ContingencyMethod.PowerFlow)
+        options1 = gce.ContingencyAnalysisOptions(pf_options=pf_options,
+                                                  engine=gce.ContingencyMethod.PowerFlow)
 
-        cont_analysis_driver1 = ContingencyAnalysisDriver(grid=main_circuit,
-                                                          options=options1,
-                                                          linear_multiple_contingencies=None)
+        cont_analysis_driver1 = gce.ContingencyAnalysisDriver(grid=main_circuit,
+                                                              options=options1,
+                                                              linear_multiple_contingencies=None)
         cont_analysis_driver1.run()
 
         # LODF method
-        linear_analysis = LinearAnalysisDriver(grid=main_circuit)
+        linear_analysis = gce.LinearAnalysisDriver(grid=main_circuit)
         linear_analysis.run()
-        linear_multi_contingency = LinearMultiContingencies(grid=main_circuit)
+        linear_multi_contingency = gce.LinearMultiContingencies(grid=main_circuit)
         linear_multi_contingency.compute(ptdf=linear_analysis.results.PTDF, lodf=linear_analysis.results.LODF)
-        options2 = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyMethod.PTDF)
-        cont_analysis_driver2 = ContingencyAnalysisDriver(grid=main_circuit,
-                                                          options=options2)  # linear_multiple_contingencies=linear_multi_contingency)
+        options2 = gce.ContingencyAnalysisOptions(pf_options=pf_options, engine=gce.ContingencyMethod.PTDF)
+        cont_analysis_driver2 = gce.ContingencyAnalysisDriver(grid=main_circuit,
+                                                              options=options2)  # linear_multiple_contingencies=linear_multi_contingency)
         cont_analysis_driver2.run()
 
     ok = np.allclose(cont_analysis_driver1.results.Sf, cont_analysis_driver2.results.Sf, atol=1e-1)
@@ -587,35 +593,35 @@ def test_generation_contingencies_powerflow():
             'cont_index_change': {44: 1.2}
         }
     ]:
-        main_circuit = FileOpen(case['conti']).open()
+        main_circuit = gce.FileOpen(case['conti']).open()
 
-        pf_options = PowerFlowOptions(SolverType.DC,
-                                      verbose=False,
-                                      initialize_with_existing_solution=False,
-                                      dispatch_storage=True,
-                                      control_q=ReactivePowerControlMode.NoControl,
-                                      control_p=False)
+        pf_options = gce.PowerFlowOptions(gce.SolverType.DC,
+                                          verbose=False,
+                                          initialize_with_existing_solution=False,
+                                          dispatch_storage=True,
+                                          control_q=gce.ReactivePowerControlMode.NoControl,
+                                          control_p=False)
 
         # DC power flow method with ContingencyAnalysisDriver
-        pf_options = PowerFlowOptions(SolverType.DC,
-                                      verbose=False,
-                                      initialize_with_existing_solution=False,
-                                      dispatch_storage=True,
-                                      control_q=ReactivePowerControlMode.NoControl,
-                                      control_p=False)
-        options1 = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyMethod.PowerFlow)
-        cont_analysis_driver1 = ContingencyAnalysisDriver(grid=main_circuit, options=options1,
-                                                          linear_multiple_contingencies=None)
+        pf_options = gce.PowerFlowOptions(gce.SolverType.DC,
+                                          verbose=False,
+                                          initialize_with_existing_solution=False,
+                                          dispatch_storage=True,
+                                          control_q=gce.ReactivePowerControlMode.NoControl,
+                                          control_p=False)
+        options1 = gce.ContingencyAnalysisOptions(pf_options=pf_options, engine=gce.ContingencyMethod.PowerFlow)
+        cont_analysis_driver1 = gce.ContingencyAnalysisDriver(grid=main_circuit, options=options1,
+                                                              linear_multiple_contingencies=None)
         cont_analysis_driver1.run()
 
         # DC power flow
-        main_circuit = FileOpen(case['orig']).open()
-        nc = compile_numerical_circuit_at(main_circuit, t_idx=None)
+        main_circuit = gce.FileOpen(case['orig']).open()
+        nc = gce.compile_numerical_circuit_at(main_circuit, t_idx=None)
 
         for index, change in case['cont_index_change'].items():
             main_circuit.generators[index].P *= change
 
-        power_flow = PowerFlowDriver(main_circuit, pf_options)
+        power_flow = gce.PowerFlowDriver(main_circuit, pf_options)
         power_flow.run()
 
         ok = np.allclose(cont_analysis_driver1.results.Sf, power_flow.results.Sf)
@@ -645,22 +651,22 @@ def test_compensated_ptdf():
         }
     ]:
 
-        main_circuit = FileOpen(case['conti']).open()
+        main_circuit = gce.FileOpen(case['conti']).open()
 
-        linear_analysis = LinearAnalysisDriver(grid=main_circuit)
+        linear_analysis = gce.LinearAnalysisDriver(grid=main_circuit)
         linear_analysis.run()
 
-        linear_multi_contingency = LinearMultiContingencies(grid=main_circuit)
+        linear_multi_contingency = gce.LinearMultiContingencies(grid=main_circuit)
         linear_multi_contingency.compute(ptdf=linear_analysis.results.PTDF, lodf=linear_analysis.results.LODF)
 
-        main_circuit_raw = FileOpen(case['orig']).open()
+        main_circuit_raw = gce.FileOpen(case['orig']).open()
         # main_circuit_raw.delete_line(main_circuit_raw.get_lines()[0]) # Disable branch 1_2
         line = main_circuit.contingencies[0].code
         for l in main_circuit_raw.lines:
             if l.code == line:
                 l.active = False
 
-        linear_analysis_raw = LinearAnalysisDriver(grid=main_circuit_raw)
+        linear_analysis_raw = gce.LinearAnalysisDriver(grid=main_circuit_raw)
         linear_analysis_raw.run()
 
         ok = np.allclose(linear_multi_contingency.multi_contingencies[0].compensated_ptdf_factors.todense(),
@@ -692,18 +698,18 @@ def test_ptdf_contingencies_powerflow():
             'cont_index_change': {44: 1.2}
         }
     ]:
-        main_circuit = FileOpen(case['conti']).open()
+        main_circuit = gce.FileOpen(case['conti']).open()
 
         # DC power flow method with ContingencyAnalysisDriver
-        pf_options = PowerFlowOptions(SolverType.DC,
-                                      verbose=False,
-                                      initialize_with_existing_solution=False,
-                                      dispatch_storage=True,
-                                      control_q=ReactivePowerControlMode.NoControl,
-                                      control_p=False)
-        options1 = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyMethod.PowerFlow)
-        cont_analysis_driver1 = ContingencyAnalysisDriver(grid=main_circuit, options=options1,
-                                                          linear_multiple_contingencies=None)
+        pf_options = gce.PowerFlowOptions(gce.SolverType.DC,
+                                          verbose=False,
+                                          initialize_with_existing_solution=False,
+                                          dispatch_storage=True,
+                                          control_q=gce.ReactivePowerControlMode.NoControl,
+                                          control_p=False)
+        options1 = gce.ContingencyAnalysisOptions(pf_options=pf_options, engine=gce.ContingencyMethod.PowerFlow)
+        cont_analysis_driver1 = gce.ContingencyAnalysisDriver(grid=main_circuit, options=options1,
+                                                              linear_multiple_contingencies=None)
         cont_analysis_driver1.run()
 
         line_cnt = ''
@@ -712,7 +718,7 @@ def test_ptdf_contingencies_powerflow():
                 line_cnt = cnt.code
 
         # DC power flow
-        main_circuit_raw = FileOpen(case['orig']).open()
+        main_circuit_raw = gce.FileOpen(case['orig']).open()
 
         for index, change in case['cont_index_change'].items():
             main_circuit_raw.generators[index].P *= change
@@ -721,7 +727,7 @@ def test_ptdf_contingencies_powerflow():
             if l.code == line_cnt:
                 l.active = False
 
-        power_flow = PowerFlowDriver(main_circuit, pf_options)
+        power_flow = gce.PowerFlowDriver(main_circuit, pf_options)
         power_flow.run()
 
         ok = np.allclose(cont_analysis_driver1.results.Sf, power_flow.results.Sf)
