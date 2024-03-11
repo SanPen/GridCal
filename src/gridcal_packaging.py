@@ -237,7 +237,7 @@ def build_wheel(pkg_name: str,
     """
 
     pkg_name2 = pkg_name + '-' + version
-    filename = pkg_name2 + '.whl'
+    filename = pkg_name2 + '-py3-none-any.whl'
     output_filename = os.path.join(folder_to_save, filename)
 
     files = find_pkg_files(path=pkg_name,

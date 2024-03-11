@@ -1876,10 +1876,10 @@ class NumericalCircuit:
         for bus_idx in idx_islands:
             if ignore_single_node_islands:
                 if len(bus_idx) > 1:
-                    island = self.get_island(bus_idx)
+                    island = self.get_island(bus_idx, consider_hvdc_as_island_links=consider_hvdc_as_island_links)
                     circuit_islands.append(island)
             else:
-                island = self.get_island(bus_idx)
+                island = self.get_island(bus_idx, consider_hvdc_as_island_links=consider_hvdc_as_island_links)
                 circuit_islands.append(island)
 
         return circuit_islands

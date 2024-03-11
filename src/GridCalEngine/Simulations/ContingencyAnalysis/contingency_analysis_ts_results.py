@@ -247,7 +247,7 @@ class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
         elif result_type == ResultTypes.ContingencyAnalysisReport:
 
             return ResultsTable(
-                data=self.report.get_data(),
+                data=self.report.get_data(time_array=self.time_array, time_format='%Y/%m/%d  %H:%M.%S'),
                 index=self.report.get_index(),
                 idx_device_type=DeviceType.NoDevice,
                 columns=self.report.get_headers(),
@@ -256,7 +256,7 @@ class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
             )
 
         elif result_type == ResultTypes.ContingencyStatisticalAnalysisReport:
-            df = self.report.get_summary_table()
+            df = self.report.get_summary_table(time_array=self.time_array, time_format='%Y/%m/%d  %H:%M.%S')
 
             return ResultsTable(
                 data=df.values,

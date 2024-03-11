@@ -28,7 +28,7 @@ from GridCalEngine.Utils.Sparse.csc_numba import get_sparse_array_numba
 
 
 @nb.njit(cache=True)
-def get_ptdf_comp_numba(data, indices, indptr, PTDF, m, bd_indices):
+def get_ptdf_comp_numba(data: Vec, indices: IntVec, indptr: IntVec, PTDF: Mat, m: int, bd_indices: IntVec):
     """
     This computes the compensatd PTDF for a single branch
     PTDFc = MLODF[m, βδ] x PTDF[βδ, :] + PTDF[m, :]
@@ -81,7 +81,8 @@ class ContingencyTableEntry:
     Entry of a contingency report
     """
 
-    __hdr__ = ["Time",
+    __hdr__ = ["Time idx",
+               "Time",
                "Area 1",
                "Area 2",
                "Monitored",
@@ -166,12 +167,17 @@ class ContingencyTableEntry:
         """
         return self.__hdr__
 
-    def to_list(self) -> List[Any]:
+    def to_list(self, time_array: Union[pd.DatetimeIndex, None], time_format='%Y/%m/%d  %H:%M.%S') -> List[Any]:
         """
         Get a list representation of this entry
+        :param time_array: optional time array to get the time
+        :param time_format: optional time format to display the time
         :return: List[Any]
         """
+        t_str = time_array[self.time_index].strftime(time_format) if time_array is not None else ""
+
         return [self.time_index,
+                t_str,
                 self.area_from,
                 self.area_to,
                 self.base_name,
@@ -190,19 +196,19 @@ class ContingencyTableEntry:
                 self.srap_power,
                 self.solved_by_srap]
 
-    def to_string_list(self) -> List[str]:
+    def to_string_list(self, time_array: Union[pd.DatetimeIndex, None], time_format='%Y/%m/%d  %H:%M.%S') -> List[str]:
         """
         Get list of string values
         :return: List[str]
         """
-        return [str(a) for a in self.to_list()]
+        return [str(a) for a in self.to_list(time_array=time_array, time_format=time_format)]
 
-    def to_array(self) -> StrVec:
+    def to_array(self, time_array: Union[pd.DatetimeIndex, None], time_format='%Y/%m/%d  %H:%M.%S') -> StrVec:
         """
         Get array of string values
         :return: StrVec
         """
-        return np.array(self.to_string_list())
+        return np.array(self.to_string_list(time_array=time_array, time_format=time_format))
 
 
 class ContingencyResultsReport:
@@ -322,34 +328,38 @@ class ContingencyResultsReport:
         """
         return np.arange(0, self.size())
 
-    def get_data(self) -> StrMat:
+    def get_data(self, time_array: Union[pd.DatetimeIndex, None], time_format='%Y/%m/%d  %H:%M.%S') -> StrMat:
         """
         Get data as list of lists of strings
         :return: List[List[str]]
         """
         data = np.empty((self.size(), self.n_cols()), dtype=object)
         for i, e in enumerate(self.entries):
-            data[i, :] = e.to_array()
+            data[i, :] = e.to_array(time_array=time_array, time_format=time_format)
         return data
 
-    def get_df(self) -> pd.DataFrame:
+    def get_df(self, time_array: Union[pd.DatetimeIndex, None], time_format='%Y/%m/%d  %H:%M.%S') -> pd.DataFrame:
         """
         Get data as pandas DataFrame
         :return: DataFrame
         """
-        return pd.DataFrame(data=self.get_data(),
+        return pd.DataFrame(data=self.get_data(time_array=time_array, time_format=time_format),
                             index=self.get_index(),
                             columns=self.get_headers())
 
-    def get_summary_table(self) -> pd.DataFrame:
+    def get_summary_table(self,
+                          time_array: Union[pd.DatetimeIndex, None],
+                          time_format='%Y/%m/%d  %H:%M.%S') -> pd.DataFrame:
         """
 
+        :param time_array:
+        :param time_format:
         :return:
         """
 
-        df = self.get_df()
+        df = self.get_df(time_array=time_array, time_format=time_format)
 
-        df["Time"] = df["Time"].astype(int)
+        df["Time idx"] = df["Time idx"].astype(int)
         df["Base rating (MW)"] = df["Base rating (MW)"].astype(float)
         df["Contingency rating (MW)"] = df["Contingency rating (MW)"].astype(float)
         df["SRAP rating (MW)"] = df["SRAP rating (MW)"].astype(float)
@@ -372,7 +382,8 @@ class ContingencyResultsReport:
                       (df["Contingency"] != "Base") & (df["SRAP availability"] == "SRAP applicable"),
                       (df["Contingency"] != "Base") & (df["SRAP availability"] != "SRAP applicable")],
             choicelist=[df["Base loading (pu)"], df["Post-SRAP loading (pu)"], df["Post-Contingency loading (pu)"]],
-            default=None)
+            default=-999999
+        )
 
         # Group de columns by Area1, Area2, Monitored, Contingency
         df_grp = df.groupby(
@@ -381,11 +392,16 @@ class ContingencyResultsReport:
 
         # Compute the columns
         ov_max = df_grp["Overload for reporting"].max()
-        ov_max_date = df.loc[df_grp["Overload for reporting"].idxmax(), "Time"]
+        ov_max_date = df.loc[df_grp["Overload for reporting"].idxmax(), "Time idx"]
         ov_avg = df_grp["Overload for reporting"].mean()
         ov_desvest = df_grp["Overload for reporting"].std()
         ov_desvest = ov_desvest.fillna(0)
         ov_count = df_grp["Overload for reporting"].count()
+
+        if time_array is not None:
+            ov_max_dates = [time_array[t].strftime(time_format) for t in ov_max_date.values]
+        else:
+            ov_max_dates = ov_max_date.values
 
         # Create the new dataframe with the columns we need
         df_summary = pd.DataFrame({
@@ -398,7 +414,7 @@ class ContingencyResultsReport:
             "SRAP rating (MW)": ov_max.index.get_level_values("SRAP rating (MW)"),
 
             "Overload max (pu)": ov_max.values,
-            "Date Overload max": ov_max_date.values,
+            "Date Overload max": ov_max_dates,
             "Overload average (pu)": ov_avg.values,
             "Standard deviation (pu)": ov_desvest.values,
             "Hours with this overload (h)": ov_count.values
@@ -461,11 +477,16 @@ class ContingencyResultsReport:
         :param srap_ratings: Array of protection ratings of the branches to use with SRAP
         :param srap_max_power: Max amount of power to lower using SRAP conditions
         :param srap_deadband: (in %)
+        :param contingency_deadband:
         :param srap_rever_to_nominal_rating:
         :param multi_contingency: list of buses for SRAP conditions
         :param PTDF: PTDF for SRAP conditions
         :param available_power: Array of power avaiable for SRAP
         :param srap_used_power: (branch, nbus) matrix to stre SRAP usage
+        :param F:
+        :param T:
+        :param bus_area_indices:
+        :param area_names:
         :param top_n: maximum number of nodes affecting the oveload
         :param detailed_massive_report: Generate massive report
         """

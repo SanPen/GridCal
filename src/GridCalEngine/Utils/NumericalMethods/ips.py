@@ -221,6 +221,10 @@ class IpsSolution:
     error: float
     gamma: float
     lam: Vec
+    dlam: Vec
+    mu: Vec
+    z: Vec
+    residuals: Vec
     structs: IpsFunctionReturn
     converged: bool
     iterations: int
@@ -357,7 +361,7 @@ def interior_point_solver(x0: Vec,
     # record initial values
     feascond_evolution[iter_counter] = feascond
     error_evolution[0] = error
-
+    N = np.zeros(n_x + n_eq)
     while not converged and iter_counter < max_iter:
 
         # Evaluate the functions, gradients and hessians at the current iteration.
@@ -494,7 +498,7 @@ def interior_point_solver(x0: Vec,
         z_inv = diags(1.0 / z)
         mu_diag = diags(mu)
 
-        converged = feascond < tol and gradcond < tol
+        converged = feascond < tol and gradcond < tol and gamma < tol
 
         if verbose > 1:
             print(f'Iteration: {iter_counter}', "-" * 80)
@@ -528,5 +532,5 @@ def interior_point_solver(x0: Vec,
         print(f'\tTime elapsed (s): {END - START}')
         print(f'\tFeas cond: ', feascond)
 
-    return IpsSolution(x=x, error=error, gamma=gamma, lam=lam, structs=ret,
+    return IpsSolution(x=x, error=error, gamma=gamma, lam=lam, dlam=dlam, mu=mu, z=z, residuals=N, structs=ret,
                        converged=converged, iterations=iter_counter, error_evolution=error_evolution)

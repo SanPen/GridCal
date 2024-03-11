@@ -100,7 +100,7 @@ class Bus(EditableDevice):
 
         # minimum voltage limit
         self.Vmin = vmin
-        self.Vm_cost = 0
+        self.Vm_cost = 1.0
 
         # maximum voltage limit
         self.Vmax = vmax
