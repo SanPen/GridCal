@@ -339,6 +339,7 @@ def publish(pkg_name: str,
     :param description_content_type:
     :param provides_extra:
     :param long_description:
+    :param ext_filter:
     """
 
     # build the tar.gz file

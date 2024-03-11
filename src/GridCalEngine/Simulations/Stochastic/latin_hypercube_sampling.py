@@ -13,12 +13,17 @@ Much thanks goes to these individuals. It has been converted to Python by
 Abraham Lee.
 """
 
+from typing import Union
 import numpy as np
+from GridCalEngine.basic_structures import Vec, Mat
 
 __all__ = ['lhs']
 
 
-def lhs(n, samples=None, criterion=None, iterations=None):
+def lhs(n: int,
+        samples: Union[Mat, None] = None,
+        criterion: str = 'center',
+        iterations: int = 5):
     """
     Generate a latin-hypercube design
 
@@ -101,11 +106,11 @@ def lhs(n, samples=None, criterion=None, iterations=None):
     else:
         H = _lhsclassic(n, samples)
 
-    if criterion is None:
-        criterion = 'center'
-
-    if iterations is None:
-        iterations = 5
+    # if criterion is None:
+    #     criterion = 'center'
+    #
+    # if iterations is None:
+    #     iterations = 5
 
     if H is None:
         if criterion.lower() in ('center', 'c'):
@@ -116,13 +121,21 @@ def lhs(n, samples=None, criterion=None, iterations=None):
             H = _lhsmaximin(n, samples, iterations, 'centermaximin')
         elif criterion.lower() in ('correlate', 'corr'):
             H = _lhscorrelate(n, samples, iterations)
+        else:
+            raise Exception('Invalid value for "criterion": {}'.format(criterion))
 
     return H
 
 
 ################################################################################
 
-def _lhsclassic(n, samples):
+def _lhsclassic(n: int, samples: int) -> Mat:
+    """
+
+    :param n:
+    :param samples:
+    :return:
+    """
     # Generate the intervals
     cut = np.linspace(0, 1, samples + 1)
 
@@ -145,7 +158,13 @@ def _lhsclassic(n, samples):
 
 ################################################################################
 
-def _lhscentered(n, samples):
+def _lhscentered(n: int, samples: int) -> Mat:
+    """
+
+    :param n:
+    :param samples:
+    :return:
+    """
     # Generate the intervals
     cut = np.linspace(0, 1, samples + 1)
 
@@ -165,7 +184,15 @@ def _lhscentered(n, samples):
 
 ################################################################################
 
-def _lhsmaximin(n, samples, iterations, lhstype):
+def _lhsmaximin(n, samples, iterations, lhstype) -> Mat:
+    """
+
+    :param n:
+    :param samples:
+    :param iterations:
+    :param lhstype:
+    :return:
+    """
     maxdist = 0
 
     # Maximize the minimum distance between points
@@ -180,12 +207,21 @@ def _lhsmaximin(n, samples, iterations, lhstype):
             maxdist = np.min(d)
             H = Hcandidate.copy()
 
-    return H
+            return H
+        else:
+            raise Exception("Cannot compute H")
 
 
 ################################################################################
 
-def _lhscorrelate(n, samples, iterations):
+def _lhscorrelate(n: int, samples: int, iterations: int) -> Mat:
+    """
+
+    :param n:
+    :param samples:
+    :param iterations:
+    :return:
+    """
     mincorr = np.inf
 
     # Minimize the components correlation coefficients
@@ -198,12 +234,14 @@ def _lhscorrelate(n, samples, iterations):
             print('new candidate solution found with max,abs corrcoef = {}'.format(mincorr))
             H = Hcandidate.copy()
 
-    return H
+            return H
+
+    raise Exception("Could not compute H")
 
 
 ################################################################################
 
-def _pdist(x):
+def _pdist(x) -> Vec:
     """
     Calculate the pair-wise point distances of a matrix
 

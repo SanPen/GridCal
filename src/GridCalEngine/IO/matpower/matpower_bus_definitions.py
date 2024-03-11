@@ -150,12 +150,12 @@ def bustypes(bus, gen, storage, Sbus, storage_dispatch_mode=StorageDispatchMode.
     Generators with "out-of-service" status are treated as L{PQ} buses with
     zero generation (regardless of C{Pg}/C{Qg} values in gen). Expects C{bus}
     and C{gen} have been converted to use internal consecutive bus numbering.
-
-    @param bus: bus data
-    @param gen: generator data
-    @return: index lists of each bus type
-
-    @author: Ray Zimmerman (PSERC Cornell)
+    :param bus: bus data
+    :param gen: generator data
+    :param storage:
+    :param Sbus:
+    :param storage_dispatch_mode:
+    :return: index lists of each bus type
     """
     # flag to indicate that it is impossible to solve the grid
     the_grid_is_disabled = False
