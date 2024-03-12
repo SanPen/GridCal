@@ -128,7 +128,7 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
             if self.clustering_results is not None:
                 t_prob = self.clustering_results.sampled_probabilities[it]
             else:
-                t_prob = 1.0
+                t_prob = 1.0/len(self.time_indices)
 
             res_t = cdriver.run_at(t=t, t_prob=t_prob)
 
