@@ -14,15 +14,19 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
 import time
 import numpy as np
-from typing import List, Dict, Union
+from typing import List, Dict, Union, TYPE_CHECKING
 from GridCalEngine.basic_structures import IntVec, Vec
 from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.enumerations import EngineType
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 import GridCalEngine.Topology.topology as tp
+
+if TYPE_CHECKING:
+    from GridCalEngine.Simulations.Clustering.clustering_results import ClusteringResults
 
 
 class DummySignal:
@@ -167,7 +171,7 @@ class TimeSeriesDriverTemplate(DriverTemplate):
             self,
             grid: MultiCircuit,
             time_indices: IntVec,
-            clustering_results: Union["ClusteringResults", None] = None,
+            clustering_results: Union[ClusteringResults, None] = None,
             engine: EngineType = EngineType.GridCal,
             check_time_series: bool = True):
         """
@@ -181,7 +185,7 @@ class TimeSeriesDriverTemplate(DriverTemplate):
 
         DriverTemplate.__init__(self, grid=grid, engine=engine)
 
-        self.clustering_results = clustering_results
+        self.clustering_results: Union[ClusteringResults, None] = clustering_results
 
         if clustering_results:
             self.using_clusters = True

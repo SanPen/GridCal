@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 import numpy as np
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
@@ -33,7 +33,8 @@ def nonlinear_contingency_analysis(grid: MultiCircuit,
                                    options: ContingencyAnalysisOptions,
                                    linear_multiple_contingencies: LinearMultiContingencies,
                                    calling_class: ContingencyAnalysisDriver,
-                                   t=None) -> ContingencyAnalysisResults:
+                                   t: Union[None, int] = None,
+                                   t_prob: float = 1.0) -> ContingencyAnalysisResults:
     """
     Run a contingency analysis using the power flow options
     :param grid: MultiCircuit
@@ -41,6 +42,7 @@ def nonlinear_contingency_analysis(grid: MultiCircuit,
     :param linear_multiple_contingencies: LinearMultiContingencies
     :param calling_class: ContingencyAnalysisDriver
     :param t: time index, if None the snapshot is used
+    :param t_prob: probability of te time
     :return: returns the results (ContingencyAnalysisResults)
     """
     # set the numerical circuit
@@ -120,8 +122,8 @@ def nonlinear_contingency_analysis(grid: MultiCircuit,
         multi_contingency = linear_multiple_contingencies.multi_contingencies[ic] if options.use_srap else None
 
         results.report.analyze(t=t,
+                               t_prob=t_prob,
                                mon_idx=mon_idx,
-                               calc_branches=calc_branches,
                                numerical_circuit=numerical_circuit,
                                base_flow=np.abs(pf_res_0.Sf),
                                base_loading=np.abs(pf_res_0.loading),
