@@ -5462,3 +5462,42 @@ class MultiCircuit:
         self.clean_investments(all_dev=all_dev, logger=logger)
 
         return logger
+
+
+    # def split_line(self, line: dev.Line, position: float) -> Tuple["Line", "Line", Bus]:
+    #     """
+    #     Split a branch by a given distance
+    #     :param position: per unit distance measured from the "from" bus (0 ~ 1)
+    #     :return: the two new Branches and the mid short circuited bus
+    #     """
+    #
+    #     assert (0.0 < position < 1.0)
+    #
+    #     # Each of the Branches will have the proportional impedance
+    #     # Bus_from           Middle_bus            Bus_To
+    #     # o----------------------o--------------------o
+    #     #   >-------- x -------->|
+    #     #   (x: distance measured in per unit (0~1)
+    #
+    #     middle_bus = line.bus_from.copy()
+    #     middle_bus.name += ' split'
+    #
+    #     # C(x, y) = (x1 + t * (x2 - x1), y1 + t * (y2 - y1))
+    #     middle_bus.X = line.bus_from.x + (line.bus_to.x - line.bus_from.x) * position
+    #     middle_bus.y = line.bus_from.y + (line.bus_to.y - line.bus_from.y) * position
+    #
+    #     props_to_scale = ['R', 'R0', 'X', 'X0', 'B', 'B0', 'length']  # list of properties to scale
+    #
+    #     br1 = line.copy()
+    #     br1.bus_from = line.bus_from
+    #     br1.bus_to = middle_bus
+    #     for p in props_to_scale:
+    #         setattr(br1, p, getattr(line, p) * position)
+    #
+    #     br2 = line.copy()
+    #     br2.bus_from = middle_bus
+    #     br2.bus_to = line.bus_to
+    #     for p in props_to_scale:
+    #         setattr(br2, p, getattr(line, p) * (1.0 - position))
+    #
+    #     return br1, br2, middle_bus

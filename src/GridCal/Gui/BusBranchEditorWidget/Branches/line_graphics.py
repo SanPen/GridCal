@@ -19,7 +19,6 @@ from typing import TYPE_CHECKING, Union
 from PySide6.QtCore import Qt, QRectF
 from PySide6.QtGui import QPen, QIcon, QPixmap, QBrush
 from PySide6.QtWidgets import QMenu, QGraphicsRectItem
-from GridCal.Gui.GeneralDialogues import InputNumberDialogue
 from GridCal.Gui.BusBranchEditorWidget.Substation.bus_graphics import TerminalItem
 from GridCal.Gui.BusBranchEditorWidget.Branches.line_editor import LineEditor
 from GridCal.Gui.messages import yes_no_question, warning_msg
@@ -168,13 +167,13 @@ class LineGraphicItem(LineGraphicTemplateItem):
             spl.setIcon(spl_icon)
             spl.triggered.connect(self.split_line)
 
-            # menu.addSeparator()
+            spl = menu.addAction('Split line with in/out')
+            spl_icon = QIcon()
+            spl_icon.addPixmap(QPixmap(":/Icons/icons/divide.svg"))
+            spl.setIcon(spl_icon)
+            spl.triggered.connect(self.split_line_in_out)
 
-            re = menu.addAction('Reduce')
-            re_icon = QIcon()
-            re_icon.addPixmap(QPixmap(":/Icons/icons/grid_reduction.svg"))
-            re.setIcon(re_icon)
-            re.triggered.connect(self.reduce)
+            # menu.addSeparator()
 
             ra2 = menu.addAction('Delete')
             del_icon = QIcon()
@@ -297,39 +296,17 @@ class LineGraphicItem(LineGraphicTemplateItem):
 
     def split_line(self):
         """
-        Split line
+        Split the line
         :return:
         """
-        dlg = InputNumberDialogue(min_value=1.0,
-                                  max_value=99.0,
-                                  is_int=False,
-                                  title="Split line",
-                                  text="Enter the distance from the beginning of the \n"
-                                       "line as a percentage of the total length",
-                                  suffix=' %',
-                                  decimals=2,
-                                  default_value=50.0)
-        if dlg.exec_():
+        self.editor.split_line(line_graphics=self)
 
-            if dlg.is_accepted:
-                br1, br2, middle_bus = self.api_object.split_line(position=dlg.value / 100.0)
-
-                # add the graphical objects
-                # TODO: Figure this out
-                # middle_bus.graphic_obj = self.diagramScene.parent_.add_api_bus(middle_bus)
-                # br1.graphic_obj = self.diagramScene.parent_.add_api_line(br1)
-                # br2.graphic_obj = self.diagramScene.parent_.add_api_line(br2)
-                # # middle_bus.graphic_obj.redraw()
-                # br1.bus_from.graphic_obj.arrange_children()
-                # br2.bus_to.graphic_obj.arrange_children()
-
-                # add to gridcal
-                self.editor.circuit.add_bus(middle_bus)
-                self.editor.circuit.add_line(br1)
-                self.editor.circuit.add_line(br2)
-
-                # remove this line
-                self.remove(ask=False)
+    def split_line_in_out(self):
+        """
+        Split the line
+        :return:
+        """
+        self.editor.split_line_in_out(line_graphics=self)
 
     def to_transformer(self):
         """
