@@ -648,7 +648,7 @@ def jacobians_and_hessians(x, c1, c2, c_s, c_v, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase,
                                                                     Hql, Hslsf, Hslst, Hslvmax, Hslvmin])
 
             if ntapm != 0:
-                Htapmu_ = csc((np.ones(tapm), (list(range(ntapm)), list(range(ntapm)))))
+                Htapmu_ = csc((np.ones(ntapm), (list(range(ntapm)), list(range(ntapm)))))
                 Htapml_ = csc((-np.ones(ntapm), (list(range(ntapm)), list(range(ntapm)))))
                 #Htapmu = sp.hstack([lil_matrix((ntapm, npfvar + nsl)), Htapmu_, lil_matrix((ntapm, ntapt))])
                 #Htapml = sp.hstack([lil_matrix((ntapm, npfvar + nsl)), Htapml_, lil_matrix((ntapm, ntapt))])
@@ -656,8 +656,8 @@ def jacobians_and_hessians(x, c1, c2, c_s, c_v, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase,
                 Htapmu = diags(np.ones(ntapm))
                 Htapml = diags(-np.ones(ntapm))
 
-                Hx[tapid: tapid + ntapm, tapid: tapid + ntapm] = Htapmu
-                Hx[tapid + ntapm: tapid + 2 * ntapm, tapid + ntapm: tapid + 2 * ntapm] = Htapml
+                Hx[tapid: tapid + ntapm, npfvar + nsl: npfvar + nsl + ntapm] = Htapmu
+                Hx[tapid + ntapm: tapid + 2 * ntapm, npfvar + nsl: npfvar + nsl +  ntapm] = Htapml
 
             if ntapt != 0:
                 Htaptu_ = csc((np.ones(ntapt), (list(range(ntapt)), list(range(ntapt)))))
@@ -667,9 +667,9 @@ def jacobians_and_hessians(x, c1, c2, c_s, c_v, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase,
                 Htaptu = diags(np.ones(ntapt))
                 Htaptl = diags(-np.ones(ntapt))
 
-                Hx[tapid + 2 * tapm: tapid + 2 * ntapm + tapt, tapid + 2 * tapm: tapid + 2 * tapm + tapt] = Htaptu
-                Hx[tapid + 2 * ntapm + tapt: tapid + 2 * ntapm + 2 * tapt,
-                   tapid + 2 * ntapm + tapt: tapid + 2 * ntapm + 2 * tapt] = Htaptl
+                Hx[tapid + 2 * ntapm: tapid + 2 * ntapm + ntapt, npfvar + nsl + ntapm: npfvar + nsl + ntapm + ntapt] = Htaptu
+                Hx[tapid + 2 * ntapm + ntapt: tapid + 2 * ntapm + 2 * ntapt,
+                   npfvar + nsl + ntapm: npfvar + nsl + ntapm + ntapt] = Htaptl
 
         else:
             Sftapm = None
@@ -702,10 +702,6 @@ def jacobians_and_hessians(x, c1, c2, c_s, c_v, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase,
         if ndc != 0:
             dcid = 2 * M + 2 * N + 4 * Ng + nsl + 2 * (ntapm + ntapt) + nqcont
 
-            Hdcu_ = csc(([1] * ndc, (list(range(ndc)), list(range(ndc)))))
-            Hdcl_ = csc(([-1] * ndc, (list(range(ndc)), list(range(ndc)))))
-            #Hdcu = sp.hstack([lil_matrix((ndc, npfvar + ntapm + ntapt + nsl)), Hdcu_])
-            #Hdcl = sp.hstack([lil_matrix((ndc, npfvar + ntapm + ntapt + nsl)), Hdcl_])
             Hdcu = diags(np.ones(ndc))
             Hdcl = diags(-np.ones(ndc))
             Hx[dcid: dcid + ndc, NV - ndc: NV] = Hdcu
@@ -790,12 +786,12 @@ def jacobians_and_hessians(x, c1, c2, c_s, c_v, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase,
                                                                                     lmbda[0: 2 * N], mu[0: 2 * M],
                                                                                     allSf, allSt)
 
-            G1 = sp.hstack([Gaa, Gav, lil_matrix((N, 2 * Ng + nsl)), GSdmdva, GSdtdva, lil_matrix(N, ndc)])
-            G2 = sp.hstack([Gva, Gvv, lil_matrix((N, 2 * Ng + nsl)), GSdmdvm, GSdtdvm, lil_matrix(N, ndc)])
+            G1 = sp.hstack([Gaa, Gav, lil_matrix((N, 2 * Ng + nsl)), GSdmdva, GSdtdva, lil_matrix((N, ndc))])
+            G2 = sp.hstack([Gva, Gvv, lil_matrix((N, 2 * Ng + nsl)), GSdmdvm, GSdtdvm, lil_matrix((N, ndc))])
             G3 = sp.hstack([GSdmdva.T, GSdmdvm.T, lil_matrix((ntapm, 2 * Ng + nsl)),
-                            GSdmdm, GSdmdt.T, lil_matrix(N, ndc)])
+                            GSdmdm, GSdmdt.T, lil_matrix((ntapm, ndc))])
             G4 = sp.hstack([GSdtdva.T, GSdtdvm.T, lil_matrix((ntapt, 2 * Ng + nsl)),
-                            GSdmdt, GSdtdt, lil_matrix(N, ndc)])
+                            GSdmdt, GSdtdt, lil_matrix((ntapt, ndc))])
 
             Gxx = sp.vstack([G1, G2, lil_matrix((2 * Ng + nsl, NV)), G3, G4, lil_matrix((ndc, NV))])
             print('')

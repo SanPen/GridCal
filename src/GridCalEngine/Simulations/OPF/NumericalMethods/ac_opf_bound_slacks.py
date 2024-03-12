@@ -463,8 +463,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     Pdcmax = nc.hvdc_data.rate
 
     # Slack relaxations for constraints
-    c_s = nc.branch_data.overload_cost[il]
-    c_v = nc.bus_data.cost_v[pq]
+    c_s = 1000 * nc.branch_data.overload_cost[il]
+    c_v = 1000 * nc.bus_data.cost_v[pq]
     #c_v[0] *=1000
 
     nsl = 2 * npq + 2 * nll
