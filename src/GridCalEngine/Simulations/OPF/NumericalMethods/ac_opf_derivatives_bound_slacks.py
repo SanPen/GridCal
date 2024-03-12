@@ -528,7 +528,9 @@ def jacobians_and_hessians(x, c1, c2, c_s, c_v, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase,
         for i, ss in enumerate(pv):
             Gvm[i, N + ss] = 1.
 
-        GS = sp.hstack([GSva, GSvm, GSpg, GSqg, lil_matrix((N, nsl))])
+        GS = lil_matrix((N, NV), dtype=complex)
+
+        GS[:, 0: npfvar] = sp.hstack([GSva, GSvm, GSpg, GSqg])
 
         if ntapm + ntapt != 0:  # Check if there are tap variables that can affect the admittances
 
@@ -537,10 +539,10 @@ def jacobians_and_hessians(x, c1, c2, c_s, c_v, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase,
 
             if ntapm != 0:
                 Gtapm = dSbusdm.copy()
-                GS = sp.hstack([GS, Gtapm])
+                GS[:, npfvar + nsl: npfvar + nsl + ntapm] = Gtapm
             if ntapt != 0:
                 Gtapt = dSbusdt.copy()
-                GS = sp.hstack([GS, Gtapt])
+                GS[:, npfvar + nsl + ntapm: npfvar + nsl + ntapm + ntapt] = Gtapt
         else:
             dSbusdm, dSfdm, dStdm, dSbusdt, dSfdt, dStdt = (None, None, None, None, None, None)
 
@@ -552,7 +554,7 @@ def jacobians_and_hessians(x, c1, c2, c_s, c_v, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase,
                 GSpfdc[fdc, link] = 1
                 GSpfdc[tdc, link] = -1
 
-            GS = sp.hstack([GS, GSpfdc])
+            GS[:, npfvar + nsl + ntapm + ntapt: npfvar + nsl + ntapm + ntapt + ndc] = GSpfdc
 
         Gx = sp.vstack([GS.real, GS.imag, GTH, Gvm])
 
@@ -620,9 +622,13 @@ def jacobians_and_hessians(x, c1, c2, c_s, c_v, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase,
         Hslvmin = sp.hstack([lil_matrix((npq, npfvar + 2 * M + npq)), diags(Hslvmin),
                              lil_matrix((npq, ntapm + ntapt + ndc))])
 
+        Hx = lil_matrix((2 * M + 2 * N + 4 * Ng + 2 * (ntapm + ntapt) + nsl + 2 * ndc + nqcont, NV))
+
+
+
         if ntapm + ntapt != 0:
 
-            tapid = 4 * M + 4 * N + 2 * Ng + 2 * npq  # Locates the index at the jacobian matrix for tap constraints.
+            tapid = 2 * M + 2 * N + 4 * Ng + nsl  # Locates the index at the jacobian matrix for tap constraints.
 
             Sftapm = dSfdm[il, :].copy()
             Sftapt = dSfdt[il, :].copy()
@@ -632,31 +638,41 @@ def jacobians_and_hessians(x, c1, c2, c_s, c_v, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase,
             SfX = sp.hstack([Sfva, Sfvm, lil_matrix((M, 2 * Ng + nsl)), Sftapm, Sftapt])
             StX = sp.hstack([Stva, Stvm, lil_matrix((M, 2 * Ng + nsl)), Sttapm, Sttapt])
 
-            HSf = 2 * (Sfmat.real @ SfX.real + Sfmat.imag @ SfX.imag)
-            HSt = 2 * (Stmat.real @ StX.real + Stmat.imag @ StX.imag)
+            Hslsf = lil_matrix((M, NV))
+            Hslst = lil_matrix((M, NV))
+            Hslsf[:, npfvar: npfvar + M] = diags(-np.ones(M))  # Warning triggered
+            Hslst[:, npfvar + M: npfvar + 2 * M] = diags(-np.ones(M))
 
-            HSf[:, npfvar: npfvar + M] = diags(-np.ones(M))
-            HSt[:, npfvar + M: npfvar + 2 * M] = diags(-np.ones(M))
 
-            Hx = sp.vstack([HSf, HSt, Hvu, Hpu, Hqu, Hvl, Hpl, Hql,
-                            Hslsf, Hslst, Hslvmax, Hslvmin, lil_matrix((2 * ntapm + 2 * ntapt + nqcont + ndc, NV))])
+            HSf = 2 * (Sfmat.real @ SfX.real + Sfmat.imag @ SfX.imag) + Hslsf
+            HSt = 2 * (Stmat.real @ StX.real + Stmat.imag @ StX.imag) + Hslst
+
+            Hx[0: 2 * M + 2 * N + 4 * Ng + nsl, :] = sp.vstack([HSf, HSt, Hvu, Hpu, Hqu, Hvl, Hpl,
+                                                                    Hql, Hslsf, Hslst, Hslvmax, Hslvmin])
 
             if ntapm != 0:
-                Htapmu_ = csc(([1] * ntapm, (list(range(ntapm)), list(range(ntapm)))))
-                Htapml_ = csc(([-1] * ntapm, (list(range(ntapm)), list(range(ntapm)))))
-                Htapmu = sp.hstack([lil_matrix((ntapm, npfvar + nsl)), Htapmu_, lil_matrix((ntapm, ntapt))])
-                Htapml = sp.hstack([lil_matrix((ntapm, npfvar + nsl)), Htapml_, lil_matrix((ntapm, ntapt))])
+                Htapmu_ = csc((np.ones(ntapm), (list(range(ntapm)), list(range(ntapm)))))
+                Htapml_ = csc((-np.ones(ntapm), (list(range(ntapm)), list(range(ntapm)))))
+                #Htapmu = sp.hstack([lil_matrix((ntapm, npfvar + nsl)), Htapmu_, lil_matrix((ntapm, ntapt))])
+                #Htapml = sp.hstack([lil_matrix((ntapm, npfvar + nsl)), Htapml_, lil_matrix((ntapm, ntapt))])
 
-                Hx[tapid: tapid + ntapm, :] = Htapmu
-                Hx[tapid + ntapm: tapid + 2 * ntapm, :] = Htapml
+                Htapmu = diags(np.ones(ntapm))
+                Htapml = diags(-np.ones(ntapm))
+
+                Hx[tapid: tapid + ntapm, npfvar + nsl: npfvar + nsl + ntapm] = Htapmu
+                Hx[tapid + ntapm: tapid + 2 * ntapm, npfvar + nsl: npfvar + nsl +  ntapm] = Htapml
 
             if ntapt != 0:
-                Htaptu_ = csc(([1] * ntapt, (list(range(ntapt)), list(range(ntapt)))))
-                Htaptl_ = csc(([-1] * ntapt, (list(range(ntapt)), list(range(ntapt)))))
-                Htaptu = sp.hstack([lil_matrix((ntapt, npfvar + nsl + ntapm)), Htaptu_])
-                Htaptl = sp.hstack([lil_matrix((ntapt, npfvar + nsl + ntapm)), Htaptl_])
-                Hx[tapid + 2 * tapm: tapid + 2 * ntapm + tapt, :] = Htaptu
-                Hx[tapid + 2 * ntapm + tapt: tapid + 2 * ntapm + 2 * tapt, :] = Htaptl
+                Htaptu_ = csc((np.ones(ntapt), (list(range(ntapt)), list(range(ntapt)))))
+                Htaptl_ = csc((-np.ones(ntapt), (list(range(ntapt)), list(range(ntapt)))))
+                #Htaptu = sp.hstack([lil_matrix((ntapt, npfvar + nsl + ntapm)), Htaptu_])
+                #Htaptl = sp.hstack([lil_matrix((ntapt, npfvar + nsl + ntapm)), Htaptl_])
+                Htaptu = diags(np.ones(ntapt))
+                Htaptl = diags(-np.ones(ntapt))
+
+                Hx[tapid + 2 * ntapm: tapid + 2 * ntapm + ntapt, npfvar + nsl + ntapm: npfvar + nsl + ntapm + ntapt] = Htaptu
+                Hx[tapid + 2 * ntapm + ntapt: tapid + 2 * ntapm + 2 * ntapt,
+                   npfvar + nsl + ntapm: npfvar + nsl + ntapm + ntapt] = Htaptl
 
         else:
             Sftapm = None
@@ -664,18 +680,18 @@ def jacobians_and_hessians(x, c1, c2, c_s, c_v, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase,
             Sttapm = None
             Sttapt = None
 
-            SfX = sp.hstack([Sfva, Sfvm, lil_matrix((M, 2 * Ng + nsl))])
-            StX = sp.hstack([Stva, Stvm, lil_matrix((M, 2 * Ng + nsl))])
+            SfX = sp.hstack([Sfva, Sfvm, lil_matrix((M, 2 * Ng + nsl + ndc))])
+            StX = sp.hstack([Stva, Stvm, lil_matrix((M, 2 * Ng + nsl + ndc))])
 
             HSf = 2 * (Sfmat.real @ SfX.real + Sfmat.imag @ SfX.imag)
             HSt = 2 * (Stmat.real @ StX.real + Stmat.imag @ StX.imag)
 
-            Hx = sp.vstack([HSf, HSt, Hvu, Hpu, Hqu, Hvl, Hpl, Hql,
-                            Hslsf, Hslst, Hslvmax, Hslvmin, lil_matrix((nqcont + ndc, NV))])
+            Hx[0: 2 * M + 2 * N + 4 * Ng + nsl, :] = sp.vstack([HSf, HSt, Hvu, Hpu, Hqu, Hvl, Hpl,
+                                                                Hql, Hslsf, Hslst, Hslvmax, Hslvmin])
 
         if ctQ != ReactivePowerControlMode.NoControl:
 
-            qcontid = 4 * M + 4 * N + 2 * Ng + 2 * npq + 2 * (tapm + tapt)
+            qcontid = 2 * M + 2 * N + 4 * Ng + nsl + 2 * (ntapm + ntapt)
 
             # tanmax curves (simplified capability curves of generators)
             Hqmaxp = -2 * (tanmax ** 2) * Pg
@@ -687,15 +703,12 @@ def jacobians_and_hessians(x, c1, c2, c_s, c_v, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase,
             Hx[qcontid: qcontid + nqcont, :] = Hqmax
 
         if ndc != 0:
-            dcid = 4 * M + 4 * N + 2 * Ng + 2 * npq + 2 * (tapm + tapt) + nqcont
+            dcid = 2 * M + 2 * N + 4 * Ng + nsl + 2 * (ntapm + ntapt) + nqcont
 
-            Hdcu_ = csc(([1] * ndc, (list(range(ndc)), list(range(ndc)))))
-            Hdcl_ = csc(([-1] * ndc, (list(range(ndc)), list(range(ndc)))))
-            Hdcu = sp.hstack([lil_matrix((ndc, npfvar + ntapm + ntapt + nsl)), Hdcu_])
-            Hdcl = sp.hstack([lil_matrix((ndc, npfvar + ntapm + ntapt + nsl)), Hdcl_])
-
-            Hx[dcid: dcid + ndc, :] = Hdcu
-            Hx[dcid: dcid + ndc, :] = Hdcl
+            Hdcu = diags(np.ones(ndc))
+            Hdcl = diags(-np.ones(ndc))
+            Hx[dcid: dcid + ndc, NV - ndc: NV] = Hdcu
+            Hx[dcid + ndc: dcid + 2 * ndc, NV - ndc: NV] = Hdcl
 
         Hx = Hx.T.tocsc()
 
@@ -776,12 +789,12 @@ def jacobians_and_hessians(x, c1, c2, c_s, c_v, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase,
                                                                                     lmbda[0: 2 * N], mu[0: 2 * M],
                                                                                     allSf, allSt)
 
-            G1 = sp.hstack([Gaa, Gav, lil_matrix((N, 2 * Ng + nsl)), GSdmdva, GSdtdva, lil_matrix(N, ndc)])
-            G2 = sp.hstack([Gva, Gvv, lil_matrix((N, 2 * Ng + nsl)), GSdmdvm, GSdtdvm, lil_matrix(N, ndc)])
+            G1 = sp.hstack([Gaa, Gav, lil_matrix((N, 2 * Ng + nsl)), GSdmdva, GSdtdva, lil_matrix((N, ndc))])
+            G2 = sp.hstack([Gva, Gvv, lil_matrix((N, 2 * Ng + nsl)), GSdmdvm, GSdtdvm, lil_matrix((N, ndc))])
             G3 = sp.hstack([GSdmdva.T, GSdmdvm.T, lil_matrix((ntapm, 2 * Ng + nsl)),
-                            GSdmdm, GSdmdt.T, lil_matrix(N, ndc)])
+                            GSdmdm, GSdmdt.T, lil_matrix((ntapm, ndc))])
             G4 = sp.hstack([GSdtdva.T, GSdtdvm.T, lil_matrix((ntapt, 2 * Ng + nsl)),
-                            GSdmdt, GSdtdt, lil_matrix(N, ndc)])
+                            GSdmdt, GSdtdt, lil_matrix((ntapt, ndc))])
 
             Gxx = sp.vstack([G1, G2, lil_matrix((2 * Ng + nsl, NV)), G3, G4, lil_matrix((ndc, NV))])
             print('')
