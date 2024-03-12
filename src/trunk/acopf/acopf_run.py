@@ -5,8 +5,6 @@ from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf_bound_slacks import r
 from GridCalEngine.enumerations import TransformerControlType
 
 
-
-
 def example_3bus_acopf():
     """
 
@@ -252,8 +250,8 @@ def case14():
 
     #grid.delete_line(grid.lines[0])
     #grid.delete_line(grid.lines[1])
-    for l in range(len(grid.lines)):
-        grid.lines[l].monitor_loading = True
+    for ll in range(len(grid.lines)):
+        grid.lines[ll].monitor_loading = True
 
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR)
     opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, ips_tolerance=1e-8,
