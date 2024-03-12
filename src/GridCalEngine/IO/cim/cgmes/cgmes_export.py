@@ -81,22 +81,22 @@ class CimExporter:
         self.class_filters = {}
         with open(os.path.join(current_directory, "export_docs/rdfs_info_CGMES2415.json"), "r") as json_file:
             json_dict = json.load(json_file)
-            for class_name in self.cgmes_circuit.classes:
-                self.class_filters[class_name] = {}
-            for i, prop_name in enumerate(json_dict['Property-AttributeAssociation']):
-                if json_dict["Class Name"][i] in self.cgmes_circuit.classes:
-                    p_key = str(prop_name).split('.')[-1]
-                    if p_key not in self.class_filters[json_dict["Class Name"][i]]:
-                        temp_dict = {
-                            "Profile": json_dict['ProfileKeyword'][i].strip('[]').split(','),
-                            "ClassFullName": json_dict["Class"][i],
-                            "Property-AttributeAssociationFull": json_dict["Property-AttributeAssociation"][i],
-                            "Type": json_dict["Type"][i]
-                        }
-                        self.class_filters[json_dict["Class Name"][i]][p_key] = temp_dict
-                    else:
-                        new_prof = json_dict['ProfileKeyword'][i].strip('[]').split(',')
-                        self.class_filters[json_dict["Class Name"][i]][p_key]["Profile"].extend(new_prof)
+        for class_name in self.cgmes_circuit.classes:
+            self.class_filters[class_name] = {}
+        for i, prop_name in enumerate(json_dict['Property-AttributeAssociation']):
+            if json_dict["Class Name"][i] in self.cgmes_circuit.classes:
+                p_key = str(prop_name).split('.')[-1]
+                if p_key not in self.class_filters[json_dict["Class Name"][i]]:
+                    temp_dict = {
+                        "Profile": json_dict['ProfileKeyword'][i].strip('[]').split(','),
+                        "ClassFullName": json_dict["Class"][i],
+                        "Property-AttributeAssociationFull": json_dict["Property-AttributeAssociation"][i],
+                        "Type": json_dict["Type"][i]
+                    }
+                    self.class_filters[json_dict["Class Name"][i]][p_key] = temp_dict
+                else:
+                    new_prof = json_dict['ProfileKeyword'][i].strip('[]').split(',')
+                    self.class_filters[json_dict["Class Name"][i]][p_key]["Profile"].extend(new_prof)
 
     def export(self):
         current_directory = os.path.dirname(__file__)
