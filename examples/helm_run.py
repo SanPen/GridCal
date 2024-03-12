@@ -15,7 +15,7 @@ fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 14.
 # fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/1354 Pegase.xlsx'
 # fname = 'helm_data1.gridcal'
 
-grid = FileOpen(fname).open()
+grid = FileOpen(fname).is_open()
 
 nc = grid.compile_snapshot()
 inputs = nc.compute()[0]  # pick the first island

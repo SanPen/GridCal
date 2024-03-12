@@ -22,7 +22,7 @@ import GridCalEngine.IO.cim.cgmes.cgmes_enums as cgmes_enums
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 import GridCalEngine.Devices as gcdev
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
-from GridCalEngine.IO.cim.cgmes.cgmes_export import CgmesExporter, CimExporter
+from GridCalEngine.IO.cim.cgmes.cgmes_export import CimExporter
 from GridCalEngine.IO.cim.cgmes.cgmes_utils import (get_nominal_voltage,
                                                     get_pu_values_ac_line_segment,
                                                     get_values_shunt,
@@ -791,7 +791,7 @@ def get_gcdev_switch(cgmes_model: CgmesCircuit,
                     bus_to=calc_node_t,
                     rate=op_rate,
                     rated_current=rated_current,
-                    open=cgmes_elm.open,
+                    is_open=cgmes_elm.open,
                     retained=cgmes_elm.retained,
                     normal_open=cgmes_elm.normalOpen
                 )
@@ -866,13 +866,6 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit, logger: DataLogger) -> MultiCirc
     get_gcdev_shunts(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger, Sbase)
     get_gcdev_switch(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger, Sbase)
     print('debug')
-
-    # Export test
-    # start = time.time()
-    # cgmes_exporter = CgmesExporter(cgmes_model)
-    # cgmes_exporter.export_to_xml()
-    # end = time.time()
-    # print("RDFlib export time: ", end - start, "sec")
 
     # Export with ET
     start = time.time()

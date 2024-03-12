@@ -43,7 +43,6 @@ class DynamicModels(Enum):
 class TransientStabilityEvents:
 
     def __init__(self):
-
         self.time = list()
         self.event_type = list()
         self.object = list()
@@ -162,6 +161,7 @@ class SynchronousMachineOrder4:
     Tq0pp = 0.0575
     H = 2
     """
+
     def __init__(self, H, Ra, Xd, Xdp, Xdpp, Xq, Xqp, Xqpp, Td0p, Tq0p, base_mva, Sbase, bus_idx, fn=50,
                  speed_volt=False, solver=DiffEqSolver.RUNGE_KUTTA):
         """
@@ -312,7 +312,8 @@ class SynchronousMachineOrder4:
         omega[k] = np.ones_like(k)
 
         # Calculate Id and Iq (Norton equivalent current injection in dq frame)
-        self.Id = (self.Eqp - self.Ra / (self.Xqp * omega) * (self.Vd - self.Edp) - self.Vq / omega) / (self.Xdp + self.Ra ** 2 / (omega * omega * self.Xqp))
+        self.Id = (self.Eqp - self.Ra / (self.Xqp * omega) * (self.Vd - self.Edp) - self.Vq / omega) / (
+                    self.Xdp + self.Ra ** 2 / (omega * omega * self.Xqp))
         self.Iq = (self.Vd / omega + self.Ra * self.Id / omega - self.Edp) / self.Xqp
 
         # Calculate power output
@@ -338,7 +339,7 @@ class SynchronousMachineOrder4:
         dEqp = (self.Vfd - (self.Xd - self.Xdp) * self.Id - self.Eqp) / self.Td0p
         dEdp = ((self.Xq - self.Xqp) * self.Iq - self.Edp) / self.Tq0p
 
-        if np.round(dEdp, 6).all() != 0 or np.round(dEqp, 6).all() != 0:
+        if np.all(np.round(dEdp, 6)) != 0 or np.all(np.round(dEqp, 6)) != 0:
             warn('Warning: differential equations not zero on initialisation...')
             print('dEdp = ' + str(dEdp) + ', dEqp = ' + str(dEqp))
 
@@ -411,10 +412,10 @@ class SynchronousMachineOrder6SauerPai:
     Based on Sauer-Pai model
     Sauer, P.W., Pai, M. A., "Power System Dynamics and Stability", Stipes Publishing, 2006 
     """
-    
+
     def __init__(self, H, Ra, Xa, Xd, Xdp, Xdpp, Xq, Xqp, Xqpp, Td0p, Tq0p, Td0pp, Tq0pp, base_mva, Sbase, bus_idx,
                  fn=50, speed_volt=False):
-        
+
         self.omega_n = 2 * np.pi * fn
 
         self.bus_idx = bus_idx
@@ -441,7 +442,7 @@ class SynchronousMachineOrder6SauerPai:
         self.gamma_q2 = (1 - self.gamma_q1) / (self.Xqp - self.Xa)
 
         # Equivalent Norton impedance for Ybus modification
-        self.Yg = (self.Ra - 1j * 0.5 * (self.Xdpp + self.Xqpp)) / (self.Ra** 2 + (self.Xdpp * self.Xqpp))
+        self.Yg = (self.Ra - 1j * 0.5 * (self.Xdpp + self.Xqpp)) / (self.Ra ** 2 + (self.Xdpp * self.Xqpp))
 
         # results
         self.Vfd = 0
@@ -492,11 +493,14 @@ class SynchronousMachineOrder6SauerPai:
         self.Vq = np.abs(vt0) * np.cos(self.delta - np.angle(vt0))
 
         # Calculate machine state variables and Vfd
-        self.Edp = self.Vd - self.Xqpp * self.Iq + self.Ra * self.Id - (1 - self.gamma_q1) * (self.Xqp - self.Xa) * self.Iq
-        self.Eqp = self.Vq + self.Xdpp * self.Id + self.Ra * self.Iq + (1 - self.gamma_d1) * (self.Xdp - self.Xa) * self.Id
+        self.Edp = self.Vd - self.Xqpp * self.Iq + self.Ra * self.Id - (1 - self.gamma_q1) * (
+                    self.Xqp - self.Xa) * self.Iq
+        self.Eqp = self.Vq + self.Xdpp * self.Id + self.Ra * self.Iq + (1 - self.gamma_d1) * (
+                    self.Xdp - self.Xa) * self.Id
         self.phid_pp = self.Eqp - (self.Xdp - self.Xa) * self.Id
         self.phiq_pp = -self.Edp - (self.Xqp - self.Xa) * self.Iq
-        self.Vfd = self.Eqp + (self.Xd - self.Xdp) * (self.Id - self.gamma_d2 * self.phid_pp - (1 - self.gamma_d1) * self.Id + self.gamma_d2 * self.Eqp)
+        self.Vfd = self.Eqp + (self.Xd - self.Xdp) * (
+                    self.Id - self.gamma_d2 * self.phid_pp - (1 - self.gamma_d1) * self.Id + self.gamma_d2 * self.Eqp)
 
         # Calculate active and reactive power
         self.P = self.Vd * self.Id + self.Vq * self.Iq
@@ -518,15 +522,17 @@ class SynchronousMachineOrder6SauerPai:
 
         dEqp = (self.Vfd - (self.Xd - self.Xdp)
                 * (self.Id - self.gamma_d2 * self.phid_pp - (1 - self.gamma_d1)
-                * self.Id + self.gamma_d2 * self.Eqp) - self.Eqp) / self.Td0p
+                   * self.Id + self.gamma_d2 * self.Eqp) - self.Eqp) / self.Td0p
         dEdp = ((self.Xq - self.Xqp)
                 * (self.Iq - self.gamma_q2 * self.phiq_pp - (1 - self.gamma_q1)
-                * self.Iq - self.gamma_q2 * self.Edp) - self.Edp) / self.Tq0p
+                   * self.Iq - self.gamma_q2 * self.Edp) - self.Edp) / self.Tq0p
         dphid_pp = (self.Eqp - (self.Xdp - self.Xa) * self.Id - self.phid_pp) / self.Td0pp
         dphiq_pp = (-self.Edp - (self.Xqp - self.Xa) * self.Iq - self.phiq_pp) / self.Tq0pp
 
-        if np.round(dEdp, 6).all() != 0 or np.round(dEqp, 6).all() != 0 or \
-                        np.round(dphid_pp, 6).all() != 0 or np.round(dphiq_pp, 6).all() != 0:
+        if (np.all(np.round(dEdp, 6)) != 0
+                or np.all(np.round(dEqp, 6)) != 0
+                or np.all(np.round(dphid_pp, 6)) != 0
+                or np.all(np.round(dphiq_pp, 6)) != 0):
             print('Warning: differential equations not zero on initialisation...')
             print('dEdp = ' + str(dEdp) + ', dEqp = ' + str(dEqp) + ', dphid_pp = ' + str(
                 dphid_pp) + ', dphiq_pp = ' + str(dphiq_pp))
@@ -549,8 +555,8 @@ class SynchronousMachineOrder6SauerPai:
         # Calculate Id and Iq (Norton equivalent current injection in dq frame)
         self.Id = (-self.Vq / omega + self.gamma_d1 * self.Eqp + (1 - self.gamma_d1) * self.phid_pp
                    - self.Ra / (omega * self.Xqpp)
-                    * (self.Vd - self.gamma_q1 * self.Edp + (1 - self.gamma_q1) * self.phiq_pp)) \
-                    / (self.Xdpp + self.Ra**2 / (omega * omega * self.Xqpp))
+                   * (self.Vd - self.gamma_q1 * self.Edp + (1 - self.gamma_q1) * self.phiq_pp)) \
+                  / (self.Xdpp + self.Ra ** 2 / (omega * omega * self.Xqpp))
 
         self.Iq = (self.Vd / omega + (self.Ra * self.Id / omega) - self.gamma_q1 * self.Edp
                    + (1 - self.gamma_q1) * self.phiq_pp) / self.Xqpp
@@ -583,11 +589,11 @@ class SynchronousMachineOrder6SauerPai:
         # Eq'
         f1 = (self.Vfd
               - (self.Xd - self.Xdp) * (self.Id - self.gamma_d2 * self.phid_pp
-                - (1 - self.gamma_d1) * self.Id + self.gamma_d2 * Eqp) - Eqp) / self.Td0p
+                                        - (1 - self.gamma_d1) * self.Id + self.gamma_d2 * Eqp) - Eqp) / self.Td0p
 
         # Ed'
         f2 = ((self.Xq - self.Xqp) * (self.Iq - self.gamma_q2 * self.phiq_pp
-              - (1 - self.gamma_q1) * self.Iq - self.gamma_q2 * Edp) - Edp) / self.Tq0p
+                                      - (1 - self.gamma_q1) * self.Iq - self.gamma_q2 * Edp) - Edp) / self.Tq0p
 
         # phi d pp
         f3 = (Eqp - (self.Xdp - self.Xa) * self.Id - self.phid_pp) / self.Td0pp
@@ -610,8 +616,8 @@ class VoltageSourceConverterAverage:
     Average model of a VSC in voltage-control mode (i.e. controlled voltage source behind an impedance).
     Copyright (C) 2014-2015 Julius Susanto. All rights reserved.
     """
-    def __init__(self, Rl, Xl, fn, bus_idx):
 
+    def __init__(self, Rl, Xl, fn, bus_idx):
         self.bus_idx = bus_idx
 
         self.Rl = Rl
@@ -710,8 +716,8 @@ class ExternalGrid:
     Grid is modelled as a constant voltage behind a transient reactance
     and two differential equations representing the swing equations.
     """
-    def __init__(self, Xdp, H, fn, bus_idx):
 
+    def __init__(self, Xdp, H, fn, bus_idx):
         self.bus_idx = bus_idx
 
         self.Xdp = Xdp
@@ -865,7 +871,7 @@ class SingleCageAsynchronousMotor:
         Initialise machine signals and states based on load flow voltage and complex power injection
         NOTE: currently only initialised at standstill
         """
-     
+
         # Initialise signals, states and parameters
         self.Id = 0
         self.Iq = 0
@@ -905,7 +911,8 @@ class SingleCageAsynchronousMotor:
             self.Vq = np.abs(vt) * np.cos(np.angle(vt))
 
             # Calculate Id and Iq (Norton equivalent current injection in dq frame)
-            self.Iq = (self.Rs / self.Xp * (self.Vq - self.Eqp) - self.Vd + self.Edp) / (self.Xp + self.Rs ** 2 / self.Xp)
+            self.Iq = (self.Rs / self.Xp * (self.Vq - self.Eqp) - self.Vd + self.Edp) / (
+                        self.Xp + self.Rs ** 2 / self.Xp)
             self.Id = (self.Vq - self.Eqp - self.Rs * self.Iq) / self.Xp
 
             # Calculate power output and electrical torque
@@ -935,20 +942,22 @@ class SingleCageAsynchronousMotor:
         if self.start == 1:
 
             # Eq'
-            f1 = (-self.omega_n * self.slip * Edp - (Eqp - (self.X0 - self.Xp) * self.Id) / self.T0p) * self.base_mva / self.Sbase
+            f1 = (-self.omega_n * self.slip * Edp - (
+                        Eqp - (self.X0 - self.Xp) * self.Id) / self.T0p) * self.base_mva / self.Sbase
 
             # Ed'
-            f2 = (self.omega_n * self.slip * Eqp - (Edp + (self.X0 - self.Xp) * self.Iq) / self.T0p) * self.base_mva / self.Sbase
+            f2 = (self.omega_n * self.slip * Eqp - (
+                        Edp + (self.X0 - self.Xp) * self.Iq) / self.T0p) * self.base_mva / self.Sbase
 
             # Tm
             Tm = self.calc_tmech(self.slip)
             f3 = (Tm - self.Te) / (2 * self.H)
-        
+
         else:
             f1 = np.zeros_like(Edp)
             f2 = np.zeros_like(Edp)
             f3 = np.zeros_like(Edp)
-        
+
         return f1, f2, f3
 
     def check_diffs(self):
@@ -961,13 +970,14 @@ class SingleCageAsynchronousMotor:
         dEqp = -self.omega_n * self.slip * self.Edp - (self.Eqp - (self.X0 - self.Xp) * self.Id) / self.T0p
         ds = self.calc_tmech(1) - self.Te
 
-        if np.round(dEdp, 6).all() != 0 or np.round(dEqp, 6).all() != 0 or np.round(ds, 6).all() != 0:
+        if (np.all(np.round(dEdp, 6)) != 0
+                or np.all(np.round(dEqp, 6)) != 0
+                or np.all(np.round(ds, 6)) != 0):
             warn('Warning: differential equations not zero on initialisation...')
             print('dEdp = ', dEdp, ', dEqp = ', dEqp, ', ds = ', ds)
 
 
 class DoubleCageAsynchronousMotor:
-
     """
     Double Cage Asynchronous Machine Model
 
@@ -998,7 +1008,8 @@ class DoubleCageAsynchronousMotor:
         # Calculate internal parameters
         self.X0 = self.Xs + self.Xm
         self.Xp = self.Xs + self.Xr * self.Xm / (self.Xr + self.Xm)
-        self.Xpp = self.Xs + self.Xr * self.Xr2 * self.Xm / (self.Xr * self.Xr2 + self.Xm * self.Xr + self.Xm * self.Xr2)
+        self.Xpp = self.Xs + self.Xr * self.Xr2 * self.Xm / (
+                    self.Xr * self.Xr2 + self.Xm * self.Xr + self.Xm * self.Xr2)
         self.T0p = (self.Xr + self.Xm) / (self.omega_n * self.Rr)
         self.T0pp = (self.Xr2 + (self.Xr * self.Xm) / (self.Xr + self.Xm)) / (self.omega_n * self.Rr2)
 
@@ -1051,7 +1062,7 @@ class DoubleCageAsynchronousMotor:
         self.Te = 0
         self.slip = 1
         self.omega = 1 - self.slip
-        
+
         self.Eqp = 0
         self.Edp = 0
         self.Eqpp = 0
@@ -1079,12 +1090,13 @@ class DoubleCageAsynchronousMotor:
             self.Vq = np.abs(vt) * np.cos(np.angle(vt))
 
             # Calculate Id and Iq (Norton equivalent current injection in dq frame)
-            self.Iq = (self.Rs / self.Xpp * (self.Vq - self.Eqpp) - self.Vd + self.Edpp) / (self.Xpp + self.Rs ** 2 / self.Xpp)
+            self.Iq = (self.Rs / self.Xpp * (self.Vq - self.Eqpp) - self.Vd + self.Edpp) / (
+                        self.Xpp + self.Rs ** 2 / self.Xpp)
             self.Id = (self.Vq - self.Eqpp - self.Rs * self.Iq) / self.Xpp
 
             # Calculate power output and electrical torque
             self.P = -(self.Vd * self.Id + self.Vq * self.Iq)
-            self.Q = -(self.Vq * self.Id -self. Vd * self.Iq)
+            self.Q = -(self.Vq * self.Id - self.Vd * self.Iq)
             self.Te = self.Edpp * self.Id + self.Eqpp * self.Iq
 
             # Calculate machine current injection (Norton equivalent current injection in network frame)
@@ -1109,28 +1121,30 @@ class DoubleCageAsynchronousMotor:
         if self.start == 1:
 
             # Eq'
-            f1 = (-self.omega_n * self.slip * Edp - (Eqp - (self.X0 - self.Xp) * self.Id) / self.T0p) * self.base_mva / self.Sbase
+            f1 = (-self.omega_n * self.slip * Edp - (
+                        Eqp - (self.X0 - self.Xp) * self.Id) / self.T0p) * self.base_mva / self.Sbase
             # k_Eqp = h * f1
-            
+
             # Ed'
-            f2 = (self.omega_n * self.slip * Eqp - (Edp + (self.X0 - self.Xp) * self.Iq) / self.T0p) * self.base_mva / self.Sbase
+            f2 = (self.omega_n * self.slip * Eqp - (
+                        Edp + (self.X0 - self.Xp) * self.Iq) / self.T0p) * self.base_mva / self.Sbase
             # k_Edp = h * f2
-            
+
             # Eq''
             f3 = f1 + (self.omega_n * self.slip * (Edp - Edpp) + (
-                        Eqp - Eqpp + (self.Xp - self.Xpp) * self.Id) / self.T0pp) * self.base_mva / self.Sbase
+                    Eqp - Eqpp + (self.Xp - self.Xpp) * self.Id) / self.T0pp) * self.base_mva / self.Sbase
             # k_Eqpp = h * f3
-            
+
             # Ed''
             f4 = f2 + (-self.omega_n * self.slip * (Eqp - Eqpp) + (
-                        Edp - Edpp - (self.Xp - self.Xpp) * self.Iq) / self.T0pp) * self.base_mva / self.Sbase
+                    Edp - Edpp - (self.Xp - self.Xpp) * self.Iq) / self.T0pp) * self.base_mva / self.Sbase
             # k_Edpp = h * f4
 
             # Mechanical equation
             Tm = self.calc_tmech(self.slip)
             f5 = (Tm - self.Te) / (2 * self.H)
             # k_s = h * f5
-        
+
         else:
             f1 = np.zeros_like(Edp)
             f2 = np.zeros_like(Edp)
@@ -1163,7 +1177,9 @@ class DoubleCageAsynchronousMotor:
         dEqp = -self.omega_n * self.slip * self.Edp - (self.Eqp - (self.X0 - self.Xp) * self.Id) / self.T0p
         ds = self.calc_tmech(1) - self.Te
 
-        if np.round(dEdp, 6).all() != 0 or np.round(dEqp, 6).all() != 0 or np.round(ds, 6).all() != 0:
+        if (np.all(np.round(dEdp, 6)) != 0
+                or np.all(np.round(dEqp, 6)) != 0
+                or np.all(np.round(ds, 6)) != 0):
             print('Warning: differential equations not zero on initialisation...')
             print('dEdp = ' + str(dEdp) + ', dEqp = ' + str(dEqp) + ', ds = ' + str(ds))
 

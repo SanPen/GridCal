@@ -206,7 +206,8 @@ def generate_automatic_contingency_plan(
         contingency_perc=100.0,
         pmin=0,
         pmax=10000,
-        injection_types: List[DeviceType] = list()) -> Tuple[List[Contingency], List[ContingencyGroup]]:
+        injection_types: List[DeviceType] = list()
+) -> Tuple[List[Contingency], List[ContingencyGroup]]:
     """
 
     :param grid: MultiCircuit instance

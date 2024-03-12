@@ -539,7 +539,7 @@ class Winding(BranchParent):
         :return:
         """
         # get the virtual taps
-        tap_f, tap_t = self.get_virtual_taps()
+        # tap_f, tap_t = self.get_virtual_taps()
 
         # get the nominal voltages
         v_from, v_to = self.get_from_to_nominal_voltages()

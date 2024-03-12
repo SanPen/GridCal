@@ -84,15 +84,10 @@ if __name__ == '__main__':
     entries = [
         # {"list_name": "", "singular_name": "", "plural_name": "", "cls_name": "", },
 
-        {"list_name": "current_injections",
-         "singular_name": "current_injection",
-         "plural_name": "current_injections",
-         "cls_name": "CurrentInjection", },
-
-        {"list_name": "controllable_shunts",
-         "singular_name": "linear_shunt",
-         "plural_name": "controllable_shunts",
-         "cls_name": "LinearShunt", },
+        {"list_name": "voltage_levels",
+         "singular_name": "voltage_level",
+         "plural_name": "voltage_levels",
+         "cls_name": "VoltageLevel", },
 
     ]
 

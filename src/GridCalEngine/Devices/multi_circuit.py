@@ -222,6 +222,9 @@ class MultiCircuit:
         # array of busbars
         self.bus_bars: List[dev.BusBar] = list()
 
+        # array of voltage levels
+        self.voltage_levels: List[dev.VoltageLevel] = list()
+
         # List of loads
         self.loads: List[dev.Load] = list()
 
@@ -332,13 +335,14 @@ class MultiCircuit:
         # objects with profiles
         self.objects_with_profiles = {
             "Substation": [
-                dev.Bus(),
-                dev.Substation(),
+                dev.Country(),
                 dev.Zone(),
                 dev.Area(),
-                dev.Country(),
+                dev.Substation(),
+                dev.VoltageLevel(),
+                dev.BusBar(),
                 dev.ConnectivityNode(),
-                dev.BusBar()
+                dev.Bus(),
             ],
             "Injections": [
                 dev.Generator(),
@@ -728,52 +732,6 @@ class MultiCircuit:
         :param diagram: MapDiagram, BusBranchDiagram, NodeBreakerDiagram device
         """
         self.diagrams.remove(diagram)
-
-    def clear(self) -> None:
-        """
-        Clear the multi-circuit (remove the bus and branch objects)
-        """
-        # Should be able to accept Branches, Lines and Transformers alike
-        self.lines = list()
-        self.dc_lines = list()
-        self.transformers2w = list()
-        self.transformers3w = list()
-        self.windings = list()
-        self.hvdc_lines = list()
-        self.vsc_devices = list()
-        self.upfc_devices = list()
-
-        self.substations = list()
-        self.areas = list()
-        self.technologies = list()
-        self.contingencies = list()
-        self.contingency_groups = list()
-        self.investments = list()
-        self.investments_groups = list()
-        self.fuels = list()
-        self.emission_gases = list()
-
-        # Should accept buses
-        self.buses = list()
-
-        # List of overhead line objects
-        self.overhead_line_types = list()
-
-        # list of wire types
-        self.wire_types = list()
-
-        # underground cable lines
-        self.underground_cable_types = list()
-
-        # sequence modelled lines
-        self.sequence_line_types = list()
-
-        # List of transformer types
-        self.transformer_types = list()
-
-        self.time_profile = None
-
-        self.contingencies = list()
 
     def get_buses(self) -> List[dev.Bus]:
         """
@@ -1385,6 +1343,57 @@ class MultiCircuit:
         self.controllable_shunts.remove(obj)
 
     # ----------------------------------------------------------------------------------------------------------------------
+    # voltage_levels
+    # ----------------------------------------------------------------------------------------------------------------------
+
+    def get_voltage_levels(self) -> List[dev.VoltageLevel]:
+        """
+        List of voltage_levels
+        :return: List[dev.VoltageLevel]
+        """
+        return self.voltage_levels
+
+    def get_voltage_levels_number(self) -> int:
+        """
+        Size of the list of voltage_levels
+        :return: size of voltage_levels
+        """
+        return len(self.voltage_levels)
+
+    def get_voltage_level_at(self, i: int) -> dev.VoltageLevel:
+        """
+        Get voltage_level at i
+        :param i: index
+        :return: VoltageLevel
+        """
+        return self.voltage_levels[i]
+
+    def get_voltage_level_names(self) -> StrVec:
+        """
+        Array of voltage_level names
+        :return: StrVec
+        """
+        return np.array([e.name for e in self.voltage_levels])
+
+    def add_voltage_level(self, obj: dev.VoltageLevel):
+        """
+        Add a VoltageLevel object
+        :param obj: VoltageLevel instance
+        """
+
+        if self.time_profile is not None:
+            obj.create_profiles(self.time_profile)
+        self.voltage_levels.append(obj)
+
+    def delete_voltage_level(self, obj: dev.VoltageLevel) -> None:
+        """
+        Add a VoltageLevel object
+        :param obj: VoltageLevel instance
+        """
+
+        self.voltage_levels.remove(obj)
+
+    # ----------------------------------------------------------------------------------------------------------------------
     # pi_measurements
     # ----------------------------------------------------------------------------------------------------------------------
 
@@ -1769,6 +1778,9 @@ class MultiCircuit:
         elif device_type == DeviceType.SubstationDevice:
             return self.substations
 
+        elif device_type == DeviceType.VoltageLevelDevice:
+            return self.voltage_levels
+
         elif device_type == DeviceType.ConnectivityNodeDevice:
             return self.connectivity_nodes
 
@@ -1950,6 +1962,9 @@ class MultiCircuit:
         elif device_type == DeviceType.SubstationDevice:
             self.substations = devices
 
+        elif device_type == DeviceType.VoltageLevelDevice:
+            self.voltage_levels = devices
+
         elif device_type == DeviceType.ConnectivityNodeDevice:
             self.connectivity_nodes = devices
 
@@ -2122,6 +2137,9 @@ class MultiCircuit:
         elif element_type == DeviceType.SubstationDevice:
             return self.delete_substation(obj)
 
+        elif element_type == DeviceType.VoltageLevelDevice:
+            return self.delete_voltage_level(obj)
+
         elif element_type == DeviceType.AreaDevice:
             return self.delete_area(obj)
 
@@ -2271,6 +2289,7 @@ class MultiCircuit:
                 'sequence_line_types',
                 'transformer_types',
                 'substations',
+                'voltage_levels',
                 'areas',
                 'zones',
                 'countries',
@@ -2299,6 +2318,50 @@ class MultiCircuit:
             setattr(cpy, pr, copy.deepcopy(getattr(self, pr)))
 
         return cpy
+
+    def clear(self) -> None:
+        """
+        Clear the multi-circuit (remove the bus and branch objects)
+        """
+
+        for lst in self.get_branch_lists():
+            lst.clear()
+
+        for lst in self.get_injection_devices_lists():
+            lst.clear()
+
+        self.areas = list()
+        self.technologies = list()
+        self.contingencies = list()
+        self.contingency_groups = list()
+        self.investments = list()
+        self.investments_groups = list()
+        self.fuels = list()
+        self.emission_gases = list()
+
+        # Should accept buses
+        self.buses = list()
+        self.voltage_levels = list()
+        self.substations = list()
+
+        # List of overhead line objects
+        self.overhead_line_types = list()
+
+        # list of wire types
+        self.wire_types = list()
+
+        # underground cable lines
+        self.underground_cable_types = list()
+
+        # sequence modelled lines
+        self.sequence_line_types = list()
+
+        # List of transformer types
+        self.transformer_types = list()
+
+        self.time_profile = None
+
+        self.contingencies = list()
 
     def get_catalogue_dict(self, branches_only=False):
         """
@@ -2556,6 +2619,7 @@ class MultiCircuit:
         try:
             self.time_profile = pd.to_datetime(np.array(unix_data), unit='s', origin='unix')
         except Exception as e:
+            print("Error", e)
             # it may come in nanoseconds instead of seconds...
             self.time_profile = pd.to_datetime(np.array(unix_data) / 1e9, unit='s', origin='unix')
 

@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from typing import List, Any, Dict, Union
+from typing import List, Any, Dict, Union, Tuple
 import pandas as pd
 import numpy as np
 import datetime
@@ -47,7 +47,7 @@ class CDF:
     Inverse Cumulative density function of a given array of data
     """
 
-    def __init__(self, data):
+    def __init__(self, data: Vec):
         """
         Constructor
         @param data: Array (list or numpy array)
@@ -132,7 +132,7 @@ class CDF:
         else:
             return np.interp(pt, self.prob, self.arr)
 
-    def get_at(self, prob):
+    def get_at(self, prob: float):
         """
         Samples a number of uniform distributed points and
         returns the corresponding probability values given the CDF.
@@ -146,11 +146,13 @@ class CDF:
         else:
             return np.interp(prob, self.prob, self.arr)
 
-    def plot(self, plt, LINEWIDTH, ax=None):
+    def plot(self, plt, LINEWIDTH: int, ax=None):
         """
         Plots the CFD
-        @param ax: MatPlotLib axis to plot into
-        @return:
+        :param plt: MatPlotLib plt module
+        :param LINEWIDTH: line width in pixels
+        :param ax: MatPlotLib axis to plot into
+        :return:
         """
         if ax is None:
             fig = plt.figure()
@@ -158,7 +160,6 @@ class CDF:
         ax.plot(self.prob, self.arr, linewidth=LINEWIDTH)
         ax.set_xlabel('$p(x)$')
         ax.set_ylabel('$x$')
-        # ax.plot(self.norm_points, self.values, 'x')
 
 
 def classify_by_hour(t: pd.DatetimeIndex) -> List[List[int]]:
@@ -336,7 +337,7 @@ class Logger:
         return len(self.entries) > 0
 
     def add_info(self, msg: str, device="", value="", expected_value="", device_class='', comment='',
-                 device_property=''):
+                 device_property='', object_value=None, expected_object_value=None):
         """
         Add info entry
         :param msg:
@@ -345,11 +346,23 @@ class Logger:
         :param expected_value:
         :param device_class:
         :param comment:
+        :param device_property:
+        :param object_value:
+        :param expected_object_value:
         :return:
         """
-        self.entries.append(LogEntry(msg, LogSeverity.Information, device, str(value), str(expected_value)))
+        self.entries.append(LogEntry(msg=msg,
+                                     severity=LogSeverity.Information,
+                                     device=device,
+                                     value=str(value),
+                                     expected_value=str(expected_value),
+                                     device_class=device_class,
+                                     device_property=device_property,
+                                     object_value=object_value,
+                                     expected_object_value=expected_object_value))
 
-    def add_warning(self, msg, device="", value="", expected_value="", device_class='', comment='', device_property=''):
+    def add_warning(self, msg: str, device="", value="", expected_value="", device_class='', comment='',
+                    device_property='', object_value=None, expected_object_value=None):
         """
         Add warning entry
         :param msg:
@@ -358,12 +371,23 @@ class Logger:
         :param expected_value:
         :param device_class:
         :param comment:
+        :param device_property:
+        :param object_value:
+        :param expected_object_value:
         :return:
         """
-        self.entries.append(LogEntry(msg, LogSeverity.Warning, device, str(value), str(expected_value)))
+        self.entries.append(LogEntry(msg=msg,
+                                     severity=LogSeverity.Warning,
+                                     device=device,
+                                     value=str(value),
+                                     expected_value=str(expected_value),
+                                     device_class=device_class,
+                                     device_property=device_property,
+                                     object_value=object_value,
+                                     expected_object_value=expected_object_value))
 
-    def add_error(self, msg, device="", value="", expected_value="", device_class='', comment='', device_property='',
-                  object_value=None, expected_object_value=None):
+    def add_error(self, msg: str, device="", value="", expected_value="", device_class='', comment='',
+                  device_property='', object_value=None, expected_object_value=None):
         """
         Add error entry
         :param msg:
@@ -399,21 +423,44 @@ class Logger:
         """
 
         if abs(value - expected_value) > tol:
-            self.entries.append(LogEntry(msg, LogSeverity.Divergence, device, str(value), str(expected_value)))
+            self.entries.append(LogEntry(msg=msg,
+                                         severity=LogSeverity.Divergence,
+                                         device=device,
+                                         value=str(value),
+                                         expected_value=str(expected_value),
+                                         device_class="",
+                                         device_property="",
+                                         object_value=None,
+                                         expected_object_value=None))
 
-    def add(self, msg, severity: LogSeverity = LogSeverity.Error, device="", value="", expected_value=""):
+    def add(self, msg: str, severity: LogSeverity = LogSeverity.Error, device="", value="", expected_value="",
+            device_class='', comment='', device_property='', object_value=None, expected_object_value=None):
         """
         Add general entry
         :param msg:
         :param severity:
         :param device:
         :param value:
-        :param expected_value
+        :param expected_value:
+        :param device_class:
+        :param comment:
+        :param device_property:
+        :param object_value:
+        :param expected_object_value:
         :return:
         """
-        self.entries.append(LogEntry(msg, severity, device, str(value), str(expected_value)))
+        # self.entries.append(LogEntry(msg, severity, device, str(value), str(expected_value)))
+        self.entries.append(LogEntry(msg=msg,
+                                     severity=severity,
+                                     device=device,
+                                     value=str(value),
+                                     expected_value=str(expected_value),
+                                     device_class=device_class,
+                                     device_property=device_property,
+                                     object_value=object_value,
+                                     expected_object_value=expected_object_value))
 
-    def to_dict(self):
+    def to_dict(self) -> Union[Dict[str, Dict[str, List[Tuple[str, str, str, str]]]], Dict[str, Dict[str, List[List[str]]]]]:
         """
         Get the logs sorted by severity and message
         :return: Dictionary[Dictionary[List[time, device, value, expected value]]]
@@ -438,10 +485,10 @@ class Logger:
 
         return by_severity
 
-    def to_df(self):
+    def to_df(self) -> pd.DataFrame:
         """
         Get DataFrame
-        :return:
+        :return: DataFrame
         """
         data = [e.to_list() for e in self.entries]
         df = pd.DataFrame(data=data, columns=['Time', 'Severity', 'Message', 'Class',
@@ -463,7 +510,7 @@ class Logger:
         """
         self.to_df().to_excel(fname)
 
-    def print(self):
+    def print(self) -> None:
         """
         Print the logs
         """
@@ -504,7 +551,7 @@ class Logger:
             self.entries += other.entries
         return self
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.entries)
 
     def size(self) -> int:
@@ -514,7 +561,7 @@ class Logger:
         """
         return len(self.entries)
 
-    def count_type(self, severity: LogSeverity):
+    def count_type(self, severity: LogSeverity) -> int:
         """
         Count the number of entries of a certain severity
         :param severity: LogSeverity
@@ -527,21 +574,21 @@ class Logger:
 
         return c
 
-    def info_count(self):
+    def info_count(self) -> int:
         """
         Count the number of information occurences
         :return:
         """
         return self.count_type(LogSeverity.Information)
 
-    def warning_count(self):
+    def warning_count(self) -> int:
         """
         Count number of warnings
         :return:
         """
         return self.count_type(LogSeverity.Warning)
 
-    def error_count(self):
+    def error_count(self) -> int:
         """
         Count number of errors
         :return:
@@ -554,7 +601,10 @@ class ConvergenceReport:
     Convergence report
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
+        """
+        Constructor
+        """
         self.methods_ = list()
         self.converged_ = list()
         self.error_ = list()
@@ -577,7 +627,7 @@ class ConvergenceReport:
         self.elapsed_.append(elapsed)
         self.iterations_.append(iterations)
 
-    def converged(self):
+    def converged(self) -> bool:
         """
 
         :return:
@@ -587,7 +637,7 @@ class ConvergenceReport:
         else:
             return False
 
-    def error(self):
+    def error(self) -> float:
         """
 
         :return:
@@ -595,9 +645,9 @@ class ConvergenceReport:
         if len(self.error_) > 0:
             return self.error_[-1]
         else:
-            return 0
+            return 0.0
 
-    def elapsed(self):
+    def elapsed(self) -> float:
         """
 
         :return:
@@ -605,9 +655,9 @@ class ConvergenceReport:
         if len(self.elapsed_) > 0:
             return self.elapsed_[-1]
         else:
-            return 0
+            return 0.0
 
-    def to_dataframe(self):
+    def to_dataframe(self) -> pd.DataFrame:
         """
 
         :return:
@@ -618,9 +668,7 @@ class ConvergenceReport:
                 'Elapsed (s)': self.elapsed_,
                 'Iterations': self.iterations_}
 
-        df = pd.DataFrame(data)
-
-        return df
+        return pd.DataFrame(data)
 
 
 def get_list_dim(a: List[Any]) -> int:
@@ -629,11 +677,11 @@ def get_list_dim(a: List[Any]) -> int:
     :param a: some List
     :return: Dimensions
     """
-    if not type(a) == list:
+    if not isinstance(a, list):
         return 0
     else:
         if len(a) > 0:
-            if type(a[0]) == list:
+            if isinstance(a[0], list):
                 return 2
             else:
                 return 1
@@ -680,7 +728,7 @@ class CompressedJsonStruct:
         :param dta: list of lists
         :return: Nothing
         """
-        if type(dta) == list:
+        if isinstance(dta, list):
             if len(dta) > 0:
 
                 dim = get_list_dim(dta)

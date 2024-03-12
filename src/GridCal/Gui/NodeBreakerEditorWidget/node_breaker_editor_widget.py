@@ -1074,7 +1074,7 @@ class NodeBreakerEditorWidget(QSplitter):
             if (not self.PlugManager.FirstConnector.Container.isSelected()):
                 self.editor_graphics_view.setDragMode(QGraphicsView.DragMode.NoDrag)
                 self.EnablePreview()
-                self.PreviewSketch = True;
+                self.PreviewSketch = True
                 pl1ps = self.PlugManager.FirstConnector.scenePos()
                 self.previewPlug1.setPos(pl1ps.x(), pl1ps.y())
                 pl2ps = event.scenePos()
@@ -1105,7 +1105,7 @@ class NodeBreakerEditorWidget(QSplitter):
         self.PlugManager.CreateConnection(self.diagram_scene)
         self.editor_graphics_view.setDragMode(QGraphicsView.DragMode.RubberBandDrag)
         self.DisablePreview()
-        self.PreviewSketch = False;
+        self.PreviewSketch = False
         pass
 
     def set_limits(self, min_x: int, max_x: Union[float, int], min_y: Union[float, int], max_y: int,
