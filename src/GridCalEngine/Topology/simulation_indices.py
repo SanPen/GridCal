@@ -193,7 +193,8 @@ class SimulationIndices:
         # bus type indices
         self.pq: IntVec = np.zeros(0, dtype=int)
         self.pqv: IntVec = np.zeros(0, dtype=int)
-        self.pv: IntVec = np.zeros(0, dtype=int)
+        self.pv: IntVec = np.zeros(0, dtype=int)  # PV-local
+        self.pvr: IntVec = np.zeros(0, dtype=int)  # PV-remote
         self.vd: IntVec = np.zeros(0, dtype=int)
         self.no_slack: IntVec = np.zeros(0, dtype=int)
 
