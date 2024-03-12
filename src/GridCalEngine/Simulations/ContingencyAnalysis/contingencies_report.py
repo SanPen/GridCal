@@ -422,8 +422,8 @@ class ContingencyResultsReport:
         #new, work in progress
         ov_avg_clust = df_grp["Overload for reporting weighted with cluster"].sum()/df_grp["Probability cluster"].sum() #checked
 
-        ov_desvest_clust = df_grp["Overload for reporting weighted with cluster"].std()
-        ov_desvest_clust = ov_desvest_clust.fillna(0)/df_grp["Probability cluster"].sum()
+        ov_desvest_clust = df_grp["Overload for reporting weighted with cluster"].std()/df_grp["Probability cluster"].sum()
+        ov_desvest_clust = ov_desvest_clust.fillna(0)
 
         # Create the new dataframe with the columns we need
         df_summary = pd.DataFrame({
