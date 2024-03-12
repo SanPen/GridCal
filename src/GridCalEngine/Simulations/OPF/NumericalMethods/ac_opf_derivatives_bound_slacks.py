@@ -638,11 +638,14 @@ def jacobians_and_hessians(x, c1, c2, c_s, c_v, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase,
             SfX = sp.hstack([Sfva, Sfvm, lil_matrix((M, 2 * Ng + nsl)), Sftapm, Sftapt])
             StX = sp.hstack([Stva, Stvm, lil_matrix((M, 2 * Ng + nsl)), Sttapm, Sttapt])
 
-            HSf = 2 * (Sfmat.real @ SfX.real + Sfmat.imag @ SfX.imag)
-            HSt = 2 * (Stmat.real @ StX.real + Stmat.imag @ StX.imag)
+            Hslsf = lil_matrix((M, NV))
+            Hslst = lil_matrix((M, NV))
+            Hslsf[:, npfvar: npfvar + M] = diags(-np.ones(M))  # Warning triggered
+            Hslst[:, npfvar + M: npfvar + 2 * M] = diags(-np.ones(M))
 
-            HSf[:, npfvar: npfvar + M] = diags(-np.ones(M))
-            HSt[:, npfvar + M: npfvar + 2 * M] = diags(-np.ones(M))
+
+            HSf = 2 * (Sfmat.real @ SfX.real + Sfmat.imag @ SfX.imag) + Hslsf
+            HSt = 2 * (Stmat.real @ StX.real + Stmat.imag @ StX.imag) + Hslst
 
             Hx[0: 2 * M + 2 * N + 4 * Ng + nsl, :] = sp.vstack([HSf, HSt, Hvu, Hpu, Hqu, Hvl, Hpl,
                                                                     Hql, Hslsf, Hslst, Hslvmax, Hslvmin])
