@@ -436,8 +436,8 @@ class ContingencyResultsReport:
 
     def analyze(self,
                 t: Union[None, int],
+                t_prob: float,
                 mon_idx: IntVec,
-                calc_branches: List[Any],
                 numerical_circuit: NumericalCircuit,
                 base_flow: Vec,
                 base_loading: Vec,
@@ -464,8 +464,8 @@ class ContingencyResultsReport:
         """
         Analize contingency resuts and add them to the report
         :param t: time index
+        :param t_prob: probability of te time
         :param mon_idx: array of monitored branch indices
-        :param calc_branches: array of calculation branches
         :param numerical_circuit: NumericalCircuit
         :param base_flow: base flows array
         :param base_loading: base loading array

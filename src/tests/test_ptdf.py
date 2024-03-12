@@ -654,6 +654,14 @@ def test_compensated_ptdf():
         }
     ]:
 
+        # TODO: Review this
+        """
+        contingency branch 04fd8ce9297445d8a220013e9cc4f49f not found
+        contingency generator 04fd8ce9297445d8a220013e9cc4f49f not found
+        
+        Si no se encuentran los dispositivos, obviamente el test fallará
+        """
+
         main_circuit = gce.FileOpen(case['conti']).open()
 
         linear_analysis = gce.LinearAnalysisDriver(grid=main_circuit)
