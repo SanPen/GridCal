@@ -493,8 +493,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
 
     # nc.Vbus  # dummy initialization
     else:
-        p0gen = ((nc.generator_data.pmax + nc.generator_data.pmin) / (2 * nc.Sbase))[ig]
-        q0gen = ((nc.generator_data.qmax + nc.generator_data.qmin) / (2 * nc.Sbase))[ig]
+        p0gen = ((nc.generator_data.pmax[ig] + nc.generator_data.pmin[ig]) / (2 * nc.Sbase))[ig]
+        q0gen = ((nc.generator_data.qmax[ig] + nc.generator_data.qmin[ig]) / (2 * nc.Sbase))[ig]
         va0 = np.angle(nc.bus_data.Vbus)
         vm0 = (Vm_max + Vm_min) / 2
         tapm0 = nc.branch_data.tap_module[k_m]
@@ -682,8 +682,8 @@ def run_nonlinear_opf(grid: MultiCircuit,
         Sbus_pf = pf_results.Sbus
         voltage_pf = pf_results.voltage
     else:
-        Sbus_pf = None
-        voltage_pf = None
+        Sbus_pf = nc.bus_data.installed_power
+        voltage_pf = nc.bus_data.Vbus
 
     islands = nc.split_into_islands(ignore_single_node_islands=True,
                                     consider_hvdc_as_island_links=True)
