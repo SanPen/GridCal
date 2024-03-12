@@ -478,6 +478,8 @@ def jacobians_and_hessians(x, c1, c2, c_s, c_v, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase,
     ntapt = len(k_tau)
     ndc = len(fdc)
     npq = len(pq)
+    npv = len(pv)
+    nslack = len(slack)
 
     va, vm, Pg, Qg, sl_sf, sl_st, sl_vmax, sl_vmin, tapm, tapt, Pfdc = x2var(x, nVa=N, nVm=N, nPg=Ng, nQg=Ng, npq=npq,
                                                                              M=M, ntapm=ntapm, ntapt=ntapt, ndc=ndc)
@@ -498,12 +500,10 @@ def jacobians_and_hessians(x, c1, c2, c_s, c_v, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase,
     alltapm[k_m] = tapm
     alltapt[k_tau] = tapt
 
+    fx = np.zeros(NV)
+
     if compute_jac:
-
         ######### OBJECTIVE FUNCTION GRAD
-
-        fx = np.zeros(NV)
-
         fx[2 * N: 2 * N + Ng] = (2 * c2 * Pg * (Sbase ** 2) + c1 * Sbase) * 1e-4
 
         fx[npfvar: npfvar + M] = c_s
@@ -624,8 +624,6 @@ def jacobians_and_hessians(x, c1, c2, c_s, c_v, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase,
 
         Hx = lil_matrix((2 * M + 2 * N + 4 * Ng + 2 * (ntapm + ntapt) + nsl + 2 * ndc + nqcont, NV))
 
-
-
         if ntapm + ntapt != 0:
 
             tapid = 2 * M + 2 * N + 4 * Ng + nsl  # Locates the index at the jacobian matrix for tap constraints.
@@ -713,9 +711,10 @@ def jacobians_and_hessians(x, c1, c2, c_s, c_v, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase,
         Hx = Hx.T.tocsc()
 
     else:
-        fx = None
-        Gx = None
-        Hx = None
+        # fx = None
+        # Gx = None
+        Gx = csc((NV, N + nslack + npv), dtype=complex)
+        Hx = None  # TODO: think about this size and the rest...
         allSf = None
         Sfmat = None
         allSt = None

@@ -1,45 +1,44 @@
 import numpy as np
-import pandas as pd
 from scipy import sparse as sp
 from scipy.sparse import csc_matrix as csc
-from scipy.sparse import csr_matrix as csr
-from dataclasses import dataclass
 from scipy.sparse import lil_matrix
 
 from GridCalEngine.Utils.Sparse.csc import diags
-import GridCalEngine.Utils.NumericalMethods.autodiff as ad
-from typing import Tuple, Union
-from GridCalEngine.basic_structures import Vec, CxVec, IntVec
-from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at, NumericalCircuit
-from GridCalEngine.enumerations import  ReactivePowerControlMode
+from typing import Tuple
+from GridCalEngine.basic_structures import Vec
+from GridCalEngine.enumerations import ReactivePowerControlMode
 
-def x2var(x: Vec, nVa: int, nVm: int, nPg: int,
-          nQg: int, ntapm: int, ntapt: int, ndc: int) -> Tuple[Vec, Vec, Vec, Vec, Vec, Vec, Vec]:
+
+def x2var(x: Vec, nva: int, nvm: int, npg: int,
+          nqg: int, ntapm: int, ntapt: int, ndc: int) -> Tuple[Vec, Vec, Vec, Vec, Vec, Vec, Vec]:
     """
     Convert the x solution vector to its composing variables
     :param x: solution vector
-    :param nVa: number of voltage angle vars
-    :param nVm: number of voltage module vars
-    :param nPg: number of generator active power vars
-    :param nQg: number of generator reactive power vars
+    :param nva: number of voltage angle vars
+    :param nvm: number of voltage module vars
+    :param npg: number of generator active power vars
+    :param nqg: number of generator reactive power vars
+    :param ntapm: number of tap module vars
+    :param ntapt: number of tap angle vars
+    :param ndc: number of HVDC lines
     :return: Va, Vm, Pg, Qg
     """
     a = 0
-    b = nVa
+    b = nva
 
-    Va = x[a: b]
+    va = x[a: b]
     a = b
-    b += nVm
+    b += nvm
 
-    Vm = x[a: b]
+    vm = x[a: b]
     a = b
-    b += nPg
+    b += npg
 
-    Pg = x[a: b]
+    pg = x[a: b]
     a = b
-    b += nQg
+    b += nqg
 
-    Qg = x[a: b]
+    qg = x[a: b]
     a = b
     b += ntapm
 
@@ -51,25 +50,24 @@ def x2var(x: Vec, nVa: int, nVm: int, nPg: int,
     a = b
     b += ndc
 
-    Pfdc = x[a: b]
-    #a = b
-    #b += ndc
+    pfdc = x[a: b]
 
-    #Ptdc = x[a: b]
-
-    return Va, Vm, Pg, Qg, tapm, tapt, Pfdc
+    return va, vm, pg, qg, tapm, tapt, pfdc
 
 
-def var2x(Va: Vec, Vm: Vec, Pg: Vec, Qg: Vec, tapm: Vec, tapt: Vec, Pfdc: Vec) -> Vec:
+def var2x(va: Vec, vm: Vec, pg: Vec, qg: Vec, tapm: Vec, tapt: Vec, pfdc: Vec) -> Vec:
     """
-    Compose the x vector from its componenets
-    :param Va: Voltage angles
-    :param Vm: Voltage modules
-    :param Pg: Generator active powers
-    :param Qg: Generator reactive powers
-    :return: [Vm, Va, Pg, Qg]
+    Compose the x vector from its components
+    :param va: Voltage angles
+    :param vm: Voltage modules
+    :param pg: Generator active powers
+    :param qg: Generator reactive powers
+    :param tapm: Tap modules
+    :param tapt: Tap angles
+    :param pfdc: HVDC from power injections
+    :return: [Vm, Va, Pg, Qg, tapm, tapt, Pfdc]
     """
-    return np.r_[Va, Vm, Pg, Qg, tapm, tapt, Pfdc]
+    return np.r_[va, vm, pg, qg, tapm, tapt, pfdc]
 
 
 def compute_analytic_admittances(alltapm, alltapt, k_m, k_tau, k_mtau, Cf, Ct, R, X):
@@ -377,7 +375,7 @@ def eval_f(x: Vec, Cg, k_m: Vec, k_tau: Vec, c0: Vec, c1: Vec, c2: Vec, ig: Vec,
     ntapm = len(k_m)
     ntapt = len(k_tau)
 
-    _, _, Pg, Qg, _, _, _ = x2var(x, nVa=N, nVm=N, nPg=Ng, nQg=Ng, ntapm=ntapm, ntapt=ntapt, ndc=ndc)
+    _, _, Pg, Qg, _, _, _ = x2var(x, nva=N, nvm=N, npg=Ng, nqg=Ng, ntapm=ntapm, ntapt=ntapt, ndc=ndc)
 
     fval = np.sum((c0 + c1 * Pg * Sbase + c2 * np.power(Pg * Sbase, 2))) * 1e-4
 
@@ -404,7 +402,7 @@ def eval_g(x, Ybus, Yf, Cg, Sd, ig, nig, pv, fdc, tdc, k_m, k_tau, Vm_max, Sg_un
     ntapt = len(k_tau)
     ndc = len(fdc)
 
-    va, vm, Pg_dis, Qg_dis, _, _, Pfdc = x2var(x, nVa=N, nVm=N, nPg=Ng, nQg=Ng, ntapm=ntapm, ntapt=ntapt, ndc=ndc)
+    va, vm, Pg_dis, Qg_dis, _, _, Pfdc = x2var(x, nva=N, nvm=N, npg=Ng, nqg=Ng, ntapm=ntapm, ntapt=ntapt, ndc=ndc)
 
     V = vm * np.exp(1j * va)
     S = V * np.conj(Ybus @ V)
@@ -422,7 +420,7 @@ def eval_g(x, Ybus, Yf, Cg, Sd, ig, nig, pv, fdc, tdc, k_m, k_tau, Vm_max, Sg_un
 
 
 def eval_h(x, Yf, Yt, from_idx, to_idx, pq, k_m, k_tau, Vm_max, Vm_min, Pg_max, Pg_min, Qg_max, Qg_min,
-           tapm_max, tapm_min, tapt_max, tapt_min, Pdcmax, rates, il, ig, tanmax, ctQ:ReactivePowerControlMode) -> Vec:
+           tapm_max, tapm_min, tapt_max, tapt_min, Pdcmax, rates, il, ig, tanmax, ctQ: ReactivePowerControlMode) -> Vec:
     """
 
     :param x:
@@ -484,10 +482,9 @@ def eval_h(x, Yf, Yt, from_idx, to_idx, pq, k_m, k_tau, Vm_max, Vm_min, Pg_max, 
     return hval, Sftot, Sttot
 
 
-
 def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, slack, pq, pv, tanmax,
-                           alltapm, alltapt, fdc, tdc, k_m, k_tau,  mu, lmbda, R, X, F, T,
-                           ctQ:ReactivePowerControlMode, compute_jac: bool, compute_hess: bool):
+                           alltapm, alltapt, fdc, tdc, k_m, k_tau, mu, lmbda, R, X, F, T,
+                           ctQ: ReactivePowerControlMode, compute_jac: bool, compute_hess: bool):
     """
 
     :param x:
@@ -527,16 +524,13 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, s
     alltapm[k_m] = tapm
     alltapt[k_tau] = tapt
 
+    fx = np.zeros(NV)
+
     if compute_jac:
-
         ######### OBJECTIVE FUNCTION GRAD
-
-        fx = np.zeros(NV)
-
         fx[2 * N: 2 * N + Ng] = (2 * c2 * Pg * (Sbase ** 2) + c1 * Sbase) * 1e-4
 
         ######### EQUALITY CONSTRAINTS GRAD
-
         Vva = 1j * Vmat
 
         GSvm = Vmat @ (IbusCJmat + np.conj(Ybus) @ np.conj(Vmat)) @ vm_inv
@@ -562,10 +556,10 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, s
 
             if ntapm != 0:
                 Gtapm = dSbusdm.copy()
-                GS = sp.hstack([GS, Gtapm])
+                GS = sp.hstack([GS, Gtapm])  # TODO: fix this
             if ntapt != 0:
                 Gtapt = dSbusdt.copy()
-                GS = sp.hstack([GS, Gtapt])
+                GS = sp.hstack([GS, Gtapt])  # TODO: fix this
 
         if ndc != 0:
 
@@ -581,9 +575,7 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, s
 
         Gx = Gx.T.tocsc()
 
-
         ######### INEQUALITY CONSTRAINTS GRAD
-
         Vfmat = diags(Cf[il, :] @ V)
         Vtmat = diags(Ct[il, :] @ V)
 
@@ -664,7 +656,6 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, s
 
             Hx = sp.vstack([HSf, HSt, Hvu, Hpu, Hqu, Hvl, Hpl, Hql])
 
-
         if ctQ != ReactivePowerControlMode.NoControl:
             # tanmax curves (simplified capability curves of generators)
             Hqmaxp = -2 * (tanmax ** 2) * Pg
@@ -675,7 +666,6 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, s
             Hx = sp.vstack([Hx, Hqmax])
 
         if ndc != 0:
-
             Hx = sp.hstack([Hx, lil_matrix((2 * M + 2 * N + 4 * Ng + 2 * ntapm + 2 * ntapt, ndc))])
 
             Hdcu_ = csc(([1] * ndc, (list(range(ndc)), list(range(ndc)))))
@@ -683,13 +673,13 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, s
             Hdcu = sp.hstack([lil_matrix((ndc, 2 * N + 2 * Ng + ntapm + ntapt)), Hdcu_])
             Hdcl = sp.hstack([lil_matrix((ndc, 2 * N + 2 * Ng + ntapm + ntapt)), Hdcl_])
 
-            Hx = sp.vstack([Hx, Hdcu, Hdcl])
+            Hx = sp.vstack([Hx, Hdcu, Hdcl])  # TODO: fix the assignment, not to the same object
 
         Hx = Hx.T.tocsc()
 
     else:
-        fx = None
-        Gx = None
+        # fx = None
+        Gx = csc((0, NV))
         Hx = None
 
     ########## HESSIANS
@@ -765,7 +755,6 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, s
             Gxx = sp.vstack([G1, G2, lil_matrix((2 * Ng, 2 * N + 2 * Ng))])
 
         if ndc != 0:
-
             Gxx = sp.hstack([Gxx, lil_matrix((NV - ndc, ndc))])
             Gxx = sp.vstack([Gxx, lil_matrix((ndc, NV))])
 
@@ -857,7 +846,6 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, s
             Hxx = sp.vstack([H1, H2, H3, H4])
 
         if ndc != 0:
-
             Hxx = sp.hstack([Hxx, lil_matrix((NV - ndc, ndc))])
             Hxx = sp.vstack([Hxx, lil_matrix((ndc, NV))])
 
