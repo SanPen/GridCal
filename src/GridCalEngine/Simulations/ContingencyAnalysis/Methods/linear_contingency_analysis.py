@@ -49,6 +49,8 @@ def linear_contingency_analysis(grid: MultiCircuit,
 
     calc_branches = grid.get_branches_wo_hvdc()
 
+    area_names, bus_area_indices, F, T, hvdc_F, hvdc_T = grid.get_branch_areas_info()
+
     # declare the results
     results = ContingencyAnalysisResults(ncon=len(grid.contingency_groups),
                                          nbr=numerical_circuit.nbr,
@@ -99,7 +101,7 @@ def linear_contingency_analysis(grid: MultiCircuit,
             injections = None
 
         c_flow = multi_contingency.get_contingency_flows(base_flow=flows_n, injections=injections)
-        c_loading = c_flow / (numerical_circuit.ContingencyRates + 1e-9)
+        c_loading = c_flow / (numerical_circuit.rates + 1e-9)
 
         results.Sf[ic, :] = c_flow  # already in MW
         results.Sbus[ic, :] = Pbus
@@ -118,11 +120,16 @@ def linear_contingency_analysis(grid: MultiCircuit,
                                srap_ratings=numerical_circuit.branch_data.protection_rates,
                                srap_max_power=options.srap_max_power,
                                srap_deadband=options.srap_deadband,
+                               contingency_deadband=options.contingency_deadband,
                                srap_rever_to_nominal_rating=options.srap_rever_to_nominal_rating,
                                multi_contingency=multi_contingency,
                                PTDF=linear_analysis.PTDF,
                                available_power=numerical_circuit.bus_data.srap_availbale_power,
                                srap_used_power=results.srap_used_power,
+                               F=F,
+                               T=T,
+                               bus_area_indices=bus_area_indices,
+                               area_names=area_names,
                                top_n=options.srap_top_n)
 
         # report progress

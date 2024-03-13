@@ -13,8 +13,6 @@ DayType
 Discrete
 DiscreteValue
 GrossToNetActivePowerCurve
-Ground
-GroundDisconnector
 MeasurementValueQuality
 MeasurementValueSource
 NonConformLoadSchedule

@@ -23,7 +23,7 @@ from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.basic_structures import IntVec, Vec, StrVec, CxMat, Mat, BoolVec
-from GridCalEngine.enumerations import StudyResultsType, ResultTypes
+from GridCalEngine.enumerations import StudyResultsType, ResultTypes, DeviceType
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCalEngine.Simulations.Clustering.clustering_results import ClusteringResults
@@ -96,8 +96,6 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                                     ResultTypes.GeneratorResults: [ResultTypes.GeneratorPower,
                                                                                    ResultTypes.GeneratorShedding,
                                                                                    ResultTypes.GeneratorCost,
-                                                                                   # ResultTypes.GeneratorFuels,
-                                                                                   # ResultTypes.GeneratorEmissions,
                                                                                    ResultTypes.GeneratorProducing,
                                                                                    ResultTypes.GeneratorStartingUp,
                                                                                    ResultTypes.GeneratorShuttingDown
@@ -176,8 +174,6 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
         self.generator_power = np.zeros((nt, ngen), dtype=float)
         self.generator_shedding = np.zeros((nt, ngen), dtype=float)
         self.generator_cost = np.zeros((nt, ngen), dtype=float)
-        # self.generator_fuel = np.zeros((nt, ngen), dtype=float)
-        # self.generator_emissions = np.zeros((nt, ngen), dtype=float)
         self.generator_producing = np.zeros((nt, ngen), dtype=bool)
         self.generator_starting_up = np.zeros((nt, ngen), dtype=bool)
         self.generator_shutting_down = np.zeros((nt, ngen), dtype=bool)
@@ -300,13 +296,17 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
             if len(pr) == circuit.get_time_number():
                 elm.P_prof = pr
 
-        loads = circuit.get_loads()
+        loads = circuit.get_load_like_devices()
         for i, elm in enumerate(loads):
             pr = self.load_shedding[:, i]
             if len(pr) == circuit.get_time_number():
                 elm.P_prof -= pr
 
-        # TODO: implement more devices
+        hvdc = circuit.get_hvdc()
+        for i, elm in enumerate(hvdc):
+            pr = self.hvdc_Pf[:, i]
+            if len(pr) == circuit.get_time_number():
+                elm.Pset_prof = pr
 
     def mdl(self, result_type) -> "ResultsTable":
         """
@@ -316,198 +316,364 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
         """
 
         if result_type == ResultTypes.BusVoltageModule:
-            labels = self.bus_names
-            y = np.abs(self.voltage)
-            y_label = '(p.u.)'
-            title = 'Bus voltage module'
+
+            return ResultsTable(data=np.abs(self.voltage),
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.bus_names,
+                                cols_device_type=DeviceType.BusDevice,
+                                title=result_type.value,
+                                ylabel='(p.u.)',
+                                xlabel='',
+                                units='(p.u.)')
 
         elif result_type == ResultTypes.BusVoltageAngle:
-            labels = self.bus_names
-            y = np.angle(self.voltage)
-            y_label = '(Radians)'
-            title = 'Bus voltage angle'
+
+            return ResultsTable(data=np.angle(self.voltage, deg=True),
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.bus_names,
+                                cols_device_type=DeviceType.BusDevice,
+                                title=result_type.value,
+                                ylabel='(deg)',
+                                xlabel='',
+                                units='(deg)')
 
         elif result_type == ResultTypes.BusShadowPrices:
-            labels = self.bus_names
-            y = self.bus_shadow_prices
-            y_label = '(currency / MW)'
-            title = 'Bus shadow prices'
 
-        elif result_type == ResultTypes.BranchPower:
-            labels = self.branch_names
-            y = self.Sf.real
-            y_label = '(MW)'
-            title = 'Branch power '
+            return ResultsTable(data=self.bus_shadow_prices,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.bus_names,
+                                cols_device_type=DeviceType.BusDevice,
+                                title=result_type.value,
+                                ylabel='(currency / MW)',
+                                xlabel='',
+                                units='(currency / MW)')
 
         elif result_type == ResultTypes.BusPower:
-            labels = self.bus_names
-            y = self.Sbus.real
-            y_label = '(MW)'
-            title = 'Bus power '
+
+            return ResultsTable(data=self.Sbus.real,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.bus_names,
+                                cols_device_type=DeviceType.BusDevice,
+                                title=result_type.value,
+                                ylabel='(MW)',
+                                xlabel='',
+                                units='(MW)')
+
+        elif result_type == ResultTypes.BranchPower:
+
+            return ResultsTable(data=self.Sf.real,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.branch_names,
+                                cols_device_type=DeviceType.BranchDevice,
+                                title=result_type.value,
+                                ylabel='(MW)',
+                                xlabel='',
+                                units='(MW)')
 
         elif result_type == ResultTypes.BranchLoading:
-            labels = self.branch_names
-            y = np.abs(self.loading * 100.0)
-            y_label = '(%)'
-            title = 'Branch loading '
+
+            return ResultsTable(data=np.abs(self.loading * 100.0),
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.branch_names,
+                                cols_device_type=DeviceType.BranchDevice,
+                                title=result_type.value,
+                                ylabel='(%)',
+                                xlabel='',
+                                units='(%)')
 
         elif result_type == ResultTypes.BranchOverloads:
-            labels = self.branch_names
-            y = np.abs(self.overloads)
-            y_label = '(MW)'
-            title = 'Branch overloads '
+
+            return ResultsTable(data=np.abs(self.overloads),
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.branch_names,
+                                cols_device_type=DeviceType.BranchDevice,
+                                title=result_type.value,
+                                ylabel='(MW)',
+                                xlabel='',
+                                units='(MW)')
 
         elif result_type == ResultTypes.BranchLosses:
-            labels = self.branch_names
-            y = self.losses.real
-            y_label = '(MW)'
-            title = 'Branch losses '
+
+            return ResultsTable(data=self.losses.real,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.branch_names,
+                                cols_device_type=DeviceType.BranchDevice,
+                                title=result_type.value,
+                                ylabel='(MW)',
+                                xlabel='',
+                                units='(MW)')
 
         elif result_type == ResultTypes.BranchTapAngle:
-            labels = self.branch_names
-            # y = np.rad2deg(self.phase_shift)
-            # y_label = '(deg)'
-            y = self.phase_shift
-            y_label = '(rad)'
-            title = 'Branch tap angle '
+
+            return ResultsTable(data=np.rad2deg(self.phase_shift),
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.branch_names,
+                                cols_device_type=DeviceType.BranchDevice,
+                                title=result_type.value,
+                                ylabel='(deg)',
+                                xlabel='',
+                                units='(deg)')
 
         elif result_type == ResultTypes.HvdcPowerFrom:
-            labels = self.hvdc_names
-            y = self.hvdc_Pf
-            y_label = '(MW)'
-            title = result_type.value[0]
+
+            return ResultsTable(data=self.hvdc_Pf,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.hvdc_names,
+                                cols_device_type=DeviceType.HVDCLineDevice,
+                                title=result_type.value,
+                                ylabel='(MW)',
+                                xlabel='',
+                                units='(MW)')
 
         elif result_type == ResultTypes.HvdcLoading:
-            labels = self.hvdc_names
-            y = self.hvdc_loading * 100.0
-            y_label = '(%)'
-            title = result_type.value[0]
+
+            return ResultsTable(data=self.hvdc_loading * 100.0,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.hvdc_names,
+                                cols_device_type=DeviceType.HVDCLineDevice,
+                                title=result_type.value,
+                                ylabel='(%)',
+                                xlabel='',
+                                units='(%)')
 
         elif result_type == ResultTypes.FluidCurrentLevel:
-            labels = self.fluid_node_names
-            y = self.fluid_node_current_level * 1e-6  # convert m3 to hm3
-            y_label = '(hm3)'
-            title = result_type.value[0]
+
+            return ResultsTable(data=self.fluid_node_current_level * 1e-6,  # convert m3 to hm3,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.fluid_node_names,
+                                cols_device_type=DeviceType.FluidNodeDevice,
+                                title=result_type.value,
+                                ylabel='(hm3)',
+                                xlabel='',
+                                units='(hm3)')
 
         elif result_type == ResultTypes.FluidFlowIn:
-            labels = self.fluid_node_names
-            y = self.fluid_node_flow_in
-            y_label = '(m3/s)'
-            title = result_type.value[0]
+
+            return ResultsTable(data=self.fluid_node_flow_in,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.fluid_node_names,
+                                cols_device_type=DeviceType.FluidNodeDevice,
+                                title=result_type.value,
+                                ylabel='(m3/s)',
+                                xlabel='',
+                                units='(m3/s)')
 
         elif result_type == ResultTypes.FluidFlowOut:
-            labels = self.fluid_node_names
-            y = self.fluid_node_flow_out
-            y_label = '(m3/s)'
-            title = result_type.value[0]
+
+            return ResultsTable(data=self.fluid_node_flow_out,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.fluid_node_names,
+                                cols_device_type=DeviceType.FluidNodeDevice,
+                                title=result_type.value,
+                                ylabel='(m3/s)',
+                                xlabel='',
+                                units='(m3/s)')
 
         elif result_type == ResultTypes.FluidP2XFlow:
-            labels = self.fluid_node_names
-            y = self.fluid_node_p2x_flow
-            y_label = '(m3/s)'
-            title = result_type.value[0]
+
+            return ResultsTable(data=self.fluid_node_p2x_flow,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.fluid_node_names,
+                                cols_device_type=DeviceType.FluidNodeDevice,
+                                title=result_type.value,
+                                ylabel='(m3/s)',
+                                xlabel='',
+                                units='(m3/s)')
 
         elif result_type == ResultTypes.FluidSpillage:
-            labels = self.fluid_node_names
-            y = self.fluid_node_spillage
-            y_label = '(m3/s)'
-            title = result_type.value[0]
+
+            return ResultsTable(data=self.fluid_node_spillage,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.fluid_node_names,
+                                cols_device_type=DeviceType.FluidNodeDevice,
+                                title=result_type.value,
+                                ylabel='(m3/s)',
+                                xlabel='',
+                                units='(m3/s)')
 
         elif result_type == ResultTypes.FluidFlowPath:
-            labels = self.fluid_path_names
-            y = self.fluid_path_flow
-            y_label = '(m3/s)'
-            title = result_type.value[0]
+
+            return ResultsTable(data=self.fluid_path_flow,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.fluid_path_names,
+                                cols_device_type=DeviceType.FluidPathDevice,
+                                title=result_type.value,
+                                ylabel='(m3/s)',
+                                xlabel='',
+                                units='(m3/s)')
 
         elif result_type == ResultTypes.FluidFlowInjection:
-            labels = self.fluid_injection_names
-            y = self.fluid_injection_flow
-            y_label = '(m3/s)'
-            title = result_type.value[0]
+
+            return ResultsTable(data=self.fluid_injection_flow,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.fluid_injection_names,
+                                cols_device_type=DeviceType.FluidInjectionDevice,
+                                title=result_type.value,
+                                ylabel='(m3/s)',
+                                xlabel='',
+                                units='(m3/s)')
 
         elif result_type == ResultTypes.LoadShedding:
-            labels = self.load_names
-            y = self.load_shedding
-            y_label = '(MW)'
-            title = 'Load shedding'
+
+            return ResultsTable(data=self.load_shedding,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.load_names,
+                                cols_device_type=DeviceType.LoadLikeDevice,
+                                title=result_type.value,
+                                ylabel='(MW)',
+                                xlabel='',
+                                units='(MW)')
 
         elif result_type == ResultTypes.GeneratorPower:
-            labels = self.generator_names
-            y = self.generator_power
-            y_label = '(MW)'
-            title = 'Generator power'
+
+            return ResultsTable(data=self.generator_power,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.generator_names,
+                                cols_device_type=DeviceType.GeneratorDevice,
+                                title=result_type.value,
+                                ylabel='(MW)',
+                                xlabel='',
+                                units='(MW)')
 
         elif result_type == ResultTypes.GeneratorShedding:
-            labels = self.generator_names
-            y = self.generator_shedding
-            y_label = '(MW)'
-            title = 'Generator power'
+
+            return ResultsTable(data=self.generator_shedding,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.generator_names,
+                                cols_device_type=DeviceType.GeneratorDevice,
+                                title=result_type.value,
+                                ylabel='(MW)',
+                                xlabel='',
+                                units='(MW)')
 
         elif result_type == ResultTypes.GeneratorCost:
-            labels = self.generator_names
-            y = self.generator_cost
-            y_label = '(Currency)'
-            title = 'Generator cost'
 
-        elif result_type == ResultTypes.GeneratorFuels:
-            labels = self.generator_names
-            y = self.generator_fuel
-            y_label = '(t)'
-            title = 'Generator fuels'
-
-        elif result_type == ResultTypes.GeneratorEmissions:
-            labels = self.generator_names
-            y = self.generator_emissions
-            y_label = '(t)'
-            title = 'Generator emissions'
+            return ResultsTable(data=self.generator_cost,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.generator_names,
+                                cols_device_type=DeviceType.GeneratorDevice,
+                                title=result_type.value,
+                                ylabel='(Currency)',
+                                xlabel='',
+                                units='(Currency)')
 
         elif result_type == ResultTypes.GeneratorProducing:
-            labels = self.generator_names
-            y = self.generator_producing
-            y_label = '(t)'
-            title = 'Generator producing'
+
+            return ResultsTable(data=self.generator_producing,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.generator_names,
+                                cols_device_type=DeviceType.GeneratorDevice,
+                                title=result_type.value,
+                                ylabel='',
+                                xlabel='',
+                                units='')
 
         elif result_type == ResultTypes.GeneratorStartingUp:
-            labels = self.generator_names
-            y = self.generator_starting_up
-            y_label = '(t)'
-            title = 'Generator starting up'
+
+            return ResultsTable(data=self.generator_starting_up,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.generator_names,
+                                cols_device_type=DeviceType.GeneratorDevice,
+                                title=result_type.value,
+                                ylabel='',
+                                xlabel='',
+                                units='')
 
         elif result_type == ResultTypes.GeneratorShuttingDown:
-            labels = self.generator_names
-            y = self.generator_shutting_down
-            y_label = '(t)'
-            title = 'Generator shutting down'
+
+            return ResultsTable(data=self.generator_shutting_down,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.generator_names,
+                                cols_device_type=DeviceType.GeneratorDevice,
+                                title=result_type.value,
+                                ylabel='',
+                                xlabel='',
+                                units='')
 
         elif result_type == ResultTypes.BatteryPower:
-            labels = self.battery_names
-            y = self.battery_power
-            y_label = '(MW)'
-            title = 'Battery power'
+
+            return ResultsTable(data=self.battery_power,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.battery_names,
+                                cols_device_type=DeviceType.BatteryDevice,
+                                title=result_type.value,
+                                ylabel='(MW)',
+                                xlabel='',
+                                units='(MW)')
 
         elif result_type == ResultTypes.BatteryEnergy:
-            labels = self.battery_names
-            y = self.battery_energy
-            y_label = '(MWh)'
-            title = 'Battery energy'
+
+            return ResultsTable(data=self.battery_energy,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.battery_names,
+                                cols_device_type=DeviceType.BatteryDevice,
+                                title=result_type.value,
+                                ylabel='(MWh)',
+                                xlabel='',
+                                units='(MWh)')
 
         elif result_type == ResultTypes.SystemFuel:
-            labels = self.fuel_names
-            y = self.system_fuel
-            y_label = '(t)'
-            title = ResultTypes.SystemFuel.value[0]
+
+            return ResultsTable(data=self.system_fuel,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.fuel_names,
+                                cols_device_type=DeviceType.FuelDevice,
+                                title=result_type.value,
+                                ylabel='(t)',
+                                xlabel='',
+                                units='(t)')
 
         elif result_type == ResultTypes.SystemEmissions:
-            labels = self.emission_names
-            y = self.system_emissions
-            y_label = '(t)'
-            title = ResultTypes.SystemEmissions.value[0]
+
+            return ResultsTable(data=self.system_emissions,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.emission_names,
+                                cols_device_type=DeviceType.EmissionGasDevice,
+                                title=result_type.value,
+                                ylabel='(t)',
+                                xlabel='',
+                                units='(t)')
 
         elif result_type == ResultTypes.SystemEnergyCost:
-            labels = ['System cost']
-            y = self.system_energy_cost
-            y_label = '(€/MWh)'
-            title = ResultTypes.SystemEnergyCost.value[0]
+
+            return ResultsTable(data=self.system_energy_cost,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=['System cost'],
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(Currency/MWh)',
+                                xlabel='',
+                                units='(Currency/MWh)')
 
         elif result_type == ResultTypes.ContingencyFlowsReport:
             y = list()
@@ -522,28 +688,17 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                               self.Sf[t, m].real / self.rates[m, t] * 100))
                     index.append(i)
 
-            labels = ['Time index', 'Monitored idx ', 'Contingency idx',
-                      'Time', 'Monitored', 'Contingency',
-                      'ContingencyFlow (MW)', 'Base flow (MW)',
-                      'ContingencyFlow (%)', 'Base flow (%)']
-            y = np.array(y, dtype=object)
-            y_label = ''
-            title = result_type.value[0]
+            columns = ['Time index', 'Monitored idx ', 'Contingency idx',
+                       'Time', 'Monitored', 'Contingency',
+                       'ContingencyFlow (MW)', 'Base flow (MW)',
+                       'ContingencyFlow (%)', 'Base flow (%)']
 
-            return ResultsTable(data=y, index=index, columns=labels, title=title,
-                                ylabel=y_label, xlabel='', units=y_label)
+            return ResultsTable(data=np.array(y, dtype=object),
+                                index=index,
+                                idx_device_type=DeviceType.NoDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value)
 
         else:
-            labels = ''
-            y_label = ''
-            title = ''
-            y = np.zeros(0)
-
-        if self.time_array is not None:
-            index = pd.to_datetime(self.time_array)
-        else:
-            index = np.arange(0, y.shape[0], 1)
-
-        mdl = ResultsTable(data=y, index=index, columns=labels, title=title,
-                           ylabel=y_label, xlabel='', units=y_label)
-        return mdl
+            raise Exception('Result type not understood:' + str(result_type))

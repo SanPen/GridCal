@@ -14,7 +14,7 @@ from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_cir
 from GridCalEngine.enumerations import  ReactivePowerControlMode
 
 def x2var(x: Vec, nVa: int, nVm: int, nPg: int,
-          nQg: int, ntapm: int, ntapt: int) -> Tuple[Vec, Vec, Vec, Vec, Vec, Vec]:
+          nQg: int, ntapm: int, ntapt: int, ndc: int) -> Tuple[Vec, Vec, Vec, Vec, Vec, Vec, Vec]:
     """
     Convert the x solution vector to its composing variables
     :param x: solution vector
@@ -48,11 +48,19 @@ def x2var(x: Vec, nVa: int, nVm: int, nPg: int,
     b += ntapt
 
     tapt = x[a: b]
+    a = b
+    b += ndc
 
-    return Va, Vm, Pg, Qg, tapm, tapt
+    Pfdc = x[a: b]
+    #a = b
+    #b += ndc
+
+    #Ptdc = x[a: b]
+
+    return Va, Vm, Pg, Qg, tapm, tapt, Pfdc
 
 
-def var2x(Va: Vec, Vm: Vec, Pg: Vec, Qg: Vec, tapm: Vec, tapt: Vec) -> Vec:
+def var2x(Va: Vec, Vm: Vec, Pg: Vec, Qg: Vec, tapm: Vec, tapt: Vec, Pfdc: Vec) -> Vec:
     """
     Compose the x vector from its componenets
     :param Va: Voltage angles
@@ -61,7 +69,7 @@ def var2x(Va: Vec, Vm: Vec, Pg: Vec, Qg: Vec, tapm: Vec, tapt: Vec) -> Vec:
     :param Qg: Generator reactive powers
     :return: [Vm, Va, Pg, Qg]
     """
-    return np.r_[Va, Vm, Pg, Qg, tapm, tapt]
+    return np.r_[Va, Vm, Pg, Qg, tapm, tapt, Pfdc]
 
 
 def compute_analytic_admittances(alltapm, alltapt, k_m, k_tau, k_mtau, Cf, Ct, R, X):
@@ -449,7 +457,7 @@ def compute_finitediff_admittances_2dev(nc, tol=1e-6):
             dYbusdtdm, dYfdtdm, dYtdtdm, dYbusdtdt, dYfdtdt, dYtdtdt)
 
 
-def eval_f(x: Vec, Cg, k_m: Vec, k_tau: Vec, c0: Vec, c1: Vec, c2: Vec, ig: Vec, Sbase: float) -> Vec:
+def eval_f(x: Vec, Cg, k_m: Vec, k_tau: Vec, c0: Vec, c1: Vec, c2: Vec, ig: Vec, ndc: int, Sbase: float) -> Vec:
     """
 
     :param x:
@@ -466,14 +474,14 @@ def eval_f(x: Vec, Cg, k_m: Vec, k_tau: Vec, c0: Vec, c1: Vec, c2: Vec, ig: Vec,
     ntapm = len(k_m)
     ntapt = len(k_tau)
 
-    _, _, Pg, Qg, _, _ = x2var(x, nVa=N, nVm=N, nPg=Ng, nQg=Ng, ntapm=ntapm, ntapt=ntapt)
+    _, _, Pg, Qg, _, _, _ = x2var(x, nVa=N, nVm=N, nPg=Ng, nQg=Ng, ntapm=ntapm, ntapt=ntapt, ndc=ndc)
 
     fval = np.sum((c0 + c1 * Pg * Sbase + c2 * np.power(Pg * Sbase, 2))) * 1e-4
 
     return fval
 
 
-def eval_g(x, Ybus, Yf, Cg, Sd, ig, nig, pv, k_m, k_tau, Vm_max, Sg_undis, slack) -> Vec:
+def eval_g(x, Ybus, Yf, Cg, Sd, ig, nig, pv, fdc, tdc, k_m, k_tau, Vm_max, Sg_undis, slack) -> Vec:
     """
 
     :param x:
@@ -491,8 +499,9 @@ def eval_g(x, Ybus, Yf, Cg, Sd, ig, nig, pv, k_m, k_tau, Vm_max, Sg_undis, slack
     Ng = len(ig)
     ntapm = len(k_m)
     ntapt = len(k_tau)
+    ndc = len(fdc)
 
-    va, vm, Pg_dis, Qg_dis, _, _ = x2var(x, nVa=N, nVm=N, nPg=Ng, nQg=Ng, ntapm=ntapm, ntapt=ntapt)
+    va, vm, Pg_dis, Qg_dis, _, _, Pfdc = x2var(x, nVa=N, nVm=N, nPg=Ng, nQg=Ng, ntapm=ntapm, ntapt=ntapt, ndc=ndc)
 
     V = vm * np.exp(1j * va)
     S = V * np.conj(Ybus @ V)
@@ -500,13 +509,21 @@ def eval_g(x, Ybus, Yf, Cg, Sd, ig, nig, pv, k_m, k_tau, Vm_max, Sg_undis, slack
     S_undispatch = Cg[:, nig] @ Sg_undis
     dS = S + Sd - S_dispatch - S_undispatch
 
+    if ndc != 0:
+
+        #dP_dc = Pfdc + Ptdc  # - (1/R) * (vm[f] - vm[t]) **2
+
+        dS[fdc] += Pfdc
+        dS[tdc] -= Pfdc
+
     gval = np.r_[dS.real, dS.imag, va[slack], vm[pv] - Vm_max[pv]]
 
     return gval, S
 
 
 def eval_h(x, Yf, Yt, from_idx, to_idx, pq, no_slack, k_m, k_tau, k_mtau, Va_max, Va_min, Vm_max, Vm_min,
-           Pg_max, Pg_min, Qg_max, Qg_min, tapm_max, tapm_min, tapt_max, tapt_min, Cg, rates, il, ig, tanmax, ctQ:ReactivePowerControlMode) -> Vec:
+           Pg_max, Pg_min, Qg_max, Qg_min, tapm_max, tapm_min, tapt_max, tapt_min, Pdcmax, Cg, rates, il, ig, tanmax,
+           ctQ:ReactivePowerControlMode) -> Vec:
     """
 
     :param x:
@@ -532,8 +549,9 @@ def eval_h(x, Yf, Yt, from_idx, to_idx, pq, no_slack, k_m, k_tau, k_mtau, Va_max
     Ng = len(ig)
     ntapm = len(k_m)
     ntapt = len(k_tau)
+    ndc = len(Pdcmax)
 
-    va, vm, Pg, Qg, tapm, tapt = x2var(x, nVa=N, nVm=N, nPg=Ng, nQg=Ng, ntapm=ntapm, ntapt=ntapt)
+    va, vm, Pg, Qg, tapm, tapt, Pfdc = x2var(x, nVa=N, nVm=N, nPg=Ng, nQg=Ng, ntapm=ntapm, ntapt=ntapt, ndc=ndc)
 
     V = vm * np.exp(1j * va)
     Sf = V[from_idx[il]] * np.conj(Yf[il, :] @ V)
@@ -568,6 +586,9 @@ def eval_h(x, Yf, Yt, from_idx, to_idx, pq, no_slack, k_m, k_tau, k_mtau, Va_max
     if ctQ != ReactivePowerControlMode.NoControl:
         hval = np.r_[hval, Qg ** 2 - tanmax ** 2 * Pg ** 2]
 
+    if ndc != 0:
+        hval = np.r_[hval, Pfdc - Pdcmax, - Pdcmax - Pfdc]
+
     # Sftot = V[from_idx[il]] * np.conj(Yf[il, :] @ V)
     # Sttot = V[to_idx[il]] * np.conj(Yt[il, :] @ V)
 
@@ -576,7 +597,7 @@ def eval_h(x, Yf, Yt, from_idx, to_idx, pq, no_slack, k_m, k_tau, k_mtau, Va_max
 
 
 def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, nig, slack, no_slack, pq, pv, tanmax,
-                           alltapm, alltapt, k_m, k_tau, k_mtau, mu, lmbda, from_idx, to_idx, R, X, F, T,
+                           alltapm, alltapt, fdc, tdc, k_m, k_tau, k_mtau, mu, lmbda, from_idx, to_idx, R, X, F, T,
                            ctQ:ReactivePowerControlMode, compute_jac: bool, compute_hess: bool):
     """
 
@@ -605,8 +626,9 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
     NV = len(x)
     ntapm = len(k_m)
     ntapt = len(k_tau)
+    ndc = len(fdc)
 
-    va, vm, Pg, Qg, tapm, tapt = x2var(x, nVa=N, nVm=N, nPg=Ng, nQg=Ng, ntapm=ntapm, ntapt=ntapt)
+    va, vm, Pg, Qg, tapm, tapt, Pfdc = x2var(x, nVa=N, nVm=N, nPg=Ng, nQg=Ng, ntapm=ntapm, ntapt=ntapt, ndc=ndc)
     V = vm * np.exp(1j * va)
     Vmat = diags(V)
     vm_inv = diags(1 / vm)
@@ -656,7 +678,20 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
                 Gtapt = dSbusdt.copy()
                 GS = sp.hstack([GS, Gtapt])
 
-        Gx = sp.vstack([GS.real, GS.imag, GTH, Gvm]).T.tocsc()
+        if ndc != 0:
+
+            GSpfdc = lil_matrix((N, ndc))
+
+            for link in range(ndc):
+                GSpfdc[fdc, link] = 1
+                GSpfdc[tdc, link] = -1
+
+            GS = sp.hstack([GS, GSpfdc])
+
+        Gx = sp.vstack([GS.real, GS.imag, GTH, Gvm])
+
+        Gx = Gx.T.tocsc()
+
 
         ######### INEQUALITY CONSTRAINTS GRAD
 
@@ -740,6 +775,7 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
 
             Hx = sp.vstack([HSf, HSt, Hvu, Hpu, Hqu, Hvl, Hpl, Hql])
 
+
         if ctQ != ReactivePowerControlMode.NoControl:
             # tanmax curves (simplified capability curves of generators)
             Hqmaxp = -2 * (tanmax ** 2) * Pg
@@ -748,7 +784,20 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
             Hqmax = sp.hstack([lil_matrix((Ng, 2 * N)), diags(Hqmaxp), diags(Hqmaxq), lil_matrix((Ng, ntapm + ntapt))])
 
             Hx = sp.vstack([Hx, Hqmax])
+
+        if ndc != 0:
+
+            Hx = sp.hstack([Hx, lil_matrix((2 * M + 2 * N + 4 * Ng + 2 * ntapm + 2 * ntapt, ndc))])
+
+            Hdcu_ = csc(([1] * ndc, (list(range(ndc)), list(range(ndc)))))
+            Hdcl_ = csc(([-1] * ndc, (list(range(ndc)), list(range(ndc)))))
+            Hdcu = sp.hstack([lil_matrix((ndc, 2 * N + 2 * Ng + ntapm + ntapt)), Hdcu_])
+            Hdcl = sp.hstack([lil_matrix((ndc, 2 * N + 2 * Ng + ntapm + ntapt)), Hdcl_])
+
+            Hx = sp.vstack([Hx, Hdcu, Hdcl])
+
         Hx = Hx.T.tocsc()
+
     else:
         fx = None
         Gx = None
@@ -762,7 +811,7 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
 
         ######## OBJECTIVE FUNCITON HESS
 
-        fxx = diags((np.r_[np.zeros(2 * N), 2 * c2 * (Sbase ** 2), np.zeros(Ng + ntapm + ntapt)]) * 1e-4).tocsc()
+        fxx = diags((np.r_[np.zeros(2 * N), 2 * c2 * (Sbase ** 2), np.zeros(Ng + ntapm + ntapt + ndc)]) * 1e-4).tocsc()
 
         ######## EQUALITY CONSTRAINTS HESS
 
@@ -818,13 +867,20 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
             G3 = sp.hstack([GSdmdva.T, GSdmdvm.T, lil_matrix((ntapm, 2 * Ng)), GSdmdm, GSdmdt.T])
             G4 = sp.hstack([GSdtdva.T, GSdtdvm.T, lil_matrix((ntapt, 2 * Ng)), GSdmdt, GSdtdt])
 
-            Gxx = sp.vstack([G1, G2, lil_matrix((2 * Ng, NV)), G3, G4]).tocsc()
+            Gxx = sp.vstack([G1, G2, lil_matrix((2 * Ng, 2 * Ng + 2 * N + ntapm + ntapt)), G3, G4])
             print('')
 
         else:
             G1 = sp.hstack([Gaa, Gav, lil_matrix((N, 2 * Ng))])
             G2 = sp.hstack([Gva, Gvv, lil_matrix((N, 2 * Ng))])
-            Gxx = sp.vstack([G1, G2, lil_matrix((2 * Ng, NV))]).tocsc()
+            Gxx = sp.vstack([G1, G2, lil_matrix((2 * Ng, 2 * N + 2 * Ng))])
+
+        if ndc != 0:
+
+            Gxx = sp.hstack([Gxx, lil_matrix((NV - ndc, ndc))])
+            Gxx = sp.vstack([Gxx, lil_matrix((ndc, NV))])
+
+        Gxx = Gxx.tocsc()
 
         ######### INEQUALITY CONSTRAINTS HESS
         muf = mu[0: M]
@@ -900,7 +956,8 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
             H6 = sp.hstack([Hftaptva + Httaptva, Hftaptvm + Httaptvm, lil_matrix((ntapt, 2 * Ng)),
                             Hftapmtapt.T + Httapmtapt.T, Hftapttapt + Httapttapt])
 
-            Hxx = sp.vstack([H1, H2, H3, H4, H5, H6]).tocsc()
+            Hxx = sp.vstack([H1, H2, H3, H4, H5, H6])
+
         else:
             H1 = sp.hstack([Hfvava + Htvava, Hfvavm + Htvavm, lil_matrix((N, 2 * Ng))])
             H2 = sp.hstack([Hfvmva + Htvmva, Hfvmvm + Htvmvm, lil_matrix((N, 2 * Ng))])
@@ -908,7 +965,14 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
             H4 = sp.hstack([lil_matrix((Ng, 2 * N + Ng)), Hqqgqg])
 
             # Hxx = sp.vstack([H1, H2, lil_matrix((2 * Ng, NV))]).tocsc()
-            Hxx = sp.vstack([H1, H2, H3, H4]).tocsc()
+            Hxx = sp.vstack([H1, H2, H3, H4])
+
+        if ndc != 0:
+
+            Hxx = sp.hstack([Hxx, lil_matrix((NV - ndc, ndc))])
+            Hxx = sp.vstack([Hxx, lil_matrix((ndc, NV))])
+
+        Hxx = Hxx.tocsc()
 
     else:
         fxx = None

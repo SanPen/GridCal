@@ -39,7 +39,7 @@ class HvdcData:
         self.names: StrVec = np.zeros(nelm, dtype=object)
         self.idtag: StrVec = np.zeros(nelm, dtype=object)
 
-        self.active: BoolVec = np.zeros(nelm, dtype=bool)
+        self.active: BoolVec = np.zeros(nelm, dtype=int)
         self.dispatchable: IntVec = np.zeros(nelm, dtype=int)
         self.F: IntVec = np.zeros(nelm, dtype=int)
         self.T: IntVec = np.zeros(nelm, dtype=int)
@@ -81,6 +81,57 @@ class HvdcData:
         """
 
         return self.nelm
+
+    def slice(self, elm_idx, bus_idx) -> "HvdcData":
+        """
+        Make a deep copy of this structure
+        :return: new HvdcData instance
+        """
+
+        data = HvdcData(nelm=len(elm_idx),
+                        nbus=len(bus_idx))
+
+        data.names = self.names[elm_idx]
+        data.idtag = self.idtag[elm_idx]
+
+        data.active = self.active[elm_idx]
+        data.dispatchable = self.dispatchable[elm_idx]
+
+        data.rate = self.rate[elm_idx]
+        data.contingency_rate = self.contingency_rate[elm_idx]
+        data.protection_rates = self.protection_rates[elm_idx]
+
+        data.r = self.r[elm_idx]
+
+        data.Pset = self.Pset[elm_idx]
+        data.Pt = self.Pt[elm_idx]
+
+        data.Vset_f = self.Vset_f[elm_idx]
+        data.Vset_t = self.Vset_t[elm_idx]
+
+        data.Vnf = self.Vnf[elm_idx]
+        data.Vnt = self.Vnt[elm_idx]
+
+        data.angle_droop = self.angle_droop[elm_idx]
+        data.control_mode = self.control_mode[elm_idx]
+
+        data.Qmin_f = self.Qmin_f[elm_idx]
+        data.Qmax_f = self.Qmax_f[elm_idx]
+        data.Qmin_t = self.Qmin_t[elm_idx]
+        data.Qmax_t = self.Qmax_t[elm_idx]
+
+        data.C_hvdc_bus_f = self.C_hvdc_bus_f[np.ix_(elm_idx, bus_idx)]
+        data.C_hvdc_bus_t = self.C_hvdc_bus_t[np.ix_(elm_idx, bus_idx)]
+
+        # first slice, then remap
+        data.F = self.F[elm_idx]
+        data.T = self.T[elm_idx]
+        bus_map = {o: i for i, o in enumerate(bus_idx)}
+        for k in range(data.nelm):
+            data.F[k] = bus_map[data.F[k]]
+            data.T[k] = bus_map[data.T[k]]
+
+        return data
 
     def copy(self) -> "HvdcData":
         """
@@ -147,8 +198,7 @@ class HvdcData:
         :return: list of HVDC lines indices
         """
         if self.nelm:
-            return tp.get_elements_of_the_island(
-                self.C_hvdc_bus_f + self.C_hvdc_bus_t, bus_idx, active=self.active)
+            return tp.get_elements_of_the_island(self.C_hvdc_bus_f + self.C_hvdc_bus_t, bus_idx, active=self.active)
         else:
             return np.zeros(0, dtype=int)
 

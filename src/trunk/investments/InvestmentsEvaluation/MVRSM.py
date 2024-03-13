@@ -502,15 +502,14 @@ def MVRSM_normalization_minimize(obj_func, x0, lb, ub, num_int, max_evals, rand_
         # next_x = np.random.binomial(1, np.random.rand(), num_int)  # [GTEP]
         next_x[0:num_int] = np.random.binomial(1, np.random.rand(), num_int)  # integer variables
         next_x[num_int:d] = np.random.uniform(lb[num_int:d], ub[num_int:d])  # continuous variables
-
+        # next_x[num_int:d] = np.random.beta(np.random.uniform(0, 5), np.random.uniform(0, 5), size=d-num_int)
         pass
 
     # Get normalization factors from random evaluations, update the model with the found points
-    normalization_factors = get_norm_factors(
-        y_population)  # --> array of len = n_objectives, each position is tuple (y_max,y_min)
+    normalization_factors = get_norm_factors(y_population[:rand_evals, :])  # --> array of len = n_objectives, each position is tuple (y_max,y_min)
 
     # Normalize objectives obtained in random evaluations
-    objectives_normalized = normalize_md(y_population, normalization_factors)
+    objectives_normalized = normalize_md(y_population[:rand_evals, :], normalization_factors)
 
     # Get objective function as sum of all objectives
     y_sum_unscaled = np.sum(objectives_normalized, axis=1)
@@ -518,10 +517,12 @@ def MVRSM_normalization_minimize(obj_func, x0, lb, ub, num_int, max_evals, rand_
     y_sum_scaled = scale(y_sum_unscaled, y0, scale_threshold=1e-8)  # scale y so surrogate model works better
 
     # Update Surrogate Model with scaled y
-    for rand_it in range(len(x_population)):
+    for rand_it in range(len(objectives_normalized)):
         model.update(x_population[rand_it], y_sum_scaled[rand_it])
     best_y = np.min(y_sum_scaled)
+    best_x = x_population[np.argmin(y_sum_scaled)]
 
+    # print(np.min(x_population[:rand_evals], axis=0))
     # Iteratively evaluate the objective, update the model, find the minimum of the model,
     # and explore the search space.
     for i in range(rand_evals, max_evals):

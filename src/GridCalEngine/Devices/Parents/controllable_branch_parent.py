@@ -19,7 +19,7 @@ import numpy as np
 from typing import Union
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
-from GridCalEngine.enumerations import TransformerControlType, BuildStatus
+from GridCalEngine.enumerations import TransformerControlType, BuildStatus, TapModuleControl, TapAngleControl
 from GridCalEngine.Devices.Parents.branch_parent import BranchParent
 from GridCalEngine.Devices.Branches.tap_changer import TapChanger
 from GridCalEngine.Devices.Parents.editable_device import DeviceType
@@ -49,23 +49,32 @@ class ControllableBranchParent(BranchParent):
                  tap_phase_max: float,
                  tap_phase_min: float,
                  tolerance: float,
-                 Cost: float,
-                 mttf: float,
-                 mttr: float,
                  vset: float,
                  Pset: float,
+                 regulation_branch: Union[BranchParent, None],
                  regulation_bus: Union[Bus, None],
                  regulation_cn: Union[ConnectivityNode, None],
                  temp_base: float,
                  temp_oper: float,
                  alpha: float,
                  control_mode: TransformerControlType,
+                 tap_module_control_mode: TapModuleControl,
+                 tap_angle_control_mode: TapAngleControl,
                  contingency_factor: float,
                  protection_rating_factor: float,
                  contingency_enabled: bool,
                  monitor_loading: bool,
-                 r0: float, x0: float, g0: float, b0: float,
-                 r2: float, x2: float, g2: float, b2: float,
+                 r0: float,
+                 x0: float,
+                 g0: float,
+                 b0: float,
+                 r2: float,
+                 x2: float,
+                 g2: float,
+                 b2: float,
+                 Cost: float,
+                 mttf: float,
+                 mttr: float,
                  capex: float,
                  opex: float,
                  build_status: BuildStatus,
@@ -95,6 +104,7 @@ class ControllableBranchParent(BranchParent):
         :param mttr: Mean time to recovery in hours
         :param vset: Voltage set-point of the voltage controlled bus in per unit
         :param Pset: Power set point
+        :param regulation_branch: Branch object where the flow regulation is applied
         :param regulation_bus: Bus object where the regulation is applied
         :param regulation_cn: ConnectivityNode where the regulation is applied
         :param temp_base: Base temperature at which `r` is measured in °C
@@ -191,6 +201,9 @@ class ControllableBranchParent(BranchParent):
         self.Pset = Pset
 
         self.control_mode: TransformerControlType = control_mode
+        self.tap_module_control_mode: TapModuleControl = tap_module_control_mode
+        self.tap_angle_control_mode: TapAngleControl = tap_angle_control_mode
+        self.regulation_branch: BranchParent = regulation_branch
         self.regulation_bus: Bus = regulation_bus
         self.regulation_cn: ConnectivityNode = regulation_cn
 
@@ -223,10 +236,28 @@ class ControllableBranchParent(BranchParent):
 
         self.register(key='control_mode', units='', tpe=TransformerControlType,
                       definition='Control type of the transformer')
+
+        self.register(key='tap_module_control_mode', units='', tpe=TapModuleControl,
+                      definition='Control available with the tap module')
+
+        self.register(key='tap_angle_control_mode', units='', tpe=TapAngleControl,
+                      definition='Control available with the tap angle')
+
         self.register(key='vset', units='p.u.', tpe=float,
                       definition='Objective voltage at the "to" side of the bus when regulating the tap.')
+
         self.register(key='Pset', units='p.u.', tpe=float,
                       definition='Objective power at the "from" side of when regulating the angle.')
+
+        self.register(key='regulation_branch', units='', tpe=DeviceType.BranchDevice,
+                      definition='Branch where the controls are applied.')
+
+        self.register(key='regulation_bus', units='', tpe=DeviceType.BusDevice,
+                      definition='Bus where the regulation is applied.')
+
+        self.register(key='regulation_cn', units='', tpe=DeviceType.ConnectivityNodeDevice,
+                      definition='Connectivity node where the regulation is applied.')
+
         self.register(key='temp_base', units='ºC', tpe=float, definition='Base temperature at which R was measured.')
         self.register(key='temp_oper', units='ºC', tpe=float, definition='Operation temperature to modify R.',
                       profile_name='temp_oper_prof')

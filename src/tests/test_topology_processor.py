@@ -3,7 +3,9 @@ from GridCalEngine.api import *
 import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Topology.topology_substation_reduction import topology_processor, create_topology_process_info
-#from GridCalEngine.Simulations.Topology.topology_processor_driver import
+
+
+# from GridCalEngine.Simulations.Topology.topology_processor_driver import
 
 
 def createExampleGridDiagram1() -> MultiCircuit:
@@ -63,6 +65,7 @@ def createExampleGridDiagram1() -> MultiCircuit:
 
     return grid
 
+
 def createExampleGridTest1() -> MultiCircuit:
     """
     This function creates a Multicircuit example from Grid Test 1 in documentation to test topology processor
@@ -116,6 +119,7 @@ def createExampleGridTest1() -> MultiCircuit:
         grid.switch_devices.append(s)
 
     return grid
+
 
 def createExampleGridTest2() -> MultiCircuit:
     """
@@ -186,6 +190,7 @@ def createExampleGridTest2() -> MultiCircuit:
 
     return grid
 
+
 def test_topology_reduction():
     """
     This function tests topology reduction for Node/Breaker model networks
@@ -207,6 +212,7 @@ def test_topology_reduction():
                 assert t.bus2, "Transformer3w without bus2 associated"
                 assert t.bus3, "Transformer3w without bus3 associated"
 
+
 def test_topology_rts():
     """
     This function tests topology reduction for Bus/branch model networks
@@ -217,17 +223,15 @@ def test_topology_rts():
         # Original grid to compare its topology with reduced topology after creating a Node/Breaker model from it
         originalgrid = grid_.copy()
 
-        grid_.convert_to_node_breaker() # Converting to Node/Breaker model
+        grid_.convert_to_node_breaker()  # Converting to Node/Breaker model
         topodriver = TopologyProcessorDriver(grid=grid_)
-        topodriver.run()    # Processing topology from new grid
+        topodriver.run()  # Processing topology from new grid
 
         # Comparing bus considering bus number assigned
-        for ln in range(0, len(grid_.get_lines())):
+        for ln in range(len(grid_.get_lines())):
             loriginal = originalgrid.lines[ln]
             lnb = grid_.lines[ln]
 
-            assert loriginal.bus_to.name.split(' ')[-1] == lnb.bus_to.name.split('_')[-1]
-            assert loriginal.bus_from.name.split(' ')[-1] == lnb.bus_from.name.split('_')[-1]
+            assert loriginal.bus_to.code == lnb.bus_to.code
+            assert loriginal.bus_from.code == lnb.bus_from.code
         print("")
-
-

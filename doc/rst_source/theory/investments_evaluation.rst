@@ -3,15 +3,15 @@ Investments evaluation
 ======================
 
 Introduction
-_______
+_____________________
 
-Planning power grids involves determining an appropriate set of assets that makes sense from both the
+Planning power grids involves determining an appropriate set of assets that makes sense from both
 technical and economical optics. This challenge can be understood as an optimization problem, where one tries to
 minimize the total cost :math:`C = CAPEX+OPEX`, while simultaneously minimizing the technical restrictions
 :math:`t_r`. While apparently simple to comprehend, such a problem in its original form is arduous to solve and a
 satisfying solution may not even be reached.
 
-At this point we have to ask ourselves what the underlying issue is. If the puzzle is rigorously formulated, it
+At this point, we have to ask ourselves what the underlying issue is. If the puzzle is rigorously formulated, it
 becomes of the type MINLP. Not only it can include continuous variables (such as the rating of a substation), but
 also a wide set of integer variables (the potential investments to make). It is well-known that even solving a
 single-period OPF with only continuous variables becomes a very complicated problem, to the point where the
@@ -26,7 +26,7 @@ the curse of dimensionality. The methodology we have adopted here consists of:
 #. Optimizing such a model in a matter of a few seconds.
 
 Formulation
-_______
+_____________________
 
 1. **Basic objective function**
 
@@ -37,10 +37,10 @@ The selected objective function considers both technical and economical criteria
 
 where :math:`C_l` is a penalty function associated with active power losses, :math:`C_o` accounts for branch
 overloadings, :math:`C_{vm}` gathers the undervoltage and overvoltage module penalties, and :math:`C_{va}` represents the
-voltage angle deviation penalties. Power losses and the overloadings are calculated for every branch
+voltage angle deviation penalties. Power losses and overloadings are calculated for every branch
 of the grid :math:`br`, the voltage-related costs are computed at every bus :math:`b` and the CAPEX and OPEX are related
 to each active investment :math:`i`. Note here that the unknown :math:`x` is used to represent the investment
-combination under consideration.That is, :math:`x` has to be seen as a vector that contains an :math:`n`-length
+combination under consideration. That is, :math:`x` has to be seen as a vector that contains an :math:`n`-length
 set of boolean variables that account for the activated or deactivated investments:
 
 .. math::
@@ -63,7 +63,7 @@ overload cost and the loading:
     \sum{C_o(x)_{br}} = \sum_{idx \in {branches\_idx}} P_o[idx] \cdot loading[idx] ,
 
 where :math:`branches\_idx` is the set of indices where :math:`loading > 1` and :math:`P_o` is the
-corresponding overload penalization of the branch .
+corresponding overload penalization of the branch.
 
 Regarding the undervoltages and overvoltages, the associated penalty is computed as:
 
@@ -75,18 +75,18 @@ maximum voltage, minimum voltage limit and voltage module penalization for each 
 
 3. **Machine-learning algorithm**
 Once the objective function is defined, each evaluation is sent to the machine-learning model previously mentioned.
-The algorithm being tested is the so called Mixed-Variable ReLU-based Surrogate Modelling (MVRSM). For further
+The algorithm being tested is the so-called Mixed-Variable ReLU-based Surrogate Modelling (MVRSM). For further
 information, the reader can find the reference paper_ to understand the insights of the model.
 
 .. _paper: https://dl.acm.org/doi/pdf/10.1145/3449726.3463136
 
 As for the electrical problem, it is not initially relevant what goes on inside the machine-learning algorithm, it
-works as a black-box model. The objective function is evaluated and sent to the model in each iteration and in the end
+works as a black-box model. The objective function is evaluated and sent to the model in each iteration and in the end,
 the model outputs the optimal point.
 
 
-Testing
-_______
+Testing on Grid
+_____________________
 1. **Grid**
 
 In order to test the algorithm for different variations of the objective function, a 130-bus grid has been prepared with
@@ -101,8 +101,8 @@ In order to test the algorithm for different variations of the objective functio
 2. **Base case**
 
 Initially, the algorithm did not include the economical criteria in the objective function. Although it is clear that it
-is needed to somehow include the CAPEX and OPEX to the minimization, the results obtained are useful to grasp the effect
-of including economical criterion.
+is needed to somehow include the CAPEX and OPEX in the minimization, the results shown in Figure 2 are useful to later
+grasp the effect of modifying the minimization function.
 
 .. figure:: ../figures/investments/Figure_1_wo_capex.png
     :alt: Results wo CAPEX
@@ -154,7 +154,7 @@ but another problem arises: How should the different criteria values be computed
 function are around the same order of magnitude?
 
 4. **Normalization**
-When dealing with multicriteria optimization, it is common to establish some reference values for each criteria in
+When dealing with multicriteria optimization, it is common to establish some reference values for each criterion in
 the objective function and normalize the terms by dividing the factors by the reference point. In essence, the basic
 objective function presented in Formulation would be modified as:
 
@@ -168,7 +168,7 @@ following subsections.
 
 4.1. First iteration normalization
 
-The first solution studied consists in taking the values of the terms for the first iteration with investments,
+The first solution studied consists of taking the values of the terms for the first iteration with investments,
 compute scaling factors referent to that iteration as
 
 .. math::
@@ -180,7 +180,7 @@ being:
     - :math:`mean_i`: the mean between the maximum and minimum value of each criteria; :math:`\frac{max(losses) + min(losses)}{2}`,
     - :math:`mean`: an array of all the computed means of the factors; :math:`[mean_{losses}, mean_{overload}, mean_{vm}, ... ]`.
 
-and multiply each term for its scaling facter throughout the rest of the iterations. Therefore,
+and multiply each term for its scaling factor throughout the rest of the iterations. Therefore,
 the objective function ends up being:
 
 .. math::
@@ -251,21 +251,22 @@ Finally, the algorithm is tested in the presented grid.
     Figure 11: Results obtained for the updated algorithm.
 
 The results show a similar points distribution as Figure 4. This is not a coincidence, given that by applying the
-normalization, both the technical and economic criteria end up being a similar order of magnitude, which is the same
+normalization, both the technical and economic criteria end up being in a similar order of magnitude, which is the same
 case as the one shown in Figure 4.
 
-It is worth mentioning that due to the fact that the objective function can now take negative values, the normalization
+It is worth mentioning that because the objective function can now take negative values, the normalization
 used in the colors visualization can no longer be LogNorm() and has been changed to Normalize().
 
 Random evaluations process
----------------------------
+--------------------------------------
 Given that all previous figures share a similar shape in terms of point distribution, with two separated regions,
 it is questioned that the algorithm is exploring all the possible solutions, especially during the random evaluation iterations.
-One would expect a continuous Pareto front, whereas the obtained results show no solutions at intermediate points.
+One would expect a continuous Pareto front, whereas the obtained results show no solutions at the intermediate points.
 
 Therefore, it is determined that when creating random :math:`x` vectors the probability of getting a 0 or a 1 must
-change for each random iteration. Therefore tThen, the random vectors obtained represent combinations of varying number
-of investments. For the previous testing, the probability was fixed to 0.5. This meant that the vectors had more or less the same number of investments.
+change for each random iteration. Then, the random vectors obtained represent combinations of varying number
+of investments. For the previous testing, the probability was fixed to 0.5 which meant that the vectors had more or
+less the same number of investments each random iteration.
 
 The results obtained with the scaled algorithm show a clear Pareto front as seen in Figure 12.
 
@@ -277,7 +278,7 @@ The results obtained with the scaled algorithm show a clear Pareto front as seen
 
 
 Multi-objective optimization
-----------------------------
+--------------------------------------
 Another line of research includes modifying the MVRSM model to support multi-objective minimization. This way, the
 scaling process after the random evaluations is not necessary, instead, the model works directly with the values obtained
 for each cost computation (losses cost, overload cost, CAPEX,...). Hence, the problem becomes a 6-objective minimization problem.
@@ -289,10 +290,10 @@ than for the previous case.
 On the other hand, to minimize the model, random weights are chosen for each objective ( the sum of the weights must be 1),
 then a single value is computed as the sum of each objective multiplied by its weight. In every iteration, these random
 weights must change. This way, it is still possible to use Scipy's tool "minimize", since the model still returns one
-single value. The reader can find a more in depth explanation of the reasoning behind this process in
+single value. The reader can find a more in-depth explanation of the reasoning behind this process in
 this `reference paper <https://arxiv.org/abs/2006.04655>`_.
 
-The results obtained show a similar distribution as in Figure 12, however the algorithm does not find the points outside
+The results obtained show a similar distribution as in Figure 12, however, the algorithm does not find the points outside
 the curve and closer to the optimal point (0,0).
 
 .. figure:: ../figures/investments/Pareto_multi.png
@@ -301,3 +302,22 @@ the curve and closer to the optimal point (0,0).
 
     Figure 12: Results obtained for the multi objective optimization.
 
+Testing on ZDT3
+____________________________
+
+This section covers the testing of both the multi-objective and single-objective with normalization algorithms on a
+typical test function for multi-objective optimization.
+
+**Test function for optimization**
+
+The function to be tested is the Zitzler–Deb–Thiele's function N3:
+
+.. math::
+    \text{Minimize:} \, f_1(x) = x_1 \, ,\; \; f_2(x) = g(x) \cdot h(f_1(x),g(x)) ,
+
+    \text{where:} \, g(x) = 1 + \frac{9}{29} \sum_{i=2}^{30} x_i  \, ,\; \;
+                         h(f_1(x),g(x))= 1 - \frac{\sqrt{f_1(x)}}{\sqrt{g(x)}} - \frac{f_1(x)}{g(x)} sin(10\pi f_1(x)) ,
+
+    \text{with:} \, 1 \leq i \leq 30  \, ,\; \; 0 \leq x_i \leq 1 .
+
+The Pareto front expected can be seen in Figure 13.

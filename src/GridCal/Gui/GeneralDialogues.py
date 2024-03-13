@@ -16,11 +16,12 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import io
 import pandas as pd
-from typing import List
+from typing import List, Union
 from datetime import datetime
 from PySide6 import QtCore, QtGui, QtWidgets
 
 from GridCalEngine.basic_structures import Logger
+from GridCalEngine.Devices.types import ALL_DEV_TYPES
 from GridCal.Gui.GuiFunctions import ObjectsModel, get_list_model, get_checked_indices
 
 
@@ -124,23 +125,25 @@ def fill_tree_from_logs(logger: Logger):
             message_child = QtGui.QStandardItem(message)
 
             # print('\t', message)
+            try:
+                for time, elm, value, expected_value in data_list:
+                    # print('\t', '\t', time, elm, value, expected_value)
 
-            for time, elm, value, expected_value in data_list:
-                # print('\t', '\t', time, elm, value, expected_value)
+                    time_child = QtGui.QStandardItem(time)
+                    time_child.setEditable(editable)
 
-                time_child = QtGui.QStandardItem(time)
-                time_child.setEditable(editable)
+                    elm_child = QtGui.QStandardItem(elm)
+                    elm_child.setEditable(editable)
 
-                elm_child = QtGui.QStandardItem(elm)
-                elm_child.setEditable(editable)
+                    value_child = QtGui.QStandardItem(value)
+                    value_child.setEditable(editable)
 
-                value_child = QtGui.QStandardItem(value)
-                value_child.setEditable(editable)
+                    expected_val_child = QtGui.QStandardItem(expected_value)
+                    expected_val_child.setEditable(editable)
 
-                expected_val_child = QtGui.QStandardItem(expected_value)
-                expected_val_child.setEditable(editable)
-
-                message_child.appendRow([time_child, elm_child, value_child, expected_val_child])
+                    message_child.appendRow([time_child, elm_child, value_child, expected_val_child])
+            except OverflowError as e:
+                print(e)
 
             message_child.setEditable(editable)
 
@@ -285,7 +288,7 @@ class ElementsDialogue(QtWidgets.QDialog):
     Selected elements dialogue window
     """
 
-    def __init__(self, name, elements: list()):
+    def __init__(self, name, elements: Union[List[ALL_DEV_TYPES], None] = None):
         super(ElementsDialogue, self).__init__()
         self.setObjectName("self")
         self.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.NoContextMenu)
@@ -294,14 +297,19 @@ class ElementsDialogue(QtWidgets.QDialog):
         # build elements list
         self.objects_table = QtWidgets.QTableView()
 
-        if len(elements) > 0:
-            model = ObjectsModel(objects=elements,
-                                 time_index=None,
-                                 property_list=elements[0].property_list,
-                                 parent=self.objects_table,
-                                 editable=False)
+        if elements is not None:
+            if len(elements) > 0:
+                model = ObjectsModel(objects=elements,
+                                     time_index=None,
+                                     property_list=elements[0].property_list,
+                                     parent=self.objects_table,
+                                     editable=False)
 
-            self.objects_table.setModel(model)
+                self.objects_table.setModel(model)
+            else:
+                raise Exception("No elements passed :/")
+        else:
+            raise Exception("No elements passed :/")
 
         # accept button
         self.accept_btn = QtWidgets.QPushButton()
@@ -327,10 +335,14 @@ class ElementsDialogue(QtWidgets.QDialog):
 
         self.setWindowTitle(name)
 
-        self.accepted = False
+        self.is_accepted = False
 
     def accept_click(self):
-        self.accepted = True
+        """
+        Accept action
+        :return:
+        """
+        self.is_accepted = True
         self.accept()
 
     def copy_click(self):
@@ -348,13 +360,12 @@ class TimeReIndexDialogue(QtWidgets.QDialog):
         self.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.NoContextMenu)
         self.main_layout = QtWidgets.QVBoxLayout(self)
 
-        self.accepted = False
+        self.is_accepted = False
 
         # year
         d2 = datetime.now()
-        d = datetime(year=d2.year, month=d2.month, day=d2.day, hour=d2.hour, minute=d2.minute, second=0)
         self.date_time_editor = QtWidgets.QDateTimeEdit()
-        self.date_time_editor.setDateTime(d)
+        self.date_time_editor.setDateTime(QtCore.QDateTime(d2.year, d2.month, d2.day, d2.hour, d2.minute))
 
         # time step length
         self.step_length = QtWidgets.QDoubleSpinBox()
@@ -394,7 +405,7 @@ class TimeReIndexDialogue(QtWidgets.QDialog):
         """
         Accept and close
         """
-        self.accepted = True
+        self.is_accepted = True
         self.accept()
 
 
@@ -592,59 +603,6 @@ class InputNumberDialogue(QtWidgets.QDialog):
         self.value = self.input_box.value()
         self.accept()
 
-class InputSearchDialogue(QtWidgets.QDialog):
-    """
-    New InputNumberDialogue window
-    """
-
-    def __init__(self, deafault_value: str, title='Search', prompt='', h=80, w=240):
-        """
-        :default_value:
-        :param title:
-        :param prompt:
-        :param h:
-        :param w:
-        """
-
-        self.searchText = ""
-        QtWidgets.QDialog.__init__(self)
-        self.setObjectName("self")
-        self.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.NoContextMenu)
-        self.main_layout = QtWidgets.QVBoxLayout(self)
-
-        self.is_accepted: bool = False
-
-        self.label1 = QtWidgets.QLabel()
-        self.label1.setText(prompt)
-
-        # min voltage
-        self.input_box = QtWidgets.QLineEdit()
-
-
-        # search button
-        self.accept_btn = QtWidgets.QPushButton()
-        self.accept_btn.setText('Search')
-        self.accept_btn.clicked.connect(self.search_click)
-
-        # add all to the GUI
-        self.main_layout.addWidget(self.label1)
-        self.main_layout.addWidget(self.input_box)
-        self.main_layout.addWidget(self.accept_btn)
-
-        self.setLayout(self.main_layout)
-
-        self.setWindowTitle(title)
-
-        self.resize(w, h)
-
-    def search_click(self):
-        """
-        Serach and close
-        """
-        self.is_accepted = True
-
-        self.searchText = self.input_box.text()
-        self.accept()
 
 class InputSearchDialogue(QtWidgets.QDialog):
     """
@@ -674,7 +632,6 @@ class InputSearchDialogue(QtWidgets.QDialog):
         # min voltage
         self.input_box = QtWidgets.QLineEdit()
 
-
         # search button
         self.accept_btn = QtWidgets.QPushButton()
         self.accept_btn.setText('Search')
@@ -699,6 +656,7 @@ class InputSearchDialogue(QtWidgets.QDialog):
 
         self.searchText = self.input_box.text()
         self.accept()
+
 
 class StartEndSelectionDialogue(QtWidgets.QDialog):
     """
@@ -825,10 +783,18 @@ class CustomQuestionDialogue(QtWidgets.QDialog):
         self.accepted_answer = 0
 
     def b1_clicked(self):
+        """
+        Button 1 clicked
+        :return:
+        """
         self.accepted_answer = 1
         self.accept()
 
     def b2_clicked(self):
+        """
+        Button 2 clicked
+        :return:
+        """
         self.accepted_answer = 2
         self.accept()
 

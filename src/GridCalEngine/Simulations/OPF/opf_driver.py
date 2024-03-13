@@ -143,6 +143,9 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
                                          zonal_grouping=self.options.zonal_grouping,
                                          skip_generation_limits=self.options.skip_generation_limits,
                                          consider_contingencies=self.options.consider_contingencies,
+                                         unit_Commitment=self.options.unit_commitment,
+                                         ramp_constraints=False,
+                                         all_generators_fixed=False,
                                          lodf_threshold=self.options.lodf_tolerance,
                                          maximize_inter_area_flow=self.options.maximize_flows,
                                          areas_from=self.options.areas_from,
@@ -180,6 +183,7 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
         elif self.options.solver == SolverType.NONLINEAR_OPF:
 
             res = run_nonlinear_opf(grid=self.grid,
+                                    opf_options=self.options,
                                     pf_options=self.pf_options,
                                     t_idx=None)
             Sbase = self.grid.Sbase

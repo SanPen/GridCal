@@ -22,14 +22,20 @@ import GridCalEngine.Devices as gcdev
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
 from GridCalEngine.IO.cim.cgmes.cgmes_export import CgmesExporter
 from GridCalEngine.IO.cim.cgmes.cgmes_utils import (get_nominal_voltage,
-    get_pu_values_ac_line_segment,
-    get_rate, get_values_shunt,
-    get_pu_values_power_transformer, get_pu_values_power_transformer3w, get_windings,
-    get_regulating_control)
+                                                    get_pu_values_ac_line_segment,
+                                                    get_rate, get_values_shunt,
+                                                    get_pu_values_power_transformer, get_pu_values_power_transformer3w,
+                                                    get_windings,
+                                                    get_regulating_control, get_pu_values_power_transformer_end,
+                                                    get_slack_id)
 from GridCalEngine.data_logger import DataLogger
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.identified_object import IdentifiedObject
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.terminal import Terminal
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.ac_line_segment import ACLineSegment
+from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.switch import Switch
+from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.disconnector import Disconnector
+from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.load_break_switch import LoadBreakSwitch
+from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.breaker import Breaker
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.power_transformer_end import PowerTransformerEnd
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.conducting_equipment import ConductingEquipment
 
@@ -112,6 +118,8 @@ def get_gcdev_calculation_nodes(cgmes_model: CgmesCircuit,
     :return: dictionary relating the TopologicalNode uuid to the gcdev CalculationNode
              Dict[str, gcdev.Bus]
     """
+
+    slack_id = get_slack_id(cgmes_model.SynchronousMachine_list, cgmes_model.Terminal_list)
     # dictionary relating the TopologicalNode uuid to the gcdev CalculationNode
     calc_node_dict: Dict[str, gcdev.Bus] = dict()
     for cgmes_elm in cgmes_model.TopologicalNode_list:
@@ -126,13 +134,18 @@ def get_gcdev_calculation_nodes(cgmes_model: CgmesCircuit,
             vm = 1.0
             va = 0.0
 
+        is_slack = False
+        if slack_id is not None:
+            if slack_id == cgmes_elm.rdfid:
+                is_slack = True
+
         gcdev_elm = gcdev.Bus(idtag=cgmes_elm.uuid,
                               code=cgmes_elm.description,
                               name=cgmes_elm.name,
                               active=True,
                               vnom=nominal_voltage,
                               is_dc=False,
-                              is_slack=False,
+                              is_slack=is_slack,
                               vmin=0.9,
                               vmax=1.1,
                               latitude=0.0,
@@ -311,6 +324,7 @@ def get_gcdev_generators(cgmes_model: CgmesCircuit,
                                                              generator=gcdev_elm,
                                                              technology=technology)
                         gcdev_model.add_generator_technology(gen_tech)
+                        # gcdev_model.add_generator_fuel()
                 else:
                     logger.add_error(msg='SynchronousMachine has no generating unit',
                                      device=cgmes_elm.rdfid,
@@ -415,7 +429,8 @@ def get_gcdev_ac_lines(cgmes_model: CgmesCircuit,
                 cn_t = cns[1]
 
                 # get per unit vlaues
-                r, x, g, b, r0, x0, g0, b0 = get_pu_values_ac_line_segment(ac_line_segment=cgmes_elm, logger=logger, Sbase=Sbase)
+                r, x, g, b, r0, x0, g0, b0 = get_pu_values_ac_line_segment(ac_line_segment=cgmes_elm, logger=logger,
+                                                                           Sbase=Sbase)
 
                 current_rate = rates_dict.get(cgmes_elm.uuid, None)  # A
                 if current_rate:
@@ -579,8 +594,40 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                                                     rate31=windings[2].ratedS,
                                                     x=0.0, y=0.0
                                                     )
+                    r, x, g, b, r0, x0, g0, b0 = get_pu_values_power_transformer_end(windings[0], Sbase)
+                    gcdev_elm.winding1.R = r
+                    gcdev_elm.winding1.X = x
+                    gcdev_elm.winding1.G = g
+                    gcdev_elm.winding1.B = b
+                    gcdev_elm.winding1.R0 = r0
+                    gcdev_elm.winding1.X0 = x0
+                    gcdev_elm.winding1.G0 = g0
+                    gcdev_elm.winding1.B0 = b0
+                    gcdev_elm.winding1.rate = windings[0].ratedS
 
+                    r, x, g, b, r0, x0, g0, b0 = get_pu_values_power_transformer_end(windings[1], Sbase)
+                    gcdev_elm.winding2.R = r
+                    gcdev_elm.winding2.X = x
+                    gcdev_elm.winding2.G = g
+                    gcdev_elm.winding2.B = b
+                    gcdev_elm.winding2.R0 = r0
+                    gcdev_elm.winding2.X0 = x0
+                    gcdev_elm.winding2.G0 = g0
+                    gcdev_elm.winding2.B0 = b0
+                    gcdev_elm.winding2.rate = windings[1].ratedS
+
+                    r, x, g, b, r0, x0, g0, b0 = get_pu_values_power_transformer_end(windings[2], Sbase)
+                    gcdev_elm.winding3.R = r
+                    gcdev_elm.winding3.X = x
+                    gcdev_elm.winding3.G = g
+                    gcdev_elm.winding3.B = b
+                    gcdev_elm.winding3.R0 = r0
+                    gcdev_elm.winding3.X0 = x0
+                    gcdev_elm.winding3.G0 = g0
+                    gcdev_elm.winding3.B0 = b0
                     gcdev_model.add_transformer3w(gcdev_elm)
+                    gcdev_elm.winding3.rate = windings[2].ratedS
+
 
                 else:
                     logger.add_error(msg='Not exactly three terminals',
@@ -648,11 +695,11 @@ def get_gcdev_shunts(cgmes_model: CgmesCircuit,
                     B=B * cgmes_elm.sections,
                     G0=G0 * cgmes_elm.sections,
                     B0=B0 * cgmes_elm.sections,
-                    Bmax=B * cgmes_elm.maximumSections,
-                    Bmin=B,
-                    active=True,        # TODO what is this?
-                    controlled=is_controlled,
-                    vset=v_set,
+                    # Bmax=B * cgmes_elm.maximumSections,
+                    # Bmin=B,
+                    active=True,  # TODO what is this?
+                    # controlled=is_controlled,
+                    # vset=v_set,
                     # bus=calc_node,  # ?
                     # cn=cn,  # ?
                 )
@@ -664,6 +711,97 @@ def get_gcdev_shunts(cgmes_model: CgmesCircuit,
                                  device_property="number of associated terminals",
                                  value=len(calc_nodes),
                                  expected_value=1)
+
+
+def get_gcdev_switch(cgmes_model: CgmesCircuit,
+                     gcdev_model: MultiCircuit,
+                     calc_node_dict: Dict[str, gcdev.Bus],
+                     cn_dict: Dict[str, gcdev.ConnectivityNode],
+                     device_to_terminal_dict: Dict[str, List[Terminal]],
+                     logger: DataLogger,
+                     Sbase: float) -> None:
+    """
+    Convert the CGMES switching dcives to gcdev
+
+    :param cgmes_model: CgmesCircuit
+    :param gcdev_model: gcdevCircuit
+    :param calc_node_dict: Dict[str, gcdev.Bus]
+    :param cn_dict: Dict[str, gcdev.ConnectivityNode]
+    :param device_to_terminal_dict: Dict[str, Terminal]
+    :param logger: DataLogger
+    :param Sbase: system base power in MVA
+    :return: None
+    """
+    # Build the ratings dictionary
+    rates_dict = {}
+    for e in cgmes_model.CurrentLimit_list:
+        if not isinstance(e.OperationalLimitSet, str):
+            conducting_equipment = e.OperationalLimitSet.Terminal.ConductingEquipment
+            if isinstance(conducting_equipment,
+                          (Switch, Breaker, Disconnector, LoadBreakSwitch)):
+                branch_id = conducting_equipment.uuid
+                rates_dict[branch_id] = e.value
+
+    # convert switch
+    for device_list in [cgmes_model.Switch_list,
+                        cgmes_model.Breaker_list,
+                        cgmes_model.Disconnector_list,
+                        cgmes_model.LoadBreakSwitch_list,
+                        # cgmes_model.GroundDisconnector_list
+                        ]:
+
+        for cgmes_elm in device_list:
+            calc_nodes, cns = find_connections(cgmes_elm=cgmes_elm,
+                                               device_to_terminal_dict=device_to_terminal_dict,
+                                               calc_node_dict=calc_node_dict,
+                                               cn_dict=cn_dict,
+                                               logger=logger)
+
+            if len(calc_nodes) == 2:
+                calc_node_f = calc_nodes[0]
+                calc_node_t = calc_nodes[1]
+                cn_f = cns[0]
+                cn_t = cns[1]
+
+                operational_current_rate = rates_dict.get(cgmes_elm.uuid, None)  # A
+                if operational_current_rate and cgmes_elm.BaseVoltage is not None:
+                    # rate in MVA = A / 1000 * kV * sqrt(3)    CORRECTED!
+                    op_rate = np.round((operational_current_rate / 1000.0) *
+                                       cgmes_elm.BaseVoltage.nominalVoltage * 1.73205080756888,
+                                    4)
+                else:
+                    op_rate = 9999  # Corrected
+
+                if cgmes_elm.ratedCurrent is not None and cgmes_elm.ratedCurrent != 0.0:   # TODO
+                    rated_current = np.round((cgmes_elm.ratedCurrent / 1000.0) * cgmes_elm.BaseVoltage.nominalVoltage * 1.73205080756888,
+                                    4)
+                else:
+                    rated_current = op_rate
+
+                gcdev_elm = gcdev.Switch(
+                    idtag=cgmes_elm.uuid,
+                    code=cgmes_elm.description,
+                    name=cgmes_elm.name,
+                    active=True,
+                    cn_from=cn_f,
+                    cn_to=cn_t,
+                    bus_from=calc_node_f,
+                    bus_to=calc_node_t,
+                    rate=op_rate,
+                    rated_current=rated_current,
+                    open=cgmes_elm.open,
+                    retained=cgmes_elm.retained,
+                    normal_open=cgmes_elm.normalOpen
+                )
+
+                gcdev_model.add_switch(gcdev_elm)
+            else:
+                logger.add_error(msg='Not exactly two terminals',
+                                 device=cgmes_elm.rdfid,
+                                 device_class=cgmes_elm.tpe,
+                                 device_property="number of associated terminals",
+                                 value=len(calc_nodes),
+                                 expected_value=2)
 
 
 def cgmes_to_gridcal(cgmes_model: CgmesCircuit, logger: DataLogger) -> MultiCircuit:
@@ -724,6 +862,7 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit, logger: DataLogger) -> MultiCirc
     get_gcdev_ac_transformers(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger, Sbase)
 
     get_gcdev_shunts(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger, Sbase)
+    get_gcdev_switch(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger, Sbase)
     print('debug')
 
     # Export test

@@ -118,12 +118,12 @@ def get_load_data(circuit: MultiCircuit,
 
         if time_series:
             if opf_results is not None:
-                data.S[ii] = elm.P_prof[t_idx] + 1j * elm.Q_prof[t_idx] - opf_results.load_shedding[t_idx, ii]
+                data.S[ii] = complex(elm.P_prof[t_idx], elm.Q_prof[t_idx]) - opf_results.load_shedding[t_idx, ii]
             else:
-                data.S[ii] = elm.P_prof[t_idx] + 1j * elm.Q_prof[t_idx]
+                data.S[ii] = complex(elm.P_prof[t_idx], elm.Q_prof[t_idx])
 
-            data.I[ii] = elm.Ir_prof[t_idx] + 1j * elm.Ii_prof[t_idx]
-            data.Y[ii] = elm.G_prof[t_idx] + 1j * elm.B_prof[t_idx]
+            data.I[ii] = complex(elm.Ir_prof[t_idx], elm.Ii_prof[t_idx])
+            data.Y[ii] = complex(elm.G_prof[t_idx], elm.B_prof[t_idx])
 
             data.active[ii] = elm.active_prof[t_idx]
             data.cost[ii] = elm.Cost_prof[t_idx]
@@ -150,20 +150,12 @@ def get_load_data(circuit: MultiCircuit,
         data.idtag[ii] = elm.idtag
 
         if time_series:
-            if opf_results is not None:
-                data.S[ii] -= elm.P_prof[t_idx] + 1j * elm.Q_prof[t_idx]
-            else:
-                data.S[ii] -= elm.P_prof[t_idx] + 1j * elm.Q_prof[t_idx]
-
+            data.S[ii] -= complex(elm.P_prof[t_idx], elm.Q_prof[t_idx])
             data.active[ii] = elm.active_prof[t_idx]
             data.cost[ii] = elm.Cost_prof[t_idx]
 
         else:
-            if opf_results is not None:
-                data.S[ii] -= complex(elm.P, elm.Q)
-            else:
-                data.S[ii] -= complex(elm.P, elm.Q)
-
+            data.S[ii] -= complex(elm.P, elm.Q)
             data.active[ii] = elm.active
             data.cost[ii] = elm.Cost
 
@@ -199,24 +191,66 @@ def get_load_data(circuit: MultiCircuit,
                             logger.add_error('Different set points', elm.bus.name, elm.Vm, Vbus[i])
 
         if time_series:
-            if opf_results is not None:
-                data.S[ii] = elm.P_prof[t_idx] + 1j * elm.Q_prof[t_idx]
-            else:
-                data.S[ii] = elm.P_prof[t_idx] + 1j * elm.Q_prof[t_idx]
-
+            data.S[ii] = complex(elm.P_prof[t_idx], elm.Q_prof[t_idx])
             data.active[ii] = elm.active_prof[t_idx]
 
         else:
-            if opf_results is not None:
-                data.S[ii] = complex(elm.P, elm.Q)
-            else:
-                data.S[ii] = complex(elm.P, elm.Q)
-
+            data.S[ii] = complex(elm.P, elm.Q)
             data.active[ii] = elm.active
 
         data.C_bus_elm[i, ii] = 1
         ii += 1
 
+    for elm in circuit.get_controllable_shunts():
+
+        i = bus_dict[elm.bus]
+
+        data.names[ii] = elm.name
+        data.idtag[ii] = elm.idtag
+
+        data.mttf[ii] = elm.mttf
+        data.mttr[ii] = elm.mttr
+
+        data.controlled[ii] = elm.is_controlled
+        data.b_min[ii] = elm.Bmin
+        data.b_max[ii] = elm.Bmax
+
+        if time_series:
+            data.Y[ii] = complex(elm.G_at(t_idx), elm.B_at(t_idx))
+            data.active[ii] = elm.active_prof[t_idx]
+            data.cost[ii] = elm.Cost_prof[t_idx]
+
+        else:
+            data.Y[ii] = complex(elm.G, elm.B)
+            data.active[ii] = elm.active
+            data.cost[ii] = elm.Cost
+
+        data.C_bus_elm[i, ii] = 1
+        ii += 1
+
+    for elm in circuit.get_current_injections():
+
+        i = bus_dict[elm.bus]
+
+        data.names[ii] = elm.name
+        data.idtag[ii] = elm.idtag
+
+        data.mttf[ii] = elm.mttf
+        data.mttr[ii] = elm.mttr
+
+        if time_series:
+            data.I[ii] = complex(elm.Ir_prof[t_idx], elm.Ii_prof[t_idx])
+            data.active[ii] = elm.active_prof[t_idx]
+            data.cost[ii] = elm.Cost_prof[t_idx]
+
+        else:
+            data.I[ii] = complex(elm.Ir, elm.Ii)
+            data.Y[ii] = complex(elm.G, elm.B)
+            data.active[ii] = elm.active
+            data.cost[ii] = elm.Cost
+
+        data.C_bus_elm[i, ii] = 1
+        ii += 1
     return data
 
 
@@ -252,22 +286,12 @@ def get_shunt_data(circuit: MultiCircuit,
         data.mttf[k] = elm.mttf
         data.mttr[k] = elm.mttr
 
-        data.controlled[k] = elm.is_controlled
-        data.b_min[k] = elm.Bmin
-        data.b_max[k] = elm.Bmax
-
         if time_series:
             data.active[k] = elm.active_prof[t_idx]
-            data.admittance[k] = elm.G_prof[t_idx] + 1j * elm.B_prof[t_idx]
+            data.admittance[k] = complex(elm.G_prof[t_idx], elm.B_prof[t_idx])
         else:
             data.active[k] = elm.active
             data.admittance[k] = complex(elm.G, elm.B)
-
-        if not use_stored_guess:
-            if Vbus[i].real == 1.0:
-                Vbus[i] = complex(elm.Vset, 0)
-            elif elm.Vset != Vbus[i]:
-                logger.add_error('Different set points', elm.bus.name, elm.Vset, Vbus[i])
 
         data.C_bus_elm[i, k] = 1
 
@@ -768,10 +792,10 @@ def get_branch_data(circuit: MultiCircuit,
         data.monitor_loading[ii] = int(elm.monitor_loading)
 
         if not use_stored_guess:
-            if elm.control_mode == TransformerControlType.Vt:
+            if elm.control_mode == TransformerControlType.V:
                 Vbus[t] = elm.vset
 
-            elif elm.control_mode == TransformerControlType.PtVt:  # 2a:Vdc
+            elif elm.control_mode == TransformerControlType.PtV:  # 2a:Vdc
                 Vbus[t] = elm.vset
 
         ii += 1
@@ -853,10 +877,10 @@ def get_branch_data(circuit: MultiCircuit,
             data.monitor_loading[ii] = int(elm.monitor_loading)
 
             if not use_stored_guess:
-                if elm.control_mode == TransformerControlType.Vt:
+                if elm.control_mode == TransformerControlType.V:
                     Vbus[t] = elm.vset
 
-                elif elm.control_mode == TransformerControlType.PtVt:  # 2a:Vdc
+                elif elm.control_mode == TransformerControlType.PtV:  # 2a:Vdc
                     Vbus[t] = elm.vset
 
             ii += 1
@@ -1064,7 +1088,7 @@ def get_hvdc_data(circuit: MultiCircuit,
             data.angle_droop[i] = elm.angle_droop_prof[t_idx]
 
             if opf_results is not None:
-                # if we are taking the valñues from the OPF, do not allow the free mode
+                # if we are taking the values from the OPF, do not allow the free mode
                 data.control_mode[i] = HvdcControlType.type_1_Pset
                 data.Pset[i] = opf_results.hvdc_Pf[t_idx, i]
             else:
@@ -1099,9 +1123,9 @@ def get_hvdc_data(circuit: MultiCircuit,
             data.Vset_t[i] = elm.Vset_t
 
             # hack the bus types to believe they are PV
-            if elm.active:
-                bus_types[f] = BusMode.PV.value
-                bus_types[t] = BusMode.PV.value
+            # if elm.active:
+            #     bus_types[f] = BusMode.PV.value
+            #     bus_types[t] = BusMode.PV.value
 
         data.Vnf[i] = elm.bus_from.Vnom
         data.Vnt[i] = elm.bus_to.Vnom

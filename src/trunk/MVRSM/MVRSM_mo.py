@@ -498,6 +498,9 @@ def MVRSM_multi_minimize(obj_func, x0: Vec, lb: Vec, ub: Vec, num_int: int, max_
     model = SurrogateModel.init(n_objectives, d, lb, ub, num_int)
     next_x = np.array(x0, dtype=float)  # candidate solution
 
+    best_x = np.copy(next_x)  # best candidate solution found so far
+    best_y = obj_func(best_x)  # least objective function value found so far, equal to obj(best_x).
+
     # Initialize storing arrays
     y_population = np.zeros((max_evals, n_objectives))
     x_population = np.zeros((max_evals, d))
@@ -515,15 +518,21 @@ def MVRSM_multi_minimize(obj_func, x0: Vec, lb: Vec, ub: Vec, num_int: int, max_
         # Perform random search
         next_x[0:num_int] = np.random.binomial(1, np.random.rand(), num_int)  # integer variables
         next_x[num_int:d] = np.random.uniform(lb[num_int:d], ub[num_int:d])  # continuous variables
+        # next_x[num_int:d] = np.random.beta(np.random.uniform(0, 5), np.random.uniform(0, 5), size=d-num_int)
 
     # Once random iterations finish, get y_max and y_min for each objective
-    normalization_factors = get_norm_factors(y_population)
+    normalization_factors = get_norm_factors(y_population[:rand_evals, :])
 
     # Normalize objectives obtained in random evaluations
-    objectives_normalized = normalize_md(y_population, normalization_factors)
+    objectives_normalized = normalize_md(y_population[:rand_evals, :], normalization_factors)
+
+    # Get best point yet
+    objectives_sorted = non_dominated_sorting(objectives_normalized, x_population[:rand_evals, :])
+    best_y = objectives_sorted[0][0]
+    best_x = objectives_sorted[1][0]
 
     # Update the model with the normalized random evaluation points
-    for rand_it in range(len(x_population)):
+    for rand_it in range(len(objectives_normalized)):
         model.update(x_population[rand_it], objectives_normalized[rand_it])
 
     # Iteratively evaluate the objective, update the model, find the minimum of the model,
@@ -549,7 +558,11 @@ def MVRSM_multi_minimize(obj_func, x0: Vec, lb: Vec, ub: Vec, num_int: int, max_
         scalarization_weights = rnd_weights / rnd_weights.sum()
 
         # Minimize surrogate model
-        next_x = model.minimum(x, scalarization_weights)
+        if dominates(y, best_y):
+            best_x = np.copy(x)
+            best_y = y_normalized
+
+        next_x = model.minimum(best_x, scalarization_weights)
 
         # Round discrete variables to the nearest integer.
         next_x[0:num_int].round(out=next_x[0:num_int])

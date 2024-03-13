@@ -10,7 +10,7 @@ def test_srap():
     # First stage of tests
     print('Loading grical circuit... ', sep=' ')
 
-    fname = os.path.join('data', 'grids', 'Test_SRAP.gridcal')
+    fname = os.path.join('data', 'grids', 'Test_SRAP_new.gridcal')
     grid = FileOpen(fname).open()
 
     # test 1
@@ -19,7 +19,8 @@ def test_srap():
     con_options.use_srap = True
     con_options.contingency_method = ContingencyMethod.PTDF
 
-    con_options.srap_max_loading = 1.4
+    #con_options.srap_max_loading = 1.4
+    grid.lines[2].protection_rating_factor = 1.4
     con_options.srap_max_power = 8
     con_drv = ContingencyAnalysisDriver(grid=grid,
                                         options=con_options,
@@ -39,7 +40,8 @@ def test_srap():
     con_options.use_srap = True
     con_options.contingency_method = ContingencyMethod.PTDF
 
-    con_options.srap_max_loading = 1.4
+    #con_options.srap_max_loading = 1.4
+    grid.lines[2].protection_rating_factor = 1.4
     con_options.srap_max_power = 1
     con_drv = ContingencyAnalysisDriver(grid=grid,
                                         options=con_options,
@@ -64,7 +66,8 @@ def test_srap():
     con_options.use_srap = True
     con_options.contingency_method = ContingencyMethod.PTDF
 
-    con_options.srap_max_loading = 1.1
+    #con_options.srap_max_loading = 1.1
+    grid.lines[2].protection_rating_factor = 1.1
     con_options.srap_max_power = 8
     con_drv = ContingencyAnalysisDriver(grid=grid,
                                         options=con_options,
@@ -82,7 +85,7 @@ def test_srap():
     # First stage of tests
     print('Loading grical circuit... ', sep=' ')
 
-    fname = os.path.join('data', 'grids', 'Test_SRAP_reverse.gridcal')
+    fname = os.path.join('data', 'grids', 'Test_SRAP_reverse_new.gridcal')
     grid = FileOpen(fname).open()
 
     # test 4
@@ -91,7 +94,8 @@ def test_srap():
     con_options.use_srap = True
     con_options.contingency_method = ContingencyMethod.PTDF
 
-    con_options.srap_max_loading = 1.4
+    #con_options.srap_max_loading = 1.4
+    grid.lines[5].protection_rating_factor = 1.4
     con_options.srap_max_power = 8
     con_drv = ContingencyAnalysisDriver(grid=grid,
                                         options=con_options,
@@ -111,7 +115,8 @@ def test_srap():
     con_options.use_srap = True
     con_options.contingency_method = ContingencyMethod.PTDF
 
-    con_options.srap_max_loading = 1.4
+    #con_options.srap_max_loading = 1.4
+    grid.lines[5].protection_rating_factor = 1.4
     con_options.srap_max_power = 1
     con_drv = ContingencyAnalysisDriver(grid=grid,
                                         options=con_options,
@@ -126,7 +131,7 @@ def test_srap():
     assert not test5_result_a
 
     # Este es el valor de la ptdf del generador correcto, el que mas influencia proporciona
-    test5_result_b = np.around(con_drv.results.report.entries[0].srap_power, decimals=3) == -0.523
+    test5_result_b = np.around(con_drv.results.report.entries[0].srap_power, decimals=3) == 0.523
     assert test5_result_b
 
     # test 6
@@ -135,7 +140,8 @@ def test_srap():
     con_options.use_srap = True
     con_options.contingency_method = ContingencyMethod.PTDF
 
-    con_options.srap_max_loading = 1.1
+    #con_options.srap_max_loading = 1.1
+    grid.lines[5].protection_rating_factor = 1.1
     con_options.srap_max_power = 8
     con_drv = ContingencyAnalysisDriver(grid=grid,
                                         options=con_options,

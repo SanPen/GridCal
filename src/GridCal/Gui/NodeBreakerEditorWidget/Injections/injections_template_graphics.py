@@ -15,16 +15,14 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPen, QCursor
 from PySide6.QtWidgets import QGraphicsLineItem, QGraphicsItemGroup
 from GridCal.Gui.NodeBreakerEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER
-from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg
 from GridCalEngine.enumerations import DeviceType
-from GridCalEngine.Devices.Parents.injection_parent import InjectionParent
-from GridCalEngine.Devices.Fluid.fluid_injection_template import FluidInjectionTemplate
+from GridCalEngine.Devices.types import INJECTION_DEVICE_TYPES
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.NodeBreakerEditorWidget.node_breaker_editor_widget import NodeBreakerEditorWidget
@@ -37,7 +35,7 @@ class InjectionTemplateGraphicItem(QGraphicsItemGroup):
 
     def __init__(self,
                  parent,
-                 api_obj: Union[InjectionParent, FluidInjectionTemplate],
+                 api_obj: INJECTION_DEVICE_TYPES,
                  device_type_name: str,
                  w: int,
                  h: int,
@@ -128,7 +126,7 @@ class InjectionTemplateGraphicItem(QGraphicsItemGroup):
 
         if ok:
             self.editor.remove_from_scene(self.nexus)
-            self.editor.remove_element(device=self, graphic_object=self.api_object)
+            self.editor.remove_element(device=self.api_object, graphic_object=self)
 
     def mousePressEvent(self, QGraphicsSceneMouseEvent):
         """

@@ -9,8 +9,8 @@ https://github.com/pypa/sampleproject
 from setuptools import setup, find_packages
 import os
 
-from GridCalEngine.__version__ import __GridCalEngine_VERSION__
-
+#from GridCalEngine.__version__ import __GridCalEngine_VERSION__
+__GridCalEngine_VERSION__ = "5.1.0a1"
 here = os.path.abspath(os.path.dirname(__file__))
 
 long_description = '''# GridCal
@@ -76,6 +76,7 @@ dependencies = ['setuptools>=41.0.1',
                 "windpowerlib",
                 "pvlib",
                 "hyperopt",
+                "rdflib"
                 ]
 
 extras_require = {

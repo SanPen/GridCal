@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1351</width>
-    <height>779</height>
+    <width>1292</width>
+    <height>795</height>
    </rect>
   </property>
   <property name="baseSize">
@@ -244,7 +244,7 @@
                        <number>1</number>
                       </property>
                       <property name="bottomMargin">
-                       <number>1</number>
+                       <number>0</number>
                       </property>
                       <item>
                        <widget class="QComboBox" name="available_results_to_color_comboBox">
@@ -283,16 +283,6 @@
                     </widget>
                    </item>
                    <item>
-                    <widget class="QSlider" name="diagram_step_slider">
-                     <property name="toolTip">
-                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Time slider&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Move this time slider to select the appropriate time slot to view.&lt;/p&gt;&lt;p&gt;The first position sets the snapshot values, the rest attend to the time series values.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                     </property>
-                     <property name="orientation">
-                      <enum>Qt::Horizontal</enum>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
                     <widget class="QLabel" name="schematic_step_label">
                      <property name="font">
                       <font>
@@ -308,27 +298,13 @@
                     </widget>
                    </item>
                    <item>
-                    <widget class="QFrame" name="frame_2">
-                     <property name="frameShape">
-                      <enum>QFrame::NoFrame</enum>
+                    <widget class="QSlider" name="diagram_step_slider">
+                     <property name="toolTip">
+                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Time slider&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Move this time slider to select the appropriate time slot to view.&lt;/p&gt;&lt;p&gt;The first position sets the snapshot values, the rest attend to the time series values.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                      </property>
-                     <property name="frameShadow">
-                      <enum>QFrame::Raised</enum>
+                     <property name="orientation">
+                      <enum>Qt::Horizontal</enum>
                      </property>
-                     <layout class="QHBoxLayout" name="horizontalLayout_29">
-                      <property name="leftMargin">
-                       <number>6</number>
-                      </property>
-                      <property name="topMargin">
-                       <number>0</number>
-                      </property>
-                      <property name="rightMargin">
-                       <number>2</number>
-                      </property>
-                      <property name="bottomMargin">
-                       <number>2</number>
-                      </property>
-                     </layout>
                     </widget>
                    </item>
                   </layout>
@@ -768,7 +744,7 @@
                   <widget class="QWidget" name="tab_16">
                    <attribute name="icon">
                     <iconset resource="icons.qrc">
-                     <normaloff>:/Icons/icons/clock.svg</normaloff>:/Icons/icons/clock.svg</iconset>
+                     <normaloff>:/Icons/icons/time_series.svg</normaloff>:/Icons/icons/time_series.svg</iconset>
                    </attribute>
                    <attribute name="title">
                     <string>Time series</string>
@@ -819,6 +795,9 @@
                           <string>Magnitude with profile</string>
                          </property>
                         </widget>
+                       </item>
+                       <item>
+                        <widget class="QLineEdit" name="time_series_search"/>
                        </item>
                        <item>
                         <widget class="QPushButton" name="new_profiles_structure_pushButton">
@@ -2277,6 +2256,11 @@
           <property name="enabled">
            <bool>true</bool>
           </property>
+          <property name="font">
+           <font>
+            <pointsize>12</pointsize>
+           </font>
+          </property>
           <property name="toolTip">
            <string>Select the solver in the OPF tab and the areas in the areas tab</string>
           </property>
@@ -2289,8 +2273,17 @@
           <property name="currentIndex">
            <number>0</number>
           </property>
+          <property name="iconSize">
+           <size>
+            <width>16</width>
+            <height>16</height>
+           </size>
+          </property>
           <property name="elideMode">
            <enum>Qt::ElideNone</enum>
+          </property>
+          <property name="usesScrollButtons">
+           <bool>false</bool>
           </property>
           <property name="documentMode">
            <bool>false</bool>
@@ -3166,6 +3159,7 @@
                 <widget class="QGroupBox" name="groupBox_3">
                  <property name="font">
                   <font>
+                   <pointsize>12</pointsize>
                    <bold>false</bold>
                   </font>
                  </property>
@@ -3301,6 +3295,7 @@
                 <widget class="QGroupBox" name="groupBox">
                  <property name="font">
                   <font>
+                   <pointsize>12</pointsize>
                    <bold>false</bold>
                   </font>
                  </property>
@@ -3319,23 +3314,6 @@
                    <widget class="QLabel" name="label_104">
                     <property name="text">
                      <string>Contingency tolerance</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="5" column="0">
-                   <widget class="QCheckBox" name="considerContingenciesOpfCheckBox">
-                    <property name="text">
-                     <string>Consider contingencies</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="9" column="0">
-                   <widget class="QCheckBox" name="save_mip_checkBox">
-                    <property name="toolTip">
-                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The program will save the MIP file in .lp format in the user GridCal folder before running a linear optimization study.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                    </property>
-                    <property name="text">
-                     <string>Save MIP file</string>
                     </property>
                    </widget>
                   </item>
@@ -3396,10 +3374,27 @@
                     </property>
                    </spacer>
                   </item>
-                  <item row="4" column="0">
+                  <item row="4" column="0" colspan="2">
                    <widget class="QLabel" name="label_132">
                     <property name="text">
                      <string/>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="5" column="0" colspan="2">
+                   <widget class="QCheckBox" name="considerContingenciesOpfCheckBox">
+                    <property name="text">
+                     <string>Consider contingencies</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="9" column="0" colspan="2">
+                   <widget class="QCheckBox" name="save_mip_checkBox">
+                    <property name="toolTip">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The program will save the MIP file in .lp format in the user GridCal folder before running a linear optimization study.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
+                    <property name="text">
+                     <string>Save MIP file</string>
                     </property>
                    </widget>
                   </item>
@@ -3410,6 +3405,7 @@
                 <widget class="QGroupBox" name="groupBox_2">
                  <property name="font">
                   <font>
+                   <pointsize>12</pointsize>
                    <bold>false</bold>
                   </font>
                  </property>
@@ -3451,24 +3447,10 @@
                     </property>
                    </widget>
                   </item>
-                  <item row="5" column="0">
-                   <widget class="QCheckBox" name="opfMaximizeExcahngeCheckBox">
-                    <property name="text">
-                     <string>Maximize area exchange</string>
-                    </property>
-                   </widget>
-                  </item>
                   <item row="1" column="1">
                    <widget class="QSpinBox" name="ips_verbose_spinBox">
                     <property name="toolTip">
                      <string>Verbosity level</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="3" column="0">
-                   <widget class="QCheckBox" name="skipOpfGenerationLimitsCheckBox">
-                    <property name="text">
-                     <string>Skip generation limits</string>
                     </property>
                    </widget>
                   </item>
@@ -3482,17 +3464,31 @@
                     </property>
                    </widget>
                   </item>
-                  <item row="4" column="0">
+                  <item row="2" column="0">
+                   <widget class="QLabel" name="label_133">
+                    <property name="text">
+                     <string/>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="5" column="0" colspan="2">
+                   <widget class="QCheckBox" name="opfMaximizeExcahngeCheckBox">
+                    <property name="text">
+                     <string>Maximize area exchange</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="4" column="0" colspan="2">
                    <widget class="QCheckBox" name="opfUnitCommitmentCheckBox">
                     <property name="text">
                      <string>Unit commitment</string>
                     </property>
                    </widget>
                   </item>
-                  <item row="2" column="0">
-                   <widget class="QLabel" name="label_133">
+                  <item row="3" column="0" colspan="2">
+                   <widget class="QCheckBox" name="skipOpfGenerationLimitsCheckBox">
                     <property name="text">
-                     <string/>
+                     <string>Skip generation limits</string>
                     </property>
                    </widget>
                   </item>
@@ -3696,6 +3692,81 @@
                  </property>
                 </spacer>
                </item>
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_97">
+                 <property name="minimumSize">
+                  <size>
+                   <width>24</width>
+                   <height>24</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>24</width>
+                   <height>24</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="pixmap">
+                  <pixmap resource="icons.qrc">:/Icons/icons/ntc_opf.svg</pixmap>
+                 </property>
+                 <property name="scaledContents">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0" colspan="4">
+                <widget class="Line" name="line_27">
+                 <property name="palette">
+                  <palette>
+                   <active>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>186</red>
+                       <green>189</green>
+                       <blue>182</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </active>
+                   <inactive>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>186</red>
+                       <green>189</green>
+                       <blue>182</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </inactive>
+                   <disabled>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>190</red>
+                       <green>190</green>
+                       <blue>190</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </disabled>
+                  </palette>
+                 </property>
+                 <property name="frameShadow">
+                  <enum>QFrame::Plain</enum>
+                 </property>
+                 <property name="lineWidth">
+                  <number>4</number>
+                 </property>
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                </widget>
+               </item>
                <item row="2" column="0" rowspan="2" colspan="3">
                 <widget class="QFrame" name="frame_67">
                  <property name="frameShape">
@@ -3819,6 +3890,7 @@
                    <widget class="QLabel" name="label_64">
                     <property name="font">
                      <font>
+                      <pointsize>12</pointsize>
                       <bold>true</bold>
                      </font>
                     </property>
@@ -3870,31 +3942,6 @@
                    </widget>
                   </item>
                  </layout>
-                </widget>
-               </item>
-               <item row="0" column="0">
-                <widget class="QLabel" name="label_97">
-                 <property name="minimumSize">
-                  <size>
-                   <width>24</width>
-                   <height>24</height>
-                  </size>
-                 </property>
-                 <property name="maximumSize">
-                  <size>
-                   <width>24</width>
-                   <height>24</height>
-                  </size>
-                 </property>
-                 <property name="text">
-                  <string/>
-                 </property>
-                 <property name="pixmap">
-                  <pixmap resource="icons.qrc">:/Icons/icons/ntc_opf.svg</pixmap>
-                 </property>
-                 <property name="scaledContents">
-                  <bool>true</bool>
-                 </property>
                 </widget>
                </item>
                <item row="0" column="1" colspan="2">
@@ -3995,6 +4042,7 @@
                    <widget class="QLabel" name="label_105">
                     <property name="font">
                      <font>
+                      <pointsize>12</pointsize>
                       <bold>true</bold>
                      </font>
                     </property>
@@ -4067,7 +4115,260 @@
                  </layout>
                 </widget>
                </item>
-               <item row="2" column="3">
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <widget class="QFrame" name="frame_64">
+              <property name="frameShape">
+               <enum>QFrame::NoFrame</enum>
+              </property>
+              <property name="frameShadow">
+               <enum>QFrame::Raised</enum>
+              </property>
+              <layout class="QGridLayout" name="gridLayout_13">
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <item row="5" column="1">
+                <widget class="QLabel" name="label_61">
+                 <property name="palette">
+                  <palette>
+                   <active>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>85</red>
+                       <green>87</green>
+                       <blue>83</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </active>
+                   <inactive>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>85</red>
+                       <green>87</green>
+                       <blue>83</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </inactive>
+                   <disabled>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>190</red>
+                       <green>190</green>
+                       <blue>190</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </disabled>
+                  </palette>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <pointsize>16</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>Linear NTC</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="6" column="0" colspan="2">
+                <widget class="Line" name="line_23">
+                 <property name="palette">
+                  <palette>
+                   <active>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>186</red>
+                       <green>189</green>
+                       <blue>182</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </active>
+                   <inactive>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>186</red>
+                       <green>189</green>
+                       <blue>182</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </inactive>
+                   <disabled>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>190</red>
+                       <green>190</green>
+                       <blue>190</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </disabled>
+                  </palette>
+                 </property>
+                 <property name="frameShadow">
+                  <enum>QFrame::Plain</enum>
+                 </property>
+                 <property name="lineWidth">
+                  <number>4</number>
+                 </property>
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                </widget>
+               </item>
+               <item row="7" column="0" colspan="2">
+                <widget class="QFrame" name="frame_66">
+                 <property name="frameShape">
+                  <enum>QFrame::NoFrame</enum>
+                 </property>
+                 <property name="frameShadow">
+                  <enum>QFrame::Raised</enum>
+                 </property>
+                 <layout class="QGridLayout" name="gridLayout_16">
+                  <item row="3" column="0">
+                   <widget class="QLabel" name="label_30">
+                    <property name="text">
+                     <string>Loading threshold to report</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="1">
+                   <widget class="QDoubleSpinBox" name="atcPerturbanceSpinBox">
+                    <property name="toolTip">
+                     <string>Amount of power used to compute the branches sensitivity to the transfer</string>
+                    </property>
+                    <property name="suffix">
+                     <string> MW</string>
+                    </property>
+                    <property name="maximum">
+                     <double>999999999999.000000000000000</double>
+                    </property>
+                    <property name="value">
+                     <double>100.000000000000000</double>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="0">
+                   <widget class="QLabel" name="label_62">
+                    <property name="text">
+                     <string>Transfer sensitivity threshold</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="0">
+                   <widget class="QLabel" name="label_91">
+                    <property name="text">
+                     <string>Perturbance power</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="1">
+                   <widget class="QDoubleSpinBox" name="atcThresholdSpinBox">
+                    <property name="toolTip">
+                     <string>Threshold used to discard insensitive branches</string>
+                    </property>
+                    <property name="decimals">
+                     <number>4</number>
+                    </property>
+                    <property name="maximum">
+                     <double>1.000000000000000</double>
+                    </property>
+                    <property name="value">
+                     <double>0.050000000000000</double>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="0">
+                   <widget class="QLabel" name="label_77">
+                    <property name="text">
+                     <string>Transfer method</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="1">
+                   <widget class="QComboBox" name="transferMethodComboBox"/>
+                  </item>
+                  <item row="3" column="1">
+                   <widget class="QSpinBox" name="ntcReportLoadingThresholdSpinBox">
+                    <property name="suffix">
+                     <string>%</string>
+                    </property>
+                    <property name="maximum">
+                     <number>9999</number>
+                    </property>
+                    <property name="value">
+                     <number>98</number>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="4" column="0" colspan="2">
+                   <widget class="QCheckBox" name="n1ConsiderationCheckBox">
+                    <property name="text">
+                     <string>n-1 sensibility consideration</string>
+                    </property>
+                    <property name="checked">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+               <item row="5" column="0">
+                <widget class="QLabel" name="label_90">
+                 <property name="minimumSize">
+                  <size>
+                   <width>24</width>
+                   <height>24</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>24</width>
+                   <height>24</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="pixmap">
+                  <pixmap resource="icons.qrc">:/Icons/icons/atc.svg</pixmap>
+                 </property>
+                 <property name="scaledContents">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="10" column="0" colspan="2">
+                <spacer name="verticalSpacer_9">
+                 <property name="orientation">
+                  <enum>Qt::Vertical</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>20</width>
+                   <height>150</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item row="11" column="0">
                 <widget class="QFrame" name="frame_68">
                  <property name="frameShape">
                   <enum>QFrame::NoFrame</enum>
@@ -4080,6 +4381,7 @@
                    <widget class="QLabel" name="label_102">
                     <property name="font">
                      <font>
+                      <pointsize>12</pointsize>
                       <bold>true</bold>
                      </font>
                     </property>
@@ -4158,309 +4460,6 @@
                    </widget>
                   </item>
                  </layout>
-                </widget>
-               </item>
-               <item row="1" column="0" colspan="4">
-                <widget class="Line" name="line_27">
-                 <property name="palette">
-                  <palette>
-                   <active>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>186</red>
-                       <green>189</green>
-                       <blue>182</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </active>
-                   <inactive>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>186</red>
-                       <green>189</green>
-                       <blue>182</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </inactive>
-                   <disabled>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>190</red>
-                       <green>190</green>
-                       <blue>190</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </disabled>
-                  </palette>
-                 </property>
-                 <property name="frameShadow">
-                  <enum>QFrame::Plain</enum>
-                 </property>
-                 <property name="lineWidth">
-                  <number>4</number>
-                 </property>
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </widget>
-            </item>
-            <item>
-             <widget class="QFrame" name="frame_64">
-              <property name="frameShape">
-               <enum>QFrame::NoFrame</enum>
-              </property>
-              <property name="frameShadow">
-               <enum>QFrame::Raised</enum>
-              </property>
-              <layout class="QGridLayout" name="gridLayout_13">
-               <property name="leftMargin">
-                <number>0</number>
-               </property>
-               <property name="topMargin">
-                <number>0</number>
-               </property>
-               <item row="6" column="0" colspan="2">
-                <widget class="Line" name="line_23">
-                 <property name="palette">
-                  <palette>
-                   <active>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>186</red>
-                       <green>189</green>
-                       <blue>182</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </active>
-                   <inactive>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>186</red>
-                       <green>189</green>
-                       <blue>182</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </inactive>
-                   <disabled>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>190</red>
-                       <green>190</green>
-                       <blue>190</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </disabled>
-                  </palette>
-                 </property>
-                 <property name="frameShadow">
-                  <enum>QFrame::Plain</enum>
-                 </property>
-                 <property name="lineWidth">
-                  <number>4</number>
-                 </property>
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                </widget>
-               </item>
-               <item row="5" column="1">
-                <widget class="QLabel" name="label_61">
-                 <property name="palette">
-                  <palette>
-                   <active>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>85</red>
-                       <green>87</green>
-                       <blue>83</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </active>
-                   <inactive>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>85</red>
-                       <green>87</green>
-                       <blue>83</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </inactive>
-                   <disabled>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>190</red>
-                       <green>190</green>
-                       <blue>190</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </disabled>
-                  </palette>
-                 </property>
-                 <property name="font">
-                  <font>
-                   <pointsize>16</pointsize>
-                  </font>
-                 </property>
-                 <property name="text">
-                  <string>Linear NTC</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="10" column="0" colspan="2">
-                <spacer name="verticalSpacer_9">
-                 <property name="orientation">
-                  <enum>Qt::Vertical</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>20</width>
-                   <height>150</height>
-                  </size>
-                 </property>
-                </spacer>
-               </item>
-               <item row="7" column="0" colspan="2">
-                <widget class="QFrame" name="frame_66">
-                 <property name="frameShape">
-                  <enum>QFrame::NoFrame</enum>
-                 </property>
-                 <property name="frameShadow">
-                  <enum>QFrame::Raised</enum>
-                 </property>
-                 <layout class="QGridLayout" name="gridLayout_16">
-                  <item row="3" column="0">
-                   <widget class="QLabel" name="label_30">
-                    <property name="text">
-                     <string>Loading threshold to report</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="0" column="1">
-                   <widget class="QDoubleSpinBox" name="atcPerturbanceSpinBox">
-                    <property name="toolTip">
-                     <string>Amount of power used to compute the branches sensitivity to the transfer</string>
-                    </property>
-                    <property name="suffix">
-                     <string> MW</string>
-                    </property>
-                    <property name="maximum">
-                     <double>999999999999.000000000000000</double>
-                    </property>
-                    <property name="value">
-                     <double>100.000000000000000</double>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="1" column="0">
-                   <widget class="QLabel" name="label_62">
-                    <property name="text">
-                     <string>Transfer sensitivity threshold</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="0" column="0">
-                   <widget class="QLabel" name="label_91">
-                    <property name="text">
-                     <string>Perturbance power</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="1" column="1">
-                   <widget class="QDoubleSpinBox" name="atcThresholdSpinBox">
-                    <property name="toolTip">
-                     <string>Threshold used to discard insensitive branches</string>
-                    </property>
-                    <property name="decimals">
-                     <number>4</number>
-                    </property>
-                    <property name="maximum">
-                     <double>1.000000000000000</double>
-                    </property>
-                    <property name="value">
-                     <double>0.050000000000000</double>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="2" column="0">
-                   <widget class="QLabel" name="label_77">
-                    <property name="text">
-                     <string>Transfer method</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="2" column="1">
-                   <widget class="QComboBox" name="transferMethodComboBox"/>
-                  </item>
-                  <item row="4" column="0">
-                   <widget class="QCheckBox" name="n1ConsiderationCheckBox">
-                    <property name="text">
-                     <string>n-1 sensibility consideration</string>
-                    </property>
-                    <property name="checked">
-                     <bool>true</bool>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="3" column="1">
-                   <widget class="QSpinBox" name="ntcReportLoadingThresholdSpinBox">
-                    <property name="suffix">
-                     <string>%</string>
-                    </property>
-                    <property name="maximum">
-                     <number>9999</number>
-                    </property>
-                    <property name="value">
-                     <number>98</number>
-                    </property>
-                   </widget>
-                  </item>
-                 </layout>
-                </widget>
-               </item>
-               <item row="5" column="0">
-                <widget class="QLabel" name="label_90">
-                 <property name="minimumSize">
-                  <size>
-                   <width>24</width>
-                   <height>24</height>
-                  </size>
-                 </property>
-                 <property name="maximumSize">
-                  <size>
-                   <width>24</width>
-                   <height>24</height>
-                  </size>
-                 </property>
-                 <property name="text">
-                  <string/>
-                 </property>
-                 <property name="pixmap">
-                  <pixmap resource="icons.qrc">:/Icons/icons/atc.svg</pixmap>
-                 </property>
-                 <property name="scaledContents">
-                  <bool>true</bool>
-                 </property>
                 </widget>
                </item>
               </layout>
@@ -5258,7 +5257,64 @@
                <property name="topMargin">
                 <number>0</number>
                </property>
-               <item row="15" column="0" colspan="2">
+               <item row="8" column="0">
+                <widget class="QLabel" name="label_52">
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
+               <item row="9" column="0" colspan="2">
+                <widget class="QCheckBox" name="use_srap_checkBox">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Activate SRAP (Sistema de reducción automática de potencia)&lt;/p&gt;&lt;p&gt;It is a mechanism that helps avoiding considering a contingency if it would be eventually resolved by nearby generation shifting.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="text">
+                  <string>Use SRAP</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="13" column="1">
+                <widget class="QDoubleSpinBox" name="srap_deadband_doubleSpinBox">
+                 <property name="suffix">
+                  <string> %</string>
+                 </property>
+                 <property name="decimals">
+                  <number>1</number>
+                 </property>
+                 <property name="maximum">
+                  <double>999999999.000000000000000</double>
+                 </property>
+                 <property name="value">
+                  <double>10.000000000000000</double>
+                 </property>
+                </widget>
+               </item>
+               <item row="13" column="0">
+                <widget class="QLabel" name="label_123">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Dead band over the SRAP rating.&lt;/p&gt;&lt;p&gt;If greater than zero, the SRAP is investigated for values over the branch protections rating until the specified value.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="text">
+                  <string>SRAP dead band</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="11" column="0">
+                <widget class="QLabel" name="label_53">
+                 <property name="text">
+                  <string>SRAP limit</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="0" colspan="2">
+                <widget class="QLabel" name="label_119">
+                 <property name="text">
+                  <string>Contingency engine</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="16" column="0" colspan="2">
                 <spacer name="verticalSpacer_19">
                  <property name="orientation">
                   <enum>Qt::Vertical</enum>
@@ -5271,7 +5327,7 @@
                  </property>
                 </spacer>
                </item>
-               <item row="11" column="1">
+               <item row="12" column="1">
                 <widget class="QSpinBox" name="srap_top_n_SpinBox">
                  <property name="minimum">
                   <number>1</number>
@@ -5284,81 +5340,7 @@
                  </property>
                 </widget>
                </item>
-               <item row="2" column="0" colspan="2">
-                <widget class="Line" name="line_25">
-                 <property name="palette">
-                  <palette>
-                   <active>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>186</red>
-                       <green>189</green>
-                       <blue>182</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </active>
-                   <inactive>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>186</red>
-                       <green>189</green>
-                       <blue>182</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </inactive>
-                   <disabled>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>190</red>
-                       <green>190</green>
-                       <blue>190</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </disabled>
-                  </palette>
-                 </property>
-                 <property name="frameShadow">
-                  <enum>QFrame::Plain</enum>
-                 </property>
-                 <property name="lineWidth">
-                  <number>4</number>
-                 </property>
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                </widget>
-               </item>
-               <item row="12" column="0">
-                <widget class="QLabel" name="label_123">
-                 <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Dead band over the SRAP rating.&lt;/p&gt;&lt;p&gt;If greater than zero, the SRAP is investigated for values over the branch protections rating until the specified value.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                 </property>
-                 <property name="text">
-                  <string>Dead band</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="0" colspan="2">
-                <widget class="QLabel" name="label_119">
-                 <property name="text">
-                  <string>Contingency engine</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="7" column="0">
-                <widget class="QLabel" name="label_52">
-                 <property name="text">
-                  <string/>
-                 </property>
-                </widget>
-               </item>
-               <item row="10" column="1">
+               <item row="11" column="1">
                 <widget class="QDoubleSpinBox" name="srap_limit_doubleSpinBox">
                  <property name="toolTip">
                   <string>Maximum overload power that is solvable using the SRAP technique.</string>
@@ -5478,17 +5460,17 @@
                  </layout>
                 </widget>
                </item>
-               <item row="11" column="0">
-                <widget class="QLabel" name="label_1322">
+               <item row="15" column="0" colspan="2">
+                <widget class="QCheckBox" name="contingency_detailed_massive_report_checkBox">
                  <property name="toolTip">
-                  <string>Maximum number of generation nodes to participate in the SRAP</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, a massive posibly intractable report is generated.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="text">
-                  <string>SRAP top N</string>
+                  <string>Detailed report</string>
                  </property>
                 </widget>
                </item>
-               <item row="13" column="0" colspan="2">
+               <item row="14" column="0" colspan="2">
                 <widget class="QCheckBox" name="srap_revert_to_nominal_rating_checkBox">
                  <property name="toolTip">
                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked the SRAP objective solution is the branch nominal rate. Otherwise the objective rating is the contingency rating.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -5501,46 +5483,86 @@
                <item row="4" column="0" colspan="2">
                 <widget class="QComboBox" name="contingencyEngineComboBox"/>
                </item>
-               <item row="8" column="0" colspan="2">
-                <widget class="QCheckBox" name="use_srap_checkBox">
+               <item row="2" column="0" colspan="2">
+                <widget class="Line" name="line_25">
+                 <property name="palette">
+                  <palette>
+                   <active>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>186</red>
+                       <green>189</green>
+                       <blue>182</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </active>
+                   <inactive>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>186</red>
+                       <green>189</green>
+                       <blue>182</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </inactive>
+                   <disabled>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>190</red>
+                       <green>190</green>
+                       <blue>190</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </disabled>
+                  </palette>
+                 </property>
+                 <property name="frameShadow">
+                  <enum>QFrame::Plain</enum>
+                 </property>
+                 <property name="lineWidth">
+                  <number>4</number>
+                 </property>
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                </widget>
+               </item>
+               <item row="12" column="0">
+                <widget class="QLabel" name="label_1322">
                  <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Activate SRAP (Sistema de reducción automática de potencia)&lt;/p&gt;&lt;p&gt;It is a mechanism that helps avoiding considering a contingency if it would be eventually resolved by nearby generation shifting.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  <string>Maximum number of generation nodes to participate in the SRAP</string>
                  </property>
                  <property name="text">
-                  <string>Use SRAP</string>
+                  <string>SRAP top N</string>
                  </property>
                 </widget>
                </item>
-               <item row="10" column="0">
-                <widget class="QLabel" name="label_53">
+               <item row="7" column="0">
+                <widget class="QLabel" name="label_27">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Amount of contingency loading with respect to the base situation loading that triggers the report of the contingency. This is specially useful when we want to avoig reporting contingencies that are not significant with respect to the base situation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
                  <property name="text">
-                  <string>SRAP limit</string>
+                  <string>Contingency dead band</string>
                  </property>
                 </widget>
                </item>
-               <item row="12" column="1">
-                <widget class="QDoubleSpinBox" name="srap_deadband_doubleSpinBox">
+               <item row="7" column="1">
+                <widget class="QDoubleSpinBox" name="contingency_deadband_SpinBox">
                  <property name="suffix">
                   <string> %</string>
                  </property>
                  <property name="decimals">
-                  <number>1</number>
-                 </property>
-                 <property name="maximum">
-                  <double>999999999.000000000000000</double>
+                  <number>2</number>
                  </property>
                  <property name="value">
-                  <double>10.000000000000000</double>
-                 </property>
-                </widget>
-               </item>
-               <item row="14" column="0" colspan="2">
-                <widget class="QCheckBox" name="contingency_detailed_massive_report_checkBox">
-                 <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, a massive posibly intractable report is generated.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                 </property>
-                 <property name="text">
-                  <string>Detailed report</string>
+                  <double>0.050000000000000</double>
                  </property>
                 </widget>
                </item>
@@ -7845,19 +7867,6 @@
              </widget>
             </item>
             <item>
-             <spacer name="horizontalSpacer_15">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>40</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-            <item>
              <widget class="QFrame" name="frame_3">
               <property name="minimumSize">
                <size>
@@ -8093,6 +8102,19 @@
                </item>
               </layout>
              </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_15">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
             </item>
            </layout>
           </widget>
@@ -8676,7 +8698,7 @@ QProgressBar::chunk{
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1351</width>
+     <width>1292</width>
      <height>22</height>
     </rect>
    </property>
@@ -8755,6 +8777,7 @@ QProgressBar::chunk{
     <addaction name="separator"/>
     <addaction name="actionClustering"/>
     <addaction name="actionUse_clustering"/>
+    <addaction name="actionFind_node_groups"/>
     <addaction name="actionPower_flow_Stochastic"/>
     <addaction name="actionInvestments_evaluation"/>
     <addaction name="actionAdd_selected_as_new_investment"/>
@@ -8775,7 +8798,6 @@ QProgressBar::chunk{
     </property>
     <addaction name="actionAuto_rate_branches"/>
     <addaction name="actionDetect_transformers"/>
-    <addaction name="actionFind_node_groups"/>
     <addaction name="actionEdit_simulation_time_limits"/>
     <addaction name="actionProcess_topology"/>
     <addaction name="actionFuse_devices"/>
@@ -8785,6 +8807,7 @@ QProgressBar::chunk{
     <addaction name="actionFix_generators_active_based_on_the_power"/>
     <addaction name="actionFix_loads_active_based_on_the_power"/>
     <addaction name="actionDelete_inconsistencies"/>
+    <addaction name="actionClean_database"/>
    </widget>
    <widget class="QMenu" name="menuDiagrams">
     <property name="title">
@@ -8869,16 +8892,12 @@ QProgressBar::chunk{
    <addaction name="actionSave"/>
    <addaction name="separator"/>
    <addaction name="actionPower_flow"/>
-   <addaction name="actionPower_Flow_Time_series"/>
    <addaction name="actionShort_Circuit"/>
    <addaction name="actionVoltage_stability"/>
    <addaction name="actionSigma_analysis"/>
-   <addaction name="actionInputs_analysis"/>
    <addaction name="separator"/>
    <addaction name="actionOPF"/>
-   <addaction name="actionOPF_time_series"/>
    <addaction name="actionOptimal_Net_Transfer_Capacity"/>
-   <addaction name="actionOptimal_Net_Transfer_Capacity_Time_Series"/>
    <addaction name="actionOpf_to_Power_flow"/>
    <addaction name="separator"/>
    <addaction name="actionClustering"/>
@@ -8888,13 +8907,10 @@ QProgressBar::chunk{
    <addaction name="actionInvestments_evaluation"/>
    <addaction name="separator"/>
    <addaction name="actionLinearAnalysis"/>
-   <addaction name="actionPTDF_time_series"/>
    <addaction name="actionAdd_selected_to_contingency"/>
    <addaction name="actionInitialize_contingencies"/>
    <addaction name="actionContingency_analysis"/>
-   <addaction name="actionOTDF_time_series"/>
    <addaction name="actionATC"/>
-   <addaction name="actionATC_Time_Series"/>
    <addaction name="separator"/>
    <addaction name="actionBigger_nodes"/>
    <addaction name="actionSmaller_nodes"/>
@@ -8902,7 +8918,11 @@ QProgressBar::chunk{
    <addaction name="actionAutoatic_layout"/>
    <addaction name="actionDelete_selected"/>
    <addaction name="separator"/>
+   <addaction name="actionInputs_analysis"/>
    <addaction name="actionLaunch_data_analysis_tool"/>
+   <addaction name="separator"/>
+   <addaction name="actionactivate_time_series"/>
+   <addaction name="actionEdit_simulation_time_limits"/>
   </widget>
   <action name="actionOpen_file">
    <property name="icon">
@@ -8963,6 +8983,9 @@ QProgressBar::chunk{
    <property name="shortcut">
     <string>F5</string>
    </property>
+   <property name="menuRole">
+    <enum>QAction::TextHeuristicRole</enum>
+   </property>
   </action>
   <action name="actionPower_Flow_Time_series">
    <property name="icon">
@@ -8976,7 +8999,7 @@ QProgressBar::chunk{
     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Power flow&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Run the power flow study with time series data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
    <property name="shortcut">
-    <string>F6</string>
+    <string>Ctrl+F5</string>
    </property>
   </action>
   <action name="actionBigger_nodes">
@@ -9031,9 +9054,6 @@ QProgressBar::chunk{
    </property>
    <property name="toolTip">
     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Continuation power flow&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Run a continuation power flow over the snapshot data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-   </property>
-   <property name="shortcut">
-    <string>F7</string>
    </property>
   </action>
   <action name="actionAbout">
@@ -9111,7 +9131,7 @@ QProgressBar::chunk{
     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Optimal power flow&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This runs an optimal power flow for the snapshot&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
    <property name="shortcut">
-    <string>F9</string>
+    <string>F6</string>
    </property>
   </action>
   <action name="actionOPF_time_series">
@@ -9126,7 +9146,7 @@ QProgressBar::chunk{
     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Optimal power flow&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This runs an optimal power flow for the time series data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
    <property name="shortcut">
-    <string>F10</string>
+    <string>Ctrl+F6</string>
    </property>
   </action>
   <action name="actionDetect_transformers">
@@ -9185,8 +9205,11 @@ QProgressBar::chunk{
    <property name="text">
     <string>Launch data analysis tool</string>
    </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Data analysis&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Launch the data analysis tool that finds and tries to repair common grid modelling issues&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
    <property name="shortcut">
-    <string>F8</string>
+    <string>F12</string>
    </property>
   </action>
   <action name="actionOnline_documentation">
@@ -9248,6 +9271,9 @@ QProgressBar::chunk{
    <property name="toolTip">
     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Linear analysis&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform linear analysis with distribution factors (PTDF, LODF)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
+   <property name="shortcut">
+    <string>F7</string>
+   </property>
   </action>
   <action name="actionReset_console">
    <property name="icon">
@@ -9307,6 +9333,9 @@ QProgressBar::chunk{
    </property>
    <property name="toolTip">
     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Linear analysis&lt;/span&gt;&lt;/p&gt;&lt;p&gt;PTDF based time series power flow&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+F7</string>
    </property>
   </action>
   <action name="actionAdd_circuit">
@@ -9434,6 +9463,9 @@ QProgressBar::chunk{
    <property name="toolTip">
     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Contingency analysis&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Per form a contingency analysis with the selected method over the time series data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+F8</string>
+   </property>
   </action>
   <action name="actionImportPlexosBranchRates">
    <property name="icon">
@@ -9515,6 +9547,9 @@ QProgressBar::chunk{
    <property name="toolTip">
     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Contingency analysis&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform a contingency analysis with the selected method over the snapshot data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
+   <property name="shortcut">
+    <string>F8</string>
+   </property>
   </action>
   <action name="actionOptimal_Net_Transfer_Capacity">
    <property name="icon">
@@ -9549,19 +9584,7 @@ QProgressBar::chunk{
     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Inputs analysis&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform an analysis of the inputs for both the snapshot and time series data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
    <property name="shortcut">
-    <string>F4</string>
-   </property>
-  </action>
-  <action name="actionATC_clustering">
-   <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/Icons/icons/atc_ts_clustering.svg</normaloff>:/Icons/icons/atc_ts_clustering.svg</iconset>
-   </property>
-   <property name="text">
-    <string>Available transfer capacity with clustering</string>
-   </property>
-   <property name="toolTip">
-    <string>Perform the ATC time series study with clustering</string>
+    <string>F11</string>
    </property>
   </action>
   <action name="actionFuse_devices">
@@ -9843,10 +9866,43 @@ QProgressBar::chunk{
   <action name="actionEdit_simulation_time_limits">
    <property name="icon">
     <iconset resource="icons.qrc">
-     <normaloff>:/Icons/icons/edit.svg</normaloff>:/Icons/icons/edit.svg</iconset>
+     <normaloff>:/Icons/icons/time_series span.svg</normaloff>:/Icons/icons/time_series span.svg</iconset>
    </property>
    <property name="text">
     <string>Edit simulation time limits</string>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Time series&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Edit simulation time limits&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+  </action>
+  <action name="actionactivate_time_series">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/time_series set.svg</normaloff>:/Icons/icons/time_series set.svg</iconset>
+   </property>
+   <property name="text">
+    <string>activate time series</string>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Time series mode&lt;/span&gt;&lt;/p&gt;&lt;p&gt;When activated, the simulations run their time series version&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+T</string>
+   </property>
+  </action>
+  <action name="actionClean_database">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/clear_runs.svg</normaloff>:/Icons/icons/clear_runs.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Clean database</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+C, Ctrl+D</string>
    </property>
   </action>
  </widget>

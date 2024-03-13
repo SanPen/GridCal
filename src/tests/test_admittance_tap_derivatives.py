@@ -189,7 +189,7 @@ def case_pegase89() -> NonlinearOPFResults:
     grid = gce.FileOpen(file_path).open()
     grid.get_transformers2w()[3].control_mode = TransformerControlType.PtQt
     grid.get_transformers2w()[7].control_mode = TransformerControlType.PtQt
-    grid.get_transformers2w()[18].control_mode = TransformerControlType.Vt
+    grid.get_transformers2w()[18].control_mode = TransformerControlType.V
     grid.get_transformers2w()[21].control_mode = TransformerControlType.PtQt
     grid.get_transformers2w()[36].control_mode = TransformerControlType.Pf
 

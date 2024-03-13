@@ -122,8 +122,7 @@ class StochasticPowerFlowDriver(DriverTemplate):
                                                 p=self.max_sampling_points,
                                                 bus_names=numerical_circuit.bus_names,
                                                 branch_names=numerical_circuit.branch_names,
-                                                bus_types=numerical_circuit.bus_types,
-                                                name='Monte Carlo')
+                                                bus_types=numerical_circuit.bus_types)
 
         avg_res = PowerFlowResults(n=numerical_circuit.nbus,
                                    m=numerical_circuit.nbr,

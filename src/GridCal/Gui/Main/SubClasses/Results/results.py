@@ -98,12 +98,13 @@ class ResultsMain(SimulationsMain):
                 else:
                     raise Exception('Path len ' + str(len(path)) + ' not supported')
 
-                if study_name in self.available_results_dict.keys():
+                study_results = self.available_results_dict.get(study_name, None)
 
-                    if result_name in self.available_results_dict[study_name].keys():
+                if study_results is not None:
 
-                        # study_type: ResultTypes
-                        study_type: ResultTypes = self.available_results_dict[study_name][result_name]
+                    study_type: ResultTypes = study_results.get(result_name, None)
+
+                    if study_type is not None:
 
                         self.results_mdl = self.session.get_results_model_by_name(study_name=study_name,
                                                                                   study_type=study_type)
@@ -111,7 +112,12 @@ class ResultsMain(SimulationsMain):
                         if self.results_mdl is not None:
 
                             # pass the matching list of devices to the ResultsModel and ResultsTable for filtering
-                            self.results_mdl.set_devices(devices_list=self.circuit.get_devices_list(study_type))
+                            self.results_mdl.table.set_col_devices(
+                                devices_list=self.circuit.get_elements_by_type(self.results_mdl.table.cols_device_type)
+                            )
+                            self.results_mdl.table.set_idx_devices(
+                                devices_list=self.circuit.get_elements_by_type(self.results_mdl.table.idx_device_type)
+                            )
 
                             if self.ui.results_traspose_checkBox.isChecked():
                                 self.results_mdl.transpose()
@@ -300,7 +306,7 @@ class ResultsMain(SimulationsMain):
 
             if reply == QtWidgets.QMessageBox.StandardButton.Yes.value:
                 for i, gen in enumerate(self.circuit.get_generators()):
-                    gen.P_prof = results.generator_power[:, i]
+                    gen.P_prof.set(results.generator_power[:, i])
 
         else:
             warning_msg('The OPF time series has no results :(')

@@ -20,7 +20,7 @@ import matplotlib.colors as plt_colors
 from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.basic_structures import IntVec, Vec, StrVec
-from GridCalEngine.enumerations import StudyResultsType, ResultTypes
+from GridCalEngine.enumerations import StudyResultsType, ResultTypes, DeviceType
 
 
 class InvestmentsEvaluationResults(ResultsTemplate):
@@ -69,10 +69,18 @@ class InvestmentsEvaluationResults(ResultsTemplate):
 
     @property
     def n_groups(self) -> int:
+        """
+
+        :return:
+        """
         return self._combinations.shape[1]
 
     @property
     def max_eval(self) -> int:
+        """
+
+        :return:
+        """
         return self._combinations.shape[0]
 
     def get_index(self) -> StrVec:
@@ -120,37 +128,58 @@ class InvestmentsEvaluationResults(ResultsTemplate):
                        "Overload cost (€)",
                        "Voltage deviations cost (€)",
                        "Objective function"] + list(self.investment_groups_names)
-            data = np.c_[self._capex,
-                         self._opex,
-                         self._losses,
-                         self._overload_score,
-                         self._voltage_score,
-                         self._f_obj,
-                         self._combinations]
+            data = np.c_[
+                self._capex,
+                self._opex,
+                self._losses,
+                self._overload_score,
+                self._voltage_score,
+                self._f_obj,
+                self._combinations
+            ]
             y_label = ''
             title = ''
+
+            return ResultsTable(data=data,
+                                index=np.array(labels),
+                                idx_device_type=DeviceType.NoDevice,
+                                columns=np.array(columns),
+                                cols_device_type=DeviceType.NoDevice.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                xlabel='',
+                                units=y_label)
 
         elif result_type == ResultTypes.InvestmentsParetoPlot:
             labels = self._index_names
             columns = ["CAPEX (M€) + OPEX (M€)", "Objective function"]
             x = self._capex + self._opex
-            y = self._f_obj
+            y = self._losses
             data = np.c_[x, y]
             y_label = ''
             title = ''
 
-            #plt.ion()
-            color_norm = plt_colors.LogNorm()
+            plt.ion()
+            color_norm = plt_colors.Normalize()
             fig = plt.figure(figsize=(8, 6))
             ax3 = plt.subplot(1, 1, 1)
-            sc3 = ax3.scatter(x, y, c=y, norm=color_norm)
-            ax3.set_xlabel('Investment cost (M€)')
+            sc3 = ax3.scatter(x, y, c=self._f_obj, norm=color_norm)
+            ax3.set_xlabel('Cost (M€)')
             ax3.set_ylabel('Total cost of losses (M€)')
             plt.colorbar(sc3, fraction=0.05, label='Objective function')
-            fig.suptitle(result_type.value[0])
+            fig.suptitle(result_type.value)
             plt.tight_layout()
             plt.show()
-            print('Plot!')
+
+            return ResultsTable(data=data,
+                                index=np.array(labels),
+                                idx_device_type=DeviceType.NoDevice,
+                                columns=np.array(columns),
+                                cols_device_type=DeviceType.NoDevice.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                xlabel='',
+                                units=y_label)
 
         elif result_type == ResultTypes.InvestmentsIterationsPlot:
             labels = self._index_names
@@ -168,22 +197,19 @@ class InvestmentsEvaluationResults(ResultsTemplate):
             # plt.plot(iters, self.best_y[0:self.iter], 'r')
             ax3.set_xlabel('Iteration')
             ax3.set_ylabel('Objective')
-            fig.suptitle(result_type.value[0])
+            fig.suptitle(result_type.value)
             plt.grid()
             plt.show()
 
-        else:
-            columns = []
-            labels = []
-            data = np.zeros(0)
-            y_label = '(MW)'
-            title = ''
+            return ResultsTable(data=data,
+                                index=np.array(labels),
+                                idx_device_type=DeviceType.NoDevice,
+                                columns=np.array(columns),
+                                cols_device_type=DeviceType.NoDevice.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                xlabel='',
+                                units=y_label)
 
-        mdl = ResultsTable(data=data,
-                           index=np.array(labels),
-                           columns=np.array(columns),
-                           title=title,
-                           ylabel=y_label,
-                           xlabel='',
-                           units=y_label)
-        return mdl
+        else:
+            raise Exception('Result type not understood:' + str(result_type))

@@ -15,8 +15,18 @@ from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.switch import Switch
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.terminal import Terminal
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.topological_node import TopologicalNode
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.linear_shunt_compensator import LinearShuntCompensator
+from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.synchronous_machine import SynchronousMachine
 from GridCalEngine.data_logger import DataLogger
 import numpy as np
+
+
+def get_slack_id(machines: List[SynchronousMachine], terminals: List[Terminal]):
+    for m in machines:
+        if m.referencePriority == 1:
+            for term in terminals:
+                if term.ConductingEquipment.rdfid == m.rdfid:
+                    return term.TopologicalNode.rdfid
+    return None
 
 
 # region PowerTransformer
@@ -168,10 +178,10 @@ def get_pu_values_power_transformer_end(power_transformer_end: PowerTransformerE
         X = power_transformer_end.x / Zbase * machine_to_sys
         G = power_transformer_end.g / Ybase * machine_to_sys
         B = power_transformer_end.b / Ybase * machine_to_sys
-        R0 = power_transformer_end.r0 / Zbase * machine_to_sys
-        X0 = power_transformer_end.x0 / Zbase * machine_to_sys
-        G0 = power_transformer_end.g0 / Ybase * machine_to_sys
-        B0 = power_transformer_end.b0 / Ybase * machine_to_sys
+        R0 = power_transformer_end.r0 / Zbase * machine_to_sys if power_transformer_end.r0 is not None else 0
+        X0 = power_transformer_end.x0 / Zbase * machine_to_sys if power_transformer_end.x0 is not None else 0
+        G0 = power_transformer_end.g0 / Ybase * machine_to_sys if power_transformer_end.g0 is not None else 0
+        B0 = power_transformer_end.b0 / Ybase * machine_to_sys if power_transformer_end.b0 is not None else 0
     else:
         R = 0
         X = 0
@@ -223,12 +233,12 @@ def get_pu_values_ac_line_segment(ac_line_segment: ACLineSegment, logger: DataLo
             # at this point r, x, g, b are the complete values for all the line length
             R = ac_line_segment.r / Zbase
             X = ac_line_segment.x / Zbase
-            G = ac_line_segment.gch / Ybase
-            B = ac_line_segment.bch / Ybase
-            R0 = ac_line_segment.r0 / Zbase
-            X0 = ac_line_segment.x0 / Zbase
-            G0 = ac_line_segment.g0ch / Ybase
-            B0 = ac_line_segment.b0ch / Ybase
+            G = ac_line_segment.gch / Ybase if ac_line_segment.gch is not None else 0
+            B = ac_line_segment.bch / Ybase if ac_line_segment.bch is not None else 0
+            R0 = ac_line_segment.r0 / Zbase if ac_line_segment.r0 is not None else 0
+            X0 = ac_line_segment.x0 / Zbase if ac_line_segment.x0 is not None else 0
+            G0 = ac_line_segment.g0ch / Ybase if ac_line_segment.g0ch is not None else 0
+            B0 = ac_line_segment.b0ch / Ybase if ac_line_segment.b0ch is not None else 0
         else:
             R = 0
             X = 0
@@ -249,7 +259,6 @@ def get_pu_values_ac_line_segment(ac_line_segment: ACLineSegment, logger: DataLo
         B0 = 0
 
     return R, X, G, B, R0, X0, G0, B0
-
 
 
 def get_rate_ac_line_segment():
@@ -316,8 +325,8 @@ def get_values_shunt(shunt: LinearShuntCompensator, logger: DataLogger, Sbase: f
             # at this point g, b are the complete values for all the line length
             G = shunt.gPerSection * (Vnom * Vnom)
             B = shunt.bPerSection * (Vnom * Vnom)
-            G0 = shunt.g0PerSection * (Vnom * Vnom)
-            B0 = shunt.b0PerSection * (Vnom * Vnom)
+            G0 = shunt.g0PerSection * (Vnom * Vnom) if shunt.g0PerSection is not None else 0
+            B0 = shunt.b0PerSection * (Vnom * Vnom) if shunt.b0PerSection is not None else 0
 
         else:
             G = 0
@@ -326,6 +335,7 @@ def get_values_shunt(shunt: LinearShuntCompensator, logger: DataLogger, Sbase: f
             B0 = 0
 
     return G, B, G0, B0
+
 
 # endregion
 
@@ -647,7 +657,6 @@ def base_voltage_to_str(base_voltage: BaseVoltage):
 # endregion
 
 def get_regulating_control(cgmes_elm: RegulatingCondEq, cgmes_enums, logger: DataLogger):
-
     if cgmes_elm.RegulatingControl is not None:
 
         if cgmes_elm.RegulatingControl.enabled:

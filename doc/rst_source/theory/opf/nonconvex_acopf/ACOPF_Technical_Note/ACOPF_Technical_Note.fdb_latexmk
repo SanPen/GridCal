@@ -1,17 +1,17 @@
 # Fdb version 4
-["bibtex ACOPF_Technical_Note"] 1704888475 "ACOPF_Technical_Note.aux" "ACOPF_Technical_Note.bbl" "ACOPF_Technical_Note" 1704890394 0
-  "./references.bib" 1702231782 1225 af8b7309ca4248c178c21d9b5b063306 ""
-  "ACOPF_Technical_Note.aux" 1704890394 1305 1e2d7d9949629a87637160c97f934fbc "pdflatex"
+["bibtex ACOPF_Technical_Note"] 1704888475 "ACOPF_Technical_Note.aux" "ACOPF_Technical_Note.bbl" "ACOPF_Technical_Note" 1708422579 0
+  "ACOPF_Technical_Note.aux" 1708422578 1305 1e2d7d9949629a87637160c97f934fbc "pdflatex"
+  "C:/Users/eroot/AppData/Local/Programs/MiKTeX/bibtex/bib/feupphdteses/references.bib" 1366808100 2206 985e03fb36d872d306e76cfacc160693 ""
   "C:/Users/eroot/AppData/Local/Programs/MiKTeX/bibtex/bst/natbib/unsrtnat.bst" 1284451856 24550 a41a6405f4de768c43e871d9fbce2bc8 ""
   (generated)
   "ACOPF_Technical_Note.bbl"
   "ACOPF_Technical_Note.blg"
   (rewritten before read)
-["pdflatex"] 1704890393 "c:/Users/eroot/OneDrive/Documents/ACOPF_Technical_Note.tex" "ACOPF_Technical_Note.pdf" "ACOPF_Technical_Note" 1704890394 0
-  "ACOPF_Technical_Note.aux" 1704890394 1305 1e2d7d9949629a87637160c97f934fbc "pdflatex"
+["pdflatex"] 1708422577 "c:/Users/eroot/PycharmProjects/GridCal/doc/rst_source/theory/opf/nonconvex_acopf/ACOPF_Technical_Note/ACOPF_Technical_Note.tex" "ACOPF_Technical_Note.pdf" "ACOPF_Technical_Note" 1708422579 0
+  "ACOPF_Technical_Note.aux" 1708422578 1305 1e2d7d9949629a87637160c97f934fbc "pdflatex"
   "ACOPF_Technical_Note.bbl" 1704888476 1322 e57e5414f1ddb119e447cf86654c4dce "bibtex ACOPF_Technical_Note"
   "ACOPF_Technical_Note.tex" 1704890393 15677 a037c5acb451a171b2fe78d236e2d58d ""
-  "C:/Users/eroot/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map" 1704883430 121619 28cafe8888aecb5d9688fed740e82db1 ""
+  "C:/Users/eroot/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map" 1705398893 121619 28cafe8888aecb5d9688fed740e82db1 ""
   "C:/Users/eroot/AppData/Local/MiKTeX/fonts/pk/ljfour/jknappen/ec/dpi600/tcrm1000.pk" 1695024901 11548 8536ff4aeba33f029e8b2160975bf0ba ""
   "C:/Users/eroot/AppData/Local/MiKTeX/miktex/data/le/pdftex/pdflatex.fmt" 1695024878 24142036 40e1767860bd8dd36aee06b7b1c7479d ""
   "C:/Users/eroot/AppData/Local/Programs/MiKTeX/fonts/tfm/jknappen/ec/tcrm1000.tfm" 993058908 1436 c7f957a372ef2fbe93c0982f96625e12 ""
@@ -96,7 +96,7 @@
   "C:/Users/eroot/AppData/Local/Programs/MiKTeX/tex/latex/natbib/natbib.sty" 1292249081 46712 1c8843383c0bd05870c45fa0ebea6cc2 ""
   "C:/Users/eroot/AppData/Local/Programs/MiKTeX/tex/latex/tools/bm.sty" 1686252040 13231 df28b16cc1506f657b947b66cabad463 ""
   "C:/Users/eroot/AppData/Local/Programs/MiKTeX/tex/latex/tools/indentfirst.sty" 1686252040 1618 7b2cc9bc42f1ad36c989fb47fd65c549 ""
-  "c:/Users/eroot/OneDrive/Documents/ACOPF_Technical_Note.tex" 1704890393 15677 a037c5acb451a171b2fe78d236e2d58d ""
+  "c:/Users/eroot/PycharmProjects/GridCal/doc/rst_source/theory/opf/nonconvex_acopf/ACOPF_Technical_Note/ACOPF_Technical_Note.tex" 1704890393 15677 a037c5acb451a171b2fe78d236e2d58d ""
   (generated)
   "ACOPF_Technical_Note.aux"
   "ACOPF_Technical_Note.log"
