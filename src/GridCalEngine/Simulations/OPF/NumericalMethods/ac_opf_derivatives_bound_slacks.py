@@ -202,12 +202,12 @@ def compute_branch_power_second_derivatives(alltapm: Vec,
                                             mu: Vec,
                                             Sf: CxVec,
                                             St: CxVec) -> Tuple[lil_matrix, lil_matrix, lil_matrix,
-lil_matrix, lil_matrix, lil_matrix,
-lil_matrix, lil_matrix, lil_matrix,
-lil_matrix, lil_matrix, lil_matrix,
-lil_matrix, lil_matrix, lil_matrix,
-lil_matrix, lil_matrix, lil_matrix,
-lil_matrix, lil_matrix, lil_matrix]:
+                                                                lil_matrix, lil_matrix, lil_matrix,
+                                                                lil_matrix, lil_matrix, lil_matrix,
+                                                                lil_matrix, lil_matrix, lil_matrix,
+                                                                lil_matrix, lil_matrix, lil_matrix,
+                                                                lil_matrix, lil_matrix, lil_matrix,
+                                                                lil_matrix, lil_matrix, lil_matrix]:
     """
     :param alltapm:
     :param alltapt:
@@ -474,10 +474,10 @@ def eval_g(x: Vec, Ybus: csr_matrix, Yf: csr_matrix, Cg: csr_matrix, Sd: CxVec, 
     return gval, S
 
 
-def eval_h(x, Yf, Yt, from_idx, to_idx, pq, k_m, k_tau, Vm_max,
-           Vm_min, Pg_max, Pg_min, Qg_max, Qg_min, tapm_max,
-           tapm_min, tapt_max, tapt_min, Pdcmax, rates,
-           il, ig, tanmax, ctQ: ReactivePowerControlMode) -> Tuple[Vec, Vec, Vec]:
+def eval_h(x: Vec, Yf: csr_matrix, Yt: csr_matrix, from_idx: Vec, to_idx: Vec, pq: Vec, k_m: Vec, k_tau: Vec,
+           Vm_max: Vec, Vm_min: Vec, Pg_max: Vec, Pg_min: Vec, Qg_max: Vec, Qg_min: Vec, tapm_max: Vec,
+           tapm_min: Vec, tapt_max: Vec, tapt_min: Vec, Pdcmax: Vec, rates: Vec, il: Vec, ig: Vec,
+           tanmax: Vec, ctQ: ReactivePowerControlMode) -> Tuple[Vec, CxVec, CxVec]:
     """
 
     :param x:
@@ -504,7 +504,7 @@ def eval_h(x, Yf, Yt, from_idx, to_idx, pq, k_m, k_tau, Vm_max,
     :param ig:
     :param tanmax:
     :param ctQ:
-    :return:
+    :return: [hval, Sftot, Sttot]
     """
     M, N = Yf.shape
     Ng = len(ig)
