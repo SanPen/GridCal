@@ -21,7 +21,7 @@ from scipy.sparse import lil_matrix
 
 from GridCalEngine.Utils.Sparse.csc import diags
 from typing import Tuple, Union
-from GridCalEngine.basic_structures import Vec, CxVec, IntVec
+from GridCalEngine.basic_structures import Vec, CxVec, IntVec, csr_matrix, csc_matrix
 from GridCalEngine.enumerations import ReactivePowerControlMode
 
 
@@ -126,7 +126,16 @@ def var2x(Va: Vec,
     return np.r_[Va, Vm, Pg, Qg, sl_sf, sl_st, sl_vmax, sl_vmin, tapm, tapt, Pfdc]
 
 
-def compute_branch_power_derivatives(alltapm, alltapt, V, k_m, k_tau, Cf, Ct, R, X):
+def compute_branch_power_derivatives(alltapm: Vec,
+                                     alltapt: Vec,
+                                     V: CxVec,
+                                     k_m: Vec,
+                                     k_tau: Vec,
+                                     Cf: csc,
+                                     Ct: csc,
+                                     R: Vec,
+                                     X: Vec) -> Tuple[csr_matrix, lil_matrix, lil_matrix, csr_matrix, lil_matrix,
+lil_matrix]:
     """
 
     :param alltapm:
@@ -138,7 +147,7 @@ def compute_branch_power_derivatives(alltapm, alltapt, V, k_m, k_tau, Cf, Ct, R,
     :param Ct:
     :param R:
     :param X:
-    :return:
+    :return: [dSbusdm, dSfdm, dStdm, dSbusdt, dSfdt, dStdt]
     """
     ys = 1.0 / (R + 1.0j * X + 1e-20)
 
@@ -176,10 +185,30 @@ def compute_branch_power_derivatives(alltapm, alltapt, V, k_m, k_tau, Cf, Ct, R,
     return dSbusdm, dSfdm, dStdm, dSbusdt, dSfdt, dStdt
 
 
-def compute_branch_power_second_derivatives(alltapm, alltapt, vm, va, k_m, k_tau, il,
-                                            Cf, Ct, R, X, F, T, lam, mu, Sf, St):
+def compute_branch_power_second_derivatives(alltapm: Vec,
+                                            alltapt: Vec,
+                                            vm: Vec,
+                                            va: Vec,
+                                            k_m: Vec,
+                                            k_tau: Vec,
+                                            il: Vec,
+                                            Cf: csc,
+                                            Ct: csc,
+                                            R: Vec,
+                                            X: Vec,
+                                            F: Vec,
+                                            T: Vec,
+                                            lam: Vec,
+                                            mu: Vec,
+                                            Sf: CxVec,
+                                            St: CxVec) -> Tuple[lil_matrix, lil_matrix, lil_matrix,
+lil_matrix, lil_matrix, lil_matrix,
+lil_matrix, lil_matrix, lil_matrix,
+lil_matrix, lil_matrix, lil_matrix,
+lil_matrix, lil_matrix, lil_matrix,
+lil_matrix, lil_matrix, lil_matrix,
+lil_matrix, lil_matrix, lil_matrix]:
     """
-
     :param alltapm:
     :param alltapt:
     :param vm:
@@ -363,16 +392,23 @@ def compute_branch_power_second_derivatives(alltapm, alltapt, vm, va, k_m, k_tau
             dSbusdtdva, dSfdtdva, dStdtdva)
 
 
-def eval_f(x: Vec, Cg, k_m: Vec, k_tau: Vec, nll: int, c0: Vec, c1: Vec, c2: Vec, c_s: Vec,
+def eval_f(x: Vec, Cg: csr_matrix, k_m: Vec, k_tau: Vec, nll: int, c0: Vec, c1: Vec, c2: Vec, c_s: Vec,
            c_v: Vec, ig: Vec, npq: int, ndc: int, Sbase: float) -> float:
     """
 
     :param x:
     :param Cg:
+    :param k_m:
+    :param k_tau:
+    :param nll:
     :param c0:
     :param c1:
     :param c2:
+    :param c_s:
+    :param c_v:
     :param ig:
+    :param npq:
+    :param ndc:
     :param Sbase:
     :return:
     """
@@ -390,8 +426,9 @@ def eval_f(x: Vec, Cg, k_m: Vec, k_tau: Vec, nll: int, c0: Vec, c1: Vec, c2: Vec
     return fval
 
 
-def eval_g(x, Ybus, Yf, Cg, Sd, ig, nig, nll, npq, pv, fdc,
-           tdc, k_m, k_tau, Vm_max, Sg_undis, slack) -> Tuple[Vec, Vec]:
+def eval_g(x: Vec, Ybus: csr_matrix, Yf: csr_matrix, Cg: csr_matrix, Sd: CxVec, ig: Vec, nig: Vec, nll: int, npq: int,
+           pv: Vec, fdc: Vec, tdc: Vec, k_m: Vec, k_tau: Vec, Vm_max: Vec, Sg_undis: CxVec, slack: Vec) \
+        -> Tuple[Vec, Vec]:
     """
 
     :param x:
