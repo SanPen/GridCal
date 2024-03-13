@@ -635,6 +635,39 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csr
         fx[npfvar + 2 * M + npq: npfvar + 2 * M + 2 * npq] = c_v
 
         # EQUALITY CONSTRAINTS GRAD ------------------------------------------------------------------------------------
+        """
+        The following comments illustrate the shapes of the equality constraints gradients:
+        Gx = 
+        +---------+
+        | GS.real |
+        +---------+
+        | GS.imag |
+        +---------+
+        | GTH     |
+        +---------+
+        | Gvm     |
+        +---------+
+        
+        where Gx has shape (N + N + nslack + npv, N + N + Ng + Ng + nsl + ntapm + ntapt + ndc), where nslack is
+        the number of slack buses, and nsl the number of slack variables.
+        Each submatrix is composed as:
+        
+        GS = 
+        +------+------+------+------+---------+--------+--------+------+
+        | GSva | GSvm | GSpg | GSqg | GSslack | GStapm | GStapt | GSdc |
+        +------+------+------+------+---------+--------+--------+------+
+        
+        GTH = 
+        +------+---+---+---+---+---+---+---+
+        | GTHx | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+        +------+---+---+---+---+---+---+---+
+        
+        Gvm = 
+        +---+------+---+---+---+---+---+---+
+        | 0 | Gvmx | 0 | 0 | 0 | 0 | 0 | 0 |
+        +---+------+---+---+---+---+---+---+
+        
+        """
 
         Vva = 1j * Vmat
 
@@ -651,34 +684,27 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csr
         for i, ss in enumerate(pv):
             Gvm[i, N + ss] = 1.
 
-        if ntapm + ntapt != 0:  # Check if there are tap variables that can affect the admittances
+        (dSbusdm, dSfdm, dStdm,
+         dSbusdt, dSfdt, dStdt) = compute_branch_power_derivatives(alltapm, alltapt, V, k_m, k_tau, Cf, Ct, R, X)
 
-            (dSbusdm, dSfdm, dStdm,
-             dSbusdt, dSfdt, dStdt) = compute_branch_power_derivatives(alltapm, alltapt, V, k_m, k_tau, Cf, Ct, R, X)
-
-            if ntapm != 0:
-                GStapm = dSbusdm.copy()
-            else:
-                GStapm = lil_matrix((N, 0))
-                dSbusdm, dSfdm, dStdm = None, None, None  # Check
-
-            if ntapt != 0:
-                GStapt = dSbusdt.copy()
-            else:
-                GStapt = lil_matrix((N,0))
-                dSbusdt, dSfdt, dStdt = None, None, None  # Check
+        if ntapm > 0:
+            Gtapm = dSbusdm.copy()
         else:
-            GStapm = lil_matrix((N, 0))
-            GStapt = lil_matrix((N, 0))
-            dSbusdm, dSfdm, dStdm, dSbusdt, dSfdt, dStdt = (None, None, None, None, None, None)
+            Gtapm = lil_matrix((N, ntapm), dtype=complex)
+
+        if ntapt > 0:
+            Gtapt = dSbusdt.copy()
+        else:
+            Gtapt = lil_matrix((N, ntapt), dtype=complex)
 
         GSpfdc = lil_matrix((N, ndc))
-
         for link in range(ndc):
             GSpfdc[fdc, link] = 1
             GSpfdc[tdc, link] = -1
 
-        GS = sp.hstack([GSva, GSvm, GSpg, GSqg, lil_matrix((N, nsl)), GStapm, GStapt, GSpfdc])
+        Gslack = lil_matrix((N, nsl), dtype=complex)
+
+        GS = sp.hstack([GSva, GSvm, GSpg, GSqg, Gslack, Gtapm, Gtapt, GSpfdc])
 
         Gx = sp.vstack([GS.real, GS.imag, GTH, Gvm]).T.tocsc()
 
@@ -864,18 +890,18 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csr
         Gav = Gva.T
         Gvv = Gvv_p.real + Gvv_q.imag
 
-        if ntapm + ntapt != 0:
-            (GSdmdm, dSfdmdm, dStdmdm,
-             GSdmdvm, dSfdmdvm, dStdmdvm,
-             GSdmdva, dSfdmdva, dStdmdva,
-             GSdmdt, dSfdmdt, dStdmdt,
-             GSdtdt, dSfdtdt, dStdtdt,
-             GSdtdvm, dSfdtdvm, dStdtdvm,
-             GSdtdva, dSfdtdva, dStdtdva) = compute_branch_power_second_derivatives(alltapm, alltapt, vm, va, k_m,
-                                                                                    k_tau, il, Cf, Ct, R, X, F, T,
-                                                                                    lmbda[0: 2 * N], mu[0: 2 * M],
-                                                                                    allSf, allSt)
+        (GSdmdm, dSfdmdm, dStdmdm,
+         GSdmdvm, dSfdmdvm, dStdmdvm,
+         GSdmdva, dSfdmdva, dStdmdva,
+         GSdmdt, dSfdmdt, dStdmdt,
+         GSdtdt, dSfdtdt, dStdtdt,
+         GSdtdvm, dSfdtdvm, dStdtdvm,
+         GSdtdva, dSfdtdva, dStdtdva) = compute_branch_power_second_derivatives(alltapm, alltapt, vm, va, k_m,
+                                                                                k_tau, il, Cf, Ct, R, X, F, T,
+                                                                                lmbda[0: 2 * N], mu[0: 2 * M],
+                                                                                allSf, allSt)
 
+        if ntapm + ntapt != 0:
             G1 = sp.hstack([Gaa, Gav, lil_matrix((N, 2 * Ng + nsl)), GSdmdva, GSdtdva, lil_matrix((N, ndc))])
             G2 = sp.hstack([Gva, Gvv, lil_matrix((N, 2 * Ng + nsl)), GSdmdvm, GSdtdvm, lil_matrix((N, ndc))])
             G3 = sp.hstack([GSdmdva.T, GSdmdvm.T, lil_matrix((ntapm, 2 * Ng + nsl)),
@@ -886,11 +912,6 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csr
             Gxx = sp.vstack([G1, G2, lil_matrix((2 * Ng + nsl, NV)), G3, G4, lil_matrix((ndc, NV))]).tocsc()
 
         else:
-            (dSfdmdm, dStdmdm, dSfdmdvm, dStdmdvm, dSfdmdva, dStdmdva, dSfdmdt,
-             dStdmdt, dSfdtdt, dStdtdt, dSfdtdvm, dStdtdvm, dSfdtdva, dStdtdva) = (None, None, None, None, None,
-                                                                                   None, None, None, None, None,
-                                                                                   None, None, None, None)
-
             G1 = sp.hstack([Gaa, Gav, lil_matrix((N, 2 * Ng + nsl + ndc))])
             G2 = sp.hstack([Gva, Gvv, lil_matrix((N, 2 * Ng + nsl + ndc))])
             Gxx = sp.vstack([G1, G2, lil_matrix((2 * Ng + nsl + ndc, npfvar + nsl + ndc))]).tocsc()
