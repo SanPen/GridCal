@@ -53,7 +53,7 @@ from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.Devices.Diagrams.bus_branch_diagram import BusBranchDiagram
 from GridCalEngine.Devices.Diagrams.graphic_location import GraphicLocation
-from GridCalEngine.basic_structures import Vec, CxVec, IntVec
+from GridCalEngine.basic_structures import Vec, CxVec, IntVec, Logger
 
 from GridCal.Gui.BusBranchEditorWidget.terminal_item import TerminalItem
 from GridCal.Gui.BusBranchEditorWidget.Substation.bus_graphics import BusGraphicItem
@@ -2280,6 +2280,77 @@ class BusBranchEditorWidget(QSplitter):
 
         # delete from the schematic
         graphic_object.remove(ask=False)
+
+    def add_object_to_the_schematic(
+            self,
+            elm: ALL_DEV_TYPES,
+            injections_by_bus: Union[None, Dict[Bus, Dict[DeviceType, List[INJECTION_DEVICE_TYPES]]]] = None,
+            injections_by_fluid_node: Union[None, Dict[FluidNode, Dict[DeviceType, List[FLUID_TYPES]]]] = None,
+            logger: Logger = Logger()):
+        """
+
+        :param elm:
+        :param injections_by_bus:
+        :param injections_by_fluid_node:
+        :param logger: Logger
+        :return:
+        """
+
+        if self.diagram.query_point(device=elm) is None:
+
+            if isinstance(elm, Bus):
+
+                if not elm.is_internal:  # 3w transformer buses are not represented
+                    if injections_by_bus is None:
+                        injections_by_bus = self.circuit.get_injection_devices_grouped_by_bus()
+
+                    graphic_obj = self.add_api_bus(bus=elm,
+                                                   injections_by_tpe=injections_by_bus.get(elm, dict()),
+                                                   explode_factor=1.0)
+                else:
+                    graphic_obj = None
+
+            elif isinstance(elm, FluidNode):
+
+                if injections_by_fluid_node is None:
+                    injections_by_fluid_node = self.circuit.get_injection_devices_grouped_by_fluid_node()
+
+                graphic_obj = self.add_api_fluid_node(node=elm,
+                                                      injections_by_tpe=injections_by_fluid_node.get(elm, dict()),
+                                                      explode_factor=1.0)
+
+            elif isinstance(elm, Line):
+                graphic_obj = self.add_api_line(elm)
+
+            elif isinstance(elm, DcLine):
+                graphic_obj = self.add_api_dc_line(elm)
+
+            elif isinstance(elm, Transformer2W):
+                graphic_obj = self.add_api_transformer(elm)
+
+            elif isinstance(elm, Transformer3W):
+                graphic_obj = self.add_api_transformer_3w(elm)
+
+            elif isinstance(elm, HvdcLine):
+                graphic_obj = self.add_api_hvdc(elm)
+
+            elif isinstance(elm, VSC):
+                graphic_obj = self.add_api_vsc(elm)
+
+            elif isinstance(elm, UPFC):
+                graphic_obj = self.add_api_upfc(elm)
+
+            elif isinstance(elm, FluidPath):
+                graphic_obj = self.add_api_fluid_path(elm)
+
+            else:
+                graphic_obj = None
+
+            self.add_to_scene(graphic_object=graphic_obj)
+
+        else:
+            # warn(f"Device {elm} added already")
+            logger.add_warning("Device already added", device_class=elm.device_type.value, device=elm.name)
 
     def add_elements_to_schematic(self,
                                   buses: List[Bus],

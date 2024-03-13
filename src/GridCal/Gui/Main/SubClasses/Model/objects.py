@@ -32,6 +32,7 @@ from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_m
 from GridCal.Gui.Main.SubClasses.Model.diagrams import DiagramsMain
 from GridCal.Gui.TowerBuilder.LineBuilderDialogue import TowerBuilderGUI
 from GridCal.Gui.GeneralDialogues import LogsDialogue
+from GridCal.Gui.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
 
 
 class ObjectsTableMain(DiagramsMain):
@@ -68,12 +69,13 @@ class ObjectsTableMain(DiagramsMain):
         self.ui.highlight_by_property_pushButton.clicked.connect(self.highlight_based_on_property)
         self.ui.structure_analysis_pushButton.clicked.connect(self.objects_histogram_analysis_plot)
         self.ui.assignToProfileButton.clicked.connect(self.assign_to_profile)
+        self.ui.addToCurrentDiagramButton.clicked.connect(self.add_objects_to_current_diagram)
 
         # menu trigger
         self.ui.actionDelete_inconsistencies.triggered.connect(self.delete_inconsistencies)
         self.ui.actionClean_database.triggered.connect(self.clean_database)
 
-        # list click
+        # tree click
         self.ui.dataStructuresTreeView.clicked.connect(self.view_objects_data)
 
         # line edit enter
@@ -388,44 +390,79 @@ class ObjectsTableMain(DiagramsMain):
         else:
             self.ui.dataStructureTableView.setModel(None)
 
+    def get_selected_objects(self) -> List[ALL_DEV_TYPES]:
+        """
+        Get the list of selected objects
+        :return:
+        """
+        model = self.get_current_objects_model_view()
+
+        if model is not None:
+            sel_idx = self.ui.dataStructureTableView.selectedIndexes()
+            if len(sel_idx) > 0:
+
+                # get the unique rows
+                unique = set()
+                for idx in sel_idx:
+                    unique.add(idx.row())
+
+                return [model.objects[i] for i in unique]
+            else:
+                info_msg('Select some cells')
+                return list()
+        else:
+            return list()
+
     def delete_selected_objects(self):
         """
         Delete selection
         """
 
-        model = self.get_current_objects_model_view()
+        selected_objects = self.get_selected_objects()
 
-        if model is not None:
-            sel_idx = self.ui.dataStructureTableView.selectedIndexes()
-            objects = model.objects
+        if len(selected_objects):
 
-            if len(sel_idx) > 0:
+            ok = yes_no_question('Are you sure that you want to delete the selected elements?', 'Delete')
+            if ok:
+                for obj in selected_objects:
 
-                ok = yes_no_question('Are you sure that you want to delete the selected elements?', 'Delete')
-                if ok:
+                    # delete from the database
+                    self.circuit.delete_elements_by_type(obj=obj)
 
-                    # get the unique rows
-                    unique = set()
-                    for idx in sel_idx:
-                        unique.add(idx.row())
+                    # delete from all diagrams
+                    for diagram in self.diagram_widgets_list:
+                        diagram.delete_diagram_element(device=obj)
 
-                    unique = list(unique)
-                    unique.sort(reverse=True)
-                    for r in unique:
-                        self.circuit.delete_elements_by_type(obj=objects[r])
+                # update the view
+                self.view_objects_data()
+                self.update_area_combos()
+                self.update_date_dependent_combos()
 
-                        # TODO: Call the displays to delete the graphic objects
+    def add_objects_to_current_diagram(self):
+        """
+        Add selected DB objects to current diagram
+        """
 
-                    # update the view
-                    self.display_objects_filter(objects)
-                    self.update_area_combos()
-                    self.update_date_dependent_combos()
-                else:
-                    pass
-            else:
-                info_msg('Select some cells')
-        else:
-            pass
+        selected_objects = self.get_selected_objects()
+
+        if len(selected_objects):
+
+            diagram = self.get_selected_diagram_widget()
+
+            if isinstance(diagram, BusBranchEditorWidget):
+                injections_by_bus = self.circuit.get_injection_devices_grouped_by_bus()
+                injections_by_fluid_node = self.circuit.get_injection_devices_grouped_by_fluid_node()
+                logger = bs.Logger()
+                for device in selected_objects:
+                    diagram.add_object_to_the_schematic(elm=device,
+                                                        injections_by_bus=injections_by_bus,
+                                                        injections_by_fluid_node=injections_by_fluid_node,
+                                                        logger=logger)
+
+                if len(logger):
+                    dlg = LogsDialogue(name="Add selected DB objects to current diagram", logger=logger)
+                    dlg.setModal(True)
+                    dlg.exec()
 
     def add_objects(self):
         """
@@ -890,7 +927,7 @@ class ObjectsTableMain(DiagramsMain):
             if len(logger) > 0:
                 dlg = LogsDialogue("Delete inconsistencies", logger)
                 dlg.setModal(True)
-                dlg.exec_()
+                dlg.exec()
 
     def delete_shit(self, min_island=1):
         """
@@ -951,4 +988,4 @@ class ObjectsTableMain(DiagramsMain):
 
             if len(logger) > 0:
                 dlg = LogsDialogue('DB clean logger', logger)
-                dlg.exec_()
+                dlg.exec()

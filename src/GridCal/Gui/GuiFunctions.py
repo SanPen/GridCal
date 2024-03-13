@@ -32,7 +32,7 @@ from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit, IdentifiedObj
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
-    from GridCal.Gui.BusBranchEditorWidget import BusBranchEditorWidget
+    from GridCal.Gui.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
     from GridCal.Gui.MapWidget.grid_map_widget import GridMapWidget
     from GridCal.Gui.BusViewer.bus_viewer_dialogue import BusViewerWidget
 
@@ -2256,6 +2256,11 @@ class DiagramsModel(QtCore.QAbstractListModel):
             if role == QtCore.Qt.ItemDataRole.DisplayRole:
                 return diagram.name
             elif role == QtCore.Qt.ItemDataRole.DecorationRole:
+
+                # TODO: Is this the only way?
+                from GridCal.Gui.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
+                from GridCal.Gui.MapWidget.grid_map_widget import GridMapWidget
+                from GridCal.Gui.BusViewer.bus_viewer_dialogue import BusViewerWidget
 
                 if isinstance(diagram, BusBranchEditorWidget):
                     return self.bus_branch_editor_icon
