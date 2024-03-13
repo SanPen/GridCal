@@ -684,30 +684,23 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csr
         for i, ss in enumerate(pv):
             Gvm[i, N + ss] = 1.
 
-        if ntapm + ntapt > 0:  # Check if there are tap variables that can affect the admittances
+        (dSbusdm, dSfdm, dStdm,
+         dSbusdt, dSfdt, dStdt) = compute_branch_power_derivatives(alltapm, alltapt, V, k_m, k_tau, Cf, Ct, R, X)
 
-            (dSbusdm, dSfdm, dStdm,
-             dSbusdt, dSfdt, dStdt) = compute_branch_power_derivatives(alltapm, alltapt, V, k_m, k_tau, Cf, Ct, R, X)
-
-            if ntapm > 0:
-                Gtapm = dSbusdm.copy()
-            else:
-                Gtapm = lil_matrix((N, ntapm), dtype=complex)
-
-            if ntapt > 0:
-                Gtapt = dSbusdt.copy()
-            else:
-                Gtapt = lil_matrix((N, ntapt), dtype=complex)
-
+        if ntapm > 0:
+            Gtapm = dSbusdm.copy()
         else:
-            dSbusdm, dSfdm, dStdm, dSbusdt, dSfdt, dStdt = (None, None, None, None, None, None)
+            Gtapm = lil_matrix((N, ntapm), dtype=complex)
+
+        if ntapt > 0:
+            Gtapt = dSbusdt.copy()
+        else:
+            Gtapt = lil_matrix((N, ntapt), dtype=complex)
 
         GSpfdc = lil_matrix((N, ndc))
         for link in range(ndc):
             GSpfdc[fdc, link] = 1
             GSpfdc[tdc, link] = -1
-
-            # GS[:, npfvar + nsl + ntapm + ntapt: npfvar + nsl + ntapm + ntapt + ndc] = GSpfdc
 
         Gslack = lil_matrix((N, nsl), dtype=complex)
 
