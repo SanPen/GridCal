@@ -25,3 +25,6 @@ from GridCalEngine.Devices.Aggregation.emission_gas import EmissionGas
 from GridCalEngine.Devices.Aggregation.area import Area
 from GridCalEngine.Devices.Aggregation.zone import Zone
 from GridCalEngine.Devices.Aggregation.country import Country
+from GridCalEngine.Devices.Aggregation.community import Community
+from GridCalEngine.Devices.Aggregation.region import Region
+from GridCalEngine.Devices.Aggregation.municipality import Municipality

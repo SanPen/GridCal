@@ -284,6 +284,12 @@ class MultiCircuit:
         # list of countries
         self.countries: List[dev.Country] = list()  # [self.default_country]
 
+        self.communities: List[dev.Community] = list()
+
+        self.regions: List[dev.Region] = list()
+
+        self.municipalities: List[dev.Municipality] = list()
+
         # logger of events
         self.logger: Logger = Logger()
 
@@ -334,10 +340,15 @@ class MultiCircuit:
 
         # objects with profiles
         self.objects_with_profiles = {
-            "Substation": [
+            "Regions": [
                 dev.Country(),
-                dev.Zone(),
+                dev.Community(),
+                dev.Region(),
+                dev.Municipality(),
                 dev.Area(),
+                dev.Zone(),
+            ],
+            "Substation": [
                 dev.Substation(),
                 dev.VoltageLevel(),
                 dev.BusBar(),
@@ -1796,6 +1807,15 @@ class MultiCircuit:
         elif device_type == DeviceType.CountryDevice:
             return self.countries
 
+        elif device_type == DeviceType.CommunityDevice:
+            return self.communities
+
+        elif device_type == DeviceType.RegionDevice:
+            return self.regions
+
+        elif device_type == DeviceType.MunicipalityDevice:
+            return self.municipalities
+
         elif device_type == DeviceType.ContingencyDevice:
             return self.contingencies
 
@@ -1980,6 +2000,15 @@ class MultiCircuit:
         elif device_type == DeviceType.CountryDevice:
             self.countries = devices
 
+        elif device_type == DeviceType.CommunityDevice:
+            self.communities = devices
+
+        elif device_type == DeviceType.RegionDevice:
+            self.regions = devices
+
+        elif device_type == DeviceType.MunicipalityDevice:
+            self.municipalities = devices
+
         elif device_type == DeviceType.ContingencyDevice:
             self.contingencies = devices
 
@@ -2149,6 +2178,15 @@ class MultiCircuit:
         elif element_type == DeviceType.CountryDevice:
             return self.delete_country(obj)
 
+        elif element_type == DeviceType.CommunityDevice:
+            return self.delete_community(obj)
+
+        elif element_type == DeviceType.RegionDevice:
+            return self.delete_region(obj)
+
+        elif element_type == DeviceType.MunicipalityDevice:
+            return self.delete_municipality(obj)
+
         elif element_type == DeviceType.ContingencyDevice:
             return self.delete_contingency(obj)
 
@@ -2293,6 +2331,9 @@ class MultiCircuit:
                 'areas',
                 'zones',
                 'countries',
+                'communities',
+                'regions',
+                'municipalities',
                 'time_profile',
                 'contingencies',
                 'contingency_groups',
@@ -3482,6 +3523,159 @@ class MultiCircuit:
                 elm.country = None
 
         self.countries.remove(obj)
+
+    # ----------------------------------------------------------------------------------------------------------------------
+    # communities
+    # ----------------------------------------------------------------------------------------------------------------------
+
+    def get_communities(self) -> List[dev.Community]:
+        """
+        List of communities
+        :return: List[dev.Community]
+        """
+        return self.communities
+
+    def get_communities_number(self) -> int:
+        """
+        Size of the list of communities
+        :return: size of communities
+        """
+        return len(self.communities)
+
+    def get_community_at(self, i: int) -> dev.Community:
+        """
+        Get community at i
+        :param i: index
+        :return: Community
+        """
+        return self.communities[i]
+
+    def get_community_names(self) -> StrVec:
+        """
+        Array of community names
+        :return: StrVec
+        """
+        return np.array([e.name for e in self.communities])
+
+    def add_community(self, obj: dev.Community):
+        """
+        Add a Community object
+        :param obj: Community instance
+        """
+
+        if self.time_profile is not None:
+            obj.create_profiles(self.time_profile)
+        self.communities.append(obj)
+
+    def delete_community(self, obj: dev.Community) -> None:
+        """
+        Add a Community object
+        :param obj: Community instance
+        """
+
+        self.communities.remove(obj)
+
+    # ----------------------------------------------------------------------------------------------------------------------
+    # regions
+    # ----------------------------------------------------------------------------------------------------------------------
+
+    def get_regions(self) -> List[dev.Region]:
+        """
+        List of regions
+        :return: List[dev.Region]
+        """
+        return self.regions
+
+    def get_regions_number(self) -> int:
+        """
+        Size of the list of regions
+        :return: size of regions
+        """
+        return len(self.regions)
+
+    def get_region_at(self, i: int) -> dev.Region:
+        """
+        Get region at i
+        :param i: index
+        :return: Region
+        """
+        return self.regions[i]
+
+    def get_region_names(self) -> StrVec:
+        """
+        Array of region names
+        :return: StrVec
+        """
+        return np.array([e.name for e in self.regions])
+
+    def add_region(self, obj: dev.Region):
+        """
+        Add a Region object
+        :param obj: Region instance
+        """
+
+        if self.time_profile is not None:
+            obj.create_profiles(self.time_profile)
+        self.regions.append(obj)
+
+    def delete_region(self, obj: dev.Region) -> None:
+        """
+        Add a Region object
+        :param obj: Region instance
+        """
+
+        self.regions.remove(obj)
+
+    # ----------------------------------------------------------------------------------------------------------------------
+    # municipalities
+    # ----------------------------------------------------------------------------------------------------------------------
+
+    def get_municipalities(self) -> List[dev.Municipality]:
+        """
+        List of municipalities
+        :return: List[dev.Municipality]
+        """
+        return self.municipalities
+
+    def get_municipalities_number(self) -> int:
+        """
+        Size of the list of municipalities
+        :return: size of municipalities
+        """
+        return len(self.municipalities)
+
+    def get_municipality_at(self, i: int) -> dev.Municipality:
+        """
+        Get municipality at i
+        :param i: index
+        :return: Municipality
+        """
+        return self.municipalities[i]
+
+    def get_municipality_names(self) -> StrVec:
+        """
+        Array of municipality names
+        :return: StrVec
+        """
+        return np.array([e.name for e in self.municipalities])
+
+    def add_municipality(self, obj: dev.Municipality):
+        """
+        Add a Municipality object
+        :param obj: Municipality instance
+        """
+
+        if self.time_profile is not None:
+            obj.create_profiles(self.time_profile)
+        self.municipalities.append(obj)
+
+    def delete_municipality(self, obj: dev.Municipality) -> None:
+        """
+        Add a Municipality object
+        :param obj: Municipality instance
+        """
+
+        self.municipalities.remove(obj)
 
     def add_fuel(self, obj: dev.Fuel):
         """
