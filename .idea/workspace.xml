@@ -29,10 +29,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="improved table integration of the new aggregations">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Ability to set none as object foreign keys with ComboDelegate">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/GuiFunctions.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/GuiFunctions.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/objects.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/objects.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1349,7 +1348,7 @@
       <workItem from="1710270373299" duration="1151000" />
       <workItem from="1710272062705" duration="306000" />
       <workItem from="1710316392602" duration="1846000" />
-      <workItem from="1710321800593" duration="8349000" />
+      <workItem from="1710321800593" duration="10496000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1694,7 +1693,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="512" />
+    <option name="localTasksCounter" value="513" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1740,7 +1739,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Added ability to create zone, area and substation &quot;on the fly&quot; from legacy gridcal files&#10;Added support for bus referencing by name" />
     <MESSAGE value="Improved the loading of legacy data" />
     <MESSAGE value="Added the possibility to select buses by are, zone and country&#10;Improved new diagram from selection" />
     <MESSAGE value="Added separator to a gui menu" />
@@ -1765,7 +1763,8 @@
     <MESSAGE value="added community, region and municipality (WIP)" />
     <MESSAGE value="added community, region and municipality (WIP2)" />
     <MESSAGE value="improved table integration of the new aggregations" />
-    <option name="LAST_COMMIT_MESSAGE" value="improved table integration of the new aggregations" />
+    <MESSAGE value="Ability to set none as object foreign keys with ComboDelegate" />
+    <option name="LAST_COMMIT_MESSAGE" value="Ability to set none as object foreign keys with ComboDelegate" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
