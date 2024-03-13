@@ -612,11 +612,6 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csr
     nsl = 2 * npq + 2 * M
     npfvar = 2 * N + 2 * Ng  # Number of variables of the typical power flow (V, th, P, Q). Used to ease readability
 
-    if ctQ != ReactivePowerControlMode.NoControl:
-        nqcont = Ng
-    else:
-        nqcont = 0
-
     V = vm * np.exp(1j * va)
     Vmat = diags(V)
     vm_inv = diags(1 / vm)
@@ -640,6 +635,39 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csr
         fx[npfvar + 2 * M + npq: npfvar + 2 * M + 2 * npq] = c_v
 
         # EQUALITY CONSTRAINTS GRAD ------------------------------------------------------------------------------------
+        """
+        The following comments illustrate the shapes of the equality constraints gradients:
+        Gx = 
+        +---------+
+        | GS.real |
+        +---------+
+        | GS.imag |
+        +---------+
+        | GTH     |
+        +---------+
+        | Gvm     |
+        +---------+
+        
+        where Gx has shape (N + N + nslack + npv, N + N + Ng + Ng + nsl + ntapm + ntapt + ndc), where nslack is
+        the number of slack buses, and nsl the number of slack variables.
+        Each submatrix is composed as:
+        
+        GS = 
+        +------+------+------+------+---------+--------+--------+------+
+        | GSva | GSvm | GSpg | GSqg | GSslack | GStapm | GStapt | GSdc |
+        +------+------+------+------+---------+--------+--------+------+
+        
+        GTH = 
+        +------+---+---+---+---+---+---+---+
+        | GTHx | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+        +------+---+---+---+---+---+---+---+
+        
+        Gvm = 
+        +---+------+---+---+---+---+---+---+
+        | 0 | Gvmx | 0 | 0 | 0 | 0 | 0 | 0 |
+        +---+------+---+---+---+---+---+---+
+        
+        """
 
         Vva = 1j * Vmat
 
@@ -656,10 +684,6 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csr
         for i, ss in enumerate(pv):
             Gvm[i, N + ss] = 1.
 
-        # GS = lil_matrix((N, NV), dtype=complex)
-
-        # GS[:, 0: npfvar] = sp.hstack([GSva, GSvm, GSpg, GSqg])
-
         if ntapm + ntapt > 0:  # Check if there are tap variables that can affect the admittances
 
             (dSbusdm, dSfdm, dStdm,
@@ -667,13 +691,11 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csr
 
             if ntapm > 0:
                 Gtapm = dSbusdm.copy()
-                # GS[:, npfvar + nsl: npfvar + nsl + ntapm] = Gtapm
             else:
                 Gtapm = lil_matrix((N, ntapm), dtype=complex)
 
             if ntapt > 0:
                 Gtapt = dSbusdt.copy()
-                # GS[:, npfvar + nsl + ntapm: npfvar + nsl + ntapm + ntapt] = Gtapt
             else:
                 Gtapt = lil_matrix((N, ntapt), dtype=complex)
 
@@ -687,7 +709,7 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csr
 
             # GS[:, npfvar + nsl + ntapm + ntapt: npfvar + nsl + ntapm + ntapt + ndc] = GSpfdc
 
-        Gslack = lil_matrix((N, nsl))
+        Gslack = lil_matrix((N, nsl), dtype=complex)
 
         GS = sp.hstack([GSva, GSvm, GSpg, GSqg, Gslack, Gtapm, Gtapt, GSpfdc])
 
