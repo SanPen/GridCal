@@ -432,16 +432,18 @@ class ObjectsTableMain(DiagramsMain):
         Add default objects objects
         """
         model = self.get_current_objects_model_view()
-        elm_type = self.ui.dataStructuresTreeView.selectedIndexes()[0].data(role=QtCore.Qt.ItemDataRole.DisplayRole)
+        elm_type = self.get_db_object_selected_type()
 
-        if model is not None:
+        if model is not None and elm_type is not None:
 
             if elm_type == DeviceType.SubstationDevice.value:
                 self.circuit.add_substation(dev.Substation(name=f'SE {self.circuit.get_substation_number() + 1}'))
                 self.update_area_combos()
 
             elif elm_type == DeviceType.VoltageLevelDevice.value:
-                self.circuit.add_voltage_level(dev.VoltageLevel(name=f'VL {self.circuit.get_voltage_levels_number() + 1}'))
+                self.circuit.add_voltage_level(dev.VoltageLevel(
+                    name=f'VL {self.circuit.get_voltage_levels_number() + 1}')
+                )
                 self.update_area_combos()
 
             elif elm_type == DeviceType.BusBarDevice.value:
@@ -461,7 +463,9 @@ class ObjectsTableMain(DiagramsMain):
                 self.update_area_combos()
 
             elif elm_type == DeviceType.CommunityDevice.value:
-                self.circuit.add_community(dev.Community(name=f'Community {self.circuit.get_communities_number() + 1}'))
+                self.circuit.add_community(dev.Community(
+                    name=f'Community {self.circuit.get_communities_number() + 1}')
+                )
                 self.update_area_combos()
 
             elif elm_type == DeviceType.RegionDevice.value:
@@ -469,52 +473,54 @@ class ObjectsTableMain(DiagramsMain):
                 self.update_area_combos()
 
             elif elm_type == DeviceType.MunicipalityDevice.value:
-                self.circuit.add_municipality(dev.Municipality(name=f'Municipalities {self.circuit.get_municipalities_number() + 1}'))
+                self.circuit.add_municipality(dev.Municipality(
+                    name=f'Municipalities {self.circuit.get_municipalities_number() + 1}')
+                )
                 self.update_area_combos()
 
             elif elm_type == DeviceType.BusDevice.value:
                 self.circuit.add_bus(dev.Bus(name=f'Bus {self.circuit.get_bus_number() + 1}'))
 
             elif elm_type == DeviceType.ContingencyGroupDevice.value:
-                group = dev.ContingencyGroup(name="Contingency group " + str(len(self.circuit.contingency_groups) + 1))
+                group = dev.ContingencyGroup(name=f"Contingency group {len(self.circuit.contingency_groups) + 1}")
                 self.circuit.add_contingency_group(group)
 
             elif elm_type == DeviceType.InvestmentsGroupDevice.value:
-                group = dev.InvestmentsGroup(name="Investments group " + str(len(self.circuit.contingency_groups) + 1))
+                group = dev.InvestmentsGroup(name=f"Investments group {len(self.circuit.investments_groups) + 1}")
                 self.circuit.add_investments_group(group)
 
             elif elm_type == DeviceType.Technology.value:
-                tech = dev.Technology(name="Technology " + str(len(self.circuit.technologies) + 1))
+                tech = dev.Technology(name=f"Technology {len(self.circuit.technologies) + 1}")
                 self.circuit.add_technology(tech)
 
             elif elm_type == DeviceType.OverheadLineTypeDevice.value:
 
                 obj = dev.OverheadLineType()
                 obj.frequency = self.circuit.fBase
-                obj.tower_name = 'Tower ' + str(len(self.circuit.overhead_line_types))
+                obj.tower_name = f'Tower {len(self.circuit.overhead_line_types) + 1}'
                 self.circuit.add_overhead_line(obj)
 
             elif elm_type == DeviceType.UnderGroundLineDevice.value:
 
-                name = 'Cable ' + str(len(self.circuit.underground_cable_types))
+                name = f'Cable {len(self.circuit.underground_cable_types) + 1}'
                 obj = dev.UndergroundLineType(name=name)
                 self.circuit.add_underground_line(obj)
 
             elif elm_type == DeviceType.SequenceLineDevice.value:
 
-                name = 'Sequence line ' + str(len(self.circuit.sequence_line_types))
+                name = f'Sequence line {len(self.circuit.sequence_line_types) + 1}'
                 obj = dev.SequenceLineType(name=name)
                 self.circuit.add_sequence_line(obj)
 
             elif elm_type == DeviceType.WireDevice.value:
 
-                name = 'Wire ' + str(len(self.circuit.wire_types))
+                name = f'Wire {len(self.circuit.wire_types) + 1}'
                 obj = dev.Wire(name=name, gmr=0.01, r=0.01, x=0)
                 self.circuit.add_wire(obj)
 
             elif elm_type == DeviceType.TransformerTypeDevice.value:
 
-                name = 'Transformer type ' + str(len(self.circuit.transformer_types))
+                name = f'Transformer type {len(self.circuit.transformer_types) + 1}'
                 obj = dev.TransformerType(hv_nominal_voltage=10, lv_nominal_voltage=0.4, nominal_power=2,
                                           copper_losses=0.8, iron_losses=0.1, no_load_current=0.1,
                                           short_circuit_voltage=0.1,
@@ -523,13 +529,13 @@ class ObjectsTableMain(DiagramsMain):
 
             elif elm_type == DeviceType.FuelDevice.value:
 
-                name = 'Fuel ' + str(len(self.circuit.fuels))
+                name = f'Fuel {len(self.circuit.fuels) + 1}'
                 obj = dev.Fuel(name=name)
                 self.circuit.add_fuel(obj)
 
             elif elm_type == DeviceType.EmissionGasDevice.value:
 
-                name = 'Gas ' + str(len(self.circuit.emission_gases))
+                name = f'Gas {len(self.circuit.emission_gases) + 1}'
                 obj = dev.EmissionGas(name=name)
                 self.circuit.add_emission_gas(obj)
 

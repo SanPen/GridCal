@@ -119,11 +119,11 @@ class ComboDelegate(QtWidgets.QItemDelegate):
     """
     commitData = QtCore.Signal(object)
 
-    def __init__(self, parent: QtWidgets.QTableView, objects: List[bool], object_names: List[str]) -> None:
+    def __init__(self, parent: QtWidgets.QTableView, objects: List[Any], object_names: List[str]) -> None:
         """
         Constructor
         :param parent: QTableView parent object
-        :param objects: List of objects to set. i.e. [True, False]
+        :param objects: List of objects to set. i.e. [True, False] or [Line1, Line2, ...]
         :param object_names: List of Object names to display. i.e. ['True', 'False']
         """
         QtWidgets.QItemDelegate.__init__(self, parent)
@@ -1160,9 +1160,11 @@ class ObjectsModel(QtCore.QAbstractTableModel):
                 F(i, delegate)
 
             elif tpe.value in self.dictionary_of_lists.keys():
-                objects = self.dictionary_of_lists[tpe.value]
-                values = [x.name for x in objects]
-                delegate = ComboDelegate(self.parent, objects, values)
+                # foreign key objects drop-down
+                objs = self.dictionary_of_lists[str(tpe.value)]
+                delegate = ComboDelegate(parent=self.parent,
+                                         objects=[None] + objs,
+                                         object_names=['None'] + [x.name for x in objs])
                 F(i, delegate)
 
             else:
