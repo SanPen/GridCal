@@ -29,7 +29,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Added the probability index to the contingency run">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Enforce types h">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/NumericalMethods/ac_opf_derivatives_bound_slacks.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/NumericalMethods/ac_opf_derivatives_bound_slacks.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/trunk/acopf/acopf_run.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acopf/acopf_run.py" afterDir="false" />
@@ -1668,7 +1668,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="507" />
+    <option name="localTasksCounter" value="508" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1714,7 +1714,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Several improvements in IO operations" />
     <MESSAGE value="Fixed compisition typo" />
     <MESSAGE value="Improved logs display&#10;Improved the big bus marker" />
     <MESSAGE value="Moved the power flow initialization in the ACOPF outside" />
@@ -1739,7 +1738,8 @@
     <MESSAGE value="Refactored the test_ptdf to avoid import *" />
     <MESSAGE value="Fixed the contingencies memory usage" />
     <MESSAGE value="Added the probability index to the contingency run" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added the probability index to the contingency run" />
+    <MESSAGE value="Enforce types h" />
+    <option name="LAST_COMMIT_MESSAGE" value="Enforce types h" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2193,8 +2193,8 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/NumericalMethods/ac_opf_derivatives_bound_slacks.py</url>
-          <line>554</line>
-          <option name="timeStamp" value="1519" />
+          <line>612</line>
+          <option name="timeStamp" value="1521" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

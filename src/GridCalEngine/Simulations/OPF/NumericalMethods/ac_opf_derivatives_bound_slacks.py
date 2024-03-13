@@ -135,7 +135,7 @@ def compute_branch_power_derivatives(alltapm: Vec,
                                      Ct: csc,
                                      R: Vec,
                                      X: Vec) -> Tuple[csr_matrix, lil_matrix, lil_matrix, csr_matrix, lil_matrix,
-lil_matrix]:
+                                                      lil_matrix]:
     """
 
     :param alltapm:
@@ -555,9 +555,12 @@ def eval_h(x: Vec, Yf: csr_matrix, Yt: csr_matrix, from_idx: Vec, to_idx: Vec, p
     return hval, Sftot, Sttot
 
 
-def jacobians_and_hessians(x, c1, c2, c_s, c_v, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, slack, pq,
-                           pv, tanmax, alltapm, alltapt, fdc, tdc, k_m, k_tau, mu, lmbda, R, X, F, T,
-                           ctQ: ReactivePowerControlMode, compute_jac: bool, compute_hess: bool):
+def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csr_matrix, Cf: csc, Ct: csc,
+                           Yf: csr_matrix, Yt: csr_matrix, Ybus: csr_matrix, Sbase: float, il: Vec, ig: Vec,
+                           slack: Vec, pq: Vec, pv: Vec, tanmax: Vec, alltapm: Vec, alltapt: Vec, fdc: Vec, tdc: Vec,
+                           k_m: Vec, k_tau: Vec, mu, lmbda, R: Vec, X: Vec, F: Vec, T: Vec,
+                           ctQ: ReactivePowerControlMode, compute_jac: bool, compute_hess: bool) -> Tuple[Vec, csc, csc,
+                                                                                                    csc, csc, csc]:
     """
 
     :param x:
