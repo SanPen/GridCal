@@ -623,14 +623,16 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csr
     E = Vmat @ vm_inv
     Ibus = Ybus @ V
     IbusCJmat = diags(np.conj(Ibus))
+    Vva = 1j * Vmat
+
     alltapm[k_m] = tapm
     alltapt[k_tau] = tapt
+
+    fx = np.zeros(NV)
 
     if compute_jac:
 
         # OBJECTIVE FUNCTION GRAD --------------------------------------------------------------------------------------
-
-        fx = np.zeros(NV)
 
         fx[2 * N: 2 * N + Ng] = (2 * c2 * Pg * (Sbase ** 2) + c1 * Sbase) * 1e-4
 
@@ -640,8 +642,37 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csr
         fx[npfvar + 2 * M + npq: npfvar + 2 * M + 2 * npq] = c_v
 
         # EQUALITY CONSTRAINTS GRAD ------------------------------------------------------------------------------------
+        """
+        Gx.T has size (2N + nslack + npv) x (nva, nvm, npg, nqg, nsl, ntapm, ntapt, ndc). 
+        Gx.T = 
+        +---------+
+        | GS.real |
+        +---------+
+        | GS.imag |
+        +---------+
+        | GTH     |
+        +---------+
+        | Gvm     |
+        +---------+
+        where nslack is the number of slack buses, nsl the number of slack variables.
+        GS = 
+        +------+------+------+------+---------+--------+--------+------+
+        | GSva | GSvm | GSpg | GSqg | GSslack | GStapm | GStapt | GSdc |
+        +------+------+------+------+---------+--------+--------+------+
 
-        Vva = 1j * Vmat
+        and GTH and Gvm are built as:
+        GTH = 
+        +------+---+---+---+---+---+---+---+
+        | GTHx | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+        +------+---+---+---+---+---+---+---+
+        Gvm =
+        +---+------+---+---+---+---+---+---+
+        | 0 | Gvmx | 0 | 0 | 0 | 0 | 0 | 0 |
+        +---+------+---+---+---+---+---+---+
+        
+        """
+
+        # Gx = lil_matrix((2 * N + nsl + npq, N + N + Ng + Ng + ntapm + ntapt + ndc)).T
 
         GSvm = Vmat @ (IbusCJmat + np.conj(Ybus) @ np.conj(Vmat)) @ vm_inv
         GSva = Vva @ (IbusCJmat - np.conj(Ybus) @ np.conj(Vmat))
@@ -656,33 +687,45 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csr
         for i, ss in enumerate(pv):
             Gvm[i, N + ss] = 1.
 
-        GS = lil_matrix((N, NV), dtype=complex)
+        # GS = lil_matrix((N, NV), dtype=complex)
 
-        GS[:, 0: npfvar] = sp.hstack([GSva, GSvm, GSpg, GSqg])
+        # GS[:, 0: npfvar] = sp.hstack([GSva, GSvm, GSpg, GSqg])
 
-        if ntapm + ntapt != 0:  # Check if there are tap variables that can affect the admittances
+        if ntapm + ntapt > 0:  # Check if there are tap variables that can affect the admittances
 
             (dSbusdm, dSfdm, dStdm,
              dSbusdt, dSfdt, dStdt) = compute_branch_power_derivatives(alltapm, alltapt, V, k_m, k_tau, Cf, Ct, R, X)
 
-            if ntapm != 0:
+            if ntapm > 0:
                 Gtapm = dSbusdm.copy()
-                GS[:, npfvar + nsl: npfvar + nsl + ntapm] = Gtapm
-            if ntapt != 0:
+                # GS[:, npfvar + nsl: npfvar + nsl + ntapm] = Gtapm
+            else:
+                Gtapm = lil_matrix((N, ntapm), dtype=complex)
+
+            if ntapt > 0:
                 Gtapt = dSbusdt.copy()
-                GS[:, npfvar + nsl + ntapm: npfvar + nsl + ntapm + ntapt] = Gtapt
+                # GS[:, npfvar + nsl + ntapm: npfvar + nsl + ntapm + ntapt] = Gtapt
+            else:
+                Gtapt = lil_matrix((N, ntapt), dtype=complex)
+
         else:
             dSbusdm, dSfdm, dStdm, dSbusdt, dSfdt, dStdt = (None, None, None, None, None, None)
 
-        if ndc != 0:
+        if ndc > 0:
 
             GSpfdc = lil_matrix((N, ndc))
-
             for link in range(ndc):
                 GSpfdc[fdc, link] = 1
                 GSpfdc[tdc, link] = -1
 
-            GS[:, npfvar + nsl + ntapm + ntapt: npfvar + nsl + ntapm + ntapt + ndc] = GSpfdc
+            # GS[:, npfvar + nsl + ntapm + ntapt: npfvar + nsl + ntapm + ntapt + ndc] = GSpfdc
+
+        else:
+            GSpfdc = lil_matrix((N, ndc))
+
+        Gslack = lil_matrix((N, nsl))
+
+        GS = sp.hstack([GSva, GSvm, GSpg, GSqg, Gslack, Gtapm, Gtapt, GSpfdc])
 
         Gx = sp.vstack([GS.real, GS.imag, GTH, Gvm]).T.tocsc()
 
@@ -836,7 +879,7 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csr
         Hx = Hx.T.tocsc()
 
     else:
-        fx = None
+        # fx = None
         Gx = None
         Hx = None
         allSf = None

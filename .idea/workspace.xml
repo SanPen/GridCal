@@ -29,10 +29,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Enforce types h">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Set types in jacobians constructor">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/NumericalMethods/ac_opf_derivatives_bound_slacks.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/NumericalMethods/ac_opf_derivatives_bound_slacks.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/acopf/acopf_run.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acopf/acopf_run.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1668,7 +1667,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="508" />
+    <option name="localTasksCounter" value="509" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1714,7 +1713,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Fixed compisition typo" />
     <MESSAGE value="Improved logs display&#10;Improved the big bus marker" />
     <MESSAGE value="Moved the power flow initialization in the ACOPF outside" />
     <MESSAGE value="Improved typing in IO" />
@@ -1739,7 +1737,8 @@
     <MESSAGE value="Fixed the contingencies memory usage" />
     <MESSAGE value="Added the probability index to the contingency run" />
     <MESSAGE value="Enforce types h" />
-    <option name="LAST_COMMIT_MESSAGE" value="Enforce types h" />
+    <MESSAGE value="Set types in jacobians constructor" />
+    <option name="LAST_COMMIT_MESSAGE" value="Set types in jacobians constructor" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2193,8 +2192,13 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/NumericalMethods/ac_opf_derivatives_bound_slacks.py</url>
-          <line>612</line>
-          <option name="timeStamp" value="1521" />
+          <line>690</line>
+          <option name="timeStamp" value="1522" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/NumericalMethods/ac_opf_derivatives_bound_slacks.py</url>
+          <line>727</line>
+          <option name="timeStamp" value="1523" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
