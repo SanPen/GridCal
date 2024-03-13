@@ -3319,6 +3319,13 @@ class MultiCircuit:
         """
         return self.bus_bars
 
+    def get_bus_bars_number(self) -> int:
+        """
+        Get all bus-bars number
+        :return:
+        """
+        return len(self.bus_bars)
+
     def add_bus_bar(self, obj: dev.BusBar):
         """
         Add Substation
@@ -3505,6 +3512,13 @@ class MultiCircuit:
         Get all countries
         """
         return self.countries
+
+    def get_country_number(self) -> int:
+        """
+        Get country number
+        :return:
+        """
+        return len(self.countries)
 
     def add_country(self, obj: dev.Country):
         """

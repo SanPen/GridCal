@@ -17,7 +17,7 @@
 
 from typing import Union
 from GridCalEngine.Devices.Parents.editable_device import DeviceType
-from GridCalEngine.Devices.Aggregation.area import GenericAreaGroup
+from GridCalEngine.Devices.Aggregation.area import GenericAreaGroup, Area
 
 
 class Zone(GenericAreaGroup):
@@ -26,13 +26,15 @@ class Zone(GenericAreaGroup):
                  idtag: Union[str, None] = None,
                  code='',
                  latitude=0.0,
-                 longitude=0.0):
+                 longitude=0.0,
+                 area: Union[Area, None] = None):
         """
         Zone
         :param name: name of the zone
         :param idtag: UUID code
         :param latitude: latitude (deg)
         :param longitude: longutide (deg)
+        :param area: (optional)
         """
         GenericAreaGroup.__init__(self,
                                   name=name,
@@ -41,3 +43,8 @@ class Zone(GenericAreaGroup):
                                   device_type=DeviceType.ZoneDevice,
                                   latitude=latitude,
                                   longitude=longitude)
+
+        self.area: Union[Area, None] = area
+
+        self.register(key="area", units="", tpe=DeviceType.AreaDevice,
+                      definition="Substation area, altenativelly this can be obtained from the zone")

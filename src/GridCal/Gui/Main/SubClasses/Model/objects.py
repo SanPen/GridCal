@@ -437,27 +437,43 @@ class ObjectsTableMain(DiagramsMain):
         if model is not None:
 
             if elm_type == DeviceType.SubstationDevice.value:
-                self.circuit.add_substation(dev.Substation('Default'))
+                self.circuit.add_substation(dev.Substation(name=f'SE {self.circuit.get_substation_number() + 1}'))
+                self.update_area_combos()
+
+            elif elm_type == DeviceType.VoltageLevelDevice.value:
+                self.circuit.add_voltage_level(dev.VoltageLevel(name=f'VL {self.circuit.get_voltage_levels_number() + 1}'))
+                self.update_area_combos()
+
+            elif elm_type == DeviceType.BusBarDevice.value:
+                self.circuit.add_bus_bar(dev.BusBar(name=f'BB {self.circuit.get_bus_bars_number() + 1}'))
                 self.update_area_combos()
 
             elif elm_type == DeviceType.ZoneDevice.value:
-                self.circuit.add_zone(dev.Zone('Default'))
+                self.circuit.add_zone(dev.Zone(name=f'Zone {self.circuit.get_zone_number() + 1}'))
                 self.update_area_combos()
 
             elif elm_type == DeviceType.AreaDevice.value:
-                self.circuit.add_area(dev.Area('Default'))
+                self.circuit.add_area(dev.Area(name=f'Area {self.circuit.get_area_number() + 1}'))
                 self.update_area_combos()
 
             elif elm_type == DeviceType.CountryDevice.value:
-                self.circuit.add_country(dev.Country('Default'))
+                self.circuit.add_country(dev.Country(name=f'Country {self.circuit.get_country_number() + 1}'))
+                self.update_area_combos()
+
+            elif elm_type == DeviceType.CommunityDevice.value:
+                self.circuit.add_community(dev.Community(name=f'Community {self.circuit.get_communities_number() + 1}'))
+                self.update_area_combos()
+
+            elif elm_type == DeviceType.RegionDevice.value:
+                self.circuit.add_region(dev.Region(name=f'Region {self.circuit.get_regions_number() + 1}'))
+                self.update_area_combos()
+
+            elif elm_type == DeviceType.MunicipalityDevice.value:
+                self.circuit.add_municipality(dev.Municipality(name=f'Municipalities {self.circuit.get_municipalities_number() + 1}'))
                 self.update_area_combos()
 
             elif elm_type == DeviceType.BusDevice.value:
-                self.circuit.add_bus(dev.Bus(name='Bus ' + str(len(self.circuit.buses) + 1),
-                                             area=self.circuit.areas[0],
-                                             zone=self.circuit.zones[0],
-                                             substation=self.circuit.substations[0],
-                                             country=self.circuit.countries[0]))
+                self.circuit.add_bus(dev.Bus(name=f'Bus {self.circuit.get_bus_number() + 1}'))
 
             elif elm_type == DeviceType.ContingencyGroupDevice.value:
                 group = dev.ContingencyGroup(name="Contingency group " + str(len(self.circuit.contingency_groups) + 1))
