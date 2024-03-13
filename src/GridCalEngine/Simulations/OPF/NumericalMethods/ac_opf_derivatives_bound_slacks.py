@@ -607,6 +607,11 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csr
     ndc = len(fdc)
     npq = len(pq)
 
+    nqct = 0
+
+    if ctQ != ReactivePowerControlMode.NoControl:
+        nqct = Ng
+
     va, vm, Pg, Qg, sl_sf, sl_st, sl_vmax, sl_vmin, tapm, tapt, Pfdc = x2var(x, nVa=N, nVm=N, nPg=Ng, nQg=Ng, npq=npq,
                                                                              M=M, ntapm=ntapm, ntapt=ntapt, ndc=ndc)
     nsl = 2 * npq + 2 * M
@@ -788,10 +793,6 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csr
                 Htaptl = lil_matrix((0, NV))
 
         else:
-            Sftapm = None
-            Sftapt = None
-            Sttapm = None
-            Sttapt = None
 
             Htapmu = lil_matrix((0, NV))
             Htapml = lil_matrix((0, NV))
@@ -823,21 +824,9 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csr
         Hx = Hx.T.tocsc()
 
     else:
-        fx = None
-        Gx = None
-        Hx = None
-        allSf = None
-        Sfmat = None
-        allSt = None
-        Stmat = None
-        Sfva = None
-        Sfvm = None
-        Sftapm = None
-        Sftapt = None
-        Stva = None
-        Stvm = None
-        Sttapm = None
-        Sttapt = None
+        fx = np.zeros(NV)
+        Gx = csc((NV, N))
+        Hx = csc((NV, 2 * M + 2 * N + 4 * Ng + nsl + nqct + 2 * (ntapm + ntapt) + 2 * ndc))
 
     # HESSIANS ---------------------------------------------------------------------------------------------------------
 
@@ -1018,8 +1007,8 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csr
             Hxx = sp.vstack([H1, H2, H3, H4, lil_matrix((nsl + ndc, NV))]).tocsc()
 
     else:
-        fxx = None
-        Gxx = None
-        Hxx = None
+        fxx = csc((NV, NV))
+        Gxx = csc((NV, NV))
+        Hxx = csc((NV, NV))
 
     return fx, Gx, Hx, fxx, Gxx, Hxx
