@@ -146,11 +146,11 @@ def compute_autodiff_structures(x, mu, lmbda, compute_jac, compute_hess, admitta
                              S=Scalc, St=St, Sf=Sf)
 
 
-def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: bool, admittances, Cg, R, X, Sd,
-                                slack, from_idx, to_idx, fdc, tdc, ndc, pq, pv, Pdcmax, V_U, V_L, P_U, P_L, tanmax, Q_U,
-                                Q_L, tapm_max, tapm_min, tapt_max, tapt_min, alltapm, alltapt, k_m, k_tau, c0, c1, c2,
-                                c_s, c_v, Sbase, rates, il, nll, ig, nig, Sg_undis, ctQ, use_bound_slacks) \
-                                -> IpsFunctionReturn:
+def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: bool, admittances, Cg, R, X, Sd, slack,
+                                from_idx, to_idx, f_nd_dc, t_nd_dc, fdc, tdc, ndc, pq, pv, Pf_nondisp, Pdcmax, V_U, V_L,
+                                P_U, P_L, tanmax, Q_U, Q_L, tapm_max, tapm_min, tapt_max, tapt_min, alltapm, alltapt,
+                                k_m, k_tau, c0, c1, c2, c_s, c_v, Sbase, rates, il, nll, ig, nig, Sg_undis, ctQ,
+                                use_bound_slacks) -> IpsFunctionReturn:
     """
 
     :param x:
@@ -211,9 +211,9 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
 
     f = eval_f(x=x, Cg=Cg, k_m=k_m, k_tau=k_tau, nll=nll, c0=c0, c1=c1, c2=c2, c_s=c_s, c_v=c_v,
                ig=ig, npq=npq, ndc=ndc, Sbase=Sbase, use_bound_slacks=use_bound_slacks)
-    G, Scalc = eval_g(x=x, Ybus=Ybus, Yf=Yf, Cg=Cg, Sd=Sd, ig=ig, nig=nig, nll=nll, npq=npq,
-                      pv=pv, fdc=fdc, tdc=tdc, k_m=k_m, k_tau=k_tau, Vm_max=V_U, Sg_undis=Sg_undis, slack=slack,
-                      use_bound_slacks=use_bound_slacks)
+    G, Scalc = eval_g(x=x, Ybus=Ybus, Yf=Yf, Cg=Cg, Sd=Sd, ig=ig, nig=nig, nll=nll, npq=npq, pv=pv, f_nd_dc=f_nd_dc,
+                      t_nd_dc=t_nd_dc, fdc=fdc, tdc=tdc, Pf_nondisp=Pf_nondisp, k_m=k_m, k_tau=k_tau, Vm_max=V_U,
+                      Sg_undis=Sg_undis, slack=slack, use_bound_slacks=use_bound_slacks)
     H, Sf, St = eval_h(x=x, Yf=Yf, Yt=Yt, from_idx=from_idx, to_idx=to_idx, pq=pq, k_m=k_m, k_tau=k_tau, Vm_max=V_U,
                        Vm_min=V_L, Pg_max=P_U, Pg_min=P_L, Qg_max=Q_U, Qg_min=Q_L, tapm_max=tapm_max, tapm_min=tapm_min,
                        tapt_max=tapt_max, tapt_min=tapt_min, Pdcmax=Pdcmax,
@@ -461,10 +461,19 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     nll = len(il)
     ngg = len(ig)
 
-    ndc = nc.nhvdc
-    fdc = nc.hvdc_data.F
-    tdc = nc.hvdc_data.T
-    Pdcmax = nc.hvdc_data.rate
+    #nalldc = nc.nhvdc
+    nondisp = np.where(nc.hvdc_data.dispatchable == 0)[0]
+    disp = np.where(nc.hvdc_data.dispatchable == 1)[0]
+
+    f_nd_dc = nc.hvdc_data.F[nondisp]
+    t_nd_dc = nc.hvdc_data.T[nondisp]
+    Pf_nondisp = nc.hvdc_data.Pset[nondisp]
+
+    ndc = len(disp)
+    fdc = nc.hvdc_data.F[disp]
+    tdc = nc.hvdc_data.T[disp]
+    Pdcmax = nc.hvdc_data.rate[disp]
+    Pfdc0 = nc.hvdc_data.Pset[disp]
 
     if use_bound_slacks:
         nsl = 2 * npq + 2 * nll
@@ -515,7 +524,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         vm0 = (Vm_max + Vm_min) / 2
         tapm0 = nc.branch_data.tap_module[k_m]
         tapt0 = nc.branch_data.tap_angle[k_tau]
-        Pfdc0 = np.zeros(ndc)
+        Pfdc0 = Pfdc0
 
     # compose the initial values
     x0 = var2x(Va=va0,
@@ -569,11 +578,11 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
             # run the solver with the analytic derivatives
             result = interior_point_solver(x0=x0, n_x=NV, n_eq=NE, n_ineq=NI,
                                            func=compute_analytic_structures,
-                                           arg=(admittances, Cg, R, X, Sd, slack, from_idx, to_idx, fdc, tdc, ndc, pq,
-                                                pv, Pdcmax, Vm_max, Vm_min, Pg_max, Pg_min, tanmax, Qg_max, Qg_min,
-                                                tapm_max, tapm_min, tapt_max, tapt_min, alltapm, alltapt, k_m, k_tau,
-                                                c0, c1, c2, c_s, c_v, Sbase, rates, il, nll, ig, nig, Sg_undis,
-                                                pf_options.control_Q, use_bound_slacks),
+                                           arg=(admittances, Cg, R, X, Sd, slack, from_idx, to_idx, f_nd_dc, t_nd_dc,
+                                                fdc, tdc, ndc, pq, pv, Pf_nondisp, Pdcmax, Vm_max, Vm_min, Pg_max,
+                                                Pg_min, tanmax, Qg_max, Qg_min, tapm_max, tapm_min, tapt_max, tapt_min,
+                                                alltapm, alltapt, k_m, k_tau, c0, c1, c2, c_s, c_v, Sbase, rates, il,
+                                                nll, ig, nig, Sg_undis, pf_options.control_Q, use_bound_slacks),
                                            verbose=opf_options.verbose,
                                            max_iter=opf_options.ips_iterations,
                                            tol=opf_options.ips_tolerance,
@@ -651,14 +660,25 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
             muz_f = abs(result.z[line] * result.mu[line])
             muz_t = abs(result.z[line + nll] * result.mu[line + nll])
             if muz_f >= 1e-3 or muz_t >= 1e-3:
-                logger.add_warning('Line rating constraint violated', device=str(line),
+                logger.add_warning('Line rating constraint violated', device=str(il[line]),
                                    value=str((muz_f, muz_t)), expected_value='< 1e-3')
+
         for link in range(ndc):
             muz_f = abs(result.z[NI - 2 * ndc + link] * result.mu[NI - 2 * ndc + link])
             muz_t = abs(result.z[NI - ndc + link] * result.mu[NI - ndc + link])
             if muz_f >= 1e-3 or muz_t >= 1e-3:
                 logger.add_warning('DC Link rating constraint violated', device=str(link),
                                    value=str((muz_f, muz_t)), expected_value='< 1e-3')
+
+        for line in range(nll):
+            if sl_sf[line] >= 1e-3 or sl_st[line] >= 1e-3:
+                logger.add_warning('Line rate exceeded', device=str(il[line]),
+                                   value=str((sl_sf[line], sl_st[line])), expected_value='< 1e-3')
+
+        for pqbus in range(npq):
+            if sl_vmax[pqbus] >= 1e-3 or sl_vmin[pqbus] >= 1e-3:
+                logger.add_warning('Voltage forced to go out of operating range', device=str(pq[pqbus]),
+                                   value=str((sl_vmin[pqbus], sl_vmax[pqbus])), expected_value='< 1e-3')
 
     logger.print()
     return NonlinearOPFResults(Va=Va, Vm=Vm, S=S, Sf=Sf, St=St, loading=loading,
