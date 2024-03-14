@@ -30,7 +30,7 @@ from GridCalEngine.IO.cim.cgmes.cgmes_utils import (get_nominal_voltage,
                                                     get_windings,
                                                     get_regulating_control, get_pu_values_power_transformer_end,
                                                     get_slack_id)
-from GridCalEngine.IO.cim.cgmes.gridcal_to_cgmes import gridcal_to_cgmes
+from GridCalEngine.IO.cim.cgmes.gridcal_to_cgmes import gridcal_to_cgmes    #TODO move them here
 from GridCalEngine.data_logger import DataLogger
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.identified_object import IdentifiedObject
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.terminal import Terminal
@@ -160,6 +160,24 @@ def find_connections(cgmes_elm: IdentifiedObject,
                          device_class=cgmes_elm.tpe)
 
     return calc_nodes, cns
+
+
+def find_object_by_idtag(object_list, target_idtag):  #TODO mone to somewhere
+    """
+    Finds an object with the specified idtag
+     in the given object_list from a Multi Circuit.
+
+    Args:
+        object_list (list[MyObject]): List of MyObject instances.
+        target_idtag (str): The uuid to search for.
+
+    Returns:
+        MyObject or None: The found object or None if not found.
+    """
+    for obj in object_list:
+        if obj.idtag == target_idtag:
+            return obj
+    return None
 
 
 def get_gcdev_calculation_nodes(cgmes_model: CgmesCircuit,
@@ -885,21 +903,12 @@ def get_gcdev_switches(cgmes_model: CgmesCircuit,
 
 
 def get_gcdev_substations(cgmes_model: CgmesCircuit,
-                          gcdev_model: MultiCircuit,
-                          calc_node_dict: Dict[str, gcdev.Bus],
-                          cn_dict: Dict[str, gcdev.ConnectivityNode],
-                          device_to_terminal_dict: Dict[str, List[Terminal]],
-                          logger: DataLogger
-                          ) -> None:
+                          gcdev_model: MultiCircuit) -> None:
     """
-    Convert the CGMES substations to gcdev
+    Convert the CGMES substations to gcdev substations
 
     :param cgmes_model: CgmesCircuit
     :param gcdev_model: gcdevCircuit
-    :param calc_node_dict: Dict[str, gcdev.Bus]
-    :param cn_dict: Dict[str, gcdev.ConnectivityNode]
-    :param device_to_terminal_dict: Dict[str, Terminal]
-    :param logger:
     """
     # convert substations
     for device_list in [cgmes_model.Substation_list]:
@@ -916,7 +925,53 @@ def get_gcdev_substations(cgmes_model: CgmesCircuit,
 
             gcdev_model.add_substation(gcdev_elm)
 
-    # convert Busbars
+
+def get_gcdev_voltage_levels(cgmes_model: CgmesCircuit,
+                             gcdev_model: MultiCircuit,
+                             logger: DataLogger) -> None:
+    """
+    Convert the CGMES voltage levels to gcdev voltage levels
+
+    :param cgmes_model: CgmesCircuit
+    :param gcdev_model: gcdevCircuit
+    :param logger:
+    """
+    for cgmes_elm in cgmes_model.VoltageLevel_list:
+
+        gcdev_elm = gcdev.VoltageLevel(
+            idtag=cgmes_elm.uuid,
+            name=cgmes_elm.name,
+            Vnom=cgmes_elm.BaseVoltage.nominalVoltage
+        )
+
+        subs = find_object_by_idtag(
+            object_list=gcdev_model.substations,
+            target_idtag=cgmes_elm.Substation.uuid  # gcdev_elm.idtag
+        )
+        if subs:
+            gcdev_elm.substation = subs
+
+        gcdev_model.add_voltage_level(gcdev_elm)
+
+
+def get_gcdev_busbars(cgmes_model: CgmesCircuit,
+                      gcdev_model: MultiCircuit,
+                      calc_node_dict: Dict[str, gcdev.Bus],
+                      cn_dict: Dict[str, gcdev.ConnectivityNode],
+                      device_to_terminal_dict: Dict[str, List[Terminal]],
+                      logger: DataLogger
+                      ) -> None:
+    """
+    Convert the CGMES busbars to gcdev busbars
+
+    :param cgmes_model: CgmesCircuit
+    :param gcdev_model: gcdevCircuit
+    :param calc_node_dict: Dict[str, gcdev.Bus]
+    :param cn_dict: Dict[str, gcdev.ConnectivityNode]
+    :param device_to_terminal_dict: Dict[str, Terminal]
+    :param logger:
+    """
+    # convert busbars
     for device_list in [cgmes_model.BusbarSection_list]:
 
         for cgmes_elm in device_list:
@@ -943,7 +998,7 @@ def get_gcdev_substations(cgmes_model: CgmesCircuit,
                     name=cgmes_elm.name,
                     idtag=cgmes_elm.uuid,
                     code=cgmes_elm.description,
-                    substation=substation,
+                    # substation=substation,  #TODO fix it with VoltageLevel
                     cn=cn
                 )
                 gcdev_model.add_bus_bar(gcdev_elm)
@@ -993,17 +1048,19 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
     get_gcdev_shunts(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger, Sbase)
     get_gcdev_switches(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger, Sbase)
 
-    get_gcdev_substations(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger)
+    get_gcdev_substations(cgmes_model, gc_model)
+    get_gcdev_voltage_levels(cgmes_model, gc_model, logger)
+    get_gcdev_busbars(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger)
     print('debug')
 
     # Export with ET
-    start = time.time()
-    serializer = CimExporter(cgmes_model)
-    serializer.export()
-    end = time.time()
-    print("ET export time: ", end - start, "sec")
+    # start = time.time()
+    # serializer = CimExporter(cgmes_model)
+    # serializer.export()
+    # end = time.time()
+    # print("ET export time: ", end - start, "sec")
 
     # Gridcal to cgmes
-    # exported_cgmes = gridcal_to_cgmes(gc_model, logger)
+    cgmes_model_export = gridcal_to_cgmes(gc_model, logger)
 
     return gc_model
