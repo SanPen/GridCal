@@ -95,5 +95,6 @@ ALL_DEV_TYPES = Union[
     EmissionGas,
     GeneratorEmission,
     GeneratorFuel,
-    GeneratorTechnology
+    GeneratorTechnology,
+    BranchGroup
 ]

@@ -272,6 +272,9 @@ class MultiCircuit:
         # List of transformer types
         self.transformer_types: List[dev.TransformerType] = list()
 
+        # list of branch groups
+        self.branch_groups: List[dev.BranchGroup] = list()
+
         # list of substations
         self.substations: List[dev.Substation] = list()  # [self.default_substation]
 
@@ -387,6 +390,7 @@ class MultiCircuit:
                 dev.Contingency(),
                 dev.InvestmentsGroup(),
                 dev.Investment(),
+                dev.BranchGroup(),
             ],
             "Tags & Associations": [
                 dev.Technology(),
@@ -1710,6 +1714,57 @@ class MultiCircuit:
 
         self.if_measurements.remove(obj)
 
+    # ----------------------------------------------------------------------------------------------------------------------
+    # branch_groups
+    # ----------------------------------------------------------------------------------------------------------------------
+
+    def get_branch_groups(self) -> List[dev.BranchGroup]:
+        """
+        List of branch_groups
+        :return: List[dev.BranchGroup]
+        """
+        return self.branch_groups
+
+    def get_branch_groups_number(self) -> int:
+        """
+        Size of the list of branch_groups
+        :return: size of branch_groups
+        """
+        return len(self.branch_groups)
+
+    def get_branch_group_at(self, i: int) -> dev.BranchGroup:
+        """
+        Get branch_group at i
+        :param i: index
+        :return: BranchGroup
+        """
+        return self.branch_groups[i]
+
+    def get_branch_group_names(self) -> StrVec:
+        """
+        Array of branch_group names
+        :return: StrVec
+        """
+        return np.array([e.name for e in self.branch_groups])
+
+    def add_branch_group(self, obj: dev.BranchGroup):
+        """
+        Add a BranchGroup object
+        :param obj: BranchGroup instance
+        """
+
+        if self.time_profile is not None:
+            obj.create_profiles(self.time_profile)
+        self.branch_groups.append(obj)
+
+    def delete_branch_group(self, obj: dev.BranchGroup) -> None:
+        """
+        Add a BranchGroup object
+        :param obj: BranchGroup instance
+        """
+
+        self.branch_groups.remove(obj)
+
     def get_elements_by_type(self, device_type: DeviceType):
         """
         Get set of elements and their parent nodes
@@ -1761,6 +1816,9 @@ class MultiCircuit:
 
         elif device_type == DeviceType.VscDevice:
             return self.vsc_devices
+
+        elif device_type == DeviceType.BranchGroupDevice:
+            return self.branch_groups
 
         elif device_type == DeviceType.BusDevice:
             return self.buses
@@ -1955,6 +2013,9 @@ class MultiCircuit:
                 elm.correct_buses_connection()
             self.vsc_devices = devices
 
+        elif device_type == DeviceType.BranchGroupDevice:
+            self.branch_groups = devices
+
         elif device_type == DeviceType.BusDevice:
             self.buses = devices
 
@@ -2142,6 +2203,9 @@ class MultiCircuit:
         elif element_type == DeviceType.ConnectivityNodeDevice:
             return self.delete_connectivity_node(obj)
 
+        elif element_type == DeviceType.BranchGroupDevice:
+            return self.delete_branch_group(obj)
+
         elif element_type == DeviceType.BusBarDevice:
             return self.delete_bus_bar(obj)
 
@@ -2299,7 +2363,8 @@ class MultiCircuit:
         """
         cpy = MultiCircuit(name=self.name, Sbase=self.Sbase, fbase=self.fBase, idtag=self.idtag)
 
-        ppts = ['lines',
+        ppts = ['branch_groups',
+                'lines',
                 'dc_lines',
                 'transformers2w',
                 'hvdc_lines',
@@ -2403,6 +2468,8 @@ class MultiCircuit:
         self.time_profile = None
 
         self.contingencies = list()
+
+        self.branch_groups = list()
 
     def get_catalogue_dict(self, branches_only=False):
         """
@@ -2519,30 +2586,6 @@ class MultiCircuit:
         else:
             t = list()
         return {'time': t}
-
-    def assign_circuit(self, circ: "MultiCircuit"):
-        """
-        Assign a circuit object to this object.
-        :param circ: Another Circuit instance
-        :return:
-        """
-        self.buses = circ.buses
-
-        self.lines = circ.lines
-        self.transformers2w = circ.transformers2w
-        self.hvdc_lines = circ.hvdc_lines
-        self.vsc_devices = circ.vsc_devices
-
-        self.name = circ.name
-        self.Sbase = circ.Sbase
-        self.fBase = circ.fBase
-
-        self.sequence_line_types = list(set(self.sequence_line_types + circ.sequence_line_types))
-        self.wire_types = list(set(self.wire_types + circ.wire_types))
-        self.overhead_line_types = list(set(self.overhead_line_types + circ.overhead_line_types))
-        self.underground_cable_types = list(set(self.underground_cable_types + circ.underground_cable_types))
-        self.sequence_line_types = list(set(self.sequence_line_types + circ.sequence_line_types))
-        self.transformer_types = list(set(self.transformer_types + circ.transformer_types))
 
     def build_graph(self):
         """

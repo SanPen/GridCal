@@ -129,27 +129,34 @@ class ObjectsTableMain(DiagramsMain):
 
         elif elm_type == DeviceType.LineDevice:
             elm = dev.Line()
+            dictionary_of_lists = {DeviceType.BranchGroupDevice.value: self.circuit.get_branch_groups()}
 
         elif elm_type == DeviceType.Transformer2WDevice:
             elm = dev.Transformer2W()
+            dictionary_of_lists = {DeviceType.BranchGroupDevice.value: self.circuit.get_branch_groups()}
 
         elif elm_type == DeviceType.WindingDevice:
             elm = dev.Winding()
+            dictionary_of_lists = {DeviceType.BranchGroupDevice.value: self.circuit.get_branch_groups()}
 
         elif elm_type == DeviceType.Transformer3WDevice:
             elm = dev.Transformer3W()
 
         elif elm_type == DeviceType.HVDCLineDevice:
             elm = dev.HvdcLine()
+            dictionary_of_lists = {DeviceType.BranchGroupDevice.value: self.circuit.get_branch_groups()}
 
         elif elm_type == DeviceType.VscDevice:
             elm = dev.VSC()
+            dictionary_of_lists = {DeviceType.BranchGroupDevice.value: self.circuit.get_branch_groups()}
 
         elif elm_type == DeviceType.UpfcDevice:
             elm = dev.UPFC()
+            dictionary_of_lists = {DeviceType.BranchGroupDevice.value: self.circuit.get_branch_groups()}
 
         elif elm_type == DeviceType.DCLineDevice:
             elm = dev.DcLine()
+            dictionary_of_lists = {DeviceType.BranchGroupDevice.value: self.circuit.get_branch_groups()}
 
         elif elm_type == DeviceType.SubstationDevice:
             elm = dev.Substation()
@@ -208,6 +215,9 @@ class ObjectsTableMain(DiagramsMain):
 
         elif elm_type == DeviceType.InvestmentsGroupDevice:
             elm = dev.InvestmentsGroup()
+
+        elif elm_type == DeviceType.BranchGroupDevice:
+            elm = dev.BranchGroup()
 
         elif elm_type == DeviceType.Technology:
             elm = dev.Technology()
@@ -525,6 +535,10 @@ class ObjectsTableMain(DiagramsMain):
             elif elm_type == DeviceType.InvestmentsGroupDevice.value:
                 group = dev.InvestmentsGroup(name=f"Investments group {len(self.circuit.investments_groups) + 1}")
                 self.circuit.add_investments_group(group)
+
+            elif elm_type == DeviceType.BranchGroupDevice.value:
+                group = dev.BranchGroup(name=f"Branch group {self.circuit.get_branch_groups_number() + 1}")
+                self.circuit.add_branch_group(group)
 
             elif elm_type == DeviceType.Technology.value:
                 tech = dev.Technology(name=f"Technology {len(self.circuit.technologies) + 1}")

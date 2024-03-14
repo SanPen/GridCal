@@ -28,3 +28,4 @@ from GridCalEngine.Devices.Aggregation.country import Country
 from GridCalEngine.Devices.Aggregation.community import Community
 from GridCalEngine.Devices.Aggregation.region import Region
 from GridCalEngine.Devices.Aggregation.municipality import Municipality
+from GridCalEngine.Devices.Aggregation.branch_group import BranchGroup

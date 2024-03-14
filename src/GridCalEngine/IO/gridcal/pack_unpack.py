@@ -81,6 +81,8 @@ def get_objects_dictionary() -> Dict[str, ALL_DEV_TYPES]:
                     'sequence_line_types': dev.SequenceLineType(),
                     'transformer_types': dev.TransformerType(),
 
+                    'branch_group': dev.BranchGroup(),
+
                     'branch': dev.Branch(),
                     'transformer2w': dev.Transformer2W(),
 
