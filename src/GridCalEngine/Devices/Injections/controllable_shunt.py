@@ -76,7 +76,7 @@ class ControllableShunt(InjectionParent):
         self._b_steps = np.zeros(number_of_steps)
 
         # regardless of the linear / nonlinear type, we always store
-        # the cummulative values because the query is faster
+        # the cumulative values because the query is faster
         for i in range(number_of_steps):
             self._g_steps[i] = g_per_step * (i + 1)
             self._b_steps[i] = b_per_step * (i + 1)
