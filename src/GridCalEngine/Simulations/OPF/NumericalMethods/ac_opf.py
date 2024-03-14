@@ -170,7 +170,7 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
     alltapm0 = alltapm.copy()
     alltapt0 = alltapt.copy()
 
-    _, _, _, _, tapm, tapt, _ = x2var(x, nVa=N, nVm=N, nPg=Ng, nQg=Ng, ntapm=ntapm, ntapt=ntapt, ndc=ndc)
+    _, _, _, _, tapm, tapt, _ = x2var(x, nva=N, nvm=N, npg=Ng, nqg=Ng, ntapm=ntapm, ntapt=ntapt, ndc=ndc)
 
     alltapm[k_m] = tapm
     alltapt[k_tau] = tapt
@@ -473,13 +473,13 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         Pfdc0 = np.array([0] * ndc)
 
     # compose the initial values
-    x0 = var2x(Va=va0,
-               Vm=vm0,
-               Pg=p0gen,
-               Qg=q0gen,
+    x0 = var2x(va=va0,
+               vm=vm0,
+               pg=p0gen,
+               qg=q0gen,
                tapm=tapm0,
                tapt=tapt0,
-               Pfdc=Pfdc0)
+               pfdc=Pfdc0)
 
     # number of variables
     NV = len(x0)
@@ -530,7 +530,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                                            trust=opf_options.ips_trust_radius)
 
     # convert the solution to the problem variables
-    Va, Vm, Pg_dis, Qg_dis, tapm, tapt, Pfdc = x2var(result.x, nVa=nbus, nVm=nbus, nPg=ngg, nQg=ngg, ntapm=ntapm,
+    Va, Vm, Pg_dis, Qg_dis, tapm, tapt, Pfdc = x2var(result.x, nva=nbus, nvm=nbus, npg=ngg, nqg=ngg, ntapm=ntapm,
                                                      ntapt=ntapt, ndc=ndc)
 
     Pg = np.zeros(len(ind_gens))

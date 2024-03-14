@@ -34,7 +34,8 @@ def x2var(x: Vec,
           M: int,
           ntapm: int,
           ntapt: int,
-          ndc: int) -> Tuple[Vec, Vec, Vec, Vec, Vec, Vec, Vec, Vec, Vec, Vec, Vec]:
+          ndc: int,
+          use_bound_slacks: bool) -> Tuple[Vec, Vec, Vec, Vec, Vec, Vec, Vec, Vec, Vec, Vec, Vec]:
     """
     Convert the x solution vector to its composing variables
     :param x: solution vector
@@ -66,23 +67,33 @@ def x2var(x: Vec,
 
     Qg = x[a: b]
     a = b
-    b += M
 
-    sl_sf = x[a: b]
-    a = b
-    b += M
+    if use_bound_slacks:
+        b += M
 
-    sl_st = x[a: b]
-    a = b
-    b += npq
+        sl_sf = x[a: b]
+        a = b
+        b += M
 
-    sl_vmax = x[a: b]
-    a = b
-    b += npq
+        sl_st = x[a: b]
+        a = b
+        b += npq
 
-    sl_vmin = x[a: b]
-    a = b
-    b += ntapm
+        sl_vmax = x[a: b]
+        a = b
+        b += npq
+
+        sl_vmin = x[a: b]
+        a = b
+        b += ntapm
+
+    else:
+        b += ntapm
+
+        sl_sf = np.array([])
+        sl_st = np.array([])
+        sl_vmax = np.array([])
+        sl_vmin = np.array([])
 
     tapm = x[a: b]
     a = b
@@ -291,9 +302,9 @@ def compute_branch_power_second_derivatives(alltapm: Vec,
         dStdmdvm_f = Vt_ * (1 / vm[f]) * np.conj(yk * Vf_) / (mp ** 2 * np.exp(-1j * tau))
         dStdmdvm_t = Vt_ * (1 / vm[t]) * np.conj(yk * Vf_) / (mp ** 2 * np.exp(-1j * tau))
 
-        l = np.where(k_tau == line)[0]
-        if len(l) != 0:
-            ang = l[0]
+        lin = np.where(k_tau == line)[0]
+        if len(lin) != 0:
+            ang = lin[0]
 
             dSfdmdt_ = - Vf_ * 1j * (np.conj(yk * Vt_) / (mp ** 2 * np.exp(1j * tau)))
             dStdmdt_ = Vt_ * 1j * (np.conj(yk * Vf_) / (mp ** 2 * np.exp(-1j * tau)))
@@ -393,7 +404,7 @@ def compute_branch_power_second_derivatives(alltapm: Vec,
 
 
 def eval_f(x: Vec, Cg: csr_matrix, k_m: Vec, k_tau: Vec, nll: int, c0: Vec, c1: Vec, c2: Vec, c_s: Vec,
-           c_v: Vec, ig: Vec, npq: int, ndc: int, Sbase: float) -> float:
+           c_v: Vec, ig: Vec, npq: int, ndc: int, Sbase: float, use_bound_slacks: bool) -> float:
     """
 
     :param x:
@@ -418,7 +429,8 @@ def eval_f(x: Vec, Cg: csr_matrix, k_m: Vec, k_tau: Vec, nll: int, c0: Vec, c1: 
     ntapt = len(k_tau)
 
     _, _, Pg, Qg, sl_sf, sl_st, sl_vmax, sl_vmin, _, _, _ = x2var(x, nVa=N, nVm=N, nPg=Ng, nQg=Ng, npq=npq,
-                                                                  M=nll, ntapm=ntapm, ntapt=ntapt, ndc=ndc)
+                                                                  M=nll, ntapm=ntapm, ntapt=ntapt, ndc=ndc,
+                                                                  use_bound_slacks=use_bound_slacks)
 
     fval = 1e-4 * (np.sum((c0 + c1 * Pg * Sbase + c2 * np.power(Pg * Sbase, 2)))
                    + np.sum(c_s * (sl_sf + sl_st)) + np.sum(c_v * (sl_vmax + sl_vmin)))
@@ -427,8 +439,8 @@ def eval_f(x: Vec, Cg: csr_matrix, k_m: Vec, k_tau: Vec, nll: int, c0: Vec, c1: 
 
 
 def eval_g(x: Vec, Ybus: csr_matrix, Yf: csr_matrix, Cg: csr_matrix, Sd: CxVec, ig: Vec, nig: Vec, nll: int, npq: int,
-           pv: Vec, fdc: Vec, tdc: Vec, k_m: Vec, k_tau: Vec, Vm_max: Vec, Sg_undis: CxVec, slack: Vec) \
-        -> Tuple[Vec, Vec]:
+           pv: Vec, fdc: Vec, tdc: Vec, k_m: Vec, k_tau: Vec, Vm_max: Vec, Sg_undis: CxVec, slack: Vec,
+           use_bound_slacks: bool) -> Tuple[Vec, Vec]:
     """
 
     :param x:
@@ -457,7 +469,8 @@ def eval_g(x: Vec, Ybus: csr_matrix, Yf: csr_matrix, Cg: csr_matrix, Sd: CxVec, 
     ndc = len(fdc)
 
     va, vm, Pg_dis, Qg_dis, sl_sf, sl_st, sl_vmax, sl_vmin, _, _, Pfdc = x2var(x, nVa=N, nVm=N, nPg=Ng, nQg=Ng, npq=npq,
-                                                                               M=nll, ntapm=ntapm, ntapt=ntapt, ndc=ndc)
+                                                                               M=nll, ntapm=ntapm, ntapt=ntapt, ndc=ndc,
+                                                                               use_bound_slacks=use_bound_slacks)
 
     V = vm * np.exp(1j * va)
     S = V * np.conj(Ybus @ V)
@@ -477,7 +490,7 @@ def eval_g(x: Vec, Ybus: csr_matrix, Yf: csr_matrix, Cg: csr_matrix, Sd: CxVec, 
 def eval_h(x: Vec, Yf: csr_matrix, Yt: csr_matrix, from_idx: Vec, to_idx: Vec, pq: Vec, k_m: Vec, k_tau: Vec,
            Vm_max: Vec, Vm_min: Vec, Pg_max: Vec, Pg_min: Vec, Qg_max: Vec, Qg_min: Vec, tapm_max: Vec,
            tapm_min: Vec, tapt_max: Vec, tapt_min: Vec, Pdcmax: Vec, rates: Vec, il: Vec, ig: Vec,
-           tanmax: Vec, ctQ: ReactivePowerControlMode) -> Tuple[Vec, CxVec, CxVec]:
+           tanmax: Vec, ctQ: ReactivePowerControlMode, use_bound_slacks: bool) -> Tuple[Vec, CxVec, CxVec]:
     """
 
     :param x:
@@ -515,7 +528,8 @@ def eval_h(x: Vec, Yf: csr_matrix, Yt: csr_matrix, from_idx: Vec, to_idx: Vec, p
     nll = len(il)
 
     va, vm, Pg, Qg, sl_sf, sl_st, sl_vmax, sl_vmin, tapm, tapt, Pfdc = x2var(x, nVa=N, nVm=N, nPg=Ng, nQg=Ng, npq=npq,
-                                                                             M=nll, ntapm=ntapm, ntapt=ntapt, ndc=ndc)
+                                                                             M=nll, ntapm=ntapm, ntapt=ntapt, ndc=ndc,
+                                                                             use_bound_slacks=use_bound_slacks)
 
     V = vm * np.exp(1j * va)
     Sf = V[from_idx[il]] * np.conj(Yf[il, :] @ V)
@@ -527,24 +541,40 @@ def eval_h(x: Vec, Yf: csr_matrix, Yt: csr_matrix, from_idx: Vec, to_idx: Vec, p
     Sf2 = np.conj(Sf) * Sf
     St2 = np.conj(St) * St
 
-    hval = np.r_[
-        Sf2.real - (rates[il] ** 2) - sl_sf,  # rates "lower limit"
-        St2.real - (rates[il] ** 2) - sl_st,  # rates "upper limit"
-        vm[pq] - Vm_max[pq] - sl_vmax,  # voltage module upper limit
-        Pg - Pg_max[ig],  # generator P upper limits
-        Qg - Qg_max[ig],  # generator Q upper limits
-        Vm_min[pq] - vm[pq] - sl_vmin,  # voltage module lower limit
-        Pg_min[ig] - Pg,  # generator P lower limits
-        Qg_min[ig] - Qg,  # generation Q lower limits
-        - sl_sf,
-        - sl_st,
-        - sl_vmax,
-        - sl_vmin,
-        tapm - tapm_max,
-        tapm_min - tapm,
-        tapt - tapt_max,
-        tapt_min - tapt
-    ]
+    if use_bound_slacks:
+        hval = np.r_[
+            Sf2.real - (rates[il] ** 2) - sl_sf,  # rates "lower limit"
+            St2.real - (rates[il] ** 2) - sl_st,  # rates "upper limit"
+            vm[pq] - Vm_max[pq] - sl_vmax,  # voltage module upper limit
+            Pg - Pg_max[ig],  # generator P upper limits
+            Qg - Qg_max[ig],  # generator Q upper limits
+            Vm_min[pq] - vm[pq] - sl_vmin,  # voltage module lower limit
+            Pg_min[ig] - Pg,  # generator P lower limits
+            Qg_min[ig] - Qg,  # generation Q lower limits
+            - sl_sf,
+            - sl_st,
+            - sl_vmax,
+            - sl_vmin,
+            tapm - tapm_max,
+            tapm_min - tapm,
+            tapt - tapt_max,
+            tapt_min - tapt
+        ]
+    else:
+        hval = np.r_[
+            Sf2.real - (rates[il] ** 2),  # rates "lower limit"
+            St2.real - (rates[il] ** 2),  # rates "upper limit"
+            vm[pq] - Vm_max[pq],  # voltage module upper limit
+            Pg - Pg_max[ig],  # generator P upper limits
+            Qg - Qg_max[ig],  # generator Q upper limits
+            Vm_min[pq] - vm[pq],  # voltage module lower limit
+            Pg_min[ig] - Pg,  # generator P lower limits
+            Qg_min[ig] - Qg,  # generation Q lower limits
+            tapm - tapm_max,
+            tapm_min - tapm,
+            tapt - tapt_max,
+            tapt_min - tapt
+        ]
 
     if ctQ != ReactivePowerControlMode.NoControl:
         hval = np.r_[hval, Qg ** 2 - tanmax ** 2 * Pg ** 2]
@@ -559,8 +589,9 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csr
                            Yf: csr_matrix, Yt: csr_matrix, Ybus: csr_matrix, Sbase: float, il: Vec, ig: Vec,
                            slack: Vec, pq: Vec, pv: Vec, tanmax: Vec, alltapm: Vec, alltapt: Vec, fdc: Vec, tdc: Vec,
                            k_m: Vec, k_tau: Vec, mu, lmbda, R: Vec, X: Vec, F: Vec, T: Vec,
-                           ctQ: ReactivePowerControlMode, compute_jac: bool, compute_hess: bool) -> Tuple[Vec, csc, csc,
-                                                                                                    csc, csc, csc]:
+                           ctQ: ReactivePowerControlMode, use_bound_slacks: bool, compute_jac: bool,
+                           compute_hess: bool) -> Tuple[Vec, csc, csc, csc, csc, csc]:
+
     """
 
     :param x:
@@ -607,14 +638,15 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csr
     ndc = len(fdc)
     npq = len(pq)
 
-    nqct = 0
-
     if ctQ != ReactivePowerControlMode.NoControl:
         nqct = Ng
+    else:
+        nqct = 0
 
     va, vm, Pg, Qg, sl_sf, sl_st, sl_vmax, sl_vmin, tapm, tapt, Pfdc = x2var(x, nVa=N, nVm=N, nPg=Ng, nQg=Ng, npq=npq,
-                                                                             M=M, ntapm=ntapm, ntapt=ntapt, ndc=ndc)
-    nsl = 2 * npq + 2 * M
+                                                                             M=M, ntapm=ntapm, ntapt=ntapt, ndc=ndc,
+                                                                             use_bound_slacks=use_bound_slacks)
+    nsl = len(np.r_[sl_sf, sl_st, sl_vmax, sl_vmin])
     npfvar = 2 * N + 2 * Ng  # Number of variables of the typical power flow (V, th, P, Q). Used to ease readability
 
     V = vm * np.exp(1j * va)
@@ -643,14 +675,15 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csr
         """
         The following comments illustrate the shapes of the equality constraints gradients:
         Gx = 
+            NV
         +---------+
-        | GS.real |
+        | GS.real | N 
         +---------+
-        | GS.imag |
+        | GS.imag | N 
         +---------+
-        | GTH     |
+        | GTH     | nslack
         +---------+
-        | Gvm     |
+        | Gvm     | npv
         +---------+
         
         where Gx has shape (N + N + nslack + npv, N + N + Ng + Ng + nsl + ntapm + ntapt + ndc), where nslack is
@@ -658,25 +691,29 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csr
         Each submatrix is composed as:
         
         GS = 
+            N     N      Ng     Ng      nsl     ntapm    ntapt    ndc
         +------+------+------+------+---------+--------+--------+------+
-        | GSva | GSvm | GSpg | GSqg | GSslack | GStapm | GStapt | GSdc |
+        | GSva | GSvm | GSpg | GSqg | GSslack | GStapm | GStapt | GSdc | N
         +------+------+------+------+---------+--------+--------+------+
         
         GTH = 
-        +------+---+---+---+---+---+---+---+
-        | GTHx | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-        +------+---+---+---+---+---+---+---+
+           N      N     Ng    Ng   nsl  ntapm  ntapt ndc
+        +------+-----+-----+-----+-----+-----+-----+-----+
+        | GTHx |  0  |  0  |  0  |  0  |  0  |  0  |  0  |
+        +------+-----+-----+-----+-----+-----+-----+-----+
         
         Gvm = 
-        +---+------+---+---+---+---+---+---+
-        | 0 | Gvmx | 0 | 0 | 0 | 0 | 0 | 0 |
-        +---+------+---+---+---+---+---+---+
         
+           N     N     Ng    Ng    nsl  ntapm ntapt  ndc
+        +-----+------+-----+-----+-----+-----+-----+-----+
+        |  0  | Gvmx |  0  |  0  |  0  |  0  |  0  |  0  |
+        +-----+------+-----+-----+-----+-----+-----+-----+
+     
         """
 
         Vva = 1j * Vmat
 
-        GSvm = Vmat @ (IbusCJmat + np.conj(Ybus) @ np.conj(Vmat)) @ vm_inv
+        GSvm = Vmat @ (IbusCJmat + np.conj(Ybus) @ np.conj(Vmat)) @ vm_inv  # N x N matrix
         GSva = Vva @ (IbusCJmat - np.conj(Ybus) @ np.conj(Vmat))
         GSpg = -Cg[:, ig]
         GSqg = -1j * Cg[:, ig]
@@ -702,7 +739,7 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csr
         else:
             Gtapt = lil_matrix((N, ntapt), dtype=complex)
 
-        GSpfdc = lil_matrix((N, ndc))
+        GSpfdc = lil_matrix((N, ndc), dtype=complex)
         for link in range(ndc):
             GSpfdc[fdc, link] = 1
             GSpfdc[tdc, link] = -1
@@ -711,7 +748,7 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csr
 
         GS = sp.hstack([GSva, GSvm, GSpg, GSqg, Gslack, Gtapm, Gtapt, GSpfdc])
 
-        Gx = sp.vstack([GS.real, GS.imag, GTH, Gvm]).T.tocsc()
+        Gx = sp.vstack([GS.real, GS.imag, GTH, Gvm]).tocsc()
 
         # INEQUALITY CONSTRAINTS GRAD ----------------------------------------------------------------------------------
 
@@ -735,28 +772,37 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csr
         Sfva = (1j * (IfCJmat @ Cf[il, :] @ Vmat - Vfmat @ np.conj(Yf[il, :]) @ np.conj(Vmat)))
         Stva = (1j * (ItCJmat @ Ct[il, :] @ Vmat - Vtmat @ np.conj(Yt[il, :]) @ np.conj(Vmat)))
 
-        Hvu = sp.hstack([lil_matrix((npq, N)), diags(np.ones(npq)), lil_matrix((npq, 2 * Ng + 2 * M)),
-                         diags(-np.ones(npq)), lil_matrix((npq, npq + ntapm + ntapt + ndc))])
-
-        Hvl = sp.hstack([lil_matrix((npq, N)), diags(- np.ones(npq)), lil_matrix((npq, 2 * Ng + 2 * M + npq)),
-                         diags(-np.ones(npq)), lil_matrix((npq, ntapm + ntapt + ndc))])
-
         Hpu = sp.hstack([lil_matrix((Ng, 2 * N)), diags(np.ones(Ng)), lil_matrix((Ng, NV - 2 * N - Ng))])
         Hpl = sp.hstack([lil_matrix((Ng, 2 * N)), diags(- np.ones(Ng)), lil_matrix((Ng, NV - 2 * N - Ng))])
         Hqu = sp.hstack([lil_matrix((Ng, 2 * N + Ng)), diags(np.ones(Ng)), lil_matrix((Ng, NV - 2 * N - 2 * Ng))])
         Hql = sp.hstack([lil_matrix((Ng, 2 * N + Ng)), diags(- np.ones(Ng)), lil_matrix((Ng, NV - 2 * N - 2 * Ng))])
 
-        Hslsf = sp.hstack([lil_matrix((M, npfvar)), diags(- np.ones(M)),
-                           lil_matrix((M, M + 2 * npq + ntapm + ntapt + ndc))])
+        if use_bound_slacks:
+            Hvu = sp.hstack([lil_matrix((npq, N)), diags(np.ones(npq)), lil_matrix((npq, 2 * Ng + 2 * M)),
+                             diags(-np.ones(npq)), lil_matrix((npq, npq + ntapm + ntapt + ndc))])
 
-        Hslst = sp.hstack([lil_matrix((M, npfvar + M)), diags(- np.ones(M)),
-                           lil_matrix((M, 2 * npq + ntapm + ntapt + ndc))])
+            Hvl = sp.hstack([lil_matrix((npq, N)), diags(- np.ones(npq)), lil_matrix((npq, 2 * Ng + 2 * M + npq)),
+                             diags(-np.ones(npq)), lil_matrix((npq, ntapm + ntapt + ndc))])
 
-        Hslvmax = sp.hstack([lil_matrix((npq, npfvar + 2 * M)), diags(- np.ones(npq)),
-                             lil_matrix((npq, npq + ntapm + ntapt + ndc))])
+            Hslsf = sp.hstack([lil_matrix((M, npfvar)), diags(- np.ones(M)),
+                               lil_matrix((M, M + 2 * npq + ntapm + ntapt + ndc))])
 
-        Hslvmin = sp.hstack([lil_matrix((npq, npfvar + 2 * M + npq)), diags(- np.ones(npq)),
-                             lil_matrix((npq, ntapm + ntapt + ndc))])
+            Hslst = sp.hstack([lil_matrix((M, npfvar + M)), diags(- np.ones(M)),
+                               lil_matrix((M, 2 * npq + ntapm + ntapt + ndc))])
+
+            Hslvmax = sp.hstack([lil_matrix((npq, npfvar + 2 * M)), diags(- np.ones(npq)),
+                                 lil_matrix((npq, npq + ntapm + ntapt + ndc))])
+
+            Hslvmin = sp.hstack([lil_matrix((npq, npfvar + 2 * M + npq)), diags(- np.ones(npq)),
+                                 lil_matrix((npq, ntapm + ntapt + ndc))])
+
+        else:
+            Hvu = sp.hstack([lil_matrix((npq, N)), diags(np.ones(npq)), lil_matrix((npq, NV - 2 * N))])
+            Hvl = sp.hstack([lil_matrix((npq, N)), diags(- np.ones(npq)), lil_matrix((npq, NV - 2 * N))])
+            Hslsf = lil_matrix((0, NV))
+            Hslst = lil_matrix((0, NV))
+            Hslvmax = lil_matrix((0, NV))
+            Hslvmin = lil_matrix((0, NV))
 
         if (ntapm + ntapt) != 0:
 
@@ -807,7 +853,7 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csr
 
         if ctQ != ReactivePowerControlMode.NoControl:
             # tanmax curves (simplified capability curves of generators)
-            Hqmaxp = -2 * (tanmax ** 2) * Pg
+            Hqmaxp = - 2 * (tanmax ** 2) * Pg
             Hqmaxq = 2 * Qg
 
             Hqmax = sp.hstack([lil_matrix((Ng, 2 * N)), diags(Hqmaxp), diags(Hqmaxq),
@@ -816,12 +862,12 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csr
             Hqmax = lil_matrix((0, NV))
 
         Hdcu = sp.hstack([lil_matrix((ndc, NV - ndc)), diags(np.ones(ndc))])
-        Hdcl = sp.hstack([lil_matrix((ndc, NV - ndc)), diags(-np.ones(ndc))])
+        Hdcl = sp.hstack([lil_matrix((ndc, NV - ndc)), diags(- np.ones(ndc))])
 
         Hx = sp.vstack([HSf, HSt, Hvu, Hpu, Hqu, Hvl, Hpl, Hql, Hslsf, Hslst, Hslvmax,
                         Hslvmin, Htapmu, Htapml, Htaptu, Htaptl, Hqmax, Hdcu, Hdcl])
 
-        Hx = Hx.T.tocsc()
+        Hx = Hx.tocsc()
 
     else:
         fx = np.zeros(NV)
