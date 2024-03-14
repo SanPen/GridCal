@@ -83,6 +83,7 @@ class ContingencyTableEntry:
 
     __hdr__ = ["Time idx",
                "Time",
+               "Probability cluster",
                "Area 1",
                "Area 2",
                "Monitored",
@@ -103,6 +104,7 @@ class ContingencyTableEntry:
 
     def __init__(self,
                  time_index: int,
+                 t_prob: float,
                  area_from: str,
                  area_to: str,
                  base_name: str,
@@ -123,6 +125,7 @@ class ContingencyTableEntry:
         """
         ContingencyTableEntry constructor
         :param time_index:
+        :param t_prob:
         :param area_from:
         :param area_to:
         :param base_name:
@@ -142,6 +145,7 @@ class ContingencyTableEntry:
         :param solved_by_srap:
         """
         self.time_index: int = time_index
+        self.t_prob: float = t_prob
         self.area_from: str = area_from
         self.area_to: str = area_to
         self.base_name: str = base_name
@@ -178,6 +182,7 @@ class ContingencyTableEntry:
 
         return [self.time_index,
                 t_str,
+                self.t_prob,
                 self.area_from,
                 self.area_to,
                 self.base_name,
@@ -231,6 +236,7 @@ class ContingencyResultsReport:
 
     def add(self,
             time_index: int,
+            t_prob: float,
             area_from: str,
             area_to: str,
             base_name: str,
@@ -252,6 +258,7 @@ class ContingencyResultsReport:
         """
         Add report data
         :param time_index:
+        :param t_prob_
         :param area_from:
         :param area_to:
         :param base_name:
@@ -273,6 +280,7 @@ class ContingencyResultsReport:
         """
         self.add_entry(ContingencyTableEntry(
             time_index=time_index,
+            t_prob=t_prob,
             area_from=area_from,
             area_to=area_to,
             base_name=base_name,
@@ -360,6 +368,7 @@ class ContingencyResultsReport:
         df = self.get_df(time_array=time_array, time_format=time_format)
 
         df["Time idx"] = df["Time idx"].astype(int)
+        df["Probability cluster"] = df["Probability cluster"].astype(float)
         df["Base rating (MW)"] = df["Base rating (MW)"].astype(float)
         df["Contingency rating (MW)"] = df["Contingency rating (MW)"].astype(float)
         df["SRAP rating (MW)"] = df["SRAP rating (MW)"].astype(float)
@@ -371,6 +380,7 @@ class ContingencyResultsReport:
         df["Post-SRAP loading (pu)"] = df["Post-SRAP loading (pu)"].astype(float)
         df["SRAP Power (MW)"] = df["SRAP Power (MW)"].astype(float)
         df["Solved with SRAP"] = df["Solved with SRAP"].astype(bool)
+
 
         # If we are analyzing a base case, we report base case
         # If we are analyzing an overload due to a contingency (not in base), we report:
@@ -385,6 +395,8 @@ class ContingencyResultsReport:
             default=-999999
         )
 
+        df["Overload for reporting weighted with cluster"] = df["Overload for reporting"]*df["Probability cluster"]
+
         # Group de columns by Area1, Area2, Monitored, Contingency
         df_grp = df.groupby(
             ["Area 1", "Area 2", "Monitored", "Contingency", "Base rating (MW)", "Contingency rating (MW)",
@@ -394,14 +406,24 @@ class ContingencyResultsReport:
         ov_max = df_grp["Overload for reporting"].max()
         ov_max_date = df.loc[df_grp["Overload for reporting"].idxmax(), "Time idx"]
         ov_avg = df_grp["Overload for reporting"].mean()
+
         ov_desvest = df_grp["Overload for reporting"].std()
         ov_desvest = ov_desvest.fillna(0)
-        ov_count = df_grp["Overload for reporting"].count()
+
+        ov_count_clusters = df_grp["Overload for reporting"].count()
+
+        ov_time_pu = df_grp["Probability cluster"].sum()
 
         if time_array is not None:
             ov_max_dates = [time_array[t].strftime(time_format) for t in ov_max_date.values]
         else:
             ov_max_dates = ov_max_date.values
+
+        #new, work in progress
+        ov_avg_clust = df_grp["Overload for reporting weighted with cluster"].sum()/df_grp["Probability cluster"].sum() #checked
+
+        ov_desvest_clust = df_grp["Overload for reporting weighted with cluster"].std()/df_grp["Probability cluster"].sum()
+        ov_desvest_clust = ov_desvest_clust.fillna(0)
 
         # Create the new dataframe with the columns we need
         df_summary = pd.DataFrame({
@@ -415,9 +437,15 @@ class ContingencyResultsReport:
 
             "Overload max (pu)": ov_max.values,
             "Date Overload max": ov_max_dates,
-            "Overload average (pu)": ov_avg.values,
-            "Standard deviation (pu)": ov_desvest.values,
-            "Hours with this overload (h)": ov_count.values
+            "Overload average for clusters(pu)": ov_avg.values,
+            "Standard deviation for clusters(pu)": ov_desvest.values,
+            "Number of clusters with this overload (h)": ov_count_clusters.values,
+
+            # new, work in progress
+            "Overload average weighting time (pu)": ov_avg_clust.values, #checked
+            "Annual time this overload happens (pu)": ov_time_pu.values, #checked
+            "Standard deviation weighting time(pu)": ov_desvest_clust.values,
+
         })
 
         df_summary = df_summary.sort_values(by="Contingency", ascending=False)
@@ -436,8 +464,8 @@ class ContingencyResultsReport:
 
     def analyze(self,
                 t: Union[None, int],
+                t_prob: float,
                 mon_idx: IntVec,
-                calc_branches: List[Any],
                 numerical_circuit: NumericalCircuit,
                 base_flow: Vec,
                 base_loading: Vec,
@@ -464,8 +492,8 @@ class ContingencyResultsReport:
         """
         Analize contingency resuts and add them to the report
         :param t: time index
+        :param t_prob: probability of te time
         :param mon_idx: array of monitored branch indices
-        :param calc_branches: array of calculation branches
         :param numerical_circuit: NumericalCircuit
         :param base_flow: base flows array
         :param base_loading: base loading array
@@ -498,7 +526,8 @@ class ContingencyResultsReport:
 
                 if abs(base_flow[m]) > numerical_circuit.rates[m]:  # only add if overloaded
 
-                    self.add(time_index=t if t is not None else 0,  # --------->Convertir a fecha
+                    self.add(time_index=t if t is not None else 0,
+                             t_prob = t_prob,
                              area_from=area_names[bus_area_indices[F[m]]],
                              area_to=area_names[bus_area_indices[T[m]]],
                              base_name=numerical_circuit.branch_data.names[m],
@@ -623,7 +652,8 @@ class ContingencyResultsReport:
                         msg_ov = 'Overload not acceptable'
 
                 if detailed_massive_report:
-                    self.add(time_index=t if t is not None else 0,  # --------->Convertir a fecha
+                    self.add(time_index=t if t is not None else 0,
+                             t_prob=t_prob,
                              area_from=area_names[bus_area_indices[F[m]]],
                              area_to=area_names[bus_area_indices[T[m]]],
                              base_name=numerical_circuit.branch_data.names[m],

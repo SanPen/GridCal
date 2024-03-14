@@ -29,13 +29,15 @@ from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_options 
 def helm_contingency_analysis(grid: MultiCircuit,
                               options: ContingencyAnalysisOptions,
                               calling_class,
-                              t: Union[int, None] = None) -> ContingencyAnalysisResults:
+                              t: Union[int, None] = None,
+                              t_prob: float = 1.0) -> ContingencyAnalysisResults:
     """
     Run N-1 simulation in series with HELM, non-linear solution
     :param grid:
     :param options:
     :param calling_class:
     :param t: time index, if None the snapshot is used
+    :param t_prob: probability of te time
     :return: returns the results
     """
 
@@ -110,8 +112,8 @@ def helm_contingency_analysis(grid: MultiCircuit,
         results.Sbus[ic, :] = numerical_circuit.Sbus
         results.loading[ic, :] = loading
         results.report.analyze(t=t,
+                               t_prob=t_prob,
                                mon_idx=mon_idx,
-                               calc_branches=calc_branches,
                                numerical_circuit=numerical_circuit,
                                base_flow=np.abs(pf_res_0.Sf),
                                base_loading=np.abs(pf_res_0.loading),

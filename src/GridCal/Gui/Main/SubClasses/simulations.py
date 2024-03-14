@@ -205,6 +205,7 @@ class SimulationsMain(TimeEventsMain):
         self.ui.actionFuse_devices.triggered.connect(self.fuse_devices)
         self.ui.actionInvestments_evaluation.triggered.connect(self.run_investments_evaluation)
         self.ui.actionProcess_topology.triggered.connect(self.run_topology_processor)
+        self.ui.actionUse_clustering.triggered.connect(self.activate_clustering)
 
         # combobox change
         self.ui.engineComboBox.currentTextChanged.connect(self.modify_ui_options_according_to_the_engine)
@@ -2667,3 +2668,31 @@ class SimulationsMain(TimeEventsMain):
 
         if not self.session.is_anything_running():
             self.UNLOCK()
+
+    def activate_clustering(self):
+        """
+        When activating the use of clustering, also activate time series
+        :return:
+        """
+        if self.ui.actionUse_clustering.isChecked():
+
+            # check if there are clustering results yet
+            _, clustering_results = self.session.get_driver_results(sim.SimulationTypes.ClusteringAnalysis_run)
+
+            if clustering_results is not None:
+                n = len(clustering_results.time_indices)
+
+                if n != self.ui.cluster_number_spinBox.value():
+                    error_msg("The number of clusters in the stored results is different from the specified :(\n"
+                              "Run another clustering analysis.")
+                    self.ui.actionUse_clustering.setChecked(False)
+                    return None
+                else:
+                    # all ok
+                    self.ui.actionactivate_time_series.setChecked(True)
+                    return None
+            else:
+                # no results ...
+                warning_msg("There are no clustering results.")
+                self.ui.actionUse_clustering.setChecked(False)
+                return None

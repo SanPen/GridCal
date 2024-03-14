@@ -30,7 +30,8 @@ def linear_contingency_analysis(grid: MultiCircuit,
                                 options: ContingencyAnalysisOptions,
                                 linear_multiple_contingencies: LinearMultiContingencies,
                                 calling_class: ContingencyAnalysisDriver,
-                                t=None) -> ContingencyAnalysisResults:
+                                t=None,
+                                t_prob=1.0) -> ContingencyAnalysisResults:
     """
     Run N-1 simulation in series with HELM, non-linear solution
     :param grid: MultiCircuit
@@ -38,6 +39,7 @@ def linear_contingency_analysis(grid: MultiCircuit,
     :param linear_multiple_contingencies: LinearMultiContingencies
     :param calling_class: ContingencyAnalysisDriver
     :param t: time index, if None the snapshot is used
+    :param t_prob: probability of te time
     :return: returns the results
     """
 
@@ -107,8 +109,8 @@ def linear_contingency_analysis(grid: MultiCircuit,
         results.Sbus[ic, :] = Pbus
         results.loading[ic, :] = c_loading
         results.report.analyze(t=t,
+                               t_prob=t_prob,
                                mon_idx=mon_idx,
-                               calc_branches=calc_branches,
                                numerical_circuit=numerical_circuit,
                                base_flow=flows_n,
                                base_loading=loadings_n,

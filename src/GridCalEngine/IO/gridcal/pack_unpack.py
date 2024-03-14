@@ -38,7 +38,6 @@ def get_objects_dictionary() -> Dict[str, ALL_DEV_TYPES]:
     # this list must be sorted in dependency order so that the
     # loading algorithm is able to find the object substitutions
     object_types = {'area': dev.Area(),
-
                     'zone': dev.Zone(),
 
                     'substation': dev.Substation(),
@@ -46,6 +45,9 @@ def get_objects_dictionary() -> Dict[str, ALL_DEV_TYPES]:
                     'voltage_level': dev.VoltageLevel(),
 
                     'country': dev.Country(),
+                    'community': dev.Community(),
+                    'region': dev.Region(),
+                    'municipality': dev.Municipality(),
 
                     'technology': dev.Technology(),
 
@@ -78,6 +80,8 @@ def get_objects_dictionary() -> Dict[str, ALL_DEV_TYPES]:
                     'underground_cable_types': dev.UndergroundLineType(),
                     'sequence_line_types': dev.SequenceLineType(),
                     'transformer_types': dev.TransformerType(),
+
+                    'branch_group': dev.BranchGroup(),
 
                     'branch': dev.Branch(),
                     'transformer2w': dev.Transformer2W(),

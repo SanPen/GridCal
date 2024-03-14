@@ -1723,37 +1723,6 @@ def run_linear_opf_ts(grid: MultiCircuit,
                                  gen_emissions_rates_matrix=gen_emissions_rates_matrix,
                                  gen_fuel_rates_matrix=gen_fuel_rates_matrix)
 
-    # if vars_v.fluid_node_vars.spillage.sum() != 0:
-    # lp_file_name = "hydro_debug.lp"
-    # lp_model.save_model(file_name=lp_file_name)
-
-    # for t, global_t_idx in enumerate(time_indices):  # use time_indices = [None] to simulate the snapshot
-    #     nc: NumericalCircuit = compile_numerical_circuit_at(circuit=grid,
-    #                                                         t_idx=global_t_idx,  # yes, this is not a bug
-    #                                                         bus_dict=bus_dict,
-    #                                                         areas_dict=areas_dict)
-    #     for m in range(nc.fluid_node_data.nelm):
-    #         print(nc.fluid_node_data.names[m])
-    #
-    #         if t == 0:
-    #             print(f'Current level {m}: {vars_v.fluid_node_vars.current_level[t, m]}')
-    #             print(f'Initial level {m}: {nc.fluid_node_data.initial_level[m]}')
-    #             print(f'Inflow {m}: {nc.fluid_node_data.inflow[m]}')
-    #             print(f'Flow in {m}: {vars_v.fluid_node_vars.flow_in[t, m]}')
-    #             print(f'P2X flow {m}: {vars_v.fluid_node_vars.p2x_flow[t, m]}')
-    #             print(f'Spillage {m}: {vars_v.fluid_node_vars.spillage[t, m]}')
-    #             print(f'Flow out {m}: {vars_v.fluid_node_vars.flow_out[t, m]}')
-    #             print()
-    #         else:
-    #             print(f'Current level {m}: {vars_v.fluid_node_vars.current_level[t, m]}')
-    #             print(f'Initial level {m}: {vars_v.fluid_node_vars.current_level[t-1, m]}')
-    #             print(f'Inflow {m}: {nc.fluid_node_data.inflow[m]}')
-    #             print(f'Flow in {m}: {vars_v.fluid_node_vars.flow_in[t, m]}')
-    #             print(f'P2X flow {m}: {vars_v.fluid_node_vars.p2x_flow[t, m]}')
-    #             print(f'Spillage {m}: {vars_v.fluid_node_vars.spillage[t, m]}')
-    #             print(f'Flow out {m}: {vars_v.fluid_node_vars.flow_out[t, m]}')
-    #             print()
-
     # add the model logger to the main logger
     logger += lp_model.logger
 

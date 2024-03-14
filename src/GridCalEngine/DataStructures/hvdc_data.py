@@ -74,6 +74,8 @@ class HvdcData:
         self.C_hvdc_bus_t: sp.lil_matrix = sp.lil_matrix((nelm, nbus),
                                                          dtype=int)  # this ons is just for splitting islands
 
+        self.original_idx = np.zeros(nelm, dtype=int)
+
     def size(self) -> int:
         """
         Get size of the structure
@@ -122,6 +124,8 @@ class HvdcData:
 
         data.C_hvdc_bus_f = self.C_hvdc_bus_f[np.ix_(elm_idx, bus_idx)]
         data.C_hvdc_bus_t = self.C_hvdc_bus_t[np.ix_(elm_idx, bus_idx)]
+
+        data.original_idx = elm_idx
 
         # first slice, then remap
         data.F = self.F[elm_idx]
@@ -174,6 +178,8 @@ class HvdcData:
 
         data.C_hvdc_bus_f = self.C_hvdc_bus_f.copy()
         data.C_hvdc_bus_t = self.C_hvdc_bus_t.copy()
+
+        data.original_idx = self.original_idx.copy()
 
         return data
 

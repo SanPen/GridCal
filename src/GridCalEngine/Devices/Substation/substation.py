@@ -17,18 +17,38 @@
 
 from typing import Union
 from GridCalEngine.Devices.Parents.editable_device import DeviceType
-from GridCalEngine.Devices.Aggregation.area import GenericAreaGroup
+from GridCalEngine.Devices.Aggregation.area import GenericAreaGroup, Area
+from GridCalEngine.Devices.Aggregation.zone import Zone
+from GridCalEngine.Devices.Aggregation.country import Country
+from GridCalEngine.Devices.Aggregation.community import Community
+from GridCalEngine.Devices.Aggregation.region import Region
+from GridCalEngine.Devices.Aggregation.municipality import Municipality
 
 
 class Substation(GenericAreaGroup):
 
-    def __init__(self, name='Substation', idtag: Union[str, None] = None, code='', latitude=0.0, longitude=0.0):
+    def __init__(self, name='Substation', idtag: Union[str, None] = None, code='', latitude=0.0, longitude=0.0,
+                 area: Union[Area, None] = None,
+                 zone: Union[Zone, None] = None,
+                 country: Union[Country, None] = None,
+                 community: Union[Community, None] = None,
+                 region: Union[Region, None] = None,
+                 municipality: Union[Municipality, None] = None,
+                 address: str = ""):
         """
 
         :param name:
         :param idtag:
+        :param code:
         :param latitude:
         :param longitude:
+        :param area:
+        :param zone:
+        :param country:
+        :param community:
+        :param region:
+        :param municipality:
+        :param address:
         """
         GenericAreaGroup.__init__(self,
                                   name=name,
@@ -37,3 +57,31 @@ class Substation(GenericAreaGroup):
                                   device_type=DeviceType.SubstationDevice,
                                   latitude=latitude,
                                   longitude=longitude)
+
+        self.area: Union[Area, None] = area
+        self.zone: Union[Zone, None] = zone
+        self.country: Union[Country, None] = country
+        self.community: Union[Community, None] = community
+        self.region: Union[Region, None] = region
+        self.municipality: Union[Municipality, None] = municipality
+        self.address: str = address
+
+        self.register(key="area", units="", tpe=DeviceType.AreaDevice,
+                      definition="Substation area, altenativelly this can be obtained from the zone")
+
+        self.register(key="zone", units="", tpe=DeviceType.ZoneDevice,
+                      definition="Substation area")
+
+        self.register(key="country", units="", tpe=DeviceType.CountryDevice,
+                      definition="Substation country, altenativelly this can be obtained from the community")
+
+        self.register(key="community", units="", tpe=DeviceType.CommunityDevice,
+                      definition="Substation community, altenativelly this can be obtained from the region")
+
+        self.register(key="region", units="", tpe=DeviceType.RegionDevice,
+                      definition="Substation region, altenativelly this can be obtained from the municipality")
+
+        self.register(key="municipality", units="", tpe=DeviceType.MunicipalityDevice,
+                      definition="Substation municipality")
+
+        self.register(key="address", units="", tpe=str, definition="Substation address")
