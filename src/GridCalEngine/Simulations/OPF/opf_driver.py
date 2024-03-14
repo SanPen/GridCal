@@ -22,7 +22,7 @@ from GridCalEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
 from GridCalEngine.Simulations.OPF.linear_opf_ts import run_linear_opf_ts
 from GridCalEngine.Simulations.OPF.simple_dispatch_ts import run_simple_dispatch
 from GridCalEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults
-from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf_bound_slacks import run_nonlinear_opf
+from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import run_nonlinear_opf
 from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Simulations.driver_template import TimeSeriesDriverTemplate
