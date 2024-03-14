@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from typing import Dict, List
-from uuid import uuid4
+from uuid import uuid4, UUID
 from GridCalEngine.IO.cim.cgmes.cgmes_poperty import CgmesProperty
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
@@ -63,6 +63,27 @@ def rfid2uuid(val):
     :return:
     """
     return val.replace('-', '').replace('_', '')
+
+
+def get_uuid(string: str) -> str:
+    """
+    Converts a simple string (without hyphens or underscores) to a UUID format.
+
+    Args:
+        string (str): The input string without hyphens or underscores.
+
+    Returns:
+        str: The corresponding UUID string with hyphens.
+    """
+    # Add hyphens to the simple string to create a valid UUID
+    formatted_uuid = f"{string[:8]}-{string[8:12]}-{string[12:16]}-{string[16:20]}-{string[20:]}"
+    try:
+        # Validate and return the UUID
+        UUID(formatted_uuid)
+        return formatted_uuid
+    except ValueError:
+        # Handle invalid input (e.g., incorrect length)
+        return "Invalid input: Not a valid UUID"
 
 
 class Base:
