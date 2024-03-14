@@ -130,11 +130,11 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
         :return: OptimalPowerFlowResults object
         """
 
-        if not remote:
-            self.report_progress(0.0)
-            self.report_text('Formulating problem...')
-
         if self.options.solver == SolverType.LINEAR_OPF:
+
+            if not remote:
+                self.report_progress(0.0)
+                self.report_text('Formulating problem...')
 
             # DC optimal power flow
             opf_vars = run_linear_opf_ts(grid=self.grid,
@@ -162,8 +162,8 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
             self.results.generator_power = opf_vars.gen_vars.p[0, :]
             self.results.Sf = opf_vars.branch_vars.flows[0, :]
             self.results.St = -opf_vars.branch_vars.flows[0, :]
-            self.results.overloads = opf_vars.branch_vars.flow_slacks_pos[0, :] - opf_vars.branch_vars.flow_slacks_neg[
-                                                                                  0, :]
+            self.results.overloads = (opf_vars.branch_vars.flow_slacks_pos[0, :]
+                                      - opf_vars.branch_vars.flow_slacks_neg[0, :])
             self.results.loading = opf_vars.branch_vars.loading[0, :]
             self.results.phase_shift = opf_vars.branch_vars.tap_angles[0, :]
             # self.results.Sbus = problem.get_power_injections()[0, :]
@@ -173,6 +173,10 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
 
         elif self.options.solver == SolverType.SIMPLE_OPF:
 
+            if not remote:
+                self.report_progress(0.0)
+                self.report_text('Simple dispatch...')
+
             # AC optimal power flow
             Pl, Pg = run_simple_dispatch(grid=self.grid,
                                          text_prog=self.report_text,
@@ -181,6 +185,10 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
             self.results.generator_power = Pg
 
         elif self.options.solver == SolverType.NONLINEAR_OPF:
+
+            if not remote:
+                self.report_progress(0.0)
+                self.report_text('Running non linear optimization...')
 
             res = run_nonlinear_opf(grid=self.grid,
                                     opf_options=self.options,
@@ -198,12 +206,12 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
             self.results.generator_power = res.Pg * Sbase
             self.results.Sf = res.Sf * Sbase
             self.results.St = res.St * Sbase
-            # self.results.overloads = npa_res.branch_overload[0, :]
+            self.results.overloads = (res.sl_sf - res.sl_st) * Sbase
             self.results.loading = res.loading
-            # self.results.phase_shift = npa_res.tap_angle[0, :]
+            self.results.phase_shift = res.tap_phase
 
-            # self.results.hvdc_Pf = npa_res.hvdc_Pf[0, :]
-            # self.results.hvdc_loading = npa_res.hvdc_loading[0, :]
+            self.results.hvdc_Pf = res.hvdc_Pf
+            self.results.hvdc_loading = res.hvdc_loading
             self.results.converged = res.converged
 
             msg = "Interior point solver"

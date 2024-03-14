@@ -132,7 +132,7 @@ def var2x(Va: Vec,
     :param tapm:
     :param tapt:
     :param Pfdc:
-    :return: [Va, Vm, Pg, Qg, sl_sf, sl_st, sl_vmax, sl_vmin, tapm, tapt, Pfdc]
+    :return: [Va, Vm, Pg, Qg, sl_sf, sl_st, sl_vmax, sl_vmin, tapm, tapt, hvdc_Pf]
     """
     return np.r_[Va, Vm, Pg, Qg, sl_sf, sl_st, sl_vmax, sl_vmin, tapm, tapt, Pfdc]
 

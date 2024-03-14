@@ -125,8 +125,8 @@ def compute_autodiff_structures(x, mu, lmbda, compute_jac, compute_hess, admitta
         fxx = ad.calc_autodiff_hessian_f_obj(func=eval_f, x=x, arg=(Cg, k_m, k_tau, nll, c0, c1, c2,
                                                                     c_s, c_v, ig, npq, ndc, Sbase), h=h).tocsc()
         Gxx = ad.calc_autodiff_hessian(func=eval_g, x=x, mult=lmbda,
-                                       arg=(Ybus, Yf, Cg, Sd, ig, nig, nll, npq, pv, fdc,tdc, k_m, k_tau, V_U,
-                                       Sg_undis, slack)).T.tocsc()
+                                       arg=(Ybus, Yf, Cg, Sd, ig, nig, nll, npq, pv, fdc, tdc, k_m, k_tau, V_U,
+                                            Sg_undis, slack)).T.tocsc()
         Hxx = ad.calc_autodiff_hessian(func=eval_h, x=x, mult=mu,
                                        arg=(Yf, Yt, from_idx, to_idx, pq, k_m, k_tau, V_U, V_L, P_U, P_L,
                                             Q_U, Q_L, tapm_max, tapm_min, tapt_max, tapt_min, Pdcmax, rates, il,
@@ -150,7 +150,7 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
                                 slack, from_idx, to_idx, fdc, tdc, ndc, pq, pv, Pdcmax, V_U, V_L, P_U, P_L, tanmax, Q_U,
                                 Q_L, tapm_max, tapm_min, tapt_max, tapt_min, alltapm, alltapt, k_m, k_tau, c0, c1, c2,
                                 c_s, c_v, Sbase, rates, il, nll, ig, nig, Sg_undis, ctQ, use_bound_slacks) \
-                                -> IpsFunctionReturn:
+        -> IpsFunctionReturn:
     """
 
     :param x:
@@ -309,19 +309,27 @@ class NonlinearOPFResults:
     loading: Vec = None
     Pg: Vec = None
     Qg: Vec = None
+    tap_module: Vec = None
+    tap_phase: Vec = None
+    hvdc_Pf: Vec = None
+    hvdc_loading: Vec = None
     lam_p: Vec = None
     lam_q: Vec = None
+    sl_sf: Vec = None
+    sl_st: Vec = None
+    sl_vmax: Vec = None
+    sl_vmin: Vec = None
     error: float = None
     converged: bool = None
     iterations: int = None
 
-    def initialize(self, nbus, nbr, ng):
+    def initialize(self, nbus: int, nbr: int, ng: int, nhvdc: int):
         """
         Initialize the arrays
-        :param nbus:
-        :param nbr:
-        :param ng:
-        :return:
+        :param nbus: number of buses
+        :param nbr: number of branches
+        :param ng: number of generators
+        :param nhvdc: number of HVDC
         """
         self.Va: Vec = np.zeros(nbus)
         self.Vm: Vec = np.zeros(nbus)
@@ -331,20 +339,29 @@ class NonlinearOPFResults:
         self.loading: Vec = np.zeros(nbr)
         self.Pg: Vec = np.zeros(ng)
         self.Qg: Vec = np.zeros(ng)
+        self.tap_module: Vec = np.zeros(nbr)
+        self.tap_phase: Vec = np.zeros(nbr)
+        self.hvdc_Pf: Vec = np.zeros(nhvdc)
+        self.hvdc_loading: Vec = np.zeros(nhvdc)
         self.lam_p: Vec = np.zeros(nbus)
         self.lam_q: Vec = np.zeros(nbus)
+        self.sl_sf: Vec = np.zeros(nbr)
+        self.sl_st: Vec = np.zeros(nbr)
+        self.sl_vmax: Vec = np.zeros(nbus)
+        self.sl_vmin: Vec = np.zeros(nbus)
         self.error: float = 0.0
         self.converged: bool = False
         self.iterations: int = 0
 
     def merge(self, other: "NonlinearOPFResults",
-              bus_idx: IntVec, br_idx: IntVec, gen_idx: IntVec):
+              bus_idx: IntVec, br_idx: IntVec, gen_idx: IntVec, hvdc_idx: IntVec):
         """
 
         :param other:
         :param bus_idx:
         :param br_idx:
         :param gen_idx:
+        :param hvdc_idx:
         """
         self.Va[bus_idx] = other.Va
         self.Vm[bus_idx] = other.Vm
@@ -354,8 +371,16 @@ class NonlinearOPFResults:
         self.loading[br_idx] = other.loading
         self.Pg[gen_idx] = other.Pg
         self.Qg[gen_idx] = other.Qg
+        self.tap_module[br_idx] = other.tap_module
+        self.tap_phase[br_idx] = other.tap_phase
+        self.hvdc_Pf[hvdc_idx] = other.hvdc_Pf
+        self.hvdc_loading[hvdc_idx] = other.hvdc_loading
         self.lam_p[bus_idx] = other.lam_p
         self.lam_q[bus_idx] = other.lam_q
+        self.sl_sf[br_idx] = other.sl_sf
+        self.sl_st[br_idx] = other.sl_st
+        self.sl_vmax[bus_idx] = other.sl_vmax
+        self.sl_vmin[bus_idx] = other.sl_vmin
         self.error: float = 0.0
         self.converged: bool = False
         self.iterations: int = 0
@@ -391,6 +416,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     :param Sbus_pf: Sbus initial solution
     :param voltage_pf: Voltage initl solution
     :param plot_error: Plot the error?
+    :param use_bound_slacks: add voltage module and branch loading slack variables? (default true)
     :param logger: Logger
     :return: NonlinearOPFResults
     """
@@ -606,6 +632,12 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     Sf = result.structs.Sf
     St = result.structs.St
     loading = np.abs(Sf) / (rates + 1e-9)
+    hvdc_loading = Pfdc / (nc.hvdc_data.rate + 1e-9)
+    tap_module = np.zeros(nc.nbr)
+    tap_phase = np.zeros(nc.nbr)
+    tap_module[k_m] = tapm
+    tap_phase[k_tau] = tapt
+
     if opf_options.verbose > 0:
         df_bus = pd.DataFrame(data={'Va (rad)': Va, 'Vm (p.u.)': Vm,
                                     'dual price (€/MW)': lam_p, 'dual price (€/MVAr)': lam_q})
@@ -660,9 +692,16 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                 logger.add_warning('DC Link rating constraint violated', device=str(link),
                                    value=str((muz_f, muz_t)), expected_value='< 1e-3')
 
-    logger.print()
-    return NonlinearOPFResults(Va=Va, Vm=Vm, S=S, Sf=Sf, St=St, loading=loading,
-                               Pg=Pg, Qg=Qg, lam_p=lam_p, lam_q=lam_q,
+    if opf_options.verbose:
+        logger.print()
+
+    return NonlinearOPFResults(Va=Va, Vm=Vm, S=S,
+                               Sf=Sf, St=St, loading=loading,
+                               Pg=Pg, Qg=Qg,
+                               tap_module=tap_module, tap_phase=tap_phase,
+                               hvdc_Pf=Pfdc, hvdc_loading=hvdc_loading,
+                               lam_p=lam_p, lam_q=lam_q,
+                               sl_sf=sl_sf, sl_st=sl_st, sl_vmax=sl_vmax, sl_vmin=sl_vmin,
                                error=result.error,
                                converged=result.converged,
                                iterations=result.iterations)
@@ -688,6 +727,7 @@ def run_nonlinear_opf(grid: MultiCircuit,
     :param use_autodiff: Use autodiff?
     :param pf_init: Initialize with a power flow?
     :param plot_error: Plot the error?
+    :param use_bound_slacks: add voltage module and branch loading slack variables? (default true)
     :param logger: Logger object
     :return: NonlinearOPFResults
     """
@@ -708,9 +748,9 @@ def run_nonlinear_opf(grid: MultiCircuit,
                                     consider_hvdc_as_island_links=True)
 
     results = NonlinearOPFResults()
-    results.initialize(nbus=nc.nbus, nbr=nc.nbr, ng=nc.ngen)
+    results.initialize(nbus=nc.nbus, nbr=nc.nbr, ng=nc.ngen, nhvdc=nc.nhvdc)
     results.converged = True  # we assume this so that the "and" works later
-    for island in islands:
+    for i, island in enumerate(islands):
         island_res = ac_optimal_power_flow(nc=island,
                                            opf_options=opf_options,
                                            pf_options=pf_options,
@@ -726,9 +766,10 @@ def run_nonlinear_opf(grid: MultiCircuit,
         results.merge(other=island_res,
                       bus_idx=island.bus_data.original_idx,
                       br_idx=island.branch_data.original_idx,
-                      gen_idx=island.generator_data.original_idx)
+                      gen_idx=island.generator_data.original_idx,
+                      hvdc_idx=island.hvdc_data.original_idx)
         results.error = max(results.error, island_res.error)
         results.iterations = max(results.iterations, island_res.iterations)
-        results.converged = results.converged and island_res.converged
+        results.converged = results.converged and island_res.converged if i > 0 else island_res.converged
 
     return results

@@ -65,7 +65,7 @@ def var2x(va: Vec, vm: Vec, pg: Vec, qg: Vec, tapm: Vec, tapt: Vec, pfdc: Vec) -
     :param tapm: Tap modules
     :param tapt: Tap angles
     :param pfdc: HVDC from power injections
-    :return: [Vm, Va, Pg, Qg, tapm, tapt, Pfdc]
+    :return: [Vm, Va, Pg, Qg, tapm, tapt, hvdc_Pf]
     """
     return np.r_[va, vm, pg, qg, tapm, tapt, pfdc]
 
