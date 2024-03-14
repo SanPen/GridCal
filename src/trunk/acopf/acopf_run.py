@@ -227,8 +227,10 @@ def case9():
     file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case9.m')
 
     grid = gce.FileOpen(file_path).open()
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, tolerance=1e-10)
-    run_nonlinear_opf(grid=grid, pf_options=pf_options, plot_error=True)
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1)
+    opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, ips_tolerance=1e-8,
+                                              ips_iterations=50, verbose=1)
+    run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True)
 
 
 def case14():
@@ -244,9 +246,9 @@ def case14():
 
     grid = gce.FileOpen(file_path).open()
 
-    grid.transformers2w[0].control_mode = TransformerControlType.PtQt
-    grid.transformers2w[1].control_mode = TransformerControlType.Pf
-    grid.transformers2w[2].control_mode = TransformerControlType.V
+    #grid.transformers2w[0].control_mode = TransformerControlType.PtQt
+    #grid.transformers2w[1].control_mode = TransformerControlType.Pf
+    #grid.transformers2w[2].control_mode = TransformerControlType.V
 
     #grid.delete_line(grid.lines[0])
     #grid.delete_line(grid.lines[1])
@@ -273,7 +275,8 @@ def case_gb():
     grid = gce.FileOpen(file_path).open()
     opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, verbose=1, ips_iterations=80, ips_tolerance=1e-8)
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1)
-    run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=False)
+    run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True,
+                      use_bound_slacks=False)
 
 
 def case_pegase89():
@@ -293,7 +296,8 @@ def case_pegase89():
     opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, verbose=1, ips_iterations=100, ips_tolerance=1e-7)
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1)
     #ac_optimal_power_flow(nc=nc, pf_options=pf_options, plot_error=True)
-    run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True)
+    run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True,
+                      use_bound_slacks=True)
     grid.get_bus_branch_connectivity_matrix()
     nc = compile_numerical_circuit_at(grid)
     print('')
@@ -347,7 +351,7 @@ def casehvdc():
     # Go back two directories
     new_directory = os.path.abspath(os.path.join(cwd, '..', '..', '..'))
 
-    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'ESPGRID.gridcal')
+    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'South Island of New Zealand.gridcal')
 
     grid = gce.FileOpen(file_path).open()
 
@@ -355,7 +359,7 @@ def casehvdc():
     power_flow = gce.PowerFlowDriver(grid, options)
     power_flow.run()
 
-    opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, verbose=1, ips_iterations=10, ips_tolerance=1e-8)
+    opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, verbose=1, ips_iterations=100, ips_tolerance=1e-8)
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=3)
     run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True)
 
@@ -366,10 +370,10 @@ if __name__ == '__main__':
     # linn5bus_example()
     # two_grids_of_3bus()
     # case9()
-    case14()
-    # case_gb()
+    # case14()
+    case_gb()
     # case6ww()
     # case_pegase89()
     # case300()
     # casepegase13k()
-    # casehvdc()
+    #casehvdc()

@@ -149,7 +149,8 @@ def compute_autodiff_structures(x, mu, lmbda, compute_jac, compute_hess, admitta
 def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: bool, admittances, Cg, R, X, Sd,
                                 slack, from_idx, to_idx, fdc, tdc, ndc, pq, pv, Pdcmax, V_U, V_L, P_U, P_L, tanmax, Q_U,
                                 Q_L, tapm_max, tapm_min, tapt_max, tapt_min, alltapm, alltapt, k_m, k_tau, c0, c1, c2,
-                                c_s, c_v, Sbase, rates, il, nll, ig, nig, Sg_undis, ctQ) -> IpsFunctionReturn:
+                                c_s, c_v, Sbase, rates, il, nll, ig, nig, Sg_undis, ctQ, use_bound_slacks) \
+                                -> IpsFunctionReturn:
     """
 
     :param x:
@@ -194,7 +195,8 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
     alltapt0 = alltapt.copy()
 
     _, _, _, _, _, _, _, _, tapm, tapt, _ = x2var(x, nVa=N, nVm=N, nPg=Ng, nQg=Ng, npq=npq,
-                                                  M=nll, ntapm=ntapm, ntapt=ntapt, ndc=ndc)
+                                                  M=nll, ntapm=ntapm, ntapt=ntapt, ndc=ndc,
+                                                  use_bound_slacks=use_bound_slacks)
 
     alltapm[k_m] = tapm
     alltapt[k_tau] = tapt
@@ -208,20 +210,21 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
     Ct = admittances.Ct
 
     f = eval_f(x=x, Cg=Cg, k_m=k_m, k_tau=k_tau, nll=nll, c0=c0, c1=c1, c2=c2, c_s=c_s, c_v=c_v,
-               ig=ig, npq=npq, ndc=ndc, Sbase=Sbase)
+               ig=ig, npq=npq, ndc=ndc, Sbase=Sbase, use_bound_slacks=use_bound_slacks)
     G, Scalc = eval_g(x=x, Ybus=Ybus, Yf=Yf, Cg=Cg, Sd=Sd, ig=ig, nig=nig, nll=nll, npq=npq,
-                      pv=pv, fdc=fdc, tdc=tdc, k_m=k_m, k_tau=k_tau, Vm_max=V_U, Sg_undis=Sg_undis, slack=slack)
+                      pv=pv, fdc=fdc, tdc=tdc, k_m=k_m, k_tau=k_tau, Vm_max=V_U, Sg_undis=Sg_undis, slack=slack,
+                      use_bound_slacks=use_bound_slacks)
     H, Sf, St = eval_h(x=x, Yf=Yf, Yt=Yt, from_idx=from_idx, to_idx=to_idx, pq=pq, k_m=k_m, k_tau=k_tau, Vm_max=V_U,
                        Vm_min=V_L, Pg_max=P_U, Pg_min=P_L, Qg_max=Q_U, Qg_min=Q_L, tapm_max=tapm_max, tapm_min=tapm_min,
                        tapt_max=tapt_max, tapt_min=tapt_min, Pdcmax=Pdcmax,
-                       rates=rates, il=il, ig=ig, tanmax=tanmax, ctQ=ctQ)
+                       rates=rates, il=il, ig=ig, tanmax=tanmax, ctQ=ctQ, use_bound_slacks=use_bound_slacks)
 
     fx, Gx, Hx, fxx, Gxx, Hxx = jacobians_and_hessians(x=x, c1=c1, c2=c2, c_s=c_s, c_v=c_v, Cg=Cg, Cf=Cf, Ct=Ct, Yf=Yf,
                                                        Yt=Yt, Ybus=Ybus, Sbase=Sbase, il=il, ig=ig, slack=slack, pq=pq,
                                                        pv=pv, tanmax=tanmax, alltapm=alltapm, alltapt=alltapt, fdc=fdc,
                                                        tdc=tdc, k_m=k_m, k_tau=k_tau, mu=mu, lmbda=lmbda, R=R, X=X,
-                                                       F=from_idx, T=to_idx, ctQ=ctQ, compute_jac=compute_jac,
-                                                       compute_hess=compute_hess)
+                                                       F=from_idx, T=to_idx, ctQ=ctQ, use_bound_slacks=use_bound_slacks,
+                                                       compute_jac=compute_jac, compute_hess=compute_hess)
 
     return IpsFunctionReturn(f=f, G=G, H=H,
                              fx=fx, Gx=Gx, Hx=Hx,
@@ -232,7 +235,7 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
 def evaluate_power_flow_debug(x, mu, lmbda, compute_jac, compute_hess, admittances, Cg, R, X, Sd, slack, from_idx,
                               to_idx, fdc, tdc, ndc, pq, pv, Pdcmax, V_U, V_L, P_U, P_L, tanmax, Q_U, Q_L, tapm_max,
                               tapm_min, tapt_max, tapt_min, alltapm, alltapt, k_m, k_tau, c0, c1, c2, c_s, c_v, Sbase,
-                              rates, il, nll, ig, nig, Sg_undis, ctQ, h=1e-5) -> IpsFunctionReturn:
+                              rates, il, nll, ig, nig, Sg_undis, ctQ, use_bound_slacks, h=1e-5) -> IpsFunctionReturn:
     """
 
     :param x:
@@ -274,7 +277,7 @@ def evaluate_power_flow_debug(x, mu, lmbda, compute_jac, compute_hess, admittanc
                                                 slack, from_idx, to_idx, fdc, tdc, ndc, pq, pv, Pdcmax, V_U, V_L, P_U,
                                                 P_L, tanmax, Q_U, Q_L, tapm_max, tapm_min, tapt_max, tapt_min, alltapm,
                                                 alltapt, k_m, k_tau, c0, c1, c2, c_s, c_v, Sbase, rates, il, nll, ig,
-                                                nig, Sg_undis, ctQ)
+                                                nig, Sg_undis, ctQ, use_bound_slacks=use_bound_slacks)
 
     mats_finite = compute_autodiff_structures(x, mu, lmbda, compute_jac, compute_hess, admittances, Cg, R, X, Sd,
                                               slack, from_idx, to_idx, fdc, tdc, ndc, pq, pv, Pdcmax, V_U, V_L, P_U,
@@ -375,6 +378,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                           Sbus_pf: Union[CxVec, None] = None,
                           voltage_pf: Union[CxVec, None] = None,
                           plot_error: bool = False,
+                          use_bound_slacks: bool = True,
                           logger: Logger = Logger()) -> NonlinearOPFResults:
     """
 
@@ -462,12 +466,24 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     tdc = nc.hvdc_data.T
     Pdcmax = nc.hvdc_data.rate
 
-    # Slack relaxations for constraints
-    c_s = 1000 * nc.branch_data.overload_cost[il]
-    c_v = 1000 * nc.bus_data.cost_v[pq]
-    #c_v[0] *=1000
+    if use_bound_slacks:
+        nsl = 2 * npq + 2 * nll
+        # Slack relaxations for constraints
+        c_s = 1000 * nc.branch_data.overload_cost[il]
+        c_v = 1000 * nc.bus_data.cost_v[pq]
+        sl_sf0 = np.ones(nll)
+        sl_st0 = np.ones(nll)
+        sl_vmax0 = np.ones(npq)
+        sl_vmin0 = np.ones(npq)
 
-    nsl = 2 * npq + 2 * nll
+    else:
+        nsl = 0
+        c_s = np.array([])
+        c_v = np.array([])
+        sl_sf0 = np.array([])
+        sl_st0 = np.array([])
+        sl_vmax0 = np.array([])
+        sl_vmin0 = np.array([])
 
     # Number of equalities: Nodal power balances, the voltage module of slack and pv buses and the slack reference
     NE = 2 * nbus + n_slack + npv
@@ -506,10 +522,10 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                Vm=vm0,
                Pg=p0gen,
                Qg=q0gen,
-               sl_sf=np.ones(nll),
-               sl_st=np.ones(nll),
-               sl_vmax=np.ones(npq),
-               sl_vmin=np.ones(npq),
+               sl_sf=sl_sf0,
+               sl_st=sl_st0,
+               sl_vmax=sl_vmax0,
+               sl_vmin=sl_vmin0,
                tapm=tapm0,
                tapt=tapt0,
                Pfdc=Pfdc0)
@@ -529,7 +545,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                                             pq, pv, Va_max, Va_min, Vm_max, Vm_min, Pg_max, Pg_min,
                                             Qg_max, Qg_min, tapm_max, tapm_min, tapt_max, tapt_min, alltapm, alltapt,
                                             k_m, k_tau, k_mtau, c0, c1, c2, Sbase, rates, il, ig, nig, Sg_undis,
-                                            pf_options.control_Q),
+                                            pf_options.control_Q, use_bound_slacks),
                                        verbose=opf_options.verbose,
                                        max_iter=opf_options.ips_iterations,
                                        tol=opf_options.ips_tolerance,
@@ -543,7 +559,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                                            arg=(admittances, Cg, Sd, slack, from_idx, to_idx, pq, pv,
                                                 Va_max, Va_min, Vm_max, Vm_min, Pg_max, Pg_min, Qg_max, Qg_min,
                                                 tapm_max, tapm_min, tapt_max, tapt_min, k_m, k_tau, k_mtau,
-                                                c0, c1, c2, Sbase, rates, il, ig, nig, Sg_undis, 1e-5),
+                                                c0, c1, c2, Sbase, rates, il, ig, nig, Sg_undis,
+                                                use_bound_slacks, 1e-5),
                                            verbose=opf_options.verbose,
                                            max_iter=opf_options.ips_iterations,
                                            tol=opf_options.ips_tolerance,
@@ -556,7 +573,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                                                 pv, Pdcmax, Vm_max, Vm_min, Pg_max, Pg_min, tanmax, Qg_max, Qg_min,
                                                 tapm_max, tapm_min, tapt_max, tapt_min, alltapm, alltapt, k_m, k_tau,
                                                 c0, c1, c2, c_s, c_v, Sbase, rates, il, nll, ig, nig, Sg_undis,
-                                                pf_options.control_Q),
+                                                pf_options.control_Q, use_bound_slacks),
                                            verbose=opf_options.verbose,
                                            max_iter=opf_options.ips_iterations,
                                            tol=opf_options.ips_tolerance,
@@ -565,7 +582,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     # convert the solution to the problem variables
     (Va, Vm, Pg_dis, Qg_dis, sl_sf, sl_st,
      sl_vmax, sl_vmin, tapm, tapt, Pfdc) = x2var(result.x, nVa=nbus, nVm=nbus, nPg=ngg, nQg=ngg,
-                                                 M=nll, npq=npq, ntapm=ntapm, ntapt=ntapt, ndc=ndc)
+                                                 M=nll, npq=npq, ntapm=ntapm, ntapt=ntapt, ndc=ndc,
+                                                 use_bound_slacks=use_bound_slacks)
 
     # Save Results DataFrame for tests
     # pd.DataFrame(Va).transpose().to_csv('pegase89resth.csv')
@@ -658,6 +676,7 @@ def run_nonlinear_opf(grid: MultiCircuit,
                       use_autodiff: bool = False,
                       pf_init=False,
                       plot_error: bool = False,
+                      use_bound_slacks: bool = True,
                       logger: Logger = Logger()) -> NonlinearOPFResults:
     """
     Run optimal power flow for a MultiCircuit
@@ -701,6 +720,7 @@ def run_nonlinear_opf(grid: MultiCircuit,
                                            Sbus_pf=Sbus_pf[island.original_bus_idx],
                                            voltage_pf=voltage_pf[island.original_bus_idx],
                                            plot_error=plot_error,
+                                           use_bound_slacks=use_bound_slacks,
                                            logger=logger)
 
         results.merge(other=island_res,

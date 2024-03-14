@@ -464,7 +464,7 @@ def eval_h(x, Yf, Yt, from_idx, to_idx, pq, k_m, k_tau, Vm_max, Vm_min, Pg_max, 
     ntapt = len(k_tau)
     ndc = len(Pdcmax)
 
-    va, vm, Pg, Qg, tapm, tapt, Pfdc = x2var(x, nVa=N, nVm=N, nPg=Ng, nQg=Ng, ntapm=ntapm, ntapt=ntapt, ndc=ndc)
+    va, vm, Pg, Qg, tapm, tapt, Pfdc = x2var(x, nva=N, nvm=N, npg=Ng, nqg=Ng, ntapm=ntapm, ntapt=ntapt, ndc=ndc)
 
     V = vm * np.exp(1j * va)
     Sf = V[from_idx[il]] * np.conj(Yf[il, :] @ V)
@@ -530,7 +530,7 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, s
     ntapt = len(k_tau)
     ndc = len(fdc)
 
-    va, vm, Pg, Qg, tapm, tapt, Pfdc = x2var(x, nVa=N, nVm=N, nPg=Ng, nQg=Ng, ntapm=ntapm, ntapt=ntapt, ndc=ndc)
+    va, vm, Pg, Qg, tapm, tapt, Pfdc = x2var(x, nva=N, nvm=N, npg=Ng, nqg=Ng, ntapm=ntapm, ntapt=ntapt, ndc=ndc)
     V = vm * np.exp(1j * va)
     Vmat = diags(V)
     vm_inv = diags(1 / vm)
