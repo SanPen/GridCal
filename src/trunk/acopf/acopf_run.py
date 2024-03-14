@@ -1,7 +1,7 @@
 import os
 import GridCalEngine.api as gce
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
-from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf_bound_slacks import run_nonlinear_opf, ac_optimal_power_flow
+from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import run_nonlinear_opf, ac_optimal_power_flow
 from GridCalEngine.enumerations import TransformerControlType
 
 
@@ -351,7 +351,7 @@ def casehvdc():
     # Go back two directories
     new_directory = os.path.abspath(os.path.join(cwd, '..', '..', '..'))
 
-    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'South Island of New Zealand.gridcal')
+    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'Lanzarote y Fuerteventura.gridcal')
 
     grid = gce.FileOpen(file_path).open()
 
@@ -361,7 +361,8 @@ def casehvdc():
 
     opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, verbose=1, ips_iterations=100, ips_tolerance=1e-8)
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=3)
-    run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True)
+    run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True,
+                      use_bound_slacks=True)
 
 
 if __name__ == '__main__':
@@ -371,9 +372,9 @@ if __name__ == '__main__':
     # two_grids_of_3bus()
     # case9()
     # case14()
-    case_gb()
+    # case_gb()
     # case6ww()
     # case_pegase89()
     # case300()
     # casepegase13k()
-    #casehvdc()
+    casehvdc()
