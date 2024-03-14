@@ -843,7 +843,10 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csr
                 Htaptl = lil_matrix((0, NV))
 
         else:
-
+            Sftapm = lil_matrix((M, ntapm))
+            Sttapm = lil_matrix((M, ntapm))
+            Sftapt = lil_matrix((M, ntapt))
+            Sttapt = lil_matrix((M, ntapt))
             Htapmu = lil_matrix((0, NV))
             Htapml = lil_matrix((0, NV))
             Htaptu = lil_matrix((0, NV))
