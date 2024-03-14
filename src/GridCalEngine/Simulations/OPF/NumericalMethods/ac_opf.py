@@ -548,18 +548,18 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     ngg = len(ig)
 
     #nalldc = nc.nhvdc
-    nondisp = np.where(nc.hvdc_data.dispatchable == 0)[0]
-    disp = np.where(nc.hvdc_data.dispatchable == 1)[0]
+    hvdc_nondisp = np.where(nc.hvdc_data.dispatchable == 0)[0]
+    hvdc_disp = np.where(nc.hvdc_data.dispatchable == 1)[0]
 
-    f_nd_dc = nc.hvdc_data.F[nondisp]
-    t_nd_dc = nc.hvdc_data.T[nondisp]
-    Pf_nondisp = nc.hvdc_data.Pset[nondisp]
+    f_nd_dc = nc.hvdc_data.F[hvdc_nondisp]
+    t_nd_dc = nc.hvdc_data.T[hvdc_nondisp]
+    Pf_nondisp = nc.hvdc_data.Pset[hvdc_nondisp]
 
-    ndc = len(disp)
-    fdc = nc.hvdc_data.F[disp]
-    tdc = nc.hvdc_data.T[disp]
-    Pdcmax = nc.hvdc_data.rate[disp]
-    Pfdc0 = nc.hvdc_data.Pset[disp]
+    ndc = len(hvdc_disp)
+    fdc = nc.hvdc_data.F[hvdc_disp]
+    tdc = nc.hvdc_data.T[hvdc_disp]
+    Pdcmax = nc.hvdc_data.rate[hvdc_disp]
+    Pfdc0 = nc.hvdc_data.Pset[hvdc_disp]
 
     if use_bound_slacks:
         nsl = 2 * npq + 2 * nll
@@ -701,7 +701,9 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     Sf = result.structs.Sf
     St = result.structs.St
     loading = np.abs(Sf) / (rates + 1e-9)
-    hvdc_loading = Pfdc / (nc.hvdc_data.rate + 1e-9)
+    hvdc_power = nc.hvdc_data.Pset.copy()
+    hvdc_power[hvdc_disp] = Pfdc
+    hvdc_loading = hvdc_power / (nc.hvdc_data.rate + 1e-9)
     tap_module = np.zeros(nc.nbr)
     tap_phase = np.zeros(nc.nbr)
     tap_module[k_m] = tapm
@@ -781,7 +783,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                                Sf=Sf, St=St, loading=loading,
                                Pg=Pg, Qg=Qg, Pcost=Pcost,
                                tap_module=tap_module, tap_phase=tap_phase,
-                               hvdc_Pf=Pfdc, hvdc_loading=hvdc_loading,
+                               hvdc_Pf=hvdc_power, hvdc_loading=hvdc_loading,
                                lam_p=lam_p, lam_q=lam_q,
                                sl_sf=sl_sf, sl_st=sl_st, sl_vmax=sl_vmax, sl_vmin=sl_vmin,
                                error=result.error,
