@@ -24,27 +24,6 @@ from GridCalEngine.enumerations import StudyResultsType, ResultTypes, DeviceType
 
 
 class OptimalPowerFlowResults(ResultsTemplate):
-    """
-    OPF results.
-
-    Arguments:
-
-        **Sbus**: bus power Injections
-
-        **voltage**: bus voltages
-
-        **load_shedding**: load shedding values
-
-        **Sf**: branch power values
-
-        **overloads**: branch overloading values
-
-        **loading**: branch loading values
-
-        **losses**: branch losses
-
-        **converged**: converged?
-    """
 
     def __init__(self,
                  bus_names: StrVec,
@@ -60,6 +39,22 @@ class OptimalPowerFlowResults(ResultsTemplate):
                  F_hvdc: IntVec,
                  T_hvdc: IntVec,
                  bus_area_indices: IntVec):
+        """
+        Constructor
+        :param bus_names:
+        :param branch_names:
+        :param load_names:
+        :param generator_names:
+        :param battery_names:
+        :param hvdc_names:
+        :param bus_types:
+        :param area_names:
+        :param F:
+        :param T:
+        :param F_hvdc:
+        :param T_hvdc:
+        :param bus_area_indices:
+        """
 
         ResultsTemplate.__init__(self,
                                  name='OPF',
@@ -255,7 +250,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
                                 idx_device_type=DeviceType.BusDevice,
                                 columns=[result_type.value],
                                 cols_device_type=DeviceType.NoDevice,
-                                title=result_type.value,
+                                title=str(result_type.value),
                                 ylabel='(p.u.)',
                                 xlabel='',
                                 units='(p.u.)')
@@ -267,7 +262,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
                                 idx_device_type=DeviceType.BusDevice,
                                 columns=[result_type.value],
                                 cols_device_type=DeviceType.NoDevice,
-                                title=result_type.value,
+                                title=str(result_type.value),
                                 ylabel='(deg)',
                                 xlabel='',
                                 units='(deg)')
@@ -279,7 +274,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
                                 idx_device_type=DeviceType.BusDevice,
                                 columns=[result_type.value],
                                 cols_device_type=DeviceType.NoDevice,
-                                title=result_type.value,
+                                title=str(result_type.value),
                                 ylabel='(Currency/MW)',
                                 xlabel='',
                                 units='(Currency/MW)')
@@ -291,7 +286,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
                                 idx_device_type=DeviceType.BusDevice,
                                 columns=[result_type.value],
                                 cols_device_type=DeviceType.NoDevice,
-                                title=result_type.value,
+                                title=str(result_type.value),
                                 ylabel='(MW)',
                                 xlabel='',
                                 units='(MW)')
@@ -303,7 +298,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
                                 idx_device_type=DeviceType.BusDevice,
                                 columns=[result_type.value],
                                 cols_device_type=DeviceType.NoDevice,
-                                title=result_type.value,
+                                title=str(result_type.value),
                                 ylabel='(MVAr)',
                                 xlabel='',
                                 units='(MVAr)')
@@ -315,7 +310,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
                                 idx_device_type=DeviceType.BranchDevice,
                                 columns=[result_type.value],
                                 cols_device_type=DeviceType.NoDevice,
-                                title=result_type.value,
+                                title=str(result_type.value),
                                 ylabel='(MW)',
                                 xlabel='',
                                 units='(MW)')
@@ -327,7 +322,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
                                 idx_device_type=DeviceType.BranchDevice,
                                 columns=[result_type.value],
                                 cols_device_type=DeviceType.NoDevice,
-                                title=result_type.value,
+                                title=str(result_type.value),
                                 ylabel='(MW)',
                                 xlabel='',
                                 units='(MW)')
@@ -339,7 +334,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
                                 idx_device_type=DeviceType.BranchDevice,
                                 columns=[result_type.value],
                                 cols_device_type=DeviceType.NoDevice,
-                                title=result_type.value,
+                                title=str(result_type.value),
                                 ylabel='(%)',
                                 xlabel='',
                                 units='(%)')
@@ -351,7 +346,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
                                 idx_device_type=DeviceType.BranchDevice,
                                 columns=[result_type.value],
                                 cols_device_type=DeviceType.NoDevice,
-                                title=result_type.value,
+                                title=str(result_type.value),
                                 ylabel='(MW)',
                                 xlabel='',
                                 units='(MW)')
@@ -363,7 +358,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
                                 idx_device_type=DeviceType.BranchDevice,
                                 columns=[result_type.value],
                                 cols_device_type=DeviceType.NoDevice,
-                                title=result_type.value,
+                                title=str(result_type.value),
                                 ylabel='(MW)',
                                 xlabel='',
                                 units='(MW)')
@@ -375,7 +370,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
                                 idx_device_type=DeviceType.BranchDevice,
                                 columns=[result_type.value],
                                 cols_device_type=DeviceType.NoDevice,
-                                title=result_type.value,
+                                title=str(result_type.value),
                                 ylabel='(deg)',
                                 xlabel='',
                                 units='(deg)')
@@ -387,7 +382,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
                                 idx_device_type=DeviceType.LoadLikeDevice,
                                 columns=[result_type.value],
                                 cols_device_type=DeviceType.NoDevice,
-                                title=result_type.value,
+                                title=str(result_type.value),
                                 ylabel='(MW)',
                                 xlabel='',
                                 units='(MW)')
@@ -399,7 +394,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
                                 idx_device_type=DeviceType.GeneratorDevice,
                                 columns=[result_type.value],
                                 cols_device_type=DeviceType.NoDevice,
-                                title=result_type.value,
+                                title=str(result_type.value),
                                 ylabel='(MW)',
                                 xlabel='',
                                 units='(MW)')
@@ -411,7 +406,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
                                 idx_device_type=DeviceType.GeneratorDevice,
                                 columns=[result_type.value],
                                 cols_device_type=DeviceType.NoDevice,
-                                title=result_type.value,
+                                title=str(result_type.value),
                                 ylabel='(MW)',
                                 xlabel='',
                                 units='(MW)')
@@ -423,7 +418,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
                                 idx_device_type=DeviceType.BatteryDevice,
                                 columns=[result_type.value],
                                 cols_device_type=DeviceType.NoDevice,
-                                title=result_type.value,
+                                title=str(result_type.value),
                                 ylabel='(MW)',
                                 xlabel='',
                                 units='(MW)')
@@ -435,7 +430,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
                                 idx_device_type=DeviceType.HVDCLineDevice,
                                 columns=[result_type.value],
                                 cols_device_type=DeviceType.NoDevice,
-                                title=result_type.value,
+                                title=str(result_type.value),
                                 ylabel='(MW)',
                                 xlabel='',
                                 units='(MW)')
@@ -447,7 +442,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
                                 idx_device_type=DeviceType.HVDCLineDevice,
                                 columns=[result_type.value],
                                 cols_device_type=DeviceType.NoDevice,
-                                title=result_type.value,
+                                title=str(result_type.value),
                                 ylabel='(%)',
                                 xlabel='',
                                 units='(%)')
@@ -476,7 +471,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
                                 idx_device_type=DeviceType.NoDevice,
                                 columns=columns,
                                 cols_device_type=DeviceType.NoDevice,
-                                title=result_type.value)
+                                title=str(result_type.value))
 
         elif result_type == ResultTypes.InterAreaExchange:
             index = [a + '->' for a in self.area_names]
@@ -495,7 +490,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
                                 idx_device_type=DeviceType.AreaDevice,
                                 columns=columns,
                                 cols_device_type=DeviceType.AreaDevice,
-                                title=result_type.value,
+                                title=str(result_type.value),
                                 units='(MW)')
 
         elif result_type == ResultTypes.LossesPercentPerArea:
@@ -516,7 +511,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
                                 idx_device_type=DeviceType.AreaDevice,
                                 columns=columns,
                                 cols_device_type=DeviceType.AreaDevice,
-                                title=result_type.value,
+                                title=str(result_type.value),
                                 units='(%)')
 
         elif result_type == ResultTypes.LossesPerGenPerArea:
@@ -539,7 +534,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
                                 idx_device_type=DeviceType.AreaDevice,
                                 columns=columns,
                                 cols_device_type=DeviceType.NoDevice,
-                                title=result_type.value,
+                                title=str(result_type.value),
                                 units='(%)')
 
         elif result_type == ResultTypes.LossesPerArea:
@@ -555,7 +550,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
                                 idx_device_type=DeviceType.AreaDevice,
                                 columns=columns,
                                 cols_device_type=DeviceType.AreaDevice,
-                                title=result_type.value,
+                                title=str(result_type.value),
                                 units='(%)')
 
         elif result_type == ResultTypes.ActivePowerFlowPerArea:
@@ -571,7 +566,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
                                 idx_device_type=DeviceType.AreaDevice,
                                 columns=columns,
                                 cols_device_type=DeviceType.AreaDevice,
-                                title=result_type.value,
+                                title=str(result_type.value),
                                 units='(MW)')
 
         else:

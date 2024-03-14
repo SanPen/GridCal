@@ -309,6 +309,7 @@ class NonlinearOPFResults:
     loading: Vec = None
     Pg: Vec = None
     Qg: Vec = None
+    Pcost: Vec = None
     tap_module: Vec = None
     tap_phase: Vec = None
     hvdc_Pf: Vec = None
@@ -339,6 +340,7 @@ class NonlinearOPFResults:
         self.loading: Vec = np.zeros(nbr)
         self.Pg: Vec = np.zeros(ng)
         self.Qg: Vec = np.zeros(ng)
+        self.Pcost: Vec = np.zeros(ng)
         self.tap_module: Vec = np.zeros(nbr)
         self.tap_phase: Vec = np.zeros(nbr)
         self.hvdc_Pf: Vec = np.zeros(nhvdc)
@@ -371,6 +373,7 @@ class NonlinearOPFResults:
         self.loading[br_idx] = other.loading
         self.Pg[gen_idx] = other.Pg
         self.Qg[gen_idx] = other.Qg
+        self.Pcost[gen_idx] = other.Pcost
         self.tap_module[br_idx] = other.tap_module
         self.tap_phase[br_idx] = other.tap_phase
         self.hvdc_Pf[hvdc_idx] = other.hvdc_Pf
@@ -637,6 +640,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     tap_phase = np.zeros(nc.nbr)
     tap_module[k_m] = tapm
     tap_phase[k_tau] = tapt
+    Pcost = c0 + c1 * Pg + c2 * Pg * Pg
 
     if opf_options.verbose > 0:
         df_bus = pd.DataFrame(data={'Va (rad)': Va, 'Vm (p.u.)': Vm,
@@ -697,7 +701,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
 
     return NonlinearOPFResults(Va=Va, Vm=Vm, S=S,
                                Sf=Sf, St=St, loading=loading,
-                               Pg=Pg, Qg=Qg,
+                               Pg=Pg, Qg=Qg, Pcost=Pcost,
                                tap_module=tap_module, tap_phase=tap_phase,
                                hvdc_Pf=Pfdc, hvdc_loading=hvdc_loading,
                                lam_p=lam_p, lam_q=lam_q,

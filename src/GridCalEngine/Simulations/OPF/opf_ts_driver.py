@@ -210,6 +210,8 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                 # self.results.battery_power = npa_res.battery_p[0, :]
                 # self.results.battery_energy = npa_res.battery_energy[0, :]
                 self.results.generator_power[it, :] = res.Pg * Sbase
+                self.results.generator_cost[it, :] = res.Pcost
+
                 self.results.Sf[it, :] = res.Sf * Sbase
                 self.results.St[it, :] = res.St * Sbase
                 self.results.overloads[it, :] = (res.sl_sf - res.sl_st) * Sbase
@@ -221,9 +223,17 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                 self.results.converged[it] = res.converged
 
             msg = "Interior point solver"
-            self.logger.add_info(msg=msg, device="Error", value=res.error, expected_value=self.pf_options.tolerance)
-            self.logger.add_info(msg=msg, device="Converged", value=res.converged)
-            self.logger.add_info(msg=msg, device="Iterations", value=res.iterations)
+            # self.logger.add_info(msg=msg, device="Error", value=res.error, expected_value=self.pf_options.tolerance)
+            # self.logger.add_info(msg=msg, device="Converged", value=res.converged)
+            # self.logger.add_info(msg=msg, device="Iterations", value=res.iterations)
+
+            # Compute the emissions, fuel costs and energy used
+            (self.results.system_fuel,
+             self.results.system_emissions,
+             self.results.system_energy_cost) = self.get_fuel_emissions_energy_calculations(
+                gen_p=self.results.generator_power,
+                gen_cost=self.results.generator_cost
+            )
 
         elif self.options.solver == SolverType.SIMPLE_OPF:
 
