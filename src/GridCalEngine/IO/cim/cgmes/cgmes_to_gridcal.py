@@ -14,15 +14,18 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+import time
+
 import numpy as np
 from typing import Dict, List, Tuple
 import GridCalEngine.IO.cim.cgmes.cgmes_enums as cgmes_enums
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 import GridCalEngine.Devices as gcdev
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
+from GridCalEngine.IO.cim.cgmes.cgmes_export import CimExporter
 from GridCalEngine.IO.cim.cgmes.cgmes_utils import (get_nominal_voltage,
                                                     get_pu_values_ac_line_segment,
-                                                    get_rate, get_values_shunt,
+                                                    get_values_shunt,
                                                     get_pu_values_power_transformer, get_pu_values_power_transformer3w,
                                                     get_windings,
                                                     get_regulating_control, get_pu_values_power_transformer_end,
@@ -36,7 +39,6 @@ from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.switch import Switch
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.disconnector import Disconnector
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.load_break_switch import LoadBreakSwitch
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.breaker import Breaker
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.power_transformer_end import PowerTransformerEnd
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.conducting_equipment import ConductingEquipment
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.voltage_level import VoltageLevel
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.bay import Bay
@@ -867,7 +869,7 @@ def get_gcdev_switches(cgmes_model: CgmesCircuit,
                     bus_to=calc_node_t,
                     rate=op_rate,
                     rated_current=rated_current,
-                    open=cgmes_elm.open,
+                    is_open=cgmes_elm.open,
                     retained=cgmes_elm.retained,
                     normal_open=cgmes_elm.normalOpen
                 )
@@ -994,9 +996,12 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
     get_gcdev_substations(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger)
     print('debug')
 
-    # Export test
-    # cgmes_exporter = CgmesExporter(cgmes_model)
-    # cgmes_exporter.export_to_xml()
+    # Export with ET
+    start = time.time()
+    serializer = CimExporter(cgmes_model)
+    serializer.export()
+    end = time.time()
+    print("ET export time: ", end - start, "sec")
 
     # Gridcal to cgmes
     # exported_cgmes = gridcal_to_cgmes(gc_model, logger)

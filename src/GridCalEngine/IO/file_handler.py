@@ -101,13 +101,12 @@ class FileOpen:
             start = time.time()
             data_parser = CgmesDataParser(text_func=text_func, progress_func=progress_func, logger=self.cgmes_logger)
             data_parser.load_files(files=self.file_name)
-            self.cgmes_circuit = CgmesCircuit(cgmes_version=data_parser.cgmes_version,text_func=text_func,
+            self.cgmes_circuit = CgmesCircuit(cgmes_version=data_parser.cgmes_version, text_func=text_func,
                                               progress_func=progress_func, logger=self.cgmes_logger)
             self.cgmes_circuit.parse_files(data_parser=data_parser)
             endt = time.time()
             print("CGMES model load time: ", endt - start, "sec")
             self.circuit = cgmes_to_gridcal(cgmes_model=self.cgmes_circuit, logger=self.cgmes_logger)
-
 
         else:
 
@@ -132,7 +131,10 @@ class FileOpen:
 
                     elif data_dictionary['version'] == 4.0:
                         if data_dictionary is not None:
-                            self.circuit = parse_gridcal_data(data_dictionary, logger=self.logger)
+                            self.circuit = parse_gridcal_data(data=data_dictionary,
+                                                              text_func=text_func,
+                                                              progress_func=progress_func,
+                                                              logger=self.logger)
                         else:
                             self.logger.add("Error while reading the file :(")
                             return None
@@ -148,7 +150,10 @@ class FileOpen:
                                                                            logger=self.logger)
                     # interpret file content
                     if data_dictionary is not None:
-                        self.circuit = parse_gridcal_data(data_dictionary, logger=self.logger)
+                        self.circuit = parse_gridcal_data(data=data_dictionary,
+                                                          text_func=text_func,
+                                                          progress_func=progress_func,
+                                                          logger=self.logger)
                     else:
                         self.logger.add("Error while reading the file :(")
                         return None

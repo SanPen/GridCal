@@ -38,6 +38,12 @@ def object_extract(elm: ALL_DEV_TYPES, args: List[str]) -> Any:
             return None
     return p
 
+def try_numeric(value):
+    try:
+        float(value)
+        return True
+    except ValueError:
+        return False
 
 def compute_results_table_masks(table: ResultsTable, flt: Filter) -> Tuple[BoolVec, BoolVec, Mat]:
     """
@@ -61,8 +67,7 @@ def compute_results_table_masks(table: ResultsTable, flt: Filter) -> Tuple[BoolV
 
     for value in lst:
         if flt.element == FilterSubject.VAL:
-
-            if is_numeric(table.data_c):
+            if try_numeric(value) and is_numeric(table.data_c):
                 val = float(value)
             else:
                 val = value
@@ -73,7 +78,6 @@ def compute_results_table_masks(table: ResultsTable, flt: Filter) -> Tuple[BoolV
 
             for i in range(table.r):
                 for j in range(table.c):
-
                     if flt.apply_filter_op(table.data_c[i, j], val):
                         idx_mask[i] = True
                         col_mask[j] = True
@@ -251,7 +255,13 @@ class FilterResultsTable:
                 for j in range(self.table.c):
                     nan_mask[i, j] = True if data_mask[i, j] else np.nan
 
-            data = self.table.data_c * nan_mask
+            data = np.empty_like(self.table.data_c)
+            for i in range(self.table.r):
+                for j in range(self.table.c):
+                    if(nan_mask[i, j] == np.nan):
+                        data[i, j] = np.nan
+                    else:
+                        data[i, j] = self.table.data_c[i, j]
 
             # return the sliced table
 

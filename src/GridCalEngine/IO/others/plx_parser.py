@@ -43,6 +43,7 @@ class XmlDictConfig(dict):
         :param parent_element:
         :param text_to_remove:
         """
+        dict.__init__(self)
         self.text_to_remove = text_to_remove
 
         if parent_element.items():
@@ -807,6 +808,7 @@ def get_st_node_load(plexos_results_folder, parse_dates=False):
     """
     Get the node load use from a PLEXOS results folder
     :param plexos_results_folder: PLEXOS results folder
+    :param parse_dates: Parse the dates?
     :return: pandas DataFrame with the node load
     """
     fname = os.path.join(plexos_results_folder, 'Interval', 'ST Node.Load.csv')
@@ -877,10 +879,9 @@ def plx_to_gridcal(mdl: PlxModel, plexos_results_folder, time_indices=None, text
             if (load_profile != 0).any():
                 load = Load(name='Load@' + name,
                             P=elm.load,
-                            Q=elm.load * 0.8,
-                            P_prof=load_profile,
-                            Q_prof=load_profile * 0.8,)
-
+                            Q=elm.load * 0.8,)
+                load.P_prof = load_profile
+                load.Q_prof = load_profile * 0.8
                 load.ensure_profiles_exist(circuit.time_profile)
                 circuit.add_load(bus, load)
 
@@ -901,10 +902,9 @@ def plx_to_gridcal(mdl: PlxModel, plexos_results_folder, time_indices=None, text
                 gen_profile = gen_df[name].values
 
             gen = Generator(name=name,
-                            P_prof=gen_profile,
                             Pmin=elm.p_min,
                             Pmax=elm.p_max)
-
+            gen.P_prof = gen_profile
             bus = bus_dict[elm.node.name]
             gen.ensure_profiles_exist(circuit.time_profile)
             circuit.add_generator(bus, gen)

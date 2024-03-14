@@ -218,7 +218,7 @@ class Branch(BranchParent):
                                  'copper @ 20ºC: 0.00393,Aluminum @ 20ºC: 0.004308,Aluminum @ 75ºC: 0.00330')
         self.register(key='tap_module', units='', tpe=float, definition='Tap changer module, it a value close to 1.0')
         self.register(key='angle', units='rad', tpe=float, definition='Angle shift of the tap changer.')
-        self.register(key='template', units='', tpe=BranchType, definition='', editable=False)
+        # self.register(key='template', units='', tpe=BranchType, definition='', editable=False)
 
         self.register(key='bus_to_regulated', units='', tpe=bool, definition='Is the regulation at the bus to?')
         self.register(key='vset', units='p.u.', tpe=float, definition='set control voltage.')
@@ -227,7 +227,7 @@ class Branch(BranchParent):
         self.register(key='x_fault', units='p.u.', tpe=float, definition='Fault reactance.')
         self.register(key='fault_pos', units='p.u.', tpe=float,
                       definition='proportion of the fault location measured from the "from" bus.')
-        self.register(key='branch_type', units='p.u.', tpe=BranchType, definition='Fault resistance.')
+        # self.register(key='branch_type', units='p.u.', tpe=DeviceType, definition='Fault resistance.')
 
     @property
     def rate_prof(self) -> Profile:
@@ -476,7 +476,6 @@ class Branch(BranchParent):
                             tap_module=self.tap_module,
                             tap_phase=self.angle,
                             vset=self.vset,
-                            bus_to_regulated=self.bus_to_regulated,
                             temp_base=self.temp_base,
                             temp_oper=self.temp_oper,
                             alpha=self.alpha,
@@ -572,7 +571,6 @@ def convert_branch(branch: Branch):
                             tap_module=branch.tap_module,
                             tap_phase=branch.angle,
                             vset=branch.vset,
-                            bus_to_regulated=branch.bus_to_regulated,
                             temp_base=branch.temp_base,
                             temp_oper=branch.temp_oper,
                             alpha=branch.alpha,

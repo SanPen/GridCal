@@ -154,6 +154,7 @@ but another problem arises: How should the different criteria values be computed
 function are around the same order of magnitude?
 
 4. **Normalization**
+
 When dealing with multicriteria optimization, it is common to establish some reference values for each criterion in
 the objective function and normalize the terms by dividing the factors by the reference point. In essence, the basic
 objective function presented in Formulation would be modified as:
@@ -163,7 +164,7 @@ objective function presented in Formulation would be modified as:
     \frac{\sum C_{va}(x)_b}{va_{ref}} + \frac{\sum CAPEX(x)_i}{CAPEX_{ref}} + \frac{\sum OPEX(x)_i}{OPEX_{ref}}
 
 However, given the nature of the problem being solved, it is not possible to determine reference values for each
-criteria beforehand. Hence, some solutions are proposed, the reader can find the explanation and results obtained in the
+criteria beforehand. Hence, some solutions are proposed. the reader can find the explanation and results obtained in the
 following subsections.
 
 4.1. First iteration normalization
@@ -270,12 +271,22 @@ less the same number of investments each random iteration.
 
 The results obtained with the scaled algorithm show a clear Pareto front as seen in Figure 12.
 
-.. figure:: ../figures/investments/Pareto_single.png
+.. figure:: ../figures/investments/single_pareto_iterations.png
     :alt: Pareto front
     :scale: 50 %
 
     Figure 12: Results obtained for the updated random evaluation iterations.
 
+However, the results show that the obtained Pareto front is only due to the random iterations. The points that represent the minimization process, 
+which begins after roughly 600 iterations are clearly centered around two areas which are not that far from the areas obtained in previous figures. 
+Therefore, given that the algorithm is not actively exploring the Pareto front, it is thought that there may be a whole set of points more optimal than the ones 
+obtained during the random iterations, as shown in red in Figure 13.
+
+.. figure:: ../figures/investments/single_pareto_iterations_2.png
+    :alt: Pareto front
+    :scale: 50 %
+
+    Figure 13: Hypothetical unexplored Pareto front.
 
 Multi-objective optimization
 --------------------------------------
@@ -293,14 +304,14 @@ weights must change. This way, it is still possible to use Scipy's tool "minimiz
 single value. The reader can find a more in-depth explanation of the reasoning behind this process in
 this `reference paper <https://arxiv.org/abs/2006.04655>`_.
 
-The results obtained show a similar distribution as in Figure 12, however, the algorithm does not find the points outside
+The results obtained show a similar distribution as in Figure 14, however, the algorithm does not find the points outside
 the curve and closer to the optimal point (0,0).
 
 .. figure:: ../figures/investments/Pareto_multi.png
     :alt: Multi-objective optimization results
     :scale: 50 %
 
-    Figure 12: Results obtained for the multi objective optimization.
+    Figure 14: Results obtained for the multi objective optimization.
 
 Testing on ZDT3
 ____________________________
@@ -310,7 +321,7 @@ typical test function for multi-objective optimization.
 
 **Test function for optimization**
 
-The function to be tested is the Zitzler–Deb–Thiele's function N3:
+The function to be tested is the Zitzler–Deb–Thiele's function N3 (ZDT3): 
 
 .. math::
     \text{Minimize:} \, f_1(x) = x_1 \, ,\; \; f_2(x) = g(x) \cdot h(f_1(x),g(x)) ,
@@ -320,4 +331,82 @@ The function to be tested is the Zitzler–Deb–Thiele's function N3:
 
     \text{with:} \, 1 \leq i \leq 30  \, ,\; \; 0 \leq x_i \leq 1 .
 
-The Pareto front expected can be seen in Figure 13.
+This test function shares one particularity with the grid problem at hand: the objective :math:`f_2(x)` is highly dependent
+on the number of variables that take non-zero values, given the presence of a summation :math:`\sum_{i=2}^{30} x_i`. In
+the electrical case, this relates to the CAPEX objective, which also depends on the number of investments evaluated,
+the more investments are active, the higher the total investment will tend to be. The Pareto front expected can be seen in Figure 15.
+
+.. figure:: ../figures/investments/ZDT3_pareto.jpg
+    :alt: Pareto front for zdt3.
+    :scale: 50 %
+
+    Figure 15: Expected Pareto front for ZDT3.
+
+On the one hand, the multi-objective algorithm is tested. The results for different simulations are shown in Figures 16-18.
+
+.. figure:: ../figures/investments/zdt3_multi_1.png
+    :alt: Results multi-objective 1.
+    :scale: 50 %
+
+    Figure 16: Results obtained for ZDT3 with multi-objective adapted algorithm, simulation 1.
+
+
+.. figure:: ../figures/investments/zdt3_multi_1.png
+    :alt: Results multi-objective 2.
+    :scale: 50 %
+
+    Figure 17: Results obtained for ZDT3 with multi-objective adapted algorithm, simulation 2.
+
+
+.. figure:: ../figures/investments/zdt3_multi_1.png
+    :alt: Results multi-objective 3.
+    :scale: 50 %
+
+    Figure 18: Results obtained for ZDT3 with multi-objective adapted algorithm, simulation 3.
+
+
+As demonstrated in the previous figures, the multi-objective algorithm fails to approximate the Pareto front of ZDT3. 
+Instead, its exploration during the minimization process shows an unwanted concentration around the best point identified in the random iteration phase. 
+This not only results in a deviation from the desired functionality but also underscores a lack of robustness, as the final outcome is excessively 
+influenced by the random iterations process. The algorithm, therefore, not only falls short of meeting the desired objectives but also reveals susceptibility in its performance.
+
+On the other hand, the following figures show the results for the single-objective algorithm with normalization, Figures 19-21.
+
+.. figure:: ../figures/investments/zdt3_single_1.png
+    :alt: Results single-objective 1.
+    :scale: 50 %
+
+    Figure 19: Results obtained for ZDT3 with single-objective adapted algorithm, simulation 1.
+
+
+.. figure:: ../figures/investments/zdt3_single_2.png
+    :alt: Results single-objective 2.
+    :scale: 50 %
+
+    Figure 20: Results obtained for ZDT3 with single-objective adapted algorithm, simulation 2.
+
+
+.. figure:: ../figures/investments/zdt3_single_3.png
+    :alt: Results single-objective 3.
+    :scale: 50 %
+
+    Figure 21: Results obtained for ZDT3 with single-objective adapted algorithm, simulation 3.
+
+As shown in the preceding figures, the single-objective algorithm approaches the Pareto front during the minimization process, albeit requires a substantial number of iterations to get sufficiently close. 
+Moreover, similar to the multi-objective algorithm, its performance is extremely linked to the best point found during the random iterations process, 
+then, the final result is different depending on the simulation. 
+
+Furthermore, the observed behavior in the case of ZDT3 draws parallels to the earlier tests performed on the grid. The algorithm does
+ get close to the Pareto front but does not extensively explore it during the minimization process, which would be the desired situation. 
+
+Conclusions
+_____________________
+
+Based on the results obtained throughout the different tests, some conclusions can be drawn.
+    - The single-objective algorithm's performance is significantly influenced by the order of magnitude of the criteria.
+    - While the single-objective algorithm successfully minimizes the function, it falls short of exploring the entire Pareto front, which would be the desired outcome.
+    - The current adaptation of the surrogate model to support multi-objective minimization does not minimize the function correctly, at the moment. 
+    - Neither algorithm performs the desired minimization. 
+
+In light of these observations, future work should include the exploration of established multi-objective black-box optimization methods and alternative algorithms 
+for multi-objective minimization, such as the application of NSGA-III.

@@ -104,8 +104,6 @@ class ContinuationPowerFlowDriver(DriverTemplate):
                                           Yt=island.Yt,
                                           branch_rates=island.branch_rates,
                                           Sbase=island.Sbase,
-                                          Ibus_base=island.Ibus,
-                                          Ibus_target=island.Ibus,
                                           Sbus_base=self.inputs.Sbase[island.original_bus_idx],
                                           Sbus_target=self.inputs.Starget[island.original_bus_idx],
                                           V=self.inputs.Vbase[island.original_bus_idx],

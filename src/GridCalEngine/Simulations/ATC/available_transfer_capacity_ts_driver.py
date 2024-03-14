@@ -22,15 +22,15 @@ from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_cir
 from GridCalEngine.Simulations.LinearFactors.linear_analysis_options import LinearAnalysisOptions
 from GridCalEngine.Simulations.LinearFactors.linear_analysis_ts_driver import LinearAnalysisTimeSeriesDriver
 from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
-from GridCalEngine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferCapacityOptions, \
-    compute_atc_list, compute_alpha
+from GridCalEngine.Simulations.ATC.available_transfer_capacity_driver import (AvailableTransferCapacityOptions,
+                                                                              compute_atc_list, compute_alpha)
 from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.Simulations.driver_template import TimeSeriesDriverTemplate
 from GridCalEngine.Simulations.Clustering.clustering_results import ClusteringResults
 from GridCalEngine.basic_structures import Vec, Mat, IntVec, StrVec, DateVec
-from GridCalEngine.enumerations import StudyResultsType, AvailableTransferMode, ResultTypes
+from GridCalEngine.enumerations import StudyResultsType, AvailableTransferMode, ResultTypes, DeviceType
 
 
 class AvailableTransferCapacityTimeSeriesResults(ResultsTemplate):
@@ -189,6 +189,8 @@ class AvailableTransferCapacityTimeSeriesResults(ResultsTemplate):
                 columns=self.report_headers,
                 title=result_type.value,
                 ylabel="",
+                cols_device_type=DeviceType.NoDevice,
+                idx_device_type=DeviceType.NoDevice
             )
         else:
             raise Exception('Result type not understood:' + str(result_type))

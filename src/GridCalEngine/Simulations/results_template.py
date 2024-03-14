@@ -233,7 +233,8 @@ class ResultsTemplate:
 
         return x
 
-    def get_bus_values_per_area(self, bus_values: Vec, area_names: StrVec, bus_area_indices: IntVec) -> Vec:
+    @staticmethod
+    def get_bus_values_per_area(bus_values: Vec, area_names: StrVec, bus_area_indices: IntVec) -> Vec:
         """
         Split array of bus-related values per area
         :param bus_values:

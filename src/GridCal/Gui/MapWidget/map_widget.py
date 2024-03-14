@@ -441,16 +441,16 @@ class MapWidget(QWidget):
                         if result:
                             (sel, data, relsel) = result
 
-                            BoxSelectEvent(mposn=None,
-                                           vposn=None,
+                            BoxSelectEvent(mposn=(None, None),
+                                           vposn=(0, 0),
                                            layer_id=lid,
                                            selection=sel,
                                            relsel=relsel).emit_event()
 
                         else:
                             # raise an empty EVT_PYSLIPQT_BOXSELECT event
-                            BoxSelectEvent(mposn=None,
-                                           vposn=None,
+                            BoxSelectEvent(mposn=(None, None),
+                                           vposn=(0, 0),
                                            layer_id=lid,
                                            selection=None,
                                            relsel=None).emit_event()
@@ -2760,6 +2760,9 @@ class MapWidget(QWidget):
                     if x <= max(p1x, p2x):
                         if p1y != p2y:
                             xinters = (y - p1y) * (p2x - p1x) / (p2y - p1y) + p1x
+                        else:
+                            xinters = x + 1  # value so that the later comparison is false
+
                         if p1x == p2x or x <= xinters:
                             inside = not inside
             (p1x, p1y) = (p2x, p2y)
@@ -2768,7 +2771,8 @@ class MapWidget(QWidget):
 
     def point_in_polygon_geo(self, poly: List[Tuple[float, float]], geo: Tuple[float, float],
                              placement: Place, offset_x: float, offset_y: float):
-        """Decide if a point is inside a map-relative polygon.
+        """
+        Decide if a point is inside a map-relative polygon.
 
         poly       an iterable of (x,y) where x,y are in geo coordinates
         geo        tuple (xgeo, ygeo) of point position
@@ -2786,7 +2790,8 @@ class MapWidget(QWidget):
 
     def point_in_polygon_view(self, poly: List[Tuple[float, float]], view: Tuple[float, float], place: Place,
                               x_off: float, y_off: float):
-        """Decide if a point is inside a view-relative polygon.
+        """
+        Decide if a point is inside a view-relative polygon.
 
         poly      an iterable of (x,y) where x,y are in view (pixel) coordinates
         ptx       point X coordinate (view)
@@ -2809,7 +2814,8 @@ class MapWidget(QWidget):
 
     def point_near_polyline_geo(self, point: Tuple[float, float], poly: List[Tuple[float, float]],
                                 placement: Place, offset_x: float, offset_y: float, delta: int):
-        """Decide if a point is near a map-relative polyline.
+        """
+        Decide if a point is near a map-relative polyline.
 
         point      tuple (xgeo, ygeo) of point position
         poly       an iterable of (x,y) where x,y are in geo coordinates
@@ -2829,7 +2835,8 @@ class MapWidget(QWidget):
 
     def point_near_polyline_view(self, point: Tuple[float, float], polyline: List[Tuple[float, float]],
                                  place: Place, x_off: float, y_off: float, delta: int):
-        """Decide if a point is near a view-relative polyline.
+        """
+        Decide if a point is near a view-relative polyline.
 
         point     a tuple (viewx, viewy) of selection point in view coordinates
         polyline  an iterable of (x,y) where x,y are in view (pixel) coordinates

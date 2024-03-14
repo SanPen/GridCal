@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_results import ContingencyAnalysisResults
@@ -34,7 +34,8 @@ def optimal_linear_contingency_analysis(grid: MultiCircuit,
                                         opf_options: OptimalPowerFlowOptions,
                                         linear_multiple_contingencies: LinearMultiContingencies,
                                         calling_class: ContingencyAnalysisDriver,
-                                        t=None,
+                                        t: Union[None, int] = None,
+                                        t_prob: float = 1.0,
                                         logger: Logger = Logger()) -> ContingencyAnalysisResults:
     """
     Run N-1 simulation in series with HELM, non-linear solution
@@ -44,6 +45,7 @@ def optimal_linear_contingency_analysis(grid: MultiCircuit,
     :param linear_multiple_contingencies: LinearMultiContingencies
     :param calling_class: ContingencyAnalysisDriver
     :param t: time index, if None the snapshot is used
+    :param t_prob: probability of te time
     :param logger: Logger object
     :return: returns the results
     """
@@ -135,8 +137,8 @@ def optimal_linear_contingency_analysis(grid: MultiCircuit,
         results.Sbus[ic, :] = Pbus
         results.loading[ic, :] = c_loading
         results.report.analyze(t=t,
+                               t_prob=t_prob,
                                mon_idx=mon_idx,
-                               calc_branches=calc_branches,
                                numerical_circuit=numerical_circuit,
                                base_flow=flows_n,
                                base_loading=loadings_n,

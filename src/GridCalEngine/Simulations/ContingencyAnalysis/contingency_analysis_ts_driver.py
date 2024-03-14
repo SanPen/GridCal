@@ -125,7 +125,12 @@ class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
             self.report_text('Contingency at ' + str(self.grid.time_profile[t]))
             self.report_progress2(it, len(self.time_indices))
 
-            res_t = cdriver.run_at(t=t)
+            if self.clustering_results is not None:
+                t_prob = self.clustering_results.sampled_probabilities[it]
+            else:
+                t_prob = 1.0
+
+            res_t = cdriver.run_at(t=t, t_prob=t_prob)
 
             results.S[it, :] = res_t.Sbus.real.max(axis=0)
 

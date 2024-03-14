@@ -735,133 +735,139 @@ class BusBranchEditorWidget(QSplitter):
 
                 for idtag, location in points_group.locations.items():
                     branch: Line = location.api_object
-                    bus_f_graphic_obj = find_my_node(branch.bus_from.idtag, bus_dict, fluid_node_dict)
-                    bus_t_graphic_obj = find_my_node(branch.bus_to.idtag, bus_dict, fluid_node_dict)
+                    if branch.bus_from is not None and branch.bus_to is not None:
+                        bus_f_graphic_obj = find_my_node(branch.bus_from.idtag, bus_dict, fluid_node_dict)
+                        bus_t_graphic_obj = find_my_node(branch.bus_to.idtag, bus_dict, fluid_node_dict)
 
-                    if bus_f_graphic_obj and bus_t_graphic_obj:
-                        terminal_from = bus_f_graphic_obj.terminal
-                        terminal_to = bus_t_graphic_obj.terminal
+                        if bus_f_graphic_obj and bus_t_graphic_obj:
+                            terminal_from = bus_f_graphic_obj.terminal
+                            terminal_to = bus_t_graphic_obj.terminal
 
-                        graphic_object = LineGraphicItem(fromPort=terminal_from,
-                                                         toPort=terminal_to,
-                                                         editor=self,
-                                                         api_object=branch)
-                        self.add_to_scene(graphic_object=graphic_object)
+                            graphic_object = LineGraphicItem(fromPort=terminal_from,
+                                                             toPort=terminal_to,
+                                                             editor=self,
+                                                             api_object=branch)
+                            self.add_to_scene(graphic_object=graphic_object)
 
-                        terminal_from.hosting_connections.append(graphic_object)
-                        terminal_to.hosting_connections.append(graphic_object)
-                        graphic_object.redraw()
-                        points_group.locations[idtag].graphic_object = graphic_object
+                            terminal_from.hosting_connections.append(graphic_object)
+                            terminal_to.hosting_connections.append(graphic_object)
+                            graphic_object.redraw()
+                            points_group.locations[idtag].graphic_object = graphic_object
 
             elif category == DeviceType.DCLineDevice.value:
 
                 for idtag, location in points_group.locations.items():
                     branch: DcLine = location.api_object
-                    bus_f_graphic_obj = find_my_node(branch.bus_from.idtag, bus_dict, fluid_node_dict)
-                    bus_t_graphic_obj = find_my_node(branch.bus_to.idtag, bus_dict, fluid_node_dict)
+                    if branch.bus_from is not None and branch.bus_to is not None:
+                        bus_f_graphic_obj = find_my_node(branch.bus_from.idtag, bus_dict, fluid_node_dict)
+                        bus_t_graphic_obj = find_my_node(branch.bus_to.idtag, bus_dict, fluid_node_dict)
 
-                    if bus_f_graphic_obj and bus_t_graphic_obj:
-                        terminal_from = bus_f_graphic_obj.terminal
-                        terminal_to = bus_t_graphic_obj.terminal
+                        if bus_f_graphic_obj and bus_t_graphic_obj:
+                            terminal_from = bus_f_graphic_obj.terminal
+                            terminal_to = bus_t_graphic_obj.terminal
 
-                        graphic_object = DcLineGraphicItem(fromPort=terminal_from,
-                                                           toPort=terminal_to,
-                                                           editor=self,
-                                                           api_object=branch)
-                        self.add_to_scene(graphic_object=graphic_object)
+                            graphic_object = DcLineGraphicItem(fromPort=terminal_from,
+                                                               toPort=terminal_to,
+                                                               editor=self,
+                                                               api_object=branch)
+                            self.add_to_scene(graphic_object=graphic_object)
 
-                        terminal_from.hosting_connections.append(graphic_object)
-                        terminal_to.hosting_connections.append(graphic_object)
-                        graphic_object.redraw()
-                        points_group.locations[idtag].graphic_object = graphic_object
+                            terminal_from.hosting_connections.append(graphic_object)
+                            terminal_to.hosting_connections.append(graphic_object)
+                            graphic_object.redraw()
+                            points_group.locations[idtag].graphic_object = graphic_object
 
             elif category == DeviceType.HVDCLineDevice.value:
 
                 for idtag, location in points_group.locations.items():
                     branch: HvdcLine = location.api_object
-                    bus_f_graphic_obj = find_my_node(branch.bus_from.idtag, bus_dict, fluid_node_dict)
-                    bus_t_graphic_obj = find_my_node(branch.bus_to.idtag, bus_dict, fluid_node_dict)
+                    if branch.bus_from is not None and branch.bus_to is not None:
+                        bus_f_graphic_obj = find_my_node(branch.bus_from.idtag, bus_dict, fluid_node_dict)
+                        bus_t_graphic_obj = find_my_node(branch.bus_to.idtag, bus_dict, fluid_node_dict)
 
-                    if bus_f_graphic_obj and bus_t_graphic_obj:
-                        terminal_from = bus_f_graphic_obj.terminal
-                        terminal_to = bus_t_graphic_obj.terminal
+                        if bus_f_graphic_obj and bus_t_graphic_obj:
+                            terminal_from = bus_f_graphic_obj.terminal
+                            terminal_to = bus_t_graphic_obj.terminal
 
-                        graphic_object = HvdcGraphicItem(fromPort=terminal_from,
-                                                         toPort=terminal_to,
-                                                         editor=self,
-                                                         api_object=branch)
-                        self.add_to_scene(graphic_object=graphic_object)
+                            graphic_object = HvdcGraphicItem(fromPort=terminal_from,
+                                                             toPort=terminal_to,
+                                                             editor=self,
+                                                             api_object=branch)
+                            self.add_to_scene(graphic_object=graphic_object)
 
-                        terminal_from.hosting_connections.append(graphic_object)
-                        terminal_to.hosting_connections.append(graphic_object)
-                        graphic_object.redraw()
-                        points_group.locations[idtag].graphic_object = graphic_object
+                            terminal_from.hosting_connections.append(graphic_object)
+                            terminal_to.hosting_connections.append(graphic_object)
+                            graphic_object.redraw()
+                            points_group.locations[idtag].graphic_object = graphic_object
 
             elif category == DeviceType.VscDevice.value:
 
                 for idtag, location in points_group.locations.items():
                     branch: VSC = location.api_object
-                    bus_f_graphic_obj = find_my_node(branch.bus_from.idtag, bus_dict, fluid_node_dict)
-                    bus_t_graphic_obj = find_my_node(branch.bus_to.idtag, bus_dict, fluid_node_dict)
+                    if branch.bus_from is not None and branch.bus_to is not None:
+                        bus_f_graphic_obj = find_my_node(branch.bus_from.idtag, bus_dict, fluid_node_dict)
+                        bus_t_graphic_obj = find_my_node(branch.bus_to.idtag, bus_dict, fluid_node_dict)
 
-                    if bus_f_graphic_obj and bus_t_graphic_obj:
-                        terminal_from = bus_f_graphic_obj.terminal
-                        terminal_to = bus_t_graphic_obj.terminal
+                        if bus_f_graphic_obj and bus_t_graphic_obj:
+                            terminal_from = bus_f_graphic_obj.terminal
+                            terminal_to = bus_t_graphic_obj.terminal
 
-                        graphic_object = VscGraphicItem(fromPort=terminal_from,
-                                                        toPort=terminal_to,
-                                                        editor=self,
-                                                        api_object=branch)
-                        self.add_to_scene(graphic_object=graphic_object)
+                            graphic_object = VscGraphicItem(fromPort=terminal_from,
+                                                            toPort=terminal_to,
+                                                            editor=self,
+                                                            api_object=branch)
+                            self.add_to_scene(graphic_object=graphic_object)
 
-                        terminal_from.hosting_connections.append(graphic_object)
-                        terminal_to.hosting_connections.append(graphic_object)
-                        graphic_object.redraw()
-                        points_group.locations[idtag].graphic_object = graphic_object
+                            terminal_from.hosting_connections.append(graphic_object)
+                            terminal_to.hosting_connections.append(graphic_object)
+                            graphic_object.redraw()
+                            points_group.locations[idtag].graphic_object = graphic_object
 
             elif category == DeviceType.UpfcDevice.value:
 
                 for idtag, location in points_group.locations.items():
                     branch: UPFC = location.api_object
-                    bus_f_graphic_obj = find_my_node(branch.bus_from.idtag, bus_dict, fluid_node_dict)
-                    bus_t_graphic_obj = find_my_node(branch.bus_to.idtag, bus_dict, fluid_node_dict)
+                    if branch.bus_from is not None and branch.bus_to is not None:
+                        bus_f_graphic_obj = find_my_node(branch.bus_from.idtag, bus_dict, fluid_node_dict)
+                        bus_t_graphic_obj = find_my_node(branch.bus_to.idtag, bus_dict, fluid_node_dict)
 
-                    if bus_f_graphic_obj and bus_t_graphic_obj:
-                        terminal_from = bus_f_graphic_obj.terminal
-                        terminal_to = bus_t_graphic_obj.terminal
+                        if bus_f_graphic_obj and bus_t_graphic_obj:
+                            terminal_from = bus_f_graphic_obj.terminal
+                            terminal_to = bus_t_graphic_obj.terminal
 
-                        graphic_object = UpfcGraphicItem(fromPort=terminal_from,
-                                                         toPort=terminal_to,
-                                                         editor=self,
-                                                         api_object=branch)
-                        self.add_to_scene(graphic_object=graphic_object)
+                            graphic_object = UpfcGraphicItem(fromPort=terminal_from,
+                                                             toPort=terminal_to,
+                                                             editor=self,
+                                                             api_object=branch)
+                            self.add_to_scene(graphic_object=graphic_object)
 
-                        terminal_from.hosting_connections.append(graphic_object)
-                        terminal_to.hosting_connections.append(graphic_object)
-                        graphic_object.redraw()
-                        points_group.locations[idtag].graphic_object = graphic_object
+                            terminal_from.hosting_connections.append(graphic_object)
+                            terminal_to.hosting_connections.append(graphic_object)
+                            graphic_object.redraw()
+                            points_group.locations[idtag].graphic_object = graphic_object
 
             elif category == DeviceType.Transformer2WDevice.value:
 
                 for idtag, location in points_group.locations.items():
                     branch: Transformer2W = location.api_object
-                    bus_f_graphic_obj = find_my_node(branch.bus_from.idtag, bus_dict, fluid_node_dict)
-                    bus_t_graphic_obj = find_my_node(branch.bus_to.idtag, bus_dict, fluid_node_dict)
+                    if branch.bus_from is not None and branch.bus_to is not None:
+                        bus_f_graphic_obj = find_my_node(branch.bus_from.idtag, bus_dict, fluid_node_dict)
+                        bus_t_graphic_obj = find_my_node(branch.bus_to.idtag, bus_dict, fluid_node_dict)
 
-                    if bus_f_graphic_obj and bus_t_graphic_obj:
-                        terminal_from = bus_f_graphic_obj.terminal
-                        terminal_to = bus_t_graphic_obj.terminal
+                        if bus_f_graphic_obj and bus_t_graphic_obj:
+                            terminal_from = bus_f_graphic_obj.terminal
+                            terminal_to = bus_t_graphic_obj.terminal
 
-                        graphic_object = TransformerGraphicItem(fromPort=terminal_from,
-                                                                toPort=terminal_to,
-                                                                editor=self,
-                                                                api_object=branch)
-                        self.add_to_scene(graphic_object=graphic_object)
+                            graphic_object = TransformerGraphicItem(fromPort=terminal_from,
+                                                                    toPort=terminal_to,
+                                                                    editor=self,
+                                                                    api_object=branch)
+                            self.add_to_scene(graphic_object=graphic_object)
 
-                        terminal_from.hosting_connections.append(graphic_object)
-                        terminal_to.hosting_connections.append(graphic_object)
-                        graphic_object.redraw()
-                        points_group.locations[idtag].graphic_object = graphic_object
+                            terminal_from.hosting_connections.append(graphic_object)
+                            terminal_to.hosting_connections.append(graphic_object)
+                            graphic_object.redraw()
+                            points_group.locations[idtag].graphic_object = graphic_object
 
             elif category == DeviceType.WindingDevice.value:
 
@@ -875,23 +881,24 @@ class BusBranchEditorWidget(QSplitter):
 
                 for idtag, location in points_group.locations.items():
                     branch: FluidPath = location.api_object
-                    bus_f_graphic_obj = fluid_node_dict.get(branch.source.idtag, None)
-                    bus_t_graphic_obj = fluid_node_dict.get(branch.target.idtag, None)
+                    if branch.source is not None and branch.target is not None:
+                        bus_f_graphic_obj = fluid_node_dict.get(branch.source.idtag, None)
+                        bus_t_graphic_obj = fluid_node_dict.get(branch.target.idtag, None)
 
-                    if bus_f_graphic_obj and bus_t_graphic_obj:
-                        terminal_from = bus_f_graphic_obj.terminal
-                        terminal_to = bus_t_graphic_obj.terminal
+                        if bus_f_graphic_obj and bus_t_graphic_obj:
+                            terminal_from = bus_f_graphic_obj.terminal
+                            terminal_to = bus_t_graphic_obj.terminal
 
-                        graphic_object = FluidPathGraphicItem(fromPort=terminal_from,
-                                                              toPort=terminal_to,
-                                                              editor=self,
-                                                              api_object=branch)
-                        self.add_to_scene(graphic_object=graphic_object)
+                            graphic_object = FluidPathGraphicItem(fromPort=terminal_from,
+                                                                  toPort=terminal_to,
+                                                                  editor=self,
+                                                                  api_object=branch)
+                            self.add_to_scene(graphic_object=graphic_object)
 
-                        terminal_from.hosting_connections.append(graphic_object)
-                        terminal_to.hosting_connections.append(graphic_object)
-                        graphic_object.redraw()
-                        points_group.locations[idtag].graphic_object = graphic_object
+                            terminal_from.hosting_connections.append(graphic_object)
+                            terminal_to.hosting_connections.append(graphic_object)
+                            graphic_object.redraw()
+                            points_group.locations[idtag].graphic_object = graphic_object
 
             else:
                 pass
@@ -2945,6 +2952,13 @@ class BusBranchEditorWidget(QSplitter):
                             # pass and is in the original diagram, add it now
                             diagram.set_point(device=bus, location=location)
                             bus_dict[bus.idtag] = location.graphic_object
+
+        # third pass: we must also add all those branches connecting the selected buses
+        for lst in self.circuit.get_branch_lists():
+            for api_object in lst:
+                if api_object.bus_from.idtag in bus_dict or api_object.bus_to.idtag in bus_dict:
+                    diagram.set_point(device=api_object,
+                                      location=GraphicLocation(api_object=api_object))
 
         return diagram
 

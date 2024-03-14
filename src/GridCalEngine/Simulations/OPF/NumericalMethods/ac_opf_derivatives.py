@@ -116,7 +116,23 @@ def compute_analytic_admittances(alltapm, alltapt, k_m, k_tau, k_mtau, Cf, Ct, R
     return dYbusdm, dYfdm, dYtdm, dYbusdt, dYfdt, dYtdt
 
 
-def compute_branch_power_derivatives(alltapm, alltapt, V, k_m, k_tau, k_mtau, Cf, Ct, Yf, Yt, R, X):
+def compute_branch_power_derivatives(alltapm, alltapt, V, k_m, k_tau, Cf, Ct, R, X):
+    """
+
+    :param alltapm:
+    :param alltapt:
+    :param V:
+    :param k_m:
+    :param k_tau:
+    :param k_mtau:
+    :param Cf:
+    :param Ct:
+    :param Yf:
+    :param Yt:
+    :param R:
+    :param X:
+    :return:
+    """
     ys = 1.0 / (R + 1.0j * X + 1e-20)
 
     Vf = Cf @ V
@@ -318,104 +334,7 @@ def compute_branch_power_second_derivatives(alltapm, alltapt, vm, va, k_m, k_tau
             dSbusdtdvm, dSfdtdvm, dStdtdvm,
             dSbusdtdva, dSfdtdva, dStdtdva)
 
-'''
-def compute_finitediff_admittances(nc, tol=1e-6):
-    k_m = nc.k_m
-    k_tau = nc.k_tau
 
-    Ybus0 = nc.Ybus
-    Yf0 = nc.Yf
-    Yt0 = nc.Yt
-
-    nc.branch_data.tap_module[k_m] += tol
-    nc.reset_calculations()
-
-    dYfdm = (nc.Yf - Yf0) / tol
-    dYtdm = (nc.Yt - Yt0) / tol
-    dYbusdm = (nc.Ybus - Ybus0) / tol
-
-    nc.branch_data.tap_module[k_m] -= tol
-
-    nc.branch_data.tap_angle[k_tau] += tol
-    nc.reset_calculations()
-
-    dYfdt = (nc.Yf - Yf0) / tol
-    dYtdt = (nc.Yt - Yt0) / tol
-    dYbusdt = (nc.Ybus - Ybus0) / tol
-
-    nc.branch_data.tap_angle[k_tau] -= tol
-    nc.reset_calculations()
-
-    return dYbusdm, dYfdm, dYtdm, dYbusdt, dYfdt, dYtdt
-
-
-def compute_analytic_admittances_2dev(alltapm, alltapt, k_m, k_tau, Cf, Ct, R, X):
-    ys = 1.0 / (R + 1.0j * X + 1e-20)
-    N = len(alltapm)
-
-    # Second partial derivative with respect to tap module
-    mp = alltapm[k_m]
-    tau = alltapt[k_m]
-    ylin = ys[k_m]
-
-    dYffdmdm = np.zeros(N, dtype=complex)
-    dYftdmdm = np.zeros(N, dtype=complex)
-    dYtfdmdm = np.zeros(N, dtype=complex)
-    dYttdmdm = np.zeros(N, dtype=complex)
-
-    dYffdmdm[k_m] = 6 * ylin / (mp * mp * mp * mp)
-    dYftdmdm[k_m] = -2 * ylin / (mp * mp * mp * np.exp(-1.0j * tau))
-    dYtfdmdm[k_m] = -2 * ylin / (mp * mp * mp * np.exp(1.0j * tau))
-
-    dYfdmdm = (sp.diags(dYffdmdm) * Cf + sp.diags(dYftdmdm) * Ct)
-    dYtdmdm = (sp.diags(dYtfdmdm) * Cf + sp.diags(dYttdmdm) * Ct)
-
-    dYbusdmdm = (Cf.T * dYfdmdm + Ct.T * dYtdmdm)
-
-    # Second partial derivative with respect to tap angle
-    mp = alltapm[k_tau]
-    tau = alltapt[k_tau]
-    ylin = ys[k_tau]
-
-    dYffdtdt = np.zeros(N, dtype=complex)
-    dYftdtdt = np.zeros(N, dtype=complex)
-    dYtfdtdt = np.zeros(N, dtype=complex)
-    dYttdtdt = np.zeros(N, dtype=complex)
-
-    dYftdtdt[k_tau] = ylin / (mp * np.exp(-1.0j * tau))
-    dYtfdtdt[k_tau] = ylin / (mp * np.exp(1.0j * tau))
-
-    dYfdtdt = sp.diags(dYffdtdt) * Cf + sp.diags(dYftdtdt) * Ct
-    dYtdtdt = sp.diags(dYtfdtdt) * Cf + sp.diags(dYttdtdt) * Ct
-
-    dYbusdtdt = Cf.T * dYfdtdt + Ct.T * dYtdtdt
-
-    # Second partial derivative with respect to both tap module and angle
-    mp = alltapm[k_mtau]
-    tau = alltapt[k_mtau]
-    ylin = ys[k_mtau]
-
-    dYffdmdt = np.zeros(N, dtype=complex)
-    dYftdmdt = np.zeros(N, dtype=complex)
-    dYtfdmdt = np.zeros(N, dtype=complex)
-    dYttdmdt = np.zeros(N, dtype=complex)
-
-    dYftdmdt[k_mtau] = 1j * ylin / (mp * mp * np.exp(-1.0j * tau))
-    dYtfdmdt[k_mtau] = -1j * ylin / (mp * mp * np.exp(1.0j * tau))
-
-    dYfdmdt = sp.diags(dYffdmdt) * Cf + sp.diags(dYftdmdt) * Ct
-    dYtdmdt = sp.diags(dYtfdmdt) * Cf + sp.diags(dYttdmdt) * Ct
-
-    dYbusdmdt = Cf.T * dYfdmdt + Ct.T * dYtdmdt
-
-    dYfdtdm = dYfdmdt.copy()
-    dYtdtdm = dYtdmdt.copy()
-    dYbusdtdm = dYbusdmdt.copy()
-
-    return (dYbusdmdm, dYfdmdm, dYtdmdm, dYbusdmdt, dYfdmdt, dYtdmdt,
-            dYbusdtdm, dYfdtdm, dYtdtdm, dYbusdtdt, dYfdtdt, dYtdtdt)
-
-'''
 def compute_finitediff_admittances_2dev(nc, tol=1e-6):
     k_m = nc.k_m
     k_tau = nc.k_tau
@@ -510,9 +429,6 @@ def eval_g(x, Ybus, Yf, Cg, Sd, ig, nig, pv, fdc, tdc, k_m, k_tau, Vm_max, Sg_un
     dS = S + Sd - S_dispatch - S_undispatch
 
     if ndc != 0:
-
-        #dP_dc = Pfdc + Ptdc  # - (1/R) * (vm[f] - vm[t]) **2
-
         dS[fdc] += Pfdc
         dS[tdc] -= Pfdc
 
@@ -521,9 +437,8 @@ def eval_g(x, Ybus, Yf, Cg, Sd, ig, nig, pv, fdc, tdc, k_m, k_tau, Vm_max, Sg_un
     return gval, S
 
 
-def eval_h(x, Yf, Yt, from_idx, to_idx, pq, no_slack, k_m, k_tau, k_mtau, Va_max, Va_min, Vm_max, Vm_min,
-           Pg_max, Pg_min, Qg_max, Qg_min, tapm_max, tapm_min, tapt_max, tapt_min, Pdcmax, Cg, rates, il, ig, tanmax,
-           ctQ:ReactivePowerControlMode) -> Vec:
+def eval_h(x, Yf, Yt, from_idx, to_idx, pq, k_m, k_tau, Vm_max, Vm_min, Pg_max, Pg_min, Qg_max, Qg_min,
+           tapm_max, tapm_min, tapt_max, tapt_min, Pdcmax, rates, il, ig, tanmax, ctQ:ReactivePowerControlMode) -> Vec:
     """
 
     :param x:
@@ -557,18 +472,11 @@ def eval_h(x, Yf, Yt, from_idx, to_idx, pq, no_slack, k_m, k_tau, k_mtau, Va_max
     Sf = V[from_idx[il]] * np.conj(Yf[il, :] @ V)
     St = V[to_idx[il]] * np.conj(Yt[il, :] @ V)
 
+    Sftot = V[from_idx] * np.conj(Yf @ V)
+    Sttot = V[to_idx] * np.conj(Yt @ V)
+
     Sf2 = np.conj(Sf) * Sf
     St2 = np.conj(St) * St
-
-    # hval = np.r_[Sf2.real - (rates[il] ** 2),  # rates "lower limit"
-    #              St2.real - (rates[il] ** 2),  # rates "upper limit"
-    #              vm[pq] - Vm_max[pq],  # voltage module upper limit
-    #              Vm_min[pq] - vm[pq],  # voltage module lower limit
-    #              Pg - Pg_max[ig],  # generator P upper limits
-    #              Pg_min[ig] - Pg,  # generator P lower limits
-    #              Qg - Qg_max[ig],  # generator Q upper limits
-    #              Qg_min[ig] - Qg  # generation Q lower limits
-    # ]
 
     hval = np.r_[Sf2.real - (rates[il] ** 2),  # rates "lower limit"
                  St2.real - (rates[il] ** 2),  # rates "upper limit"
@@ -589,15 +497,12 @@ def eval_h(x, Yf, Yt, from_idx, to_idx, pq, no_slack, k_m, k_tau, k_mtau, Va_max
     if ndc != 0:
         hval = np.r_[hval, Pfdc - Pdcmax, - Pdcmax - Pfdc]
 
-    # Sftot = V[from_idx[il]] * np.conj(Yf[il, :] @ V)
-    # Sttot = V[to_idx[il]] * np.conj(Yt[il, :] @ V)
-
-    # return hval, Sftot, Sttot
-    return hval, Sf, St
+    return hval, Sftot, Sttot
 
 
-def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, nig, slack, no_slack, pq, pv, tanmax,
-                           alltapm, alltapt, fdc, tdc, k_m, k_tau, k_mtau, mu, lmbda, from_idx, to_idx, R, X, F, T,
+
+def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, slack, pq, pv, tanmax,
+                           alltapm, alltapt, fdc, tdc, k_m, k_tau,  mu, lmbda, R, X, F, T,
                            ctQ:ReactivePowerControlMode, compute_jac: bool, compute_hess: bool):
     """
 
@@ -668,8 +573,15 @@ def jacobians_and_hessians(x, c1, c2, Cg, Cf, Ct, Yf, Yt, Ybus, Sbase, il, ig, n
         if ntapm + ntapt != 0:  # Check if there are tap variables that can affect the admittances
 
             (dSbusdm, dSfdm, dStdm,
-             dSbusdt, dSfdt, dStdt) = compute_branch_power_derivatives(alltapm, alltapt, V, k_m, k_tau, k_mtau,
-                                                                       Cf, Ct, Yf, Yt, R, X)
+             dSbusdt, dSfdt, dStdt) = compute_branch_power_derivatives(alltapm=alltapm,
+                                                                       alltapt=alltapt,
+                                                                       V=V,
+                                                                       k_m=k_m,
+                                                                       k_tau=k_tau,
+                                                                       Cf=Cf,
+                                                                       Ct=Ct,
+                                                                       R=R,
+                                                                       X=X)
 
             if ntapm != 0:
                 Gtapm = dSbusdm.copy()

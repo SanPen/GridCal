@@ -1797,7 +1797,7 @@ class SimulationsMain(TimeEventsMain):
             areas_to = None
 
         ips_method = self.ips_solvers_dict[self.ui.ips_method_comboBox.currentText()]
-        ips_tolerance = self.ui.ips_tolerance_spinBox.value()
+        ips_tolerance = 1.0 / (10.0 ** self.ui.ips_tolerance_spinBox.value())
         ips_iterations = self.ui.ips_iterations_spinBox.value()
         ips_trust_radius = self.ui.ips_trust_radius_doubleSpinBox.value()
         ips_init_with_pf = self.ui.ips_initialize_with_pf_checkBox.isChecked()
@@ -2332,7 +2332,7 @@ class SimulationsMain(TimeEventsMain):
 
             colours = viz.get_n_colours(n=len(drv.groups_by_index))
 
-            bus_colours = [QtGui.QColor] * len(self.circuit.buses)
+            bus_colours = np.empty(len(self.circuit.buses), dtype=object)
             tool_tips = [""] * len(self.circuit.buses)
             for c, group in enumerate(drv.groups_by_index):
                 for i in group:

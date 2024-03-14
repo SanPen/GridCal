@@ -66,6 +66,7 @@ class Line(BranchParent):
         :param alpha: Thermal constant of the material in °C
         :param template: Basic branch template
         :param contingency_factor: Rating factor in case of contingency
+        :param protection_rating_factor: Rating factor before the protections tripping
         :param contingency_enabled: enabled for contingencies (Legacy)
         :param monitor_loading: monitor the loading (used in OPF)
         :param r0: zero-sequence resistence (p.u.)
@@ -90,7 +91,7 @@ class Line(BranchParent):
                               active=active,
                               rate=rate,
                               contingency_factor=contingency_factor,
-                              protection_rating_factor=contingency_factor,
+                              protection_rating_factor=protection_rating_factor,
                               contingency_enabled=contingency_enabled,
                               monitor_loading=monitor_loading,
                               mttf=mttf,
@@ -405,13 +406,16 @@ class Line(BranchParent):
         :param branch_connection_voltage_tolerance:
         :return:
         """
-        V1 = min(self.bus_to.Vnom, self.bus_from.Vnom)
-        V2 = max(self.bus_to.Vnom, self.bus_from.Vnom)
-        if V2 > 0:
-            per = V1 / V2
-            return per < (1.0 - branch_connection_voltage_tolerance)
+        if self.bus_to is not None and self.bus_from is not None:
+            V1 = min(self.bus_to.Vnom, self.bus_from.Vnom)
+            V2 = max(self.bus_to.Vnom, self.bus_from.Vnom)
+            if V2 > 0:
+                per = V1 / V2
+                return per < (1.0 - branch_connection_voltage_tolerance)
+            else:
+                return V1 != V2
         else:
-            return V1 != V2
+            return False
 
     def get_equivalent_transformer(self) -> Transformer2W:
         """

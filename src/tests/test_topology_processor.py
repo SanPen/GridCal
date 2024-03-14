@@ -2,10 +2,6 @@ import os
 from GridCalEngine.api import *
 import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.Topology.topology_substation_reduction import topology_processor, create_topology_process_info
-
-
-# from GridCalEngine.Simulations.Topology.topology_processor_driver import
 
 
 def createExampleGridDiagram1() -> MultiCircuit:

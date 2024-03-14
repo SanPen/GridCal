@@ -222,6 +222,7 @@ def topology_processor(grid: MultiCircuit, t_idx: Union[int, None], logger: Logg
     :param grid: MultiCircuit
     :param t_idx: Time index
     :param logger: Logger object
+    :param test: ??
     :return: Results are processed into the grid object
     """
     # compose the candidate nodes (buses)

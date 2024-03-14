@@ -22,8 +22,8 @@ import pandas as pd
 from PySide6 import QtWidgets
 
 import GridCal.Gui.GuiFunctions as gf
-import GridCal.Gui.Session.export_results_driver as exprtdrv
-import GridCal.Gui.Session.file_handler as filedrv
+import GridCal.Session.export_results_driver as exprtdrv
+import GridCal.Session.file_handler as filedrv
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCal.Gui.CoordinatesInput.coordinates_dialogue import CoordinatesInputGUI
 from GridCal.Gui.GeneralDialogues import LogsDialogue, CustomQuestionDialogue

@@ -1,12 +1,14 @@
-
-from typing import Dict
+from typing import Dict, TypeVar, Union
 from GridCalEngine.IO.base.units import Unit
 
 
 class BaseProperty:
+    """
+    BaseProperty
+    """
 
     def __init__(self, property_name: str,
-                 class_type: object,
+                 class_type: TypeVar,
                  unit: Unit,
                  denominator_unit: Unit = None,
                  description: str = '',
@@ -34,20 +36,27 @@ class BaseProperty:
         self.max_value = max_value
 
     def get_class_name(self):
+        """
+
+        :return:
+        """
         tpe_name = str(self.class_type)
         if '.' in tpe_name:
             chunks = tpe_name.split('.')
-            return chunks[-1].replace("'", "") \
-                .replace("<", "") \
-                .replace(">", "").strip()
+            return (chunks[-1].replace("'", "")
+                    .replace("<", "")
+                    .replace(">", "").strip())
         else:
-            return tpe_name.replace('class', '') \
-                .replace("'", "") \
-                .replace("<", "") \
-                .replace(">", "").strip()
+            return (tpe_name.replace('class', '')
+                    .replace("'", "")
+                    .replace("<", "")
+                    .replace(">", "").strip())
 
     def get_unit(self):
-
+        """
+        Get units
+        :return:
+        """
         if self.unit is not None:
 
             if self.unit.has_unit():
@@ -76,7 +85,10 @@ class BaseProperty:
                 return ""
 
     def get_dict(self) -> Dict[str, any]:
-
+        """
+        Get dictionary
+        :return:
+        """
         return {'property_name': self.property_name,
                 'class_type': self.get_class_name(),
                 'units': self.get_unit(),
