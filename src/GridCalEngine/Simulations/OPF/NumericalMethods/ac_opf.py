@@ -16,13 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
 import pandas as pd
-from scipy import sparse as sp
-from scipy.sparse import csc_matrix as csc
-from scipy.sparse import csr_matrix as csr
 from dataclasses import dataclass
-from scipy.sparse import lil_matrix
-
-from GridCalEngine.Utils.Sparse.csc import diags
 from GridCalEngine.Utils.NumericalMethods.ips import interior_point_solver, IpsFunctionReturn
 import GridCalEngine.Utils.NumericalMethods.autodiff as ad
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
@@ -30,8 +24,8 @@ from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_cir
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
-from GridCalEngine.enumerations import TransformerControlType, ReactivePowerControlMode
-from typing import Tuple, Union
+from GridCalEngine.enumerations import ReactivePowerControlMode
+from typing import Union
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec, Logger
 from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf_derivatives import (x2var, var2x, eval_f,
                                                                                eval_g, eval_h,
@@ -547,7 +541,6 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     nll = len(il)
     ngg = len(ig)
 
-    #nalldc = nc.nhvdc
     hvdc_nondisp = np.where(nc.hvdc_data.dispatchable == 0)[0]
     hvdc_disp = np.where(nc.hvdc_data.dispatchable == 1)[0]
 
@@ -823,25 +816,29 @@ def run_nonlinear_opf(grid: MultiCircuit,
     # compile the system
     nc = compile_numerical_circuit_at(circuit=grid, t_idx=t_idx)
 
-    # run power flow to initialize
     if pf_init:
         if Sbus_pf0 is None:
+            # run power flow to initialize
             pf_results = multi_island_pf_nc(nc=nc, options=pf_options)
             Sbus_pf = pf_results.Sbus
             voltage_pf = pf_results.voltage
         else:
+            # pick the passed values
             Sbus_pf = Sbus_pf0
             voltage_pf = voltage_pf0
     else:
+        # initialize with sensible values
         Sbus_pf = nc.bus_data.installed_power
         voltage_pf = nc.bus_data.Vbus
 
+    # split into islands, but considering the HVDC lineas as actual links
     islands = nc.split_into_islands(ignore_single_node_islands=True,
                                     consider_hvdc_as_island_links=True)
 
+    # create and initialize results
     results = NonlinearOPFResults()
     results.initialize(nbus=nc.nbus, nbr=nc.nbr, ng=nc.ngen, nhvdc=nc.nhvdc)
-    results.converged = True  # we assume this so that the "and" works later
+
     for i, island in enumerate(islands):
         island_res = ac_optimal_power_flow(nc=island,
                                            opf_options=opf_options,
@@ -860,8 +857,14 @@ def run_nonlinear_opf(grid: MultiCircuit,
                       br_idx=island.branch_data.original_idx,
                       gen_idx=island.generator_data.original_idx,
                       hvdc_idx=island.hvdc_data.original_idx)
-        results.error = max(results.error, island_res.error)
-        results.iterations = max(results.iterations, island_res.iterations)
-        results.converged = results.converged and island_res.converged if i > 0 else island_res.converged
+
+        if i > 0:
+            results.error = max(results.error, island_res.error)
+            results.iterations = max(results.iterations, island_res.iterations)
+            results.converged = results.converged and island_res.converged if i > 0 else island_res.converged
+        else:
+            results.error = island_res.error
+            results.iterations = island_res.iterations
+            results.converged = island_res.converged
 
     return results
