@@ -73,12 +73,6 @@ class TransformerGraphicItem(LineGraphicTemplateItem):
             ra2.setIcon(del_icon)
             ra2.triggered.connect(self.remove)
 
-            re = menu.addAction('Reduce')
-            re_icon = QIcon()
-            re_icon.addPixmap(QPixmap(":/Icons/icons/grid_reduction.svg"))
-            re.setIcon(re_icon)
-            re.triggered.connect(self.reduce)
-
             ra3 = menu.addAction('Editor')
             edit_icon = QIcon()
             edit_icon.addPixmap(QPixmap(":/Icons/icons/edit.svg"))

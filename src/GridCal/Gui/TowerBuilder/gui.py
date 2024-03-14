@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'gui.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.5.1
+## Created by: Qt User Interface Compiler version 6.5.3
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -346,7 +346,7 @@ class Ui_Dialog(object):
         self.add_to_tower_pushButton.setToolTip(QCoreApplication.translate("Dialog", u"Add wire", None))
 #endif // QT_CONFIG(tooltip)
         self.add_to_tower_pushButton.setText("")
-        self.label_10.setText(QCoreApplication.translate("Dialog", u"Wire compisition", None))
+        self.label_10.setText(QCoreApplication.translate("Dialog", u"Wire composition", None))
 #if QT_CONFIG(tooltip)
         self.delete_from_tower_pushButton.setToolTip(QCoreApplication.translate("Dialog", u"Delete wire", None))
 #endif // QT_CONFIG(tooltip)

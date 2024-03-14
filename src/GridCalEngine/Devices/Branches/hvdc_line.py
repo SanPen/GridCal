@@ -70,6 +70,7 @@ def getFromAndToPowerAt(Pset, theta_f, theta_t, Vnf, Vnt, v_set_f, v_set_t, Sbas
     :param Sbase: base power MVA
     :param r1: line resistance (ohm)
     :param angle_droop: angle droop control (MW/deg)
+    :param rate: Rate (MW)
     :param free: is free to use the angle droop?
     :param in_pu: return power in per unit? otherwise the power comes in MW
     :return: Pf, Pt, losses (in MW or p.u. depending on `in_pu`)

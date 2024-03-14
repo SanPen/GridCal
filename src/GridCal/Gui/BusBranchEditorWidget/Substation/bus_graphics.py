@@ -183,20 +183,21 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
                                            r=self.rotation(),
                                            graphic_object=self)
 
-    def add_big_marker(self, color=Qt.red, tool_tip_text=""):
+    def add_big_marker(self, color: Union[None, QColor] = Qt.red, tool_tip_text: str = ""):
         """
         Add a big marker to the bus
         :param color: Qt Color ot the marker
         :param tool_tip_text: tool tip text to display
-        :return:
         """
-        if self.big_marker is None:
-            self.big_marker = QtWidgets.QGraphicsEllipseItem(0, 0, 180, 180, parent=self)
+        if color is not None:
+            if self.big_marker is None:
+                self.big_marker = QtWidgets.QGraphicsEllipseItem(0, 0, 180, 180, parent=self)
+
             self.big_marker.setBrush(color)
             self.big_marker.setOpacity(0.5)
             self.big_marker.setToolTip(tool_tip_text)
 
-    def delete_big_marker(self):
+    def delete_big_marker(self) -> None:
         """
         Delete the big marker
         """
@@ -204,7 +205,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
             self.editor.remove_from_scene(self.big_marker)
             self.big_marker = None
 
-    def set_position(self, x, y):
+    def set_position(self, x: int, y: int) -> None:
         """
         Set the bus x, y position
         :param x: x in pixels
@@ -216,7 +217,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
             y = 0
         self.setPos(QPoint(int(x), int(y)))
 
-    def set_tile_color(self, brush):
+    def set_tile_color(self, brush: QBrush) -> None:
         """
         Set the color of the title
         Args:
@@ -225,8 +226,11 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         self.tile.setBrush(brush)
         self.terminal.setBrush(brush)
 
-    def merge(self, other_bus_graphic):
-
+    def merge(self, other_bus_graphic: "BusGraphicItem") -> None:
+        """
+        Merge another BusGraphicItem into this
+        :param other_bus_graphic: BusGraphicItem
+        """
         self.shunt_children += other_bus_graphic.shunt_children
 
     def update(self, rect: Union[QRectF, QRect] = ...):
@@ -236,17 +240,21 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         """
         self.change_size(self.w, self.h)
 
-    def set_height(self, h):
-
+    def set_height(self, h: int):
+        """
+        Set the height of the
+        :param h:
+        :return:
+        """
         self.setRect(0.0, 0.0, self.w, h)
         self.h = h
 
     def change_size(self, w: int, h: Union[None, int] = None):
         """
         Resize block function
-        @param w:
-        @param h:
-        @return:
+        :param w:
+        :param h:
+        :return:
         """
         # Limit the block size to the minimum size:
         if h is None:
@@ -289,7 +297,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
 
         return w, h
 
-    def arrange_children(self):
+    def arrange_children(self) -> None:
         """
         This function sorts the load and generators icons
         Returns:
@@ -522,7 +530,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         """
         self.editor.set_active_status_to_profile(self.api_object)
 
-    def delete_all_connections(self):
+    def delete_all_connections(self) -> None:
         """
         Delete all bus connections
         """
@@ -538,7 +546,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
             reduce_buses(self.editor.circuit, [self.api_object])
             self.remove()
 
-    def remove(self, ask=True):
+    def remove(self, ask: bool = True) -> None:
         """
         Remove this element
         @return:
@@ -557,6 +565,9 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
             self.editor.remove_element(device=self.api_object, graphic_object=self)
 
     def update_color(self):
+        """
+        Update the colour
+        """
         if self.api_object.active:
             self.set_tile_color(QBrush(ACTIVE['color']))
         else:
@@ -592,46 +603,58 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
                         if host.api_object is not None:
                             self.editor.set_active_status_to_profile(host.api_object, override_question=True)
 
-    def any_short_circuit(self):
+    def any_short_circuit(self) -> bool:
+        """
+        Determine if there are short circuits enabled
+        :return:
+        """
         for t in self.sc_enabled:
             if t:
                 return True
         return False
 
-    def enable_sc(self):
+    def enable_sc(self) -> None:
         """
-
-        Returns:
-
+        Enable the short circuit
         """
         self.tile.setPen(QPen(QColor(EMERGENCY['color']), self.pen_width))
 
     def disable_sc(self):
         """
-
-        Returns:
-
+        Disable short circuit
         """
         # self.tile.setPen(QPen(QColor(ACTIVE['color']), self.pen_width))
         self.tile.setPen(QPen(Qt.transparent, self.pen_width))
         self.sc_enabled = [False, False, False, False]
 
     def enable_disable_sc_3p(self):
+        """
+        Enable 3-phase short circuit
+        """
         self.sc_enabled = [True, False, False, False]
         self.sc_type = FaultType.ph3
         self.enable_sc()
 
     def enable_disable_sc_lg(self):
+        """
+        Enable line ground short circuit
+        """
         self.sc_enabled = [False, True, False, False]
         self.sc_type = FaultType.LG
         self.enable_sc()
 
     def enable_disable_sc_ll(self):
+        """
+        Enable line-line short circuit
+        """
         self.sc_enabled = [False, False, True, False]
         self.sc_type = FaultType.LL
         self.enable_sc()
 
     def enable_disable_sc_llg(self):
+        """
+        Enable line-line-ground short circuit
+        """
         self.sc_enabled = [False, False, False, True]
         self.sc_type = FaultType.LLG
         self.enable_sc()
@@ -645,21 +668,19 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         else:
             self.api_object.is_dc = True
 
-    def plot_profiles(self):
+    def plot_profiles(self) -> None:
         """
-
-        @return:
+        Plot profiles
         """
         # get the index of this object
         i = self.editor.circuit.get_buses().index(self.api_object)
         self.editor.plot_bus(i, self.api_object)
 
-    def mousePressEvent(self, event):
+    def mousePressEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent):
         """
         mouse press: display the editor
         :param event: QGraphicsSceneMouseEvent
         """
-        dictionary_of_lists = dict()
 
         if self.api_object.device_type == DeviceType.BusDevice:
             dictionary_of_lists = {DeviceType.AreaDevice.value: self.editor.circuit.areas,
@@ -670,14 +691,14 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
             self.editor.set_editor_model(api_object=self.api_object,
                                          dictionary_of_lists=dictionary_of_lists)
 
-    def mouseDoubleClickEvent(self, event):
+    def mouseDoubleClickEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent):
         """
         Mouse double click
         :param event: event object
         """
         self.adapt()
 
-    def adapt(self):
+    def adapt(self) -> None:
         """
         Set the bus width according to the label text
         """

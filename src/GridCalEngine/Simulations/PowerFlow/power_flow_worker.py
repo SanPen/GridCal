@@ -29,7 +29,7 @@ from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Aggregation.area import Area
-from GridCalEngine.basic_structures import CxVec, Vec, IntVec
+from GridCalEngine.basic_structures import CxVec, Vec, IntVec, CscMat
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCalEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults
@@ -38,19 +38,19 @@ if TYPE_CHECKING:  # Only imports the below statements during type checking
 def solve(circuit: NumericalCircuit,
           options: PowerFlowOptions,
           report: ConvergenceReport,
-          V0: CxVec, 
-          S0: CxVec, 
-          I0: CxVec, 
+          V0: CxVec,
+          S0: CxVec,
+          I0: CxVec,
           Y0: CxVec,
-          tap_modules: Vec, 
-          tap_angles: Vec, 
+          tap_modules: Vec,
+          tap_angles: Vec,
           Beq: Vec,
-          pq: IntVec, 
-          pv: IntVec, 
-          ref: IntVec, 
+          pq: IntVec,
+          pv: IntVec,
+          ref: IntVec,
           pqpv: IntVec,
-          Qmin: Vec, 
-          Qmax: Vec, 
+          Qmin: Vec,
+          Qmax: Vec,
           logger=Logger()) -> NumericPowerFlowResults:
     """
     Run a power flow simulation using the selected method (no outer loop controls).
@@ -330,8 +330,20 @@ def solve(circuit: NumericalCircuit,
 
 
 def single_island_pf(circuit: NumericalCircuit, options: PowerFlowOptions,
-                     voltage_solution, S0, I0, Y0, tap_modules, tap_angles, Beq, branch_rates,
-                     pq, pv, vd, pqpv, Qmin, Qmax, logger=Logger()) -> "PowerFlowResults":
+                     voltage_solution: CxVec,
+                     S0: CxVec,
+                     I0: CxVec,
+                     Y0: CxVec,
+                     tap_modules: Vec,
+                     tap_angles: Vec,
+                     Beq: Vec,
+                     branch_rates: Vec,
+                     pq: IntVec,
+                     pv: IntVec,
+                     vd: IntVec,
+                     pqpv: IntVec,
+                     Qmin: Vec,
+                     Qmax: Vec, logger=Logger()) -> "PowerFlowResults":
     """
     Run a power flow simulation for a single circuit using the
     selected outer loop controls.
@@ -464,12 +476,15 @@ def single_island_pf(circuit: NumericalCircuit, options: PowerFlowOptions,
     return results
 
 
-def power_flow_post_process(calculation_inputs: NumericalCircuit,
-                            Sbus: CxVec,
-                            V: CxVec,
-                            branch_rates: CxVec,
-                            Yf=None, Yt=None,
-                            method: SolverType = None) -> Tuple[CxVec, CxVec, CxVec, CxVec, CxVec, CxVec, CxVec, CxVec]:
+def power_flow_post_process(
+        calculation_inputs: NumericalCircuit,
+        Sbus: CxVec,
+        V: CxVec,
+        branch_rates: CxVec,
+        Yf: Union[CscMat, None] = None,
+        Yt: Union[CscMat, None] = None,
+        method: Union[None, SolverType] = None
+) -> Tuple[CxVec, CxVec, CxVec, CxVec, CxVec, CxVec, CxVec, CxVec]:
     """
     Compute the power Sf trough the Branches.
     :param calculation_inputs: NumericalCircuit
@@ -549,7 +564,7 @@ def multi_island_pf_nc(nc: NumericalCircuit,
                        options: PowerFlowOptions,
                        logger=Logger(),
                        V_guess: Union[CxVec, None] = None,
-                       Sbus_input: Union[CxVec, None] = None) -> "PowerFlowResults":
+                       Sbus_input: Union[CxVec, None] = None) -> PowerFlowResults:
     """
     Multiple islands power flow (this is the most generic power flow function)
     :param nc: SnapshotData instance
@@ -605,7 +620,7 @@ def multi_island_pf_nc(nc: NumericalCircuit,
                 if Sbus_input is None:
                     Sbus = island.Sbus + Shvdc[island.original_bus_idx]
                 else:
-                    Sbus = Sbus_input + Shvdc[island.original_bus_idx]
+                    Sbus = (Sbus_input + Shvdc)[island.original_bus_idx]
 
                 res = single_island_pf(
                     circuit=island,
@@ -624,7 +639,8 @@ def multi_island_pf_nc(nc: NumericalCircuit,
                     pqpv=island.pqpv,
                     Qmin=island.Qmin_bus,
                     Qmax=island.Qmax_bus,
-                    logger=logger)
+                    logger=logger
+                )
 
                 # merge the results from this island
                 results.apply_from_island(

@@ -884,7 +884,7 @@ class DeviceType(Enum):
     UpfcDevice = 'UPFC'  # unified power flow controller
     ExternalGridDevice = 'External grid'
     LoadLikeDevice = 'Load like'
-
+    BranchGroupDevice = 'Branch group'
     LambdaDevice = "Loading from the base situation ($\lambda$)"
 
     PiMeasurementDevice = 'Pi Measurement'
@@ -907,7 +907,11 @@ class DeviceType(Enum):
     AreaDevice = 'Area'
     ZoneDevice = 'Zone'
     CountryDevice = 'Country'
+    CommunityDevice = 'Comunity'
+    RegionDevice = 'Region'
+    MunicipalityDevice = 'Municipality'
     BusBarDevice = 'BusBar'
+    VoltageLevelDevice = 'VoltageLevel'
 
     Technology = 'Technology'
     TechnologyGroup = 'Technology Group'
@@ -1426,7 +1430,7 @@ class ResultTypes(Enum):
     # investments evaluation
     InvestmentsReportResults = 'Investments evaluation report'
     InvestmentsParetoPlot = 'Pareto plot'
-    InvestmentsIterationsPlot = 'Itertions plot'
+    InvestmentsIterationsPlot = 'Iterations plot'
 
     def __str__(self):
         return self.value[0]

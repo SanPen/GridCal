@@ -24,6 +24,7 @@ from GridCalEngine.enumerations import SolverType, TimeGrouping, EngineType
 from GridCalEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
 from GridCalEngine.Simulations.OPF.linear_opf_ts import run_linear_opf_ts
 from GridCalEngine.Simulations.OPF.simple_dispatch_ts import run_simple_dispatch_ts
+from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import run_nonlinear_opf
 from GridCalEngine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSeriesResults
 from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
@@ -181,6 +182,58 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
             # set converged for all t to the value of acceptable solution
             self.results.converged = np.array([opf_vars.acceptable_solution] * opf_vars.nt)
 
+        elif self.options.solver == SolverType.NONLINEAR_OPF:
+
+            self.report_progress(0.0)
+            for it, t in enumerate(self.time_indices):
+
+                # report progress
+                self.report_text('Nonlinear OPF at ' + str(self.grid.time_profile[t]) + '...')
+                self.report_progress2(it, len(self.time_indices))
+
+                # run opf
+                res = run_nonlinear_opf(grid=self.grid,
+                                        opf_options=self.options,
+                                        pf_options=self.pf_options,
+                                        t_idx=t,
+                                        # for the first power flow, use the given strategy
+                                        # for the succesive ones, use the previous solution
+                                        pf_init=self.options.ips_init_with_pf if it == 0 else True,
+                                        Sbus_pf0=self.results.Sbus[it-1, :] if it > 0 else None,
+                                        voltage_pf0=self.results.voltage[it - 1, :] if it > 0 else None,
+                                        logger=self.logger)
+                Sbase = self.grid.Sbase
+                self.results.voltage[it, :] = res.V
+                self.results.Sbus[it, :] = res.S * Sbase
+                self.results.bus_shadow_prices[it, :] = res.lam_p
+                # self.results.load_shedding = npa_res.load_shedding[0, :]
+                # self.results.battery_power = npa_res.battery_p[0, :]
+                # self.results.battery_energy = npa_res.battery_energy[0, :]
+                self.results.generator_power[it, :] = res.Pg * Sbase
+                self.results.generator_cost[it, :] = res.Pcost
+
+                self.results.Sf[it, :] = res.Sf * Sbase
+                self.results.St[it, :] = res.St * Sbase
+                self.results.overloads[it, :] = (res.sl_sf - res.sl_st) * Sbase
+                self.results.loading[it, :] = res.loading
+                self.results.phase_shift[it, :] = res.tap_phase
+
+                self.results.hvdc_Pf[it, :] = res.hvdc_Pf
+                self.results.hvdc_loading[it, :] = res.hvdc_loading
+                self.results.converged[it] = res.converged
+
+            msg = "Interior point solver"
+            # self.logger.add_info(msg=msg, device="Error", value=res.error, expected_value=self.pf_options.tolerance)
+            # self.logger.add_info(msg=msg, device="Converged", value=res.converged)
+            # self.logger.add_info(msg=msg, device="Iterations", value=res.iterations)
+
+            # Compute the emissions, fuel costs and energy used
+            (self.results.system_fuel,
+             self.results.system_emissions,
+             self.results.system_energy_cost) = self.get_fuel_emissions_energy_calculations(
+                gen_p=self.results.generator_power,
+                gen_cost=self.results.generator_cost
+            )
 
         elif self.options.solver == SolverType.SIMPLE_OPF:
 

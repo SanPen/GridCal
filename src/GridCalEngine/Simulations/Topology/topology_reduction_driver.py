@@ -174,6 +174,8 @@ def reduce_buses(circuit: MultiCircuit, buses_to_reduce: List[Bus], text_func=No
     If the bus is isolated, those devices are lost.
     :param circuit: MultiCircuit instance
     :param buses_to_reduce: list of Bus objects
+    :param text_func:
+    :param prog_func:
     :return: Nothing
     """
 

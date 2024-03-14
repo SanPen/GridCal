@@ -14,15 +14,19 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
 import time
 import numpy as np
-from typing import List, Dict, Union
+from typing import List, Dict, Union, TYPE_CHECKING
 from GridCalEngine.basic_structures import IntVec, Vec
 from GridCalEngine.Simulations.driver_types import SimulationTypes
-from GridCalEngine.basic_structures import Logger
+from GridCalEngine.basic_structures import Logger, Mat
 from GridCalEngine.enumerations import EngineType
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 import GridCalEngine.Topology.topology as tp
+
+if TYPE_CHECKING:
+    from GridCalEngine.Simulations.Clustering.clustering_results import ClusteringResults
 
 
 class DummySignal:
@@ -167,7 +171,7 @@ class TimeSeriesDriverTemplate(DriverTemplate):
             self,
             grid: MultiCircuit,
             time_indices: IntVec,
-            clustering_results: Union["ClusteringResults", None] = None,
+            clustering_results: Union[ClusteringResults, None] = None,
             engine: EngineType = EngineType.GridCal,
             check_time_series: bool = True):
         """
@@ -181,7 +185,7 @@ class TimeSeriesDriverTemplate(DriverTemplate):
 
         DriverTemplate.__init__(self, grid=grid, engine=engine)
 
-        self.clustering_results = clustering_results
+        self.clustering_results: Union[ClusteringResults, None] = clustering_results
 
         if clustering_results:
             self.using_clusters = True
@@ -228,3 +232,22 @@ class TimeSeriesDriverTemplate(DriverTemplate):
         return tp.find_different_states(
             states_array=self.grid.get_branch_active_time_array()[self.time_indices]
         )
+
+    def get_fuel_emissions_energy_calculations(self, gen_p: Mat, gen_cost: Mat):
+        """
+        Calculate fuel emissions and energy cost
+        :param gen_p:
+        :param gen_cost:
+        :return:
+        """
+        # gather the fuels and emission rates matrices
+        gen_emissions_rates_matrix = self.grid.get_emission_rates_sparse_matrix()
+        gen_fuel_rates_matrix = self.grid.get_fuel_rates_sparse_matrix()
+
+        system_fuel = (gen_fuel_rates_matrix * gen_p.T).T
+        system_emissions = (gen_emissions_rates_matrix * gen_p.T).T
+
+        with np.errstate(divide='ignore', invalid='ignore'):  # numpy magic to ignore the zero divisions
+            system_energy_cost = np.nan_to_num(gen_cost / gen_p).sum(axis=1)
+
+        return system_fuel, system_emissions, system_energy_cost

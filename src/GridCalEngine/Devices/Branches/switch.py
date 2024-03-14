@@ -32,13 +32,12 @@ class Switch(BranchParent):
                  cn_from: ConnectivityNode = None, cn_to: ConnectivityNode = None,
                  name='Switch', idtag=None, code='', r=1e-20, x=1e-20,
                  rate=1.0,
-                 active=True, active_prof=None,
+                 active=True,
                  contingency_factor=1.0, protection_rating_factor: float = 1.4,
-                 open=False,
+                 is_open=False,
                  retained=True,
                  normal_open=False,
-                 rated_current=0.0,
-                 ):
+                 rated_current=0.0):
         """
         Switch device
         :param bus_from: Bus from
@@ -50,7 +49,6 @@ class Switch(BranchParent):
         :param x: reactance in p.u.
         :param rate: Branch rating (MW)
         :param active: is it active?
-        :param active_prof: Active profile
         :param contingency_factor: Rating factor in case of contingency
         """
         BranchParent.__init__(self,
@@ -79,7 +77,7 @@ class Switch(BranchParent):
         self.R = r
         self.X = x
 
-        self.open = open
+        self.is_open = is_open
         self.retained = retained
 
         self.normal_open = normal_open
@@ -88,8 +86,8 @@ class Switch(BranchParent):
         self.register(key='R', units='pu', tpe=float, definition='Positive-sequence resistance')
         self.register(key='X', units='pu', tpe=float, definition='Positive-sequence reactance')
 
-        self.register(key='open', units="", tpe=bool,
-                      definition='Switch is open')
+        self.register(key='is_open', units="", tpe=bool,
+                      definition='Switch is open', old_names=['open'])
         self.register(key='retained', units="", tpe=bool,
                       definition='Switch is retained')
 
@@ -118,8 +116,6 @@ class Switch(BranchParent):
                    x=self.X,
                    rate=self.rate,
                    active=self.active)
-
-        b.measurements = self.measurements
 
         return b
 

@@ -222,6 +222,9 @@ class MultiCircuit:
         # array of busbars
         self.bus_bars: List[dev.BusBar] = list()
 
+        # array of voltage levels
+        self.voltage_levels: List[dev.VoltageLevel] = list()
+
         # List of loads
         self.loads: List[dev.Load] = list()
 
@@ -269,6 +272,9 @@ class MultiCircuit:
         # List of transformer types
         self.transformer_types: List[dev.TransformerType] = list()
 
+        # list of branch groups
+        self.branch_groups: List[dev.BranchGroup] = list()
+
         # list of substations
         self.substations: List[dev.Substation] = list()  # [self.default_substation]
 
@@ -280,6 +286,12 @@ class MultiCircuit:
 
         # list of countries
         self.countries: List[dev.Country] = list()  # [self.default_country]
+
+        self.communities: List[dev.Community] = list()
+
+        self.regions: List[dev.Region] = list()
+
+        self.municipalities: List[dev.Municipality] = list()
 
         # logger of events
         self.logger: Logger = Logger()
@@ -331,14 +343,20 @@ class MultiCircuit:
 
         # objects with profiles
         self.objects_with_profiles = {
-            "Substation": [
-                dev.Bus(),
-                dev.Substation(),
-                dev.Zone(),
-                dev.Area(),
+            "Regions": [
                 dev.Country(),
+                dev.Community(),
+                dev.Region(),
+                dev.Municipality(),
+                dev.Area(),
+                dev.Zone(),
+            ],
+            "Substation": [
+                dev.Substation(),
+                dev.VoltageLevel(),
+                dev.BusBar(),
                 dev.ConnectivityNode(),
-                dev.BusBar()
+                dev.Bus(),
             ],
             "Injections": [
                 dev.Generator(),
@@ -372,6 +390,7 @@ class MultiCircuit:
                 dev.Contingency(),
                 dev.InvestmentsGroup(),
                 dev.Investment(),
+                dev.BranchGroup(),
             ],
             "Tags & Associations": [
                 dev.Technology(),
@@ -728,52 +747,6 @@ class MultiCircuit:
         :param diagram: MapDiagram, BusBranchDiagram, NodeBreakerDiagram device
         """
         self.diagrams.remove(diagram)
-
-    def clear(self) -> None:
-        """
-        Clear the multi-circuit (remove the bus and branch objects)
-        """
-        # Should be able to accept Branches, Lines and Transformers alike
-        self.lines = list()
-        self.dc_lines = list()
-        self.transformers2w = list()
-        self.transformers3w = list()
-        self.windings = list()
-        self.hvdc_lines = list()
-        self.vsc_devices = list()
-        self.upfc_devices = list()
-
-        self.substations = list()
-        self.areas = list()
-        self.technologies = list()
-        self.contingencies = list()
-        self.contingency_groups = list()
-        self.investments = list()
-        self.investments_groups = list()
-        self.fuels = list()
-        self.emission_gases = list()
-
-        # Should accept buses
-        self.buses = list()
-
-        # List of overhead line objects
-        self.overhead_line_types = list()
-
-        # list of wire types
-        self.wire_types = list()
-
-        # underground cable lines
-        self.underground_cable_types = list()
-
-        # sequence modelled lines
-        self.sequence_line_types = list()
-
-        # List of transformer types
-        self.transformer_types = list()
-
-        self.time_profile = None
-
-        self.contingencies = list()
 
     def get_buses(self) -> List[dev.Bus]:
         """
@@ -1385,6 +1358,57 @@ class MultiCircuit:
         self.controllable_shunts.remove(obj)
 
     # ----------------------------------------------------------------------------------------------------------------------
+    # voltage_levels
+    # ----------------------------------------------------------------------------------------------------------------------
+
+    def get_voltage_levels(self) -> List[dev.VoltageLevel]:
+        """
+        List of voltage_levels
+        :return: List[dev.VoltageLevel]
+        """
+        return self.voltage_levels
+
+    def get_voltage_levels_number(self) -> int:
+        """
+        Size of the list of voltage_levels
+        :return: size of voltage_levels
+        """
+        return len(self.voltage_levels)
+
+    def get_voltage_level_at(self, i: int) -> dev.VoltageLevel:
+        """
+        Get voltage_level at i
+        :param i: index
+        :return: VoltageLevel
+        """
+        return self.voltage_levels[i]
+
+    def get_voltage_level_names(self) -> StrVec:
+        """
+        Array of voltage_level names
+        :return: StrVec
+        """
+        return np.array([e.name for e in self.voltage_levels])
+
+    def add_voltage_level(self, obj: dev.VoltageLevel):
+        """
+        Add a VoltageLevel object
+        :param obj: VoltageLevel instance
+        """
+
+        if self.time_profile is not None:
+            obj.create_profiles(self.time_profile)
+        self.voltage_levels.append(obj)
+
+    def delete_voltage_level(self, obj: dev.VoltageLevel) -> None:
+        """
+        Add a VoltageLevel object
+        :param obj: VoltageLevel instance
+        """
+
+        self.voltage_levels.remove(obj)
+
+    # ----------------------------------------------------------------------------------------------------------------------
     # pi_measurements
     # ----------------------------------------------------------------------------------------------------------------------
 
@@ -1690,6 +1714,57 @@ class MultiCircuit:
 
         self.if_measurements.remove(obj)
 
+    # ----------------------------------------------------------------------------------------------------------------------
+    # branch_groups
+    # ----------------------------------------------------------------------------------------------------------------------
+
+    def get_branch_groups(self) -> List[dev.BranchGroup]:
+        """
+        List of branch_groups
+        :return: List[dev.BranchGroup]
+        """
+        return self.branch_groups
+
+    def get_branch_groups_number(self) -> int:
+        """
+        Size of the list of branch_groups
+        :return: size of branch_groups
+        """
+        return len(self.branch_groups)
+
+    def get_branch_group_at(self, i: int) -> dev.BranchGroup:
+        """
+        Get branch_group at i
+        :param i: index
+        :return: BranchGroup
+        """
+        return self.branch_groups[i]
+
+    def get_branch_group_names(self) -> StrVec:
+        """
+        Array of branch_group names
+        :return: StrVec
+        """
+        return np.array([e.name for e in self.branch_groups])
+
+    def add_branch_group(self, obj: dev.BranchGroup):
+        """
+        Add a BranchGroup object
+        :param obj: BranchGroup instance
+        """
+
+        if self.time_profile is not None:
+            obj.create_profiles(self.time_profile)
+        self.branch_groups.append(obj)
+
+    def delete_branch_group(self, obj: dev.BranchGroup) -> None:
+        """
+        Add a BranchGroup object
+        :param obj: BranchGroup instance
+        """
+
+        self.branch_groups.remove(obj)
+
     def get_elements_by_type(self, device_type: DeviceType):
         """
         Get set of elements and their parent nodes
@@ -1742,6 +1817,9 @@ class MultiCircuit:
         elif device_type == DeviceType.VscDevice:
             return self.vsc_devices
 
+        elif device_type == DeviceType.BranchGroupDevice:
+            return self.branch_groups
+
         elif device_type == DeviceType.BusDevice:
             return self.buses
 
@@ -1769,6 +1847,9 @@ class MultiCircuit:
         elif device_type == DeviceType.SubstationDevice:
             return self.substations
 
+        elif device_type == DeviceType.VoltageLevelDevice:
+            return self.voltage_levels
+
         elif device_type == DeviceType.ConnectivityNodeDevice:
             return self.connectivity_nodes
 
@@ -1783,6 +1864,15 @@ class MultiCircuit:
 
         elif device_type == DeviceType.CountryDevice:
             return self.countries
+
+        elif device_type == DeviceType.CommunityDevice:
+            return self.communities
+
+        elif device_type == DeviceType.RegionDevice:
+            return self.regions
+
+        elif device_type == DeviceType.MunicipalityDevice:
+            return self.municipalities
 
         elif device_type == DeviceType.ContingencyDevice:
             return self.contingencies
@@ -1923,6 +2013,9 @@ class MultiCircuit:
                 elm.correct_buses_connection()
             self.vsc_devices = devices
 
+        elif device_type == DeviceType.BranchGroupDevice:
+            self.branch_groups = devices
+
         elif device_type == DeviceType.BusDevice:
             self.buses = devices
 
@@ -1950,6 +2043,9 @@ class MultiCircuit:
         elif device_type == DeviceType.SubstationDevice:
             self.substations = devices
 
+        elif device_type == DeviceType.VoltageLevelDevice:
+            self.voltage_levels = devices
+
         elif device_type == DeviceType.ConnectivityNodeDevice:
             self.connectivity_nodes = devices
 
@@ -1964,6 +2060,15 @@ class MultiCircuit:
 
         elif device_type == DeviceType.CountryDevice:
             self.countries = devices
+
+        elif device_type == DeviceType.CommunityDevice:
+            self.communities = devices
+
+        elif device_type == DeviceType.RegionDevice:
+            self.regions = devices
+
+        elif device_type == DeviceType.MunicipalityDevice:
+            self.municipalities = devices
 
         elif device_type == DeviceType.ContingencyDevice:
             self.contingencies = devices
@@ -2098,6 +2203,9 @@ class MultiCircuit:
         elif element_type == DeviceType.ConnectivityNodeDevice:
             return self.delete_connectivity_node(obj)
 
+        elif element_type == DeviceType.BranchGroupDevice:
+            return self.delete_branch_group(obj)
+
         elif element_type == DeviceType.BusBarDevice:
             return self.delete_bus_bar(obj)
 
@@ -2122,6 +2230,9 @@ class MultiCircuit:
         elif element_type == DeviceType.SubstationDevice:
             return self.delete_substation(obj)
 
+        elif element_type == DeviceType.VoltageLevelDevice:
+            return self.delete_voltage_level(obj)
+
         elif element_type == DeviceType.AreaDevice:
             return self.delete_area(obj)
 
@@ -2130,6 +2241,15 @@ class MultiCircuit:
 
         elif element_type == DeviceType.CountryDevice:
             return self.delete_country(obj)
+
+        elif element_type == DeviceType.CommunityDevice:
+            return self.delete_community(obj)
+
+        elif element_type == DeviceType.RegionDevice:
+            return self.delete_region(obj)
+
+        elif element_type == DeviceType.MunicipalityDevice:
+            return self.delete_municipality(obj)
 
         elif element_type == DeviceType.ContingencyDevice:
             return self.delete_contingency(obj)
@@ -2243,7 +2363,8 @@ class MultiCircuit:
         """
         cpy = MultiCircuit(name=self.name, Sbase=self.Sbase, fbase=self.fBase, idtag=self.idtag)
 
-        ppts = ['lines',
+        ppts = ['branch_groups',
+                'lines',
                 'dc_lines',
                 'transformers2w',
                 'hvdc_lines',
@@ -2271,9 +2392,13 @@ class MultiCircuit:
                 'sequence_line_types',
                 'transformer_types',
                 'substations',
+                'voltage_levels',
                 'areas',
                 'zones',
                 'countries',
+                'communities',
+                'regions',
+                'municipalities',
                 'time_profile',
                 'contingencies',
                 'contingency_groups',
@@ -2299,6 +2424,52 @@ class MultiCircuit:
             setattr(cpy, pr, copy.deepcopy(getattr(self, pr)))
 
         return cpy
+
+    def clear(self) -> None:
+        """
+        Clear the multi-circuit (remove the bus and branch objects)
+        """
+
+        for lst in self.get_branch_lists():
+            lst.clear()
+
+        for lst in self.get_injection_devices_lists():
+            lst.clear()
+
+        self.areas = list()
+        self.technologies = list()
+        self.contingencies = list()
+        self.contingency_groups = list()
+        self.investments = list()
+        self.investments_groups = list()
+        self.fuels = list()
+        self.emission_gases = list()
+
+        # Should accept buses
+        self.buses = list()
+        self.voltage_levels = list()
+        self.substations = list()
+
+        # List of overhead line objects
+        self.overhead_line_types = list()
+
+        # list of wire types
+        self.wire_types = list()
+
+        # underground cable lines
+        self.underground_cable_types = list()
+
+        # sequence modelled lines
+        self.sequence_line_types = list()
+
+        # List of transformer types
+        self.transformer_types = list()
+
+        self.time_profile = None
+
+        self.contingencies = list()
+
+        self.branch_groups = list()
 
     def get_catalogue_dict(self, branches_only=False):
         """
@@ -2416,30 +2587,6 @@ class MultiCircuit:
             t = list()
         return {'time': t}
 
-    def assign_circuit(self, circ: "MultiCircuit"):
-        """
-        Assign a circuit object to this object.
-        :param circ: Another Circuit instance
-        :return:
-        """
-        self.buses = circ.buses
-
-        self.lines = circ.lines
-        self.transformers2w = circ.transformers2w
-        self.hvdc_lines = circ.hvdc_lines
-        self.vsc_devices = circ.vsc_devices
-
-        self.name = circ.name
-        self.Sbase = circ.Sbase
-        self.fBase = circ.fBase
-
-        self.sequence_line_types = list(set(self.sequence_line_types + circ.sequence_line_types))
-        self.wire_types = list(set(self.wire_types + circ.wire_types))
-        self.overhead_line_types = list(set(self.overhead_line_types + circ.overhead_line_types))
-        self.underground_cable_types = list(set(self.underground_cable_types + circ.underground_cable_types))
-        self.sequence_line_types = list(set(self.sequence_line_types + circ.sequence_line_types))
-        self.transformer_types = list(set(self.transformer_types + circ.transformer_types))
-
     def build_graph(self):
         """
         Returns a networkx DiGraph object of the grid.
@@ -2556,6 +2703,7 @@ class MultiCircuit:
         try:
             self.time_profile = pd.to_datetime(np.array(unix_data), unit='s', origin='unix')
         except Exception as e:
+            print("Error", e)
             # it may come in nanoseconds instead of seconds...
             self.time_profile = pd.to_datetime(np.array(unix_data) / 1e9, unit='s', origin='unix')
 
@@ -2564,8 +2712,12 @@ class MultiCircuit:
         for elm in self.buses:
             elm.create_profiles(self.time_profile)
 
-        for branch_list in self.get_branch_lists():
-            for elm in branch_list:
+        for lst in self.get_branch_lists():
+            for elm in lst:
+                elm.create_profiles(self.time_profile)
+
+        for lst in self.get_injection_devices_lists():
+            for elm in lst:
                 elm.create_profiles(self.time_profile)
 
     def ensure_profiles_exist(self) -> None:
@@ -2580,6 +2732,10 @@ class MultiCircuit:
 
         for branch_list in self.get_branch_lists():
             for elm in branch_list:
+                elm.ensure_profiles_exist(self.time_profile)
+
+        for lst in self.get_injection_devices_lists():
+            for elm in lst:
                 elm.ensure_profiles_exist(self.time_profile)
 
     def get_bus_dict(self, by_idtag=False) -> Dict[str, dev.Bus]:
@@ -3206,6 +3362,13 @@ class MultiCircuit:
         """
         return self.bus_bars
 
+    def get_bus_bars_number(self) -> int:
+        """
+        Get all bus-bars number
+        :return:
+        """
+        return len(self.bus_bars)
+
     def add_bus_bar(self, obj: dev.BusBar):
         """
         Add Substation
@@ -3393,6 +3556,13 @@ class MultiCircuit:
         """
         return self.countries
 
+    def get_country_number(self) -> int:
+        """
+        Get country number
+        :return:
+        """
+        return len(self.countries)
+
     def add_country(self, obj: dev.Country):
         """
         Add country
@@ -3410,6 +3580,159 @@ class MultiCircuit:
                 elm.country = None
 
         self.countries.remove(obj)
+
+    # ----------------------------------------------------------------------------------------------------------------------
+    # communities
+    # ----------------------------------------------------------------------------------------------------------------------
+
+    def get_communities(self) -> List[dev.Community]:
+        """
+        List of communities
+        :return: List[dev.Community]
+        """
+        return self.communities
+
+    def get_communities_number(self) -> int:
+        """
+        Size of the list of communities
+        :return: size of communities
+        """
+        return len(self.communities)
+
+    def get_community_at(self, i: int) -> dev.Community:
+        """
+        Get community at i
+        :param i: index
+        :return: Community
+        """
+        return self.communities[i]
+
+    def get_community_names(self) -> StrVec:
+        """
+        Array of community names
+        :return: StrVec
+        """
+        return np.array([e.name for e in self.communities])
+
+    def add_community(self, obj: dev.Community):
+        """
+        Add a Community object
+        :param obj: Community instance
+        """
+
+        if self.time_profile is not None:
+            obj.create_profiles(self.time_profile)
+        self.communities.append(obj)
+
+    def delete_community(self, obj: dev.Community) -> None:
+        """
+        Add a Community object
+        :param obj: Community instance
+        """
+
+        self.communities.remove(obj)
+
+    # ----------------------------------------------------------------------------------------------------------------------
+    # regions
+    # ----------------------------------------------------------------------------------------------------------------------
+
+    def get_regions(self) -> List[dev.Region]:
+        """
+        List of regions
+        :return: List[dev.Region]
+        """
+        return self.regions
+
+    def get_regions_number(self) -> int:
+        """
+        Size of the list of regions
+        :return: size of regions
+        """
+        return len(self.regions)
+
+    def get_region_at(self, i: int) -> dev.Region:
+        """
+        Get region at i
+        :param i: index
+        :return: Region
+        """
+        return self.regions[i]
+
+    def get_region_names(self) -> StrVec:
+        """
+        Array of region names
+        :return: StrVec
+        """
+        return np.array([e.name for e in self.regions])
+
+    def add_region(self, obj: dev.Region):
+        """
+        Add a Region object
+        :param obj: Region instance
+        """
+
+        if self.time_profile is not None:
+            obj.create_profiles(self.time_profile)
+        self.regions.append(obj)
+
+    def delete_region(self, obj: dev.Region) -> None:
+        """
+        Add a Region object
+        :param obj: Region instance
+        """
+
+        self.regions.remove(obj)
+
+    # ----------------------------------------------------------------------------------------------------------------------
+    # municipalities
+    # ----------------------------------------------------------------------------------------------------------------------
+
+    def get_municipalities(self) -> List[dev.Municipality]:
+        """
+        List of municipalities
+        :return: List[dev.Municipality]
+        """
+        return self.municipalities
+
+    def get_municipalities_number(self) -> int:
+        """
+        Size of the list of municipalities
+        :return: size of municipalities
+        """
+        return len(self.municipalities)
+
+    def get_municipality_at(self, i: int) -> dev.Municipality:
+        """
+        Get municipality at i
+        :param i: index
+        :return: Municipality
+        """
+        return self.municipalities[i]
+
+    def get_municipality_names(self) -> StrVec:
+        """
+        Array of municipality names
+        :return: StrVec
+        """
+        return np.array([e.name for e in self.municipalities])
+
+    def add_municipality(self, obj: dev.Municipality):
+        """
+        Add a Municipality object
+        :param obj: Municipality instance
+        """
+
+        if self.time_profile is not None:
+            obj.create_profiles(self.time_profile)
+        self.municipalities.append(obj)
+
+    def delete_municipality(self, obj: dev.Municipality) -> None:
+        """
+        Add a Municipality object
+        :param obj: Municipality instance
+        """
+
+        self.municipalities.remove(obj)
 
     def add_fuel(self, obj: dev.Fuel):
         """
@@ -5390,3 +5713,42 @@ class MultiCircuit:
         self.clean_investments(all_dev=all_dev, logger=logger)
 
         return logger
+
+
+    # def split_line(self, line: dev.Line, position: float) -> Tuple["Line", "Line", Bus]:
+    #     """
+    #     Split a branch by a given distance
+    #     :param position: per unit distance measured from the "from" bus (0 ~ 1)
+    #     :return: the two new Branches and the mid short circuited bus
+    #     """
+    #
+    #     assert (0.0 < position < 1.0)
+    #
+    #     # Each of the Branches will have the proportional impedance
+    #     # Bus_from           Middle_bus            Bus_To
+    #     # o----------------------o--------------------o
+    #     #   >-------- x -------->|
+    #     #   (x: distance measured in per unit (0~1)
+    #
+    #     middle_bus = line.bus_from.copy()
+    #     middle_bus.name += ' split'
+    #
+    #     # C(x, y) = (x1 + t * (x2 - x1), y1 + t * (y2 - y1))
+    #     middle_bus.X = line.bus_from.x + (line.bus_to.x - line.bus_from.x) * position
+    #     middle_bus.y = line.bus_from.y + (line.bus_to.y - line.bus_from.y) * position
+    #
+    #     props_to_scale = ['R', 'R0', 'X', 'X0', 'B', 'B0', 'length']  # list of properties to scale
+    #
+    #     br1 = line.copy()
+    #     br1.bus_from = line.bus_from
+    #     br1.bus_to = middle_bus
+    #     for p in props_to_scale:
+    #         setattr(br1, p, getattr(line, p) * position)
+    #
+    #     br2 = line.copy()
+    #     br2.bus_from = middle_bus
+    #     br2.bus_to = line.bus_to
+    #     for p in props_to_scale:
+    #         setattr(br2, p, getattr(line, p) * (1.0 - position))
+    #
+    #     return br1, br2, middle_bus

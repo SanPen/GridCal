@@ -86,7 +86,6 @@ class PowerFlowResults(ResultsTemplate):
             branch_names: np.ndarray,
             hvdc_names: np.ndarray,
             bus_types: np.ndarray,
-            area_names: Union[np.ndarray, None] = None,
             clustering_results=None):
         """
         A **PowerFlowResults** object is create as an attribute of the

@@ -856,12 +856,12 @@ class PSSeBranch(PSSeObject):
     def get_object(self, psse_bus_dict, Sbase, logger: Logger):
         """
         Return Newton branch object
-        Args:
-            psse_bus_dict: Dictionary that relates PSSe bus indices with Newton Bus objects
-
-        Returns:
-            Newton Branch object
+        :param psse_bus_dict: Dictionary that relates PSSe bus indices with Newton Bus objects
+        :param Sbase: Base power in MVA
+        :param logger: Logger
+        :return: Branch object
         """
+
         i = abs(self.I)
         j = abs(self.J)
         bus_from = psse_bus_dict[i]

@@ -83,16 +83,12 @@ def delete_{singular_name}(self, obj: dev.{cls_name}) -> None:
 if __name__ == '__main__':
     entries = [
         # {"list_name": "", "singular_name": "", "plural_name": "", "cls_name": "", },
+        # community, region, municipality
+        {"list_name": "branch_groups",
+         "singular_name": "branch_group",
+         "plural_name": "branch_groups",
+         "cls_name": "BranchGroup", },
 
-        {"list_name": "current_injections",
-         "singular_name": "current_injection",
-         "plural_name": "current_injections",
-         "cls_name": "CurrentInjection", },
-
-        {"list_name": "controllable_shunts",
-         "singular_name": "linear_shunt",
-         "plural_name": "controllable_shunts",
-         "cls_name": "LinearShunt", },
 
     ]
 

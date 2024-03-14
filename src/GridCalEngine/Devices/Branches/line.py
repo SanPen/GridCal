@@ -66,6 +66,7 @@ class Line(BranchParent):
         :param alpha: Thermal constant of the material in °C
         :param template: Basic branch template
         :param contingency_factor: Rating factor in case of contingency
+        :param protection_rating_factor: Rating factor before the protections tripping
         :param contingency_enabled: enabled for contingencies (Legacy)
         :param monitor_loading: monitor the loading (used in OPF)
         :param r0: zero-sequence resistence (p.u.)
@@ -90,7 +91,7 @@ class Line(BranchParent):
                               active=active,
                               rate=rate,
                               contingency_factor=contingency_factor,
-                              protection_rating_factor=contingency_factor,
+                              protection_rating_factor=protection_rating_factor,
                               contingency_enabled=contingency_enabled,
                               monitor_loading=monitor_loading,
                               mttf=mttf,
@@ -405,13 +406,16 @@ class Line(BranchParent):
         :param branch_connection_voltage_tolerance:
         :return:
         """
-        V1 = min(self.bus_to.Vnom, self.bus_from.Vnom)
-        V2 = max(self.bus_to.Vnom, self.bus_from.Vnom)
-        if V2 > 0:
-            per = V1 / V2
-            return per < (1.0 - branch_connection_voltage_tolerance)
+        if self.bus_to is not None and self.bus_from is not None:
+            V1 = min(self.bus_to.Vnom, self.bus_from.Vnom)
+            V2 = max(self.bus_to.Vnom, self.bus_from.Vnom)
+            if V2 > 0:
+                per = V1 / V2
+                return per < (1.0 - branch_connection_voltage_tolerance)
+            else:
+                return V1 != V2
         else:
-            return V1 != V2
+            return False
 
     def get_equivalent_transformer(self) -> Transformer2W:
         """
@@ -436,44 +440,6 @@ class Line(BranchParent):
         elm.rate_prof = self.rate_prof
         elm.temperature_prof = self.temp_oper_prof
         return elm
-
-    def split_line(self, position: float) -> Tuple["Line", "Line", Bus]:
-        """
-        Split a branch by a given distance
-        :param position: per unit distance measured from the "from" bus (0 ~ 1)
-        :return: the two new Branches and the mid short circuited bus
-        """
-
-        assert (0.0 < position < 1.0)
-
-        # Each of the Branches will have the proportional impedance
-        # Bus_from           Middle_bus            Bus_To
-        # o----------------------o--------------------o
-        #   >-------- x -------->|
-        #   (x: distance measured in per unit (0~1)
-
-        middle_bus = self.bus_from.copy()
-        middle_bus.name += ' split'
-
-        # C(x, y) = (x1 + t * (x2 - x1), y1 + t * (y2 - y1))
-        middle_bus.X = self.bus_from.x + (self.bus_to.x - self.bus_from.x) * position
-        middle_bus.y = self.bus_from.y + (self.bus_to.y - self.bus_from.y) * position
-
-        props_to_scale = ['R', 'R0', 'X', 'X0', 'B', 'B0', 'length']  # list of properties to scale
-
-        br1 = self.copy()
-        br1.bus_from = self.bus_from
-        br1.bus_to = middle_bus
-        for p in props_to_scale:
-            setattr(br1, p, getattr(self, p) * position)
-
-        br2 = self.copy()
-        br2.bus_from = middle_bus
-        br2.bus_to = self.bus_to
-        for p in props_to_scale:
-            setattr(br2, p, getattr(self, p) * (1.0 - position))
-
-        return br1, br2, middle_bus
 
     def fill_design_properties(self, r_ohm, x_ohm, c_nf, length, Imax, freq, Sbase):
         """

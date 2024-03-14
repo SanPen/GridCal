@@ -26,6 +26,7 @@ from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_options 
 from GridCalEngine.Simulations.ContingencyAnalysis.Methods.nonlinear_contingency_analysis import nonlinear_contingency_analysis
 from GridCalEngine.Simulations.ContingencyAnalysis.Methods.linear_contingency_analysis import linear_contingency_analysis
 from GridCalEngine.Simulations.ContingencyAnalysis.Methods.helm_contingency_analysis import helm_contingency_analysis
+from GridCalEngine.Simulations.ContingencyAnalysis.Methods.optimal_linear_contingency_analysis import optimal_linear_contingency_analysis
 from GridCalEngine.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE
 from GridCalEngine.Compilers.circuit_to_newton_pa import (NEWTON_PA_AVAILABLE, newton_pa_contingencies,
                                                                translate_newton_pa_contingencies)
@@ -83,10 +84,11 @@ class ContingencyAnalysisDriver(DriverTemplate):
         else:
             return list()
 
-    def run_at(self, t: int = None) -> ContingencyAnalysisResults:
+    def run_at(self, t: int = None, t_prob: float = 1.0) -> ContingencyAnalysisResults:
         """
         Run the contingency at a time point
         :param t: index for any time series index, None for the snapshot
+        :param t_prob: probability of te time
         :return: ContingencyAnalysisResults
         """
         if self.engine == EngineType.NewtonPA and not NEWTON_PA_AVAILABLE:
@@ -108,7 +110,8 @@ class ContingencyAnalysisDriver(DriverTemplate):
                     options=self.options,
                     linear_multiple_contingencies=self.linear_multiple_contingencies,
                     calling_class=self,
-                    t=t
+                    t=t,
+                    t_prob=t_prob
                 )
 
             elif self.options.contingency_method == ContingencyMethod.PTDF:
@@ -117,7 +120,8 @@ class ContingencyAnalysisDriver(DriverTemplate):
                     options=self.options,
                     linear_multiple_contingencies=self.linear_multiple_contingencies,
                     calling_class=self,
-                    t=t
+                    t=t,
+                    t_prob=t_prob
                 )
 
             elif self.options.contingency_method == ContingencyMethod.HELM:
@@ -125,9 +129,20 @@ class ContingencyAnalysisDriver(DriverTemplate):
                     grid=self.grid,
                     options=self.options,
                     calling_class=self,
-                    t=t
+                    t=t,
+                    t_prob=t_prob
                 )
-
+            elif self.options.contingency_method == ContingencyMethod.OptimalPowerFlow:
+                self.results = optimal_linear_contingency_analysis(
+                    grid=self.grid,
+                    options=self.options,
+                    opf_options=None,
+                    linear_multiple_contingencies=self.linear_multiple_contingencies,
+                    calling_class=self,
+                    t=t,
+                    t_prob=t_prob,
+                    logger=self.logger
+                )
             else:
                 raise Exception(f'Unknown contingency engine {self.options.contingency_method}')
 
