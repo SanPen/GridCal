@@ -714,6 +714,8 @@ def run_nonlinear_opf(grid: MultiCircuit,
                       debug: bool = False,
                       use_autodiff: bool = False,
                       pf_init=False,
+                      Sbus_pf0: Union[CxVec, None] = None,
+                      voltage_pf0: Union[CxVec, None] = None,
                       plot_error: bool = False,
                       use_bound_slacks: bool = True,
                       logger: Logger = Logger()) -> NonlinearOPFResults:
@@ -726,6 +728,8 @@ def run_nonlinear_opf(grid: MultiCircuit,
     :param debug: debug? when active the autodiff is activated
     :param use_autodiff: Use autodiff?
     :param pf_init: Initialize with a power flow?
+    :param Sbus_pf0: Sbus initial solution
+    :param voltage_pf0: Voltage initl solution
     :param plot_error: Plot the error?
     :param use_bound_slacks: add voltage module and branch loading slack variables? (default true)
     :param logger: Logger object
@@ -737,9 +741,13 @@ def run_nonlinear_opf(grid: MultiCircuit,
 
     # run power flow to initialize
     if pf_init:
-        pf_results = multi_island_pf_nc(nc=nc, options=pf_options)
-        Sbus_pf = pf_results.Sbus
-        voltage_pf = pf_results.voltage
+        if Sbus_pf0 is None:
+            pf_results = multi_island_pf_nc(nc=nc, options=pf_options)
+            Sbus_pf = pf_results.Sbus
+            voltage_pf = pf_results.voltage
+        else:
+            Sbus_pf = Sbus_pf0
+            voltage_pf = voltage_pf0
     else:
         Sbus_pf = nc.bus_data.installed_power
         voltage_pf = nc.bus_data.Vbus
