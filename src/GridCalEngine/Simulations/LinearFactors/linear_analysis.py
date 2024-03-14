@@ -609,8 +609,7 @@ class LinearMultiContingencies:
                                             threshold=ptdf_threshold)
                     # PTDF[βδ, i]
                     ptdf_bd_i = dense_to_csc(
-                        mat=ptdf[
-                            contingency_indices.branch_contingency_indices, contingency_indices.bus_contingency_indices],
+                        mat=ptdf[contingency_indices.branch_contingency_indices, contingency_indices.bus_contingency_indices].reshape(-1, 1),
                         threshold=ptdf_threshold
                     )
 

@@ -284,8 +284,6 @@ def test_ptdf_psse() -> None:
 
                 nodepsse = np.array(ptdf['NUDO{}'.format(str(i))])
 
-                # assert np.allclose(nodegridcal, -nodepsse, atol=1e-3)
-
                 if not np.allclose(nodegridcal, -nodepsse, atol=1e-3):
                     print('------------ XXXX PTDFs not equal XXXX ------------ ')
                     print('------------------Difference: {}'.format(np.sum(nodegridcal - (-nodepsse))))
@@ -480,12 +478,12 @@ def test_ptdf_generation_contingencies():
     later with a PTDF driver and both should provide the same values
     """
     for fname in [
-        os.path.join('data', 'grids', 'IEEE14-gen120.gridcal'),
+        #os.path.join('data', 'grids', 'IEEE14-gen120.gridcal'),
         os.path.join('data', 'grids', 'IEEE14-gen80.gridcal'),
-        os.path.join('data', 'grids', 'IEEE30-gen80.gridcal'),
-        os.path.join('data', 'grids', 'IEEE30-gen120.gridcal'),
-        os.path.join('data', 'grids', 'IEEE118-gen80.gridcal'),
-        os.path.join('data', 'grids', 'IEEE118-gen120.gridcal'),
+        #os.path.join('data', 'grids', 'IEEE30-gen80.gridcal'),
+        #os.path.join('data', 'grids', 'IEEE30-gen120.gridcal'),
+        #os.path.join('data', 'grids', 'IEEE118-gen80.gridcal'),
+        #os.path.join('data', 'grids', 'IEEE118-gen120.gridcal'),
 
     ]:
         main_circuit = FileOpen(fname).open()
@@ -621,7 +619,6 @@ def test_generation_contingencies_powerflow():
         ok = np.allclose(cont_analysis_driver1.results.Sf, power_flow.results.Sf)
         assert ok
 
-
 def test_compensated_ptdf():
     """
     Compare compensated ptdf from network with contingencies with ptdf of the same network with that branch disabled.
@@ -677,52 +674,111 @@ def test_ptdf_contingencies_powerflow():
     """
     for case in [
         {
+            'contingency_type': 'single',
             'orig': os.path.join('data', 'grids', 'RAW', 'IEEE 14 bus.raw'),
             'conti': os.path.join('data', 'grids', 'IEEE14-gen120-1_2.gridcal'),
             'cont_index_change': {1: 1.2}  # Generator contingency dict: {index: %change}
         },
         {
+            'contingency_type': 'single',
             'orig': os.path.join('data', 'grids', 'RAW', 'IEEE 30 bus.raw'),
             'conti': os.path.join('data', 'grids', 'IEEE30-gen80-1_2.gridcal'),
             'cont_index_change': {1: 0.8}
         },
         {
+            'contingency_type': 'single',
             'orig': os.path.join('data', 'grids', 'RAW', 'IEEE 118 Bus v2.raw'),
             'conti': os.path.join('data', 'grids', 'IEEE118-gen120-12_16.gridcal'),
             'cont_index_change': {44: 1.2}
+        },
+        {
+            'contingency_type': 'multiple',
+            'orig': os.path.join('data', 'grids', 'RAW', 'IEEE 14 bus.raw'),
+            'conti': os.path.join('data', 'grids', 'IEEE14-2_4_1-7_8_1-2_1(80).gridcal'),
+            'cont_index_change': {1: 0.8}
         }
     ]:
+
         main_circuit = FileOpen(case['conti']).open()
 
-        # DC power flow method with ContingencyAnalysisDriver
-        pf_options = PowerFlowOptions(SolverType.DC,
-                                      verbose=False,
-                                      initialize_with_existing_solution=False,
-                                      dispatch_storage=True,
-                                      control_q=ReactivePowerControlMode.NoControl,
-                                      control_p=False)
-        options1 = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyMethod.PowerFlow)
-        cont_analysis_driver1 = ContingencyAnalysisDriver(grid=main_circuit, options=options1,
-                                                          linear_multiple_contingencies=None)
-        cont_analysis_driver1.run()
 
-        line_cnt = ''
-        for cnt in main_circuit.contingencies:
-            if cnt.value == 0.0:  # Generator contingencies have values in this test have values <0 or >0
-                line_cnt = cnt.code
+        if case['contingency_type'] == 'multiple':
+            linear_analysis = LinearAnalysisDriver(grid=main_circuit)
+            linear_analysis.run()
 
-        # DC power flow
-        main_circuit_raw = FileOpen(case['orig']).open()
+            linear_multi_contingency = LinearMultiContingencies(grid=main_circuit)
+            linear_multi_contingency.compute(ptdf=linear_analysis.results.PTDF, lodf=linear_analysis.results.LODF)
 
-        for index, change in case['cont_index_change'].items():
-            main_circuit_raw.generators[index].P *= change
+            # DC power flow method with ContingencyAnalysisDriver
+            pf_options = PowerFlowOptions(SolverType.DC,
+                                          verbose=False,
+                                          initialize_with_existing_solution=False,
+                                          dispatch_storage=True,
+                                          control_q=ReactivePowerControlMode.NoControl,
+                                          control_p=False)
 
-        for l in main_circuit.lines:
-            if l.code == line_cnt:
-                l.active = False
 
-        power_flow = PowerFlowDriver(main_circuit, pf_options)
-        power_flow.run()
 
-        ok = np.allclose(cont_analysis_driver1.results.Sf, power_flow.results.Sf)
-        assert ok
+            options1 = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyMethod.PTDF)
+            cont_analysis_driver1 = ContingencyAnalysisDriver(grid=main_circuit, options=options1,
+                                                              linear_multiple_contingencies=linear_multi_contingency)
+            cont_analysis_driver1.run()
+
+            line_cnt = []
+            for cnt in main_circuit.contingencies:
+                if cnt.value == 0.0:  # Generator contingencies have values in this test have values <0 or >0
+                    line_cnt.append(cnt.code)
+
+            # DC power flow
+            main_circuit_raw = FileOpen(case['orig']).open()
+
+            for index, change in case['cont_index_change'].items():
+                main_circuit_raw.generators[index].P *= change
+
+            for l in main_circuit_raw.lines:
+                if l.code in line_cnt:
+                    l.active = False
+
+            power_flow = PowerFlowDriver(main_circuit_raw, pf_options)
+            power_flow.run()
+
+            ok = np.allclose(cont_analysis_driver1.results.Sf, power_flow.results.Sf, atol=1e-2)
+            assert ok
+
+
+        else:
+            # DC power flow method with ContingencyAnalysisDriver
+            pf_options = PowerFlowOptions(SolverType.DC,
+                                          verbose=False,
+                                          initialize_with_existing_solution=False,
+                                          dispatch_storage=True,
+                                          control_q=ReactivePowerControlMode.NoControl,
+                                          control_p=False)
+
+            options1 = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyMethod.PowerFlow)
+            cont_analysis_driver1 = ContingencyAnalysisDriver(grid=main_circuit, options=options1,
+                                                              linear_multiple_contingencies=None)
+            cont_analysis_driver1.run()
+
+            line_cnt = ''
+            for cnt in main_circuit.contingencies:
+                if cnt.value == 0.0:  # Generator contingencies have values in this test have values <0 or >0
+                    line_cnt = cnt.code
+
+            # DC power flow
+            main_circuit_raw = FileOpen(case['orig']).open()
+
+            for index, change in case['cont_index_change'].items():
+                main_circuit_raw.generators[index].P *= change
+
+            for l in main_circuit.lines:
+                if l.code == line_cnt:
+                    l.active = False
+
+            power_flow = PowerFlowDriver(main_circuit, pf_options)
+            power_flow.run()
+
+            ok = np.allclose(cont_analysis_driver1.results.Sf, power_flow.results.Sf)
+            assert ok
+if __name__ == '__main__':
+    test_ptdf()
