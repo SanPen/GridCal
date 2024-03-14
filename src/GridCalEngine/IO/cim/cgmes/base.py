@@ -65,18 +65,19 @@ def rfid2uuid(val):
     return val.replace('-', '').replace('_', '')
 
 
-def get_uuid(string: str) -> str:
+def form_rdfid(idtag: str) -> str:
     """
-    Converts a simple string (without hyphens or underscores) to a UUID format.
+    Converts a simple string, eg. idtag (without hyphens or underscores)
+    to a UUID format.
 
     Args:
-        string (str): The input string without hyphens or underscores.
+        idtag (str): The input idtag without hyphens or underscores.
 
     Returns:
-        str: The corresponding UUID string with hyphens.
+        str: The corresponding UUID idtag with hyphens.
     """
-    # Add hyphens to the simple string to create a valid UUID
-    formatted_uuid = f"{string[:8]}-{string[8:12]}-{string[12:16]}-{string[16:20]}-{string[20:]}"
+    # Add hyphens to the simple idtag to create a valid UUID
+    formatted_uuid = f"{idtag[:8]}-{idtag[8:12]}-{idtag[12:16]}-{idtag[16:20]}-{idtag[20:]}"
     try:
         # Validate and return the UUID
         UUID(formatted_uuid)
