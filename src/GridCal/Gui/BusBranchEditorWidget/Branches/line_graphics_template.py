@@ -498,13 +498,13 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         if ask:
             dtype = self.api_object.device_type.value
             ok = yes_no_question(f'Do you want to remove the {dtype} {self.api_object.name}?',
-                                 'Remove branch')
+                                 f'Remove {dtype}')
         else:
             ok = True
 
         if ok:
-            self.editor.circuit.delete_branch(self.api_object)
-            self.editor.delete_diagram_element(self.api_object)
+            self.editor.circuit.delete_branch(obj=self.api_object)
+            self.editor.delete_diagram_element(device=self.api_object)
 
     def enable_disable_toggle(self):
         """
@@ -702,55 +702,6 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         self.arrow_from_2.setToolTip("Pf: {} MW".format(Pf))
         self.arrow_to_1.setToolTip("Pt: {} MW".format(Pt))
         self.arrow_to_2.setToolTip("Pt: {} MW".format(Pt))
-
-    def reduce(self):
-        """
-        Reduce this branch
-        """
-        # TODO: Fix this
-
-        ok = yes_no_question('Do you want to reduce this branch {}?'.format(self.api_object.name),
-                             'Remove branch')
-
-        if ok:
-            # get the index of the branch
-            br_idx = self.editor.circuit.get_branches().index(self.api_object)
-
-            # call the reduction routine
-            (removed_branch, removed_bus,
-             updated_bus, updated_branches) = reduce_grid_brute(self.editor.circuit, br_idx)
-
-            # remove the reduced branch
-            removed_branch.graphic_obj.remove_symbol()
-            self.editor.delete_diagram_element(device=removed_branch.graphic_obj)
-
-            # update the buses (the deleted one and the updated one)
-            if removed_bus is not None:
-                # merge the removed bus with the remaining one
-                # TODO: Figure out how to merge two buses
-                updated_bus.graphic_obj.merge(removed_bus.graphic_obj)
-                # circuit.merge_buses(bus1=bus_t, bus2=bus_f)
-
-                # remove the updated bus children
-                for g in updated_bus.graphic_obj.shunt_children:
-                    self.editor.remove_from_scene(g.nexus)
-                    self.editor.remove_from_scene(g)
-                # re-draw the children
-                updated_bus.graphic_obj.create_children_widgets()
-
-                # remove bus
-                for g in removed_bus.graphic_obj.shunt_children:
-                    self.editor.remove_from_scene(g.nexus)  # remove the links between the bus and the children
-                self.editor.delete_diagram_element(device=removed_bus.graphic_obj)  # remove the bus and all the children contained
-
-            for br in updated_branches:
-                # remove the branch from the schematic
-                self.editor.delete_diagram_element(br.graphic_obj)
-                # add the branch to the schematic with the rerouting and all
-                self.editor.add_api_line(br)
-                # update both buses
-                br.bus_from.graphic_obj.update()
-                br.bus_to.graphic_obj.update()
 
     def change_bus(self):
         """

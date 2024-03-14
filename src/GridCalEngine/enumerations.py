@@ -907,6 +907,9 @@ class DeviceType(Enum):
     AreaDevice = 'Area'
     ZoneDevice = 'Zone'
     CountryDevice = 'Country'
+    CommunityDevice = 'Comunity'
+    RegionDevice = 'Region'
+    MunicipalityDevice = 'Municipality'
     BusBarDevice = 'BusBar'
     VoltageLevelDevice = 'VoltageLevel'
 

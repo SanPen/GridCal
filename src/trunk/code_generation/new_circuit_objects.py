@@ -83,11 +83,21 @@ def delete_{singular_name}(self, obj: dev.{cls_name}) -> None:
 if __name__ == '__main__':
     entries = [
         # {"list_name": "", "singular_name": "", "plural_name": "", "cls_name": "", },
+        # community, region, municipality
+        {"list_name": "communities",
+         "singular_name": "community",
+         "plural_name": "communities",
+         "cls_name": "Community", },
 
-        {"list_name": "voltage_levels",
-         "singular_name": "voltage_level",
-         "plural_name": "voltage_levels",
-         "cls_name": "VoltageLevel", },
+        {"list_name": "regions",
+         "singular_name": "region",
+         "plural_name": "regions",
+         "cls_name": "Region", },
+
+        {"list_name": "municipalities",
+         "singular_name": "municipality",
+         "plural_name": "municipalities",
+         "cls_name": "Municipality", },
 
     ]
 

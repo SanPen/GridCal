@@ -151,6 +151,13 @@ class ObjectsTableMain(DiagramsMain):
 
         elif elm_type == DeviceType.SubstationDevice:
             elm = dev.Substation()
+            dictionary_of_lists = {DeviceType.CountryDevice.value: self.circuit.get_countries(),
+                                   DeviceType.CommunityDevice.value: self.circuit.get_communities(),
+                                   DeviceType.RegionDevice.value: self.circuit.get_regions(),
+                                   DeviceType.MunicipalityDevice.value: self.circuit.get_municipalities(),
+                                   DeviceType.AreaDevice.value: self.circuit.get_areas(),
+                                   DeviceType.ZoneDevice.value: self.circuit.get_zones(),
+                                   }
 
         elif elm_type == DeviceType.ConnectivityNodeDevice:
             elm = dev.ConnectivityNode()
@@ -164,14 +171,27 @@ class ObjectsTableMain(DiagramsMain):
             elm = dev.VoltageLevel()
             dictionary_of_lists = {DeviceType.SubstationDevice.value: self.circuit.get_substations(), }
 
-        elif elm_type == DeviceType.ZoneDevice:
-            elm = dev.Zone()
-
         elif elm_type == DeviceType.AreaDevice:
             elm = dev.Area()
 
+        elif elm_type == DeviceType.ZoneDevice:
+            elm = dev.Zone()
+            dictionary_of_lists = {DeviceType.AreaDevice.value: self.circuit.get_areas(), }
+
         elif elm_type == DeviceType.CountryDevice:
             elm = dev.Country()
+
+        elif elm_type == DeviceType.CommunityDevice:
+            elm = dev.Community()
+            dictionary_of_lists = {DeviceType.CountryDevice.value: self.circuit.get_countries(), }
+
+        elif elm_type == DeviceType.RegionDevice:
+            elm = dev.Region()
+            dictionary_of_lists = {DeviceType.CommunityDevice.value: self.circuit.get_communities(), }
+
+        elif elm_type == DeviceType.MunicipalityDevice:
+            elm = dev.Municipality()
+            dictionary_of_lists = {DeviceType.RegionDevice.value: self.circuit.get_regions(), }
 
         elif elm_type == DeviceType.ContingencyDevice:
             elm = dev.Contingency()
@@ -219,7 +239,7 @@ class ObjectsTableMain(DiagramsMain):
         elif elm_type == DeviceType.GeneratorFuelAssociation:
             elm = dev.GeneratorFuel()
             dictionary_of_lists = {DeviceType.GeneratorDevice.value: self.circuit.get_generators(),
-                                   DeviceType.FuelDevice.value: self.circuit.fuels, }
+                                   DeviceType.FuelDevice.value: self.circuit.get_fuels(), }
 
         elif elm_type == DeviceType.GeneratorEmissionAssociation:
             elm = dev.GeneratorEmission()
@@ -228,27 +248,27 @@ class ObjectsTableMain(DiagramsMain):
 
         elif elm_type == DeviceType.FluidNodeDevice:
             elm = dev.FluidNode()
-            # dictionary_of_lists = {DeviceType.FluidNodeDevice.value: self.circuit.fluid_nodes, }
+            # dictionary_of_lists = {DeviceType.FluidNodeDevice.value: self.circuit.get_fluid_nodes(), }
 
         elif elm_type == DeviceType.FluidPathDevice:
             elm = dev.FluidPath()
-            dictionary_of_lists = {DeviceType.FluidNodeDevice.value: self.circuit.fluid_nodes, }
+            dictionary_of_lists = {DeviceType.FluidNodeDevice.value: self.circuit.get_fluid_nodes(), }
 
         elif elm_type == DeviceType.FluidTurbineDevice:
             elm = dev.FluidTurbine()
-            dictionary_of_lists = {DeviceType.FluidNodeDevice.value: self.circuit.fluid_nodes,
+            dictionary_of_lists = {DeviceType.FluidNodeDevice.value: self.circuit.get_fluid_nodes(),
                                    DeviceType.GeneratorDevice.value: self.circuit.get_generators(),
                                    }
 
         elif elm_type == DeviceType.FluidPumpDevice:
             elm = dev.FluidPump()
-            dictionary_of_lists = {DeviceType.FluidNodeDevice.value: self.circuit.fluid_nodes,
+            dictionary_of_lists = {DeviceType.FluidNodeDevice.value: self.circuit.get_fluid_nodes(),
                                    DeviceType.GeneratorDevice.value: self.circuit.get_generators(),
                                    }
 
         elif elm_type == DeviceType.FluidP2XDevice:
             elm = dev.FluidP2x()
-            dictionary_of_lists = {DeviceType.FluidNodeDevice.value: self.circuit.fluid_nodes,
+            dictionary_of_lists = {DeviceType.FluidNodeDevice.value: self.circuit.get_fluid_nodes(),
                                    DeviceType.GeneratorDevice.value: self.circuit.get_generators(),
                                    }
 
