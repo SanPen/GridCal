@@ -666,10 +666,11 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csr
 
         fx[2 * N: 2 * N + Ng] = (2 * c2 * Pg * (Sbase ** 2) + c1 * Sbase) * 1e-4
 
-        fx[npfvar: npfvar + M] = c_s
-        fx[npfvar + M: npfvar + 2 * M] = c_s
-        fx[npfvar + 2 * M: npfvar + 2 * M + npq] = c_v
-        fx[npfvar + 2 * M + npq: npfvar + 2 * M + 2 * npq] = c_v
+        if use_bound_slacks:
+            fx[npfvar: npfvar + M] = c_s
+            fx[npfvar + M: npfvar + 2 * M] = c_s
+            fx[npfvar + 2 * M: npfvar + 2 * M + npq] = c_v
+            fx[npfvar + 2 * M + npq: npfvar + 2 * M + 2 * npq] = c_v
 
         # EQUALITY CONSTRAINTS GRAD ------------------------------------------------------------------------------------
         """
