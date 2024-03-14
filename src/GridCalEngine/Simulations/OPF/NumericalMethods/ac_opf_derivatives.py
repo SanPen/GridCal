@@ -439,8 +439,8 @@ def eval_f(x: Vec, Cg: csr_matrix, k_m: Vec, k_tau: Vec, nll: int, c0: Vec, c1: 
 
 
 def eval_g(x: Vec, Ybus: csr_matrix, Yf: csr_matrix, Cg: csr_matrix, Sd: CxVec, ig: Vec, nig: Vec, nll: int, npq: int,
-           pv: Vec, fdc: Vec, tdc: Vec, k_m: Vec, k_tau: Vec, Vm_max: Vec, Sg_undis: CxVec, slack: Vec,
-           use_bound_slacks: bool) -> Tuple[Vec, Vec]:
+           pv: Vec, f_nd_dc: Vec, t_nd_dc: Vec, fdc: Vec, tdc: Vec, Pf_nondisp: Vec, k_m: Vec, k_tau: Vec, Vm_max: Vec,
+           Sg_undis: CxVec, slack: Vec, use_bound_slacks: bool) -> Tuple[Vec, Vec]:
     """
 
     :param x:
@@ -478,9 +478,12 @@ def eval_g(x: Vec, Ybus: csr_matrix, Yf: csr_matrix, Cg: csr_matrix, Sd: CxVec, 
     S_undispatch = Cg[:, nig] @ Sg_undis
     dS = S + Sd - S_dispatch - S_undispatch
 
-    if ndc != 0:
-        dS[fdc] += Pfdc  # Lossless model. Pdc_From = Pdc_To
-        dS[tdc] -= Pfdc
+    for link in range(len(Pfdc)):
+        dS[fdc[link]] += Pfdc[link]  # Lossless model. Pdc_From = Pdc_To
+        dS[tdc[link]] -= Pfdc[link]
+    for nd_link in range(len(Pf_nondisp)):
+        dS[f_nd_dc[nd_link]] += Pf_nondisp[nd_link]
+        dS[t_nd_dc[nd_link]] -= Pf_nondisp[nd_link]
 
     gval = np.r_[dS.real, dS.imag, va[slack], vm[pv] - Vm_max[pv]]
 
@@ -698,7 +701,7 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csr
         +------+------+------+------+---------+--------+--------+------+
         
         GTH = 
-           N      N     Ng    Ng   nsl  ntapm  ntapt ndc
+           N      N    Ng    Ng    nsl  ntapm ntapt  ndc
         +------+-----+-----+-----+-----+-----+-----+-----+
         | GTHx |  0  |  0  |  0  |  0  |  0  |  0  |  0  |
         +------+-----+-----+-----+-----+-----+-----+-----+
@@ -780,10 +783,10 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csr
 
         if use_bound_slacks:
             Hvu = sp.hstack([lil_matrix((npq, N)), diags(np.ones(npq)), lil_matrix((npq, 2 * Ng + 2 * M)),
-                             diags(-np.ones(npq)), lil_matrix((npq, npq + ntapm + ntapt + ndc))])
+                             diags(- np.ones(npq)), lil_matrix((npq, npq + ntapm + ntapt + ndc))])
 
             Hvl = sp.hstack([lil_matrix((npq, N)), diags(- np.ones(npq)), lil_matrix((npq, 2 * Ng + 2 * M + npq)),
-                             diags(-np.ones(npq)), lil_matrix((npq, ntapm + ntapt + ndc))])
+                             diags(- np.ones(npq)), lil_matrix((npq, ntapm + ntapt + ndc))])
 
             Hslsf = sp.hstack([lil_matrix((M, npfvar)), diags(- np.ones(M)),
                                lil_matrix((M, M + 2 * npq + ntapm + ntapt + ndc))])
@@ -874,6 +877,19 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csr
         fx = np.zeros(NV)
         Gx = csc((NV, N))
         Hx = csc((NV, 2 * M + 2 * N + 4 * Ng + nsl + nqct + 2 * (ntapm + ntapt) + 2 * ndc))
+
+        allSf = lil_matrix((M, 1))
+        allSt = lil_matrix((M, 1))
+        Sfmat = lil_matrix((M, M))
+        Stmat = lil_matrix((M, M))
+        Sfva = lil_matrix((M, N))
+        Stva = lil_matrix((M, N))
+        Sfvm = lil_matrix((M, N))
+        Stvm = lil_matrix((M, N))
+        Sftapm = lil_matrix((M, ntapm))
+        Sttapm = lil_matrix((M, ntapm))
+        Sftapt = lil_matrix((M, ntapt))
+        Sttapt = lil_matrix((M, ntapt))
 
     # HESSIANS ---------------------------------------------------------------------------------------------------------
 

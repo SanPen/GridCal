@@ -190,7 +190,7 @@ def two_grids_of_3bus():
     grid.add_generator(b11, gce.Generator('G1 (2)', vset=1.00, Cost=1.0, Cost2=2.0))
     grid.add_generator(b21, gce.Generator('G2 (2)', P=10, vset=0.995, Cost=1.0, Cost2=1.0))
 
-    hvdc = gce.HvdcLine(b11, b1, r=0.001, rate=0.4)
+    hvdc = gce.HvdcLine(b11, b1, r=0.001, rate=0.4, dispatchable=0, Pset=0.05)
     grid.add_hvdc(hvdc)
     hvdc2 = gce.HvdcLine(b11, b1, r=0.001, rate=0.4)
     grid.add_hvdc(hvdc2)
@@ -351,7 +351,7 @@ def casehvdc():
     # Go back two directories
     new_directory = os.path.abspath(os.path.join(cwd, '..', '..', '..'))
 
-    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'Lanzarote y Fuerteventura.gridcal')
+    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'ESPGRID.gridcal')
 
     grid = gce.FileOpen(file_path).open()
 
@@ -369,7 +369,7 @@ if __name__ == '__main__':
     # example_3bus_acopf()
     # case_3bus()
     # linn5bus_example()
-    # two_grids_of_3bus()
+    two_grids_of_3bus()
     # case9()
     # case14()
     # case_gb()
@@ -377,4 +377,4 @@ if __name__ == '__main__':
     # case_pegase89()
     # case300()
     # casepegase13k()
-    casehvdc()
+    # casehvdc()
