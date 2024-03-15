@@ -43,12 +43,12 @@ def x2var(x: Vec,
     :param nVm: number of voltage module vars
     :param nPg: number of generator active power vars
     :param nQg: number of generator reactive power vars
-    :param npq:
-    :param M:
-    :param ntapm:
-    :param ntapt:
-    :param ndc:
-    :return:
+    :param npq: number of PQ buses
+    :param M: number of monitored lines
+    :param ntapm: number of module controlled transformers
+    :param ntapt: number of phase controlled transformers
+    :param ndc: number of dispatchable DC links
+    :return: Tuple of sliced variables
     """
     a = 0
     b = nVa
@@ -125,14 +125,14 @@ def var2x(Va: Vec,
     :param Vm: Voltage modules
     :param Pg: Generator active powers
     :param Qg: Generator reactive powers
-    :param sl_sf:
-    :param sl_st:
-    :param sl_vmax:
-    :param sl_vmin:
-    :param tapm:
-    :param tapt:
-    :param Pfdc:
-    :return: [Va, Vm, Pg, Qg, sl_sf, sl_st, sl_vmax, sl_vmin, tapm, tapt, Pfdc]
+    :param sl_sf: Bound slacks for the 'from' power through a line
+    :param sl_st: Bound slacks for the 'to' power through a line
+    :param sl_vmax: Bound slacks for the maximum voltage of the buses
+    :param sl_vmin: Bound slacks for the minimum voltage of the buses
+    :param tapm: Tap modules
+    :param tapt: Tap phases
+    :param Pfdc: From power of the dispatchable DC links
+    :return: The stacked state vector [Va, Vm, Pg, Qg, sl_sf, sl_st, sl_vmax, sl_vmin, tapm, tapt, Pfdc]
     """
     return np.r_[Va, Vm, Pg, Qg, sl_sf, sl_st, sl_vmax, sl_vmin, tapm, tapt, Pfdc]
 
@@ -149,16 +149,16 @@ def compute_branch_power_derivatives(alltapm: Vec,
                                                       lil_matrix]:
     """
 
-    :param alltapm:
-    :param alltapt:
-    :param V:
-    :param k_m:
-    :param k_tau:
-    :param Cf:
-    :param Ct:
-    :param R:
-    :param X:
-    :return: [dSbusdm, dSfdm, dStdm, dSbusdt, dSfdt, dStdt]
+    :param alltapm: Vector with all the tap module, including the non-controlled ones
+    :param alltapt: Vector with all the tap phases, including the non-controlled ones
+    :param V: Complex voltages
+    :param k_m: List with the index of the module controlled transformers
+    :param k_tau: List with the index of the phase controlled transformers
+    :param Cf: From connectivity matrix
+    :param Ct: To connectivity matrix
+    :param R: Line resistances
+    :param X: Line inductances
+    :return: Power first derivatives with respect to the tap variables [dSbusdm, dSfdm, dStdm, dSbusdt, dSfdt, dStdt]
     """
     ys = 1.0 / (R + 1.0j * X + 1e-20)
 
@@ -220,24 +220,24 @@ def compute_branch_power_second_derivatives(alltapm: Vec,
                                                                 lil_matrix, lil_matrix, lil_matrix,
                                                                 lil_matrix, lil_matrix, lil_matrix]:
     """
-    :param alltapm:
-    :param alltapt:
-    :param vm:
-    :param va:
-    :param k_m:
-    :param k_tau:
-    :param il:
-    :param Cf:
-    :param Ct:
-    :param R:
-    :param X:
-    :param F:
-    :param T:
-    :param lam:
-    :param mu:
-    :param Sf:
-    :param St:
-    :return:
+    :param alltapm: Vector with all the tap module, including the non-controlled ones
+    :param alltapt: Vector with all the tap phase, including the non-controlled ones
+    :param vm: Voltage modules
+    :param va: Voltage angles
+    :param k_m: List with the index of the module controlled transformers
+    :param k_tau: List with the index of the phase controlled transformers
+    :param il: List with the index of the monitored lines
+    :param Cf: From connectivity matrix
+    :param Ct: To connectivity matrix
+    :param R: Line resistances
+    :param X: Line inductances
+    :param F: Indexes of the 'from' buses
+    :param T: Indexes of the 'to' buses
+    :param lam: Lambda multiplier
+    :param mu: Mu multiplier
+    :param Sf: From powers
+    :param St: To powers
+    :return: Power second derivatives with respect to tap variables
     """
     ys = 1.0 / (R + 1.0j * X + 1e-20)
     V = vm * np.exp(1j * va)
@@ -406,22 +406,22 @@ def compute_branch_power_second_derivatives(alltapm: Vec,
 def eval_f(x: Vec, Cg: csr_matrix, k_m: Vec, k_tau: Vec, nll: int, c0: Vec, c1: Vec, c2: Vec, c_s: Vec,
            c_v: Vec, ig: Vec, npq: int, ndc: int, Sbase: float, use_bound_slacks: bool) -> float:
     """
-
-    :param x:
-    :param Cg:
-    :param k_m:
-    :param k_tau:
-    :param nll:
-    :param c0:
-    :param c1:
-    :param c2:
-    :param c_s:
-    :param c_v:
-    :param ig:
-    :param npq:
-    :param ndc:
-    :param Sbase:
-    :return:
+    Calculates the value of the objective function at the current state (given by x)
+    :param x: State vector
+    :param Cg: Generation connectivity matrix
+    :param k_m: List with the index of the module controlled transformers
+    :param k_tau: List with the index of the phase controlled transformers
+    :param nll: Number of monitored lines
+    :param c0: Base cost of generators
+    :param c1: Linear cost of generators
+    :param c2: Quadratic cost of generators
+    :param c_s: Cost of overloading a line
+    :param c_v: Cost of over or undervoltages
+    :param ig: Dispatchable generators
+    :param npq: Number of pq buses
+    :param ndc: Number of dispatchable DC links
+    :param Sbase: Base power (per unit reference)
+    :return: Scalar value: Cost of operation (objective function)
     """
     N, _ = Cg.shape  # Check
     Ng = len(ig)
@@ -442,25 +442,29 @@ def eval_g(x: Vec, Ybus: csr_matrix, Yf: csr_matrix, Cg: csr_matrix, Sd: CxVec, 
            pv: Vec, f_nd_dc: Vec, t_nd_dc: Vec, fdc: Vec, tdc: Vec, Pf_nondisp: Vec, k_m: Vec, k_tau: Vec, Vm_max: Vec,
            Sg_undis: CxVec, slack: Vec, use_bound_slacks: bool) -> Tuple[Vec, Vec]:
     """
-
-    :param x:
-    :param Ybus:
-    :param Yf:
-    :param Cg:
-    :param Sd:
+    Calculates the equality constraints at the current state (given by x)
+    :param x: State vector
+    :param Ybus: Bus admittance matrix
+    :param Yf: From admittance matrix
+    :param Cg: Generators connectivity matrix
+    :param Sd: Loads vector
     :param ig: indices of dispatchable gens
     :param nig: indices of non dispatchable gens
-    :param nll:
-    :param npq:
-    :param pv:
-    :param fdc:
-    :param tdc:
-    :param k_m:
-    :param k_tau:
-    :param Vm_max:
+    :param nll: Number of monitored lines
+    :param npq: Number of pq buses
+    :param pv: Index of PV buses
+    :param f_nd_dc: Index of 'from' buses of non dispatchable DC links
+    :param t_nd_dc: Index of 'to' buses of non dispatchable DC links
+    :param fdc: Index of 'from' buses of dispatchable DC links
+    :param tdc: Index of 'to' buses of dispatchable DC links
+    :param k_m: Index of module controlled transformers
+    :param k_tau: Index of phase controlled transformers
+    :param Vm_max: Maximum bound for voltage
     :param Sg_undis: undispatchable complex power
-    :param slack:
-    :return:
+    :param slack: Index of slack buses
+    :param use_bound_slacks: Determine if there will be bound slacks in the optimization model
+    :return: Vector with the value of each equality constraint G = [g1(x), ... gn(x)] s.t. gi(x) = 0. It also
+             returns the value of the power injections S
     """
     M, N = Yf.shape
     Ng = len(ig)
@@ -495,33 +499,35 @@ def eval_h(x: Vec, Yf: csr_matrix, Yt: csr_matrix, from_idx: Vec, to_idx: Vec, p
            tapm_min: Vec, tapt_max: Vec, tapt_min: Vec, Pdcmax: Vec, rates: Vec, il: Vec, ig: Vec,
            tanmax: Vec, ctQ: ReactivePowerControlMode, use_bound_slacks: bool) -> Tuple[Vec, CxVec, CxVec]:
     """
-
-    :param x:
-    :param Yf:
-    :param Yt:
-    :param from_idx:
-    :param to_idx:
-    :param pq:
-    :param k_m:
-    :param k_tau:
-    :param Vm_max:
-    :param Vm_min:
-    :param Pg_max:
-    :param Pg_min:
-    :param Qg_max:
-    :param Qg_min:
-    :param tapm_max:
-    :param tapm_min:
-    :param tapt_max:
-    :param tapt_min:
-    :param Pdcmax:
-    :param rates:
-    :param il: relevant lines to check rating
-    :param ig:
-    :param tanmax:
-    :param ctQ:
-    :return: [hval, Sftot, Sttot]
+    Calculates the inequality constraints at the current state (given by x)
+    :param x: State vector
+    :param Yf: From admittance matrix
+    :param Yt: To admittance matrix
+    :param from_idx: Vector with the indices of the 'from' buses for each line
+    :param to_idx: Vector with the indices of the 'from' buses for each line
+    :param pq: Index of PQ buses
+    :param k_m: Index of module controlled transformers
+    :param k_tau: Index of phase controlles transformers
+    :param Vm_max: upper bound for voltage module per bus
+    :param vm_min: lower bound for voltage module per bus
+    :param pg_max: upper bound for active power generation per generator
+    :param pg_min: lower bound for active power generation per generator
+    :param qg_max: upper bound for reactive power generation per generator
+    :param qg_min: lower bound for reactive power generation per generator
+    :param tapm_max: Upper bound for tap module per transformer
+    :param tapm_min: Lower bound for tap module per transformer
+    :param tapt_max: Upper bound for tap phase per transformer
+    :param tapt_min: Lower bound for tap phase per transformer
+    :param Pdcmax: Bound for power transmission in a DC link
+    :param rates: Rates for branch power at each line
+    :param il: Index of monitored lines
+    :param ig: Index of dispatchable generators
+    :param tanmax: Maximum value of tan(phi), where phi is the angle of the complex generation, for each generator
+    :param ctQ: Boolean indicating if limits to reactive power generation realted to active generation apply
+    :return: Vector with the value of each inequality constraint H = [h1(x), ... hn(x)] s.t. hi(x) <= 0 and the
+             calculated from and to branch powers.
     """
+
     M, N = Yf.shape
     Ng = len(ig)
     ntapm = len(k_m)
@@ -596,41 +602,42 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csr
                            compute_hess: bool) -> Tuple[Vec, csc, csc, csc, csc, csc]:
 
     """
-
-    :param x:
-    :param c1:
-    :param c2:
-    :param c_s:
-    :param c_v:
-    :param Cg:
-    :param Cf:
-    :param Ct:
-    :param Yf:
-    :param Yt:
-    :param Ybus:
-    :param Sbase:
-    :param il: relevant lines to check rating
-    :param ig:
-    :param slack:
-    :param pq:
-    :param pv:
-    :param tanmax:
-    :param alltapm:
-    :param alltapt:
-    :param fdc:
-    :param tdc:
-    :param k_m:
-    :param k_tau:
-    :param mu:
-    :param lmbda:
-    :param R:
-    :param X:
-    :param F:
-    :param T:
-    :param ctQ:
-    :param compute_jac:
-    :param compute_hess:
-    :return:
+    Calculates the jacobians and hessians of the objective function and the equality and inequality constraints
+    at the current state given by x
+    :param x: State vector
+    :param c1: Linear cost of each generator
+    :param c2: Quadratic cost of each generator
+    :param c_s: Cost of overloading each line
+    :param c_v: Cost of over or undervoltage for each bus
+    :param Cg: Generator connectivity matrix
+    :param Cf: From connectivity matrix
+    :param Ct:To connectivity matrix
+    :param Yf: From admittance matrix
+    :param Yt: To admittance matrix
+    :param Ybus: Bus admittance matrix
+    :param Sbase: Base power
+    :param il: Index of monitored lines
+    :param ig: Index of dispatchable generatora
+    :param slack: Index of slack buses
+    :param pq: Index of PQ buses
+    :param pv: Index of PV buses
+    :param tanmax: Maximum value of tan(phi), where phi is the angle of the complex generation, for each generator
+    :param alltapm: value of all the tap modules, including the non controlled ones
+    :param alltapt: value of all the tap phases, including the non controlled ones
+    :param fdc: Index of the 'from' buses for the dispatchable DC links
+    :param tdc: Index of the 'to' buses for the dispatchable DC links
+    :param k_m: Index of the module controlled transformers
+    :param k_tau: Index of the phase controlled transformers
+    :param mu: Vector of mu multipliers
+    :param lmbda: Vector of lambda multipliers
+    :param R: Line Resistance
+    :param X: Line inductance
+    :param F: Index of the 'form' bus for each line
+    :param T: Index of the 'to' bus for each line
+    :param ctQ: Boolean that indicates if the Reactive control applies
+    :param compute_jac: Boolean that indicates if the Jacobians have to be calculated
+    :param compute_hess: Boolean that indicates if the Hessians have to be calculated
+    :return: Jacobians and hessians matrices for the objective function and the equality and inequality constraints
     """
     Mm, N = Yf.shape
     M = len(il)
@@ -755,6 +762,52 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csr
         Gx = sp.vstack([GS.real, GS.imag, GTH, Gvm]).tocsc()
 
         # INEQUALITY CONSTRAINTS GRAD ----------------------------------------------------------------------------------
+
+        """
+        The following comments illustrate the shapes of the equality constraints gradients:
+        
+        Hx =
+            NV
+        +---------+
+        | HSf     | M
+        +---------+
+        | HSt     | M
+        +---------+
+        | Hvu     | N
+        +---------+
+        | Hpu     | Ng
+        +---------+
+        | Hqu     | Ng
+        +---------+
+        | Hvl     | N
+        +---------+
+        | Hpl     | Ng
+        +---------+
+        | Hql     | Ng
+        +---------+
+        | Hslsf   | M
+        +---------+
+        | Hslst   | M
+        +---------+
+        | Hslvmax | npq
+        +---------+
+        | Hslvmin | npq
+        +---------+
+        | Htapmu  | ntapm
+        +---------+
+        | Htapml  | ntapm
+        +---------+
+        | Htaptu  | ntapt
+        +---------+
+        | Htaptl  | ntapt
+        +---------+
+        | Hqmax   | Ng (if ctQ==True), 0 else
+        +---------+
+        | Hdcu    | ndc
+        +---------+
+        | Hdcl    | ndc
+        +---------+
+        """
 
         Vfmat = diags(Cf[il, :] @ V)
         Vtmat = diags(Ct[il, :] @ V)

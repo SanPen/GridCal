@@ -130,7 +130,7 @@ def linn5bus_example():
     grid.add_load(bus5, gce.Load('load 5', P=50, Q=20))
 
     # add Lines connecting the buses
-    #grid.add_line(gce.Line(bus1, bus2, name='line 1-2', r=0.05, x=0.11, b=0.02, rate=1000))
+    grid.add_line(gce.Line(bus1, bus2, name='line 1-2', r=0.05, x=0.11, b=0.02, rate=1000))
     grid.add_line(gce.Line(bus1, bus3, name='line 1-3', r=0.05, x=0.11, b=0.02, rate=1000))
     grid.add_line(gce.Line(bus1, bus5, name='line 1-5', r=0.03, x=0.08, b=0.02, rate=1000))
     grid.add_line(gce.Line(bus2, bus3, name='line 2-3', r=0.04, x=0.09, b=0.02, rate=1000))
@@ -142,10 +142,11 @@ def linn5bus_example():
                             tap_module=0.95, tap_phase=-0.02, r=0.05, x=0.11, tap_phase_max=0.5, tap_module_max=1.1,
                             tap_phase_min=-0.5, tap_module_min=0.9, rate=1000)
 
-    grid.add_transformer2w(tr1)
-
+    #grid.add_transformer2w(tr1)
+    opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, verbose=1, ips_tolerance=1e-8,
+                                              ips_iterations=25)
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1)
-    run_nonlinear_opf(grid=grid, pf_options=pf_options, plot_error=True)
+    run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True)
 
 
 def two_grids_of_3bus():
@@ -291,7 +292,6 @@ def case_pegase89():
     file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case89pegase.m')
 
     grid = gce.FileOpen(file_path).open()
-
     #nc = compile_numerical_circuit_at(grid)
     opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, verbose=1, ips_iterations=100, ips_tolerance=1e-7)
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1)
@@ -368,13 +368,13 @@ def casehvdc():
 if __name__ == '__main__':
     # example_3bus_acopf()
     # case_3bus()
-    # linn5bus_example()
-    two_grids_of_3bus()
+    linn5bus_example()
+    # two_grids_of_3bus()
     # case9()
     # case14()
     # case_gb()
     # case6ww()
-    # case_pegase89()
+    #case_pegase89()
     # case300()
     # casepegase13k()
     # casehvdc()
