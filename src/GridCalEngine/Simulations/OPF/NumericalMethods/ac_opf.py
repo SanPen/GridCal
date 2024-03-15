@@ -171,59 +171,57 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
                                 k_m, k_tau, c0, c1, c2, c_s, c_v, Sbase, rates, il, nll, ig, nig, Sg_undis, ctQ,
                                 use_bound_slacks) -> IpsFunctionReturn:
     """
-
-    :param x:
-    :param mu:
-    :param lmbda:
-    :param compute_jac:
-    :param compute_hess:
-    :param admittances:
-    :param Cg:
-    :param R:
-    :param X:
-    :param Sd:
-    :param slack:
-    :param from_idx:
-    :param to_idx:
-    :param f_nd_dc:
-    :param t_nd_dc:
-    :param fdc:
-    :param tdc:
-    :param ndc:
-    :param pq:
-    :param pv:
-    :param Pf_nondisp:
-    :param Pdcmax:
-    :param V_U:
-    :param V_L:
-    :param P_U:
-    :param P_L:
-    :param tanmax:
-    :param Q_U:
-    :param Q_L:
-    :param tapm_max:
-    :param tapm_min:
-    :param tapt_max:
-    :param tapt_min:
-    :param alltapm:
-    :param alltapt:
-    :param k_m:
-    :param k_tau:
-    :param c0:
-    :param c1:
-    :param c2:
-    :param c_s:
-    :param c_v:
-    :param Sbase:
-    :param rates:
-    :param il:
-    :param nll:
-    :param ig:
-    :param nig:
-    :param Sg_undis:
-    :param ctQ:
-    :param use_bound_slacks:
-    :return:
+    A function that computes the optimization model for a NumericalCircuit object and returns the values of the
+    equations and their derivatives computed analyitically
+    :param x: State vector
+    :param mu: Vector of mu multipliers
+    :param lmbda: Vector of lambda multipliers
+    :param compute_jac: Boolean that indicates if the Jacobians have to be calculated
+    :param compute_hess: Boolean that indicates if the Hessians have to be calculated
+    :param admittances: Object with all the admittance parameters stored
+    :param Cg: Generator connectivity matrix
+    :param R: Line Resistance
+    :param X: Line inductance
+    :param Sd: Load powers
+    :param slack: Index of slack buses
+    :param from_idx: Index of 'from' buses for each line
+    :param to_idx: Index of 'to' buses for each line
+    :param fdc: Index of the 'from' buses for the dispatchable DC links
+    :param tdc: Index of the 'to' buses for the dispatchable DC links
+    :param ndc: Number of dispatchable DC links
+    :param pq: Index of PQ buses
+    :param pv: Index of PV buses
+    :param Pdcmax: Bound for power transmission in a DC link
+    :param V_U: upper bound for voltage module per bus
+    :param V_L: lower bound for voltage module per bus
+    :param P_U: upper bound for active power generation per generator
+    :param P_L: lower bound for active power generation per generator
+    :param Q_U: upper bound for reactive power generation per generator
+    :param Q_L: lower bound for reactive power generation per generator
+    :param tapm_max: Upper bound for tap module per transformer
+    :param tapm_min: Lower bound for tap module per transformer
+    :param tapt_max: Upper bound for tap phase per transformer
+    :param tapt_min: Lower bound for tap phase per transformer
+    :param tanmax: Maximum value of tan(phi), where phi is the angle of the complex generation, for each generator
+    :param alltapm: value of all the tap modules, including the non controlled ones
+    :param alltapt: value of all the tap phases, including the non controlled ones
+    :param k_m: Index of module controlled transformers
+    :param k_tau: Index of phase controlles transformers
+    :param c0: Base cost of each generator
+    :param c1: Linear cost of each generator
+    :param c2: Quadratic cost of each generator
+    :param c_s: Cost of overloading each line
+    :param c_v: Cost of over or undervoltage for each bus
+    :param Sbase: Base power
+    :param rates: Line loading limits
+    :param il: Index of monitored lines
+    :param nll: Number of monitored lines
+    :param ig: Index of dispatchable generators
+    :param nig: Number of dispatchable generators
+    :param Sg_undis: undispatchable complex power
+    :param ctQ: Boolean that indicates if the Reactive control applies
+    :param use_bound_slacks: Determine if there will be bound slacks in the optimization model
+    :return: Object with all the model equations and derivatives stored
     """
     M, N = admittances.Cf.shape
     Ng = len(ig)
@@ -278,56 +276,56 @@ def evaluate_power_flow_debug(x, mu, lmbda, compute_jac, compute_hess, admittanc
                               rates, il, nll, ig, nig, Sg_undis, ctQ, use_bound_slacks, h=1e-5) -> IpsFunctionReturn:
     """
 
-    :param x:
-    :param mu:
-    :param lmbda:
-    :param compute_jac:
-    :param compute_hess:
-    :param admittances:
-    :param Cg:
-    :param R:
-    :param X:
-    :param Sd:
-    :param slack:
-    :param from_idx:
-    :param to_idx:
-    :param fdc:
-    :param tdc:
-    :param ndc:
-    :param pq:
-    :param pv:
-    :param Pdcmax:
-    :param V_U:
-    :param V_L:
-    :param P_U:
-    :param P_L:
-    :param tanmax:
-    :param Q_U:
-    :param Q_L:
-    :param tapm_max:
-    :param tapm_min:
-    :param tapt_max:
-    :param tapt_min:
-    :param alltapm:
-    :param alltapt:
-    :param k_m:
-    :param k_tau:
-    :param c0:
-    :param c1:
-    :param c2:
-    :param c_s:
-    :param c_v:
-    :param Sbase:
-    :param rates:
-    :param il:
-    :param nll:
-    :param ig:
-    :param nig:
-    :param Sg_undis:
-    :param ctQ:
-    :param use_bound_slacks:
-    :param h:
-    :return:
+    :param x: State vector
+    :param mu: Vector of mu multipliers
+    :param lmbda: Vector of lambda multipliers
+    :param compute_jac: Boolean that indicates if the Jacobians have to be calculated
+    :param compute_hess: Boolean that indicates if the Hessians have to be calculated
+    :param admittances: Object with all the admittance parameters stored
+    :param Cg: Generator connectivity matrix
+    :param R: Line Resistance
+    :param X: Line inductance
+    :param Sd: Load powers
+    :param slack: Index of slack buses
+    :param from_idx: Index of 'from' buses for each line
+    :param to_idx: Index of 'to' buses for each line
+    :param fdc: Index of the 'from' buses for the dispatchable DC links
+    :param tdc: Index of the 'to' buses for the dispatchable DC links
+    :param ndc: Number of dispatchable DC links
+    :param pq: Index of PQ buses
+    :param pv: Index of PV buses
+    :param Pdcmax: Bound for power transmission in a DC link
+    :param V_U: upper bound for voltage module per bus
+    :param V_L: lower bound for voltage module per bus
+    :param P_U: upper bound for active power generation per generator
+    :param P_L: lower bound for active power generation per generator
+    :param Q_U: upper bound for reactive power generation per generator
+    :param Q_L: lower bound for reactive power generation per generator
+    :param tapm_max: Upper bound for tap module per transformer
+    :param tapm_min: Lower bound for tap module per transformer
+    :param tapt_max: Upper bound for tap phase per transformer
+    :param tapt_min: Lower bound for tap phase per transformer
+    :param tanmax: Maximum value of tan(phi), where phi is the angle of the complex generation, for each generator
+    :param alltapm: value of all the tap modules, including the non controlled ones
+    :param alltapt: value of all the tap phases, including the non controlled ones
+    :param k_m: Index of module controlled transformers
+    :param k_tau: Index of phase controlles transformers
+    :param c0: Base cost of each generator
+    :param c1: Linear cost of each generator
+    :param c2: Quadratic cost of each generator
+    :param c_s: Cost of overloading each line
+    :param c_v: Cost of over or undervoltage for each bus
+    :param Sbase: Base power
+    :param rates: Line loading limits
+    :param il: Index of monitored lines
+    :param nll: Number of monitored lines
+    :param ig: Index of dispatchable generators
+    :param nig: Number of dispatchable generators
+    :param Sg_undis: undispatchable complex power
+    :param ctQ: Boolean that indicates if the Reactive control applies
+    :param use_bound_slacks: Determine if there will be bound slacks in the optimization model
+    :param h: Tolerance used for the autodiferentiation
+    :return: return the resulting error between the autodif and the analytic derivation
     """
 
     mats_analytic = compute_analytic_structures(x, mu, lmbda, compute_jac, compute_hess, admittances, Cg, R, X, Sd,
@@ -474,8 +472,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     :param use_autodiff: use the autodiff version of the structures
     :param pf_init: Initialize with power flow
     :param Sbus_pf: Sbus initial solution
-    :param voltage_pf: Voltage initl solution
-    :param plot_error: Plot the error?
+    :param voltage_pf: Voltage initial solution
+    :param plot_error: Plot the error evolution. Default: False
     :param use_bound_slacks: add voltage module and branch loading slack variables? (default true)
     :param logger: Logger
     :return: NonlinearOPFResults
@@ -547,7 +545,6 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     nll = len(il)
     ngg = len(ig)
 
-    #nalldc = nc.nhvdc
     hvdc_nondisp = np.where(nc.hvdc_data.dispatchable == 0)[0]
     hvdc_disp = np.where(nc.hvdc_data.dispatchable == 1)[0]
 
@@ -813,8 +810,8 @@ def run_nonlinear_opf(grid: MultiCircuit,
     :param use_autodiff: Use autodiff?
     :param pf_init: Initialize with a power flow?
     :param Sbus_pf0: Sbus initial solution
-    :param voltage_pf0: Voltage initl solution
-    :param plot_error: Plot the error?
+    :param voltage_pf0: Voltage initial solution
+    :param plot_error: Plot the error evolution
     :param use_bound_slacks: add voltage module and branch loading slack variables? (default true)
     :param logger: Logger object
     :return: NonlinearOPFResults
