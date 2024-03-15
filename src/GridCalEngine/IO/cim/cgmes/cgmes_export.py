@@ -140,9 +140,23 @@ class CimExporter:
                         continue
                     child = Et.Element(f"md:Model.{attr_name}")
                     if filter_props.get(attr_name) == "Association":
-                        child.attrib = {"rdf:resource": "urn:uuid:" + attr_value}
+                        if isinstance(attr_value, list):
+                            for v in attr_value:
+                                child = Et.Element(f"md:Model.{attr_name}")
+                                child.attrib = {"rdf:resource": "urn:uuid:" + v}
+                                element.append(child)
+                            continue
+                        else:
+                            child.attrib = {"rdf:resource": "urn:uuid:" + attr_value}
                     else:
-                        child.text = str(attr_value)
+                        if isinstance(attr_value, list):
+                            for v in attr_value:
+                                child = Et.Element(f"md:Model.{attr_name}")
+                                child.text = str(v)
+                                element.append(child)
+                            continue
+                        else:
+                            child.text = str(attr_value)
                     element.append(child)
                 full_model_elements.append(element)
         return full_model_elements
@@ -183,7 +197,14 @@ class CimExporter:
                         prop_text = "cim:" + prop_split[-1]
                     child = Et.Element(prop_text)
                     if attr_type == "Association":
-                        child.attrib = {"rdf:resource": "#_" + attr_value.rdfid}
+                        if isinstance(attr_value, list):
+                            for v in attr_value:
+                                child = Et.Element(prop_text)
+                                child.attrib = {"rdf:resource": "#_" + v.rdfid}
+                                element.append(child)
+                            continue
+                        else:
+                            child.attrib = {"rdf:resource": "#_" + attr_value.rdfid}
                     elif attr_type == "Enumeration":
                         enum_dict_key = profile
                         enum_dict_value = self.enum_dict.get(enum_dict_key)
@@ -192,7 +213,14 @@ class CimExporter:
                     elif attr_type == "Attribute":
                         if isinstance(attr_value, bool):
                             attr_value = str(attr_value).lower()
-                        child.text = str(attr_value)
+                        if isinstance(attr_value, list):
+                            for v in attr_value:
+                                child = Et.Element(prop_text)
+                                child.text = str(v)
+                                element.append(child)
+                            continue
+                        else:
+                            child.text = str(attr_value)
                     element.append(child)
                 other_elements.append(element)
         return other_elements

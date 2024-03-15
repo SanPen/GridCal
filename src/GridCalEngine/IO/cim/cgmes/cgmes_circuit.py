@@ -179,9 +179,20 @@ from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.position_point import Posi
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.full_model import FullModel
 
 
+def find_attribute(referenced_object, obj, association_type_dict):
+    for attr_n, tpe in association_type_dict.items():
+        if isinstance(obj, tpe):
+            if attr_n in referenced_object.get_all_properties():
+                return attr_n
+            else:
+                continue
+    return None
+
+
 def find_references(elements_by_type: Dict[str, List[IdentifiedObject]],
                     all_objects_dict: Dict[str, IdentifiedObject],
                     all_objects_dict_boundary: Union[Dict[str, IdentifiedObject], None],
+                    association_type_dict,
                     logger: DataLogger,
                     mark_used: bool) -> None:
     """
@@ -241,63 +252,126 @@ def find_references(elements_by_type: Dict[str, List[IdentifiedObject]],
 
                     else:
                         # search for the reference, if not found -> return None
-                        referenced_object = all_objects_dict.get(value, None)
+                        if not isinstance(value, list):
+                            referenced_object = all_objects_dict.get(value, None)
 
-                        if referenced_object is None and all_objects_dict_boundary:
-                            # search for the reference in the boundary set
-                            referenced_object = all_objects_dict_boundary.get(value, None)
+                            if referenced_object is None and all_objects_dict_boundary:
+                                # search for the reference in the boundary set
+                                referenced_object = all_objects_dict_boundary.get(value, None)
 
-                            # add to the normal data if it wasn't added before
-                            if referenced_object.rdfid not in all_objects_dict:
-                                all_objects_dict[referenced_object.rdfid] = referenced_object
-                                added_from_the_boundary_set.append(referenced_object)
+                                # add to the normal data if it wasn't added before
+                                if referenced_object is not None and referenced_object.rdfid not in all_objects_dict:
+                                    all_objects_dict[referenced_object.rdfid] = referenced_object
+                                    added_from_the_boundary_set.append(referenced_object)
 
-                        # if the reference was found in the data of the boundary set ...
-                        if referenced_object is not None:
-                            if mark_used:
-                                referenced_object.used = True
+                            # if the reference was found in the data of the boundary set ...
+                            if referenced_object is not None:
+                                if mark_used:
+                                    referenced_object.used = True
 
-                            # set the referenced object in the property
-                            setattr(element, property_name, referenced_object)
+                                # set the referenced object in the property
+                                setattr(element, property_name, referenced_object)
 
-                            # register the inverse reference
-                            referenced_object.add_reference(element)
+                                # register the inverse reference
+                                referenced_object.add_reference(element, find_attribute(referenced_object=referenced_object, obj=element, association_type_dict=association_type_dict))
 
-                            # check that the type matches the expected type
-                            if cim_prop.class_type in [ConnectivityNodeContainer, IdentifiedObject]:
-                                # the container class is too generic...
-                                pass
+                                # check that the type matches the expected type
+                                if cim_prop.class_type in [ConnectivityNodeContainer, IdentifiedObject]:
+                                    # the container class is too generic...
+                                    pass
+                                else:
+                                    if not isinstance(referenced_object, cim_prop.class_type) and \
+                                            cim_prop.class_type != EquipmentContainer:
+                                        # if the class specification does not match but the
+                                        # required type is also not a generic polymorphic object ...
+                                        cls = str(cim_prop.class_type).split('.')[-1].replace("'", "").replace(">", "")
+                                        logger.add_error(msg='Object type different from expected',
+                                                         device=element.rdfid,
+                                                         device_class=class_name,
+                                                         device_property=property_name,
+                                                         value=referenced_object.tpe,
+                                                         expected_value=cls)
                             else:
-                                if not isinstance(referenced_object, cim_prop.class_type) and \
-                                        cim_prop.class_type != EquipmentContainer:
-                                    # if the class specification does not match but the
-                                    # required type is also not a generic polymorphic object ...
-                                    cls = str(cim_prop.class_type).split('.')[-1].replace("'", "").replace(">", "")
-                                    logger.add_error(msg='Object type different from expected',
+
+                                # I want to know that it was not found
+                                element.missing_references[property_name] = value
+
+                                if hasattr(element, 'rdfid'):
+                                    logger.add_error(msg='Reference not found',
                                                      device=element.rdfid,
                                                      device_class=class_name,
                                                      device_property=property_name,
-                                                     value=referenced_object.tpe,
-                                                     expected_value=cls)
+                                                     value='Not found',
+                                                     expected_value=value)
+                                else:
+                                    logger.add_error(msg='Reference not found for (debugger error)',
+                                                     device=element.rdfid,
+                                                     device_class=class_name,
+                                                     device_property=property_name,
+                                                     value='Not found',
+                                                     expected_value=value)
                         else:
+                            referenced_object_list = []
+                            for v in value:
+                                referenced_object = all_objects_dict.get(v, None)
 
-                            # I want to know that it was not found
-                            element.missing_references[property_name] = value
+                                if referenced_object is None and all_objects_dict_boundary:
+                                    # search for the reference in the boundary set
+                                    referenced_object = all_objects_dict_boundary.get(v, None)
 
-                            if hasattr(element, 'rdfid'):
-                                logger.add_error(msg='Reference not found',
-                                                 device=element.rdfid,
-                                                 device_class=class_name,
-                                                 device_property=property_name,
-                                                 value='Not found',
-                                                 expected_value=value)
-                            else:
-                                logger.add_error(msg='Reference not found for (debugger error)',
-                                                 device=element.rdfid,
-                                                 device_class=class_name,
-                                                 device_property=property_name,
-                                                 value='Not found',
-                                                 expected_value=value)
+                                    # add to the normal data if it wasn't added before
+                                    if referenced_object is not None and referenced_object.rdfid not in all_objects_dict:
+                                        all_objects_dict[referenced_object.rdfid] = referenced_object
+                                        added_from_the_boundary_set.append(referenced_object)
+
+                                # if the reference was found in the data of the boundary set ...
+                                if referenced_object is not None:
+                                    if mark_used:
+                                        referenced_object.used = True
+
+                                    # set the referenced object in the property
+                                    referenced_object_list.append(referenced_object)
+
+                                    # register the inverse reference
+                                    referenced_object.add_reference(element, find_attribute(referenced_object=referenced_object, obj=element, association_type_dict=association_type_dict))
+
+                                    # check that the type matches the expected type
+                                    if cim_prop.class_type in [ConnectivityNodeContainer, IdentifiedObject]:
+                                        # the container class is too generic...
+                                        pass
+                                    else:
+                                        if not isinstance(referenced_object, cim_prop.class_type) and \
+                                                cim_prop.class_type != EquipmentContainer:
+                                            # if the class specification does not match but the
+                                            # required type is also not a generic polymorphic object ...
+                                            cls = str(cim_prop.class_type).split('.')[-1].replace("'", "").replace(">",
+                                                                                                                   "")
+                                            logger.add_error(msg='Object type different from expected',
+                                                             device=element.rdfid,
+                                                             device_class=class_name,
+                                                             device_property=property_name,
+                                                             value=referenced_object.tpe,
+                                                             expected_value=cls)
+                                else:
+
+                                    # I want to know that it was not found
+                                    element.missing_references[property_name] = v
+
+                                    if hasattr(element, 'rdfid'):
+                                        logger.add_error(msg='Reference not found',
+                                                         device=element.rdfid,
+                                                         device_class=class_name,
+                                                         device_property=property_name,
+                                                         value='Not found',
+                                                         expected_value=v)
+                                    else:
+                                        logger.add_error(msg='Reference not found for (debugger error)',
+                                                         device=element.rdfid,
+                                                         device_class=class_name,
+                                                         device_property=property_name,
+                                                         value='Not found',
+                                                         expected_value=v)
+                            setattr(element, property_name, referenced_object_list)
 
                     if cim_prop.out_of_the_standard:
                         logger.add_warning(msg='Property supported but out of the standard',
@@ -340,6 +414,7 @@ def convert_data_to_objects(data: Dict[str, Dict[str, Dict[str, str]]],
                             all_objects_dict_boundary: Union[Dict[str, IdentifiedObject], None],
                             elements_by_type: Dict[str, List[IdentifiedObject]],
                             class_dict: Dict[str, IdentifiedObject],
+                            association_type_dict,
                             logger: DataLogger) -> None:
     """
     Convert CGMES data dictionaries to proper CGMES objects
@@ -383,6 +458,7 @@ def convert_data_to_objects(data: Dict[str, Dict[str, Dict[str, str]]],
     find_references(elements_by_type=elements_by_type,
                     all_objects_dict=all_objects_dict,
                     all_objects_dict_boundary=all_objects_dict_boundary,
+                    association_type_dict=association_type_dict,
                     logger=logger,
                     mark_used=True)
 
@@ -557,6 +633,119 @@ class CgmesCircuit(BaseCircuit):
             'Location': Location,
             'PositionPoint': PositionPoint,
             'FullModel': FullModel,
+        }
+
+        self.association_type_dict = {
+            'DCTerminals': DCBaseTerminal,
+            'PccTerminal': Terminal,
+            'DCConductingEquipment': DCConductingEquipment,
+            'DCNode': DCNode,
+            'DCTopologicalNode': DCTopologicalNode,
+            'Substation': Substation,
+            'DCNodes': DCNode,
+            'Region': SubGeographicalRegion,
+            'PerLengthParameter': PerLengthDCLineParameter,
+            'DCEquipmentContainer': DCEquipmentContainer,
+            'DCLineSegments': DCLineSegment,
+            'VsConverterDCSides': VsConverter,
+            'CapabilityCurve': VsCapabilityCurve,
+            'ReportingGroup': ReportingGroup,
+            'Terminal': Terminal,
+            'PowerSystemResource': PowerSystemResource,
+            'EnergySource': EnergySource,
+            'EnergySchedulingType': EnergySchedulingType,
+            'ThermalGeneratingUnit': ThermalGeneratingUnit,
+            'ControlAreaGeneratingUnit': ControlAreaGeneratingUnit,
+            'RotatingMachine': RotatingMachine,
+            'HydroPowerPlant': HydroPowerPlant,
+            'HydroGeneratingUnits': HydroGeneratingUnit,
+            'HydroPumps': HydroPump,
+            'FossilFuels': FossilFuel,
+            'BusNameMarker': BusNameMarker,
+            'Measurements': Measurement,
+            'OperationalLimitSet': OperationalLimitSet,
+            'ConductingEquipment': ConductingEquipment,
+            'VoltageLevel': VoltageLevel,
+            'TransformerEnds': TransformerEnd,
+            'TopologicalNode': TopologicalNode,
+            'BaseVoltage': BaseVoltage,
+            'Terminals': Terminal,
+            'SvStatus': SvStatus,
+            'ConnectivityNodeContainer': ConnectivityNodeContainer,
+            'ConnectivityNodes': ConnectivityNode,
+            'CurveDatas': CurveData,
+            'Curve': Curve,
+            'EquipmentContainer': EquipmentContainer,
+            'Equipments': Equipment,
+            'Regions': SubGeographicalRegion,
+            'Controls': Control,
+            'Location': Location,
+            'DCLines': DCLine,
+            'Lines': Line,
+            'Substations': Substation,
+            'DCConverterUnit': DCConverterUnit,
+            'VoltageLevels': VoltageLevel,
+            'ConverterDCSides': ACDCConverter,
+            'ConnectivityNode': ConnectivityNode,
+            'HasFirstMutualCoupling': MutualCoupling,
+            'HasSecondMutualCoupling': MutualCoupling,
+            'RegulatingControl': RegulatingControl,
+            'TieFlow': TieFlow,
+            'TransformerEnd': TransformerEnd,
+            'SvPowerFlow': SvPowerFlow,
+            'Bays': Bay,
+            'OperationalLimitType': OperationalLimitType,
+            'Equipment': Equipment,
+            'OperationalLimitValue': OperationalLimit,
+            'OperationalLimit': OperationalLimit,
+            'LoadResponse': LoadResponseCharacteristic,
+            'First_Terminal': Terminal,
+            'Second_Terminal': Terminal,
+            'NonlinearShuntCompensatorPoints': NonlinearShuntCompensatorPoint,
+            'NonlinearShuntCompensator': NonlinearShuntCompensator,
+            'PhaseTapChangerTablePoint': PhaseTapChangerTablePoint,
+            'PhaseTapChangerTabular': PhaseTapChangerTabular,
+            'PhaseTapChangerTable': PhaseTapChangerTable,
+            'PowerTransformerEnd': PowerTransformerEnd,
+            'PowerTransformer': PowerTransformer,
+            'RatioTapChangerTable': RatioTapChangerTable,
+            'RatioTapChanger': RatioTapChanger,
+            'RatioTapChangerTablePoint': RatioTapChangerTablePoint,
+            'EquivalentInjection': EquivalentInjection,
+            'InitiallyUsedBySynchronousMachines': SynchronousMachine,
+            'RegulatingCondEq': RegulatingCondEq,
+            'GeneratingUnit': GeneratingUnit,
+            'HydroPump': HydroPump,
+            'SvShuntCompensatorSections': SvShuntCompensatorSections,
+            'InitialReactiveCapabilityCurve': ReactiveCapabilityCurve,
+            'TapChangerControl': TapChangerControl,
+            'SvTapStep': SvTapStep,
+            'TapChanger': TapChanger,
+            'PhaseTapChanger': PhaseTapChanger,
+            'LoadGroup': NonConformLoadGroup,
+            'EnergyConsumers': NonConformLoad,
+            'ControlArea': ControlArea,
+            'SubLoadAreas': SubLoadArea,
+            'SubLoadArea': SubLoadArea,
+            'EnergyConsumer': EnergyConsumer,
+            'LoadArea': LoadArea,
+            'LoadGroups': LoadGroup,
+            'EquivalentNetwork': EquivalentNetwork,
+            'ReactiveCapabilityCurve': ReactiveCapabilityCurve,
+            'EquivalentEquipments': EquivalentEquipment,
+            'EnergyArea': EnergyArea,
+            'DCTopologicalNodes': DCTopologicalNode,
+            'ShuntCompensator': ShuntCompensator,
+            'DCTopologicalIsland': DCTopologicalIsland,
+            'SvInjection': SvInjection,
+            'SvVoltage': SvVoltage,
+            'AngleRefTopologicalIsland': TopologicalIsland,
+            'TopologicalIsland': TopologicalIsland,
+            'AngleRefTopologicalNode': TopologicalNode,
+            'TopologicalNodes': TopologicalNode,
+            'CoordinateSystem': CoordinateSystem,
+            'PowerSystemResources': PowerSystemResource,
+            'PositionPoints': PositionPoint,
         }
 
         self.ACDCConverter_list: List[ACDCConverter] = list()
@@ -748,6 +937,7 @@ class CgmesCircuit(BaseCircuit):
                                 all_objects_dict_boundary=None,
                                 elements_by_type=self.elements_by_type_boundary,
                                 class_dict=self.class_dict,
+                                association_type_dict=self.association_type_dict,
                                 logger=self.logger)
 
         # convert the dictionaries to the internal class model,
@@ -758,6 +948,7 @@ class CgmesCircuit(BaseCircuit):
                                 all_objects_dict_boundary=self.all_objects_dict_boundary,
                                 elements_by_type=self.elements_by_type,
                                 class_dict=self.class_dict,
+                                association_type_dict=self.association_type_dict,
                                 logger=self.logger)
 
         # Assign the data from all_objects_dict to the appropriate lists in the circuit

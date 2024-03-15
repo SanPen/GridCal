@@ -93,10 +93,28 @@ def parse_xml_to_dict(xml_element: ET.Element):
             else:
                 objects_list[obj_id] = child_result
         else:
-            if child.text is None:
-                result[class_name] = obj_id  # it is a resource id
+            if class_name not in result:
+                if child.text is None:
+                    result[class_name] = obj_id  # it is a resource id
+                else:
+                    result[class_name] = child.text
             else:
-                result[class_name] = child.text
+                if child.text is None:
+                    t_list = []
+                    if isinstance(result[class_name], list):
+                        t_list.extend(result[class_name])
+                    else:
+                        t_list.append(result[class_name])
+                    t_list.append(obj_id)  # it is a resource id
+                    result[class_name] = t_list
+                else:
+                    t_list = []
+                    if isinstance(result[class_name], list):
+                        t_list.extend(result[class_name])
+                    else:
+                        t_list.append(result[class_name])
+                    t_list.append(child.text)
+                    result[class_name] = t_list
 
     return result
 
