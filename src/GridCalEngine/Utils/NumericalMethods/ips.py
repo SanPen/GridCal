@@ -314,7 +314,7 @@ def interior_point_solver(x0: Vec,
         z_inv = diags(1.0 / z)
         mu = gamma * (z_inv @ e)
         mu_diag = diags(mu)
-        lam = sparse.linalg.lsqr(ret.Gx, -ret.fx - ret.Hx @ mu.T)[0]
+        lam = sparse.linalg.lsqr(ret.Gx.T, -ret.fx - ret.Hx.T @ mu.T)[0]
 
     # PyPower init
     else:
@@ -347,22 +347,23 @@ def interior_point_solver(x0: Vec,
 
         # Evaluate the functions, gradients and hessians at the current iteration.
         ret = func(x, mu, lam, True, True, *arg)
-
+        Hx_t = ret.Hx.T
+        Gx_t = ret.Gx.T
         # compose the Jacobian
         lxx = ret.fxx + ret.Gxx + ret.Hxx
-        m = lxx + ret.Hx @ z_inv @ mu_diag @ ret.Hx.T
-        jac = pack_3_by_4(m.tocsc(), ret.Gx.tocsc(), ret.Gx.T.tocsc())
+        m = lxx + Hx_t @ z_inv @ mu_diag @ ret.Hx
+        jac = pack_3_by_4(m.tocsc(), Gx_t.tocsc(), ret.Gx.tocsc())
 
         # compose the residual
-        lx = ret.fx + ret.Gx @ lam + ret.Hx @ mu
-        n = lx + ret.Hx @ z_inv @ (gamma * e + mu * ret.H)
+        lx = ret.fx + Gx_t @ lam + Hx_t @ mu
+        n = lx + Hx_t @ z_inv @ (gamma * e + mu * ret.H)
         r = - np.r_[n, ret.G]
 
         # Find the reduced problem residuals and split them
         dx, dlam = split(linear_solver(jac, r), n_x)
 
         # Calculate the inequalities residuals using the reduced problem residuals
-        dz = - ret.H - z - ret.Hx.T @ dx
+        dz = - ret.H - z - ret.Hx @ dx
         dmu = - mu + z_inv @ (gamma * e - mu * dz)
 
         # Step control as in PyPower
@@ -402,13 +403,14 @@ def interior_point_solver(x0: Vec,
 
         # Update fobj, g, h
         ret = func(x, mu, lam, True, False, *arg)
-
+        Hx_t = ret.Hx.T
+        Gx_t = ret.Gx.T
         g_norm = np.linalg.norm(ret.G, np.Inf)
         lam_norm = np.linalg.norm(lam, np.Inf)
         mu_norm = np.linalg.norm(mu, np.Inf)
         z_norm = np.linalg.norm(z, np.Inf)
 
-        lx = ret.fx + ret.Hx @ mu + ret.Gx @ lam
+        lx = ret.fx + Hx_t @ mu + Gx_t @ lam
         feascond = max([g_norm, max(ret.H)]) / (1 + max([np.linalg.norm(x, np.Inf), z_norm]))
         gradcond = np.linalg.norm(lx, np.Inf) / (1 + max([lam_norm, mu_norm]))
         error = np.max([feascond, gradcond])

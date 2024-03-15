@@ -117,8 +117,6 @@ class Switch(BranchParent):
                    rate=self.rate,
                    active=self.active)
 
-        b.measurements = self.measurements
-
         return b
 
     def get_save_data(self):

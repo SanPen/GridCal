@@ -606,8 +606,8 @@ class LinearMultiContingencies:
                                             threshold=ptdf_threshold)
                     # PTDF[βδ, i]
                     ptdf_bd_i = dense_to_csc(
-                        mat=ptdf[contingency_indices.branch_contingency_indices,
-                                 contingency_indices.bus_contingency_indices],
+                        mat=ptdf[np.ix_(contingency_indices.branch_contingency_indices,
+                                        contingency_indices.bus_contingency_indices)],
                         threshold=ptdf_threshold
                     )
 
@@ -640,8 +640,8 @@ class LinearMultiContingencies:
                                             threshold=ptdf_threshold)
                     # PTDF[βδ, i]
                     ptdf_bd_i = dense_to_csc(
-                        mat=ptdf[contingency_indices.branch_contingency_indices,
-                                 contingency_indices.bus_contingency_indices],
+                        mat=ptdf[np.ix_(contingency_indices.branch_contingency_indices,
+                                 contingency_indices.bus_contingency_indices)],
                         threshold=ptdf_threshold
                     )
 
@@ -649,7 +649,7 @@ class LinearMultiContingencies:
                     compensated_ptdf_factors = mlodf_factors @ ptdf_bd_i + ptdf_k_i
                 else:
                     # single branch contingency, no bus contingency
-                    compensated_ptdf_factors = mlodf_factors
+                    compensated_ptdf_factors = sp.csc_matrix(([], [], [0]), shape=(lodf.shape[0], 0))
 
             else:
                 mlodf_factors = sp.csc_matrix(([], [], [0]), shape=(lodf.shape[0], 0))

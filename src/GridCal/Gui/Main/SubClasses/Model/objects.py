@@ -32,6 +32,7 @@ from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_m
 from GridCal.Gui.Main.SubClasses.Model.diagrams import DiagramsMain
 from GridCal.Gui.TowerBuilder.LineBuilderDialogue import TowerBuilderGUI
 from GridCal.Gui.GeneralDialogues import LogsDialogue
+from GridCal.Gui.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
 
 
 class ObjectsTableMain(DiagramsMain):
@@ -68,12 +69,13 @@ class ObjectsTableMain(DiagramsMain):
         self.ui.highlight_by_property_pushButton.clicked.connect(self.highlight_based_on_property)
         self.ui.structure_analysis_pushButton.clicked.connect(self.objects_histogram_analysis_plot)
         self.ui.assignToProfileButton.clicked.connect(self.assign_to_profile)
+        self.ui.addToCurrentDiagramButton.clicked.connect(self.add_objects_to_current_diagram)
 
         # menu trigger
         self.ui.actionDelete_inconsistencies.triggered.connect(self.delete_inconsistencies)
         self.ui.actionClean_database.triggered.connect(self.clean_database)
 
-        # list click
+        # tree click
         self.ui.dataStructuresTreeView.clicked.connect(self.view_objects_data)
 
         # line edit enter
@@ -127,30 +129,44 @@ class ObjectsTableMain(DiagramsMain):
 
         elif elm_type == DeviceType.LineDevice:
             elm = dev.Line()
+            dictionary_of_lists = {DeviceType.BranchGroupDevice.value: self.circuit.get_branch_groups()}
 
         elif elm_type == DeviceType.Transformer2WDevice:
             elm = dev.Transformer2W()
+            dictionary_of_lists = {DeviceType.BranchGroupDevice.value: self.circuit.get_branch_groups()}
 
         elif elm_type == DeviceType.WindingDevice:
             elm = dev.Winding()
+            dictionary_of_lists = {DeviceType.BranchGroupDevice.value: self.circuit.get_branch_groups()}
 
         elif elm_type == DeviceType.Transformer3WDevice:
             elm = dev.Transformer3W()
 
         elif elm_type == DeviceType.HVDCLineDevice:
             elm = dev.HvdcLine()
+            dictionary_of_lists = {DeviceType.BranchGroupDevice.value: self.circuit.get_branch_groups()}
 
         elif elm_type == DeviceType.VscDevice:
             elm = dev.VSC()
+            dictionary_of_lists = {DeviceType.BranchGroupDevice.value: self.circuit.get_branch_groups()}
 
         elif elm_type == DeviceType.UpfcDevice:
             elm = dev.UPFC()
+            dictionary_of_lists = {DeviceType.BranchGroupDevice.value: self.circuit.get_branch_groups()}
 
         elif elm_type == DeviceType.DCLineDevice:
             elm = dev.DcLine()
+            dictionary_of_lists = {DeviceType.BranchGroupDevice.value: self.circuit.get_branch_groups()}
 
         elif elm_type == DeviceType.SubstationDevice:
             elm = dev.Substation()
+            dictionary_of_lists = {DeviceType.CountryDevice.value: self.circuit.get_countries(),
+                                   DeviceType.CommunityDevice.value: self.circuit.get_communities(),
+                                   DeviceType.RegionDevice.value: self.circuit.get_regions(),
+                                   DeviceType.MunicipalityDevice.value: self.circuit.get_municipalities(),
+                                   DeviceType.AreaDevice.value: self.circuit.get_areas(),
+                                   DeviceType.ZoneDevice.value: self.circuit.get_zones(),
+                                   }
 
         elif elm_type == DeviceType.ConnectivityNodeDevice:
             elm = dev.ConnectivityNode()
@@ -164,14 +180,27 @@ class ObjectsTableMain(DiagramsMain):
             elm = dev.VoltageLevel()
             dictionary_of_lists = {DeviceType.SubstationDevice.value: self.circuit.get_substations(), }
 
-        elif elm_type == DeviceType.ZoneDevice:
-            elm = dev.Zone()
-
         elif elm_type == DeviceType.AreaDevice:
             elm = dev.Area()
 
+        elif elm_type == DeviceType.ZoneDevice:
+            elm = dev.Zone()
+            dictionary_of_lists = {DeviceType.AreaDevice.value: self.circuit.get_areas(), }
+
         elif elm_type == DeviceType.CountryDevice:
             elm = dev.Country()
+
+        elif elm_type == DeviceType.CommunityDevice:
+            elm = dev.Community()
+            dictionary_of_lists = {DeviceType.CountryDevice.value: self.circuit.get_countries(), }
+
+        elif elm_type == DeviceType.RegionDevice:
+            elm = dev.Region()
+            dictionary_of_lists = {DeviceType.CommunityDevice.value: self.circuit.get_communities(), }
+
+        elif elm_type == DeviceType.MunicipalityDevice:
+            elm = dev.Municipality()
+            dictionary_of_lists = {DeviceType.RegionDevice.value: self.circuit.get_regions(), }
 
         elif elm_type == DeviceType.ContingencyDevice:
             elm = dev.Contingency()
@@ -186,6 +215,9 @@ class ObjectsTableMain(DiagramsMain):
 
         elif elm_type == DeviceType.InvestmentsGroupDevice:
             elm = dev.InvestmentsGroup()
+
+        elif elm_type == DeviceType.BranchGroupDevice:
+            elm = dev.BranchGroup()
 
         elif elm_type == DeviceType.Technology:
             elm = dev.Technology()
@@ -219,7 +251,7 @@ class ObjectsTableMain(DiagramsMain):
         elif elm_type == DeviceType.GeneratorFuelAssociation:
             elm = dev.GeneratorFuel()
             dictionary_of_lists = {DeviceType.GeneratorDevice.value: self.circuit.get_generators(),
-                                   DeviceType.FuelDevice.value: self.circuit.fuels, }
+                                   DeviceType.FuelDevice.value: self.circuit.get_fuels(), }
 
         elif elm_type == DeviceType.GeneratorEmissionAssociation:
             elm = dev.GeneratorEmission()
@@ -228,27 +260,27 @@ class ObjectsTableMain(DiagramsMain):
 
         elif elm_type == DeviceType.FluidNodeDevice:
             elm = dev.FluidNode()
-            # dictionary_of_lists = {DeviceType.FluidNodeDevice.value: self.circuit.fluid_nodes, }
+            # dictionary_of_lists = {DeviceType.FluidNodeDevice.value: self.circuit.get_fluid_nodes(), }
 
         elif elm_type == DeviceType.FluidPathDevice:
             elm = dev.FluidPath()
-            dictionary_of_lists = {DeviceType.FluidNodeDevice.value: self.circuit.fluid_nodes, }
+            dictionary_of_lists = {DeviceType.FluidNodeDevice.value: self.circuit.get_fluid_nodes(), }
 
         elif elm_type == DeviceType.FluidTurbineDevice:
             elm = dev.FluidTurbine()
-            dictionary_of_lists = {DeviceType.FluidNodeDevice.value: self.circuit.fluid_nodes,
+            dictionary_of_lists = {DeviceType.FluidNodeDevice.value: self.circuit.get_fluid_nodes(),
                                    DeviceType.GeneratorDevice.value: self.circuit.get_generators(),
                                    }
 
         elif elm_type == DeviceType.FluidPumpDevice:
             elm = dev.FluidPump()
-            dictionary_of_lists = {DeviceType.FluidNodeDevice.value: self.circuit.fluid_nodes,
+            dictionary_of_lists = {DeviceType.FluidNodeDevice.value: self.circuit.get_fluid_nodes(),
                                    DeviceType.GeneratorDevice.value: self.circuit.get_generators(),
                                    }
 
         elif elm_type == DeviceType.FluidP2XDevice:
             elm = dev.FluidP2x()
-            dictionary_of_lists = {DeviceType.FluidNodeDevice.value: self.circuit.fluid_nodes,
+            dictionary_of_lists = {DeviceType.FluidNodeDevice.value: self.circuit.get_fluid_nodes(),
                                    DeviceType.GeneratorDevice.value: self.circuit.get_generators(),
                                    }
 
@@ -368,117 +400,178 @@ class ObjectsTableMain(DiagramsMain):
         else:
             self.ui.dataStructureTableView.setModel(None)
 
+    def get_selected_objects(self) -> List[ALL_DEV_TYPES]:
+        """
+        Get the list of selected objects
+        :return:
+        """
+        model = self.get_current_objects_model_view()
+
+        if model is not None:
+            sel_idx = self.ui.dataStructureTableView.selectedIndexes()
+            if len(sel_idx) > 0:
+
+                # get the unique rows
+                unique = set()
+                for idx in sel_idx:
+                    unique.add(idx.row())
+
+                return [model.objects[i] for i in unique]
+            else:
+                info_msg('Select some cells')
+                return list()
+        else:
+            return list()
+
     def delete_selected_objects(self):
         """
         Delete selection
         """
 
-        model = self.get_current_objects_model_view()
+        selected_objects = self.get_selected_objects()
 
-        if model is not None:
-            sel_idx = self.ui.dataStructureTableView.selectedIndexes()
-            objects = model.objects
+        if len(selected_objects):
 
-            if len(sel_idx) > 0:
+            ok = yes_no_question('Are you sure that you want to delete the selected elements?', 'Delete')
+            if ok:
+                for obj in selected_objects:
 
-                ok = yes_no_question('Are you sure that you want to delete the selected elements?', 'Delete')
-                if ok:
+                    # delete from the database
+                    self.circuit.delete_elements_by_type(obj=obj)
 
-                    # get the unique rows
-                    unique = set()
-                    for idx in sel_idx:
-                        unique.add(idx.row())
+                    # delete from all diagrams
+                    for diagram in self.diagram_widgets_list:
+                        diagram.delete_diagram_element(device=obj)
 
-                    unique = list(unique)
-                    unique.sort(reverse=True)
-                    for r in unique:
-                        self.circuit.delete_elements_by_type(obj=objects[r])
+                # update the view
+                self.view_objects_data()
+                self.update_area_combos()
+                self.update_date_dependent_combos()
 
-                        # TODO: Call the displays to delete the graphic objects
+    def add_objects_to_current_diagram(self):
+        """
+        Add selected DB objects to current diagram
+        """
 
-                    # update the view
-                    self.display_objects_filter(objects)
-                    self.update_area_combos()
-                    self.update_date_dependent_combos()
-                else:
-                    pass
-            else:
-                info_msg('Select some cells')
-        else:
-            pass
+        selected_objects = self.get_selected_objects()
+
+        if len(selected_objects):
+
+            diagram = self.get_selected_diagram_widget()
+
+            if isinstance(diagram, BusBranchEditorWidget):
+                injections_by_bus = self.circuit.get_injection_devices_grouped_by_bus()
+                injections_by_fluid_node = self.circuit.get_injection_devices_grouped_by_fluid_node()
+                logger = bs.Logger()
+                for device in selected_objects:
+                    diagram.add_object_to_the_schematic(elm=device,
+                                                        injections_by_bus=injections_by_bus,
+                                                        injections_by_fluid_node=injections_by_fluid_node,
+                                                        logger=logger)
+
+                if len(logger):
+                    dlg = LogsDialogue(name="Add selected DB objects to current diagram", logger=logger)
+                    dlg.setModal(True)
+                    dlg.exec()
 
     def add_objects(self):
         """
         Add default objects objects
         """
         model = self.get_current_objects_model_view()
-        elm_type = self.ui.dataStructuresTreeView.selectedIndexes()[0].data(role=QtCore.Qt.ItemDataRole.DisplayRole)
+        elm_type = self.get_db_object_selected_type()
 
-        if model is not None:
+        if model is not None and elm_type is not None:
 
             if elm_type == DeviceType.SubstationDevice.value:
-                self.circuit.add_substation(dev.Substation('Default'))
+                self.circuit.add_substation(dev.Substation(name=f'SE {self.circuit.get_substation_number() + 1}'))
+                self.update_area_combos()
+
+            elif elm_type == DeviceType.VoltageLevelDevice.value:
+                self.circuit.add_voltage_level(dev.VoltageLevel(
+                    name=f'VL {self.circuit.get_voltage_levels_number() + 1}')
+                )
+                self.update_area_combos()
+
+            elif elm_type == DeviceType.BusBarDevice.value:
+                self.circuit.add_bus_bar(dev.BusBar(name=f'BB {self.circuit.get_bus_bars_number() + 1}'))
                 self.update_area_combos()
 
             elif elm_type == DeviceType.ZoneDevice.value:
-                self.circuit.add_zone(dev.Zone('Default'))
+                self.circuit.add_zone(dev.Zone(name=f'Zone {self.circuit.get_zone_number() + 1}'))
                 self.update_area_combos()
 
             elif elm_type == DeviceType.AreaDevice.value:
-                self.circuit.add_area(dev.Area('Default'))
+                self.circuit.add_area(dev.Area(name=f'Area {self.circuit.get_area_number() + 1}'))
                 self.update_area_combos()
 
             elif elm_type == DeviceType.CountryDevice.value:
-                self.circuit.add_country(dev.Country('Default'))
+                self.circuit.add_country(dev.Country(name=f'Country {self.circuit.get_country_number() + 1}'))
+                self.update_area_combos()
+
+            elif elm_type == DeviceType.CommunityDevice.value:
+                self.circuit.add_community(dev.Community(
+                    name=f'Community {self.circuit.get_communities_number() + 1}')
+                )
+                self.update_area_combos()
+
+            elif elm_type == DeviceType.RegionDevice.value:
+                self.circuit.add_region(dev.Region(name=f'Region {self.circuit.get_regions_number() + 1}'))
+                self.update_area_combos()
+
+            elif elm_type == DeviceType.MunicipalityDevice.value:
+                self.circuit.add_municipality(dev.Municipality(
+                    name=f'Municipalities {self.circuit.get_municipalities_number() + 1}')
+                )
                 self.update_area_combos()
 
             elif elm_type == DeviceType.BusDevice.value:
-                self.circuit.add_bus(dev.Bus(name='Bus ' + str(len(self.circuit.buses) + 1),
-                                             area=self.circuit.areas[0],
-                                             zone=self.circuit.zones[0],
-                                             substation=self.circuit.substations[0],
-                                             country=self.circuit.countries[0]))
+                self.circuit.add_bus(dev.Bus(name=f'Bus {self.circuit.get_bus_number() + 1}'))
 
             elif elm_type == DeviceType.ContingencyGroupDevice.value:
-                group = dev.ContingencyGroup(name="Contingency group " + str(len(self.circuit.contingency_groups) + 1))
+                group = dev.ContingencyGroup(name=f"Contingency group {len(self.circuit.contingency_groups) + 1}")
                 self.circuit.add_contingency_group(group)
 
             elif elm_type == DeviceType.InvestmentsGroupDevice.value:
-                group = dev.InvestmentsGroup(name="Investments group " + str(len(self.circuit.contingency_groups) + 1))
+                group = dev.InvestmentsGroup(name=f"Investments group {len(self.circuit.investments_groups) + 1}")
                 self.circuit.add_investments_group(group)
 
+            elif elm_type == DeviceType.BranchGroupDevice.value:
+                group = dev.BranchGroup(name=f"Branch group {self.circuit.get_branch_groups_number() + 1}")
+                self.circuit.add_branch_group(group)
+
             elif elm_type == DeviceType.Technology.value:
-                tech = dev.Technology(name="Technology " + str(len(self.circuit.technologies) + 1))
+                tech = dev.Technology(name=f"Technology {len(self.circuit.technologies) + 1}")
                 self.circuit.add_technology(tech)
 
             elif elm_type == DeviceType.OverheadLineTypeDevice.value:
 
                 obj = dev.OverheadLineType()
                 obj.frequency = self.circuit.fBase
-                obj.tower_name = 'Tower ' + str(len(self.circuit.overhead_line_types))
+                obj.tower_name = f'Tower {len(self.circuit.overhead_line_types) + 1}'
                 self.circuit.add_overhead_line(obj)
 
             elif elm_type == DeviceType.UnderGroundLineDevice.value:
 
-                name = 'Cable ' + str(len(self.circuit.underground_cable_types))
+                name = f'Cable {len(self.circuit.underground_cable_types) + 1}'
                 obj = dev.UndergroundLineType(name=name)
                 self.circuit.add_underground_line(obj)
 
             elif elm_type == DeviceType.SequenceLineDevice.value:
 
-                name = 'Sequence line ' + str(len(self.circuit.sequence_line_types))
+                name = f'Sequence line {len(self.circuit.sequence_line_types) + 1}'
                 obj = dev.SequenceLineType(name=name)
                 self.circuit.add_sequence_line(obj)
 
             elif elm_type == DeviceType.WireDevice.value:
 
-                name = 'Wire ' + str(len(self.circuit.wire_types))
+                name = f'Wire {len(self.circuit.wire_types) + 1}'
                 obj = dev.Wire(name=name, gmr=0.01, r=0.01, x=0)
                 self.circuit.add_wire(obj)
 
             elif elm_type == DeviceType.TransformerTypeDevice.value:
 
-                name = 'Transformer type ' + str(len(self.circuit.transformer_types))
+                name = f'Transformer type {len(self.circuit.transformer_types) + 1}'
                 obj = dev.TransformerType(hv_nominal_voltage=10, lv_nominal_voltage=0.4, nominal_power=2,
                                           copper_losses=0.8, iron_losses=0.1, no_load_current=0.1,
                                           short_circuit_voltage=0.1,
@@ -487,13 +580,13 @@ class ObjectsTableMain(DiagramsMain):
 
             elif elm_type == DeviceType.FuelDevice.value:
 
-                name = 'Fuel ' + str(len(self.circuit.fuels))
+                name = f'Fuel {len(self.circuit.fuels) + 1}'
                 obj = dev.Fuel(name=name)
                 self.circuit.add_fuel(obj)
 
             elif elm_type == DeviceType.EmissionGasDevice.value:
 
-                name = 'Gas ' + str(len(self.circuit.emission_gases))
+                name = f'Gas {len(self.circuit.emission_gases) + 1}'
                 obj = dev.EmissionGas(name=name)
                 self.circuit.add_emission_gas(obj)
 
@@ -848,7 +941,7 @@ class ObjectsTableMain(DiagramsMain):
             if len(logger) > 0:
                 dlg = LogsDialogue("Delete inconsistencies", logger)
                 dlg.setModal(True)
-                dlg.exec_()
+                dlg.exec()
 
     def delete_shit(self, min_island=1):
         """
@@ -909,4 +1002,4 @@ class ObjectsTableMain(DiagramsMain):
 
             if len(logger) > 0:
                 dlg = LogsDialogue('DB clean logger', logger)
-                dlg.exec_()
+                dlg.exec()

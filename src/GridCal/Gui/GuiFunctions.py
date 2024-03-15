@@ -14,10 +14,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
+from __future__ import annotations
 import numpy as np
 import pandas as pd
-from typing import Dict, List, Union, Any, Tuple
+from typing import Dict, List, Union, Any, Tuple, TYPE_CHECKING
 from PySide6 import QtCore, QtWidgets, QtGui
 from warnings import warn
 from enum import EnumMeta
@@ -30,7 +30,11 @@ from GridCalEngine.basic_structures import IntVec
 from GridCalEngine.data_logger import DataLogger
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit, IdentifiedObject
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
-import GridCal
+
+if TYPE_CHECKING:  # Only imports the below statements during type checking
+    from GridCal.Gui.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
+    from GridCal.Gui.MapWidget.grid_map_widget import GridMapWidget
+    from GridCal.Gui.BusViewer.bus_viewer_dialogue import BusViewerWidget
 
 
 class TreeDelegate(QtWidgets.QItemDelegate):
@@ -43,7 +47,7 @@ class TreeDelegate(QtWidgets.QItemDelegate):
     
     """
 
-    def __init__(self, parent, data=defaultdict()):
+    def __init__(self, parent, data=None):
         """
         Constructor
         :param parent: QTableView parent object
@@ -52,7 +56,7 @@ class TreeDelegate(QtWidgets.QItemDelegate):
         QtWidgets.QItemDelegate.__init__(self, parent)
 
         # dictionary of lists
-        self.data = data
+        self.data = data if data is not None else defaultdict()
 
     @QtCore.Slot()
     def double_click(self):
@@ -119,11 +123,11 @@ class ComboDelegate(QtWidgets.QItemDelegate):
     """
     commitData = QtCore.Signal(object)
 
-    def __init__(self, parent: QtWidgets.QTableView, objects: List[bool], object_names: List[str]) -> None:
+    def __init__(self, parent: QtWidgets.QTableView, objects: List[Any], object_names: List[str]) -> None:
         """
         Constructor
         :param parent: QTableView parent object
-        :param objects: List of objects to set. i.e. [True, False]
+        :param objects: List of objects to set. i.e. [True, False] or [Line1, Line2, ...]
         :param object_names: List of Object names to display. i.e. ['True', 'False']
         """
         QtWidgets.QItemDelegate.__init__(self, parent)
@@ -141,7 +145,7 @@ class ComboDelegate(QtWidgets.QItemDelegate):
         """
         self.commitData.emit(self.sender())
 
-    def createEditor(self, parent, option, index):
+    def createEditor(self, parent, option, index: QtCore.QModelIndex):
         """
 
         :param parent:
@@ -154,7 +158,7 @@ class ComboDelegate(QtWidgets.QItemDelegate):
         combo.currentIndexChanged.connect(self.currentIndexChanged)
         return combo
 
-    def setEditorData(self, editor, index):
+    def setEditorData(self, editor: QtWidgets.QComboBox, index: QtCore.QModelIndex):
         """
 
         :param editor:
@@ -170,7 +174,7 @@ class ComboDelegate(QtWidgets.QItemDelegate):
             pass
 
     def setModelData(self,
-                     editor: QtWidgets.QWidget,
+                     editor: QtWidgets.QComboBox,
                      model: QtCore.QAbstractItemModel,
                      index: QtCore.QModelIndex):
         """
@@ -218,7 +222,7 @@ class TextDelegate(QtWidgets.QItemDelegate):
         editor.returnPressed.connect(self.returnPressed)
         return editor
 
-    def setEditorData(self, editor, index):
+    def setEditorData(self, editor: QtWidgets.QLineEdit, index):
         """
 
         :param editor:
@@ -229,7 +233,7 @@ class TextDelegate(QtWidgets.QItemDelegate):
         editor.setText(val)
         editor.blockSignals(False)
 
-    def setModelData(self, editor, model, index):
+    def setModelData(self, editor: QtWidgets.QLineEdit, model, index):
         """
 
         :param editor:
@@ -278,7 +282,7 @@ class FloatDelegate(QtWidgets.QItemDelegate):
         editor.editingFinished.connect(self.returnPressed)
         return editor
 
-    def setEditorData(self, editor, index):
+    def setEditorData(self, editor: QtWidgets.QDoubleSpinBox, index):
         """
 
         :param editor:
@@ -289,7 +293,7 @@ class FloatDelegate(QtWidgets.QItemDelegate):
         editor.setValue(val)
         editor.blockSignals(False)
 
-    def setModelData(self, editor, model, index):
+    def setModelData(self, editor: QtWidgets.QDoubleSpinBox, model, index):
         """
 
         :param editor:
@@ -399,6 +403,13 @@ class ColorPickerDelegate(QtWidgets.QItemDelegate):
         self.commitData.emit(self.sender())
 
     def createEditor(self, parent, option, index):
+        """
+
+        :param parent:
+        :param option:
+        :param index:
+        :return:
+        """
         colorDialog = QtWidgets.QColorDialog(parent)
         return colorDialog
 
@@ -668,8 +679,8 @@ class ObjectsModelOld(QtCore.QAbstractTableModel):
                  parent=None,
                  editable=False,
                  transposed=False,
-                 check_unique=list(),
-                 dictionary_of_lists: Dict[str, List[EditableDevice]] = {}):
+                 check_unique: Union[None, List[str]] = None,
+                 dictionary_of_lists: Union[None, Dict[str, List[ALL_DEV_TYPES]]] = None):
         """
 
         :param objects: list of objects associated to the editor
@@ -697,7 +708,7 @@ class ObjectsModelOld(QtCore.QAbstractTableModel):
 
         self.non_editable_attributes = [attr for attr in self.attributes if not editable_headers[attr].editable]
 
-        self.check_unique = check_unique
+        self.check_unique = check_unique if check_unique is not None else list()
 
         self.r = len(self.objects)
 
@@ -707,7 +718,7 @@ class ObjectsModelOld(QtCore.QAbstractTableModel):
 
         self.transposed = transposed
 
-        self.dictionary_of_lists = dictionary_of_lists
+        self.dictionary_of_lists = dictionary_of_lists if dictionary_of_lists is not None else dict()
 
         self.set_delegates()
 
@@ -767,7 +778,7 @@ class ObjectsModelOld(QtCore.QAbstractTableModel):
                          DeviceType.EmissionGasDevice,
                          DeviceType.GeneratorDevice]:
 
-                objects = self.dictionary_of_lists[tpe.value]
+                objects = self.dictionary_of_lists[str(tpe.value)]
                 values = [x.name for x in objects]
                 delegate = ComboDelegate(self.parent, objects, values)
                 F(i, delegate)
@@ -822,10 +833,11 @@ class ObjectsModelOld(QtCore.QAbstractTableModel):
         else:
             return self.c
 
-    def data_raw(self, r, c):
+    def data_raw(self, r: int, c: int):
         """
         Get the data to display
-        :param index:
+        :param r: row index
+        :param c: col index
         :return:
         """
 
@@ -844,7 +856,7 @@ class ObjectsModelOld(QtCore.QAbstractTableModel):
         else:
             return getattr(self.objects[obj_idx], attr)
 
-    def data_with_type(self, index):
+    def data_with_type(self, index: QtCore.QModelIndex):
         """
         Get the data to display
         :param index:
@@ -1057,8 +1069,8 @@ class ObjectsModel(QtCore.QAbstractTableModel):
                  parent=None,
                  editable=False,
                  transposed=False,
-                 check_unique=list(),
-                 dictionary_of_lists: Dict[str, List[ALL_DEV_TYPES]] = {}):
+                 check_unique: Union[None, List[str]] = None,
+                 dictionary_of_lists: Union[None, Dict[str, List[ALL_DEV_TYPES]]] = None):
         """
 
         :param objects: list of objects associated to the editor
@@ -1090,7 +1102,7 @@ class ObjectsModel(QtCore.QAbstractTableModel):
 
         self.non_editable_attributes = [p.name for p in self.property_list if not p.editable]
 
-        self.check_unique = check_unique
+        self.check_unique = check_unique if check_unique is not None else list()
 
         self.r = len(self.objects)
 
@@ -1100,7 +1112,7 @@ class ObjectsModel(QtCore.QAbstractTableModel):
 
         self.transposed = transposed
 
-        self.dictionary_of_lists = dictionary_of_lists
+        self.dictionary_of_lists = dictionary_of_lists if dictionary_of_lists is not None else dict()
 
         self.set_delegates()
 
@@ -1159,20 +1171,12 @@ class ObjectsModel(QtCore.QAbstractTableModel):
                 delegate = ComboDelegate(self.parent, objects, values)
                 F(i, delegate)
 
-            elif tpe in [DeviceType.SubstationDevice,
-                         DeviceType.AreaDevice,
-                         DeviceType.ZoneDevice,
-                         DeviceType.CountryDevice,
-                         DeviceType.Technology,
-                         DeviceType.ContingencyGroupDevice,
-                         DeviceType.InvestmentsGroupDevice,
-                         DeviceType.FuelDevice,
-                         DeviceType.EmissionGasDevice,
-                         DeviceType.GeneratorDevice]:
-
-                objects = self.dictionary_of_lists[tpe.value]
-                values = [x.name for x in objects]
-                delegate = ComboDelegate(self.parent, objects, values)
+            elif tpe.value in self.dictionary_of_lists.keys():
+                # foreign key objects drop-down
+                objs = self.dictionary_of_lists[str(tpe.value)]
+                delegate = ComboDelegate(parent=self.parent,
+                                         objects=[None] + objs,
+                                         object_names=['None'] + [x.name for x in objs])
                 F(i, delegate)
 
             else:
@@ -1462,7 +1466,7 @@ class ObjectHistory:
     ObjectHistory
     """
 
-    def __init__(self, max_undo_states=100):
+    def __init__(self, max_undo_states: int = 100) -> None:
         """
         Constructor
         :param max_undo_states: maximum number of undo states
@@ -1528,9 +1532,15 @@ class RosetaObjectsModel(QtCore.QAbstractTableModel):
     Class to populate a Qt table view with the properties of objects
     """
 
-    def __init__(self, objects, editable_headers, parent=None, editable=False,
-                 non_editable_attributes=list(), transposed=False, check_unique=list(),
-                 dictionary_of_lists={}):
+    def __init__(self,
+                 objects,
+                 editable_headers,
+                 parent=None,
+                 editable=False,
+                 non_editable_attributes: Union[None, List[str]] = None,
+                 transposed=False,
+                 check_unique: Union[None, List[str]] = None,
+                 dictionary_of_lists: Union[None, Dict[str, List[ALL_DEV_TYPES]]] = None):
         """
 
         :param objects: list of objects associated to the editor
@@ -1557,9 +1567,9 @@ class RosetaObjectsModel(QtCore.QAbstractTableModel):
 
         self.editable = editable
 
-        self.non_editable_attributes = non_editable_attributes
+        self.non_editable_attributes = non_editable_attributes if non_editable_attributes is not None else list()
 
-        self.check_unique = check_unique
+        self.check_unique = check_unique if check_unique is not None else list()
 
         self.r = len(self.objects)
 
@@ -1569,7 +1579,7 @@ class RosetaObjectsModel(QtCore.QAbstractTableModel):
 
         self.transposed = transposed
 
-        self.dictionary_of_lists = dictionary_of_lists
+        self.dictionary_of_lists = dictionary_of_lists if dictionary_of_lists is not None else dict()
 
         self.set_delegates()
 
@@ -1667,10 +1677,11 @@ class RosetaObjectsModel(QtCore.QAbstractTableModel):
         else:
             return self.c
 
-    def data_raw(self, r, c):
+    def data_raw(self, r: int, c: int):
         """
         Get the data to display
-        :param index:
+        :param r: row index
+        :param c: col index
         :return:
         """
 
@@ -1682,7 +1693,6 @@ class RosetaObjectsModel(QtCore.QAbstractTableModel):
             attr_idx = c
 
         attr = self.attributes[attr_idx]
-        tpe = self.attribute_types[attr_idx]
 
         return getattr(self.objects[obj_idx], attr)
 
@@ -1701,7 +1711,6 @@ class RosetaObjectsModel(QtCore.QAbstractTableModel):
             attr_idx = index.column()
 
         attr = self.attributes[attr_idx]
-        tpe = self.attribute_types[attr_idx]
 
         return getattr(self.objects[obj_idx], attr)
 
@@ -1717,7 +1726,7 @@ class RosetaObjectsModel(QtCore.QAbstractTableModel):
 
         return None
 
-    def setData(self, index, value, role=None):
+    def setData(self, index: QtCore.QModelIndex, value, role=None):
         """
         Set data by simple editor (whatever text)
         :param index:
@@ -1732,9 +1741,7 @@ class RosetaObjectsModel(QtCore.QAbstractTableModel):
         else:
             obj_idx = index.row()
             attr_idx = index.column()
-
-        tpe = self.attribute_types[attr_idx]
-
+            
         # check taken values
         if self.attributes[attr_idx] in self.check_unique:
             taken = self.attr_taken(self.attributes[attr_idx], value)
@@ -2114,8 +2121,8 @@ class ProfilesModel(QtCore.QAbstractTableModel):
             profile_property = self.elements[0].properties_with_profile[self.magnitude]
 
             # gather values
-            names = [None] * n
-            values = [None] * n
+            names = np.empty(n, dtype=object)
+            values = np.empty(n, dtype=object)
             for c in range(n):
                 names[c] = self.elements[c].name
                 # values[c] = getattr(self.elements[c], profile_property)
@@ -2200,7 +2207,7 @@ class DiagramsModel(QtCore.QAbstractListModel):
     # from GridCal.Gui.MapWidget.grid_map_widget import GridMapWidget
     """
 
-    def __init__(self, list_of_diagrams: List[Union["BusBranchEditorWidget", "GridMapWidget", "BusViewerGUI"]]):
+    def __init__(self, list_of_diagrams: List[Union[BusBranchEditorWidget, GridMapWidget, BusViewerWidget]]):
         """
         Enumeration model
         :param list_of_diagrams: list of enumeration values to show
@@ -2217,15 +2224,17 @@ class DiagramsModel(QtCore.QAbstractListModel):
         self.map_editor_icon = QtGui.QIcon()
         self.map_editor_icon.addPixmap(QtGui.QPixmap(":/Icons/icons/map.svg"))
 
-    def flags(self, index):
+    def flags(self, index: QtCore.QModelIndex):
         """
         Get the display mode
         :param index:
         :return:
         """
-        return QtCore.Qt.ItemFlag.ItemIsEditable | QtCore.Qt.ItemFlag.ItemIsEnabled | QtCore.Qt.ItemFlag.ItemIsSelectable
+        return (QtCore.Qt.ItemFlag.ItemIsEditable |
+                QtCore.Qt.ItemFlag.ItemIsEnabled |
+                QtCore.Qt.ItemFlag.ItemIsSelectable)
 
-    def rowCount(self, parent=QtCore.QModelIndex()):
+    def rowCount(self, parent=QtCore.QModelIndex()) -> int:
         """
 
         :param parent:
@@ -2248,11 +2257,16 @@ class DiagramsModel(QtCore.QAbstractListModel):
                 return diagram.name
             elif role == QtCore.Qt.ItemDataRole.DecorationRole:
 
-                if isinstance(diagram, GridCal.Gui.BusBranchEditorWidget.BusBranchEditorWidget):
+                # TODO: Is this the only way?
+                from GridCal.Gui.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
+                from GridCal.Gui.MapWidget.grid_map_widget import GridMapWidget
+                from GridCal.Gui.BusViewer.bus_viewer_dialogue import BusViewerWidget
+
+                if isinstance(diagram, BusBranchEditorWidget):
                     return self.bus_branch_editor_icon
-                elif isinstance(diagram, GridCal.Gui.MapWidget.grid_map_widget.GridMapWidget):
+                elif isinstance(diagram, GridMapWidget):
                     return self.map_editor_icon
-                elif isinstance(diagram, GridCal.Gui.BusViewer.bus_viewer_dialogue.BusViewerWidget):
+                elif isinstance(diagram, BusViewerWidget):
                     return self.bus_branch_vecinity_icon
 
         return None
@@ -2297,8 +2311,14 @@ def get_list_model(lst: List[Union[str, DeviceType]], checks=False, check_value=
 
 
 class CustomFileSystemModel(QtWidgets.QFileSystemModel):
-    def __init__(self, root_path: str, ext_filter: List[str] = ['*.py']):
+    """
+    CustomFileSystemModel
+    """
+
+    def __init__(self, root_path: str, ext_filter: Union[None, List[str]] = None):
         super(CustomFileSystemModel, self).__init__()
+
+        self.ext_filter = ext_filter if ext_filter is not None else ['*.py']
 
         self.setNameFilters(ext_filter)
         self.setRootPath(root_path)
@@ -2512,7 +2532,10 @@ def fast_data_to_numpy_text(data: np.ndarray):
     return txt
 
 
-def add_cim_object_node(class_tag, device: IdentifiedObject, editable=False, already_visited=list()):
+def add_cim_object_node(class_tag,
+                        device: IdentifiedObject,
+                        editable=False,
+                        already_visited: Union[List, None] = None):
     """
 
     :param class_tag:
@@ -2521,6 +2544,9 @@ def add_cim_object_node(class_tag, device: IdentifiedObject, editable=False, alr
     :param already_visited:
     :return:
     """
+    if already_visited is None:
+        already_visited = list()
+
     if class_tag is None:
         if hasattr(device, 'name'):
             if device.name is not None:
@@ -2555,8 +2581,8 @@ def add_cim_object_node(class_tag, device: IdentifiedObject, editable=False, alr
 
                 # if the property is an object, recursively add it
                 tpe = str(property_value.tpe)
-                class_name_child = add_cim_object_node(tpe,
-                                                       property_value,
+                class_name_child = add_cim_object_node(class_tag=tpe,
+                                                       device=property_value,
                                                        editable=editable,
                                                        already_visited=already_visited)
                 class_name_child.setEditable(editable)
@@ -2580,10 +2606,10 @@ def add_cim_object_node(class_tag, device: IdentifiedObject, editable=False, alr
         else:
             # if the property is a value (float, str, bool, etc.) just add it
 
-            tpe = str(type(property_value)).replace('class', '') \
-                .replace("'", "") \
-                .replace("<", "") \
-                .replace(">", "").strip()
+            tpe = (str(type(property_value)).replace('class', '')
+                   .replace("'", "")
+                   .replace("<", "")
+                   .replace(">", "").strip())
 
             class_name_child = QtGui.QStandardItem(tpe)
             class_name_child.setEditable(editable)

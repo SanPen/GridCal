@@ -17,34 +17,31 @@
 
 from typing import Union
 from GridCalEngine.Devices.Parents.editable_device import DeviceType
-from GridCalEngine.Devices.Aggregation.area import GenericAreaGroup, Area
+from GridCalEngine.Devices.Aggregation.area import GenericAreaGroup
+from GridCalEngine.Devices.Aggregation.region import Region
 
 
-class Zone(GenericAreaGroup):
+class Municipality(GenericAreaGroup):
 
-    def __init__(self, name='Zone',
-                 idtag: Union[str, None] = None,
-                 code='',
-                 latitude=0.0,
-                 longitude=0.0,
-                 area: Union[Area, None] = None):
+    def __init__(self, name='Municipality', idtag: Union[str, None] = None, code='', latitude=0.0, longitude=0.0,
+                 region: Union[Region, None] = None):
         """
-        Zone
-        :param name: name of the zone
+        Country
+        :param name: name of the area
         :param idtag: UUID code
         :param latitude: latitude (deg)
         :param longitude: longutide (deg)
-        :param area: (optional)
+        :param region: (optional)
         """
         GenericAreaGroup.__init__(self,
                                   name=name,
                                   idtag=idtag,
                                   code=code,
-                                  device_type=DeviceType.ZoneDevice,
+                                  device_type=DeviceType.MunicipalityDevice,
                                   latitude=latitude,
                                   longitude=longitude)
 
-        self.area: Union[Area, None] = area
+        self.region: Union[Region, None] = region
 
-        self.register(key="area", units="", tpe=DeviceType.AreaDevice,
-                      definition="Substation area, altenativelly this can be obtained from the zone")
+        self.register(key="region", units="", tpe=DeviceType.RegionDevice,
+                      definition="Substation region, altenativelly this can be obtained from the municipality")

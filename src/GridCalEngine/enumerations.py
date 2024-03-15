@@ -884,7 +884,7 @@ class DeviceType(Enum):
     UpfcDevice = 'UPFC'  # unified power flow controller
     ExternalGridDevice = 'External grid'
     LoadLikeDevice = 'Load like'
-
+    BranchGroupDevice = 'Branch group'
     LambdaDevice = "Loading from the base situation ($\lambda$)"
 
     PiMeasurementDevice = 'Pi Measurement'
@@ -907,6 +907,9 @@ class DeviceType(Enum):
     AreaDevice = 'Area'
     ZoneDevice = 'Zone'
     CountryDevice = 'Country'
+    CommunityDevice = 'Comunity'
+    RegionDevice = 'Region'
+    MunicipalityDevice = 'Municipality'
     BusBarDevice = 'BusBar'
     VoltageLevelDevice = 'VoltageLevel'
 
