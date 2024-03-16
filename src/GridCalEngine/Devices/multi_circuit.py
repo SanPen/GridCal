@@ -4933,6 +4933,61 @@ class MultiCircuit:
 
         return groups
 
+    def get_injection_devices_grouped_by_group_type(
+            self,
+            group_type: DeviceType) -> List[Dict[DeviceType, List[INJECTION_DEVICE_TYPES]]]:
+        """
+        Get the injection devices grouped by bus and by device type
+        :return: Dict[bus, Dict[DeviceType, List[Injection devs]]
+        """
+        result: List[Dict[DeviceType, List[INJECTION_DEVICE_TYPES]]] = list()
+
+        group_devices = self.get_elements_by_type(device_type=group_type)
+
+        for group_device in group_devices:
+
+            devices_by_type = dict()
+
+            for lst in self.get_injection_devices_lists():
+
+                for elm in lst:
+
+                    if group_type == DeviceType.AreaDevice:
+                        matches = elm.bus.area == group_device
+
+                    elif group_type == DeviceType.ZoneDevice:
+                        matches = elm.bus.zone == group_device
+
+                    elif group_type == DeviceType.SubstationDevice:
+                        matches = elm.bus.substation == group_device
+
+                    elif group_type == DeviceType.CountryDevice:
+                        matches = ((elm.bus.country == group_device) or
+                                   (elm.bus.substation.country == group_device))
+
+                    elif group_type == DeviceType.CommunityDevice:
+                        matches = (elm.bus.substation.community == group_device)
+
+                    elif group_type == DeviceType.RegionDevice:
+                        matches = elm.bus.substation.region == group_device
+
+                    elif group_type == DeviceType.MunicipalityDevice:
+                        matches = elm.bus.substation.municipality == group_device
+
+                    else:
+                        matches = False
+
+                    if matches:
+                        lst = devices_by_type.get(elm.device_type, None)
+                        if lst is None:
+                            devices_by_type[elm.device_type] = [elm]
+                        else:
+                            devices_by_type[elm.device_type].append(elm)
+
+            result.append(devices_by_type)
+
+        return result
+
     def get_batteries_by_bus(self) -> Dict[dev.Bus, List[dev.Battery]]:
         """
         Get the injection devices grouped by bus and by device type
@@ -5713,7 +5768,6 @@ class MultiCircuit:
         self.clean_investments(all_dev=all_dev, logger=logger)
 
         return logger
-
 
     # def split_line(self, line: dev.Line, position: float) -> Tuple["Line", "Line", Bus]:
     #     """

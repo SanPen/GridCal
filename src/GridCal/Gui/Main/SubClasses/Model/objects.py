@@ -33,6 +33,7 @@ from GridCal.Gui.Main.SubClasses.Model.diagrams import DiagramsMain
 from GridCal.Gui.TowerBuilder.LineBuilderDialogue import TowerBuilderGUI
 from GridCal.Gui.GeneralDialogues import LogsDialogue
 from GridCal.Gui.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
+from GridCal.Gui.SystemScaler.system_scaler import SystemScaler
 
 
 class ObjectsTableMain(DiagramsMain):
@@ -74,6 +75,7 @@ class ObjectsTableMain(DiagramsMain):
         # menu trigger
         self.ui.actionDelete_inconsistencies.triggered.connect(self.delete_inconsistencies)
         self.ui.actionClean_database.triggered.connect(self.clean_database)
+        self.ui.actionScale.triggered.connect(self.scale)
 
         # tree click
         self.ui.dataStructuresTreeView.clicked.connect(self.view_objects_data)
@@ -1003,3 +1005,11 @@ class ObjectsTableMain(DiagramsMain):
             if len(logger) > 0:
                 dlg = LogsDialogue('DB clean logger', logger)
                 dlg.exec()
+
+    def scale(self):
+        """
+        Show the system scaler window
+        The scaler window may modify the circuit
+        """
+        system_scaler_window = SystemScaler(grid=self.circuit, parent=self)
+        system_scaler_window.exec()

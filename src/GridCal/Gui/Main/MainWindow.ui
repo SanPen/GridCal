@@ -8802,6 +8802,7 @@ QProgressBar::chunk{
     <addaction name="actionProcess_topology"/>
     <addaction name="actionFuse_devices"/>
     <addaction name="actionre_index_time"/>
+    <addaction name="actionScale"/>
     <addaction name="separator"/>
     <addaction name="actionLaunch_data_analysis_tool"/>
     <addaction name="actionFix_generators_active_based_on_the_power"/>
@@ -9928,6 +9929,18 @@ QProgressBar::chunk{
    </property>
    <property name="text">
     <string>Select buses by country</string>
+   </property>
+  </action>
+  <action name="actionScale">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/scale.svg</normaloff>:/Icons/icons/scale.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Scale</string>
+   </property>
+   <property name="toolTip">
+    <string>Scale the system load and or generation</string>
    </property>
   </action>
  </widget>

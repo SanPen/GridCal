@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="Icons">
+    <file>icons/scale.svg</file>
     <file>icons/time_series set.svg</file>
     <file>icons/time_series span.svg</file>
     <file>icons/time_series.svg</file>
