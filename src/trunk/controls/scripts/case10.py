@@ -1,5 +1,6 @@
 # Made up case with 10 nodes, 2 VSCs, 1 controlled transformer
 import numpy as np
+import pandas as pd
 
 # Data 1
 d1 = 0.0
@@ -43,7 +44,7 @@ c = 0.04
 
 
 # Equations
-# x = [d2, d3, d7, d8, d9, V2, V3, V5, V6, V8, V9, tau1, Pf3, Pt4, Pf7, Pf8, Qf7, Qf8, Qt8]
+# x = [d2, d3, d7, d8, d9, V2, V3, V5, V6, V8, V9, tau1, Pf3, Pt4, Pf7, Qf7, Qf8]
 x = []
 
 
@@ -63,99 +64,122 @@ def unpack_x(x):
     Pf3 = x[12]
     Pt4 = x[13]
     Pf7 = x[14]
-    Pf8 = x[15]
-    Qf7 = x[16]
-    Qf8 = x[17]
-    Qt8 = x[18]
-    return d2, d3, d7, d8, d9, V2, V3, V5, V6, V8, V9, tau1, Pf3, Pt4, Pf7, Pf8, Qf7, Qf8, Qt8
+    Qf7 = x[15]
+    Qf8 = x[16]
+    return d2, d3, d7, d8, d9, V2, V3, V5, V6, V8, V9, tau1, Pf3, Pt4, Pf7, Qf7, Qf8
 
-def pack_x(d2, d3, d7, d8, d9, V2, V3, V5, V6, V8, V9, tau1, Pf3, Pt4, Pf7, Pf8, Qf7, Qf8, Qt8):
-    x = [d2, d3, d7, d8, d9, V2, V3, V5, V6, V8, V9, tau1, Pf3, Pt4, Pf7, Pf8, Qf7, Qf8, Qt8]
+def pack_x(d2, d3, d7, d8, d9, V2, V3, V5, V6, V8, V9, tau1, Pf3, Pt4, Pf7, Qf7, Qf8):
+    x = [d2, d3, d7, d8, d9, V2, V3, V5, V6, V8, V9, tau1, Pf3, Pt4, Pf7, Qf7, Qf8]
     return x
+    
+def complex_V(V2, V3, V7, V8, V9, d2, d3, d7, d8, d9):
+    V2c = V2 * np.exp(1j * d2)
+    V3c = V3 * np.exp(1j * d3)
+    V7c = V7 * np.exp(1j * d7)
+    V8c = V8 * np.exp(1j * d8)
+    V9c = V9 * np.exp(1j * d9)
+    return V2c, V3c, V7c, V8c, V9c
 
 def P2(x):
-    d2, d3, d7, d8, d9, V2, V3, V5, V6, V8, V9, tau1, Pf3, Pt4, Pf7, Pf8, Qf7, Qf8, Qt8 = unpack_x(x)
-    S2calc = V2 * (np.conj(V2) - np.conj(V1)) * np.conj(Y12) + V2 * (np.conj(V2) - np.conj(V3)) * np.conj(Y23)
+    d2, d3, d7, d8, d9, V2, V3, V5, V6, V8, V9, tau1, Pf3, Pt4, Pf7, Qf7, Qf8 = unpack_x(x)
+    V2c, V3c, V7c, V8c, V9c = complex_V(V2, V3, V7, V8, V9, d2, d3, d7, d8, d9)
+    S2calc = V2c * (np.conj(V2c) - np.conj(V1)) * np.conj(Y12) + V2c * (np.conj(V2c) - np.conj(V3c)) * np.conj(Y23)
     return np.real(S2calc) - np.real(S2sp)
 
 def Q2(x):
-    d2, d3, d7, d8, d9, V2, V3, V5, V6, V8, V9, tau1, Pf3, Pt4, Pf7, Pf8, Qf7, Qf8, Qt8 = unpack_x(x)
-    S2calc = V2 * (np.conj(V2) - np.conj(V1)) * np.conj(Y12) + V2 * (np.conj(V2) - np.conj(V3)) * np.conj(Y23)
+    d2, d3, d7, d8, d9, V2, V3, V5, V6, V8, V9, tau1, Pf3, Pt4, Pf7, Qf7, Qf8 = unpack_x(x)
+    V2c, V3c, V7c, V8c, V9c = complex_V(V2, V3, V7, V8, V9, d2, d3, d7, d8, d9)
+    S2calc = V2c * (np.conj(V2c) - np.conj(V1)) * np.conj(Y12) + V2c * (np.conj(V2c) - np.conj(V3c)) * np.conj(Y23)
     return np.imag(S2calc) - np.imag(S2sp)
 
 def P3(x):
-    d2, d3, d7, d8, d9, V2, V3, V5, V6, V8, V9, tau1, Pf3, Pt4, Pf7, Pf8, Qf7, Qf8, Qt8 = unpack_x(x)
-    S3calc = V3 * (np.conj(V3) - np.conj(V1)) * np.conj(Y13) + V3 * (np.conj(V3) - np.conj(V2)) * np.conj(Y23) + Pf3 + 1j * Qf3
+    d2, d3, d7, d8, d9, V2, V3, V5, V6, V8, V9, tau1, Pf3, Pt4, Pf7, Qf7, Qf8 = unpack_x(x)
+    V2c, V3c, V7c, V8c, V9c = complex_V(V2, V3, V7, V8, V9, d2, d3, d7, d8, d9)
+    S3calc = V3c * (np.conj(V3c) - np.conj(V1)) * np.conj(Y13) + V3c * (np.conj(V3c) - np.conj(V2c)) * np.conj(Y23) + Pf3 + 1j * Qf3
     return np.real(S3calc) - np.real(S3sp)
 
 def Q3(x):
-    d2, d3, d7, d8, d9, V2, V3, V5, V6, V8, V9, tau1, Pf3, Pt4, Pf7, Pf8, Qf7, Qf8, Qt8 = unpack_x(x)
-    S3calc = V3 * (np.conj(V3) - np.conj(V1)) * np.conj(Y13) + V3 * (np.conj(V3) - np.conj(V2)) * np.conj(Y23) + Pf3 + 1j * Qf3
+    d2, d3, d7, d8, d9, V2, V3, V5, V6, V8, V9, tau1, Pf3, Pt4, Pf7, Qf7, Qf8 = unpack_x(x)
+    V2c, V3c, V7c, V8c, V9c = complex_V(V2, V3, V7, V8, V9, d2, d3, d7, d8, d9)
+    S3calc = V3c * (np.conj(V3c) - np.conj(V1)) * np.conj(Y13) + V3c * (np.conj(V3c) - np.conj(V2c)) * np.conj(Y23) + Pf3 + 1j * Qf3
     return np.imag(S3calc) - np.imag(S3sp)
 
 def P4(x):
-    d2, d3, d7, d8, d9, V2, V3, V5, V6, V8, V9, tau1, Pf3, Pt4, Pf7, Pf8, Qf7, Qf8, Qt8 = unpack_x(x)
-    P4calc = V4 * (V4 - V5) * G45 + V4 * (V4 - V6) * G46
+    d2, d3, d7, d8, d9, V2, V3, V5, V6, V8, V9, tau1, Pf3, Pt4, Pf7, Qf7, Qf8 = unpack_x(x)
+    V2c, V3c, V7c, V8c, V9c = complex_V(V2, V3, V7, V8, V9, d2, d3, d7, d8, d9)
+    P4calc = V4 * (V4 - V5) * G45 + V4 * (V4 - V6) * G46 + Pt4
     return P4calc - P4sp
 
 def P5(x):
-    d2, d3, d7, d8, d9, V2, V3, V5, V6, V8, V9, tau1, Pf3, Pt4, Pf7, Pf8, Qf7, Qf8, Qt8 = unpack_x(x)
+    d2, d3, d7, d8, d9, V2, V3, V5, V6, V8, V9, tau1, Pf3, Pt4, Pf7, Qf7, Qf8 = unpack_x(x)
+    V2c, V3c, V7c, V8c, V9c = complex_V(V2, V3, V7, V8, V9, d2, d3, d7, d8, d9)
     P5calc = V5 * (V5 - V4) * G45 + V5 * (V5 - V6) * G56
     return P5calc - P5sp
 
 def P6(x):
-    d2, d3, d7, d8, d9, V2, V3, V5, V6, V8, V9, tau1, Pf3, Pt4, Pf7, Pf8, Qf7, Qf8, Qt8 = unpack_x(x)
+    d2, d3, d7, d8, d9, V2, V3, V5, V6, V8, V9, tau1, Pf3, Pt4, Pf7, Qf7, Qf8 = unpack_x(x)
+    V2c, V3c, V7c, V8c, V9c = complex_V(V2, V3, V7, V8, V9, d2, d3, d7, d8, d9)
     P6calc = V6 * (V6 - V4) * G46 + V6 * (V6 - V5) * G56
     return P6calc - P6sp
 
 def P7(x):
-    d2, d3, d7, d8, d9, V2, V3, V5, V6, V8, V9, tau1, Pf3, Pt4, Pf7, Pf8, Qf7, Qf8, Qt8 = unpack_x(x)
-    S7calc =V7 * (np.conj(V7) - np.conj(V8)) * np.conj(Y78) + Pf7 + 1j * Qf7
+    d2, d3, d7, d8, d9, V2, V3, V5, V6, V8, V9, tau1, Pf3, Pt4, Pf7, Qf7, Qf8 = unpack_x(x)
+    V2c, V3c, V7c, V8c, V9c = complex_V(V2, V3, V7, V8, V9, d2, d3, d7, d8, d9)
+    S7calc = V7c * (np.conj(V7c) - np.conj(V8c)) * np.conj(Y78) + Pf7 + 1j * Qf7
     return np.real(S7calc) - np.real(S7sp)
 
 def Q7(x):
-    d2, d3, d7, d8, d9, V2, V3, V5, V6, V8, V9, tau1, Pf3, Pt4, Pf7, Pf8, Qf7, Qf8, Qt8 = unpack_x(x)
-    S7calc =V7 * (np.conj(V7) - np.conj(V8)) * np.conj(Y78) + Pf7 + 1j * Qf7
+    d2, d3, d7, d8, d9, V2, V3, V5, V6, V8, V9, tau1, Pf3, Pt4, Pf7, Qf7, Qf8 = unpack_x(x)
+    V2c, V3c, V7c, V8c, V9c = complex_V(V2, V3, V7, V8, V9, d2, d3, d7, d8, d9)
+    S7calc = V7c * (np.conj(V7c) - np.conj(V8c)) * np.conj(Y78) + Pf7 + 1j * Qf7
     return np.imag(S7calc) - np.imag(S7sp)
 
 def P8(x):
-    d2, d3, d7, d8, d9, V2, V3, V5, V6, V8, V9, tau1, Pf3, Pt4, Pf7, Pf8, Qf7, Qf8, Qt8 = unpack_x(x)
-    S8calc = V8 * (np.conj(V8) - np.conj(V7)) * np.conj(Y78) + V8 * (np.conj(V8) - np.conj(V9)) * np.conj(Y89) + Pf8 + 1j * Qf8
+    d2, d3, d7, d8, d9, V2, V3, V5, V6, V8, V9, tau1, Pf3, Pt4, Pf7, Qf7, Qf8 = unpack_x(x)
+    V2c, V3c, V7c, V8c, V9c = complex_V(V2, V3, V7, V8, V9, d2, d3, d7, d8, d9)
+    S8calc = V8c * (np.conj(V8c) - np.conj(V7c)) * np.conj(Y78) + V8c * (np.conj(V8c) - np.conj(V9c)) * np.conj(Y89) + Pf8 + 1j * Qf8
     return np.real(S8calc) - np.real(S8sp)
 
 def Q8(x):
-    d2, d3, d7, d8, d9, V2, V3, V5, V6, V8, V9, tau1, Pf3, Pt4, Pf7, Pf8, Qf7, Qf8, Qt8 = unpack_x(x)
-    S8calc = V8 * (np.conj(V8) - np.conj(V7)) * np.conj(Y78) + V8 * (np.conj(V8) - np.conj(V9)) * np.conj(Y89) + Pf8 + 1j * Qf8
+    d2, d3, d7, d8, d9, V2, V3, V5, V6, V8, V9, tau1, Pf3, Pt4, Pf7, Qf7, Qf8 = unpack_x(x)
+    V2c, V3c, V7c, V8c, V9c = complex_V(V2, V3, V7, V8, V9, d2, d3, d7, d8, d9)
+    S8calc = V8c * (np.conj(V8c) - np.conj(V7c)) * np.conj(Y78) + V8c * (np.conj(V8c) - np.conj(V9c)) * np.conj(Y89) + Pf8 + 1j * Qf8
     return np.imag(S8calc) - np.imag(S8sp)
 
 def P9(x):
-    d2, d3, d7, d8, d9, V2, V3, V5, V6, V8, V9, tau1, Pf3, Pt4, Pf7, Pf8, Qf7, Qf8, Qt8 = unpack_x(x)
-    S9calc = V9 * (np.conj(V9) - np.conj(V8)) * np.conj(Y89) + V9 * (np.conj(V9) - np.conj(V10)) * np.conj(Y910)
+    d2, d3, d7, d8, d9, V2, V3, V5, V6, V8, V9, tau1, Pf3, Pt4, Pf7, Qf7, Qf8 = unpack_x(x)
+    V2c, V3c, V7c, V8c, V9c = complex_V(V2, V3, V7, V8, V9, d2, d3, d7, d8, d9)
+    S9calc = V9c * (np.conj(V9c) - np.conj(V8c)) * np.conj(Y89) + V9c * (np.conj(V9c) - np.conj(V10)) * np.conj(Y910)
     return np.real(S9calc) - np.real(S9sp)
 
 def Q9(x):
-    d2, d3, d7, d8, d9, V2, V3, V5, V6, V8, V9, tau1, Pf3, Pt4, Pf7, Pf8, Qf7, Qf8, Qt8 = unpack_x(x)
-    S9calc = V9 * (np.conj(V9) - np.conj(V8)) * np.conj(Y89) + V9 * (np.conj(V9) - np.conj(V10)) * np.conj(Y910)
+    d2, d3, d7, d8, d9, V2, V3, V5, V6, V8, V9, tau1, Pf3, Pt4, Pf7, Qf7, Qf8 = unpack_x(x)
+    V2c, V3c, V7c, V8c, V9c = complex_V(V2, V3, V7, V8, V9, d2, d3, d7, d8, d9)
+    S9calc = V9c * (np.conj(V9c) - np.conj(V8c)) * np.conj(Y89) + V9c * (np.conj(V9c) - np.conj(V10)) * np.conj(Y910)
     return np.imag(S9calc) - np.imag(S9sp)
 
 def VSC1(x):
-    d2, d3, d7, d8, d9, V2, V3, V5, V6, V8, V9, tau1, Pf3, Pt4, Pf7, Pf8, Qf7, Qf8, Qt8 = unpack_x(x)
+    d2, d3, d7, d8, d9, V2, V3, V5, V6, V8, V9, tau1, Pf3, Pt4, Pf7, Qf7, Qf8 = unpack_x(x)
+    V2c, V3c, V7c, V8c, V9c = complex_V(V2, V3, V7, V8, V9, d2, d3, d7, d8, d9)
     loss1 = a + b * np.sqrt(Pf3**2 + Qf3**2) / V3 + c * (Pf3**2 + Qf3**2) / V3**2
     return loss1 - Pf3 - Pt4
 
 def VSC2(x):
-    d2, d3, d7, d8, d9, V2, V3, V5, V6, V8, V9, tau1, Pf3, Pt4, Pf7, Pf8, Qf7, Qf8, Qt8 = unpack_x(x)
+    d2, d3, d7, d8, d9, V2, V3, V5, V6, V8, V9, tau1, Pf3, Pt4, Pf7, Qf7, Qf8 = unpack_x(x)
+    V2c, V3c, V7c, V8c, V9c = complex_V(V2, V3, V7, V8, V9, d2, d3, d7, d8, d9)
     loss2 = a + b * np.sqrt(Pf7**2 + Qf7**2) / V7 + c * (Pf7**2 + Qf7**2) / V7**2
     return loss2 - Pf7 - Pt6
 
 def Ptr(x):
-    d2, d3, d7, d8, d9, V2, V3, V5, V6, V8, V9, tau1, Pf3, Pt4, Pf7, Pf8, Qf7, Qf8, Qt8 = unpack_x(x)
-    Strcalc = V8**2 * np.conj(Ys) / m**2 - V8 * np.conj(V10) * np.conj(Ys) / (m * np.exp(1j * tau1))
+    d2, d3, d7, d8, d9, V2, V3, V5, V6, V8, V9, tau1, Pf3, Pt4, Pf7, Qf7, Qf8 = unpack_x(x)
+    V2c, V3c, V7c, V8c, V9c = complex_V(V2, V3, V7, V8, V9, d2, d3, d7, d8, d9)
+    Strcalc = V8**2 * np.conj(Ys) / m**2 - V8c * np.conj(V10) * np.conj(Ys) / (m * np.exp(1j * tau1))
     return np.real(Strcalc) - np.real(Pf8 + 1j * Qf8)
 
 def Qtr(x):
-    d2, d3, d7, d8, d9, V2, V3, V5, V6, V8, V9, tau1, Pf3, Pt4, Pf7, Pf8, Qf7, Qf8, Qt8 = unpack_x(x)
-    Strcalc = V8**2 * np.conj(Ys) / m**2 - V8 * np.conj(V10) * np.conj(Ys) / (m * np.exp(1j * tau1))
+    d2, d3, d7, d8, d9, V2, V3, V5, V6, V8, V9, tau1, Pf3, Pt4, Pf7, Qf7, Qf8 = unpack_x(x)
+    V2c, V3c, V7c, V8c, V9c = complex_V(V2, V3, V7, V8, V9, d2, d3, d7, d8, d9)
+    Strcalc = V8**2 * np.conj(Ys) / m**2 - V8c * np.conj(V10) * np.conj(Ys) / (m * np.exp(1j * tau1))
     return np.imag(Strcalc) - np.imag(Pf8 + 1j * Qf8)
 
 
@@ -177,19 +201,17 @@ tau1 = 0.0
 Pf3 = 0.0
 Pt4 = 0.0
 Pf7 = 0.0
-Pf8 = 0.0
 Qf7 = 0.0
 Qf8 = 0.0
-Qt8 = 0.0
 
 delta = 1e-6
 
 n_unk = len(func)
 
-x = pack_x(d2, d3, d7, d8, d9, V2, V3, V5, V6, V8, V9, tau1, Pf3, Pt4, Pf7, Pf8, Qf7, Qf8, Qt8)
+x = pack_x(d2, d3, d7, d8, d9, V2, V3, V5, V6, V8, V9, tau1, Pf3, Pt4, Pf7, Qf7, Qf8)
 
 # Solve f = - J Ax
-for k in range(20):
+for k in range(10):
 
     f = np.zeros(n_unk, dtype=float)
     for i in range(n_unk):
@@ -203,6 +225,7 @@ for k in range(20):
             f1 = func[i](x1)
             J[i, j] = (f1 - f[i]) / delta
 
+    
     Ax = np.linalg.solve(J, -f)
 
     x += Ax
