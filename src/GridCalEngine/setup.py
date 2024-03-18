@@ -8,9 +8,8 @@ https://github.com/pypa/sampleproject
 # Always prefer setuptools over distutils
 from setuptools import setup, find_packages
 import os
+from GridCalEngine.__version__ import __GridCalEngine_VERSION__
 
-#from GridCalEngine.__version__ import __GridCalEngine_VERSION__
-__GridCalEngine_VERSION__ = "5.1.0a1"
 here = os.path.abspath(os.path.dirname(__file__))
 
 long_description = '''# GridCal

@@ -38,7 +38,7 @@ def step_calculation(v: Vec, dv: Vec, tau: float = 0.99995):
     :param v: Array of multipliers or slack variables
     :param dv: Variation calculated in the Newton step
     :param tau: Factor to be not exactly 1
-    :return:
+    :return: step size value for the given multipliers
     """
     k = np.flatnonzero(dv < 0.0)
     if len(k) > 0:
@@ -85,8 +85,8 @@ def calc_error(dx, dz, dmu, dlmbda):
 def max_abs(x: Vec):
     """
     Compute max abs efficiently
-    :param x:
-    :return:
+    :param x: State vector
+    :return: Inf-norm of the state vector
     """
     max_val = 0.0
     for x_val in x:
@@ -100,11 +100,11 @@ def max_abs(x: Vec):
 def calc_feascond(g: Vec, h: Vec, x: Vec, z: Vec):
     """
     Calculate the feasible conditions
-    :param g:
-    :param h:
-    :param x:
-    :param z:
-    :return:
+    :param g: Equality values
+    :param h: Inequality values
+    :param x: State vector
+    :param z: Vector of z slack variables
+    :return: Feasibility condition value
     """
     return max(max_abs(g), np.max(h)) / (1.0 + max(max_abs(x), max_abs(z)))
 
@@ -112,20 +112,20 @@ def calc_feascond(g: Vec, h: Vec, x: Vec, z: Vec):
 def calc_gradcond(lx: Vec, lam: Vec, mu: Vec):
     """
     calculate the gradient conditions
-    :param lx:
-    :param lam:
-    :param mu:
-    :return:
+    :param lx: Gradient of the lagrangian
+    :param lam: Vector of lambda multipliers
+    :param mu: Vector of mu multipliers
+    :return: Gradient condition value
     """
     return max_abs(lx) / (1 + max(max_abs(lam), max_abs(mu)))
 
 
 def calc_ccond(mu: Vec, z: Vec, x: Vec):
     """
-    :param mu:
-    :param z:
-    :param x:
-    :return:
+    :param mu: Vector of mu mutipliers
+    :param z: Vector of z slack variables
+    :param x: State vector
+    :return: Vector of ccond
     """
     return (mu @ z) / (1.0 + max_abs(x))
 
@@ -133,9 +133,9 @@ def calc_ccond(mu: Vec, z: Vec, x: Vec):
 def calc_ocond(f: float, f_prev: float):
     """
 
-    :param f:
-    :param f_prev:
-    :return:
+    :param f: Value of objective funciton
+    :param f_prev: Previous value of objective function
+    :return: Variation of the objective function
     """
     return abs(f - f_prev) / (1.0 + abs(f_prev))
 
@@ -283,7 +283,7 @@ def interior_point_solver(x0: Vec,
     :param func: A function pointer called with (x, mu, lmbda, *args) that returns (f, G, H, fx, Gx, Hx, fxx, Gxx, Hxx)
     :param arg: Tuple of arguments to call func: func(x, mu, lmbda, *arg)
     :param max_iter: Maximum number of iterations
-    :param tol: Expected tolerance
+    :param tol: Convergence tolerance
     :param pf_init: Use the power flow solution as initial values
     :param trust: Amount of trust in the initial Newton derivative length estimation
     :param verbose: 0 to 3 (the larger, the more verbose)
@@ -302,7 +302,7 @@ def interior_point_solver(x0: Vec,
     rho_upper = 1.0 + nabla
     e = np.ones(n_ineq)
 
-    # Our init
+    # Our init, which computes the multipliers as a solution of the KKT conditions
     if pf_init:
         z0 = 1.0
         z = z0 * np.ones(n_ineq)
