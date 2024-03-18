@@ -24,6 +24,7 @@ from GridCalEngine.Devices.multi_circuit import MultiCircuit
 import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.Parents.editable_device import GCProp
 from GridCalEngine.Devices.profile import Profile
+from GridCalEngine.Devices.line_locations import LineLocations
 from GridCalEngine.Devices.sparse_array import SparseArray
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
 from GridCalEngine.enumerations import DiagramType, DeviceType
@@ -380,6 +381,9 @@ def gridcal_object_to_json(elm: ALL_DEV_TYPES) -> Dict[str, str]:
 
         elif prop.tpe == DeviceType.GeneratorQCurve:
             data[name] = obj.str()
+
+        elif prop.tpe == LineLocations:
+            data[name] = obj.to_list()
 
         else:
             # if the object is not of a primary type, get the idtag instead
@@ -897,7 +901,7 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
 
                         if valid_value(property_value):
 
-                            if isinstance(gc_prop.tpe, DeviceType):
+                            if isinstance(gc_prop.tpe, DeviceType):  # this is a hyperlink to another object
 
                                 if gc_prop.tpe == DeviceType.GeneratorQCurve:
                                     val = dev.GeneratorQCurve()
@@ -987,6 +991,11 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
                                     logger.add_error(f'Cannot cast value to {gc_prop.tpe}',
                                                      device=elm.name,
                                                      value=property_value)
+
+                            elif isinstance(gc_prop.tpe, type(LineLocations)):
+
+                                locations_obj: LineLocations = elm.get_snapshot_value(gc_prop)
+                                locations_obj.parse(property_value)
 
                             else:
                                 raise Exception(f'Unsupported property type: {gc_prop.tpe}')

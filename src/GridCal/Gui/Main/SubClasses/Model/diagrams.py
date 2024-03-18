@@ -1259,7 +1259,7 @@ class DiagramsMain(CompiledArraysMain):
             else:
                 info_msg('Choose some elements from the schematic', 'Fix buses locations')
 
-    def get_selected_devices(self) -> List[dev.EditableDevice]:
+    def get_selected_devices(self) -> List[ALL_DEV_TYPES]:
         """
         Get the selected investment devices
         :return: list of selected devices

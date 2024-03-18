@@ -20,6 +20,7 @@ import numpy as np
 from GridCalEngine.enumerations import (DeviceType, TimeFrame, BuildStatus, WindingsConnection, TransformerControlType,
                                         ConverterControlType, TapModuleControl, TapAngleControl)
 from GridCalEngine.Devices.profile import Profile
+from GridCalEngine.Devices.line_locations import LineLocations
 from typing import List, Dict, AnyStr, Any, Optional, Union, Type, Tuple
 
 
@@ -36,6 +37,7 @@ GCPROP_TYPES = Union[
     Type[ConverterControlType],
     Type[TapModuleControl],
     Type[TapAngleControl],
+    Type[LineLocations]
 ]
 
 

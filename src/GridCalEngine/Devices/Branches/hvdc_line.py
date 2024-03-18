@@ -27,6 +27,7 @@ from GridCalEngine.Devices.Parents.branch_parent import BranchParent
 from GridCalEngine.enumerations import HvdcControlType
 from GridCalEngine.basic_structures import Vec, IntVec
 from GridCalEngine.Devices.profile import Profile
+from GridCalEngine.Devices.line_locations import LineLocations
 
 
 def firing_angles_to_reactive_limits(P, alphamin, alphamax) -> Tuple[float, float]:
@@ -185,9 +186,6 @@ class HvdcLine(BranchParent):
                               Cost=overload_cost,
                               device_type=DeviceType.HVDCLineDevice)
 
-        # List of measurements
-        self.measurements = list()
-
         # line length in km
         self.length = length
 
@@ -238,6 +236,9 @@ class HvdcLine(BranchParent):
 
         self.n_lines = n_lines
 
+        # Line locations
+        self._locations: LineLocations = LineLocations(n_points=0)
+
         self.register(key='dispatchable', units='', tpe=bool, definition='Is the line power optimizable?')
 
         self.register(key='control_mode', units='-', tpe=HvdcControlType, definition='Control type.')
@@ -262,6 +263,8 @@ class HvdcLine(BranchParent):
                       definition='maximum firing angle at the "to" side.')
 
         self.register(key='length', units='km', tpe=float, definition='Length of the branch (not used for calculation)')
+
+        self.register(key='locations', units='', tpe=LineLocations, definition='', editable=False)
 
     @property
     def active_prof(self) -> Profile:
@@ -398,6 +401,23 @@ class HvdcLine(BranchParent):
             self._Vset_t_prof.set(arr=val)
         else:
             raise Exception(str(type(val)) + 'not supported to be set into a Vset_t_prof')
+
+    @property
+    def locations(self) -> LineLocations:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._locations
+
+    @locations.setter
+    def locations(self, val: Union[LineLocations, np.ndarray]):
+        if isinstance(val, LineLocations):
+            self._locations = val
+        elif isinstance(val, np.ndarray):
+            self._locations.set(data=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a locations')
 
     def get_from_and_to_power(self, theta_f, theta_t, Sbase, in_pu=False):
         """
