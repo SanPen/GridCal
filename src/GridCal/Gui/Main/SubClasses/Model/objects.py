@@ -643,8 +643,10 @@ class ObjectsTableMain(DiagramsMain):
 
                 else:
 
-                    warning_msg('No editor available.\nThe values can be changes from within the table.',
-                                'Transformers')
+                    warning_msg('No editor available.\n'
+                                'The values can be changed from the table or '
+                                'via context menus in the graphical interface.',
+                                'Edit')
             else:
                 info_msg('Choose an element from the table')
         else:

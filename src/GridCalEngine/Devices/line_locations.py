@@ -16,6 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from typing import List, Tuple
 import numpy as np
+import pandas as pd
 
 
 class LineLocations:
@@ -24,12 +25,25 @@ class LineLocations:
     """
     def __init__(self, n_points: int):
         """
-
-        :param n_points:
+        Constructor
+        :param n_points: Number of points to pre-declare
         """
-        self.data = np.zeros((n_points, 3))
 
-    def parse(self, data: List[Tuple[float, float, float]]):
+        # [[sequence, latitude, longitude, altitude]]
+        self.data = np.zeros((n_points, 4))
+
+    def add(self, sequence: int, latitude: float, longitude: float, altitude: float = 0.0):
+        """
+        Append row to this object (very slow)
+        :param sequence: Sequence of the point
+        :param latitude: Latitude (deg)
+        :param longitude: Longitude (deg)
+        :param altitude: Altitude (m)
+        """
+        row = np.array([sequence, latitude, longitude, altitude])
+        self.data = np.r_[self.data, row]
+
+    def parse(self, data: List[Tuple[int, float, float, float]]):
         """
         Parse Json data
         :param data: List of lists with (latitude, longitude, altitude)
@@ -38,7 +52,7 @@ class LineLocations:
             values = np.array(data)
             self.set(data=values)
         else:
-            self.data = np.zeros((0, 3))
+            self.data = np.zeros((0, 4))
 
     def set(self, data: np.ndarray):
         """
@@ -46,19 +60,26 @@ class LineLocations:
         :param data: List of lists with (latitude, longitude, altitude)
         """
         if data.ndim == 2:
-            if data.shape[1] == 3:
+            if data.shape[1] == 4:
                 self.data = data
             else:
                 raise ValueError('Locations data does not have exactly 3 columns')
         else:
             raise ValueError('Location data must be 2-dimensional: (n_points, 3)')
 
-    def to_list(self) -> List[Tuple[float, float, float]]:
+    def to_list(self) -> List[Tuple[int, float, float, float]]:
         """
         Convert data to list of lists for Json usage
         :return: List[Tuple[float, float, float]] -> [(latitude, longitude, altitude)]
         """
         return self.data.tolist()
+
+    def to_df(self) -> pd.DataFrame:
+        """
+        Convert data to DataFrame
+        :return: DataFrame
+        """
+        return pd.DataFrame(data=self.data, columns=["sequence", "latitude", "longitude", "altitude"])
 
     def __eq__(self, other: "LineLocations") -> bool:
         """
@@ -68,3 +89,7 @@ class LineLocations:
         :return: Close enough?
         """
         return np.allclose(self.data, other.data, atol=1e-6)
+
+    def __str__(self) -> str:
+
+        return f"{len(self.data)} locations"
