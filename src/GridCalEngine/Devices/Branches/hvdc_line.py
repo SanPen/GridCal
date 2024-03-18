@@ -22,12 +22,12 @@ from typing import Tuple, Union
 from matplotlib import pyplot as plt
 
 from GridCalEngine.Devices.Substation.bus import Bus
-from GridCalEngine.enumerations import DeviceType, BuildStatus
+from GridCalEngine.enumerations import DeviceType, BuildStatus, SubObjectType
 from GridCalEngine.Devices.Parents.branch_parent import BranchParent
 from GridCalEngine.enumerations import HvdcControlType
 from GridCalEngine.basic_structures import Vec, IntVec
 from GridCalEngine.Devices.profile import Profile
-from GridCalEngine.Devices.line_locations import LineLocations
+from GridCalEngine.Devices.Branches.line_locations import LineLocations
 
 
 def firing_angles_to_reactive_limits(P, alphamin, alphamax) -> Tuple[float, float]:
@@ -264,7 +264,7 @@ class HvdcLine(BranchParent):
 
         self.register(key='length', units='km', tpe=float, definition='Length of the branch (not used for calculation)')
 
-        self.register(key='locations', units='', tpe=LineLocations, definition='', editable=False)
+        self.register(key='locations', units='', tpe=SubObjectType.LineLocations, definition='', editable=False)
 
     @property
     def active_prof(self) -> Profile:

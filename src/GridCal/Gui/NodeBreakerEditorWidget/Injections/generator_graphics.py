@@ -231,7 +231,7 @@ class GeneratorQCurveEditor(QDialog):
         """
         Collect the data from the data model into the curve object
         """
-        self.q_curve.set_data(self.table_model.getData())
+        self.q_curve.set(self.table_model.getData())
         self.Snom = self.q_curve.get_Snom()
         self.Qmax = self.q_curve.get_Qmax()
         self.Qmin = self.q_curve.get_Qmin()

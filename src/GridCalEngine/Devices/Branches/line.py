@@ -20,15 +20,14 @@ from typing import Union
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
-from GridCalEngine.enumerations import BuildStatus
+from GridCalEngine.enumerations import BuildStatus, SubObjectType, DeviceType
 from GridCalEngine.Devices.Branches.underground_line_type import UndergroundLineType
 from GridCalEngine.Devices.Branches.overhead_line_type import OverheadLineType
 from GridCalEngine.Devices.Parents.branch_parent import BranchParent
 from GridCalEngine.Devices.Branches.sequence_line_type import SequenceLineType
 from GridCalEngine.Devices.Branches.transformer import Transformer2W
-from GridCalEngine.Devices.Parents.editable_device import DeviceType
 from GridCalEngine.Devices.profile import Profile
-from GridCalEngine.Devices.line_locations import LineLocations
+from GridCalEngine.Devices.Branches.line_locations import LineLocations
 
 
 class Line(BranchParent):
@@ -172,7 +171,7 @@ class Line(BranchParent):
                                  '1 would be at the "to" side,'
                                  'therefore 0.5 is at the middle.')
         self.register(key='template', units='', tpe=DeviceType.SequenceLineDevice, definition='', editable=False)
-        self.register(key='locations', units='', tpe=LineLocations, definition='', editable=False)
+        self.register(key='locations', units='', tpe=SubObjectType.LineLocations, definition='', editable=False)
 
     @property
     def temp_oper_prof(self) -> Profile:

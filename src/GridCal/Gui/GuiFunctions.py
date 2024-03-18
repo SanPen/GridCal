@@ -29,7 +29,7 @@ from GridCalEngine.enumerations import DeviceType, ResultTypes
 from GridCalEngine.basic_structures import IntVec
 from GridCalEngine.data_logger import DataLogger
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit, IdentifiedObject
-from GridCalEngine.Devices.line_locations import LineLocations
+from GridCalEngine.Devices.Branches.line_locations import LineLocations
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking

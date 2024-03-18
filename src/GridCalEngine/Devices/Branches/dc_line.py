@@ -23,8 +23,8 @@ import numpy as np
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Parents.branch_parent import BranchParent
 from GridCalEngine.Devices.profile import Profile
-from GridCalEngine.enumerations import DeviceType, BuildStatus
-from GridCalEngine.Devices.line_locations import LineLocations
+from GridCalEngine.enumerations import DeviceType, BuildStatus, SubObjectType
+from GridCalEngine.Devices.Branches.line_locations import LineLocations
 
 
 class DcLine(BranchParent):
@@ -145,7 +145,7 @@ class DcLine(BranchParent):
                                  'be at the "to" side,therefore 0.5 is at the middle.')
         self.register(key='template', units='', tpe=DeviceType.SequenceLineDevice, definition='', editable=False)
 
-        self.register(key='locations', units='', tpe=LineLocations, definition='', editable=False)
+        self.register(key='locations', units='', tpe=SubObjectType.LineLocations, definition='', editable=False)
 
     @property
     def temp_oper_prof(self) -> Profile:

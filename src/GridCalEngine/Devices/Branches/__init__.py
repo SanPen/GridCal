@@ -31,3 +31,4 @@ from GridCalEngine.Devices.Branches.transformer_type import TransformerType
 from GridCalEngine.Devices.Branches.overhead_line_type import OverheadLineType, WireInTower
 from GridCalEngine.Devices.Branches.sequence_line_type import SequenceLineType
 from GridCalEngine.Devices.Branches.underground_line_type import UndergroundLineType
+from GridCalEngine.Devices.Branches.line_locations import LineLocations
