@@ -30,7 +30,7 @@ class Winding(Transformer2W):
     def __init__(self,
                  bus_from: Bus = None,
                  bus_to: Bus = None,
-                 name='Branch',
+                 name='Winding',
                  idtag: Union[None, str] = None,
                  code: str = '',
                  cn_from: ConnectivityNode = None,

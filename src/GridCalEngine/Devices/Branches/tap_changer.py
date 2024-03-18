@@ -15,122 +15,120 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+import numpy as np
+from GridCalEngine.enumerations import TapChangerTypes
+
 
 class TapChanger:
     """
-    The **TapChanger** class defines a transformer's tap changer, either onload or
-    offload. It needs to be attached to a predefined transformer (i.e. a
-    :ref:`Branch<branch>` object).
-
-    The following example shows how to attach a tap changer to a transformer tied to a
-    voltage regulated :ref:`bus`:
-
-    .. code:: ipython3
-
-        from GridCalEngine.multi_circuit import MultiCircuit
-        from GridCalEngine.Devices import *
-        from GridCalEngine.device_types import *
-
-        # Create grid
-        grid = MultiCircuit()
-
-        # Create buses
-        POI = Bus(name="POI",
-                  vnom=100, #kV
-                  is_slack=True)
-        grid.add_bus(POI)
-
-        B_C3 = Bus(name="B_C3",
-                   vnom=10) #kV
-        grid.add_bus_to_diagram(B_C3)
-
-        # Create transformer types
-        SS = TransformerType(name="SS",
-                             hv_nominal_voltage=100, # kV
-                             lv_nominal_voltage=10, # kV
-                             nominal_power=100, # MVA
-                             copper_losses=10000, # kW
-                             iron_losses=125, # kW
-                             no_load_current=0.5, # %
-                             short_circuit_voltage=8) # %
-        grid.add_transformer_type(SS)
-
-        # Create transformer
-        X_C3 = Branch(bus_from=POI,
-                      bus_to=B_C3,
-                      name="X_C3",
-                      branch_type=BranchType.Transformer,
-                      template=SS,
-                      bus_to_regulated=True,
-                      vset=1.05)
-
-        # Attach tap changer
-        X_C3.tap_changer = TapChanger(taps_up=16, taps_down=16, max_reg=1.1, min_reg=0.9)
-        X_C3.tap_changer.set_tap(X_C3.tap_module)
-
-        # Add transformer to grid
-        grid.add_branch(X_C3)
-
-    Arguments:
-
-        **taps_up** (int, 5): Number of taps position up
-
-        **taps_down** (int, 5): Number of tap positions down
-
-        **max_reg** (float, 1.1): Maximum regulation up i.e 1.1 -> +10%
-
-        **min_reg** (float, 0.9): Maximum regulation down i.e 0.9 -> -10%
-
-    Additional Properties:
-
-        **tap** (int, 0): Current tap position
-
+    Tap changer
     """
 
-    def __init__(self, taps_up=5, taps_down=5, max_reg=1.1, min_reg=0.9):
+    def __init__(self,
+                 total_positions: int = 5,
+                 neutral_position: int = 2,
+                 dV: float = 0.01,
+                 asymmetry_angle=90,
+                 tpe: TapChangerTypes = TapChangerTypes.Symmetrical) -> None:
         """
 
-        :param taps_up:
-        :param taps_down:
-        :param max_reg:
-        :param min_reg:
+        :param total_positions:
+        :param neutral_position:
+        :param dV: per unit of voltage increment
+        :param asymmetry_angle:
+        :param tpe:
         """
-        self.max_tap = taps_up
 
-        self.min_tap = -taps_down
+        self.asymmetry_angle = np.deg2rad(asymmetry_angle)
 
-        self.inc_reg_up = (max_reg - 1.0) / taps_up
+        self.steps = np.array([dV * i for i in range(total_positions)]) - neutral_position * dV
 
-        self.inc_reg_down = (1.0 - min_reg) / taps_down
+        self.neutral_pos = neutral_position
 
-        self.tap = 0
+        self.tap_position = neutral_position
 
-    def tap_up(self):
+        self.tpe = tpe
+
+    def reset(self) -> None:
+        """
+        Resets the tap changer to the neutral position
+        """
+        self.tap_position = self.neutral_pos
+
+    def tap_up(self) -> None:
         """
         Go to the next upper tap position
         """
-        if self.tap + 1 <= self.max_tap:
-            self.tap += 1
+        if self.tap_position + 1 < len(self.steps):
+            self.tap_position += 1
 
-    def tap_down(self):
+    def tap_down(self) -> None:
         """
         Go to the next upper tap position
         """
-        if self.tap - 1 >= self.min_tap:
-            self.tap -= 1
+        if self.tap_position - 1 > 0:
+            self.tap_position -= 1
 
-    def get_tap(self):
+    def ndu(self) -> float:
+        """
+        Return the total tap voltage
+        :return:
+        """
+        return self.steps[self.tap_position]
+
+    def get_tap_phase(self) -> float:
+        """
+        Get the tap phase in radians
+        :return: phase in radians
+        """
+        if self.tpe == TapChangerTypes.VoltageRegulation:
+            return 0.0
+
+        elif self.tpe == TapChangerTypes.Asymmetrical:
+            ndu = self.ndu()
+            a = np.arctan((ndu * np.sin(self.asymmetry_angle)) / (1.0 + ndu * np.cos(self.asymmetry_angle)))
+            return a
+
+        elif self.tpe == TapChangerTypes.Asymmetrical90:
+            ndu = self.ndu()
+            a = np.arctan(ndu)
+            return a
+
+        elif self.tpe == TapChangerTypes.Symmetrical:
+            ndu = self.ndu()
+            a = 2.0 * np.arctan(ndu / 2.0)
+            return a
+
+        else:
+            raise Exception("Unknown tap phase type")
+
+    def get_tap_module(self) -> float:
         """
         Get the tap voltage regulation module
+        :return: voltage regulation module
         """
-        if self.tap == 0:
-            return 1.0
-        elif self.tap > 0:
-            return 1.0 + self.tap * self.inc_reg_up
-        elif self.tap < 0:
-            return 1.0 + self.tap * self.inc_reg_down
 
-    def set_tap(self, tap_module):
+        if self.tpe == TapChangerTypes.VoltageRegulation:
+            ndu = self.ndu()
+            return 1.0 / (1.0 - ndu) if ndu != 0.0 else 0.0
+
+        elif self.tpe == TapChangerTypes.Asymmetrical:
+            ndu = self.ndu()
+            rho = 1.0 / np.sqrt(
+                (ndu * np.sin(self.asymmetry_angle)) ** 2 + (1.0 + ndu * np.cos(self.asymmetry_angle)) ** 2)
+            return rho
+
+        elif self.tpe == TapChangerTypes.Asymmetrical90:
+            ndu = self.ndu()
+            rho = 1.0 / np.sqrt(ndu ** 2 + 1.0)
+            return rho
+
+        elif self.tpe == TapChangerTypes.Symmetrical:
+            return 1.0
+        else:
+            raise Exception("Unknown tap phase type")
+
+    def set_tap_module(self, tap_module: float):
         """
         Set the integer tap position corresponding to a tap value
 
@@ -140,8 +138,24 @@ class TapChanger:
 
         """
         if tap_module == 1.0:
-            self.tap = 0
+            self.tap_position = 0
         elif tap_module > 1:
-            self.tap = round((tap_module - 1.0) / self.inc_reg_up)
+            self.tap_position = round((tap_module - 1.0) / self.inc_reg_up)
         elif tap_module < 1:
-            self.tap = -round((1.0 - tap_module) / self.inc_reg_down)
+            self.tap_position = -round((1.0 - tap_module) / self.inc_reg_down)
+
+    def __eq__(self, other: "TapChanger") -> bool:
+        """
+        Equality check
+        :param other: TapChanger
+        :return: ok?
+        """
+        return ((self.asymmetry_angle == other.asymmetry_angle)
+                and (np.all(self.steps == other.steps))
+                and (self.neutral_pos == other.neutral_pos)
+                and (self.tap_position == other.tap_position)
+                and (self.tpe == other.tpe))
+
+    def __str__(self):
+
+        return "Tap changer"

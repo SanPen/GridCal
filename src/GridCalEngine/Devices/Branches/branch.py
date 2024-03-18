@@ -173,9 +173,9 @@ class Branch(BranchParent):
         # Tap module
         if tap != 0:
             self.tap_module = tap
-            self.tap_changer.set_tap(self.tap_module)
+            self.tap_changer.set_tap_module(self.tap_module)
         else:
-            self.tap_module = self.tap_changer.get_tap()
+            self.tap_module = self.tap_changer.get_tap_module()
 
         # Tap angle
         self.angle = shift_angle
@@ -331,14 +331,14 @@ class Branch(BranchParent):
         Move the tap changer one position up
         """
         self.tap_changer.tap_up()
-        self.tap_module = self.tap_changer.get_tap()
+        self.tap_module = self.tap_changer.get_tap_module()
 
     def tap_down(self):
         """
         Move the tap changer one position up
         """
         self.tap_changer.tap_down()
-        self.tap_module = self.tap_changer.get_tap()
+        self.tap_module = self.tap_changer.get_tap_module()
 
     def apply_tap_changer(self, tap_changer: TapChanger):
         """
@@ -352,9 +352,9 @@ class Branch(BranchParent):
         self.tap_changer = tap_changer
 
         if self.tap_module != 0:
-            self.tap_changer.set_tap(self.tap_module)
+            self.tap_changer.set_tap_module(self.tap_module)
         else:
-            self.tap_module = self.tap_changer.get_tap()
+            self.tap_module = self.tap_changer.get_tap_module()
 
     def get_save_data(self):
         """

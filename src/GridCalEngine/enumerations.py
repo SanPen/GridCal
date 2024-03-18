@@ -973,6 +973,7 @@ class SubObjectType(Enum):
     Profile = "Profile"
     GeneratorQCurve = 'Generator Q curve'
     LineLocations = 'Line locations'
+    TapChanger = 'Tap changer'
 
     def __str__(self) -> str:
         return str(self.value)
@@ -989,6 +990,42 @@ class SubObjectType(Enum):
         """
         try:
             return SubObjectType[s]
+        except KeyError:
+            return s
+
+    @classmethod
+    def list(cls):
+        """
+
+        :return:
+        """
+        return list(map(lambda c: c.value, cls))
+
+
+class TapChangerTypes(Enum):
+    """
+    Types of objects that act as complicated variable types
+    """
+    VoltageRegulation = "Voltage Regulation"
+    Asymmetrical = 'Asymmetrical'
+    Asymmetrical90 = 'Asymmetrical 90deg'
+    Symmetrical = 'Symmetrical'
+
+    def __str__(self) -> str:
+        return str(self.value)
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
+        try:
+            return TapChangerTypes[s]
         except KeyError:
             return s
 
