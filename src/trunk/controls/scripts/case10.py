@@ -119,7 +119,7 @@ def P5(x):
 def P6(x):
     d2, d3, d7, d8, d9, V2, V3, V5, V6, V8, V9, tau1, Pf3, Pt4, Pf7, Qf7, Qf8 = unpack_x(x)
     V2c, V3c, V7c, V8c, V9c = complex_V(V2, V3, V7, V8, V9, d2, d3, d7, d8, d9)
-    P6calc = V6 * (V6 - V4) * G46 + V6 * (V6 - V5) * G56
+    P6calc = V6 * (V6 - V4) * G46 + V6 * (V6 - V5) * G56 + Pt6
     return P6calc - P6sp
 
 def P7(x):
@@ -233,5 +233,22 @@ for k in range(10):
     err = max(abs(f))
     print(f'Iteration {k}, error: {err}')
 
-
+print(f'Final x: {x}')
     
+# Debug
+# d2, d3, d7, d8, d9, V2, V3, V5, V6, V8, V9, tau1, Pf3, Pt4, Pf7, Qf7, Qf8 = unpack_x(x)
+# i78 = (V7 * np.exp(1j * d7) - V8 * np.exp(1j * d8)) * Y78
+# i98 = (V9 * np.exp(1j * d9) - V8 * np.exp(1j * d8)) * Y89
+# itr8 = - (i78 + i98)
+# str8 = V8 * np.exp(1j * d8) * np.conj(itr8)
+# print(str8)
+
+# i56 = (V5 - V6) * G56
+# i46 = (V4 - V6) * G46
+# pt6 = V6 * (i56 + i46)
+# print(pt6)
+
+# i31 = (V3 * np.exp(1j * d3) - V1) * Y13
+# i32 = (V3 * np.exp(1j * d3) - V2 * np.exp(1j * d2)) * Y23
+# sfvsc1 = - V3 * np.exp(1j * d3) * (np.conj(i31) + np.conj(i32)) + S3sp
+# print(sfvsc1)
