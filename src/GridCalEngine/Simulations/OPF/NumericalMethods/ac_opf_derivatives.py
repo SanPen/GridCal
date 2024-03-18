@@ -659,7 +659,12 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csr
     va, vm, Pg, Qg, sl_sf, sl_st, sl_vmax, sl_vmin, tapm, tapt, Pfdc = x2var(x, nVa=N, nVm=N, nPg=Ng, nQg=Ng, npq=npq,
                                                                              M=M, ntapm=ntapm, ntapt=ntapt, ndc=ndc,
                                                                              use_bound_slacks=use_bound_slacks)
-    nsl = 2 * npq + 2 * M  # Number of slacks
+
+    if use_bound_slacks:
+        nsl = 2 * npq + 2 * M  # Number of slacks
+    else:
+        nsl = 0
+
     npfvar = 2 * N + 2 * Ng  # Number of variables of the typical power flow (V, th, P, Q). Used to ease readability
 
     V = vm * np.exp(1j * va)
@@ -874,8 +879,12 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csr
             SfX = sp.hstack([Sfva, Sfvm, lil_matrix((M, 2 * Ng + nsl)), Sftapm, Sftapt, lil_matrix((M, ndc))])
             StX = sp.hstack([Stva, Stvm, lil_matrix((M, 2 * Ng + nsl)), Sttapm, Sttapt, lil_matrix((M, ndc))])
 
-            HSf = 2 * (Sfmat.real @ SfX.real + Sfmat.imag @ SfX.imag) + Hslsf
-            HSt = 2 * (Stmat.real @ StX.real + Stmat.imag @ StX.imag) + Hslst
+            if use_bound_slacks:
+                HSf = 2 * (Sfmat.real @ SfX.real + Sfmat.imag @ SfX.imag) + Hslsf
+                HSt = 2 * (Stmat.real @ StX.real + Stmat.imag @ StX.imag) + Hslst
+            else:
+                HSf = 2 * (Sfmat.real @ SfX.real + Sfmat.imag @ SfX.imag)
+                HSt = 2 * (Stmat.real @ StX.real + Stmat.imag @ StX.imag)
 
             if ntapm != 0:
                 Htapmu = sp.hstack([lil_matrix((ntapm, npfvar + nsl)), diags(np.ones(ntapm)),

@@ -15,7 +15,6 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-print(tabulate([['Gvava', 'Gvavm', 'Gvapg', 'Gvaqg', 'Gvasl', 'Gvatapm', 'Gvatapt', 'Gvapdc'], ['Gvmva', 'Gvmvm', 'Gvmpg', 'Gvmqg', 'Gvmsl', 'Gvmtapm', 'Gvmtapt', 'Gvmpdc'], ['Gpgva', 'Gpgvm', 'Gpgpg', 'Gpgqg', 'Gpgsl', 'Gpgtapm', 'Gpgtapt', 'Gpgpdc'], ['Gqgva', 'Gqgvm', 'Gqgpg', 'Gqgqg', 'Gqgsl', 'Gqgtapm', 'Gqgtapt', 'Gqgpdc'], ['Gslva', 'Gslvm', 'Gslpg', 'Gslqg', 'Gslsl', 'Gsltapm', 'Gsltapt', 'Gslpdc'], ['Gtapmva', 'Gtapmvm', 'Gtapmpg', 'Gtapmqg', 'Gtapmsl', 'Gtapmtapm', 'Gtapmtapt', 'Gtapmpdc'], ['Gtaptva', 'Gtaptvm', 'Gtaptpg', 'Gtaptqg', 'Gtaptsl', 'Gtapttapm', 'Gtapttapt', 'Gtaptpdc'], ['Gpdcva', 'Gpdcvm', 'Gpdcpg', 'Gpdcqg', 'Gpdcsl', 'Gpdctapm', 'Gpdctapt', 'Gpdcpdc']]))
 
 import numpy as np
 import pandas as pd
@@ -382,7 +381,7 @@ class NonlinearOPFResults:
     converged: bool = None
     iterations: int = None
 
-    def initialize(self, nbus: int, nbr: int, ng: int, nhvdc: int):
+    def initialize(self, nbus: int, nbr: int, ng: int, nll: int, nhvdc: int):
         """
         Initialize the arrays
         :param nbus: number of buses
@@ -405,8 +404,8 @@ class NonlinearOPFResults:
         self.hvdc_loading: Vec = np.zeros(nhvdc)
         self.lam_p: Vec = np.zeros(nbus)
         self.lam_q: Vec = np.zeros(nbus)
-        self.sl_sf: Vec = np.zeros(nbr)
-        self.sl_st: Vec = np.zeros(nbr)
+        self.sl_sf: Vec = np.zeros(nll)
+        self.sl_st: Vec = np.zeros(nll)
         self.sl_vmax: Vec = np.zeros(nbus)
         self.sl_vmin: Vec = np.zeros(nbus)
         self.error: float = 0.0
@@ -414,7 +413,8 @@ class NonlinearOPFResults:
         self.iterations: int = 0
 
     def merge(self, other: "NonlinearOPFResults",
-              bus_idx: IntVec, br_idx: IntVec, gen_idx: IntVec, hvdc_idx: IntVec):
+              bus_idx: IntVec, br_idx: IntVec, il_idx: IntVec, gen_idx: IntVec, hvdc_idx: IntVec,
+              use_bound_slacks):
         """
 
         :param other:
@@ -438,10 +438,11 @@ class NonlinearOPFResults:
         self.hvdc_loading[hvdc_idx] = other.hvdc_loading
         self.lam_p[bus_idx] = other.lam_p
         self.lam_q[bus_idx] = other.lam_q
-        self.sl_sf[br_idx] = other.sl_sf
-        self.sl_st[br_idx] = other.sl_st
-        self.sl_vmax[bus_idx] = other.sl_vmax
-        self.sl_vmin[bus_idx] = other.sl_vmin
+        if use_bound_slacks:
+            self.sl_sf[il_idx] = other.sl_sf
+            self.sl_st[il_idx] = other.sl_st
+            self.sl_vmax[bus_idx] = other.sl_vmax
+            self.sl_vmin[bus_idx] = other.sl_vmin
         self.error: float = 0.0
         self.converged: bool = False
         self.iterations: int = 0
@@ -764,16 +765,16 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
             if muz_f >= 1e-3 or muz_t >= 1e-3:
                 logger.add_warning('DC Link rating constraint violated', device=str(link),
                                    value=str((muz_f, muz_t)), expected_value='< 1e-3')
+        if use_bound_slacks:
+            for line in range(nll):
+                if sl_sf[line] >= 1e-3 or sl_st[line] >= 1e-3:
+                    logger.add_warning('Line rate exceeded', device=str(il[line]),
+                                       value=str((sl_sf[line], sl_st[line])), expected_value='< 1e-3')
 
-        for line in range(nll):
-            if sl_sf[line] >= 1e-3 or sl_st[line] >= 1e-3:
-                logger.add_warning('Line rate exceeded', device=str(il[line]),
-                                   value=str((sl_sf[line], sl_st[line])), expected_value='< 1e-3')
-
-        for pqbus in range(npq):
-            if sl_vmax[pqbus] >= 1e-3 or sl_vmin[pqbus] >= 1e-3:
-                logger.add_warning('Voltage forced to go out of operating range', device=str(pq[pqbus]),
-                                   value=str((sl_vmin[pqbus], sl_vmax[pqbus])), expected_value='< 1e-3')
+            for pqbus in range(npq):
+                if sl_vmax[pqbus] >= 1e-3 or sl_vmin[pqbus] >= 1e-3:
+                    logger.add_warning('Voltage forced to go out of operating range', device=str(pq[pqbus]),
+                                       value=str((sl_vmin[pqbus], sl_vmax[pqbus])), expected_value='< 1e-3')
 
     if opf_options.verbose:
         if len(logger):
@@ -840,7 +841,8 @@ def run_nonlinear_opf(grid: MultiCircuit,
                                     consider_hvdc_as_island_links=True)
 
     results = NonlinearOPFResults()
-    results.initialize(nbus=nc.nbus, nbr=nc.nbr, ng=nc.ngen, nhvdc=nc.nhvdc)
+    results.initialize(nbus=nc.nbus, nbr=nc.nbr, ng=nc.ngen,
+                       nll=len(nc.branch_data.get_monitor_enabled_indices()), nhvdc=nc.nhvdc)
     results.converged = True  # we assume this so that the "and" works later
     for i, island in enumerate(islands):
         island_res = ac_optimal_power_flow(nc=island,
@@ -858,8 +860,10 @@ def run_nonlinear_opf(grid: MultiCircuit,
         results.merge(other=island_res,
                       bus_idx=island.bus_data.original_idx,
                       br_idx=island.branch_data.original_idx,
+                      il_idx=island.branch_data.get_monitor_enabled_indices(),
                       gen_idx=island.generator_data.original_idx,
-                      hvdc_idx=island.hvdc_data.original_idx)
+                      hvdc_idx=island.hvdc_data.original_idx,
+                      use_bound_slacks=use_bound_slacks)
         results.error = max(results.error, island_res.error)
         results.iterations = max(results.iterations, island_res.iterations)
         results.converged = results.converged and island_res.converged if i > 0 else island_res.converged
