@@ -14,6 +14,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+print(tabulate([['Gvava', 'Gvavm', 'Gvapg', 'Gvaqg', 'Gvasl', 'Gvatapm', 'Gvatapt', 'Gvapdc'], ['Gvmva', 'Gvmvm', 'Gvmpg', 'Gvmqg', 'Gvmsl', 'Gvmtapm', 'Gvmtapt', 'Gvmpdc'], ['Gpgva', 'Gpgvm', 'Gpgpg', 'Gpgqg', 'Gpgsl', 'Gpgtapm', 'Gpgtapt', 'Gpgpdc'], ['Gqgva', 'Gqgvm', 'Gqgpg', 'Gqgqg', 'Gqgsl', 'Gqgtapm', 'Gqgtapt', 'Gqgpdc'], ['Gslva', 'Gslvm', 'Gslpg', 'Gslqg', 'Gslsl', 'Gsltapm', 'Gsltapt', 'Gslpdc'], ['Gtapmva', 'Gtapmvm', 'Gtapmpg', 'Gtapmqg', 'Gtapmsl', 'Gtapmtapm', 'Gtapmtapt', 'Gtapmpdc'], ['Gtaptva', 'Gtaptvm', 'Gtaptpg', 'Gtaptqg', 'Gtaptsl', 'Gtapttapm', 'Gtapttapt', 'Gtaptpdc'], ['Gpdcva', 'Gpdcvm', 'Gpdcpg', 'Gpdcqg', 'Gpdcsl', 'Gpdctapm', 'Gpdctapt', 'Gpdcpdc']]))
+
 import numpy as np
 import pandas as pd
 from scipy import sparse as sp
