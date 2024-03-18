@@ -88,6 +88,13 @@ class TapChanger:
     """
 
     def __init__(self, taps_up=5, taps_down=5, max_reg=1.1, min_reg=0.9):
+        """
+
+        :param taps_up:
+        :param taps_down:
+        :param max_reg:
+        :param min_reg:
+        """
         self.max_tap = taps_up
 
         self.min_tap = -taps_down
