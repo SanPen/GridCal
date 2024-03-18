@@ -22,7 +22,7 @@ import numpy as np
 import GridCalEngine.api as gce
 from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import ac_optimal_power_flow, NonlinearOPFResults
 from GridCalEngine.enumerations import TransformerControlType
-from Simulations.OPF.NumericalMethods.ac_opf import NonlinearOPFResults
+from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import NonlinearOPFResults
 
 
 def case9() -> NonlinearOPFResults:
