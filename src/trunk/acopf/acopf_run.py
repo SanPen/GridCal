@@ -247,9 +247,9 @@ def case14():
 
     grid = gce.FileOpen(file_path).open()
 
-    #grid.transformers2w[0].control_mode = TransformerControlType.PtQt
-    #grid.transformers2w[1].control_mode = TransformerControlType.Pf
-    #grid.transformers2w[2].control_mode = TransformerControlType.V
+    grid.transformers2w[0].control_mode = TransformerControlType.PtQt
+    grid.transformers2w[1].control_mode = TransformerControlType.Pf
+    grid.transformers2w[2].control_mode = TransformerControlType.V
 
     #grid.delete_line(grid.lines[0])
     #grid.delete_line(grid.lines[1])
@@ -259,8 +259,8 @@ def case14():
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR)
     opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, ips_tolerance=1e-8,
                                               ips_iterations=50, verbose=1)
-    run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True)
-
+    res = run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True, use_bound_slacks=True)
+    print('')
 
 def case_gb():
     """
@@ -368,10 +368,10 @@ def casehvdc():
 if __name__ == '__main__':
     # example_3bus_acopf()
     # case_3bus()
-    linn5bus_example()
+    #linn5bus_example()
     # two_grids_of_3bus()
     # case9()
-    # case14()
+    case14()
     # case_gb()
     # case6ww()
     #case_pegase89()
