@@ -132,7 +132,7 @@ class Base:
         Can I keep this object?
         :return:
         """
-        return self.used # and not self.boundary_set
+        return self.used  # and not self.boundary_set
 
     def has_references(self) -> bool:
         """
@@ -185,16 +185,35 @@ class Base:
         """
         return True
 
-    def add_reference(self, obj: "IdentifiedObject"):
+    def add_reference(self, obj, attr_name):
         """
         Adds a categorized reference to this object
         :param obj:
+        :param attr_name:
         :return:
         """
         if obj.tpe in self.references_to_me.keys():
             self.references_to_me[obj.tpe].add(obj)
         else:
             self.references_to_me[obj.tpe] = {obj}
+        if attr_name is None:
+            return
+        if isinstance(getattr(self, attr_name), list):
+            tmp_list = {obj}
+            tmp_list.update(set(getattr(self, attr_name)))
+            if len(tmp_list) > 1:
+                setattr(self, attr_name, list(tmp_list))
+            else:
+                setattr(self, attr_name, list(tmp_list)[0])
+        else:
+            if getattr(self, attr_name) is None:
+                setattr(self, attr_name, obj)
+            else:
+                tmp_list = {obj, getattr(self, attr_name)}
+                if len(tmp_list) > 1:
+                    setattr(self, attr_name, list(tmp_list))
+                else:
+                    setattr(self, attr_name, list(tmp_list)[0])
 
     def register_property(self, name: str,
                           class_type: object,

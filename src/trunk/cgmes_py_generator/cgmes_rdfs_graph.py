@@ -42,10 +42,12 @@ cims_isFixed = rdflib.term.URIRef(cims + 'isFixed')
 
 all_class = []
 cgmes_class_list = []
+assoc_datatype_dict = dict()
 
 
 def generate_cgmes_classes():
-    from write_py import write_py_for_class, write_class_list_and_dict, write_class_import, write_enums
+    from write_py import (write_py_for_class, write_class_list_and_dict, write_class_import, write_enums,
+                          write_assoc_dict)
     from cgmes_class import CGMES_class
     # LOOP on all classes:
     for s_i, p_i, o_i in rdf_graph.triples((None, RDF.type, RDFS.Class)):
@@ -177,6 +179,7 @@ def generate_cgmes_classes():
                         aso_range = rdf_graph.value(s, RDFS.range).__str__()
                     # could be active p: value or multiplier
                     if aso_range not in not_in_scope_list:
+                        assoc_datatype_dict[attr_label] = aso_range
                         attribute_i["range"] = aso_range
                         attribute_i["description"] = rdf_graph.value(s, RDFS.comment).__str__()
                     else:
@@ -202,6 +205,8 @@ def generate_cgmes_classes():
     write_class_import(all_class)
     # Creating .py file for all the enums used
     write_enums()
+    # Creating a dict for association types
+    write_assoc_dict(assoc_datatype_dict)
 
     # print(f'\n ----------------------------------------------------- ')
     # print("\nALL CLASSES:")

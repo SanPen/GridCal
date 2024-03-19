@@ -93,10 +93,33 @@ def parse_xml_to_dict(xml_element: ET.Element):
             else:
                 objects_list[obj_id] = child_result
         else:
-            if child.text is None:
-                result[class_name] = obj_id  # it is a resource id
+            if class_name not in result:
+                if child.text is None:
+                    result[class_name] = obj_id  # it is a resource id
+                else:
+                    result[class_name] = child.text
             else:
-                result[class_name] = child.text
+                if child.text is None:
+                    t_set = set()
+                    if isinstance(result[class_name], list):
+                        t_set.update(result[class_name])
+                    else:
+                        t_set.add(result[class_name])
+                    t_set.update([obj_id])  # it is a resource id
+                    if len(t_set) > 1:
+                        result[class_name] = list(t_set)
+                    else:
+                        result[class_name] = list(t_set)[0]
+                else:
+                    t_set = {child.text}
+                    if isinstance(result[class_name], list):
+                        t_set.update(result[class_name])
+                    else:
+                        t_set.add(result[class_name])
+                    if len(t_set) > 1:
+                        result[class_name] = list(t_set)
+                    else:
+                        result[class_name] = list(t_set)[0]
 
     return result
 
@@ -339,10 +362,16 @@ class CgmesDataParser(BaseCircuit):
                         elif prof in cgmes3_0_0_uri:
                             self.cgmes_version = "3.0.0"
 
-                    if 'Boundary' in profile:
-                        merge(self.boudary_set, file_cgmes_data, self.logger)
+                    if isinstance(profile, list):
+                        if 'Boundary' in profile[0]:
+                            merge(self.boudary_set, file_cgmes_data, self.logger)
+                        else:
+                            merge(self.data, file_cgmes_data, self.logger)
                     else:
-                        merge(self.data, file_cgmes_data, self.logger)
+                        if 'Boundary' in profile:
+                            merge(self.boudary_set, file_cgmes_data, self.logger)
+                        else:
+                            merge(self.data, file_cgmes_data, self.logger)
 
                 else:
                     self.logger.add_error("File does not contain exactly one FullModel",

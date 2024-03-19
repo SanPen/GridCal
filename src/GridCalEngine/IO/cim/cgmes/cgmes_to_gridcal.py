@@ -193,7 +193,7 @@ def get_gcdev_calculation_nodes(cgmes_model: CgmesCircuit,
              Dict[str, gcdev.Bus]
     """
 
-    slack_id = get_slack_id(cgmes_model.SynchronousMachine_list, cgmes_model.Terminal_list)
+    slack_id = get_slack_id(cgmes_model.SynchronousMachine_list)
 
     # dictionary relating the TopologicalNode uuid to the gcdev CalculationNode
     calc_node_dict: Dict[str, gcdev.Bus] = dict()
@@ -506,9 +506,15 @@ def get_gcdev_ac_lines(cgmes_model: CgmesCircuit,
     rates_dict = dict()
     for e in cgmes_model.CurrentLimit_list:
         if not isinstance(e.OperationalLimitSet, str):
-            if isinstance(e.OperationalLimitSet.Terminal.ConductingEquipment, ACLineSegment):
-                branch_id = e.OperationalLimitSet.Terminal.ConductingEquipment.uuid
-                rates_dict[branch_id] = e.value
+            if isinstance(e.OperationalLimitSet, list):
+                for ols in e.OperationalLimitSet:
+                    if isinstance(ols.Terminal.ConductingEquipment, ACLineSegment):
+                        branch_id = e.OperationalLimitSet.Terminal.ConductingEquipment.uuid
+                        rates_dict[branch_id] = e.value
+            else:
+                if isinstance(e.OperationalLimitSet.Terminal.ConductingEquipment, ACLineSegment):
+                    branch_id = e.OperationalLimitSet.Terminal.ConductingEquipment.uuid
+                    rates_dict[branch_id] = e.value
 
     # convert ac lines
     for device_list in [cgmes_model.ACLineSegment_list]:
