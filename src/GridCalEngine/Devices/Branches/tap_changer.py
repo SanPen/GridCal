@@ -19,6 +19,27 @@ import numpy as np
 import pandas as pd
 from typing import Union, Dict
 from GridCalEngine.enumerations import TapChangerTypes
+from GridCalEngine.basic_structures import IntVec, Vec
+
+
+def find_closest_number(arr: Vec, target: float) -> int:
+    """
+
+    :param arr:
+    :param target:
+    :return:
+    """
+    idx = np.searchsorted(arr, target)
+    if idx == 0:
+        return arr[0]
+    if idx == len(arr):
+        return arr[-1]
+    before = arr[idx - 1]
+    after = arr[idx]
+    if after - target < target - before:
+        return after
+    else:
+        return before
 
 
 class TapChanger:
@@ -225,12 +246,14 @@ class TapChanger:
         Set the tap position closest to the tap module
         :param tap_module: float value of the tap module
         """
-        if tap_module == 1.0:
-            self.tap_position = 0
-        elif tap_module > 1:
-            self.tap_position = round((tap_module - 1.0) / self.inc_reg_up)
-        elif tap_module < 1:
-            self.tap_position = -round((1.0 - tap_module) / self.inc_reg_down)
+        # if tap_module == 1.0:
+        #     self.tap_position = 0
+        # elif tap_module > 1:
+        #     self.tap_position = round((tap_module - 1.0) / self.inc_reg_up)
+        # elif tap_module < 1:
+        #     self.tap_position = -round((1.0 - tap_module) / self.inc_reg_down)
+
+        return find_closest_number(arr=self._tau_array, target=tap_module)
 
     def __eq__(self, other: "TapChanger") -> bool:
         """
@@ -239,7 +262,8 @@ class TapChanger:
         :return: ok?
         """
         return ((self.asymmetry_angle == other.asymmetry_angle)
-                and (np.all(self._ndv == other._ndv))
+                and (self.total_positions == other.total_positions)
+                and (self.dV == other.dV)
                 and (self.neutral_position == other.neutral_position)
                 and (self.tap_position == other.tap_position)
                 and (self.tc_type == other.tc_type))
