@@ -253,7 +253,8 @@ class TapChanger:
         # elif tap_module < 1:
         #     self.tap_position = -round((1.0 - tap_module) / self.inc_reg_down)
 
-        return find_closest_number(arr=self._tau_array, target=tap_module)
+        if self.tc_type != TapChangerTypes.NoRegulation:
+            return find_closest_number(arr=self._tau_array, target=tap_module)
 
     def __eq__(self, other: "TapChanger") -> bool:
         """

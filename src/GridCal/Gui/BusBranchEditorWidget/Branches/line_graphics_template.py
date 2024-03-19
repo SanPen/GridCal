@@ -28,7 +28,6 @@ from GridCal.Gui.BusBranchEditorWidget.Substation.bus_graphics import BusGraphic
 from GridCal.Gui.BusBranchEditorWidget.Fluid.fluid_node_graphics import FluidNodeGraphicItem
 
 from GridCal.Gui.messages import yes_no_question, warning_msg, error_msg
-from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Branches.line import Line
 from GridCalEngine.Devices.Branches.transformer import Transformer2W
@@ -38,7 +37,6 @@ from GridCalEngine.Devices.Branches.dc_line import DcLine
 from GridCalEngine.Devices.Branches.hvdc_line import HvdcLine
 from GridCalEngine.Devices.Fluid.fluid_node import FluidNode
 from GridCalEngine.Devices.Fluid.fluid_path import FluidPath
-from GridCalEngine.Simulations.Topology.topology_reduction_driver import reduce_grid_brute
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
@@ -359,16 +357,16 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
     """
 
     def __init__(self,
-                 fromPort: TerminalItem,
-                 toPort: Union[TerminalItem, None],
+                 from_port: TerminalItem,
+                 to_port: Union[TerminalItem, None],
                  editor: BusBranchEditorWidget,
                  width=5,
                  api_object: Union[Line, Transformer2W, VSC, UPFC, HvdcLine, DcLine, FluidPath, None] = None,
                  arrow_size=10):
         """
 
-        :param fromPort:
-        :param toPort:
+        :param from_port:
+        :param to_port:
         :param editor:
         :param width:
         :param api_object:
@@ -401,17 +399,13 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         self.setFlag(self.GraphicsItemFlag.ItemIsSelectable, True)
         self.setCursor(QCursor(Qt.PointingHandCursor))
 
-        self.pos1 = None
-        self.pos2 = None
-        self.fromPort: Union[TerminalItem, None] = None
-        self.toPort: Union[TerminalItem, None] = None
         self.editor: BusBranchEditorWidget = editor
 
-        if fromPort:
-            self.setFromPort(fromPort)
+        self.pos1: QPointF = QPointF(0.0, 0.0)
+        self.pos2: QPointF = QPointF(0.0, 0.0)
 
-        if toPort:
-            self.setToPort(toPort)
+        self._from_port: Union[TerminalItem, None] = None
+        self._to_port: Union[TerminalItem, None] = None
 
         # arrows
         self.view_arrows = True
@@ -420,11 +414,25 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         self.arrow_to_1 = ArrowHead(parent=self, arrow_size=arrow_size, position=0.85, under=False)
         self.arrow_to_2 = ArrowHead(parent=self, arrow_size=arrow_size, position=0.85, under=True)
 
-        if fromPort and toPort:
+        if from_port and to_port:
             self.redraw()
 
         # set coulours
         self.recolour_mode()
+
+        if from_port:
+            self.set_from_port(from_port)
+
+        if to_port:
+            self.set_to_port(to_port)
+
+    def update_ports(self):
+        """
+
+        :return:
+        """
+        self._from_port.update()
+        self._to_port.update()
 
     def recolour_mode(self):
         """
@@ -562,31 +570,54 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         i = self.editor.circuit.get_branches().index(self.api_object)
         self.editor.plot_branch(i, self.api_object)
 
-    def setFromPort(self, fromPort):
+    def set_from_port(self, from_port: TerminalItem):
         """
         Set the From terminal in a connection
-        @param fromPort:
-        @return:
+        @param from_port: TerminalItem
         """
-        self.fromPort = fromPort
-        if self.fromPort:
-            self.pos1 = fromPort.scenePos()
-            self.fromPort.posCallbacks.append(self.setBeginPos)
-            self.fromPort.parent.setZValue(0)
 
-    def setToPort(self, toPort):
+        if self._from_port:
+            # there was a port before, unregister it
+            self._from_port.delete_hosting_connection(graphic_obj=self)
+
+        # register the new port
+        self._from_port = from_port
+        self._from_port.add_hosting_connection(graphic_obj=self, callback=self.setBeginPos)
+        self._from_port.update()
+        self._from_port.parent.setZValue(0)
+
+    def set_to_port(self, to_port: TerminalItem):
         """
         Set the To terminal in a connection
-        @param toPort:
-        @return:
+        @param to_port: TerminalItem
         """
-        self.toPort = toPort
-        if self.toPort:
-            self.pos2 = toPort.scenePos()
-            self.toPort.posCallbacks.append(self.setEndPos)
-            self.toPort.parent.setZValue(0)
+        if self._to_port:
+            # there was a port before, unregister it
+            self._to_port.delete_hosting_connection(graphic_obj=self)
 
-    def setEndPos(self, endpos):
+        # register the new port
+        self._to_port = to_port
+        self._to_port.add_hosting_connection(graphic_obj=self, callback=self.setEndPos)
+        self._to_port.update()
+        self._to_port.parent.setZValue(0)
+
+    def unregister_port_from(self):
+        """
+
+        :return:
+        """
+        if self._from_port:
+            self._from_port.delete_hosting_connection(graphic_obj=self)
+
+    def unregister_port_to(self):
+        """
+
+        :return:
+        """
+        if self._to_port:
+            self._to_port.delete_hosting_connection(graphic_obj=self)
+
+    def setEndPos(self, endpos: QPointF):
         """
         Set the starting position
         @param endpos:
@@ -595,7 +626,7 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         self.pos2 = endpos
         self.redraw()
 
-    def setBeginPos(self, pos1):
+    def setBeginPos(self, pos1: QPointF):
         """
         Set the starting position
         @param pos1:
@@ -632,8 +663,9 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
     def set_pen(self, pen, scale: float = 1.0):
         """
         Set pen to all objects
-        Args:
-            pen:
+        :param pen:
+        :param scale:
+        :return:
         """
 
         self.pen_style = pen.style()
@@ -707,66 +739,15 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         """
         change the from or to bus of the nbranch with another selected bus
         """
-
-        idx_bus_list = self.editor.get_selected_buses()
-
-        if len(idx_bus_list) == 2:
-
-            # detect the bus and its combinations
-            if idx_bus_list[0][1] == self.api_object.bus_from:
-                idx, old_bus, old_bus_graphic_item = idx_bus_list[0]
-                idx, new_bus, new_bus_graphic_item = idx_bus_list[1]
-                side = 'f'
-            elif idx_bus_list[1][1] == self.api_object.bus_from:
-                idx, new_bus, new_bus_graphic_item = idx_bus_list[0]
-                idx, old_bus, old_bus_graphic_item = idx_bus_list[1]
-                side = 'f'
-            elif idx_bus_list[0][1] == self.api_object.bus_to:
-                idx, old_bus, old_bus_graphic_item = idx_bus_list[0]
-                idx, new_bus, new_bus_graphic_item = idx_bus_list[1]
-                side = 't'
-            elif idx_bus_list[1][1] == self.api_object.bus_to:
-                idx, new_bus, new_bus_graphic_item = idx_bus_list[0]
-                idx, old_bus, old_bus_graphic_item = idx_bus_list[1]
-                side = 't'
-            else:
-                error_msg("The 'from' or 'to' bus to change has not been selected!",
-                          'Change bus')
-                return
-
-            ok = yes_no_question(
-                text="Are you sure that you want to relocate the bus from {0} to {1}?".format(old_bus.name,
-                                                                                              new_bus.name),
-                title='Change bus')
-
-            if ok:
-                if side == 'f':
-                    self.api_object.bus_from = new_bus
-                    self.setFromPort(new_bus_graphic_item.get_terminal())
-                elif side == 't':
-                    self.api_object.bus_to = new_bus
-                    self.setToPort(new_bus_graphic_item.get_terminal())
-                else:
-                    raise Exception('Unsupported side value {}'.format(side))
-
-                # Add this line to the new connection bus
-                new_bus_graphic_item.add_hosting_connection(graphic_obj=self)
-                new_bus_graphic_item.get_terminal().update()
-
-                # remove thid line from the old bus connections
-                old_bus_graphic_item.delete_hosting_connection(graphic_obj=self)
-                old_bus_graphic_item.get_terminal().update()
-        else:
-            warning_msg("you must select the origin and destination buses!",
-                        title='Change bus')
+        self.editor.change_bus(line_graphics=self)
 
     def get_from_graphic_object(self):
         """
 
         :return:
         """
-        if self.fromPort:
-            return self.fromPort.parent
+        if self._from_port:
+            return self._from_port.parent
         else:
             return None
 
@@ -775,110 +756,181 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
 
         :return:
         """
-        if self.toPort:
-            return self.toPort.parent
+        if self._to_port:
+            return self._to_port.parent
         else:
             return None
 
     def is_from_port_a_bus(self) -> bool:
+        """
 
-        if self.fromPort:
-            return isinstance(self.fromPort.parent, BusGraphicItem)
+        :return:
+        """
+        if self._from_port:
+            return isinstance(self._from_port.parent, BusGraphicItem)
         else:
             return False
 
     def is_to_port_a_bus(self) -> bool:
+        """
 
-        if self.toPort:
-            return isinstance(self.toPort.parent, BusGraphicItem)
+        :return:
+        """
+        if self._to_port:
+            return isinstance(self._to_port.parent, BusGraphicItem)
         else:
             return False
 
     def is_from_port_a_tr3(self) -> bool:
+        """
 
-        if self.fromPort:
+        :return:
+        """
+        if self._from_port:
             if 'Transformer3WGraphicItem' not in sys.modules:
                 from GridCal.Gui.BusBranchEditorWidget.Branches.transformer3w_graphics import Transformer3WGraphicItem
-            return isinstance(self.fromPort.parent, Transformer3WGraphicItem)
+            return isinstance(self._from_port.parent, Transformer3WGraphicItem)
         else:
             return False
 
     def is_to_port_a_tr3(self) -> bool:
+        """
 
-        if self.toPort:
+        :return:
+        """
+        if self._to_port:
             if 'Transformer3WGraphicItem' not in sys.modules:
                 from GridCal.Gui.BusBranchEditorWidget.Branches.transformer3w_graphics import Transformer3WGraphicItem
-            return isinstance(self.toPort.parent, Transformer3WGraphicItem)
+            return isinstance(self._to_port.parent, Transformer3WGraphicItem)
         else:
             return False
 
     def is_from_port_a_fluid_node(self) -> bool:
+        """
 
-        if self.fromPort:
-            return isinstance(self.fromPort.parent, FluidNodeGraphicItem)
+        :return:
+        """
+        if self._from_port:
+            return isinstance(self._from_port.parent, FluidNodeGraphicItem)
         else:
             return False
 
     def is_to_port_a_fluid_node(self) -> bool:
+        """
 
-        if self.toPort:
-            return isinstance(self.toPort.parent, FluidNodeGraphicItem)
+        :return:
+        """
+        if self._to_port:
+            return isinstance(self._to_port.parent, FluidNodeGraphicItem)
         else:
             return False
 
     def get_bus_from(self) -> Bus:
+        """
+
+        :return:
+        """
         return self.get_from_graphic_object().api_object
 
     def get_bus_to(self) -> Bus:
+        """
+
+        :return:
+        """
         return self.get_to_graphic_object().api_object
 
     def get_fluid_node_from(self) -> FluidNode:
+        """
+
+        :return:
+        """
         return self.get_from_graphic_object().api_object
 
     def get_fluid_node_to(self) -> FluidNode:
+        """
+
+        :return:
+        """
         return self.get_to_graphic_object().api_object
 
     def get_fluid_node_graphics_from(self) -> FluidNodeGraphicItem:
+        """
+
+        :return:
+        """
         return self.get_from_graphic_object()
 
     def get_fluid_node_graphics_to(self) -> FluidNodeGraphicItem:
+        """
+
+        :return:
+        """
         return self.get_to_graphic_object()
 
     def connected_between_buses(self):
+        """
 
+        :return:
+        """
         return self.is_from_port_a_bus() and self.is_to_port_a_bus()
-    def connected_between_bus_and_tr3(self):
 
+    def connected_between_bus_and_tr3(self):
+        """
+
+        :return:
+        """
         return self.is_from_port_a_bus() and self.is_to_port_a_tr3()
 
     def conneted_between_tr3_and_bus(self):
+        """
 
+        :return:
+        """
         return self.is_from_port_a_tr3() and self.is_to_port_a_bus()
 
     def connected_between_fluid_nodes(self):
+        """
 
+        :return:
+        """
         return self.is_from_port_a_fluid_node() and self.is_to_port_a_fluid_node()
 
     def connected_between_fluid_node_and_bus(self):
+        """
 
+        :return:
+        """
         return self.is_from_port_a_fluid_node() and self.is_to_port_a_bus()
 
     def connected_between_bus_and_fluid_node(self):
+        """
 
+        :return:
+        """
         return self.is_from_port_a_bus() and self.is_to_port_a_fluid_node()
 
     def should_be_a_converter(self):
+        """
 
-        return self.fromPort.parent.api_object.is_dc != self.toPort.parent.api_object.is_dc
+        :return:
+        """
+        return self._from_port.parent.api_object.is_dc != self._to_port.parent.api_object.is_dc
 
     def should_be_a_dc_line(self):
+        """
 
-        return self.fromPort.parent.api_object.is_dc and self.toPort.parent.api_object.is_dc
+        :return:
+        """
+        return self._from_port.parent.api_object.is_dc and self._to_port.parent.api_object.is_dc
 
     def should_be_a_transformer(self, branch_connection_voltage_tolerance=0.1):
+        """
 
-        bus_from = self.fromPort.parent.api_object
-        bus_to = self.toPort.parent.api_object
+        :param branch_connection_voltage_tolerance:
+        :return:
+        """
+        bus_from = self._from_port.parent.api_object
+        bus_to = self._to_port.parent.api_object
 
         V1 = min(bus_to.Vnom, bus_from.Vnom)
         V2 = max(bus_to.Vnom, bus_from.Vnom)

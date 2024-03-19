@@ -591,7 +591,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
             self.api_object.active = not self.api_object.active
 
             # change the Branches state (snapshot)
-            for host in self._terminal.hosting_connections:
+            for host in self._terminal._hosting_connections:
                 if host.api_object is not None:
                     host.set_enable(val=self.api_object.active)
 
@@ -606,7 +606,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
                     self.editor.set_active_status_to_profile(self.api_object, override_question=True)
 
                     # change the Branches state (time series)
-                    for host in self._terminal.hosting_connections:
+                    for host in self._terminal._hosting_connections:
                         if host.api_object is not None:
                             self.editor.set_active_status_to_profile(host.api_object, override_question=True)
 
@@ -721,25 +721,6 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         :return: TerminalItem
         """
         return self._terminal
-
-    def add_hosting_connection(self, graphic_obj):
-        """
-        Add object graphically connected to the graphical bus
-        :param graphic_obj:
-        :return:
-        """
-        self._terminal.hosting_connections.append(graphic_obj)
-
-    def delete_hosting_connection(self, graphic_obj):
-        """
-        Delete object graphically connected to the graphical bus
-        :param graphic_obj:
-        :return:
-        """
-        if graphic_obj in self._terminal.hosting_connections:
-            self._terminal.hosting_connections.remove(graphic_obj)
-        else:
-            print(f'No such hosting connection {self.api_object.name} -> {graphic_obj.api_object.name}')
 
     def add_object(self, api_obj: Union[None, INJECTION_DEVICE_TYPES] = None):
         """

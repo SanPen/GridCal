@@ -32,22 +32,22 @@ if TYPE_CHECKING:  # Only imports the below statements during type checking
 class WindingGraphicItem(LineGraphicTemplateItem):
 
     def __init__(self,
-                 fromPort: TerminalItem,
-                 toPort: Union[TerminalItem, None],
+                 from_port: TerminalItem,
+                 to_port: Union[TerminalItem, None],
                  editor: BusBranchEditorWidget,
                  width=5,
                  api_object: Winding = None):
         """
 
-        :param fromPort:
-        :param toPort:
+        :param from_port:
+        :param to_port:
         :param editor:
         :param width:
         :param api_object:
         """
         LineGraphicTemplateItem.__init__(self=self,
-                                         fromPort=fromPort,
-                                         toPort=toPort,
+                                         from_port=from_port,
+                                         to_port=to_port,
                                          editor=editor,
                                          width=width,
                                          api_object=api_object)

@@ -52,13 +52,13 @@ class TerminalItem(QGraphicsRectItem):
         # terminal parent object
         self.parent = parent
 
-        self.hosting_connections = list()
+        # object -> callback
+        self._hosting_connections = dict()
 
         self.editor = editor
 
         # Name:
         self.name = name
-        self.posCallbacks = list()
         self.setFlag(QGraphicsRectItem.GraphicsItemFlag.ItemSendsScenePositionChanges, True)
 
     @property
@@ -85,6 +85,25 @@ class TerminalItem(QGraphicsRectItem):
     def yc(self):
         return self.pos().y() - self.h / 2
 
+    def add_hosting_connection(self, graphic_obj, callback):
+        """
+        Add object graphically connected to the graphical bus
+        :param graphic_obj:
+        :return:
+        """
+        self._hosting_connections[graphic_obj] = callback
+
+    def delete_hosting_connection(self, graphic_obj):
+        """
+        Delete object graphically connected to the graphical bus
+        :param graphic_obj:
+        :return:
+        """
+        if graphic_obj in self._hosting_connections.keys():
+            del self._hosting_connections[graphic_obj]
+        else:
+            print(f'No such hosting connection {self.name} -> {graphic_obj}')
+
     def update(self, rect: Union[QRectF, QRect] = ...):
         """
 
@@ -93,7 +112,7 @@ class TerminalItem(QGraphicsRectItem):
         """
         self.process_callbacks(self.parent.pos() + self.pos())
 
-    def process_callbacks(self, value, scale: float = 1.0):
+    def process_callbacks(self, value: QPointF, scale: float = 1.0):
         """
 
         :param value:
@@ -102,12 +121,11 @@ class TerminalItem(QGraphicsRectItem):
         """
         w = self.rect().width()
         h2 = self.rect().height() / 2.0
-        n = len(self.posCallbacks)
+        n = len(self._hosting_connections)
         dx = w / (n + 1)
-        for i, call_back in enumerate(self.posCallbacks):
-            call_back(value + QPointF((i + 1) * dx, h2))
 
-        for connection in self.hosting_connections:
+        for i, (connection, call_back) in enumerate(self._hosting_connections.items()):
+            call_back(value + QPointF((i + 1) * dx, h2))
             w = connection.pen_width
             style = connection.pen_style
             color = connection.pen_color
@@ -135,16 +153,8 @@ class TerminalItem(QGraphicsRectItem):
         Returns:
 
         """
-
-        self.hosting_connections.append(self.editor.start_connection(self))
-
-    def remove_connection(self, started_branch):
-        """
-
-        :param started_branch:
-        :return:
-        """
-        self.hosting_connections.remove(started_branch)
+        lne = self.editor.start_connection(self)
+        # self.add_hosting_connection(graphic_obj=lne, callback=lne.setBeginPos)
 
     def remove_all_connections(self) -> None:
         """
@@ -152,15 +162,18 @@ class TerminalItem(QGraphicsRectItem):
         Returns:
 
         """
-        n = len(self.hosting_connections)
+        n = len(self._hosting_connections)
         for i in range(n - 1, -1, -1):
-            self.hosting_connections[i].remove_widget()
-            self.hosting_connections[i].remove(ask=False)
-            self.hosting_connections.pop(i)
+            self._hosting_connections[i].remove_widget()
+            self._hosting_connections[i].remove(ask=False)
+            self._hosting_connections.pop(i)
 
     def __str__(self):
 
-        return f"Terminal [{hex(id(self))}]"
+        if self.parent is None:
+            return f"Terminal [{hex(id(self))}]"
+        else:
+            return f"Terminal {self.parent} [{hex(id(self))}]"
 
     def __repr__(self):
         return str(self)
@@ -204,4 +217,3 @@ class HandleItem(QGraphicsEllipseItem):
 
         # Call superclass method:
         return super(HandleItem, self).itemChange(change, value)
-

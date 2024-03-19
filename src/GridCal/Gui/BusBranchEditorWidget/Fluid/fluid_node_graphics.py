@@ -133,11 +133,11 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
         self.label.setScale(FONT_SCALE)
 
         # connection terminals the block
-        self.terminal = TerminalItem('s', parent=self, editor=self.editor)  # , h=self.h))
-        self.terminal.setPen(QPen(Qt.transparent, self.pen_width, self.style, Qt.RoundCap, Qt.RoundJoin))
+        self._terminal = TerminalItem('s', parent=self, editor=self.editor)  # , h=self.h))
+        self._terminal.setPen(QPen(Qt.transparent, self.pen_width, self.style, Qt.RoundCap, Qt.RoundJoin))
 
         # Create corner for resize:
-        self.sizer = HandleItem(self.terminal)
+        self.sizer = HandleItem(self._terminal)
         self.sizer.setPos(self.w, 20)
         self.sizer.posChangeCallbacks.append(self.change_size)  # Connect the callback
         self.sizer.setFlag(self.GraphicsItemFlag.ItemIsMovable)
@@ -222,7 +222,7 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
             brush:  Qt Color
         """
         self.tile.setBrush(brush)
-        self.terminal.setBrush(brush)
+        self._terminal.setBrush(brush)
 
     def redraw(self):
         """
@@ -267,8 +267,8 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
         # lower
         y0 = h + self.offset
         x0 = 0
-        self.terminal.setPos(x0, y0)
-        self.terminal.setRect(0, 0, w, 10)
+        self._terminal.setPos(x0, y0)
+        self._terminal.setRect(0, 0, w, 10)
 
         # Set text
         if self.api_object is not None:
@@ -302,7 +302,7 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
             x += inc_x
 
         # Arrange line positions
-        self.terminal.process_callbacks(self.pos() + self.terminal.pos())
+        self._terminal.process_callbacks(self.pos() + self._terminal.pos())
 
     def create_children_widgets(self, injections_by_tpe: Dict[DeviceType, List[EditableDevice]]):
         """
@@ -389,26 +389,7 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
         Get the hosting terminal of this bus object
         :return: TerminalItem
         """
-        return self.terminal
-
-    def add_hosting_connection(self, graphic_obj):
-        """
-        Add object graphically connected to the graphical bus
-        :param graphic_obj:
-        :return:
-        """
-        self.terminal.hosting_connections.append(graphic_obj)
-
-    def delete_hosting_connection(self, graphic_obj):
-        """
-        Delete object graphically connected to the graphical bus
-        :param graphic_obj:
-        :return:
-        """
-        if graphic_obj in self.terminal.hosting_connections:
-            self.terminal.hosting_connections.remove(graphic_obj)
-        else:
-            print(f'No such hosting connection {self.api_object.name} -> {graphic_obj.api_object.name}')
+        return self._terminal
 
     def add_object(self, api_obj: Union[None, EditableDevice] = None):
         """
@@ -495,7 +476,7 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
         """
         Delete all bus connections
         """
-        self.terminal.remove_all_connections()
+        self._terminal.remove_all_connections()
 
     def remove(self, ask=True):
         """
