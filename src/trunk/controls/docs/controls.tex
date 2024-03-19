@@ -426,9 +426,96 @@ The expression defining the behavior of AC/DC links is simply the active power l
 	P_f^\text{acdc} + P_t^\text{acdc} = a + b\frac{\sqrt{P_f^{2,acdc} + Q_f^{2,acdc}}}{V_f} + c\frac{P_f^{2,acdc} + Q_f^{2,acdc}}{V_f^2}.	
 \end{equation}
 
+\newpage
+\section{Revisited power flow}
+% P and Q eq.
+% Pf and Pt eq. trafos and acdc
+The traditional power flow problem considers three types of buses: slack, PQ and PV. The set of non-linear equations is solved for the voltage magnitudes and angles of the PQ and PV buses (as the slack is already set). However, this conventional formulation poses some challenges, such as:
+\begin{itemize}
+	\item Remote controls are not taken into account.
+	\item No more than two magnitudes can be controlled in a given bus.
+	\item Lack of consideration when it comes to controlled branch magnitudes.
+	\item The bus type is predefined, which is not the case in the generalized power flow as there can be control switching.
+	\item DC grids are not considered.
+\end{itemize}
+All these limitations are hindering the capability to model and solve modern grids. The generalized power flow is a step forward in this direction, as it allows for a more flexible and comprehensive approach to the power flow problem.
 
-\section{Switching rules}
+The adopted methodology has to be able to handle:
+\begin{itemize}
+	\item Remote controls and the possibility to control more than two magnitudes in a bus.
+	\item Controlled branch magnitudes.
+	\item Interconnected AC/DC grids to be solved in a unified manner.
+	\item All potential bus types without explicitly defining them.
+\end{itemize}
+For this, we start by defining a general bus object, such as indicated in Fig.~\ref{fig:busgen}.
 
+\begin{figure}[!htb]
+	\centering
+	\begin{circuitikz}[american]
+		\draw[line width=0.7mm] (0,0) to [short] (7,0);
+		\draw (0.6,0) to[generic, l=$G_i+jB_i$] (0.6,-3);
+		\draw (3.5,-3) to [isource, l_=$I^\text{re}_i + jI^\text{im}_i$] (3.5,-0);
+		\draw (6.4,0) to [cute european voltage source, l=$P_i+jQ_i$] (6.4,-3);
+		\draw (0,-3) to [short] (7,-3);
+		\draw (2,0) to [short] (1,2);
+		\draw (2.5,0) to [short] (1.75,2);
+		\draw (3.0,0) to [short] (2.5,2);
+		\draw (5,0) to [short] (6,2);
+		\draw (4.5,0) to [short] (5.25,2);
+		\draw (4.0,0) to [short] (4.5,2);
+		\draw[dashed] (2,1) ellipse (1.2cm and 0.55cm);
+		\draw[dashed] (5.0,1) ellipse (1.2cm and 0.55cm);
+
+		\node at (6.6,1.0) {$\Gamma$};
+		\node at (0.4,1.0) {$\kappa$};
+		\node at (7.6, 0.0) {$V_i\angle \delta_i$};
+		
+		\end{circuitikz}		
+		\caption{Representation of a generic bus with a ZIP shunt model, passive branch connections, and active branch connections.}
+		\label{fig:busgen}
+\end{figure}
+\FloatBarrier
+Branches belong to two sets:
+\begin{itemize}
+	\item $\kappa$: set of branches that can be represented through admittances. For example, power lines and transformers, even if controllable, are part of this set.
+	\item $\Gamma$: set of branches interfaced to elements that cannot be inherently modelled with admittances, mainly AC/DC converters.
+\end{itemize}
+It is observed in Fig.~\ref{fig:busgen} that the ZIP model is employed to represent the shunt elements. This is a common practice in power systems, as it allows for a more accurate representation of the load. The ZIP model is given by three components: a constant admittance, a constant current source, and a constant power injection. The three components can be grouped under a ZIP power that takes the form:
+\begin{equation}
+	P_i^\text{zip} + jQ_i^\text{zip} = V_i^2(G_i-jB_i) + V_i\angle\delta_i(I_i^\text{re} - jI_i^\text{im}) + P_i + jQ_i.
+\end{equation}
+With this, by applying Kirchhoff laws, the nodal balance equation can be written as:
+\begin{equation}
+	P^\text{zip} + jQ^\text{zip} =  {V}Y^*_\text{bus}{V}^* + {C}_f^\Gamma({P}^\Gamma_f + j{Q}^\Gamma_f) + {C}_t^\Gamma({P}^\Gamma_t + j{Q}^\Gamma_t),
+\end{equation}
+where $Y_\text{bus}$ is the bus admittance matrix, and $C_f^\Gamma$ and $C_t^\Gamma$ are the from and to connectivity matrices of the set $\Gamma$. The set $\Gamma$ is the set of branches interfaced to elements that cannot be inherently modelled with admittances, mainly AC/DC converters. Hence, the powers $P^\Gamma_f$, $Q^\Gamma_f$, $P^\Gamma_t$, and $Q^\Gamma_t$ are the active and reactive powers of the branches belonging to this set. Notice that up to this point the only addition with respect to the conventional power flow is the presence of the set $\Gamma$ and the related objects.
+
+Then, it is worth mentioning the employed models for all branches. A branch $b$ that belongs to the set $\kappa$ is modelled through the two by two admittance matrix of the form:
+\begin{equation}
+	Y_{b\in\kappa} = 
+	\begin{bmatrix}
+		Y_{ff} & Y_{ft} \\
+		Y_{tf} & Y_{tt}
+	\end{bmatrix},
+\end{equation}
+where $Y_{ff}$, $Y_{ft}$, $Y_{tf}$, and $Y_{tt}$ are the admittances of the branches seen from the combination of bused from $f$ and to $t$. The selection of what bus belongs to $f$ and what bus to $t$ is arbitrary and to be fully decided by the user. 
+
+For example, in the case of a transformer, the admittance matrix is given by:
+\begin{equation}
+	Y_{b\in \kappa} = 
+	\begin{bmatrix}
+		\dfrac{Y_s + Y_{sh}}{m^2} & -\dfrac{Y_s}{me^{-j\tau}} \vspace{0.2cm} \\
+		-\dfrac{Y_s}{me^{j\tau}} & Y_s + Y_{sh} \\
+	\end{bmatrix},
+\end{equation}
+where $Y_s$ stands for the series admittance component, $Y_{sh}$ for the shunt admittance term, $m$ for the tap ratio, and $\tau$ for the phase shift angle. A similar expression is obtained for a regular power line.
+
+Branches linking the bus to an active element that cannot be modelled through a combination of admittances are part of the $\Gamma$ set. The way to interface the bus with these active devices is through the branch power injections $P_f^\Gamma$, $Q_f^\Gamma$, $P_t^\Gamma$, and $Q_t^\Gamma$ and the connectivity matrices $C_f^\Gamma$ and $C_t^\Gamma$. Such an active device can have some interior equation defining its behavior. For instance, in an AC/DC converter, the active powers on the $f$ and $t$ sides are related through the power loss equation:
+\begin{equation}
+	P_f + P_t = a + b\frac{\sqrt{P_f^{2} + Q_f^{2}}}{V_f} + c\frac{P_f^{2} + Q_f^{2}}{V_f^2},
+\end{equation}
+where the convention is to use $f$ for the AC side and $t$ for the DC side. The parameters $a$, $b$, and $c$ are the coefficients of the power loss equation, and $P_f$ and $Q_f$ are the active and reactive powers on the AC side. 
+	
 	
 \section{Bibliography}
 	\printbibliography
