@@ -20,12 +20,13 @@ from GridCalEngine.data_logger import DataLogger
 import numpy as np
 
 
-def get_slack_id(machines: List[SynchronousMachine], terminals: List[Terminal]):
+def get_slack_id(machines: List[SynchronousMachine]):
     for m in machines:
         if m.referencePriority == 1:
-            for term in terminals:
-                if term.ConductingEquipment.rdfid == m.rdfid:
-                    return term.TopologicalNode.rdfid
+            if not isinstance(m.Terminals, list):
+                return m.Terminals.TopologicalNode.rdfid
+            else:
+                return m.Terminals[0].TopologicalNode.rdfid
     return None
 
 

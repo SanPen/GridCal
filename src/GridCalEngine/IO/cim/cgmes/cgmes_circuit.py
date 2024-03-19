@@ -219,6 +219,8 @@ def find_references(elements_by_type: Dict[str, List[IdentifiedObject]],
                 # try to get the property value, else, fill with None
                 # at this point val is always the string that came in the XML
                 value = getattr(element, property_name)
+                if value is not None and isinstance(value, IdentifiedObject):
+                    value = value.rdfid
 
                 if value is not None:  # if the value is something...
 
@@ -311,8 +313,11 @@ def find_references(elements_by_type: Dict[str, List[IdentifiedObject]],
                                                      value='Not found',
                                                      expected_value=value)
                         else:
-                            referenced_object_list = []
+                            referenced_object_list = set()
                             for v in value:
+                                if isinstance(v, IdentifiedObject):
+                                    v = v.rdfid
+
                                 referenced_object = all_objects_dict.get(v, None)
 
                                 if referenced_object is None and all_objects_dict_boundary:
@@ -330,7 +335,7 @@ def find_references(elements_by_type: Dict[str, List[IdentifiedObject]],
                                         referenced_object.used = True
 
                                     # set the referenced object in the property
-                                    referenced_object_list.append(referenced_object)
+                                    referenced_object_list.add(referenced_object)
 
                                     # register the inverse reference
                                     referenced_object.add_reference(element, find_attribute(referenced_object=referenced_object, obj=element, association_type_dict=association_type_dict))
@@ -371,7 +376,10 @@ def find_references(elements_by_type: Dict[str, List[IdentifiedObject]],
                                                          device_property=property_name,
                                                          value='Not found',
                                                          expected_value=v)
-                            setattr(element, property_name, referenced_object_list)
+                            if len(referenced_object_list) > 1:
+                                setattr(element, property_name, list(referenced_object_list))
+                            elif len(referenced_object_list) == 1:
+                                setattr(element, property_name, list(referenced_object_list)[0])
 
                     if cim_prop.out_of_the_standard:
                         logger.add_warning(msg='Property supported but out of the standard',

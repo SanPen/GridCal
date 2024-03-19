@@ -199,15 +199,21 @@ class Base:
         if attr_name is None:
             return
         if isinstance(getattr(self, attr_name), list):
-            tmp_list = [obj]
-            tmp_list.extend(getattr(self, attr_name))
-            setattr(self, attr_name, tmp_list)
+            tmp_list = {obj}
+            tmp_list.update(set(getattr(self, attr_name)))
+            if len(tmp_list) > 1:
+                setattr(self, attr_name, list(tmp_list))
+            else:
+                setattr(self, attr_name, list(tmp_list)[0])
         else:
             if getattr(self, attr_name) is None:
                 setattr(self, attr_name, obj)
             else:
-                tmp_list = [obj, getattr(self, attr_name)]
-                setattr(self, attr_name, tmp_list)
+                tmp_list = {obj, getattr(self, attr_name)}
+                if len(tmp_list) > 1:
+                    setattr(self, attr_name, list(tmp_list))
+                else:
+                    setattr(self, attr_name, list(tmp_list)[0])
 
     def register_property(self, name: str,
                           class_type: object,
