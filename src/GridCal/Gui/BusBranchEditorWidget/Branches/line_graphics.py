@@ -206,7 +206,7 @@ class LineGraphicItem(LineGraphicTemplateItem):
             toupfc.setIcon(toupfc_icon)
             toupfc.triggered.connect(self.to_upfc)
 
-            menu.exec_(event.screenPos())
+            menu.exec(event.screenPos())
         else:
             pass
 
@@ -346,3 +346,13 @@ class LineGraphicItem(LineGraphicTemplateItem):
         ok = yes_no_question('Are you sure that you want to convert this line into a UPFC device?', 'Convert line')
         if ok:
             self.editor.convert_line_to_upfc(line=self.api_object, line_graphic=self)
+
+    def __str__(self):
+
+        if self.api_object is None:
+            return f"Line graphics {hex(id(self))}"
+        else:
+            return f"Graphics of {self.api_object.name} [{hex(id(self))}]"
+
+    def __repr__(self):
+        return str(self)

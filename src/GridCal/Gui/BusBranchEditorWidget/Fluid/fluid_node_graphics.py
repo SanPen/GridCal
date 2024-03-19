@@ -76,7 +76,6 @@ class VerticalWaterIndicator(QGraphicsRectItem):
         self.label.setPlainText(f'{percentage}%')
 
 
-
 class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
     """
       Represents a block in the diagram
@@ -385,6 +384,32 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
 
         menu.exec_(event.screenPos())
 
+    def get_terminal(self) -> TerminalItem:
+        """
+        Get the hosting terminal of this bus object
+        :return: TerminalItem
+        """
+        return self.terminal
+
+    def add_hosting_connection(self, graphic_obj):
+        """
+        Add object graphically connected to the graphical bus
+        :param graphic_obj:
+        :return:
+        """
+        self.terminal.hosting_connections.append(graphic_obj)
+
+    def delete_hosting_connection(self, graphic_obj):
+        """
+        Delete object graphically connected to the graphical bus
+        :param graphic_obj:
+        :return:
+        """
+        if graphic_obj in self.terminal.hosting_connections:
+            self.terminal.hosting_connections.remove(graphic_obj)
+        else:
+            print(f'No such hosting connection {self.api_object.name} -> {graphic_obj.api_object.name}')
+
     def add_object(self, api_obj: Union[None, EditableDevice] = None):
         """
         Add any recognized object
@@ -425,7 +450,6 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
         :return:
         """
         if api_obj is None or type(api_obj) is bool:
-
             api_obj = self.editor.circuit.add_fluid_turbine(node=self.api_object, api_obj=None)
             api_obj.generator = self.editor.circuit.add_generator(bus=self.create_bus_if_necessary())
             api_obj.generator.name = f"Turbine @{self.api_object.name}"

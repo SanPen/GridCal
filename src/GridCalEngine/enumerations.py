@@ -1006,9 +1006,9 @@ class TapChangerTypes(Enum):
     """
     Types of objects that act as complicated variable types
     """
-    VoltageRegulation = "Voltage Regulation"
+    NoRegulation = 'NoRegulation'
+    VoltageRegulation = "VoltageRegulation"
     Asymmetrical = 'Asymmetrical'
-    Asymmetrical90 = 'Asymmetrical 90deg'
     Symmetrical = 'Symmetrical'
 
     def __str__(self) -> str:

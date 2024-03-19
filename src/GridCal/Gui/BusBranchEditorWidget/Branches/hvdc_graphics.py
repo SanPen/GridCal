@@ -28,8 +28,11 @@ if TYPE_CHECKING:  # Only imports the below statements during type checking
 
 class HvdcGraphicItem(LineGraphicTemplateItem):
 
-    def __init__(self, fromPort: TerminalItem, toPort: TerminalItem,
-                 editor: BusBranchEditorWidget, width=5,
+    def __init__(self,
+                 fromPort: TerminalItem,
+                 toPort: TerminalItem,
+                 editor: BusBranchEditorWidget,
+                 width=5,
                  api_object: HvdcLine = None):
         """
 

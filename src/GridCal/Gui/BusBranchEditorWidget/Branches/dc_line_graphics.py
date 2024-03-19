@@ -229,7 +229,9 @@ class DcLineEditor(QDialog):
 
 class DcLineGraphicItem(LineGraphicTemplateItem):
 
-    def __init__(self, fromPort: TerminalItem, toPort: TerminalItem,
+    def __init__(self,
+                 fromPort: TerminalItem,
+                 toPort: TerminalItem,
                  editor: BusBranchEditorWidget,
                  width=5, api_object: DcLine = None):
         """

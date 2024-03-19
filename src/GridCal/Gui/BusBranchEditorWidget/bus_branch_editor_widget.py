@@ -743,17 +743,17 @@ class BusBranchEditorWidget(QSplitter):
                         bus_t_graphic_obj = find_my_node(branch.bus_to.idtag, bus_dict, fluid_node_dict)
 
                         if bus_f_graphic_obj and bus_t_graphic_obj:
-                            terminal_from = bus_f_graphic_obj.terminal
-                            terminal_to = bus_t_graphic_obj.terminal
+                            # terminal_from = bus_f_graphic_obj.terminal
+                            # terminal_to = bus_t_graphic_obj.terminal
 
-                            graphic_object = LineGraphicItem(fromPort=terminal_from,
-                                                             toPort=terminal_to,
+                            graphic_object = LineGraphicItem(fromPort=bus_f_graphic_obj.get_terminal(),
+                                                             toPort=bus_t_graphic_obj.get_terminal(),
                                                              editor=self,
                                                              api_object=branch)
                             self.add_to_scene(graphic_object=graphic_object)
 
-                            terminal_from.hosting_connections.append(graphic_object)
-                            terminal_to.hosting_connections.append(graphic_object)
+                            bus_f_graphic_obj.add_hosting_connection(graphic_object)
+                            bus_t_graphic_obj.add_hosting_connection(graphic_object)
                             graphic_object.redraw()
                             points_group.locations[idtag].graphic_object = graphic_object
 
@@ -766,17 +766,17 @@ class BusBranchEditorWidget(QSplitter):
                         bus_t_graphic_obj = find_my_node(branch.bus_to.idtag, bus_dict, fluid_node_dict)
 
                         if bus_f_graphic_obj and bus_t_graphic_obj:
-                            terminal_from = bus_f_graphic_obj.terminal
-                            terminal_to = bus_t_graphic_obj.terminal
+                            # terminal_from = bus_f_graphic_obj.terminal
+                            # terminal_to = bus_t_graphic_obj.terminal
 
-                            graphic_object = DcLineGraphicItem(fromPort=terminal_from,
-                                                               toPort=terminal_to,
+                            graphic_object = DcLineGraphicItem(fromPort=bus_f_graphic_obj.get_terminal(),
+                                                               toPort=bus_t_graphic_obj.get_terminal(),
                                                                editor=self,
                                                                api_object=branch)
                             self.add_to_scene(graphic_object=graphic_object)
 
-                            terminal_from.hosting_connections.append(graphic_object)
-                            terminal_to.hosting_connections.append(graphic_object)
+                            bus_f_graphic_obj.add_hosting_connection(graphic_object)
+                            bus_t_graphic_obj.add_hosting_connection(graphic_object)
                             graphic_object.redraw()
                             points_group.locations[idtag].graphic_object = graphic_object
 
@@ -789,17 +789,15 @@ class BusBranchEditorWidget(QSplitter):
                         bus_t_graphic_obj = find_my_node(branch.bus_to.idtag, bus_dict, fluid_node_dict)
 
                         if bus_f_graphic_obj and bus_t_graphic_obj:
-                            terminal_from = bus_f_graphic_obj.terminal
-                            terminal_to = bus_t_graphic_obj.terminal
 
-                            graphic_object = HvdcGraphicItem(fromPort=terminal_from,
-                                                             toPort=terminal_to,
+                            graphic_object = HvdcGraphicItem(fromPort=bus_f_graphic_obj.get_terminal(),
+                                                             toPort=bus_t_graphic_obj.get_terminal(),
                                                              editor=self,
                                                              api_object=branch)
                             self.add_to_scene(graphic_object=graphic_object)
 
-                            terminal_from.hosting_connections.append(graphic_object)
-                            terminal_to.hosting_connections.append(graphic_object)
+                            bus_f_graphic_obj.add_hosting_connection(graphic_object)
+                            bus_t_graphic_obj.add_hosting_connection(graphic_object)
                             graphic_object.redraw()
                             points_group.locations[idtag].graphic_object = graphic_object
 
@@ -812,17 +810,15 @@ class BusBranchEditorWidget(QSplitter):
                         bus_t_graphic_obj = find_my_node(branch.bus_to.idtag, bus_dict, fluid_node_dict)
 
                         if bus_f_graphic_obj and bus_t_graphic_obj:
-                            terminal_from = bus_f_graphic_obj.terminal
-                            terminal_to = bus_t_graphic_obj.terminal
 
-                            graphic_object = VscGraphicItem(fromPort=terminal_from,
-                                                            toPort=terminal_to,
+                            graphic_object = VscGraphicItem(fromPort=bus_f_graphic_obj.get_terminal(),
+                                                            toPort=bus_t_graphic_obj.get_terminal(),
                                                             editor=self,
                                                             api_object=branch)
                             self.add_to_scene(graphic_object=graphic_object)
 
-                            terminal_from.hosting_connections.append(graphic_object)
-                            terminal_to.hosting_connections.append(graphic_object)
+                            bus_f_graphic_obj.add_hosting_connection(graphic_object)
+                            bus_t_graphic_obj.add_hosting_connection(graphic_object)
                             graphic_object.redraw()
                             points_group.locations[idtag].graphic_object = graphic_object
 
@@ -835,17 +831,15 @@ class BusBranchEditorWidget(QSplitter):
                         bus_t_graphic_obj = find_my_node(branch.bus_to.idtag, bus_dict, fluid_node_dict)
 
                         if bus_f_graphic_obj and bus_t_graphic_obj:
-                            terminal_from = bus_f_graphic_obj.terminal
-                            terminal_to = bus_t_graphic_obj.terminal
 
-                            graphic_object = UpfcGraphicItem(fromPort=terminal_from,
-                                                             toPort=terminal_to,
+                            graphic_object = UpfcGraphicItem(fromPort=bus_f_graphic_obj.get_terminal(),
+                                                             toPort=bus_t_graphic_obj.get_terminal(),
                                                              editor=self,
                                                              api_object=branch)
                             self.add_to_scene(graphic_object=graphic_object)
 
-                            terminal_from.hosting_connections.append(graphic_object)
-                            terminal_to.hosting_connections.append(graphic_object)
+                            bus_f_graphic_obj.add_hosting_connection(graphic_object)
+                            bus_t_graphic_obj.add_hosting_connection(graphic_object)
                             graphic_object.redraw()
                             points_group.locations[idtag].graphic_object = graphic_object
 
@@ -858,17 +852,15 @@ class BusBranchEditorWidget(QSplitter):
                         bus_t_graphic_obj = find_my_node(branch.bus_to.idtag, bus_dict, fluid_node_dict)
 
                         if bus_f_graphic_obj and bus_t_graphic_obj:
-                            terminal_from = bus_f_graphic_obj.terminal
-                            terminal_to = bus_t_graphic_obj.terminal
 
-                            graphic_object = TransformerGraphicItem(fromPort=terminal_from,
-                                                                    toPort=terminal_to,
+                            graphic_object = TransformerGraphicItem(fromPort=bus_f_graphic_obj.get_terminal(),
+                                                                    toPort=bus_t_graphic_obj.get_terminal(),
                                                                     editor=self,
                                                                     api_object=branch)
                             self.add_to_scene(graphic_object=graphic_object)
 
-                            terminal_from.hosting_connections.append(graphic_object)
-                            terminal_to.hosting_connections.append(graphic_object)
+                            bus_f_graphic_obj.add_hosting_connection(graphic_object)
+                            bus_t_graphic_obj.add_hosting_connection(graphic_object)
                             graphic_object.redraw()
                             points_group.locations[idtag].graphic_object = graphic_object
 
@@ -889,17 +881,15 @@ class BusBranchEditorWidget(QSplitter):
                         bus_t_graphic_obj = fluid_node_dict.get(branch.target.idtag, None)
 
                         if bus_f_graphic_obj and bus_t_graphic_obj:
-                            terminal_from = bus_f_graphic_obj.terminal
-                            terminal_to = bus_t_graphic_obj.terminal
 
-                            graphic_object = FluidPathGraphicItem(fromPort=terminal_from,
-                                                                  toPort=terminal_to,
+                            graphic_object = FluidPathGraphicItem(fromPort=bus_f_graphic_obj.get_terminal(),
+                                                                  toPort=bus_t_graphic_obj.get_terminal(),
                                                                   editor=self,
                                                                   api_object=branch)
                             self.add_to_scene(graphic_object=graphic_object)
 
-                            terminal_from.hosting_connections.append(graphic_object)
-                            terminal_to.hosting_connections.append(graphic_object)
+                            bus_f_graphic_obj.add_hosting_connection(graphic_object)
+                            bus_t_graphic_obj.add_hosting_connection(graphic_object)
                             graphic_object.redraw()
                             points_group.locations[idtag].graphic_object = graphic_object
 
@@ -1874,16 +1864,13 @@ class BusBranchEditorWidget(QSplitter):
             else:
                 bus_t_graphic0: BusGraphicItem = bus_t_graphic_data.graphic_object
 
-        terminal_from = bus_f_graphic0.terminal
-        terminal_to = bus_t_graphic0.terminal
-
-        graphic_object = LineGraphicItem(fromPort=terminal_from,
-                                         toPort=terminal_to,
+        graphic_object = LineGraphicItem(fromPort=bus_f_graphic0.get_terminal(),
+                                         toPort=bus_t_graphic0.get_terminal(),
                                          editor=self,
                                          api_object=branch)
 
-        terminal_from.hosting_connections.append(graphic_object)
-        terminal_to.hosting_connections.append(graphic_object)
+        bus_f_graphic0.add_hosting_connection(graphic_object)
+        bus_t_graphic0.add_hosting_connection(graphic_object)
         graphic_object.redraw()
         self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_object)
         return graphic_object
@@ -1898,16 +1885,14 @@ class BusBranchEditorWidget(QSplitter):
         :param bus_f_graphic
         :param bus_t_graphic
         """
-        terminal_from = bus_f_graphic.terminal
-        terminal_to = bus_t_graphic.terminal
 
-        graphic_object = LineGraphicItem(fromPort=terminal_from,
-                                         toPort=terminal_to,
+        graphic_object = LineGraphicItem(fromPort=bus_f_graphic.get_terminal(),
+                                         toPort=bus_t_graphic.get_terminal(),
                                          editor=self,
                                          api_object=branch)
 
-        terminal_from.hosting_connections.append(graphic_object)
-        terminal_to.hosting_connections.append(graphic_object)
+        bus_f_graphic.add_hosting_connection(graphic_object)
+        bus_t_graphic.add_hosting_connection(graphic_object)
         graphic_object.redraw()
         self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_object)
         return graphic_object
@@ -2055,17 +2040,17 @@ class BusBranchEditorWidget(QSplitter):
         bus3_graphics: BusGraphicItem = self.diagram.query_point(elm.bus3).graphic_object
 
         conn1 = WindingGraphicItem(fromPort=tr3_graphic_object.terminals[0],
-                                   toPort=bus1_graphics.terminal,
+                                   toPort=bus1_graphics.get_terminal(),
                                    editor=self)
         tr3_graphic_object.set_connection(i=0, bus=elm.bus1, conn=conn1)
 
         conn2 = WindingGraphicItem(fromPort=tr3_graphic_object.terminals[1],
-                                   toPort=bus2_graphics.terminal,
+                                   toPort=bus2_graphics.get_terminal(),
                                    editor=self)
         tr3_graphic_object.set_connection(i=1, bus=elm.bus2, conn=conn2)
 
         conn3 = WindingGraphicItem(fromPort=tr3_graphic_object.terminals[2],
-                                   toPort=bus3_graphics.terminal,
+                                   toPort=bus3_graphics.get_terminal(),
                                    editor=self)
         tr3_graphic_object.set_connection(i=2, bus=elm.bus3, conn=conn3)
 
@@ -2252,8 +2237,8 @@ class BusBranchEditorWidget(QSplitter):
                                                                bus_t_graphic=fl_to)
 
         # update position
-        fl_from.terminal.update()
-        fl_to.terminal.update()
+        fl_from.get_terminal().update()
+        fl_to.get_terminal().update()
 
         # delete from the schematic
         self.remove_from_scene(item_graphic)
@@ -2270,16 +2255,21 @@ class BusBranchEditorWidget(QSplitter):
         """
         battery = self.circuit.convert_generator_to_battery(gen)
 
-        bus_graphic_object: BusGraphicItem = self.diagram.query_point(gen.bus).graphic_object
+        bus_graphic_info = self.diagram.query_point(gen.bus)
 
-        # add device to the schematic
-        if bus_graphic_object is not None:
-            bus_graphic_object.add_battery(battery)
+        if bus_graphic_info is not None:
+            bus_graphic_object: Union[BusGraphicItem, None] = bus_graphic_info.graphic_object
+
+            # add device to the schematic
+            if bus_graphic_object is not None:
+                bus_graphic_object.add_battery(battery)
+            else:
+                raise Exception("Bus graphics not found! this is likely a bug")
+
+            # delete from the schematic
+            graphic_object.remove(ask=False)
         else:
-            raise Exception("Bus graphics not found! this is likely a bug")
-
-        # delete from the schematic
-        graphic_object.remove(ask=False)
+            raise Exception("Bus graphic info not found! this is likely a bug")
 
     def add_object_to_the_schematic(
             self,

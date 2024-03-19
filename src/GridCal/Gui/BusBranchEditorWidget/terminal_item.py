@@ -14,12 +14,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from typing import Union
+from __future__ import annotations
+from typing import Union, Any, TYPE_CHECKING
 from PySide6.QtCore import Qt, QPointF, QRectF, QRect
 from PySide6.QtGui import QPen, QCursor
-from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsItem, QGraphicsEllipseItem
+from PySide6.QtWidgets import (QGraphicsRectItem, QGraphicsItem, QGraphicsEllipseItem, QGraphicsSceneMouseEvent)
 
 from GridCal.Gui.BusBranchEditorWidget.generic_graphics import ACTIVE
+
+if TYPE_CHECKING:  # Only imports the below statements during type checking
+    from GridCal.Gui.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
 
 
 class TerminalItem(QGraphicsRectItem):
@@ -27,7 +31,7 @@ class TerminalItem(QGraphicsRectItem):
     Represents a connection point to a subsystem
     """
 
-    def __init__(self, name, editor=None, parent=None, h=10.0, w=10.0):
+    def __init__(self, name: str, editor: BusBranchEditorWidget, parent=None, h=10.0, w=10.0):
         """
 
         @param name:
@@ -82,13 +86,18 @@ class TerminalItem(QGraphicsRectItem):
         return self.pos().y() - self.h / 2
 
     def update(self, rect: Union[QRectF, QRect] = ...):
+        """
 
+        :param rect:
+        :return:
+        """
         self.process_callbacks(self.parent.pos() + self.pos())
 
     def process_callbacks(self, value, scale: float = 1.0):
         """
 
         :param value:
+        :param scale:
         :return:
         """
         w = self.rect().width()
@@ -104,7 +113,7 @@ class TerminalItem(QGraphicsRectItem):
             color = connection.pen_color
             connection.set_pen(QPen(color, w, style), scale)
 
-    def itemChange(self, change, value):
+    def itemChange(self, change: QGraphicsItem.GraphicsItemChange, value: Any) -> Any:
         """
 
         @param change:
@@ -117,7 +126,7 @@ class TerminalItem(QGraphicsRectItem):
         else:
             return super(TerminalItem, self).itemChange(change, value)
 
-    def mousePressEvent(self, event):
+    def mousePressEvent(self, event: QGraphicsSceneMouseEvent) -> None:
         """
         Start a connection
         Args:
@@ -130,10 +139,14 @@ class TerminalItem(QGraphicsRectItem):
         self.hosting_connections.append(self.editor.start_connection(self))
 
     def remove_connection(self, started_branch):
+        """
 
+        :param started_branch:
+        :return:
+        """
         self.hosting_connections.remove(started_branch)
 
-    def remove_all_connections(self):
+    def remove_all_connections(self) -> None:
         """
         Removes all the terminal connections
         Returns:
@@ -144,6 +157,13 @@ class TerminalItem(QGraphicsRectItem):
             self.hosting_connections[i].remove_widget()
             self.hosting_connections[i].remove(ask=False)
             self.hosting_connections.pop(i)
+
+    def __str__(self):
+
+        return f"Terminal [{hex(id(self))}]"
+
+    def __repr__(self):
+        return str(self)
 
 
 class HandleItem(QGraphicsEllipseItem):

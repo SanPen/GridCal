@@ -742,18 +742,22 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
             if ok:
                 if side == 'f':
                     self.api_object.bus_from = new_bus
-                    self.setFromPort(new_bus_graphic_item.terminal)
+                    self.setFromPort(new_bus_graphic_item.get_terminal())
                 elif side == 't':
                     self.api_object.bus_to = new_bus
-                    self.setToPort(new_bus_graphic_item.terminal)
+                    self.setToPort(new_bus_graphic_item.get_terminal())
                 else:
                     raise Exception('Unsupported side value {}'.format(side))
 
+                # Add this line to the new connection bus
                 new_bus_graphic_item.add_hosting_connection(graphic_obj=self)
+                new_bus_graphic_item.get_terminal().update()
+
+                # remove thid line from the old bus connections
                 old_bus_graphic_item.delete_hosting_connection(graphic_obj=self)
-                new_bus_graphic_item.terminal.update()
+                old_bus_graphic_item.get_terminal().update()
         else:
-            warning_msg("you have to select the origin and destination buses!",
+            warning_msg("you must select the origin and destination buses!",
                         title='Change bus')
 
     def get_from_graphic_object(self):

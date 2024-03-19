@@ -56,8 +56,15 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
       - description
     """
 
-    def __init__(self, parent=None, index=0, editor: BusBranchEditorWidget = None, bus: Bus = None,
-                 h: int = 20, w: int = 80, x: int = 0, y: int = 0):
+    def __init__(self, 
+                 parent=None, 
+                 index=0, 
+                 editor: BusBranchEditorWidget = None, 
+                 bus: Bus = None,
+                 h: int = 20, 
+                 w: int = 80, 
+                 x: int = 0, 
+                 y: int = 0):
         """
 
         :param parent:
@@ -114,11 +121,11 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         self.tile.setOpacity(0.7)
 
         # connection terminals the block
-        self.terminal = TerminalItem('s', parent=self, editor=self.editor)  # , h=self.h))
-        self.terminal.setPen(QPen(Qt.transparent, self.pen_width, self.style, Qt.RoundCap, Qt.RoundJoin))
+        self._terminal = TerminalItem('s', parent=self, editor=self.editor)  # , h=self.h))
+        self._terminal.setPen(QPen(Qt.transparent, self.pen_width, self.style, Qt.RoundCap, Qt.RoundJoin))
 
         # Create corner for resize:
-        self.sizer = HandleItem(self.terminal)
+        self.sizer = HandleItem(self._terminal)
         self.sizer.setPos(self.w, self.h)
         self.sizer.posChangeCallbacks.append(self.change_size)  # Connect the callback
         self.sizer.setFlag(self.GraphicsItemFlag.ItemIsMovable)
@@ -138,7 +145,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
 
         self.set_position(x, y)
 
-    def recolour_mode(self):
+    def recolour_mode(self) -> None:
         """
         Change the colour according to the system theme
         """
@@ -224,7 +231,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
             brush:  Qt Color
         """
         self.tile.setBrush(brush)
-        self.terminal.setBrush(brush)
+        self._terminal.setBrush(brush)
 
     def merge(self, other_bus_graphic: "BusGraphicItem") -> None:
         """
@@ -277,8 +284,8 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         # lower
         y0 = h + self.offset
         x0 = 0
-        self.terminal.setPos(x0, y0)
-        self.terminal.setRect(0, 0, w, 10)
+        self._terminal.setPos(x0, y0)
+        self._terminal.setRect(0, 0, w, 10)
 
         # Set text
         if self.api_object is not None:
@@ -312,7 +319,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
             x += inc_x
 
         # Arrange line positions
-        self.terminal.process_callbacks(self.pos() + self.terminal.pos())
+        self._terminal.process_callbacks(self.pos() + self._terminal.pos())
 
     def create_children_widgets(self, injections_by_tpe: Dict[DeviceType, List[INJECTION_DEVICE_TYPES]]):
         """
@@ -534,7 +541,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         """
         Delete all bus connections
         """
-        self.terminal.remove_all_connections()
+        self._terminal.remove_all_connections()
 
     def reduce(self):
         """
@@ -584,7 +591,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
             self.api_object.active = not self.api_object.active
 
             # change the Branches state (snapshot)
-            for host in self.terminal.hosting_connections:
+            for host in self._terminal.hosting_connections:
                 if host.api_object is not None:
                     host.set_enable(val=self.api_object.active)
 
@@ -599,7 +606,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
                     self.editor.set_active_status_to_profile(self.api_object, override_question=True)
 
                     # change the Branches state (time series)
-                    for host in self.terminal.hosting_connections:
+                    for host in self._terminal.hosting_connections:
                         if host.api_object is not None:
                             self.editor.set_active_status_to_profile(host.api_object, override_question=True)
 
@@ -703,10 +710,17 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         Set the bus width according to the label text
         """
         # Todo: fix the resizing on double click
-        h = self.terminal.boundingRect().height()
+        h = self._terminal.boundingRect().height()
         w = len(self.api_object.name) * 8 + 10
         self.change_size(w=w, h=h)
         self.sizer.setPos(w, self.h)
+
+    def get_terminal(self) -> TerminalItem:
+        """
+        Get the hosting terminal of this bus object
+        :return: TerminalItem
+        """
+        return self._terminal
 
     def add_hosting_connection(self, graphic_obj):
         """
@@ -714,7 +728,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         :param graphic_obj:
         :return:
         """
-        self.terminal.hosting_connections.append(graphic_obj)
+        self._terminal.hosting_connections.append(graphic_obj)
 
     def delete_hosting_connection(self, graphic_obj):
         """
@@ -722,7 +736,10 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         :param graphic_obj:
         :return:
         """
-        self.terminal.hosting_connections.remove(graphic_obj)
+        if graphic_obj in self._terminal.hosting_connections:
+            self._terminal.hosting_connections.remove(graphic_obj)
+        else:
+            print(f'No such hosting connection {self.api_object.name} -> {graphic_obj.api_object.name}')
 
     def add_object(self, api_obj: Union[None, INJECTION_DEVICE_TYPES] = None):
         """
@@ -871,3 +888,13 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         self.arrange_children()
 
         return _grph
+
+    def __str__(self):
+
+        if self.api_object is None:
+            return f"Bus graphics {hex(id(self))}"
+        else:
+            return f"Graphics of {self.api_object.name} [{hex(id(self))}]"
+
+    def __repr__(self):
+        return str(self)
