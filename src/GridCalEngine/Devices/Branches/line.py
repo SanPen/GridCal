@@ -16,18 +16,18 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import numpy as np
-from typing import Union, Tuple
+from typing import Union
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
-from GridCalEngine.enumerations import BuildStatus
+from GridCalEngine.enumerations import BuildStatus, SubObjectType, DeviceType
 from GridCalEngine.Devices.Branches.underground_line_type import UndergroundLineType
 from GridCalEngine.Devices.Branches.overhead_line_type import OverheadLineType
 from GridCalEngine.Devices.Parents.branch_parent import BranchParent
 from GridCalEngine.Devices.Branches.sequence_line_type import SequenceLineType
 from GridCalEngine.Devices.Branches.transformer import Transformer2W
-from GridCalEngine.Devices.Parents.editable_device import DeviceType
 from GridCalEngine.Devices.profile import Profile
+from GridCalEngine.Devices.Branches.line_locations import LineLocations
 
 
 class Line(BranchParent):
@@ -135,7 +135,10 @@ class Line(BranchParent):
         self.alpha = alpha
 
         # type template
-        self.template = template
+        self.template: Union[OverheadLineType, SequenceLineType, UndergroundLineType] = template
+
+        # Line locations
+        self._locations: LineLocations = LineLocations(n_points=0)
 
         self.register(key='R', units='p.u.', tpe=float, definition='Total positive sequence resistance.')
         self.register(key='X', units='p.u.', tpe=float, definition='Total positive sequence reactance.')
@@ -167,7 +170,8 @@ class Line(BranchParent):
                                  '0 would be at the "from" side,'
                                  '1 would be at the "to" side,'
                                  'therefore 0.5 is at the middle.')
-        self.register(key='template', units='', tpe=DeviceType.SequenceLineDevice, definition='')
+        self.register(key='template', units='', tpe=DeviceType.SequenceLineDevice, definition='', editable=False)
+        self.register(key='locations', units='', tpe=SubObjectType.LineLocations, definition='', editable=False)
 
     @property
     def temp_oper_prof(self) -> Profile:
@@ -185,6 +189,23 @@ class Line(BranchParent):
             self._temp_oper_prof.set(arr=val)
         else:
             raise Exception(str(type(val)) + 'not supported to be set into a temp_oper_prof')
+
+    @property
+    def locations(self) -> LineLocations:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._locations
+
+    @locations.setter
+    def locations(self, val: Union[LineLocations, np.ndarray]):
+        if isinstance(val, LineLocations):
+            self._locations = val
+        elif isinstance(val, np.ndarray):
+            self._locations.set(data=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a locations')
 
     @property
     def R_corrected(self):

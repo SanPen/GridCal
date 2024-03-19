@@ -478,10 +478,13 @@ class SimulationsMain(TimeEventsMain):
         self.ui.resultsTableView.setModel(None)
         self.ui.resultsLogsTreeView.setModel(None)
 
-    def get_compatible_areas_from_to(self) -> Tuple[bool,
-    List[Tuple[int, dev.Bus]], List[Tuple[int, dev.Bus]],
-    List[Tuple[int, object, float]], List[Tuple[int, object, float]],
-    List[dev.Area], List[dev.Area]]:
+    def get_compatible_areas_from_to(self) -> Tuple[
+        bool,
+        List[Tuple[int, dev.Bus]],
+        List[Tuple[int, dev.Bus]],
+        List[Tuple[int, object, float]],
+        List[Tuple[int, object, float]],
+        List[dev.Area], List[dev.Area]]:
         """
         Get the lists that help defining the inter area objects
         :return: success?,

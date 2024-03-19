@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+import json
 import math
 from typing import Dict, Union, List, Tuple, Any, Callable
 import pandas as pd
@@ -26,7 +27,7 @@ from GridCalEngine.Devices.Parents.editable_device import GCProp
 from GridCalEngine.Devices.profile import Profile
 from GridCalEngine.Devices.sparse_array import SparseArray
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
-from GridCalEngine.enumerations import DiagramType, DeviceType
+from GridCalEngine.enumerations import DiagramType, DeviceType, SubObjectType
 
 
 def get_objects_dictionary() -> Dict[str, ALL_DEV_TYPES]:
@@ -378,8 +379,11 @@ def gridcal_object_to_json(elm: ALL_DEV_TYPES) -> Dict[str, str]:
             if prop.has_profile():
                 data[name + '_prof'] = profile_todict(elm.get_profile_by_prop(prop=prop))
 
-        elif prop.tpe == DeviceType.GeneratorQCurve:
-            data[name] = obj.str()
+        elif prop.tpe == SubObjectType.GeneratorQCurve:
+            data[name] = obj.to_list()
+
+        elif prop.tpe == SubObjectType.LineLocations:
+            data[name] = obj.to_list()
 
         else:
             # if the object is not of a primary type, get the idtag instead
@@ -640,82 +644,83 @@ def parse_object_type_from_dataframe(main_df: pd.DataFrame,
                         # the property of the file exists, parse it
                         if isinstance(gc_prop.tpe, DeviceType):
 
-                            if gc_prop.tpe == DeviceType.GeneratorQCurve:
-                                val = dev.GeneratorQCurve()
-                                val.parse(property_value)
-                                elm.set_snapshot_value(gc_prop.name, val)
+                            # we must look for the refference in elements_dict
+                            collection = elements_dict_by_type.get(gc_prop.tpe, None)
 
-                                if gc_prop.has_profile():
-                                    prof.fill(val)
+                            if collection is not None:
+                                ref_idtag = str(property_value)
+                                ref_elm = collection.get(ref_idtag, None)
 
-                            else:
-                                # we must look for the refference in elements_dict
-                                collection = elements_dict_by_type.get(gc_prop.tpe, None)
+                                if ref_elm is not None:
+                                    elm.set_snapshot_value(gc_prop.name, ref_elm)
 
-                                if collection is not None:
-                                    ref_idtag = str(property_value)
-                                    ref_elm = collection.get(ref_idtag, None)
+                                    if gc_prop.has_profile():
+                                        prof.fill(ref_elm)
 
-                                    if ref_elm is not None:
-                                        elm.set_snapshot_value(gc_prop.name, ref_elm)
-
-                                        if gc_prop.has_profile():
-                                            prof.fill(ref_elm)
-
-                                    else:
-
-                                        # legacy operations: this is from when grids referenced buses by name
-                                        if gc_prop.name in ['bus_from', 'bus_to', 'bus']:
-                                            ref_elm = look_in_collection_by_name(key=ref_idtag, collection=collection)
-                                            if ref_elm is None:
-                                                could_not_fix_it = True
-                                            else:
-                                                could_not_fix_it = False
-
-                                                elm.set_snapshot_value(gc_prop.name, ref_elm)
-
-                                                if gc_prop.has_profile():
-                                                    prof.fill(ref_elm)
-                                        else:
-                                            could_not_fix_it = True
-
-                                        if could_not_fix_it:
-                                            logger.add_error("Could not locate refference",
-                                                             device=row.get('idtag', 'not provided'),
-                                                             device_class=template_elm.device_type.value,
-                                                             device_property=gc_prop.name,
-                                                             value=ref_idtag)
                                 else:
 
-                                    # legacy operations: this is from when area, zone and substation were strings
-                                    if gc_prop.name == 'area':
+                                    # legacy operations: this is from when grids referenced buses by name
+                                    if gc_prop.name in ['bus_from', 'bus_to', 'bus']:
+                                        ref_elm = look_in_collection_by_name(key=ref_idtag, collection=collection)
+                                        if ref_elm is None:
+                                            could_not_fix_it = True
+                                        else:
+                                            could_not_fix_it = False
 
-                                        if str(property_value).strip() != '':
-                                            area = on_the_fly.get_create_area(property_value=str(property_value))
-                                            elm.set_snapshot_value(gc_prop.name, area)
+                                            elm.set_snapshot_value(gc_prop.name, ref_elm)
 
-                                    elif gc_prop.name == 'zone':
-
-                                        if str(property_value).strip() != '':
-                                            zone = on_the_fly.get_create_zone(property_value=str(property_value))
-                                            elm.set_snapshot_value(gc_prop.name, zone)
-
-                                    elif gc_prop.name == 'substation':
-
-                                        if str(property_value).strip() != '':
-                                            substation = on_the_fly.get_create_substation(
-                                                property_value=str(property_value))
-                                            elm.set_snapshot_value(gc_prop.name, substation)
-                                    elif gc_prop.name == 'template' and property_value == 'BranchTemplate':
-                                        # skip this
-                                        pass
+                                            if gc_prop.has_profile():
+                                                prof.fill(ref_elm)
                                     else:
+                                        could_not_fix_it = True
 
-                                        logger.add_error("No device of the refferenced type",
+                                    if could_not_fix_it:
+                                        logger.add_error("Could not locate refference",
                                                          device=row.get('idtag', 'not provided'),
                                                          device_class=template_elm.device_type.value,
                                                          device_property=gc_prop.name,
-                                                         value=property_value)
+                                                         value=ref_idtag)
+                            else:
+
+                                # legacy operations: this is from when area, zone and substation were strings
+                                if gc_prop.name == 'area':
+
+                                    if str(property_value).strip() != '':
+                                        area = on_the_fly.get_create_area(property_value=str(property_value))
+                                        elm.set_snapshot_value(gc_prop.name, area)
+
+                                elif gc_prop.name == 'zone':
+
+                                    if str(property_value).strip() != '':
+                                        zone = on_the_fly.get_create_zone(property_value=str(property_value))
+                                        elm.set_snapshot_value(gc_prop.name, zone)
+
+                                elif gc_prop.name == 'substation':
+
+                                    if str(property_value).strip() != '':
+                                        substation = on_the_fly.get_create_substation(
+                                            property_value=str(property_value))
+                                        elm.set_snapshot_value(gc_prop.name, substation)
+                                elif gc_prop.name == 'template' and property_value == 'BranchTemplate':
+                                    # skip this
+                                    pass
+                                else:
+
+                                    logger.add_error("No device of the refferenced type",
+                                                     device=row.get('idtag', 'not provided'),
+                                                     device_class=template_elm.device_type.value,
+                                                     device_property=gc_prop.name,
+                                                     value=property_value)
+
+                        elif isinstance(gc_prop.tpe, SubObjectType):
+
+                            if gc_prop.tpe == SubObjectType.GeneratorQCurve:
+                                q_curve: dev.GeneratorQCurve = elm.get_snapshot_value(gc_prop)
+
+                                if isinstance(property_value, str):
+                                    q_curve.parse(json.loads(property_value))
+                                else:
+                                    q_curve.parse(property_value)
 
                         elif gc_prop.tpe == str:
                             # set the value directly
@@ -899,43 +904,51 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
 
                             if isinstance(gc_prop.tpe, DeviceType):
 
-                                if gc_prop.tpe == DeviceType.GeneratorQCurve:
-                                    val = dev.GeneratorQCurve()
-                                    val.parse(property_value)
-                                    elm.set_snapshot_value(gc_prop.name, val)
-                                    search_and_apply_json_profile(json_entry=json_entry,
-                                                                  gc_prop=gc_prop,
-                                                                  elm=elm,
-                                                                  property_value=val)
+                                # this is a hyperlink to another object
+                                # we must look for the refference in elements_dict
+                                collection = elements_dict_by_type.get(gc_prop.tpe, None)
 
-                                else:
-                                    # we must look for the refference in elements_dict
-                                    collection = elements_dict_by_type.get(gc_prop.tpe, None)
+                                if collection is not None:
+                                    ref_idtag = str(property_value)
+                                    ref_elm = collection.get(ref_idtag, None)
 
-                                    if collection is not None:
-                                        ref_idtag = str(property_value)
-                                        ref_elm = collection.get(ref_idtag, None)
+                                    if ref_elm is not None:
+                                        elm.set_snapshot_value(gc_prop.name, ref_elm)
+                                        search_and_apply_json_profile(json_entry=json_entry,
+                                                                      gc_prop=gc_prop,
+                                                                      elm=elm,
+                                                                      property_value=ref_elm,
+                                                                      collection=collection)
 
-                                        if ref_elm is not None:
-                                            elm.set_snapshot_value(gc_prop.name, ref_elm)
-                                            search_and_apply_json_profile(json_entry=json_entry,
-                                                                          gc_prop=gc_prop,
-                                                                          elm=elm,
-                                                                          property_value=ref_elm,
-                                                                          collection=collection)
-
-                                        else:
-                                            logger.add_error("Could not locate refference",
-                                                             device=elm.idtag,
-                                                             device_class=template_elm.device_type.value,
-                                                             device_property=gc_prop.name,
-                                                             value=ref_idtag)
                                     else:
-                                        logger.add_error("No device of the refferenced type",
+                                        logger.add_error("Could not locate refference",
                                                          device=elm.idtag,
                                                          device_class=template_elm.device_type.value,
                                                          device_property=gc_prop.name,
-                                                         value=property_value)
+                                                         value=ref_idtag)
+                                else:
+                                    logger.add_error("No device of the refferenced type",
+                                                     device=elm.idtag,
+                                                     device_class=template_elm.device_type.value,
+                                                     device_property=gc_prop.name,
+                                                     value=property_value)
+
+                            elif isinstance(gc_prop.tpe, SubObjectType):  # this is a hyperlink to another object
+
+                                if gc_prop.tpe == SubObjectType.GeneratorQCurve:
+
+                                    # get the curve object and fill it with the json data
+                                    q_curve: dev.GeneratorQCurve = elm.get_snapshot_value(gc_prop)
+                                    if isinstance(property_value, str):
+                                        q_curve.parse(json.loads(property_value))
+                                    else:
+                                        q_curve.parse(property_value)
+
+                                elif gc_prop.tpe == SubObjectType.LineLocations:
+
+                                    # get the line locations object and fill it with the json data
+                                    locations_obj: dev.LineLocations = elm.get_snapshot_value(gc_prop)
+                                    locations_obj.parse(property_value)
 
                             elif gc_prop.tpe == str:
                                 # set the value directly

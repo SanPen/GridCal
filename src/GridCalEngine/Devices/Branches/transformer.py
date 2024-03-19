@@ -193,9 +193,11 @@ class Transformer2W(ControllableBranchParent):
                                           device_type=DeviceType.Transformer2WDevice)
 
         # set the high and low voltage values
-        self.HV = 0
-        self.LV = 0
-        self.set_hv_and_lv(HV, LV)
+        self.HV = HV
+        self.LV = LV
+
+        if self.bus_from and self.bus_to:
+            self.set_hv_and_lv(HV, LV)
 
         self.Sn = nominal_power
 

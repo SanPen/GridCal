@@ -23,7 +23,8 @@ import numpy as np
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Parents.branch_parent import BranchParent
 from GridCalEngine.Devices.profile import Profile
-from GridCalEngine.enumerations import DeviceType, BuildStatus
+from GridCalEngine.enumerations import DeviceType, BuildStatus, SubObjectType
+from GridCalEngine.Devices.Branches.line_locations import LineLocations
 
 
 class DcLine(BranchParent):
@@ -132,6 +133,9 @@ class DcLine(BranchParent):
         # type template
         self.template = template
 
+        # Line locations
+        self._locations: LineLocations = LineLocations(n_points=0)
+
         self.register(key='R', units='p.u.', tpe=float, definition='Total positive sequence resistance.')
         self.register(key='length', units='km', tpe=float, definition='Length of the line (not used for calculation)')
         self.register(key='r_fault', units='p.u.', tpe=float,
@@ -140,6 +144,8 @@ class DcLine(BranchParent):
                       definition='Per-unit positioning of the fault:0 would be at the "from" side,1 would '
                                  'be at the "to" side,therefore 0.5 is at the middle.')
         self.register(key='template', units='', tpe=DeviceType.SequenceLineDevice, definition='', editable=False)
+
+        self.register(key='locations', units='', tpe=SubObjectType.LineLocations, definition='', editable=False)
 
     @property
     def temp_oper_prof(self) -> Profile:
@@ -157,6 +163,23 @@ class DcLine(BranchParent):
             self._temp_oper_prof.set(arr=val)
         else:
             raise Exception(str(type(val)) + 'not supported to be set into a temp_oper_prof')
+
+    @property
+    def locations(self) -> LineLocations:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._locations
+
+    @locations.setter
+    def locations(self, val: Union[LineLocations, np.ndarray]):
+        if isinstance(val, LineLocations):
+            self._locations = val
+        elif isinstance(val, np.ndarray):
+            self._locations.set(data=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a locations')
 
     @property
     def R_corrected(self):

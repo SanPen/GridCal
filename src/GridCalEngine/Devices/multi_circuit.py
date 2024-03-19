@@ -465,7 +465,7 @@ class MultiCircuit:
         """
         self.time_profile = pd.to_datetime(arr, unit='s')
 
-    def get_objects_with_profiles_list(self) -> List[dev.EditableDevice]:
+    def get_objects_with_profiles_list(self) -> List[ALL_DEV_TYPES]:
         """
         get objects_with_profiles in the form of list
         :return: List[dev.EditableDevice]
@@ -886,14 +886,14 @@ class MultiCircuit:
                 self.get_fluid_turbines(),
                 self.get_fluid_p2xs()]
 
-    def get_contingency_devices(self) -> List[dev.EditableDevice]:
+    def get_contingency_devices(self) -> List[ALL_DEV_TYPES]:
         """
         Get a list of devices susceptible to be included in contingencies
         :return: list of devices
         """
         return self.get_branches() + self.get_generators()
 
-    def get_investment_devices(self) -> List[dev.EditableDevice]:
+    def get_investment_devices(self) -> List[ALL_DEV_TYPES]:
         """
         Get a list of devices susceptible to be included in investments
         :return: list of devices

@@ -16,8 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import json
 import numpy as np
-from typing import Tuple
-from matplotlib.pyplot import axis
+from typing import Tuple, List
 from matplotlib import pyplot as plt
 from GridCalEngine.basic_structures import Mat
 
@@ -32,20 +31,18 @@ class GeneratorQCurve:
         # Array of points [(P1, Qmin1, Qmax1), (P2, Qmin2, Qmax2), ...]
         self._q_points: Mat = np.zeros((0, 3))
 
-    def set_data(self, data: Mat):
-        """
-        Set the data
-        :param data: numpy array with [(P1, Qmin1, Qmax1), (P2, Qmin2, Qmax2), ...], must have 3 rows or more
-        """
-        assert data.shape[1] == 3  # must have exactly 3 columns: P, Qmin, Qmax
-        assert data.shape[0] > 0  # must have at leat one point
-        self._q_points = data
-
     def get_data(self):
+        """
+        Get the data
+        :return:
+        """
         return self._q_points
 
     def get_data_by_type(self):
-
+        """
+        Get the data points P, Qmin, Qmax
+        :return: P, Qmin, Qmax
+        """
         return self._q_points[:, 0], self._q_points[:, 1], self._q_points[:, 2]
 
     def make_default_q_curve(self, Snom: float, Qmin: float, Qmax: float, n: int = 3):
@@ -156,25 +153,55 @@ class GeneratorQCurve:
         """
         return np.allclose(self._q_points, other._q_points)
 
+    def to_list(self) -> list:
+        """
+        Get list of points
+        :return:
+        """
+        return self._q_points.tolist()
+
     def str(self) -> str:
         """
         Get string representation of the curve
         :return: json string of list of lists: "[[P1, Qmin1, Qmax1], [P2, Qmin2, Qmax2], ...]"
         """
-        return json.dumps(self._q_points.tolist())
+        return json.dumps(self.to_list())
 
-    def parse(self, val: str):
+    # def parse(self, data: List[float]) -> None:
+    #     """
+    #     Parse json curve data
+    #     :param data: string value: [[P1, Qmin1, Qmax1], [P2, Qmin2, Qmax2], ...]
+    #     """
+    #     n = len(data)
+    #     self._q_points = np.zeros((n, 3))
+    #     for i, row in enumerate(data):
+    #         self._q_points[i, 0] = row[0]
+    #         self._q_points[i, 1] = row[1]
+    #         self._q_points[i, 2] = row[2]
+
+    def parse(self, data: List[Tuple[float, float, float]]):
         """
-        Parse json curve data
-        :param val: string value: "[[P1, Qmin1, Qmax1], [P2, Qmin2, Qmax2], ...]"
+        Parse Json data
+        :param data: List of lists with (latitude, longitude, altitude)
         """
-        data = json.loads(val)
-        n = len(data)
-        self._q_points = np.zeros((n, 3))
-        for i, row in enumerate(data):
-            self._q_points[i, 0] = row[0]
-            self._q_points[i, 1] = row[1]
-            self._q_points[i, 2] = row[2]
+        if len(data) > 0:
+            values = np.array(data)
+            self.set(data=values)
+        else:
+            self._q_points = np.zeros((0, 4))
+
+    def set(self, data: np.ndarray):
+        """
+        Parse Json data
+        :param data: List of lists with (latitude, longitude, altitude)
+        """
+        if data.ndim == 2:
+            if data.shape[1] == 3:
+                self._q_points = data
+            else:
+                raise ValueError('GeneratorQCurve data does not have exactly 3 columns')
+        else:
+            raise ValueError('GeneratorQCurve data must be 2-dimensional: (n_points, 3)')
 
     def get_Qmin(self):
 
