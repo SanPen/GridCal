@@ -22,6 +22,7 @@ from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.Simulations.NTC.ntc_options import OptimalNetTransferCapacityOptions
 from GridCalEngine.Simulations.NTC.ntc_results import OptimalNetTransferCapacityResults
+from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.basic_structures import Logger
 
 
@@ -31,7 +32,7 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
 
     def __init__(self, grid: MultiCircuit,
                  options: OptimalNetTransferCapacityOptions,
-                 pf_options: "PowerFlowOptions"):
+                 pf_options: PowerFlowOptions):
         """
         PowerFlowDriver class constructor
         :param grid: MultiCircuit Object

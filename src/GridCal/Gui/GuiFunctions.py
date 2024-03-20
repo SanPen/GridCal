@@ -29,6 +29,7 @@ from GridCalEngine.enumerations import DeviceType, ResultTypes
 from GridCalEngine.basic_structures import IntVec
 from GridCalEngine.data_logger import DataLogger
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit, IdentifiedObject
+from GridCalEngine.Devices.line_locations import LineLocations
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
@@ -379,6 +380,80 @@ class ComplexDelegate(QtWidgets.QItemDelegate):
         """
         val = complex(editor.children()[1].value(), editor.children()[2].value())
         model.setData(index, val)
+
+
+class LineLocationsDelegate(QtWidgets.QItemDelegate):
+    """
+    A delegate that places a fully functioning LineLocations Editor in every
+    cell of the column to which it's applied
+    """
+
+    commitData = QtCore.Signal(object)
+
+    def __init__(self, parent):
+        """
+        Constructor
+        :param parent: QTableView parent object
+        """
+        QtWidgets.QItemDelegate.__init__(self, parent)
+
+        self.line_locations: Union[None, LineLocations] = None
+
+    @QtCore.Slot()
+    def returnPressed(self):
+        """
+
+        :return:
+        """
+        self.commitData.emit(self.sender())
+
+    def createEditor(self, parent: QtWidgets.QWidget,
+                     option: QtWidgets.QStyleOptionViewItem,
+                     index: QtCore.QModelIndex):
+        """
+
+        :param parent:
+        :param option:
+        :param index:
+        :return:
+        """
+        editor = QtWidgets.QFrame(parent)
+        main_layout = QtWidgets.QHBoxLayout(editor)
+        main_layout.layout().setContentsMargins(0, 0, 0, 0)
+
+        table = QtWidgets.QTableView()
+
+        main_layout.addWidget(table)
+        # main_layout.addWidget(button)
+
+        # button.clicked.connect(self.returnPressed)
+        editor.showNormal()
+
+        return editor
+
+    def setEditorData(self, editor: QtWidgets.QFrame, index):
+        """
+
+        :param editor:
+        :param index:
+        :return:
+        """
+        editor.blockSignals(True)
+        self.line_locations: LineLocations = index.model().data(index, role=QtCore.Qt.ItemDataRole.DisplayRole)
+        # editor.children()[1].setValue(val.real)
+        editor.blockSignals(False)
+
+    def setModelData(self, editor: QtWidgets.QFrame, model: ObjectsModel, index):
+        """
+
+        :param editor:
+        :param model:
+        :param index:
+        :return:
+        """
+        table = editor.children()[1]
+        # model.setData(index, val)
+        print()
 
 
 class ColorPickerDelegate(QtWidgets.QItemDelegate):
@@ -807,7 +882,7 @@ class ObjectsModelOld(QtCore.QAbstractTableModel):
             attr_idx = index.column()
 
         if self.editable and self.attributes[attr_idx] not in self.non_editable_attributes:
-            return QtCore.Qt.ItemFlag.ItemIsEditable | QtCore.Qt.ItemFlag.ItemIsEnabled | QtCore.Qt.ItemFlag.ItemIsSelectable
+            return (QtCore.Qt.ItemFlag.ItemIsEditable | QtCore.Qt.ItemFlag.ItemIsEnabled | QtCore.Qt.ItemFlag.ItemIsSelectable)
         else:
             return QtCore.Qt.ItemFlag.ItemIsEnabled
 
@@ -1158,6 +1233,10 @@ class ObjectsModel(QtCore.QAbstractTableModel):
 
             elif tpe is complex:
                 delegate = ComplexDelegate(self.parent)
+                F(i, delegate)
+
+            elif tpe is LineLocations:
+                delegate = LineLocationsDelegate(self.parent)
                 F(i, delegate)
 
             elif tpe is None:
@@ -1741,7 +1820,7 @@ class RosetaObjectsModel(QtCore.QAbstractTableModel):
         else:
             obj_idx = index.row()
             attr_idx = index.column()
-            
+
         # check taken values
         if self.attributes[attr_idx] in self.check_unique:
             taken = self.attr_taken(self.attributes[attr_idx], value)
