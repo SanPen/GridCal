@@ -334,15 +334,7 @@ class Profile:
 
         if isinstance(other, (int, float)):
 
-            if self._is_sparse:
-
-                # Scale the map
-                self._sparse_array._map = {key: val * other
-                                           for key, val in self._sparse_array.get_map().items()}
-            else:
-
-                # Scale the dense array
-                self._dense_array *= other
+            self.scale(value=other)
 
         else:
             raise TypeError("Unsupported type {}".format(type(other)))
@@ -398,6 +390,21 @@ class Profile:
         self._sparse_array.fill(value)
         self._dense_array = None
         self._dtype = type(value)
+
+    def scale(self, value: Union[float, int]):
+        """
+        Scale this profile with the same value
+        :param value: any value
+        """
+        if self._is_sparse:
+
+            # Scale the map
+            self._sparse_array._map = {key: val * value
+                                       for key, val in self._sparse_array.get_map().items()}
+        else:
+
+            # Scale the dense array
+            self._dense_array *= value
 
     def size(self) -> int:
         """
