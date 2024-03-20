@@ -951,7 +951,8 @@ class BusBranchEditorWidget(QSplitter):
             except:
                 warn(f"Could not remove {graphic_object} from the scene")
 
-    def remove_element(self, device: ALL_DEV_TYPES,
+    def remove_element(self,
+                       device: ALL_DEV_TYPES,
                        graphic_object: Union[QGraphicsItem, None] = None) -> None:
         """
         Remove device from the diagram and the database

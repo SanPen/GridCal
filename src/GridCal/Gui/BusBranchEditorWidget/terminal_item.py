@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
-from typing import Union, Any, TYPE_CHECKING
+from typing import Union, Any, TYPE_CHECKING, Callable, Dict
 from PySide6.QtCore import Qt, QPointF, QRectF, QRect
 from PySide6.QtGui import QPen, QCursor
 from PySide6.QtWidgets import (QGraphicsRectItem, QGraphicsItem, QGraphicsEllipseItem, QGraphicsSceneMouseEvent)
@@ -24,6 +24,7 @@ from GridCal.Gui.BusBranchEditorWidget.generic_graphics import ACTIVE
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
+    from GridCal.Gui.BusBranchEditorWidget.Branches.line_graphics_template import LineGraphicTemplateItem
 
 
 class TerminalItem(QGraphicsRectItem):
@@ -53,7 +54,7 @@ class TerminalItem(QGraphicsRectItem):
         self.parent = parent
 
         # object -> callback
-        self._hosting_connections = dict()
+        self._hosting_connections: Dict[LineGraphicTemplateItem, Callable[[float], None]] = dict()
 
         self.editor = editor
 
@@ -62,42 +63,63 @@ class TerminalItem(QGraphicsRectItem):
         self.setFlag(QGraphicsRectItem.GraphicsItemFlag.ItemSendsScenePositionChanges, True)
 
     @property
-    def w(self):
+    def w(self) -> float:
+        """
+        Width
+        """
         return self.rect().width()
 
     @property
-    def h(self):
+    def h(self) -> float:
+        """
+        Height
+        """
         return self.rect().height()
 
     @property
-    def x(self):
+    def x(self) -> float:
+        """
+        x position
+        """
         return self.pos().x()
 
     @property
-    def y(self):
+    def y(self) -> float:
+        """
+        y position
+        """
         return self.pos().y()
 
     @property
-    def xc(self):
+    def xc(self) -> float:
+        """
+        x-center
+        :return:
+        """
         return self.pos().x() - self.w / 2
 
     @property
-    def yc(self):
+    def yc(self) -> float:
+        """
+        Y-center
+        :return:
+        """
         return self.pos().y() - self.h / 2
 
-    def add_hosting_connection(self, graphic_obj, callback):
+    def add_hosting_connection(self,
+                               graphic_obj: LineGraphicTemplateItem,
+                               callback: Callable[[float], None]):
         """
         Add object graphically connected to the graphical bus
-        :param graphic_obj:
-        :return:
+        :param graphic_obj: LineGraphicTemplateItem (or child of this)
+        :param callback: callback function
         """
         self._hosting_connections[graphic_obj] = callback
 
-    def delete_hosting_connection(self, graphic_obj):
+    def delete_hosting_connection(self, graphic_obj: LineGraphicTemplateItem):
         """
         Delete object graphically connected to the graphical bus
-        :param graphic_obj:
-        :return:
+        :param graphic_obj: LineGraphicTemplateItem (or child of this)
         """
         if graphic_obj in self._hosting_connections.keys():
             del self._hosting_connections[graphic_obj]
@@ -147,26 +169,18 @@ class TerminalItem(QGraphicsRectItem):
     def mousePressEvent(self, event: QGraphicsSceneMouseEvent) -> None:
         """
         Start a connection
-        Args:
-            event:
-
-        Returns:
-
+        :param event: QGraphicsSceneMouseEvent
         """
-        lne = self.editor.start_connection(self)
-        # self.add_hosting_connection(graphic_obj=lne, callback=lne.setBeginPos)
+        self.editor.start_connection(self)
 
     def remove_all_connections(self) -> None:
         """
         Removes all the terminal connections
-        Returns:
-
         """
-        n = len(self._hosting_connections)
-        for i in range(n - 1, -1, -1):
-            self._hosting_connections[i].remove_widget()
-            self._hosting_connections[i].remove(ask=False)
-            self._hosting_connections.pop(i)
+        for graphic_item, _ in self._hosting_connections.items():
+            self.editor.remove_element(graphic_object=graphic_item, device=graphic_item.api_object)
+
+        self._hosting_connections.clear()
 
     def __str__(self):
 
@@ -184,7 +198,7 @@ class HandleItem(QGraphicsEllipseItem):
     A handle that can be moved by the mouse: Element to resize the boxes
     """
 
-    def __init__(self, parent=None):
+    def __init__(self, parent: TerminalItem = None) -> None:
         """
 
         @param parent:
@@ -197,7 +211,7 @@ class HandleItem(QGraphicsEllipseItem):
         self.setFlag(self.GraphicsItemFlag.ItemSendsScenePositionChanges, True)
         self.setCursor(QCursor(Qt.SizeFDiagCursor))
 
-    def itemChange(self, change, value):
+    def itemChange(self, change: QGraphicsItem.GraphicsItemChange, value: Any):
         """
 
         @param change:
