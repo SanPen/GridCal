@@ -385,6 +385,9 @@ def gridcal_object_to_json(elm: ALL_DEV_TYPES) -> Dict[str, str]:
         elif prop.tpe == SubObjectType.LineLocations:
             data[name] = obj.to_list()
 
+        elif prop.tpe == SubObjectType.TapChanger:
+            data[name] = obj.to_dict()
+
         else:
             # if the object is not of a primary type, get the idtag instead
             if hasattr(obj, 'idtag'):
@@ -938,7 +941,7 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
                                 if gc_prop.tpe == SubObjectType.GeneratorQCurve:
 
                                     # get the curve object and fill it with the json data
-                                    q_curve: dev.GeneratorQCurve = elm.get_snapshot_value(gc_prop)
+                                    q_curve: dev.GeneratorQCurve = elm.get_snapshot_value(prop=gc_prop)
                                     if isinstance(property_value, str):
                                         q_curve.parse(json.loads(property_value))
                                     else:
@@ -947,8 +950,17 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
                                 elif gc_prop.tpe == SubObjectType.LineLocations:
 
                                     # get the line locations object and fill it with the json data
-                                    locations_obj: dev.LineLocations = elm.get_snapshot_value(gc_prop)
+                                    locations_obj: dev.LineLocations = elm.get_snapshot_value(prop=gc_prop)
                                     locations_obj.parse(property_value)
+
+                                elif gc_prop.tpe == SubObjectType.TapChanger:
+
+                                    # get the line locations object and fill it with the json data
+                                    locations_obj: dev.TapChanger = elm.get_snapshot_value(prop=gc_prop)
+                                    locations_obj.parse(property_value)
+
+                                else:
+                                    raise Exception(f"SubObjectType {gc_prop.tpe} not implemented")
 
                             elif gc_prop.tpe == str:
                                 # set the value directly
