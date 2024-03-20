@@ -1249,13 +1249,13 @@ class BusBranchEditorWidget(QSplitter):
         # set the connection placement
         graphic_object.setZValue(-1)
 
-    def create_fluid_path(self, source: FluidNode, target: FluidNode, fromPort: TerminalItem, toPort: TerminalItem):
+    def create_fluid_path(self, source: FluidNode, target: FluidNode, from_port: TerminalItem, to_port: TerminalItem):
         """
 
         :param source:
         :param target:
-        :param fromPort:
-        :param toPort:
+        :param from_port:
+        :param to_port:
         :return:
         """
         name = 'FluidPath ' + str(len(self.circuit.fluid_paths) + 1)
@@ -1263,8 +1263,8 @@ class BusBranchEditorWidget(QSplitter):
                         target=target,
                         name=name)
 
-        graphic_object = FluidPathGraphicItem(from_port=fromPort,
-                                              to_port=toPort,
+        graphic_object = FluidPathGraphicItem(from_port=from_port,
+                                              to_port=to_port,
                                               editor=self,
                                               api_object=obj)
 
@@ -1294,7 +1294,7 @@ class BusBranchEditorWidget(QSplitter):
 
             for item in items:
                 if isinstance(item, TerminalItem):  # connect only to terminals
-                    if item.parent is not self.started_branch._from_port.parent:  # forbid connecting to itself
+                    if item.get_parent() is not self.started_branch.get_terminal_from_parent():  # forbid connecting to itself
 
                         self.started_branch.set_to_port(item)
                         # self.started_branch.bus_to = item.parent
@@ -1306,30 +1306,30 @@ class BusBranchEditorWidget(QSplitter):
 
                                 self.create_vsc(bus_from=self.started_branch.get_bus_from(),
                                                 bus_to=self.started_branch.get_bus_to(),
-                                                from_port=self.started_branch._from_port,
-                                                to_port=self.started_branch._to_port)
+                                                from_port=self.started_branch.get_terminal_from(),
+                                                to_port=self.started_branch.get_terminal_to())
 
                             elif self.started_branch.should_be_a_dc_line():
                                 # both buses are DC
 
                                 self.create_dc_line(bus_from=self.started_branch.get_bus_from(),
                                                     bus_to=self.started_branch.get_bus_to(),
-                                                    from_port=self.started_branch._from_port,
-                                                    to_port=self.started_branch._to_port)
+                                                    from_port=self.started_branch.get_terminal_from(),
+                                                    to_port=self.started_branch.get_terminal_to())
 
                             elif self.started_branch.should_be_a_transformer():
 
                                 self.create_transformer(bus_from=self.started_branch.get_bus_from(),
                                                         bus_to=self.started_branch.get_bus_to(),
-                                                        from_port=self.started_branch._from_port,
-                                                        to_port=self.started_branch._to_port)
+                                                        from_port=self.started_branch.get_terminal_from(),
+                                                        to_port=self.started_branch.get_terminal_to())
 
                             else:
 
                                 self.create_line(bus_from=self.started_branch.get_bus_from(),
                                                  bus_to=self.started_branch.get_bus_to(),
-                                                 from_port=self.started_branch._from_port,
-                                                 to_port=self.started_branch._to_port)
+                                                 from_port=self.started_branch.get_terminal_from(),
+                                                 to_port=self.started_branch.get_terminal_to())
 
                         elif self.started_branch.conneted_between_tr3_and_bus():
 
@@ -1341,14 +1341,18 @@ class BusBranchEditorWidget(QSplitter):
                             else:
                                 raise Exception('Nor the from or to connection points are a bus!')
 
-                            i = tr3_graphic_object.get_connection_winding(from_port=self.started_branch._from_port,
-                                                                          to_port=self.started_branch._to_port)
+                            i = tr3_graphic_object.get_connection_winding(
+                                from_port=self.started_branch.get_terminal_from(),
+                                to_port=self.started_branch.get_terminal_to()
+                            )
 
                             if tr3_graphic_object.connection_lines[i] is None:
                                 winding = tr3_graphic_object.api_object.get_winding(i)
-                                winding_graphics = self.create_winding(from_port=self.started_branch._from_port,
-                                                                       to_port=self.started_branch._to_port,
-                                                                       api_object=winding)
+                                winding_graphics = self.create_winding(
+                                    from_port=self.started_branch.get_terminal_from(),
+                                    to_port=self.started_branch.get_terminal_to(),
+                                    api_object=winding
+                                )
 
                                 tr3_graphic_object.set_connection(i, bus, winding_graphics)
                                 tr3_graphic_object.update_conn()
@@ -1363,14 +1367,17 @@ class BusBranchEditorWidget(QSplitter):
                             else:
                                 raise Exception('Nor the from or to connection points are a bus!')
 
-                            i = tr3_graphic_object.get_connection_winding(from_port=self.started_branch._from_port,
-                                                                          to_port=self.started_branch._to_port)
+                            i = tr3_graphic_object.get_connection_winding(
+                                from_port=self.started_branch.get_terminal_from(),
+                                to_port=self.started_branch.get_terminal_to()
+                            )
 
                             if tr3_graphic_object.connection_lines[i] is None:
                                 winding = tr3_graphic_object.api_object.get_winding(i)
-                                winding_graphics = self.create_winding(from_port=self.started_branch._from_port,
-                                                                       to_port=self.started_branch._to_port,
-                                                                       api_object=winding)
+                                winding_graphics = self.create_winding(
+                                    from_port=self.started_branch.get_terminal_from(),
+                                    to_port=self.started_branch.get_terminal_to(),
+                                    api_object=winding)
 
                                 tr3_graphic_object.set_connection(i, bus, winding_graphics)
                                 tr3_graphic_object.update_conn()
@@ -1379,8 +1386,8 @@ class BusBranchEditorWidget(QSplitter):
 
                             self.create_fluid_path(source=self.started_branch.get_fluid_node_from(),
                                                    target=self.started_branch.get_fluid_node_to(),
-                                                   fromPort=self.started_branch._from_port,
-                                                   toPort=self.started_branch._to_port)
+                                                   from_port=self.started_branch.get_terminal_from(),
+                                                   to_port=self.started_branch.get_terminal_to())
 
                         elif self.started_branch.connected_between_fluid_node_and_bus():
 
@@ -1400,8 +1407,8 @@ class BusBranchEditorWidget(QSplitter):
 
                             self.create_line(bus_from=fn_bus,
                                              bus_to=bus,
-                                             from_port=self.started_branch._from_port,
-                                             to_port=self.started_branch._to_port)
+                                             from_port=self.started_branch.get_terminal_from(),
+                                             to_port=self.started_branch.get_terminal_to())
 
                         elif self.started_branch.connected_between_bus_and_fluid_node():
                             # electrical bus
@@ -1420,8 +1427,8 @@ class BusBranchEditorWidget(QSplitter):
 
                             self.create_line(bus_from=bus,
                                              bus_to=fn_bus,
-                                             from_port=self.started_branch._from_port,
-                                             to_port=self.started_branch._to_port)
+                                             from_port=self.started_branch.get_terminal_from(),
+                                             to_port=self.started_branch.get_terminal_to())
 
                         else:
                             warn('unknown connection')

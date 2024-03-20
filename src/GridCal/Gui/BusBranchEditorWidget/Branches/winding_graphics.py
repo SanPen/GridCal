@@ -63,7 +63,7 @@ class WindingGraphicItem(LineGraphicTemplateItem):
         """
         if self.api_object is not None:
             menu = QMenu()
-            menu.addSection("Line")
+            menu.addSection("Winding")
 
             pe = menu.addAction('Active')
             pe.setCheckable(True)

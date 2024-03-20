@@ -25,6 +25,9 @@ from GridCal.Gui.BusBranchEditorWidget.generic_graphics import ACTIVE
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
     from GridCal.Gui.BusBranchEditorWidget.Branches.line_graphics_template import LineGraphicTemplateItem
+    from GridCal.Gui.BusBranchEditorWidget.Branches.transformer3w_graphics import Transformer3WGraphicItem
+    from GridCal.Gui.BusBranchEditorWidget.Substation.bus_graphics import BusGraphicItem
+    from GridCal.Gui.BusBranchEditorWidget.Fluid.fluid_node_graphics import FluidNodeGraphicItem
 
 
 class TerminalItem(QGraphicsRectItem):
@@ -32,7 +35,12 @@ class TerminalItem(QGraphicsRectItem):
     Represents a connection point to a subsystem
     """
 
-    def __init__(self, name: str, editor: BusBranchEditorWidget, parent=None, h=10.0, w=10.0):
+    def __init__(self,
+                 name: str,
+                 editor: BusBranchEditorWidget,
+                 parent: Union[None, BusGraphicItem, Transformer3WGraphicItem, FluidNodeGraphicItem] = None,
+                 h=10.0,
+                 w=10.0):
         """
 
         @param name:
@@ -51,7 +59,7 @@ class TerminalItem(QGraphicsRectItem):
         self.setPen(QPen(self.color, self.pen_width, self.style))
 
         # terminal parent object
-        self.parent = parent
+        self.parent: Union[None, BusGraphicItem, Transformer3WGraphicItem, FluidNodeGraphicItem] = parent
 
         # object -> callback
         self._hosting_connections: Dict[LineGraphicTemplateItem, Callable[[float], None]] = dict()
@@ -61,6 +69,13 @@ class TerminalItem(QGraphicsRectItem):
         # Name:
         self.name = name
         self.setFlag(QGraphicsRectItem.GraphicsItemFlag.ItemSendsScenePositionChanges, True)
+
+    def get_parent(self) -> Union[None, BusGraphicItem, Transformer3WGraphicItem]:
+        """
+        Returns the parent object
+        :return: Union[None, BusGraphicItem, Transformer3WGraphicItem]
+        """
+        return self.parent
 
     @property
     def w(self) -> float:

@@ -31,6 +31,7 @@ from GridCal.Gui.messages import yes_no_question, warning_msg, error_msg
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Branches.line import Line
 from GridCalEngine.Devices.Branches.transformer import Transformer2W
+from GridCalEngine.Devices.Branches.winding import Winding
 from GridCalEngine.Devices.Branches.vsc import VSC
 from GridCalEngine.Devices.Branches.upfc import UPFC
 from GridCalEngine.Devices.Branches.dc_line import DcLine
@@ -40,6 +41,7 @@ from GridCalEngine.Devices.Fluid.fluid_path import FluidPath
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
+    from GridCal.Gui.BusBranchEditorWidget.Branches.transformer3w_graphics import Transformer3WGraphicItem
 
 
 class ArrowHead(QGraphicsPolygonItem):
@@ -335,6 +337,9 @@ class HvdcSymbol(QGraphicsRectItem):
         self.setToolTip(toolTip)
 
     def redraw(self):
+        """
+        Redraw the HVDC symbol
+        """
         h = self.parent.pos2.y() - self.parent.pos1.y()
         b = self.parent.pos2.x() - self.parent.pos1.x()
         ang = np.arctan2(h, b)
@@ -377,7 +382,10 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         self.api_object = api_object
 
         if isinstance(api_object, Transformer2W):
-            self.symbol = TransformerSymbol(parent=self, pen_width=width, h=80, w=80)
+            if isinstance(api_object, Winding):  # Winding is a sublass of Transformer
+                self.symbol = None
+            else:
+                self.symbol = TransformerSymbol(parent=self, pen_width=width, h=80, w=80)
         elif isinstance(api_object, VSC):
             self.symbol = VscSymbol(parent=self, pen_width=width, h=48, w=48)
         elif isinstance(api_object, UPFC):
@@ -425,7 +433,35 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
 
         if to_port:
             self.set_to_port(to_port)
+            
+    def get_terminal_from(self) -> Union[None, TerminalItem]:
+        """
+        Get the terminal from
+        :return: TerminalItem 
+        """
+        return self._from_port
 
+    def get_terminal_to(self) -> Union[None, TerminalItem]:
+        """
+        Get the terminal to
+        :return: TerminalItem
+        """
+        return self._to_port
+    
+    def get_terminal_from_parent(self) -> Union[None, BusGraphicItem, Transformer3WGraphicItem, FluidNodeGraphicItem]:
+        """
+        Get the terminal from parent object
+        :return: TerminalItem 
+        """
+        return self._from_port.get_parent()
+
+    def get_terminal_to_parent(self) -> Union[None, BusGraphicItem, Transformer3WGraphicItem, FluidNodeGraphicItem]:
+        """
+        Get the terminal to parent object
+        :return: TerminalItem
+        """
+        return self._to_port.get_parent()
+    
     def update_ports(self):
         """
 
@@ -434,7 +470,7 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         self._from_port.update()
         self._to_port.update()
 
-    def recolour_mode(self):
+    def recolour_mode(self) -> None:
         """
         Change the colour according to the system theme
         """
@@ -584,7 +620,7 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         self._from_port = from_port
         self._from_port.add_hosting_connection(graphic_obj=self, callback=self.setBeginPos)
         self._from_port.update()
-        self._from_port.parent.setZValue(0)
+        self._from_port.get_parent().setZValue(0)
 
     def set_to_port(self, to_port: TerminalItem):
         """
@@ -599,7 +635,7 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         self._to_port = to_port
         self._to_port.add_hosting_connection(graphic_obj=self, callback=self.setEndPos)
         self._to_port.update()
-        self._to_port.parent.setZValue(0)
+        self._to_port.get_parent().setZValue(0)
 
     def unregister_port_from(self):
         """
@@ -747,7 +783,7 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         :return:
         """
         if self._from_port:
-            return self._from_port.parent
+            return self.get_terminal_from_parent()
         else:
             return None
 
@@ -757,7 +793,7 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         :return:
         """
         if self._to_port:
-            return self._to_port.parent
+            return self.get_terminal_to_parent()
         else:
             return None
 
@@ -767,7 +803,7 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         :return:
         """
         if self._from_port:
-            return isinstance(self._from_port.parent, BusGraphicItem)
+            return isinstance(self.get_terminal_from_parent(), BusGraphicItem)
         else:
             return False
 
@@ -777,7 +813,7 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         :return:
         """
         if self._to_port:
-            return isinstance(self._to_port.parent, BusGraphicItem)
+            return isinstance(self.get_terminal_to_parent(), BusGraphicItem)
         else:
             return False
 
@@ -789,7 +825,7 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         if self._from_port:
             if 'Transformer3WGraphicItem' not in sys.modules:
                 from GridCal.Gui.BusBranchEditorWidget.Branches.transformer3w_graphics import Transformer3WGraphicItem
-            return isinstance(self._from_port.parent, Transformer3WGraphicItem)
+            return isinstance(self.get_terminal_from_parent(), Transformer3WGraphicItem)
         else:
             return False
 
@@ -801,7 +837,7 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         if self._to_port:
             if 'Transformer3WGraphicItem' not in sys.modules:
                 from GridCal.Gui.BusBranchEditorWidget.Branches.transformer3w_graphics import Transformer3WGraphicItem
-            return isinstance(self._to_port.parent, Transformer3WGraphicItem)
+            return isinstance(self.get_terminal_to_parent(), Transformer3WGraphicItem)
         else:
             return False
 
@@ -811,7 +847,7 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         :return:
         """
         if self._from_port:
-            return isinstance(self._from_port.parent, FluidNodeGraphicItem)
+            return isinstance(self.get_terminal_from_parent(), FluidNodeGraphicItem)
         else:
             return False
 
@@ -821,7 +857,7 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         :return:
         """
         if self._to_port:
-            return isinstance(self._to_port.parent, FluidNodeGraphicItem)
+            return isinstance(self.get_terminal_to_parent(), FluidNodeGraphicItem)
         else:
             return False
 
@@ -909,28 +945,28 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         """
         return self.is_from_port_a_bus() and self.is_to_port_a_fluid_node()
 
-    def should_be_a_converter(self):
+    def should_be_a_converter(self) -> bool:
+        """
+
+        :return:
+        """        
+        return self.self.get_bus_from().is_dc != self.self.get_bus_to().is_dc
+
+    def should_be_a_dc_line(self) -> bool:
         """
 
         :return:
         """
-        return self._from_port.parent.api_object.is_dc != self._to_port.parent.api_object.is_dc
+        return self.self.get_bus_from().is_dc and self.self.get_bus_to().is_dc
 
-    def should_be_a_dc_line(self):
-        """
-
-        :return:
-        """
-        return self._from_port.parent.api_object.is_dc and self._to_port.parent.api_object.is_dc
-
-    def should_be_a_transformer(self, branch_connection_voltage_tolerance=0.1):
+    def should_be_a_transformer(self, branch_connection_voltage_tolerance: float = 0.1) -> bool:
         """
 
         :param branch_connection_voltage_tolerance:
         :return:
         """
-        bus_from = self._from_port.parent.api_object
-        bus_to = self._to_port.parent.api_object
+        bus_from = self.self.get_bus_from()
+        bus_to = self.self.get_bus_to()
 
         V1 = min(bus_to.Vnom, bus_from.Vnom)
         V2 = max(bus_to.Vnom, bus_from.Vnom)
