@@ -98,17 +98,18 @@ class ArrowHead(QGraphicsPolygonItem):
         self.setBrush(color)
         self.label.setDefaultTextColor(color)
 
-    def set_value(self, value: float, redraw=True, name="", units="", format_str="{:10.2f}"):
+    def set_value(self, value: float, redraw=True, backwards=False, name="", units="", format_str="{:10.2f}"):
         """
         Set the sign with a value
         :param value: any real value
         :param redraw: redraw after the sign update
+        :param backwards: draw backwards
         :param name: name of the displayed magnitude (i.e. Pf)
         :param units: the units of the displayed magnitude (i.e MW)
         :param format_str: the formatting string of the displayed magnitude
         """
-        self.backwards = value < 0
-
+        # self.backwards = value < 0
+        self.backwards = backwards
         x = format_str.format(value)
         msg = f'{name}:{x} {units}'
         self.label.setPlainText(msg)
@@ -766,8 +767,6 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         :param St: Complex power to
         """
 
-        # TODO: Review the signs and conditions
-
         if Sf is not None:
             if St is None:
                 St = -Sf
@@ -776,10 +775,10 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
             Qf = Sf.imag
             Pt = St.real
             Qt = St.imag
-            self.arrow_from_1.set_value(Pf, True, name="Pf", units="MW")
-            self.arrow_from_2.set_value(Qf if Qf != 0.0 else Pf, True, name="Qf", units="MVAr")
-            self.arrow_to_1.set_value(-Pt, True, name="Pt", units="MW")
-            self.arrow_to_2.set_value(-Qt if Qt != 0.0 else -Pt, True, name="Qt", units="MVAr")
+            self.arrow_from_1.set_value(Pf, True, Pf < 0, name="Pf", units="MW")
+            self.arrow_from_2.set_value(Qf, True, Qf < 0,  name="Qf", units="MVAr")
+            self.arrow_to_1.set_value(Pt, True, Pt > 0, name="Pt", units="MW")
+            self.arrow_to_2.set_value(Qt, True, Qt > 0, name="Qt", units="MVAr")
 
     def set_arrows_with_hvdc_power(self, Pf: float, Pt: float) -> None:
         """
@@ -787,10 +786,10 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         :param Pf: Complex power from
         :param Pt: Complex power to
         """
-        self.arrow_from_1.set_value(Pf, True, name="Pf", units="MW")
-        self.arrow_from_2.set_value(Pf, True, name="Pf", units="MW")
-        self.arrow_to_1.set_value(-Pt, True, name="Pt", units="MW")
-        self.arrow_to_2.set_value(-Pt, True, name="Pt", units="MW")
+        self.arrow_from_1.set_value(Pf, True, Pf < 0, name="Pf", units="MW")
+        self.arrow_from_2.set_value(Pf, True, Pf < 0, name="Pf", units="MW")
+        self.arrow_to_1.set_value(Pt, True, Pt > 0, name="Pt", units="MW")
+        self.arrow_to_2.set_value(Pt, True, Pt > 0, name="Pt", units="MW")
 
     def change_bus(self):
         """
