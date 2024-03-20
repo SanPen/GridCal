@@ -77,7 +77,7 @@ class ArrowHead(QGraphicsPolygonItem):
         self.sep = separation
 
         self.label = QGraphicsTextItem(self)
-        self.label.setPlainText("abc")
+        self.label.setPlainText("")
         self.show_text = show_text
 
         self.w = arrow_size
