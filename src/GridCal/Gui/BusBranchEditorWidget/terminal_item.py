@@ -163,10 +163,10 @@ class TerminalItem(QGraphicsRectItem):
 
         for i, (connection, call_back) in enumerate(self._hosting_connections.items()):
             call_back(value + QPointF((i + 1) * dx, h2))
-            w = connection.pen_width
-            style = connection.pen_style
-            color = connection.pen_color
-            connection.set_pen(QPen(color, w, style), scale)
+            # w = connection.pen_width
+            # style = connection.pen_style
+            # color = connection.pen_color
+            # connection.set_pen(QPen(color, w, style), scale)
 
     def itemChange(self, change: QGraphicsItem.GraphicsItemChange, value: Any) -> Any:
         """

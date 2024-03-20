@@ -21,13 +21,13 @@ from typing import Union, TYPE_CHECKING
 from PySide6.QtCore import Qt, QLineF, QPointF, QRectF
 from PySide6.QtGui import QPen, QCursor, QPixmap, QBrush, QColor, QTransform, QPolygonF
 from PySide6.QtWidgets import (QGraphicsLineItem, QGraphicsRectItem, QGraphicsPolygonItem,
-                               QGraphicsEllipseItem, QGraphicsSceneMouseEvent)
+                               QGraphicsEllipseItem, QGraphicsSceneMouseEvent, QGraphicsTextItem)
 from GridCal.Gui.BusBranchEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER
 from GridCal.Gui.BusBranchEditorWidget.Substation.bus_graphics import TerminalItem
 from GridCal.Gui.BusBranchEditorWidget.Substation.bus_graphics import BusGraphicItem
 from GridCal.Gui.BusBranchEditorWidget.Fluid.fluid_node_graphics import FluidNodeGraphicItem
 
-from GridCal.Gui.messages import yes_no_question, warning_msg, error_msg
+from GridCal.Gui.messages import yes_no_question
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Branches.line import Line
 from GridCalEngine.Devices.Branches.transformer import Transformer2W
@@ -55,7 +55,18 @@ class ArrowHead(QGraphicsPolygonItem):
                  position: float = 0.9,
                  under: bool = False,
                  backwards: bool = False,
-                 separation: int = 5):
+                 separation: int = 5,
+                 show_text: bool = True):
+        """
+        Constructor
+        :param parent: Parent line
+        :param arrow_size: Size of the arrow
+        :param position: proportion of the line where to locate the arrow
+        :param under: Is it under?
+        :param backwards: Is it backwards?
+        :param separation: Separation
+        :param show_text: Show the label?
+        """
         QGraphicsPolygonItem.__init__(self, parent=parent)
 
         self.parent: QGraphicsLineItem = parent
@@ -64,6 +75,10 @@ class ArrowHead(QGraphicsPolygonItem):
         self.under: bool = under
         self.backwards: float = backwards
         self.sep = separation
+
+        self.label = QGraphicsTextItem(self)
+        self.label.setPlainText("abc")
+        self.show_text = show_text
 
         self.w = arrow_size
         self.h = arrow_size
@@ -81,14 +96,23 @@ class ArrowHead(QGraphicsPolygonItem):
         # self.setPen(QPen(color, w, style))
         # self.setPen(Qt.NoPen)
         self.setBrush(color)
+        self.label.setDefaultTextColor(color)
 
-    def set_value(self, value: float, redraw=True):
+    def set_value(self, value: float, redraw=True, name="", units="", format_str="{:10.2f}"):
         """
         Set the sign with a value
         :param value: any real value
         :param redraw: redraw after the sign update
+        :param name: name of the displayed magnitude (i.e. Pf)
+        :param units: the units of the displayed magnitude (i.e MW)
+        :param format_str: the formatting string of the displayed magnitude
         """
         self.backwards = value < 0
+
+        x = format_str.format(value)
+        msg = f'{name}:{x} {units}'
+        self.label.setPlainText(msg)
+        self.setToolTip(msg)
 
         if redraw:
             self.redraw()
@@ -111,13 +135,20 @@ class ArrowHead(QGraphicsPolygonItem):
 
         self.setPolygon(arrow_polygon)
 
+        if self.show_text:
+            # pl = -self.arrow_size - 10 if self.under else self.arrow_size + 10
+            a = - angle + 1.570796
+            label_p = base_pt - QTransform().rotate(a).map(QPointF(0, -10 if self.under else 35))
+            self.label.setPos(label_p)
+            self.label.setRotation(a)
+
 
 class TransformerSymbol(QGraphicsRectItem):
     """
     TransformerSymbol
     """
 
-    def __init__(self, parent, pen_width, h=80, w=80):
+    def __init__(self, parent, pen_width: int, h=80, w=80):
         QGraphicsRectItem.__init__(self, parent=parent)
 
         d = w / 2
@@ -417,10 +448,10 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
 
         # arrows
         self.view_arrows = True
-        self.arrow_from_1 = ArrowHead(parent=self, arrow_size=arrow_size, position=0.15, under=False)
-        self.arrow_from_2 = ArrowHead(parent=self, arrow_size=arrow_size, position=0.15, under=True)
-        self.arrow_to_1 = ArrowHead(parent=self, arrow_size=arrow_size, position=0.85, under=False)
-        self.arrow_to_2 = ArrowHead(parent=self, arrow_size=arrow_size, position=0.85, under=True)
+        self.arrow_from_1 = ArrowHead(parent=self, arrow_size=arrow_size, position=0.2, under=False)
+        self.arrow_from_2 = ArrowHead(parent=self, arrow_size=arrow_size, position=0.2, under=True)
+        self.arrow_to_1 = ArrowHead(parent=self, arrow_size=arrow_size, position=0.8, under=False)
+        self.arrow_to_2 = ArrowHead(parent=self, arrow_size=arrow_size, position=0.8, under=True)
 
         if from_port and to_port:
             self.redraw()
@@ -433,7 +464,7 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
 
         if to_port:
             self.set_to_port(to_port)
-            
+
     def get_terminal_from(self) -> Union[None, TerminalItem]:
         """
         Get the terminal from
@@ -447,7 +478,7 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         :return: TerminalItem
         """
         return self._to_port
-    
+
     def get_terminal_from_parent(self) -> Union[None, BusGraphicItem, Transformer3WGraphicItem, FluidNodeGraphicItem]:
         """
         Get the terminal from parent object
@@ -461,7 +492,7 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         :return: TerminalItem
         """
         return self._to_port.get_parent()
-    
+
     def update_ports(self):
         """
 
@@ -671,7 +702,7 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         self.pos1 = pos1
         self.redraw()
 
-    def redraw(self):
+    def redraw(self) -> None:
         """
         Redraw the line with the given positions
         @return:
@@ -745,15 +776,10 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
             Qf = Sf.imag
             Pt = St.real
             Qt = St.imag
-            self.arrow_from_1.set_value(Pf, True)
-            self.arrow_from_2.set_value(Qf if Qf != 0.0 else Pf, True)
-            self.arrow_to_1.set_value(-Pt, True)
-            self.arrow_to_2.set_value(-Qt if Qt != 0.0 else -Pt, True)
-
-            self.arrow_from_1.setToolTip("Pf: {} MW".format(Pf))
-            self.arrow_from_2.setToolTip("Qf: {} MVAr".format(Qf))
-            self.arrow_to_1.setToolTip("Pt: {} MW".format(Pt))
-            self.arrow_to_2.setToolTip("Qt: {} MVAr".format(Qt))
+            self.arrow_from_1.set_value(Pf, True, name="Pf", units="MW")
+            self.arrow_from_2.set_value(Qf if Qf != 0.0 else Pf, True, name="Qf", units="MVAr")
+            self.arrow_to_1.set_value(-Pt, True, name="Pt", units="MW")
+            self.arrow_to_2.set_value(-Qt if Qt != 0.0 else -Pt, True, name="Qt", units="MVAr")
 
     def set_arrows_with_hvdc_power(self, Pf: float, Pt: float) -> None:
         """
@@ -761,15 +787,10 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         :param Pf: Complex power from
         :param Pt: Complex power to
         """
-        self.arrow_from_1.set_value(Pf, True)
-        self.arrow_from_2.set_value(Pf, True)
-        self.arrow_to_1.set_value(-Pt, True)
-        self.arrow_to_2.set_value(-Pt, True)
-
-        self.arrow_from_1.setToolTip("Pf: {} MW".format(Pf))
-        self.arrow_from_2.setToolTip("Pf: {} MW".format(Pf))
-        self.arrow_to_1.setToolTip("Pt: {} MW".format(Pt))
-        self.arrow_to_2.setToolTip("Pt: {} MW".format(Pt))
+        self.arrow_from_1.set_value(Pf, True, name="Pf", units="MW")
+        self.arrow_from_2.set_value(Pf, True, name="Pf", units="MW")
+        self.arrow_to_1.set_value(-Pt, True, name="Pt", units="MW")
+        self.arrow_to_2.set_value(-Pt, True, name="Pt", units="MW")
 
     def change_bus(self):
         """
@@ -949,15 +970,15 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         """
 
         :return:
-        """        
-        return self.self.get_bus_from().is_dc != self.self.get_bus_to().is_dc
+        """
+        return self.get_bus_from().is_dc != self.get_bus_to().is_dc
 
     def should_be_a_dc_line(self) -> bool:
         """
 
         :return:
         """
-        return self.self.get_bus_from().is_dc and self.self.get_bus_to().is_dc
+        return self.get_bus_from().is_dc and self.get_bus_to().is_dc
 
     def should_be_a_transformer(self, branch_connection_voltage_tolerance: float = 0.1) -> bool:
         """
@@ -965,8 +986,8 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         :param branch_connection_voltage_tolerance:
         :return:
         """
-        bus_from = self.self.get_bus_from()
-        bus_to = self.self.get_bus_to()
+        bus_from = self.get_bus_from()
+        bus_to = self.get_bus_to()
 
         V1 = min(bus_to.Vnom, bus_from.Vnom)
         V2 = max(bus_to.Vnom, bus_from.Vnom)
