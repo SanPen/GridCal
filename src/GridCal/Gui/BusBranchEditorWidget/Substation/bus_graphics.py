@@ -56,14 +56,14 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
       - description
     """
 
-    def __init__(self, 
-                 parent=None, 
-                 index=0, 
-                 editor: BusBranchEditorWidget = None, 
+    def __init__(self,
+                 parent=None,
+                 index=0,
+                 editor: BusBranchEditorWidget = None,
                  bus: Bus = None,
-                 h: int = 20, 
-                 w: int = 80, 
-                 x: int = 0, 
+                 h: int = 20,
+                 w: int = 80,
+                 x: int = 0,
                  y: int = 0):
         """
 
@@ -116,6 +116,10 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         self.label.setDefaultTextColor(ACTIVE['text'])
         self.label.setScale(FONT_SCALE)
 
+        # Label:
+        self.results_label = QtWidgets.QGraphicsTextItem(self)
+        self.results_label.setDefaultTextColor(ACTIVE['text'])
+
         # square
         self.tile = QtWidgets.QGraphicsRectItem(0, 0, self.min_h, self.min_h, self)
         self.tile.setOpacity(0.7)
@@ -161,6 +165,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
             self.style = ACTIVE['style']
 
         self.label.setDefaultTextColor(ACTIVE['text'])
+        self.results_label.setDefaultTextColor(ACTIVE['text'])
         self.set_tile_color(self.color)
 
         for e in self.shunt_children:
@@ -274,16 +279,20 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         self.h = h
         self.w = w
 
+        y0 = h + self.offset
+        x0 = 0
+
         # center label:
         rect = self.label.boundingRect()
         lw, lh = rect.width(), rect.height()
         lx = (w - lw) / 2
         ly = (h - lh) / 2 - lh * (FONT_SCALE - 1)
-        self.label.setPos(lx, ly)
+        # self.label.setPos(lx, ly)
+        self.label.setPos(w, ly - 40)
+
+        self.results_label.setPos(w + 20, ly)
 
         # lower
-        y0 = h + self.offset
-        x0 = 0
         self._terminal.setPos(x0, y0)
         self._terminal.setRect(0, 0, w, 10)
 
@@ -869,6 +878,38 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         self.arrange_children()
 
         return _grph
+
+    def set_values(self, i: int, Vm: float, Va: float, P: float, Q: float, tpe: str, format_str="{:10.2f}"):
+        """
+
+        :param i:
+        :param Vm:
+        :param Va:
+        :param P:
+        :param Q:
+        :param tpe:
+        :param format_str:
+        :return:
+        """
+        vm = format_str.format(Vm)
+        vvm = format_str.format(Vm * self.api_object.Vnom)
+        va = format_str.format(Va)
+        msg = f"Bus {i}"
+        if tpe is not None:
+            msg += f" [{tpe}]"
+        msg += "<br>"
+        msg += f"v={vm}&lt;{va}º pu<br>"
+        msg += f"V={vvm} kV<br>"
+        if P is not None:
+            p = format_str.format(P)
+            q = format_str.format(Q)
+            msg += f"P={p} MW<br>Q={q} MVAr"
+
+        title = self.api_object.name
+        # self.results_label.setPlainText(msg)
+        # self.results_label.setHtml(f"<div align='left'>{msg}</div>")
+        self.label.setHtml(f'<html><head/><body><p><span style=" font-size:10pt;">{title}<br/></span><span style=" font-size:6pt;">{msg}</span></p></body></html>')
+        self.setToolTip(msg)
 
     def __str__(self):
 

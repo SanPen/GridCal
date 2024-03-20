@@ -2738,14 +2738,20 @@ class BusBranchEditorWidget(QSplitter):
                             tooltip += ': ' + bus_types[types[i]]
                         tooltip += '\n'
 
-                        tooltip += "%-10s %10.4f < %10.4fº [p.u.]\n" % ("V", vabs[i], vang[i])
-                        tooltip += "%-10s %10.4f < %10.4fº [kV]\n" % ("V", vabs[i] * bus.Vnom, vang[i])
-
-                        if Sbus is not None:
-                            tooltip += "%-10s %10.4f [MW]\n" % ("P", Sbus[i].real)
-                            tooltip += "%-10s %10.4f [MVAr]\n" % ("Q", Sbus[i].imag)
+                        # tooltip += "%-10s %10.4f < %10.4fº [p.u.]\n" % ("V", vabs[i], vang[i])
+                        # tooltip += "%-10s %10.4f < %10.4fº [kV]\n" % ("V", vabs[i] * bus.Vnom, vang[i])
+                        #
+                        # if Sbus is not None:
+                        #     tooltip += "%-10s %10.4f [MW]\n" % ("P", Sbus[i].real)
+                        #     tooltip += "%-10s %10.4f [MVAr]\n" % ("Q", Sbus[i].imag)
 
                         graphic_object.setToolTip(tooltip)
+                        graphic_object.set_values(i=i,
+                                                  Vm=vabs[i],
+                                                  Va=vang[i],
+                                                  P=Sbus[i].real if Sbus is not None else None,
+                                                  Q=Sbus[i].imag if Sbus is not None else None,
+                                                  tpe=bus_types[types[i]] if types is not None else None)
 
                         if use_flow_based_width:
                             h = int(np.floor(min_bus_width + Pnorm[i] * (max_bus_width - min_bus_width)))
