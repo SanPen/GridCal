@@ -351,7 +351,7 @@ def casehvdc():
     # Go back two directories
     new_directory = os.path.abspath(os.path.join(cwd, '..', '..', '..'))
 
-    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids','IEEE14 - ntc areas_voltages_hvdc.gridcal')
+    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids','IEEE14 - ntc areas_voltages_hvdc_shifter.gridcal')
 
     grid = gce.FileOpen(file_path).open()
 
