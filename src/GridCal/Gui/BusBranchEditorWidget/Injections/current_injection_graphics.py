@@ -79,22 +79,6 @@ class CurrentInjectionGraphicItem(InjectionTemplateGraphicItem):
         self.nexus.setPen(pen)
         self.label.setDefaultTextColor(self.color)
 
-    def update_line(self, pos):
-        """
-        Update the line that joins the parent and this object
-        :param pos: position of this object
-        """
-        parent = self.parentItem()
-        rect = parent.rect()
-        self.nexus.setLine(
-            pos.x() + self.w / 2,
-            pos.y() + 0,
-            parent.x() + rect.width() / 2,
-            parent.y() + parent.terminal.y + 5,
-        )
-        self.setZValue(-1)
-        self.nexus.setZValue(-1)
-
     def contextMenuEvent(self, event):
         """
         Display context menu
