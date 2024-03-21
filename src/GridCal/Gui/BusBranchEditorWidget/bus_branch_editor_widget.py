@@ -2101,6 +2101,7 @@ class BusBranchEditorWidget(QSplitter):
 
         # add device to the schematic
         graphic_object = self.add_api_hvdc(hvdc)
+        self.add_to_scene(graphic_object)
 
         # update position
         graphic_object.update_ports()
@@ -2109,7 +2110,7 @@ class BusBranchEditorWidget(QSplitter):
         self.remove_from_scene(line_graphic)
 
         self.update_diagram_element(device=hvdc, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_object)
-        self.delete_diagram_element(device=line)
+        # self.delete_diagram_element(device=line)
 
     def convert_line_to_transformer(self, line: Line, line_graphic: LineGraphicItem):
         """
@@ -2122,6 +2123,7 @@ class BusBranchEditorWidget(QSplitter):
 
         # add device to the schematic
         graphic_object = self.add_api_transformer(transformer)
+        self.add_to_scene(graphic_object)
 
         # update position
         graphic_object.update_ports()
@@ -2130,7 +2132,7 @@ class BusBranchEditorWidget(QSplitter):
         self.remove_from_scene(line_graphic)
 
         self.update_diagram_element(device=transformer, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_object)
-        self.delete_diagram_element(device=line)
+        # self.delete_diagram_element(device=line)
 
     def convert_line_to_vsc(self, line: Line, line_graphic: LineGraphicItem):
         """
@@ -2143,6 +2145,7 @@ class BusBranchEditorWidget(QSplitter):
 
         # add device to the schematic
         graphic_object = self.add_api_vsc(vsc)
+        self.add_to_scene(graphic_object)
 
         # update position
         graphic_object.update_ports()
@@ -2151,7 +2154,7 @@ class BusBranchEditorWidget(QSplitter):
         self.remove_from_scene(line_graphic)
 
         self.update_diagram_element(device=vsc, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_object)
-        self.delete_diagram_element(device=line)
+        # self.delete_diagram_element(device=line)
 
     def convert_line_to_upfc(self, line: Line, line_graphic: LineGraphicItem):
         """
@@ -2164,6 +2167,7 @@ class BusBranchEditorWidget(QSplitter):
 
         # add device to the schematic
         graphic_object = self.add_api_upfc(upfc)
+        self.add_to_scene(graphic_object)
 
         # update position
         graphic_object.update_ports()
@@ -2172,7 +2176,7 @@ class BusBranchEditorWidget(QSplitter):
         self.remove_from_scene(line_graphic)
 
         self.update_diagram_element(device=upfc, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_object)
-        self.delete_diagram_element(device=line)
+        # self.delete_diagram_element(device=line)
 
     def convert_fluid_path_to_line(self, element: FluidPath, item_graphic: FluidPathGraphicItem):
         """
@@ -2191,9 +2195,10 @@ class BusBranchEditorWidget(QSplitter):
         line = self.circuit.convert_fluid_path_to_line(element)
 
         # add device to the schematic
-        graphic_obj = self.add_api_line_between_fluid_graphics(line,
-                                                               bus_f_graphic=fl_from,
-                                                               bus_t_graphic=fl_to)
+        graphic_object = self.add_api_line_between_fluid_graphics(line,
+                                                                  bus_f_graphic=fl_from,
+                                                                  bus_t_graphic=fl_to)
+        self.add_to_scene(graphic_object)
 
         # update position
         fl_from.get_terminal().update()
@@ -2202,8 +2207,8 @@ class BusBranchEditorWidget(QSplitter):
         # delete from the schematic
         self.remove_from_scene(item_graphic)
 
-        self.update_diagram_element(device=line, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_obj)
-        self.delete_diagram_element(device=element)
+        self.update_diagram_element(device=line, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_object)
+        # self.delete_diagram_element(device=element)
 
     def convert_generator_to_battery(self, gen: Generator, graphic_object: GeneratorGraphicItem):
         """

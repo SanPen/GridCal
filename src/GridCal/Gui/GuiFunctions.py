@@ -596,18 +596,20 @@ class PandasModel(QtCore.QAbstractTableModel):
 
         self.formatter = lambda x: "%.2f" % x
 
-    def flags(self, index):
+    def flags(self, index: QtCore.QModelIndex):
         """
 
         :param index:
         :return:
         """
         if self.editable and index.column() > self.editable_min_idx:
-            return QtCore.Qt.ItemFlag.ItemIsEditable | QtCore.Qt.ItemFlag.ItemIsEnabled | QtCore.Qt.ItemFlag.ItemIsSelectable
+            return (QtCore.Qt.ItemFlag.ItemIsEditable |
+                    QtCore.Qt.ItemFlag.ItemIsEnabled |
+                    QtCore.Qt.ItemFlag.ItemIsSelectable)
         else:
             return QtCore.Qt.ItemFlag.ItemIsEnabled
 
-    def rowCount(self, parent=None):
+    def rowCount(self, parent: Union[QtCore.QModelIndex, QtCore.QPersistentModelIndex] = ...) -> int:
         """
 
         :param parent:
@@ -615,7 +617,7 @@ class PandasModel(QtCore.QAbstractTableModel):
         """
         return self.r
 
-    def columnCount(self, parent=None):
+    def columnCount(self, parent: Union[QtCore.QModelIndex, QtCore.QPersistentModelIndex] = ...) -> int:
         """
 
         :param parent:
@@ -623,7 +625,7 @@ class PandasModel(QtCore.QAbstractTableModel):
         """
         return self.c
 
-    def data(self, index, role=QtCore.Qt.ItemDataRole.DisplayRole):
+    def data(self, index: QtCore.QModelIndex, role: int = QtCore.Qt.ItemDataRole.DisplayRole) -> Any:
         """
 
         :param index:
@@ -730,8 +732,9 @@ class PandasModel(QtCore.QAbstractTableModel):
                     if isinstance(names[0], ResultTypes):
                         names = [val.name for val in names]
 
-            elif isinstance(self.cols_c, ResultTypes):
-                names = [val.name for val in self.cols_c]
+            # elif isinstance(self.cols_c, ResultTypes):
+            #     names = [val.value for val in self.cols_c]
+
             else:
                 names = [val.name for val in self.cols_c]
 
