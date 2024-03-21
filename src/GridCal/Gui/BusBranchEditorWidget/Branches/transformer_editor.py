@@ -274,7 +274,7 @@ class TransformerEditor(QDialog):
                 # pick the last selected template
                 tpe = self.selected_template
 
-            self.transformer_obj.apply_template(tpe, Sbase=self.Sbase)
+            self.transformer_obj.apply_template(obj=tpe, Sbase=self.Sbase)
 
         self.accept()
 

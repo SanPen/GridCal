@@ -366,6 +366,7 @@ class Transformer2W(ControllableBranchParent):
             self.B = np.round(y_shunt.imag, 6)
 
             self.rate = obj.Sn
+            self.rate_prof.fill(self.rate)
 
             self.Sn = obj.Sn
             self.Pcu = obj.Pcu
