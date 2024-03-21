@@ -286,14 +286,14 @@ def build_wheel(pkg_name: str,
                               description_content_type=description_content_type,
                               provides_extra=provides_extra,
                               long_description=long_description)
-    pkg_info_path = 'pkg_info' + pkg_name
-    with open(pkg_info_path, 'w') as f:
-        f.write(pkg_info)
-
-    setup_cfg = build_setup_cfg()
-    setup_cfg_path = 'setup_cfg' + pkg_name
-    with open(setup_cfg_path, 'w') as f:
-        f.write(setup_cfg)
+    # pkg_info_path = 'pkg_info' + pkg_name
+    # with open(pkg_info_path, 'w') as f:
+    #     f.write(pkg_info)
+    #
+    # setup_cfg = build_setup_cfg()
+    # setup_cfg_path = 'setup_cfg' + pkg_name
+    # with open(setup_cfg_path, 'w') as f:
+    #     f.write(setup_cfg)
 
     if not os.path.exists(dist_info_path):
         os.makedirs(dist_info_path)
@@ -321,7 +321,7 @@ def build_wheel(pkg_name: str,
     wheel_f_path = os.path.join(dist_info_path, 'WHEEL')
     with open(wheel_f_path, 'w') as f:
         f.write("Wheel-Version: 1.0\n")
-        f.write("Generator: bdist_wheel (0.42.0)\n")
+        f.write("Generator: GridCal packaging\n")
         f.write("Root-Is-Purelib: true\n")
         f.write("Tag: py3-none-any")
 
@@ -345,8 +345,8 @@ def build_wheel(pkg_name: str,
         tar.writestr(os.path.join(dist_info_path, 'WHEEL'), data=wheel_f_path)
         tar.writestr(os.path.join(dist_info_path, 'RECORD'), data=record_f_path)
 
-    os.remove(pkg_info_path)
-    os.remove(setup_cfg_path)
+    # os.remove(pkg_info_path)
+    # os.remove(setup_cfg_path)
     os.remove(metadata_f_path)
     os.remove(wheel_f_path)
     os.remove(record_f_path)
