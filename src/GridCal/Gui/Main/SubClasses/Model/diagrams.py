@@ -205,6 +205,7 @@ class DiagramsMain(CompiledArraysMain):
         if diagram is not None:
             if isinstance(diagram, BusBranchEditorWidget) or isinstance(diagram, BusViewerWidget):
                 diagram.expand_node_distances()
+                diagram.center_nodes()
 
     def smaller_nodes(self):
         """
@@ -214,6 +215,7 @@ class DiagramsMain(CompiledArraysMain):
         if diagram is not None:
             if isinstance(diagram, BusBranchEditorWidget) or isinstance(diagram, BusViewerWidget):
                 diagram.shrink_node_distances()
+                diagram.center_nodes()
 
     def center_nodes(self):
         """
