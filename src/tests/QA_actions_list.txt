@@ -18,12 +18,8 @@ This is a list of actions to check
 *- Import PSSe -> drag the .raw
 *- Create new diagram from a selection of an existing one
 ?- Create an empty diagram and populate it with DB objects -> Fix Bugs
-- Wheels. To be confirmed
+?- Wheels. To be confirmed
 
------Other videos-----:
-- Filters
-- add transformer
----------------
 
 
 ----- to do by FPM-----
@@ -72,7 +68,31 @@ Video 2. Create a line and its contingencies
 
      - 3 Add a double contingency
 
-Video 3: Create In-and-out in a line
+Video 3. Create a transformers and its contingencies
+
+
+    - 1 Create a transformer that exists in the catalog:
+        - Check that voltages of buses are different (>10%)
+        - Check/load catalog
+        - Draw line (it will be automatically converted to a transformer)
+        - Define name (legible)
+        - Mention if you want to add PSSE code (it does not affect)
+        - Set template
+        - Add to contingencies
+        - Add to investments
+
+    - 2 Create a transformer that does not exist in the catalog:
+        - Check voltage of both buses (>10%)
+        - Draw line (it will be automatically converted to a transformer)
+        - Define name (legible)
+        - Mention if you want to add PSSE code (it does not affect)
+        - Define the parameters
+        - Create the profiles
+        - Add to contingencies
+        - Add to investments
+
+
+Video 4: Create In-and-out in a line
 
     - 1 Select the line where I want to create the In-and-out in a line
     - 2 Right bottom - SPlit line with in/out
@@ -81,7 +101,7 @@ Video 3: Create In-and-out in a line
 
     Notes: The new power lines parameters will be the same as the original power line
 
-Video 4: Add something (injection) to a bus (load or a generator..)
+Video 5: Add something (injection) to a bus (load or a generator..)
 
     - 1 Select the bus I want to install the load or generator
     - 2 Right button - Load / Generator....
@@ -89,7 +109,7 @@ Video 4: Add something (injection) to a bus (load or a generator..)
     - 4 Go to the DB and select the load/generator... Click the "Assign the selected property to the matching profile". Accept the message
     - 5 If I want to set a predefined profile, check add profiles to an object property
 
-Video 5: Transform a line into other series element (reactance, transformer, HVDC ...)
+Video 6: Transform a line into other series element (reactance, transformer, HVDC ...)
 
     - 1 Select the line I want to install the load or generator
     - 2 Right button - Reactance / Transformer....
@@ -99,7 +119,7 @@ Video 5: Transform a line into other series element (reactance, transformer, HVD
 
     Note: If it is an HVDC and I want to set the P. It should be in Control Mode = Pdc , and in Pset = the setpoint (a profile might be added)
 
-Video 6: Add a profile to an object property
+Video 7: Add a profile to an object property
     - Using copy paste:
         - 1. Database / Time series
         - 2. Select where I want to paste it, and press paste button
@@ -110,31 +130,31 @@ Video 6: Add a profile to an object property
         - 4 Important! Unmark both, set unasigned to zero, and normalize.
         - 5 Accept
 
-Video 7: Scale load / generation per area
+Video 8: Scale load / generation per area
     - 1 Menu - Model - Scale
     - 2 Select the Zone/ Region/Munipality I want to scale up/down
     - 3 Select the factor
     - 4 Choose if I want to do it in the snapshot (default), or if I want to extend it to the profiles (mark the check)
     - 5 Do it
 
-Video 8: Clustering
+Video 9: Clustering
     - 1. Explain what clustering is, and how it is done.
     - 2. Explain how it is performed. Settings number of clusters
     - 3. Explain results expansion
 
-Video 9: Power flow
+Video 10: Power flow
     - 1. Check settings
     - 2. Check if I want time series and or clustering
     - 3. Run
     - 4. Results
 
-Video 10: Contingency analysis
+Video 11: Contingency analysis
     - 1. Check settings
     - 2. Check if I want time series and or clustering
     - 3. Run
     - 4. Results (same as in Redeval)
 
-Video 11: Visualization
+Video 12: Visualization
     - Part 1: Vecinity diagram
         - 1 In DB- Bus/Line/..., select a bus/line/...
         - 2 Click on add bus "Bus Vecinity viewer of the selected items"
@@ -149,8 +169,10 @@ Video 11: Visualization
         - 4 Click on center view
         - 5 CLick (+) button to expand it
 
-Video
-
+Video 13: Filters
+    - In DB objects, filter bus by name: "idxobj.name like arenas" where name is the header. If the headers has units avoid them "idxobj.Vnom = 132.0"
+    - Note1:The filters in Objects are also applied to Time series
+    - Note2:For results, normally it is better to download the file
 
 
 
