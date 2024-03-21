@@ -115,6 +115,15 @@ def get_record_info(files):
     return val
 
 
+def get_wheel_info():
+    val = ""
+    val += "Wheel-Version: 1.0\n"
+    val += "Generator: GridCal packaging\n"
+    val += "Root-Is-Purelib: true\n"
+    val += "Tag: py3-none-any"
+    return val
+
+
 def check_ext(filename, ext_filter) -> bool:
     """
     Check of the file complies with the list of extensions
@@ -273,31 +282,6 @@ def build_wheel(pkg_name: str,
     files = find_pkg_files(path=pkg_name,
                            ext_filter=ext_filter)
 
-    pkg_info = build_pkg_info(name=pkg_name,
-                              version=version,
-                              summary=summary,
-                              home_page=home_page,
-                              author=author,
-                              email=email,
-                              license_=license_,
-                              keywords=keywords,
-                              classifiers_list=classifiers_list,
-                              requires_pyhon=requires_pyhon,
-                              description_content_type=description_content_type,
-                              provides_extra=provides_extra,
-                              long_description=long_description)
-    # pkg_info_path = 'pkg_info' + pkg_name
-    # with open(pkg_info_path, 'w') as f:
-    #     f.write(pkg_info)
-    #
-    # setup_cfg = build_setup_cfg()
-    # setup_cfg_path = 'setup_cfg' + pkg_name
-    # with open(setup_cfg_path, 'w') as f:
-    #     f.write(setup_cfg)
-
-    if not os.path.exists(dist_info_path):
-        os.makedirs(dist_info_path)
-
     """
     The .dist-info directory
 
@@ -313,22 +297,21 @@ def build_wheel(pkg_name: str,
     md5 and sha1 are not permitted, as signed wheel files rely on the strong hashes in RECORD 
     to validate the integrity of the archive.
     """
-
-    metadata_f_path = os.path.join(dist_info_path, 'METADATA')
-    with open(metadata_f_path, 'w') as f:
-        f.write(pkg_info)
-
-    wheel_f_path = os.path.join(dist_info_path, 'WHEEL')
-    with open(wheel_f_path, 'w') as f:
-        f.write("Wheel-Version: 1.0\n")
-        f.write("Generator: GridCal packaging\n")
-        f.write("Root-Is-Purelib: true\n")
-        f.write("Tag: py3-none-any")
-
-    record_f_path = os.path.join(dist_info_path, 'RECORD')
+    metadata_info = build_pkg_info(name=pkg_name,
+                                   version=version,
+                                   summary=summary,
+                                   home_page=home_page,
+                                   author=author,
+                                   email=email,
+                                   license_=license_,
+                                   keywords=keywords,
+                                   classifiers_list=classifiers_list,
+                                   requires_pyhon=requires_pyhon,
+                                   description_content_type=description_content_type,
+                                   provides_extra=provides_extra,
+                                   long_description=long_description)
+    wheel_info = get_wheel_info()
     record_info = get_record_info(files)
-    with open(record_f_path, 'w') as f:
-        f.write(record_info)
 
     with zipfile.ZipFile(output_filename, "w", zipfile.ZIP_DEFLATED) as tar:
         for name, file_path in files:
@@ -341,16 +324,16 @@ def build_wheel(pkg_name: str,
         # add
         # tar.writestr(os.path.join(pkg_name2, 'PKG-INFO'), data=pkg_info)
         # tar.writestr(os.path.join(pkg_name2, 'setup.cfg'), data=setup_cfg_path)
-        tar.writestr(os.path.join(dist_info_path, 'METADATA'), data=metadata_f_path)
-        tar.writestr(os.path.join(dist_info_path, 'WHEEL'), data=wheel_f_path)
-        tar.writestr(os.path.join(dist_info_path, 'RECORD'), data=record_f_path)
+        tar.writestr(os.path.join(dist_info_path, 'METADATA'), data=metadata_info)
+        tar.writestr(os.path.join(dist_info_path, 'WHEEL'), data=wheel_info)
+        tar.writestr(os.path.join(dist_info_path, 'RECORD'), data=record_info)
 
     # os.remove(pkg_info_path)
     # os.remove(setup_cfg_path)
-    os.remove(metadata_f_path)
-    os.remove(wheel_f_path)
-    os.remove(record_f_path)
-    os.removedirs(dist_info_path)
+    # os.remove(metadata_f_path)
+    # os.remove(wheel_f_path)
+    # os.remove(record_f_path)
+    # os.removedirs(dist_info_path)
 
     return output_filename
 
