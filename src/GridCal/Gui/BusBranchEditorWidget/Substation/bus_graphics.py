@@ -117,8 +117,8 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         self.label.setScale(FONT_SCALE)
 
         # Label:
-        self.results_label = QtWidgets.QGraphicsTextItem(self)
-        self.results_label.setDefaultTextColor(ACTIVE['text'])
+        # self.results_label = QtWidgets.QGraphicsTextItem(self)
+        # self.results_label.setDefaultTextColor(ACTIVE['text'])
 
         # square
         self.tile = QtWidgets.QGraphicsRectItem(0, 0, self.min_h, self.min_h, self)
@@ -165,7 +165,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
             self.style = ACTIVE['style']
 
         self.label.setDefaultTextColor(ACTIVE['text'])
-        self.results_label.setDefaultTextColor(ACTIVE['text'])
+        # self.results_label.setDefaultTextColor(ACTIVE['text'])
         self.set_tile_color(self.color)
 
         for e in self.shunt_children:
@@ -290,7 +290,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         # self.label.setPos(lx, ly)
         self.label.setPos(w, ly - 40)
 
-        self.results_label.setPos(w + 20, ly)
+        # self.results_label.setPos(w + 20, ly)
 
         # lower
         self._terminal.setPos(x0, y0)
@@ -908,7 +908,8 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         title = self.api_object.name
         # self.results_label.setPlainText(msg)
         # self.results_label.setHtml(f"<div align='left'>{msg}</div>")
-        self.label.setHtml(f'<html><head/><body><p><span style=" font-size:10pt;">{title}<br/></span><span style=" font-size:6pt;">{msg}</span></p></body></html>')
+        self.label.setHtml(f'<html><head/><body><p><span style=" font-size:10pt;">{title}<br/></span>'
+                           f'<span style=" font-size:6pt;">{msg}</span></p></body></html>')
         self.setToolTip(msg)
 
     def __str__(self):

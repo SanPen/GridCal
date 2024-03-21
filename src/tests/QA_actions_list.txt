@@ -1,0 +1,21 @@
+This is a list of actions to check
+=========================================
+
+- Create a line / tranformer
+- Change a lines rating
+- Change a lines template
+- Create a contingency, create a double contingency
+- Create a new substation
+- Create In-and-out in a line
+- Create a reactance (series)
+- Create a load / generator and introduce a profile
+- Scale load / generation per area
+- Run power flow
+- Change inter-area exchange
+- Create HVDC line and set a power dispatch profile
+
+- Import PSSe
+- Create new diagram from a selection of an existing one
+- Create an empty diagram and populate it with DB objects
+
+
