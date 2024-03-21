@@ -597,6 +597,11 @@ class PandasModel(QtCore.QAbstractTableModel):
         self.formatter = lambda x: "%.2f" % x
 
     def flags(self, index):
+        """
+
+        :param index:
+        :return:
+        """
         if self.editable and index.column() > self.editable_min_idx:
             return QtCore.Qt.ItemFlag.ItemIsEditable | QtCore.Qt.ItemFlag.ItemIsEnabled | QtCore.Qt.ItemFlag.ItemIsSelectable
         else:
@@ -775,8 +780,8 @@ class PandasModel(QtCore.QAbstractTableModel):
     def copy_to_clipboard(self, mode=None):
         """
         Copy profiles to clipboard
-        Args:
-            mode: 'real', 'imag', 'abs'
+        :param mode: numpy or other -> separated by tabs
+        :return:
         """
         n = len(self.cols_c)
 
@@ -2213,7 +2218,6 @@ class ProfilesModel(QtCore.QAbstractTableModel):
         nt = len(self.time_array)
 
         if n > 0:
-            profile_property = self.elements[0].properties_with_profile[self.magnitude]
             formatter = self.elements[0].registered_properties[self.magnitude].tpe
 
             # copy to clipboard
@@ -2244,33 +2248,40 @@ class ProfilesModel(QtCore.QAbstractTableModel):
                     if parsed:
                         if c2 < n and r2 < nt:
                             mod_cols.append(c2)
-                            getattr(self.elements[c2], profile_property)[r2] = val2
+                            prof = self.elements[c2].get_profile(magnitude=self.magnitude)
+                            arr = prof.toarray()
+                            arr[r2] = val2
+                            prof.set(arr)
                         else:
                             print('Out of profile bounds')
 
-            # if len(mod_cols) > 0:
-            #     self.add_state(mod_cols, 'paste')
         else:
             # there are no elements
             pass
 
-    def copy_to_clipboard(self):
+    def copy_to_clipboard(self, cols: Union[None, List[int]] = None) -> None:
         """
         Copy profiles to clipboard
+        :param cols:
+        :return:
         """
-        n = len(self.elements)
+
+        elements = self.elements if cols is None else [self.elements[i] for i in cols]
+
+        n = len(elements)
 
         if n > 0:
-            profile_property = self.elements[0].properties_with_profile[self.magnitude]
+
+            nt = len(self.time_array)
 
             # gather values
             names = np.empty(n, dtype=object)
-            values = np.empty(n, dtype=object)
+            values = np.empty((nt, n), dtype=object)
+
             for c in range(n):
-                names[c] = self.elements[c].name
-                # values[c] = getattr(self.elements[c], profile_property)
-                values[c] = getattr(self.elements[c], profile_property, "N/A")
-            values = np.array(values).transpose().astype(str)
+                names[c] = elements[c].name
+                prof = elements[c].get_profile(self.magnitude)
+                values[:, c] = prof.toarray().astype(str)
 
             # header first
             data = '\t' + '\t'.join(names) + '\n'

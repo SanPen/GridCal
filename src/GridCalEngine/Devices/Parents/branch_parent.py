@@ -477,11 +477,19 @@ class BranchParent(EditableDevice):
             return False
 
     @property
-    def Vf(self):
+    def Vf(self) -> float:
+        """
+        Get the voltage "from" (kV)
+        :return: get the nominal voltage from
+        """
         return self.bus_from.Vnom
 
     @property
-    def Vt(self):
+    def Vt(self) -> float:
+        """
+        Get the voltage "to" (kV)
+        :return: get the nominal voltage to
+        """
         return self.bus_to.Vnom
 
     def should_this_be_a_transformer(self, branch_connection_voltage_tolerance: float = 0.1) -> bool:

@@ -30,16 +30,16 @@ from GridCalEngine.Devices.profile import Profile
 from GridCalEngine.Devices.Branches.line_locations import LineLocations
 
 
-class Line(BranchParent):
+class SeriesReactance(BranchParent):
 
     def __init__(self, bus_from: Bus = None, bus_to: Bus = None, cn_from: ConnectivityNode = None,
-                 cn_to: ConnectivityNode = None, name='Line', idtag=None, code='',
-                 r=1e-20, x=1e-20, b=1e-20, rate=1.0, active=True, tolerance=0.0, cost=100.0,
-                 mttf=0.0, mttr=0, r_fault=0.0, x_fault=0.0, fault_pos=0.5,
-                 length=1.0, temp_base=20, temp_oper=20, alpha=0.00330,
+                 cn_to: ConnectivityNode = None, name='SeriesReactance', idtag=None, code='',
+                 r=1e-20, x=1e-20, rate=1.0, active=True, tolerance=0, cost=100.0,
+                 mttf=0, mttr=0, r_fault=0.0, x_fault=0.0, fault_pos=0.5,
+                 temp_base=20, temp_oper=20, alpha=0.00330,
                  template=None, contingency_factor=1.0, protection_rating_factor: float = 1.4,
                  contingency_enabled=True, monitor_loading=True,
-                 r0=1e-20, x0=1e-20, b0=1e-20, r2=1e-20, x2=1e-20, b2=1e-20,
+                 r0=1e-20, x0=1e-20,  r2=1e-20, x2=1e-20,
                  capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned):
         """
         AC current Line
@@ -102,9 +102,6 @@ class Line(BranchParent):
                               Cost=cost,
                               device_type=DeviceType.LineDevice)
 
-        # line length in km
-        self.length = length
-
         # line impedance tolerance
         self.tolerance = tolerance
 
@@ -116,15 +113,12 @@ class Line(BranchParent):
         # total impedance and admittance in p.u.
         self.R = r
         self.X = x
-        self.B = b
 
         self.R0 = r0
         self.X0 = x0
-        self.B0 = b0
 
         self.R2 = r2
         self.X2 = x2
-        self.B2 = b2
 
         # Conductor base and operating temperatures in ºC
         self.temp_base = temp_base
@@ -142,18 +136,17 @@ class Line(BranchParent):
 
         self.register(key='R', units='p.u.', tpe=float, definition='Total positive sequence resistance.')
         self.register(key='X', units='p.u.', tpe=float, definition='Total positive sequence reactance.')
-        self.register(key='B', units='p.u.', tpe=float, definition='Total positive sequence shunt susceptance.')
+
         self.register(key='R0', units='p.u.', tpe=float, definition='Total zero sequence resistance.')
         self.register(key='X0', units='p.u.', tpe=float, definition='Total zero sequence reactance.')
-        self.register(key='B0', units='p.u.', tpe=float, definition='Total zero sequence shunt susceptance.')
+
         self.register(key='R2', units='p.u.', tpe=float, definition='Total negative sequence resistance.')
         self.register(key='X2', units='p.u.', tpe=float, definition='Total negative sequence reactance.')
-        self.register(key='B2', units='p.u.', tpe=float, definition='Total negative sequence shunt susceptance.')
+
         self.register(key='tolerance', units='%', tpe=float,
                       definition='Tolerance expected for the impedance values % is expected '
                                  'for transformers0% for lines.')
 
-        self.register(key='length', units='km', tpe=float, definition='Length of the line (not used for calculation)')
         self.register(key='temp_base', units='ºC', tpe=float, definition='Base temperature at which R was measured.')
         self.register(key='temp_oper', units='ºC', tpe=float, definition='Operation temperature to modify R.',
                       profile_name='temp_oper_prof')
