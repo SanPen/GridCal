@@ -9,18 +9,27 @@ This is a list of actions to check
 *- Create In-and-out in a line
 ?- Create a reactance (series)
 *- Create a load / generator and introduce a profile
-- Scale load / generation per area
-- Run power flow
-- Contingencies
-- Change inter-area exchange
-- Create HVDC line and set a power dispatch profile
+*- Scale load / generation per area
+*- Run power flow
+*- Contingencies
+*- Change inter-area exchange -> with scaling
+*- Create HVDC line and set a power dispatch profile
 
-- Import PSSe
-- Create new diagram from a selection of an existing one
-- Create an empty diagram and populate it with DB objects
+*- Import PSSe -> drag the .raw
+*- Create new diagram from a selection of an existing one
+?- Create an empty diagram and populate it with DB objects -> Fix Bugs
 - Wheels. To be confirmed
-- Check copy paste of profiles
 
+-----Other videos-----:
+- Filters
+- add transformer
+---------------
+
+
+----- to do by FPM-----
+- Change areas in contingencies report
+- Order and modify std in reports
+-------------------------
 
 
 Videos
@@ -80,13 +89,15 @@ Video 4: Add something (injection) to a bus (load or a generator..)
     - 4 Go to the DB and select the load/generator... Click the "Assign the selected property to the matching profile". Accept the message
     - 5 If I want to set a predefined profile, check add profiles to an object property
 
-Video 5: Transform a line into other series element (reactance, transformer, ...)
+Video 5: Transform a line into other series element (reactance, transformer, HVDC ...)
 
     - 1 Select the line I want to install the load or generator
     - 2 Right button - Reactance / Transformer....
     - 3 Set the value parameters X
     - 4 Go to the DB and select the reactance/transformer..... Click the "Assign the selected property to the matching profile". Accept the message
     - 5 If I want to set a predefined profile, check add profiles to an object property
+
+    Note: If it is an HVDC and I want to set the P. It should be in Control Mode = Pdc , and in Pset = the setpoint (a profile might be added)
 
 Video 6: Add a profile to an object property
     - Using copy paste:
@@ -106,12 +117,41 @@ Video 7: Scale load / generation per area
     - 4 Choose if I want to do it in the snapshot (default), or if I want to extend it to the profiles (mark the check)
     - 5 Do it
 
+Video 8: Clustering
+    - 1. Explain what clustering is, and how it is done.
+    - 2. Explain how it is performed. Settings number of clusters
+    - 3. Explain results expansion
+
+Video 9: Power flow
+    - 1. Check settings
+    - 2. Check if I want time series and or clustering
+    - 3. Run
+    - 4. Results
+
+Video 10: Contingency analysis
+    - 1. Check settings
+    - 2. Check if I want time series and or clustering
+    - 3. Run
+    - 4. Results (same as in Redeval)
+
+Video 11: Visualization
+    - Part 1: Vecinity diagram
+        - 1 In DB- Bus/Line/..., select a bus/line/...
+        - 2 Click on add bus "Bus Vecinity viewer of the selected items"
+        - 3 Go to diagrams
+        - 4 Click on center view
+        - 5 CLick (+) button to expand it
+
+    - Part 2: Dense areas
+        - 1 Select the part of the network I want to include in the new diagram
+        - 2 Diagram/Bus-Branch OPtions/New diagram from selection
+        - 3 Go to diagrams
+        - 4 Click on center view
+        - 5 CLick (+) button to expand it
+
+Video
 
 
-Others:
-- Execute a contingencies study (with clustering)
-- Visualize dense areas
-- Filters
 
 
 

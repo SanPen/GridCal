@@ -28,9 +28,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="336ac068-5f36-44a4-9f98-8909f6be5848" name="Changes" comment="New reports including clustering weights (weighted std pending small improvement)">
+    <list default="true" id="336ac068-5f36-44a4-9f98-8909f6be5848" name="Changes" comment="Fixed bug with inputs_analysis_driver.py">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InputsAnalysis/inputs_analysis_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InputsAnalysis/inputs_analysis_driver.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/contingencies_report.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/contingencies_report.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/tests/QA_actions_list.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/QA_actions_list.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -1290,13 +1290,6 @@
       <workItem from="1709565306279" duration="3137000" />
       <workItem from="1709626829664" duration="5096000" />
     </task>
-    <task id="LOCAL-00313" summary="moved the Gui package out as GridCalGui and refactored all that was necessary">
-      <created>1656759710081</created>
-      <option name="number" value="00313" />
-      <option name="presentableId" value="LOCAL-00313" />
-      <option name="project" value="LOCAL" />
-      <updated>1656759710081</updated>
-    </task>
     <task id="LOCAL-00314" summary="Some more refactoring of missing imports">
       <created>1656760923750</created>
       <option name="number" value="00314" />
@@ -1633,7 +1626,14 @@
       <option name="project" value="LOCAL" />
       <updated>1710256391171</updated>
     </task>
-    <option name="localTasksCounter" value="484" />
+    <task id="LOCAL-00484" summary="Fixed bug with inputs_analysis_driver.py">
+      <created>1711031132470</created>
+      <option name="number" value="00484" />
+      <option name="presentableId" value="LOCAL-00484" />
+      <option name="project" value="LOCAL" />
+      <updated>1711031132470</updated>
+    </task>
+    <option name="localTasksCounter" value="485" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1667,7 +1667,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="keep work on multi-objective" />
     <MESSAGE value="improved fix functions in the object plot analysis" />
     <MESSAGE value="Added linear shunt and current injection (wip)" />
     <MESSAGE value="implemented imul in the profile&#10;fixed get_load_like_device_number in multi_circuit" />
@@ -1692,7 +1691,8 @@
     <MESSAGE value="Includind clustering weights" />
     <MESSAGE value="New reports including clustering weights (weighted std pending)" />
     <MESSAGE value="New reports including clustering weights (weighted std pending small improvement)" />
-    <option name="LAST_COMMIT_MESSAGE" value="New reports including clustering weights (weighted std pending small improvement)" />
+    <MESSAGE value="Fixed bug with inputs_analysis_driver.py" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed bug with inputs_analysis_driver.py" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
