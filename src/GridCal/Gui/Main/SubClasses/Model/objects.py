@@ -156,6 +156,10 @@ class ObjectsTableMain(DiagramsMain):
             elm = dev.UPFC()
             dictionary_of_lists = {DeviceType.BranchGroupDevice.value: self.circuit.get_branch_groups()}
 
+        elif elm_type == DeviceType.SeriesReactanceDevice:
+            elm = dev.SeriesReactance()
+            dictionary_of_lists = {DeviceType.BranchGroupDevice.value: self.circuit.get_branch_groups()}
+
         elif elm_type == DeviceType.DCLineDevice:
             elm = dev.DcLine()
             dictionary_of_lists = {DeviceType.BranchGroupDevice.value: self.circuit.get_branch_groups()}

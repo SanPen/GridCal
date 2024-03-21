@@ -20,14 +20,9 @@ from typing import Union
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
-from GridCalEngine.enumerations import BuildStatus, SubObjectType, DeviceType
-from GridCalEngine.Devices.Branches.underground_line_type import UndergroundLineType
-from GridCalEngine.Devices.Branches.overhead_line_type import OverheadLineType
+from GridCalEngine.enumerations import BuildStatus, DeviceType
 from GridCalEngine.Devices.Parents.branch_parent import BranchParent
-from GridCalEngine.Devices.Branches.sequence_line_type import SequenceLineType
-from GridCalEngine.Devices.Branches.transformer import Transformer2W
 from GridCalEngine.Devices.profile import Profile
-from GridCalEngine.Devices.Branches.line_locations import LineLocations
 
 
 class SeriesReactance(BranchParent):
@@ -50,7 +45,6 @@ class SeriesReactance(BranchParent):
         :param code: secondary ID
         :param r: Branch resistance in per unit
         :param x: Branch reactance in per unit
-        :param b: Branch shunt susceptance in per unit
         :param rate: Branch rate in MVA
         :param active: Is the branch active?
         :param tolerance: Tolerance specified for the branch impedance in %
@@ -60,7 +54,6 @@ class SeriesReactance(BranchParent):
         :param r_fault: Mid-line fault resistance in per unit (SC only)
         :param x_fault: Mid-line fault reactance in per unit (SC only)
         :param fault_pos: Mid-line fault position in per unit (0.0 = `bus_from`, 0.5 = middle, 1.0 = `bus_to`)
-        :param length: Length of the branch in km
         :param temp_base: Base temperature at which `r` is measured in °C
         :param temp_oper: Operating temperature in °C
         :param alpha: Thermal constant of the material in °C
@@ -71,10 +64,8 @@ class SeriesReactance(BranchParent):
         :param monitor_loading: monitor the loading (used in OPF)
         :param r0: zero-sequence resistence (p.u.)
         :param x0: zero-sequence reactance (p.u.)
-        :param b0: zero-sequence susceptance (p.u.)
         :param r2: negative-sequence resistence (p.u.)
         :param x2: negative-sequence reactance (p.u.)
-        :param b2: negative-sequence susceptance (p.u.)
         :param capex: Cost of investment (e/MW)
         :param opex: Cost of operation (e/MWh)
         :param build_status: build status (now time)
@@ -100,7 +91,7 @@ class SeriesReactance(BranchParent):
                               capex=capex,
                               opex=opex,
                               Cost=cost,
-                              device_type=DeviceType.LineDevice)
+                              device_type=DeviceType.SeriesReactanceDevice)
 
         # line impedance tolerance
         self.tolerance = tolerance
@@ -127,12 +118,6 @@ class SeriesReactance(BranchParent):
 
         # Conductor thermal constant (1/ºC)
         self.alpha = alpha
-
-        # type template
-        self.template: Union[OverheadLineType, SequenceLineType, UndergroundLineType] = template
-
-        # Line locations
-        self._locations: LineLocations = LineLocations(n_points=0)
 
         self.register(key='R', units='p.u.', tpe=float, definition='Total positive sequence resistance.')
         self.register(key='X', units='p.u.', tpe=float, definition='Total positive sequence reactance.')
@@ -163,8 +148,6 @@ class SeriesReactance(BranchParent):
                                  '0 would be at the "from" side,'
                                  '1 would be at the "to" side,'
                                  'therefore 0.5 is at the middle.')
-        self.register(key='template', units='', tpe=DeviceType.SequenceLineDevice, definition='', editable=False)
-        self.register(key='locations', units='', tpe=SubObjectType.LineLocations, definition='', editable=False)
 
     @property
     def temp_oper_prof(self) -> Profile:
@@ -182,23 +165,6 @@ class SeriesReactance(BranchParent):
             self._temp_oper_prof.set(arr=val)
         else:
             raise Exception(str(type(val)) + 'not supported to be set into a temp_oper_prof')
-
-    @property
-    def locations(self) -> LineLocations:
-        """
-        Cost profile
-        :return: Profile
-        """
-        return self._locations
-
-    @locations.setter
-    def locations(self, val: Union[LineLocations, np.ndarray]):
-        if isinstance(val, LineLocations):
-            self._locations = val
-        elif isinstance(val, np.ndarray):
-            self._locations.set(data=val)
-        else:
-            raise Exception(str(type(val)) + 'not supported to be set into a locations')
 
     @property
     def R_corrected(self):
@@ -220,7 +186,6 @@ class SeriesReactance(BranchParent):
 
         self.R *= b
         self.X *= b
-        self.B *= b
 
     def get_weight(self) -> float:
         """
@@ -229,53 +194,6 @@ class SeriesReactance(BranchParent):
         :return: weight value
         """
         return np.sqrt(self.R * self.R + self.X * self.X)
-
-    def apply_template(self, obj: Union[OverheadLineType, UndergroundLineType, SequenceLineType], Sbase: float,
-                       logger=Logger()):
-        """
-        Apply a line template to this object
-        :param obj: OverheadLineType, UndergroundLineType, SequenceLineType
-        :param Sbase: Nominal power in MVA
-        :param logger: Logger
-        """
-
-        if type(obj) in [OverheadLineType, UndergroundLineType, SequenceLineType]:
-
-            self.R, self.X, self.B, self.R0, self.X0, self.B0, self.rate = obj.get_values(Sbase=Sbase,
-                                                                                          length=self.length)
-
-            if self.template is not None:
-                if obj != self.template:
-                    self.template = obj
-            else:
-                self.template = obj
-
-        else:
-            logger.add_error('Template not recognised', self.name)
-
-    def get_save_data(self):
-        """
-        Return the data that matches the edit_headers
-        :return:
-        """
-        data = list()
-        for name, properties in self.registered_properties.items():
-            obj = getattr(self, name)
-
-            if obj is None:
-                data.append("")
-            else:
-
-                if hasattr(obj, 'idtag'):
-                    obj = obj.idtag
-                else:
-                    if properties.tpe not in [str, float, int, bool]:
-                        obj = str(obj)
-                    else:
-                        obj = str(obj)
-
-                data.append(obj)
-        return data
 
     def get_properties_dict(self, version=3):
         """
@@ -295,9 +213,7 @@ class SeriesReactance(BranchParent):
                     'rate': self.rate,
                     'r': self.R,
                     'x': self.X,
-                    'b': self.B,
 
-                    'length': self.length,
                     'base_temperature': self.temp_base,
                     'operational_temperature': self.temp_oper,
                     'alpha': self.alpha,
@@ -320,9 +236,7 @@ class SeriesReactance(BranchParent):
                     'contingency_factor3': self.contingency_factor,
                     'r': self.R,
                     'x': self.X,
-                    'b': self.B,
 
-                    'length': self.length,
                     'base_temperature': self.temp_base,
                     'operational_temperature': self.temp_oper,
                     'alpha': self.alpha,
@@ -352,70 +266,22 @@ class SeriesReactance(BranchParent):
 
         return errors
 
-    def should_this_be_a_transformer(self, branch_connection_voltage_tolerance: float = 0.1) -> bool:
-        """
-
-        :param branch_connection_voltage_tolerance:
-        :return:
-        """
-        if self.bus_to is not None and self.bus_from is not None:
-            V1 = min(self.bus_to.Vnom, self.bus_from.Vnom)
-            V2 = max(self.bus_to.Vnom, self.bus_from.Vnom)
-            if V2 > 0:
-                per = V1 / V2
-                return per < (1.0 - branch_connection_voltage_tolerance)
-            else:
-                return V1 != V2
-        else:
-            return False
-
-    def get_equivalent_transformer(self) -> Transformer2W:
-        """
-        Convert this line into a transformer
-        This is necessary if the buses' voltage differ too much
-        :return: Transformer2W
-        """
-        V1 = min(self.bus_to.Vnom, self.bus_from.Vnom)
-        V2 = max(self.bus_to.Vnom, self.bus_from.Vnom)
-        elm = Transformer2W(bus_from=self.bus_from,
-                            bus_to=self.bus_to,
-                            name=self.name,
-                            code=self.code,
-                            active=self.active,
-                            rate=self.rate,
-                            HV=V2,
-                            LV=V1,
-                            r=self.R,
-                            x=self.X,
-                            b=self.B)
-        elm.active_prof = self.active_prof
-        elm.rate_prof = self.rate_prof
-        elm.temperature_prof = self.temp_oper_prof
-        return elm
-
-    def fill_design_properties(self, r_ohm, x_ohm, c_nf, length, Imax, freq, Sbase):
+    def fill_design_properties(self, r_ohm, x_ohm, length, Imax, Sbase):
         """
         Fill R, X, B from not-in-per-unit parameters
         :param r_ohm: Resistance per km in OHM
         :param x_ohm: Reactance per km in OHM
-        :param c_nf: Capacitance per km in nF
         :param length: lenght in kn
         :param Imax: Maximum current in kA
-        :param freq: System frequency in Hz
         :param Sbase: Base power in MVA (take always 100 MVA)
         """
         R = r_ohm * length
         X = x_ohm * length
-        B = (
-                    2 * np.pi * freq * c_nf * 1e-9) * length  # impedance = 1 / (2 * pi * f * c), susceptance = (2 * pi * f * c)
-
         Vf = self.get_max_bus_nominal_voltage()
 
         Zbase = (Vf * Vf) / Sbase
-        Ybase = 1.0 / Zbase
 
         self.R = np.round(R / Zbase, 6)
         self.X = np.round(X / Zbase, 6)
-        self.B = np.round(B / Ybase, 6)
         self.rate = np.round(Imax * Vf * 1.73205080757, 6)  # nominal power in MVA = kA * kV * sqrt(3)
-        self.length = length
+

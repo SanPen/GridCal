@@ -54,6 +54,7 @@ from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.Devices.Diagrams.bus_branch_diagram import BusBranchDiagram
 from GridCalEngine.Devices.Diagrams.graphic_location import GraphicLocation
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec, Logger
+from GridCalEngine.Devices.types import BRANCH_TYPES
 
 from GridCal.Gui.BusBranchEditorWidget.terminal_item import TerminalItem
 from GridCal.Gui.BusBranchEditorWidget.Substation.bus_graphics import BusGraphicItem
@@ -1644,7 +1645,7 @@ class BusBranchEditorWidget(QSplitter):
 
         tuples = list()
 
-        for dev_type in self.circuit.get_branches_types():
+        for dev_type in BRANCH_TYPES:
 
             points_group = self.diagram.data.get(dev_type.value, None)
 

@@ -42,7 +42,8 @@ BRANCH_TYPES = Union[
     VSC,
     UPFC,
     Winding,
-    Switch
+    Switch,
+    SeriesReactance
 ]
 
 FLUID_TYPES = Union[
