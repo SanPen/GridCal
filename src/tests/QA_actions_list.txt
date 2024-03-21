@@ -1,21 +1,124 @@
 This is a list of actions to check
 =========================================
 
-- Create a line / tranformer
-- Change a lines rating
-- Change a lines template
-- Create a contingency, create a double contingency
-- Create a new substation
-- Create In-and-out in a line
-- Create a reactance (series)
-- Create a load / generator and introduce a profile
+*- Create a line / tranformer
+*- Change a lines rating
+*- Change a lines template
+*- Create a contingency, create a double contingency
+*- Create a new substation
+*- Create In-and-out in a line
+?- Create a reactance (series)
+*- Create a load / generator and introduce a profile
 - Scale load / generation per area
 - Run power flow
+- Contingencies
 - Change inter-area exchange
 - Create HVDC line and set a power dispatch profile
 
 - Import PSSe
 - Create new diagram from a selection of an existing one
 - Create an empty diagram and populate it with DB objects
+- Wheels. To be confirmed
+- Check copy paste of profiles
+
+
+
+Videos
+-----------
+Video 1. Create a substation
+
+   - 1 Drag the bus
+     - Define name
+     - Define voltage
+   - 2 Go to Substation/Substations in DB
+     - (+) Button - Create a new one
+     - Fill the fields
+   - 3 Go to Substation/Voltage level in DB (Parque in Spanish)
+     - (+) Button - Create a new one
+     - Fill the fields
+
+
+Video 2. Create a line and its contingencies
+
+    - 1 Create a line that exists in the catalog:
+        - Check voltage of both buses
+        - Check/load catalog
+        - Draw line
+        - Define name (legible)
+        - Mention if you want to add PSSE code (it does not affect)
+        - Set length
+        - Set template
+        - Add to contingencies
+        - Add to investments
+
+    - 2 Create a line that does not exist in the catalog:
+        - Check voltage of both buses
+        - Draw line
+        - Define name (legible)
+        - Mention if you want to add PSSE code (it does not affect)
+        - Define the parameters
+        - Create the profiles
+        - Add to contingencies
+        - Add to investments
+
+     - 3 Add a double contingency
+
+Video 3: Create In-and-out in a line
+
+    - 1 Select the line where I want to create the In-and-out in a line
+    - 2 Right bottom - SPlit line with in/out
+        - Define % of the length where I want to split the line
+        - Define the kilometers of the in and out lines
+
+    Notes: The new power lines parameters will be the same as the original power line
+
+Video 4: Add something (injection) to a bus (load or a generator..)
+
+    - 1 Select the bus I want to install the load or generator
+    - 2 Right button - Load / Generator....
+    - 3 Set the value of the P or Q
+    - 4 Go to the DB and select the load/generator... Click the "Assign the selected property to the matching profile". Accept the message
+    - 5 If I want to set a predefined profile, check add profiles to an object property
+
+Video 5: Transform a line into other series element (reactance, transformer, ...)
+
+    - 1 Select the line I want to install the load or generator
+    - 2 Right button - Reactance / Transformer....
+    - 3 Set the value parameters X
+    - 4 Go to the DB and select the reactance/transformer..... Click the "Assign the selected property to the matching profile". Accept the message
+    - 5 If I want to set a predefined profile, check add profiles to an object property
+
+Video 6: Add a profile to an object property
+    - Using copy paste:
+        - 1. Database / Time series
+        - 2. Select where I want to paste it, and press paste button
+    - Importing profiles:
+        - 1. Database / Time series / Import profiles
+        - 2 Import profile. Select sheet. ok . The prfile should have the samde length as the original GridCal time series
+        - 3 Find the element I want to assign the profile and select it. Double click on the Profile box
+        - 4 Important! Unmark both, set unasigned to zero, and normalize.
+        - 5 Accept
+
+Video 7: Scale load / generation per area
+    - 1 Menu - Model - Scale
+    - 2 Select the Zone/ Region/Munipality I want to scale up/down
+    - 3 Select the factor
+    - 4 Choose if I want to do it in the snapshot (default), or if I want to extend it to the profiles (mark the check)
+    - 5 Do it
+
+
+
+Others:
+- Execute a contingencies study (with clustering)
+- Visualize dense areas
+- Filters
+
+
+
+
+
+
+
+
 
 
