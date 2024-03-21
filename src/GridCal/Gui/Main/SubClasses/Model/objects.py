@@ -82,7 +82,7 @@ class ObjectsTableMain(DiagramsMain):
 
         # line edit enter
         self.ui.smart_search_lineEdit.returnPressed.connect(self.objects_smart_search)
-        self.ui.time_series_search.returnPressed.connect(self.timeseries_search)
+        # self.ui.time_series_search.returnPressed.connect(self.timeseries_search)
 
     def create_objects_model(self, elements, elm_type: DeviceType) -> gf.ObjectsModel:
         """

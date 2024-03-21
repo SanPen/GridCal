@@ -267,7 +267,7 @@ class SystemScaler(QtWidgets.QDialog):
 
         :return:
         """
-        ok = yes_no_question("This oeration will alter the generation "
+        ok = yes_no_question("This operation will alter the generation "
                              "and load composition irreversibly\nAre you sure?",
                              "System scaling")
 

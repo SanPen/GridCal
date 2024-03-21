@@ -390,7 +390,7 @@
                    <enum>QTabWidget::East</enum>
                   </property>
                   <property name="currentIndex">
-                   <number>0</number>
+                   <number>1</number>
                   </property>
                   <property name="documentMode">
                    <bool>true</bool>
@@ -795,9 +795,6 @@
                           <string>Magnitude with profile</string>
                          </property>
                         </widget>
-                       </item>
-                       <item>
-                        <widget class="QLineEdit" name="time_series_search"/>
                        </item>
                        <item>
                         <widget class="QPushButton" name="new_profiles_structure_pushButton">
