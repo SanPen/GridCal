@@ -98,6 +98,7 @@ Video 4: Create In-and-out in a line
     - 2 Right bottom - SPlit line with in/out
         - Define % of the length where I want to split the line
         - Define the kilometers of the in and out lines
+    - 3 Add contingencies
 
     Notes: The new power lines parameters will be the same as the original power line
 

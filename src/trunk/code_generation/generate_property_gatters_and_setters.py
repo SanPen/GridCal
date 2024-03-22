@@ -36,12 +36,12 @@ self.municipality: Union[Municipality, None] = municipality
 
 data = [
 
-    ('area', 'Union[Area, None]'),
-    ('zone', 'Union[Zone, None]'),
-    ('country', 'Union[Country, None]'),
-    ('community', 'Union[Community, None]'),
-    ('region', 'Union[Region, None]'),
-    ('municipality', 'Union[Municipality, None]'),
+    # ('area', 'Union[Area, None]'),
+    # ('zone', 'Union[Zone, None]'),
+    # ('country', 'Union[Country, None]'),
+    # ('community', 'Union[Community, None]'),
+    # ('region', 'Union[Region, None]'),
+    ('voltage_level', 'Union[VoltageLevel, None]'),
 ]
 
 with open("getters_and_setters_code.py", "w") as f:
