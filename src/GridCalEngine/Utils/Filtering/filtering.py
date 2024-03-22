@@ -221,15 +221,13 @@ class Filter:
         except ValueError:
             return False
 
-    def apply_filter_op(self, obj_val, val):
+    def apply_filter_op(self, obj_val: Union[float, str], val: Union[float, str]) -> bool:
         """
         Apply the filter operation
-        :param obj_val:
-        :param val:
-        :return:
+        :param obj_val: value of the object
+        :param val: value to compare
+        :return: passes the filter?
         """
-        ok = True
-
         if self.op == CompOps.GT:
             if self.try_numeric(obj_val) and self.try_numeric(val):
                 obj_val = float(obj_val)
@@ -263,8 +261,8 @@ class Filter:
                 ok = False
 
         elif self.op == CompOps.NOT_EQ:
-            obj_val = str(obj_val)
-            val = str(val)
+            obj_val = str(obj_val).lower()
+            val = str(val).lower()
             ok = obj_val != val
 
         elif self.op == CompOps.EQ:
@@ -273,28 +271,28 @@ class Filter:
                 val = float(val)
                 ok = obj_val == val
             else:
-                obj_val = str(obj_val)
-                val = str(val)
+                obj_val = str(obj_val).lower()
+                val = str(val).lower()
                 ok = obj_val == val
 
         elif self.op == CompOps.LIKE:
-            obj_val = str(obj_val)
-            val = str(val)
+            obj_val = str(obj_val).lower()
+            val = str(val).lower()
             ok = str(val) in str(obj_val)
 
         elif self.op == CompOps.NOT_LIKE:
-            obj_val = str(obj_val)
-            val = str(val)
+            obj_val = str(obj_val).lower()
+            val = str(val).lower()
             ok = val not in str(obj_val)
 
         elif self.op == CompOps.STARTS:
-            obj_val = str(obj_val)
-            val = str(val)
+            obj_val = str(obj_val).lower()
+            val = str(val).lower()
             ok = str(obj_val).startswith(val)
 
         elif self.op == CompOps.ENDS:
-            obj_val = str(obj_val)
-            val = str(val)
+            obj_val = str(obj_val).lower()
+            val = str(val).lower()
             ok = str(obj_val).endswith(val)
 
         else:

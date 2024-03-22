@@ -82,7 +82,7 @@ class ObjectsTableMain(DiagramsMain):
 
         # line edit enter
         self.ui.smart_search_lineEdit.returnPressed.connect(self.objects_smart_search)
-        self.ui.time_series_search.returnPressed.connect(self.timeseries_search)
+        # self.ui.time_series_search.returnPressed.connect(self.timeseries_search)
 
     def create_objects_model(self, elements, elm_type: DeviceType) -> gf.ObjectsModel:
         """
@@ -154,6 +154,10 @@ class ObjectsTableMain(DiagramsMain):
 
         elif elm_type == DeviceType.UpfcDevice:
             elm = dev.UPFC()
+            dictionary_of_lists = {DeviceType.BranchGroupDevice.value: self.circuit.get_branch_groups()}
+
+        elif elm_type == DeviceType.SeriesReactanceDevice:
+            elm = dev.SeriesReactance()
             dictionary_of_lists = {DeviceType.BranchGroupDevice.value: self.circuit.get_branch_groups()}
 
         elif elm_type == DeviceType.DCLineDevice:

@@ -84,10 +84,10 @@ if __name__ == '__main__':
     entries = [
         # {"list_name": "", "singular_name": "", "plural_name": "", "cls_name": "", },
         # community, region, municipality
-        {"list_name": "branch_groups",
-         "singular_name": "branch_group",
-         "plural_name": "branch_groups",
-         "cls_name": "BranchGroup", },
+        {"list_name": "series_reactances",
+         "singular_name": "series_reactance",
+         "plural_name": "series_reactances",
+         "cls_name": "SeriesReactance", },
 
 
     ]

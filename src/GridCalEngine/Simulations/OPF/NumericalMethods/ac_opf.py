@@ -14,8 +14,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
-
 import numpy as np
 import pandas as pd
 from dataclasses import dataclass
@@ -840,7 +838,8 @@ def run_nonlinear_opf(grid: MultiCircuit,
     # create and initialize results
     results = NonlinearOPFResults()
     results.initialize(nbus=nc.nbus, nbr=nc.nbr, ng=nc.ngen,
-                       nll=len(nc.branch_data.get_monitor_enabled_indices()), nhvdc=nc.nhvdc)
+                       nll=len(nc.branch_data.get_monitor_enabled_indices()),
+                       nhvdc=nc.nhvdc)
 
     for i, island in enumerate(islands):
         island_res = ac_optimal_power_flow(nc=island,
@@ -862,7 +861,6 @@ def run_nonlinear_opf(grid: MultiCircuit,
                       gen_idx=island.generator_data.original_idx,
                       hvdc_idx=island.hvdc_data.original_idx,
                       use_bound_slacks=use_bound_slacks)
-
         if i > 0:
             results.error = max(results.error, island_res.error)
             results.iterations = max(results.iterations, island_res.iterations)

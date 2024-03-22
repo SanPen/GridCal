@@ -101,6 +101,8 @@ def get_objects_dictionary() -> Dict[str, ALL_DEV_TYPES]:
                     'vsc': dev.VSC(None, None),
                     'upfc': dev.UPFC(None, None),
 
+                    'series_reactance': dev.SeriesReactance(),
+
                     'switch': dev.Switch(),
 
                     'contingency_group': dev.ContingencyGroup(),

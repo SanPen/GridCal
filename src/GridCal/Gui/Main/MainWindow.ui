@@ -797,9 +797,6 @@
                         </widget>
                        </item>
                        <item>
-                        <widget class="QLineEdit" name="time_series_search"/>
-                       </item>
-                       <item>
                         <widget class="QPushButton" name="new_profiles_structure_pushButton">
                          <property name="toolTip">
                           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Create profiles&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This will create all the object's profiles&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>

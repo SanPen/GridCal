@@ -477,11 +477,19 @@ class BranchParent(EditableDevice):
             return False
 
     @property
-    def Vf(self):
+    def Vf(self) -> float:
+        """
+        Get the voltage "from" (kV)
+        :return: get the nominal voltage from
+        """
         return self.bus_from.Vnom
 
     @property
-    def Vt(self):
+    def Vt(self) -> float:
+        """
+        Get the voltage "to" (kV)
+        :return: get the nominal voltage to
+        """
         return self.bus_to.Vnom
 
     def should_this_be_a_transformer(self, branch_connection_voltage_tolerance: float = 0.1) -> bool:
@@ -493,8 +501,11 @@ class BranchParent(EditableDevice):
         if self.bus_to is not None and self.bus_from is not None:
             V1 = min(self.bus_to.Vnom, self.bus_from.Vnom)
             V2 = max(self.bus_to.Vnom, self.bus_from.Vnom)
-            per = V1 / V2
-            return per < (1.0 - branch_connection_voltage_tolerance)
+            if V2 > 0:
+                per = V1 / V2
+                return per < (1.0 - branch_connection_voltage_tolerance)
+            else:
+                return V1 != V2
         else:
             return False
 

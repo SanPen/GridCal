@@ -35,6 +35,7 @@ from GridCalEngine.Devices.Branches.winding import Winding
 from GridCalEngine.Devices.Branches.vsc import VSC
 from GridCalEngine.Devices.Branches.upfc import UPFC
 from GridCalEngine.Devices.Branches.dc_line import DcLine
+from GridCalEngine.Devices.Branches.series_reactance import SeriesReactance
 from GridCalEngine.Devices.Branches.hvdc_line import HvdcLine
 from GridCalEngine.Devices.Fluid.fluid_node import FluidNode
 from GridCalEngine.Devices.Fluid.fluid_path import FluidPath
@@ -307,6 +308,16 @@ class UpfcSymbol(VscSymbol):
         VscSymbol.__init__(self, parent=parent, pen_width=pen_width, h=h, w=w, icon_route=":/Icons/icons/upfc.svg")
 
 
+class SeriesReactanceSymbol(VscSymbol):
+    """
+    UpfcSymbol
+    """
+
+    def __init__(self, parent, pen_width, h=48, w=48):
+        VscSymbol.__init__(self, parent=parent, pen_width=pen_width, h=h, w=w,
+                           icon_route=":/Icons/icons/to_series_reactance.svg")
+
+
 class HvdcSymbol(QGraphicsRectItem):
     """
     HvdcSymbol
@@ -424,6 +435,8 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
             self.symbol = UpfcSymbol(parent=self, pen_width=width, h=48, w=48)
         elif isinstance(api_object, HvdcLine):
             self.symbol = HvdcSymbol(parent=self, pen_width=width, h=30, w=30)
+        elif isinstance(api_object, SeriesReactance):
+            self.symbol = SeriesReactanceSymbol(parent=self, pen_width=width, h=30, w=30)
         else:
             self.symbol = None
 

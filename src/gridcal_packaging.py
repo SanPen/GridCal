@@ -17,9 +17,24 @@ import os
 import sys
 import tarfile
 import zipfile
+import hashlib
 from pathlib import Path
 from typing import List, Tuple
 from subprocess import call
+
+
+def file_hash(filename: str) -> str:
+    """
+    Python program to find SHA256 hash string of a file
+    :param filename:
+    :return:
+    """
+    sha256_hash = hashlib.sha256()
+    with open(filename, "rb") as f:
+        # Read and update hash string value in blocks of 4K
+        for byte_block in iter(lambda: f.read(4096), b""):
+            sha256_hash.update(byte_block)
+        return sha256_hash.hexdigest()
 
 
 def build_setup_cfg() -> str:
@@ -83,6 +98,29 @@ def build_pkg_info(name: str,
 
     val += '\n' + long_description + '\n'
 
+    return val
+
+
+def get_record_info(files):
+    """
+
+    :param files:
+    :return:
+    """
+    val = ""
+    for name, file_path in files:
+        hsh = file_hash(filename=file_path)
+        val += f"{file_path},sha256={hsh}\n"
+
+    return val
+
+
+def get_wheel_info():
+    val = ""
+    val += "Wheel-Version: 1.0\n"
+    val += "Generator: GridCal packaging\n"
+    val += "Root-Is-Purelib: true\n"
+    val += "Tag: py3-none-any"
     return val
 
 
@@ -238,47 +276,64 @@ def build_wheel(pkg_name: str,
 
     pkg_name2 = pkg_name + '-' + version
     filename = pkg_name2 + '-py3-none-any.whl'
+    dist_info_path = pkg_name2 + '.dist-info'
     output_filename = os.path.join(folder_to_save, filename)
 
     files = find_pkg_files(path=pkg_name,
                            ext_filter=ext_filter)
 
-    pkg_info = build_pkg_info(name=pkg_name,
-                              version=version,
-                              summary=summary,
-                              home_page=home_page,
-                              author=author,
-                              email=email,
-                              license_=license_,
-                              keywords=keywords,
-                              classifiers_list=classifiers_list,
-                              requires_pyhon=requires_pyhon,
-                              description_content_type=description_content_type,
-                              provides_extra=provides_extra,
-                              long_description=long_description)
-    pkg_info_path = 'pkg_info' + pkg_name
-    with open(pkg_info_path, 'w') as f:
-        f.write(pkg_info)
+    """
+    The .dist-info directory
 
-    setup_cfg = build_setup_cfg()
-    setup_cfg_path = 'setup_cfg' + pkg_name
-    with open(setup_cfg_path, 'w') as f:
-        f.write(setup_cfg)
+    Wheel .dist-info directories include at a minimum METADATA, WHEEL, and RECORD.
+    
+    METADATA is the package metadata, the same format as PKG-INFO as found at the root of sdists.
+    
+    WHEEL is the wheel metadata specific to a build of the package.
+    
+    RECORD is a list of (almost) all the files in the wheel and their secure hashes. 
+    Unlike PEP 376, every file except RECORD, which cannot contain a hash of itself, 
+    must include its hash. The hash algorithm must be sha256 or better; specifically, 
+    md5 and sha1 are not permitted, as signed wheel files rely on the strong hashes in RECORD 
+    to validate the integrity of the archive.
+    """
+    metadata_info = build_pkg_info(name=pkg_name,
+                                   version=version,
+                                   summary=summary,
+                                   home_page=home_page,
+                                   author=author,
+                                   email=email,
+                                   license_=license_,
+                                   keywords=keywords,
+                                   classifiers_list=classifiers_list,
+                                   requires_pyhon=requires_pyhon,
+                                   description_content_type=description_content_type,
+                                   provides_extra=provides_extra,
+                                   long_description=long_description)
+    wheel_info = get_wheel_info()
+    record_info = get_record_info(files)
 
-    with zipfile.ZipFile(output_filename, "w", zipfile.ZIP_DEFLATED)as tar:
+    with zipfile.ZipFile(output_filename, "w", zipfile.ZIP_DEFLATED) as tar:
         for name, file_path in files:
             if not name.endswith('setup.py'):
-                tar.write(file_path, arcname=os.path.join(pkg_name2, file_path))
+                tar.write(file_path, arcname=file_path)
 
         # add the setup where it belongs
-        tar.write(setup_path, arcname=os.path.join(pkg_name2, 'setup.py'))
+        # tar.write(setup_path, arcname=os.path.join(pkg_name, 'setup.py'))
 
         # add
-        tar.writestr(os.path.join(pkg_name2, 'PKG-INFO'), data=pkg_info)
-        tar.writestr(os.path.join(pkg_name2, 'setup.cfg'), data=setup_cfg_path)
+        # tar.writestr(os.path.join(pkg_name2, 'PKG-INFO'), data=pkg_info)
+        # tar.writestr(os.path.join(pkg_name2, 'setup.cfg'), data=setup_cfg_path)
+        tar.writestr(os.path.join(dist_info_path, 'METADATA'), data=metadata_info)
+        tar.writestr(os.path.join(dist_info_path, 'WHEEL'), data=wheel_info)
+        tar.writestr(os.path.join(dist_info_path, 'RECORD'), data=record_info)
 
-    os.remove(pkg_info_path)
-    os.remove(setup_cfg_path)
+    # os.remove(pkg_info_path)
+    # os.remove(setup_cfg_path)
+    # os.remove(metadata_f_path)
+    # os.remove(wheel_f_path)
+    # os.remove(record_f_path)
+    # os.removedirs(dist_info_path)
 
     return output_filename
 

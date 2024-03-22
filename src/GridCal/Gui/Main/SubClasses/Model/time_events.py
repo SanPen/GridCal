@@ -477,9 +477,20 @@ class TimeEventsMain(ObjectsTableMain):
         Copy the current displayed profiles to the clipboard
         """
 
-        mdl = self.ui.profiles_tableView.model()
+        mdl: gf.ProfilesModel = self.ui.profiles_tableView.model()
+
+        cols = set()
+        if len(self.ui.profiles_tableView.selectedIndexes()) > 0:
+            for index in self.ui.profiles_tableView.selectedIndexes():
+                row_idx = index.row()
+                col_idx = index.column()
+                cols.add(col_idx)
+        else:
+            row_idx = 0
+            col_idx = 0
+
         if mdl is not None:
-            mdl.copy_to_clipboard()
+            mdl.copy_to_clipboard(cols=list(cols))
             print('Copied!')
         else:
             warning_msg('There is no profile displayed, please display one', 'Copy profile to clipboard')

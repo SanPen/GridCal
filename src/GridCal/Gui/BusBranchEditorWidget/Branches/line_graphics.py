@@ -206,6 +206,12 @@ class LineGraphicItem(LineGraphicTemplateItem):
             toupfc.setIcon(toupfc_icon)
             toupfc.triggered.connect(self.to_upfc)
 
+            toser = menu.addAction('Series reactance')
+            toser_icon = QIcon()
+            toser_icon.addPixmap(QPixmap(":/Icons/icons/to_series_reactance.svg"))
+            toser.setIcon(toser_icon)
+            toser.triggered.connect(self.to_series_reactance)
+
             menu.exec(event.screenPos())
         else:
             pass
@@ -332,7 +338,8 @@ class LineGraphicItem(LineGraphicTemplateItem):
         :return:
         """
         if self.api_object.convertible_to_vsc():
-            ok = yes_no_question('Are you sure that you want to convert this line into a VSC device?', 'Convert line')
+            ok = yes_no_question('Are you sure that you want to convert this line into a VSC device?',
+                                 'Convert line')
             if ok:
                 self.editor.convert_line_to_vsc(line=self.api_object, line_graphic=self)
         else:
@@ -343,9 +350,20 @@ class LineGraphicItem(LineGraphicTemplateItem):
         Convert this object to UPFC
         :return:
         """
-        ok = yes_no_question('Are you sure that you want to convert this line into a UPFC device?', 'Convert line')
+        ok = yes_no_question('Are you sure that you want to convert this line into a UPFC device?',
+                             'Convert line')
         if ok:
             self.editor.convert_line_to_upfc(line=self.api_object, line_graphic=self)
+
+    def to_series_reactance(self):
+        """
+        Convert this object to series reactance
+        :return:
+        """
+        ok = yes_no_question('Are you sure that you want to convert this line into a series reactance device?',
+                             'Convert line')
+        if ok:
+            self.editor.convert_line_to_series_reactance(line=self.api_object, line_graphic=self)
 
     def __str__(self):
 

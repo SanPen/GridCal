@@ -213,6 +213,8 @@ class MultiCircuit:
 
         self.windings: List[dev.Winding] = list()
 
+        self.series_reactances: List[dev.SeriesReactance] = list()
+
         # Should accept buses
         self.buses: List[dev.Bus] = list()
 
@@ -374,6 +376,7 @@ class MultiCircuit:
                 dev.Transformer2W(),
                 dev.Winding(),
                 dev.Transformer3W(),
+                dev.SeriesReactance(),
                 dev.HvdcLine(),
                 dev.VSC(),
                 dev.UPFC(),
@@ -549,26 +552,10 @@ class MultiCircuit:
         """
         return np.ones(len(self.buses), dtype=int)
 
-    @staticmethod
-    def get_branches_types() -> List[DeviceType]:
-        """
-        Get branches types
-        :return list of device types
-        """
-        return [DeviceType.LineDevice,
-                DeviceType.DCLineDevice,
-                DeviceType.HVDCLineDevice,
-                DeviceType.Transformer2WDevice,
-                DeviceType.WindingDevice,
-                DeviceType.SwitchDevice,
-                DeviceType.VscDevice,
-                DeviceType.UpfcDevice]
-
     def get_branch_lists_wo_hvdc(self) -> List[List[BRANCH_TYPES]]:
         """
         Get list of the branch lists
-        :return: List[Union[List[dev.Line], List[dev.DcLine], List[dev.Transformer2W],
-                            List[dev.Winding], List[dev.VSC], List[dev.UPFC]]]
+        :return: List[List[BRANCH_TYPES]]
         """
         return [
             self.lines,
@@ -576,7 +563,8 @@ class MultiCircuit:
             self.transformers2w,
             self.windings,
             self.vsc_devices,
-            self.upfc_devices
+            self.upfc_devices,
+            self.series_reactances
         ]
 
     def get_branch_names_wo_hvdc(self) -> StrVec:
@@ -1808,6 +1796,9 @@ class MultiCircuit:
         elif device_type == DeviceType.WindingDevice:
             return self.windings
 
+        elif device_type == DeviceType.SeriesReactanceDevice:
+            return self.series_reactances
+
         elif device_type == DeviceType.HVDCLineDevice:
             return self.hvdc_lines
 
@@ -2002,6 +1993,9 @@ class MultiCircuit:
         elif device_type == DeviceType.WindingDevice:
             self.windings = devices
 
+        elif device_type == DeviceType.SeriesReactanceDevice:
+            self.series_reactances = devices
+
         elif device_type == DeviceType.HVDCLineDevice:
             self.hvdc_lines = devices
 
@@ -2188,6 +2182,9 @@ class MultiCircuit:
         elif element_type == DeviceType.WindingDevice:
             return self.delete_winding(obj)
 
+        elif element_type == DeviceType.SeriesReactanceDevice:
+            return self.delete_series_reactance(obj)
+
         elif element_type == DeviceType.HVDCLineDevice:
             return self.delete_hvdc_line(obj)
 
@@ -2373,6 +2370,7 @@ class MultiCircuit:
                 'switch_devices',
                 'transformers3w',
                 'windings',
+                'series_reactances',
                 'buses',
 
                 'loads',
@@ -2951,7 +2949,7 @@ class MultiCircuit:
             else:
                 self.add_line(obj.get_equivalent_line())
         else:
-            raise Exception('Unrecognized branch type ' + obj.device_type.value)
+            raise Exception(f'Unrecognized branch type {obj.device_type.value}')
 
     def delete_branch(self, obj: BRANCH_TYPES):
         """
@@ -3582,6 +3580,57 @@ class MultiCircuit:
         self.countries.remove(obj)
 
     # ----------------------------------------------------------------------------------------------------------------------
+    # series_reactances
+    # ----------------------------------------------------------------------------------------------------------------------
+
+    def get_series_reactances(self) -> List[dev.SeriesReactance]:
+        """
+        List of series_reactances
+        :return: List[dev.SeriesReactance]
+        """
+        return self.series_reactances
+
+    def get_series_reactances_number(self) -> int:
+        """
+        Size of the list of series_reactances
+        :return: size of series_reactances
+        """
+        return len(self.series_reactances)
+
+    def get_series_reactance_at(self, i: int) -> dev.SeriesReactance:
+        """
+        Get series_reactance at i
+        :param i: index
+        :return: SeriesReactance
+        """
+        return self.series_reactances[i]
+
+    def get_series_reactance_names(self) -> StrVec:
+        """
+        Array of series_reactance names
+        :return: StrVec
+        """
+        return np.array([e.name for e in self.series_reactances])
+
+    def add_series_reactance(self, obj: dev.SeriesReactance):
+        """
+        Add a SeriesReactance object
+        :param obj: SeriesReactance instance
+        """
+
+        if self.time_profile is not None:
+            obj.create_profiles(self.time_profile)
+        self.series_reactances.append(obj)
+
+    def delete_series_reactance(self, obj: dev.SeriesReactance) -> None:
+        """
+        Add a SeriesReactance object
+        :param obj: SeriesReactance instance
+        """
+
+        self.series_reactances.remove(obj)
+
+    # ----------------------------------------------------------------------------------------------------------------------
     # communities
     # ----------------------------------------------------------------------------------------------------------------------
 
@@ -4204,7 +4253,7 @@ class MultiCircuit:
         """
         Convert a line to voltage source converter
         :param line: Line instance
-        :return: Nothing
+        :return: UPFC
         """
         upfc = dev.UPFC(bus_from=line.bus_from,
                         bus_to=line.bus_to,
@@ -4212,9 +4261,7 @@ class MultiCircuit:
                         active=line.active,
                         rate=line.rate,
                         rs=line.R,
-                        xs=line.X,
-                        # bl=line.B,
-                        )
+                        xs=line.X)
 
         upfc.active_prof = line.active_prof
         upfc.rate_prof = line.rate_prof
@@ -4226,6 +4273,32 @@ class MultiCircuit:
         self.delete_line(line)
 
         return upfc
+
+    def convert_line_to_series_reactance(self, line: dev.Line) -> dev.SeriesReactance:
+        """
+        Convert a line to voltage source converter
+        :param line: Line instance
+        :return: SeriesReactance
+        """
+        series_reactance = dev.SeriesReactance(bus_from=line.bus_from,
+                                               bus_to=line.bus_to,
+                                               name='Series reactance',
+                                               active=line.active,
+                                               rate=line.rate,
+                                               r=line.R,
+                                               x=line.X,
+                                               )
+
+        series_reactance.active_prof = line.active_prof
+        series_reactance.rate_prof = line.rate_prof
+
+        # add device to the circuit
+        self.add_series_reactance(series_reactance)
+
+        # delete the line from the circuit
+        self.delete_line(line)
+
+        return series_reactance
 
     def convert_fluid_path_to_line(self, fluid_path: dev.FluidPath) -> dev.Line:
         """

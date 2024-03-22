@@ -871,6 +871,7 @@ class DeviceType(Enum):
     Transformer2WDevice = 'Transformer'
     Transformer3WDevice = 'Transformer3W'
     WindingDevice = 'Winding'
+    SeriesReactanceDevice = 'Series reactance'
     HVDCLineDevice = 'HVDC Line'
     DCLineDevice = 'DC line'
     VscDevice = 'VSC'

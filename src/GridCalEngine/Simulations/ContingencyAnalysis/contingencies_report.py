@@ -439,7 +439,7 @@ class ContingencyResultsReport:
             "Date Overload max": ov_max_dates,
             "Overload average for clusters(pu)": ov_avg.values,
             "Standard deviation for clusters(pu)": ov_desvest.values,
-            "Number of clusters with this overload (h)": ov_count_clusters.values,
+            "Number of clusters with this overload (h)": ov_count_clusters.values.astype(int),
 
             # new, work in progress
             "Overload average weighting time (pu)": ov_avg_clust.values, #checked
