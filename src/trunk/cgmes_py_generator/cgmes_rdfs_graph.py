@@ -39,6 +39,7 @@ cims_multiplicity = rdflib.term.URIRef(cims + 'multiplicity')
 cims_stereotype = rdflib.term.URIRef(cims + 'stereotype')
 cims_datatype = rdflib.term.URIRef(cims + 'dataType')
 cims_isFixed = rdflib.term.URIRef(cims + 'isFixed')
+cims_inverseRoleName = rdflib.term.URIRef(cims + "inverseRoleName")
 
 all_class = []
 cgmes_class_list = []
@@ -179,7 +180,8 @@ def generate_cgmes_classes():
                         aso_range = rdf_graph.value(s, RDFS.range).__str__()
                     # could be active p: value or multiplier
                     if aso_range not in not_in_scope_list:
-                        assoc_datatype_dict[attr_label] = aso_range
+                        inv_role_name = rdf_graph.value(s, cims_inverseRoleName).__str__().split('#')[-1]
+                        assoc_datatype_dict[inv_role_name] = label + "." + attr_label
                         attribute_i["range"] = aso_range
                         attribute_i["description"] = rdf_graph.value(s, RDFS.comment).__str__()
                     else:

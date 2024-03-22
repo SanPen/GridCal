@@ -23,7 +23,6 @@ from PySide6.QtWidgets import QGraphicsItem, QGraphicsEllipseItem, QGraphicsRect
 
 from GridCalEngine.Devices.Branches.transformer3w import Transformer3W
 from GridCal.Gui.BusBranchEditorWidget.generic_graphics import ACTIVE, DEACTIVATED
-from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCal.Gui.BusBranchEditorWidget.terminal_item import TerminalItem
 from GridCal.Gui.BusBranchEditorWidget.Branches.winding_graphics import WindingGraphicItem
 from GridCal.Gui.messages import yes_no_question

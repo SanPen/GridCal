@@ -43,6 +43,7 @@ class ControllableShunt(InjectionParent):
                  mttr: float = 0.0,
                  capex: float = 0.0,
                  opex: float = 0.0,
+                 is_controlled: bool = True,
                  build_status: BuildStatus = BuildStatus.Commissioned):
         """
         The controllable shunt object implements the so-called ZIP model, in which the load can be
@@ -71,6 +72,7 @@ class ControllableShunt(InjectionParent):
                                  build_status=build_status,
                                  device_type=DeviceType.ControllableShuntDevice)
 
+        self.is_controlled = is_controlled
         self.is_nonlinear = is_nonlinear
         self._g_steps = np.zeros(number_of_steps)
         self._b_steps = np.zeros(number_of_steps)
@@ -86,6 +88,15 @@ class ControllableShunt(InjectionParent):
 
         self.register(key='step', units='', tpe=int, definition='Device tap step', profile_name='step_prof')
         self.register(key='is_nonlinear', units='', tpe=bool, definition='Is non-linear?')
+        self.register(key='is_controlled', units='', tpe=bool, definition='Is controlled?')
+
+    @property
+    def Bmin(self):
+        return self._b_steps[0]
+
+    @property
+    def Bmax(self):
+        return self._b_steps[-1]
 
     @property
     def g_steps(self):

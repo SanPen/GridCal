@@ -38,24 +38,24 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
     """
 
     def __init__(self,
-                 fromPort: TerminalItem,
-                 toPort: Union[TerminalItem, None],
+                 from_port: TerminalItem,
+                 to_port: Union[TerminalItem, None],
                  editor: BusBranchEditorWidget,
                  width=10,
                  api_object: FluidPath = None,
                  arrow_size=15):
         """
         
-        :param fromPort:
-        :param toPort:
+        :param from_port:
+        :param to_port:
         :param editor:
         :param width:
         :param api_object:
         :param arrow_size:
         """
         LineGraphicTemplateItem.__init__(self,
-                                         fromPort=fromPort,
-                                         toPort=toPort,
+                                         from_port=from_port,
+                                         to_port=to_port,
                                          editor=editor,
                                          width=width,
                                          api_object=api_object,

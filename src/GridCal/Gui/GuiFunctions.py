@@ -304,6 +304,65 @@ class FloatDelegate(QtWidgets.QItemDelegate):
         model.setData(index, editor.value())
 
 
+class IntDelegate(QtWidgets.QItemDelegate):
+    """
+    A delegate that places a fully functioning QDoubleSpinBox in every
+    cell of the column to which it's applied
+    """
+
+    commitData = QtCore.Signal(object)
+
+    def __init__(self, parent: QtWidgets.QTableView, min_: int = -99999, max_: int = 99999) -> None:
+        """
+        Constructor
+        :param parent: QTableView parent object
+        """
+        QtWidgets.QItemDelegate.__init__(self, parent)
+        self.min = min_
+        self.max = max_
+
+    @QtCore.Slot()
+    def returnPressed(self):
+        """
+        returnPressed
+        """
+        self.commitData.emit(self.sender())
+
+    def createEditor(self, parent, option, index):
+        """
+
+        :param parent:
+        :param option:
+        :param index:
+        :return:
+        """
+        editor = QtWidgets.QSpinBox(parent)
+        editor.setMaximum(self.max)
+        editor.setMinimum(self.min)
+        editor.editingFinished.connect(self.returnPressed)
+        return editor
+
+    def setEditorData(self, editor: QtWidgets.QDoubleSpinBox, index):
+        """
+
+        :param editor:
+        :param index:
+        """
+        editor.blockSignals(True)
+        val = int(index.model().data(index, role=QtCore.Qt.ItemDataRole.DisplayRole))
+        editor.setValue(val)
+        editor.blockSignals(False)
+
+    def setModelData(self, editor: QtWidgets.QDoubleSpinBox, model, index):
+        """
+
+        :param editor:
+        :param model:
+        :param index:
+        """
+        model.setData(index, editor.value())
+
+
 class ComplexDelegate(QtWidgets.QItemDelegate):
     """
     A delegate that places a fully functioning Complex Editor in every
@@ -882,7 +941,8 @@ class ObjectsModelOld(QtCore.QAbstractTableModel):
             attr_idx = index.column()
 
         if self.editable and self.attributes[attr_idx] not in self.non_editable_attributes:
-            return (QtCore.Qt.ItemFlag.ItemIsEditable | QtCore.Qt.ItemFlag.ItemIsEnabled | QtCore.Qt.ItemFlag.ItemIsSelectable)
+            return (
+                        QtCore.Qt.ItemFlag.ItemIsEditable | QtCore.Qt.ItemFlag.ItemIsEnabled | QtCore.Qt.ItemFlag.ItemIsSelectable)
         else:
             return QtCore.Qt.ItemFlag.ItemIsEnabled
 
@@ -1229,6 +1289,10 @@ class ObjectsModel(QtCore.QAbstractTableModel):
 
             elif tpe is float:
                 delegate = FloatDelegate(self.parent)
+                F(i, delegate)
+
+            elif tpe is int:
+                delegate = IntDelegate(self.parent)
                 F(i, delegate)
 
             elif tpe is complex:

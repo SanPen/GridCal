@@ -246,7 +246,6 @@ def get_load_data(circuit: MultiCircuit,
 
         else:
             data.I[ii] = complex(elm.Ir, elm.Ii)
-            data.Y[ii] = complex(elm.G, elm.B)
             data.active[ii] = elm.active
             data.cost[ii] = elm.Cost
 
