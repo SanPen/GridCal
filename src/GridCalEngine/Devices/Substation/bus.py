@@ -230,6 +230,28 @@ class Bus(EditableDevice):
         else:
             raise Exception(str(type(val)) + 'not supported to be set into a active_prof')
 
+    @property
+    def voltage_level(self) -> Union[VoltageLevel, None]:
+        """
+        voltage_level getter
+        :return: Union[VoltageLevel, None]
+        """
+        return self._voltage_level
+
+    @voltage_level.setter
+    def voltage_level(self, val: Union[VoltageLevel, None]):
+        """
+        voltage_level getter
+        :param val: value
+        """
+        if isinstance(val, Union[VoltageLevel, None]):
+            self._voltage_level = val
+            if val.substation is not None and self.substation is None:
+                self.substation = val.substation
+        else:
+            raise Exception(str(type(
+                val)) + 'not supported to be set into a voltage_level of type Union[VoltageLevel, None]')
+
     def determine_bus_type(self) -> BusMode:
         """
         Infer the bus type from the devices attached to it
