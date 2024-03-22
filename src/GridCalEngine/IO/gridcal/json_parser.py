@@ -395,26 +395,10 @@ def parse_json_data_v3(data: dict, logger: Logger):
                 zone_id = str(jentry['zone']) if 'zone' in jentry.keys() else ''
                 substation_id = str(jentry['Substation']) if 'Substation' in jentry.keys() else ''
                 country_id = str(jentry['country']) if 'country' in jentry.keys() else ''
-
-                if area_id in areas_dict.keys():
-                    area = areas_dict[area_id]
-                else:
-                    area = circuit.areas[0]
-
-                if zone_id in zones_dict.keys():
-                    zone = zones_dict[zone_id]
-                else:
-                    zone = circuit.zones[0]
-
-                if substation_id in substations_dict.keys():
-                    substation = substations_dict[substation_id]
-                else:
-                    substation = circuit.substations[0]
-
-                if country_id in country_dict.keys():
-                    country = country_dict[country_id]
-                else:
-                    country = circuit.countries[0]
+                area = areas_dict.get(area_id, None)
+                zone = zones_dict.get(zone_id, None)
+                substation = substations_dict.get(substation_id, None)
+                country = country_dict.get(country_id, None)
 
                 bus = dev.Bus(name=str(jentry['name']),
                               idtag=str(jentry['id']),
@@ -1006,26 +990,10 @@ def parse_json_data_v2(data: dict, logger: Logger):
                 zone_id = str(jentry['zone']) if 'zone' in jentry.keys() else ''
                 substation_id = str(jentry['Substation']) if 'Substation' in jentry.keys() else ''
                 country_id = str(jentry['country']) if 'country' in jentry.keys() else ''
-
-                if area_id in areas_dict.keys():
-                    area = areas_dict[area_id]
-                else:
-                    area = circuit.areas[0]
-
-                if zone_id in zones_dict.keys():
-                    zone = zones_dict[zone_id]
-                else:
-                    zone = circuit.zones[0]
-
-                if substation_id in substations_dict.keys():
-                    substation = substations_dict[substation_id]
-                else:
-                    substation = circuit.substations[0]
-
-                if country_id in country_dict.keys():
-                    country = country_dict[country_id]
-                else:
-                    country = circuit.countries[0]
+                area = areas_dict.get(area_id, None)
+                zone = zones_dict.get(zone_id, None)
+                substation = substations_dict.get(substation_id, None)
+                country = country_dict.get(country_id, None)
 
                 bus = dev.Bus(name=str(jentry['name']),
                               idtag=str(jentry['id']),
@@ -1460,11 +1428,11 @@ def save_json_file_v3(file_path: str, circuit: MultiCircuit, simulation_drivers:
                                                            'b_steps': elm.b_steps.tolist(),
                                                            'step': elm.step,
                                                            'shedding_cost': elm.Cost
-                                                           } for elm in circuit.get_loads()]
+                                                           } for elm in circuit.get_controllable_shunts()]
     element_profiles[DeviceType.ControllableShuntDevice.value] = [{'id': elm.idtag,
                                                                    'active': profile_to_json(elm.active_prof),
                                                                    'step': profile_to_json(elm.steps_prof), } for elm in
-                                                                  circuit.get_loads()]
+                                                                  circuit.get_controllable_shunts()]
 
     # current injection
     elements[DeviceType.CurrentInjectionDevice.value] = [{'id': elm.idtag,
@@ -1499,7 +1467,7 @@ def save_json_file_v3(file_path: str, circuit: MultiCircuit, simulation_drivers:
                                                       'P': elm.P,
                                                       'Q': elm.Q,
                                                       'Cost': elm.Cost
-                                                      } for elm in circuit.get_loads()]
+                                                      } for elm in circuit.get_external_grids()]
     element_profiles[DeviceType.ExternalGridDevice.value] = [{'id': elm.idtag,
                                                               'active': profile_to_json(elm.active_prof),
                                                               'Vm_prof': profile_to_json(elm.Vm_prof),
@@ -1508,7 +1476,7 @@ def save_json_file_v3(file_path: str, circuit: MultiCircuit, simulation_drivers:
                                                               'Q_prof': profile_to_json(elm.Q_prof),
                                                               'Cost_prof': profile_to_json(elm.Cost_prof)
                                                               } for elm in
-                                                             circuit.get_loads()]
+                                                             circuit.get_external_grids()]
 
     # generators
     elements[DeviceType.GeneratorDevice.value] = [{'id': elm.idtag,
