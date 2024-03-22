@@ -42,6 +42,7 @@ from GridCalEngine.Devices.Branches.dc_line import DcLine
 from GridCalEngine.Devices.Branches.transformer import Transformer2W
 from GridCalEngine.Devices.Branches.vsc import VSC
 from GridCalEngine.Devices.Branches.upfc import UPFC
+from GridCalEngine.Devices.Branches.series_reactance import SeriesReactance
 from GridCalEngine.Devices.Branches.hvdc_line import HvdcLine
 from GridCalEngine.Devices.Branches.transformer3w import Transformer3W, Winding
 from GridCalEngine.Devices.Injections.generator import Generator
@@ -67,6 +68,7 @@ from GridCal.Gui.BusBranchEditorWidget.Branches.transformer2w_graphics import Tr
 from GridCal.Gui.BusBranchEditorWidget.Branches.hvdc_graphics import HvdcGraphicItem
 from GridCal.Gui.BusBranchEditorWidget.Branches.vsc_graphics import VscGraphicItem
 from GridCal.Gui.BusBranchEditorWidget.Branches.upfc_graphics import UpfcGraphicItem
+from GridCal.Gui.BusBranchEditorWidget.Branches.series_reactance_graphics import SeriesReactanceGraphicItem
 from GridCal.Gui.BusBranchEditorWidget.Branches.line_graphics_template import LineGraphicTemplateItem
 from GridCal.Gui.BusBranchEditorWidget.Branches.transformer3w_graphics import Transformer3WGraphicItem
 from GridCal.Gui.BusBranchEditorWidget.Injections.generator_graphics import GeneratorGraphicItem
@@ -1969,6 +1971,30 @@ class BusBranchEditorWidget(QSplitter):
             print("Branch's buses were not found in the diagram :(")
             return None
 
+    def add_api_series_reactance(self, branch: SeriesReactance):
+        """
+        add API branch to the Scene
+        :param branch: Branch instance
+        """
+        bus_f_graphic_data = self.diagram.query_point(branch.bus_from)
+        bus_t_graphic_data = self.diagram.query_point(branch.bus_to)
+
+        if bus_f_graphic_data and bus_t_graphic_data:
+            bus_f_graphics: BusGraphicItem = bus_f_graphic_data.graphic_object
+            bus_t_graphics: BusGraphicItem = bus_t_graphic_data.graphic_object
+
+            graphic_object = SeriesReactanceGraphicItem(from_port=bus_f_graphics.get_terminal(),
+                                                        to_port=bus_t_graphics.get_terminal(),
+                                                        editor=self,
+                                                        api_object=branch)
+
+            graphic_object.redraw()
+            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_object)
+            return graphic_object
+        else:
+            print("Branch's buses were not found in the diagram :(")
+            return None
+
     def add_api_transformer(self, branch: Transformer2W):
         """
         add API branch to the Scene
@@ -2159,7 +2185,7 @@ class BusBranchEditorWidget(QSplitter):
 
     def convert_line_to_upfc(self, line: Line, line_graphic: LineGraphicItem):
         """
-        Convert a line to voltage source converter
+        Convert a line to UPFC
         :param line: Line instance
         :param line_graphic: LineGraphicItem
         :return: Nothing
@@ -2177,7 +2203,27 @@ class BusBranchEditorWidget(QSplitter):
         self.remove_from_scene(line_graphic)
 
         self.update_diagram_element(device=upfc, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_object)
-        # self.delete_diagram_element(device=line)
+
+    def convert_line_to_series_reactance(self, line: Line, line_graphic: LineGraphicItem):
+        """
+        Convert a line to convert_line_to_series_reactance
+        :param line: Line instance
+        :param line_graphic: LineGraphicItem
+        :return: Nothing
+        """
+        series_reactance = self.circuit.convert_line_to_series_reactance(line)
+
+        # add device to the schematic
+        graphic_object = self.add_api_series_reactance(series_reactance)
+        self.add_to_scene(graphic_object)
+
+        # update position
+        graphic_object.update_ports()
+
+        # delete from the schematic
+        self.remove_from_scene(line_graphic)
+
+        self.update_diagram_element(device=series_reactance, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_object)
 
     def convert_fluid_path_to_line(self, element: FluidPath, item_graphic: FluidPathGraphicItem):
         """

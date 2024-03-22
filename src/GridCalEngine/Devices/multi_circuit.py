@@ -4253,7 +4253,7 @@ class MultiCircuit:
         """
         Convert a line to voltage source converter
         :param line: Line instance
-        :return: Nothing
+        :return: UPFC
         """
         upfc = dev.UPFC(bus_from=line.bus_from,
                         bus_to=line.bus_to,
@@ -4261,9 +4261,7 @@ class MultiCircuit:
                         active=line.active,
                         rate=line.rate,
                         rs=line.R,
-                        xs=line.X,
-                        # bl=line.B,
-                        )
+                        xs=line.X)
 
         upfc.active_prof = line.active_prof
         upfc.rate_prof = line.rate_prof
@@ -4275,6 +4273,32 @@ class MultiCircuit:
         self.delete_line(line)
 
         return upfc
+
+    def convert_line_to_series_reactance(self, line: dev.Line) -> dev.SeriesReactance:
+        """
+        Convert a line to voltage source converter
+        :param line: Line instance
+        :return: SeriesReactance
+        """
+        series_reactance = dev.SeriesReactance(bus_from=line.bus_from,
+                                               bus_to=line.bus_to,
+                                               name='Series reactance',
+                                               active=line.active,
+                                               rate=line.rate,
+                                               r=line.R,
+                                               x=line.X,
+                                               )
+
+        series_reactance.active_prof = line.active_prof
+        series_reactance.rate_prof = line.rate_prof
+
+        # add device to the circuit
+        self.add_series_reactance(series_reactance)
+
+        # delete the line from the circuit
+        self.delete_line(line)
+
+        return series_reactance
 
     def convert_fluid_path_to_line(self, fluid_path: dev.FluidPath) -> dev.Line:
         """
