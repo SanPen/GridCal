@@ -185,52 +185,6 @@ class ControllableShunt(InjectionParent):
         else:
             raise Exception(str(type(val)) + 'not supported to be set into a step_prof')
 
-    def get_properties_dict(self, version=3):
-        """
-        Get json dictionary
-        :return:
-        """
-        if version in [2, 3]:
-            return {'id': self.idtag,
-                    'type': 'load',
-                    'phases': 'ps',
-                    'name': self.name,
-                    'name_code': self.code,
-                    'bus': self.bus.idtag,
-                    'active': bool(self.active),
-                    'g_steps': self._g_steps.tolist(),
-                    'b_steps': self._b_steps.tolist(),
-                    'step': self.step,
-                    'shedding_cost': self.Cost
-                    }
-        else:
-            return dict()
-
-    def get_profiles_dict(self, version=3):
-        """
-
-        :return:
-        """
-
-        if self.active_prof is not None:
-            active_profile = self.active_prof.tolist()
-            steps_prof = self.step_prof.tolist()
-
-        else:
-            active_profile = list()
-            steps_prof = list()
-
-        return {'id': self.idtag,
-                'active': active_profile,
-                'step': steps_prof,
-                }
-
-    def get_units_dict(self, version=3):
-        """
-        Get units of the values
-        """
-        return {}
-
     def plot_profiles(self, time=None, show_fig=True):
         """
         Plot the time series results of this object
