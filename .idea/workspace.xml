@@ -29,9 +29,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Removed the json profile thing from the devices and centralized it into save_json_file">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Improved the eJsonV3 parser">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/json_parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/json_parser.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/enumerations.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/enumerations.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1355,7 +1356,7 @@
       <workItem from="1711007587393" duration="1135000" />
       <workItem from="1711049974452" duration="2834000" />
       <workItem from="1711092549276" duration="17627000" />
-      <workItem from="1711130958846" duration="438000" />
+      <workItem from="1711130958846" duration="2795000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1700,7 +1701,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="526" />
+    <option name="localTasksCounter" value="527" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1746,7 +1747,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Further fixing of the stochastic PF" />
     <MESSAGE value="More types in the power flow worker" />
     <MESSAGE value="Improved types" />
     <MESSAGE value="Refactored the test_ptdf to avoid import *" />
@@ -1771,7 +1771,8 @@
     <MESSAGE value="Added series reactance graphics" />
     <MESSAGE value="Changes to QA_actions_list.txt" />
     <MESSAGE value="Removed the json profile thing from the devices and centralized it into save_json_file" />
-    <option name="LAST_COMMIT_MESSAGE" value="Removed the json profile thing from the devices and centralized it into save_json_file" />
+    <MESSAGE value="Improved the eJsonV3 parser" />
+    <option name="LAST_COMMIT_MESSAGE" value="Improved the eJsonV3 parser" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
