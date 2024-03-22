@@ -48,7 +48,7 @@ def index_find(string, start, end):
     return string.partition(start)[2].partition(end)[0]
 
 
-def get_new_rfid():
+def get_new_rdfid():
     """
 
     :return:
@@ -103,7 +103,7 @@ class Base:
 
         # pick the object id
         rdfid = rdfid.strip()
-        self.rdfid = rdfid if rdfid != '' else get_new_rfid()
+        self.rdfid = rdfid if rdfid != '' else get_new_rdfid()
         self.uuid = rfid2uuid(self.rdfid)
 
         # store the object type

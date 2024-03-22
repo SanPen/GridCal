@@ -23,6 +23,7 @@ from GridCalEngine.enumerations import BusMode
 from GridCalEngine.Devices.Parents.editable_device import EditableDevice, DeviceType
 from GridCalEngine.Devices.Aggregation import Area, Zone, Country
 from GridCalEngine.Devices.Substation.substation import Substation
+from GridCalEngine.Devices.Substation.voltage_level import VoltageLevel
 from GridCalEngine.Devices.profile import Profile
 
 
@@ -49,6 +50,7 @@ class Bus(EditableDevice):
                  area: Area = None,
                  zone: Zone = None,
                  substation: Substation = None,
+                 voltage_level: VoltageLevel = None,
                  country: Country = None,
                  longitude=0.0,
                  latitude=0.0,
@@ -136,6 +138,8 @@ class Bus(EditableDevice):
 
         self.substation: Substation = substation
 
+        self._voltage_level: VoltageLevel = voltage_level
+
         # Bus type
         self.type = BusMode.PQ
 
@@ -200,8 +204,12 @@ class Bus(EditableDevice):
                       profile_name='')
         self.register(key='area', units='', tpe=DeviceType.AreaDevice, definition='Area of the bus', profile_name='')
         self.register(key='zone', units='', tpe=DeviceType.ZoneDevice, definition='Zone of the bus', profile_name='')
-        self.register(key='substation', units='', tpe=DeviceType.SubstationDevice, definition='Substation of the bus.',
-                      profile_name='')
+        self.register(key='substation', units='',
+                      tpe=DeviceType.SubstationDevice,
+                      definition='Substation of the bus.')
+        self.register(key='voltage_level', units='',
+                      tpe=DeviceType.VoltageLevelDevice,
+                      definition='Voltage level of the bus.')
         self.register(key='longitude', units='deg', tpe=float, definition='longitude of the bus.', profile_name='')
         self.register(key='latitude', units='deg', tpe=float, definition='latitude of the bus.', profile_name='')
 
