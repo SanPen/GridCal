@@ -303,6 +303,8 @@ def get_gcdev_loads(cgmes_model: CgmesCircuit,
                         q = cgmes_elm.q * cgmes_elm.LoadResponse.qConstantPower
                         i_r = cgmes_elm.p * cgmes_elm.LoadResponse.pConstantCurrent
                         i_i = cgmes_elm.q * cgmes_elm.LoadResponse.qConstantCurrent
+
+                        # g = cgmes_elm.p / cgmes_elm.LoadResponse.pConstantImpedance  # TODO ask Chavdar
                         g = cgmes_elm.p * cgmes_elm.LoadResponse.pConstantImpedance
                         b = cgmes_elm.q * cgmes_elm.LoadResponse.qConstantImpedance
                 else:
