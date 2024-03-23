@@ -447,15 +447,15 @@ The adopted methodology has to be able to handle:
 	\item Interconnected AC/DC grids to be solved in a unified manner.
 	\item All potential bus types without explicitly defining them.
 \end{itemize}
-For this, we start by defining a general bus object, such as indicated in Fig.~\ref{fig:busgen}.
+For this, we start by defining a general bus object with index $r$, such as indicated in Fig.~\ref{fig:busgen}.
 
 \begin{figure}[!htb]
 	\centering
 	\begin{circuitikz}[american]
 		\draw[line width=0.7mm] (0,0) to [short] (7,0);
-		\draw (0.6,0) to[generic, l=$G_i+jB_i$] (0.6,-3);
-		\draw (3.5,-3) to [isource, l_=$I^\text{re}_i + jI^\text{im}_i$] (3.5,-0);
-		\draw (6.4,0) to [cute european voltage source, l=$P_i+jQ_i$] (6.4,-3);
+		\draw (0.6,0) to[generic, l=$G_r+jB_r$] (0.6,-3);
+		\draw (3.5,-3) to [isource, l_=$I^\text{re}_r + jI^\text{im}_r$] (3.5,-0);
+		\draw (6.4,0) to [cute european voltage source, l=$P_r+jQ_r$] (6.4,-3);
 		\draw (0,-3) to [short] (7,-3);
 		\draw (2,0) to [short] (1,2);
 		\draw (2.5,0) to [short] (1.75,2);
@@ -468,7 +468,7 @@ For this, we start by defining a general bus object, such as indicated in Fig.~\
 
 		\node at (6.6,1.0) {$\Gamma$};
 		\node at (0.4,1.0) {$\kappa$};
-		\node at (7.6, 0.0) {$V_i\angle \delta_i$};
+		\node at (7.6, 0.0) {$V_r\angle \delta_r$};
 		
 		\end{circuitikz}		
 		\caption{Representation of a generic bus with a ZIP shunt model, passive branch connections, and active branch connections.}
@@ -477,18 +477,18 @@ For this, we start by defining a general bus object, such as indicated in Fig.~\
 \FloatBarrier
 Branches belong to two sets:
 \begin{itemize}
-	\item $\kappa$: set of branches that can be represented through admittances. For example, power lines and transformers, even if controllable, are part of this set.
-	\item $\Gamma$: set of branches interfaced to elements that cannot be inherently modelled with admittances, mainly AC/DC converters.
+	\item $\kappa$: set of passive branches that can be represented through admittances. For example, power lines and non-controllable transformers are part of this set.
+	\item $\Gamma$: set of branches interfaced to elements that cannot be inherently modelled through admittances, mainly AC/DC converters and controllable taps.
 \end{itemize}
 It is observed in Fig.~\ref{fig:busgen} that the ZIP model is employed to represent the shunt elements. This is a common practice in power systems, as it allows for a more accurate representation of the load. The ZIP model is given by three components: a constant admittance, a constant current source, and a constant power injection. The three components can be grouped under a ZIP power that takes the form:
 \begin{equation}
-	P_i^\text{zip} + jQ_i^\text{zip} = V_i^2(G_i-jB_i) + V_i\angle\delta_i(I_i^\text{re} - jI_i^\text{im}) + P_i + jQ_i.
+	P_r^\text{zip} + jQ_r^\text{zip} = V_r^2(G_r-jB_r) + V_r\angle\delta_r(I_r^\text{re} - jI_r^\text{im}) + P_r + jQ_r.
 \end{equation}
 With this, by applying Kirchhoff laws, the nodal balance equation can be written as:
 \begin{equation}
-	P^\text{zip} + jQ^\text{zip} =  {V}Y^*_\text{bus}{V}^* + {C}_f^\Gamma({P}^\Gamma_f + j{Q}^\Gamma_f) + {C}_t^\Gamma({P}^\Gamma_t + j{Q}^\Gamma_t),
+	0 = {V}Y^*_\text{bus}{V}^* + {C}_f^\Gamma({P}^\Gamma_f + j{Q}^\Gamma_f) + {C}_t^\Gamma({P}^\Gamma_t + j{Q}^\Gamma_t) - {P}^\text{zip} - j{Q}^\text{zip},
 \end{equation}
-where $Y_\text{bus}$ is the bus admittance matrix, and $C_f^\Gamma$ and $C_t^\Gamma$ are the from and to connectivity matrices of the set $\Gamma$. The set $\Gamma$ is the set of branches interfaced to elements that cannot be inherently modelled with admittances, mainly AC/DC converters. Hence, the powers $P^\Gamma_f$, $Q^\Gamma_f$, $P^\Gamma_t$, and $Q^\Gamma_t$ are the active and reactive powers of the branches belonging to this set. Notice that up to this point the only addition with respect to the conventional power flow is the presence of the set $\Gamma$ and the related objects.
+where $Y_\text{bus}$ is the passive bus admittance matrix, and $C_f^\Gamma$ and $C_t^\Gamma$ are the from and to connectivity matrices of the set $\Gamma$. The set $\Gamma$ is the set of branches interfaced to elements that cannot be purely modelled with admittances, mainly AC/DC converters and controllable transformers. Hence, the powers $P^\Gamma_f$, $Q^\Gamma_f$, $P^\Gamma_t$, and $Q^\Gamma_t$ are the active and reactive powers of the branches belonging to this set. Notice that up to this point the only addition with respect to the conventional power flow is the presence of the set $\Gamma$ and the related objects.
 
 Then, it is worth mentioning the employed models for all branches. A branch $b$ that belongs to the set $\kappa$ is modelled through the two by two admittance matrix of the form:
 \begin{equation}
@@ -508,14 +508,288 @@ For example, in the case of a transformer, the admittance matrix is given by:
 		-\dfrac{Y_s}{me^{j\tau}} & Y_s + Y_{sh} \\
 	\end{bmatrix},
 \end{equation}
-where $Y_s$ stands for the series admittance component, $Y_{sh}$ for the shunt admittance term, $m$ for the tap ratio, and $\tau$ for the phase shift angle. A similar expression is obtained for a regular power line.
+where $Y_s$ stands for the series admittance component, $Y_{sh}$ for the shunt admittance term, $m$ for the tap ratio, and $\tau$ for the phase shift angle. A similar expression is obtained for a regular power line. Note that modelling a transformer where the tap is controllable is part of the $\Gamma$ set.
 
-Branches linking the bus to an active element that cannot be modelled through a combination of admittances are part of the $\Gamma$ set. The way to interface the bus with these active devices is through the branch power injections $P_f^\Gamma$, $Q_f^\Gamma$, $P_t^\Gamma$, and $Q_t^\Gamma$ and the connectivity matrices $C_f^\Gamma$ and $C_t^\Gamma$. Such an active device can have some interior equation defining its behavior. For instance, in an AC/DC converter, the active powers on the $f$ and $t$ sides are related through the power loss equation:
+Branches linking the bus to an active element that cannot be modelled through a combination of passive admittances are part of the $\Gamma$ set. The way to interface the bus with these active devices is through the branch power injections $P_f^\Gamma$, $Q_f^\Gamma$, $P_t^\Gamma$, and $Q_t^\Gamma$ and the connectivity matrices $C_f^\Gamma$ and $C_t^\Gamma$. Such an active device can have some interior equation defining its behavior. For instance, in an AC/DC converter, the active powers on the $f$ and $t$ sides are related through the power loss equation:
 \begin{equation}
-	P_f + P_t = a + b\frac{\sqrt{P_f^{2} + Q_f^{2}}}{V_f} + c\frac{P_f^{2} + Q_f^{2}}{V_f^2},
+	P_f^\text{acdc} + P_t^\text{acdc} = a + b\frac{\sqrt{P_f^{2,\text{acdc}} + Q_f^{2,\text{acdc}}}}{V_f} + c\frac{P_f^{2,\text{acdc}} + Q_f^{2,\text{acdc}}}{V_f^2}.	
 \end{equation}
 where the convention is to use $f$ for the AC side and $t$ for the DC side. The parameters $a$, $b$, and $c$ are the coefficients of the power loss equation, and $P_f$ and $Q_f$ are the active and reactive powers on the AC side. 
-	
+ 
+For controllable transformers, it can be discussed if part of their model could be moved to the $\kappa$ set. This is because the transformer can be modelled through a combination of passive admittances and also controllable power injections. However, the tap ratio and the phase shift angle are not directly related to the admittances, and hence, for now, they are part of the $\Gamma$ set. The corresponding equations for a controllable transformer are:
+\begin{equation}
+	\begin{aligned}
+		P_f^\text{tr} + jQ_f^\text{tr} = V_f^2 \frac{Y_s^* + Y_{sh}^*}{m^2} - V_fV_t^*\frac{Y_s^*}{me^{j\tau}}, \\
+		P_t^\text{tr} + jQ_t^\text{tr} = V_t^2 (Y_s^* + Y_{sh}^*) - V_tV_f^*\frac{Y_s^*}{me^{-j\tau}}.
+	\end{aligned}
+\end{equation}
+Fig.~\ref{fig:14bus} illustrates the concept of remote controls. In this case, the generator located in bus 6 controls the voltage magnitude at bus 13 $V_{13}$ through its injected power $P_6$, whereas the transformer between buses 4 and 9 adjusts its tap module $m_{49}$ to regulate the to power $P_{t,52}$ of the line located between buses 2 and 5. Although these associations between the controlled magnitudes and the related unknowns may not make the most sense in a real-world scenario, they have to be allowed in the generalized power flow.
+
+\begin{figure}[!htb]\centering
+   \begin{tikzpicture}[european, scale=1.6]
+
+      % 0. Draw nodes
+    \node(1) at (-0.2, 0) {1};
+    \node(2) at (1.8, -2) {2};
+    \node(3) at (5.0, -2) {3};
+    \node(4) at (5.8, 0) {4};
+    \node(5) at (4.0, 0) {5};
+    \node(6) at (4.0, 1.5) {6};
+    \node(7) at (7.0, 0.4) {7};
+    \node(8) at (7.5, 0.2) {8};
+    \node(9) at (5.8, 1.5) {9};
+    \node(10) at (5.3, 2.5) {10};
+    \node(11) at (3.8, 2.5) {11};
+    \node(12) at (0.8, 2.5) {12};
+    \node(13) at (2.8, 3.5) {13};
+    \node(14) at (7.0, 3.5) {14};
+
+    \node(p4) at (7.0, -1) {};
+    \node(p5) at (2.1, 0.2) {};
+
+      % 1. Draw buses
+    \draw[line width=0.1cm] (0, 0) to [short] (0.8, 0);
+    \draw[line width=0.1cm] (2, -2) to [short] (2.8, -2);
+    \draw[line width=0.1cm] (6, 0) to [short] (6.8, 0);
+    \draw[line width=0.1cm] (3, 0) to [short] (3.8, 0);
+    \draw[line width=0.1cm] (4, -2) to [short] (4.8, -2);
+
+    \draw[line width=0.1cm] (3, 1.5) to [short] (3.8, 1.5);
+    \draw[line width=0.1cm] (6, 1.5) to [short] (6.8, 1.5);
+
+    \draw[line width=0.1cm] (4.0, 2.5) to [short] (4.8, 2.5);
+    \draw[line width=0.1cm] (5.5, 2.5) to [short] (6.3, 2.5);
+
+    \draw[line width=0.1cm] (3, 3.5) to [short] (3.8, 3.5);
+    \draw[line width=0.1cm] (6.0, 3.5) to [short] (6.8, 3.5);
+
+    \draw[line width=0.1cm] (1.0, 2.5) to [short] (1.8, 2.5);
+    \draw[line width=0.1cm] (7.5, 0.35) to [short] (7.5, 1.15);
+
+    % 2. Draw trafos
+    \draw[thick] (6.7, 0.65) circle (0.2cm);
+    \draw[thick] (6.7, 0.85) circle (0.2cm);
+    \draw[thick] (6.9, 0.75) circle (0.2cm);
+
+    \draw[thick] (6.1, 0.65) circle (0.2cm);
+    \draw[thick] (6.1, 0.85) circle (0.2cm);
+
+    \draw[thick] (3.4, 0.65) circle (0.2cm);
+    \draw[thick] (3.4, 0.85) circle (0.2cm);
+
+    % 3. Draw generators
+    \draw (0.4, 0.75) to [/tikz/circuitikz/bipoles/length=25pt, sinusoidal voltage source] (0.4,0.25);
+    \draw (0.4, 0.25) to [short] (0.4,0); 
+
+    \draw (2.4, -2.25) to [/tikz/circuitikz/bipoles/length=25pt, sinusoidal voltage source] (2.4, -2.75);
+    \draw (2.4, -2.25) to [short] (2.4, -2.0); 
+
+    \draw (4.4, -2.25) to [/tikz/circuitikz/bipoles/length=25pt, sinusoidal voltage source] (4.4, -2.75);
+    \draw (4.4, -2.25) to [short] (4.4, -2.0); 
+
+    \draw (7.75, 0.75) to [/tikz/circuitikz/bipoles/length=25pt, sinusoidal voltage source] (8.25, 0.75);
+    \draw (7.75, 0.75) to [short] (7.5, 0.75); 
+
+    \draw (2.0, 1.2) to [/tikz/circuitikz/bipoles/length=25pt, sinusoidal voltage source] (2.5, 1.2);
+    \draw (2.5, 1.2) to [short] (3.1, 1.2); 
+    \draw (3.1, 1.2) to [short] (3.1, 1.5); 
+
+    % 4. Draw loads
+    \draw (2.1, -2) to [short] (2.1, -2.2);
+    \draw[-{Latex[scale=1.5]}] (2.1,-2.2) -- (1.3,-2.2);
+
+    \draw (4.7, -2) to [short] (4.7, -2.2);
+    \draw[-{Latex[scale=1.5]}] (4.7,-2.2) -- (5.5,-2.2);
+
+    \draw (6.8, 0) to [short] (7.0, 0);
+    \draw[-{Latex[scale=1.5]}] (7.0, 0) -- (7.0, -0.8);
+
+    \draw (3.1, 0) to [short] (3.1, 0.2);
+    \draw[-{Latex[scale=1.5]}] (3.1, 0.2) -- (2.3, 0.2);
+
+    \draw (3.7, 1.5) to [short] (3.7, 1.7);
+    \draw[-{Latex[scale=1.5]}] (3.7, 1.7) -- (4.5, 1.7);
+
+    \draw (6.7, 1.5) to [short] (6.7, 1.7);
+    \draw[-{Latex[scale=1.5]}] (6.7, 1.7) -- (7.5, 1.7);
+
+    \draw[-{Latex[scale=1.5]}] (1.4, 2.5) -- (1.4, 3.3);
+    \draw[-{Latex[scale=1.5]}] (3.4, 3.5) -- (3.4, 4.3);
+    \draw[-{Latex[scale=1.5]}] (4.4, 2.5) -- (4.4, 3.3);
+    \draw[-{Latex[scale=1.5]}] (5.9, 2.5) -- (5.9, 3.3);
+    \draw[-{Latex[scale=1.5]}] (6.4, 3.5) -- (6.4, 4.3);
+
+    % Draw lines
+    \draw (0.4, 0) to [short] (0.4, -0.2);
+    \draw (2.2, -2) to [short] (2.2, -1.8);
+    \draw (0.4, -0.2) to [short] (2.2, -1.8);
+
+    \draw (0.6, 0) to [short] (0.6, -0.2);
+    \draw (3.2, 0) to [short] (3.2, -0.2);
+    \draw (0.6, -0.2) to [short] (3.2, -0.2);
+    
+    \draw (3.4, 0) to [short] (3.4, -0.2);
+    \draw (2.4, -2) to [short] (2.4, -1.8);
+    \draw (3.4, -0.2) to [short] (2.4, -1.8);
+
+    \draw (2.6, -2) to [short] (2.6, -2.2);
+    \draw (4.2, -2) to [short] (4.2, -2.2);
+    \draw (2.6, -2.2) to [short] (4.2, -2.2);
+
+    \draw (2.6, -2) to [short] (2.6, -1.8);
+    \draw (6.4, 0) to [short] (6.4, -0.2);
+    \draw (2.6, -1.8) to [short] (6.4, -0.2);
+
+    \draw (3.6, 0) to [short] (3.6, -0.2);
+    \draw (6.2, 0) to [short] (6.2, -0.2);
+    \draw (3.6, -0.2) to [short] (6.2, -0.2);
+
+    \draw (4.4, -2) to [short] (4.4, -1.8);
+    \draw (6.6, 0) to [short] (6.6, -0.2);
+    \draw (4.4, -1.8) to [short] (6.6, -0.2);
+    
+    \draw (3.4, 0) to [short] (3.4, 0.45);
+    \draw (3.4, 1.05) to [short] (3.4, 1.5);
+
+    \draw (6.1, 0) to [short] (6.1, 0.45);
+    \draw (6.1, 1.05) to [short] (6.1, 1.5);
+
+    \draw (6.7, 0) to [short] (6.7, 0.45);
+    \draw (6.7, 1.05) to [short] (6.7, 1.5);
+    \draw (7.1, 0.75) to [short] (7.5, 0.75);
+    
+    \draw (1.4, 2.5) to [short] (1.4, 2.3);
+    \draw (3.2, 1.5) to [short] (3.2, 1.7);
+    \draw (1.4, 2.3) to [short] (3.2, 1.7);
+
+    \draw (3.4, 1.5) to [short] (3.4, 3.5);
+
+    \draw (3.6, 1.5) to [short] (3.6, 1.7);
+    \draw (4.2, 2.5) to [short] (4.2, 2.3);
+    \draw (3.6, 1.7) to [short] (4.2, 2.3);
+    
+    \draw (4.6, 2.5) to [short] (4.6, 2.3);
+    \draw (5.7, 2.5) to [short] (5.7, 2.3);
+    \draw (4.6, 2.3) to [short] (5.7, 2.3);
+    
+    \draw (6.1, 2.5) to [short] (6.1, 1.5);
+
+    \draw (6.5, 1.5) to [short] (6.5, 3.5);
+    
+    \draw (6.2, 3.5) to [short] (6.2, 3.7);
+    \draw (3.6, 3.5) to [short] (3.6, 3.7); 
+    \draw (6.2, 3.7) to [short] (3.6, 3.7);
+    
+    \draw (1.6, 2.5) to [short] (1.6, 2.7);
+    \draw (3.2, 3.5) to [short] (3.2, 3.3);
+    \draw (1.6, 2.7) to [short] (3.2, 3.3);
+
+	% Draw control arrows
+	\draw[->, red] (5.8, 0.75) to [out=180, in=0] (4.4, -0.7) to [out=180, in=0] (3.4, -0.5);
+	\draw[->, red] (2.4, 1.4) to [out=50, in=310] (3.5, 3.4); 
+
+	\draw[-{Latex[scale=1.5]}, red] (2.5, 1.1) -- (3.0, 1.1);
+	\draw[-{Latex[scale=1.5]}, red] (3.1, -0.4) -- (2.79, -0.9);
+    \node[red](Pg6) at (2.7, 0.9) {$P_6$};
+	\node[red](V13) at (4.0, 3.5) {$V_{13}$};
+	\node[red](m49) at (5.6, 0.9) {$m_{49}$};
+	\node[red](pt52) at (2.6, -0.5) {$P_{t,52}$};
+
+  \end{tikzpicture}
+  \caption{Scheme of the IEEE 14-bus system to illustrate the concept of remote controls.}
+  \label{fig:14bus}
+\end{figure}
+From this, it follows that a set of known and unknown magnitudes has to be defined. The known magnitudes are the ones that are controlled, and the unknown magnitudes are the ones that are not controlled. The unknown set is composed of the following:
+\begin{equation}
+	x = [\delta, V, \tau, m, P^\text{zip}, Q^\text{zip}, P_f, P_t, Q_f, Q_t].
+\end{equation}
+Note that the conventional power flow formulation only contains the first two unknowns of the above defined $x$. This formulation includes many more unknowns, as it is designed to handle a broader range of cases, including regulated transformers, AC/DC links, among others.
+
+The total number of equations to solve the system should be independent of the controls and resulting bus types. This is achieved by applying the nodal balance equations (both $P$ and $Q$) to the set of AC buses, the $P$ balance in all DC buses, the power loss equation for each AC/DC link, and the four power equations for each controlled transformer. Mathematically, in compact form:
+\begin{equation}
+	\begin{aligned}
+		g_{p,ac} \coloneqq \sum P_i = 0 \quad \forall i \in AC, \\
+		g_{q,ac} \coloneqq \sum Q_i = 0 \quad \forall i \in AC, \\
+		g_{p,dc} \coloneqq \sum P_i = 0 \quad \forall i \in DC, \\
+		g_{p,acdc} \coloneqq P_{fk}^\text{acdc} + P_{tk}^\text{acdc} - P_{\text{loss},k}^\text{acdc} = 0 \quad \forall k \in ACDC, \\
+		g_{p_f,tr} \coloneqq P_{fk}^\text{tr} = f(\delta, V, \tau, m) \quad \forall k \in TR, \\
+		g_{p_t,tr} \coloneqq P_{tk}^\text{tr} = f(\delta, V, \tau, m) \quad \forall k \in TR, \\
+		g_{q_f,tr} \coloneqq Q_{fk}^\text{tr} = f(\delta, V, \tau, m) \quad \forall k \in TR, \\
+		g_{q_t,tr} \coloneqq Q_{tk}^\text{tr} = f(\delta, V, \tau, m) \quad \forall k \in TR,
+	\end{aligned}
+\end{equation}
+where $AC$ is the set of AC buses, $DC$ is the set of DC buses, $ACDC$ is the set of AC/DC links, and $TR$ is the set of controlled transformers. The index $i$ is employed to identify buses, while $k$ is employed to identify branches. 
+
+Then, it is necessary to build arrays containing the indices where bus and branch magnitudes are either set of unknown. This is done through the sets $i$ to identify known bus magnitudes, $\overline{i}$ to identify unknown bus magnitudes, $k$ to identify known branch magnitudes, and $\overline{k}$ to identify unknown branch magnitudes. The sets are defined as shown in Table~\ref{tab:sets}. 
+
+\begin{table}[!htb]
+	\centering
+	\caption{Sets to identify known and unknown magnitudes.}
+	\begin{tabular}{cl}
+		\hline
+		\textbf{Set} & \textbf{Description} \\
+		\hline
+		$i_\delta$ & Known bus voltage phase \\
+		$i_V$ & Known bus voltage magnitudes \\
+		$i_p$ & Known bus ZIP active powers \\
+		$i_q$ & Known bus ZIP reactive powers \\
+		$k_\tau$ & Known branch tap phase shift angles \\
+		$k_m$ & Known branch tap ratios \\
+		$k_{p_f}$ & Known branch from active powers \\
+		$k_{p_t}$ & Known branch to active powers \\
+		$k_{q_f}$ & Known branch from reactive powers \\
+		$k_{q_t}$ & Known branch to reactive powers \\
+		$\overline{i}_\delta$ & Unknown bus voltage phase \\
+		$\overline{i}_V$ & Unknown bus voltage magnitudes \\
+		$\overline{i}_p$ & Unknown bus ZIP active powers \\
+		$\overline{i}_q$ & Unknown bus ZIP reactive powers \\
+		$\overline{k}_\tau$ & Unknown branch tap phase shift angles \\
+		$\overline{k}_m$ & Unknown branch tap ratios \\
+		$\overline{k}_{p_f}$ & Unknown branch from active powers \\
+		$\overline{k}_{p_t}$ & Unknown branch to active powers \\
+		$\overline{k}_{q_f}$ & Unknown branch from reactive powers \\
+		$\overline{k}_{q_t}$ & Unknown branch to reactive powers \\
+		\hline
+	\end{tabular}
+	\label{tab:sets}
+\end{table}
+The set of non-linear equations is meant to be solved with the Newton-Raphson method, where the Jacobian matrix is built from the partial derivatives of the equations with respect to the unknowns. In its general form, at each iteration the following linear system has to be solved:
+\setlength{\arraycolsep}{1.5pt}
+\begin{equation}
+	-
+	\begin{bmatrix}
+		g_{p,ac} \\
+		g_{q,ac} \\
+		g_{p,dc} \\
+		g_{p,acdc} \\
+		g_{p_f,tr} \\
+		g_{p_t,tr} \\
+		g_{q_f,tr} \\
+		g_{q_t,tr} \\
+	\end{bmatrix} = 
+	\begin{bmatrix}
+		\frac{\partial g_{p,ac}}{\partial \delta} & \frac{\partial g_{p,ac}}{\partial V} & \frac{\partial g_{p,ac}}{\partial \tau} & \frac{\partial g_{p,ac}}{\partial m} & \frac{\partial g_{p,ac}}{\partial P^\text{zip}} & \frac{\partial g_{p,ac}}{\partial Q^\text{zip}} & \frac{\partial g_{p,ac}}{\partial P_f} & \frac{\partial g_{p,ac}}{\partial P_t} & \frac{\partial g_{p,ac}}{\partial Q_f} & \frac{\partial g_{p,ac}}{\partial Q_t} \\
+		\frac{\partial g_{q,ac}}{\partial \delta} & \frac{\partial g_{q,ac}}{\partial V} & \frac{\partial g_{q,ac}}{\partial \tau} & \frac{\partial g_{q,ac}}{\partial m} & \frac{\partial g_{q,ac}}{\partial P^\text{zip}} & \frac{\partial g_{q,ac}}{\partial Q^\text{zip}} & \frac{\partial g_{q,ac}}{\partial P_f} & \frac{\partial g_{q,ac}}{\partial P_t} & \frac{\partial g_{q,ac}}{\partial Q_f} & \frac{\partial g_{q,ac}}{\partial Q_t} \\
+		\frac{\partial g_{p,dc}}{\partial \delta} & \frac{\partial g_{p,dc}}{\partial V} & \frac{\partial g_{p,dc}}{\partial \tau} & \frac{\partial g_{p,dc}}{\partial m} & \frac{\partial g_{p,dc}}{\partial P^\text{zip}} & \frac{\partial g_{p,dc}}{\partial Q^\text{zip}} & \frac{\partial g_{p,dc}}{\partial P_f} & \frac{\partial g_{p,dc}}{\partial P_t} & \frac{\partial g_{p,dc}}{\partial Q_f} & \frac{\partial g_{p,dc}}{\partial Q_t} \\
+		\frac{\partial g_{p,acdc}}{\partial \delta} & \frac{\partial g_{p,acdc}}{\partial V} & \frac{\partial g_{p,acdc}}{\partial \tau} & \frac{\partial g_{p,acdc}}{\partial m} & \frac{\partial g_{p,acdc}}{\partial P^\text{zip}} & \frac{\partial g_{p,acdc}}{\partial Q^\text{zip}} & \frac{\partial g_{p,acdc}}{\partial P_f} & \frac{\partial g_{p,acdc}}{\partial P_t} & \frac{\partial g_{p,acdc}}{\partial Q_f} & \frac{\partial g_{p,acdc}}{\partial Q_t} \\
+		\frac{\partial g_{p_f,tr}}{\partial \delta} & \frac{\partial g_{p_f,tr}}{\partial V} & \frac{\partial g_{p_f,tr}}{\partial \tau} & \frac{\partial g_{p_f,tr}}{\partial m} & \frac{\partial g_{p_f,tr}}{\partial P^\text{zip}} & \frac{\partial g_{p_f,tr}}{\partial Q^\text{zip}} & \frac{\partial g_{p_f,tr}}{\partial P_f} & \frac{\partial g_{p_f,tr}}{\partial P_t} & \frac{\partial g_{p_f,tr}}{\partial Q_f} & \frac{\partial g_{p_f,tr}}{\partial Q_t} \\
+		\frac{\partial g_{p_t,tr}}{\partial \delta} & \frac{\partial g_{p_t,tr}}{\partial V} & \frac{\partial g_{p_t,tr}}{\partial \tau} & \frac{\partial g_{p_t,tr}}{\partial m} & \frac{\partial g_{p_t,tr}}{\partial P^\text{zip}} & \frac{\partial g_{p_t,tr}}{\partial Q^\text{zip}} & \frac{\partial g_{p_t,tr}}{\partial P_f} & \frac{\partial g_{p_t,tr}}{\partial P_t} & \frac{\partial g_{p_t,tr}}{\partial Q_f} & \frac{\partial g_{p_t,tr}}{\partial Q_t} \\
+		\frac{\partial g_{q_f,tr}}{\partial \delta} & \frac{\partial g_{q_f,tr}}{\partial V} & \frac{\partial g_{q_f,tr}}{\partial \tau} & \frac{\partial g_{q_f,tr}}{\partial m} & \frac{\partial g_{q_f,tr}}{\partial P^\text{zip}} & \frac{\partial g_{q_f,tr}}{\partial Q^\text{zip}} & \frac{\partial g_{q_f,tr}}{\partial P_f} & \frac{\partial g_{q_f,tr}}{\partial P_t} & \frac{\partial g_{q_f,tr}}{\partial Q_f} & \frac{\partial g_{q_f,tr}}{\partial Q_t} \\
+		\frac{\partial g_{q_t,tr}}{\partial \delta} & \frac{\partial g_{q_t,tr}}{\partial V} & \frac{\partial g_{q_t,tr}}{\partial \tau} & \frac{\partial g_{q_t,tr}}{\partial m} & \frac{\partial g_{q_t,tr}}{\partial P^\text{zip}} & \frac{\partial g_{q_t,tr}}{\partial Q^\text{zip}} & \frac{\partial g_{q_t,tr}}{\partial P_f} & \frac{\partial g_{q_t,tr}}{\partial P_t} & \frac{\partial g_{q_t,tr}}{\partial Q_f} & \frac{\partial g_{q_t,tr}}{\partial Q_t} \\
+	\end{bmatrix}
+	\begin{bmatrix}
+		\Delta \delta \\
+		\Delta V \\
+		\Delta \tau \\
+		\Delta m \\
+		\Delta P^\text{zip} \\
+		\Delta Q^\text{zip} \\
+		\Delta P_f \\
+		\Delta P_t \\
+		\Delta Q_f \\
+		\Delta Q_t \\
+	\end{bmatrix}
+\end{equation}
 	
 \section{Bibliography}
 	\printbibliography
