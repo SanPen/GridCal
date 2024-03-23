@@ -1,7 +1,7 @@
 import os
 from typing import Dict
 import pandas as pd
-from pytablewriter import RstSimpleTableWriter
+# from pytablewriter import RstSimpleTableWriter
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
 from GridCalEngine.IO.raw.devices.psse_circuit import PsseCircuit
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
@@ -307,13 +307,13 @@ if __name__ == '__main__':
     #                           'cgmes_classes_all_in_one_sheet.xlsx')
     # write_dataframes_to_excel_one_sheet(psse_info,
     #                           'psse_classes_all_in_one_sheet.xlsx')
-    # write_dataframes_to_excel_one_sheet(gridcal_info,
-    #                           'roseta_classes_all_in_one_sheet.xlsx')
+    write_dataframes_to_excel_one_sheet(gridcal_info,
+                              'roseta_classes_all_in_one_sheet.xlsx')
 
     # write_dataframes_to_rst(cgmes_info, 'cgmes_clases.rst', "CGMES")
     # write_dataframes_to_rst(psse_info, 'psse_clases.rst', "PSSE")
     # write_dataframes_to_rst(roseta_info, 'roseta_clases.rst', "Roseta")
-    write_dataframes_to_latex(gridcal_info_cat)
+    # write_dataframes_to_latex(gridcal_info_cat)
 
     # write_models_to_rst(os.path.join('rst_source', 'other_data_models.rst'))
 

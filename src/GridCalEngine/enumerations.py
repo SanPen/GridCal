@@ -871,6 +871,7 @@ class DeviceType(Enum):
     Transformer2WDevice = 'Transformer'
     Transformer3WDevice = 'Transformer3W'
     WindingDevice = 'Winding'
+    SeriesReactanceDevice = 'Series reactance'
     HVDCLineDevice = 'HVDC Line'
     DCLineDevice = 'DC line'
     VscDevice = 'VSC'
@@ -911,7 +912,7 @@ class DeviceType(Enum):
     RegionDevice = 'Region'
     MunicipalityDevice = 'Municipality'
     BusBarDevice = 'BusBar'
-    VoltageLevelDevice = 'VoltageLevel'
+    VoltageLevelDevice = 'Voltage level'
 
     Technology = 'Technology'
     TechnologyGroup = 'Technology Group'

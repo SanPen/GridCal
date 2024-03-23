@@ -38,6 +38,7 @@ def get_objects_dictionary() -> Dict[str, ALL_DEV_TYPES]:
 
     # this list must be sorted in dependency order so that the
     # loading algorithm is able to find the object substitutions
+
     object_types = {'area': dev.Area(),
                     'zone': dev.Zone(),
 
@@ -74,6 +75,8 @@ def get_objects_dictionary() -> Dict[str, ALL_DEV_TYPES]:
 
                     'linear_shunt': dev.ControllableShunt(),
 
+                    'external_grid': dev.ExternalGrid(),
+
                     'current_injection': dev.CurrentInjection(),
 
                     'wires': dev.Wire(),
@@ -98,6 +101,10 @@ def get_objects_dictionary() -> Dict[str, ALL_DEV_TYPES]:
                     'vsc': dev.VSC(None, None),
                     'upfc': dev.UPFC(None, None),
 
+                    'series_reactance': dev.SeriesReactance(),
+
+                    'switch': dev.Switch(),
+
                     'contingency_group': dev.ContingencyGroup(),
                     'contingency': dev.Contingency(),
 
@@ -115,7 +122,6 @@ def get_objects_dictionary() -> Dict[str, ALL_DEV_TYPES]:
                     'fluid_p2x': dev.FluidP2x(),
 
                     }
-
     return object_types
 
 

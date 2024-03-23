@@ -296,7 +296,7 @@ class Transformer2W(ControllableBranchParent):
 
         return b
 
-    def get_from_to_nominal_voltages(self):
+    def get_from_to_nominal_voltages(self) -> Tuple[float, float]:
         """
 
         :return:
@@ -366,6 +366,7 @@ class Transformer2W(ControllableBranchParent):
             self.B = np.round(y_shunt.imag, 6)
 
             self.rate = obj.Sn
+            self.rate_prof.fill(self.rate)
 
             self.Sn = obj.Sn
             self.Pcu = obj.Pcu
@@ -407,167 +408,6 @@ class Transformer2W(ControllableBranchParent):
 
             data.append(obj)
         return data
-
-    def get_properties_dict(self, version=3):
-        """
-        Get json dictionary
-        :return:
-        """
-        # get the virtual taps
-        tap_f, tap_t = self.get_virtual_taps()
-
-        # get the nominal voltages
-        v_from, v_to = self.get_from_to_nominal_voltages()
-
-        '''
-        TransformerControlType(Enum):
-        fixed = '0:Fixed'
-        Pt = '1:Pt'
-        Qt = '2:Qt'
-        PtQt = '3:Pt+Qt'
-        Vt = '4:Vt'
-        PtVt = '5:Pt+Vt'
-        
-        '''
-        control_modes = {TransformerControlType.fixed: 0,
-                         TransformerControlType.V: 1,
-                         TransformerControlType.Pf: 2,
-                         TransformerControlType.PtV: 3,
-                         TransformerControlType.Qt: 4,
-                         TransformerControlType.PtQt: 5}
-        if version == 2:
-            d = {'id': self.idtag,
-                 'type': 'transformer',
-                 'phases': 'ps',
-                 'name': self.name,
-                 'name_code': self.code,
-                 'bus_from': self.bus_from.idtag,
-                 'bus_to': self.bus_to.idtag,
-                 'active': self.active,
-                 'rate': self.rate,
-                 'Vnomf': v_from,
-                 'Vnomt': v_to,
-                 'hv': self.HV,
-                 'lv': self.LV,
-                 'r': self.R,
-                 'x': self.X,
-                 'g': self.G,
-                 'b': self.B,
-                 'tap_module': self.tap_module,
-                 'min_tap_module': self.tap_module_min,
-                 'max_tap_module': self.tap_module_max,
-                 'id_tap_module_table': "",
-
-                 'tap_angle': self.tap_phase,
-                 'min_tap_angle': self.tap_phase_min,
-                 'max_tap_angle': self.tap_phase_max,
-                 'id_tap_angle_table': "",
-
-                 'control_mode': control_modes[self.control_mode],
-
-                 # 'min_tap_position': self.tap_changer.min_tap,
-                 # 'max_tap_position': self.tap_changer.max_tap,
-                 # 'tap_inc_reg_down': self.tap_changer.inc_reg_down,
-                 # 'tap_inc_reg_up': self.tap_changer.inc_reg_up,
-                 # 'virtual_tap_from': tap_f,
-                 # 'virtual_tap_to': tap_t,
-                 # 'bus_to_regulated': self.bus_to_regulated,
-
-                 'vset': self.vset,
-                 'pset': self.Pset,
-
-                 'base_temperature': self.temp_base,
-                 'operational_temperature': self.temp_oper,
-                 'alpha': self.alpha
-                 }
-
-        elif version == 3:
-            d = {'id': self.idtag,
-                 'type': 'transformer',
-                 'phases': 'ps',
-                 'name': self.name,
-                 'name_code': self.code,
-                 'bus_from': self.bus_from.idtag,
-                 'bus_to': self.bus_to.idtag,
-                 'active': self.active,
-                 'rate': self.rate,
-                 'contingency_factor1': self.contingency_factor,
-                 'contingency_factor2': self.contingency_factor,
-                 'contingency_factor3': self.contingency_factor,
-
-                 'Vnomf': v_from,
-                 'Vnomt': v_to,
-                 'hv': self.HV,
-                 'lv': self.LV,
-                 'r': self.R,
-                 'x': self.X,
-                 'g': self.G,
-                 'b': self.B,
-                 'tap_module': self.tap_module,
-                 'min_tap_module': self.tap_module_min,
-                 'max_tap_module': self.tap_module_max,
-                 'id_tap_module_table': "",
-
-                 'tap_angle': self.tap_phase,
-                 'min_tap_angle': self.tap_phase_min,
-                 'max_tap_angle': self.tap_phase_max,
-                 'id_tap_angle_table': "",
-
-                 'control_mode': control_modes[self.control_mode],
-
-                 # 'min_tap_position': self.tap_changer.min_tap,
-                 # 'max_tap_position': self.tap_changer.max_tap,
-                 # 'tap_inc_reg_down': self.tap_changer.inc_reg_down,
-                 # 'tap_inc_reg_up': self.tap_changer.inc_reg_up,
-                 # 'virtual_tap_from': tap_f,
-                 # 'virtual_tap_to': tap_t,
-                 # 'bus_to_regulated': self.bus_to_regulated,
-
-                 'vset': self.vset,
-                 'pset': self.Pset,
-
-                 'base_temperature': self.temp_base,
-                 'operational_temperature': self.temp_oper,
-                 'alpha': self.alpha,
-
-                 'overload_cost': self.Cost,
-                 'capex': self.capex,
-                 'opex': self.opex,
-                 'build_status': str(self.build_status.value).lower(),
-                 }
-        else:
-            d = dict()
-
-        return d
-
-    def get_profiles_dict(self, version=3):
-        """
-
-        :return:
-        """
-        if self.active_prof is not None:
-            active_prof = self.active_prof.tolist()
-            rate_prof = self.rate_prof.tolist()
-        else:
-            active_prof = list()
-            rate_prof = list()
-
-        return {'id': self.idtag,
-                'active': active_prof,
-                'rate': rate_prof}
-
-    def get_units_dict(self, version=3):
-        """
-        Get units of the values
-        """
-        return {'rate': 'MW',
-                'r': 'p.u.',
-                'x': 'p.u.',
-                'b': 'p.u.',
-                'g': 'p.u.',
-                'base_temperature': 'ºC',
-                'operational_temperature': 'ºC',
-                'alpha': '1/ºC'}
 
     def delete_virtual_taps(self):
         """

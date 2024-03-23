@@ -84,7 +84,7 @@ def compute_power(Ybus: csc_matrix, V: CxVec) -> CxVec:
     :param V: Voltage vector
     :return: Calculated power injections
     """
-    return V * np.conj(Ybus * V)
+    return V * np.conj(Ybus @ V)
 
 
 @nb.njit(cache=True, fastmath=True)

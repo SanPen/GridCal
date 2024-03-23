@@ -309,7 +309,6 @@ def get_gcdev_loads(cgmes_model: CgmesCircuit,
                     p = cgmes_elm.p
                     q = cgmes_elm.q
 
-
                 gcdev_elm = gcdev.Load(idtag=cgmes_elm.uuid,
                                        code=cgmes_elm.description,
                                        name=cgmes_elm.name,
@@ -1059,14 +1058,14 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
     get_gcdev_busbars(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger)
     print('debug')
 
+    # Gridcal to cgmes
+    cgmes_model_export = gridcal_to_cgmes(gc_model, logger)
+
     # Export with ET
     # start = time.time()
     # serializer = CimExporter(cgmes_model)
     # serializer.export()
     # end = time.time()
     # print("ET export time: ", end - start, "sec")
-
-    # Gridcal to cgmes
-    cgmes_model_export = gridcal_to_cgmes(gc_model, logger)
 
     return gc_model

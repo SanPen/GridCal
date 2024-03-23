@@ -305,9 +305,9 @@ def write_enums():
 
 
 def write_assoc_dict(assoc_datatype_dict: dict):
-    dict_code = "self.association_type_dict = {\n"
+    dict_code = "self.association_inverse_dict = {\n"
     for name, tpe in assoc_datatype_dict.items():
-        dict_code += f"\t'{name}': {tpe},\n"
+        dict_code += f"\t'{name}': '{tpe}',\n"
     dict_code += "}"
-    with open(f"{cgmes_folder}/assoc_type_dict.py", 'w') as file:
+    with open(f"{cgmes_folder}/assoc_inverse_dict.py", 'w') as file:
         file.write(dict_code)

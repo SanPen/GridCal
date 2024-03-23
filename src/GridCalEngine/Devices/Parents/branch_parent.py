@@ -380,79 +380,6 @@ class BranchParent(EditableDevice):
             else:
                 return 1.0, 1.0
 
-    def get_properties_dict(self, version=3):
-        """
-        Get json dictionary
-        :return:
-        """
-        if version == 2:
-            return {'id': self.idtag,
-                    'type': 'line',
-                    'phases': 'ps',
-                    'name': self.name,
-                    'name_code': self.code,
-                    'bus_from': self.bus_from.idtag,
-                    'bus_to': self.bus_to.idtag,
-                    'active': self.active,
-
-                    'rate': self.rate,
-                    'locations': []
-                    }
-
-        elif version == 3:
-            return {'id': self.idtag,
-                    'type': 'line',
-                    'phases': 'ps',
-                    'name': self.name,
-                    'name_code': self.code,
-                    'bus_from': self.bus_from.idtag,
-                    'bus_to': self.bus_to.idtag,
-                    'active': self.active,
-
-                    'rate': self.rate,
-                    'contingency_factor1': self.contingency_factor,
-                    'contingency_factor2': self.contingency_factor,
-                    'contingency_factor3': self.contingency_factor,
-
-                    'overload_cost': self.Cost,
-                    'capex': self.capex,
-                    'opex': self.opex,
-                    'build_status': str(self.build_status.value).lower(),
-
-                    'locations': []
-                    }
-        else:
-            return dict()
-
-    def get_profiles_dict(self, version=3):
-        """
-
-        :return:
-        """
-        if self.active_prof is not None:
-            active_prof = self.active_prof.tolist()
-            rate_prof = self.rate_prof.tolist()
-        else:
-            active_prof = list()
-            rate_prof = list()
-
-        return {'id': self.idtag,
-                'active': active_prof,
-                'rate': rate_prof}
-
-    def get_units_dict(self, version=3):
-        """
-        Get units of the values
-        """
-        return {'rate': 'MW',
-                'r': 'p.u.',
-                'x': 'p.u.',
-                'b': 'p.u.',
-                'length': 'km',
-                'base_temperature': 'ºC',
-                'operational_temperature': 'ºC',
-                'alpha': '1/ºC'}
-
     def get_coordinates(self):
         """
         Get the line defining coordinates
@@ -477,11 +404,19 @@ class BranchParent(EditableDevice):
             return False
 
     @property
-    def Vf(self):
+    def Vf(self) -> float:
+        """
+        Get the voltage "from" (kV)
+        :return: get the nominal voltage from
+        """
         return self.bus_from.Vnom
 
     @property
-    def Vt(self):
+    def Vt(self) -> float:
+        """
+        Get the voltage "to" (kV)
+        :return: get the nominal voltage to
+        """
         return self.bus_to.Vnom
 
     def should_this_be_a_transformer(self, branch_connection_voltage_tolerance: float = 0.1) -> bool:
@@ -493,8 +428,11 @@ class BranchParent(EditableDevice):
         if self.bus_to is not None and self.bus_from is not None:
             V1 = min(self.bus_to.Vnom, self.bus_from.Vnom)
             V2 = max(self.bus_to.Vnom, self.bus_from.Vnom)
-            per = V1 / V2
-            return per < (1.0 - branch_connection_voltage_tolerance)
+            if V2 > 0:
+                per = V1 / V2
+                return per < (1.0 - branch_connection_voltage_tolerance)
+            else:
+                return V1 != V2
         else:
             return False
 

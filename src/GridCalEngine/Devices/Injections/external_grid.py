@@ -117,59 +117,6 @@ class ExternalGrid(LoadParent):
         else:
             raise Exception(str(type(val)) + 'not supported to be set into a Va_prof')
 
-    def get_properties_dict(self, version=3):
-        """
-        Get json dictionary
-        :return:
-        """
-
-        d = {'id': self.idtag,
-             'type': 'external_grid',
-             'phases': 'ps',
-             'name': self.name,
-             'bus': self.bus.idtag,
-             'active': self.active,
-             'Vm': self.Vm,
-             'Va': self.Va,
-             'P': self.P,
-             'Q': self.Q,
-             'Cost': self.Cost}
-
-        if self.active_prof is not None:
-            d['active_profile'] = self.active_prof.tolist()
-            d['Vm_prof'] = self.Vm_prof.tolist()
-            d['Va_prof'] = self.Va_prof.tolist()
-            d['P_prof'] = self.P_prof.tolist()
-            d['Q_prof'] = self.Q_prof.tolist()
-            d['Cost_prof'] = self.Cost_prof.tolist()
-
-        return d
-
-    def get_profiles_dict(self, version=3):
-        """
-
-        :return:
-        """
-        if self.active_prof is not None:
-            active_profile = self.active_prof.tolist()
-            Vm_prof = self.Vm_prof.tolist()
-            Va_prof = self.Va_prof.tolist()
-            P_prof = self.P_prof.tolist()
-            Q_prof = self.Q_prof.tolist()
-        else:
-            active_profile = list()
-            Vm_prof = list()
-            Va_prof = list()
-            P_prof = list()
-            Q_prof = list()
-
-        return {'id': self.idtag,
-                'active': active_profile,
-                'vm': Vm_prof,
-                'va': Va_prof,
-                'P': P_prof,
-                'Q': Q_prof}
-
     def plot_profiles(self, time=None, show_fig=True):
         """
         Plot the time series results of this object

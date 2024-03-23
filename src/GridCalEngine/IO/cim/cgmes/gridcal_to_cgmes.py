@@ -1,5 +1,6 @@
 from GridCalEngine.Devices import MultiCircuit
-from GridCalEngine.IO.cim.cgmes.base import get_new_rfid, form_rdfid
+from GridCalEngine.Devices.Substation.bus import Bus
+from GridCalEngine.IO.cim.cgmes.base import get_new_rdfid, form_rdfid
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
 # import GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices as cgmes
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.base_voltage import BaseVoltage
@@ -10,16 +11,21 @@ from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.topological_node import To
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.sv_voltage import SvVoltage
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.conform_load import ConformLoad
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.load_response_characteristic import LoadResponseCharacteristic
+from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.terminal import Terminal
+# if cgmes_version == '2.4.15.':
+#     from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.terminal import \
+#         Terminal
+
 from GridCalEngine.data_logger import DataLogger
 from typing import Dict, List, Tuple
 
 
 # region UTILS
-def find_terms_connections():
-    pass # TODO
+# def find_terms_connections():
+#     pass   # TODO
 
 
-def find_object_by_uuid(object_list, target_uuid):  #TODO mone to CGMES utils
+def find_object_by_uuid(object_list, target_uuid):  #TODO move to CGMES utils
     """
     Finds an object with the specified uuid
      in the given object_list from a CGMES Circuit.
@@ -45,29 +51,77 @@ def find_object_by_vnom(object_list: List[BaseVoltage], target_vnom):
 
 # endregion
 
+# region create new classes for CC
+
+
+def create_cgmes_terminal(bus: Bus,
+                          cgmes_model: CgmesCircuit,
+                          logger: DataLogger) -> Terminal:
+    """ Creates a new Terminal in CGMES model,
+    and connects it the relating Topologinal Node """
+
+
+
+    new_rdf_id = get_new_rdfid()
+    term = Terminal(new_rdf_id)
+    term.name = bus.name
+    # term.phases =
+    # term.ConductingEquipment = BusBarSection
+    term.connected = True
+    tn = find_object_by_uuid(
+        object_list=cgmes_model.TopologicalNode_list,
+        target_uuid=bus.idtag
+    )
+    if isinstance(tn, TopologicalNode):
+        term.TopologicalNode = tn
+    else:
+        logger.add_error(msg='No found TopologinalNode',
+                         device=bus,
+                         device_class=bus.name)
+
+    cgmes_model.Terminal_list.append(term)
+
+    return term
+
+
+def create_cgmes_load_response_char() -> LoadResponseCharacteristic:
+
+    new_rdf_id = get_new_rdfid()
+    lrc = LoadResponseCharacteristic(rdfid=new_rdf_id)
+    # lrc.name =
+    return lrc
+
+
+def create_cgmes_regulating_control():
+    pass
+
+# endregion
+
 # region Convert functions from MC to CC
+
+
 def get_cgmes_geograpical_regions(multi_circuit_model: MultiCircuit,
-                            cgmes_model: CgmesCircuit,
-                            logger: DataLogger):
+                                  cgmes_model: CgmesCircuit,
+                                  logger: DataLogger):
     pass
 
 
 def get_cgmes_subgeograpical_regions(multi_circuit_model: MultiCircuit,
-                            cgmes_model: CgmesCircuit,
-                            logger: DataLogger):
+                                     cgmes_model: CgmesCircuit,
+                                     logger: DataLogger):
     pass
 
 
 def get_cgmes_base_voltages(multi_circuit_model: MultiCircuit,
                             cgmes_model: CgmesCircuit,
-                            logger: DataLogger):
+                            logger: DataLogger) -> None:
     base_volt_set = set()
     for bus in multi_circuit_model.buses:
 
         if bus.Vnom not in base_volt_set:
             base_volt_set.add(bus.Vnom)
 
-            new_rdfid = get_new_rfid()
+            new_rdfid = get_new_rdfid()
             base_volt = BaseVoltage(rdfid=new_rdfid)
             base_volt.name = f'_BV_{int(bus.Vnom)}'
             base_volt.nominalVoltage = bus.Vnom
@@ -78,7 +132,7 @@ def get_cgmes_base_voltages(multi_circuit_model: MultiCircuit,
 
 def get_cgmes_substations(multi_circuit_model: MultiCircuit,
                           cgmes_model: CgmesCircuit,
-                          logger: DataLogger):
+                          logger: DataLogger) -> None:
 
     for mc_elm in multi_circuit_model.substations:
 
@@ -94,7 +148,7 @@ def get_cgmes_substations(multi_circuit_model: MultiCircuit,
 
 def get_cgmes_voltage_levels(multi_circuit_model: MultiCircuit,
                              cgmes_model: CgmesCircuit,
-                             logger: DataLogger):
+                             logger: DataLogger) -> None:
 
     for mc_elm in multi_circuit_model.voltage_levels:
 
@@ -124,12 +178,12 @@ def get_cgmes_voltage_levels(multi_circuit_model: MultiCircuit,
 
 def get_cgmes_cn_tn_nodes(multi_circuit_model: MultiCircuit,
                           cgmes_model: CgmesCircuit,
-                          logger: DataLogger):
+                          logger: DataLogger) -> None:
 
     for bus in multi_circuit_model.buses:
 
-        new_rdfid = get_new_rfid()
-        tn = TopologicalNode(new_rdfid)
+        new_rdf_id = get_new_rdfid()
+        tn = TopologicalNode(rdfid=new_rdf_id)
         tn.name = bus.name
         tn.BaseVoltage = find_object_by_vnom(
             object_list=cgmes_model.BaseVoltage_list,
@@ -182,17 +236,22 @@ def get_cgmes_loads(multicircuit_model: MultiCircuit,
                     cgmes_model: CgmesCircuit,
                     logger: DataLogger):
 
-    # TODO find connections
-    find_terms_connections()
     for mc_elm in multicircuit_model.loads:
+
         # TODO How do we determine what the MultiCircuit mc_elm corresponds to in the Cgmes object? Is it EnergyConsumer, Conformmc_elm, NonConformmc_elm
         # mc_elm.bus contains the Terminal connections ?
         # all can be Conformmc_elm! and mc_elmResponseChar
         cl = ConformLoad(rdfid=form_rdfid(mc_elm.idtag))
-        cl.description = mc_elm.code
+        cl.Terminals = create_cgmes_terminal(mc_elm.bus, cgmes_model, logger)
         cl.name = mc_elm.name
-        cl.p = mc_elm.P
+        # cl.EquipmentContainer =
+        # cl.BaseVoltage =
+        # cl.LoadResponse = create_cgmes_load_response_char()
+        # cl.LoadGroup =
+        cl.p = mc_elm.P     # LoadResponse
         cl.q = mc_elm.Q
+        cl.description = mc_elm.code
+
         cgmes_model.ConformLoad_list.append(cl)
 
 # endregion
@@ -207,22 +266,22 @@ def gridcal_to_cgmes(gc_model: MultiCircuit, logger: DataLogger) -> CgmesCircuit
     :return: CGMES circuit (as a new object)
     """
 
-    cgmes_circuit = CgmesCircuit()
+    cgmes_model = CgmesCircuit(cgmes_version='2.4.15.')   # get from GUI
     
-    get_cgmes_geograpical_regions(gc_model, cgmes_circuit, logger)
-    get_cgmes_subgeograpical_regions(gc_model, cgmes_circuit, logger)
+    get_cgmes_geograpical_regions(gc_model, cgmes_model, logger)
+    get_cgmes_subgeograpical_regions(gc_model, cgmes_model, logger)
     
-    get_cgmes_base_voltages(gc_model, cgmes_circuit, logger)
+    get_cgmes_base_voltages(gc_model, cgmes_model, logger)
 
-    get_cgmes_substations(gc_model, cgmes_circuit, logger)
-    get_cgmes_voltage_levels(gc_model, cgmes_circuit, logger)
+    get_cgmes_substations(gc_model, cgmes_model, logger)
+    get_cgmes_voltage_levels(gc_model, cgmes_model, logger)
 
-    get_cgmes_cn_tn_nodes(gc_model, cgmes_circuit, logger)
+    get_cgmes_cn_tn_nodes(gc_model, cgmes_model, logger)
 
     #TODO How to determine the device_to_terminal_dict, calc_node_dict, and cn_dict dictionaries?
     # What are the appropriate data types in MultiCircuit that provide the connectivity?
 
     #TODO Determine multicircuit terminals here to be able to define connections
-    get_cgmes_loads(gc_model, cgmes_circuit, logger)
+    get_cgmes_loads(gc_model, cgmes_model, logger)
 
-    return cgmes_circuit
+    return cgmes_model

@@ -421,10 +421,13 @@ class Profile:
         Get dense numpy array representation
         :return: NumericVec
         """
-        if self._is_sparse:
-            return self._sparse_array.toarray()
+        if self.size() > 0:
+            if self._is_sparse:
+                return self._sparse_array.toarray()
+            else:
+                return self._dense_array
         else:
-            return self._dense_array
+            return np.zeros(0)
 
     def tolist(self) -> List[Union[int, float]]:
         """

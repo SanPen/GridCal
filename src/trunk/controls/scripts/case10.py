@@ -252,3 +252,4 @@ print(f'Final x: {x}')
 # i32 = (V3 * np.exp(1j * d3) - V2 * np.exp(1j * d2)) * Y23
 # sfvsc1 = - V3 * np.exp(1j * d3) * (np.conj(i31) + np.conj(i32)) + S3sp
 # print(sfvsc1)
+

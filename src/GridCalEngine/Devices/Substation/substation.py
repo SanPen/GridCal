@@ -58,12 +58,12 @@ class Substation(GenericAreaGroup):
                                   latitude=latitude,
                                   longitude=longitude)
 
-        self.area: Union[Area, None] = area
-        self.zone: Union[Zone, None] = zone
-        self.country: Union[Country, None] = country
-        self.community: Union[Community, None] = community
-        self.region: Union[Region, None] = region
-        self.municipality: Union[Municipality, None] = municipality
+        self._area: Union[Area, None] = area
+        self._zone: Union[Zone, None] = zone
+        self._country: Union[Country, None] = country
+        self._community: Union[Community, None] = community
+        self._region: Union[Region, None] = region
+        self._municipality: Union[Municipality, None] = municipality
         self.address: str = address
 
         self.register(key="area", units="", tpe=DeviceType.AreaDevice,
@@ -85,3 +85,133 @@ class Substation(GenericAreaGroup):
                       definition="Substation municipality")
 
         self.register(key="address", units="", tpe=str, definition="Substation address")
+
+    @property
+    def area(self) -> Union[Area, None]:
+        """
+        area getter
+        :return: Union[Area, None]
+        """
+        return self._area
+
+    @area.setter
+    def area(self, val: Union[Area, None]):
+        """
+        area getter
+        :param val: value
+        """
+        if isinstance(val, Union[Area, None]):
+            self._area = val
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a area of type Union[Area, None]')
+
+    @property
+    def zone(self) -> Union[Zone, None]:
+        """
+        zone getter
+        :return: Union[Zone, None]
+        """
+        return self._zone
+
+    @zone.setter
+    def zone(self, val: Union[Zone, None]):
+        """
+        zone getter
+        :param val: value
+        """
+        if isinstance(val, Union[Zone, None]):
+            self._zone = val
+
+            if val.area is not None and self.area is None:
+                self.area = val.area
+
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a zone of type Union[Zone, None]')
+
+    @property
+    def country(self) -> Union[Country, None]:
+        """
+        country getter
+        :return: Union[Country, None]
+        """
+        return self._country
+
+    @country.setter
+    def country(self, val: Union[Country, None]):
+        """
+        country getter
+        :param val: value
+        """
+        if isinstance(val, Union[Country, None]):
+            self._country = val
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a country of type Union[Country, None]')
+
+    @property
+    def community(self) -> Union[Community, None]:
+        """
+        community getter
+        :return: Union[Community, None]
+        """
+        return self._community
+
+    @community.setter
+    def community(self, val: Union[Community, None]):
+        """
+        community getter
+        :param val: value
+        """
+        if isinstance(val, Union[Community, None]):
+            self._community = val
+
+            if val.country is not None and self.country is None:
+                self.country = val.country
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a community of type Union[Community, None]')
+
+    @property
+    def region(self) -> Union[Region, None]:
+        """
+        region getter
+        :return: Union[Region, None]
+        """
+        return self._region
+
+    @region.setter
+    def region(self, val: Union[Region, None]):
+        """
+        region getter
+        :param val: value
+        """
+        if isinstance(val, Union[Region, None]):
+            self._region = val
+
+            if val.community is not None and self.community is None:
+                self.community = val.community
+
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a region of type Union[Region, None]')
+
+    @property
+    def municipality(self) -> Union[Municipality, None]:
+        """
+        municipality getter
+        :return: Union[Municipality, None]
+        """
+        return self._municipality
+
+    @municipality.setter
+    def municipality(self, val: Union[Municipality, None]):
+        """
+        municipality getter
+        :param val: value
+        """
+        if isinstance(val, Union[Municipality, None]):
+            self._municipality = val
+
+            if val.region is not None and self.region is None:
+                self.region = val.region
+
+        else:
+            raise Exception(
+                str(type(val)) + 'not supported to be set into a municipality of type Union[Municipality, None]')
