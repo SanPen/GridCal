@@ -107,16 +107,24 @@ def compute_g(V: CxVec,
 
     Yf_bus = Cf.T @ yff + Ct.T @ yft
     Yt_bus = Cf.T @ ytf  # ytt is zero
+    Y0c = Cf.T @ (yff - ytf) + Ct.T @ yft
 
     # Formulation 1
     # Sbus = cf.compute_zip_power(S0, I0, Y0, Vm)
     # Scalc = V * np.conj(Ybus @ V - Yf_bus * V + Yt_bus * V)
 
     # Formulation 2
+    # Sbus = cf.compute_zip_power(S0=S0,
+    #                             I0=I0,
+    #                             Y0=Y0 + Yf_bus - Yt_bus,
+    #                             Vm=Vm)
+    # Scalc = V * np.conj(Ybus @ V)
+
+    # Formulation 2.5
     Sbus = cf.compute_zip_power(S0=S0,
                                 I0=I0,
-                                Y0=Y0 + Yf_bus - Yt_bus,
-                                Vm=Vm)
+                                Y0=Y0 + Y0c,
+                                Vm=Vm)  # + (Yf_bus - Yt_bus) * Vm * Vm
     Scalc = V * np.conj(Ybus @ V)
 
     # Formulation 3
@@ -313,7 +321,7 @@ def run_pf(grid: gce.MultiCircuit, pf_options: gce.PowerFlowOptions):
     elif pf_options.solver_type == SolverType.LM:
         ret: ConvexMethodResult = levenberg_marquardt(func=pf_function,
                                                       func_args=(
-                                                      Va0, Vm0, Ybus, S0, Y0, I0, m, tau, Cf, Ct, F, T, pq, pvpq),
+                                                          Va0, Vm0, Ybus, S0, Y0, I0, m, tau, Cf, Ct, F, T, pq, pvpq),
                                                       x0=x0,
                                                       tol=pf_options.tolerance,
                                                       max_iter=pf_options.max_iter,
