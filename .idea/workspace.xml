@@ -28,7 +28,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Add acdc for the 10 bus case">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Update controls with list of unknowns">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -851,9 +851,9 @@
       <method v="2" />
     </configuration>
     <list>
+      <item itemvalue="Python.ExecuteGridCal" />
       <item itemvalue="Python.mips" />
       <item itemvalue="Python.update_gui_file" />
-      <item itemvalue="Python.ExecuteGridCal" />
       <item itemvalue="Python tests.Nosetests for test_load_save_load.test_load_save_load" />
       <item itemvalue="Python tests.Nosetests for tests.test_load_save_load" />
       <item itemvalue="Python tests.Nosetests in tests" />
@@ -1880,7 +1880,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="470" />
+    <option name="localTasksCounter" value="471" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1926,7 +1926,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="added missing picture" />
     <MESSAGE value="Fixed bug with SRAP parameters" />
     <MESSAGE value="Added SRAP and PTDF sparse configuration values to the GUI management" />
     <MESSAGE value="Improved the type hinting in struct_to_data" />
@@ -1951,7 +1950,8 @@
     <MESSAGE value="Minimal change investments rst" />
     <MESSAGE value="Rename axis MVRSM plots" />
     <MESSAGE value="Fix mdl investment results col and row types" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fix mdl investment results col and row types" />
+    <MESSAGE value="Update controls with list of unknowns" />
+    <option name="LAST_COMMIT_MESSAGE" value="Update controls with list of unknowns" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2374,22 +2374,22 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/pack_unpack.py</url>
-          <line>921</line>
+          <line>927</line>
           <option name="timeStamp" value="1503" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/pack_unpack.py</url>
-          <line>785</line>
+          <line>791</line>
           <option name="timeStamp" value="1504" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/pack_unpack.py</url>
-          <line>927</line>
+          <line>933</line>
           <option name="timeStamp" value="1505" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/pack_unpack.py</url>
-          <line>707</line>
+          <line>713</line>
           <option name="timeStamp" value="1507" />
         </line-breakpoint>
       </breakpoints>
