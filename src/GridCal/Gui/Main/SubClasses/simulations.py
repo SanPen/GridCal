@@ -1164,7 +1164,7 @@ class SimulationsMain(TimeEventsMain):
 
             if not self.session.is_this_running(sim.SimulationTypes.NetTransferCapacity_run):
                 distributed_slack = self.ui.distributed_slack_checkBox.isChecked()
-                dT = self.ui.atcPerturbanceSpinBox.value()
+                dT = 1.0
                 threshold = self.ui.atcThresholdSpinBox.value()
                 max_report_elements = 5  # TODO: self.ui.ntcReportLimitingElementsSpinBox.value()
                 # available transfer capacity inter areas
@@ -1279,13 +1279,14 @@ class SimulationsMain(TimeEventsMain):
                 if not self.session.is_this_running(sim.SimulationTypes.NetTransferCapacity_run):
 
                     distributed_slack = self.ui.distributed_slack_checkBox.isChecked()
-                    dT = self.ui.atcPerturbanceSpinBox.value()
+                    dT = 1.0
                     threshold = self.ui.atcThresholdSpinBox.value()
                     max_report_elements = 5  # TODO: self.ui.ntcReportLimitingElementsSpinBox.value()
 
                     # available transfer capacity inter areas
-                    compatible_areas, lst_from, lst_to, lst_br, \
-                        lst_hvdc_br, areas_from, areas_to = self.get_compatible_areas_from_to()
+                    (compatible_areas,
+                     lst_from, lst_to, lst_br,
+                     lst_hvdc_br, areas_from, areas_to) = self.get_compatible_areas_from_to()
 
                     if not compatible_areas:
                         return

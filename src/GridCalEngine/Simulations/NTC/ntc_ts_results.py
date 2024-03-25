@@ -21,7 +21,7 @@ from typing import Dict, Union
 
 from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.enumerations import ResultTypes, StudyResultsType
-from GridCalEngine.Simulations.results_table import ResultsTable
+from GridCalEngine.Simulations.results_table import ResultsTable, DeviceType
 
 
 class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):

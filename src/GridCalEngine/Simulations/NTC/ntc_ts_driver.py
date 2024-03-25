@@ -97,7 +97,7 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         # Initialize results object
         self.results = OptimalNetTransferCapacityTimeSeriesResults(
-            branch_names=self.grid.get_branch_names(),
+            branch_names=self.grid.get_branch_names_wo_hvdc(),
             bus_names=self.grid.get_bus_names(),
             hvdc_names=linear.numerical_circuit.hvdc_names,
             time_array=self.grid.time_profile[self.time_indices],
@@ -119,8 +119,8 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                                              buses_areas_1=self.options.area_from_bus_idx,
                                              buses_areas_2=self.options.area_to_bus_idx,
                                              logger=self.logger,
-                                             progress_text=self.report_text,
-                                             progress_func=self.report_progress,
+                                             progress_text=None,
+                                             progress_func=None,
                                              export_model_fname=self.options.opf_options.export_model_fname)
 
             self.results.voltage[t_idx, :] = np.ones(opf_vars.nbus) * np.exp(1j * opf_vars.bus_vars.theta)

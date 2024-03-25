@@ -5285,7 +5285,7 @@ class MultiCircuit:
         val = np.zeros((self.get_time_number(), self.get_branch_number_wo_hvdc()))
 
         for i, branch in enumerate(self.get_branches_wo_hvdc()):
-            val[:, i] = branch.rate_prof
+            val[:, i] = branch.rate_prof.toarray()
 
         return val
 
