@@ -27,7 +27,7 @@ from GridCalEngine.Devices.Parents.editable_device import GCProp
 from GridCalEngine.Devices.profile import Profile
 from GridCalEngine.Devices.sparse_array import SparseArray
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
-from GridCalEngine.enumerations import DiagramType, DeviceType, SubObjectType
+from GridCalEngine.enumerations import DiagramType, DeviceType, SubObjectType, TransformerControlType
 
 
 def get_objects_dictionary() -> Dict[str, ALL_DEV_TYPES]:
@@ -545,12 +545,21 @@ class CreatedOnTheFly:
     This class is to pack all those devices that are created "on the fly" to support legacy formats
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
+        """
+        Constructor
+        """
         # legacy operations: this is from when area, zone and substation were strings,
         # now we create those objects on the fly
         self.legacy_area_dict: Dict[str, dev.Area] = dict()
         self.legacy_zone_dict: Dict[str, dev.Zone] = dict()
         self.legacy_substation_dict: Dict[str, dev.Substation] = dict()
+
+        self.contingency_groups: List[dev.ContingencyGroup] = list()
+        self.contingencies: List[dev.Contingency] = list()
+
+        self.technologies: Dict[str, dev.Technology] = dict()
+        self.gen2technologies: List[dev.GeneratorTechnology] = list()
 
     def get_create_area(self, property_value):
         """
@@ -587,6 +596,41 @@ class CreatedOnTheFly:
             substation = dev.Substation(name=str(property_value))
             self.legacy_substation_dict[property_value] = substation
         return substation
+
+    def create_contingency(self, elm: ALL_DEV_TYPES):
+        """
+
+        :param elm:
+        :return:
+        """
+        con_group = dev.ContingencyGroup(name=elm.name)
+        conn = dev.Contingency(device_idtag=elm.idtag, prop='active', group=con_group)
+
+        self.contingency_groups.append(con_group)
+        self.contingencies.append(conn)
+
+    def create_technology(self, elm: dev.Generator, tech_name: str):
+        """
+
+        :param elm:
+        :param tech_name:
+        :return:
+        """
+
+        tech = self.technologies.get(tech_name, None)
+
+        if tech is None:
+            tech = dev.Technology(name=tech_name)
+            self.technologies[tech_name] = tech
+
+        gen2tech = dev.GeneratorTechnology(name=f"{elm.name}_{tech_name}",
+                                           code='',
+                                           idtag=None,
+                                           generator=elm,
+                                           technology=tech,
+                                           proportion=1.0)
+
+        self.gen2technologies.append(gen2tech)
 
 
 def parse_object_type_from_dataframe(main_df: pd.DataFrame,
@@ -769,9 +813,16 @@ def parse_object_type_from_dataframe(main_df: pd.DataFrame,
                                     prof.fill(val)
 
                             except ValueError:
-                                logger.add_error(f'Cannot cast value to {gc_prop.tpe}',
-                                                 device=elm.name,
-                                                 value=property_value)
+                                skip = False
+                                if property_name == 'control_mode':
+                                    if property_value == "1:Pt":
+                                        elm.set_snapshot_value(gc_prop.name, TransformerControlType.Pf)
+                                        skip = True
+
+                                if not skip:
+                                    logger.add_error(f'Cannot cast value to {gc_prop.tpe}',
+                                                     device=elm.name,
+                                                     value=property_value)
 
                         else:
                             raise Exception(f'Unsupported property type: {gc_prop.tpe}')
@@ -793,7 +844,12 @@ def parse_object_type_from_dataframe(main_df: pd.DataFrame,
                             elm.set_profile(gc_prop, arr=dfp.values[:, i].astype(gc_prop.tpe))
 
                         else:
-                            logger.add_info('No profile for the property', value=gc_prop.name)
+                            skip = False
+                            if gc_prop.name == 'bus':
+                                skip = True
+
+                            if not skip:
+                                logger.add_info(msg='No profile for the property', value=gc_prop.name)
 
                 else:
                     # the property does not exists, neither in the old names
@@ -801,6 +857,14 @@ def parse_object_type_from_dataframe(main_df: pd.DataFrame,
                     if template_elm.device_type == DeviceType.ShuntDevice:
                         if property_name in ['is_controlled', 'Bmin', 'Bmax', 'Vset']:
                             skip = True
+
+                    if property_name == 'contingency_enabled':
+                        # this is a branch with the legacy property "contingency_enabled", hence, create a contingency
+                        on_the_fly.create_contingency(elm=elm)
+                        skip = True
+                    elif property_name == 'technology':
+                        on_the_fly.create_technology(elm=elm, tech_name=property_value)
+                        skip = True
 
                     if not skip:
                         logger.add_warning("Property in the file is not found in the model",
@@ -1130,6 +1194,14 @@ def parse_gridcal_data(data: Dict[str, Union[str, float, Dict, pd.DataFrame, Dic
                     circuit.add_zone(obj=on_the_fly_elm)
                 for name, on_the_fly_elm in on_the_fly.legacy_substation_dict.items():
                     circuit.add_substation(obj=on_the_fly_elm)
+                for conn_group in on_the_fly.contingency_groups:
+                    circuit.add_contingency_group(obj=conn_group)
+                for cont in on_the_fly.contingencies:
+                    circuit.add_contingency(obj=cont)
+                for tech_name, technology in on_the_fly.technologies.items():
+                    circuit.add_technology(obj=technology)
+                for gen2tech in on_the_fly.gen2technologies:
+                    circuit.add_generator_technology(obj=gen2tech)
 
                 # set the dictionary per type for later
                 elements_dict_by_type[template_elm.device_type] = devices_dict

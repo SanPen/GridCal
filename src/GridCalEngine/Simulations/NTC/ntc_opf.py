@@ -1216,6 +1216,6 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
         lp_model.save_model(file_name=lp_file_name)
         print("Debug LP model saved as:", lp_file_name)
 
-    vars_v = mip_vars.get_values(grid.Sbase)
+    vars_v = mip_vars.get_values(grid.Sbase, model=lp_model)
 
     return vars_v

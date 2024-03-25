@@ -266,6 +266,8 @@ class HvdcLine(BranchParent):
 
         self.register(key='locations', units='', tpe=SubObjectType.LineLocations, definition='', editable=False)
 
+        self.registered_properties['Cost'].old_names.append('overload_cost')
+
     @property
     def active_prof(self) -> Profile:
         """
