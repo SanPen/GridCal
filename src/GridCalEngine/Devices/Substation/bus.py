@@ -328,69 +328,6 @@ class Bus(EditableDevice):
         if show_fig:
             plt.show()
 
-    def get_properties_dict(self, version=3):
-        """
-        Return Json-like dictionary
-        :return: Dictionary
-        """
-        if version in [2, 3]:
-            return {'id': self.idtag,
-                    'type': self.determine_bus_type().value,
-                    'phases': 'ps',
-                    'name': self.name,
-                    'name_code': self.code,
-                    'active': self.active,
-                    'is_slack': bool(self.is_slack),
-                    'vnom': self.Vnom,
-                    'vmin': self.Vmin,
-                    'vmax': self.Vmax,
-                    'rf': self.r_fault,
-                    'xf': self.x_fault,
-                    'x': self.x,
-                    'y': self.y,
-                    'h': self.h,
-                    'w': self.w,
-                    'lat': self.latitude,
-                    'lon': self.longitude,
-                    'alt': 0.0,
-                    'country': self.country.idtag if self.country is not None else "",
-                    'area': self.area.idtag if self.area is not None else "",
-                    'zone': self.zone.idtag if self.zone is not None else "",
-                    'Substation': self.substation.idtag if self.substation is not None else ""
-                    }
-        else:
-            return dict()
-
-    def get_profiles_dict(self, version=3):
-        """
-
-        :return:
-        """
-        if self.active_prof is not None:
-            active_profile = self.active_prof.tolist()
-        else:
-            active_profile = list()
-
-        return {'id': self.idtag,
-                'active': active_profile}
-
-    def get_units_dict(self, version=3):
-        """
-        Get units of the values
-        """
-        return {'vnom': 'kV',
-                'vmin': 'p.u.',
-                'vmax': 'p.u.',
-                'rf': 'p.u.',
-                'xf': 'p.u.',
-                'x': 'px',
-                'y': 'px',
-                'h': 'px',
-                'w': 'px',
-                'lat': 'degrees',
-                'lon': 'degrees',
-                'alt': 'm'}
-
     def get_fault_impedance(self):
         """
         Get the fault impedance

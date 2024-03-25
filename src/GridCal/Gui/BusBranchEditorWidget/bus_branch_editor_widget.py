@@ -3546,6 +3546,7 @@ class BusBranchEditorWidget(QSplitter):
                     # deactivate the original line
                     line_graphics.api_object.active = False
                     line_graphics.api_object.active_prof.fill(False)
+                    line_graphics.set_enable(False)
 
                     # add to gridcal the new 2 lines and the bus
                     self.circuit.add_bus(mid_bus)
@@ -3585,9 +3586,8 @@ class BusBranchEditorWidget(QSplitter):
 
     def split_line_in_out(self, line_graphics: LineGraphicItem):
         """
-
-        :param line_graphics:
-        :return:
+        Split line and create extra substations so that an in/out is formed
+        :param line_graphics: Original LineGraphicItem to split
         """
         dlg = InputNumberDialogue(min_value=1.0,
                                   max_value=99.0,
@@ -3732,6 +3732,7 @@ class BusBranchEditorWidget(QSplitter):
                             # deactivate the original line
                             line_graphics.api_object.active = False
                             line_graphics.api_object.active_prof.fill(False)
+                            line_graphics.set_enable(False)
 
                             # add to gridcal the new 2 lines and the bus
                             self.circuit.add_bus(B1)

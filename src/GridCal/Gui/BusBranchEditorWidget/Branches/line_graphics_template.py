@@ -126,20 +126,19 @@ class ArrowHead(QGraphicsPolygonItem):
         line = self.parent.line()
 
         # the angle is added 180º if the sign is negative
-        angle = line.angle()
+        angle = - line.angle()
         base_pt = line.p1() + (line.p2() - line.p1()) * self.position
 
         p1 = -self.arrow_size if self.backwards else self.arrow_size
         p2 = -self.arrow_size if self.under else self.arrow_size
-        arrow_p1 = base_pt - QTransform().rotate(-angle).map(QPointF(p1, 0))
-        arrow_p2 = base_pt - QTransform().rotate(-angle).map(QPointF(p1, p2))
+        arrow_p1 = base_pt - QTransform().rotate(angle).map(QPointF(p1, 0))
+        arrow_p2 = base_pt - QTransform().rotate(angle).map(QPointF(p1, p2))
         arrow_polygon = QPolygonF([base_pt, arrow_p1, arrow_p2])
 
         self.setPolygon(arrow_polygon)
 
         if self.show_text:
-            # pl = -self.arrow_size - 10 if self.under else self.arrow_size + 10
-            a = - angle + 1.570796
+            a = angle + 180 if 90 < line.angle() <= 270 else angle  # this keep the labels upside
             label_p = base_pt - QTransform().rotate(a).map(QPointF(0, -10 if self.under else 35))
             self.label.setPos(label_p)
             self.label.setRotation(a)
@@ -446,8 +445,17 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         self.pen_width = width
         self.width = width
 
-        self.color = ACTIVE['color']
-        self.style = ACTIVE['style']
+        if self.api_object is not None:
+            if self.api_object.active:
+                self.color = ACTIVE['color']
+                self.style = ACTIVE['style']
+            else:
+                self.color = DEACTIVATED['color']
+                self.style = DEACTIVATED['style']
+        else:
+            self.color = ACTIVE['color']
+            self.style = ACTIVE['style']
+
 
         self.setFlag(self.GraphicsItemFlag.ItemIsSelectable, True)
         self.setCursor(QCursor(Qt.PointingHandCursor))
@@ -470,14 +478,13 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         if from_port and to_port:
             self.redraw()
 
-        # set coulours
-        self.recolour_mode()
-
         if from_port:
             self.set_from_port(from_port)
 
         if to_port:
             self.set_to_port(to_port)
+
+        self.set_colour(self.color, self.width, self.style)
 
     def get_terminal_from(self) -> Union[None, TerminalItem]:
         """
@@ -514,23 +521,6 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         """
         self._from_port.update()
         self._to_port.update()
-
-    def recolour_mode(self) -> None:
-        """
-        Change the colour according to the system theme
-        """
-        if self.api_object is not None:
-            if self.api_object.active:
-                self.color = ACTIVE['color']
-                self.style = ACTIVE['style']
-            else:
-                self.color = DEACTIVATED['color']
-                self.style = DEACTIVATED['style']
-        else:
-            self.color = ACTIVE['color']
-            self.style = ACTIVE['style']
-
-        self.set_colour(self.color, self.width, self.style)
 
     def set_colour(self, color: QColor, w, style: Qt.PenStyle):
         """
@@ -606,7 +596,7 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
             else:
                 self.set_enable(True)
 
-            if self.editor.circuit.has_time_series:
+            if self.editor.circuit.get_time_number() > 0:
                 ok = yes_no_question('Do you want to update the time series active status accordingly?',
                                      'Update time series active status')
 
@@ -789,7 +779,7 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
             Pt = St.real
             Qt = St.imag
             self.arrow_from_1.set_value(Pf, True, Pf < 0, name="Pf", units="MW")
-            self.arrow_from_2.set_value(Qf, True, Qf < 0,  name="Qf", units="MVAr")
+            self.arrow_from_2.set_value(Qf, True, Qf < 0, name="Qf", units="MVAr")
             self.arrow_to_1.set_value(Pt, True, Pt > 0, name="Pt", units="MW")
             self.arrow_to_2.set_value(Qt, True, Qt > 0, name="Qt", units="MVAr")
 

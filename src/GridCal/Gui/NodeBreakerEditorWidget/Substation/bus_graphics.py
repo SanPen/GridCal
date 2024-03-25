@@ -146,34 +146,10 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         self.setFlags(self.GraphicsItemFlag.ItemIsSelectable | self.GraphicsItemFlag.ItemIsMovable)
         self.setCursor(QCursor(Qt.PointingHandCursor))
 
-
-
         # Update size:
         self.change_size(self.w, self.h)
 
         self.set_position(x, y)
-
-    def recolour_mode(self):
-        """
-        Change the colour according to the system theme
-        """
-        if self.api_object is not None:
-            if self.api_object.active:
-                self.color = ACTIVE['color']
-                self.style = ACTIVE['style']
-            else:
-                self.color = DEACTIVATED['color']
-                self.style = DEACTIVATED['style']
-        else:
-            self.color = ACTIVE['color']
-            self.style = ACTIVE['style']
-
-        self.label.setDefaultTextColor(ACTIVE['text'])
-        self.set_tile_color(self.color)
-
-        for e in self.shunt_children:
-            if e is not None:
-                e.recolour_mode()
 
     def set_label(self, val: str):
         """

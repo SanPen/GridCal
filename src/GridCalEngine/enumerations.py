@@ -912,7 +912,7 @@ class DeviceType(Enum):
     RegionDevice = 'Region'
     MunicipalityDevice = 'Municipality'
     BusBarDevice = 'BusBar'
-    VoltageLevelDevice = 'VoltageLevel'
+    VoltageLevelDevice = 'Voltage level'
 
     Technology = 'Technology'
     TechnologyGroup = 'Technology Group'

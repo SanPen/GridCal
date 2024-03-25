@@ -763,8 +763,10 @@ class MultiCircuit:
         Return all the branch objects.
         :return: lines + transformers 2w + hvdc
         """
-        return (self.lines + self.dc_lines + self.transformers2w + self.windings +
-                self.vsc_devices + self.upfc_devices + self.switch_devices)
+        lst = list()
+        for dev_list in self.get_branch_lists_wo_hvdc():
+            lst += dev_list
+        return lst
 
     def get_branches_wo_hvdc_names(self) -> List[str]:
         """
@@ -2542,36 +2544,7 @@ class MultiCircuit:
 
         return d
 
-    def get_properties_dict(self) -> Dict[str, str]:
-        """
-        Returns a JSON dictionary of the :ref:`MultiCircuit<multicircuit>` instance
-        with the following values: id, type, phases, name, Sbase, comments.
-
-        Arguments:
-
-            **id**: Arbitrary identifier
-        """
-        d = {'id': self.idtag,
-             'phases': 'ps',
-             'name': self.name,
-             'sbase': self.Sbase,
-             'fbase': self.fBase,
-             'model_version': self.model_version,
-             'user_name': self.user_name,
-             'comments': self.comments,
-             }
-
-        return d
-
-    @staticmethod
-    def get_units_dict() -> Dict[str, str]:
-        """
-        Dictionary of units
-        used in json export v3
-        """
-        return {'time': 'Milliseconds since 1/1/1970 (Unix time in ms)'}
-
-    def get_profiles_dict(self) -> Dict[str, List]:
+    def get_time_profile_as_list(self):
         """
         Get the profiles dictionary
         mainly used in json export
@@ -2580,10 +2553,9 @@ class MultiCircuit:
             # recommended way to get the unix datetimes
             arr = (self.time_profile - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")
             # t = (self.time_profile.array.astype(int) * 1e-9).tolist()  # UNIX time in seconds
-            t = arr.tolist()
+            return arr.tolist()
         else:
-            t = list()
-        return {'time': t}
+            return list()
 
     def build_graph(self):
         """

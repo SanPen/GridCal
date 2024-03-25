@@ -46,22 +46,6 @@ class GenericAreaGroup(EditableDevice):
         self.register(key='latitude', units='deg', tpe=float, definition='latitude of the bus.', profile_name='',
                       editable=False)
 
-    def get_properties_dict(self, version=3):
-
-        data = {'id': self.idtag,
-                'name': self.name,
-                'code': self.code
-                }
-        return data
-
-    def get_profiles_dict(self, version=3):
-        data = {'id': self.idtag}
-        return data
-
-    def get_units_dict(self, version=3):
-        data = {}
-        return data
-
 
 class Area(GenericAreaGroup):
 

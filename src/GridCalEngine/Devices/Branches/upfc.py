@@ -142,103 +142,19 @@ class UPFC(BranchParent):
     def get_min_bus_nominal_voltage(self):
         return min(self.bus_from.Vnom, self.bus_to.Vnom)
 
-    def change_base(self, Sbase_old, Sbase_new):
+    def change_base(self, Sbase_old: float, Sbase_new: float):
+        """
+
+        :param Sbase_old:
+        :param Sbase_new:
+        :return:
+        """
         b = Sbase_new / Sbase_old
 
         self.Rs *= b
         self.Xs *= b
         self.Rsh *= b
         self.Xs *= b
-
-    def get_properties_dict(self, version=3):
-        """
-        Get json dictionary
-        :return:
-        """
-        if version == 2:
-            return {'id': self.idtag,
-                    'type': 'upfc',
-                    'phases': 'ps',
-                    'name': self.name,
-                    'name_code': self.code,
-                    'bus_from': self.bus_from.idtag,
-                    'bus_to': self.bus_to.idtag,
-                    'active': self.active,
-                    'rate': self.rate,
-                    'rl': 0.0,
-                    'xl': 0.0,
-                    'bl': 0.0,
-                    'rs': self.Rs,
-                    'xs': self.Xs,
-                    'rsh': self.Rsh,
-                    'xsh': self.Xsh,
-                    'vsh': self.Vsh,
-                    'Pfset': self.Pfset,
-                    'Qfset': self.Qfset
-                    }
-        elif version == 3:
-            return {'id': self.idtag,
-                    'type': 'upfc',
-                    'phases': 'ps',
-                    'name': self.name,
-                    'name_code': self.code,
-                    'bus_from': self.bus_from.idtag,
-                    'bus_to': self.bus_to.idtag,
-                    'active': self.active,
-                    'rate': self.rate,
-                    'contingency_factor1': self.contingency_factor,
-                    'contingency_factor2': self.contingency_factor,
-                    'contingency_factor3': self.contingency_factor,
-                    'rl': 0.0,
-                    'xl': 0.0,
-                    'bl': 0.0,
-                    'rs': self.Rs,
-                    'xs': self.Xs,
-                    'rsh': self.Rsh,
-                    'xsh': self.Xsh,
-                    'vsh': self.Vsh,
-                    'Pfset': self.Pfset,
-                    'Qfset': self.Qfset,
-
-                    'overload_cost': self.Cost,
-                    'capex': self.capex,
-                    'opex': self.opex,
-                    'build_status': str(self.build_status.value).lower(),
-                    }
-        else:
-            return dict()
-
-    def get_profiles_dict(self, version=3):
-        """
-
-        :return:
-        """
-        if self.active_prof is not None:
-            active_prof = self.active_prof.tolist()
-            rate_prof = self.rate_prof.tolist()
-        else:
-            active_prof = list()
-            rate_prof = list()
-
-        return {'id': self.idtag,
-                'active': active_prof,
-                'rate': rate_prof}
-
-    def get_units_dict(self, version=3):
-        """
-        Get units of the values
-        """
-        return {'rate': 'MW',
-                'r': 'p.u.',
-                'x': 'p.u.',
-                'b': 'p.u.',
-                'g': 'p.u.'}
-
-    def get_coordinates(self):
-        """
-        Get the branch defining coordinates
-        """
-        return [self.bus_from.get_coordinates(), self.bus_to.get_coordinates()]
 
     def plot_profiles(self, time_series=None, my_index=0, show_fig=True):
         """

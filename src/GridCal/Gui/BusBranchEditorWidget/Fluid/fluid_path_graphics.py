@@ -89,12 +89,6 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
         if self.symbol is not None:
             self.symbol.set_colour(color, w, style)
 
-    def recolour_mode(self):
-        """
-        Change the colour according to the system theme
-        """
-        self.set_colour(self.color, self.width, self.style)
-
     def mouseDoubleClickEvent(self, event):
         """
         On double click, edit
@@ -119,23 +113,6 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
             menu = QMenu()
             menu.addSection("FluidPath")
 
-            # pe = menu.addAction('Active')
-            # pe.setCheckable(True)
-            # pe.setChecked(self.api_object.active)
-            # pe.triggered.connect(self.enable_disable_toggle)
-
-            # ra3 = menu.addAction('Editor')
-            # edit_icon = QIcon()
-            # edit_icon.addPixmap(QPixmap(":/Icons/icons/edit.svg"))
-            # ra3.setIcon(edit_icon)
-            # ra3.triggered.connect(self.edit)
-
-            # rabf = menu.addAction('Change bus')
-            # move_bus_icon = QIcon()
-            # move_bus_icon.addPixmap(QPixmap(":/Icons/icons/move_bus.svg"))
-            # rabf.setIcon(move_bus_icon)
-            # rabf.triggered.connect(self.change_bus)
-
             menu.addSeparator()
 
             ra6 = menu.addAction('Plot profiles')
@@ -144,29 +121,11 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
             ra6.setIcon(plot_icon)
             ra6.triggered.connect(self.plot_profiles)
 
-
-            #
-            # ra5 = menu.addAction('Assign active state to profile')
-            # ra5_icon = QIcon()
-            # ra5_icon.addPixmap(QPixmap(":/Icons/icons/assign_to_profile.svg"))
-            # ra5.setIcon(ra5_icon)
-            # ra5.triggered.connect(self.assign_status_to_profile)
-
-            # spl = menu.addAction('Split line')
-            # spl_icon = QIcon()
-            # spl_icon.addPixmap(QPixmap(":/Icons/icons/divide.svg"))
-            # spl.setIcon(spl_icon)
-            # spl.triggered.connect(self.split_line)
-
-            # menu.addSeparator()
-
             ra2 = menu.addAction('Delete')
             del_icon = QIcon()
             del_icon.addPixmap(QPixmap(":/Icons/icons/delete3.svg"))
             ra2.setIcon(del_icon)
             ra2.triggered.connect(self.remove)
-
-            # menu.addSeparator()
 
             menu.addSection('Convert to')
 
@@ -179,25 +138,6 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
             menu.exec_(event.screenPos())
         else:
             pass
-
-    def enable_disable_toggle(self):
-        """
-
-        @return:
-        """
-        if self.api_object is not None:
-            if self.api_object.active:
-                self.set_enable(False)
-            else:
-                self.set_enable(True)
-
-            if self.editor.circuit.has_time_series:
-                ok = yes_no_question('Do you want to update the time series active status accordingly?',
-                                     'Update time series active status')
-
-                if ok:
-                    # change the bus state (time series)
-                    self.editor.set_active_status_to_profile(self.api_object, override_question=True)
 
     def plot_profiles(self):
         """
@@ -214,53 +154,6 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
         :return:
         """
         pass
-
-    def show_line_editor(self):
-        """
-        Open the appropriate editor dialogue
-        :return:
-        """
-        Sbase = self.editor.circuit.Sbase
-
-        dlg = LineEditor(self.api_object, Sbase)
-        if dlg.exec_():
-            pass
-
-    def split_line(self):
-        """
-        Split line
-        :return:
-        """
-        dlg = InputNumberDialogue(min_value=1.0,
-                                  max_value=99.0,
-                                  is_int=False,
-                                  title="Split fluid path",
-                                  text="Enter the distance from the beginning of the \n"
-                                       "fluid path as a percentage of the total length",
-                                  suffix=' %',
-                                  decimals=2,
-                                  default_value=50.0)
-        if dlg.exec_():
-
-            if dlg.is_accepted:
-                br1, br2, middle_bus = self.api_object.split_line(position=dlg.value / 100.0)
-
-                # add the graphical objects
-                # TODO: Figure this out
-                # middle_bus.graphic_obj = self.diagramScene.parent_.add_api_bus(middle_bus)
-                # br1.graphic_obj = self.diagramScene.parent_.add_api_line(br1)
-                # br2.graphic_obj = self.diagramScene.parent_.add_api_line(br2)
-                # # middle_bus.graphic_obj.redraw()
-                # br1.bus_from.graphic_obj.arrange_children()
-                # br2.bus_to.graphic_obj.arrange_children()
-
-                # add to gridcal
-                self.editor.circuit.add_bus(middle_bus)
-                self.editor.circuit.add_line(br1)
-                self.editor.circuit.add_line(br2)
-
-                # remove this line
-                self.remove(ask=False)
 
     def to_line(self):
         """
