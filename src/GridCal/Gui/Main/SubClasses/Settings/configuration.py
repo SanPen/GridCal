@@ -26,6 +26,35 @@ from GridCal.Gui.BusBranchEditorWidget import BusBranchEditorWidget
 from GridCal.Gui.BusBranchEditorWidget.generic_graphics import set_dark_mode, set_light_mode
 
 
+def config_data_to_struct(data_, struct_):
+    """
+    Recursive function to set the GUI values from the config dictionary
+    :param data_: config dictionary with values from the file
+    :param struct_: result of self.get_config_structure()
+    """
+    for key, instance in struct_.items():
+        if key in data_:
+            if isinstance(instance, dict):
+                config_data_to_struct(data_[key], instance)
+            elif isinstance(instance, QtWidgets.QComboBox):
+                val = data_[key]
+                index = instance.findText(val)
+                if -1 < index < instance.count():
+                    instance.setCurrentIndex(index)
+            elif isinstance(instance, QtWidgets.QDoubleSpinBox):
+                instance.setValue(float(data_[key]))
+            elif isinstance(instance, QtWidgets.QSpinBox):
+                instance.setValue(int(data_[key]))
+            elif isinstance(instance, QtWidgets.QCheckBox):
+                instance.setChecked(bool(data_[key]))
+            elif isinstance(instance, QtWidgets.QRadioButton):
+                instance.setChecked(bool(data_[key]))
+            else:
+                raise Exception('unknown structure')
+        else:
+            print(key)
+
+
 class ConfigurationMain(ResultsMain):
     """
     Diagrams Main
@@ -139,11 +168,7 @@ class ConfigurationMain(ResultsMain):
                 }
             },
             "linear": {
-                "perturbance_power": self.ui.atcPerturbanceSpinBox,
-                "transfer_sensitivity_threshold": self.ui.atcThresholdSpinBox,
-                "transfer_method": self.ui.transferMethodComboBox,
-                "Loading_threshold_to_report": self.ui.ntcReportLoadingThresholdSpinBox,
-                "consider_contingencies": self.ui.n1ConsiderationCheckBox,
+
                 "ptdf_threshold": self.ui.ptdf_threshold_doubleSpinBox,
                 "lodf_threshold": self.ui.lodf_threshold_doubleSpinBox
             },
@@ -202,26 +227,21 @@ class ConfigurationMain(ResultsMain):
                 "available_transfer_capacity": self.ui.atcRadioButton,
             },
             "net_transfer_capacity": {
-                "proportional_redispatch": self.ui.proportionalRedispatchRadioButton,
-                "optimal_redispatch": self.ui.optimalRedispatchRadioButton,
-                "skip_generation_limits": self.ui.skipNtcGenerationLimitsCheckBox,
-                "dispatch_all_areas": self.ui.ntcDispatchAllAreasCheckBox,
-                "check_feasibility": self.ui.ntcFeasibilityCheckCheckBox,
+                "transfer_sensitivity_threshold": self.ui.atcThresholdSpinBox,
+                "transfer_method": self.ui.transferMethodComboBox,
+                "Loading_threshold_to_report": self.ui.ntcReportLoadingThresholdSpinBox,
+                "ntc_linear_consider_contingencies": self.ui.n1ConsiderationCheckBox,
 
-                "ntc_lodf_tolerance": self.ui.ntcLODFToleranceSpinBox,
+                "skip_generation_limits": self.ui.skipNtcGenerationLimitsCheckBox,
                 "transmission_reliability_margin": self.ui.trmSpinBox,
 
+                "use_branch_exchange_sensitivity": self.ui.ntcSelectBasedOnExchangeSensitivityCheckBox,
                 "branch_exchange_sensitivity": self.ui.ntcAlphaSpinBox,
+
+                "use_branch_rating_contribution": self.ui.ntcSelectBasedOnAcerCriteriaCheckBox,
                 "branch_rating_contribution": self.ui.ntcLoadRuleSpinBox,
 
-                "consider_branch_contingencies": self.ui.considerContingenciesNtcOpfCheckBox,
-                "consider_hvdc_contingencies": self.ui.considerContingenciesHvdcOpfCheckBox,
-                "consider_generator_contingencies": self.ui.considerContingenciesGeneratorOpfCheckBox,
-                "generator_contingency_power": self.ui.contingencyGenerationThresholdDoubleSpinBox,
-
-                "power_shift_weight": self.ui.weightPowerShiftSpinBox,
-                "generation_cost_weight": self.ui.weightGenCostSpinBox,
-                "branch_overload_weight": self.ui.weightsOverloadsSpinBox,
+                "ntc_opt_consider_contingencies": self.ui.consider_ntc_contingencies_checkBox,
             },
             "general": {
                 "base_power": self.ui.sbase_doubleSpinBox,
@@ -295,36 +315,8 @@ class ConfigurationMain(ResultsMain):
         :param data: GUI configuration dictionary
         """
 
-        def data_to_struct(data_, struct_):
-            """
-            Recursive function to set the GUI values from the config dictionary
-            :param data_: config dictionary with values from the file
-            :param struct_: result of self.get_config_structure()
-            """
-            for key, instance in struct_.items():
-                if key in data_:
-                    if isinstance(instance, dict):
-                        data_to_struct(data_[key], instance)
-                    elif isinstance(instance, QtWidgets.QComboBox):
-                        val = data_[key]
-                        index = instance.findText(val)
-                        if -1 < index < instance.count():
-                            instance.setCurrentIndex(index)
-                    elif isinstance(instance, QtWidgets.QDoubleSpinBox):
-                        instance.setValue(float(data_[key]))
-                    elif isinstance(instance, QtWidgets.QSpinBox):
-                        instance.setValue(int(data_[key]))
-                    elif isinstance(instance, QtWidgets.QCheckBox):
-                        instance.setChecked(bool(data_[key]))
-                    elif isinstance(instance, QtWidgets.QRadioButton):
-                        instance.setChecked(bool(data_[key]))
-                    else:
-                        raise Exception('unknown structure')
-                else:
-                    print(key)
-
         struct = self.get_config_structure()
-        data_to_struct(data_=data, struct_=struct)
+        config_data_to_struct(data_=data, struct_=struct)
 
         if self.ui.dark_mode_checkBox.isChecked():
             set_dark_mode()

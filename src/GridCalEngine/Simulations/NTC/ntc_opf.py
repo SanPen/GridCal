@@ -433,6 +433,13 @@ class BranchNtcVars:
         """
         self.contingency_flow_data.append((t, m, c, flow_var, neg_slack, pos_slack))
 
+    def get_total_flow_slack(self):
+        """
+        Get total flow slacks
+        :return:
+        """
+        return self.flow_slacks_pos - self.flow_slacks_neg
+
 
 class HvdcNtcVars:
     """
