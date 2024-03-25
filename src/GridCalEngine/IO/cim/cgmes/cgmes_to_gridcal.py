@@ -162,7 +162,7 @@ def find_connections(cgmes_elm: IdentifiedObject,
     return calc_nodes, cns
 
 
-def find_object_by_idtag(object_list, target_idtag):  #TODO mone to somewhere
+def find_object_by_idtag(object_list, target_idtag):  #TODO move to somewhere
     """
     Finds an object with the specified idtag
      in the given object_list from a Multi Circuit.
@@ -200,7 +200,8 @@ def get_gcdev_calculation_nodes(cgmes_model: CgmesCircuit,
     for cgmes_elm in cgmes_model.TopologicalNode_list:
 
         voltage = v_dict.get(cgmes_elm.uuid, None)
-        nominal_voltage = get_nominal_voltage(topological_node=cgmes_elm, logger=logger)
+        nominal_voltage = get_nominal_voltage(topological_node=cgmes_elm,
+                                              logger=logger)
 
         if voltage is not None and nominal_voltage is not None:
             vm = voltage[0] / nominal_voltage
@@ -214,21 +215,38 @@ def get_gcdev_calculation_nodes(cgmes_model: CgmesCircuit,
             if slack_id == cgmes_elm.rdfid:
                 is_slack = True
 
-        gcdev_elm = gcdev.Bus(idtag=cgmes_elm.uuid,
+        # subs = find_object_by_idtag(
+        #     object_list=gc_model.substations,
+        #     target_idtag=cgmes_elm.Substation.uuid  # gcdev_elm.idtag
+        # )
+
+        volt_lev = find_object_by_idtag(
+            object_list=gc_model.voltage_levels,
+            target_idtag=cgmes_elm.ConnectivityNodeContainer.uuid
+        )
+        if volt_lev is None:
+            print(f'No volt lev found for {cgmes_elm.name}')
+
+        gcdev_elm = gcdev.Bus(name=cgmes_elm.name,
+                              idtag=cgmes_elm.uuid,
                               code=cgmes_elm.description,
-                              name=cgmes_elm.name,
-                              active=True,
                               vnom=nominal_voltage,
-                              is_dc=False,
-                              is_slack=is_slack,
                               vmin=0.9,
                               vmax=1.1,
-                              latitude=0.0,
-                              longitude=0.0,
-                              area=None,
-                              zone=None,
+                              active=True,
+                              is_slack=is_slack,
+                              is_dc=False,
+                              # is_internal=False,
+                              area=None,    #TODO get tp area
+                              zone=None,    #TODO get tp zone
+                              substation=None,  #TODO
+                              voltage_level=volt_lev,   #TODO
+                              country=None,     #TODO
+                              # latitude=0.0,
+                              # longitude=0.0,
                               Vm0=vm,
                               Va0=va)
+
 
         gc_model.add_bus(gcdev_elm)
         calc_node_dict[gcdev_elm.idtag] = gcdev_elm
@@ -1038,12 +1056,15 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
     # parse_shunts(cgmes_model, circuit, busbar_dict, logger)
     # parse_generators(cgmes_model, circuit, busbar_dict, logger)
 
-    v_dict = get_gcdev_voltage_dict(cgmes_model, logger)
+    get_gcdev_substations(cgmes_model, gc_model)
+    get_gcdev_voltage_levels(cgmes_model, gc_model, logger)
 
+    sv_volt_dict = get_gcdev_voltage_dict(cgmes_model, logger)
     device_to_terminal_dict = get_gcdev_device_to_terminal_dict(cgmes_model, logger)
 
-    calc_node_dict = get_gcdev_calculation_nodes(cgmes_model, gc_model, v_dict, logger)
+    calc_node_dict = get_gcdev_calculation_nodes(cgmes_model, gc_model, sv_volt_dict, logger)
     cn_dict = get_gcdev_connectivity_nodes(cgmes_model, gc_model)
+    get_gcdev_busbars(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger)
 
     get_gcdev_loads(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger)
     get_gcdev_external_grids(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger)
@@ -1055,19 +1076,16 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
     get_gcdev_shunts(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger, Sbase)
     get_gcdev_switches(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger, Sbase)
 
-    get_gcdev_substations(cgmes_model, gc_model)
-    get_gcdev_voltage_levels(cgmes_model, gc_model, logger)
-    get_gcdev_busbars(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger)
     print('debug')
 
     # Gridcal to cgmes
     cgmes_model_export = gridcal_to_cgmes(gc_model, logger)
 
     # Export with ET
-    # start = time.time()
-    # serializer = CimExporter(cgmes_model)
-    # serializer.export()
-    # end = time.time()
-    # print("ET export time: ", end - start, "sec")
+    start = time.time()
+    serializer = CimExporter(cgmes_model)
+    serializer.export()
+    end = time.time()
+    print("ET export time: ", end - start, "sec")
 
     return gc_model

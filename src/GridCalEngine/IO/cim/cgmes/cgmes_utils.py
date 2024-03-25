@@ -657,7 +657,9 @@ def base_voltage_to_str(base_voltage: BaseVoltage):
 
 # endregion
 
-def get_regulating_control(cgmes_elm: RegulatingCondEq, cgmes_enums, logger: DataLogger):
+def get_regulating_control(cgmes_elm: RegulatingCondEq,
+                           cgmes_enums,
+                           logger: DataLogger):
     if cgmes_elm.RegulatingControl is not None:
 
         if cgmes_elm.RegulatingControl.enabled:

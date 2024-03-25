@@ -4,13 +4,16 @@ from GridCalEngine.IO.cim.cgmes.base import get_new_rdfid, form_rdfid
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
 import GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices as cgmes
 import GridCalEngine.Devices as gcdev
+from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices import GeneratingUnit, \
+    ThermalGeneratingUnit, HydroGeneratingUnit, SolarGeneratingUnit, \
+    WindGeneratingUnit, NuclearGeneratingUnit
 
 # if cgmes_version == '2.4.15.':
 #     from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.terminal import \
 #         Terminal
 
 from GridCalEngine.data_logger import DataLogger
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Union
 
 
 # region UTILS
@@ -36,6 +39,14 @@ def find_object_by_uuid(object_list, target_uuid):  #TODO move to CGMES utils
     return None
 
 
+def find_object_by_tn_uuid(object_list: List[cgmes.VoltageLevel], target_uuid):
+    """ for Voltage Levels.. """
+    for obj in object_list:
+        if obj.TopologicalNode.uuid == target_uuid:
+            return obj
+    return None
+
+
 def find_object_by_vnom(object_list: List[cgmes.BaseVoltage], target_vnom):
     for obj in object_list:
         if obj.nominalVoltage == target_vnom:
@@ -52,8 +63,6 @@ def create_cgmes_terminal(bus: Bus,
                           logger: DataLogger) -> cgmes.Terminal:
     """ Creates a new Terminal in CGMES model,
     and connects it the relating Topologinal Node """
-
-
 
     new_rdf_id = get_new_rdfid()
     term = cgmes.Terminal(new_rdf_id)
@@ -85,13 +94,53 @@ def create_cgmes_load_response_char(load: gcdev.Load) \
     # lrc.name =
     lrc.pConstantPower = 1
     lrc.qConstantPower = 1
-    lrc.pConstantCurrent = load.Ir / load.P
-    lrc.qConstantCurrent = load.Ii / load.Q
-    lrc.pConstantImpedance = load.G / load.P
-    lrc.qConstantImpedance = load.B / load.Q
+    lrc.pConstantCurrent = load.Ir / load.P if load.P != 0.0 else 0
+    lrc.qConstantCurrent = load.Ii / load.Q if load.Q != 0.0 else 0
+    lrc.pConstantImpedance = load.G / load.P if load.P != 0.0 else 0
+    lrc.qConstantImpedance = load.B / load.Q if load.Q != 0.0 else 0  # TODO ask Chavdar
 
     return lrc
 
+
+def create_cgmes_generating_unit(gen: gcdev.Generator,
+                                 cgmes_model: CgmesCircuit) \
+        -> Union[cgmes.GeneratingUnit, None] :
+    """
+    Creates the appropriate GeneratingUnit object for CGMES
+    """
+    
+    new_rdf_id = get_new_rdfid()
+    if gen.technology.name == 'General':
+        sm = cgmes.GeneratingUnit(new_rdf_id)
+        cgmes_model.GeneratingUnit_list.append(sm)
+        return sm
+
+    if gen.technology.name == 'Thermal':
+        tgu = cgmes.ThermalGeneratingUnit(new_rdf_id)
+        cgmes_model.ThermalGeneratingUnit_list.append(tgu)
+        return tgu
+
+    if gen.technology.name == 'Hydro':
+        hgu = cgmes.HydroGeneratingUnit(new_rdf_id)
+        cgmes_model.HydroGeneratingUnit_list.append(hgu)
+        return hgu
+
+    if gen.technology.name == 'Solar':
+        sgu = cgmes.SolarGeneratingUnit(new_rdf_id)
+        cgmes_model.SolarGeneratingUnit_list.append(sgu)
+        return sgu
+
+    if gen.technology.name == 'Wind':
+        wgu = cgmes.WindGeneratingUnit(new_rdf_id)
+        cgmes_model.WindGeneratingUnit_list.append(wgu)
+        return wgu
+
+    if gen.technology.name == 'Nuclear':
+        ngu = cgmes.NuclearGeneratingUnit(new_rdf_id)
+        cgmes_model.NuclearGeneratingUnit_list.append(ngu)
+        return ngu
+
+    return None
 
 def create_cgmes_regulating_control():
     pass
@@ -122,8 +171,8 @@ def get_cgmes_base_voltages(multi_circuit_model: MultiCircuit,
         if bus.Vnom not in base_volt_set:
             base_volt_set.add(bus.Vnom)
 
-            new_rdfid = get_new_rdfid()
-            base_volt = cgmes.BaseVoltage(rdfid=new_rdfid)
+            new_rdf_id = get_new_rdfid()
+            base_volt = cgmes.BaseVoltage(rdfid=new_rdf_id)
             base_volt.name = f'_BV_{int(bus.Vnom)}'
             base_volt.nominalVoltage = bus.Vnom
 
@@ -160,6 +209,7 @@ def get_cgmes_voltage_levels(multi_circuit_model: MultiCircuit,
             target_vnom=mc_elm.Vnom
         )
         # vl.Bays = later
+        # vl.TopologicalNode added at tn_nodes func
 
         if mc_elm.substation is not None:
             substation: cgmes.Substation = find_object_by_uuid(
@@ -190,14 +240,24 @@ def get_cgmes_cn_tn_nodes(multi_circuit_model: MultiCircuit,
             object_list=cgmes_model.BaseVoltage_list,
             target_vnom=bus.Vnom
         )
-        # tn.ConnectivityNodeContainer = VoltageLevel
+        if bus.voltage_level is not None:   # VoltageLevel
+            vl: cgmes.VoltageLevel = find_object_by_uuid(
+                object_list=cgmes_model.VoltageLevel_list,
+                target_uuid=bus.voltage_level.idtag
+            )
+            tn.ConnectivityNodeContainer = vl
+            # link back
+            vl.TopologicalNode = tn
+
+        else:
+            print(f'Bus.voltage_level.idtag is None for {bus.name}')
         #TODO bus should have association for VoltageLevel first
         # and the voltagelevel to the substation
 
         cn = cgmes.ConnectivityNode(rdfid=form_rdfid(bus.idtag))
         cn.name = bus.name
         cn.TopologicalNode = tn
-        # cn.ConnectivityNodeContainer = VoltageLevel same as for tn
+        cn.ConnectivityNodeContainer = tn.ConnectivityNodeContainer
 
         cgmes_model.ConnectivityNode_list.append(cn)
         cgmes_model.TopologicalNode_list.append(tn)
@@ -236,22 +296,105 @@ def get_cgmes_svvoltages(v_dict: Dict[str, Tuple[float, float]],
 def get_cgmes_loads(multicircuit_model: MultiCircuit,
                     cgmes_model: CgmesCircuit,
                     logger: DataLogger):
+    """
+    Converts every Multi Circuit load into CGMES ConformLoad.
+
+    :param multicircuit_model:
+    :param cgmes_model:
+    :param logger:
+    :return:
+    """
 
     for mc_elm in multicircuit_model.loads:
 
         cl = cgmes.ConformLoad(rdfid=form_rdfid(mc_elm.idtag))
         cl.Terminals = create_cgmes_terminal(mc_elm.bus, cgmes_model, logger)
         cl.name = mc_elm.name
-        # cl.EquipmentContainer =
-        # cl.BaseVoltage =
+
+        # vl = find_object_by_tn_uuid(
+        #     object_list=cgmes_model.VoltageLevel_list,
+        #     target_uuid=cl.Terminals.TopologicalNode.uuid
+        # )
+        # if isinstance(vl, cgmes.VoltageLevel):
+        #     cl.EquipmentContainer = vl
+        # else:
+        #     print("hello")
+
+        # cl.BaseVoltage = BaseVoltage
         cl.LoadResponse = create_cgmes_load_response_char(load=mc_elm)
-        # cl.LoadGroup =
-        cl.p = mc_elm.P     # LoadResponse
+        # cl.LoadGroup = ConformLoadGroup ..?
+        cl.p = mc_elm.P
         cl.q = mc_elm.Q
 
         cl.description = mc_elm.code
 
         cgmes_model.ConformLoad_list.append(cl)
+
+
+def get_cgmes_equivalent_injections(multicircuit_model: MultiCircuit,
+                                    cgmes_model: CgmesCircuit,
+                                    logger: DataLogger):
+    """
+    Converts every Multi Circuit external grid
+    into CGMES equivalent injection.
+
+    :param multicircuit_model:
+    :param cgmes_model:
+    :param logger:
+    :return:
+    """
+
+    for mc_elm in multicircuit_model.external_grids:
+        ei = cgmes.EquivalentInjection(rdfid=form_rdfid(mc_elm.idtag))
+        # fill ei.attr
+
+        cgmes_model.ConformLoad_list.append(ei)
+
+
+def get_cgmes_generators(multicircuit_model: MultiCircuit,
+                         cgmes_model: CgmesCircuit,
+                         logger: DataLogger):
+    """
+    Converts Multi Circuit generators
+    into approriate CGMES Generating Unit.
+
+    :param multicircuit_model:
+    :param cgmes_model:
+    :param logger:
+    :return:
+    """
+
+    for mc_elm in multicircuit_model.generators:
+
+        # Generating Units
+        cgmes_gen = create_cgmes_generating_unit(
+            gen=mc_elm, cgmes_model=cgmes_model
+        )
+        cgmes_gen.name = mc_elm.name
+        cgmes_gen.description = mc_elm.code
+        # cgmes_gen.EquipmentContainer: cgmes.Substation
+        cgmes_gen.initialP = mc_elm.P    # ?
+        cgmes_gen.maxOperatingP = mc_elm.Pmax
+        cgmes_gen.minOperatingP = mc_elm.Pmin
+        cgmes_gen.normalPF = mc_elm.Pf      # power_factor
+
+        # Synchronous Machine
+        cgmes_syn = cgmes.SynchronousMachine(rdfid=form_rdfid(mc_elm.idtag))
+        # cgmes_syn.description =
+        # cgmes_syn.name =
+        # cgmes_syn.aggregate =
+        # cgmes_syn.EquipmentContainer =
+        # cgmes_syn.RegulatingControl =
+        # cgmes_syn.ratedPowerFactor =
+        cgmes_syn.ratedS = mc_elm.Snom
+        cgmes_syn.GeneratingUnit = cgmes_gen     # linking them together
+        cgmes_gen.RotatingMachine = cgmes_syn    # linking them together
+        cgmes_syn.maxQ = mc_elm.Qmax
+        cgmes_syn.minQ = mc_elm.Qmin
+        # ...
+        cgmes_syn.referencePriority = '0'   # ?
+
+        cgmes_model.SynchronousMachine_list.append(cgmes_syn)
 
 # endregion
 
@@ -270,7 +413,7 @@ def gridcal_to_cgmes(gc_model: MultiCircuit, logger: DataLogger) -> CgmesCircuit
     get_cgmes_geograpical_regions(gc_model, cgmes_model, logger)
     get_cgmes_subgeograpical_regions(gc_model, cgmes_model, logger)
     
-    get_cgmes_base_voltages(gc_model, cgmes_model, logger)
+    get_cgmes_base_voltages(gc_model, cgmes_model, logger)  # TODO 46-45
 
     get_cgmes_substations(gc_model, cgmes_model, logger)
     get_cgmes_voltage_levels(gc_model, cgmes_model, logger)
@@ -278,5 +421,12 @@ def gridcal_to_cgmes(gc_model: MultiCircuit, logger: DataLogger) -> CgmesCircuit
     get_cgmes_cn_tn_nodes(gc_model, cgmes_model, logger)
 
     get_cgmes_loads(gc_model, cgmes_model, logger)
+    get_cgmes_equivalent_injections(gc_model, cgmes_model, logger)  #TODO Mate
+    get_cgmes_generators(gc_model, cgmes_model, logger)
+
+    # ac lines,     TODO Mate
+    # transformers, windings
+
+    # shunts
 
     return cgmes_model

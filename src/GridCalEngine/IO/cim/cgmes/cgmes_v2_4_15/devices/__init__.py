@@ -7,3 +7,11 @@ from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.sv_voltage import SvVoltag
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.conform_load import ConformLoad
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.load_response_characteristic import LoadResponseCharacteristic
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.terminal import Terminal
+from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.equivalent_injection import EquivalentInjection
+from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.generating_unit import GeneratingUnit
+from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.thermal_generating_unit import ThermalGeneratingUnit
+from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.hydro_generating_unit import HydroGeneratingUnit
+from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.solar_generating_unit import SolarGeneratingUnit
+from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.wind_generating_unit import WindGeneratingUnit
+from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.nuclear_generating_unit import NuclearGeneratingUnit
+from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.synchronous_machine import SynchronousMachine
