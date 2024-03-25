@@ -24,6 +24,7 @@ from GridCalEngine.Devices.Substation import Bus
 from GridCalEngine.Devices.Branches.line import Line
 from GridCalEngine.Devices.Branches.dc_line import DcLine
 from GridCalEngine.Devices.Branches.transformer import Transformer2W
+from GridCalEngine.Devices.Branches.winding import Winding
 from GridCalEngine.Devices.Branches.vsc import VSC
 from GridCalEngine.Devices.Branches.upfc import UPFC
 from GridCalEngine.Devices.Branches.hvdc_line import HvdcLine
@@ -123,7 +124,7 @@ class GridMapWidget(MapWidget):
 
     def colour_results(self,
                        buses: List[Bus],
-                       branches: List[Union[Line, DcLine, Transformer2W, Warning, UPFC, VSC]],
+                       branches: List[Union[Line, DcLine, Transformer2W, Winding, UPFC, VSC]],
                        hvdc_lines: List[HvdcLine],
                        Sbus: CxVec,
                        bus_active: IntVec,
