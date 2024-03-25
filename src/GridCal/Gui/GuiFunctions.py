@@ -2810,3 +2810,19 @@ def get_cim_tree_model(cim_model: CgmesCircuit):
         root_node.appendRow(class_child)
 
     return model
+
+
+def add_menu_entry(menu: QtWidgets.QMenu, text: str, icon_path: str, function_ptr):
+    """
+    Add a context menu entry
+    :param menu:
+    :param text:
+    :param icon_path:
+    :param function_ptr:
+    :return:
+    """
+    ra3 = menu.addAction(text)
+    edit_icon = QtGui.QIcon()
+    edit_icon.addPixmap(QtGui.QPixmap(icon_path))
+    ra3.setIcon(edit_icon)
+    ra3.triggered.connect(function_ptr)

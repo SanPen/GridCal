@@ -27,10 +27,11 @@ import pyproj
 from PySide6.QtCore import (Qt, QPoint, QSize, QPointF, QRect, QRectF, QMimeData, QIODevice, QByteArray,
                             QDataStream, QModelIndex)
 from PySide6.QtGui import (QIcon, QPixmap, QImage, QPainter, QStandardItemModel, QStandardItem, QColor, QPen,
-                           QDragEnterEvent, QDragMoveEvent, QDropEvent, QWheelEvent, QKeyEvent, QMouseEvent)
+                           QDragEnterEvent, QDragMoveEvent, QDropEvent, QWheelEvent, QKeyEvent, QMouseEvent,
+                           QContextMenuEvent)
 from PySide6.QtWidgets import (QGraphicsView, QListView, QTableView, QVBoxLayout, QHBoxLayout, QFrame,
                                QSplitter, QMessageBox, QAbstractItemView, QGraphicsScene, QGraphicsSceneMouseEvent,
-                               QGraphicsItem)
+                               QGraphicsItem, QMenu)
 from PySide6.QtSvg import QSvgGenerator
 
 from GridCalEngine.Devices.types import ALL_DEV_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES
@@ -76,7 +77,7 @@ from GridCal.Gui.BusBranchEditorWidget.generic_graphics import ACTIVE
 from GridCal.Gui.GeneralDialogues import InputNumberDialogue
 import GridCal.Gui.Visualization.visualization as viz
 import GridCal.Gui.Visualization.palettes as palettes
-from GridCal.Gui.GuiFunctions import ObjectsModel
+from GridCal.Gui.GuiFunctions import ObjectsModel, add_menu_entry
 from GridCal.Gui.messages import info_msg, error_msg, warning_msg, yes_no_question
 from matplotlib import pyplot as plt
 
@@ -1096,6 +1097,51 @@ class BusBranchEditorWidget(QSplitter):
             self.newCenterPos = center_scene
             self.displacement = self.newCenterPos - self.startPos
             self.editor_graphics_view.setDragMode(QGraphicsView.DragMode.NoDrag)
+
+    def contextMenuEvent(self, event: QContextMenuEvent):
+        """
+
+        :param event:
+        :return:
+        """
+        context_menu = QMenu(parent=self)
+
+        add_menu_entry(menu=context_menu,
+                       text="Center",
+                       icon_path=":/Icons/icons/resize.svg",
+                       function_ptr=lambda x: self.align_schematic())
+
+        add_menu_entry(menu=context_menu,
+                       text="Expand",
+                       icon_path=":/Icons/icons/plus (gray).svg",
+                       function_ptr=lambda x: self.expand_node_distances())
+
+        add_menu_entry(menu=context_menu,
+                       text="Contract",
+                       icon_path=":/Icons/icons/minus (gray).svg",
+                       function_ptr=lambda x: self.shrink_node_distances())
+
+        add_menu_entry(menu=context_menu,
+                       text="Auto-layout",
+                       icon_path=":/Icons/icons/automatic_layout.svg",
+                       function_ptr=lambda x: self.auto_layout(sel=""))
+
+        add_menu_entry(menu=context_menu,
+                       text="Layout from (lat, lon) data",
+                       icon_path=":/Icons/icons/map.svg",
+                       function_ptr=lambda x: self.fill_xy_from_lat_lon())
+
+        add_menu_entry(menu=context_menu,
+                       text="Zoom in",
+                       icon_path=":/Icons/icons/zoom_in.svg",
+                       function_ptr=lambda x: self.zoom_in())
+
+        add_menu_entry(menu=context_menu,
+                       text="Zoom out",
+                       icon_path=":/Icons/icons/zoom_out.svg",
+                       function_ptr=lambda x: self.zoom_out())
+
+        context_menu.exec(event.pos())
 
     def create_line(self, bus_from: Bus, bus_to: Bus, from_port: TerminalItem, to_port: TerminalItem):
         """

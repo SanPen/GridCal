@@ -456,7 +456,6 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
             self.color = ACTIVE['color']
             self.style = ACTIVE['style']
 
-
         self.setFlag(self.GraphicsItemFlag.ItemIsSelectable, True)
         self.setCursor(QCursor(Qt.PointingHandCursor))
 

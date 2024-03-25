@@ -18,7 +18,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Union
 from PySide6.QtCore import Qt, QRectF
 from PySide6.QtGui import QPen, QIcon, QPixmap, QBrush
-from PySide6.QtWidgets import QMenu, QGraphicsRectItem
+from PySide6.QtWidgets import QMenu, QGraphicsRectItem, QGraphicsSceneContextMenuEvent
 from GridCal.Gui.BusBranchEditorWidget.Substation.bus_graphics import TerminalItem
 from GridCal.Gui.BusBranchEditorWidget.Branches.line_editor import LineEditor
 from GridCal.Gui.messages import yes_no_question, warning_msg
@@ -108,7 +108,7 @@ class LineGraphicItem(LineGraphicTemplateItem):
                 # change state
                 self.enable_disable_toggle()
 
-    def contextMenuEvent(self, event):
+    def contextMenuEvent(self, event: QGraphicsSceneContextMenuEvent):
         """
         Show context menu
         @param event:

@@ -19,7 +19,7 @@ from typing import List, Tuple, Union
 
 import networkx as nx
 import numpy as np
-from PySide6 import QtGui, QtWidgets
+from PySide6 import QtGui, QtWidgets, QtCore, Qt
 from matplotlib import pyplot as plt
 from pandas.plotting import register_matplotlib_converters
 
@@ -41,7 +41,6 @@ from GridCal.Gui.Main.object_select_window import ObjectSelectWindow
 from GridCal.Gui.MapWidget.TileProviders.blue_marble import BlueMarbleTiles
 from GridCal.Gui.MapWidget.TileProviders.cartodb import CartoDbTiles
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
-
 
 ALL_EDITORS = Union[BusBranchEditorWidget, GridMapWidget, BusViewerWidget, NodeBreakerEditorWidget]
 ALL_EDITORS_NONE = Union[None, BusBranchEditorWidget, GridMapWidget, BusViewerWidget, NodeBreakerEditorWidget]
@@ -136,7 +135,7 @@ class DiagramsMain(CompiledArraysMain):
         self.ui.actionAdd_bus_vecinity_diagram.triggered.connect(self.add_bus_vecinity_diagram_from_diagram_selection)
         self.ui.actionAdd_map.triggered.connect(self.add_map_diagram)
         self.ui.actionAdd_substation_diagram.triggered.connect(self.add_node_breaker_diagram)
-        self.ui.actionRemove_selected_diagram.triggered.connect(self.remove_diagram)
+        # self.ui.actionRemove_selected_diagram.triggered.connect(self.remove_diagram)
         self.ui.actionBigger_nodes.triggered.connect(self.bigger_nodes)
         self.ui.actionSmaller_nodes.triggered.connect(self.smaller_nodes)
         self.ui.actionCenter_view.triggered.connect(self.center_nodes)
@@ -163,6 +162,12 @@ class DiagramsMain(CompiledArraysMain):
         # spinbox change
         self.ui.explosion_factor_doubleSpinBox.valueChanged.connect(self.explosion_factor_change)
         self.ui.defaultBusVoltageSpinBox.valueChanged.connect(self.default_voltage_change)
+
+        # context menu
+        self.ui.diagramsListView.customContextMenuRequested.connect(self.show_diagrams_context_menu)
+
+        # Set context menu policy to CustomContextMenu
+        self.ui.diagramsListView.setContextMenuPolicy(QtGui.Qt.ContextMenuPolicy.CustomContextMenu)
 
     def auto_layout(self):
         """
@@ -1496,3 +1501,36 @@ class DiagramsMain(CompiledArraysMain):
                 if diagram is not None:
                     if isinstance(diagram, BusBranchEditorWidget):
                         diagram.graphical_search(search_text=dlg.searchText.lower())
+
+    def show_diagrams_context_menu(self, pos: QtCore.QPoint):
+        """
+
+        :param pos:
+        :return:
+        """
+        context_menu = QtWidgets.QMenu(parent=self.ui.diagramsListView)
+
+        gf.add_menu_entry(menu=context_menu,
+                          text="New bus-branch",
+                          icon_path=":/Icons/icons/schematic.svg",
+                          function_ptr=self.add_complete_bus_branch_diagram)
+
+        gf.add_menu_entry(menu=context_menu,
+                          text="New bus-branch from selection",
+                          icon_path=":/Icons/icons/schematic.svg",
+                          function_ptr=self.new_bus_branch_diagram_from_selection)
+
+        gf.add_menu_entry(menu=context_menu,
+                          text="New map",
+                          icon_path=":/Icons/icons/map (add).svg",
+                          function_ptr=self.add_map_diagram)
+
+        context_menu.addSeparator()
+        gf.add_menu_entry(menu=context_menu,
+                          text="Remove",
+                          icon_path=":/Icons/icons/delete3.svg",
+                          function_ptr=self.remove_diagram)
+
+        # Convert global position to local position of the list widget
+        mapped_pos = self.ui.diagramsListView.viewport().mapToGlobal(pos)
+        context_menu.exec(mapped_pos)

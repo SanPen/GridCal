@@ -8445,11 +8445,8 @@ QProgressBar::chunk{
     </widget>
     <addaction name="actionAdd_general_bus_branch_diagram"/>
     <addaction name="menuBus_Branch_options"/>
-    <addaction name="actionAdd_bus_vecinity_diagram"/>
     <addaction name="actionAdd_map"/>
     <addaction name="actionAdd_substation_diagram"/>
-    <addaction name="separator"/>
-    <addaction name="actionRemove_selected_diagram"/>
     <addaction name="separator"/>
     <addaction name="actionZoom_in"/>
     <addaction name="actionZoom_out"/>
