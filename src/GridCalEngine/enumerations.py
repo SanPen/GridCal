@@ -871,6 +871,7 @@ class DeviceType(Enum):
     Transformer2WDevice = 'Transformer'
     Transformer3WDevice = 'Transformer3W'
     WindingDevice = 'Winding'
+    SeriesReactanceDevice = 'Series reactance'
     HVDCLineDevice = 'HVDC Line'
     DCLineDevice = 'DC line'
     VscDevice = 'VSC'
@@ -884,7 +885,7 @@ class DeviceType(Enum):
     UpfcDevice = 'UPFC'  # unified power flow controller
     ExternalGridDevice = 'External grid'
     LoadLikeDevice = 'Load like'
-
+    BranchGroupDevice = 'Branch group'
     LambdaDevice = "Loading from the base situation ($\lambda$)"
 
     PiMeasurementDevice = 'Pi Measurement'
@@ -907,7 +908,11 @@ class DeviceType(Enum):
     AreaDevice = 'Area'
     ZoneDevice = 'Zone'
     CountryDevice = 'Country'
+    CommunityDevice = 'Comunity'
+    RegionDevice = 'Region'
+    MunicipalityDevice = 'Municipality'
     BusBarDevice = 'BusBar'
+    VoltageLevelDevice = 'VoltageLevel'
 
     Technology = 'Technology'
     TechnologyGroup = 'Technology Group'
@@ -927,8 +932,6 @@ class DeviceType(Enum):
     GeneratorTechnologyAssociation = 'Generator Technology'
 
     DiagramDevice = 'Diagram'
-
-    GeneratorQCurve = 'Generator Q curve'
 
     FluidInjectionDevice = 'Fluid Injection'
     FluidTurbineDevice = 'Fluid Turbine'
@@ -952,6 +955,78 @@ class DeviceType(Enum):
         """
         try:
             return DeviceType[s]
+        except KeyError:
+            return s
+
+    @classmethod
+    def list(cls):
+        """
+
+        :return:
+        """
+        return list(map(lambda c: c.value, cls))
+
+
+class SubObjectType(Enum):
+    """
+    Types of objects that act as complicated variable types
+    """
+    Profile = "Profile"
+    GeneratorQCurve = 'Generator Q curve'
+    LineLocations = 'Line locations'
+    TapChanger = 'Tap changer'
+
+    def __str__(self) -> str:
+        return str(self.value)
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
+        try:
+            return SubObjectType[s]
+        except KeyError:
+            return s
+
+    @classmethod
+    def list(cls):
+        """
+
+        :return:
+        """
+        return list(map(lambda c: c.value, cls))
+
+
+class TapChangerTypes(Enum):
+    """
+    Types of objects that act as complicated variable types
+    """
+    NoRegulation = 'NoRegulation'
+    VoltageRegulation = "VoltageRegulation"
+    Asymmetrical = 'Asymmetrical'
+    Symmetrical = 'Symmetrical'
+
+    def __str__(self) -> str:
+        return str(self.value)
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
+        try:
+            return TapChangerTypes[s]
         except KeyError:
             return s
 
@@ -1426,7 +1501,7 @@ class ResultTypes(Enum):
     # investments evaluation
     InvestmentsReportResults = 'Investments evaluation report'
     InvestmentsParetoPlot = 'Pareto plot'
-    InvestmentsIterationsPlot = 'Itertions plot'
+    InvestmentsIterationsPlot = 'Iterations plot'
 
     def __str__(self):
         return self.value[0]

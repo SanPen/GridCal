@@ -231,7 +231,7 @@ class GeneratorQCurveEditor(QDialog):
         """
         Collect the data from the data model into the curve object
         """
-        self.q_curve.set_data(self.table_model.getData())
+        self.q_curve.set(self.table_model.getData())
         self.Snom = self.q_curve.get_Snom()
         self.Qmax = self.q_curve.get_Qmax()
         self.Qmin = self.q_curve.get_Qmin()
@@ -346,7 +346,7 @@ class GeneratorGraphicItem(InjectionTemplateGraphicItem):
             pos.x() + self.w / 2,
             pos.y() + 0,
             parent.x() + rect.width() / 2,
-            parent.y() + parent.terminal.y + 5,
+            parent.y() + parent.get_terminal().y + 5,
         )
         self.setZValue(-1)
         self.nexus.setZValue(-1)

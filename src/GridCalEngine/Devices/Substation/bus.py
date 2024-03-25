@@ -23,6 +23,7 @@ from GridCalEngine.enumerations import BusMode
 from GridCalEngine.Devices.Parents.editable_device import EditableDevice, DeviceType
 from GridCalEngine.Devices.Aggregation import Area, Zone, Country
 from GridCalEngine.Devices.Substation.substation import Substation
+from GridCalEngine.Devices.Substation.voltage_level import VoltageLevel
 from GridCalEngine.Devices.profile import Profile
 
 
@@ -49,6 +50,7 @@ class Bus(EditableDevice):
                  area: Area = None,
                  zone: Zone = None,
                  substation: Substation = None,
+                 voltage_level: VoltageLevel = None,
                  country: Country = None,
                  longitude=0.0,
                  latitude=0.0,
@@ -100,7 +102,7 @@ class Bus(EditableDevice):
 
         # minimum voltage limit
         self.Vmin = vmin
-        self.Vm_cost = 0
+        self.Vm_cost = 1.0
 
         # maximum voltage limit
         self.Vmax = vmax
@@ -135,6 +137,8 @@ class Bus(EditableDevice):
         self.zone: Zone = zone
 
         self.substation: Substation = substation
+
+        self._voltage_level: VoltageLevel = voltage_level
 
         # Bus type
         self.type = BusMode.PQ
@@ -200,8 +204,12 @@ class Bus(EditableDevice):
                       profile_name='')
         self.register(key='area', units='', tpe=DeviceType.AreaDevice, definition='Area of the bus', profile_name='')
         self.register(key='zone', units='', tpe=DeviceType.ZoneDevice, definition='Zone of the bus', profile_name='')
-        self.register(key='substation', units='', tpe=DeviceType.SubstationDevice, definition='Substation of the bus.',
-                      profile_name='')
+        self.register(key='substation', units='',
+                      tpe=DeviceType.SubstationDevice,
+                      definition='Substation of the bus.')
+        self.register(key='voltage_level', units='',
+                      tpe=DeviceType.VoltageLevelDevice,
+                      definition='Voltage level of the bus.')
         self.register(key='longitude', units='deg', tpe=float, definition='longitude of the bus.', profile_name='')
         self.register(key='latitude', units='deg', tpe=float, definition='latitude of the bus.', profile_name='')
 
@@ -221,6 +229,28 @@ class Bus(EditableDevice):
             self._active_prof.set(arr=val)
         else:
             raise Exception(str(type(val)) + 'not supported to be set into a active_prof')
+
+    @property
+    def voltage_level(self) -> Union[VoltageLevel, None]:
+        """
+        voltage_level getter
+        :return: Union[VoltageLevel, None]
+        """
+        return self._voltage_level
+
+    @voltage_level.setter
+    def voltage_level(self, val: Union[VoltageLevel, None]):
+        """
+        voltage_level getter
+        :param val: value
+        """
+        if isinstance(val, Union[VoltageLevel, None]):
+            self._voltage_level = val
+            if val.substation is not None and self.substation is None:
+                self.substation = val.substation
+        else:
+            raise Exception(str(type(
+                val)) + 'not supported to be set into a voltage_level of type Union[VoltageLevel, None]')
 
     def determine_bus_type(self) -> BusMode:
         """

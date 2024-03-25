@@ -55,6 +55,7 @@ def get_bus_data(circuit: MultiCircuit,
         bus_data.Vmin[i] = bus.Vmin
         bus_data.Vmax[i] = bus.Vmax
         bus_data.Vnom[i] = bus.Vnom
+        bus_data.cost_v[i] = bus.Vm_cost
         # TODO: Check that the devices are are changing the guess
         bus_data.Vbus[i] = bus.get_voltage_guess(None, use_stored_guess=use_stored_guess)
 
@@ -245,7 +246,6 @@ def get_load_data(circuit: MultiCircuit,
 
         else:
             data.I[ii] = complex(elm.Ir, elm.Ii)
-            data.Y[ii] = complex(elm.G, elm.B)
             data.active[ii] = elm.active
             data.cost[ii] = elm.Cost
 
@@ -1042,6 +1042,63 @@ def get_branch_data(circuit: MultiCircuit,
 
         data.control_mode[ii] = TransformerControlType.fixed
 
+        ii += 1
+
+    # Series reactance
+    for i, elm in enumerate(circuit.series_reactances):
+        # generic stuff
+        f = bus_dict[elm.bus_from]
+        t = bus_dict[elm.bus_to]
+
+        data.names[ii] = elm.name
+        data.idtag[ii] = elm.idtag
+
+        data.mttf[ii] = elm.mttf
+        data.mttr[ii] = elm.mttr
+
+        data.dc[ii] = 0
+
+        if time_series:
+            data.active[ii] = elm.active_prof[t_idx]
+            data.rates[ii] = elm.rate_prof[t_idx]
+            data.contingency_rates[ii] = elm.rate_prof[t_idx] * elm.contingency_factor_prof[t_idx]
+            data.protection_rates[ii] = elm.rate_prof[t_idx] * elm.protection_rating_factor_prof[t_idx]
+            data.overload_cost[ii] = elm.Cost_prof[t_idx]
+        else:
+            data.active[ii] = elm.active
+            data.rates[ii] = elm.rate
+            data.contingency_rates[ii] = elm.rate * elm.contingency_factor
+            data.protection_rates[ii] = elm.rate * elm.protection_rating_factor
+            data.overload_cost[ii] = elm.Cost
+
+        data.C_branch_bus_f[ii, f] = 1
+        data.C_branch_bus_t[ii, t] = 1
+        data.F[ii] = f
+        data.T[ii] = t
+
+        data.contingency_enabled[ii] = int(elm.contingency_enabled)
+        data.monitor_loading[ii] = int(elm.monitor_loading)
+
+        data.control_mode[ii] = TransformerControlType.fixed
+
+        data.virtual_tap_f[ii], data.virtual_tap_t[ii] = elm.get_virtual_taps()
+
+        if apply_temperature:
+            data.R[ii] = elm.R_corrected
+        else:
+            data.R[ii] = elm.R
+
+        if branch_tolerance_mode == BranchImpedanceMode.Lower:
+            data.R[ii] *= (1 - elm.tolerance / 100.0)
+        elif branch_tolerance_mode == BranchImpedanceMode.Upper:
+            data.R[ii] *= (1 + elm.tolerance / 100.0)
+
+        data.X[ii] = elm.X
+        data.R0[ii] = elm.R0
+        data.X0[ii] = elm.X0
+
+        data.R2[ii] = elm.R2
+        data.X2[ii] = elm.X2
         ii += 1
 
     return data

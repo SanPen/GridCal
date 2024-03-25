@@ -19,7 +19,6 @@ from typing import TYPE_CHECKING, Union
 from PySide6.QtCore import Qt, QRectF
 from PySide6.QtGui import QPen, QIcon, QPixmap, QBrush
 from PySide6.QtWidgets import QMenu, QGraphicsRectItem
-from GridCal.Gui.GeneralDialogues import InputNumberDialogue
 from GridCal.Gui.BusBranchEditorWidget.Substation.bus_graphics import TerminalItem
 from GridCal.Gui.BusBranchEditorWidget.Branches.line_editor import LineEditor
 from GridCal.Gui.messages import yes_no_question, warning_msg
@@ -37,22 +36,22 @@ class LineGraphicItem(LineGraphicTemplateItem):
     """
 
     def __init__(self,
-                 fromPort: TerminalItem,
-                 toPort: Union[TerminalItem, None],
+                 from_port: TerminalItem,
+                 to_port: Union[TerminalItem, None],
                  editor: BusBranchEditorWidget,
                  width=5,
                  api_object: Line = None):
         """
 
-        :param fromPort:
-        :param toPort:
+        :param from_port:
+        :param to_port:
         :param editor:
         :param width:
         :param api_object:
         """
         LineGraphicTemplateItem.__init__(self,
-                                         fromPort=fromPort,
-                                         toPort=toPort,
+                                         from_port=from_port,
+                                         to_port=to_port,
                                          editor=editor,
                                          width=width,
                                          api_object=api_object)
@@ -168,13 +167,13 @@ class LineGraphicItem(LineGraphicTemplateItem):
             spl.setIcon(spl_icon)
             spl.triggered.connect(self.split_line)
 
-            # menu.addSeparator()
+            spl = menu.addAction('Split line with in/out')
+            spl_icon = QIcon()
+            spl_icon.addPixmap(QPixmap(":/Icons/icons/divide.svg"))
+            spl.setIcon(spl_icon)
+            spl.triggered.connect(self.split_line_in_out)
 
-            re = menu.addAction('Reduce')
-            re_icon = QIcon()
-            re_icon.addPixmap(QPixmap(":/Icons/icons/grid_reduction.svg"))
-            re.setIcon(re_icon)
-            re.triggered.connect(self.reduce)
+            # menu.addSeparator()
 
             ra2 = menu.addAction('Delete')
             del_icon = QIcon()
@@ -207,7 +206,13 @@ class LineGraphicItem(LineGraphicTemplateItem):
             toupfc.setIcon(toupfc_icon)
             toupfc.triggered.connect(self.to_upfc)
 
-            menu.exec_(event.screenPos())
+            toser = menu.addAction('Series reactance')
+            toser_icon = QIcon()
+            toser_icon.addPixmap(QPixmap(":/Icons/icons/to_series_reactance.svg"))
+            toser.setIcon(toser_icon)
+            toser.triggered.connect(self.to_series_reactance)
+
+            menu.exec(event.screenPos())
         else:
             pass
 
@@ -297,39 +302,17 @@ class LineGraphicItem(LineGraphicTemplateItem):
 
     def split_line(self):
         """
-        Split line
+        Split the line
         :return:
         """
-        dlg = InputNumberDialogue(min_value=1.0,
-                                  max_value=99.0,
-                                  is_int=False,
-                                  title="Split line",
-                                  text="Enter the distance from the beginning of the \n"
-                                       "line as a percentage of the total length",
-                                  suffix=' %',
-                                  decimals=2,
-                                  default_value=50.0)
-        if dlg.exec_():
+        self.editor.split_line(line_graphics=self)
 
-            if dlg.is_accepted:
-                br1, br2, middle_bus = self.api_object.split_line(position=dlg.value / 100.0)
-
-                # add the graphical objects
-                # TODO: Figure this out
-                # middle_bus.graphic_obj = self.diagramScene.parent_.add_api_bus(middle_bus)
-                # br1.graphic_obj = self.diagramScene.parent_.add_api_line(br1)
-                # br2.graphic_obj = self.diagramScene.parent_.add_api_line(br2)
-                # # middle_bus.graphic_obj.redraw()
-                # br1.bus_from.graphic_obj.arrange_children()
-                # br2.bus_to.graphic_obj.arrange_children()
-
-                # add to gridcal
-                self.editor.circuit.add_bus(middle_bus)
-                self.editor.circuit.add_line(br1)
-                self.editor.circuit.add_line(br2)
-
-                # remove this line
-                self.remove(ask=False)
+    def split_line_in_out(self):
+        """
+        Split the line
+        :return:
+        """
+        self.editor.split_line_in_out(line_graphics=self)
 
     def to_transformer(self):
         """
@@ -355,7 +338,8 @@ class LineGraphicItem(LineGraphicTemplateItem):
         :return:
         """
         if self.api_object.convertible_to_vsc():
-            ok = yes_no_question('Are you sure that you want to convert this line into a VSC device?', 'Convert line')
+            ok = yes_no_question('Are you sure that you want to convert this line into a VSC device?',
+                                 'Convert line')
             if ok:
                 self.editor.convert_line_to_vsc(line=self.api_object, line_graphic=self)
         else:
@@ -366,6 +350,27 @@ class LineGraphicItem(LineGraphicTemplateItem):
         Convert this object to UPFC
         :return:
         """
-        ok = yes_no_question('Are you sure that you want to convert this line into a UPFC device?', 'Convert line')
+        ok = yes_no_question('Are you sure that you want to convert this line into a UPFC device?',
+                             'Convert line')
         if ok:
             self.editor.convert_line_to_upfc(line=self.api_object, line_graphic=self)
+
+    def to_series_reactance(self):
+        """
+        Convert this object to series reactance
+        :return:
+        """
+        ok = yes_no_question('Are you sure that you want to convert this line into a series reactance device?',
+                             'Convert line')
+        if ok:
+            self.editor.convert_line_to_series_reactance(line=self.api_object, line_graphic=self)
+
+    def __str__(self):
+
+        if self.api_object is None:
+            return f"Line graphics {hex(id(self))}"
+        else:
+            return f"Graphics of {self.api_object.name} [{hex(id(self))}]"
+
+    def __repr__(self):
+        return str(self)

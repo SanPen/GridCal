@@ -255,11 +255,11 @@ class InputsAnalysisResults(ResultsTemplate):
         d = {elm: i for i, elm in enumerate(self.grid.substations)}
         return np.array([d.get(bus.substation, "") for bus in self.grid.buses])
 
-    def get_collection_attr_series(self, elms, attr, aggregation="Area"):
+    def get_collection_attr_series(self, elms, magnitude: str, aggregation="Area"):
         """
 
         :param elms:
-        :param attr:
+        :param magnitude:snaphot property name
         :param aggregation:
         :return:
         """
@@ -292,7 +292,7 @@ class InputsAnalysisResults(ResultsTemplate):
         for elm in elms:
             i = self.bus_dict[elm.bus]
             i2 = d2[i]
-            x[:, i2] += getattr(elm, attr)
+            x[:, i2] += elm.get_profile(magnitude=magnitude).toarray()
 
         return x, headers
 
@@ -334,7 +334,7 @@ class InputsAnalysisResults(ResultsTemplate):
 
         elif result_type == ResultTypes.AreaGenerationAnalysis:
             generators = self.grid.get_generators() + self.grid.get_batteries() + self.grid.get_static_generators()
-            y, columns = self.get_collection_attr_series(generators, 'P_prof', 'Area')
+            y, columns = self.get_collection_attr_series(generators, 'P', 'Area')
 
             return ResultsTable(data=y,
                                 index=pd.to_datetime(self.grid.time_profile),
@@ -346,7 +346,7 @@ class InputsAnalysisResults(ResultsTemplate):
 
         elif result_type == ResultTypes.ZoneGenerationAnalysis:
             generators = self.grid.get_generators() + self.grid.get_batteries() + self.grid.get_static_generators()
-            y, columns = self.get_collection_attr_series(generators, 'P_prof', 'Zone')
+            y, columns = self.get_collection_attr_series(generators, 'P', 'Zone')
 
             return ResultsTable(data=y,
                                 index=pd.to_datetime(self.grid.time_profile),
@@ -358,7 +358,7 @@ class InputsAnalysisResults(ResultsTemplate):
 
         elif result_type == ResultTypes.CountryGenerationAnalysis:
             generators = self.grid.get_generators() + self.grid.get_batteries() + self.grid.get_static_generators()
-            y, columns = self.get_collection_attr_series(generators, 'P_prof', 'Country')
+            y, columns = self.get_collection_attr_series(generators, 'P', 'Country')
 
             return ResultsTable(data=y,
                                 index=pd.to_datetime(self.grid.time_profile),
@@ -369,7 +369,7 @@ class InputsAnalysisResults(ResultsTemplate):
                                 units="(MW)")
 
         elif result_type == ResultTypes.AreaLoadAnalysis:
-            y, columns = self.get_collection_attr_series(self.grid.get_loads(), 'P_prof', 'Area')
+            y, columns = self.get_collection_attr_series(self.grid.get_loads(), 'P', 'Area')
             return ResultsTable(data=y,
                                 index=pd.to_datetime(self.grid.time_profile),
                                 idx_device_type=DeviceType.TimeDevice,
@@ -379,7 +379,7 @@ class InputsAnalysisResults(ResultsTemplate):
                                 units="(MW)")
 
         elif result_type == ResultTypes.ZoneLoadAnalysis:
-            y, columns = self.get_collection_attr_series(self.grid.get_loads(), 'P_prof', 'Zone')
+            y, columns = self.get_collection_attr_series(self.grid.get_loads(), 'P', 'Zone')
             return ResultsTable(data=y,
                                 index=pd.to_datetime(self.grid.time_profile),
                                 idx_device_type=DeviceType.TimeDevice,
@@ -389,7 +389,7 @@ class InputsAnalysisResults(ResultsTemplate):
                                 units="(MW)")
 
         elif result_type == ResultTypes.CountryLoadAnalysis:
-            y, columns = self.get_collection_attr_series(self.grid.get_loads(), 'P_prof', 'Country')
+            y, columns = self.get_collection_attr_series(self.grid.get_loads(), 'P', 'Country')
             return ResultsTable(data=y,
                                 index=pd.to_datetime(self.grid.time_profile),
                                 idx_device_type=DeviceType.TimeDevice,
@@ -400,9 +400,9 @@ class InputsAnalysisResults(ResultsTemplate):
 
         elif result_type == ResultTypes.AreaBalanceAnalysis:
             generators = self.grid.get_generators() + self.grid.get_batteries() + self.grid.get_static_generators()
-            yg, columns = self.get_collection_attr_series(generators, 'P_prof', 'Area')
+            yg, columns = self.get_collection_attr_series(generators, 'P', 'Area')
 
-            yl, columns = self.get_collection_attr_series(self.grid.get_loads(), 'P_prof', 'Area')
+            yl, columns = self.get_collection_attr_series(self.grid.get_loads(), 'P', 'Area')
 
             y = yg - yl
 
@@ -416,9 +416,9 @@ class InputsAnalysisResults(ResultsTemplate):
 
         elif result_type == ResultTypes.ZoneBalanceAnalysis:
             generators = self.grid.get_generators() + self.grid.get_batteries() + self.grid.get_static_generators()
-            yg, columns = self.get_collection_attr_series(generators, 'P_prof', 'Zone')
+            yg, columns = self.get_collection_attr_series(generators, 'P', 'Zone')
 
-            yl, columns = self.get_collection_attr_series(self.grid.get_loads(), 'P_prof', 'Zone')
+            yl, columns = self.get_collection_attr_series(self.grid.get_loads(), 'P', 'Zone')
 
             y = yg - yl
 
@@ -432,9 +432,9 @@ class InputsAnalysisResults(ResultsTemplate):
 
         elif result_type == ResultTypes.CountryBalanceAnalysis:
             generators = self.grid.get_generators() + self.grid.get_batteries() + self.grid.get_static_generators()
-            yg, columns = self.get_collection_attr_series(generators, 'P_prof', 'Country')
+            yg, columns = self.get_collection_attr_series(generators, 'P', 'Country')
 
-            yl, columns = self.get_collection_attr_series(self.grid.get_loads(), 'P_prof', 'Country')
+            yl, columns = self.get_collection_attr_series(self.grid.get_loads(), 'P', 'Country')
 
             y = yg - yl
 

@@ -92,7 +92,7 @@ class PowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
             self.report_text('Time series at ' + str(self.grid.time_profile[t]) + '...')
             self.report_progress2(it, len(time_indices))
 
-            # TODO: pass the results by reference to be filled inside
+            # run power flow
             pf_res = pf_worker.multi_island_pf(multi_circuit=self.grid,
                                                t=t,
                                                options=self.options,

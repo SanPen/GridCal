@@ -20,7 +20,7 @@ import pandas as pd
 from typing import Union
 from matplotlib import pyplot as plt
 from GridCalEngine.basic_structures import Logger
-from GridCalEngine.enumerations import DeviceType, BuildStatus
+from GridCalEngine.enumerations import DeviceType, BuildStatus, SubObjectType
 from GridCalEngine.Devices.Aggregation.technology import Technology
 from GridCalEngine.Devices.Parents.generator_parent import GeneratorParent
 from GridCalEngine.Devices.Injections.generator_q_curve import GeneratorQCurve
@@ -170,7 +170,7 @@ class Generator(GeneratorParent):
         self.q_curve = GeneratorQCurve()
 
         if q_points is not None:
-            self.q_curve.set_data(np.array(q_points))
+            self.q_curve.set(np.array(q_points))
             self.custom_q_points = True
         else:
             self.q_curve.make_default_q_curve(self.Snom, self.qmin_set, self.qmax_set, n=1)
@@ -221,7 +221,7 @@ class Generator(GeneratorParent):
         self.register(key='Qmax', units='MVAr', tpe=float, definition='Maximum reactive power.')
         self.register(key='use_reactive_power_curve', units='', tpe=bool,
                       definition='Use the reactive power capability curve?')
-        self.register(key='q_curve', units='MVAr', tpe=DeviceType.GeneratorQCurve,
+        self.register(key='q_curve', units='MVAr', tpe=SubObjectType.GeneratorQCurve,
                       definition='Capability curve data (double click on the generator to edit)',
                       editable=False, display=False)
 

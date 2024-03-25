@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
+
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.equipment import Equipment
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile, GeneratorControlSource, UnitSymbol, Currency
@@ -144,15 +146,15 @@ class GeneratingUnit(Equipment):
 			name='startupCost',
 			class_type=float,
 			multiplier=UnitMultiplier.none,
-			unit=Currency.None,
-			description='''Amount of money.''',
+			unit=UnitSymbol.Money,
+			description='Amount of money.',
 			profiles=[]
 		)
 		self.register_property(
 			name='variableCost',
 			class_type=float,
 			multiplier=UnitMultiplier.none,
-			unit=Currency.None,
+			unit=UnitSymbol.Money,
 			description='''Amount of money.''',
 			profiles=[]
 		)

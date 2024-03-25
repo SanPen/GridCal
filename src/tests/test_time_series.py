@@ -41,12 +41,12 @@ def test_time_series():
     data = open_data_frame_from_zip(file_name_zip=os.path.join('data', 'results', 'Results_IEEE39_1W.zip'),
                                     file_name='Time series Bus voltage module.csv')
 
-    assert np.isclose(np.abs(ts.results.voltage), data.values[:96]).all()
+    assert np.allclose(np.abs(ts.results.voltage), data.values[:96])
 
     data = open_data_frame_from_zip(file_name_zip=os.path.join('data', 'results', 'Results_IEEE39_1W.zip'),
                                     file_name='Time series Branch active power "from".csv')
 
-    assert np.isclose(np.real(ts.results.Sf), data.values[:96]).all()
+    assert np.allclose(np.real(ts.results.Sf), data.values[:96])
 
 
 if __name__ == '__main__':

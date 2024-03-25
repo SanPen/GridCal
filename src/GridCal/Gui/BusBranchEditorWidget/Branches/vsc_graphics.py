@@ -31,20 +31,20 @@ class VscGraphicItem(LineGraphicTemplateItem):
     Graphics item for the VSC converter
     """
 
-    def __init__(self, fromPort: TerminalItem, toPort: TerminalItem,
+    def __init__(self, from_port: TerminalItem, to_port: TerminalItem,
                  editor: BusBranchEditorWidget, width=5,
                  api_object: VSC = None):
         """
 
-        :param fromPort:
-        :param toPort:
+        :param from_port:
+        :param to_port:
         :param editor:
         :param width:
         :param api_object:
         """
         LineGraphicTemplateItem.__init__(self=self,
-                                         fromPort=fromPort,
-                                         toPort=toPort,
+                                         from_port=from_port,
+                                         to_port=to_port,
                                          editor=editor,
                                          width=width,
                                          api_object=api_object)
@@ -100,14 +100,6 @@ class VscGraphicItem(LineGraphicTemplateItem):
             ra5_icon.addPixmap(QPixmap(":/Icons/icons/assign_to_profile.svg"))
             ra5.setIcon(ra5_icon)
             ra5.triggered.connect(self.assign_status_to_profile)
-
-            menu.addSeparator()
-
-            re = menu.addAction('Reduce')
-            re_icon = QIcon()
-            re_icon.addPixmap(QPixmap(":/Icons/icons/grid_reduction.svg"))
-            re.setIcon(re_icon)
-            re.triggered.connect(self.reduce)
 
             menu.exec_(event.screenPos())
         else:

@@ -868,6 +868,7 @@ def parse_transformers(circuit: MultiCircuit, block: CompressedJsonStruct, buses
     :param circuit:
     :param block:
     :param buses_dict:
+    :param logger:
     :return:
     """
     # ibus	 "jbus"	 "kbus"	 "ckt"	 "cw"	 "cz"	 "cm"	 "mag1"	 "mag2"	 "nmet"

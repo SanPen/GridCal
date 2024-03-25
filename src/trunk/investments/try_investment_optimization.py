@@ -168,11 +168,13 @@ if __name__ == "__main__":
     import cProfile
 
     absolute_path = os.path.abspath(
-        os.path.join(os.getcwd(), 'Grids_and_profiles', 'grids', 'ding0_test_network_2_mvlv.gridcal'))
+        os.path.join(os.getcwd(), os.pardir, os.pardir, os.pardir, 'Grids_and_profiles', 'grids',
+                     'ding0_test_network_2_mvlv.gridcal'))
     grid = FileOpen(absolute_path).open()
 
     pf_options = sim.PowerFlowOptions()
-    mvrsm = InvestmentEvaluationMethod.MVRSM_multi
+    # mvrsm = InvestmentEvaluationMethod.MVRSM_multi
+    mvrsm = InvestmentEvaluationMethod.MVRSM
 
     print(4*len(grid.investments))
     options = invsim.InvestmentsEvaluationOptions(solver=mvrsm, max_eval=4*len(grid.investments), pf_options=pf_options)

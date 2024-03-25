@@ -17,11 +17,12 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 from PySide6.QtGui import QIcon, QPixmap
-from PySide6.QtWidgets import QMenu, QGraphicsScene
+from PySide6.QtWidgets import QMenu
 from GridCal.Gui.BusBranchEditorWidget.Branches.line_graphics_template import LineGraphicTemplateItem
 from GridCal.Gui.BusBranchEditorWidget.Substation.bus_graphics import TerminalItem
 from GridCal.Gui.messages import yes_no_question
-from GridCal.Gui.BusBranchEditorWidget.Branches.transformer_editor import TransformerEditor, reverse_transformer_short_circuit_study
+from GridCal.Gui.BusBranchEditorWidget.Branches.transformer_editor import (TransformerEditor,
+                                                                           reverse_transformer_short_circuit_study)
 from GridCalEngine.Devices.Branches.transformer import Transformer2W, TransformerType
 from GridCalEngine.enumerations import DeviceType
 
@@ -34,20 +35,20 @@ class TransformerGraphicItem(LineGraphicTemplateItem):
     TransformerGraphicItem
     """
 
-    def __init__(self, fromPort: TerminalItem, toPort: TerminalItem,
+    def __init__(self, from_port: TerminalItem, to_port: TerminalItem,
                  editor: BusBranchEditorWidget, width=5,
                  api_object: Transformer2W = None):
         """
 
-        :param fromPort:
-        :param toPort:
+        :param from_port:
+        :param to_port:
         :param editor:
         :param width:
         :param api_object:
         """
         LineGraphicTemplateItem.__init__(self=self,
-                                         fromPort=fromPort,
-                                         toPort=toPort,
+                                         from_port=from_port,
+                                         to_port=to_port,
                                          editor=editor,
                                          width=width,
                                          api_object=api_object)
@@ -72,12 +73,6 @@ class TransformerGraphicItem(LineGraphicTemplateItem):
             del_icon.addPixmap(QPixmap(":/Icons/icons/delete3.svg"))
             ra2.setIcon(del_icon)
             ra2.triggered.connect(self.remove)
-
-            re = menu.addAction('Reduce')
-            re_icon = QIcon()
-            re_icon.addPixmap(QPixmap(":/Icons/icons/grid_reduction.svg"))
-            re.setIcon(re_icon)
-            re.triggered.connect(self.reduce)
 
             ra3 = menu.addAction('Editor')
             edit_icon = QIcon()

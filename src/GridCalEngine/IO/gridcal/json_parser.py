@@ -25,6 +25,7 @@ from GridCalEngine.IO.gridcal.contingency_parser import get_contingencies_dict, 
 from GridCalEngine.IO.gridcal.generic_io_functions import CustomJSONizer
 import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.profile import Profile
+from GridCalEngine.Devices.Parents.editable_device import EditableDevice
 from GridCalEngine.enumerations import DeviceType, ConverterControlType, HvdcControlType, BuildStatus
 
 
@@ -105,7 +106,7 @@ def json_to_profile(d: Dict[str, Any]) -> Profile:
         raise Exception("The passed value is not a list or dictionary definition")
 
 
-def get_profiles_dict(elm: dev.EditableDevice) -> Dict[str, Any]:
+def get_profiles_dict(elm: EditableDevice) -> Dict[str, Any]:
     """
 
     :return:
@@ -574,10 +575,7 @@ def parse_json_data_v3(data: dict, logger: Logger):
                                 idtag=str(jentry['id']),
                                 G=float(jentry['g']),
                                 B=float(jentry['b']),
-                                Bmax=Bmax,
-                                Bmin=Bmin,
-                                active=bool(jentry['active']),
-                                controlled=bool(jentry['controlled'])
+                                active=bool(jentry['active'])
                                 )
 
                 if has_profiles:
@@ -739,8 +737,6 @@ def parse_json_data_v3(data: dict, logger: Logger):
                                         active=bool(entry['active']),
                                         tap_module=float(entry['tap_module']),
                                         tap_phase=float(entry['tap_angle']),
-                                        bus_to_regulated=bool(
-                                            entry['bus_to_regulated']) if 'bus_to_regulated' in entry else False,
                                         vset=float(entry['vset']),
                                         temp_base=float(entry['base_temperature']),
                                         temp_oper=float(entry['operational_temperature']),

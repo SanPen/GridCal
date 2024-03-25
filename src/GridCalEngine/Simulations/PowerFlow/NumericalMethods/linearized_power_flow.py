@@ -107,15 +107,14 @@ def lacpf(Ybus, Ys, S0: CxVec, I0: CxVec, V0: CxVec, pq: IntVec, pv: IntVec) -> 
 
     Linearized AC Load Flow Applied to Analysis in Electric Power Systems
         by: P. Rossoni, W. M da Rosa and E. A. Belati
-    Args:
-        Ybus: Admittance matrix
-        Ys: Admittance matrix of the series elements
-        S0: Power Injections vector of all the nodes
-        V0: Set voltages of all the nodes (used for the slack and PV nodes)
-        pq: list of indices of the pq nodes
-        pv: list of indices of the pv nodes
-
-    Returns: Voltage vector, converged?, error, calculated power and elapsed time
+    :param Ybus: Admittance matrix
+    :param Ys: Admittance matrix of the series elements
+    :param S0: Power Injections vector of all the nodes
+    :param I0: Current Injections vector of all the nodes
+    :param V0: Set voltages of all the nodes (used for the slack and PV nodes)
+    :param pq: list of indices of the pq nodes
+    :param pv: list of indices of the pv nodes
+    :return: NumericPowerFlowResults
     """
 
     start = time.time()

@@ -64,7 +64,7 @@ dependencies = ["PySide6>=6.5.0",  # for now, 5.14 breaks the UI generation for 
                 "pytest>=3.8",
                 "h5py>=2.9.0",
                 "numba>=0.54",
-                "pyarrow",
+                "pyarrow>=15",
                 "fastparquet",
                 "pyqtdarktheme",
                 "ortools",

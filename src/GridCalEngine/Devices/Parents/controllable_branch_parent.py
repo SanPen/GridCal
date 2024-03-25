@@ -19,7 +19,8 @@ import numpy as np
 from typing import Union
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
-from GridCalEngine.enumerations import TransformerControlType, BuildStatus, TapModuleControl, TapAngleControl
+from GridCalEngine.enumerations import (TransformerControlType, BuildStatus, TapModuleControl, TapAngleControl,
+                                        SubObjectType)
 from GridCalEngine.Devices.Parents.branch_parent import BranchParent
 from GridCalEngine.Devices.Branches.tap_changer import TapChanger
 from GridCalEngine.Devices.Parents.editable_device import DeviceType
@@ -177,14 +178,14 @@ class ControllableBranchParent(BranchParent):
         self.alpha = alpha
 
         # tap changer object
-        self.tap_changer = TapChanger()
+        self._tap_changer = TapChanger()
 
         # Tap module
         if tap_module != 0:
             self.tap_module = tap_module
-            self.tap_changer.set_tap(self.tap_module)
+            self._tap_changer.set_tap_module(self.tap_module)
         else:
-            self.tap_module = self.tap_changer.get_tap()
+            self.tap_module = self._tap_changer.get_tap_module()
 
         self._tap_module_prof = Profile(default_value=tap_module)
 
@@ -223,6 +224,9 @@ class ControllableBranchParent(BranchParent):
         self.register(key='tolerance', units='%', tpe=float,
                       definition='Tolerance expected for the impedance values% '
                                  'is expected for transformers0% for lines.')
+
+        self.register(key='tap_changer', units='', tpe=SubObjectType.TapChanger, definition='Tap changer object',
+                      editable=False)
 
         self.register(key='tap_module', units='', tpe=float, definition='Tap changer module, it a value close to 1.0',
                       profile_name='tap_module_prof', old_names=['tap'])
@@ -318,6 +322,21 @@ class ControllableBranchParent(BranchParent):
             raise Exception(str(type(val)) + 'not supported to be set into a temp_oper_prof')
 
     @property
+    def tap_changer(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._tap_changer
+
+    @tap_changer.setter
+    def tap_changer(self, val: TapChanger):
+        if isinstance(val, TapChanger):
+            self._tap_changer = val
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a tap_changer')
+
+    @property
     def R_corrected(self):
         """
         Returns a temperature corrected resistance based on a formula provided by:
@@ -383,6 +402,3 @@ class ControllableBranchParent(BranchParent):
             self.tap_changer.set_tap(self.tap_module)
         else:
             self.tap_module = self.tap_changer.get_tap()
-
-
-

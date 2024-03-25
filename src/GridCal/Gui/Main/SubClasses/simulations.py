@@ -205,6 +205,7 @@ class SimulationsMain(TimeEventsMain):
         self.ui.actionFuse_devices.triggered.connect(self.fuse_devices)
         self.ui.actionInvestments_evaluation.triggered.connect(self.run_investments_evaluation)
         self.ui.actionProcess_topology.triggered.connect(self.run_topology_processor)
+        self.ui.actionUse_clustering.triggered.connect(self.activate_clustering)
 
         # combobox change
         self.ui.engineComboBox.currentTextChanged.connect(self.modify_ui_options_according_to_the_engine)
@@ -477,10 +478,13 @@ class SimulationsMain(TimeEventsMain):
         self.ui.resultsTableView.setModel(None)
         self.ui.resultsLogsTreeView.setModel(None)
 
-    def get_compatible_areas_from_to(self) -> Tuple[bool,
-    List[Tuple[int, dev.Bus]], List[Tuple[int, dev.Bus]],
-    List[Tuple[int, object, float]], List[Tuple[int, object, float]],
-    List[dev.Area], List[dev.Area]]:
+    def get_compatible_areas_from_to(self) -> Tuple[
+        bool,
+        List[Tuple[int, dev.Bus]],
+        List[Tuple[int, dev.Bus]],
+        List[Tuple[int, object, float]],
+        List[Tuple[int, object, float]],
+        List[dev.Area], List[dev.Area]]:
         """
         Get the lists that help defining the inter area objects
         :return: success?,
@@ -1797,7 +1801,7 @@ class SimulationsMain(TimeEventsMain):
             areas_to = None
 
         ips_method = self.ips_solvers_dict[self.ui.ips_method_comboBox.currentText()]
-        ips_tolerance = self.ui.ips_tolerance_spinBox.value()
+        ips_tolerance = 1.0 / (10.0 ** self.ui.ips_tolerance_spinBox.value())
         ips_iterations = self.ui.ips_iterations_spinBox.value()
         ips_trust_radius = self.ui.ips_trust_radius_doubleSpinBox.value()
         ips_init_with_pf = self.ui.ips_initialize_with_pf_checkBox.isChecked()
@@ -2332,7 +2336,7 @@ class SimulationsMain(TimeEventsMain):
 
             colours = viz.get_n_colours(n=len(drv.groups_by_index))
 
-            bus_colours = [QtGui.QColor] * len(self.circuit.buses)
+            bus_colours = np.empty(len(self.circuit.buses), dtype=object)
             tool_tips = [""] * len(self.circuit.buses)
             for c, group in enumerate(drv.groups_by_index):
                 for i in group:
@@ -2667,3 +2671,31 @@ class SimulationsMain(TimeEventsMain):
 
         if not self.session.is_anything_running():
             self.UNLOCK()
+
+    def activate_clustering(self):
+        """
+        When activating the use of clustering, also activate time series
+        :return:
+        """
+        if self.ui.actionUse_clustering.isChecked():
+
+            # check if there are clustering results yet
+            _, clustering_results = self.session.get_driver_results(sim.SimulationTypes.ClusteringAnalysis_run)
+
+            if clustering_results is not None:
+                n = len(clustering_results.time_indices)
+
+                if n != self.ui.cluster_number_spinBox.value():
+                    error_msg("The number of clusters in the stored results is different from the specified :(\n"
+                              "Run another clustering analysis.")
+                    self.ui.actionUse_clustering.setChecked(False)
+                    return None
+                else:
+                    # all ok
+                    self.ui.actionactivate_time_series.setChecked(True)
+                    return None
+            else:
+                # no results ...
+                warning_msg("There are no clustering results.")
+                self.ui.actionUse_clustering.setChecked(False)
+                return None

@@ -56,8 +56,15 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
       - description
     """
 
-    def __init__(self, parent=None, index=0, editor: BusBranchEditorWidget = None, bus: Bus = None,
-                 h: int = 20, w: int = 80, x: int = 0, y: int = 0):
+    def __init__(self,
+                 parent=None,
+                 index=0,
+                 editor: BusBranchEditorWidget = None,
+                 bus: Bus = None,
+                 h: int = 20,
+                 w: int = 80,
+                 x: int = 0,
+                 y: int = 0):
         """
 
         :param parent:
@@ -109,16 +116,20 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         self.label.setDefaultTextColor(ACTIVE['text'])
         self.label.setScale(FONT_SCALE)
 
+        # Label:
+        # self.results_label = QtWidgets.QGraphicsTextItem(self)
+        # self.results_label.setDefaultTextColor(ACTIVE['text'])
+
         # square
         self.tile = QtWidgets.QGraphicsRectItem(0, 0, self.min_h, self.min_h, self)
         self.tile.setOpacity(0.7)
 
         # connection terminals the block
-        self.terminal = TerminalItem('s', parent=self, editor=self.editor)  # , h=self.h))
-        self.terminal.setPen(QPen(Qt.transparent, self.pen_width, self.style, Qt.RoundCap, Qt.RoundJoin))
+        self._terminal = TerminalItem('s', parent=self, editor=self.editor)  # , h=self.h))
+        self._terminal.setPen(QPen(Qt.transparent, self.pen_width, self.style, Qt.RoundCap, Qt.RoundJoin))
 
         # Create corner for resize:
-        self.sizer = HandleItem(self.terminal)
+        self.sizer = HandleItem(self._terminal)
         self.sizer.setPos(self.w, self.h)
         self.sizer.posChangeCallbacks.append(self.change_size)  # Connect the callback
         self.sizer.setFlag(self.GraphicsItemFlag.ItemIsMovable)
@@ -138,7 +149,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
 
         self.set_position(x, y)
 
-    def recolour_mode(self):
+    def recolour_mode(self) -> None:
         """
         Change the colour according to the system theme
         """
@@ -154,6 +165,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
             self.style = ACTIVE['style']
 
         self.label.setDefaultTextColor(ACTIVE['text'])
+        # self.results_label.setDefaultTextColor(ACTIVE['text'])
         self.set_tile_color(self.color)
 
         for e in self.shunt_children:
@@ -183,20 +195,21 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
                                            r=self.rotation(),
                                            graphic_object=self)
 
-    def add_big_marker(self, color=Qt.red, tool_tip_text=""):
+    def add_big_marker(self, color: Union[None, QColor] = Qt.red, tool_tip_text: str = ""):
         """
         Add a big marker to the bus
         :param color: Qt Color ot the marker
         :param tool_tip_text: tool tip text to display
-        :return:
         """
-        if self.big_marker is None:
-            self.big_marker = QtWidgets.QGraphicsEllipseItem(0, 0, 180, 180, parent=self)
+        if color is not None:
+            if self.big_marker is None:
+                self.big_marker = QtWidgets.QGraphicsEllipseItem(0, 0, 180, 180, parent=self)
+
             self.big_marker.setBrush(color)
             self.big_marker.setOpacity(0.5)
             self.big_marker.setToolTip(tool_tip_text)
 
-    def delete_big_marker(self):
+    def delete_big_marker(self) -> None:
         """
         Delete the big marker
         """
@@ -204,7 +217,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
             self.editor.remove_from_scene(self.big_marker)
             self.big_marker = None
 
-    def set_position(self, x, y):
+    def set_position(self, x: int, y: int) -> None:
         """
         Set the bus x, y position
         :param x: x in pixels
@@ -216,17 +229,20 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
             y = 0
         self.setPos(QPoint(int(x), int(y)))
 
-    def set_tile_color(self, brush):
+    def set_tile_color(self, brush: QBrush) -> None:
         """
         Set the color of the title
         Args:
             brush:  Qt Color
         """
         self.tile.setBrush(brush)
-        self.terminal.setBrush(brush)
+        self._terminal.setBrush(brush)
 
-    def merge(self, other_bus_graphic):
-
+    def merge(self, other_bus_graphic: "BusGraphicItem") -> None:
+        """
+        Merge another BusGraphicItem into this
+        :param other_bus_graphic: BusGraphicItem
+        """
         self.shunt_children += other_bus_graphic.shunt_children
 
     def update(self, rect: Union[QRectF, QRect] = ...):
@@ -236,17 +252,21 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         """
         self.change_size(self.w, self.h)
 
-    def set_height(self, h):
-
+    def set_height(self, h: int):
+        """
+        Set the height of the
+        :param h:
+        :return:
+        """
         self.setRect(0.0, 0.0, self.w, h)
         self.h = h
 
     def change_size(self, w: int, h: Union[None, int] = None):
         """
         Resize block function
-        @param w:
-        @param h:
-        @return:
+        :param w:
+        :param h:
+        :return:
         """
         # Limit the block size to the minimum size:
         if h is None:
@@ -259,18 +279,22 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         self.h = h
         self.w = w
 
+        y0 = h + self.offset
+        x0 = 0
+
         # center label:
         rect = self.label.boundingRect()
         lw, lh = rect.width(), rect.height()
         lx = (w - lw) / 2
         ly = (h - lh) / 2 - lh * (FONT_SCALE - 1)
-        self.label.setPos(lx, ly)
+        # self.label.setPos(lx, ly)
+        self.label.setPos(w, ly - 40)
+
+        # self.results_label.setPos(w + 20, ly)
 
         # lower
-        y0 = h + self.offset
-        x0 = 0
-        self.terminal.setPos(x0, y0)
-        self.terminal.setRect(0, 0, w, 10)
+        self._terminal.setPos(x0, y0)
+        self._terminal.setRect(0, 0, w, 10)
 
         # Set text
         if self.api_object is not None:
@@ -289,7 +313,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
 
         return w, h
 
-    def arrange_children(self):
+    def arrange_children(self) -> None:
         """
         This function sorts the load and generators icons
         Returns:
@@ -304,7 +328,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
             x += inc_x
 
         # Arrange line positions
-        self.terminal.process_callbacks(self.pos() + self.terminal.pos())
+        self._terminal.process_callbacks(self.pos() + self._terminal.pos())
 
     def create_children_widgets(self, injections_by_tpe: Dict[DeviceType, List[INJECTION_DEVICE_TYPES]]):
         """
@@ -522,11 +546,11 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         """
         self.editor.set_active_status_to_profile(self.api_object)
 
-    def delete_all_connections(self):
+    def delete_all_connections(self) -> None:
         """
         Delete all bus connections
         """
-        self.terminal.remove_all_connections()
+        self._terminal.remove_all_connections()
 
     def reduce(self):
         """
@@ -538,7 +562,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
             reduce_buses(self.editor.circuit, [self.api_object])
             self.remove()
 
-    def remove(self, ask=True):
+    def remove(self, ask: bool = True) -> None:
         """
         Remove this element
         @return:
@@ -557,6 +581,9 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
             self.editor.remove_element(device=self.api_object, graphic_object=self)
 
     def update_color(self):
+        """
+        Update the colour
+        """
         if self.api_object.active:
             self.set_tile_color(QBrush(ACTIVE['color']))
         else:
@@ -573,7 +600,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
             self.api_object.active = not self.api_object.active
 
             # change the Branches state (snapshot)
-            for host in self.terminal.hosting_connections:
+            for host in self._terminal._hosting_connections:
                 if host.api_object is not None:
                     host.set_enable(val=self.api_object.active)
 
@@ -588,50 +615,62 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
                     self.editor.set_active_status_to_profile(self.api_object, override_question=True)
 
                     # change the Branches state (time series)
-                    for host in self.terminal.hosting_connections:
+                    for host in self._terminal._hosting_connections:
                         if host.api_object is not None:
                             self.editor.set_active_status_to_profile(host.api_object, override_question=True)
 
-    def any_short_circuit(self):
+    def any_short_circuit(self) -> bool:
+        """
+        Determine if there are short circuits enabled
+        :return:
+        """
         for t in self.sc_enabled:
             if t:
                 return True
         return False
 
-    def enable_sc(self):
+    def enable_sc(self) -> None:
         """
-
-        Returns:
-
+        Enable the short circuit
         """
         self.tile.setPen(QPen(QColor(EMERGENCY['color']), self.pen_width))
 
     def disable_sc(self):
         """
-
-        Returns:
-
+        Disable short circuit
         """
         # self.tile.setPen(QPen(QColor(ACTIVE['color']), self.pen_width))
         self.tile.setPen(QPen(Qt.transparent, self.pen_width))
         self.sc_enabled = [False, False, False, False]
 
     def enable_disable_sc_3p(self):
+        """
+        Enable 3-phase short circuit
+        """
         self.sc_enabled = [True, False, False, False]
         self.sc_type = FaultType.ph3
         self.enable_sc()
 
     def enable_disable_sc_lg(self):
+        """
+        Enable line ground short circuit
+        """
         self.sc_enabled = [False, True, False, False]
         self.sc_type = FaultType.LG
         self.enable_sc()
 
     def enable_disable_sc_ll(self):
+        """
+        Enable line-line short circuit
+        """
         self.sc_enabled = [False, False, True, False]
         self.sc_type = FaultType.LL
         self.enable_sc()
 
     def enable_disable_sc_llg(self):
+        """
+        Enable line-line-ground short circuit
+        """
         self.sc_enabled = [False, False, False, True]
         self.sc_type = FaultType.LLG
         self.enable_sc()
@@ -645,21 +684,19 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         else:
             self.api_object.is_dc = True
 
-    def plot_profiles(self):
+    def plot_profiles(self) -> None:
         """
-
-        @return:
+        Plot profiles
         """
         # get the index of this object
         i = self.editor.circuit.get_buses().index(self.api_object)
         self.editor.plot_bus(i, self.api_object)
 
-    def mousePressEvent(self, event):
+    def mousePressEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent):
         """
         mouse press: display the editor
         :param event: QGraphicsSceneMouseEvent
         """
-        dictionary_of_lists = dict()
 
         if self.api_object.device_type == DeviceType.BusDevice:
             dictionary_of_lists = {DeviceType.AreaDevice.value: self.editor.circuit.areas,
@@ -670,38 +707,29 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
             self.editor.set_editor_model(api_object=self.api_object,
                                          dictionary_of_lists=dictionary_of_lists)
 
-    def mouseDoubleClickEvent(self, event):
+    def mouseDoubleClickEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent):
         """
         Mouse double click
         :param event: event object
         """
         self.adapt()
 
-    def adapt(self):
+    def adapt(self) -> None:
         """
         Set the bus width according to the label text
         """
         # Todo: fix the resizing on double click
-        h = self.terminal.boundingRect().height()
+        h = self._terminal.boundingRect().height()
         w = len(self.api_object.name) * 8 + 10
         self.change_size(w=w, h=h)
         self.sizer.setPos(w, self.h)
 
-    def add_hosting_connection(self, graphic_obj):
+    def get_terminal(self) -> TerminalItem:
         """
-        Add object graphically connected to the graphical bus
-        :param graphic_obj:
-        :return:
+        Get the hosting terminal of this bus object
+        :return: TerminalItem
         """
-        self.terminal.hosting_connections.append(graphic_obj)
-
-    def delete_hosting_connection(self, graphic_obj):
-        """
-        Delete object graphically connected to the graphical bus
-        :param graphic_obj:
-        :return:
-        """
-        self.terminal.hosting_connections.remove(graphic_obj)
+        return self._terminal
 
     def add_object(self, api_obj: Union[None, INJECTION_DEVICE_TYPES] = None):
         """
@@ -850,3 +878,46 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         self.arrange_children()
 
         return _grph
+
+    def set_values(self, i: int, Vm: float, Va: float, P: float, Q: float, tpe: str, format_str="{:10.2f}"):
+        """
+
+        :param i:
+        :param Vm:
+        :param Va:
+        :param P:
+        :param Q:
+        :param tpe:
+        :param format_str:
+        :return:
+        """
+        vm = format_str.format(Vm)
+        vvm = format_str.format(Vm * self.api_object.Vnom)
+        va = format_str.format(Va)
+        msg = f"Bus {i}"
+        if tpe is not None:
+            msg += f" [{tpe}]"
+        msg += "<br>"
+        msg += f"v={vm}&lt;{va}º pu<br>"
+        msg += f"V={vvm} kV<br>"
+        if P is not None:
+            p = format_str.format(P)
+            q = format_str.format(Q)
+            msg += f"P={p} MW<br>Q={q} MVAr"
+
+        title = self.api_object.name
+        # self.results_label.setPlainText(msg)
+        # self.results_label.setHtml(f"<div align='left'>{msg}</div>")
+        self.label.setHtml(f'<html><head/><body><p><span style=" font-size:10pt;">{title}<br/></span>'
+                           f'<span style=" font-size:6pt;">{msg}</span></p></body></html>')
+        self.setToolTip(msg)
+
+    def __str__(self):
+
+        if self.api_object is None:
+            return f"Bus graphics {hex(id(self))}"
+        else:
+            return f"Graphics of {self.api_object.name} [{hex(id(self))}]"
+
+    def __repr__(self):
+        return str(self)

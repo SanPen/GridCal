@@ -18,7 +18,7 @@ import numpy as np
 
 from typing import Union, List
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QPushButton, QVBoxLayout, QDialog, QLabel, QDoubleSpinBox, QComboBox
+from PySide6.QtWidgets import QPushButton, QVBoxLayout, QDialog, QLabel, QDoubleSpinBox, QComboBox, QCheckBox
 from GridCal.Gui.GuiFunctions import get_list_model
 from GridCalEngine.Devices.Branches.line import Line, SequenceLineType, OverheadLineType, UndergroundLineType
 
@@ -150,6 +150,12 @@ class LineEditor(QDialog):
         self.b_spinner.setDecimals(6)
         self.b_spinner.setValue(B)
 
+        # apply to profile
+        self.apply_to_profile = QCheckBox()
+        self.apply_to_profile.setToolTip("Apply the newly computed values like the rating to the profile")
+        self.apply_to_profile.setChecked(True)
+        self.apply_to_profile.setText("Apply to profiles")
+
         # accept button
         self.accept_btn = QPushButton()
         self.accept_btn.setText('Accept')
@@ -176,6 +182,8 @@ class LineEditor(QDialog):
 
         self.layout.addWidget(QLabel("B: Susceptance [uS/Km]"))
         self.layout.addWidget(self.b_spinner)
+
+        self.layout.addWidget(self.apply_to_profile)
 
         self.layout.addWidget(self.accept_btn)
 
@@ -206,8 +214,14 @@ class LineEditor(QDialog):
             self.line.R = np.round(R / Zbase, 6)
             self.line.X = np.round(X / Zbase, 6)
             self.line.B = np.round(B / Ybase, 6)
-            self.line.rate = np.round(I * Vf * 1.73205080757, 6)  # nominal power in MVA = kA * kV * sqrt(3)
+            old_rate = float(self.line.rate)
+            new_rate = np.round(I * Vf * 1.73205080757, 6)  # nominal power in MVA = kA * kV * sqrt(3)
+            self.line.rate = new_rate
             self.line.length = length
+
+            if self.apply_to_profile.isChecked():
+                prof_old = self.line.rate_prof.toarray()
+                self.line.rate_prof.set(prof_old * new_rate / old_rate)
 
         self.accept()
 

@@ -122,22 +122,14 @@ class DataLogger:
         """
         self.entries.append(DataLogEntry(txt))
 
-    def has_logs(self):
+    def has_logs(self) -> bool:
+        """
+        Has logs?
+        """
         return len(self.entries) > 0
 
-    def add_info(self, msg: str, device="", device_class="", device_property='', value="", expected_value=""):
-        """
-
-        :param msg:
-        :param device:
-        :param value:
-        :param expected_value
-        :return:
-        """
-        self.entries.append(DataLogEntry(msg, DataLogSeverity.Information, device, device_class, device_property,
-                                         str(value), str(expected_value)))
-
-    def add_warning(self, msg, device="", device_class="", device_property='', value="", expected_value=""):
+    def add_info(self, msg: str, device="", device_class="", device_property='', value="", expected_value="",
+                 comment=""):
         """
 
         :param msg:
@@ -146,13 +138,42 @@ class DataLogger:
         :param device_property:
         :param value:
         :param expected_value:
+        :param comment:
         :return:
         """
-        self.entries.append(
-            DataLogEntry(msg, DataLogSeverity.Warning, device, device_class, device_property, str(value),
-                         str(expected_value)))
+        self.entries.append(DataLogEntry(msg=msg,
+                                         severity=DataLogSeverity.Warning,
+                                         device=device,
+                                         device_class=device_class,
+                                         property_name=device_property,
+                                         value=str(value),
+                                         expected_value=str(expected_value),
+                                         comment=comment))
 
-    def add_error(self, msg, device="", device_class="", device_property='', value="", expected_value="", comment=""):
+    def add_warning(self, msg, device="", device_class="", device_property='', value="", expected_value="",
+                    comment=""):
+        """
+
+        :param msg:
+        :param device:
+        :param device_class:
+        :param device_property:
+        :param value:
+        :param expected_value:
+        :param comment:
+        :return:
+        """
+        self.entries.append(DataLogEntry(msg=msg,
+                                         severity=DataLogSeverity.Warning,
+                                         device=device,
+                                         device_class=device_class,
+                                         property_name=device_property,
+                                         value=str(value),
+                                         expected_value=str(expected_value),
+                                         comment=comment))
+
+    def add_error(self, msg: str, device="", device_class="", device_property='', value="", expected_value="",
+                  comment=""):
         """
 
         :param msg:
@@ -293,7 +314,7 @@ class DataLogger:
         """
         self.entries[idx] = value
 
-    def __iadd__(self, other: "Logger"):
+    def __iadd__(self, other: "DataLogger"):
         """
         += implementation
         :param other:

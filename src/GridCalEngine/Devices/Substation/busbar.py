@@ -17,21 +17,21 @@
 
 from typing import Union
 from GridCalEngine.Devices.Parents.editable_device import EditableDevice, DeviceType
-from GridCalEngine.Devices.Substation.substation import Substation
+from GridCalEngine.Devices.Substation.voltage_level import VoltageLevel
 from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
 
 
 class BusBar(EditableDevice):
 
     def __init__(self, name='BusBar', idtag: Union[None, str] = None, code: str = '',
-                 substation: Union[None, Substation] = None,
+                 voltage_level: Union[None, VoltageLevel] = None,
                  cn: Union[None, ConnectivityNode] = None) -> None:
         """
         Constructor
         :param name: Name of the bus bar
         :param idtag: unique identifier of the device
         :param code: secondary identifyer
-        :param substation: Substation of this bus bar (optional)
+        :param voltage_level: VoltageLevel of this bus bar (optional)
         :param cn: internal Connectivity node, if none a new one is created
         """
         EditableDevice.__init__(self,
@@ -40,12 +40,12 @@ class BusBar(EditableDevice):
                                 idtag=idtag,
                                 device_type=DeviceType.BusBarDevice)
 
-        self.substation: Union[None, Substation] = substation
+        self.voltage_level: Union[None, VoltageLevel] = voltage_level
 
         self._cn: ConnectivityNode = cn if cn is not None else ConnectivityNode(name=name)
 
-        self.register("substation", "", DeviceType.SubstationDevice,
-                      "Substation of this bus bar (optional)")
+        self.register("voltage_level", "", DeviceType.VoltageLevelDevice,
+                      "Substation voltage level (optional)")
 
         self.register("cn", "", DeviceType.ConnectivityNodeDevice,
                       "Internal connectvity node")

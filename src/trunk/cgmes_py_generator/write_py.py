@@ -302,3 +302,12 @@ def write_enums():
         with open("copyright_text.txt", "r") as cr_file:
             file.write(cr_file.read())
         file.write(code)
+
+
+def write_assoc_dict(assoc_datatype_dict: dict):
+    dict_code = "self.association_inverse_dict = {\n"
+    for name, tpe in assoc_datatype_dict.items():
+        dict_code += f"\t'{name}': '{tpe}',\n"
+    dict_code += "}"
+    with open(f"{cgmes_folder}/assoc_inverse_dict.py", 'w') as file:
+        file.write(dict_code)

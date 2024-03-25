@@ -6,7 +6,6 @@ from GridCalEngine.basic_structures import BranchImpedanceMode
 from GridCalEngine.IO.file_handler import FileOpen
 from GridCalEngine.Simulations.ATC.available_transfer_capacity_driver import compute_alpha
 
-
 folder = r'\\mornt4\DESRED\DPE-Internacional\Interconexiones\FRANCIA\2022 MoU\5GW 8.0\Con N-x\merged\GridCal'
 fname = os.path.join(folder, 'MOU_2022_5GW_v6f_contingencias_dc.gridcal')
 
@@ -35,10 +34,7 @@ a2 = np.where(areas == area_to_idx)[0]
 linear = LinearAnalysis(
     numerical_circuit=numerical_circuit_,
     distributed_slack=False,
-    correct_values=False,
-    with_nx=True,
-    contingency_group_dict=main_circuit.get_contingency_group_dict(),
-    branch_dict=main_circuit.get_branches_wo_hvdc_dict(),
+    correct_values=False
 )
 
 tm0 = time.time()

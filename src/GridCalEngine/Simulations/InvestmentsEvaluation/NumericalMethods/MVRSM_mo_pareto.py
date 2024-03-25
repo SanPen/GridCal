@@ -242,10 +242,12 @@ class SurrogateModel:
     # def scalarized_jac
     # Probably just scalarization_weights[obj_index]*g_jac[obj_index]
 
-    def minimum(self, x0, scalarization_weights):
+    def minimum(self, x0, scalarization_weights) -> Vec:
         """
         Find a minimum of the surrogate model approximately.
         :param x0: the initial guess.
+        :param scalarization_weights: weights for the scalarization
+        :return minimization evaluation
         """
         res = minimize(self.g_scalarize, x0,
                        args=(scalarization_weights,),

@@ -337,6 +337,11 @@ class ConfigurationMain(ResultsMain):
         """
         if self.config_file_exists():
             with open(self.config_file_path(), "r") as f:
-                data = json.load(f)
-                self.apply_gui_config(data=data)
-                self.change_theme_mode()
+                try:
+                    data = json.load(f)
+                    self.apply_gui_config(data=data)
+                    self.change_theme_mode()
+                except json.decoder.JSONDecodeError as e:
+                    print(e)
+                    self.save_gui_config()
+                    print("Config file was erroneous, wrote a new one")

@@ -16,27 +16,27 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import numpy as np
-from typing import Union, Tuple
+from typing import Union
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
-from GridCalEngine.enumerations import BuildStatus
+from GridCalEngine.enumerations import BuildStatus, SubObjectType, DeviceType
 from GridCalEngine.Devices.Branches.underground_line_type import UndergroundLineType
 from GridCalEngine.Devices.Branches.overhead_line_type import OverheadLineType
 from GridCalEngine.Devices.Parents.branch_parent import BranchParent
 from GridCalEngine.Devices.Branches.sequence_line_type import SequenceLineType
 from GridCalEngine.Devices.Branches.transformer import Transformer2W
-from GridCalEngine.Devices.Parents.editable_device import DeviceType
 from GridCalEngine.Devices.profile import Profile
+from GridCalEngine.Devices.Branches.line_locations import LineLocations
 
 
 class Line(BranchParent):
 
     def __init__(self, bus_from: Bus = None, bus_to: Bus = None, cn_from: ConnectivityNode = None,
                  cn_to: ConnectivityNode = None, name='Line', idtag=None, code='',
-                 r=1e-20, x=1e-20, b=1e-20, rate=1.0, active=True, tolerance=0, cost=100.0,
-                 mttf=0, mttr=0, r_fault=0.0, x_fault=0.0, fault_pos=0.5,
-                 length=1, temp_base=20, temp_oper=20, alpha=0.00330,
+                 r=1e-20, x=1e-20, b=1e-20, rate=1.0, active=True, tolerance=0.0, cost=100.0,
+                 mttf=0.0, mttr=0, r_fault=0.0, x_fault=0.0, fault_pos=0.5,
+                 length=1.0, temp_base=20, temp_oper=20, alpha=0.00330,
                  template=None, contingency_factor=1.0, protection_rating_factor: float = 1.4,
                  contingency_enabled=True, monitor_loading=True,
                  r0=1e-20, x0=1e-20, b0=1e-20, r2=1e-20, x2=1e-20, b2=1e-20,
@@ -66,6 +66,7 @@ class Line(BranchParent):
         :param alpha: Thermal constant of the material in °C
         :param template: Basic branch template
         :param contingency_factor: Rating factor in case of contingency
+        :param protection_rating_factor: Rating factor before the protections tripping
         :param contingency_enabled: enabled for contingencies (Legacy)
         :param monitor_loading: monitor the loading (used in OPF)
         :param r0: zero-sequence resistence (p.u.)
@@ -90,7 +91,7 @@ class Line(BranchParent):
                               active=active,
                               rate=rate,
                               contingency_factor=contingency_factor,
-                              protection_rating_factor=contingency_factor,
+                              protection_rating_factor=protection_rating_factor,
                               contingency_enabled=contingency_enabled,
                               monitor_loading=monitor_loading,
                               mttf=mttf,
@@ -134,7 +135,10 @@ class Line(BranchParent):
         self.alpha = alpha
 
         # type template
-        self.template = template
+        self.template: Union[OverheadLineType, SequenceLineType, UndergroundLineType] = template
+
+        # Line locations
+        self._locations: LineLocations = LineLocations(n_points=0)
 
         self.register(key='R', units='p.u.', tpe=float, definition='Total positive sequence resistance.')
         self.register(key='X', units='p.u.', tpe=float, definition='Total positive sequence reactance.')
@@ -166,7 +170,8 @@ class Line(BranchParent):
                                  '0 would be at the "from" side,'
                                  '1 would be at the "to" side,'
                                  'therefore 0.5 is at the middle.')
-        self.register(key='template', units='', tpe=DeviceType.SequenceLineDevice, definition='')
+        self.register(key='template', units='', tpe=DeviceType.SequenceLineDevice, definition='', editable=False)
+        self.register(key='locations', units='', tpe=SubObjectType.LineLocations, definition='', editable=False)
 
     @property
     def temp_oper_prof(self) -> Profile:
@@ -184,6 +189,23 @@ class Line(BranchParent):
             self._temp_oper_prof.set(arr=val)
         else:
             raise Exception(str(type(val)) + 'not supported to be set into a temp_oper_prof')
+
+    @property
+    def locations(self) -> LineLocations:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._locations
+
+    @locations.setter
+    def locations(self, val: Union[LineLocations, np.ndarray]):
+        if isinstance(val, LineLocations):
+            self._locations = val
+        elif isinstance(val, np.ndarray):
+            self._locations.set(data=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a locations')
 
     @property
     def R_corrected(self):
@@ -322,52 +344,6 @@ class Line(BranchParent):
         else:
             return dict()
 
-    def get_profiles_dict(self, version=3):
-        """
-
-        :return:
-        """
-        if self.active_prof is not None:
-            active_prof = self.active_prof.tolist()
-            rate_prof = self.rate_prof.tolist()
-        else:
-            active_prof = list()
-            rate_prof = list()
-
-        return {'id': self.idtag,
-                'active': active_prof,
-                'rate': rate_prof}
-
-    def get_units_dict(self, version=3):
-        """
-        Get units of the values
-        """
-        return {'rate': 'MW',
-                'r': 'p.u.',
-                'x': 'p.u.',
-                'b': 'p.u.',
-                'length': 'km',
-                'base_temperature': 'ºC',
-                'operational_temperature': 'ºC',
-                'alpha': '1/ºC'}
-
-    def convertible_to_vsc(self):
-        """
-        Is this line convertible to VSC?
-        :return:
-        """
-        if self.bus_to is not None and self.bus_from is not None:
-            # connectivity:
-            # for the later primitives to make sense, the "bus from" must be AC and the "bus to" must be DC
-            if self.bus_from.is_dc and not self.bus_to.is_dc:  # this is the correct sense
-                return True
-            elif not self.bus_from.is_dc and self.bus_to.is_dc:  # opposite sense, revert
-                return True
-            else:
-                return False
-        else:
-            return False
-
     def fix_inconsistencies(self, logger: Logger):
         """
         Fix the inconsistencies
@@ -383,35 +359,22 @@ class Line(BranchParent):
 
         return errors
 
-    @property
-    def Vf(self) -> float:
-        """
-        Get the voltage "from" (kV)
-        :return: get the nominal voltage from
-        """
-        return self.bus_from.Vnom
-
-    @property
-    def Vt(self) -> float:
-        """
-        Get the voltage "to" (kV)
-        :return: get the nominal voltage to
-        """
-        return self.bus_to.Vnom
-
     def should_this_be_a_transformer(self, branch_connection_voltage_tolerance: float = 0.1) -> bool:
         """
 
         :param branch_connection_voltage_tolerance:
         :return:
         """
-        V1 = min(self.bus_to.Vnom, self.bus_from.Vnom)
-        V2 = max(self.bus_to.Vnom, self.bus_from.Vnom)
-        if V2 > 0:
-            per = V1 / V2
-            return per < (1.0 - branch_connection_voltage_tolerance)
+        if self.bus_to is not None and self.bus_from is not None:
+            V1 = min(self.bus_to.Vnom, self.bus_from.Vnom)
+            V2 = max(self.bus_to.Vnom, self.bus_from.Vnom)
+            if V2 > 0:
+                per = V1 / V2
+                return per < (1.0 - branch_connection_voltage_tolerance)
+            else:
+                return V1 != V2
         else:
-            return V1 != V2
+            return False
 
     def get_equivalent_transformer(self) -> Transformer2W:
         """
@@ -436,44 +399,6 @@ class Line(BranchParent):
         elm.rate_prof = self.rate_prof
         elm.temperature_prof = self.temp_oper_prof
         return elm
-
-    def split_line(self, position: float) -> Tuple["Line", "Line", Bus]:
-        """
-        Split a branch by a given distance
-        :param position: per unit distance measured from the "from" bus (0 ~ 1)
-        :return: the two new Branches and the mid short circuited bus
-        """
-
-        assert (0.0 < position < 1.0)
-
-        # Each of the Branches will have the proportional impedance
-        # Bus_from           Middle_bus            Bus_To
-        # o----------------------o--------------------o
-        #   >-------- x -------->|
-        #   (x: distance measured in per unit (0~1)
-
-        middle_bus = self.bus_from.copy()
-        middle_bus.name += ' split'
-
-        # C(x, y) = (x1 + t * (x2 - x1), y1 + t * (y2 - y1))
-        middle_bus.X = self.bus_from.x + (self.bus_to.x - self.bus_from.x) * position
-        middle_bus.y = self.bus_from.y + (self.bus_to.y - self.bus_from.y) * position
-
-        props_to_scale = ['R', 'R0', 'X', 'X0', 'B', 'B0', 'length']  # list of properties to scale
-
-        br1 = self.copy()
-        br1.bus_from = self.bus_from
-        br1.bus_to = middle_bus
-        for p in props_to_scale:
-            setattr(br1, p, getattr(self, p) * position)
-
-        br2 = self.copy()
-        br2.bus_from = middle_bus
-        br2.bus_to = self.bus_to
-        for p in props_to_scale:
-            setattr(br2, p, getattr(self, p) * (1.0 - position))
-
-        return br1, br2, middle_bus
 
     def fill_design_properties(self, r_ohm, x_ohm, c_nf, length, Imax, freq, Sbase):
         """

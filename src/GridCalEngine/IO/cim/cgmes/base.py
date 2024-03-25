@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from typing import Dict, List
-from uuid import uuid4
+from uuid import uuid4, UUID
 from GridCalEngine.IO.cim.cgmes.cgmes_poperty import CgmesProperty
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
@@ -48,7 +48,7 @@ def index_find(string, start, end):
     return string.partition(start)[2].partition(end)[0]
 
 
-def get_new_rfid():
+def get_new_rdfid():
     """
 
     :return:
@@ -63,6 +63,28 @@ def rfid2uuid(val):
     :return:
     """
     return val.replace('-', '').replace('_', '')
+
+
+def form_rdfid(idtag: str) -> str:
+    """
+    Converts a simple string, eg. idtag (without hyphens or underscores)
+    to a UUID format.
+
+    Args:
+        idtag (str): The input idtag without hyphens or underscores.
+
+    Returns:
+        str: The corresponding UUID idtag with hyphens.
+    """
+    # Add hyphens to the simple idtag to create a valid UUID
+    formatted_uuid = f"{idtag[:8]}-{idtag[8:12]}-{idtag[12:16]}-{idtag[16:20]}-{idtag[20:]}"
+    try:
+        # Validate and return the UUID
+        UUID(formatted_uuid)
+        return formatted_uuid
+    except ValueError:
+        # Handle invalid input (e.g., incorrect length)
+        return "Invalid input: Not a valid UUID"
 
 
 class Base:
@@ -81,7 +103,7 @@ class Base:
 
         # pick the object id
         rdfid = rdfid.strip()
-        self.rdfid = rdfid if rdfid != '' else get_new_rfid()
+        self.rdfid = rdfid if rdfid != '' else get_new_rdfid()
         self.uuid = rfid2uuid(self.rdfid)
 
         # store the object type
@@ -110,7 +132,7 @@ class Base:
         Can I keep this object?
         :return:
         """
-        return self.used # and not self.boundary_set
+        return self.used  # and not self.boundary_set
 
     def has_references(self) -> bool:
         """
@@ -163,16 +185,35 @@ class Base:
         """
         return True
 
-    def add_reference(self, obj: "IdentifiedObject"):
+    def add_reference(self, obj, attr_name):
         """
         Adds a categorized reference to this object
         :param obj:
+        :param attr_name:
         :return:
         """
         if obj.tpe in self.references_to_me.keys():
             self.references_to_me[obj.tpe].add(obj)
         else:
             self.references_to_me[obj.tpe] = {obj}
+        if attr_name is None:
+            return
+        if isinstance(getattr(self, attr_name), list):
+            tmp_list = {obj}
+            tmp_list.update(set(getattr(self, attr_name)))
+            if len(tmp_list) > 1:
+                setattr(self, attr_name, list(tmp_list))
+            else:
+                setattr(self, attr_name, list(tmp_list)[0])
+        else:
+            if getattr(self, attr_name) is None:
+                setattr(self, attr_name, obj)
+            else:
+                tmp_list = {obj, getattr(self, attr_name)}
+                if len(tmp_list) > 1:
+                    setattr(self, attr_name, list(tmp_list))
+                else:
+                    setattr(self, attr_name, list(tmp_list)[0])
 
     def register_property(self, name: str,
                           class_type: object,

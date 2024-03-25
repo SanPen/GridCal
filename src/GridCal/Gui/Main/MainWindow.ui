@@ -797,9 +797,6 @@
                         </widget>
                        </item>
                        <item>
-                        <widget class="QLineEdit" name="time_series_search"/>
-                       </item>
-                       <item>
                         <widget class="QPushButton" name="new_profiles_structure_pushButton">
                          <property name="toolTip">
                           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Create profiles&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This will create all the object's profiles&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -8454,7 +8451,7 @@
               <item>
                <widget class="QDoubleSpinBox" name="sbase_doubleSpinBox">
                 <property name="toolTip">
-                 <string>Base power. Despite all the bibliography, changing this number to anything other than 100 MVA, might change the meaning of what sensible per-unit voltage are.</string>
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Base power&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Despite all the bibliography, changing this number to anything other than 100 MVA, might change the meaning of what sensible per-unit voltage are.&lt;/p&gt;&lt;p&gt;This is, 1.0 is no longer the nominal voltage and so on.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                 </property>
                 <property name="suffix">
                  <string> MVA</string>
@@ -8483,7 +8480,7 @@
               <item>
                <widget class="QDoubleSpinBox" name="fbase_doubleSpinBox">
                 <property name="toolTip">
-                 <string>System frequency.</string>
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;System frequency&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This only has an effect in the program when computing lines' per-unit impedance from ohm values.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                 </property>
                 <property name="suffix">
                  <string> Hz</string>
@@ -8517,7 +8514,7 @@
               <item>
                <widget class="QDoubleSpinBox" name="defaultBusVoltageSpinBox">
                 <property name="toolTip">
-                 <string>This is the voltage that drag&amp;drop buses have</string>
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Bus default voltage&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This is the voltage that drag&amp;amp;drop buses have when they are created from the schematic.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                 </property>
                 <property name="suffix">
                  <string> kV</string>
@@ -8802,12 +8799,17 @@ QProgressBar::chunk{
     <addaction name="actionProcess_topology"/>
     <addaction name="actionFuse_devices"/>
     <addaction name="actionre_index_time"/>
+    <addaction name="actionScale"/>
     <addaction name="separator"/>
     <addaction name="actionLaunch_data_analysis_tool"/>
     <addaction name="actionFix_generators_active_based_on_the_power"/>
     <addaction name="actionFix_loads_active_based_on_the_power"/>
     <addaction name="actionDelete_inconsistencies"/>
     <addaction name="actionClean_database"/>
+    <addaction name="separator"/>
+    <addaction name="actionSetSelectedBusCountry"/>
+    <addaction name="actionSetSelectedBusArea"/>
+    <addaction name="actionSetSelectedBusZone"/>
    </widget>
    <widget class="QMenu" name="menuDiagrams">
     <property name="title">
@@ -8817,21 +8819,15 @@ QProgressBar::chunk{
      <property name="title">
       <string>Bus-Branch options</string>
      </property>
-     <widget class="QMenu" name="menuSelect_buses_by_2">
-      <property name="title">
-       <string>Select buses by</string>
-      </property>
-      <addaction name="actionSetSelectedBusCountry"/>
-      <addaction name="actionSetSelectedBusArea"/>
-      <addaction name="actionSetSelectedBusZone"/>
-     </widget>
      <addaction name="actionBigger_nodes"/>
      <addaction name="actionSmaller_nodes"/>
      <addaction name="actionAutoatic_layout"/>
      <addaction name="actionTry_to_fix_buses_location"/>
      <addaction name="actionSet_schematic_positions_from_GPS_coordinates"/>
      <addaction name="separator"/>
-     <addaction name="menuSelect_buses_by_2"/>
+     <addaction name="actionSelect_buses_by_area"/>
+     <addaction name="actionSelect_buses_by_zone"/>
+     <addaction name="actionSelect_buses_by_country"/>
      <addaction name="actionNew_bus_branch_diagram_from_selection"/>
      <addaction name="separator"/>
      <addaction name="actionDelete_selected"/>
@@ -8978,7 +8974,7 @@ QProgressBar::chunk{
     <string>Power Flow</string>
    </property>
    <property name="toolTip">
-    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Power Flow&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Run a power flow analysis with the snapshot data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Power Flow&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Run a power flow analysis&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
    <property name="shortcut">
     <string>F5</string>
@@ -9128,7 +9124,7 @@ QProgressBar::chunk{
     <string>Optimal power flow</string>
    </property>
    <property name="toolTip">
-    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Optimal power flow&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This runs an optimal power flow for the snapshot&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Optimal power flow&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This runs an optimal power flow&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
    <property name="shortcut">
     <string>F6</string>
@@ -9386,7 +9382,7 @@ QProgressBar::chunk{
     <string>Sigma analysis</string>
    </property>
    <property name="toolTip">
-    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Sigma analysis&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform HELM-Sigma analysis&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Sigma analysis&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform HELM-Sigma analysis over the snapshot data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
   </action>
   <action name="actionClear_stuff_running_right_now">
@@ -9482,7 +9478,7 @@ QProgressBar::chunk{
      <normaloff>:/Icons/icons/grid_icon.svg</normaloff>:/Icons/icons/grid_icon.svg</iconset>
    </property>
    <property name="text">
-    <string>Area</string>
+    <string>Set selected buses' Area</string>
    </property>
   </action>
   <action name="actionSetSelectedBusZone">
@@ -9491,7 +9487,7 @@ QProgressBar::chunk{
      <normaloff>:/Icons/icons/grid_icon.svg</normaloff>:/Icons/icons/grid_icon.svg</iconset>
    </property>
    <property name="text">
-    <string>Zone</string>
+    <string>Set selected buses' Zone</string>
    </property>
   </action>
   <action name="actionSetSelectedBusCountry">
@@ -9500,7 +9496,7 @@ QProgressBar::chunk{
      <normaloff>:/Icons/icons/map.svg</normaloff>:/Icons/icons/map.svg</iconset>
    </property>
    <property name="text">
-    <string>Country</string>
+    <string>Set seleted buses' Country</string>
    </property>
   </action>
   <action name="actionImport_bus_coordinates">
@@ -9545,7 +9541,7 @@ QProgressBar::chunk{
     <string>Contingency analysis</string>
    </property>
    <property name="toolTip">
-    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Contingency analysis&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform a contingency analysis with the selected method over the snapshot data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Contingency analysis&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform a contingency analysis with the selected method&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
    <property name="shortcut">
     <string>F8</string>
@@ -9560,7 +9556,7 @@ QProgressBar::chunk{
     <string>Optimal net transfer capacity</string>
    </property>
    <property name="toolTip">
-    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Net Transfer Capacity&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform an optimal net transfer capacity optimization over the snapshot data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Optimal Net Transfer Capacity&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Perform an optimal net transfer capacity optimization&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
   </action>
   <action name="actionSet_schematic_positions_from_GPS_coordinates">
@@ -9903,6 +9899,45 @@ QProgressBar::chunk{
    </property>
    <property name="shortcut">
     <string>Ctrl+C, Ctrl+D</string>
+   </property>
+  </action>
+  <action name="actionSelect_buses_by_area">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/grid_icon.svg</normaloff>:/Icons/icons/grid_icon.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Select buses by area</string>
+   </property>
+  </action>
+  <action name="actionSelect_buses_by_zone">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/grid_icon.svg</normaloff>:/Icons/icons/grid_icon.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Select buses by zone</string>
+   </property>
+  </action>
+  <action name="actionSelect_buses_by_country">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/map.svg</normaloff>:/Icons/icons/map.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Select buses by country</string>
+   </property>
+  </action>
+  <action name="actionScale">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/scale.svg</normaloff>:/Icons/icons/scale.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Scale</string>
+   </property>
+   <property name="toolTip">
+    <string>Scale the system load and or generation</string>
    </property>
   </action>
  </widget>

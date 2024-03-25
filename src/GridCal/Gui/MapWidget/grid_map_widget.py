@@ -235,48 +235,49 @@ class GridMapWidget(MapWidget):
         #                   tooltip=tooltip).add_to(marker_cluster)
 
         # add lines
-        lnorm = np.abs(loadings)
-        lnorm[lnorm == np.inf] = 0
-        Sfabs = np.abs(Sf)
-        Sfnorm = Sfabs / np.max(Sfabs + 1e-20)
-        for i, branch in enumerate(branches):
+        if len(branches):
+            lnorm = np.abs(loadings)
+            lnorm[lnorm == np.inf] = 0
+            Sfabs = np.abs(Sf)
+            Sfnorm = Sfabs / np.max(Sfabs + 1e-20)
+            for i, branch in enumerate(branches):
 
-            points = branch.get_coordinates()
+                points = branch.get_coordinates()
 
-            if not viz.has_null_coordinates(points):
-                # compose the tooltip
-                tooltip = str(i) + ': ' + branch.name
-                tooltip += '\n' + loading_label + ': ' + "{:10.4f}".format(lnorm[i] * 100) + ' [%]'
-                if Sf is not None:
-                    tooltip += '\nPower: ' + "{:10.4f}".format(Sf[i]) + ' [MVA]'
-                if losses is not None:
-                    tooltip += '\nLosses: ' + "{:10.4f}".format(losses[i]) + ' [MVA]'
+                if not viz.has_null_coordinates(points):
+                    # compose the tooltip
+                    tooltip = str(i) + ': ' + branch.name
+                    tooltip += '\n' + loading_label + ': ' + "{:10.4f}".format(lnorm[i] * 100) + ' [%]'
+                    if Sf is not None:
+                        tooltip += '\nPower: ' + "{:10.4f}".format(Sf[i]) + ' [MVA]'
+                    if losses is not None:
+                        tooltip += '\nLosses: ' + "{:10.4f}".format(losses[i]) + ' [MVA]'
 
-                # get the line colour
-                a = 255
-                if cmap == palettes.Colormaps.Green2Red:
-                    b, g, r = palettes.green_to_red_bgr(lnorm[i])
+                    # get the line colour
+                    a = 255
+                    if cmap == palettes.Colormaps.Green2Red:
+                        b, g, r = palettes.green_to_red_bgr(lnorm[i])
 
-                elif cmap == palettes.Colormaps.Heatmap:
-                    b, g, r = palettes.heatmap_palette_bgr(lnorm[i])
+                    elif cmap == palettes.Colormaps.Heatmap:
+                        b, g, r = palettes.heatmap_palette_bgr(lnorm[i])
 
-                elif cmap == palettes.Colormaps.TSO:
-                    b, g, r = palettes.tso_line_palette_bgr(branch.get_max_bus_nominal_voltage(), lnorm[i])
+                    elif cmap == palettes.Colormaps.TSO:
+                        b, g, r = palettes.tso_line_palette_bgr(branch.get_max_bus_nominal_voltage(), lnorm[i])
 
-                else:
-                    r, g, b, a = loading_cmap(lnorm[i])
-                    r *= 255
-                    g *= 255
-                    b *= 255
-                    a *= 255
+                    else:
+                        r, g, b, a = loading_cmap(lnorm[i])
+                        r *= 255
+                        g *= 255
+                        b *= 255
+                        a *= 255
 
-                if use_flow_based_width:
-                    weight = int(np.floor(min_branch_width + Sfnorm[i] * (max_branch_width - min_branch_width)))
-                else:
-                    weight = 3
+                    if use_flow_based_width:
+                        weight = int(np.floor(min_branch_width + Sfnorm[i] * (max_branch_width - min_branch_width)))
+                    else:
+                        weight = 3
 
-                # draw the line
-                data.append(PolylineData(points, Place.Center, weight, (r, g, b, a), 0, 0, {}))
+                    # draw the line
+                    data.append(PolylineData(points, Place.Center, weight, (r, g, b, a), 0, 0, {}))
 
         if len(hvdc_lines) > 0:
 

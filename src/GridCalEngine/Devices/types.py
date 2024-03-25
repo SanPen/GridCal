@@ -23,7 +23,6 @@ from GridCalEngine.Devices.Associations import *
 from GridCalEngine.Devices.Fluid import *
 from GridCalEngine.Devices.measurement import *
 
-
 INJECTION_DEVICE_TYPES = Union[
     Generator,
     Battery,
@@ -43,7 +42,8 @@ BRANCH_TYPES = Union[
     VSC,
     UPFC,
     Winding,
-    Switch
+    Switch,
+    SeriesReactance
 ]
 
 FLUID_TYPES = Union[
@@ -54,11 +54,21 @@ FLUID_TYPES = Union[
     FluidPump
 ]
 
+AREA_TYPES = Union[
+    Country,
+    Region,
+    Community,
+    Municipality,
+    Area,
+    Zone
+]
+
 SUBSTATION_TYPES = Union[
     Substation,
     Bus,
     ConnectivityNode,
-    BusBar
+    BusBar,
+    VoltageLevel
 ]
 
 MEASUREMENT_TYPES = Union[
@@ -76,6 +86,7 @@ ALL_DEV_TYPES = Union[
     FLUID_TYPES,
     SUBSTATION_TYPES,
     MEASUREMENT_TYPES,
+    AREA_TYPES,
     Transformer3W,
     OverheadLineType,
     Wire,
@@ -85,5 +96,6 @@ ALL_DEV_TYPES = Union[
     EmissionGas,
     GeneratorEmission,
     GeneratorFuel,
-    GeneratorTechnology
+    GeneratorTechnology,
+    BranchGroup
 ]
