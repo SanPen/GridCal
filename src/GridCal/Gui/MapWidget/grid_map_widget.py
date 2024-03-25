@@ -285,7 +285,7 @@ class GridMapWidget(MapWidget):
             lnorm = np.abs(hvdc_loading)
             lnorm[lnorm == np.inf] = 0
             Sfabs = np.abs(hvdc_Pf)
-            Sfnorm = Sfabs / np.max(Sfabs)
+            Sfnorm = Sfabs / np.max(Sfabs + 1e-9)
 
             for i, branch in enumerate(hvdc_lines):
 
