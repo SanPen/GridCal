@@ -179,7 +179,6 @@ def compute_gx_autodiff(x: Vec,
     """
 
     :param x: vector of unknowns (handled by the solver)
-    :param compute_jac: compute the jacobian? (handled by the solver)
     :param Va0:
     :param Vm0:
     :param Ybus:

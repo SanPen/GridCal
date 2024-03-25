@@ -216,25 +216,6 @@ class LineGraphicItem(LineGraphicTemplateItem):
         else:
             pass
 
-    def enable_disable_toggle(self):
-        """
-
-        @return:
-        """
-        if self.api_object is not None:
-            if self.api_object.active:
-                self.set_enable(False)
-            else:
-                self.set_enable(True)
-
-            if self.editor.circuit.has_time_series:
-                ok = yes_no_question('Do you want to update the time series active status accordingly?',
-                                     'Update time series active status')
-
-                if ok:
-                    # change the bus state (time series)
-                    self.editor.set_active_status_to_profile(self.api_object, override_question=True)
-
     def plot_profiles(self):
         """
         Plot the time series profiles

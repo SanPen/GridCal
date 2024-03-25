@@ -202,19 +202,6 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
             y = 0
         self.setPos(QPoint(int(x), int(y)))
 
-    def recolour_mode(self):
-        """
-        Change the colour according to the system theme
-        """
-        # self.color = ACTIVE['color']
-        # self.style = ACTIVE['style']
-        self.label.setDefaultTextColor(ACTIVE['text'])
-        # self.set_tile_color(self.color)
-
-        for e in self.shunt_children:
-            if e is not None:
-                e.recolour_mode()
-
     def set_tile_color(self, brush):
         """
         Set the color of the title
