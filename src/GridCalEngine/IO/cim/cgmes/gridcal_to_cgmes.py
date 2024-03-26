@@ -362,6 +362,44 @@ def get_cgmes_equivalent_injections(multicircuit_model: MultiCircuit,
         cgmes_model.EquivalentInjection_list.append(ei)
 
 
+def get_cgmes_ac_line_segments(multicircuit_model: MultiCircuit,
+                               cgmes_model: CgmesCircuit,
+                               logger: DataLogger):
+    """
+    Converts every Multi Circuit line
+    into CGMES AC line segment.
+
+    :param multicircuit_model:
+    :param cgmes_model:
+    :param logger:
+    :return:
+    """
+    sbase = multicircuit_model.Sbase
+    for mc_elm in multicircuit_model.lines:
+        line = cgmes.ACLineSegment(rdfid=form_rdfid(mc_elm.idtag))
+        line.description = mc_elm.code
+        line.name = mc_elm.name
+        line.BaseVoltage = find_object_by_attribute(cgmes_model.BaseVoltage_list, "nominalVoltage",
+                                                    mc_elm.get_max_bus_nominal_voltage()) # which Vnom we need?
+        vnom = line.BaseVoltage.nominalVoltage
+
+        if vnom is not None:
+            # Calculate Zbase
+            zbase = (vnom * vnom) / sbase
+            ybase = 1.0 / zbase
+
+            line.r = mc_elm.R * zbase
+            line.x = mc_elm.X * zbase
+            # line.gch = mc_elm.G * Ybase
+            line.bch = mc_elm.B * ybase
+            line.r0 = mc_elm.R0 * zbase
+            line.x0 = mc_elm.X0 * zbase
+            # line.g0ch = mc_elm.G0 * Ybase
+            line.b0ch = mc_elm.B0 * ybase
+
+        cgmes_model.ACLineSegment_list.append(line)
+
+
 def get_cgmes_generators(multicircuit_model: MultiCircuit,
                          cgmes_model: CgmesCircuit,
                          logger: DataLogger):
@@ -432,10 +470,10 @@ def gridcal_to_cgmes(gc_model: MultiCircuit, logger: DataLogger) -> CgmesCircuit
     get_cgmes_cn_tn_nodes(gc_model, cgmes_model, logger)
 
     get_cgmes_loads(gc_model, cgmes_model, logger)
-    get_cgmes_equivalent_injections(gc_model, cgmes_model, logger)  # TODO Mate
+    get_cgmes_equivalent_injections(gc_model, cgmes_model, logger)
     get_cgmes_generators(gc_model, cgmes_model, logger)
 
-    # ac lines,     TODO Mate
+    get_cgmes_ac_line_segments(gc_model, cgmes_model, logger)
     # transformers, windings
 
     # shunts
