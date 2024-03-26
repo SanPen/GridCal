@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1312</width>
+    <width>1292</width>
     <height>746</height>
    </rect>
   </property>
@@ -8016,52 +8016,9 @@
                </widget>
               </item>
               <item>
-               <widget class="Line" name="line_19">
-                <property name="palette">
-                 <palette>
-                  <active>
-                   <colorrole role="WindowText">
-                    <brush brushstyle="SolidPattern">
-                     <color alpha="255">
-                      <red>186</red>
-                      <green>189</green>
-                      <blue>182</blue>
-                     </color>
-                    </brush>
-                   </colorrole>
-                  </active>
-                  <inactive>
-                   <colorrole role="WindowText">
-                    <brush brushstyle="SolidPattern">
-                     <color alpha="255">
-                      <red>186</red>
-                      <green>189</green>
-                      <blue>182</blue>
-                     </color>
-                    </brush>
-                   </colorrole>
-                  </inactive>
-                  <disabled>
-                   <colorrole role="WindowText">
-                    <brush brushstyle="SolidPattern">
-                     <color alpha="255">
-                      <red>190</red>
-                      <green>190</green>
-                      <blue>190</blue>
-                     </color>
-                    </brush>
-                   </colorrole>
-                  </disabled>
-                 </palette>
-                </property>
-                <property name="frameShadow">
-                 <enum>QFrame::Plain</enum>
-                </property>
-                <property name="lineWidth">
-                 <number>4</number>
-                </property>
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
+               <widget class="QLabel" name="label_40">
+                <property name="text">
+                 <string/>
                 </property>
                </widget>
               </item>
@@ -8180,7 +8137,7 @@ QProgressBar::chunk{
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1312</width>
+     <width>1292</width>
      <height>22</height>
     </rect>
    </property>
@@ -8370,25 +8327,25 @@ QProgressBar::chunk{
    <addaction name="actionSave"/>
    <addaction name="separator"/>
    <addaction name="actionPower_flow"/>
+   <addaction name="actionLinearAnalysis"/>
+   <addaction name="actionAdd_selected_to_contingency"/>
+   <addaction name="actionContingency_analysis"/>
+   <addaction name="actionSigma_analysis"/>
    <addaction name="actionShort_Circuit"/>
    <addaction name="actionVoltage_stability"/>
-   <addaction name="actionLinearAnalysis"/>
-   <addaction name="actionSigma_analysis"/>
    <addaction name="separator"/>
-   <addaction name="actionOPF"/>
-   <addaction name="actionOptimal_Net_Transfer_Capacity"/>
    <addaction name="actionATC"/>
+   <addaction name="actionOptimal_Net_Transfer_Capacity"/>
+   <addaction name="actionOPF"/>
    <addaction name="actionOpf_to_Power_flow"/>
    <addaction name="separator"/>
-   <addaction name="actionClustering"/>
-   <addaction name="actionUse_clustering"/>
-   <addaction name="actionPower_flow_Stochastic"/>
    <addaction name="actionAdd_selected_as_new_investment"/>
    <addaction name="actionInvestments_evaluation"/>
-   <addaction name="separator"/>
-   <addaction name="actionAdd_selected_to_contingency"/>
-   <addaction name="actionInitialize_contingencies"/>
-   <addaction name="actionContingency_analysis"/>
+   <addaction name="actionPower_flow_Stochastic"/>
+   <addaction name="actionClustering"/>
+   <addaction name="actionUse_clustering"/>
+   <addaction name="actionEdit_simulation_time_limits"/>
+   <addaction name="actionactivate_time_series"/>
    <addaction name="separator"/>
    <addaction name="actionBigger_nodes"/>
    <addaction name="actionSmaller_nodes"/>
@@ -8398,9 +8355,6 @@ QProgressBar::chunk{
    <addaction name="separator"/>
    <addaction name="actionInputs_analysis"/>
    <addaction name="actionLaunch_data_analysis_tool"/>
-   <addaction name="separator"/>
-   <addaction name="actionactivate_time_series"/>
-   <addaction name="actionEdit_simulation_time_limits"/>
   </widget>
   <action name="actionOpen_file">
    <property name="icon">
