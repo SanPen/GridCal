@@ -19,7 +19,7 @@ from typing import List, Tuple, Union
 
 import networkx as nx
 import numpy as np
-from PySide6 import QtGui, QtWidgets, QtCore, Qt
+from PySide6 import QtGui, QtWidgets, QtCore
 from matplotlib import pyplot as plt
 from pandas.plotting import register_matplotlib_converters
 
@@ -1504,9 +1504,8 @@ class DiagramsMain(CompiledArraysMain):
 
     def show_diagrams_context_menu(self, pos: QtCore.QPoint):
         """
-
-        :param pos:
-        :return:
+        Show diagrams list view context menu
+        :param pos: Relative click position
         """
         context_menu = QtWidgets.QMenu(parent=self.ui.diagramsListView)
 

@@ -1141,6 +1141,11 @@ class BusBranchEditorWidget(QSplitter):
                        icon_path=":/Icons/icons/zoom_out.svg",
                        function_ptr=lambda x: self.zoom_out())
 
+        add_menu_entry(menu=context_menu,
+                       text="Clear highlight",
+                       icon_path=":/Icons/icons/bus_icon.svg",
+                       function_ptr=lambda x: self.clear_big_bus_markers())
+
         context_menu.exec(event.pos())
 
     def create_line(self, bus_from: Bus, bus_to: Bus, from_port: TerminalItem, to_port: TerminalItem):

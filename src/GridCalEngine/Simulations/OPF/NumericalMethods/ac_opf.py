@@ -396,8 +396,8 @@ class NonlinearOPFResults:
         self.hvdc_loading: Vec = np.zeros(nhvdc)
         self.lam_p: Vec = np.zeros(nbus)
         self.lam_q: Vec = np.zeros(nbus)
-        self.sl_sf: Vec = np.zeros(nll)
-        self.sl_st: Vec = np.zeros(nll)
+        self.sl_sf: Vec = np.zeros(nbr)
+        self.sl_st: Vec = np.zeros(nbr)
         self.sl_vmax: Vec = np.zeros(nbus)
         self.sl_vmin: Vec = np.zeros(nbus)
         self.error: float = 0.0
@@ -557,8 +557,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     if use_bound_slacks:
         nsl = 2 * npq + 2 * nll
         # Slack relaxations for constraints
-        c_s = 1000 * nc.branch_data.overload_cost[il]
-        c_v = 1000 * nc.bus_data.cost_v[pq]
+        c_s = 10 * (0.1 + nc.branch_data.overload_cost[il])
+        c_v = 1000000 * (0.1 + nc.bus_data.cost_v[pq])
         sl_sf0 = np.ones(nll)
         sl_st0 = np.ones(nll)
         sl_vmax0 = np.ones(npq)
@@ -853,6 +853,23 @@ def run_nonlinear_opf(grid: MultiCircuit,
                                            plot_error=plot_error,
                                            use_bound_slacks=use_bound_slacks,
                                            logger=logger)
+
+        if pf_init and not island_res.converged:
+            # if we were initializing with the power flow results and it failed, try without power flow initialization
+
+            logger.add_warning(msg="Trying flat start because power flow initialization did not converge")
+
+            island_res = ac_optimal_power_flow(nc=island,
+                                               opf_options=opf_options,
+                                               pf_options=pf_options,
+                                               debug=debug,
+                                               use_autodiff=use_autodiff,
+                                               pf_init=False,
+                                               Sbus_pf=Sbus_pf[island.original_bus_idx],
+                                               voltage_pf=voltage_pf[island.original_bus_idx],
+                                               plot_error=plot_error,
+                                               use_bound_slacks=use_bound_slacks,
+                                               logger=logger)
 
         results.merge(other=island_res,
                       bus_idx=island.bus_data.original_idx,
