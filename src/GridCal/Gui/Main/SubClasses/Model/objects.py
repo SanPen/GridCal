@@ -93,10 +93,11 @@ class ObjectsTableMain(DiagramsMain):
 
         if elm_type == DeviceType.BusDevice:
             elm = dev.Bus()
-            dictionary_of_lists = {DeviceType.AreaDevice.value: self.circuit.areas,
-                                   DeviceType.ZoneDevice.value: self.circuit.zones,
-                                   DeviceType.SubstationDevice.value: self.circuit.substations,
-                                   DeviceType.CountryDevice.value: self.circuit.countries,
+            dictionary_of_lists = {DeviceType.AreaDevice.value: self.circuit.get_areas(),
+                                   DeviceType.ZoneDevice.value: self.circuit.get_zones(),
+                                   DeviceType.SubstationDevice.value: self.circuit.get_substations(),
+                                   DeviceType.VoltageLevelDevice.value: self.circuit.get_voltage_levels(),
+                                   DeviceType.CountryDevice.value: self.circuit.get_countries(),
                                    }
 
         elif elm_type == DeviceType.LoadDevice:
@@ -114,7 +115,7 @@ class ObjectsTableMain(DiagramsMain):
         elif elm_type == DeviceType.GeneratorDevice:
             elm = dev.Generator()
             dictionary_of_lists = {DeviceType.Technology.value: self.circuit.technologies,
-                                   DeviceType.FuelDevice.value: self.circuit.fuels,
+                                   DeviceType.FuelDevice.value: self.circuit.get_fuels(),
                                    DeviceType.EmissionGasDevice.value: self.circuit.emission_gases, }
 
         elif elm_type == DeviceType.BatteryDevice:
