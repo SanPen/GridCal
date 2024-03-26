@@ -31,7 +31,7 @@ from PySide6.QtGui import (QIcon, QPixmap, QImage, QPainter, QStandardItemModel,
                            QContextMenuEvent)
 from PySide6.QtWidgets import (QGraphicsView, QListView, QTableView, QVBoxLayout, QHBoxLayout, QFrame,
                                QSplitter, QMessageBox, QAbstractItemView, QGraphicsScene, QGraphicsSceneMouseEvent,
-                               QGraphicsItem, QMenu)
+                               QGraphicsItem, QMenu, QGraphicsSceneContextMenuEvent)
 from PySide6.QtSvg import QSvgGenerator
 
 from GridCalEngine.Devices.types import ALL_DEV_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES
@@ -241,7 +241,7 @@ class BusBranchDiagramScene(QGraphicsScene):
         # call mouseReleaseEvent on "me" (continue with the rest of the actions)
         super(BusBranchDiagramScene, self).mouseReleaseEvent(event)
 
-    def contextMenuEvent(self, event: QContextMenuEvent):
+    def contextMenuEvent(self, event: QGraphicsSceneContextMenuEvent):
         """
 
         :param event:

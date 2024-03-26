@@ -171,14 +171,6 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
             if e is not None:
                 e.recolour_mode()
 
-    def set_label(self, val: str):
-        """
-        Set the label content
-        :param val:
-        :return:
-        """
-        self.label.setPlainText(val)
-
     def mouseMoveEvent(self, event: QGraphicsSceneMouseEvent):
         """
         On mouse move of this object...
@@ -296,8 +288,8 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         self._terminal.setRect(0, 0, w, 10)
 
         # Set text
-        if self.api_object is not None:
-            self.label.setPlainText(self.api_object.name)
+        # if self.api_object is not None:
+        #     self.label.setPlainText(self.api_object.name)
 
         # rearrange children
         self.arrange_children()
