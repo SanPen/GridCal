@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
 from typing import Union, List
-from PySide6 import QtGui, QtCore
+from PySide6 import QtGui, QtCore, QtWidgets
 from matplotlib import pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 
@@ -83,6 +83,12 @@ class ObjectsTableMain(DiagramsMain):
         # line edit enter
         self.ui.smart_search_lineEdit.returnPressed.connect(self.objects_smart_search)
         # self.ui.time_series_search.returnPressed.connect(self.timeseries_search)
+
+        # context menu
+        self.ui.dataStructureTableView.customContextMenuRequested.connect(self.show_objects_context_menu)
+
+        # Set context menu policy to CustomContextMenu
+        self.ui.dataStructureTableView.setContextMenuPolicy(QtGui.Qt.ContextMenuPolicy.CustomContextMenu)
 
     def create_objects_model(self, elements, elm_type: DeviceType) -> gf.ObjectsModel:
         """
@@ -1019,3 +1025,34 @@ class ObjectsTableMain(DiagramsMain):
         """
         system_scaler_window = SystemScaler(grid=self.circuit, parent=self)
         system_scaler_window.exec()
+
+    def show_objects_context_menu(self, pos: QtCore.QPoint):
+        """
+        Show diagrams list view context menu
+        :param pos: Relative click position
+        """
+        context_menu = QtWidgets.QMenu(parent=self.ui.diagramsListView)
+
+        gf.add_menu_entry(menu=context_menu,
+                          text="New bus-branch from here",
+                          icon_path=":/Icons/icons/schematic.svg",
+                          function_ptr=self.add_bus_vecinity_diagram_from_model)
+
+        gf.add_menu_entry(menu=context_menu,
+                          text="Add to current diagram",
+                          icon_path=":/Icons/icons/schematicadd_to.svg",
+                          function_ptr=self.add_objects_to_current_diagram)
+
+        gf.add_menu_entry(menu=context_menu,
+                          text="Highlight buses selection",
+                          icon_path=":/Icons/icons/highlight.svg",
+                          function_ptr=self.highlight_selection_buses)
+
+        gf.add_menu_entry(menu=context_menu,
+                          text="Highlight based on property",
+                          icon_path=":/Icons/icons/highlight2.svg",
+                          function_ptr=self.highlight_based_on_property)
+
+        # Convert global position to local position of the list widget
+        mapped_pos = self.ui.dataStructureTableView.viewport().mapToGlobal(pos)
+        context_menu.exec(mapped_pos)

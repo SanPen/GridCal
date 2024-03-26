@@ -1504,9 +1504,8 @@ class DiagramsMain(CompiledArraysMain):
 
     def show_diagrams_context_menu(self, pos: QtCore.QPoint):
         """
-
-        :param pos:
-        :return:
+        Show diagrams list view context menu
+        :param pos: Relative click position
         """
         context_menu = QtWidgets.QMenu(parent=self.ui.diagramsListView)
 
