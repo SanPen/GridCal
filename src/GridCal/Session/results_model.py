@@ -14,14 +14,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
-from typing import List
 import io
 import numpy as np
 import pandas as pd
 from PySide6 import QtCore, QtWidgets
 from GridCalEngine.Simulations.results_table import ResultsTable
-from GridCalEngine.Devices.types import ALL_DEV_TYPES
 from GridCalEngine.Utils.Filtering.results_table_filtering import FilterResultsTable
 
 
@@ -68,13 +65,18 @@ class ResultsModel(QtCore.QAbstractTableModel):
 
         self.units = table.units
 
-    def flags(self, index):
+    def flags(self, index: QtCore.QModelIndex) -> QtCore.Qt.ItemFlag:
+        """
+
+        :param index:
+        :return:
+        """
         if self.table.editable and index.column() > self.table.editable_min_idx:
             return QtCore.Qt.ItemFlag.ItemIsEditable | QtCore.Qt.ItemFlag.ItemIsEnabled | QtCore.Qt.ItemFlag.ItemIsSelectable
         else:
             return QtCore.Qt.ItemFlag.ItemIsEnabled | QtCore.Qt.ItemFlag.ItemIsSelectable
 
-    def rowCount(self, parent=None):
+    def rowCount(self, parent: QtCore.QModelIndex = None) -> int:
         """
 
         :param parent:
@@ -82,7 +84,7 @@ class ResultsModel(QtCore.QAbstractTableModel):
         """
         return self.table.r
 
-    def columnCount(self, parent=None):
+    def columnCount(self, parent: QtCore.QModelIndex = None) -> int:
         """
 
         :param parent:
@@ -90,7 +92,7 @@ class ResultsModel(QtCore.QAbstractTableModel):
         """
         return self.table.c
 
-    def data(self, index, role=QtCore.Qt.ItemDataRole.DisplayRole):
+    def data(self, index: QtCore.QModelIndex, role=QtCore.Qt.ItemDataRole.DisplayRole):
         """
 
         :param index:

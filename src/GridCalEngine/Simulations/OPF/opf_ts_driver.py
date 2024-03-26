@@ -222,10 +222,8 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                 self.results.hvdc_loading[it, :] = res.hvdc_loading
                 self.results.converged[it] = res.converged
 
-            msg = "Interior point solver"
-            # self.logger.add_info(msg=msg, device="Error", value=res.error, expected_value=self.pf_options.tolerance)
-            # self.logger.add_info(msg=msg, device="Converged", value=res.converged)
-            # self.logger.add_info(msg=msg, device="Iterations", value=res.iterations)
+                if self.__cancel__:
+                    return self.results
 
             # Compute the emissions, fuel costs and energy used
             (self.results.system_fuel,

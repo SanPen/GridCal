@@ -145,7 +145,6 @@ class DiagramsMain(CompiledArraysMain):
 
         # Buttons
         self.ui.colour_results_pushButton.clicked.connect(self.colour_diagrams)
-        self.ui.busViewerButton.clicked.connect(self.add_bus_vecinity_diagram_from_model)
 
         # list clicks
         self.ui.diagramsListView.clicked.connect(self.set_selected_diagram_on_click)

@@ -869,24 +869,22 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         :return:
         """
         vm = format_str.format(Vm)
-        vvm = format_str.format(Vm * self.api_object.Vnom)
+        vm_kv = format_str.format(Vm * self.api_object.Vnom)
         va = format_str.format(Va)
         msg = f"Bus {i}"
         if tpe is not None:
             msg += f" [{tpe}]"
         msg += "<br>"
         msg += f"v={vm}&lt;{va}º pu<br>"
-        msg += f"V={vvm} kV<br>"
+        msg += f"V={vm_kv} kV<br>"
         if P is not None:
             p = format_str.format(P)
             q = format_str.format(Q)
             msg += f"P={p} MW<br>Q={q} MVAr"
 
         title = self.api_object.name
-        # self.results_label.setPlainText(msg)
-        # self.results_label.setHtml(f"<div align='left'>{msg}</div>")
-        self.label.setHtml(f'<html><head/><body><p><span style=" font-size:10pt;">{title}<br/></span>'
-                           f'<span style=" font-size:6pt;">{msg}</span></p></body></html>')
+        self.label.setHtml(f'<html><head/><body><p><span style=" font-size:10pt;">{title}<br/></span><span style=" font-size:6pt;">{msg}</span></p></body></html>')
+
         self.setToolTip(msg)
 
     def __str__(self):
