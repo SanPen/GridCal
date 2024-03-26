@@ -381,7 +381,6 @@ class ContingencyResultsReport:
         df["SRAP Power (MW)"] = df["SRAP Power (MW)"].astype(float)
         df["Solved with SRAP"] = df["Solved with SRAP"].astype(bool)
 
-
         # If we are analyzing a base case, we report base case
         # If we are analyzing an overload due to a contingency (not in base), we report:
         # --- If 'SRAP applicable' we report "Post-SRAP loading (pu)"
@@ -397,10 +396,20 @@ class ContingencyResultsReport:
 
         df["Overload for reporting weighted with cluster"] = df["Overload for reporting"]*df["Probability cluster"]
 
+        # Count the number of Hours the monitored line appears
+
+        df_ = df[["Time idx", "Monitored", "Probability cluster"]].drop_duplicates()
+        df_monit_time_pu = pd.pivot_table(df_, values='Probability cluster', index="Monitored", aggfunc="sum")
+        df_monit_time_clust = pd.pivot_table(df_, values='Probability cluster', index="Monitored", aggfunc="count")
+
+        df['Time this line is monitored (pu)'] = df['Monitored'].map(df_monit_time_pu['Probability cluster'])
+        df['Number of clusters this line is monitored'] = df['Monitored'].map(df_monit_time_clust['Probability cluster'])
+
+
         # Group de columns by Area1, Area2, Monitored, Contingency
         df_grp = df.groupby(
             ["Area 1", "Area 2", "Monitored", "Contingency", "Base rating (MW)", "Contingency rating (MW)",
-             "SRAP rating (MW)"])
+             "SRAP rating (MW)","Time this line is monitored (pu)","Number of clusters this line is monitored"])
 
         # Compute the columns
         ov_max = df_grp["Overload for reporting"].max()
@@ -421,9 +430,10 @@ class ContingencyResultsReport:
 
         #new, work in progress
         ov_avg_clust = df_grp["Overload for reporting weighted with cluster"].sum()/df_grp["Probability cluster"].sum() #checked
-
         ov_desvest_clust = df_grp["Overload for reporting weighted with cluster"].std()/df_grp["Probability cluster"].sum()
-        ov_desvest_clust = ov_desvest_clust.fillna(0)
+
+        #monit_time_pu = df_grp["Time this line is monitored (pu)"]
+        #monit_time_clust = df_grp["Number of clusters this line is monitored"]
 
         # Create the new dataframe with the columns we need
         df_summary = pd.DataFrame({
@@ -444,7 +454,10 @@ class ContingencyResultsReport:
             # new, work in progress
             "Overload average weighting time (pu)": ov_avg_clust.values, #checked
             "Annual time this overload happens (pu)": ov_time_pu.values, #checked
-            "Standard deviation weighting time(pu)": ov_desvest_clust.values,
+
+            "Time this line is monitored (pu)": ov_max.index.get_level_values("Time this line is monitored (pu)"),
+            "Number of clusters this line is monitored": ov_max.index.get_level_values("Number of clusters this line is monitored")
+
 
         })
 
