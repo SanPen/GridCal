@@ -247,6 +247,8 @@ class BusBranchDiagramScene(QGraphicsScene):
         :param event:
         :return:
         """
+        super().contextMenuEvent(event)
+
         context_menu = QMenu()
 
         add_menu_entry(menu=context_menu,
