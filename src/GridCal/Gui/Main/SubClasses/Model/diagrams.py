@@ -19,7 +19,7 @@ from typing import List, Tuple, Union
 
 import networkx as nx
 import numpy as np
-from PySide6 import QtGui, QtWidgets, QtCore, Qt
+from PySide6 import QtGui, QtWidgets, QtCore
 from matplotlib import pyplot as plt
 from pandas.plotting import register_matplotlib_converters
 

@@ -1053,6 +1053,16 @@ class ObjectsTableMain(DiagramsMain):
                           icon_path=":/Icons/icons/highlight2.svg",
                           function_ptr=self.highlight_based_on_property)
 
+        gf.add_menu_entry(menu=context_menu,
+                          text="Copy table",
+                          icon_path=":/Icons/icons/copy.svg",
+                          function_ptr=self.copy_objects_data)
+
+        gf.add_menu_entry(menu=context_menu,
+                          text="Set value to column",
+                          icon_path=":/Icons/icons/copy2.svg",
+                          function_ptr=self.set_value_to_column)
+
         # Convert global position to local position of the list widget
         mapped_pos = self.ui.dataStructureTableView.viewport().mapToGlobal(pos)
         context_menu.exec(mapped_pos)
