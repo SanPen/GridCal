@@ -53,7 +53,7 @@ def get_new_rdfid():
 
     :return:
     """
-    return "_" + str(uuid4())
+    return str(uuid4())
 
 
 def rfid2uuid(val):
