@@ -396,8 +396,8 @@ class NonlinearOPFResults:
         self.hvdc_loading: Vec = np.zeros(nhvdc)
         self.lam_p: Vec = np.zeros(nbus)
         self.lam_q: Vec = np.zeros(nbus)
-        self.sl_sf: Vec = np.zeros(nll)
-        self.sl_st: Vec = np.zeros(nll)
+        self.sl_sf: Vec = np.zeros(nbr)
+        self.sl_st: Vec = np.zeros(nbr)
         self.sl_vmax: Vec = np.zeros(nbus)
         self.sl_vmin: Vec = np.zeros(nbus)
         self.error: float = 0.0
@@ -557,8 +557,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     if use_bound_slacks:
         nsl = 2 * npq + 2 * nll
         # Slack relaxations for constraints
-        c_s = 1000 * nc.branch_data.overload_cost[il]
-        c_v = 1000 * nc.bus_data.cost_v[pq]
+        c_s = 10 * (0.1 + nc.branch_data.overload_cost[il])
+        c_v = 1000000 * (0.1 + nc.bus_data.cost_v[pq])
         sl_sf0 = np.ones(nll)
         sl_st0 = np.ones(nll)
         sl_vmax0 = np.ones(npq)
