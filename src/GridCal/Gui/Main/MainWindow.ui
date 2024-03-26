@@ -471,76 +471,6 @@
                         </widget>
                        </item>
                        <item>
-                        <widget class="QPushButton" name="busViewerButton">
-                         <property name="toolTip">
-                          <string>Add bus vecinity viewer of the selected items</string>
-                         </property>
-                         <property name="text">
-                          <string/>
-                         </property>
-                         <property name="icon">
-                          <iconset resource="icons.qrc">
-                           <normaloff>:/Icons/icons/grid_icon.svg</normaloff>:/Icons/icons/grid_icon.svg</iconset>
-                         </property>
-                        </widget>
-                       </item>
-                       <item>
-                        <widget class="QPushButton" name="addToCurrentDiagramButton">
-                         <property name="toolTip">
-                          <string>Add selection to the current diagram</string>
-                         </property>
-                         <property name="text">
-                          <string/>
-                         </property>
-                         <property name="icon">
-                          <iconset resource="icons.qrc">
-                           <normaloff>:/Icons/icons/schematicadd_to.svg</normaloff>:/Icons/icons/schematicadd_to.svg</iconset>
-                         </property>
-                        </widget>
-                       </item>
-                       <item>
-                        <widget class="QPushButton" name="highlight_selection_buses_pushButton">
-                         <property name="toolTip">
-                          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Highlight&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Highlight the buses of the selected elements. For this to work you need to type the desired highlighting property in the search box.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                         </property>
-                         <property name="text">
-                          <string/>
-                         </property>
-                         <property name="icon">
-                          <iconset resource="icons.qrc">
-                           <normaloff>:/Icons/icons/highlight.svg</normaloff>:/Icons/icons/highlight.svg</iconset>
-                         </property>
-                        </widget>
-                       </item>
-                       <item>
-                        <widget class="QPushButton" name="highlight_by_property_pushButton">
-                         <property name="toolTip">
-                          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Highlight&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Highlight the schematic buses based on the values of the selected property&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                         </property>
-                         <property name="text">
-                          <string/>
-                         </property>
-                         <property name="icon">
-                          <iconset resource="icons.qrc">
-                           <normaloff>:/Icons/icons/highlight2.svg</normaloff>:/Icons/icons/highlight2.svg</iconset>
-                         </property>
-                        </widget>
-                       </item>
-                       <item>
-                        <widget class="QPushButton" name="clear_highlight_pushButton">
-                         <property name="toolTip">
-                          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Highlight&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Clear the bus highlight&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                         </property>
-                         <property name="text">
-                          <string/>
-                         </property>
-                         <property name="icon">
-                          <iconset resource="icons.qrc">
-                           <normaloff>:/Icons/icons/unhighlight.svg</normaloff>:/Icons/icons/unhighlight.svg</iconset>
-                         </property>
-                        </widget>
-                       </item>
-                       <item>
                         <spacer name="horizontalSpacer_2">
                          <property name="orientation">
                           <enum>Qt::Horizontal</enum>
@@ -552,48 +482,6 @@
                           </size>
                          </property>
                         </spacer>
-                       </item>
-                       <item>
-                        <widget class="QPushButton" name="copyObjectsTableButton">
-                         <property name="toolTip">
-                          <string>Copy the displayed table to the clipboard</string>
-                         </property>
-                         <property name="text">
-                          <string/>
-                         </property>
-                         <property name="icon">
-                          <iconset resource="icons.qrc">
-                           <normaloff>:/Icons/icons/copy.svg</normaloff>:/Icons/icons/copy.svg</iconset>
-                         </property>
-                        </widget>
-                       </item>
-                       <item>
-                        <widget class="QPushButton" name="setValueToColumnButton">
-                         <property name="toolTip">
-                          <string>Set value to column</string>
-                         </property>
-                         <property name="text">
-                          <string/>
-                         </property>
-                         <property name="icon">
-                          <iconset resource="icons.qrc">
-                           <normaloff>:/Icons/icons/copy2down.svg</normaloff>:/Icons/icons/copy2down.svg</iconset>
-                         </property>
-                        </widget>
-                       </item>
-                       <item>
-                        <widget class="QPushButton" name="assignToProfileButton">
-                         <property name="toolTip">
-                          <string>Assign the selected property to the matching profile (select a cell or the entire column)</string>
-                         </property>
-                         <property name="text">
-                          <string/>
-                         </property>
-                         <property name="icon">
-                          <iconset resource="icons.qrc">
-                           <normaloff>:/Icons/icons/assign_to_profile.svg</normaloff>:/Icons/icons/assign_to_profile.svg</iconset>
-                         </property>
-                        </widget>
                        </item>
                        <item>
                         <widget class="QPushButton" name="structure_analysis_pushButton">
@@ -719,20 +607,6 @@
                          <property name="icon">
                           <iconset resource="icons.qrc">
                            <normaloff>:/Icons/icons/minus.svg</normaloff>:/Icons/icons/minus.svg</iconset>
-                         </property>
-                        </widget>
-                       </item>
-                       <item>
-                        <widget class="QPushButton" name="catalogue_edit_pushButton">
-                         <property name="toolTip">
-                          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Edit&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Edit the selected object (where editors ara availble)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                         </property>
-                         <property name="text">
-                          <string/>
-                         </property>
-                         <property name="icon">
-                          <iconset resource="icons.qrc">
-                           <normaloff>:/Icons/icons/edit.svg</normaloff>:/Icons/icons/edit.svg</iconset>
                          </property>
                         </widget>
                        </item>
