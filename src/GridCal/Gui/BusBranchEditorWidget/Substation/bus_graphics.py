@@ -149,6 +149,28 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
 
         self.set_position(x, y)
 
+    def recolour_mode(self) -> None:
+        """
+        Change the colour according to the system theme
+        """
+        if self.api_object is not None:
+            if self.api_object.active:
+                self.color = ACTIVE['color']
+                self.style = ACTIVE['style']
+            else:
+                self.color = DEACTIVATED['color']
+                self.style = DEACTIVATED['style']
+        else:
+            self.color = ACTIVE['color']
+            self.style = ACTIVE['style']
+
+        self.label.setDefaultTextColor(ACTIVE['text'])
+        self.set_tile_color(self.color)
+
+        for e in self.shunt_children:
+            if e is not None:
+                e.recolour_mode()
+
     def set_label(self, val: str):
         """
         Set the label content
@@ -883,7 +905,8 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
             msg += f"P={p} MW<br>Q={q} MVAr"
 
         title = self.api_object.name
-        self.label.setHtml(f'<html><head/><body><p><span style=" font-size:10pt;">{title}<br/></span><span style=" font-size:6pt;">{msg}</span></p></body></html>')
+        self.label.setHtml(f'<html><head/><body><p><span style=" font-size:10pt;">{title}<br/></span>'
+                           f'<span style=" font-size:6pt;">{msg}</span></p></body></html>')
 
         self.setToolTip(msg)
 

@@ -106,7 +106,7 @@ class BusBranchLibraryModel(QStandardItemModel):
     This is the list of draggable items
     """
 
-    def __init__(self, parent=None):
+    def __init__(self, parent: "BusBranchEditorWidget" = None) -> None:
         """
         Items model to host the draggable icons
         @param parent:
@@ -185,7 +185,12 @@ class BusBranchLibraryModel(QStandardItemModel):
                 mimedata.setData('component/name', data)
         return mimedata
 
-    def flags(self, index):
+    def flags(self, index: QModelIndex) -> Qt.ItemFlag:
+        """
+        
+        :param index: 
+        :return: 
+        """
         return Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemFlag.ItemIsDragEnabled
 
 
@@ -235,6 +240,57 @@ class BusBranchDiagramScene(QGraphicsScene):
 
         # call mouseReleaseEvent on "me" (continue with the rest of the actions)
         super(BusBranchDiagramScene, self).mouseReleaseEvent(event)
+
+    def contextMenuEvent(self, event: QContextMenuEvent):
+        """
+
+        :param event:
+        :return:
+        """
+        context_menu = QMenu()
+
+        add_menu_entry(menu=context_menu,
+                       text="Center",
+                       icon_path=":/Icons/icons/resize.svg",
+                       function_ptr=lambda x: self.parent_.align_schematic())
+
+        add_menu_entry(menu=context_menu,
+                       text="Expand",
+                       icon_path=":/Icons/icons/plus (gray).svg",
+                       function_ptr=lambda x: self.parent_.expand_node_distances())
+
+        add_menu_entry(menu=context_menu,
+                       text="Contract",
+                       icon_path=":/Icons/icons/minus (gray).svg",
+                       function_ptr=lambda x: self.parent_.shrink_node_distances())
+
+        add_menu_entry(menu=context_menu,
+                       text="Auto-layout",
+                       icon_path=":/Icons/icons/automatic_layout.svg",
+                       function_ptr=lambda x: self.parent_.auto_layout(sel=""))
+
+        add_menu_entry(menu=context_menu,
+                       text="Layout from (lat, lon) data",
+                       icon_path=":/Icons/icons/map.svg",
+                       function_ptr=lambda x: self.parent_.fill_xy_from_lat_lon())
+
+        add_menu_entry(menu=context_menu,
+                       text="Zoom in",
+                       icon_path=":/Icons/icons/zoom_in.svg",
+                       function_ptr=lambda x: self.parent_.zoom_in())
+
+        add_menu_entry(menu=context_menu,
+                       text="Zoom out",
+                       icon_path=":/Icons/icons/zoom_out.svg",
+                       function_ptr=lambda x: self.parent_.zoom_out())
+
+        add_menu_entry(menu=context_menu,
+                       text="Clear highlight",
+                       icon_path=":/Icons/icons/bus_icon.svg",
+                       function_ptr=lambda x: self.parent_.clear_big_bus_markers())
+
+        # launch the menu
+        context_menu.exec(event.screenPos())
 
 
 class CustomGraphicsView(QGraphicsView):
@@ -1097,56 +1153,6 @@ class BusBranchEditorWidget(QSplitter):
             self.newCenterPos = center_scene
             self.displacement = self.newCenterPos - self.startPos
             self.editor_graphics_view.setDragMode(QGraphicsView.DragMode.NoDrag)
-
-    def contextMenuEvent(self, event: QContextMenuEvent):
-        """
-
-        :param event:
-        :return:
-        """
-        context_menu = QMenu(parent=self)
-
-        add_menu_entry(menu=context_menu,
-                       text="Center",
-                       icon_path=":/Icons/icons/resize.svg",
-                       function_ptr=lambda x: self.align_schematic())
-
-        add_menu_entry(menu=context_menu,
-                       text="Expand",
-                       icon_path=":/Icons/icons/plus (gray).svg",
-                       function_ptr=lambda x: self.expand_node_distances())
-
-        add_menu_entry(menu=context_menu,
-                       text="Contract",
-                       icon_path=":/Icons/icons/minus (gray).svg",
-                       function_ptr=lambda x: self.shrink_node_distances())
-
-        add_menu_entry(menu=context_menu,
-                       text="Auto-layout",
-                       icon_path=":/Icons/icons/automatic_layout.svg",
-                       function_ptr=lambda x: self.auto_layout(sel=""))
-
-        add_menu_entry(menu=context_menu,
-                       text="Layout from (lat, lon) data",
-                       icon_path=":/Icons/icons/map.svg",
-                       function_ptr=lambda x: self.fill_xy_from_lat_lon())
-
-        add_menu_entry(menu=context_menu,
-                       text="Zoom in",
-                       icon_path=":/Icons/icons/zoom_in.svg",
-                       function_ptr=lambda x: self.zoom_in())
-
-        add_menu_entry(menu=context_menu,
-                       text="Zoom out",
-                       icon_path=":/Icons/icons/zoom_out.svg",
-                       function_ptr=lambda x: self.zoom_out())
-
-        add_menu_entry(menu=context_menu,
-                       text="Clear highlight",
-                       icon_path=":/Icons/icons/bus_icon.svg",
-                       function_ptr=lambda x: self.clear_big_bus_markers())
-
-        context_menu.exec(event.pos())
 
     def create_line(self, bus_from: Bus, bus_to: Bus, from_port: TerminalItem, to_port: TerminalItem):
         """

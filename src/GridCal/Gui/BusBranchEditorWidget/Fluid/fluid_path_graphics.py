@@ -89,6 +89,12 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
         if self.symbol is not None:
             self.symbol.set_colour(color, w, style)
 
+    def recolour_mode(self):
+        """
+        Change the colour according to the system theme
+        """
+        self.set_colour(self.color, self.width, self.style)
+
     def mouseDoubleClickEvent(self, event):
         """
         On double click, edit

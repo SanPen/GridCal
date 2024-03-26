@@ -29,6 +29,7 @@ from GridCalEngine.Devices.Branches.vsc import VSC
 from GridCalEngine.Devices.Branches.upfc import UPFC
 from GridCalEngine.Devices.Branches.hvdc_line import HvdcLine
 from GridCalEngine.Devices.Diagrams.map_diagram import MapDiagram
+from GridCalEngine.Devices.types import BRANCH_TYPES
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec
 from GridCal.Gui.MapWidget.Tiles.tiles import Tiles
 
@@ -124,7 +125,7 @@ class GridMapWidget(MapWidget):
 
     def colour_results(self,
                        buses: List[Bus],
-                       branches: List[Union[Line, DcLine, Transformer2W, Winding, UPFC, VSC]],
+                       branches: List[BRANCH_TYPES],
                        hvdc_lines: List[HvdcLine],
                        Sbus: CxVec,
                        bus_active: IntVec,

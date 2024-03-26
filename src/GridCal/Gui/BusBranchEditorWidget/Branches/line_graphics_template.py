@@ -521,6 +521,23 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         self._from_port.update()
         self._to_port.update()
 
+    def recolour_mode(self) -> None:
+        """
+        Change the colour according to the system theme
+        """
+        if self.api_object is not None:
+            if self.api_object.active:
+                self.color = ACTIVE['color']
+                self.style = ACTIVE['style']
+            else:
+                self.color = DEACTIVATED['color']
+                self.style = DEACTIVATED['style']
+        else:
+            self.color = ACTIVE['color']
+            self.style = ACTIVE['style']
+
+        self.set_colour(self.color, self.width, self.style)
+
     def set_colour(self, color: QColor, w, style: Qt.PenStyle):
         """
         Set color and style
