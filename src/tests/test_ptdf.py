@@ -367,7 +367,7 @@ def test_lodf_psse() -> None:
                     branchpsse[branchpsse == '---'] = 0.0
                     branchpsse = branchpsse.astype(float)
                 elif branchsearchundirect in lodf.columns:
-                    print("----------Nodes reordered")
+                    print("----------Schema reordered")
                     branchpsse = np.array(lodf[branchsearchundirect])
                     branchpsse[branchpsse == '---'] = 0.0
                     branchpsse = branchpsse.astype(float)

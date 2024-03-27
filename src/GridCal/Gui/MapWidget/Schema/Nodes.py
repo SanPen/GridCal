@@ -23,6 +23,9 @@ from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor
 from PySide6.QtWidgets import QMenu, QGraphicsSceneMouseEvent
 import random
 
+from GridCalEngine.IO.matpower.matpower_branch_definitions import QT
+
+
 class NodeGraphicItem(QtWidgets.QGraphicsEllipseItem):
     """
       Represents a block in the diagram
@@ -47,21 +50,73 @@ class NodeGraphicItem(QtWidgets.QGraphicsEllipseItem):
         self.y = y
         self.Parent = parent
         self.resize(r)
-        # self.setFlag(QtWidgets.QGraphicsItem.ItemIsMovable)  # Allow moving the node
-        # self.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable)  # Allow selecting the node
-        parent.addItem(self)
+        self.setFlag(QtWidgets.QGraphicsItem.ItemIsMovable)  # Allow moving the node
+        self.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable)  # Allow selecting the node
+        parent.Scene.addItem(self)
 
         # Create a pen with reduced line width
         self.change_pen_width(0.5)
 
+        self.colorInner = QColor(100, random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+        self.colorBorder = QColor(100, random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
         # Assign color to the node
-        self.setNodeColor()
+        self.setDefaultColor()
 
-    def setNodeColor(self):
-        # Example: Random color assignment
-        color = QColor(100, random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
-        brush = QBrush(color)
+    def updatePosition(self):
+        real_position = self.pos()
+        center_point = self.getPos()
+        self.x = center_point.x() + real_position.x()
+        self.y = center_point.y() + real_position.y()
+
+    def mouseMoveEvent(self, event):
+        """
+        Event handler for mouse move events.
+        """
+        self.updatePosition()
+        self.Parent.UpdateConnectors()
+        super().mouseMoveEvent(event)
+
+    def mousePressEvent(self, event):
+        """
+        Event handler for mouse press events.
+        """
+        if event.button() == Qt.LeftButton:
+            self.Parent.disableMove = True
+        super().mousePressEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        """
+        Event handler for mouse release events.
+        """
+        if event.button() == Qt.LeftButton:
+            self.Parent.disableMove = False
+        super().mouseReleaseEvent(event)
+
+    def hoverEnterEvent(self, event):
+        """
+        Event handler for when the mouse enters the item.
+        """
+        self.setNodeColor(QT.Yellow, QT.Yellow)
+
+    def hoverLeaveEvent(self, event):
+        """
+        Event handler for when the mouse leaves the item.
+        """
+        self.setDefaultColor()
+
+    def setNodeColor(self, inner_color=None, border_color=None):
+        # Example: color assignment
+        brush = QBrush(inner_color)
         self.setBrush(brush)
+
+        if border_color is not None:
+            pen = self.pen()
+            pen.setColor(border_color)
+            self.setPen(pen)
+
+    def setDefaultColor(self):
+        # Example: color assignment
+        self.setNodeColor(self.colorInner, self.colorBorder)
 
     def getPos(self):
         # Get the bounding rectangle of the ellipse item
@@ -71,6 +126,10 @@ class NodeGraphicItem(QtWidgets.QGraphicsEllipseItem):
         center_point = bounding_rect.center()
 
         return center_point
+
+    def getRealPos(self):
+        self.updatePosition()
+        return [self.x, self.y]
 
     def resize(self, new_radius):
         """

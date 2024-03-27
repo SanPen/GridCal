@@ -24,15 +24,14 @@ Some semantics:
     view  is the view of the map through the widget
           (view may be smaller than map, or larger)
 """
-
+import math
 from typing import List, Dict, Union, Tuple, Callable
 from PySide6.QtCore import Qt, QTimer, QPoint, QPointF, QEvent
 from PySide6.QtWidgets import QSizePolicy, QWidget, QMessageBox, QGraphicsScene, QGraphicsView, QVBoxLayout
 from PySide6.QtGui import QPainter, QColor, QPixmap, QPen, QFont, QFontMetrics, QPolygon, QBrush, QCursor, \
     QMouseEvent, QKeyEvent, QWheelEvent, QResizeEvent, QEnterEvent, QPaintEvent
 
-from GridCal.Gui.MapWidget.Nodes.Connector import Connector
-from GridCal.Gui.MapWidget.Nodes.Nodes import NodeGraphicItem
+from GridCal.Gui.MapWidget.Schema.SchemaManager import schemaManager
 from GridCal.Gui.MapWidget.map_events import LevelEvent, PositionEvent, SelectEvent, BoxSelectEvent
 from GridCal.Gui.MapWidget.logger import log
 from GridCal.Gui.MapWidget.Layers.point_layer import PointLayer, PointData
@@ -46,6 +45,8 @@ from GridCal.Gui.MapWidget.Tiles.tiles import Tiles
 
 # version number of the widget
 __version__ = '0.5'
+
+from GridCalEngine.IO.matpower.matpower_branch_definitions import QT
 
 
 class MapWidget(QWidget):
@@ -314,7 +315,7 @@ class MapWidget(QWidget):
         self.setLayout(layout)  # Set the layout for the MapWidget
 
         # Install an event filter on the QGraphicsView
-        self.view.installEventFilter(self)
+        # self.view.installEventFilter(self)
 
         # Install an event filter on the QGraphicsView
         self.scene.installEventFilter(self)
@@ -327,18 +328,6 @@ class MapWidget(QWidget):
         # # You can add more QGraphicsItems to the scene here
         # rect_item = self.scene.addRect(50, 50, 100, 100)  # Example rectangle
         # ellipse_item = self.scene.addEllipse(200, 200, 100, 100)  # Example ellipse
-
-        self.Nodes = list()
-        # node1 = NodeGraphicItem(self.scene, 1, 0, -1400)
-        # self.Nodes.append(node1)
-        # node2 = NodeGraphicItem(self.scene, 1, 100, -1600)
-        # self.Nodes.append(node2)
-        # node3 = NodeGraphicItem(self.scene, 1, 30, -1520)
-        # self.Nodes.append(node3)
-        #
-        # self.ConnectorList = list()
-        # con1 = Connector(self.scene, node1, node2)
-        # self.ConnectorList.append(con1)
 
         self.diagram_w = 25000
         self.diagram_H = 25000
@@ -353,30 +342,8 @@ class MapWidget(QWidget):
         self.schema_zoom = 1
         self.view.scale(initial_zoom_factor, initial_zoom_factor)
         self.remapSchema()
-
-        # Define the parameters for the array formation
-        num_points = 100  # Number of points in the array
-        start_x = -400  # X-coordinate of the starting point
-        start_y = -2800  # Y-coordinate of the starting point
-        spacing_x = 2.5  # Horizontal spacing between points
-        spacing_y = 2.5  # Vertical spacing between points
-
-        self.ConnectorList = []
-        # Create nodes in an array formation
-        for i in range(num_points):
-            for j in range(num_points):
-                x = start_x + i * spacing_x
-                y = start_y + j * spacing_y
-                node = NodeGraphicItem(self.scene, 0.5, x,
-                                       y)  # Assuming NodeGraphicItem takes (scene, type, x, y) as arguments
-                self.Nodes.append(node)
-
-        # Create connectors between nodes
-
-            for j in range(1, num_points):
-                con = Connector(self.scene, self.Nodes[(i * num_points) + j - 1],
-                                self.Nodes[(i * num_points) + j])  # Assuming Connector takes (scene, node1, node2) as arguments
-                self.ConnectorList.append(con)
+        self.selTempDistance = 20
+        self.schema_Manager = schemaManager(self.scene)
 
     def convertToQMouseEvent(self, sceneMouseEvent):
         # Get relevant information from QGraphicsSceneMouseEvent
@@ -407,7 +374,7 @@ class MapWidget(QWidget):
             self.pressed = False
 
         if event.type() == QEvent.GraphicsSceneMouseMove:
-            if self.pressed:
+            if not self.schema_Manager.disableMove:
                 self.mouseMoveEvent(self.convertToQMouseEvent(event))
 
         if event.type() == QEvent.GraphicsSceneWheel:
@@ -433,11 +400,11 @@ class MapWidget(QWidget):
 
     def change_size_and_pen_width_all(self, new_radius, pen_width):
         """
-        Change the size and pen width of all elements in Nodes.
+        Change the size and pen width of all elements in Schema.
         :param new_radius: New radius for the nodes.
         :param pen_width: New pen width for the nodes.
         """
-        for node in self.Nodes:
+        for node in self.schema_Manager.Nodes:
             node.resize(new_radius)
             node.change_pen_width(pen_width)
 
@@ -659,8 +626,6 @@ class MapWidget(QWidget):
             xgeo = xgeo * self.devXFact  # TODO: improve transforming function from adhoc values to true transformer
             ygeo = -ygeo * self.devYFact  # TODO: improve transforming function from adhoc values to true transformer
             point = QPointF(xgeo, ygeo)
-            print(xgeo)
-            print(ygeo)
             self.view.centerOn(point)
 
     def mouseMoveEvent(self, event: QMouseEvent):

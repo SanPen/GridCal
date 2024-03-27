@@ -90,43 +90,43 @@ __headers__['CatalogBranch']['ZN'] = ['CLASS', 'EQ', 'DESC', 'VNOM', 'RZN', 'RXN
 
 ########################################################################################################################
 # nodes block
-__headers__['Nodes'] = dict()
+__headers__['Schema'] = dict()
 
 # Airline support post
-__headers__['Nodes']['APOIO'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST']
+__headers__['Schema']['APOIO'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST']
 
 # Cabinet (only for low voltage)
-__headers__['Nodes']['ARM'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST', 'YEAR']
+__headers__['Schema']['ARM'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST', 'YEAR']
 
 # Connection
-__headers__['Nodes']['CX'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST']
+__headers__['Schema']['CX'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST']
 
 # Neutral connection
-__headers__['Nodes']['CXN'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST']
+__headers__['Schema']['CXN'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST']
 
 # Network Equivalent
-__headers__['Nodes']['EQUIV'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'VMIN', 'VMAX', 'ZONE',
+__headers__['Schema']['EQUIV'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'VMIN', 'VMAX', 'ZONE',
                                  'SEPNET', 'AUTOUP', 'P', 'Q', 'ELAST', 'SIMUL', 'HTYP', 'HARM5', 'HARM7', 'HARM11',
                                  'HARM13', 'NOGRW', 'RS', 'XS', 'R1', 'X1', 'R2', 'X2', 'RH', 'XH', 'COM']
 
 # Generator
-__headers__['Nodes']['GEN'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST', 'MODEL', 'VMIN', 'VMAX',
+__headers__['Schema']['GEN'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST', 'MODEL', 'VMIN', 'VMAX',
                                'V', 'ENAB', 'P', 'Q', 'QMIN', 'QMAX', 'ELAST', 'HTYP', 'HARM5', 'HARM7', 'HARM11',
                                'HARM13', 'VNOM', 'RAT', 'TGEN', 'COST', 'YEAR']
 
 # Charging (only for low voltage)
-__headers__['Nodes']['LOAD'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST', 'VMIN', 'VMAX',
+__headers__['Schema']['LOAD'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST', 'VMIN', 'VMAX',
                                 'NCMPLAN']  # fill to fit...
 
 # Transformation station
-__headers__['Nodes']['PT'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST', 'VMIN', 'VMAX', 'ZONE',
+__headers__['Schema']['PT'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST', 'VMIN', 'VMAX', 'ZONE',
                               'ENAB', 'P', 'Q', 'ELAST', 'SIMUL', 'HTYP', 'HARM5', 'HARM7', 'HARM11', 'HARM13', 'NOGRW',
                               'EQEXIST', 'EQPOSS1', 'MCOST1', 'ICOST1', 'EQPOSS2', 'MCOST2', 'ICOST2', 'EQPOSS3',
                               'MCOST3',
                               'ICOST3', 'NCLI', 'EQTYPE', 'YEAR', 'COM', 'INFOCOM', 'ID_AUX']
 
 # Customer transformation office
-__headers__['Nodes']['PTC'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST', 'VMIN', 'VMAX', 'ZONE',
+__headers__['Schema']['PTC'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST', 'VMIN', 'VMAX', 'ZONE',
                                'ENAB', 'P', 'Q', 'ELAST', 'SIMUL', 'HTYP', 'HARM5', 'HARM7', 'HARM11', 'HARM13',
                                'NOGRW',
                                'EQEXIST', 'EQPOSS1', 'MCOST1', 'ICOST1', 'EQPOSS2', 'MCOST2', 'ICOST2', 'EQPOSS3',
@@ -134,11 +134,11 @@ __headers__['Nodes']['PTC'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX',
                                'ICOST3', 'NCLI', 'EQTYPE', 'YEAR', 'COM', 'INFOCOM', 'ID_AUX']
 
 # Reference node
-__headers__['Nodes']['REF'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'VREF', 'RAT',
+__headers__['Schema']['REF'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'VREF', 'RAT',
                                'COST', 'TGEN', 'YEAR']
 
 # Voltage Transformer
-__headers__['Nodes']['TT'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST', 'VMIN', 'VMAX',
+__headers__['Schema']['TT'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST', 'VMIN', 'VMAX',
                               'DISABLE', 'HARM5', 'HARM7', 'HARM11', 'HARM13', 'EQEXIST', 'TAP', 'YEAR', 'ID_AUX']
 
 ########################################################################################################################
@@ -251,7 +251,7 @@ def read_dpx_data(file_name):
 
                 if len(values) > 1:
 
-                    if current_block in ['CatalogNode', 'CatalogBranch', 'Areas', 'Sites', 'Nodes',
+                    if current_block in ['CatalogNode', 'CatalogBranch', 'Areas', 'Sites', 'Schema',
                                          'Branches']:  # blocks with further categorization
 
                         # check the if the block has been created
@@ -312,7 +312,7 @@ def repack(data_structures, logger=Logger(), verbose=False):
             # blocks without header marker
             pass
 
-        elif current_block in ['Nodes', 'Branches', 'CatalogBranch']:  # blocks without header marker
+        elif current_block in ['Schema', 'Branches', 'CatalogBranch']:  # blocks without header marker
 
             # repack the data with headers
             for tpe in data_structures[current_block].keys():
@@ -389,15 +389,15 @@ def load_dpx(file_name, contraction_factor=1000) -> tuple[Union[MultiCircuit, An
 
     buses_id_dict = dict()
     #  create nodes
-    for tpe in data_structures['Nodes']:
+    for tpe in data_structures['Schema']:
         # Airline support post
-        # __headers__['Nodes']['APOIO'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST']
-        # __headers__['Nodes']['ARM'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST', 'YEAR']
-        # __headers__['Nodes']['CX'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST']
-        # __headers__['Nodes']['CXN'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST']
-        # __headers__['Nodes']['LOAD'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST', 'VMIN', 'VMAX', 'NCMPLAN']  # fill to fit...
+        # __headers__['Schema']['APOIO'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST']
+        # __headers__['Schema']['ARM'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST', 'YEAR']
+        # __headers__['Schema']['CX'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST']
+        # __headers__['Schema']['CXN'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST']
+        # __headers__['Schema']['LOAD'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST', 'VMIN', 'VMAX', 'NCMPLAN']  # fill to fit...
         if tpe in ['APOIO', 'ARM', 'CX', 'CXN', 'LOAD']:
-            df = data_structures['Nodes'][tpe]
+            df = data_structures['Schema'][tpe]
 
             for i in range(df.shape[0]):
                 name = 'B' + str(len(circuit.buses) + 1) + '_' + str(df['NAME'].values[i])
@@ -411,12 +411,12 @@ def load_dpx(file_name, contraction_factor=1000) -> tuple[Union[MultiCircuit, An
                 buses_id_dict[id_] = bus
 
         # Network Equivalent
-        # __headers__['Nodes']['EQUIV'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'VMIN', 'VMAX', 'ZONE',
+        # __headers__['Schema']['EQUIV'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'VMIN', 'VMAX', 'ZONE',
         #                                  'SEPNET', 'AUTOUP', 'P', 'Q', 'ELAST', 'SIMUL', 'HTYP', 'HARM5', 'HARM7',
         #                                  'HARM11',
         #                                  'HARM13', 'NOGRW', 'RS', 'XS', 'R1', 'X1', 'R2', 'X2', 'RH', 'XH', 'COM']
         elif tpe == 'EQUIV':
-            df = data_structures['Nodes'][tpe]
+            df = data_structures['Schema'][tpe]
 
             for i in range(df.shape[0]):
                 name = 'B' + str(len(circuit.buses) + 1) + '_' + str(df['NAME'].values[i])
@@ -436,13 +436,13 @@ def load_dpx(file_name, contraction_factor=1000) -> tuple[Union[MultiCircuit, An
                 circuit.add_load(bus, load)
 
         # Generator
-        # __headers__['Nodes']['GEN'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST', 'MODEL', 'VMIN',
+        # __headers__['Schema']['GEN'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST', 'MODEL', 'VMIN',
         #                                'VMAX',
         #                                'V', 'ENAB', 'P', 'Q', 'QMIN', 'QMAX', 'ELAST', 'HTYP', 'HARM5', 'HARM7',
         #                                'HARM11',
         #                                'HARM13', 'VNOM', 'RAT', 'TGEN', 'COST', 'YEAR']
         elif tpe == 'GEN':
-            df = data_structures['Nodes'][tpe]
+            df = data_structures['Schema'][tpe]
 
             for i in range(df.shape[0]):
                 name = 'B' + str(len(circuit.buses) + 1) + '_' + str(df['NAME'].values[i])
@@ -472,7 +472,7 @@ def load_dpx(file_name, contraction_factor=1000) -> tuple[Union[MultiCircuit, An
                     circuit.add_static_generator(bus, gen)
 
         # Transformation station
-        # __headers__['Nodes']['PT'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST', 'VMIN', 'VMAX',
+        # __headers__['Schema']['PT'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST', 'VMIN', 'VMAX',
         #                               'ZONE',
         #                               'ENAB', 'P', 'Q', 'ELAST', 'SIMUL', 'HTYP', 'HARM5', 'HARM7', 'HARM11', 'HARM13',
         #                               'NOGRW',
@@ -481,7 +481,7 @@ def load_dpx(file_name, contraction_factor=1000) -> tuple[Union[MultiCircuit, An
         #                               'ICOST3', 'NCLI', 'EQTYPE', 'YEAR', 'COM', 'INFOCOM', 'ID_AUX']
         elif tpe in ['PT', 'PTC']:
 
-            df = data_structures['Nodes'][tpe]
+            df = data_structures['Schema'][tpe]
 
             for i in range(df.shape[0]):
                 name = 'B' + str(len(circuit.buses) + 1) + '_' + str(df['NAME'].values[i])
@@ -501,10 +501,10 @@ def load_dpx(file_name, contraction_factor=1000) -> tuple[Union[MultiCircuit, An
                 buses_id_dict[id_] = bus
 
         # Reference node
-        # __headers__['Nodes']['REF'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'VREF', 'RAT',
+        # __headers__['Schema']['REF'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'VREF', 'RAT',
         #                                'COST', 'TGEN', 'YEAR']
         elif tpe == 'REF':
-            df = data_structures['Nodes'][tpe]
+            df = data_structures['Schema'][tpe]
 
             for i in range(df.shape[0]):
                 name = 'B' + str(len(circuit.buses) + 1) + '_' + str(df['NAME'].values[i])
@@ -518,11 +518,11 @@ def load_dpx(file_name, contraction_factor=1000) -> tuple[Union[MultiCircuit, An
                 buses_id_dict[id_] = bus
 
         # Voltage Transformer
-        # __headers__['Nodes']['TT'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST', 'VMIN', 'VMAX',
+        # __headers__['Schema']['TT'] = ['CLASS', 'ID', 'NAME', 'VBASE', 'GX', 'GY', 'SX', 'SY', 'EXIST', 'VMIN', 'VMAX',
         #                               'DISABLE', 'HARM5', 'HARM7', 'HARM11', 'HARM13', 'EQEXIST', 'TAP', 'YEAR',
         #                               'ID_AUX']
         elif tpe == 'TT':
-            df = data_structures['Nodes'][tpe]
+            df = data_structures['Schema'][tpe]
 
             for i in range(df.shape[0]):
                 name = 'B' + str(len(circuit.buses) + 1) + '_' + str(df['NAME'].values[i])
@@ -536,7 +536,7 @@ def load_dpx(file_name, contraction_factor=1000) -> tuple[Union[MultiCircuit, An
                 buses_id_dict[id_] = bus
 
         else:
-            logger.add_error('Not recognised under Nodes', tpe)
+            logger.add_error('Not recognised under Schema', tpe)
 
     # create Branches
     for tpe in data_structures['Branches']:

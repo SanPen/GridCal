@@ -17,9 +17,11 @@
 from typing import Union, List
 import numpy as np
 from PySide6.QtWidgets import QWidget
+from collections.abc import Callable
 from GridCal.Gui.MapWidget.map_widget import MapWidget, PolylineData, Place
 import GridCal.Gui.Visualization.visualization as viz
 import GridCal.Gui.Visualization.palettes as palettes
+from GridCalEngine.Devices import GraphicLocation, Transformer3W, Winding
 from GridCalEngine.Devices.Substation import Bus
 from GridCalEngine.Devices.Branches.line import Line
 from GridCalEngine.Devices.Branches.dc_line import DcLine
@@ -28,7 +30,9 @@ from GridCalEngine.Devices.Branches.vsc import VSC
 from GridCalEngine.Devices.Branches.upfc import UPFC
 from GridCalEngine.Devices.Branches.hvdc_line import HvdcLine
 from GridCalEngine.Devices.Diagrams.map_diagram import MapDiagram
+from GridCalEngine.Devices.Fluid import FluidNode, FluidPath
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec
+
 from GridCal.Gui.MapWidget.Tiles.tiles import Tiles
 
 
@@ -328,3 +332,199 @@ class GridMapWidget(MapWidget):
 
         self.setLayerData(lid=self.polyline_layer_id, data=data)
         self.update()
+
+
+def generate_map_diagram(buses: List[Bus],
+                                lines: List[Line],
+                                dc_lines: List[DcLine],
+                                transformers2w: List[Transformer2W],
+                                transformers3w: List[Transformer3W],
+                                windings: List[Winding],
+                                hvdc_lines: List[HvdcLine],
+                                vsc_devices: List[VSC],
+                                upfc_devices: List[UPFC],
+                                fluid_nodes: List[FluidNode],
+                                fluid_paths: List[FluidPath],
+                                explode_factor=1.0,
+                                prog_func: Union[Callable, None] = None,
+                                text_func: Union[Callable, None] = None,
+                                name='Bus branch diagram') -> MapDiagram:
+    """
+    Add a elements to the schematic scene
+    :param buses: list of Bus objects
+    :param lines: list of Line objects
+    :param dc_lines: list of DcLine objects
+    :param transformers2w: list of Transformer Objects
+    :param transformers3w: list of Transformer3W Objects
+    :param windings: list of Winding objects
+    :param hvdc_lines: list of HvdcLine objects
+    :param vsc_devices: list Vsc objects
+    :param upfc_devices: List of UPFC devices
+    :param fluid_nodes:
+    :param fluid_paths:
+    :param explode_factor: factor of "explosion": Separation of the nodes factor
+    :param prog_func: progress report function
+    :param text_func: Text report function
+    :param name: name of the diagram
+    """
+
+    diagram = MapDiagram(name=name)
+
+    # first create the buses
+    if text_func is not None:
+        text_func('Creating schematic buses')
+
+    nn = len(buses)
+    for i, bus in enumerate(buses):
+
+        if not bus.is_internal:  # 3w transformer buses are not represented
+
+            if prog_func is not None:
+                prog_func((i + 1) / nn * 100.0)
+
+            # correct possible nonsense
+            if np.isnan(bus.y):
+                bus.y = 0.0
+            if np.isnan(bus.x):
+                bus.x = 0.0
+
+            x = int(bus.x * explode_factor)
+            y = int(bus.y * explode_factor)
+            diagram.set_point(device=bus, location=GraphicLocation(x=x, y=y, h=bus.h, w=bus.w))
+
+    # --------------------------------------------------------------------------------------------------------------
+    if text_func is not None:
+        text_func('Creating schematic fluid nodes devices')
+
+    nn = len(fluid_nodes)
+    for i, elm in enumerate(fluid_nodes):
+
+        if prog_func is not None:
+            prog_func((i + 1) / nn * 100.0)
+
+        # branch.graphic_obj = self.add_api_upfc(branch)
+        diagram.set_point(device=elm, location=GraphicLocation())
+
+    # --------------------------------------------------------------------------------------------------------------
+    if text_func is not None:
+        text_func('Creating schematic line devices')
+
+    nn = len(lines)
+    for i, branch in enumerate(lines):
+
+        if prog_func is not None:
+            prog_func((i + 1) / nn * 100.0)
+
+        # branch.graphic_obj = self.add_api_line(branch)
+        diagram.set_point(device=branch, location=GraphicLocation())
+
+    # --------------------------------------------------------------------------------------------------------------
+    if text_func is not None:
+        text_func('Creating schematic line devices')
+
+    nn = len(dc_lines)
+    for i, branch in enumerate(dc_lines):
+
+        if prog_func is not None:
+            prog_func((i + 1) / nn * 100.0)
+
+        # branch.graphic_obj = self.add_api_dc_line(branch)
+        diagram.set_point(device=branch, location=GraphicLocation())
+
+    # --------------------------------------------------------------------------------------------------------------
+    if text_func is not None:
+        text_func('Creating schematic transformer devices')
+
+    nn = len(transformers2w)
+    for i, branch in enumerate(transformers2w):
+
+        if prog_func is not None:
+            prog_func((i + 1) / nn * 100.0)
+
+        # branch.graphic_obj = self.add_api_transformer(branch)
+        diagram.set_point(device=branch, location=GraphicLocation())
+
+    # --------------------------------------------------------------------------------------------------------------
+    if text_func is not None:
+        text_func('Creating schematic transformer3w devices')
+
+    nn = len(transformers3w)
+    for i, elm in enumerate(transformers3w):
+
+        if prog_func is not None:
+            prog_func((i + 1) / nn * 100.0)
+
+        # elm.graphic_obj = self.add_api_transformer_3w(elm, explode_factor, filter_with_diagram)
+        x = int(elm.x * explode_factor)
+        y = int(elm.y * explode_factor)
+        diagram.set_point(device=elm, location=GraphicLocation(x=x, y=y))
+        diagram.set_point(device=elm.winding1, location=GraphicLocation())
+        diagram.set_point(device=elm.winding2, location=GraphicLocation())
+        diagram.set_point(device=elm.winding3, location=GraphicLocation())
+
+    # --------------------------------------------------------------------------------------------------------------
+    if text_func is not None:
+        text_func('Creating schematic winding devices')
+
+    nn = len(windings)
+    for i, branch in enumerate(windings):
+
+        if prog_func is not None:
+            prog_func((i + 1) / nn * 100.0)
+
+        # branch.graphic_obj = self.add_api_transformer(branch)
+        diagram.set_point(device=branch, location=GraphicLocation())
+
+    # --------------------------------------------------------------------------------------------------------------
+    if text_func is not None:
+        text_func('Creating schematic HVDC devices')
+
+    nn = len(hvdc_lines)
+    for i, branch in enumerate(hvdc_lines):
+
+        if prog_func is not None:
+            prog_func((i + 1) / nn * 100.0)
+
+        # branch.graphic_obj = self.add_api_hvdc(branch)
+        diagram.set_point(device=branch, location=GraphicLocation())
+
+    # --------------------------------------------------------------------------------------------------------------
+    if text_func is not None:
+        text_func('Creating schematic VSC devices')
+
+    nn = len(vsc_devices)
+    for i, branch in enumerate(vsc_devices):
+
+        if prog_func is not None:
+            prog_func((i + 1) / nn * 100.0)
+
+        # branch.graphic_obj = self.add_api_vsc(branch)
+        diagram.set_point(device=branch, location=GraphicLocation())
+
+    # --------------------------------------------------------------------------------------------------------------
+    if text_func is not None:
+        text_func('Creating schematic UPFC devices')
+
+    nn = len(upfc_devices)
+    for i, branch in enumerate(upfc_devices):
+
+        if prog_func is not None:
+            prog_func((i + 1) / nn * 100.0)
+
+        # branch.graphic_obj = self.add_api_upfc(branch)
+        diagram.set_point(device=branch, location=GraphicLocation())
+
+    # --------------------------------------------------------------------------------------------------------------
+    if text_func is not None:
+        text_func('Creating schematic fluid paths devices')
+
+    nn = len(fluid_paths)
+    for i, elm in enumerate(fluid_paths):
+
+        if prog_func is not None:
+            prog_func((i + 1) / nn * 100.0)
+
+        # branch.graphic_obj = self.add_api_upfc(branch)
+        diagram.set_point(device=elm, location=GraphicLocation())
+
+    return diagram

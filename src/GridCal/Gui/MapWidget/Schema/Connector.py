@@ -22,7 +22,7 @@ from PySide6.QtCore import Qt, QPoint, QRectF, QRect
 from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor
 from PySide6.QtWidgets import QGraphicsScene, QGraphicsLineItem
 
-from GridCal.Gui.MapWidget.Nodes.Nodes import NodeGraphicItem
+from GridCal.Gui.MapWidget.Schema.Nodes import NodeGraphicItem
 
 
 class Connector(QGraphicsLineItem):
@@ -31,20 +31,23 @@ class Connector(QGraphicsLineItem):
         self.Parent = parent
         self.First = first
         self.Second = second
-        self.Parent.addItem(self)
+        self.Parent.Scene.addItem(self)
+        color = QColor(Qt.blue)
+        self.setLineColor(color)
         self.update()
+
+    def setLineColor(self, color):
+        pen = self.pen()
+        if(pen == None):
+            pen = QPen()
+        pen.setWidth(0.5)  # Adjust the width as needed
+        pen.setColor(color)  # Set the color
+        self.setPen(pen)
 
     def update(self):
         # Get the positions of the first and second objects
-        first_pos = self.First.getPos()
-        second_pos = self.Second.getPos()
-
-        # Create a pen with reduced line width
-        pen = QPen()
-        pen.setWidth(0.5)  # Adjust the width as needed
-
-        # Set the pen for the ellipse item
-        self.setPen(pen)
+        first_pos = self.First.getRealPos()
+        second_pos = self.Second.getRealPos()
 
         # Set the line's starting and ending points
-        self.setLine(first_pos.x(), first_pos.y(), second_pos.x(), second_pos.y())
+        self.setLine(first_pos[0], first_pos[1], second_pos[0], second_pos[1])
