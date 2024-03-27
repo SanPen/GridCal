@@ -91,6 +91,12 @@ class LineLocations(EditableDevice):
 
         self.data: List[LineLocation] = list()
 
+    def get_locations(self) -> List[LineLocation]:
+        """
+        Get list of LineLocation
+        """
+        return self.data
+
     def add(self, sequence: int, latitude: float, longitude: float, altitude: float = 0.0):
         """
         Append row to this object (very slow)

@@ -398,6 +398,12 @@ def generate_map_diagram(substations: List[Substation],
         # branch.graphic_obj = self.add_api_line(branch)
         diagram.set_point(device=branch, location=MapLocation())
 
+        # register all the line locations
+        for loc in branch.locations.get_locations():
+            diagram.set_point(device=loc, location=MapLocation(latitude=loc.lat,
+                                                               longitude=loc.long,
+                                                               altitude=loc.alt))
+
     # --------------------------------------------------------------------------------------------------------------
     if text_func is not None:
         text_func('Creating schematic line devices')
@@ -410,6 +416,12 @@ def generate_map_diagram(substations: List[Substation],
 
         # branch.graphic_obj = self.add_api_dc_line(branch)
         diagram.set_point(device=branch, location=MapLocation())
+
+        # register all the line locations
+        for loc in branch.locations.get_locations():
+            diagram.set_point(device=loc, location=MapLocation(latitude=loc.lat,
+                                                               longitude=loc.long,
+                                                               altitude=loc.alt))
 
     # --------------------------------------------------------------------------------------------------------------
     if text_func is not None:
@@ -424,6 +436,12 @@ def generate_map_diagram(substations: List[Substation],
         # branch.graphic_obj = self.add_api_hvdc(branch)
         diagram.set_point(device=branch, location=MapLocation())
 
+        # register all the line locations
+        for loc in branch.locations.get_locations():
+            diagram.set_point(device=loc, location=MapLocation(latitude=loc.lat,
+                                                               longitude=loc.long,
+                                                               altitude=loc.alt))
+
     # --------------------------------------------------------------------------------------------------------------
     if text_func is not None:
         text_func('Creating schematic fluid paths devices')
@@ -436,5 +454,11 @@ def generate_map_diagram(substations: List[Substation],
 
         # branch.graphic_obj = self.add_api_upfc(branch)
         diagram.set_point(device=elm, location=MapLocation())
+
+        # register all the line locations
+        for loc in elm.locations.get_locations():
+            diagram.set_point(device=loc, location=MapLocation(latitude=loc.lat,
+                                                               longitude=loc.long,
+                                                               altitude=loc.alt))
 
     return diagram

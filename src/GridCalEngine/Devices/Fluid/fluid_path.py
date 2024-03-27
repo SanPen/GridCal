@@ -14,11 +14,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
+import numpy as np
 from typing import Union
 from GridCalEngine.Devices.Parents.editable_device import EditableDevice
-from GridCalEngine.enumerations import DeviceType
+from GridCalEngine.enumerations import DeviceType, SubObjectType
 from GridCalEngine.Devices.Fluid.fluid_node import FluidNode
+from GridCalEngine.Devices.Branches.line_locations import LineLocations
 
 
 class FluidPath(EditableDevice):
@@ -52,10 +53,14 @@ class FluidPath(EditableDevice):
         self.min_flow = min_flow
         self.max_flow = max_flow
 
+        # Line locations
+        self._locations: LineLocations = LineLocations()
+
         self.register(key='source', units="", tpe=DeviceType.FluidNodeDevice, definition="Source node")
         self.register(key='target', units="", tpe=DeviceType.FluidNodeDevice, definition="Target node")
         self.register(key='min_flow', units="m3/s", tpe=float, definition="Minimum flow")
         self.register(key='max_flow', units="m3/s", tpe=float, definition="Maximum flow")
+        self.register(key='locations', units='', tpe=SubObjectType.LineLocations, definition='Locations', editable=False)
 
     def copy(self):
         """
@@ -72,3 +77,20 @@ class FluidPath(EditableDevice):
         fluid_path.max_flow = self.max_flow
 
         return fluid_path
+
+    @property
+    def locations(self) -> LineLocations:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._locations
+
+    @locations.setter
+    def locations(self, val: Union[LineLocations, np.ndarray]):
+        if isinstance(val, LineLocations):
+            self._locations = val
+        elif isinstance(val, np.ndarray):
+            self._locations.set(data=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a locations')
