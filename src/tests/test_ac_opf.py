@@ -56,10 +56,11 @@ def case14() -> tuple[NonlinearOPFResults, NonlinearOPFResults, NonlinearOPFResu
     new_directory = os.path.abspath(os.path.join(cwd, '..', '..'))
     file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case14.m')
 
-    base_grid = gce.FileOpen(file_path).open()
-    grid = base_grid.copy()
+    grid = gce.FileOpen(file_path).open()
+
     for ll in range(len(grid.lines)):
         grid.lines[ll].monitor_loading = True
+
     nc = gce.compile_numerical_circuit_at(grid)
     pf_options = gce.PowerFlowOptions(control_q=gce.ReactivePowerControlMode.NoControl)
     opf_options = gce.OptimalPowerFlowOptions(ips_method=gce.SolverType.NR, ips_tolerance=1e-8, ips_iterations=50)
@@ -72,6 +73,9 @@ def case14() -> tuple[NonlinearOPFResults, NonlinearOPFResults, NonlinearOPFResu
 
     for ll in range(len(grid.lines)):
         grid.lines[ll].monitor_loading = True
+        grid.lines[ll].Cost_prof.default_value *= 10000
+    for b in range(len(grid.buses)):
+        grid.buses[b].Vm_cost *= 10000
 
     nc = gce.compile_numerical_circuit_at(grid)
     tap_sol = ac_optimal_power_flow(nc=nc, pf_options=pf_options, opf_options=opf_options, use_bound_slacks=False)
