@@ -779,8 +779,7 @@ class BusBranchEditorWidget(QSplitter):
                         injections_by_tpe=inj_dev_by_bus.get(location.api_object, dict())
                     )
 
-                    graphic_object.change_size(h=location.h,
-                                               w=location.w)
+                    graphic_object.change_size(w=location.w)
 
                     # add buses reference for later
                     bus_dict[idtag] = graphic_object
@@ -2932,8 +2931,8 @@ class BusBranchEditorWidget(QSplitter):
                                                   tpe=bus_types[types[i]] if types is not None else None)
 
                         if use_flow_based_width:
-                            h = int(np.floor(min_bus_width + Pnorm[i] * (max_bus_width - min_bus_width)))
-                            graphic_object.change_size(graphic_object.w, h)
+                            # h = int(np.floor(min_bus_width + Pnorm[i] * (max_bus_width - min_bus_width)))
+                            graphic_object.change_size(w=graphic_object.w)
 
                     else:
                         graphic_object.set_tile_color(Qt.gray)

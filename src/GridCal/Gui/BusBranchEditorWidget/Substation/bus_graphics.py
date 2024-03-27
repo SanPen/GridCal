@@ -61,7 +61,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
                  index=0,
                  editor: BusBranchEditorWidget = None,
                  bus: Bus = None,
-                 h: int = 20,
+                 h: int = 40,
                  w: int = 80,
                  x: int = 0,
                  y: int = 0):
@@ -79,7 +79,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         super(BusGraphicItem, self).__init__(parent)
 
         self.min_w = 180.0
-        self.min_h = 20.0
+        self.min_h = 40.0
         self.offset = 10
         self.h = h if h >= self.min_h else self.min_h
         self.w = w if w >= self.min_w else self.min_w
@@ -121,7 +121,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         # self.results_label.setDefaultTextColor(ACTIVE['text'])
 
         # square
-        self.tile = QtWidgets.QGraphicsRectItem(0, 0, self.min_h, self.min_h, self)
+        self.tile = QtWidgets.QGraphicsRectItem(0, 0, 20, 20, self)
         self.tile.setOpacity(0.7)
 
         # connection terminals the block
@@ -133,7 +133,6 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         self.sizer.setPos(self.w, self.h)
         self.sizer.posChangeCallbacks.append(self.change_size)  # Connect the callback
         self.sizer.setFlag(self.GraphicsItemFlag.ItemIsMovable)
-        self.adapt()
 
         self.big_marker = None
 
@@ -145,7 +144,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         self.setCursor(QCursor(Qt.PointingHandCursor))
 
         # Update size:
-        self.change_size(self.w, self.h)
+        self.change_size(w=self.w)
 
         self.set_position(x, y)
 
@@ -241,7 +240,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         Update the object
         :return:
         """
-        self.change_size(self.w, self.h)
+        self.change_size(w=self.w)
 
     def set_height(self, h: int):
         """
@@ -252,32 +251,31 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         self.setRect(0.0, 0.0, self.w, h)
         self.h = h
 
-    def change_size(self, w: int, h: Union[None, int] = None):
+    def change_size(self, w: int, dummy: float = 0.0):
         """
         Resize block function
         :param w:
-        :param h:
+        :param dummy:
         :return:
         """
         # Limit the block size to the minimum size:
-        if h is None:
-            h = self.min_h
+        # if h is None:
+        #     h = self.min_h
 
         if w < self.min_w:
             w = self.min_w
 
-        self.setRect(0.0, 0.0, w, h)
-        self.h = h
+        self.setRect(0.0, 0.0, w, self.min_h)
         self.w = w
 
-        y0 = h + self.offset
+        y0 = self.offset
         x0 = 0
 
         # center label:
         rect = self.label.boundingRect()
         lw, lh = rect.width(), rect.height()
         lx = (w - lw) / 2
-        ly = (h - lh) / 2 - lh * (FONT_SCALE - 1)
+        ly = lh / 2 - lh * (FONT_SCALE - 1)
         # self.label.setPos(lx, ly)
         self.label.setPos(w, ly - 40)
 
@@ -285,7 +283,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
 
         # lower
         self._terminal.setPos(x0, y0)
-        self._terminal.setRect(0, 0, w, 10)
+        self._terminal.setRect(0, 20, w, 10)
 
         # Set text
         # if self.api_object is not None:
@@ -298,11 +296,11 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
                                            x=self.pos().x(),
                                            y=self.pos().y(),
                                            w=w,
-                                           h=h,
+                                           h=int(self.min_h),
                                            r=self.rotation(),
                                            graphic_object=self)
 
-        return w, h
+        return w, self.min_h
 
     def arrange_children(self) -> None:
         """
@@ -704,18 +702,6 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         Mouse double click
         :param event: event object
         """
-        self.adapt()
-
-    def adapt(self) -> None:
-        """
-        Set the bus width according to the label text
-        """
-        # Todo: fix the resizing on double click
-        h = self._terminal.boundingRect().height()
-        w = len(self.api_object.name) * 8 + 10
-        self.change_size(w=w, h=h)
-        self.sizer.setPos(w, self.h)
-
         title = self.api_object.name if self.api_object is not None else ""
         msg = ""
         self.label.setHtml(f'<html><head/><body><p><span style=" font-size:10pt;">{title}<br/></span>'
