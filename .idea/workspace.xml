@@ -28,7 +28,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="336ac068-5f36-44a4-9f98-8909f6be5848" name="Changes" comment="Videos and tasks to do">
+    <list default="true" id="336ac068-5f36-44a4-9f98-8909f6be5848" name="Changes" comment="Added number of times a line appears as monitored. Still need to order the columns. WIP">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/contingencies_report.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/contingencies_report.py" afterDir="false" />
     </list>
@@ -1289,13 +1289,6 @@
       <workItem from="1709565306279" duration="3137000" />
       <workItem from="1709626829664" duration="5096000" />
     </task>
-    <task id="LOCAL-00316" summary="Implemented profile sparsity in the ejson v3">
-      <created>1656844513018</created>
-      <option name="number" value="00316" />
-      <option name="presentableId" value="LOCAL-00316" />
-      <option name="project" value="LOCAL" />
-      <updated>1656844513019</updated>
-    </task>
     <task id="LOCAL-00317" summary="added the newtonpa time series error reading">
       <created>1657011725858</created>
       <option name="number" value="00317" />
@@ -1632,7 +1625,14 @@
       <option name="project" value="LOCAL" />
       <updated>1711038111719</updated>
     </task>
-    <option name="localTasksCounter" value="487" />
+    <task id="LOCAL-00487" summary="Added number of times a line appears as monitored. Still need to order the columns. WIP">
+      <created>1711458461493</created>
+      <option name="number" value="00487" />
+      <option name="presentableId" value="LOCAL-00487" />
+      <option name="project" value="LOCAL" />
+      <updated>1711458461494</updated>
+    </task>
+    <option name="localTasksCounter" value="488" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1666,7 +1666,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="implemented imul in the profile&#10;fixed get_load_like_device_number in multi_circuit" />
     <MESSAGE value="added ZIP test" />
     <MESSAGE value="added contingency_deadband" />
     <MESSAGE value="added get_branch_areas_info to the multi-circuit" />
@@ -1691,7 +1690,8 @@
     <MESSAGE value="Fixed bug with inputs_analysis_driver.py" />
     <MESSAGE value="Small change in contingencies report" />
     <MESSAGE value="Videos and tasks to do" />
-    <option name="LAST_COMMIT_MESSAGE" value="Videos and tasks to do" />
+    <MESSAGE value="Added number of times a line appears as monitored. Still need to order the columns. WIP" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added number of times a line appears as monitored. Still need to order the columns. WIP" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2133,8 +2133,8 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/contingencies_report.py</url>
-          <line>463</line>
-          <option name="timeStamp" value="1486" />
+          <line>496</line>
+          <option name="timeStamp" value="1489" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
