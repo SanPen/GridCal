@@ -34,6 +34,8 @@ from GridCalEngine.Devices.Diagrams.map_diagram import MapDiagram
 from GridCalEngine.Devices.types import BRANCH_TYPES
 from GridCalEngine.Devices.Fluid import FluidNode, FluidPath
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec
+from GridCalEngine.Devices.Substation.substation import Substation
+from GridCalEngine.Devices.Substation.voltage_level import VoltageLevel
 
 from GridCal.Gui.MapWidget.Tiles.tiles import Tiles
 
@@ -336,7 +338,8 @@ class GridMapWidget(MapWidget):
         self.update()
 
 
-def generate_map_diagram(buses: List[Bus],
+def generate_map_diagram(substations: List[Substation],
+                                voltage_level: List[VoltageLevel],
                                 lines: List[Line],
                                 dc_lines: List[DcLine],
                                 transformers2w: List[Transformer2W],
@@ -376,23 +379,13 @@ def generate_map_diagram(buses: List[Bus],
     if text_func is not None:
         text_func('Creating schematic buses')
 
-    nn = len(buses)
-    for i, bus in enumerate(buses):
+    nn = len(substations)
+    for i, substation in enumerate(substations):
 
-        if not bus.is_internal:  # 3w transformer buses are not represented
+        if prog_func is not None:
+            prog_func((i + 1) / nn * 100.0)
 
-            if prog_func is not None:
-                prog_func((i + 1) / nn * 100.0)
-
-            # correct possible nonsense
-            if np.isnan(bus.y):
-                bus.y = 0.0
-            if np.isnan(bus.x):
-                bus.x = 0.0
-
-            x = int(bus.x * explode_factor)
-            y = int(bus.y * explode_factor)
-            diagram.set_point(device=bus, location=GraphicLocation(x=x, y=y, h=bus.h, w=bus.w))
+        diagram.set_point(device=substation, location=GraphicLocation())
 
     # --------------------------------------------------------------------------------------------------------------
     if text_func is not None:
@@ -434,48 +427,10 @@ def generate_map_diagram(buses: List[Bus],
         diagram.set_point(device=branch, location=GraphicLocation())
 
     # --------------------------------------------------------------------------------------------------------------
-    if text_func is not None:
-        text_func('Creating schematic transformer devices')
-
-    nn = len(transformers2w)
-    for i, branch in enumerate(transformers2w):
-
-        if prog_func is not None:
-            prog_func((i + 1) / nn * 100.0)
-
-        # branch.graphic_obj = self.add_api_transformer(branch)
-        diagram.set_point(device=branch, location=GraphicLocation())
 
     # --------------------------------------------------------------------------------------------------------------
-    if text_func is not None:
-        text_func('Creating schematic transformer3w devices')
-
-    nn = len(transformers3w)
-    for i, elm in enumerate(transformers3w):
-
-        if prog_func is not None:
-            prog_func((i + 1) / nn * 100.0)
-
-        # elm.graphic_obj = self.add_api_transformer_3w(elm, explode_factor, filter_with_diagram)
-        x = int(elm.x * explode_factor)
-        y = int(elm.y * explode_factor)
-        diagram.set_point(device=elm, location=GraphicLocation(x=x, y=y))
-        diagram.set_point(device=elm.winding1, location=GraphicLocation())
-        diagram.set_point(device=elm.winding2, location=GraphicLocation())
-        diagram.set_point(device=elm.winding3, location=GraphicLocation())
 
     # --------------------------------------------------------------------------------------------------------------
-    if text_func is not None:
-        text_func('Creating schematic winding devices')
-
-    nn = len(windings)
-    for i, branch in enumerate(windings):
-
-        if prog_func is not None:
-            prog_func((i + 1) / nn * 100.0)
-
-        # branch.graphic_obj = self.add_api_transformer(branch)
-        diagram.set_point(device=branch, location=GraphicLocation())
 
     # --------------------------------------------------------------------------------------------------------------
     if text_func is not None:
@@ -491,30 +446,8 @@ def generate_map_diagram(buses: List[Bus],
         diagram.set_point(device=branch, location=GraphicLocation())
 
     # --------------------------------------------------------------------------------------------------------------
-    if text_func is not None:
-        text_func('Creating schematic VSC devices')
-
-    nn = len(vsc_devices)
-    for i, branch in enumerate(vsc_devices):
-
-        if prog_func is not None:
-            prog_func((i + 1) / nn * 100.0)
-
-        # branch.graphic_obj = self.add_api_vsc(branch)
-        diagram.set_point(device=branch, location=GraphicLocation())
 
     # --------------------------------------------------------------------------------------------------------------
-    if text_func is not None:
-        text_func('Creating schematic UPFC devices')
-
-    nn = len(upfc_devices)
-    for i, branch in enumerate(upfc_devices):
-
-        if prog_func is not None:
-            prog_func((i + 1) / nn * 100.0)
-
-        # branch.graphic_obj = self.add_api_upfc(branch)
-        diagram.set_point(device=branch, location=GraphicLocation())
 
     # --------------------------------------------------------------------------------------------------------------
     if text_func is not None:
