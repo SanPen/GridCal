@@ -131,6 +131,7 @@ class InjectionTemplateGraphicItem(QGraphicsItemGroup):
         if ok:
             self.editor.remove_from_scene(self.nexus)
             self.editor.remove_element(device=self.api_object, graphic_object=self)
+            self.editor.remove_from_scene(self)
 
     def mousePressEvent(self, QGraphicsSceneMouseEvent):
         """
