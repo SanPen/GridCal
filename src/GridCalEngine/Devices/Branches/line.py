@@ -138,7 +138,7 @@ class Line(BranchParent):
         self.template: Union[OverheadLineType, SequenceLineType, UndergroundLineType] = template
 
         # Line locations
-        self._locations: LineLocations = LineLocations(n_points=0)
+        self._locations: LineLocations = LineLocations()
 
         self.register(key='R', units='p.u.', tpe=float, definition='Total positive sequence resistance.')
         self.register(key='X', units='p.u.', tpe=float, definition='Total positive sequence reactance.')

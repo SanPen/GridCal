@@ -21,14 +21,10 @@ from collections.abc import Callable
 from GridCal.Gui.MapWidget.map_widget import MapWidget, PolylineData, Place
 import GridCal.Gui.Visualization.visualization as viz
 import GridCal.Gui.Visualization.palettes as palettes
-from GridCalEngine.Devices import GraphicLocation, Transformer3W, Winding
+from GridCalEngine.Devices.Diagrams.map_location import MapLocation
 from GridCalEngine.Devices.Substation import Bus
 from GridCalEngine.Devices.Branches.line import Line
 from GridCalEngine.Devices.Branches.dc_line import DcLine
-from GridCalEngine.Devices.Branches.transformer import Transformer2W
-from GridCalEngine.Devices.Branches.winding import Winding
-from GridCalEngine.Devices.Branches.vsc import VSC
-from GridCalEngine.Devices.Branches.upfc import UPFC
 from GridCalEngine.Devices.Branches.hvdc_line import HvdcLine
 from GridCalEngine.Devices.Diagrams.map_diagram import MapDiagram
 from GridCalEngine.Devices.types import BRANCH_TYPES
@@ -339,35 +335,24 @@ class GridMapWidget(MapWidget):
 
 
 def generate_map_diagram(substations: List[Substation],
-                                voltage_level: List[VoltageLevel],
-                                lines: List[Line],
-                                dc_lines: List[DcLine],
-                                transformers2w: List[Transformer2W],
-                                transformers3w: List[Transformer3W],
-                                windings: List[Winding],
-                                hvdc_lines: List[HvdcLine],
-                                vsc_devices: List[VSC],
-                                upfc_devices: List[UPFC],
-                                fluid_nodes: List[FluidNode],
-                                fluid_paths: List[FluidPath],
-                                explode_factor=1.0,
-                                prog_func: Union[Callable, None] = None,
-                                text_func: Union[Callable, None] = None,
-                                name='Bus branch diagram') -> MapDiagram:
+                         voltage_level: List[VoltageLevel],
+                         lines: List[Line],
+                         dc_lines: List[DcLine],
+                         hvdc_lines: List[HvdcLine],
+                         fluid_nodes: List[FluidNode],
+                         fluid_paths: List[FluidPath],
+                         prog_func: Union[Callable, None] = None,
+                         text_func: Union[Callable, None] = None,
+                         name='Map diagram') -> MapDiagram:
     """
     Add a elements to the schematic scene
-    :param buses: list of Bus objects
+    :param substations: list of Substation objects
+    :param voltage_level: list of VoltageLevel objects
     :param lines: list of Line objects
     :param dc_lines: list of DcLine objects
-    :param transformers2w: list of Transformer Objects
-    :param transformers3w: list of Transformer3W Objects
-    :param windings: list of Winding objects
     :param hvdc_lines: list of HvdcLine objects
-    :param vsc_devices: list Vsc objects
-    :param upfc_devices: List of UPFC devices
-    :param fluid_nodes:
-    :param fluid_paths:
-    :param explode_factor: factor of "explosion": Separation of the nodes factor
+    :param fluid_nodes: list of FluidNode objects
+    :param fluid_paths: list of FluidPath objects
     :param prog_func: progress report function
     :param text_func: Text report function
     :param name: name of the diagram
@@ -385,7 +370,7 @@ def generate_map_diagram(substations: List[Substation],
         if prog_func is not None:
             prog_func((i + 1) / nn * 100.0)
 
-        diagram.set_point(device=substation, location=GraphicLocation())
+        diagram.set_point(device=substation, location=MapLocation())
 
     # --------------------------------------------------------------------------------------------------------------
     if text_func is not None:
@@ -398,7 +383,7 @@ def generate_map_diagram(substations: List[Substation],
             prog_func((i + 1) / nn * 100.0)
 
         # branch.graphic_obj = self.add_api_upfc(branch)
-        diagram.set_point(device=elm, location=GraphicLocation())
+        diagram.set_point(device=elm, location=MapLocation())
 
     # --------------------------------------------------------------------------------------------------------------
     if text_func is not None:
@@ -411,7 +396,7 @@ def generate_map_diagram(substations: List[Substation],
             prog_func((i + 1) / nn * 100.0)
 
         # branch.graphic_obj = self.add_api_line(branch)
-        diagram.set_point(device=branch, location=GraphicLocation())
+        diagram.set_point(device=branch, location=MapLocation())
 
     # --------------------------------------------------------------------------------------------------------------
     if text_func is not None:
@@ -424,13 +409,7 @@ def generate_map_diagram(substations: List[Substation],
             prog_func((i + 1) / nn * 100.0)
 
         # branch.graphic_obj = self.add_api_dc_line(branch)
-        diagram.set_point(device=branch, location=GraphicLocation())
-
-    # --------------------------------------------------------------------------------------------------------------
-
-    # --------------------------------------------------------------------------------------------------------------
-
-    # --------------------------------------------------------------------------------------------------------------
+        diagram.set_point(device=branch, location=MapLocation())
 
     # --------------------------------------------------------------------------------------------------------------
     if text_func is not None:
@@ -443,11 +422,7 @@ def generate_map_diagram(substations: List[Substation],
             prog_func((i + 1) / nn * 100.0)
 
         # branch.graphic_obj = self.add_api_hvdc(branch)
-        diagram.set_point(device=branch, location=GraphicLocation())
-
-    # --------------------------------------------------------------------------------------------------------------
-
-    # --------------------------------------------------------------------------------------------------------------
+        diagram.set_point(device=branch, location=MapLocation())
 
     # --------------------------------------------------------------------------------------------------------------
     if text_func is not None:
@@ -460,6 +435,6 @@ def generate_map_diagram(substations: List[Substation],
             prog_func((i + 1) / nn * 100.0)
 
         # branch.graphic_obj = self.add_api_upfc(branch)
-        diagram.set_point(device=elm, location=GraphicLocation())
+        diagram.set_point(device=elm, location=MapLocation())
 
     return diagram

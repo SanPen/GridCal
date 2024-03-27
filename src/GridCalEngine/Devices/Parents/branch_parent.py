@@ -19,6 +19,8 @@ import numpy as np
 from typing import Tuple, Union
 
 from GridCalEngine.basic_structures import Logger
+from GridCalEngine.Devices.Substation.substation import Substation
+from GridCalEngine.Devices.Substation.voltage_level import VoltageLevel
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.enumerations import BuildStatus
@@ -445,3 +447,43 @@ class BranchParent(EditableDevice):
         :return:
         """
         pass
+
+    def get_substation_from(self) -> Union[Substation, None]:
+        """
+        Try to get the substation at the From side
+        :return: Union[Substation, None]
+        """
+        if self.bus_from is not None:
+            return self.bus_from.substation
+        else:
+            return None
+
+    def get_substation_to(self) -> Union[Substation, None]:
+        """
+        Try to get the substation at the To side
+        :return: Union[Substation, None]
+        """
+        if self.bus_to is not None:
+            return self.bus_to.substation
+        else:
+            return None
+
+    def get_voltage_level_from(self) -> Union[VoltageLevel, None]:
+        """
+        Try to get the voltage level at the From side
+        :return: Union[VoltageLevel, None]
+        """
+        if self.bus_from is not None:
+            return self.bus_from.voltage_level
+        else:
+            return None
+
+    def get_voltage_level_to(self) -> Union[VoltageLevel, None]:
+        """
+        Try to get the voltage level at the To side
+        :return: Union[VoltageLevel, None]
+        """
+        if self.bus_to is not None:
+            return self.bus_to.voltage_level
+        else:
+            return None
