@@ -433,6 +433,13 @@ class BranchNtcVars:
         """
         self.contingency_flow_data.append((t, m, c, flow_var, neg_slack, pos_slack))
 
+    def get_total_flow_slack(self):
+        """
+        Get total flow slacks
+        :return:
+        """
+        return self.flow_slacks_pos - self.flow_slacks_neg
+
 
 class HvdcNtcVars:
     """
@@ -1209,6 +1216,6 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
         lp_model.save_model(file_name=lp_file_name)
         print("Debug LP model saved as:", lp_file_name)
 
-    vars_v = mip_vars.get_values(grid.Sbase)
+    vars_v = mip_vars.get_values(grid.Sbase, model=lp_model)
 
     return vars_v

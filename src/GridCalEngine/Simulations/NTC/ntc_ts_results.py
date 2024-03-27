@@ -20,8 +20,8 @@ import numpy as np
 from typing import Dict, Union
 
 from GridCalEngine.Simulations.results_template import ResultsTemplate
-from GridCalEngine.enumerations import ResultTypes
-from GridCalEngine.Simulations.results_table import ResultsTable
+from GridCalEngine.enumerations import ResultTypes, StudyResultsType
+from GridCalEngine.Simulations.results_table import ResultsTable, DeviceType
 
 
 class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
@@ -30,10 +30,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
             self,
             bus_names: np.ndarray,
             branch_names: np.ndarray,
-            generator_names: np.ndarray,
-            load_names: np.ndarray,
-            rates: np.ndarray,
-            contingency_rates: np.ndarray,
+            hvdc_names: np.ndarray,
             time_array: np.ndarray,
             time_indices: np.ndarray,
             sampled_probabilities: Union[np.ndarray, None] = None,
@@ -46,10 +43,6 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
         :param bus_names:
         :param branch_names:
-        :param generator_names:
-        :param load_names:
-        :param rates:
-        :param contingency_rates:
         :param time_array:
         :param time_indices:
         :param sampled_probabilities:
@@ -80,19 +73,42 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
                     ResultTypes.TsContingencyBranches,
                 ],
             },
-            data_variables=[],
             time_array=time_array,
-            clustering_results=None)
+            clustering_results=None,
+            study_results_type=StudyResultsType.NetTransferCapacityTimeSeries)
+
+        nt = len(time_indices)
+        m = len(branch_names)
+        n = len(bus_names)
+        nhvdc = len(hvdc_names)
 
         # self.time_array = time_array
         self.time_indices = time_indices
         self.branch_names = np.array(branch_names, dtype=object)
         self.bus_names = bus_names
-        self.generator_names = generator_names
-        self.load_names = load_names
 
-        self.rates = rates
-        self.contingency_rates = contingency_rates
+        self.voltage = np.zeros((nt, n), dtype=complex)
+        self.Sbus = np.zeros((nt, n), dtype=complex)
+        self.bus_shadow_prices = np.zeros((nt, n), dtype=float)
+
+        self.Sf = np.zeros((nt, m), dtype=complex)
+        self.St = np.zeros((nt, m), dtype=complex)
+        self.loading = np.zeros((nt, m), dtype=float)
+        self.losses = np.zeros((nt, m), dtype=float)
+        self.phase_shift = np.zeros((nt, m), dtype=float)
+        self.overloads = np.zeros((nt, m), dtype=float)
+        self.rates = np.zeros(m)
+        self.contingency_rates = np.zeros(m)
+        self.contingency_flows_list = list()
+        self.contingency_indices_list = list()  # [(t, m, c), ...]
+        self.contingency_flows_slacks_list = list()
+
+        self.hvdc_Pf = np.zeros((nt, nhvdc), dtype=float)
+        self.hvdc_loading = np.zeros((nt, nhvdc), dtype=float)
+
+        self.monitor = np.zeros((nt, m), dtype=bool)
+        self.monitor_type = np.zeros((nt, m), dtype=object)
+
         self.base_exchange = 0
         self.raw_report = None
         self.report = None
@@ -228,45 +244,45 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
         tm1 = time.time()
         self.create_generation_power_report()
-        print(f'Generation power report created in {time.time()-tm1:.2f} scs.')
+        print(f'Generation power report created in {time.time() - tm1:.2f} scs.')
 
         tm1 = time.time()
         self.create_generation_delta_report()
-        print(f'Generation delta report created in {time.time()-tm1:.2f} scs.')
+        print(f'Generation delta report created in {time.time() - tm1:.2f} scs.')
 
         tm1 = time.time()
         self.create_alpha_report()
-        print(f'Alpha report created in {time.time()-tm1:.2f} scs.')
+        print(f'Alpha report created in {time.time() - tm1:.2f} scs.')
 
         tm1 = time.time()
         self.create_worst_alpha_n1_report()
-        print(f'Worst alpha n1 report created in {time.time()-tm1:.2f} scs.')
+        print(f'Worst alpha n1 report created in {time.time() - tm1:.2f} scs.')
 
         tm1 = time.time()
         self.create_branch_monitoring_report()
-        print(f'Branch monitoring report created in {time.time()-tm1:.2f} scs.')
+        print(f'Branch monitoring report created in {time.time() - tm1:.2f} scs.')
 
         tm1 = time.time()
         self.create_base_report(
             loading_threshold=loading_threshold,
             reverse=reverse
         )
-        print(f'Base report created in {time.time()-tm1:.2f} scs.')
+        print(f'Base report created in {time.time() - tm1:.2f} scs.')
 
         tm1 = time.time()
         self.create_contingency_full_report(
             loading_threshold=loading_threshold,
             reverse=reverse
         )
-        print(f'Contingency power report created in {time.time()-tm1:.2f} scs.')
+        print(f'Contingency power report created in {time.time() - tm1:.2f} scs.')
 
         tm1 = time.time()
         self.create_critical_branches_report(
             loading_threshold=100,
             reverse=reverse
         )
-        print(f'Critical branches report created in {time.time()-tm1:.2f} scs.')
-        print(f'All final reports created in {time.time()-tm0:.2f} scs.')
+        print(f'Critical branches report created in {time.time() - tm1:.2f} scs.')
+        print(f'All final reports created in {time.time() - tm0:.2f} scs.')
 
     def mdl(self, result_type) -> "ResultsTable":
         """
@@ -311,7 +327,6 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
             return self.get_contingency_branches_report()
         else:
             raise Exception('No results available')
-
 
     def get_steps(self):
         return
@@ -374,7 +389,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
         # get columns indices to sort
         ttc_idx = list(map(str.lower, columns)).index('ttc')
-        load_col_name = [c for c in columns if any(x in c.lower().split(' ') for x in ['flow', 'load' ]) and '%' in c][0]
+        load_col_name = [c for c in columns if any(x in c.lower().split(' ') for x in ['flow', 'load']) and '%' in c][0]
         cload_idx = columns.index(load_col_name)
         time_idx = list(map(str.lower, columns)).index('time')
 
@@ -753,7 +768,7 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
 
         self.reports[title] = ResultsTable(
             data=data_all,
-            index= np.arange(data_all.shape[0]),
+            index=np.arange(data_all.shape[0]),
             columns=columns_all,
             title=title,
             ylabel='(p.u.)',
@@ -779,7 +794,8 @@ class OptimalNetTransferCapacityTimeSeriesResults(ResultsTemplate):
                 mdl = self.results_dict[t].get_monitoring_logic_report()
 
                 # complete the report data with Time info
-                time_data = np.array([[t, self.time_array[idx].strftime("%d/%m/%Y %H:%M:%S")]] * mdl.get_data()[2].shape[0])
+                time_data = np.array(
+                    [[t, self.time_array[idx].strftime("%d/%m/%Y %H:%M:%S")]] * mdl.get_data()[2].shape[0])
                 data = np.concatenate((np.array([mdl.get_data()[0]]).T, time_data, mdl.get_data()[2]), axis=1)
 
                 # add to main data set

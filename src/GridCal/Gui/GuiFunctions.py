@@ -2509,22 +2509,22 @@ def get_logger_tree_model(logger: DataLogger):
                 time_child = QtGui.QStandardItem(time)
                 time_child.setEditable(editable)
 
-                elm_child = QtGui.QStandardItem(elm)
+                elm_child = QtGui.QStandardItem(str(elm))
                 elm_child.setEditable(editable)
 
-                elm_class_child = QtGui.QStandardItem(elm_class)
+                elm_class_child = QtGui.QStandardItem(str(elm_class))
                 elm_class_child.setEditable(editable)
 
-                elm_property_child = QtGui.QStandardItem(elm_property)
+                elm_property_child = QtGui.QStandardItem(str(elm_property))
                 elm_property_child.setEditable(editable)
 
-                value_child = QtGui.QStandardItem(value)
+                value_child = QtGui.QStandardItem(str(value))
                 value_child.setEditable(editable)
 
-                expected_val_child = QtGui.QStandardItem(expected_value)
+                expected_val_child = QtGui.QStandardItem(str(expected_value))
                 expected_val_child.setEditable(editable)
 
-                comment_val_child = QtGui.QStandardItem(comment)
+                comment_val_child = QtGui.QStandardItem(str(comment))
                 comment_val_child.setEditable(editable)
 
                 message_child.appendRow([time_child, elm_child, elm_class_child,
@@ -2810,3 +2810,19 @@ def get_cim_tree_model(cim_model: CgmesCircuit):
         root_node.appendRow(class_child)
 
     return model
+
+
+def add_menu_entry(menu: QtWidgets.QMenu, text: str, icon_path: str, function_ptr):
+    """
+    Add a context menu entry
+    :param menu:
+    :param text:
+    :param icon_path:
+    :param function_ptr:
+    :return:
+    """
+    ra3 = menu.addAction(text)
+    edit_icon = QtGui.QIcon()
+    edit_icon.addPixmap(QtGui.QPixmap(icon_path))
+    ra3.setIcon(edit_icon)
+    ra3.triggered.connect(function_ptr)

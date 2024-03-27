@@ -54,8 +54,9 @@ def set_var_bounds(var: LpVar, lb: float, ub: float):
     :param lb: lower bound value
     :param ub: upper bound value
     """
-    var.lower_bound = lb
-    var.upper_bound = ub
+    if isinstance(var, LpVar):
+        var.lower_bound = lb
+        var.upper_bound = ub
 
 
 class LpModel:

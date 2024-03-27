@@ -35,10 +35,6 @@ class Shunt(ShuntParent):
         :param G:
         :param B:
         :param active:
-        :param controlled:
-        :param Bmin:
-        :param Bmax:
-        :param vset:
         :param mttf:
         :param mttr:
         :param G0:
@@ -66,70 +62,3 @@ class Shunt(ShuntParent):
                              opex=opex,
                              build_status=build_status,
                              device_type=DeviceType.ShuntDevice)
-
-    def get_properties_dict(self, version=3):
-        """
-        Get json dictionary
-        :return:
-        """
-        if version == 2:
-            data = {'id': self.idtag,
-                    'type': 'shunt',
-                    'phases': 'ps',
-                    'name': self.name,
-                    'name_code': self.code,
-                    'bus': self.bus.idtag,
-                    'active': self.active,
-                    'g': self.G,
-                    'b': self.B,
-                    'id_impedance_table': "",
-                    'technology': ""
-                    }
-        elif version == 3:
-            data = {'id': self.idtag,
-                    'type': 'shunt',
-                    'phases': 'ps',
-                    'name': self.name,
-                    'name_code': self.code,
-                    'bus': self.bus.idtag,
-                    'active': self.active,
-                    'g': self.G,
-                    'b': self.B,
-                    'g0': self.G0,
-                    'b0': self.B0,
-                    'capex': self.capex,
-                    'opex': self.opex,
-                    'build_status': str(self.build_status.value).lower(),
-                    'id_impedance_table': "",
-                    'technology': ""
-                    }
-        else:
-            data = dict()
-        return data
-
-    def get_profiles_dict(self, version=3):
-        """
-
-        :return:
-        """
-
-        if self.active_prof is not None:
-            active_profile = self.active_prof.tolist()
-            G_prof = self.G_prof.tolist()
-            B_prof = self.B_prof.tolist()
-        else:
-            active_profile = list()
-            G_prof = list()
-            B_prof = list()
-
-        return {'id': self.idtag,
-                'active': active_profile,
-                'g': G_prof,
-                'b': B_prof}
-
-    def get_units_dict(self, version=3):
-        """
-        Get units of the values
-        """
-        return {'g': 'MVAr at V=1 p.u.',
-                'b': 'MVAr at V=1 p.u.'}

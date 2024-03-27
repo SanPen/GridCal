@@ -34,7 +34,7 @@ class Line(BranchParent):
 
     def __init__(self, bus_from: Bus = None, bus_to: Bus = None, cn_from: ConnectivityNode = None,
                  cn_to: ConnectivityNode = None, name='Line', idtag=None, code='',
-                 r=1e-20, x=1e-20, b=1e-20, rate=1.0, active=True, tolerance=0.0, cost=100.0,
+                 r=1e-20, x=0.00001, b=1e-20, rate=1.0, active=True, tolerance=0.0, cost=100.0,
                  mttf=0.0, mttr=0, r_fault=0.0, x_fault=0.0, fault_pos=0.5,
                  length=1.0, temp_base=20, temp_oper=20, alpha=0.00330,
                  template=None, contingency_factor=1.0, protection_rating_factor: float = 1.4,
@@ -283,66 +283,6 @@ class Line(BranchParent):
 
                 data.append(obj)
         return data
-
-    def get_properties_dict(self, version=3):
-        """
-        Get json dictionary
-        :return:
-        """
-        if version == 2:
-            return {'id': self.idtag,
-                    'type': 'line',
-                    'phases': 'ps',
-                    'name': self.name,
-                    'name_code': self.code,
-                    'bus_from': self.bus_from.idtag,
-                    'bus_to': self.bus_to.idtag,
-                    'active': self.active,
-
-                    'rate': self.rate,
-                    'r': self.R,
-                    'x': self.X,
-                    'b': self.B,
-
-                    'length': self.length,
-                    'base_temperature': self.temp_base,
-                    'operational_temperature': self.temp_oper,
-                    'alpha': self.alpha,
-                    'locations': []
-                    }
-
-        elif version == 3:
-            return {'id': self.idtag,
-                    'type': 'line',
-                    'phases': 'ps',
-                    'name': self.name,
-                    'name_code': self.code,
-                    'bus_from': self.bus_from.idtag,
-                    'bus_to': self.bus_to.idtag,
-                    'active': self.active,
-
-                    'rate': self.rate,
-                    'contingency_factor1': self.contingency_factor,
-                    'contingency_factor2': self.contingency_factor,
-                    'contingency_factor3': self.contingency_factor,
-                    'r': self.R,
-                    'x': self.X,
-                    'b': self.B,
-
-                    'length': self.length,
-                    'base_temperature': self.temp_base,
-                    'operational_temperature': self.temp_oper,
-                    'alpha': self.alpha,
-
-                    'overload_cost': self.Cost,
-                    'capex': self.capex,
-                    'opex': self.opex,
-                    'build_status': str(self.build_status.value).lower(),
-
-                    'locations': []
-                    }
-        else:
-            return dict()
 
     def fix_inconsistencies(self, logger: Logger):
         """

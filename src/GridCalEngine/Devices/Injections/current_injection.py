@@ -25,10 +25,10 @@ from GridCalEngine.Devices.profile import Profile
 
 class CurrentInjection(InjectionParent):
     """
-    Load
+    CurrentInjection
     """
 
-    def __init__(self, name='Load', idtag=None, code='', Ir=0.0, Ii=0.0, Cost=1200.0,
+    def __init__(self, name='CurrentInjection', idtag=None, code='', Ir=0.0, Ii=0.0, Cost=1200.0,
                  active=True, mttf=0.0, mttr=0.0, capex=0, opex=0,
                  build_status: BuildStatus = BuildStatus.Commissioned):
         """
@@ -106,58 +106,6 @@ class CurrentInjection(InjectionParent):
             self._Ii_prof.set(arr=val)
         else:
             raise Exception(str(type(val)) + 'not supported to be set into a Ii_prof')
-
-    def get_properties_dict(self, version=3):
-        """
-        Get json dictionary
-        :return:
-        """
-        if version in [2, 3]:
-            return {'id': self.idtag,
-                    'type': 'load',
-                    'phases': 'ps',
-                    'name': self.name,
-                    'name_code': self.code,
-                    'bus': self.bus.idtag,
-                    'active': bool(self.active),
-                    'ir': self.Ir,
-                    'ii': self.Ii,
-                    'shedding_cost': self.Cost
-                    }
-        else:
-            return dict()
-
-    def get_profiles_dict(self, version=3):
-        """
-
-        :return:
-        """
-
-        if self.active_prof is not None:
-            active_profile = self.active_prof.tolist()
-            Ir_prof = self.Ir_prof.tolist()
-            Ii_prof = self.Ii_prof.tolist()
-
-        else:
-            active_profile = list()
-            Ir_prof = list()
-            Ii_prof = list()
-
-        return {'id': self.idtag,
-                'active': active_profile,
-                'ir': Ir_prof,
-                'ii': Ii_prof}
-
-    def get_units_dict(self, version=3):
-        """
-        Get units of the values
-        """
-        return {'g': 'MVAr at V=1 p.u.',
-                'b': 'MVAr at V=1 p.u.',
-                'ir': 'MVAr at V=1 p.u.',
-                'ii': 'MVAr at V=1 p.u.',
-                'p': 'MW',
-                'q': 'MVAr'}
 
     def plot_profiles(self, time=None, show_fig=True):
         """

@@ -26,10 +26,12 @@ from GridCalEngine.Devices.Substation import Bus
 from GridCalEngine.Devices.Branches.line import Line
 from GridCalEngine.Devices.Branches.dc_line import DcLine
 from GridCalEngine.Devices.Branches.transformer import Transformer2W
+from GridCalEngine.Devices.Branches.winding import Winding
 from GridCalEngine.Devices.Branches.vsc import VSC
 from GridCalEngine.Devices.Branches.upfc import UPFC
 from GridCalEngine.Devices.Branches.hvdc_line import HvdcLine
 from GridCalEngine.Devices.Diagrams.map_diagram import MapDiagram
+from GridCalEngine.Devices.types import BRANCH_TYPES
 from GridCalEngine.Devices.Fluid import FluidNode, FluidPath
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec
 
@@ -127,7 +129,7 @@ class GridMapWidget(MapWidget):
 
     def colour_results(self,
                        buses: List[Bus],
-                       branches: List[Union[Line, DcLine, Transformer2W, Warning, UPFC, VSC]],
+                       branches: List[BRANCH_TYPES],
                        hvdc_lines: List[HvdcLine],
                        Sbus: CxVec,
                        bus_active: IntVec,
@@ -288,7 +290,7 @@ class GridMapWidget(MapWidget):
             lnorm = np.abs(hvdc_loading)
             lnorm[lnorm == np.inf] = 0
             Sfabs = np.abs(hvdc_Pf)
-            Sfnorm = Sfabs / np.max(Sfabs)
+            Sfnorm = Sfabs / np.max(Sfabs + 1e-9)
 
             for i, branch in enumerate(hvdc_lines):
 

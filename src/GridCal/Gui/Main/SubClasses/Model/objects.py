@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
 from typing import Union, List
-from PySide6 import QtGui, QtCore
+from PySide6 import QtGui, QtCore, QtWidgets
 from matplotlib import pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 
@@ -59,18 +59,10 @@ class ObjectsTableMain(DiagramsMain):
         self.ui.simulationDataStructuresListView.setModel(gf.get_list_model(NumericalCircuit.available_structures))
 
         # Buttons
-        self.ui.setValueToColumnButton.clicked.connect(self.set_value_to_column)
         self.ui.filter_pushButton.clicked.connect(self.objects_smart_search)
-        self.ui.catalogue_edit_pushButton.clicked.connect(self.edit_from_catalogue)
-        self.ui.copyObjectsTableButton.clicked.connect(self.copy_objects_data)
         self.ui.delete_selected_objects_pushButton.clicked.connect(self.delete_selected_objects)
         self.ui.add_object_pushButton.clicked.connect(self.add_objects)
-        self.ui.highlight_selection_buses_pushButton.clicked.connect(self.highlight_selection_buses)
-        self.ui.clear_highlight_pushButton.clicked.connect(self.clear_big_bus_markers)
-        self.ui.highlight_by_property_pushButton.clicked.connect(self.highlight_based_on_property)
         self.ui.structure_analysis_pushButton.clicked.connect(self.objects_histogram_analysis_plot)
-        self.ui.assignToProfileButton.clicked.connect(self.assign_to_profile)
-        self.ui.addToCurrentDiagramButton.clicked.connect(self.add_objects_to_current_diagram)
 
         # menu trigger
         self.ui.actionDelete_inconsistencies.triggered.connect(self.delete_inconsistencies)
@@ -84,6 +76,12 @@ class ObjectsTableMain(DiagramsMain):
         self.ui.smart_search_lineEdit.returnPressed.connect(self.objects_smart_search)
         # self.ui.time_series_search.returnPressed.connect(self.timeseries_search)
 
+        # context menu
+        self.ui.dataStructureTableView.customContextMenuRequested.connect(self.show_objects_context_menu)
+
+        # Set context menu policy to CustomContextMenu
+        self.ui.dataStructureTableView.setContextMenuPolicy(QtGui.Qt.ContextMenuPolicy.CustomContextMenu)
+
     def create_objects_model(self, elements, elm_type: DeviceType) -> gf.ObjectsModel:
         """
         Generate the objects' table model
@@ -95,10 +93,11 @@ class ObjectsTableMain(DiagramsMain):
 
         if elm_type == DeviceType.BusDevice:
             elm = dev.Bus()
-            dictionary_of_lists = {DeviceType.AreaDevice.value: self.circuit.areas,
-                                   DeviceType.ZoneDevice.value: self.circuit.zones,
-                                   DeviceType.SubstationDevice.value: self.circuit.substations,
-                                   DeviceType.CountryDevice.value: self.circuit.countries,
+            dictionary_of_lists = {DeviceType.AreaDevice.value: self.circuit.get_areas(),
+                                   DeviceType.ZoneDevice.value: self.circuit.get_zones(),
+                                   DeviceType.SubstationDevice.value: self.circuit.get_substations(),
+                                   DeviceType.VoltageLevelDevice.value: self.circuit.get_voltage_levels(),
+                                   DeviceType.CountryDevice.value: self.circuit.get_countries(),
                                    }
 
         elif elm_type == DeviceType.LoadDevice:
@@ -116,7 +115,7 @@ class ObjectsTableMain(DiagramsMain):
         elif elm_type == DeviceType.GeneratorDevice:
             elm = dev.Generator()
             dictionary_of_lists = {DeviceType.Technology.value: self.circuit.technologies,
-                                   DeviceType.FuelDevice.value: self.circuit.fuels,
+                                   DeviceType.FuelDevice.value: self.circuit.get_fuels(),
                                    DeviceType.EmissionGasDevice.value: self.circuit.emission_gases, }
 
         elif elm_type == DeviceType.BatteryDevice:
@@ -618,7 +617,7 @@ class ObjectsTableMain(DiagramsMain):
             # update the view
             self.view_objects_data()
 
-    def edit_from_catalogue(self):
+    def launch_object_editor(self):
         """
         Edit catalogue element
         """
@@ -752,86 +751,88 @@ class ObjectsTableMain(DiagramsMain):
         """
         Highlight and select the buses of the selected objects
         """
+        indices = self.ui.dataStructureTableView.selectedIndexes()
 
-        model = self.get_current_objects_model_view()
-        t_idx = self.get_objects_time_index()
+        if len(indices):
+            model = self.get_current_objects_model_view()
+            t_idx = self.get_objects_time_index()
 
-        if model is not None:
-            objects = model.objects
+            if model is not None:
+                objects = model.objects
 
-            if len(objects) > 0:
+                if len(objects) > 0:
+                    col_indices = list({index.column() for index in indices})
+                    elm = objects[0]
+                    attr = model.attributes[col_indices[0]]
+                    gc_prop = elm.registered_properties[attr]
+                    if gc_prop is None:
+                        info_msg(f"The proprty {attr} cannot be found :(", "Highlight based on property")
+                        return
 
-                elm = objects[0]
-                attr = self.ui.smart_search_lineEdit.text().strip()
-                gc_prop = elm.registered_properties.get(attr, None)
-                if gc_prop:
-                    info_msg(f"The proprty {attr} cannot be found :(", "Highlight based on property")
-                    return
+                    if gc_prop.tpe in [float, int]:
 
-                if gc_prop.tpe in [float, int]:
+                        self.clear_big_bus_markers()
 
-                    self.clear_big_bus_markers()
+                        if elm.device_type == DeviceType.BusDevice:
+                            # buses
+                            buses = objects
+                            values = [elm.get_value(prop=gc_prop, t_idx=t_idx) for elm in objects]
 
-                    if elm.device_type == DeviceType.BusDevice:
-                        # buses
-                        buses = objects
-                        values = [elm.get_value(prop=gc_prop, t_idx=t_idx) for elm in objects]
+                        elif elm.device_type in [DeviceType.BranchDevice,
+                                                 DeviceType.LineDevice,
+                                                 DeviceType.DCLineDevice,
+                                                 DeviceType.HVDCLineDevice,
+                                                 DeviceType.Transformer2WDevice,
+                                                 DeviceType.SwitchDevice,
+                                                 DeviceType.VscDevice,
+                                                 DeviceType.UpfcDevice]:
+                            # Branches
+                            buses = list()
+                            values = list()
+                            for br in objects:
+                                gc_prop = br.registered_properties[attr]
+                                buses.append(br.bus_from)
+                                buses.append(br.bus_to)
+                                val = elm.get_value(prop=gc_prop, t_idx=t_idx)
+                                values.append(val)
+                                values.append(val)
 
-                    elif elm.device_type in [DeviceType.BranchDevice,
-                                             DeviceType.LineDevice,
-                                             DeviceType.DCLineDevice,
-                                             DeviceType.HVDCLineDevice,
-                                             DeviceType.Transformer2WDevice,
-                                             DeviceType.SwitchDevice,
-                                             DeviceType.VscDevice,
-                                             DeviceType.UpfcDevice]:
-                        # Branches
-                        buses = list()
-                        values = list()
-                        for br in objects:
-                            gc_prop = br.registered_properties[attr]
-                            buses.append(br.bus_from)
-                            buses.append(br.bus_to)
-                            val = elm.get_value(prop=gc_prop, t_idx=t_idx)
-                            values.append(val)
-                            values.append(val)
+                        else:
+                            # loads, generators, etc...
+                            buses = list()
+                            values = list()
+                            for elm in objects:
+                                gc_prop = elm.registered_properties[attr]
+                                val = elm.get_value(prop=gc_prop, t_idx=t_idx)
+                                buses.append(elm.bus)
+                                values.append(val)
 
+                        # build the color map
+                        seq = [(0.0, 'gray'),
+                               (0.5, 'orange'),
+                               (1, 'red')]
+                        cmap = LinearSegmentedColormap.from_list('lcolors', seq)
+                        mx = max(values)
+
+                        if mx != 0:
+
+                            colors = np.zeros(len(values), dtype=object)
+                            for i, value in enumerate(values):
+                                r, g, b, a = cmap(value / mx)
+                                colors[i] = QtGui.QColor(r * 255, g * 255, b * 255, a * 255)
+
+                            # color based on the value
+                            self.set_big_bus_marker_colours(buses=buses, colors=colors, tool_tips=None)
+
+                        else:
+                            info_msg('The maximum value is 0, so the coloring cannot be applied',
+                                     'Highlight based on property')
                     else:
-                        # loads, generators, etc...
-                        buses = list()
-                        values = list()
-                        for elm in objects:
-                            gc_prop = elm.registered_properties[attr]
-                            val = elm.get_value(prop=gc_prop, t_idx=t_idx)
-                            buses.append(elm.bus)
-                            values.append(val)
-
-                    # build the color map
-                    seq = [(0.0, 'gray'),
-                           (0.5, 'orange'),
-                           (1, 'red')]
-                    cmap = LinearSegmentedColormap.from_list('lcolors', seq)
-                    mx = max(values)
-
-                    if mx != 0:
-
-                        colors = np.zeros(len(values), dtype=object)
-                        for i, value in enumerate(values):
-                            r, g, b, a = cmap(value / mx)
-                            colors[i] = QtGui.QColor(r * 255, g * 255, b * 255, a * 255)
-
-                        # color based on the value
-                        self.set_big_bus_marker_colours(buses=buses, colors=colors, tool_tips=None)
-
-                    else:
-                        info_msg('The maximum value is 0, so the coloring cannot be applied',
+                        info_msg('The selected property must be of a numeric type',
                                  'Highlight based on property')
-                else:
-                    info_msg('The selected property must be of a numeric type',
-                             'Highlight based on property')
 
-            else:
-                pass
+                else:
+                    pass
 
     def assign_to_profile(self):
         """
@@ -1019,3 +1020,56 @@ class ObjectsTableMain(DiagramsMain):
         """
         system_scaler_window = SystemScaler(grid=self.circuit, parent=self)
         system_scaler_window.exec()
+
+    def show_objects_context_menu(self, pos: QtCore.QPoint):
+        """
+        Show diagrams list view context menu
+        :param pos: Relative click position
+        """
+        context_menu = QtWidgets.QMenu(parent=self.ui.diagramsListView)
+
+        gf.add_menu_entry(menu=context_menu,
+                          text="Edit",
+                          icon_path=":/Icons/icons/edit.svg",
+                          function_ptr=self.launch_object_editor)
+
+        context_menu.addSeparator()
+
+        gf.add_menu_entry(menu=context_menu,
+                          text="New vecinity diagram",
+                          icon_path=":/Icons/icons/grid_icon.svg",
+                          function_ptr=self.add_bus_vecinity_diagram_from_model)
+
+        gf.add_menu_entry(menu=context_menu,
+                          text="Add to current diagram",
+                          icon_path=":/Icons/icons/schematicadd_to.svg",
+                          function_ptr=self.add_objects_to_current_diagram)
+
+        gf.add_menu_entry(menu=context_menu,
+                          text="Highlight buses selection",
+                          icon_path=":/Icons/icons/highlight.svg",
+                          function_ptr=self.highlight_selection_buses)
+
+        gf.add_menu_entry(menu=context_menu,
+                          text="Highlight based on property",
+                          icon_path=":/Icons/icons/highlight2.svg",
+                          function_ptr=self.highlight_based_on_property)
+
+        gf.add_menu_entry(menu=context_menu,
+                          text="Copy table",
+                          icon_path=":/Icons/icons/copy.svg",
+                          function_ptr=self.copy_objects_data)
+
+        gf.add_menu_entry(menu=context_menu,
+                          text="Set value to column",
+                          icon_path=":/Icons/icons/copy2down.svg",
+                          function_ptr=self.set_value_to_column)
+
+        gf.add_menu_entry(menu=context_menu,
+                          text="Assign to profile",
+                          icon_path=":/Icons/icons/assign_to_profile.svg",
+                          function_ptr=self.assign_to_profile)
+
+        # Convert global position to local position of the list widget
+        mapped_pos = self.ui.dataStructureTableView.viewport().mapToGlobal(pos)
+        context_menu.exec(mapped_pos)

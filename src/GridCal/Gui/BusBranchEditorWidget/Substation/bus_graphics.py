@@ -112,7 +112,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
             self.style = ACTIVE['style']
 
         # Label:
-        self.label = QtWidgets.QGraphicsTextItem(bus.name, self)
+        self.label = QtWidgets.QGraphicsTextItem(self.api_object.name if self.api_object is not None else "", self)
         self.label.setDefaultTextColor(ACTIVE['text'])
         self.label.setScale(FONT_SCALE)
 
@@ -165,20 +165,11 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
             self.style = ACTIVE['style']
 
         self.label.setDefaultTextColor(ACTIVE['text'])
-        # self.results_label.setDefaultTextColor(ACTIVE['text'])
         self.set_tile_color(self.color)
 
         for e in self.shunt_children:
             if e is not None:
                 e.recolour_mode()
-
-    def set_label(self, val: str):
-        """
-        Set the label content
-        :param val:
-        :return:
-        """
-        self.label.setPlainText(val)
 
     def mouseMoveEvent(self, event: QGraphicsSceneMouseEvent):
         """
@@ -297,8 +288,8 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         self._terminal.setRect(0, 0, w, 10)
 
         # Set text
-        if self.api_object is not None:
-            self.label.setPlainText(self.api_object.name)
+        # if self.api_object is not None:
+        #     self.label.setPlainText(self.api_object.name)
 
         # rearrange children
         self.arrange_children()
@@ -699,10 +690,11 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         """
 
         if self.api_object.device_type == DeviceType.BusDevice:
-            dictionary_of_lists = {DeviceType.AreaDevice.value: self.editor.circuit.areas,
-                                   DeviceType.ZoneDevice.value: self.editor.circuit.zones,
-                                   DeviceType.SubstationDevice.value: self.editor.circuit.substations,
-                                   DeviceType.CountryDevice.value: self.editor.circuit.countries}
+            dictionary_of_lists = {DeviceType.AreaDevice.value: self.editor.circuit.get_areas(),
+                                   DeviceType.ZoneDevice.value: self.editor.circuit.get_zones(),
+                                   DeviceType.SubstationDevice.value: self.editor.circuit.get_substations(),
+                                   DeviceType.VoltageLevelDevice.value: self.editor.circuit.get_voltage_levels(),
+                                   DeviceType.CountryDevice.value: self.editor.circuit.get_countries()}
 
             self.editor.set_editor_model(api_object=self.api_object,
                                          dictionary_of_lists=dictionary_of_lists)
@@ -723,6 +715,13 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         w = len(self.api_object.name) * 8 + 10
         self.change_size(w=w, h=h)
         self.sizer.setPos(w, self.h)
+
+        title = self.api_object.name if self.api_object is not None else ""
+        msg = ""
+        self.label.setHtml(f'<html><head/><body><p><span style=" font-size:10pt;">{title}<br/></span>'
+                           f'<span style=" font-size:6pt;">{msg}</span></p></body></html>')
+
+        self.setToolTip(msg)
 
     def get_terminal(self) -> TerminalItem:
         """
@@ -892,24 +891,23 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         :return:
         """
         vm = format_str.format(Vm)
-        vvm = format_str.format(Vm * self.api_object.Vnom)
+        vm_kv = format_str.format(Vm * self.api_object.Vnom)
         va = format_str.format(Va)
         msg = f"Bus {i}"
         if tpe is not None:
             msg += f" [{tpe}]"
         msg += "<br>"
         msg += f"v={vm}&lt;{va}º pu<br>"
-        msg += f"V={vvm} kV<br>"
+        msg += f"V={vm_kv} kV<br>"
         if P is not None:
             p = format_str.format(P)
             q = format_str.format(Q)
             msg += f"P={p} MW<br>Q={q} MVAr"
 
-        title = self.api_object.name
-        # self.results_label.setPlainText(msg)
-        # self.results_label.setHtml(f"<div align='left'>{msg}</div>")
+        title = self.api_object.name if self.api_object is not None else ""
         self.label.setHtml(f'<html><head/><body><p><span style=" font-size:10pt;">{title}<br/></span>'
                            f'<span style=" font-size:6pt;">{msg}</span></p></body></html>')
+
         self.setToolTip(msg)
 
     def __str__(self):

@@ -37,7 +37,7 @@ from GridCal.Gui.Main.SubClasses.Model.time_events import TimeEventsMain
 from GridCal.Gui.SigmaAnalysis.sigma_analysis_dialogue import SigmaAnalysisGUI
 from GridCalEngine.Utils.MIP.selected_interface import get_available_mip_solvers
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
-from GridCalEngine.enumerations import (DeviceType, AvailableTransferMode, GenerationNtcFormulation, SolverType,
+from GridCalEngine.enumerations import (DeviceType, AvailableTransferMode, SolverType,
                                         ReactivePowerControlMode, TapsControlMode, MIPSolvers, TimeGrouping,
                                         ZonalGrouping, ContingencyMethod, InvestmentEvaluationMethod, EngineType,
                                         BranchImpedanceMode, ResultTypes)
@@ -209,10 +209,6 @@ class SimulationsMain(TimeEventsMain):
 
         # combobox change
         self.ui.engineComboBox.currentTextChanged.connect(self.modify_ui_options_according_to_the_engine)
-
-        # Radio Button
-        self.ui.proportionalRedispatchRadioButton.clicked.connect(self.default_options_opf_ntc_proportional)
-        self.ui.optimalRedispatchRadioButton.clicked.connect(self.default_options_opf_ntc_optimal)
 
     def get_simulations(self):
         """
@@ -1168,7 +1164,7 @@ class SimulationsMain(TimeEventsMain):
 
             if not self.session.is_this_running(sim.SimulationTypes.NetTransferCapacity_run):
                 distributed_slack = self.ui.distributed_slack_checkBox.isChecked()
-                dT = self.ui.atcPerturbanceSpinBox.value()
+                dT = 1.0
                 threshold = self.ui.atcThresholdSpinBox.value()
                 max_report_elements = 5  # TODO: self.ui.ntcReportLimitingElementsSpinBox.value()
                 # available transfer capacity inter areas
@@ -1283,13 +1279,14 @@ class SimulationsMain(TimeEventsMain):
                 if not self.session.is_this_running(sim.SimulationTypes.NetTransferCapacity_run):
 
                     distributed_slack = self.ui.distributed_slack_checkBox.isChecked()
-                    dT = self.ui.atcPerturbanceSpinBox.value()
+                    dT = 1.0
                     threshold = self.ui.atcThresholdSpinBox.value()
                     max_report_elements = 5  # TODO: self.ui.ntcReportLimitingElementsSpinBox.value()
 
                     # available transfer capacity inter areas
-                    compatible_areas, lst_from, lst_to, lst_br, \
-                        lst_hvdc_br, areas_from, areas_to = self.get_compatible_areas_from_to()
+                    (compatible_areas,
+                     lst_from, lst_to, lst_br,
+                     lst_hvdc_br, areas_from, areas_to) = self.get_compatible_areas_from_to()
 
                     if not compatible_areas:
                         return
@@ -1990,31 +1987,53 @@ class SimulationsMain(TimeEventsMain):
         else:
             pass
 
-    def default_options_opf_ntc_optimal(self):
+    def get_opf_ntc_options(self) -> Union[None, sim.OptimalNetTransferCapacityOptions]:
         """
-        Set the default options for the NTC optimization in the optimal setting
-        :return:
-        """
-        self.ui.skipNtcGenerationLimitsCheckBox.setChecked(False)
-        self.ui.considerContingenciesNtcOpfCheckBox.setChecked(True)
-        self.ui.ntcDispatchAllAreasCheckBox.setChecked(False)
-        self.ui.ntcFeasibilityCheckCheckBox.setChecked(False)
-        self.ui.weightPowerShiftSpinBox.setValue(0)
-        self.ui.weightGenCostSpinBox.setValue(0)
-        self.ui.weightsOverloadsSpinBox.setValue(0)
 
-    def default_options_opf_ntc_proportional(self):
-        """
-        Set the default options for the NTC optimization in the proportional setting
         :return:
         """
-        self.ui.skipNtcGenerationLimitsCheckBox.setChecked(True)
-        self.ui.considerContingenciesNtcOpfCheckBox.setChecked(True)
-        self.ui.ntcDispatchAllAreasCheckBox.setChecked(False)
-        self.ui.ntcFeasibilityCheckCheckBox.setChecked(False)
-        self.ui.weightPowerShiftSpinBox.setValue(5)
-        self.ui.weightGenCostSpinBox.setValue(2)
-        self.ui.weightsOverloadsSpinBox.setValue(3)
+
+        # available transfer capacity inter areas
+        (compatible_areas, lst_from, lst_to, lst_br,
+         lst_hvdc_br, areas_from, areas_to) = self.get_compatible_areas_from_to()
+
+        if not compatible_areas:
+            error_msg('There are no compatible areas')
+            return None
+
+        idx_from = np.array([i for i, bus in lst_from])
+        idx_to = np.array([i for i, bus in lst_to])
+        idx_br = np.array([i for i, bus, sense in lst_br])
+
+        if len(idx_from) == 0:
+            error_msg('The area "from" has no buses!')
+            return None
+
+        if len(idx_to) == 0:
+            error_msg('The area "to" has no buses!')
+            return None
+
+        if len(idx_br) == 0:
+            error_msg('There are no inter-area Branches!')
+            return None
+
+        opts = sim.OptimalNetTransferCapacityOptions(
+            area_from_bus_idx=idx_from,
+            area_to_bus_idx=idx_to,
+            transfer_method=self.transfer_modes_dict[self.ui.transferMethodComboBox.currentText()],
+            loading_threshold_to_report=self.ui.ntcReportLoadingThresholdSpinBox.value(),
+            skip_generation_limits=self.ui.skipNtcGenerationLimitsCheckBox.isChecked(),
+            transmission_reliability_margin=self.ui.trmSpinBox.value(),  # MW
+            branch_exchange_sensitivity=self.ui.ntcAlphaSpinBox.value() / 100.0,
+            use_branch_exchange_sensitivity=self.ui.ntcSelectBasedOnExchangeSensitivityCheckBox.isChecked(),
+            branch_rating_contribution=self.ui.ntcLoadRuleSpinBox.value() / 100.0,
+            use_branch_rating_contribution=self.ui.ntcSelectBasedOnAcerCriteriaCheckBox.isChecked(),
+            consider_contingencies=self.ui.consider_ntc_contingencies_checkBox.isChecked(),
+            opf_options=self.get_opf_options(),
+            lin_options=self.get_linear_options()
+        )
+
+        return opts
 
     def run_opf_ntc(self):
         """
@@ -2026,109 +2045,23 @@ class SimulationsMain(TimeEventsMain):
 
                 self.remove_simulation(sim.SimulationTypes.OPF_NTC_run)
 
-                # available transfer capacity inter areas
-                compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br, areas_from, areas_to = self.get_compatible_areas_from_to()
+                options = self.get_opf_ntc_options()
 
-                if not compatible_areas:
+                if options is None:
                     return
 
-                idx_from = np.array([i for i, bus in lst_from])
-                idx_to = np.array([i for i, bus in lst_to])
-                idx_br = np.array([i for i, bus, sense in lst_br])
-
-                if len(idx_from) == 0:
-                    error_msg('The area "from" has no buses!')
-                    return
-
-                if len(idx_to) == 0:
-                    error_msg('The area "to" has no buses!')
-                    return
-
-                if len(idx_br) == 0:
-                    error_msg('There are no inter-area Branches!')
-                    return
-
-                mip_solver = self.mip_solvers_dict[self.ui.mip_solver_comboBox.currentText()]
-
-                if self.ui.optimalRedispatchRadioButton.isChecked():
-                    generation_formulation = GenerationNtcFormulation.Optimal
-                    # perform_previous_checks = False
-                elif self.ui.proportionalRedispatchRadioButton.isChecked():
-                    generation_formulation = GenerationNtcFormulation.Proportional
-                    # perform_previous_checks = True
                 else:
-                    generation_formulation = GenerationNtcFormulation.Optimal
-                    # perform_previous_checks = False
+                    self.ui.progress_label.setText('Running optimal net transfer capacity...')
+                    QtGui.QGuiApplication.processEvents()
 
-                monitor_only_sensitive_branches = self.ui.ntcSelectBasedOnExchangeSensitivityCheckBox.isChecked()
-                monitor_only_ntc_rule_branches = self.ui.ntcSelectBasedOnAcerCriteriaCheckBox.isChecked()
-                skip_generation_limits = self.ui.skipNtcGenerationLimitsCheckBox.isChecked()
-                branch_sensitivity_threshold = self.ui.ntcAlphaSpinBox.value() / 100.0
-                dT = self.ui.atcPerturbanceSpinBox.value()
-                mode = self.transfer_modes_dict[self.ui.transferMethodComboBox.currentText()]
-                lodf_tolerance = 10.0 ** self.ui.ntcLODFToleranceSpinBox.value()
+                    # set power flow object instance
+                    drv = sim.OptimalNetTransferCapacityDriver(grid=self.circuit, options=options)
 
-                perform_previous_checks = self.ui.ntcFeasibilityCheckCheckBox.isChecked()
-
-                dispatch_all_areas = self.ui.ntcDispatchAllAreasCheckBox.isChecked()
-
-                weight_power_shift = 10.0 ** self.ui.weightPowerShiftSpinBox.value()
-                weight_generation_cost = 10.0 ** self.ui.weightGenCostSpinBox.value()
-
-                # todo: add consider_nx_contingencies to gui if necessary
-                consider_contingencies = self.ui.considerContingenciesNtcOpfCheckBox.isChecked()
-                consider_nx_contingencies = self.ui.considerContingenciesNtcOpfCheckBox.isChecked()
-                consider_hvdc_contingencies = self.ui.considerContingenciesHvdcOpfCheckBox.isChecked()
-                consider_gen_contingencies = self.ui.considerContingenciesGeneratorOpfCheckBox.isChecked()
-                generation_contingency_threshold = self.ui.contingencyGenerationThresholdDoubleSpinBox.value()
-
-                trm = self.ui.trmSpinBox.value()
-                ntc_load_rule = self.ui.ntcLoadRuleSpinBox.value() / 100.0
-                loading_threshold_to_report = self.ui.ntcReportLoadingThresholdSpinBox.value()
-                n1_consideration = self.ui.n1ConsiderationCheckBox.isChecked()
-
-                options = sim.OptimalNetTransferCapacityOptions(
-                    area_from_bus_idx=idx_from,
-                    area_to_bus_idx=idx_to,
-                    mip_solver=mip_solver,
-                    generation_formulation=generation_formulation,
-                    monitor_only_sensitive_branches=monitor_only_sensitive_branches,
-                    monitor_only_ntc_rule_branches=monitor_only_ntc_rule_branches,
-                    branch_sensitivity_threshold=branch_sensitivity_threshold,
-                    skip_generation_limits=skip_generation_limits,
-                    dispatch_all_areas=dispatch_all_areas,
-                    lodf_tolerance=lodf_tolerance,
-                    sensitivity_dT=dT,
-                    transfer_method=mode,
-                    perform_previous_checks=perform_previous_checks,
-                    weight_power_shift=weight_power_shift,
-                    weight_generation_cost=weight_generation_cost,
-                    consider_contingencies=consider_contingencies,
-                    consider_hvdc_contingencies=consider_hvdc_contingencies,
-                    consider_gen_contingencies=consider_gen_contingencies,
-                    consider_nx_contingencies=consider_nx_contingencies,
-                    generation_contingency_threshold=generation_contingency_threshold,
-                    loading_threshold_to_report=loading_threshold_to_report,
-                    trm=trm,
-                    ntc_load_rule=ntc_load_rule,
-                    n1_consideration=n1_consideration,
-                )
-
-                self.ui.progress_label.setText('Running optimal net transfer capacity...')
-                QtGui.QGuiApplication.processEvents()
-                pf_options = self.get_selected_power_flow_options()
-
-                # set power flow object instance
-                drv = sim.OptimalNetTransferCapacityDriver(
-                    grid=self.circuit,
-                    options=options,
-                    pf_options=pf_options)
-
-                self.LOCK()
-                self.session.run(drv,
-                                 post_func=self.post_opf_ntc,
-                                 prog_func=self.ui.progressBar.setValue,
-                                 text_func=self.ui.progress_label.setText)
+                    self.LOCK()
+                    self.session.run(drv,
+                                     post_func=self.post_opf_ntc,
+                                     prog_func=self.ui.progressBar.setValue,
+                                     text_func=self.ui.progress_label.setText)
 
             else:
                 warning_msg('Another OPF is being run...')
@@ -2149,9 +2082,9 @@ class SimulationsMain(TimeEventsMain):
         if not self.session.is_anything_running():
             self.UNLOCK()
 
-    def run_opf_ntc_ts(self, with_clustering=False):
+    def run_opf_ntc_ts(self):
         """
-        Run OPF time series simulation
+        Run OPF NTC time series simulation
         """
         if len(self.circuit.buses) > 0:
 
@@ -2159,104 +2092,27 @@ class SimulationsMain(TimeEventsMain):
 
                 self.remove_simulation(sim.SimulationTypes.OPF_NTC_TS_run)
 
-                # available transfer capacity inter areas
-                compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br, areas_from, areas_to = self.get_compatible_areas_from_to()
+                options = self.get_opf_ntc_options()
 
-                if not compatible_areas:
+                if options is None:
                     return
 
-                idx_from = np.array([i for i, bus in lst_from])
-                idx_to = np.array([i for i, bus in lst_to])
-                idx_br = np.array([i for i, bus, sense in lst_br])
-
-                if len(idx_from) == 0:
-                    error_msg('The area "from" has no buses!')
-                    return
-
-                if len(idx_to) == 0:
-                    error_msg('The area "to" has no buses!')
-                    return
-
-                if len(idx_br) == 0:
-                    error_msg('There are no inter-area Branches!')
-                    return
-
-                mip_solver = self.mip_solvers_dict[self.ui.mip_solver_comboBox.currentText()]
-
-                if self.ui.optimalRedispatchRadioButton.isChecked():
-                    generation_formulation = GenerationNtcFormulation.Optimal
-                elif self.ui.proportionalRedispatchRadioButton.isChecked():
-                    generation_formulation = GenerationNtcFormulation.Proportional
                 else:
-                    generation_formulation = GenerationNtcFormulation.Optimal
 
-                monitor_only_sensitive_branches = self.ui.ntcSelectBasedOnExchangeSensitivityCheckBox.isChecked()
-                monitor_only_ntc_rule_branches = self.ui.ntcSelectBasedOnAcerCriteriaCheckBox.isChecked()
-                skip_generation_limits = self.ui.skipNtcGenerationLimitsCheckBox.isChecked()
-                branch_sensitivity_threshold = self.ui.atcThresholdSpinBox.value()
-                dT = self.ui.atcPerturbanceSpinBox.value()
-                mode = self.transfer_modes_dict[self.ui.transferMethodComboBox.currentText()]
-                lodf_tolerance = 10.0 ** self.ui.ntcLODFToleranceSpinBox.value()
+                    self.ui.progress_label.setText('Running optimal net transfer capacity time series...')
+                    QtGui.QGuiApplication.processEvents()
 
-                perform_previous_checks = self.ui.ntcFeasibilityCheckCheckBox.isChecked()
+                    # set optimal net transfer capacity driver instance
+                    drv = sim.OptimalNetTransferCapacityTimeSeriesDriver(grid=self.circuit,
+                                                                         options=options,
+                                                                         time_indices=self.get_time_indices(),
+                                                                         clustering_results=self.get_clustering_results())
 
-                dispatch_all_areas = self.ui.ntcDispatchAllAreasCheckBox.isChecked()
-
-                weight_power_shift = 10.0 ** self.ui.weightPowerShiftSpinBox.value()
-                weight_generation_cost = 10.0 ** self.ui.weightGenCostSpinBox.value()
-
-                # todo: add consider_nx_contingencies to gui if necessary
-                consider_contingencies = self.ui.considerContingenciesNtcOpfCheckBox.isChecked()
-                consider_nx_contingencies = self.ui.considerContingenciesNtcOpfCheckBox.isChecked()
-                consider_hvdc_contingencies = self.ui.considerContingenciesHvdcOpfCheckBox.isChecked()
-                consider_gen_contingencies = self.ui.considerContingenciesGeneratorOpfCheckBox.isChecked()
-                generation_contingency_threshold = self.ui.contingencyGenerationThresholdDoubleSpinBox.value()
-
-                trm = self.ui.trmSpinBox.value()
-                loading_threshold_to_report = self.ui.ntcReportLoadingThresholdSpinBox.value()
-                ntcLoadRule = self.ui.ntcLoadRuleSpinBox.value() / 100
-                n1Consideration = self.ui.n1ConsiderationCheckBox.isChecked()
-
-                options = sim.OptimalNetTransferCapacityOptions(
-                    area_from_bus_idx=idx_from,
-                    area_to_bus_idx=idx_to,
-                    mip_solver=mip_solver,
-                    generation_formulation=generation_formulation,
-                    monitor_only_sensitive_branches=monitor_only_sensitive_branches,
-                    monitor_only_ntc_rule_branches=monitor_only_ntc_rule_branches,
-                    branch_sensitivity_threshold=branch_sensitivity_threshold,
-                    skip_generation_limits=skip_generation_limits,
-                    dispatch_all_areas=dispatch_all_areas,
-                    lodf_tolerance=lodf_tolerance,
-                    sensitivity_dT=dT,
-                    transfer_method=mode,
-                    perform_previous_checks=perform_previous_checks,
-                    weight_power_shift=weight_power_shift,
-                    weight_generation_cost=weight_generation_cost,
-                    consider_contingencies=consider_contingencies,
-                    consider_hvdc_contingencies=consider_hvdc_contingencies,
-                    consider_gen_contingencies=consider_gen_contingencies,
-                    consider_nx_contingencies=consider_nx_contingencies,
-                    generation_contingency_threshold=generation_contingency_threshold,
-                    trm=trm,
-                    loading_threshold_to_report=loading_threshold_to_report,
-                    ntc_load_rule=ntcLoadRule,
-                    n1_consideration=n1Consideration)
-
-                self.ui.progress_label.setText('Running optimal net transfer capacity time series...')
-                QtGui.QGuiApplication.processEvents()
-
-                # set optimal net transfer capacity driver instance
-                drv = sim.OptimalNetTransferCapacityTimeSeriesDriver(grid=self.circuit,
-                                                                     options=options,
-                                                                     time_indices=self.get_time_indices(),
-                                                                     clustering_results=self.get_clustering_results())
-
-                self.LOCK()
-                self.session.run(drv,
-                                 post_func=self.post_opf_ntc_ts,
-                                 prog_func=self.ui.progressBar.setValue,
-                                 text_func=self.ui.progress_label.setText)
+                    self.LOCK()
+                    self.session.run(drv,
+                                     post_func=self.post_opf_ntc_ts,
+                                     prog_func=self.ui.progressBar.setValue,
+                                     text_func=self.ui.progress_label.setText)
 
             else:
                 warning_msg('Another Optimal NCT time series is being run...')

@@ -19,7 +19,7 @@ import numpy as np
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.basic_structures import DateVec, IntVec, Vec, StrVec, CxMat
-from GridCalEngine.enumerations import StudyResultsType, TransformerControlType, ResultTypes
+from GridCalEngine.enumerations import StudyResultsType, TransformerControlType, ResultTypes, DeviceType
 
 
 def add_shifter_data(y, columns, controlled_shifters, phase_shift):
@@ -283,12 +283,6 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         ResultsTemplate.__init__(self,
                                  name='NTC',
                                  available_results={
-                                     ResultTypes.FlowReports: [
-                                         ResultTypes.ContingencyFlowsReport,
-                                         ResultTypes.ContingencyFlowsBranchReport,
-                                         ResultTypes.ContingencyFlowsGenerationReport,
-                                         ResultTypes.ContingencyFlowsHvdcReport,
-                                     ],
                                      ResultTypes.BusResults: [
                                          ResultTypes.BusVoltageModule,
                                          ResultTypes.BusVoltageAngle,
@@ -302,16 +296,22 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                                      ResultTypes.HvdcResults: [
                                          ResultTypes.HvdcPowerFrom,
                                      ],
-                                     ResultTypes.DispatchResults: [
-                                         ResultTypes.BatteryPower,
-                                         ResultTypes.GeneratorPower,
-                                         ResultTypes.GenerationDelta,
-                                     ],
+                                     # ResultTypes.DispatchResults: [
+                                     #     ResultTypes.BatteryPower,
+                                     #     ResultTypes.GeneratorPower,
+                                     #     ResultTypes.GenerationDelta,
+                                     # ],
                                      ResultTypes.AreaResults: [
                                          ResultTypes.AvailableTransferCapacityAlpha,
                                          ResultTypes.AvailableTransferCapacityAlphaN1,
                                          ResultTypes.InterAreaExchange,
-                                     ]
+                                     ],
+                                     ResultTypes.FlowReports: [
+                                         ResultTypes.ContingencyFlowsReport,
+                                         ResultTypes.ContingencyFlowsBranchReport,
+                                         ResultTypes.ContingencyFlowsGenerationReport,
+                                         ResultTypes.ContingencyFlowsHvdcReport,
+                                     ],
                                  },
                                  time_array=None,
                                  clustering_results=None,
@@ -1055,8 +1055,10 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                 data=np.abs(self.voltage),
                 index=self.bus_names,
                 columns=['V (p.u.)'],
-                title=result_type.value,
+                title=str(result_type.value),
                 ylabel='(p.u.)',
+                cols_device_type=DeviceType.NoDevice,
+                idx_device_type=DeviceType.BusDevice
             )
 
         elif result_type == ResultTypes.BusVoltageAngle:
@@ -1064,8 +1066,10 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                 data=np.angle(self.voltage),
                 index=self.bus_names,
                 columns=['V (radians)'],
-                title=result_type.value,
+                title=str(result_type.value),
                 ylabel='(radians)',
+                cols_device_type=DeviceType.NoDevice,
+                idx_device_type=DeviceType.BusDevice
             )
 
         elif result_type == ResultTypes.BranchPower:
@@ -1073,8 +1077,10 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                 data=self.Sf.real,
                 columns=['Sf'],
                 index=self.branch_names,
-                title=result_type.value,
+                title=str(result_type.value),
                 ylabel='(MW)',
+                cols_device_type=DeviceType.NoDevice,
+                idx_device_type=DeviceType.BranchDevice
             )
 
         elif result_type == ResultTypes.BusPower:
@@ -1082,8 +1088,10 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                 data=self.loading * 100.0,
                 index=self.Sbus.real,
                 columns=['Sb'],
-                title=result_type.value,
+                title=str(result_type.value),
                 ylabel='(MW)',
+                cols_device_type=DeviceType.NoDevice,
+                idx_device_type=DeviceType.BusDevice
             )
 
         elif result_type == ResultTypes.BranchLoading:
@@ -1091,8 +1099,10 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                 data=self.loading * 100.0,
                 index=self.branch_names,
                 columns=['Loading'],
-                title=result_type.value,
+                title=str(result_type.value),
                 ylabel='(%)',
+                cols_device_type=DeviceType.NoDevice,
+                idx_device_type=DeviceType.BranchDevice
             )
 
         elif result_type == ResultTypes.BranchLosses:
@@ -1100,8 +1110,10 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                 data=self.losses.real,
                 index=self.branch_names,
                 columns=['PLosses'],
-                title=result_type.value,
+                title=str(result_type.value),
                 ylabel='(MW)',
+                cols_device_type=DeviceType.NoDevice,
+                idx_device_type=DeviceType.BranchDevice
             )
 
         elif result_type == ResultTypes.BranchTapAngle:
@@ -1109,26 +1121,10 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                 data=np.rad2deg(self.phase_shift),
                 index=self.branch_names,
                 columns=['V (deg)'],
-                title=result_type.value,
+                title=str(result_type.value),
                 ylabel='(deg)',
-            )
-
-        elif result_type == ResultTypes.GeneratorPower:
-            return ResultsTable(
-                data=self.generator_power,
-                index=self.generator_names,
-                columns=['P'],
-                title=result_type.value,
-                ylabel='(MW)',
-            )
-
-        elif result_type == ResultTypes.BatteryPower:
-            return ResultsTable(
-                data=self.battery_power,
-                index=self.battery_names,
-                columns=['P'],
-                title=result_type.value,
-                ylabel='(MW)',
+                cols_device_type=DeviceType.NoDevice,
+                idx_device_type=DeviceType.BranchDevice
             )
 
         elif result_type == ResultTypes.HvdcPowerFrom:
@@ -1136,19 +1132,23 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                 data=self.hvdc_Pf,
                 index=self.hvdc_names,
                 columns=['Pf'],
-                title=result_type.value,
+                title=str(result_type.value),
                 ylabel='(MW)',
+                cols_device_type=DeviceType.NoDevice,
+                idx_device_type=DeviceType.HVDCLineDevice
             )
 
         elif result_type == ResultTypes.AvailableTransferCapacityAlpha:
             return ResultsTable(
                 data=self.alpha,
                 index=self.branch_names,
-                title=result_type.value,
+                title=str(result_type.value),
                 columns=['Sensitivity'],
                 ylabel='(p.u.)',
                 xlabel='',
                 units='',
+                cols_device_type=DeviceType.NoDevice,
+                idx_device_type=DeviceType.BranchDevice
             )
 
         elif result_type == ResultTypes.AvailableTransferCapacityAlphaN1:
@@ -1156,21 +1156,12 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                 data=self.alpha_n1,
                 index=self.branch_names,
                 columns=self.branch_names,
-                title=result_type.value,
+                title=str(result_type.value),
                 ylabel='(p.u.)',
                 xlabel='',
                 units='',
-            )
-
-        elif result_type == ResultTypes.GenerationDelta:
-            return ResultsTable(
-                data=self.generation_delta,
-                index=self.generator_names,
-                columns=['P'],
-                title=result_type.value,
-                ylabel='(MW)',
-                xlabel='',
-                units='',
+                cols_device_type=DeviceType.BranchDevice,
+                idx_device_type=DeviceType.BranchDevice
             )
 
         elif result_type == ResultTypes.BranchMonitoring:
@@ -1204,11 +1195,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             )
 
         else:
-            return ResultsTable(
-                data=np.zeros(0),
-                index=np.zeros(0).shape[0] * [''],
-                columns=np.zeros(0).shape[0] * [''],
-            )
+            raise Exception(f"Unknown NTC result type {result_type}")
 
     def get_monitoring_logic_report(self):
         """

@@ -26,7 +26,8 @@ from GridCalEngine.IO.gridcal.generic_io_functions import CustomJSONizer
 import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.profile import Profile
 from GridCalEngine.Devices.Parents.editable_device import EditableDevice
-from GridCalEngine.enumerations import DeviceType, ConverterControlType, HvdcControlType, BuildStatus
+from GridCalEngine.enumerations import (DeviceType, ConverterControlType, HvdcControlType, BuildStatus,
+                                        TransformerControlType)
 
 
 def add_to_dict(main_dict: Dict[str, List[Any]], data_to_append: Dict[Any, Any], key: str):
@@ -89,8 +90,11 @@ def json_to_profile(d: Dict[str, Any]) -> Profile:
 
             elif d['type'] == 'dense':
                 val = np.array(d['data'])
-                profile = Profile(default_value=val[0])
-                profile.set(arr=val)
+                if len(val):
+                    profile = Profile(default_value=val[0])
+                    profile.set(arr=val)
+                else:
+                    profile = Profile(default_value=0)
                 return profile
             else:
                 raise Exception('Unknown profile type' + str(d['type']))
@@ -391,26 +395,10 @@ def parse_json_data_v3(data: dict, logger: Logger):
                 zone_id = str(jentry['zone']) if 'zone' in jentry.keys() else ''
                 substation_id = str(jentry['Substation']) if 'Substation' in jentry.keys() else ''
                 country_id = str(jentry['country']) if 'country' in jentry.keys() else ''
-
-                if area_id in areas_dict.keys():
-                    area = areas_dict[area_id]
-                else:
-                    area = circuit.areas[0]
-
-                if zone_id in zones_dict.keys():
-                    zone = zones_dict[zone_id]
-                else:
-                    zone = circuit.zones[0]
-
-                if substation_id in substations_dict.keys():
-                    substation = substations_dict[substation_id]
-                else:
-                    substation = circuit.substations[0]
-
-                if country_id in country_dict.keys():
-                    country = country_dict[country_id]
-                else:
-                    country = circuit.countries[0]
+                area = areas_dict.get(area_id, None)
+                zone = zones_dict.get(zone_id, None)
+                substation = substations_dict.get(substation_id, None)
+                country = country_dict.get(country_id, None)
 
                 bus = dev.Bus(name=str(jentry['name']),
                               idtag=str(jentry['id']),
@@ -426,6 +414,8 @@ def parse_json_data_v3(data: dict, logger: Logger):
                               width=float(jentry['w']),
                               active=bool(jentry['active']),
                               is_slack=bool(jentry['is_slack']),
+                              is_internal=bool(jentry.get('is_internal', False)),
+                              is_dc=bool(jentry.get('is_dc', False)),
                               area=area,
                               zone=zone,
                               substation=substation,
@@ -750,6 +740,88 @@ def parse_json_data_v3(data: dict, logger: Logger):
 
                 circuit.add_transformer2w(elm)
 
+        windings_dict = dict()
+        if "Windings" in devices.keys():
+
+            transformers = devices["Windings"]
+            if 'Windings' in profiles.keys():
+                device_profiles_dict = {e['id']: e for e in profiles["Windings"]}
+                has_profiles = True
+            else:
+                device_profiles_dict = dict()
+                has_profiles = False
+
+            for entry in transformers:
+
+                v1 = float(entry['Vnomf'])
+                v2 = float(entry['Vnomt'])
+
+                bus_from = bus_dict[entry['bus_from']]
+                bus_to = bus_dict[entry['bus_to']]
+
+                if v1 == 0.0:
+                    v1 = bus_from.Vnom
+
+                if v2 == 0.0:
+                    v2 = bus_to.Vnom
+
+                if v1 > v2:
+                    HV = v1
+                    LV = v2
+                else:
+                    HV = v2
+                    LV = v1
+
+                elm = dev.Winding(bus_from=bus_from,
+                                  bus_to=bus_to,
+                                  name=str(entry['name']),
+                                  idtag=str(entry['id']),
+                                  code=str(entry['name_code']),
+                                  r=float(entry['r']),
+                                  x=float(entry['x']),
+                                  g=float(entry['g']),
+                                  b=float(entry['b']),
+                                  rate=float(entry['rate']),
+                                  HV=HV,
+                                  LV=LV,
+                                  active=bool(entry['active']),
+                                  tap_module=float(entry['tap_module']),
+                                  tap_phase=float(entry['tap_angle']),
+                                  vset=float(entry['vset']),
+                                  temp_base=float(entry['base_temperature']),
+                                  temp_oper=float(entry['operational_temperature']),
+                                  alpha=float(entry['alpha'])
+                                  )
+
+                if has_profiles:
+                    profile_entry = device_profiles_dict[elm.idtag]
+                    elm.active_prof = json_to_profile(profile_entry['active'])
+                    elm.rate_prof = json_to_profile(profile_entry['rate'])
+
+                circuit.add_winding(elm)
+                windings_dict[elm.idtag] = elm
+
+
+        if "Transformer3w" in devices.keys():
+
+            transformers = devices["Transformer3w"]
+
+            for entry in transformers:
+
+                elm = dev.Transformer3W(idtag=entry['id'],
+                                        code=entry['code'],
+                                        name=entry['name'],
+                                        bus1=bus_dict[entry['bus_1']],
+                                        bus2=bus_dict[entry['bus_2']],
+                                        bus3=bus_dict[entry['bus_3']])
+
+                elm.bus0 = bus_dict[entry['bus_0']]
+                elm.winding1 = windings_dict[entry['winding1']]
+                elm.winding2 = windings_dict[entry['winding2']]
+                elm.winding3 = windings_dict[entry['winding3']]
+
+                circuit.add_transformer3w(elm)
+
         if "TransformerNw" in devices.keys():
 
             for tr_entry in devices["TransformerNw"]:
@@ -997,31 +1069,14 @@ def parse_json_data_v2(data: dict, logger: Logger):
         if 'Bus' in devices.keys():
             buses = devices["Bus"]
             for jentry in buses:
-
                 area_id = str(jentry['area']) if 'area' in jentry.keys() else ''
                 zone_id = str(jentry['zone']) if 'zone' in jentry.keys() else ''
                 substation_id = str(jentry['Substation']) if 'Substation' in jentry.keys() else ''
                 country_id = str(jentry['country']) if 'country' in jentry.keys() else ''
-
-                if area_id in areas_dict.keys():
-                    area = areas_dict[area_id]
-                else:
-                    area = circuit.areas[0]
-
-                if zone_id in zones_dict.keys():
-                    zone = zones_dict[zone_id]
-                else:
-                    zone = circuit.zones[0]
-
-                if substation_id in substations_dict.keys():
-                    substation = substations_dict[substation_id]
-                else:
-                    substation = circuit.substations[0]
-
-                if country_id in country_dict.keys():
-                    country = country_dict[country_id]
-                else:
-                    country = circuit.countries[0]
+                area = areas_dict.get(area_id, None)
+                zone = zones_dict.get(zone_id, None)
+                substation = substations_dict.get(substation_id, None)
+                country = country_dict.get(country_id, None)
 
                 bus = dev.Bus(name=str(jentry['name']),
                               idtag=str(jentry['id']),
@@ -1178,49 +1233,874 @@ def parse_json(file_name) -> MultiCircuit:
     return parse_json_data(data)
 
 
+# def save_json_file_v3_old(file_path: str, circuit: MultiCircuit, simulation_drivers: Union[None, List[Any]] = None):
+#     """
+#     Save JSON file
+#     :param file_path: file path
+#     :param circuit: GridCal MultiCircuit element
+#     :param simulation_drivers: List of Simulation Drivers (optional)
+#     """
+#     elements = dict()
+#     element_profiles = dict()
+#     units_dict = dict()
+#     logger = Logger()
+#
+#     # add the circuit
+#     elements[DeviceType.CircuitDevice.value] = circuit.get_properties_dict()
+#     units_dict[DeviceType.CircuitDevice.value] = circuit.get_units_dict()
+#     element_profiles[DeviceType.CircuitDevice.value] = circuit.get_profiles_dict()
+#
+#     # idelly, these list go in dependency order
+#     all_lists = [circuit.substations,
+#                  circuit.zones,
+#                  circuit.areas,
+#                  circuit.countries,
+#                  circuit.technologies,
+#                  circuit.contingency_groups,
+#                  circuit.contingencies,
+#                  circuit.investments_groups,
+#                  circuit.investments,
+#                  circuit.buses,
+#                  circuit.connectivity_nodes]
+#     all_lists += circuit.get_injection_devices_lists()
+#     all_lists += circuit.get_branch_lists()
+#
+#     # add the devices
+#     for device_list in all_lists:
+#         for elm in device_list:
+#             # pack the bus data into a dictionary
+#             key = elm.device_type.value
+#             add_to_dict(main_dict=elements,
+#                         data_to_append=elm.get_properties_dict(),
+#                         key=key)
+#             add_to_dict(main_dict=element_profiles,
+#                         data_to_append=get_profiles_dict(elm),
+#                         key=key)
+#
+#     # results
+#     results = dict()
+#     if simulation_drivers is not None:
+#         for driver in simulation_drivers:
+#             if driver is not None:
+#
+#                 if driver.name == 'Power Flow':
+#
+#                     bus_data = dict()
+#                     for i, elm in enumerate(circuit.buses):
+#                         bus_data[elm.idtag] = {'vm': np.abs(driver.results.voltage[i]),
+#                                                'va': np.angle(driver.results.voltage[i])}
+#
+#                     branch_data = dict()
+#                     for i, elm in enumerate(circuit.get_branches_wo_hvdc()):
+#                         branch_data[elm.idtag] = {'p': driver.results.Sf[i].real,
+#                                                   'q': driver.results.Sf[i].imag,
+#                                                   'losses': driver.results.losses[i].real}
+#
+#                     for i, elm in enumerate(circuit.hvdc_lines):
+#                         branch_data[elm.idtag] = {'p': driver.results.hvdc_Pf[i].real,
+#                                                   'q': 0,
+#                                                   'losses': driver.results.hvdc_losses[i].real}
+#
+#                     results["power_flow"] = {'bus': bus_data,
+#                                              'branch': branch_data}
+#
+#                 elif driver.name == 'Time Series':
+#
+#                     bus_data = dict()
+#                     for i, elm in enumerate(circuit.buses):
+#                         bus_data[elm.idtag] = {'vm': np.abs(driver.results.voltage[:, i]).tolist(),
+#                                                'va': np.angle(driver.results.voltage[:, i]).tolist()}
+#
+#                     branch_data = dict()
+#                     for i, elm in enumerate(circuit.get_branches_wo_hvdc()):
+#                         branch_data[elm.idtag] = {'p': driver.results.Sf[:, i].real.tolist(),
+#                                                   'q': driver.results.Sf[:, i].imag.tolist(),
+#                                                   'losses': driver.results.losses[:, i].real.tolist()}
+#
+#                     for i, elm in enumerate(circuit.hvdc_lines):
+#                         branch_data[elm.idtag] = {'p': driver.results.hvdc_Pf[:, i].real,
+#                                                   'q': 0,
+#                                                   'losses': driver.results.hvdc_losses[:, i].real}
+#
+#                     results["time_series"] = {'bus': bus_data,
+#                                               'branch': branch_data}
+#
+#     data = {'version': '3',
+#             'review': '3',
+#             'software': 'GridCal',
+#             'units': units_dict,
+#             'devices': elements,
+#             'profiles': element_profiles,
+#             'contingencies': get_contingencies_dict(circuit=circuit),
+#             'results': results,
+#             }
+#
+#     data_str = json.dumps(data, indent=True, cls=CustomJSONizer)
+#
+#     # Save json to a text file
+#     text_file = open(file_path, "w")
+#     text_file.write(data_str)
+#     text_file.close()
+#
+#     return logger
+
+
+def get_obj_ref(elm):
+    return elm.idtag if elm is not None else ''
+
+
 def save_json_file_v3(file_path: str, circuit: MultiCircuit, simulation_drivers: Union[None, List[Any]] = None):
     """
     Save JSON file
-    :param file_path: file path 
+    :param file_path: file path
     :param circuit: GridCal MultiCircuit element
     :param simulation_drivers: List of Simulation Drivers (optional)
     """
+    logger = Logger()
+    units_dict = dict()
     elements = dict()
     element_profiles = dict()
-    units_dict = dict()
-    logger = Logger()
 
     # add the circuit
-    elements[DeviceType.CircuitDevice.value] = circuit.get_properties_dict()
-    units_dict[DeviceType.CircuitDevice.value] = circuit.get_units_dict()
-    element_profiles[DeviceType.CircuitDevice.value] = circuit.get_profiles_dict()
+    elements["Circuit"] = {'id': circuit.idtag,
+                           'phases': 'ps',
+                           'name': circuit.name,
+                           'sbase': circuit.Sbase,
+                           'fbase': circuit.fBase,
+                           'model_version': circuit.model_version,
+                           'user_name': circuit.user_name,
+                           'comments': circuit.comments}
+    element_profiles["Circuit"] = {'time': circuit.get_time_profile_as_list()}
 
-    # idelly, these list go in dependency order
-    all_lists = [circuit.substations,
-                 circuit.zones,
-                 circuit.areas,
-                 circuit.countries,
-                 circuit.technologies,
-                 circuit.contingency_groups,
-                 circuit.contingencies,
-                 circuit.investments_groups,
-                 circuit.investments,
-                 circuit.buses,
-                 circuit.connectivity_nodes]
-    all_lists += circuit.get_injection_devices_lists()
-    all_lists += circuit.get_branch_lists()
+    # Add area-like devices
+    elements['Country'] = [{'id': elm.idtag,
+                            'name': elm.name,
+                            'code': elm.code} for elm in circuit.get_countries()]
 
-    # add the devices
-    for device_list in all_lists:
-        for elm in device_list:
-            # pack the bus data into a dictionary
-            key = elm.device_type.value
-            add_to_dict(main_dict=elements,
-                        data_to_append=elm.get_properties_dict(),
-                        key=key)
-            add_to_dict(main_dict=element_profiles,
-                        data_to_append=get_profiles_dict(elm),
-                        key=key)
+    elements["Community"] = [{'id': elm.idtag,
+                              'name': elm.name,
+                              'code': elm.code} for elm in circuit.get_communities()]
+
+    elements["Region"] = [{'id': elm.idtag,
+                           'name': elm.name,
+                           'code': elm.code} for elm in circuit.get_regions()]
+
+    elements["Municipality"] = [{'id': elm.idtag,
+                                 'name': elm.name,
+                                 'code': elm.code} for elm in circuit.get_municipalities()]
+
+    elements['Area'] = [{'id': elm.idtag,
+                         'name': elm.name,
+                         'code': elm.code} for elm in circuit.get_areas()]
+
+    elements['Zone'] = [{'id': elm.idtag,
+                         'name': elm.name,
+                         'code': elm.code} for elm in circuit.get_zones()]
+
+    elements['Substation'] = [{'id': elm.idtag,
+                               'name': elm.name,
+                               'code': elm.code,
+                               'area': get_obj_ref(elm.area),
+                               'zone': get_obj_ref(elm.zone),
+                               'country': get_obj_ref(elm.country),
+                               'community': get_obj_ref(elm.community),
+                               'region': get_obj_ref(elm.region),
+                               'municipality': get_obj_ref(elm.municipality),
+                               'address': elm.address} for elm in circuit.get_substations()]
+
+    elements['Voltage level'] = [{'id': elm.idtag,
+                                  'name': elm.name,
+                                  'code': elm.code,
+                                  'v_nom': elm.Vnom,
+                                  'substation': get_obj_ref(elm.substation)} for elm in
+                                 circuit.get_voltage_levels()]
+
+    # Add buses
+    elements['Bus'] = [{'id': elm.idtag,
+                        'type': elm.determine_bus_type().value,
+                        'phases': 'ps',
+                        'name': elm.name,
+                        'name_code': elm.code,
+                        'active': elm.active,
+                        'is_slack': bool(elm.is_slack),
+                        'is_internal': bool(elm.is_internal),
+                        'is_dc': bool(elm.is_dc),
+                        'vnom': elm.Vnom,
+                        'vmin': elm.Vmin,
+                        'vmax': elm.Vmax,
+                        'rf': elm.r_fault,
+                        'xf': elm.x_fault,
+                        'x': elm.x,
+                        'y': elm.y,
+                        'h': elm.h,
+                        'w': elm.w,
+                        'lat': elm.latitude,
+                        'lon': elm.longitude,
+                        'alt': 0.0,
+                        'country': get_obj_ref(elm.country),
+                        'area': get_obj_ref(elm.area),
+                        'zone': get_obj_ref(elm.zone),
+                        'Substation': get_obj_ref(elm.substation),
+
+                        } for elm in circuit.get_buses()]
+    element_profiles['Bus'] = [{'id': elm.idtag,
+                                'active': profile_to_json(elm.active_prof)} for elm in
+                               circuit.get_buses()]
+
+    # connectivity nodes
+    elements['Connectivity Node'] = [{'id': elm.idtag,
+                                      'phases': 'ps',
+                                      'name': elm.name,
+                                      'name_code': elm.code,
+                                      'dc': elm.dc,
+                                      'default_bus': get_obj_ref(elm.default_bus)} for elm in
+                                     circuit.get_connectivity_nodes()]
+
+    # bus bars
+    elements["BusBar"] = [{'id': elm.idtag,
+                           'name': elm.name,
+                           'code': elm.code,
+                           'voltage_level': get_obj_ref(elm.voltage_level),
+                           'cn': get_obj_ref(elm.cn)} for elm in circuit.get_bus_bars()]
+
+    # load
+    elements['Load'] = [{'id': elm.idtag,
+                         'type': 'load',
+                         'phases': 'ps',
+                         'name': elm.name,
+                         'name_code': elm.code,
+                         'bus': get_obj_ref(elm.bus),
+                         'cn': get_obj_ref(elm.cn),
+                         'active': bool(elm.active),
+                         'g': elm.G,
+                         'b': elm.B,
+                         'ir': elm.Ir,
+                         'ii': elm.Ii,
+                         'p': elm.P,
+                         'q': elm.Q,
+                         'shedding_cost': elm.Cost
+                         } for elm in circuit.get_loads()]
+    element_profiles['Load'] = [{'id': elm.idtag,
+                                 'active': profile_to_json(elm.active_prof),
+                                 'p': profile_to_json(elm.P_prof),
+                                 'q': profile_to_json(elm.Q_prof),
+                                 'ir': profile_to_json(elm.Ir_prof),
+                                 'ii': profile_to_json(elm.Ii_prof),
+                                 'g': profile_to_json(elm.G_prof),
+                                 'b': profile_to_json(elm.B_prof)} for elm in circuit.get_loads()]
+
+    # static generator
+    elements['Static Generator'] = [{'id': elm.idtag,
+                                     'type': 'load',
+                                     'phases': 'ps',
+                                     'name': elm.name,
+                                     'name_code': elm.code,
+                                     'bus': get_obj_ref(elm.bus),
+                                     'cn': get_obj_ref(elm.cn),
+                                     'active': bool(elm.active),
+                                     'p': elm.P,
+                                     'q': elm.Q,
+                                     'shedding_cost': elm.Cost
+                                     } for elm in circuit.get_static_generators()]
+    element_profiles['Static Generator'] = [{'id': elm.idtag,
+                                             'active': profile_to_json(elm.active_prof),
+                                             'p': profile_to_json(elm.P_prof),
+                                             'q': profile_to_json(elm.Q_prof)} for elm in
+                                            circuit.get_static_generators()]
+
+    # controllable shunt
+    elements['Controllable shunt'] = [{'id': elm.idtag,
+                                       'type': 'load',
+                                       'phases': 'ps',
+                                       'name': elm.name,
+                                       'name_code': elm.code,
+                                       'bus': get_obj_ref(elm.bus),
+                                       'cn': get_obj_ref(elm.cn),
+                                       'active': bool(elm.active),
+                                       'g_steps': elm.g_steps.tolist(),
+                                       'b_steps': elm.b_steps.tolist(),
+                                       'step': elm.step,
+                                       'shedding_cost': elm.Cost
+                                       } for elm in circuit.get_controllable_shunts()]
+    element_profiles['Controllable shunt'] = [{'id': elm.idtag,
+                                               'active': profile_to_json(elm.active_prof),
+                                               'step': profile_to_json(elm.steps_prof), } for elm in
+                                              circuit.get_controllable_shunts()]
+
+    # current injection
+    elements['Current injection'] = [{'id': elm.idtag,
+                                      'type': 'load',
+                                      'phases': 'ps',
+                                      'name': elm.name,
+                                      'name_code': elm.code,
+                                      'bus': get_obj_ref(elm.bus),
+                                      'cn': get_obj_ref(elm.cn),
+                                      'active': bool(elm.active),
+                                      'ir': elm.Ir,
+                                      'ii': elm.Ii,
+                                      'shedding_cost': elm.Cost
+                                      } for elm in circuit.get_loads()]
+    element_profiles['Current injection'] = [{'id': elm.idtag,
+                                              'active': profile_to_json(elm.active_prof),
+                                              'ir': profile_to_json(elm.Ir_prof),
+                                              'ii': profile_to_json(elm.Ii_prof)} for elm in
+                                             circuit.get_loads()]
+
+    # External grid
+    elements["External grid"] = [{'id': elm.idtag,
+                                  'type': 'external_grid',
+                                  'phases': 'ps',
+                                  'name': elm.name,
+                                  'name_code': elm.code,
+                                  'bus': get_obj_ref(elm.bus),
+                                  'cn': get_obj_ref(elm.cn),
+                                  'active': bool(elm.active),
+                                  'Vm': elm.Vm,
+                                  'Va': elm.Va,
+                                  'P': elm.P,
+                                  'Q': elm.Q,
+                                  'Cost': elm.Cost
+                                  } for elm in circuit.get_external_grids()]
+    element_profiles["External grid"] = [{'id': elm.idtag,
+                                          'active': profile_to_json(elm.active_prof),
+                                          'Vm_prof': profile_to_json(elm.Vm_prof),
+                                          'Va_prof': profile_to_json(elm.Va_prof),
+                                          'P_prof': profile_to_json(elm.P_prof),
+                                          'Q_prof': profile_to_json(elm.Q_prof),
+                                          'Cost_prof': profile_to_json(elm.Cost_prof)
+                                          } for elm in
+                                         circuit.get_external_grids()]
+
+    # generators
+    elements['Generator'] = [{'id': elm.idtag,
+                              'type': 'generator',
+                              'phases': 'ps',
+                              'name': elm.name,
+                              'name_code': elm.code,
+                              'bus': get_obj_ref(elm.bus),
+                              'cn': get_obj_ref(elm.cn),
+                              'active': elm.active,
+                              'is_controlled': elm.is_controlled,
+                              'p': elm.P,
+                              'pf': elm.Pf,
+                              'vset': elm.Vset,
+                              'snom': elm.Snom,
+                              'qmin': elm.Qmin,
+                              'qmax': elm.Qmax,
+                              'q_curve': elm.q_curve.str(),
+
+                              'pmin': elm.Pmin,
+                              'pmax': elm.Pmax,
+                              'cost2': elm.Cost2,
+                              'cost1': elm.Cost,
+                              'cost0': elm.Cost0,
+
+                              'startup_cost': elm.StartupCost,
+                              'shutdown_cost': elm.ShutdownCost,
+                              'min_time_up': elm.MinTimeUp,
+                              'min_time_down': elm.MinTimeDown,
+                              'ramp_up': elm.RampUp,
+                              'ramp_down': elm.RampDown,
+
+                              'capex': elm.capex,
+                              'opex': elm.opex,
+                              'build_status': str(elm.build_status.value).lower(),
+                              'technology': "",
+                              } for elm in circuit.get_generators()]
+    element_profiles['Generator'] = [{'id': elm.idtag,
+                                      'active': profile_to_json(elm.active_prof),
+                                      'p': profile_to_json(elm.P_prof),
+                                      'v': profile_to_json(elm.Vset_prof),
+                                      'pf': profile_to_json(elm.Pf_prof)} for elm in
+                                     circuit.get_generators()]
+
+    # batteries
+    elements['Battery'] = [{'id': elm.idtag,
+                            'type': 'battery',
+                            'phases': 'ps',
+                            'name': elm.name,
+                            'name_code': elm.code,
+                            'bus': get_obj_ref(elm.bus),
+                            'cn': get_obj_ref(elm.cn),
+                            'active': elm.active,
+                            'is_controlled': elm.is_controlled,
+                            'p': elm.P,
+                            'vset': elm.Vset,
+                            'pf': elm.Pf,
+                            'snom': elm.Snom,
+                            'enom': elm.Enom,
+                            'qmin': elm.Qmin,
+                            'qmax': elm.Qmax,
+                            'pmin': elm.Pmin,
+                            'pmax': elm.Pmax,
+                            'cost': elm.Cost,
+
+                            'cost2': elm.Cost2,
+                            'cost1': elm.Cost,
+                            'cost0': elm.Cost0,
+
+                            'startup_cost': elm.StartupCost,
+                            'shutdown_cost': elm.ShutdownCost,
+                            'min_time_up': elm.MinTimeUp,
+                            'min_time_down': elm.MinTimeDown,
+                            'ramp_up': elm.RampUp,
+                            'ramp_down': elm.RampDown,
+
+                            'capex': elm.capex,
+                            'opex': elm.opex,
+                            'build_status': str(elm.build_status.value).lower(),
+                            'charge_efficiency': elm.charge_efficiency,
+                            'discharge_efficiency': elm.discharge_efficiency,
+                            'min_soc': elm.min_soc,
+                            'max_soc': elm.max_soc,
+                            'soc_0': elm.soc_0,
+                            'min_soc_charge': elm.min_soc_charge,
+                            'charge_per_cycle': elm.charge_per_cycle,
+                            'discharge_per_cycle': elm.discharge_per_cycle,
+                            'technology': ""
+                            } for elm in circuit.get_batteries()]
+    element_profiles['Battery'] = [{'id': elm.idtag,
+                                    'active': profile_to_json(elm.active_prof),
+                                    'p': profile_to_json(elm.P_prof),
+                                    'v': profile_to_json(elm.Vset_prof),
+                                    'pf': profile_to_json(elm.Pf_prof)} for elm in
+                                   circuit.get_batteries()]
+
+    # shunt
+    elements["Shunt"] = [{'id': elm.idtag,
+                          'type': 'load',
+                          'phases': 'ps',
+                          'name': elm.name,
+                          'name_code': elm.code,
+                          'bus': get_obj_ref(elm.bus),
+                          'cn': get_obj_ref(elm.cn),
+                          'active': bool(elm.active),
+                          'g': elm.G,
+                          'b': elm.B,
+                          'g0': elm.G0,
+                          'b0': elm.B0,
+                          'capex': elm.capex,
+                          'opex': elm.opex,
+                          'build_status': str(elm.build_status.value).lower(),
+                          } for elm in circuit.get_shunts()]
+    element_profiles["Shunt"] = [{'id': elm.idtag,
+                                  'active': profile_to_json(elm.active_prof),
+                                  'g': profile_to_json(elm.G_prof),
+                                  'b': profile_to_json(elm.B_prof)} for elm in
+                                 circuit.get_shunts()]
+
+    # Line
+    elements["Line"] = [{'id': elm.idtag,
+                         'type': 'line',
+                         'phases': 'ps',
+                         'name': elm.name,
+                         'name_code': elm.code,
+                         'bus_from': get_obj_ref(elm.bus_from),
+                         'bus_to': get_obj_ref(elm.bus_to),
+                         'cn_from': get_obj_ref(elm.cn_from),
+                         'cn_to': get_obj_ref(elm.cn_to),
+                         'active': elm.active,
+
+                         'rate': elm.rate,
+                         'contingency_factor1': elm.contingency_factor,
+                         'contingency_factor2': elm.contingency_factor,
+                         'contingency_factor3': elm.contingency_factor,
+                         'r': elm.R,
+                         'x': elm.X,
+                         'b': elm.B,
+
+                         'length': elm.length,
+                         'base_temperature': elm.temp_base,
+                         'operational_temperature': elm.temp_oper,
+                         'alpha': elm.alpha,
+
+                         'overload_cost': elm.Cost,
+                         'capex': elm.capex,
+                         'opex': elm.opex,
+                         'build_status': str(elm.build_status.value).lower(),
+
+                         'locations': []
+                         } for elm in circuit.get_lines()]
+    element_profiles["Line"] = [{'id': elm.idtag,
+                                 'active': profile_to_json(elm.active_prof),
+                                 'rate': profile_to_json(elm.rate_prof),
+                                 'contingency_factor1': profile_to_json(
+                                     elm.contingency_factor_prof)} for elm in
+                                circuit.get_lines()]
+
+    # DC Line
+    elements["DC line"] = [{'id': elm.idtag,
+                            'type': 'line',
+                            'phases': 'ps',
+                            'name': elm.name,
+                            'name_code': elm.code,
+                            'bus_from': get_obj_ref(elm.bus_from),
+                            'bus_to': get_obj_ref(elm.bus_to),
+                            'cn_from': get_obj_ref(elm.cn_from),
+                            'cn_to': get_obj_ref(elm.cn_to),
+                            'active': elm.active,
+
+                            'rate': elm.rate,
+                            'contingency_factor1': elm.contingency_factor,
+                            'contingency_factor2': elm.contingency_factor,
+                            'contingency_factor3': elm.contingency_factor,
+                            'r': elm.R,
+
+                            'length': elm.length,
+                            'base_temperature': elm.temp_base,
+                            'operational_temperature': elm.temp_oper,
+                            'alpha': elm.alpha,
+
+                            'overload_cost': elm.Cost,
+                            'capex': elm.capex,
+                            'opex': elm.opex,
+                            'build_status': str(elm.build_status.value).lower(),
+
+                            'locations': []
+                            } for elm in circuit.get_dc_lines()]
+    element_profiles["DC line"] = [{'id': elm.idtag,
+                                    'active': profile_to_json(elm.active_prof),
+                                    'rate': profile_to_json(elm.rate_prof),
+                                    'contingency_factor1': profile_to_json(
+                                        elm.contingency_factor_prof)} for elm in
+                                   circuit.get_dc_lines()]
+
+    # Transformer 2W
+    control_modes = {TransformerControlType.fixed: 0,
+                     TransformerControlType.V: 1,
+                     TransformerControlType.Pf: 2,
+                     TransformerControlType.PtV: 3,
+                     TransformerControlType.Qt: 4,
+                     TransformerControlType.PtQt: 5}
+    elements["Transformer2w"] = [{'id': elm.idtag,
+                                  'type': 'transformer',
+                                  'phases': 'ps',
+                                  'name': elm.name,
+                                  'name_code': elm.code,
+                                  'bus_from': get_obj_ref(elm.bus_from),
+                                  'bus_to': get_obj_ref(elm.bus_to),
+                                  'cn_from': get_obj_ref(elm.cn_from),
+                                  'cn_to': get_obj_ref(elm.cn_to),
+                                  'active': elm.active,
+                                  'rate': elm.rate,
+                                  'contingency_factor1': elm.contingency_factor,
+                                  'contingency_factor2': elm.contingency_factor,
+                                  'contingency_factor3': elm.contingency_factor,
+
+                                  'Vnomf': elm.get_from_to_nominal_voltages()[0],
+                                  'Vnomt': elm.get_from_to_nominal_voltages()[1],
+                                  'hv': elm.HV,
+                                  'lv': elm.LV,
+                                  'r': elm.R,
+                                  'x': elm.X,
+                                  'g': elm.G,
+                                  'b': elm.B,
+                                  'tap_module': elm.tap_module,
+                                  'min_tap_module': elm.tap_module_min,
+                                  'max_tap_module': elm.tap_module_max,
+                                  'id_tap_module_table': "",
+
+                                  'tap_angle': elm.tap_phase,
+                                  'min_tap_angle': elm.tap_phase_min,
+                                  'max_tap_angle': elm.tap_phase_max,
+                                  'id_tap_angle_table': "",
+
+                                  'control_mode': control_modes[elm.control_mode],
+
+                                  # 'min_tap_position': self.tap_changer.min_tap,
+                                  # 'max_tap_position': self.tap_changer.max_tap,
+                                  # 'tap_inc_reg_down': self.tap_changer.inc_reg_down,
+                                  # 'tap_inc_reg_up': self.tap_changer.inc_reg_up,
+                                  # 'virtual_tap_from': tap_f,
+                                  # 'virtual_tap_to': tap_t,
+                                  # 'bus_to_regulated': self.bus_to_regulated,
+
+                                  'vset': elm.vset,
+                                  'pset': elm.Pset,
+
+                                  'base_temperature': elm.temp_base,
+                                  'operational_temperature': elm.temp_oper,
+                                  'alpha': elm.alpha,
+
+                                  'overload_cost': elm.Cost,
+                                  'capex': elm.capex,
+                                  'opex': elm.opex,
+                                  'build_status': str(elm.build_status.value).lower(),
+                                  } for elm in circuit.get_transformers2w()]
+    element_profiles["Transformer2w"] = [{'id': elm.idtag,
+                                          'active': profile_to_json(elm.active_prof),
+                                          'rate': profile_to_json(elm.rate_prof),
+                                          'contingency_factor1': profile_to_json(
+                                              elm.contingency_factor_prof)} for elm in
+                                         circuit.get_transformers2w()]
+
+    # Windings
+    elements["Windings"] = [{'id': elm.idtag,
+                             'type': 'transformer',
+                             'phases': 'ps',
+                             'name': elm.name,
+                             'name_code': elm.code,
+                             'bus_from': get_obj_ref(elm.bus_from),
+                             'bus_to': get_obj_ref(elm.bus_to),
+                             'cn_from': get_obj_ref(elm.cn_from),
+                             'cn_to': get_obj_ref(elm.cn_to),
+                             'active': elm.active,
+                             'rate': elm.rate,
+                             'contingency_factor1': elm.contingency_factor,
+                             'contingency_factor2': elm.contingency_factor,
+                             'contingency_factor3': elm.contingency_factor,
+
+                             'Vnomf': elm.get_from_to_nominal_voltages()[0],
+                             'Vnomt': elm.get_from_to_nominal_voltages()[1],
+                             'hv': elm.HV,
+                             'lv': elm.LV,
+                             'r': elm.R,
+                             'x': elm.X,
+                             'g': elm.G,
+                             'b': elm.B,
+                             'tap_module': elm.tap_module,
+                             'min_tap_module': elm.tap_module_min,
+                             'max_tap_module': elm.tap_module_max,
+                             'id_tap_module_table': "",
+
+                             'tap_angle': elm.tap_phase,
+                             'min_tap_angle': elm.tap_phase_min,
+                             'max_tap_angle': elm.tap_phase_max,
+                             'id_tap_angle_table': "",
+
+                             'control_mode': control_modes[elm.control_mode],
+
+                             # 'min_tap_position': self.tap_changer.min_tap,
+                             # 'max_tap_position': self.tap_changer.max_tap,
+                             # 'tap_inc_reg_down': self.tap_changer.inc_reg_down,
+                             # 'tap_inc_reg_up': self.tap_changer.inc_reg_up,
+                             # 'virtual_tap_from': tap_f,
+                             # 'virtual_tap_to': tap_t,
+                             # 'bus_to_regulated': self.bus_to_regulated,
+
+                             'vset': elm.vset,
+                             'pset': elm.Pset,
+
+                             'base_temperature': elm.temp_base,
+                             'operational_temperature': elm.temp_oper,
+                             'alpha': elm.alpha,
+
+                             'overload_cost': elm.Cost,
+                             'capex': elm.capex,
+                             'opex': elm.opex,
+                             'build_status': str(elm.build_status.value).lower(),
+                             } for elm in circuit.get_windings()]
+    element_profiles["Windings"] = [{'id': elm.idtag,
+                                     'active': profile_to_json(elm.active_prof),
+                                     'rate': profile_to_json(elm.rate_prof),
+                                     'contingency_factor1': profile_to_json(
+                                         elm.contingency_factor_prof)} for elm in
+                                    circuit.get_windings()]
+
+    # Transformer3w
+    elements["Transformer3w"] = [{'id': elm.idtag,
+                                  'type': 'transformer',
+                                  'phases': 'ps',
+                                  'name': elm.name,
+                                  'name_code': elm.code,
+                                  'bus_0': get_obj_ref(elm.bus0),
+                                  'bus_1': get_obj_ref(elm.bus1),
+                                  'bus_2': get_obj_ref(elm.bus2),
+                                  'bus_3': get_obj_ref(elm.bus3),
+                                  'active': elm.active,
+                                  'winding1': get_obj_ref(elm.winding1),
+                                  'winding2': get_obj_ref(elm.winding2),
+                                  'winding3': get_obj_ref(elm.winding3),
+                                  } for elm in circuit.get_transformers3w()]
+
+    # Series reactances
+    elements["Series reactance"] = [{'id': elm.idtag,
+                                     'type': 'series_reactance',
+                                     'phases': 'ps',
+                                     'name': elm.name,
+                                     'name_code': elm.code,
+                                     'bus_from': get_obj_ref(elm.bus_from),
+                                     'bus_to': get_obj_ref(elm.bus_to),
+                                     'cn_from': get_obj_ref(elm.cn_from),
+                                     'cn_to': get_obj_ref(elm.cn_to),
+                                     'active': elm.active,
+
+                                     'rate': elm.rate,
+                                     'contingency_factor1': elm.contingency_factor,
+                                     'contingency_factor2': elm.contingency_factor,
+                                     'contingency_factor3': elm.contingency_factor,
+                                     'r': elm.R,
+                                     'x': elm.X,
+
+                                     'base_temperature': elm.temp_base,
+                                     'operational_temperature': elm.temp_oper,
+                                     'alpha': elm.alpha,
+
+                                     'overload_cost': elm.Cost,
+                                     'capex': elm.capex,
+                                     'opex': elm.opex,
+                                     'build_status': str(elm.build_status.value).lower(),
+
+                                     } for elm in circuit.get_series_reactances()]
+    element_profiles["Series reactance"] = [{'id': elm.idtag,
+                                             'active': profile_to_json(elm.active_prof),
+                                             'rate': profile_to_json(elm.rate_prof),
+                                             'contingency_factor1': profile_to_json(
+                                                 elm.contingency_factor_prof)} for elm in
+                                            circuit.get_series_reactances()]
+
+    # UPFC
+    elements["UPFC"] = [{'id': elm.idtag,
+                         'type': 'upfc',
+                         'phases': 'ps',
+                         'name': elm.name,
+                         'name_code': elm.code,
+                         'bus_from': get_obj_ref(elm.bus_from),
+                         'bus_to': get_obj_ref(elm.bus_to),
+                         'cn_from': get_obj_ref(elm.cn_from),
+                         'cn_to': get_obj_ref(elm.cn_to),
+                         'active': elm.active,
+                         'rate': elm.rate,
+                         'contingency_factor1': elm.contingency_factor,
+                         'contingency_factor2': elm.contingency_factor,
+                         'contingency_factor3': elm.contingency_factor,
+                         'rl': 0.0,
+                         'xl': 0.0,
+                         'bl': 0.0,
+                         'rs': elm.Rs,
+                         'xs': elm.Xs,
+                         'rsh': elm.Rsh,
+                         'xsh': elm.Xsh,
+                         'vsh': elm.Vsh,
+                         'Pfset': elm.Pfset,
+                         'Qfset': elm.Qfset,
+
+                         'overload_cost': elm.Cost,
+                         'capex': elm.capex,
+                         'opex': elm.opex,
+                         'build_status': str(elm.build_status.value).lower(),
+                         } for elm in circuit.get_upfc()]
+    element_profiles["UPFC"] = [{'id': elm.idtag,
+                                 'active': profile_to_json(elm.active_prof),
+                                 'rate': profile_to_json(elm.rate_prof),
+                                 'contingency_factor1': profile_to_json(
+                                     elm.contingency_factor_prof)} for elm in
+                                circuit.get_upfc()]
+
+    # VSC
+    modes = {ConverterControlType.type_0_free: 0,
+             ConverterControlType.type_I_1: 1,
+             ConverterControlType.type_I_2: 2,
+             ConverterControlType.type_I_3: 3,
+             ConverterControlType.type_II_4: 4,
+             ConverterControlType.type_II_5: 5,
+             ConverterControlType.type_III_6: 6,
+             ConverterControlType.type_III_7: 7,
+             ConverterControlType.type_IV_I: 8,
+             ConverterControlType.type_IV_II: 9}
+    elements["VSC"] = [{'id': elm.idtag,
+                        'type': 'vsc',
+                        'phases': 'ps',
+                        'name': elm.name,
+                        'name_code': elm.code,
+                        'bus_from': get_obj_ref(elm.bus_from),
+                        'bus_to': get_obj_ref(elm.bus_to),
+                        'cn_from': get_obj_ref(elm.cn_from),
+                        'cn_to': get_obj_ref(elm.cn_to),
+                        'active': elm.active,
+
+                        'rate': elm.rate,
+                        'contingency_factor1': elm.contingency_factor,
+                        'contingency_factor2': elm.contingency_factor,
+                        'contingency_factor3': elm.contingency_factor,
+
+                        'r': elm.R,
+                        'x': elm.X,
+                        'g': elm.G0sw,
+
+                        'm': elm.tap_module,
+                        'm_min': elm.tap_module_min,
+                        'm_max': elm.tap_module_max,
+
+                        'theta': elm.tap_phase,
+                        'theta_min': elm.tap_phase_min,
+                        'theta_max': elm.tap_phase_max,
+
+                        'Beq': elm.Beq,
+                        'Beq_min': elm.Beq_min,
+                        'Beq_max': elm.Beq_max,
+
+                        'alpha1': elm.alpha1,
+                        'alpha2': elm.alpha2,
+                        'alpha3': elm.alpha3,
+
+                        'k': elm.k,
+                        'kdp': elm.kdp,
+                        'Pfset': elm.Pdc_set,
+                        'Qfset': elm.Qac_set,
+                        'vac_set': elm.Vac_set,
+                        'vdc_set': elm.Vdc_set,
+
+                        'control_mode': modes[elm.control_mode],
+
+                        'overload_cost': elm.Cost,
+                        'capex': elm.capex,
+                        'opex': elm.opex,
+                        'build_status': str(elm.build_status.value).lower(),
+                        } for elm in circuit.get_vsc()]
+    element_profiles["VSC"] = [{'id': elm.idtag,
+                                'active': profile_to_json(elm.active_prof),
+                                'rate': profile_to_json(elm.rate_prof),
+                                'contingency_factor1': profile_to_json(
+                                    elm.contingency_factor_prof)} for elm in
+                               circuit.get_vsc()]
+
+    # HVDC
+    elements["HVDC Line"] = [{'id': elm.idtag,
+                              'type': 'hvdc',
+                              'phases': 'ps',
+                              'name': elm.name,
+                              'name_code': elm.code,
+                              'bus_from': get_obj_ref(elm.bus_from),
+                              'bus_to': get_obj_ref(elm.bus_to),
+                              'cn_from': get_obj_ref(elm.cn_from),
+                              'cn_to': get_obj_ref(elm.cn_to),
+                              'active': elm.active,
+                              'rate': elm.rate,
+                              'control_mode': elm.control_mode.value,
+                              'contingency_factor1': elm.contingency_factor,
+                              'contingency_factor2': elm.contingency_factor,
+                              'contingency_factor3': elm.contingency_factor,
+                              'r': elm.r,
+                              'length': elm.length,
+                              'loss_factor': elm.loss_factor,
+                              'angle_droop': elm.angle_droop,
+                              'vset_from': elm.Vset_f,
+                              'vset_to': elm.Vset_t,
+                              'Pset': elm.Pset,
+                              'min_firing_angle_f': elm.min_firing_angle_f,
+                              'max_firing_angle_f': elm.max_firing_angle_f,
+                              'min_firing_angle_t': elm.min_firing_angle_t,
+                              'max_firing_angle_t': elm.max_firing_angle_t,
+                              'overload_cost': elm.Cost,
+                              'base_temperature': 20,
+                              'operational_temperature': 20,
+                              'alpha': 0.00330,
+                              'capex': elm.capex,
+                              'opex': elm.opex,
+                              'build_status': str(elm.build_status.value).lower(),
+                              'locations': []
+                              } for elm in circuit.get_hvdc()]
+    element_profiles["HVDC Line"] = [{'id': elm.idtag,
+                                      'active': profile_to_json(elm.active_prof),
+                                      'rate': profile_to_json(elm.rate_prof),
+                                      'contingency_factor1': profile_to_json(
+                                          elm.contingency_factor_prof),
+                                      'Pset': profile_to_json(elm.Pset_prof),
+                                      'vset_from': profile_to_json(elm.Vset_f_prof),
+                                      'vset_to': profile_to_json(elm.Vset_t_prof),
+                                      'overload_cost': profile_to_json(elm.Cost_prof)} for elm in
+                                     circuit.get_hvdc()]
 
     # results
     results = dict()
@@ -1267,11 +2147,10 @@ def save_json_file_v3(file_path: str, circuit: MultiCircuit, simulation_drivers:
                                                   'q': 0,
                                                   'losses': driver.results.hvdc_losses[:, i].real}
 
-                    results["time_series"] = {'bus': bus_data,
-                                              'branch': branch_data}
+                    results["time_series"] = {'bus': bus_data, 'branch': branch_data}
 
     data = {'version': '3',
-            'review': '3',
+            'review': '4',
             'software': 'GridCal',
             'units': units_dict,
             'devices': elements,
