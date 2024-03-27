@@ -57,7 +57,7 @@ class CurrentInjectionGraphicItem(InjectionTemplateGraphicItem):
         self.label.setPos(self.h / 4, self.w / 5)
 
         self.setPos(self.parent.x(), self.parent.y() + 100)
-        self.update_line(self.pos())
+        self.update_nexus(self.pos())
 
     def recolour_mode(self):
         """

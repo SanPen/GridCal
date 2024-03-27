@@ -52,7 +52,7 @@ class LoadGraphicItem(InjectionTemplateGraphicItem):
         self.addToGroup(self.glyph)
 
         self.setPos(self.parent.x(), self.parent.y() + 100)
-        self.update_line(self.pos())
+        self.update_nexus(self.pos())
 
     def recolour_mode(self):
         """

@@ -72,7 +72,7 @@ class LineUpdateMixin:
 
     def itemChange(self, change, value):
         if change == QGraphicsItem.ItemScenePositionHasChanged:
-            self.parentItem().update_line(value)
+            self.parentItem().update_nexus(value)
         return super(LineUpdateMixin, self).itemChange(change, value)
 
 
