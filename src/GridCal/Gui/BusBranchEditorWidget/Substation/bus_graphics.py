@@ -112,7 +112,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
             self.style = ACTIVE['style']
 
         # Label:
-        self.label = QtWidgets.QGraphicsTextItem(bus.name, self)
+        self.label = QtWidgets.QGraphicsTextItem(self.api_object.name if self.api_object is not None else "", self)
         self.label.setDefaultTextColor(ACTIVE['text'])
         self.label.setScale(FONT_SCALE)
 
@@ -716,6 +716,13 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         self.change_size(w=w, h=h)
         self.sizer.setPos(w, self.h)
 
+        title = self.api_object.name if self.api_object is not None else ""
+        msg = ""
+        self.label.setHtml(f'<html><head/><body><p><span style=" font-size:10pt;">{title}<br/></span>'
+                           f'<span style=" font-size:6pt;">{msg}</span></p></body></html>')
+
+        self.setToolTip(msg)
+
     def get_terminal(self) -> TerminalItem:
         """
         Get the hosting terminal of this bus object
@@ -897,7 +904,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
             q = format_str.format(Q)
             msg += f"P={p} MW<br>Q={q} MVAr"
 
-        title = self.api_object.name
+        title = self.api_object.name if self.api_object is not None else ""
         self.label.setHtml(f'<html><head/><body><p><span style=" font-size:10pt;">{title}<br/></span>'
                            f'<span style=" font-size:6pt;">{msg}</span></p></body></html>')
 
