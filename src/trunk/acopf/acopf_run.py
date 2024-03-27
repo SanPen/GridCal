@@ -247,9 +247,9 @@ def case14():
 
     grid = gce.FileOpen(file_path).open()
 
-    grid.transformers2w[0].control_mode = TransformerControlType.PtQt
-    grid.transformers2w[1].control_mode = TransformerControlType.Pf
-    grid.transformers2w[2].control_mode = TransformerControlType.V
+    # grid.transformers2w[0].control_mode = TransformerControlType.PtQt
+    # grid.transformers2w[1].control_mode = TransformerControlType.Pf
+    # grid.transformers2w[2].control_mode = TransformerControlType.V
 
     #grid.delete_line(grid.lines[0])
     #grid.delete_line(grid.lines[1])
@@ -371,10 +371,10 @@ if __name__ == '__main__':
     # linn5bus_example()
     # two_grids_of_3bus()
     # case9()
-    # case14()
+    case14()
     # case_gb()
     # case6ww()
     # case_pegase89()
     # case300()
     # casepegase13k()
-    casehvdc()
+    # casehvdc()
