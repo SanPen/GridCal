@@ -28,10 +28,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="336ac068-5f36-44a4-9f98-8909f6be5848" name="Changes" comment="Added number of times a line appears as monitored. Still need to order the columns. WIP">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/contingencies_report.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/contingencies_report.py" afterDir="false" />
-    </list>
+    <list default="true" id="336ac068-5f36-44a4-9f98-8909f6be5848" name="Changes" comment="Fixed number of decimals in report.&#10;Columns ordered" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -1289,13 +1286,6 @@
       <workItem from="1709565306279" duration="3137000" />
       <workItem from="1709626829664" duration="5096000" />
     </task>
-    <task id="LOCAL-00317" summary="added the newtonpa time series error reading">
-      <created>1657011725858</created>
-      <option name="number" value="00317" />
-      <option name="presentableId" value="LOCAL-00317" />
-      <option name="project" value="LOCAL" />
-      <updated>1657011725858</updated>
-    </task>
     <task id="LOCAL-00318" summary="Added if condition to prevent bug with time series">
       <created>1658234803791</created>
       <option name="number" value="00318" />
@@ -1632,7 +1622,14 @@
       <option name="project" value="LOCAL" />
       <updated>1711458461494</updated>
     </task>
-    <option name="localTasksCounter" value="488" />
+    <task id="LOCAL-00488" summary="Fixed number of decimals in report.&#10;Columns ordered">
+      <created>1711535848011</created>
+      <option name="number" value="00488" />
+      <option name="presentableId" value="LOCAL-00488" />
+      <option name="project" value="LOCAL" />
+      <updated>1711535848011</updated>
+    </task>
+    <option name="localTasksCounter" value="489" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1666,7 +1663,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="added ZIP test" />
     <MESSAGE value="added contingency_deadband" />
     <MESSAGE value="added get_branch_areas_info to the multi-circuit" />
     <MESSAGE value="added the linear shunt and current injection to the compiler" />
@@ -1691,7 +1687,8 @@
     <MESSAGE value="Small change in contingencies report" />
     <MESSAGE value="Videos and tasks to do" />
     <MESSAGE value="Added number of times a line appears as monitored. Still need to order the columns. WIP" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added number of times a line appears as monitored. Still need to order the columns. WIP" />
+    <MESSAGE value="Fixed number of decimals in report.&#10;Columns ordered" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed number of decimals in report.&#10;Columns ordered" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2133,8 +2130,13 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/contingencies_report.py</url>
-          <line>496</line>
+          <line>479</line>
           <option name="timeStamp" value="1489" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/contingencies_report.py</url>
+          <line>469</line>
+          <option name="timeStamp" value="1490" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

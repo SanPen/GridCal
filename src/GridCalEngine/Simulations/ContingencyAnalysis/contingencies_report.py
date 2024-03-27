@@ -473,9 +473,9 @@ class ContingencyResultsReport:
         cols_2dec = ["Base rating (MW)","Contingency rating (MW)","SRAP rating (MW)"]
         cols_4dec = ["Overload max (pu)","Overload average weighting time (pu)","Annual time the Monitored line is overloaded by this contingency (pu)","Time this line is monitored by any contingency (pu)","Overload average for clusters(pu)","Standard deviation for clusters(pu)"]
 
-        df_summary[cols_1dec]=df_summary[cols_1dec].applymap(lambda x:f'{x:.1f}')
-        df_summary[cols_2dec] = df_summary[cols_2dec].applymap(lambda x: f'{x:.2f}')
-        df_summary[cols_4dec] = df_summary[cols_4dec].applymap(lambda x: f'{x:.4f}')
+        df_summary[cols_1dec]=df_summary[cols_1dec].map(lambda x:f'{x:.1f}')
+        df_summary[cols_2dec] = df_summary[cols_2dec].map(lambda x: f'{x:.2f}')
+        df_summary[cols_4dec] = df_summary[cols_4dec].map(lambda x: f'{x:.4f}')
 
         return df_summary
 
