@@ -139,7 +139,7 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
         # Create corner for resize:
         self.sizer = HandleItem(self._terminal)
         self.sizer.setPos(self.w, 20)
-        self.sizer.posChangeCallbacks.append(self.change_size)  # Connect the callback
+        self.sizer.callbacks_list.append(self.change_size)  # Connect the callback
         self.sizer.setFlag(self.GraphicsItemFlag.ItemIsMovable)
         # self.adapt()
 

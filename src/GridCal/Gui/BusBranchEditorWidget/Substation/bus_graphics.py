@@ -80,7 +80,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
 
         self.min_w = 180.0
         self.min_h = 40.0
-        self.offset = 10
+        self.offset = 20
         self.h = h if h >= self.min_h else self.min_h
         self.w = w if w >= self.min_w else self.min_w
 
@@ -116,10 +116,6 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         self.label.setDefaultTextColor(ACTIVE['text'])
         self.label.setScale(FONT_SCALE)
 
-        # Label:
-        # self.results_label = QtWidgets.QGraphicsTextItem(self)
-        # self.results_label.setDefaultTextColor(ACTIVE['text'])
-
         # square
         self.tile = QtWidgets.QGraphicsRectItem(0, 0, 20, 20, self)
         self.tile.setOpacity(0.7)
@@ -129,9 +125,8 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         self._terminal.setPen(QPen(Qt.transparent, self.pen_width, self.style, Qt.RoundCap, Qt.RoundJoin))
 
         # Create corner for resize:
-        self.sizer = HandleItem(self._terminal)
+        self.sizer = HandleItem(self._terminal, callback=self.change_size)
         self.sizer.setPos(self.w, self.h)
-        self.sizer.posChangeCallbacks.append(self.change_size)  # Connect the callback
         self.sizer.setFlag(self.GraphicsItemFlag.ItemIsMovable)
 
         self.big_marker = None
@@ -259,39 +254,22 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         :return:
         """
         # Limit the block size to the minimum size:
-        # if h is None:
-        #     h = self.min_h
-
-        if w < self.min_w:
-            w = self.min_w
-
+        self.w = w if w > self.min_w else self.min_w
         self.setRect(0.0, 0.0, w, self.min_h)
-        self.w = w
-
         y0 = self.offset
         x0 = 0
 
         # center label:
-        rect = self.label.boundingRect()
-        lw, lh = rect.width(), rect.height()
-        lx = (w - lw) / 2
-        ly = lh / 2 - lh * (FONT_SCALE - 1)
-        # self.label.setPos(lx, ly)
-        self.label.setPos(w, ly - 40)
-
-        # self.results_label.setPos(w + 20, ly)
+        self.label.setPos(w + 5, -20)
 
         # lower
         self._terminal.setPos(x0, y0)
         self._terminal.setRect(0, 20, w, 10)
 
-        # Set text
-        # if self.api_object is not None:
-        #     self.label.setPlainText(self.api_object.name)
-
         # rearrange children
         self.arrange_children()
 
+        # update editor diagram position
         self.editor.update_diagram_element(device=self.api_object,
                                            x=self.pos().x(),
                                            y=self.pos().y(),

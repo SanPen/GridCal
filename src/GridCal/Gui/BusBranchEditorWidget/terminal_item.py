@@ -157,16 +157,12 @@ class TerminalItem(QGraphicsRectItem):
         :return:
         """
         w = self.rect().width()
-        h2 = self.rect().height() / 2.0
+        h2 = self.y + self.h / 2
         n = len(self._hosting_connections)
         dx = w / (n + 1)
 
         for i, (connection, call_back) in enumerate(self._hosting_connections.items()):
             call_back(value + QPointF((i + 1) * dx, h2))
-            # w = connection.pen_width
-            # style = connection.pen_style
-            # color = connection.pen_color
-            # connection.set_pen(QPen(color, w, style), scale)
 
     def itemChange(self, change: QGraphicsItem.GraphicsItemChange, value: Any) -> Any:
         """
@@ -213,14 +209,18 @@ class HandleItem(QGraphicsEllipseItem):
     A handle that can be moved by the mouse: Element to resize the boxes
     """
 
-    def __init__(self, parent: TerminalItem = None) -> None:
+    def __init__(self, parent: TerminalItem = None, callback: Callable = None) -> None:
         """
 
         @param parent:
         """
         QGraphicsEllipseItem.__init__(self, QRectF(-4, -4, 8, 8), parent)
 
-        self.posChangeCallbacks = list()
+        self.callbacks_list = list()
+
+        if callback is not None:
+            self.callbacks_list.append(callback)
+
         self.setBrush(Qt.red)
         self.setFlag(self.GraphicsItemFlag.ItemIsMovable, True)
         self.setFlag(self.GraphicsItemFlag.ItemSendsScenePositionChanges, True)
@@ -237,7 +237,7 @@ class HandleItem(QGraphicsEllipseItem):
             x, y = value.x(), value.y()
 
             # This cannot be a signal because this is not a QObject
-            for cb in self.posChangeCallbacks:
+            for cb in self.callbacks_list:
                 res = cb(x, y)
                 if res:
                     x, y = res

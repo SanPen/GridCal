@@ -108,11 +108,12 @@ class InjectionTemplateGraphicItem(QGraphicsItemGroup):
         """
         parent = self.parentItem()
         rect = parent.rect()
+        term = parent.get_terminal()
         self.nexus.setLine(
             pos.x() + self.w / 2,
-            pos.y() + 0,
+            pos.y(),
             parent.x() + rect.width() / 2,
-            parent.y() + parent.get_terminal().y + 5,
+            parent.y() + rect.height() + term.h / 2,
         )
         self.setZValue(-1)
         self.nexus.setZValue(-1)

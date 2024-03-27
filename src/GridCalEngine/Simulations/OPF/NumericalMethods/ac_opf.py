@@ -585,24 +585,22 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     # ignore power from Z and I of the load
 
     if pf_init:
-        s0gen = (Sbus_pf - nc.load_data.get_injections_per_bus()) / nc.Sbase
-        p0gen = (nc.generator_data.C_bus_elm.T @ np.real(s0gen))[gen_disp_idx]
-        q0gen = (nc.generator_data.C_bus_elm.T @ np.imag(s0gen))[gen_disp_idx]
+        p0gen = nc.generator_data.p[gen_disp_idx]
+        q0gen = (nc.generator_data.C_bus_elm.T @ np.imag(Sbus_pf / nc.Sbase))[gen_disp_idx]
         vm0 = np.abs(voltage_pf)
         va0 = np.angle(voltage_pf)
         tapm0 = nc.branch_data.tap_module[k_m]
         tapt0 = nc.branch_data.tap_angle[k_tau]
-        Pf0_hvdc = np.zeros(n_disp_hvdc)
+        Pf0_hvdc = nc.hvdc_data.Pset[hvdc_disp_idx]
 
-    # nc.Vbus  # dummy initialization
     else:
-        p0gen = ((nc.generator_data.pmax[gen_disp_idx] + nc.generator_data.pmin[gen_disp_idx]) / (2 * nc.Sbase))[gen_disp_idx]
-        q0gen = ((nc.generator_data.qmax[gen_disp_idx] + nc.generator_data.qmin[gen_disp_idx]) / (2 * nc.Sbase))[gen_disp_idx]
+        p0gen = (nc.generator_data.pmax[gen_disp_idx] + nc.generator_data.pmin[gen_disp_idx]) / (2 * nc.Sbase)
+        q0gen = (nc.generator_data.qmax[gen_disp_idx] + nc.generator_data.qmin[gen_disp_idx]) / (2 * nc.Sbase)
         va0 = np.angle(nc.bus_data.Vbus)
         vm0 = (Vm_max + Vm_min) / 2
         tapm0 = nc.branch_data.tap_module[k_m]
         tapt0 = nc.branch_data.tap_angle[k_tau]
-        Pf0_hvdc = nc.hvdc_data.Pset[hvdc_disp_idx]
+        Pf0_hvdc = np.zeros(n_disp_hvdc)
 
     # compose the initial values
     x0 = var2x(Va=va0,
@@ -736,56 +734,87 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     if not result.converged or result.converged:
         for bus in range(nbus):
             if abs(result.dlam[bus]) >= 1e-3:
-                logger.add_warning('Nodal Power Balance convergence tolerance not achieved', device=str(bus),
-                                   value=str(result.dlam[bus]), expected_value='< 1e-3')
+                logger.add_warning('Nodal Power Balance convergence tolerance not achieved',
+                                   device_property="dlam",
+                                   device=str(bus),
+                                   value=str(result.dlam[bus]),
+                                   expected_value='< 1e-3')
 
             if abs(result.dlam[nbus + bus]) >= 1e-3:  # TODO: What is the difference with the previous?
-                logger.add_warning('Nodal Power Balance convergence tolerance not achieved', device=str(bus),
-                                   value=str(result.dlam[bus + nbus]), expected_value='< 1e-3')
+                logger.add_warning('Nodal Power Balance convergence tolerance not achieved',
+                                   device_property="dlam",
+                                   device=str(bus),
+                                   value=str(result.dlam[bus + nbus]),
+                                   expected_value='< 1e-3')
 
         for pvbus in range(npv):
             if abs(result.dlam[2 * nbus + 1 + pvbus]) >= 1e-3:
-                logger.add_warning('PV voltage module convergence tolerance not achieved', device=str(pv[pvbus]),
-                                   value=str((result.dlam[2 * nbus + 1 + pvbus])), expected_value='< 1e-3')
+                logger.add_warning('PV voltage module convergence tolerance not achieved',
+                                   device_property="dlam",
+                                   device=str(pv[pvbus]),
+                                   value=str((result.dlam[2 * nbus + 1 + pvbus])),
+                                   expected_value='< 1e-3')
 
         for k in range(n_br_mon):
             muz_f = abs(result.z[k] * result.mu[k])
             muz_t = abs(result.z[k + n_br_mon] * result.mu[k + n_br_mon])
             if muz_f >= 1e-3:
                 logger.add_warning('Branch rating "from" multipliers did not reach the tolerance',
-                                   device=str(br_mon_idx[k]), value=str(muz_f), expected_value='< 1e-3')
+                                   device_property="mu · z",
+                                   device=str(br_mon_idx[k]),
+                                   value=str(muz_f),
+                                   expected_value='< 1e-3')
             if muz_t >= 1e-3:
                 logger.add_warning('Branch rating "to" multipliers did not reach the tolerance',
-                                   device=str(br_mon_idx[k]), value=str(muz_t), expected_value='< 1e-3')
+                                   device_property="mu · z",
+                                   device=str(br_mon_idx[k]),
+                                   value=str(muz_t),
+                                   expected_value='< 1e-3')
 
         for link in range(n_disp_hvdc):
             muz_f = abs(result.z[NI - 2 * n_disp_hvdc + link] * result.mu[NI - 2 * n_disp_hvdc + link])
             muz_t = abs(result.z[NI - n_disp_hvdc + link] * result.mu[NI - n_disp_hvdc + link])
             if muz_f >= 1e-3:
                 logger.add_warning('HVDC rating "from" multipliers did not reach the tolerance',
-                                   device=str(link), value=str(muz_f), expected_value='< 1e-3')
+                                   device_property="mu · z",
+                                   device=str(link),
+                                   value=str(muz_f),
+                                   expected_value='< 1e-3')
             if muz_t >= 1e-3:
                 logger.add_warning('HVDC rating "to" multipliers did not reach the tolerance',
-                                   device=str(link), value=str(muz_t), expected_value='< 1e-3')
+                                   device_property="mu · z",
+                                   device=str(link),
+                                   value=str(muz_t),
+                                   expected_value='< 1e-3')
 
         if use_bound_slacks:
             for k in range(n_br_mon):
                 if sl_sf[k] > opf_options.ips_tolerance:
-                    logger.add_warning('Branch overload in the from sense', device=str(br_mon_idx[k]),
-                                       value=str(sl_sf[k]), expected_value=f'< {opf_options.ips_tolerance}')
+                    logger.add_warning('Branch overload in the from sense',
+                                       device=str(br_mon_idx[k]),
+                                       device_property="Slack",
+                                       value=str(sl_sf[k]),
+                                       expected_value=f'< {opf_options.ips_tolerance}')
 
                 if sl_st[k] > opf_options.ips_tolerance:
-                    logger.add_warning('Branch overload in the to sense', device=str(br_mon_idx[k]),
-                                       value=str(sl_st[k]), expected_value=f'< {opf_options.ips_tolerance}')
+                    logger.add_warning('Branch overload in the to sense',
+                                       device=str(br_mon_idx[k]),
+                                       device_property="Slack",
+                                       value=str(sl_st[k]),
+                                       expected_value=f'< {opf_options.ips_tolerance}')
 
             for i in range(npq):
                 if sl_vmax[i] > opf_options.ips_tolerance:
                     logger.add_warning('Overvoltage',
-                                       device=str(pq[i]), value=str(sl_vmin[i]),
+                                       device_property="Slack",
+                                       device=str(pq[i]),
+                                       value=str(sl_vmax[i]),
                                        expected_value=f'>{opf_options.ips_tolerance}')
                 if sl_vmin[i] > opf_options.ips_tolerance:
                     logger.add_warning('Undervoltage',
-                                       device=str(pq[i]), value=str(sl_vmax[i]),
+                                       device_property="Slack",
+                                       device=str(pq[i]),
+                                       value=str(sl_vmin[i]),
                                        expected_value=f'> {opf_options.ips_tolerance}')
 
     if opf_options.verbose:
