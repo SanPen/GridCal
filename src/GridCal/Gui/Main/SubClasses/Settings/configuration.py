@@ -82,7 +82,9 @@ class ConfigurationMain(ResultsMain):
 
         if self.ui.dark_mode_checkBox.isChecked():
             set_dark_mode()
-            qdarktheme.setup_theme(theme='dark', custom_colors=custom_colors)
+            qdarktheme.setup_theme(theme='dark',
+                                   custom_colors=custom_colors,
+                                   additional_qss="QToolTip {color: black;}")
 
             diagram = self.get_selected_diagram_widget()
             if diagram is not None:
@@ -95,7 +97,9 @@ class ConfigurationMain(ResultsMain):
                 self.console.set_dark_theme()
         else:
             set_light_mode()
-            qdarktheme.setup_theme(theme='light', custom_colors=custom_colors)
+            qdarktheme.setup_theme(theme='light',
+                                   custom_colors=custom_colors,
+                                   additional_qss="QToolTip {color: black;}")
 
             diagram = self.get_selected_diagram_widget()
             if diagram is not None:

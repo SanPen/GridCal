@@ -131,7 +131,8 @@ def runGridCal() -> None:
         custom_colors={
             "primary": "#00aa88ff",
             "primary>list.selectionBackground": "#00aa88be"
-        }
+        },
+        additional_qss="QToolTip {color: black;}"
     )
 
     window_ = MainGUI()

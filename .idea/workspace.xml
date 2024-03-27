@@ -28,8 +28,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Small improvements">
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/line.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/line.py" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Changed line default x to 0.00001">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1283,6 +1284,8 @@
       <workItem from="1709149002662" duration="839000" />
       <workItem from="1711476008098" duration="783000" />
       <workItem from="1711479535584" duration="5690000" />
+      <workItem from="1711530537977" duration="51000" />
+      <workItem from="1711530760955" duration="390000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1627,7 +1630,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="456" />
+    <option name="localTasksCounter" value="457" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1673,7 +1676,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Add equalities and inequalities generalized" />
     <MESSAGE value="Start generating IPM solver" />
     <MESSAGE value="Pack construction of g, h and fobj" />
     <MESSAGE value="Build sets of gradients Ai and Ae" />
@@ -1698,7 +1700,8 @@
     <MESSAGE value="fixed missing attributes in example" />
     <MESSAGE value="Fixed critical bug with the diagram context menu" />
     <MESSAGE value="Small improvements" />
-    <option name="LAST_COMMIT_MESSAGE" value="Small improvements" />
+    <MESSAGE value="Changed line default x to 0.00001" />
+    <option name="LAST_COMMIT_MESSAGE" value="Changed line default x to 0.00001" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
