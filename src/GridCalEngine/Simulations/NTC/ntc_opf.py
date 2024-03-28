@@ -1206,15 +1206,15 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
 
     # gather the results
     if status == LpModel.OPTIMAL:
-        print('Solution:')
-        print('Objective value =', lp_model.fobj_value())
+        # print('Solution:')
+        # print('Objective value =', lp_model.fobj_value())
         mip_vars.acceptable_solution = True
     else:
-        print('The problem does not have an optimal solution.')
+        logger.add_error('The problem does not have an optimal solution.')
         mip_vars.acceptable_solution = False
-        lp_file_name = grid.name + "_debug.lp"
-        lp_model.save_model(file_name=lp_file_name)
-        print("Debug LP model saved as:", lp_file_name)
+        # lp_file_name = grid.name + "_debug.lp"
+        # lp_model.save_model(file_name=lp_file_name)
+        # print("Debug LP model saved as:", lp_file_name)
 
     vars_v = mip_vars.get_values(grid.Sbase, model=lp_model)
 
