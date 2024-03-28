@@ -75,14 +75,16 @@ class ConfigurationMain(ResultsMain):
     def change_theme_mode(self) -> None:
         """
         Change the GUI theme
-        :return:
         """
         custom_colors = {"primary": "#00aa88ff",
                          "primary>list.selectionBackground": "#00aa88be"}
 
         if self.ui.dark_mode_checkBox.isChecked():
             set_dark_mode()
-            qdarktheme.setup_theme(theme='dark', custom_colors=custom_colors)
+            qdarktheme.setup_theme(theme='dark',
+                                   custom_colors=custom_colors,
+                                   additional_qss="QToolTip {color: white; background-color: black; border: 0px; }")
+            # note: The 0px border on the tooltips allow it to render properly
 
             diagram = self.get_selected_diagram_widget()
             if diagram is not None:
@@ -95,7 +97,10 @@ class ConfigurationMain(ResultsMain):
                 self.console.set_dark_theme()
         else:
             set_light_mode()
-            qdarktheme.setup_theme(theme='light', custom_colors=custom_colors)
+            qdarktheme.setup_theme(theme='light',
+                                   custom_colors=custom_colors,
+                                   additional_qss="QToolTip {color: black; background-color: white; border: 0px;}")
+            # note: The 0px border on the tooltips allow it to render properly
 
             diagram = self.get_selected_diagram_widget()
             if diagram is not None:

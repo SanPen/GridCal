@@ -153,7 +153,7 @@ class CollectionEnum(Enum):
     Node = 'Node'
     NodeFrom = 'NodeFrom'
     NodeTo = 'NodeTo'
-    Nodes = 'Nodes'
+    Nodes = 'Schema'
     PASA = 'PASA'
     Performance = 'Performance'
     FlowControls = 'FlowControls'

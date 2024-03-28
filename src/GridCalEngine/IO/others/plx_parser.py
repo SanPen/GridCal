@@ -621,7 +621,7 @@ class PlxModel:
                     self.nodes[name].zone = self.zones[member]
 
             elif cls == 'Generator':
-                if row['collection'] == 'Nodes':
+                if row['collection'] == 'Schema':
                     self.generators[name].node = self.nodes[member]
                     self.nodes[member].generators.append(self.generators[name])
 

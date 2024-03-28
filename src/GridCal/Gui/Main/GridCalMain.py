@@ -125,15 +125,6 @@ def runGridCal() -> None:
     app = QApplication(sys.argv)
     # app.setStyle('Fusion')  # ['Breeze', 'Oxygen', 'QtCurve', 'Windows', 'Fusion']
 
-    # Apply the complete dark theme to your Qt App.
-    qdarktheme.setup_theme(
-        theme='auto',
-        custom_colors={
-            "primary": "#00aa88ff",
-            "primary>list.selectionBackground": "#00aa88be"
-        }
-    )
-
     window_ = MainGUI()
 
     # process the argument if provided

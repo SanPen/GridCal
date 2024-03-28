@@ -139,7 +139,7 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
         # Create corner for resize:
         self.sizer = HandleItem(self._terminal)
         self.sizer.setPos(self.w, 20)
-        self.sizer.posChangeCallbacks.append(self.change_size)  # Connect the callback
+        self.sizer.callbacks_list.append(self.change_size)  # Connect the callback
         self.sizer.setFlag(self.GraphicsItemFlag.ItemIsMovable)
         # self.adapt()
 
@@ -201,6 +201,19 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
         if np.isnan(y):
             y = 0
         self.setPos(QPoint(int(x), int(y)))
+
+    def recolour_mode(self):
+        """
+        Change the colour according to the system theme
+        """
+        # self.color = ACTIVE['color']
+        # self.style = ACTIVE['style']
+        self.label.setDefaultTextColor(ACTIVE['text'])
+        # self.set_tile_color(self.color)
+
+        for e in self.shunt_children:
+            if e is not None:
+                e.recolour_mode()
 
     def set_tile_color(self, brush):
         """

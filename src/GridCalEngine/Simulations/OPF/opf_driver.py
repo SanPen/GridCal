@@ -215,7 +215,7 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
             self.results.converged = res.converged
 
             msg = "Interior point solver"
-            self.logger.add_info(msg=msg, device="Error", value=res.error, expected_value=self.pf_options.tolerance)
+            self.logger.add_info(msg=msg, device="Error", value=res.error, expected_value=self.options.ips_tolerance)
             self.logger.add_info(msg=msg, device="Converged", value=res.converged)
             self.logger.add_info(msg=msg, device="Iterations", value=res.iterations)
 

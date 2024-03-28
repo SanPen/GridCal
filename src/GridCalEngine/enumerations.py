@@ -940,6 +940,9 @@ class DeviceType(Enum):
     FluidPathDevice = 'Fluid path'
     FluidNodeDevice = 'Fluid node'
 
+    LineLocation = "Line Location"
+    LineLocations = "Line Locations"
+
     def __str__(self) -> str:
         return str(self.value)
 

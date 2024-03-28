@@ -4948,7 +4948,7 @@ class Ui_mainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.label_76.setText("")
         self.label_49.setText(QCoreApplication.translate("mainWindow", u"Draw", None))
-        self.label_56.setText(QCoreApplication.translate("mainWindow", u"Nodes", None))
+        self.label_56.setText(QCoreApplication.translate("mainWindow", u"Schema", None))
         self.label_112.setText("")
         self.label_43.setText(QCoreApplication.translate("mainWindow", u"Palette", None))
         self.branch_width_based_on_flow_checkBox.setText(QCoreApplication.translate("mainWindow", u"Width based on flow", None))

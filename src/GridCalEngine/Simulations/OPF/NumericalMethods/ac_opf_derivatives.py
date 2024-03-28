@@ -176,9 +176,10 @@ def compute_branch_power_derivatives(alltapm: Vec,
         mp = alltapm[line]
         tau = alltapt[line]
         yk = ys[line]
+        mp2 = np.power(mp, 2)
         # First derivatives with respect to the tap module. Each line is computed individually and stored
-        dSfdm[line, mod] = Vf_ * ((-2 * np.conj(yk * Vf_) / mp ** 3) + np.conj(yk * Vt_) / (mp ** 2 * np.exp(1j * tau)))
-        dStdm[line, mod] = Vt_ * (np.conj(yk * Vf_) / (mp ** 2 * np.exp(-1j * tau)))
+        dSfdm[line, mod] = Vf_ * ((-2 * np.conj(yk * Vf_) / np.power(mp, 3)) + np.conj(yk * Vt_) / (mp2 * np.exp(1j * tau)))
+        dStdm[line, mod] = Vt_ * (np.conj(yk * Vf_) / (mp2 * np.exp(-1j * tau)))
 
     for ang, line in enumerate(k_tau):
         Vf_ = Vf[line]
@@ -287,28 +288,31 @@ def compute_branch_power_second_derivatives(alltapm: Vec,
         t = T[line]
         # For each line with a module controlled transformer, compute its second derivatives w.r.t. the tap module and
         # the rest of the variables.
-        dSfdmdm_ = Vf_ * ((6 * np.conj(yk * Vf_) / mp ** 4) - 2 * np.conj(yk * Vt_) / (mp ** 3 * np.exp(1j * tau)))
-        dStdmdm_ = - Vt_ * 2 * np.conj(yk * Vf_) / (mp ** 3 * np.exp(-1j * tau))
+        mp2 = mp * mp
+        mp3 = mp2 * mp
+        mp4 = mp3 * mp
+        dSfdmdm_ = Vf_ * ((6 * np.conj(yk * Vf_) / mp4) - 2 * np.conj(yk * Vt_) / (mp3 * np.exp(1j * tau)))
+        dStdmdm_ = - Vt_ * 2 * np.conj(yk * Vf_) / (mp3 * np.exp(-1j * tau))
 
-        dSfdmdva_f = Vf_ * 1j * np.conj(yk * Vt_) / (mp ** 2 * np.exp(1j * tau))
-        dSfdmdva_t = - Vf_ * 1j * np.conj(yk * Vt_) / (mp ** 2 * np.exp(1j * tau))
+        dSfdmdva_f = Vf_ * 1j * np.conj(yk * Vt_) / (mp2 * np.exp(1j * tau))
+        dSfdmdva_t = - Vf_ * 1j * np.conj(yk * Vt_) / (mp2 * np.exp(1j * tau))
 
-        dStdmdva_f = - Vt_ * 1j * np.conj(yk * Vf_) / (mp ** 2 * np.exp(-1j * tau))
-        dStdmdva_t = Vt_ * 1j * np.conj(yk * Vf_) / (mp ** 2 * np.exp(-1j * tau))
+        dStdmdva_f = - Vt_ * 1j * np.conj(yk * Vf_) / (mp2 * np.exp(-1j * tau))
+        dStdmdva_t = Vt_ * 1j * np.conj(yk * Vf_) / (mp2 * np.exp(-1j * tau))
 
-        dSfdmdvm_f = Vf_ * (1 / vm[f]) * ((-4 * np.conj(yk * Vf_) / mp ** 3)
-                                          + np.conj(yk * Vt_) / (mp ** 2 * np.exp(1j * tau)))
-        dSfdmdvm_t = Vf_ * (1 / vm[t]) * np.conj(yk * Vt_) / (mp ** 2 * np.exp(1j * tau))
+        dSfdmdvm_f = Vf_ * (1 / vm[f]) * ((-4 * np.conj(yk * Vf_) / mp3)
+                                          + np.conj(yk * Vt_) / (mp2 * np.exp(1j * tau)))
+        dSfdmdvm_t = Vf_ * (1 / vm[t]) * np.conj(yk * Vt_) / (mp2 * np.exp(1j * tau))
 
-        dStdmdvm_f = Vt_ * (1 / vm[f]) * np.conj(yk * Vf_) / (mp ** 2 * np.exp(-1j * tau))
-        dStdmdvm_t = Vt_ * (1 / vm[t]) * np.conj(yk * Vf_) / (mp ** 2 * np.exp(-1j * tau))
+        dStdmdvm_f = Vt_ * (1 / vm[f]) * np.conj(yk * Vf_) / (mp2 * np.exp(-1j * tau))
+        dStdmdvm_t = Vt_ * (1 / vm[t]) * np.conj(yk * Vf_) / (mp2 * np.exp(-1j * tau))
 
         lin = np.where(k_tau == line)[0]
         if len(lin) != 0:
             ang = lin[0]
             # If the trafo is controlled for both module and phase, compute these derivatives. Otherwise, they are 0
-            dSfdmdt_ = - Vf_ * 1j * (np.conj(yk * Vt_) / (mp ** 2 * np.exp(1j * tau)))
-            dStdmdt_ = Vt_ * 1j * (np.conj(yk * Vf_) / (mp ** 2 * np.exp(-1j * tau)))
+            dSfdmdt_ = - Vf_ * 1j * (np.conj(yk * Vt_) / (mp2 * np.exp(1j * tau)))
+            dStdmdt_ = Vt_ * 1j * (np.conj(yk * Vf_) / (mp2 * np.exp(-1j * tau)))
 
             dSbusdmdt[ang, mod] = ((dSfdmdt_ * lam[f]).real + (dSfdmdt_ * lam[f + N]).imag
                                    + (dStdmdt_ * lam[t]).real + (dStdmdt_ * lam[t + N]).imag)
@@ -552,11 +556,12 @@ def eval_h(x: Vec, Yf: csr_matrix, Yt: csr_matrix, from_idx: Vec, to_idx: Vec, p
 
     Sf2 = np.conj(Sf) * Sf
     St2 = np.conj(St) * St
+    rates2 = np.power(rates[il], 2.0)
 
     if use_bound_slacks:
         hval = np.r_[
-            Sf2.real - (rates[il] ** 2) - sl_sf,  # rates "lower limit"
-            St2.real - (rates[il] ** 2) - sl_st,  # rates "upper limit"
+            Sf2.real - rates2 - sl_sf,  # rates "lower limit"
+            St2.real - rates2 - sl_st,  # rates "upper limit"
             vm[pq] - Vm_max[pq] - sl_vmax,  # voltage module upper limit
             Pg - Pg_max[ig],  # generator P upper limits
             Qg - Qg_max[ig],  # generator Q upper limits
@@ -574,8 +579,8 @@ def eval_h(x: Vec, Yf: csr_matrix, Yt: csr_matrix, from_idx: Vec, to_idx: Vec, p
         ]
     else:
         hval = np.r_[
-            Sf2.real - (rates[il] ** 2),  # rates "lower limit"
-            St2.real - (rates[il] ** 2),  # rates "upper limit"
+            Sf2.real - rates2,  # rates "lower limit"
+            St2.real - rates2,  # rates "upper limit"
             vm[pq] - Vm_max[pq],  # voltage module upper limit
             Pg - Pg_max[ig],  # generator P upper limits
             Qg - Qg_max[ig],  # generator Q upper limits
@@ -589,7 +594,7 @@ def eval_h(x: Vec, Yf: csr_matrix, Yt: csr_matrix, from_idx: Vec, to_idx: Vec, p
         ]
 
     if ctQ != ReactivePowerControlMode.NoControl:
-        hval = np.r_[hval, Qg ** 2 - tanmax ** 2 * Pg ** 2]
+        hval = np.r_[hval, np.power(Qg, 2.0) - np.power(tanmax, 2.0) * np.power(Pg, 2.0)]
 
     if ndc != 0:
         hval = np.r_[hval, Pfdc - Pdcmax, - Pdcmax - Pfdc]
@@ -682,7 +687,7 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csr
 
         fx = np.zeros(NV)
 
-        fx[2 * N: 2 * N + Ng] = (2 * c2 * Pg * (Sbase ** 2) + c1 * Sbase) * 1e-4
+        fx[2 * N: 2 * N + Ng] = (2 * c2 * Pg * (Sbase * Sbase) + c1 * Sbase) * 1e-4
 
         if use_bound_slacks:
             fx[npfvar: npfvar + M] = c_s
@@ -925,7 +930,7 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csr
 
         if ctQ != ReactivePowerControlMode.NoControl:
             # tanmax curves (simplified capability curves of generators)
-            Hqmaxp = - 2 * (tanmax ** 2) * Pg
+            Hqmaxp = - 2 * np.power(tanmax, 2) * Pg
             Hqmaxq = 2 * Qg
 
             Hqmax = sp.hstack([lil_matrix((nqct, 2 * N)), diags(Hqmaxp), diags(Hqmaxq),
@@ -970,7 +975,7 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csr
 
         fxx = diags((np.r_[
             np.zeros(2 * N),
-            2 * c2 * (Sbase ** 2),
+            2 * c2 * (Sbase * Sbase),
             np.zeros(Ng + nsl + ntapm + ntapt + ndc)
         ]) * 1e-4).tocsc()
 
@@ -1103,7 +1108,7 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csr
         Sfvmvm = vm_inv @ Ff @ vm_inv
 
         if ctQ != ReactivePowerControlMode.NoControl:
-            Hqpgpg = diags(-2 * (tanmax ** 2) * mu[-Ng:])
+            Hqpgpg = diags(-2 * np.power(tanmax, 2) * mu[-Ng:])
             Hqqgqg = diags(np.array([2] * Ng) * mu[-Ng:])
         else:
             Hqpgpg = lil_matrix((Ng, Ng))

@@ -60,7 +60,7 @@ class FluidP2xGraphicItem(InjectionTemplateGraphicItem):
         self.label.setPos(2, self.w / 5)
 
         self.setPos(self.parent.x(), self.parent.y() + 100)
-        self.update_line(self.pos())
+        self.update_nexus(self.pos())
 
     def mouseDoubleClickEvent(self, event):
         """

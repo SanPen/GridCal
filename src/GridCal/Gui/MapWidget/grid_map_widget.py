@@ -17,19 +17,22 @@
 from typing import Union, List
 import numpy as np
 from PySide6.QtWidgets import QWidget
+from collections.abc import Callable
 from GridCal.Gui.MapWidget.map_widget import MapWidget, PolylineData, Place
 import GridCal.Gui.Visualization.visualization as viz
 import GridCal.Gui.Visualization.palettes as palettes
+from GridCalEngine.Devices.Diagrams.map_location import MapLocation
 from GridCalEngine.Devices.Substation import Bus
 from GridCalEngine.Devices.Branches.line import Line
 from GridCalEngine.Devices.Branches.dc_line import DcLine
-from GridCalEngine.Devices.Branches.transformer import Transformer2W
-from GridCalEngine.Devices.Branches.winding import Winding
-from GridCalEngine.Devices.Branches.vsc import VSC
-from GridCalEngine.Devices.Branches.upfc import UPFC
 from GridCalEngine.Devices.Branches.hvdc_line import HvdcLine
 from GridCalEngine.Devices.Diagrams.map_diagram import MapDiagram
+from GridCalEngine.Devices.types import BRANCH_TYPES
+from GridCalEngine.Devices.Fluid import FluidNode, FluidPath
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec
+from GridCalEngine.Devices.Substation.substation import Substation
+from GridCalEngine.Devices.Substation.voltage_level import VoltageLevel
+
 from GridCal.Gui.MapWidget.Tiles.tiles import Tiles
 
 
@@ -124,7 +127,7 @@ class GridMapWidget(MapWidget):
 
     def colour_results(self,
                        buses: List[Bus],
-                       branches: List[Union[Line, DcLine, Transformer2W, Winding, UPFC, VSC]],
+                       branches: List[BRANCH_TYPES],
                        hvdc_lines: List[HvdcLine],
                        Sbus: CxVec,
                        bus_active: IntVec,
@@ -329,3 +332,133 @@ class GridMapWidget(MapWidget):
 
         self.setLayerData(lid=self.polyline_layer_id, data=data)
         self.update()
+
+
+def generate_map_diagram(substations: List[Substation],
+                         voltage_level: List[VoltageLevel],
+                         lines: List[Line],
+                         dc_lines: List[DcLine],
+                         hvdc_lines: List[HvdcLine],
+                         fluid_nodes: List[FluidNode],
+                         fluid_paths: List[FluidPath],
+                         prog_func: Union[Callable, None] = None,
+                         text_func: Union[Callable, None] = None,
+                         name='Map diagram') -> MapDiagram:
+    """
+    Add a elements to the schematic scene
+    :param substations: list of Substation objects
+    :param voltage_level: list of VoltageLevel objects
+    :param lines: list of Line objects
+    :param dc_lines: list of DcLine objects
+    :param hvdc_lines: list of HvdcLine objects
+    :param fluid_nodes: list of FluidNode objects
+    :param fluid_paths: list of FluidPath objects
+    :param prog_func: progress report function
+    :param text_func: Text report function
+    :param name: name of the diagram
+    """
+
+    diagram = MapDiagram(name=name)
+
+    # first create the buses
+    if text_func is not None:
+        text_func('Creating schematic buses')
+
+    nn = len(substations)
+    for i, substation in enumerate(substations):
+
+        if prog_func is not None:
+            prog_func((i + 1) / nn * 100.0)
+
+        diagram.set_point(device=substation, location=MapLocation())
+
+    # --------------------------------------------------------------------------------------------------------------
+    if text_func is not None:
+        text_func('Creating schematic fluid nodes devices')
+
+    nn = len(fluid_nodes)
+    for i, elm in enumerate(fluid_nodes):
+
+        if prog_func is not None:
+            prog_func((i + 1) / nn * 100.0)
+
+        # branch.graphic_obj = self.add_api_upfc(branch)
+        diagram.set_point(device=elm, location=MapLocation())
+
+    # --------------------------------------------------------------------------------------------------------------
+    if text_func is not None:
+        text_func('Creating schematic line devices')
+
+    nn = len(lines)
+    for i, branch in enumerate(lines):
+
+        if prog_func is not None:
+            prog_func((i + 1) / nn * 100.0)
+
+        # branch.graphic_obj = self.add_api_line(branch)
+        diagram.set_point(device=branch, location=MapLocation())
+
+        # register all the line locations
+        for loc in branch.locations.get_locations():
+            diagram.set_point(device=loc, location=MapLocation(latitude=loc.lat,
+                                                               longitude=loc.long,
+                                                               altitude=loc.alt))
+
+    # --------------------------------------------------------------------------------------------------------------
+    if text_func is not None:
+        text_func('Creating schematic line devices')
+
+    nn = len(dc_lines)
+    for i, branch in enumerate(dc_lines):
+
+        if prog_func is not None:
+            prog_func((i + 1) / nn * 100.0)
+
+        # branch.graphic_obj = self.add_api_dc_line(branch)
+        diagram.set_point(device=branch, location=MapLocation())
+
+        # register all the line locations
+        for loc in branch.locations.get_locations():
+            diagram.set_point(device=loc, location=MapLocation(latitude=loc.lat,
+                                                               longitude=loc.long,
+                                                               altitude=loc.alt))
+
+    # --------------------------------------------------------------------------------------------------------------
+    if text_func is not None:
+        text_func('Creating schematic HVDC devices')
+
+    nn = len(hvdc_lines)
+    for i, branch in enumerate(hvdc_lines):
+
+        if prog_func is not None:
+            prog_func((i + 1) / nn * 100.0)
+
+        # branch.graphic_obj = self.add_api_hvdc(branch)
+        diagram.set_point(device=branch, location=MapLocation())
+
+        # register all the line locations
+        for loc in branch.locations.get_locations():
+            diagram.set_point(device=loc, location=MapLocation(latitude=loc.lat,
+                                                               longitude=loc.long,
+                                                               altitude=loc.alt))
+
+    # --------------------------------------------------------------------------------------------------------------
+    if text_func is not None:
+        text_func('Creating schematic fluid paths devices')
+
+    nn = len(fluid_paths)
+    for i, elm in enumerate(fluid_paths):
+
+        if prog_func is not None:
+            prog_func((i + 1) / nn * 100.0)
+
+        # branch.graphic_obj = self.add_api_upfc(branch)
+        diagram.set_point(device=elm, location=MapLocation())
+
+        # register all the line locations
+        for loc in elm.locations.get_locations():
+            diagram.set_point(device=loc, location=MapLocation(latitude=loc.lat,
+                                                               longitude=loc.long,
+                                                               altitude=loc.alt))
+
+    return diagram

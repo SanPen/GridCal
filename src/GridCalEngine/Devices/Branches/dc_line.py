@@ -15,7 +15,6 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-
 import pandas as pd
 from typing import Union
 from matplotlib import pyplot as plt
@@ -134,7 +133,7 @@ class DcLine(BranchParent):
         self.template = template
 
         # Line locations
-        self._locations: LineLocations = LineLocations(n_points=0)
+        self._locations: LineLocations = LineLocations()
 
         self.register(key='R', units='p.u.', tpe=float, definition='Total positive sequence resistance.')
         self.register(key='length', units='km', tpe=float, definition='Length of the line (not used for calculation)')

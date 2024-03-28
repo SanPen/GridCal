@@ -122,8 +122,9 @@ class Substation(GenericAreaGroup):
         if isinstance(val, Union[Zone, None]):
             self._zone = val
 
-            if val.area is not None and self.area is None:
-                self.area = val.area
+            if val is not None:
+                if val.area is not None and self.area is None:
+                    self.area = val.area
 
         else:
             raise Exception(str(type(val)) + 'not supported to be set into a zone of type Union[Zone, None]')
@@ -164,8 +165,9 @@ class Substation(GenericAreaGroup):
         if isinstance(val, Union[Community, None]):
             self._community = val
 
-            if val.country is not None and self.country is None:
-                self.country = val.country
+            if val is not None:
+                if val.country is not None and self.country is None:
+                    self.country = val.country
         else:
             raise Exception(str(type(val)) + 'not supported to be set into a community of type Union[Community, None]')
 
@@ -186,8 +188,9 @@ class Substation(GenericAreaGroup):
         if isinstance(val, Union[Region, None]):
             self._region = val
 
-            if val.community is not None and self.community is None:
-                self.community = val.community
+            if val is not None:
+                if val.community is not None and self.community is None:
+                    self.community = val.community
 
         else:
             raise Exception(str(type(val)) + 'not supported to be set into a region of type Union[Region, None]')
@@ -209,8 +212,9 @@ class Substation(GenericAreaGroup):
         if isinstance(val, Union[Municipality, None]):
             self._municipality = val
 
-            if val.region is not None and self.region is None:
-                self.region = val.region
+            if val is not None:
+                if val.region is not None and self.region is None:
+                    self.region = val.region
 
         else:
             raise Exception(

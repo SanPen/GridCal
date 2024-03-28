@@ -80,7 +80,7 @@ class InjectionTemplateGraphicItem(QGraphicsItemGroup):
         self.editor.add_to_scene(self.nexus)
 
         self.setPos(self.parent.x(), self.parent.y() + 100)
-        self.update_line(self.pos())
+        self.update_nexus(self.pos())
 
     def recolour_mode(self):
         """
@@ -101,18 +101,19 @@ class InjectionTemplateGraphicItem(QGraphicsItemGroup):
         self.nexus.setPen(pen)
         return pen
 
-    def update_line(self, pos):
+    def update_nexus(self, pos):
         """
-        Update the line that joins the parent and this object
+        Update the nexus line that joins the parent and this object
         :param pos: position of this object
         """
         parent = self.parentItem()
         rect = parent.rect()
+        term = parent.get_terminal()
         self.nexus.setLine(
             pos.x() + self.w / 2,
-            pos.y() + 0,
+            pos.y(),
             parent.x() + rect.width() / 2,
-            parent.y() + parent.get_terminal().y + 5,
+            parent.y() + rect.height() + term.h / 2,
         )
         self.setZValue(-1)
         self.nexus.setZValue(-1)
@@ -131,6 +132,7 @@ class InjectionTemplateGraphicItem(QGraphicsItemGroup):
         if ok:
             self.editor.remove_from_scene(self.nexus)
             self.editor.remove_element(device=self.api_object, graphic_object=self)
+            self.editor.remove_from_scene(self)
 
     def mousePressEvent(self, QGraphicsSceneMouseEvent):
         """

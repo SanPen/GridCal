@@ -64,7 +64,7 @@ class ShuntGraphicItem(InjectionTemplateGraphicItem):
             self.addToGroup(l1)
 
         self.setPos(self.parent.x(), self.parent.y() + 100)
-        self.update_line(self.pos())
+        self.update_nexus(self.pos())
 
     def recolour_mode(self):
         """
@@ -99,11 +99,6 @@ class ShuntGraphicItem(InjectionTemplateGraphicItem):
         pe.setCheckable(True)
         pe.setChecked(self.api_object.active)
         pe.triggered.connect(self.enable_disable_toggle)
-
-        pc = menu.addAction('Voltage control')
-        pc.setCheckable(True)
-        pc.setChecked(self.api_object.is_controlled)
-        pc.triggered.connect(self.enable_disable_control_toggle)
 
         pa = menu.addAction('Plot profiles')
         plot_icon = QIcon()
@@ -142,13 +137,6 @@ class ShuntGraphicItem(InjectionTemplateGraphicItem):
                 if ok:
                     # change the bus state (time series)
                     self.editor.set_active_status_to_profile(self.api_object, override_question=True)
-
-    def enable_disable_control_toggle(self):
-        """
-        Enable / Disable device voltage control
-        """
-        if self.api_object is not None:
-            self.api_object.is_controlled = not self.api_object.is_controlled
 
     def set_enable(self, val=True):
         """

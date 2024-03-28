@@ -97,5 +97,7 @@ ALL_DEV_TYPES = Union[
     GeneratorEmission,
     GeneratorFuel,
     GeneratorTechnology,
-    BranchGroup
+    BranchGroup,
+    LineLocations,
+    LineLocation
 ]

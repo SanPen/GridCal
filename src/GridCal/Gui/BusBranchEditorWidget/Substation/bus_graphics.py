@@ -61,7 +61,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
                  index=0,
                  editor: BusBranchEditorWidget = None,
                  bus: Bus = None,
-                 h: int = 20,
+                 h: int = 40,
                  w: int = 80,
                  x: int = 0,
                  y: int = 0):
@@ -79,8 +79,8 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         super(BusGraphicItem, self).__init__(parent)
 
         self.min_w = 180.0
-        self.min_h = 20.0
-        self.offset = 10
+        self.min_h = 40.0
+        self.offset = 20
         self.h = h if h >= self.min_h else self.min_h
         self.w = w if w >= self.min_w else self.min_w
 
@@ -112,16 +112,12 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
             self.style = ACTIVE['style']
 
         # Label:
-        self.label = QtWidgets.QGraphicsTextItem(bus.name, self)
+        self.label = QtWidgets.QGraphicsTextItem(self.api_object.name if self.api_object is not None else "", self)
         self.label.setDefaultTextColor(ACTIVE['text'])
         self.label.setScale(FONT_SCALE)
 
-        # Label:
-        # self.results_label = QtWidgets.QGraphicsTextItem(self)
-        # self.results_label.setDefaultTextColor(ACTIVE['text'])
-
         # square
-        self.tile = QtWidgets.QGraphicsRectItem(0, 0, self.min_h, self.min_h, self)
+        self.tile = QtWidgets.QGraphicsRectItem(0, 0, 20, 20, self)
         self.tile.setOpacity(0.7)
 
         # connection terminals the block
@@ -129,11 +125,9 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         self._terminal.setPen(QPen(Qt.transparent, self.pen_width, self.style, Qt.RoundCap, Qt.RoundJoin))
 
         # Create corner for resize:
-        self.sizer = HandleItem(self._terminal)
+        self.sizer = HandleItem(self._terminal, callback=self.change_size)
         self.sizer.setPos(self.w, self.h)
-        self.sizer.posChangeCallbacks.append(self.change_size)  # Connect the callback
         self.sizer.setFlag(self.GraphicsItemFlag.ItemIsMovable)
-        self.adapt()
 
         self.big_marker = None
 
@@ -145,17 +139,31 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         self.setCursor(QCursor(Qt.PointingHandCursor))
 
         # Update size:
-        self.change_size(self.w, self.h)
+        self.change_size(w=self.w)
 
         self.set_position(x, y)
 
-    def set_label(self, val: str):
+    def recolour_mode(self) -> None:
         """
-        Set the label content
-        :param val:
-        :return:
+        Change the colour according to the system theme
         """
-        self.label.setPlainText(val)
+        if self.api_object is not None:
+            if self.api_object.active:
+                self.color = ACTIVE['color']
+                self.style = ACTIVE['style']
+            else:
+                self.color = DEACTIVATED['color']
+                self.style = DEACTIVATED['style']
+        else:
+            self.color = ACTIVE['color']
+            self.style = ACTIVE['style']
+
+        self.label.setDefaultTextColor(ACTIVE['text'])
+        self.set_tile_color(self.color)
+
+        for e in self.shunt_children:
+            if e is not None:
+                e.recolour_mode()
 
     def mouseMoveEvent(self, event: QGraphicsSceneMouseEvent):
         """
@@ -227,7 +235,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         Update the object
         :return:
         """
-        self.change_size(self.w, self.h)
+        self.change_size(w=self.w)
 
     def set_height(self, h: int):
         """
@@ -238,57 +246,39 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         self.setRect(0.0, 0.0, self.w, h)
         self.h = h
 
-    def change_size(self, w: int, h: Union[None, int] = None):
+    def change_size(self, w: int, dummy: float = 0.0):
         """
         Resize block function
         :param w:
-        :param h:
+        :param dummy:
         :return:
         """
         # Limit the block size to the minimum size:
-        if h is None:
-            h = self.min_h
-
-        if w < self.min_w:
-            w = self.min_w
-
-        self.setRect(0.0, 0.0, w, h)
-        self.h = h
-        self.w = w
-
-        y0 = h + self.offset
+        self.w = w if w > self.min_w else self.min_w
+        self.setRect(0.0, 0.0, w, self.min_h)
+        y0 = self.offset
         x0 = 0
 
         # center label:
-        rect = self.label.boundingRect()
-        lw, lh = rect.width(), rect.height()
-        lx = (w - lw) / 2
-        ly = (h - lh) / 2 - lh * (FONT_SCALE - 1)
-        # self.label.setPos(lx, ly)
-        self.label.setPos(w, ly - 40)
-
-        # self.results_label.setPos(w + 20, ly)
+        self.label.setPos(w + 5, -20)
 
         # lower
         self._terminal.setPos(x0, y0)
-        self._terminal.setRect(0, 0, w, 10)
-
-        # Set text
-        if self.api_object is not None:
-            self.label.setPlainText(self.api_object.name)
+        self._terminal.setRect(0, 20, w, 10)
 
         # rearrange children
         self.arrange_children()
 
+        # update editor diagram position
         self.editor.update_diagram_element(device=self.api_object,
                                            x=self.pos().x(),
                                            y=self.pos().y(),
                                            w=w,
-                                           h=h,
+                                           h=int(self.min_h),
                                            r=self.rotation(),
                                            graphic_object=self)
 
-        return w, h
+        return w, self.min_h
 
     def arrange_children(self) -> None:
         """
@@ -676,10 +666,11 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         """
 
         if self.api_object.device_type == DeviceType.BusDevice:
-            dictionary_of_lists = {DeviceType.AreaDevice.value: self.editor.circuit.areas,
-                                   DeviceType.ZoneDevice.value: self.editor.circuit.zones,
-                                   DeviceType.SubstationDevice.value: self.editor.circuit.substations,
-                                   DeviceType.CountryDevice.value: self.editor.circuit.countries}
+            dictionary_of_lists = {DeviceType.AreaDevice.value: self.editor.circuit.get_areas(),
+                                   DeviceType.ZoneDevice.value: self.editor.circuit.get_zones(),
+                                   DeviceType.SubstationDevice.value: self.editor.circuit.get_substations(),
+                                   DeviceType.VoltageLevelDevice.value: self.editor.circuit.get_voltage_levels(),
+                                   DeviceType.CountryDevice.value: self.editor.circuit.get_countries()}
 
             self.editor.set_editor_model(api_object=self.api_object,
                                          dictionary_of_lists=dictionary_of_lists)
@@ -689,17 +680,12 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         Mouse double click
         :param event: event object
         """
-        self.adapt()
+        title = self.api_object.name if self.api_object is not None else ""
+        msg = ""
+        self.label.setHtml(f'<html><head/><body><p><span style=" font-size:10pt;">{title}<br/></span>'
+                           f'<span style=" font-size:6pt;">{msg}</span></p></body></html>')
 
-    def adapt(self) -> None:
-        """
-        Set the bus width according to the label text
-        """
-        # Todo: fix the resizing on double click
-        h = self._terminal.boundingRect().height()
-        w = len(self.api_object.name) * 8 + 10
-        self.change_size(w=w, h=h)
-        self.sizer.setPos(w, self.h)
+        self.setToolTip(msg)
 
     def get_terminal(self) -> TerminalItem:
         """
@@ -882,8 +868,9 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
             q = format_str.format(Q)
             msg += f"P={p} MW<br>Q={q} MVAr"
 
-        title = self.api_object.name
-        self.label.setHtml(f'<html><head/><body><p><span style=" font-size:10pt;">{title}<br/></span><span style=" font-size:6pt;">{msg}</span></p></body></html>')
+        title = self.api_object.name if self.api_object is not None else ""
+        self.label.setHtml(f'<html><head/><body><p><span style=" font-size:10pt;">{title}<br/></span>'
+                           f'<span style=" font-size:6pt;">{msg}</span></p></body></html>')
 
         self.setToolTip(msg)
 

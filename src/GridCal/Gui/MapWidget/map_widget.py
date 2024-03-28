@@ -24,13 +24,14 @@ Some semantics:
     view  is the view of the map through the widget
           (view may be smaller than map, or larger)
 """
-
+import math
 from typing import List, Dict, Union, Tuple, Callable
 from PySide6.QtCore import Qt, QTimer, QPoint, QPointF, QEvent
 from PySide6.QtWidgets import QSizePolicy, QWidget, QMessageBox, QGraphicsScene, QGraphicsView, QVBoxLayout
 from PySide6.QtGui import QPainter, QColor, QPixmap, QPen, QFont, QFontMetrics, QPolygon, QBrush, QCursor, \
     QMouseEvent, QKeyEvent, QWheelEvent, QResizeEvent, QEnterEvent, QPaintEvent
 
+from GridCal.Gui.MapWidget.Schema.SchemaManager import schemaManager
 from GridCal.Gui.MapWidget.map_events import LevelEvent, PositionEvent, SelectEvent, BoxSelectEvent
 from GridCal.Gui.MapWidget.logger import log
 from GridCal.Gui.MapWidget.Layers.point_layer import PointLayer, PointData
@@ -44,6 +45,8 @@ from GridCal.Gui.MapWidget.Tiles.tiles import Tiles
 
 # version number of the widget
 __version__ = '0.5'
+
+from GridCalEngine.IO.matpower.matpower_branch_definitions import QT
 
 
 class MapWidget(QWidget):
@@ -286,13 +289,25 @@ class MapWidget(QWidget):
         self.zoom_callback: Callable[[int], None] = zoom_callback
         self.position_callback: Callable[[float, float], None] = position_callback
 
+        self.xPan = 0
+        self.yPan = 0
+
         # Create a QGraphicsScene
         self.scene = QGraphicsScene(self)
         self.scene.setSceneRect(0, 0, 800, 600)  # Set the scene rect as per your requirements
+        self.zoom_factor = 2
 
         # Create a QGraphicsView and set the scene
         self.view = QGraphicsView(self.scene)
         self.view.setAlignment(Qt.AlignLeft | Qt.AlignTop)
+
+        # Set the scroll bars policy to off
+        self.view.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.view.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+
+        # # Set transformation and viewport anchor for proper scaling around the view center
+        # self.view.setTransformationAnchor(QGraphicsView.AnchorUnderMouse)
+        # self.view.setViewportUpdateMode(QGraphicsView.NoViewportUpdate)
 
         # Create a layout for the MapWidget
         layout = QVBoxLayout()
@@ -300,26 +315,98 @@ class MapWidget(QWidget):
         self.setLayout(layout)  # Set the layout for the MapWidget
 
         # Install an event filter on the QGraphicsView
-        self.view.installEventFilter(self)
+        # self.view.installEventFilter(self)
+
+        # Install an event filter on the QGraphicsView
+        self.scene.installEventFilter(self)
 
         # Make the layout transparent
         self.layout().setContentsMargins(0, 0, 0, 0)
         self.layout().setSpacing(0)
         self.setStyleSheet("background-color: transparent;")
 
-        # You can add more QGraphicsItems to the scene here
-        rect_item = self.scene.addRect(50, 50, 100, 100)  # Example rectangle
-        ellipse_item = self.scene.addEllipse(200, 200, 100, 100)  # Example ellipse
+        # # You can add more QGraphicsItems to the scene here
+        # rect_item = self.scene.addRect(50, 50, 100, 100)  # Example rectangle
+        # ellipse_item = self.scene.addEllipse(200, 200, 100, 100)  # Example ellipse
+
+        self.diagram_w = 25000
+        self.diagram_H = 25000
+
+        # Set initial zoom level (change the values as needed)
+        initial_zoom_factor = 1
+        self.devXFact  = 22.8
+        self.devYFact = 33.0
+        initial_zoom_factor = 0.47
+        self.devXFact  = 48.3
+        self.devYFact = 61.9
+        self.schema_zoom = 1
+        self.view.scale(initial_zoom_factor, initial_zoom_factor)
+        self.remapSchema()
+        self.selTempDistance = 20
+        self.schema_Manager = schemaManager(self.scene)
+
+    def convertToQMouseEvent(self, sceneMouseEvent):
+        # Get relevant information from QGraphicsSceneMouseEvent
+        pos = sceneMouseEvent.screenPos()
+        button = sceneMouseEvent.button()
+        buttons = sceneMouseEvent.buttons()
+        modifiers = sceneMouseEvent.modifiers()
+
+        # Create a new QMouseEvent using the extracted information
+        qMouseEvent = QMouseEvent(
+            QEvent.MouseMove,  # Event type (assuming MouseMove for this example)
+            pos,  # Position in screen coordinates
+            button,  # Pressed button
+            buttons,  # Buttons currently pressed
+            modifiers  # Keyboard modifiers
+        )
+
+        return qMouseEvent
 
     def eventFilter(self, obj, event):
-        if obj == self.view and event.type() == QEvent.MouseButtonPress:
-            # Convert the mouse event coordinates to scene coordinates
-            view_pos = event.pos()
-            scene_pos = self.view.mapToScene(view_pos)
-            print("Mouse pressed at scene position:", scene_pos)
+
+        val = event.type()
+
+        if event.type() == QEvent.GraphicsSceneMousePress:
+            self.pressed = True
+
+        if event.type() == QEvent.GraphicsSceneMouseRelease:
+            self.pressed = False
+
+        if event.type() == QEvent.GraphicsSceneMouseMove:
+            if not self.schema_Manager.disableMove:
+                self.mouseMoveEvent(self.convertToQMouseEvent(event))
+
+        if event.type() == QEvent.GraphicsSceneWheel:
+            view_center = self.view.mapToScene(self.view.viewport().rect().center())
+
+            if event.delta() > 0:
+                new_level = self.level + 1
+                self.zoom_in()
+            else:
+                new_level = self.level - 1
+                self.zoom_out()
+
+            self.zoom_level(new_level, self.mouse_x, self.mouse_y)
+
+            return True
+
+        self.centerSchema()
 
         # Pass the event to the base class
         return super().eventFilter(obj, event)
+
+        return wheel_event
+
+    def change_size_and_pen_width_all(self, new_radius, pen_width):
+        """
+        Change the size and pen width of all elements in Schema.
+        :param new_radius: New radius for the nodes.
+        :param pen_width: New pen width for the nodes.
+        """
+        for node in self.schema_Manager.Nodes:
+            node.resize(new_radius)
+            node.change_pen_width(pen_width)
 
     def on_tile_available(self, level: int, x: float, y: float, image: QPixmap, error: bool):
         """Called when a new 'net tile is available.
@@ -490,8 +577,6 @@ class MapWidget(QWidget):
                                             selection=None,
                                             relsel=None).emit_event()
 
-
-
             # turn off dragging, if we were
             self.start_drag_x = self.start_drag_y = None
 
@@ -530,6 +615,19 @@ class MapWidget(QWidget):
         else:
             log('mouseDoubleClickEvent: unknown button')
 
+    def centerSchema(self):
+        '''
+        This function centers the schema relative to the map according to lat. and long.
+        :return:
+        '''
+
+        level, xgeo, ygeo = self.get_level_and_position()
+        if (xgeo != None):
+            xgeo = xgeo * self.devXFact  # TODO: improve transforming function from adhoc values to true transformer
+            ygeo = -ygeo * self.devYFact  # TODO: improve transforming function from adhoc values to true transformer
+            point = QPointF(xgeo, ygeo)
+            self.view.centerOn(point)
+
     def mouseMoveEvent(self, event: QMouseEvent):
         """
         Handle a mouse move event.
@@ -560,6 +658,7 @@ class MapWidget(QWidget):
                 # set select box start point at mouse position
                 self.sbox_w, self.sbox_h = x - self.sbox_1_x, y - self.sbox_1_y
             else:
+
                 # we are dragging
                 if self.start_drag_x is None:
                     # start of drag, set drag state
@@ -624,13 +723,37 @@ class MapWidget(QWidget):
         """
         Handle a mouse wheel rotation.
         """
+        view_center = self.view.mapToScene(self.view.viewport().rect().center())
 
         if event.angleDelta().y() > 0:
             new_level = self.level + 1
+            self.zoom_in()
         else:
             new_level = self.level - 1
+            self.zoom_out()
 
         self.zoom_level(new_level, self.mouse_x, self.mouse_y)
+
+        self.centerSchema()
+
+    def zoom_in(self):
+        # Translate the scene to make the center point correspond to the origin
+        self.schema_zoom = self.schema_zoom * self.zoom_factor
+        self.view.scale(self.zoom_factor, self.zoom_factor)
+        self.remapSchema()
+
+    def zoom_out(self):
+        # Translate the scene to make the center point correspond to the origin
+        self.schema_zoom = self.schema_zoom / self.zoom_factor
+        self.view.scale(1.0 / self.zoom_factor, 1.0 / self.zoom_factor)
+        self.remapSchema()
+
+    def remapSchema(self):
+        a = 0
+        # if self.schema_zoom > 0 and self.schema_zoom < 22:
+        #     self.change_size_and_pen_width_all(0.5,0.5)
+        # if self.schema_zoom >= 22:
+        #     self.change_size_and_pen_width_all(0.2,0.5)
 
     def resizeEvent(self, event: QResizeEvent = None):
         """
@@ -645,10 +768,21 @@ class MapWidget(QWidget):
         self.rectify_key_tile()
 
         # Resize the view to match the widget's size
-        self.view.setGeometry(0, 0, self.width(), self.height())
+        # self.view.setGeometry(0, 0, self.width(), self.height())
+
+        used_width = self.diagram_w
+        used_height = self.diagram_H
+
+        xToDiagram = -(used_width / 2)
+        yToDiagram = -(used_height / 2)
 
         # Adjust the scene rect if needed
-        self.scene.setSceneRect(0, 0, self.width(), self.height())
+        self.view.setSceneRect(xToDiagram,
+                               yToDiagram,
+                               used_width,
+                               used_height)
+
+        self.centerSchema()
 
     def enterEvent(self, event: QEnterEvent):
         self.setFocus()

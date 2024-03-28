@@ -237,7 +237,7 @@ class HvdcLine(BranchParent):
         self.n_lines = n_lines
 
         # Line locations
-        self._locations: LineLocations = LineLocations(n_points=0)
+        self._locations: LineLocations = LineLocations()
 
         self.register(key='dispatchable', units='', tpe=bool, definition='Is the line power optimizable?')
 

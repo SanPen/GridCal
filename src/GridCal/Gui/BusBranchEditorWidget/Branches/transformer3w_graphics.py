@@ -136,6 +136,27 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
         # other actions
         self.set_winding_tool_tips()
 
+    def recolour_mode(self):
+        """
+        Change the colour according to the system theme
+        """
+        if self.api_object is not None:
+            if self.api_object.active:
+                self.color = ACTIVE['color']
+                self.style = ACTIVE['style']
+            else:
+                self.color = DEACTIVATED['color']
+                self.style = DEACTIVATED['style']
+        else:
+            self.color = ACTIVE['color']
+            self.style = ACTIVE['style']
+
+        pen = QPen(self.color, self.pen_width, self.style)
+        for i in range(self.n_windings):
+            self.winding_circles[i].setPen(pen)
+            self.terminals[i].setPen(pen)
+            self.connection_lines[i].recolour_mode()
+
     def set_winding_tool_tips(self):
         """
         Set

@@ -373,7 +373,7 @@ class NonlinearOPFResults:
     converged: bool = None
     iterations: int = None
 
-    def initialize(self, nbus: int, nbr: int, ng: int, nll: int, nhvdc: int):
+    def initialize(self, nbus: int, nbr: int, ng: int, nhvdc: int):
         """
         Initialize the arrays
         :param nbus: number of buses
@@ -501,10 +501,10 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     slack = nc.vd
 
     # Check the active elements and their operational limits.
-    il = nc.branch_data.get_monitor_enabled_indices()
-    ig = nc.generator_data.get_dispatchable_indices()
+    br_mon_idx = nc.branch_data.get_monitor_enabled_indices()
+    gen_disp_idx = nc.generator_data.get_dispatchable_indices()
     ind_gens = np.arange(len(Pg_max))
-    nig = np.where(~np.isin(ind_gens, ig))[0]
+    nig = np.where(~np.isin(ind_gens, gen_disp_idx))[0]
     Sg_undis = (nc.generator_data.get_injections() / nc.Sbase)[nig]
     rates = nc.rates / Sbase  # Line loading limits. If the grid is not well conditioned, add constant value (i.e. +100)
     Va_max = nc.bus_data.angle_max  # This limits are not really used as of right now.
@@ -517,9 +517,9 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     R = nc.branch_data.R
     X = nc.branch_data.X
 
-    c0 = nc.generator_data.cost_0[ig]
-    c1 = nc.generator_data.cost_1[ig]
-    c2 = nc.generator_data.cost_2[ig]
+    c0 = nc.generator_data.cost_0[gen_disp_idx]
+    c1 = nc.generator_data.cost_1[gen_disp_idx]
+    c2 = nc.generator_data.cost_2[gen_disp_idx]
 
     # Transformer operational limits
     tapm_max = nc.branch_data.tap_module_max[k_m]
@@ -538,29 +538,28 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     ntapt = len(k_tau)
     npv = len(pv)
     npq = len(pq)
-    nll = len(il)
-    ngg = len(ig)
+    n_br_mon = len(br_mon_idx)
+    n_gen_disp = len(gen_disp_idx)
 
-    hvdc_nondisp = np.where(nc.hvdc_data.dispatchable == 0)[0]
-    hvdc_disp = np.where(nc.hvdc_data.dispatchable == 1)[0]
+    hvdc_nondisp_idx = np.where(nc.hvdc_data.dispatchable == 0)[0]
+    hvdc_disp_idx = np.where(nc.hvdc_data.dispatchable == 1)[0]
 
-    f_nd_dc = nc.hvdc_data.F[hvdc_nondisp]
-    t_nd_dc = nc.hvdc_data.T[hvdc_nondisp]
-    Pf_nondisp = nc.hvdc_data.Pset[hvdc_nondisp]
+    f_nd_hvdc = nc.hvdc_data.F[hvdc_nondisp_idx]
+    t_nd_hvdc = nc.hvdc_data.T[hvdc_nondisp_idx]
+    Pf_nondisp = nc.hvdc_data.Pset[hvdc_nondisp_idx]
 
-    ndc = len(hvdc_disp)
-    fdc = nc.hvdc_data.F[hvdc_disp]
-    tdc = nc.hvdc_data.T[hvdc_disp]
-    Pdcmax = nc.hvdc_data.rate[hvdc_disp]
-    Pfdc0 = nc.hvdc_data.Pset[hvdc_disp]
+    n_disp_hvdc = len(hvdc_disp_idx)
+    f_disp_hvdc = nc.hvdc_data.F[hvdc_disp_idx]
+    t_disp_hvdc = nc.hvdc_data.T[hvdc_disp_idx]
+    P_hvdc_max = nc.hvdc_data.rate[hvdc_disp_idx]
 
     if use_bound_slacks:
-        nsl = 2 * npq + 2 * nll
+        nsl = 2 * npq + 2 * n_br_mon
         # Slack relaxations for constraints
-        c_s = 10 * (0.1 + nc.branch_data.overload_cost[il])
-        c_v = 1000000 * (0.1 + nc.bus_data.cost_v[pq])
-        sl_sf0 = np.ones(nll)
-        sl_st0 = np.ones(nll)
+        c_s = nc.branch_data.overload_cost[br_mon_idx] + 1e-9
+        c_v = nc.bus_data.cost_v[pq] + 1e-9
+        sl_sf0 = np.ones(n_br_mon)
+        sl_st0 = np.ones(n_br_mon)
         sl_vmax0 = np.ones(npq)
         sl_vmin0 = np.ones(npq)
 
@@ -579,31 +578,29 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     # Number of inequalities: Line ratings, max and min angle of buses, voltage module range and
 
     if pf_options.control_Q == ReactivePowerControlMode.NoControl:
-        NI = 2 * nll + 2 * npq + 4 * ngg + 2 * ntapm + 2 * ntapt + 2 * ndc + nsl  # No Reactive constraint (power curve)
+        NI = 2 * n_br_mon + 2 * npq + 4 * n_gen_disp + 2 * ntapm + 2 * ntapt + 2 * n_disp_hvdc + nsl  # No Reactive constraint (power curve)
     else:
-        NI = 2 * nll + 2 * npq + 5 * ngg + 2 * ntapm + 2 * ntapt + 2 * ndc + nsl
+        NI = 2 * n_br_mon + 2 * npq + 5 * n_gen_disp + 2 * ntapm + 2 * ntapt + 2 * n_disp_hvdc + nsl
 
     # ignore power from Z and I of the load
 
     if pf_init:
-        s0gen = (Sbus_pf - nc.load_data.get_injections_per_bus()) / nc.Sbase
-        p0gen = (nc.generator_data.C_bus_elm.T @ np.real(s0gen))[ig]
-        q0gen = (nc.generator_data.C_bus_elm.T @ np.imag(s0gen))[ig]
+        p0gen = nc.generator_data.p[gen_disp_idx]
+        q0gen = (nc.generator_data.C_bus_elm.T @ np.imag(Sbus_pf / nc.Sbase))[gen_disp_idx]
         vm0 = np.abs(voltage_pf)
         va0 = np.angle(voltage_pf)
         tapm0 = nc.branch_data.tap_module[k_m]
         tapt0 = nc.branch_data.tap_angle[k_tau]
-        Pfdc0 = np.zeros(ndc)
+        Pf0_hvdc = nc.hvdc_data.Pset[hvdc_disp_idx]
 
-    # nc.Vbus  # dummy initialization
     else:
-        p0gen = ((nc.generator_data.pmax[ig] + nc.generator_data.pmin[ig]) / (2 * nc.Sbase))[ig]
-        q0gen = ((nc.generator_data.qmax[ig] + nc.generator_data.qmin[ig]) / (2 * nc.Sbase))[ig]
+        p0gen = (nc.generator_data.pmax[gen_disp_idx] + nc.generator_data.pmin[gen_disp_idx]) / (2 * nc.Sbase)
+        q0gen = (nc.generator_data.qmax[gen_disp_idx] + nc.generator_data.qmin[gen_disp_idx]) / (2 * nc.Sbase)
         va0 = np.angle(nc.bus_data.Vbus)
         vm0 = (Vm_max + Vm_min) / 2
         tapm0 = nc.branch_data.tap_module[k_m]
         tapt0 = nc.branch_data.tap_angle[k_tau]
-        Pfdc0 = Pfdc0
+        Pf0_hvdc = np.zeros(n_disp_hvdc)
 
     # compose the initial values
     x0 = var2x(Va=va0,
@@ -616,7 +613,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                sl_vmin=sl_vmin0,
                tapm=tapm0,
                tapt=tapt0,
-               Pfdc=Pfdc0)
+               Pfdc=Pf0_hvdc)
 
     # number of variables
     NV = len(x0)
@@ -632,7 +629,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                                        arg=(admittances, Cg, Sd, slack, from_idx, to_idx,
                                             pq, pv, Va_max, Va_min, Vm_max, Vm_min, Pg_max, Pg_min,
                                             Qg_max, Qg_min, tapm_max, tapm_min, tapt_max, tapt_min, alltapm, alltapt,
-                                            k_m, k_tau, k_mtau, c0, c1, c2, Sbase, rates, il, ig, nig, Sg_undis,
+                                            k_m, k_tau, k_mtau, c0, c1, c2, Sbase, rates, br_mon_idx, gen_disp_idx, nig, Sg_undis,
                                             pf_options.control_Q, use_bound_slacks),
                                        verbose=opf_options.verbose,
                                        max_iter=opf_options.ips_iterations,
@@ -647,7 +644,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                                            arg=(admittances, Cg, Sd, slack, from_idx, to_idx, pq, pv,
                                                 Va_max, Va_min, Vm_max, Vm_min, Pg_max, Pg_min, Qg_max, Qg_min,
                                                 tapm_max, tapm_min, tapt_max, tapt_min, k_m, k_tau, k_mtau,
-                                                c0, c1, c2, Sbase, rates, il, ig, nig, Sg_undis,
+                                                c0, c1, c2, Sbase, rates, br_mon_idx, gen_disp_idx, nig, Sg_undis,
                                                 use_bound_slacks, 1e-5),
                                            verbose=opf_options.verbose,
                                            max_iter=opf_options.ips_iterations,
@@ -657,11 +654,11 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
             # run the solver with the analytic derivatives
             result = interior_point_solver(x0=x0, n_x=NV, n_eq=NE, n_ineq=NI,
                                            func=compute_analytic_structures,
-                                           arg=(admittances, Cg, R, X, Sd, slack, from_idx, to_idx, f_nd_dc, t_nd_dc,
-                                                fdc, tdc, ndc, pq, pv, Pf_nondisp, Pdcmax, Vm_max, Vm_min, Pg_max,
+                                           arg=(admittances, Cg, R, X, Sd, slack, from_idx, to_idx, f_nd_hvdc, t_nd_hvdc,
+                                                f_disp_hvdc, t_disp_hvdc, n_disp_hvdc, pq, pv, Pf_nondisp, P_hvdc_max, Vm_max, Vm_min, Pg_max,
                                                 Pg_min, tanmax, Qg_max, Qg_min, tapm_max, tapm_min, tapt_max, tapt_min,
-                                                alltapm, alltapt, k_m, k_tau, c0, c1, c2, c_s, c_v, Sbase, rates, il,
-                                                nll, ig, nig, Sg_undis, pf_options.control_Q, use_bound_slacks),
+                                                alltapm, alltapt, k_m, k_tau, c0, c1, c2, c_s, c_v, Sbase, rates, br_mon_idx,
+                                                n_br_mon, gen_disp_idx, nig, Sg_undis, pf_options.control_Q, use_bound_slacks),
                                            verbose=opf_options.verbose,
                                            max_iter=opf_options.ips_iterations,
                                            tol=opf_options.ips_tolerance,
@@ -669,8 +666,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
 
     # convert the solution to the problem variables
     (Va, Vm, Pg_dis, Qg_dis, sl_sf, sl_st,
-     sl_vmax, sl_vmin, tapm, tapt, Pfdc) = x2var(result.x, nVa=nbus, nVm=nbus, nPg=ngg, nQg=ngg,
-                                                 M=nll, npq=npq, ntapm=ntapm, ntapt=ntapt, ndc=ndc,
+     sl_vmax, sl_vmin, tapm, tapt, Pfdc) = x2var(result.x, nVa=nbus, nVm=nbus, nPg=n_gen_disp, nQg=n_gen_disp,
+                                                 M=n_br_mon, npq=npq, ntapm=ntapm, ntapt=ntapt, ndc=n_disp_hvdc,
                                                  use_bound_slacks=use_bound_slacks)
 
     # Save Results DataFrame for tests
@@ -682,8 +679,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     Pg = np.zeros(len(ind_gens))
     Qg = np.zeros(len(ind_gens))
 
-    Pg[ig] = Pg_dis
-    Qg[ig] = Qg_dis
+    Pg[gen_disp_idx] = Pg_dis
+    Qg[gen_disp_idx] = Qg_dis
     Pg[nig] = np.real(Sg_undis)
     Qg[nig] = np.imag(Sg_undis)
 
@@ -695,13 +692,14 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     St = result.structs.St
     loading = np.abs(Sf) / (rates + 1e-9)
     hvdc_power = nc.hvdc_data.Pset.copy()
-    hvdc_power[hvdc_disp] = Pfdc
+    hvdc_power[hvdc_disp_idx] = Pfdc
     hvdc_loading = hvdc_power / (nc.hvdc_data.rate + 1e-9)
     tap_module = np.zeros(nc.nbr)
     tap_phase = np.zeros(nc.nbr)
     tap_module[k_m] = tapm
     tap_phase[k_tau] = tapt
-    Pcost = c0 + c1 * Pg + c2 * Pg * Pg
+    Pcost = np.zeros(nc.ngen)
+    Pcost[gen_disp_idx] = c0 + c1 * Pg[gen_disp_idx] + c2 * np.power(Pg[gen_disp_idx], 2.0)
 
     if opf_options.verbose > 0:
         df_bus = pd.DataFrame(data={'Va (rad)': Va, 'Vm (p.u.)': Vm,
@@ -735,38 +733,89 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
 
     if not result.converged or result.converged:
         for bus in range(nbus):
-            if abs(result.dlam[bus]) >= 1e-3 or abs(result.dlam[nbus + bus]) >= 1e-3:
-                logger.add_warning('Nodal Power Balance convergence tolerance not achieved', device=str(bus),
-                                   value=str((result.dlam[bus], result.dlam[bus + nbus])), expected_value='< 1e-3')
+            if abs(result.dlam[bus]) >= 1e-3:
+                logger.add_warning('Nodal Power Balance convergence tolerance not achieved',
+                                   device_property="dlam",
+                                   device=str(bus),
+                                   value=str(result.dlam[bus]),
+                                   expected_value='< 1e-3')
+
+            if abs(result.dlam[nbus + bus]) >= 1e-3:  # TODO: What is the difference with the previous?
+                logger.add_warning('Nodal Power Balance convergence tolerance not achieved',
+                                   device_property="dlam",
+                                   device=str(bus),
+                                   value=str(result.dlam[bus + nbus]),
+                                   expected_value='< 1e-3')
 
         for pvbus in range(npv):
             if abs(result.dlam[2 * nbus + 1 + pvbus]) >= 1e-3:
-                logger.add_warning('PV voltage module convergence tolerance not achieved', device=str(pv[pvbus]),
-                                   value=str((result.dlam[2 * nbus + 1 + pvbus])), expected_value='< 1e-3')
+                logger.add_warning('PV voltage module convergence tolerance not achieved',
+                                   device_property="dlam",
+                                   device=str(pv[pvbus]),
+                                   value=str((result.dlam[2 * nbus + 1 + pvbus])),
+                                   expected_value='< 1e-3')
 
-        for line in range(nll):
-            muz_f = abs(result.z[line] * result.mu[line])
-            muz_t = abs(result.z[line + nll] * result.mu[line + nll])
-            if muz_f >= 1e-3 or muz_t >= 1e-3:
-                logger.add_warning('Line rating constraint violated', device=str(il[line]),
-                                   value=str((muz_f, muz_t)), expected_value='< 1e-3')
+        for k in range(n_br_mon):
+            muz_f = abs(result.z[k] * result.mu[k])
+            muz_t = abs(result.z[k + n_br_mon] * result.mu[k + n_br_mon])
+            if muz_f >= 1e-3:
+                logger.add_warning('Branch rating "from" multipliers did not reach the tolerance',
+                                   device_property="mu · z",
+                                   device=str(br_mon_idx[k]),
+                                   value=str(muz_f),
+                                   expected_value='< 1e-3')
+            if muz_t >= 1e-3:
+                logger.add_warning('Branch rating "to" multipliers did not reach the tolerance',
+                                   device_property="mu · z",
+                                   device=str(br_mon_idx[k]),
+                                   value=str(muz_t),
+                                   expected_value='< 1e-3')
 
-        for link in range(ndc):
-            muz_f = abs(result.z[NI - 2 * ndc + link] * result.mu[NI - 2 * ndc + link])
-            muz_t = abs(result.z[NI - ndc + link] * result.mu[NI - ndc + link])
-            if muz_f >= 1e-3 or muz_t >= 1e-3:
-                logger.add_warning('DC Link rating constraint violated', device=str(link),
-                                   value=str((muz_f, muz_t)), expected_value='< 1e-3')
+        for link in range(n_disp_hvdc):
+            muz_f = abs(result.z[NI - 2 * n_disp_hvdc + link] * result.mu[NI - 2 * n_disp_hvdc + link])
+            muz_t = abs(result.z[NI - n_disp_hvdc + link] * result.mu[NI - n_disp_hvdc + link])
+            if muz_f >= 1e-3:
+                logger.add_warning('HVDC rating "from" multipliers did not reach the tolerance',
+                                   device_property="mu · z",
+                                   device=str(link),
+                                   value=str(muz_f),
+                                   expected_value='< 1e-3')
+            if muz_t >= 1e-3:
+                logger.add_warning('HVDC rating "to" multipliers did not reach the tolerance',
+                                   device_property="mu · z",
+                                   device=str(link),
+                                   value=str(muz_t),
+                                   expected_value='< 1e-3')
+
         if use_bound_slacks:
-            for line in range(nll):
-                if sl_sf[line] >= 1e-3 or sl_st[line] >= 1e-3:
-                    logger.add_warning('Line rate exceeded', device=str(il[line]),
-                                       value=str((sl_sf[line], sl_st[line])), expected_value='< 1e-3')
+            for k in range(n_br_mon):
+                if sl_sf[k] > opf_options.ips_tolerance:
+                    logger.add_warning('Branch overload in the from sense',
+                                       device=str(br_mon_idx[k]),
+                                       device_property="Slack",
+                                       value=str(sl_sf[k]),
+                                       expected_value=f'< {opf_options.ips_tolerance}')
 
-            for pqbus in range(npq):
-                if sl_vmax[pqbus] >= 1e-3 or sl_vmin[pqbus] >= 1e-3:
-                    logger.add_warning('Voltage forced to go out of operating range', device=str(pq[pqbus]),
-                                       value=str((sl_vmin[pqbus], sl_vmax[pqbus])), expected_value='< 1e-3')
+                if sl_st[k] > opf_options.ips_tolerance:
+                    logger.add_warning('Branch overload in the to sense',
+                                       device=str(br_mon_idx[k]),
+                                       device_property="Slack",
+                                       value=str(sl_st[k]),
+                                       expected_value=f'< {opf_options.ips_tolerance}')
+
+            for i in range(npq):
+                if sl_vmax[i] > opf_options.ips_tolerance:
+                    logger.add_warning('Overvoltage',
+                                       device_property="Slack",
+                                       device=str(pq[i]),
+                                       value=str(sl_vmax[i]),
+                                       expected_value=f'>{opf_options.ips_tolerance}')
+                if sl_vmin[i] > opf_options.ips_tolerance:
+                    logger.add_warning('Undervoltage',
+                                       device_property="Slack",
+                                       device=str(pq[i]),
+                                       value=str(sl_vmin[i]),
+                                       expected_value=f'> {opf_options.ips_tolerance}')
 
     if opf_options.verbose:
         if len(logger):
@@ -837,9 +886,7 @@ def run_nonlinear_opf(grid: MultiCircuit,
 
     # create and initialize results
     results = NonlinearOPFResults()
-    results.initialize(nbus=nc.nbus, nbr=nc.nbr, ng=nc.ngen,
-                       nll=len(nc.branch_data.get_monitor_enabled_indices()),
-                       nhvdc=nc.nhvdc)
+    results.initialize(nbus=nc.nbus, nbr=nc.nbr, ng=nc.ngen, nhvdc=nc.nhvdc)
 
     for i, island in enumerate(islands):
         island_res = ac_optimal_power_flow(nc=island,

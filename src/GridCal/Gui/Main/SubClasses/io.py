@@ -375,6 +375,7 @@ class IoMain(ConfigurationMain):
                 if isinstance(diagram, BusBranchEditorWidget):
                     diagram.center_nodes()
 
+
         self.collect_memory()
         self.setup_time_sliders()
 

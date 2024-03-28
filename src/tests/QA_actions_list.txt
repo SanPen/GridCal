@@ -145,15 +145,16 @@ Video 9: Clustering
 
 Video 10: Power flow
     - 1. Check settings
-    - 2. Check if I want time series and or clustering
+    - 2. Check if I want time series and or clustering / Snapshot
     - 3. Run
     - 4. Results
 
 Video 11: Contingency analysis
     - 1. Check settings
-    - 2. Check if I want time series and or clustering
+    - 2. Check if I want time series and or clustering / Snapshot
     - 3. Run
     - 4. Results (same as in Redeval)
+    - 5. Show SRAP results
 
 Video 12: Visualization
     - Part 1: Vecinity diagram

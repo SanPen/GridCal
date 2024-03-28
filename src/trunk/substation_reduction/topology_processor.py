@@ -19,7 +19,7 @@ def createExampleGrid():
         busbardict['B{}'.format(i + 1)] = i
         grid.bus_bars.append(b)
 
-    # Add Connectivity Nodes representing physical connections
+    # Add Connectivity Schema representing physical connections
     cnbus = {'T1': 'B1', 'T2': 'B2', 'T3': 'B1', 'T4': 'B2', 'T5': 'B2',
              'T12': 'B3', 'T13': 'B4', 'T14': 'B4', 'T15': 'B4', 'T16': 'B5'}
     cndict = {}
@@ -91,7 +91,7 @@ def topology_proc(grid: MultiCircuit):
     C = M @ M.T
     C = C.tocsc()
 
-    # 3. Nodes reduction
+    # 3. Schema reduction
 
     reduced = np.zeros(n_calc_nodes, dtype=int)  # stores which buses are to merge with another bus
 
