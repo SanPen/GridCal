@@ -189,6 +189,7 @@ def get_gcdev_calculation_nodes(cgmes_model: CgmesCircuit,
     :param cgmes_model: CgmesCircuit
     :param gc_model: gcdevCircuit
     :param v_dict: Dict[str, Terminal]
+    :param logger: DataLogger
     :return: dictionary relating the TopologicalNode uuid to the gcdev CalculationNode
              Dict[str, gcdev.Bus]
     """
@@ -255,24 +256,39 @@ def get_gcdev_calculation_nodes(cgmes_model: CgmesCircuit,
 
 
 def get_gcdev_connectivity_nodes(cgmes_model: CgmesCircuit,
-                                 gcdev_model: MultiCircuit) \
-        -> Dict[str, gcdev.ConnectivityNode]:
+                                 gcdev_model: MultiCircuit,
+                                 calc_node_dict: Dict[str, gcdev.Bus],
+                                 logger: DataLogger
+                                 ) -> Dict[str, gcdev.ConnectivityNode]:
     """
     Convert the TopologicalNodes to CalculationNodes
+    :param calc_node_dict: dictionary relating the TopologicalNode uuid to the gcdev CalculationNode
+             Dict[str, gcdev.Bus]
     :param cgmes_model: CgmesCircuit
     :param gcdev_model: gcdevCircuit
-    :return: dictionary relating the TopologicalNode uuid to the gcdev CalculationNode
+    :param logger: DataLogger
+    :return: dictionary relating the ConnectivityNode uuid to the gcdev CalculationNode
              Dict[str, gcdev.Bus]
     """
     # dictionary relating the ConnectivityNode uuid to the gcdev ConnectivityNode
     cn_node_dict: Dict[str, gcdev.ConnectivityNode] = dict()
     for cgmes_elm in cgmes_model.ConnectivityNode_list:
-        gcdev_elm = gcdev.ConnectivityNode(idtag=cgmes_elm.uuid,
-                                           code=cgmes_elm.description,
-                                           name=cgmes_elm.name,
-                                           dc=False)
 
-        gcdev_model.connectivity_nodes.append(gcdev_elm)
+        bus = calc_node_dict.get(cgmes_elm.TopologicalNode.uuid, None)
+        if bus is None:
+            logger.add_error(msg='No Bus found',
+                             device=cgmes_elm,
+                             device_class=cgmes_elm.tpe)
+
+        gcdev_elm = gcdev.ConnectivityNode(
+            idtag=cgmes_elm.uuid,
+            code=cgmes_elm.description,
+            name=cgmes_elm.name,
+            dc=False,
+            default_bus=bus
+        )
+
+        # gcdev_model.connectivity_nodes.append(gcdev_elm)
         cn_node_dict[gcdev_elm.idtag] = gcdev_elm
 
     return cn_node_dict
@@ -1063,7 +1079,7 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
     device_to_terminal_dict = get_gcdev_device_to_terminal_dict(cgmes_model, logger)
 
     calc_node_dict = get_gcdev_calculation_nodes(cgmes_model, gc_model, sv_volt_dict, logger)
-    cn_dict = get_gcdev_connectivity_nodes(cgmes_model, gc_model)
+    cn_dict = get_gcdev_connectivity_nodes(cgmes_model, gc_model, calc_node_dict, logger)
     get_gcdev_busbars(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger)
 
     get_gcdev_loads(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger)
