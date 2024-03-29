@@ -169,12 +169,24 @@ class BusBranchLibraryModel(QStandardItemModel):
         return data
 
     def get_bus_mime_data(self) -> QByteArray:
+        """
+
+        :return:
+        """
         return self.to_bytes_array(self.bus_name)
 
     def get_3w_transformer_mime_data(self) -> QByteArray:
+        """
+
+        :return:
+        """
         return self.to_bytes_array(self.transformer3w_name)
 
     def get_fluid_node_mime_data(self) -> QByteArray:
+        """
+
+        :return:
+        """
         return self.to_bytes_array(self.fluid_node_name)
 
     def mimeTypes(self) -> List[str]:
@@ -453,18 +465,22 @@ class GraphicsManager:
         :param elm: Any database device
         :param graphic: Corresponding graphic
         """
-        elm_dict: Dict[str, ALL_BUS_BRACH_GRAPHICS] = self.graphic_dict.get(elm.device_type, None)
+        if graphic is not None:  # it makes no sense to add a None graphic
 
-        if elm_dict is None:
-            self.graphic_dict[elm.device_type] = {elm.idtag: graphic}
-        else:
-            graphic_0 = elm_dict.get(elm.idtag, None)  # try to get the existing element
-            if graphic_0 is None:
-                elm_dict[elm.idtag] = graphic
+            elm_dict: Dict[str, ALL_BUS_BRACH_GRAPHICS] = self.graphic_dict.get(elm.device_type, None)
+
+            if elm_dict is None:
+                self.graphic_dict[elm.device_type] = {elm.idtag: graphic}
             else:
-                if graphic_0 != graphic:
-                    warn(f"Replacing {graphic} with {graphic}, this could be a sign of an idtag bug")
-                elm_dict[elm.idtag] = graphic
+                graphic_0 = elm_dict.get(elm.idtag, None)  # try to get the existing element
+                if graphic_0 is None:
+                    elm_dict[elm.idtag] = graphic
+                else:
+                    if graphic_0 != graphic:
+                        warn(f"Replacing {graphic} with {graphic}, this could be a sign of an idtag bug")
+                    elm_dict[elm.idtag] = graphic
+        else:
+            raise ValueError(f"Trying to set a None graphic object for {elm}")
 
     def delete_device(self, device: ALL_DEV_TYPES) -> Union[ALL_BUS_BRACH_GRAPHICS, None]:
         """
