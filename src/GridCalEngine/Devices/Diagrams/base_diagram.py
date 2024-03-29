@@ -51,7 +51,7 @@ class PointsGroup:
         """
         self.locations[device.idtag] = location
 
-    def delete_device(self, device: ALL_DEV_TYPES) -> Union[object, None]:
+    def delete_device(self, device: ALL_DEV_TYPES):
         """
         Delete location
         :param device:
@@ -60,9 +60,7 @@ class PointsGroup:
         loc = self.query_point(device)
 
         if loc:
-            graphic_object = loc.graphic_object
             del self.locations[device.idtag]
-            return graphic_object
         else:
             return None
 
@@ -151,16 +149,16 @@ class BaseDiagram:
         :return:
         """
         # check if the category exists ...
-        d = self.data.get(device.device_type.value, None)
+        d = self.data.get(str(device.device_type.value), None)
 
         if location.api_object is None:
             location.api_object = device
 
         if d is None:
             # the category does not exist, create it
-            group = PointsGroup(name=device.device_type.value)
+            group = PointsGroup(name=str(device.device_type.value))
             group.set_point(device, location)
-            self.data[device.device_type.value] = group
+            self.data[str(device.device_type.value)] = group
         else:
             # the category does exists, add point
             d.set_point(device, location)  # the category, exists, just add
@@ -173,7 +171,7 @@ class BaseDiagram:
         """
         if device is not None:
             # check if the category exists ...
-            d = self.data.get(device.device_type.value, None)
+            d = self.data.get(str(device.device_type.value), None)
 
             if d:
                 # the category does exist, delete from it
@@ -191,7 +189,7 @@ class BaseDiagram:
         :return:
         """
         # check if the category exists ...
-        group = self.data.get(device.device_type.value, None)
+        group = self.data.get(str(device.device_type.value), None)
 
         if group is None:
             return None  # the category did not exist
@@ -267,7 +265,7 @@ class BaseDiagram:
                 node_devices.append(location.api_object)
                 n_bus += 1
 
-        # Add fluid ndes -----------------------------------------------------------------------------------------------
+        # Add fluid nodes ----------------------------------------------------------------------------------------------
         fluid_node_groups = self.data.get(DeviceType.FluidNodeDevice.value, None)
         if fluid_node_groups:
             for i, (idtag, location) in enumerate(fluid_node_groups.locations.items()):
