@@ -18,7 +18,8 @@ from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.terminal import Terminal
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.topological_node import TopologicalNode
 from GridCalEngine.data_logger import DataLogger
 
-from src.GridCalEngine.IO.cim.cgmes.cgmes_utils import get_pu_values_power_transformer
+from GridCalEngine.IO.cim.cgmes.cgmes_utils import get_pu_values_power_transformer
+# from src.GridCalEngine.IO.cim.cgmes.cgmes_utils import get_pu_values_power_transformer
 
 
 def test_get_windings_number_no_windings_returns_zero():

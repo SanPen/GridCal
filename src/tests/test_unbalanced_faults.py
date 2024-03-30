@@ -24,7 +24,7 @@ from GridCalEngine.enumerations import FaultType
 def test_unbalanced_short_circuit():
     """
     Example 10.6b from Hadi Saadat - Power System Analysis (pag 498)
-    Single line-to-ground fault at bus 3 through a fault impedance Zj = jO.l.
+    Single line-to-ground fault at bus 3 through a fault impedance Zj = jO.1
     """
 
     fname = os.path.join('data', 'grids', '5bus_Saadat.xlsx')
@@ -51,19 +51,17 @@ def test_unbalanced_short_circuit():
     print('\t|V1|:', np.abs(sc.results.voltage1))
     print('\t|V2|:', np.abs(sc.results.voltage2))
 
-    Vm0 = np.abs(sc.results.voltage0)
-    Vm1 = np.abs(sc.results.voltage1)
-    Vm2 = np.abs(sc.results.voltage2)
+    vm0 = np.abs(sc.results.voltage0)
+    vm1 = np.abs(sc.results.voltage1)
+    vm2 = np.abs(sc.results.voltage2)
 
-    # TODO: These results assume the power flow not to take into account the transformer
-    #       connection phase changes applied in the admittance matrix building
-    V0_book = [0.12844037, 0.05963303, 0.32110092, 0.09633028, 0.0]
-    V1_book = [0.88073394, 0.88990826, 0.79816514, 0.92844037, 0.93394495]
-    V2_book = [0.11926606, 0.11009174, 0.20183486, 0.07155963, 0.06605505]
+    vm0_book = [0.12844037, 0.05963303, 0.32110092, 0.09633028, 0.0]
+    vm1_book = [0.88073394, 0.88990826, 0.79816514, 0.92844037, 0.93394495]
+    vm2_book = [0.11926606, 0.11009174, 0.20183486, 0.07155963, 0.06605505]
 
-    v0_ok = np.allclose(Vm0, V0_book, atol=1e-2)
-    v1_ok = np.allclose(Vm1, V1_book, atol=1e-2)
-    v2_ok = np.allclose(Vm2, V2_book, atol=1e-2)
+    v0_ok = np.allclose(vm0, vm0_book, atol=1e-2)
+    v1_ok = np.allclose(vm1, vm1_book, atol=1e-2)
+    v2_ok = np.allclose(vm2, vm2_book, atol=1e-2)
 
     assert v0_ok
     assert v1_ok
