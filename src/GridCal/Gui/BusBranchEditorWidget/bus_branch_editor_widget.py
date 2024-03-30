@@ -2942,7 +2942,7 @@ class BusBranchEditorWidget(QSplitter):
                         print("Bus {0} {1} has no graphic object!!".format(bus.name, bus.idtag))
         else:
             error_msg("Bus results length differs from the number of Bus results. \n"
-                      "Did you change the numbe rof devices? If so, re-run the simulation.")
+                      "Did you change the number of devices? If so, re-run the simulation.")
             return
 
         # color Branches
