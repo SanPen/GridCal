@@ -119,6 +119,16 @@ class CimExporter:
         xmlstr = xml.dom.minidom.parseString(Et.tostring(root)).toprettyxml(indent="   ")
         stream.write(xmlstr.encode('utf-8'))
 
+    def is_in_profile(self, instance_profiles, model_profile):
+        if isinstance(instance_profiles, list):
+            for profile in instance_profiles:
+                if profile in self.profile_uris[model_profile]:
+                    return True
+        else:
+            if instance_profiles in self.profile_uris[model_profile]:
+                return True
+        return False
+
     def generate_full_model_elements(self, profile):
         full_model_elements = []
         filter_props = {"scenarioTime": "str",
@@ -133,7 +143,7 @@ class CimExporter:
 
         for instance in self.cgmes_circuit.FullModel_list:
             instance_dict = instance.parsed_properties
-            if instance_dict.get("profile") in self.profile_uris[profile]:
+            if self.is_in_profile(instance_profiles=instance_dict.get("profile"), model_profile=profile):
                 element = Et.Element("md:FullModel", {"rdf:about": "urn:uuid:" + instance.rdfid})
                 for attr_name, attr_value in instance_dict.items():
                     if attr_name not in filter_props or attr_value is None:

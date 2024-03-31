@@ -994,13 +994,13 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
                                                                       collection=collection)
 
                                     else:
-                                        logger.add_error("Could not locate refference",
+                                        logger.add_error("Could not locate reference",
                                                          device=elm.idtag,
                                                          device_class=template_elm.device_type.value,
                                                          device_property=gc_prop.name,
                                                          value=ref_idtag)
                                 else:
-                                    logger.add_error("No device of the refferenced type",
+                                    logger.add_error("No device of the referenced type",
                                                      device=elm.idtag,
                                                      device_class=template_elm.device_type.value,
                                                      device_property=gc_prop.name,

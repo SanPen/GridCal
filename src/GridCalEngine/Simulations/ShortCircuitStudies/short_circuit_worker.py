@@ -275,7 +275,7 @@ def short_circuit_unbalanced(calculation_inputs: NumericalCircuit,
     I_vd = adm_series.Ybus[np.ix_(pqpv, vd)] * Vpf[vd]
     Vpqpv_ph = - sp.linalg.spsolve(adm_series.Ybus[np.ix_(pqpv, pqpv)], I_vd)
     ph_add = np.angle(Vpqpv_ph)
-    Vpf[pqpv] = polar_to_rect(np.abs(Vpf[pqpv]), np.angle(Vpf[pqpv]) + ph_add.T[0])
+    Vpf[pqpv] = polar_to_rect(np.abs(Vpf[pqpv]), np.angle(Vpf[pqpv]) + ph_add.T)
 
     # solve the fault
     V0, V1, V2, SCC = short_circuit_unbalance(bus_idx=bus_index,

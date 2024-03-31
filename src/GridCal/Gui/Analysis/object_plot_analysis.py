@@ -422,13 +422,13 @@ def grid_analysis(circuit: MultiCircuit,
                                                                property_name='R',
                                                                value=elm.R))
 
-                elif elm.R == 0.0:
+                elif elm.R == 1e-20:
                     logger.add(object_type=object_type.value,
                                element_name=elm.name,
                                element_index=i,
                                severity=LogSeverity.Information,
                                propty='R',
-                               message='The resistance is exactly zero.',
+                               message='The resistance is practically zero.',
                                val=elm.R)
                     fixable_errors.append(FixableErrorOutOfRange(grid_element=elm,
                                                                  property_name='R',
@@ -436,13 +436,13 @@ def grid_analysis(circuit: MultiCircuit,
                                                                  lower_limit=eps_min,
                                                                  upper_limit=eps_max))
 
-                if elm.X == 0.0:
+                if elm.X == 1e-20:
                     logger.add(object_type=object_type.value,
                                element_name=elm.name,
                                element_index=i,
                                severity=LogSeverity.Error,
                                propty='X',
-                               message='The reactance is exactly zero. This hurts numerical conditioning.',
+                               message='The reactance is practically zero. This hurts numerical conditioning.',
                                val=elm.X)
                     fixable_errors.append(FixableErrorOutOfRange(grid_element=elm,
                                                                  property_name='X',
@@ -456,7 +456,7 @@ def grid_analysis(circuit: MultiCircuit,
                                element_index=i,
                                severity=LogSeverity.Error,
                                propty='B',
-                               message='There is no susceptance, this hurts numerical conditioning.',
+                               message='There is no susceptance, this could hurt numerical conditioning.',
                                val=elm.B)
                     fixable_errors.append(FixableErrorOutOfRange(grid_element=elm,
                                                                  property_name='B',
