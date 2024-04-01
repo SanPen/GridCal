@@ -15,11 +15,13 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import os
-from PySide6.QtGui import QFont, QFontMetrics
+from PySide6.QtGui import QFont, QFontMetrics, Qt
+from PySide6 import QtWidgets, QtCore
 from GridCal.Gui.Main.SubClasses.io import IoMain
 from GridCal.Gui.Main.SubClasses.Scripting.python_highlighter import PythonHighlighter
 
 from GridCal.Gui.GuiFunctions import CustomFileSystemModel
+import GridCal.Gui.GuiFunctions as gf
 from GridCal.Gui.messages import error_msg, yes_no_question
 
 
@@ -36,8 +38,6 @@ class ScriptingMain(IoMain):
 
         # create main window
         IoMain.__init__(self, parent)
-
-
 
         # Source code text ---------------------------------------------------------------------------------------------
         # Set the font for your widget
@@ -63,10 +63,15 @@ class ScriptingMain(IoMain):
         # buttonclicks -------------------------------------------------------------------------------------------------
         self.ui.runSourceCodeButton.clicked.connect(self.run_source_code)
         self.ui.saveSourceCodeButton.clicked.connect(self.save_source_code)
-        self.ui.deleteSourceCodeFileButton.clicked.connect(self.delete_source_code)
 
         # double clicked -----------------------------------------------------------------------------------------------
         self.ui.sourceCodeTreeView.doubleClicked.connect(self.source_code_tree_clicked)
+
+        # context menu
+        self.ui.sourceCodeTreeView.customContextMenuRequested.connect(self.show_source_code_tree_context_menu)
+
+        # Set context menu policy to CustomContextMenu
+        self.ui.sourceCodeTreeView.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
 
     def run_source_code(self):
         """
@@ -122,3 +127,19 @@ class ScriptingMain(IoMain):
                 os.remove(pth)
         else:
             error_msg(pth + ' does not exists :/', "Delete source code file")
+
+    def show_source_code_tree_context_menu(self, pos: QtCore.QPoint):
+        """
+        Show source code tree view context menu
+        :param pos: Relative click position
+        """
+        context_menu = QtWidgets.QMenu(parent=self.ui.diagramsListView)
+
+        gf.add_menu_entry(menu=context_menu,
+                          text="Delete",
+                          icon_path=":/Icons/icons/delete.svg",
+                          function_ptr=self.delete_source_code)
+
+        # Convert global position to local position of the list widget
+        mapped_pos = self.ui.sourceCodeTreeView.viewport().mapToGlobal(pos)
+        context_menu.exec(mapped_pos)
