@@ -18,12 +18,12 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Union
 from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtWidgets import QMenu, QGraphicsScene
-from GridCal.Gui.Diagrams.BusBranchEditorWidget import TerminalItem
+from GridCal.Gui.Diagrams.BusBranchEditorWidget.terminal_item import TerminalItem
 from GridCalEngine.Devices.Branches.switch import Switch
-from GridCal.Gui.Diagrams.BusBranchEditorWidget import LineGraphicTemplateItem
+from GridCal.Gui.Diagrams.BusBranchEditorWidget.Branches.line_graphics_template import LineGraphicTemplateItem
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
-    from GridCal.Gui.Diagrams.BusBranchEditorWidget import BusBranchEditorWidget
+    from GridCal.Gui.Diagrams.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
 
 
 class SwitchGraphicItem(LineGraphicTemplateItem):

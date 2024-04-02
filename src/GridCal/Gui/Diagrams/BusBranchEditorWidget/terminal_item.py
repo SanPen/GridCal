@@ -23,11 +23,11 @@ from PySide6.QtWidgets import (QGraphicsRectItem, QGraphicsItem, QGraphicsEllips
 from GridCal.Gui.Diagrams.BusBranchEditorWidget.generic_graphics import ACTIVE
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
-    from GridCal.Gui.Diagrams.BusBranchEditorWidget import BusBranchEditorWidget
-    from GridCal.Gui.Diagrams.BusBranchEditorWidget import LineGraphicTemplateItem
-    from GridCal.Gui.Diagrams.BusBranchEditorWidget import Transformer3WGraphicItem
-    from GridCal.Gui.Diagrams.BusBranchEditorWidget import BusGraphicItem
-    from GridCal.Gui.Diagrams.BusBranchEditorWidget import FluidNodeGraphicItem
+    from GridCal.Gui.Diagrams.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
+    from GridCal.Gui.Diagrams.BusBranchEditorWidget.Branches.line_graphics_template import LineGraphicTemplateItem
+    from GridCal.Gui.Diagrams.BusBranchEditorWidget.Branches.transformer3w_graphics import Transformer3WGraphicItem
+    from GridCal.Gui.Diagrams.BusBranchEditorWidget.Substation.bus_graphics import BusGraphicItem
+    from GridCal.Gui.Diagrams.BusBranchEditorWidget.Fluid.fluid_node_graphics import FluidNodeGraphicItem
 
 
 class TerminalItem(QGraphicsRectItem):

@@ -32,7 +32,7 @@ from GridCal.Gui.SolarPowerWizard.solar_power_wizzard import SolarPvWizard
 from GridCal.Gui.WindPowerWizard.wind_power_wizzard import WindFarmWizard
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
-    from GridCal.Gui.Diagrams.BusBranchEditorWidget import BusBranchEditorWidget
+    from GridCal.Gui.Diagrams.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
 
 
 class GeneratorQCurveEditorTableModel(QAbstractTableModel):

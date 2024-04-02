@@ -22,12 +22,12 @@ from GridCal.Gui.Diagrams.BusBranchEditorWidget.Branches.line_graphics_template 
 from GridCal.Gui.Diagrams.BusBranchEditorWidget.terminal_item import TerminalItem
 from GridCal.Gui.messages import yes_no_question
 from GridCal.Gui.Diagrams.BusBranchEditorWidget.Branches.transformer_editor import (TransformerEditor,
-                                                        reverse_transformer_short_circuit_study)
+                                                                                    reverse_transformer_short_circuit_study)
 from GridCalEngine.Devices.Branches.transformer import Transformer2W, TransformerType
 from GridCalEngine.enumerations import DeviceType
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
-    from GridCal.Gui.Diagrams.BusBranchEditorWidget import BusBranchEditorWidget
+    from GridCal.Gui.Diagrams.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
 
 
 class TransformerGraphicItem(LineGraphicTemplateItem):

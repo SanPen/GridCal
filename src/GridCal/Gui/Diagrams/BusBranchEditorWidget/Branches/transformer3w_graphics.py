@@ -28,7 +28,7 @@ from GridCal.Gui.Diagrams.BusBranchEditorWidget.Branches.winding_graphics import
 from GridCal.Gui.messages import yes_no_question
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
-    from GridCal.Gui.Diagrams.BusBranchEditorWidget import BusBranchEditorWidget
+    from GridCal.Gui.Diagrams.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
 
 
 class Transformer3WGraphicItem(QGraphicsRectItem):

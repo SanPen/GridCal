@@ -24,7 +24,7 @@ from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCal.Gui.messages import yes_no_question
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
-    from GridCal.Gui.Diagrams.BusBranchEditorWidget import BusBranchEditorWidget
+    from GridCal.Gui.Diagrams.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
 
 
 class BatteryGraphicItem(InjectionTemplateGraphicItem):

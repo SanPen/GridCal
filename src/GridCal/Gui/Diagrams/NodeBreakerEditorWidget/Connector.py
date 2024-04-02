@@ -20,7 +20,7 @@ import numpy as np
 from math import sqrt
 from PySide6 import QtGui
 from PySide6.QtCore import Qt, QPointF
-from PySide6.QtWidgets import QGraphicsLineItem, QGraphicsScene, QGraphicsRectItem, QGraphicsPathItem
+from PySide6.QtWidgets import QGraphicsScene, QGraphicsRectItem, QGraphicsPathItem
 
 
 class PlugOrganization(Enum):
@@ -28,8 +28,9 @@ class PlugOrganization(Enum):
     VERTICAL = 2
     CIRCULAR = 3
 
+
 class Plug(QGraphicsRectItem):
-    def __init__(self, parent: QGraphicsScene, container = None, connector = None):
+    def __init__(self, parent: QGraphicsScene, container=None, connector=None):
         self.size = 10
         super().__init__(-self.size / 2, -self.size / 2, self.size, self.size)
         self.Parent = parent
@@ -42,6 +43,7 @@ class Plug(QGraphicsRectItem):
     def Update(self):
         position = self.Container.scenePos()
         self.setPos(position.x(), position.y())
+
 
 class Connector(QGraphicsPathItem):
     def __init__(self, parent: QGraphicsScene, first: Plug, second: Plug):
@@ -59,7 +61,6 @@ class Connector(QGraphicsPathItem):
 
         mid_x = first_pos.x() + ((second_pos.x() - first_pos.x()) * 0.5)
 
-
         path = QtGui.QPainterPath(QPointF(first_pos.x(), first_pos.y()))
         path.lineTo(mid_x, first_pos.y())
         path.lineTo(mid_x, second_pos.y())
@@ -72,6 +73,7 @@ class Connector(QGraphicsPathItem):
 
     def getPos(self, element):
         return element.scenePos()
+
 
 class ConnectionManager:
     def __init__(self):
@@ -109,9 +111,9 @@ class ConnectionManager:
     def CreateConnection(self, parent: QGraphicsScene):
         print(self.FirstConnector)
         print(self.SecondConnector)
-        if(self.FirstConnector != None and self.SecondConnector != None):
+        if (self.FirstConnector != None and self.SecondConnector != None):
             if (self.FirstConnector.Container != self.SecondConnector.Container
-                and self.FirstConnector != self.SecondConnector):
+                    and self.FirstConnector != self.SecondConnector):
                 newConnector = Connector(parent, self.FirstConnector, self.SecondConnector)
                 self.FirstConnector.Container.Connection.Connectors.append(newConnector)
                 self.SecondConnector.Container.Connection.Connectors.append(newConnector)
@@ -120,8 +122,9 @@ class ConnectionManager:
         self.FirstConnector = None
         self.SecondConnector = None
 
+
 class ConnectionItem:
-    def __init__(self, parent: QGraphicsScene, manager: ConnectionManager, container = None, organization = 3):
+    def __init__(self, parent: QGraphicsScene, manager: ConnectionManager, container=None, organization=3):
         self.Parent = parent
         self.Manager = manager
         self.Container = container
@@ -131,14 +134,14 @@ class ConnectionItem:
         self.PlugList = list()
         self.UpdatePlugs()
 
-    def CreatePlugs(self, number = 1, updateModel = True):
+    def CreatePlugs(self, number=1, updateModel=True):
         self.PlugList.clear()
         for i in range(number):
             newPlug = Plug(self.Parent, self.Container, None)
             """Add a Plug object to the Bus and arrange it vertically."""
             self.PlugList.append(newPlug)
             newPlug.setParentItem(self.Container)
-            if(updateModel):
+            if (updateModel):
                 self.UpdatePlugs()
             self.Manager.PlugList.append(newPlug)
 
@@ -177,6 +180,3 @@ class ConnectionItem:
         self.UpdatePlugs()
         for connector in self.Connectors:
             connector.update()
-
-
-

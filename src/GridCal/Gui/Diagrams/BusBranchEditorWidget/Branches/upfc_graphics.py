@@ -23,7 +23,7 @@ from GridCalEngine.Devices.Branches.upfc import UPFC
 from GridCal.Gui.Diagrams.BusBranchEditorWidget.Branches.line_graphics_template import LineGraphicTemplateItem
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
-    from GridCal.Gui.Diagrams.BusBranchEditorWidget import BusBranchEditorWidget
+    from GridCal.Gui.Diagrams.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
 
 
 class UpfcGraphicItem(LineGraphicTemplateItem):
