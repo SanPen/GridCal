@@ -58,6 +58,7 @@ from GridCalEngine.Devices.Diagrams.graphic_location import GraphicLocation
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec, Logger
 from GridCalEngine.Devices.types import BRANCH_TYPES
 
+from GridCal.Gui.Diagrams.graphics_manager import GraphicsManager
 from GridCal.Gui.Diagrams.BusBranchEditorWidget.terminal_item import TerminalItem
 from GridCal.Gui.Diagrams.BusBranchEditorWidget.Substation.bus_graphics import BusGraphicItem
 from GridCal.Gui.Diagrams.BusBranchEditorWidget.Fluid.fluid_node_graphics import FluidNodeGraphicItem
@@ -99,22 +100,7 @@ The graphic objects need to call the API objects and functions inside the MultiC
 To do this the graphic objects call "parent.circuit.<function or object>"
 '''
 
-ALL_BUS_BRACH_GRAPHICS = Union[
-    BusGraphicItem,
-    FluidNodeGraphicItem,
-    FluidPathGraphicItem,
-    LineGraphicItem,
-    WindingGraphicItem,
-    DcLineGraphicItem,
-    TransformerGraphicItem,
-    HvdcGraphicItem,
-    VscGraphicItem,
-    UpfcGraphicItem,
-    SeriesReactanceGraphicItem,
-    LineGraphicTemplateItem,
-    Transformer3WGraphicItem,
-    GeneratorGraphicItem
-]
+
 
 
 class BusBranchLibraryModel(QStandardItemModel):
@@ -448,97 +434,7 @@ def find_my_node(idtag_: str,
     return graphic_obj
 
 
-class GraphicsManager:
-    """
-    Class to handle the correspondance between graphics and database devices
-    """
 
-    def __init__(self):
-        # this is a dictionary that groups by 2 levels:
-        # first by DeviceType
-        # second idtag -> GraphicItem
-        self.graphic_dict: Dict[DeviceType, Dict[str, ALL_BUS_BRACH_GRAPHICS]] = dict()
-
-    def add_device(self, elm: ALL_DEV_TYPES, graphic: ALL_BUS_BRACH_GRAPHICS) -> None:
-        """
-        Add the graphic of a device
-        :param elm: Any database device
-        :param graphic: Corresponding graphic
-        """
-        if graphic is not None:  # it makes no sense to add a None graphic
-
-            elm_dict: Dict[str, ALL_BUS_BRACH_GRAPHICS] = self.graphic_dict.get(elm.device_type, None)
-
-            if elm_dict is None:
-                self.graphic_dict[elm.device_type] = {elm.idtag: graphic}
-            else:
-                graphic_0 = elm_dict.get(elm.idtag, None)  # try to get the existing element
-                if graphic_0 is None:
-                    elm_dict[elm.idtag] = graphic
-                else:
-                    if graphic_0 != graphic:
-                        warn(f"Replacing {graphic} with {graphic}, this could be a sign of an idtag bug")
-                    elm_dict[elm.idtag] = graphic
-        else:
-            raise ValueError(f"Trying to set a None graphic object for {elm}")
-
-    def delete_device(self, device: ALL_DEV_TYPES) -> Union[ALL_BUS_BRACH_GRAPHICS, None]:
-        """
-        Delete device from the registry and return the object if it exists
-        :param device: Any database device
-        :return: Corresponding graphic or None
-        """
-        if device is not None:
-            # check if the category exists ...
-            elm_dict = self.graphic_dict.get(device.device_type, None)
-
-            if elm_dict is not None:
-                # the category does exist, delete from it
-                graphic = elm_dict.get(device.idtag, None)
-
-                if graphic:
-                    del elm_dict[device.idtag]
-                    return graphic
-
-            else:
-                # not found so we're ok
-                return None
-        else:
-            return None
-
-    def query(self, elm: ALL_DEV_TYPES) -> Union[None, ALL_BUS_BRACH_GRAPHICS]:
-        """
-        Query the graphic of a database element
-        :param elm: Any database element
-        :return: Corresponding graphic
-        """
-        elm_dict: Dict[str, ALL_BUS_BRACH_GRAPHICS] = self.graphic_dict.get(elm.device_type, None)
-
-        if elm_dict is None:
-            return None
-        else:
-            return elm_dict.get(elm.idtag, None)
-
-    def get_device_type_list(self, device_type: DeviceType) -> List[ALL_BUS_BRACH_GRAPHICS]:
-        """
-        Get the list of graphics of a device type
-        :param device_type: DeviceType
-        :return: List[ALL_BUS_BRACH_GRAPHICS]
-        """
-        elm_dict: Dict[str, ALL_BUS_BRACH_GRAPHICS] = self.graphic_dict.get(device_type, None)
-
-        if elm_dict is None:
-            return list()
-        else:
-            return [graphic for idtag, graphic in elm_dict.items()]
-
-    def get_device_type_dict(self, device_type: DeviceType) -> Dict[str, ALL_BUS_BRACH_GRAPHICS]:
-        """
-        Get the list of graphics of a device type
-        :param device_type: DeviceType
-        :return: Dict[str, ALL_BUS_BRACH_GRAPHICS]
-        """
-        return self.graphic_dict.get(device_type, dict())
 
 
 class BusBranchEditorWidget(QSplitter):

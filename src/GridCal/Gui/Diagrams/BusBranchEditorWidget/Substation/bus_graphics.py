@@ -81,7 +81,7 @@ class BusGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
         :param x:
         :param y:
         """
-        GenericDBWidget.__init__(self, parent=parent, api_object=bus, editor=editor)
+        GenericDBWidget.__init__(self, parent=parent, api_object=bus, editor=editor, draw_labels=True)
         QtWidgets.QGraphicsRectItem.__init__(self, parent)
 
         self.min_w = 180.0

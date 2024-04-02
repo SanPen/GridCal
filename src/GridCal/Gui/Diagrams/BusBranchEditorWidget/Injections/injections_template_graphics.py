@@ -49,7 +49,7 @@ class InjectionTemplateGraphicItem(GenericDBWidget, QGraphicsItemGroup):
         :param h:
         """
         GenericDBWidget.__init__(self, parent=parent, api_object=api_obj, editor=editor, draw_labels=True)
-        super(InjectionTemplateGraphicItem, self).__init__(parent)
+        QGraphicsItemGroup.__init__(self, parent)
 
         self.w = w
         self.h = h

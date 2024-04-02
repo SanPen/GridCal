@@ -18,9 +18,7 @@ from typing import Union, List
 import numpy as np
 from PySide6.QtWidgets import QWidget
 from collections.abc import Callable
-from GridCal.Gui.Diagrams.MapWidget.map_widget import MapWidget, PolylineData, Place
-import GridCal.Gui.Visualization.visualization as viz
-import GridCal.Gui.Visualization.palettes as palettes
+
 from GridCalEngine.Devices.Diagrams.map_location import MapLocation
 from GridCalEngine.Devices.Substation import Bus
 from GridCalEngine.Devices.Branches.line import Line
@@ -33,6 +31,10 @@ from GridCalEngine.basic_structures import Vec, CxVec, IntVec
 from GridCalEngine.Devices.Substation.substation import Substation
 from GridCalEngine.Devices.Substation.voltage_level import VoltageLevel
 
+from GridCal.Gui.Diagrams.MapWidget.map_widget import MapWidget, PolylineData, Place
+import GridCal.Gui.Visualization.visualization as viz
+import GridCal.Gui.Visualization.palettes as palettes
+from GridCal.Gui.Diagrams.graphics_manager import GraphicsManager
 from GridCal.Gui.Diagrams.MapWidget.Tiles.tiles import Tiles
 
 
@@ -53,6 +55,8 @@ class GridMapWidget(MapWidget):
                            start_level=start_level,
                            zoom_callback=self.zoom_callback,
                            position_callback=self.position_callback)
+
+        self.graphics_manager = GraphicsManager()
 
         # diagram to store the objects locations
         self.diagram: MapDiagram = MapDiagram(name=name,
