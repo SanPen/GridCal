@@ -33,9 +33,9 @@ from GridCalEngine.Devices.Branches.line_locations import LineLocations
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
-    from GridCal.Gui.Diagrams.BusBranchEditorWidget import BusBranchEditorWidget
-    from GridCal.Gui.MapWidget.grid_map_widget import GridMapWidget
-    from GridCal.Gui.BusViewer.bus_viewer_dialogue import BusViewerWidget
+    from GridCal.Gui.Diagrams.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
+    from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget
+    from GridCal.Gui.Diagrams.BusViewer.bus_viewer_dialogue import BusViewerWidget
 
 
 class TreeDelegate(QtWidgets.QItemDelegate):
@@ -2359,9 +2359,9 @@ class ProfilesModel(QtCore.QAbstractTableModel):
 class DiagramsModel(QtCore.QAbstractListModel):
     """
     Model for the diagrams
-    # from GridCal.Gui.BusViewer.bus_viewer_dialogue import BusViewerGUI
+    # from GridCal.Gui.Diagrams.BusViewer.bus_viewer_dialogue import BusViewerGUI
     # from GridCal.Gui.BusBranchEditorWidget import BusBranchEditorWidget
-    # from GridCal.Gui.MapWidget.grid_map_widget import GridMapWidget
+    # from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget
     """
 
     def __init__(self, list_of_diagrams: List[Union[BusBranchEditorWidget, GridMapWidget, BusViewerWidget]]):
@@ -2416,8 +2416,8 @@ class DiagramsModel(QtCore.QAbstractListModel):
 
                 # TODO: Is this the only way?
                 from GridCal.Gui.Diagrams.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
-                from GridCal.Gui.MapWidget.grid_map_widget import GridMapWidget
-                from GridCal.Gui.BusViewer.bus_viewer_dialogue import BusViewerWidget
+                from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget
+                from GridCal.Gui.Diagrams.BusViewer.bus_viewer_dialogue import BusViewerWidget
 
                 if isinstance(diagram, BusBranchEditorWidget):
                     return self.bus_branch_editor_icon
