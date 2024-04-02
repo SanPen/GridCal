@@ -22,22 +22,28 @@ from PySide6.QtCore import Qt, QPoint
 from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QPainterPath, QFont
 from PySide6.QtWidgets import QMenu, QGraphicsRectItem, QGraphicsSceneMouseEvent, QGraphicsTextItem
 
-from GridCal.Gui.BusBranchEditorWidget.generic_graphics import ACTIVE, FONT_SCALE
 from GridCalEngine.Devices.Fluid import FluidNode, FluidTurbine, FluidPump, FluidP2x
 from GridCalEngine.Devices.Substation.bus import Bus
+from GridCalEngine.enumerations import DeviceType, FaultType
+from GridCalEngine.Devices.Parents.editable_device import EditableDevice
+from GridCalEngine.Devices.types import FLUID_TYPES
+
+from GridCal.Gui.BusBranchEditorWidget.generic_graphics import ACTIVE, FONT_SCALE
+from GridCal.Gui.BusBranchEditorWidget.generic_graphics import GenericDBWidget
 from GridCal.Gui.BusBranchEditorWidget.terminal_item import TerminalItem, HandleItem
 from GridCal.Gui.BusBranchEditorWidget.Fluid.fluid_turbine_graphics import FluidTurbineGraphicItem
 from GridCal.Gui.BusBranchEditorWidget.Fluid.fluid_pump_graphics import FluidPumpGraphicItem
 from GridCal.Gui.BusBranchEditorWidget.Fluid.fluid_p2x_graphics import FluidP2xGraphicItem
 from GridCal.Gui.messages import yes_no_question
-from GridCalEngine.enumerations import DeviceType, FaultType
-from GridCalEngine.Devices.Parents.editable_device import EditableDevice
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
 
 
 class RoundedRect(QtWidgets.QGraphicsRectItem):
+    """
+    Rounded rectangle
+    """
     def __init__(self, x, y, width, height, radius, parent):
         super().__init__(x, y, width, height, parent=parent)
         self.radius = radius
@@ -76,7 +82,7 @@ class VerticalWaterIndicator(QGraphicsRectItem):
         self.label.setPlainText(f'{percentage}%')
 
 
-class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
+class FluidNodeGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
     """
       Represents a block in the diagram
       Has an x and y and width and height
@@ -90,6 +96,7 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
     def __init__(self, editor: BusBranchEditorWidget, fluid_node: FluidNode,
                  parent=None, index=0, h: int = 20, w: int = 80, x: int = 0, y: int = 0):
 
+        GenericDBWidget.__init__(self, parent=parent, api_object=fluid_node, editor=editor)
         super(FluidNodeGraphicItem, self).__init__(parent)
 
         self.min_w = 180.0
@@ -97,10 +104,6 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
         self.offset = 10
         self.h = h if h >= self.min_h else self.min_h
         self.w = w if w >= self.min_w else self.min_w
-
-        self.api_object = fluid_node
-
-        self.editor: BusBranchEditorWidget = editor
 
         # loads, shunts, generators, etc...
         self.shunt_children = list()
@@ -304,7 +307,7 @@ class FluidNodeGraphicItem(QtWidgets.QGraphicsRectItem):
         # Arrange line positions
         self._terminal.process_callbacks(self.pos() + self._terminal.pos())
 
-    def create_children_widgets(self, injections_by_tpe: Dict[DeviceType, List[EditableDevice]]):
+    def create_children_widgets(self, injections_by_tpe: Dict[DeviceType, List[FLUID_TYPES]]):
         """
         Create the icons of the elements that are attached to the API bus object
         Returns:

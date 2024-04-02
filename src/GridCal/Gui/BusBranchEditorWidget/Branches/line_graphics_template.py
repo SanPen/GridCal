@@ -26,8 +26,9 @@ from GridCal.Gui.BusBranchEditorWidget.generic_graphics import ACTIVE, DEACTIVAT
 from GridCal.Gui.BusBranchEditorWidget.Substation.bus_graphics import TerminalItem
 from GridCal.Gui.BusBranchEditorWidget.Substation.bus_graphics import BusGraphicItem
 from GridCal.Gui.BusBranchEditorWidget.Fluid.fluid_node_graphics import FluidNodeGraphicItem
-
+from GridCal.Gui.BusBranchEditorWidget.generic_graphics import GenericDBWidget
 from GridCal.Gui.messages import yes_no_question
+
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Branches.line import Line
 from GridCalEngine.Devices.Branches.transformer import Transformer2W
@@ -398,7 +399,7 @@ class HvdcSymbol(QGraphicsRectItem):
         self.setTransform(transform)
 
 
-class LineGraphicTemplateItem(QGraphicsLineItem):
+class LineGraphicTemplateItem(GenericDBWidget, QGraphicsLineItem):
     """
     LineGraphicItem
     """
@@ -419,9 +420,8 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         :param api_object:
         :param arrow_size:
         """
+        GenericDBWidget.__init__(self, parent=None, api_object=api_object, editor=editor, draw_labels=True)
         QGraphicsLineItem.__init__(self)
-
-        self.api_object = api_object
 
         if isinstance(api_object, Transformer2W):
             if isinstance(api_object, Winding):  # Winding is a sublass of Transformer
@@ -445,21 +445,8 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         self.pen_width = width
         self.width = width
 
-        if self.api_object is not None:
-            if self.api_object.active:
-                self.color = ACTIVE['color']
-                self.style = ACTIVE['style']
-            else:
-                self.color = DEACTIVATED['color']
-                self.style = DEACTIVATED['style']
-        else:
-            self.color = ACTIVE['color']
-            self.style = ACTIVE['style']
-
         self.setFlag(self.GraphicsItemFlag.ItemIsSelectable, True)
         self.setCursor(QCursor(Qt.PointingHandCursor))
-
-        self.editor: BusBranchEditorWidget = editor
 
         self.pos1: QPointF = QPointF(0.0, 0.0)
         self.pos2: QPointF = QPointF(0.0, 0.0)
@@ -525,16 +512,7 @@ class LineGraphicTemplateItem(QGraphicsLineItem):
         """
         Change the colour according to the system theme
         """
-        if self.api_object is not None:
-            if self.api_object.active:
-                self.color = ACTIVE['color']
-                self.style = ACTIVE['style']
-            else:
-                self.color = DEACTIVATED['color']
-                self.style = DEACTIVATED['style']
-        else:
-            self.color = ACTIVE['color']
-            self.style = ACTIVE['style']
+        super().recolour_mode()
 
         self.set_colour(self.color, self.width, self.style)
 

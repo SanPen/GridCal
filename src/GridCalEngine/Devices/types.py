@@ -31,7 +31,10 @@ INJECTION_DEVICE_TYPES = Union[
     StaticGenerator,
     Shunt,
     ControllableShunt,
-    CurrentInjection
+    CurrentInjection,
+    FluidP2x,
+    FluidTurbine,
+    FluidPump
 ]
 
 BRANCH_TYPES = Union[

@@ -14,11 +14,17 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
+from typing import Union, TYPE_CHECKING
 import darkdetect
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QPointF
 from PySide6.QtWidgets import (QPushButton, QGraphicsLineItem, QGraphicsItem, QVBoxLayout, QGraphicsPolygonItem,
                                QDialog, QGraphicsRectItem, QGraphicsEllipseItem)
 from PySide6.QtGui import QColor
+from GridCalEngine.Devices.types import ALL_DEV_TYPES
+
+if TYPE_CHECKING:  # Only imports the below statements during type checking
+    from GridCal.Gui.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
 
 try:
     IS_DARK = darkdetect.theme() == "Dark"
@@ -37,7 +43,7 @@ OTHER = ACTIVE
 FONT_SCALE = 1.9
 
 
-def set_dark_mode():
+def set_dark_mode() -> None:
     """
     Set the dark mode
     """
@@ -46,7 +52,7 @@ def set_dark_mode():
     ACTIVE['text'] = Qt.white
 
 
-def set_light_mode():
+def set_light_mode() -> None:
     """
     Set the light mode
     """
@@ -61,48 +67,168 @@ else:
     set_light_mode()
 
 
-class LineUpdateMixin:
+class Polygon(QGraphicsPolygonItem):
     """
-    LineUpdateMixin
+    PolygonItem
     """
 
     def __init__(self, parent):
-        super(LineUpdateMixin, self).__init__(parent)
+        """
+        Constructor
+        :param parent:
+        """
+        QGraphicsPolygonItem.__init__(self, parent)
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemSendsScenePositionChanges)
 
-    def itemChange(self, change, value):
+    def itemChange(self, change: QGraphicsItem.GraphicsItemChange, value: Union[int, QPointF]) -> Union[int, QPointF]:
+        """
+
+        :param change:
+        :param value:
+        :return:
+        """
         if change == QGraphicsItem.ItemScenePositionHasChanged:
             self.parentItem().update_nexus(value)
-        return super(LineUpdateMixin, self).itemChange(change, value)
+        return super(QGraphicsPolygonItem, self).itemChange(change, value)
 
 
-class Polygon(LineUpdateMixin, QGraphicsPolygonItem):
-    pass
-
-
-class Square(LineUpdateMixin, QGraphicsRectItem):
-    pass
-
-
-class Circle(LineUpdateMixin, QGraphicsEllipseItem):
-    pass
-
-
-class Line(LineUpdateMixin, QGraphicsLineItem):
-    pass
-
-
-class ParameterDialog(QDialog):
+class Square(QGraphicsRectItem):
     """
-    ParameterDialog
+    Square
     """
 
-    def __init__(self, parent=None):
-        super(ParameterDialog, self).__init__(parent)
-        self.button = QPushButton('Ok', self)
-        layout = QVBoxLayout(self)
-        layout.addWidget(self.button)
-        self.button.clicked.connect(self.OK)
+    def __init__(self, parent):
+        """
+        Constructor
+        :param parent:
+        """
+        QGraphicsRectItem.__init__(self, parent)
+        self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemSendsScenePositionChanges)
 
-    def OK(self):
-        self.close()
+    def itemChange(self, change: QGraphicsItem.GraphicsItemChange, value: Union[int, QPointF]) -> Union[int, QPointF]:
+        """
+
+        :param change:
+        :param value:
+        :return:
+        """
+        if change == QGraphicsItem.ItemScenePositionHasChanged:
+            self.parentItem().update_nexus(value)
+        return super(QGraphicsRectItem, self).itemChange(change, value)
+
+
+class Circle(QGraphicsEllipseItem):
+    """
+    Circle
+    """
+
+    def __init__(self, parent):
+        """
+        Constructor
+        :param parent:
+        """
+        QGraphicsEllipseItem.__init__(self, parent)
+        self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemSendsScenePositionChanges)
+
+    def itemChange(self, change: QGraphicsItem.GraphicsItemChange, value: Union[int, QPointF]) -> Union[int, QPointF]:
+        """
+
+        :param change:
+        :param value:
+        :return:
+        """
+        if change == QGraphicsItem.ItemScenePositionHasChanged:
+            self.parentItem().update_nexus(value)
+        return super(QGraphicsEllipseItem, self).itemChange(change, value)
+
+
+class Line(QGraphicsLineItem):
+    """
+    Line
+    """
+
+    def __init__(self, parent):
+        """
+        Constructor
+        :param parent:
+        """
+        QGraphicsLineItem.__init__(self, parent)
+        self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemSendsScenePositionChanges)
+
+    def itemChange(self, change: QGraphicsItem.GraphicsItemChange, value: Union[int, QPointF]) -> Union[int, QPointF]:
+        """
+
+        :param change:
+        :param value:
+        :return:
+        """
+        if change == QGraphicsItem.ItemScenePositionHasChanged:
+            self.parentItem().update_nexus(value)
+        return super(QGraphicsLineItem, self).itemChange(change, value)
+
+
+class GenericDBWidget:
+    """
+    Generic DataBase Widget
+    """
+    def __init__(self,
+                 parent,
+                 api_object: ALL_DEV_TYPES,
+                 editor: BusBranchEditorWidget,
+                 draw_labels: bool):
+        """
+        Constructor
+        :param parent:
+        :param api_object: Any database object
+        :param editor: BusBranchEditorWidget
+        :param draw_labels:
+        """
+
+        self.parent = parent
+
+        self.api_object: ALL_DEV_TYPES = api_object
+
+        self.editor: BusBranchEditorWidget = editor
+
+        self.draw_labels: bool = draw_labels
+
+        # color
+        if self.api_object is not None:
+            if self.api_object.active:
+                self.color = ACTIVE['color']
+                self.style = ACTIVE['style']
+            else:
+                self.color = DEACTIVATED['color']
+                self.style = DEACTIVATED['style']
+        else:
+            self.color = ACTIVE['color']
+            self.style = ACTIVE['style']
+
+    def recolour_mode(self) -> None:
+        """
+        Change the colour according to the system theme
+        """
+        if self.api_object is not None:
+            if self.api_object.active:
+                self.color = ACTIVE['color']
+                self.style = ACTIVE['style']
+            else:
+                self.color = DEACTIVATED['color']
+                self.style = DEACTIVATED['style']
+        else:
+            self.color = ACTIVE['color']
+            self.style = ACTIVE['style']
+
+    def enable_label_drawing(self):
+        """
+
+        :return:
+        """
+        self.draw_labels = True
+
+    def disable_label_drawing(self):
+        """
+
+        :return:
+        """
+        self.draw_labels = False

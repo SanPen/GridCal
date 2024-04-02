@@ -22,6 +22,7 @@ from PySide6.QtWidgets import QMenu
 from GridCal.Gui.GeneralDialogues import InputNumberDialogue
 from GridCal.Gui.BusBranchEditorWidget.Substation.bus_graphics import TerminalItem
 from GridCal.Gui.BusBranchEditorWidget.Branches.line_editor import LineEditor
+from GridCal.Gui.BusBranchEditorWidget.generic_graphics import GenericDBWidget
 from GridCal.Gui.messages import yes_no_question
 from GridCal.Gui.BusBranchEditorWidget.Branches.line_graphics_template import LineGraphicTemplateItem
 from GridCal.Gui.BusBranchEditorWidget.generic_graphics import ACTIVE
@@ -53,6 +54,7 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
         :param api_object:
         :param arrow_size:
         """
+        GenericDBWidget.__init__(self, parent=None, api_object=api_object, editor=editor, draw_labels=True)
         LineGraphicTemplateItem.__init__(self,
                                          from_port=from_port,
                                          to_port=to_port,
@@ -93,6 +95,7 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
         """
         Change the colour according to the system theme
         """
+        # super().recolour_mode()
         self.set_colour(self.color, self.width, self.style)
 
     def mouseDoubleClickEvent(self, event):

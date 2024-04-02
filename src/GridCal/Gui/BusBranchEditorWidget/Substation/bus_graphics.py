@@ -21,9 +21,10 @@ from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, QPoint, QRectF, QRect
 from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor
 from PySide6.QtWidgets import QMenu, QGraphicsSceneMouseEvent
-from GridCalEngine.Devices.Substation import Bus
+
+from GridCal.Gui.messages import yes_no_question
+from GridCal.Gui.BusBranchEditorWidget.generic_graphics import GenericDBWidget
 from GridCal.Gui.BusBranchEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, FONT_SCALE, EMERGENCY
-from GridCalEngine.Simulations.Topology.topology_reduction_driver import reduce_buses
 from GridCal.Gui.BusBranchEditorWidget.terminal_item import TerminalItem, HandleItem
 from GridCal.Gui.BusBranchEditorWidget.Injections.load_graphics import LoadGraphicItem, Load
 from GridCal.Gui.BusBranchEditorWidget.Injections.generator_graphics import GeneratorGraphicItem, Generator
@@ -36,16 +37,17 @@ from GridCal.Gui.BusBranchEditorWidget.Injections.current_injection_graphics imp
                                                                                      CurrentInjection)
 from GridCal.Gui.BusBranchEditorWidget.Injections.controllable_shunt_graphics import (ControllableShuntGraphicItem,
                                                                                       ControllableShunt)
-from GridCal.Gui.messages import yes_no_question
+
 from GridCalEngine.enumerations import DeviceType, FaultType
-# from GridCalEngine.Devices.Parents.editable_device import EditableDevice
 from GridCalEngine.Devices.types import INJECTION_DEVICE_TYPES
+from GridCalEngine.Simulations.Topology.topology_reduction_driver import reduce_buses
+from GridCalEngine.Devices.Substation import Bus
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
 
 
-class BusGraphicItem(QtWidgets.QGraphicsRectItem):
+class BusGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
     """
       Represents a block in the diagram
       Has an x and y and width and height
@@ -76,17 +78,14 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         :param x:
         :param y:
         """
-        super(BusGraphicItem, self).__init__(parent)
+        GenericDBWidget.__init__(self, parent=parent, api_object=bus, editor=editor)
+        QtWidgets.QGraphicsRectItem.__init__(self, parent)
 
         self.min_w = 180.0
         self.min_h = 40.0
         self.offset = 20
         self.h = h if h >= self.min_h else self.min_h
         self.w = w if w >= self.min_w else self.min_w
-
-        self.api_object = bus
-
-        self.editor = editor
 
         # loads, shunts, generators, etc...
         self.shunt_children = list()
@@ -98,18 +97,6 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
 
         # index
         self.index = index
-
-        # color
-        if self.api_object is not None:
-            if self.api_object.active:
-                self.color = ACTIVE['color']
-                self.style = ACTIVE['style']
-            else:
-                self.color = DEACTIVATED['color']
-                self.style = DEACTIVATED['style']
-        else:
-            self.color = ACTIVE['color']
-            self.style = ACTIVE['style']
 
         # Label:
         self.label = QtWidgets.QGraphicsTextItem(self.api_object.name if self.api_object is not None else "", self)
@@ -147,16 +134,7 @@ class BusGraphicItem(QtWidgets.QGraphicsRectItem):
         """
         Change the colour according to the system theme
         """
-        if self.api_object is not None:
-            if self.api_object.active:
-                self.color = ACTIVE['color']
-                self.style = ACTIVE['style']
-            else:
-                self.color = DEACTIVATED['color']
-                self.style = DEACTIVATED['style']
-        else:
-            self.color = ACTIVE['color']
-            self.style = ACTIVE['style']
+        super().recolour_mode()
 
         self.label.setDefaultTextColor(ACTIVE['text'])
         self.set_tile_color(self.color)

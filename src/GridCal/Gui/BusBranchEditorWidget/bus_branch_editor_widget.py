@@ -2979,6 +2979,7 @@ class BusBranchEditorWidget(QSplitter):
         if len(buses) == len(vnorm):
             for i, bus in enumerate(buses):
 
+                # try to find the diagram object of the DB object
                 graphic_object = self.graphics_manager.query(bus)
 
                 if graphic_object:
@@ -3003,19 +3004,6 @@ class BusBranchEditorWidget(QSplitter):
 
                         graphic_object.set_tile_color(QColor(r, g, b, a))
 
-                        tooltip = str(i) + ': ' + bus.name
-                        if types is not None:
-                            tooltip += ': ' + bus_types[types[i]]
-                        tooltip += '\n'
-
-                        # tooltip += "%-10s %10.4f < %10.4fº [p.u.]\n" % ("V", vabs[i], vang[i])
-                        # tooltip += "%-10s %10.4f < %10.4fº [kV]\n" % ("V", vabs[i] * bus.Vnom, vang[i])
-                        #
-                        # if Sbus is not None:
-                        #     tooltip += "%-10s %10.4f [MW]\n" % ("P", Sbus[i].real)
-                        #     tooltip += "%-10s %10.4f [MVAr]\n" % ("Q", Sbus[i].imag)
-
-                        graphic_object.setToolTip(tooltip)
                         graphic_object.set_values(i=i,
                                                   Vm=vabs[i],
                                                   Va=vang[i],
@@ -3024,14 +3012,14 @@ class BusBranchEditorWidget(QSplitter):
                                                   tpe=bus_types[types[i]] if types is not None else None)
 
                         if use_flow_based_width:
-                            # h = int(np.floor(min_bus_width + Pnorm[i] * (max_bus_width - min_bus_width)))
                             graphic_object.change_size(w=graphic_object.w)
 
                     else:
                         graphic_object.set_tile_color(Qt.gray)
 
                 else:
-                    print("Bus {0} {1} has no graphic object!!".format(bus.name, bus.idtag))
+                    # No graphic object found
+                    pass
         else:
             error_msg("Bus results length differs from the number of Bus results. \n"
                       "Did you change the number of devices? If so, re-run the simulation.")
@@ -3057,6 +3045,7 @@ class BusBranchEditorWidget(QSplitter):
                 if len(branches) == len(Sf):
                     for i, branch in enumerate(branches):
 
+                        # try to find the diagram object of the DB object
                         graphic_object = self.graphics_manager.query(branch)
 
                         if graphic_object:
@@ -3133,8 +3122,8 @@ class BusBranchEditorWidget(QSplitter):
                                 color = Qt.gray
                                 graphic_object.set_pen(QPen(color, w, style))
                         else:
-                            print("Branch {0} {1} has no graphic object!!".format(branch.name, branch.idtag))
-
+                            # No diagram object
+                            pass
                 else:
                     error_msg("Branch results length differs from the number of branch results. \n"
                               "Did you change the numbe rof devices? If so, re-run the simulation.")
@@ -3147,6 +3136,7 @@ class BusBranchEditorWidget(QSplitter):
             if len(hvdc_lines) == len(hvdc_Pf):
                 for i, elm in enumerate(hvdc_lines):
 
+                    # try to find the diagram object of the DB object
                     graphic_object = self.graphics_manager.query(elm)
 
                     if graphic_object:
@@ -3207,7 +3197,8 @@ class BusBranchEditorWidget(QSplitter):
                             color = Qt.gray
                             graphic_object.set_pen(QPen(color, w, style))
                     else:
-                        print("HVDC line {0} {1} has no graphic object!!".format(elm.name, elm.idtag))
+                        # No diagram object
+                        pass
             else:
                 error_msg("HVDC results length differs from the number of HVDC results. \n"
                           "Did you change the numbe rof devices? If so, re-run the simulation.")

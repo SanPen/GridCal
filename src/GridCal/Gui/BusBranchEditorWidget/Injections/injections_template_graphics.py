@@ -21,6 +21,7 @@ from PySide6.QtGui import QPen, QCursor
 from PySide6.QtWidgets import QGraphicsLineItem, QGraphicsItemGroup
 from GridCal.Gui.BusBranchEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER
 from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg
+from GridCal.Gui.BusBranchEditorWidget.generic_graphics import GenericDBWidget
 from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Devices.types import INJECTION_DEVICE_TYPES
 
@@ -28,7 +29,7 @@ if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
 
 
-class InjectionTemplateGraphicItem(QGraphicsItemGroup):
+class InjectionTemplateGraphicItem(GenericDBWidget, QGraphicsItemGroup):
     """
     InjectionTemplateGraphicItem
     """
@@ -39,7 +40,7 @@ class InjectionTemplateGraphicItem(QGraphicsItemGroup):
                  device_type_name: str,
                  w: int,
                  h: int,
-                 editor: "BusBranchEditorWidget"):
+                 editor: BusBranchEditorWidget):
         """
 
         :param parent:
@@ -48,18 +49,13 @@ class InjectionTemplateGraphicItem(QGraphicsItemGroup):
         :param w:
         :param h:
         """
+        GenericDBWidget.__init__(self, parent=parent, api_object=api_obj, editor=editor, draw_labels=True)
         super(InjectionTemplateGraphicItem, self).__init__(parent)
 
         self.w = w
         self.h = h
 
         self.scale = 1.0
-
-        self.parent = parent
-
-        self.api_object = api_obj
-
-        self.editor = editor
 
         self.device_type_name = device_type_name
 
@@ -68,9 +64,6 @@ class InjectionTemplateGraphicItem(QGraphicsItemGroup):
         self.setCursor(QCursor(Qt.PointingHandCursor))
 
         self.width = 4
-
-        self.style = OTHER['style']
-        self.color = OTHER['color']
 
         # line to tie this object with the original bus (the parent)
         self.nexus = QGraphicsLineItem()
@@ -84,16 +77,7 @@ class InjectionTemplateGraphicItem(QGraphicsItemGroup):
         """
         Change the colour according to the system theme
         """
-        if self.api_object is not None:
-            if self.api_object.active:
-                self.color = ACTIVE['color']
-                self.style = ACTIVE['style']
-            else:
-                self.color = DEACTIVATED['color']
-                self.style = DEACTIVATED['style']
-        else:
-            self.color = ACTIVE['color']
-            self.style = ACTIVE['style']
+        super().recolour_mode()
 
         pen = QPen(self.color, self.width, self.style)
         self.nexus.setPen(pen)
@@ -122,8 +106,8 @@ class InjectionTemplateGraphicItem(QGraphicsItemGroup):
         @return:
         """
         if ask:
-            ok = yes_no_question('Are you sure that you want to remove this ' + self.device_type_name + '?',
-                                 'Remove ' + self.api_object.name)
+            ok = yes_no_question(f'Are you sure that you want to remove this {self.device_type_name}?',
+                                 f'Remove {self.api_object.name}')
         else:
             ok = True
 
@@ -163,8 +147,7 @@ class InjectionTemplateGraphicItem(QGraphicsItemGroup):
                 return
 
             ok = yes_no_question(
-                text="Are you sure that you want to relocate the bus from {0} to {1}?".format(old_bus.name,
-                                                                                              new_bus.name),
+                text=f"Are you sure that you want to relocate the bus from {old_bus.name} to {new_bus.name}?",
                 title='Change bus')
 
             if ok:
@@ -177,4 +160,9 @@ class InjectionTemplateGraphicItem(QGraphicsItemGroup):
                         title='Change bus')
 
     def rescale(self, scale: float = 1.0):
+        """
+
+        :param scale:
+        :return:
+        """
         self.scale = scale

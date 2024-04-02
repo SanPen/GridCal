@@ -35,7 +35,7 @@ class FluidTurbineGraphicItem(InjectionTemplateGraphicItem):
     FluidTurbineGraphicItem
     """
 
-    def __init__(self, parent, api_obj: FluidTurbine, editor: "BusBranchEditorWidget"):
+    def __init__(self, parent, api_obj: FluidTurbine, editor: BusBranchEditorWidget):
         """
 
         :param parent:
