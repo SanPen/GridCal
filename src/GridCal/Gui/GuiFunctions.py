@@ -33,7 +33,7 @@ from GridCalEngine.Devices.Branches.line_locations import LineLocations
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
-    from GridCal.Gui.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
+    from GridCal.Gui.Diagrams.BusBranchEditorWidget import BusBranchEditorWidget
     from GridCal.Gui.MapWidget.grid_map_widget import GridMapWidget
     from GridCal.Gui.BusViewer.bus_viewer_dialogue import BusViewerWidget
 
@@ -2415,7 +2415,7 @@ class DiagramsModel(QtCore.QAbstractListModel):
             elif role == QtCore.Qt.ItemDataRole.DecorationRole:
 
                 # TODO: Is this the only way?
-                from GridCal.Gui.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
+                from GridCal.Gui.Diagrams.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
                 from GridCal.Gui.MapWidget.grid_map_widget import GridMapWidget
                 from GridCal.Gui.BusViewer.bus_viewer_dialogue import BusViewerWidget
 

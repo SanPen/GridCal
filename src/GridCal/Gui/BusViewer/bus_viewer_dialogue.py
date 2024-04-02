@@ -19,7 +19,7 @@ from PySide6 import QtWidgets
 
 from typing import List, Union
 from GridCal.Gui.BusViewer.gui import Ui_BusViewerWindow, QMainWindow
-from GridCal.Gui.BusBranchEditorWidget import BusBranchEditorWidget, generate_bus_branch_diagram
+from GridCal.Gui.Diagrams.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget, generate_bus_branch_diagram
 import GridCalEngine.Devices as dev
 from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Devices.multi_circuit import MultiCircuit

@@ -22,8 +22,8 @@ from PySide6 import QtWidgets
 
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCal.Gui.Main.SubClasses.Results.results import ResultsMain
-from GridCal.Gui.BusBranchEditorWidget import BusBranchEditorWidget
-from GridCal.Gui.BusBranchEditorWidget.generic_graphics import set_dark_mode, set_light_mode
+from GridCal.Gui.Diagrams.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
+from GridCal.Gui.Diagrams.BusBranchEditorWidget.generic_graphics import set_dark_mode, set_light_mode
 
 
 def config_data_to_struct(data_, struct_):
