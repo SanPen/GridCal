@@ -199,8 +199,8 @@ def compute_admittances(R: Vec,
                                    for con in conn])
 
             Yff = (ys + bc2) / (mp * mp * vtap_f * vtap_f)
-            Yft = -ys / (mp * np.exp(+1.0j * tap_angle) * vtap_f * vtap_t) * factor_psh
-            Ytf = -ys / (mp * np.exp(-1.0j * tap_angle) * vtap_t * vtap_f) * np.conj(factor_psh)
+            Yft = -ys / (mp * np.exp(+1.0j * tap_angle) * vtap_f * vtap_t) * np.conj(factor_psh)
+            Ytf = -ys / (mp * np.exp(-1.0j * tap_angle) * vtap_t * vtap_f) * factor_psh
             Ytt = (ys + bc2) / (vtap_t * vtap_t)
 
         elif seq == 1:  # positive sequence

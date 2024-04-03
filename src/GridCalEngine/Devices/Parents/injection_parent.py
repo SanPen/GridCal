@@ -29,6 +29,7 @@ class InjectionParent(EditableDevice):
     """
     Parent class for Injections
     """
+
     def __init__(self,
                  name: str,
                  idtag: Union[str, None],
@@ -66,7 +67,7 @@ class InjectionParent(EditableDevice):
                                 code=code,
                                 device_type=device_type)
 
-        self.bus = bus
+        self._bus = bus
         self._bus_prof = Profile(default_value=bus)
 
         self.cn = cn
@@ -108,6 +109,22 @@ class InjectionParent(EditableDevice):
 
         self.register(key='Cost', units='e/MWh', tpe=float, definition='Cost of not served energy. Used in OPF.',
                       profile_name='Cost_prof')
+
+    @property
+    def bus(self) -> Bus:
+        """
+        Bus
+        :return: Bus
+        """
+        return self._bus
+
+    @bus.setter
+    def bus(self, val: Bus):
+        if isinstance(val, Bus):
+            self._bus = val
+            self._bus_prof.fill(value=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a bus')
 
     @property
     def bus_prof(self) -> Profile:

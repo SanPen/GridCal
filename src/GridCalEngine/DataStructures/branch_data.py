@@ -147,15 +147,15 @@ class BranchData:
         data.G = self.G[elm_idx]
         data.B = self.B[elm_idx]
 
-        data.R0 = self.R[elm_idx]
-        data.X0 = self.X[elm_idx]
-        data.G0 = self.G[elm_idx]
-        data.B0 = self.B[elm_idx]
+        data.R0 = self.R0[elm_idx]
+        data.X0 = self.X0[elm_idx]
+        data.G0 = self.G0[elm_idx]
+        data.B0 = self.B0[elm_idx]
 
-        data.R2 = self.R[elm_idx]
-        data.X2 = self.X[elm_idx]
-        data.G2 = self.G[elm_idx]
-        data.B2 = self.B[elm_idx]
+        data.R2 = self.R2[elm_idx]
+        data.X2 = self.X2[elm_idx]
+        data.G2 = self.G2[elm_idx]
+        data.B2 = self.B2[elm_idx]
 
         data.k = self.k[elm_idx]
         data.virtual_tap_f = self.virtual_tap_f[elm_idx]

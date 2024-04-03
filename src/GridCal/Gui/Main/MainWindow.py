@@ -1330,26 +1330,6 @@ class Ui_mainWindow(object):
         self.verticalLayout_39 = QVBoxLayout(self.sourceCodeTab)
         self.verticalLayout_39.setObjectName(u"verticalLayout_39")
         self.verticalLayout_39.setContentsMargins(6, 0, 6, 0)
-        self.frame_63 = QFrame(self.sourceCodeTab)
-        self.frame_63.setObjectName(u"frame_63")
-        self.frame_63.setFrameShape(QFrame.NoFrame)
-        self.frame_63.setFrameShadow(QFrame.Raised)
-        self.horizontalLayout_27 = QHBoxLayout(self.frame_63)
-        self.horizontalLayout_27.setObjectName(u"horizontalLayout_27")
-        self.horizontalLayout_27.setContentsMargins(0, 0, 0, 0)
-        self.horizontalSpacer_4 = QSpacerItem(434, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-
-        self.horizontalLayout_27.addItem(self.horizontalSpacer_4)
-
-        self.deleteSourceCodeFileButton = QPushButton(self.frame_63)
-        self.deleteSourceCodeFileButton.setObjectName(u"deleteSourceCodeFileButton")
-        self.deleteSourceCodeFileButton.setIcon(icon23)
-
-        self.horizontalLayout_27.addWidget(self.deleteSourceCodeFileButton)
-
-
-        self.verticalLayout_39.addWidget(self.frame_63)
-
         self.sourceCodeTreeView = QTreeView(self.sourceCodeTab)
         self.sourceCodeTreeView.setObjectName(u"sourceCodeTreeView")
         self.sourceCodeTreeView.setFrameShape(QFrame.StyledPanel)
@@ -4590,10 +4570,6 @@ class Ui_mainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.runSourceCodeButton.setText("")
         self.tabWidget_2.setTabText(self.tabWidget_2.indexOf(self.pythonConsoleTab), QCoreApplication.translate("mainWindow", u"Python console", None))
-#if QT_CONFIG(tooltip)
-        self.deleteSourceCodeFileButton.setToolTip(QCoreApplication.translate("mainWindow", u"Delete source code file", None))
-#endif // QT_CONFIG(tooltip)
-        self.deleteSourceCodeFileButton.setText("")
         self.tabWidget_2.setTabText(self.tabWidget_2.indexOf(self.sourceCodeTab), QCoreApplication.translate("mainWindow", u"Source code", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.main_console_tab), QCoreApplication.translate("mainWindow", u"Scripting", None))
 #if QT_CONFIG(tooltip)
@@ -4948,7 +4924,7 @@ class Ui_mainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.label_76.setText("")
         self.label_49.setText(QCoreApplication.translate("mainWindow", u"Draw", None))
-        self.label_56.setText(QCoreApplication.translate("mainWindow", u"Schema", None))
+        self.label_56.setText(QCoreApplication.translate("mainWindow", u"Nodes", None))
         self.label_112.setText("")
         self.label_43.setText(QCoreApplication.translate("mainWindow", u"Palette", None))
         self.branch_width_based_on_flow_checkBox.setText(QCoreApplication.translate("mainWindow", u"Width based on flow", None))

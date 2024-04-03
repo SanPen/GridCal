@@ -29,17 +29,17 @@ import GridCal.Gui.GuiFunctions as gf
 import GridCal.Gui.Visualization.palettes as palettes
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCal.Gui.GeneralDialogues import CheckListDialogue, StartEndSelectionDialogue, InputSearchDialogue
-from GridCal.Gui.BusViewer.bus_viewer_dialogue import BusViewerWidget
-from GridCal.Gui.BusBranchEditorWidget.bus_branch_editor_widget import (BusBranchEditorWidget,
-                                                                        BusGraphicItem,
-                                                                        generate_bus_branch_diagram)
-from GridCal.Gui.NodeBreakerEditorWidget.node_breaker_editor_widget import NodeBreakerEditorWidget
-from GridCal.Gui.MapWidget.grid_map_widget import GridMapWidget
+from GridCal.Gui.Diagrams.BusViewer.bus_viewer_dialogue import BusViewerWidget
+from GridCal.Gui.Diagrams.BusBranchEditorWidget.bus_branch_editor_widget import (BusBranchEditorWidget,
+                                                        BusGraphicItem,
+                                                        generate_bus_branch_diagram)
+from GridCal.Gui.Diagrams.NodeBreakerEditorWidget.node_breaker_editor_widget import NodeBreakerEditorWidget
+from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget
 from GridCal.Gui.messages import yes_no_question, error_msg, info_msg
 from GridCal.Gui.Main.SubClasses.Model.compiled_arrays import CompiledArraysMain
 from GridCal.Gui.Main.object_select_window import ObjectSelectWindow
-from GridCal.Gui.MapWidget.TileProviders.blue_marble import BlueMarbleTiles
-from GridCal.Gui.MapWidget.TileProviders.cartodb import CartoDbTiles
+from GridCal.Gui.Diagrams.MapWidget.TileProviders.blue_marble import BlueMarbleTiles
+from GridCal.Gui.Diagrams.MapWidget.TileProviders.cartodb import CartoDbTiles
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
 
 ALL_EDITORS = Union[BusBranchEditorWidget, GridMapWidget, BusViewerWidget, NodeBreakerEditorWidget]

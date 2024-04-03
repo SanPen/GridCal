@@ -233,7 +233,10 @@ def find_references(elements_by_type: Dict[str, List[IdentifiedObject]],
                     if cim_prop.class_type in [str, float, int, bool]:
                         # set the referenced object in the property
                         try:
-                            setattr(element, property_name, cim_prop.class_type(value))
+                            if isinstance(value, list):
+                                setattr(element, property_name, value)
+                            else:
+                                setattr(element, property_name, cim_prop.class_type(value))
                         except ValueError:
                             logger.add_error(msg='Value error',
                                              device=element.rdfid,
