@@ -31,10 +31,10 @@ from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCal.Gui.GeneralDialogues import CheckListDialogue, StartEndSelectionDialogue, InputSearchDialogue
 from GridCal.Gui.Diagrams.BusViewer.bus_viewer_dialogue import BusViewerWidget
 from GridCal.Gui.Diagrams.BusBranchEditorWidget.bus_branch_editor_widget import (BusBranchEditorWidget,
-                                                        BusGraphicItem,
-                                                        generate_bus_branch_diagram)
+                                                                                 BusGraphicItem,
+                                                                                 generate_bus_branch_diagram)
 from GridCal.Gui.Diagrams.NodeBreakerEditorWidget.node_breaker_editor_widget import NodeBreakerEditorWidget
-from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget
+from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget, generate_map_diagram
 from GridCal.Gui.messages import yes_no_question, error_msg, info_msg
 from GridCal.Gui.Main.SubClasses.Model.compiled_arrays import CompiledArraysMain
 from GridCal.Gui.Main.object_select_window import ObjectSelectWindow
@@ -990,13 +990,25 @@ class DiagramsMain(CompiledArraysMain):
         # select the tile source
         tile_source = self.tile_sources[self.ui.tile_provider_comboBox.currentText()]
 
+        diagram = generate_map_diagram(substations=self.circuit.get_substations(),
+                                       voltage_levels=self.circuit.get_voltage_levels(),
+                                       lines=self.circuit.lines,
+                                       dc_lines=self.circuit.dc_lines,
+                                       hvdc_lines=self.circuit.hvdc_lines,
+                                       fluid_nodes=self.circuit.fluid_nodes,
+                                       fluid_paths=self.circuit.fluid_paths,
+                                       prog_func=None,
+                                       text_func=None,
+                                       name='Map diagram')
+
         # create the map widget
         map_widget = GridMapWidget(parent=None,
                                    tile_src=tile_source,
                                    start_level=5,
                                    longitude=-15.41,
                                    latitude=40.11,
-                                   name='Map diagram')
+                                   name='Map diagram',
+                                   diagram=diagram)
         # map_widget.GotoLevelAndPosition(5, -15.41, 40.11)
 
         self.add_diagram(map_widget)
