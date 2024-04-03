@@ -271,13 +271,13 @@ def get_cgmes_tn_nodes(multi_circuit_model: MultiCircuit,
 
     for bus in multi_circuit_model.buses:
 
-        new_rdf_id = get_new_rdfid()
-        tn = cgmes.TopologicalNode(rdfid=new_rdf_id)
+        tn = cgmes.TopologicalNode(rdfid=bus.idtag)
         tn.name = bus.name
         tn.BaseVoltage = find_object_by_vnom(
             object_list=cgmes_model.BaseVoltage_list,
             target_vnom=bus.Vnom
         )
+
         if bus.voltage_level is not None:  # VoltageLevel
             vl: cgmes.VoltageLevel = find_object_by_uuid(
                 object_list=cgmes_model.VoltageLevel_list,
@@ -286,7 +286,6 @@ def get_cgmes_tn_nodes(multi_circuit_model: MultiCircuit,
             tn.ConnectivityNodeContainer = vl
             # link back
             vl.TopologicalNode = tn
-
         else:
             print(f'Bus.voltage_level.idtag is None for {bus.name}')
         # TODO bus should have association for VoltageLevel first

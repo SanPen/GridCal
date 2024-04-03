@@ -28,11 +28,8 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="export CGMES generators">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="buse">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_to_gridcal.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_to_gridcal.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_utils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_v2_4_15/devices/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_v2_4_15/devices/__init__.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/gridcal_to_cgmes.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/gridcal_to_cgmes.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -1301,7 +1298,9 @@
       <workItem from="1709712688980" duration="42668000" />
       <workItem from="1710173521152" duration="12946000" />
       <workItem from="1710312729297" duration="95421000" />
-      <workItem from="1711352858467" duration="46845000" />
+      <workItem from="1711352858467" duration="49057000" />
+      <workItem from="1712098171956" duration="23000" />
+      <workItem from="1712123975308" duration="2046000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1646,7 +1645,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="484" />
+    <option name="localTasksCounter" value="485" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1680,7 +1679,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="keep work on multi-objective" />
     <MESSAGE value="improved fix functions in the object plot analysis" />
     <MESSAGE value="Added linear shunt and current injection (wip)" />
     <MESSAGE value="implemented imul in the profile&#10;fixed get_load_like_device_number in multi_circuit" />
@@ -1705,7 +1703,8 @@
     <MESSAGE value="added voltage level to bus, enhanced class list in pack_unpack.py" />
     <MESSAGE value="cgmes alias for class import, create LoadResponseChar" />
     <MESSAGE value="export CGMES generators" />
-    <option name="LAST_COMMIT_MESSAGE" value="export CGMES generators" />
+    <MESSAGE value="export CGMES: load response char, reg control, get connectivity nodes" />
+    <option name="LAST_COMMIT_MESSAGE" value="export CGMES: load response char, reg control, get connectivity nodes" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2007,22 +2006,22 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/MapWidget/map_widget.py</url>
-          <line>597</line>
+          <line>696</line>
           <option name="timeStamp" value="1248" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/MapWidget/map_widget.py</url>
-          <line>860</line>
+          <line>994</line>
           <option name="timeStamp" value="1252" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/MapWidget/map_widget.py</url>
-          <line>743</line>
+          <line>877</line>
           <option name="timeStamp" value="1257" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/MapWidget/map_widget.py</url>
-          <line>873</line>
+          <line>1007</line>
           <option name="timeStamp" value="1258" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -2142,12 +2141,12 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/contingencies_report.py</url>
-          <line>617</line>
+          <line>631</line>
           <option name="timeStamp" value="1476" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/contingencies_report.py</url>
-          <line>665</line>
+          <line>679</line>
           <option name="timeStamp" value="1478" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -2225,7 +2224,7 @@
     <SUITE FILE_PATH="coverage/GridCal$update_gui_file.coverage" NAME="update_gui_file Coverage Results" MODIFIED="1700039952938" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/Main" />
     <SUITE FILE_PATH="coverage/GridCal$topology_driver.coverage" NAME="topology_driver Coverage Results" MODIFIED="1590932816525" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/Simulations/Topology" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_profiles_test_py.coverage" NAME="Nosetests in profiles_test.py Coverage Results" MODIFIED="1701346671216" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
-    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1711550963919" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
+    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1711637114032" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
     <SUITE FILE_PATH="coverage/GridCal$5_node.coverage" NAME="5_node Coverage Results" MODIFIED="1694035681161" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/Tutorials" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_voltage_controlled_generator_py.coverage" NAME="Nosetests in test_voltage_controlled_generator.py Coverage Results" MODIFIED="1616959365012" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_tests_test_api_helm_test_api_helm.coverage" NAME="Nosetests for tests.test_api_helm.test_api_helm Coverage Results" MODIFIED="1687725548984" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
