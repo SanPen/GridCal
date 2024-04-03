@@ -225,7 +225,8 @@ class NumericalCircuit:
         self.Ibus_: CxVec = None
         self.YloadBus_: CxVec = None
         self.Yshunt_from_devices_: CxVec = None
-
+        self.Bmax_bus_: Vec = None
+        self.Bmin_bus_: Vec = None
         self.Qmax_bus_: Vec = None
         self.Qmin_bus_: Vec = None
 
@@ -263,7 +264,6 @@ class NumericalCircuit:
         self.Ibus_: CxVec = None
         self.YloadBus_: CxVec = None
         self.Yshunt_from_devices_: CxVec = None
-
         self.Qmax_bus_: Vec = None
         self.Qmin_bus_: Vec = None
         self.Bmax_bus_: Vec = None
@@ -398,11 +398,7 @@ class NumericalCircuit:
 
         return nc
 
-    def get_structures_list(self) -> List[Union[ds.BusData, ds.LoadData, ds.ShuntData,
-    ds.GeneratorData, ds.BatteryData,
-    ds.BranchData, ds.HvdcData,
-    ds.FluidNodeData, ds.FluidTurbineData, ds.FluidPumpData,
-    ds.FluidP2XData, ds.FluidPathData]]:
+    def get_structures_list(self) -> List[ALL_STRUCTS]:
         """
         Get a list of the structures inside the NumericalCircuit
         :return:

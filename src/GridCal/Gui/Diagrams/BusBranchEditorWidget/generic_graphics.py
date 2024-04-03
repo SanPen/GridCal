@@ -193,16 +193,17 @@ class GenericDBWidget:
         self.draw_labels: bool = draw_labels
 
         # color
-        if self.api_object is not None:
-            if self.api_object.active:
-                self.color = ACTIVE['color']
-                self.style = ACTIVE['style']
-            else:
-                self.color = DEACTIVATED['color']
-                self.style = DEACTIVATED['style']
-        else:
-            self.color = ACTIVE['color']
-            self.style = ACTIVE['style']
+        # if self.api_object is not None:
+        #     if hasattr(self.api_object, 'active'):
+        #         if self.api_object.active:
+        #             self.color = ACTIVE['color']
+        #             self.style = ACTIVE['style']
+        #         else:
+        #             self.color = DEACTIVATED['color']
+        #             self.style = DEACTIVATED['style']
+        # else:
+        self.color = ACTIVE['color']
+        self.style = ACTIVE['style']
 
     def recolour_mode(self) -> None:
         """
