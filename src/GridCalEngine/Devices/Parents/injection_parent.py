@@ -120,11 +120,15 @@ class InjectionParent(EditableDevice):
 
     @bus.setter
     def bus(self, val: Bus):
-        if isinstance(val, Bus):
+        if val is None:
             self._bus = val
             self._bus_prof.fill(value=val)
         else:
-            raise Exception(str(type(val)) + 'not supported to be set into a bus')
+            if isinstance(val, Bus):
+                self._bus = val
+                self._bus_prof.fill(value=val)
+            else:
+                raise Exception(str(type(val)) + 'not supported to be set into a bus')
 
     @property
     def bus_prof(self) -> Profile:
