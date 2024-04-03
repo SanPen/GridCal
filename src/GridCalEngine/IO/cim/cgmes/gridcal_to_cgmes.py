@@ -271,13 +271,13 @@ def get_cgmes_tn_nodes(multi_circuit_model: MultiCircuit,
 
     for bus in multi_circuit_model.buses:
 
-        new_rdf_id = get_new_rdfid()
-        tn = cgmes.TopologicalNode(rdfid=new_rdf_id)
+        tn = cgmes.TopologicalNode(rdfid=bus.idtag)
         tn.name = bus.name
         tn.BaseVoltage = find_object_by_vnom(
             object_list=cgmes_model.BaseVoltage_list,
             target_vnom=bus.Vnom
         )
+
         if bus.voltage_level is not None:  # VoltageLevel
             vl: cgmes.VoltageLevel = find_object_by_uuid(
                 object_list=cgmes_model.VoltageLevel_list,
@@ -286,7 +286,6 @@ def get_cgmes_tn_nodes(multi_circuit_model: MultiCircuit,
             tn.ConnectivityNodeContainer = vl
             # link back
             vl.TopologicalNode = tn
-
         else:
             print(f'Bus.voltage_level.idtag is None for {bus.name}')
         # TODO bus should have association for VoltageLevel first
@@ -461,6 +460,22 @@ def get_cgmes_ac_line_segments(multicircuit_model: MultiCircuit,
         cgmes_model.ACLineSegment_list.append(line)
 
 
+def get_cgmes_operational_limits(multicircuit_model: MultiCircuit,
+                                 cgmes_model: CgmesCircuit,
+                                 logger: DataLogger):
+
+    # OperationalLimitSet and OperationalLimitType
+
+    pass
+
+
+
+def get_cgmes_current_limits(multicircuit_model: MultiCircuit,
+                             cgmes_model: CgmesCircuit,
+                             logger: DataLogger):
+    pass
+
+
 def get_cgmes_generators(multicircuit_model: MultiCircuit,
                          cgmes_model: CgmesCircuit,
                          logger: DataLogger):
@@ -511,6 +526,14 @@ def get_cgmes_generators(multicircuit_model: MultiCircuit,
         cgmes_syn.referencePriority = '0'  # ?
 
         cgmes_model.SynchronousMachine_list.append(cgmes_syn)
+
+
+def get_cgmes_power_transformers():
+    pass
+
+
+def get_cgmes_power_transformer_ends():
+    pass
 
 # endregion
 
