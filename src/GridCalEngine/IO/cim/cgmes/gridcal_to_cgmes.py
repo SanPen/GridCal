@@ -460,6 +460,22 @@ def get_cgmes_ac_line_segments(multicircuit_model: MultiCircuit,
         cgmes_model.ACLineSegment_list.append(line)
 
 
+def get_cgmes_operational_limits(multicircuit_model: MultiCircuit,
+                                 cgmes_model: CgmesCircuit,
+                                 logger: DataLogger):
+
+    # OperationalLimitSet and OperationalLimitType
+
+    pass
+
+
+
+def get_cgmes_current_limits(multicircuit_model: MultiCircuit,
+                             cgmes_model: CgmesCircuit,
+                             logger: DataLogger):
+    pass
+
+
 def get_cgmes_generators(multicircuit_model: MultiCircuit,
                          cgmes_model: CgmesCircuit,
                          logger: DataLogger):
@@ -510,6 +526,14 @@ def get_cgmes_generators(multicircuit_model: MultiCircuit,
         cgmes_syn.referencePriority = '0'  # ?
 
         cgmes_model.SynchronousMachine_list.append(cgmes_syn)
+
+
+def get_cgmes_power_transformers():
+    pass
+
+
+def get_cgmes_power_transformer_ends():
+    pass
 
 # endregion
 
