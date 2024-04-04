@@ -966,7 +966,7 @@
           <widget class="QWidget" name="compiledArraysTab">
            <attribute name="icon">
             <iconset resource="icons.qrc">
-             <normaloff>:/Icons/icons/squares.svg</normaloff>:/Icons/icons/squares.svg</iconset>
+             <normaloff>:/Icons/icons/spmat.svg</normaloff>:/Icons/icons/spmat.svg</iconset>
            </attribute>
            <attribute name="title">
             <string>Compiled arrays</string>

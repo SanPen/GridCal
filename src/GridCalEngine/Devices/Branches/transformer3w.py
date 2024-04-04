@@ -171,7 +171,9 @@ class Transformer3W(EditableDevice):
     def bus1(self, obj: Bus):
         self._bus1 = obj
         self.winding1.bus_to = obj
-        self.winding1.set_hv_and_lv(self.winding1.HV, self.winding1.LV)
+
+        if obj is not None:
+            self.winding1.set_hv_and_lv(self.winding1.HV, self.winding1.LV)
 
     @property
     def bus2(self) -> Bus:
@@ -184,7 +186,9 @@ class Transformer3W(EditableDevice):
     def bus2(self, obj: Bus):
         self._bus2 = obj
         self.winding2.bus_to = obj
-        self.winding2.set_hv_and_lv(self.winding2.HV, self.winding2.LV)
+
+        if obj is not None:
+            self.winding2.set_hv_and_lv(self.winding2.HV, self.winding2.LV)
 
     @property
     def bus3(self) -> Bus:
@@ -197,7 +201,9 @@ class Transformer3W(EditableDevice):
     def bus3(self, obj: Bus):
         self._bus3 = obj
         self.winding3.bus_to = obj
-        self.winding3.set_hv_and_lv(self.winding3.HV, self.winding3.LV)
+
+        if obj is not None:
+            self.winding3.set_hv_and_lv(self.winding3.HV, self.winding3.LV)
 
     @property
     def V1(self) -> float:

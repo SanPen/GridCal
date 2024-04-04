@@ -947,7 +947,7 @@ class Ui_mainWindow(object):
         self.horizontalLayout_7.addWidget(self.simulationDataSplitter)
 
         icon83 = QIcon()
-        icon83.addFile(u":/Icons/icons/squares.svg", QSize(), QIcon.Normal, QIcon.Off)
+        icon83.addFile(u":/Icons/icons/spmat.svg", QSize(), QIcon.Normal, QIcon.Off)
         self.tabWidget_3.addTab(self.compiledArraysTab, icon83, "")
         self.commentsTab = QWidget()
         self.commentsTab.setObjectName(u"commentsTab")

@@ -19,7 +19,7 @@ from typing import TYPE_CHECKING, Union
 from PySide6.QtCore import Qt, QRectF
 from PySide6.QtGui import QPen, QIcon, QPixmap, QBrush
 from PySide6.QtWidgets import QMenu, QGraphicsRectItem, QGraphicsSceneContextMenuEvent
-from GridCal.Gui.Diagrams.BusBranchEditorWidget.terminal_item import TerminalItem
+from GridCal.Gui.Diagrams.BusBranchEditorWidget.terminal_item import BarTerminalItem, RoundTerminalItem
 from GridCal.Gui.Diagrams.BusBranchEditorWidget.Branches.line_editor import LineEditor
 from GridCal.Gui.messages import yes_no_question, warning_msg
 from GridCal.Gui.Diagrams.BusBranchEditorWidget.Branches.line_graphics_template import LineGraphicTemplateItem
@@ -27,7 +27,7 @@ from GridCalEngine.Devices.Branches.line import Line, SequenceLineType
 from GridCalEngine.enumerations import DeviceType
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
-    from GridCal.Gui.Diagrams.BusBranchEditorWidget import BusBranchEditorWidget
+    from GridCal.Gui.Diagrams.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
 
 
 class LineGraphicItem(LineGraphicTemplateItem):
@@ -36,8 +36,8 @@ class LineGraphicItem(LineGraphicTemplateItem):
     """
 
     def __init__(self,
-                 from_port: TerminalItem,
-                 to_port: Union[TerminalItem, None],
+                 from_port: Union[BarTerminalItem, RoundTerminalItem],
+                 to_port: Union[BarTerminalItem, RoundTerminalItem, None],
                  editor: BusBranchEditorWidget,
                  width=5,
                  api_object: Line = None):

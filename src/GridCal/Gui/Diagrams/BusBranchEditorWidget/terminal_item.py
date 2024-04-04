@@ -30,7 +30,7 @@ if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.BusBranchEditorWidget.Fluid.fluid_node_graphics import FluidNodeGraphicItem
 
 
-class TerminalItem(QGraphicsRectItem):
+class BarTerminalItem(QGraphicsRectItem):
     """
     Represents a connection point to a subsystem
     """
@@ -175,7 +175,7 @@ class TerminalItem(QGraphicsRectItem):
             self.process_callbacks(value)
             return value
         else:
-            return super(TerminalItem, self).itemChange(change, value)
+            return super(BarTerminalItem, self).itemChange(change, value)
 
     def mousePressEvent(self, event: QGraphicsSceneMouseEvent) -> None:
         """
@@ -209,17 +209,14 @@ class HandleItem(QGraphicsEllipseItem):
     A handle that can be moved by the mouse: Element to resize the boxes
     """
 
-    def __init__(self, parent: TerminalItem = None, callback: Callable = None) -> None:
+    def __init__(self, parent: BarTerminalItem = None, callback: Callable = None) -> None:
         """
 
         @param parent:
         """
         QGraphicsEllipseItem.__init__(self, QRectF(-4, -4, 8, 8), parent)
 
-        self.callbacks_list = list()
-
-        if callback is not None:
-            self.callbacks_list.append(callback)
+        self.callback = callback
 
         self.setBrush(Qt.red)
         self.setFlag(self.GraphicsItemFlag.ItemIsMovable, True)
@@ -237,8 +234,8 @@ class HandleItem(QGraphicsEllipseItem):
             x, y = value.x(), value.y()
 
             # This cannot be a signal because this is not a QObject
-            for cb in self.callbacks_list:
-                res = cb(x, y)
+            if self.callback is not None:
+                res = self.callback(x, y)
                 if res:
                     x, y = res
                     value = QPointF(x, y)

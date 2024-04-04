@@ -15,10 +15,10 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtWidgets import QMenu
-from GridCal.Gui.Diagrams.BusBranchEditorWidget.terminal_item import TerminalItem
+from GridCal.Gui.Diagrams.BusBranchEditorWidget.terminal_item import BarTerminalItem, RoundTerminalItem
 from GridCalEngine.Devices.Branches.vsc import VSC
 from GridCal.Gui.Diagrams.BusBranchEditorWidget.Branches.line_graphics_template import LineGraphicTemplateItem
 
@@ -31,7 +31,9 @@ class VscGraphicItem(LineGraphicTemplateItem):
     Graphics item for the VSC converter
     """
 
-    def __init__(self, from_port: TerminalItem, to_port: TerminalItem,
+    def __init__(self,
+                 from_port: Union[BarTerminalItem, RoundTerminalItem],
+                 to_port: Union[BarTerminalItem, RoundTerminalItem],
                  editor: BusBranchEditorWidget, width=5,
                  api_object: VSC = None):
         """

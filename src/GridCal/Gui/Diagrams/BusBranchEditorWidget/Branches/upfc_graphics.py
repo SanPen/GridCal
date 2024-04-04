@@ -18,7 +18,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtWidgets import QMenu
-from GridCal.Gui.Diagrams.BusBranchEditorWidget.terminal_item import TerminalItem
+from GridCal.Gui.Diagrams.BusBranchEditorWidget.terminal_item import BarTerminalItem
 from GridCalEngine.Devices.Branches.upfc import UPFC
 from GridCal.Gui.Diagrams.BusBranchEditorWidget.Branches.line_graphics_template import LineGraphicTemplateItem
 
@@ -28,7 +28,7 @@ if TYPE_CHECKING:  # Only imports the below statements during type checking
 
 class UpfcGraphicItem(LineGraphicTemplateItem):
 
-    def __init__(self, from_port: TerminalItem, to_port: TerminalItem,
+    def __init__(self, from_port: BarTerminalItem, to_port: BarTerminalItem,
                  editor: BusBranchEditorWidget, width=5,
                  api_object: UPFC = None):
         """
