@@ -802,7 +802,7 @@ def get_gcdev_shunts(cgmes_model: CgmesCircuit,
     :param logger:
     """
     # convert shunts
-    for device_list in [cgmes_model.LinearShuntCompensator_list, cgmes_model.NonlinearShuntCompensator_list]:
+    for device_list in [cgmes_model.LinearShuntCompensator_list]:
 
         for cgmes_elm in device_list:
 
@@ -820,10 +820,6 @@ def get_gcdev_shunts(cgmes_model: CgmesCircuit,
                 G, B, G0, B0 = get_values_shunt(shunt=cgmes_elm,
                                                 logger=logger,
                                                 Sbase=Sbase)
-                v_set, is_controlled = get_regulating_control(
-                    cgmes_elm=cgmes_elm,
-                    cgmes_enums=cgmes_enums,
-                    logger=logger)
 
                 gcdev_elm = gcdev.Shunt(
                     idtag=cgmes_elm.uuid,
@@ -835,11 +831,7 @@ def get_gcdev_shunts(cgmes_model: CgmesCircuit,
                     B0=B0 * cgmes_elm.sections,
                     # Bmax=B * cgmes_elm.maximumSections,
                     # Bmin=B,
-                    active=True,  # TODO what is this?
-                    # controlled=is_controlled,
-                    # vset=v_set,
-                    # bus=calc_node,  # ?
-                    # cn=cn,  # ?
+                    active=True,
                 )
                 gcdev_model.add_shunt(calc_node, gcdev_elm)
 
@@ -850,6 +842,34 @@ def get_gcdev_shunts(cgmes_model: CgmesCircuit,
                                  device_property="number of associated terminals",
                                  value=len(calc_nodes),
                                  expected_value=1)
+
+
+def get_gcdev_controllable_shunts(
+        cgmes_model: CgmesCircuit,
+        gcdev_model: MultiCircuit,
+        calc_node_dict: Dict[str, gcdev.Bus],
+        cn_dict: Dict[str, gcdev.ConnectivityNode],
+        device_to_terminal_dict: Dict[str, List[Terminal]],
+        logger: DataLogger,
+        Sbase: float) -> None:
+    """
+    Convert the CGMES non-linear shunt compensators to gcdev Controllable shunts.
+
+    :param cgmes_model: CgmesCircuit
+    :param gcdev_model: gcdevCircuit
+    :param calc_node_dict: Dict[str, gcdev.Bus]
+    :param cn_dict: Dict[str, gcdev.ConnectivityNode]
+    :param device_to_terminal_dict: Dict[str, Terminal]
+    :param logger:
+    """
+    # comes later
+    for device_list in [cgmes_model.NonlinearShuntCompensator_list]:
+        # ...
+        # v_set, is_controlled = get_regulating_control(
+        #     cgmes_elm=cgmes_elm,
+        #     cgmes_enums=cgmes_enums,
+        #     logger=logger)
+        pass
 
 
 def get_gcdev_switches(cgmes_model: CgmesCircuit,
@@ -1090,6 +1110,7 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
     get_gcdev_ac_transformers(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger, Sbase)
 
     get_gcdev_shunts(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger, Sbase)
+    # get_gcdev_controllable_shunts()  TODO controllable shunts
     get_gcdev_switches(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger, Sbase)
 
     print('debug')
@@ -1098,10 +1119,10 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
     cgmes_model_export = gridcal_to_cgmes(gc_model, logger)
 
     # Export with ET
-    start = time.time()
-    serializer = CimExporter(cgmes_model)
-    serializer.export()
-    end = time.time()
-    print("ET export time: ", end - start, "sec")
+    # start = time.time()
+    # serializer = CimExporter(cgmes_model)
+    # serializer.export()
+    # end = time.time()
+    # print("ET export time: ", end - start, "sec")
 
     return gc_model

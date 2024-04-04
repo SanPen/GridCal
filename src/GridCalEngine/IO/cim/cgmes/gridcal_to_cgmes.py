@@ -84,14 +84,15 @@ def create_cgmes_terminal(bus: Bus,
         object_list=cgmes_model.TopologicalNode_list,
         target_uuid=bus.idtag
     )
+
     if isinstance(tn, cgmes.TopologicalNode):
         term.TopologicalNode = tn
+
+        cgmes_model.Terminal_list.append(term)
     else:
         logger.add_error(msg='No found TopologinalNode',
                          device=bus,
                          device_class=gcdev.Bus)
-
-    cgmes_model.Terminal_list.append(term)
 
     return term
 
@@ -172,7 +173,9 @@ def create_cgmes_regulating_control(
     """
     new_rdf_id = get_new_rdfid()
     rc = cgmes.RegulatingControl(rdfid=new_rdf_id)
+
     rc.name = f'_RC_{gen.name}'
+    rc.RegulatingCondEq = gen
     # rc.mode: RegulatingControlModeKind
     # rc.Terminal
     # rc.discrete
@@ -514,7 +517,6 @@ def get_cgmes_generators(multicircuit_model: MultiCircuit,
         # is_controlled: enabling flag (already have)
         if mc_elm.is_controlled:
             cgmes_syn.RegulatingControl = create_cgmes_regulating_control(cgmes_syn, cgmes_model)
-            cgmes_syn.RegulatingControl.RegulatingCondEq = cgmes_syn
 
         # cgmes_syn.ratedPowerFactor =
         cgmes_syn.ratedS = mc_elm.Snom
@@ -534,6 +536,39 @@ def get_cgmes_power_transformers():
 
 def get_cgmes_power_transformer_ends():
     pass
+
+
+def get_cgmes_linear_shunt(multicircuit_model: MultiCircuit,
+                           cgmes_model: CgmesCircuit,
+                           logger: DataLogger):
+    """
+    Converts Multi Circuit shunts
+    into CGMES Linear shunt compensator
+
+    :param multicircuit_model:
+    :param cgmes_model:
+    :param logger:
+    :return:
+    """
+
+    for mc_elm in multicircuit_model.shunts:
+
+        lsc = cgmes.LinearShuntCompensator(rdfid=form_rdfid(mc_elm.idtag))
+        lsc.name = mc_elm.name
+        lsc.description = mc_elm.code
+        # lsc.EquipmentContainer: VoltageLevel
+        lsc.RegulatingControl = False
+        lsc.controlEnabled = False
+        lsc.maximumSections = 1
+        # lsc.nomU = lsc.EquipmentContainer.BaseVoltage.nominalVoltage
+        # lsc.bPerSection = mc_elm.B / (lsc.nomU ** 2)
+        # lsc.gPerSection = mc_elm.G / (lsc.nomU ** 2)
+        # lsc.sections = ?
+        # lsc.normalSections = ?
+
+        lsc.Terminals = create_cgmes_terminal(mc_elm.bus, cgmes_model, logger)
+
+        cgmes_model.LinearShuntCompensator_list.append(lsc)
 
 # endregion
 
