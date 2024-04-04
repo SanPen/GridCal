@@ -44,10 +44,10 @@ from GridCal.Gui.Diagrams.BusBranchEditorWidget.Injections.controllable_shunt_gr
 from GridCalEngine.enumerations import DeviceType, FaultType
 from GridCalEngine.Devices.types import INJECTION_DEVICE_TYPES
 from GridCalEngine.Simulations.Topology.topology_reduction_driver import reduce_buses
-from GridCalEngine.Devices.Substation import Bus
+from GridCalEngine.Devices.Substation.busbar import BusBar
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
-    from GridCal.Gui.Diagrams.BusBranchEditorWidget import BusBranchEditorWidget
+    from GridCal.Gui.Diagrams.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
 
 
 class BusBarGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
@@ -65,7 +65,7 @@ class BusBarGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
                  parent=None,
                  index=0,
                  editor: BusBranchEditorWidget = None,
-                 bus: Bus = None,
+                 node: BusBar = None,
                  h: int = 40,
                  w: int = 80,
                  x: int = 0,
@@ -81,7 +81,7 @@ class BusBarGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
         :param x:
         :param y:
         """
-        GenericDBWidget.__init__(self, parent=parent, api_object=bus, editor=editor, draw_labels=True)
+        GenericDBWidget.__init__(self, parent=parent, api_object=node, editor=editor, draw_labels=True)
         QtWidgets.QGraphicsRectItem.__init__(self, parent)
 
         self.min_w = 180.0

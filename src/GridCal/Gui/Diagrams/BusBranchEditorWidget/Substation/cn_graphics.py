@@ -25,7 +25,7 @@ from PySide6.QtWidgets import QMenu, QGraphicsSceneMouseEvent
 from GridCal.Gui.messages import yes_no_question
 from GridCal.Gui.Diagrams.BusBranchEditorWidget.generic_graphics import (GenericDBWidget, ACTIVE, DEACTIVATED,
                                                                          FONT_SCALE, EMERGENCY)
-from GridCal.Gui.Diagrams.BusBranchEditorWidget.terminal_item import TerminalItem, HandleItem
+from GridCal.Gui.Diagrams.BusBranchEditorWidget.terminal_item import RoundTerminalItem
 from GridCal.Gui.Diagrams.BusBranchEditorWidget.Injections.load_graphics import LoadGraphicItem, Load
 from GridCal.Gui.Diagrams.BusBranchEditorWidget.Injections.generator_graphics import GeneratorGraphicItem, Generator
 from GridCal.Gui.Diagrams.BusBranchEditorWidget.Injections.static_generator_graphics import (StaticGeneratorGraphicItem,
@@ -44,7 +44,7 @@ from GridCal.Gui.Diagrams.BusBranchEditorWidget.Injections.controllable_shunt_gr
 from GridCalEngine.enumerations import DeviceType, FaultType
 from GridCalEngine.Devices.types import INJECTION_DEVICE_TYPES
 from GridCalEngine.Simulations.Topology.topology_reduction_driver import reduce_buses
-from GridCalEngine.Devices.Substation import Bus
+from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
@@ -65,9 +65,9 @@ class CnGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
                  parent=None,
                  index=0,
                  editor: BusBranchEditorWidget = None,
-                 bus: Bus = None,
+                 node: ConnectivityNode = None,
                  h: int = 40,
-                 w: int = 80,
+                 w: int = 40,
                  x: int = 0,
                  y: int = 0):
         """
@@ -81,11 +81,11 @@ class CnGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
         :param x:
         :param y:
         """
-        GenericDBWidget.__init__(self, parent=parent, api_object=bus, editor=editor, draw_labels=True)
+        GenericDBWidget.__init__(self, parent=parent, api_object=node, editor=editor, draw_labels=True)
         QtWidgets.QGraphicsRectItem.__init__(self, parent)
 
-        self.min_w = 180.0
-        self.min_h = 40.0
+        self.min_w = 5.0
+        self.min_h = 5.0
         self.offset = 20
         self.h = h if h >= self.min_h else self.min_h
         self.w = w if w >= self.min_w else self.min_w
@@ -105,33 +105,21 @@ class CnGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
         self.label = QtWidgets.QGraphicsTextItem(self.api_object.name if self.api_object is not None else "", self)
         self.label.setDefaultTextColor(ACTIVE['text'])
         self.label.setScale(FONT_SCALE)
-
-        # square
-        self.tile = QtWidgets.QGraphicsRectItem(0, 0, 20, 20, self)
-        self.tile.setOpacity(0.7)
+        self.label.setPos(QPoint(self.w, 0))
 
         # connection terminals the block
-        self._terminal = TerminalItem('s', parent=self, editor=self.editor)  # , h=self.h))
+        self._terminal = RoundTerminalItem('s', parent=self, editor=self.editor, h=20, w=20)  # , h=self.h))
         self._terminal.setPen(QPen(Qt.transparent, self.pen_width, self.style, Qt.RoundCap, Qt.RoundJoin))
-
-        # Create corner for resize:
-        self.sizer = HandleItem(self._terminal, callback=self.change_size)
-        self.sizer.setPos(self.w, self.h)
-        self.sizer.setFlag(self.GraphicsItemFlag.ItemIsMovable)
-
-        self.big_marker = None
-
-        self.set_tile_color(self.color)
+        self._terminal.setPos(QPoint(15, 15))
 
         self.setPen(QPen(Qt.transparent, self.pen_width, self.style))
         self.setBrush(Qt.transparent)
+        # self.setBrush(QBrush(QColor(255, 0, 0)))
         self.setFlags(self.GraphicsItemFlag.ItemIsSelectable | self.GraphicsItemFlag.ItemIsMovable)
         self.setCursor(QCursor(Qt.PointingHandCursor))
 
-        # Update size:
-        self.change_size(w=self.w)
-
         self.set_position(x, y)
+        self.setRect(0.0, 0.0, self.w, self.h)
 
     def recolour_mode(self) -> None:
         """
@@ -140,7 +128,6 @@ class CnGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
         super().recolour_mode()
 
         self.label.setDefaultTextColor(ACTIVE['text'])
-        self.set_tile_color(self.color)
 
         for e in self.shunt_children:
             if e is not None:
@@ -161,28 +148,6 @@ class CnGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
                                            r=self.rotation(),
                                            graphic_object=self)
 
-    def add_big_marker(self, color: Union[None, QColor] = Qt.red, tool_tip_text: str = ""):
-        """
-        Add a big marker to the bus
-        :param color: Qt Color ot the marker
-        :param tool_tip_text: tool tip text to display
-        """
-        if color is not None:
-            if self.big_marker is None:
-                self.big_marker = QtWidgets.QGraphicsEllipseItem(0, 0, 180, 180, parent=self)
-
-            self.big_marker.setBrush(color)
-            self.big_marker.setOpacity(0.5)
-            self.big_marker.setToolTip(tool_tip_text)
-
-    def delete_big_marker(self) -> None:
-        """
-        Delete the big marker
-        """
-        if self.big_marker is not None:
-            self.editor.remove_from_scene(self.big_marker)
-            self.big_marker = None
-
     def set_position(self, x: int, y: int) -> None:
         """
         Set the bus x, y position
@@ -195,28 +160,12 @@ class CnGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
             y = 0
         self.setPos(QPoint(int(x), int(y)))
 
-    def set_tile_color(self, brush: QBrush) -> None:
-        """
-        Set the color of the title
-        Args:
-            brush:  Qt Color
-        """
-        self.tile.setBrush(brush)
-        self._terminal.setBrush(brush)
-
-    def merge(self, other_bus_graphic: "BusGraphicItem") -> None:
+    def merge(self, other_bus_graphic: "CnGraphicItem") -> None:
         """
         Merge another BusGraphicItem into this
         :param other_bus_graphic: BusGraphicItem
         """
         self.shunt_children += other_bus_graphic.shunt_children
-
-    def update(self, rect: Union[QRectF, QRect] = ...):
-        """
-        Update the object
-        :return:
-        """
-        self.change_size(w=self.w)
 
     def set_height(self, h: int):
         """
@@ -226,40 +175,6 @@ class CnGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
         """
         self.setRect(0.0, 0.0, self.w, h)
         self.h = h
-
-    def change_size(self, w: int, dummy: float = 0.0):
-        """
-        Resize block function
-        :param w:
-        :param dummy:
-        :return:
-        """
-        # Limit the block size to the minimum size:
-        self.w = w if w > self.min_w else self.min_w
-        self.setRect(0.0, 0.0, w, self.min_h)
-        y0 = self.offset
-        x0 = 0
-
-        # center label:
-        self.label.setPos(w + 5, -20)
-
-        # lower
-        self._terminal.setPos(x0, y0)
-        self._terminal.setRect(0, 20, w, 10)
-
-        # rearrange children
-        self.arrange_children()
-
-        # update editor diagram position
-        self.editor.update_diagram_element(device=self.api_object,
-                                           x=self.pos().x(),
-                                           y=self.pos().y(),
-                                           w=w,
-                                           h=int(self.min_h),
-                                           r=self.rotation(),
-                                           graphic_object=self)
-
-        return w, self.min_h
 
     def arrange_children(self) -> None:
         """
@@ -331,74 +246,15 @@ class CnGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
         @return:
         """
         menu = QMenu()
-        menu.addSection("Bus")
+        menu.addSection("Connectivity node")
 
-        pe = menu.addAction('Active')
-        pe.setCheckable(True)
-        pe.setChecked(self.api_object.active)
-        pe.triggered.connect(self.enable_disable_toggle)
-
-        sc = menu.addMenu('Short circuit')
-        sc_icon = QIcon()
-        sc_icon.addPixmap(QPixmap(":/Icons/icons/short_circuit.svg"))
-        sc.setIcon(sc_icon)
-        # sc.setCheckable(True)
-        # sc.setChecked(self.sc_enabled)
-        # sc.triggered.connect(self.enable_disable_sc)
-
-        sc_3p = sc.addAction('3-phase')
-        sc_3p_icon = QIcon()
-        sc_3p_icon.addPixmap(QPixmap(":/Icons/icons/short_circuit.svg"))
-        sc_3p.setIcon(sc_3p_icon)
-        sc_3p.setCheckable(True)
-        sc_3p.setChecked(self.sc_enabled[0])
-        sc_3p.triggered.connect(self.enable_disable_sc_3p)
-
-        sc_lg = sc.addAction('Line-Ground')
-        sc_lg_icon = QIcon()
-        sc_lg_icon.addPixmap(QPixmap(":/Icons/icons/short_circuit.svg"))
-        sc_lg.setIcon(sc_lg_icon)
-        sc_lg.setCheckable(True)
-        sc_lg.setChecked(self.sc_enabled[1])
-        sc_lg.triggered.connect(self.enable_disable_sc_lg)
-
-        sc_ll = sc.addAction('Line-Line')
-        sc_ll_icon = QIcon()
-        sc_ll_icon.addPixmap(QPixmap(":/Icons/icons/short_circuit.svg"))
-        sc_ll.setIcon(sc_ll_icon)
-        sc_ll.setCheckable(True)
-        sc_ll.setChecked(self.sc_enabled[2])
-        sc_ll.triggered.connect(self.enable_disable_sc_ll)
-
-        sc_llg = sc.addAction('Line-Line-Ground')
-        sc_llg_icon = QIcon()
-        sc_llg_icon.addPixmap(QPixmap(":/Icons/icons/short_circuit.svg"))
-        sc_llg.setIcon(sc_llg_icon)
-        sc_llg.setCheckable(True)
-        sc_llg.setChecked(self.sc_enabled[3])
-        sc_llg.triggered.connect(self.enable_disable_sc_llg)
-
-        sc_no = sc.addAction('Disable')
-        # sc_no_icon = QIcon()
-        # sc_no_icon.addPixmap(QPixmap(":/Icons/icons/short_circuit.svg"))
-        # sc_no.setIcon(sc_no_icon)
-        # sc_no.setCheckable(True)
-        # sc_no.setChecked(self.api_object.is_dc)
-        sc_no.triggered.connect(self.disable_sc)
-
-        # types
-        # ph3 = '3x'
-        # LG = 'LG'
-        # LL = 'LL'
-        # LLG = 'LLG'
-
-        dc = menu.addAction('Is a DC bus')
-        dc_icon = QIcon()
-        dc_icon.addPixmap(QPixmap(":/Icons/icons/dc.svg"))
-        dc.setIcon(dc_icon)
-        dc.setCheckable(True)
-        dc.setChecked(self.api_object.is_dc)
-        dc.triggered.connect(self.enable_disable_dc)
+        # dc = menu.addAction('Is a DC cn')
+        # dc_icon = QIcon()
+        # dc_icon.addPixmap(QPixmap(":/Icons/icons/dc.svg"))
+        # dc.setIcon(dc_icon)
+        # dc.setCheckable(True)
+        # dc.setChecked(self.api_object.is_dc)
+        # dc.triggered.connect(self.enable_disable_dc)
 
         pl = menu.addAction('Plot profiles')
         plot_icon = QIcon()
@@ -412,12 +268,6 @@ class CnGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
         arr.setIcon(arr_icon)
         arr.triggered.connect(self.arrange_children)
 
-        ra5 = menu.addAction('Assign active state to profile')
-        ra5_icon = QIcon()
-        ra5_icon.addPixmap(QPixmap(":/Icons/icons/assign_to_profile.svg"))
-        ra5.setIcon(ra5_icon)
-        ra5.triggered.connect(self.assign_status_to_profile)
-
         ra3 = menu.addAction('Delete all the connections')
         del2_icon = QIcon()
         del2_icon.addPixmap(QPixmap(":/Icons/icons/delete_conn.svg"))
@@ -429,12 +279,6 @@ class CnGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
         del_icon.addPixmap(QPixmap(":/Icons/icons/delete3.svg"))
         da.setIcon(del_icon)
         da.triggered.connect(self.remove)
-
-        re = menu.addAction('Reduce')
-        re_icon = QIcon()
-        re_icon.addPixmap(QPixmap(":/Icons/icons/grid_reduction.svg"))
-        re.setIcon(re_icon)
-        re.triggered.connect(self.reduce)
 
         menu.addSection("Add")
 
@@ -488,27 +332,11 @@ class CnGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
 
         menu.exec_(event.screenPos())
 
-    def assign_status_to_profile(self):
-        """
-        Assign the snapshot rate to the profile
-        """
-        self.editor.set_active_status_to_profile(self.api_object)
-
     def delete_all_connections(self) -> None:
         """
         Delete all bus connections
         """
         self._terminal.remove_all_connections()
-
-    def reduce(self):
-        """
-        Reduce this bus
-        :return:
-        """
-        ok = yes_no_question('Are you sure that you want to reduce this bus', 'Reduce bus')
-        if ok:
-            reduce_buses(self.editor.circuit, [self.api_object])
-            self.remove()
 
     def remove(self, ask: bool = True) -> None:
         """
@@ -527,101 +355,6 @@ class CnGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
                 self.editor.remove_from_scene(g.nexus)
 
             self.editor.remove_element(device=self.api_object, graphic_object=self)
-
-    def update_color(self):
-        """
-        Update the colour
-        """
-        if self.api_object.active:
-            self.set_tile_color(QBrush(ACTIVE['color']))
-        else:
-            self.set_tile_color(QBrush(DEACTIVATED['color']))
-
-    def enable_disable_toggle(self):
-        """
-        Toggle bus element state
-        @return:
-        """
-        if self.api_object is not None:
-
-            # change the bus state (snapshot)
-            self.api_object.active = not self.api_object.active
-
-            # change the Branches state (snapshot)
-            for host in self._terminal._hosting_connections:
-                if host.api_object is not None:
-                    host.set_enable(val=self.api_object.active)
-
-            self.update_color()
-
-            if self.editor.circuit.has_time_series:
-                ok = yes_no_question('Do you want to update the time series active status accordingly?',
-                                     'Update time series active status')
-
-                if ok:
-                    # change the bus state (time series)
-                    self.editor.set_active_status_to_profile(self.api_object, override_question=True)
-
-                    # change the Branches state (time series)
-                    for host in self._terminal._hosting_connections:
-                        if host.api_object is not None:
-                            self.editor.set_active_status_to_profile(host.api_object, override_question=True)
-
-    def any_short_circuit(self) -> bool:
-        """
-        Determine if there are short circuits enabled
-        :return:
-        """
-        for t in self.sc_enabled:
-            if t:
-                return True
-        return False
-
-    def enable_sc(self) -> None:
-        """
-        Enable the short circuit
-        """
-        self.tile.setPen(QPen(QColor(EMERGENCY['color']), self.pen_width))
-
-    def disable_sc(self):
-        """
-        Disable short circuit
-        """
-        # self.tile.setPen(QPen(QColor(ACTIVE['color']), self.pen_width))
-        self.tile.setPen(QPen(Qt.transparent, self.pen_width))
-        self.sc_enabled = [False, False, False, False]
-
-    def enable_disable_sc_3p(self):
-        """
-        Enable 3-phase short circuit
-        """
-        self.sc_enabled = [True, False, False, False]
-        self.sc_type = FaultType.ph3
-        self.enable_sc()
-
-    def enable_disable_sc_lg(self):
-        """
-        Enable line ground short circuit
-        """
-        self.sc_enabled = [False, True, False, False]
-        self.sc_type = FaultType.LG
-        self.enable_sc()
-
-    def enable_disable_sc_ll(self):
-        """
-        Enable line-line short circuit
-        """
-        self.sc_enabled = [False, False, True, False]
-        self.sc_type = FaultType.LL
-        self.enable_sc()
-
-    def enable_disable_sc_llg(self):
-        """
-        Enable line-line-ground short circuit
-        """
-        self.sc_enabled = [False, False, False, True]
-        self.sc_type = FaultType.LLG
-        self.enable_sc()
 
     def enable_disable_dc(self):
         """
@@ -668,7 +401,7 @@ class CnGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
 
         self.setToolTip(msg)
 
-    def get_terminal(self) -> TerminalItem:
+    def get_terminal(self) -> RoundTerminalItem:
         """
         Get the hosting terminal of this bus object
         :return: TerminalItem
@@ -858,7 +591,7 @@ class CnGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
     def __str__(self):
 
         if self.api_object is None:
-            return f"Bus graphics {hex(id(self))}"
+            return f"CN graphics {hex(id(self))}"
         else:
             return f"Graphics of {self.api_object.name} [{hex(id(self))}]"
 

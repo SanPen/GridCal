@@ -47,7 +47,7 @@ from GridCalEngine.Simulations.Topology.topology_reduction_driver import reduce_
 from GridCalEngine.Devices.Substation import Bus
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
-    from GridCal.Gui.Diagrams.BusBranchEditorWidget import BusBranchEditorWidget
+    from GridCal.Gui.Diagrams.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
 
 
 class BusGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):

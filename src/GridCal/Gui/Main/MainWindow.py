@@ -3990,7 +3990,6 @@ class Ui_mainWindow(object):
         self.menuDiagrams.addAction(self.actionAdd_general_bus_branch_diagram)
         self.menuDiagrams.addAction(self.menuBus_Branch_options.menuAction())
         self.menuDiagrams.addAction(self.actionAdd_map)
-        self.menuDiagrams.addAction(self.actionAdd_substation_diagram)
         self.menuDiagrams.addSeparator()
         self.menuDiagrams.addAction(self.actionZoom_in)
         self.menuDiagrams.addAction(self.actionZoom_out)

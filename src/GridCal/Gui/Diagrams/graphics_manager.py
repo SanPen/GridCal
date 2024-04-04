@@ -65,6 +65,12 @@ class GraphicsManager:
         # second idtag -> GraphicItem
         self.graphic_dict: Dict[DeviceType, Dict[str, ALL_BUS_BRACH_GRAPHICS]] = dict()
 
+    def clear(self):
+        """
+        Clear all graphics references
+        """
+        self.graphic_dict.clear()
+
     def add_device(self, elm: ALL_DEV_TYPES, graphic: ALL_BUS_BRACH_GRAPHICS) -> None:
         """
         Add the graphic of a device

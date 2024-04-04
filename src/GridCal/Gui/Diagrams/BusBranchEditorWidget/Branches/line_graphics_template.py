@@ -840,7 +840,7 @@ class LineGraphicTemplateItem(GenericDBWidget, QGraphicsLineItem):
         """
         if self._from_port:
             if 'Transformer3WGraphicItem' not in sys.modules:
-                from GridCal.Gui.Diagrams.BusBranchEditorWidget import Transformer3WGraphicItem
+                from GridCal.Gui.Diagrams.BusBranchEditorWidget.Branches.transformer3w_graphics import Transformer3WGraphicItem
             return isinstance(self.get_terminal_from_parent(), Transformer3WGraphicItem)
         else:
             return False
@@ -852,7 +852,7 @@ class LineGraphicTemplateItem(GenericDBWidget, QGraphicsLineItem):
         """
         if self._to_port:
             if 'Transformer3WGraphicItem' not in sys.modules:
-                from GridCal.Gui.Diagrams.BusBranchEditorWidget import Transformer3WGraphicItem
+                from GridCal.Gui.Diagrams.BusBranchEditorWidget.Branches.transformer3w_graphics import Transformer3WGraphicItem
             return isinstance(self.get_terminal_to_parent(), Transformer3WGraphicItem)
         else:
             return False
