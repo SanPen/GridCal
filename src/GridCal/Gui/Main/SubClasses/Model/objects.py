@@ -289,6 +289,10 @@ class ObjectsTableMain(DiagramsMain):
                                    DeviceType.GeneratorDevice.value: self.circuit.get_generators(),
                                    }
 
+        elif elm_type == DeviceType.ModellingAuthority:
+            elm = dev.ModellingAuthority()
+            dictionary_of_lists = {}
+
         else:
             raise Exception('elm_type not understood: ' + elm_type.value)
 
@@ -609,6 +613,12 @@ class ObjectsTableMain(DiagramsMain):
 
                 obj = dev.GeneratorEmission()
                 self.circuit.add_generator_emission(obj)
+
+            elif elm_type == DeviceType.ModellingAuthority.value:
+
+                name = f'Modelling authority {self.circuit.get_modelling_authorities_number()}'
+                obj = dev.ModellingAuthority(name=name)
+                self.circuit.add_modelling_authority(obj)
 
             else:
                 info_msg("This object does not support table-like addition.\nUse the schematic instead.")
