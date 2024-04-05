@@ -191,7 +191,7 @@ class CnGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
             x += inc_x
 
         # Arrange line positions
-        self._terminal.process_callbacks(self.pos() + self._terminal.pos())
+        self._terminal.process_callbacks(parent_pos=self.pos())
 
     def create_children_widgets(self, injections_by_tpe: Dict[DeviceType, List[INJECTION_DEVICE_TYPES]]):
         """

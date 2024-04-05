@@ -277,11 +277,9 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
         """
         Update the object
         """
-
         # Arrange line positions
         for terminal in self.terminals:
-            m = QPointF(int(terminal.xc), int(terminal.yc))
-            terminal.process_callbacks(self.pos() + terminal.pos() - m)
+            terminal.process_callbacks(parent_pos=self.pos())
 
     def get_connection_winding(self, from_port: RoundTerminalItem, to_port: RoundTerminalItem):
         """

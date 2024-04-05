@@ -31,7 +31,7 @@ from PySide6.QtGui import (QIcon, QPixmap, QImage, QPainter, QStandardItemModel,
                            QContextMenuEvent)
 from PySide6.QtWidgets import (QGraphicsView, QListView, QTableView, QVBoxLayout, QHBoxLayout, QFrame,
                                QSplitter, QMessageBox, QAbstractItemView, QGraphicsScene, QGraphicsSceneMouseEvent,
-                               QGraphicsItem, QMenu, QWidget)
+                               QGraphicsItem, QGraphicsTextItem, QMenu, QWidget)
 from PySide6.QtSvg import QSvgGenerator
 
 from GridCalEngine.Devices.types import ALL_DEV_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES
@@ -534,16 +534,19 @@ class BusBranchEditorWidget(QSplitter):
         splitter2.setStretchFactor(0, 2)
         splitter2.setStretchFactor(1, 5)
 
-        self.started_branch: Union[LineGraphicTemplateItem, None] = None
-
         self.setStretchFactor(0, 0)
         self.setStretchFactor(1, 2000)
 
+        # line drawing vars
+        self.started_branch: Union[LineGraphicTemplateItem, None] = None
         self.setMouseTracking(True)
         self.startPos = QPoint()
         self.newCenterPos = QPoint()
         self.displacement = QPoint()
-        self.startPos = None
+        self.startPos: Union[QPoint, None] = None
+
+        self.pos_label = QGraphicsTextItem()
+        self.add_to_scene(self.pos_label)
 
         # current time index from the GUI (None or 0, 1, 2, ..., n-1)
         self._time_index: Union[None, int] = time_index
@@ -1239,6 +1242,8 @@ class BusBranchEditorWidget(QSplitter):
         if self.started_branch:
             pos = event.scenePos()
             self.started_branch.setEndPos(pos)
+
+        self.pos_label.setPlainText(f"{event.scenePos().x()}, {event.scenePos().y()}")
 
     def scene_mouse_press_event(self, event: QGraphicsSceneMouseEvent) -> None:
         """

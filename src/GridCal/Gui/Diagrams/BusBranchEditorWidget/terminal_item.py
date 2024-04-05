@@ -62,7 +62,7 @@ class BarTerminalItem(QGraphicsRectItem):
         self.parent: Union[None, BusGraphicItem, Transformer3WGraphicItem, FluidNodeGraphicItem] = parent
 
         # object -> callback
-        self._hosting_connections: Dict[LineGraphicTemplateItem, Callable[[float], None]] = dict()
+        self._hosting_connections: Dict[LineGraphicTemplateItem, Callable[[QPointF], None]] = dict()
 
         self.editor = editor
 
@@ -123,7 +123,7 @@ class BarTerminalItem(QGraphicsRectItem):
 
     def add_hosting_connection(self,
                                graphic_obj: LineGraphicTemplateItem,
-                               callback: Callable[[float], None]):
+                               callback: Callable[[QPointF], None]):
         """
         Add object graphically connected to the graphical bus
         :param graphic_obj: LineGraphicTemplateItem (or child of this)
@@ -307,21 +307,21 @@ class RoundTerminalItem(QGraphicsEllipseItem):
         return self.rect().height()
 
     @property
-    def x(self) -> float:
+    def x(self) -> int:
         """
         x position
         """
         return self.pos().x()
 
     @property
-    def y(self) -> float:
+    def y(self) -> int:
         """
         y position
         """
         return self.pos().y()
 
     @property
-    def xc(self) -> float:
+    def xc(self) -> int:
         """
         x-center
         :return:
@@ -329,7 +329,7 @@ class RoundTerminalItem(QGraphicsEllipseItem):
         return self.pos().x() - self.w / 2
 
     @property
-    def yc(self) -> float:
+    def yc(self) -> int:
         """
         Y-center
         :return:
@@ -362,22 +362,19 @@ class RoundTerminalItem(QGraphicsEllipseItem):
         :param rect:
         :return:
         """
-        self.process_callbacks(self.parent.pos() + self.pos())
+        self.process_callbacks(parent_pos=self.parent.pos())
 
-    def process_callbacks(self, value: QPointF, scale: float = 1.0):
+    def process_callbacks(self, parent_pos: QPointF):
         """
-
-        :param value:
-        :param scale:
-        :return:
+        Send the callbacks, ussually setEndPos or setStartPos functions from the line template
+        :param parent_pos: Parent position
         """
-        h2 = self.y - self.h / 2
-        w2 = self.x - self.w / 2
+        scene_pos = parent_pos + self.pos()  # + QPointF(self.w / 2, self.h / 2)
 
         for i, (connection, call_back) in enumerate(self._hosting_connections.items()):
-            call_back(value + QPointF(w2, h2))
+            call_back(scene_pos)
 
-    def itemChange(self, change: QGraphicsItem.GraphicsItemChange, value: Any) -> Any:
+    def itemChange(self, change: QGraphicsItem.GraphicsItemChange, value: QPointF) -> QPointF:
         """
 
         @param change:
@@ -385,7 +382,7 @@ class RoundTerminalItem(QGraphicsEllipseItem):
         @return:
         """
         if change == QGraphicsItem.GraphicsItemChange.ItemScenePositionHasChanged:
-            self.process_callbacks(value)
+            self.process_callbacks(parent_pos=value)
             return value
         else:
             return super(RoundTerminalItem, self).itemChange(change, value)
