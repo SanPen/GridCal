@@ -63,6 +63,34 @@ def find_object_by_attribute(object_list: List, target_attr_name, target_value):
     return None
 
 
+def get_ohm_values_power_transformer(r, x, g, b, r0, x0, g0, b0, nominal_power, rated_voltage):
+    """
+    Get the transformer ohm values
+    :return:
+    """
+    try:
+        Sbase_system = 100
+        Zbase = (rated_voltage * rated_voltage) / nominal_power
+        Ybase = 1.0 / Zbase
+        R, X, G, B = 0, 0, 0, 0
+        R0, X0, G0, B0 = 0, 0, 0, 0
+        machine_to_sys = Sbase_system / nominal_power
+        R = r * Zbase / machine_to_sys
+        X = x * Zbase / machine_to_sys
+        G = g * Ybase / machine_to_sys
+        B = b * Ybase / machine_to_sys
+        R0 = r0 * Zbase / machine_to_sys if r0 is not None else 0
+        X0 = x0 * Zbase / machine_to_sys if x0 is not None else 0
+        G0 = g0 * Ybase / machine_to_sys if g0 is not None else 0
+        B0 = b0 * Ybase / machine_to_sys if b0 is not None else 0
+
+    except KeyError:
+        R, X, G, B = 0, 0, 0, 0
+        R0, X0, G0, B0 = 0, 0, 0, 0
+
+    return R, X, G, B, R0, X0, G0, B0
+
+
 # endregion
 
 # region create new classes for CC
@@ -99,7 +127,6 @@ def create_cgmes_terminal(bus: Bus,
 def create_cgmes_load_response_char(
         load: gcdev.Load,
         logger: DataLogger) -> cgmes.LoadResponseCharacteristic:
-
     new_rdf_id = get_new_rdfid()
     lrc = cgmes.LoadResponseCharacteristic(rdfid=new_rdf_id)
     # lrc.name =
@@ -268,7 +295,6 @@ def get_cgmes_voltage_levels(multi_circuit_model: MultiCircuit,
 def get_cgmes_tn_nodes(multi_circuit_model: MultiCircuit,
                        cgmes_model: CgmesCircuit,
                        logger: DataLogger) -> None:
-
     for bus in multi_circuit_model.buses:
 
         tn = cgmes.TopologicalNode(rdfid=bus.idtag)
@@ -299,7 +325,6 @@ def get_cgmes_tn_nodes(multi_circuit_model: MultiCircuit,
 def get_cgmes_cn_nodes(multi_circuit_model: MultiCircuit,
                        cgmes_model: CgmesCircuit,
                        logger: DataLogger) -> None:
-
     for mc_elm in multi_circuit_model.connectivity_nodes:
 
         cn = cgmes.ConnectivityNode(rdfid=form_rdfid(mc_elm.idtag))
@@ -313,7 +338,7 @@ def get_cgmes_cn_nodes(multi_circuit_model: MultiCircuit,
             if tn is not None:
                 cn.TopologicalNode = tn
                 cn.ConnectivityNodeContainer = tn.ConnectivityNodeContainer
-                tn.ConnectivityNodes = cn    # link back
+                tn.ConnectivityNodes = cn  # link back
             else:
                 logger.add_error(msg='No TopologinalNode found',
                                  device=cn,
@@ -440,7 +465,7 @@ def get_cgmes_ac_line_segments(multicircuit_model: MultiCircuit,
             object_list=cgmes_model.BaseVoltage_list,
             target_attr_name="nominalVoltage",
             target_value=mc_elm.get_max_bus_nominal_voltage()
-        ) # which Vnom we need?
+        )  # which Vnom we need?
         vnom = line.BaseVoltage.nominalVoltage
 
         if vnom is not None:
@@ -463,11 +488,9 @@ def get_cgmes_ac_line_segments(multicircuit_model: MultiCircuit,
 def get_cgmes_operational_limits(multicircuit_model: MultiCircuit,
                                  cgmes_model: CgmesCircuit,
                                  logger: DataLogger):
-
     # OperationalLimitSet and OperationalLimitType
 
     pass
-
 
 
 def get_cgmes_current_limits(multicircuit_model: MultiCircuit,
@@ -508,7 +531,7 @@ def get_cgmes_generators(multicircuit_model: MultiCircuit,
         cgmes_syn.name = mc_elm.name
         # cgmes_syn.aggregate is optional, not exported
         # cgmes_syn.EquipmentContainer: VoltageLevel
-        #TODO implement control_node in MultiCircuit
+        # TODO implement control_node in MultiCircuit
         # has_control: do we have control
         # control_type: voltage or power control, ..
         # is_controlled: enabling flag (already have)
@@ -518,7 +541,7 @@ def get_cgmes_generators(multicircuit_model: MultiCircuit,
 
         # cgmes_syn.ratedPowerFactor =
         cgmes_syn.ratedS = mc_elm.Snom
-        cgmes_syn.GeneratingUnit = cgmes_gen   # linking them together
+        cgmes_syn.GeneratingUnit = cgmes_gen  # linking them together
         cgmes_gen.RotatingMachine = cgmes_syn  # linking them together
         cgmes_syn.maxQ = mc_elm.Qmax
         cgmes_syn.minQ = mc_elm.Qmin
@@ -528,12 +551,56 @@ def get_cgmes_generators(multicircuit_model: MultiCircuit,
         cgmes_model.SynchronousMachine_list.append(cgmes_syn)
 
 
-def get_cgmes_power_transformers():
-    pass
+def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
+                                 cgmes_model: CgmesCircuit,
+                                 logger: DataLogger):
+    for mc_elm in multicircuit_model.transformers2w:
+        cm_transformer = cgmes.PowerTransformer(rdfid=form_rdfid(mc_elm.idtag))
+        cm_transformer.uuid = mc_elm.idtag
+        cm_transformer.description = mc_elm.code
+        cm_transformer.name = mc_elm.name
+        cm_transformer.Terminals = [create_cgmes_terminal(mc_elm.bus_from, cgmes_model, logger),
+                                    create_cgmes_terminal(mc_elm.bus_to, cgmes_model, logger)]
 
+        cm_transformer.PowerTransformerEnd = []
+        pte1 = cgmes.PowerTransformerEnd()
+        pte1.PowerTransformer = cm_transformer
+        R, X, G, B, R0, X0, G0, B0 = (mc_elm.R, mc_elm.X, mc_elm.G, mc_elm.B, mc_elm.R0,
+                                      mc_elm.X0, mc_elm.G0, mc_elm.B0)
+        r, x, g, b, r0, x0, g0, b0 = get_ohm_values_power_transformer(R, X, G, B, R0, X0, G0, B0, mc_elm.Sn, mc_elm.HV)
+        pte1.r = r
+        pte1.x = x
+        pte1.g = g
+        pte1.b = b
+        pte1.r0 = r0
+        pte1.x0 = x0
+        pte1.g0 = g0
+        pte1.b0 = b0
+        pte1.ratedU = mc_elm.HV
+        pte1.ratedS = mc_elm.Sn
+        pte1.endNumber = 1
 
-def get_cgmes_power_transformer_ends():
-    pass
+        pte2 = cgmes.PowerTransformerEnd()
+        pte2.PowerTransformer = cm_transformer
+        pte2.r = 0
+        pte2.x = 0
+        pte2.g = 0
+        pte2.b = 0
+        pte2.r0 = 0
+        pte2.x0 = 0
+        pte2.g0 = 0
+        pte2.b0 = 0
+        pte2.ratedU = mc_elm.LV
+        pte2.ratedS = mc_elm.Sn
+        pte2.endNumber = 2
+
+        cm_transformer.PowerTransformerEnd.append(pte1)
+        cgmes_model.PowerTransformerEnd_list.append(pte1)
+        cm_transformer.PowerTransformerEnd.append(pte2)
+        cgmes_model.PowerTransformerEnd_list.append(pte2)
+
+        cgmes_model.PowerTransformer_list.append(cm_transformer)
+
 
 # endregion
 
@@ -566,7 +633,7 @@ def gridcal_to_cgmes(gc_model: MultiCircuit, logger: DataLogger) -> CgmesCircuit
 
     get_cgmes_ac_line_segments(gc_model, cgmes_model, logger)
     # transformers, windings
-
+    get_cgmes_power_transformers(gc_model, cgmes_model, logger)
     # shunts
 
     return cgmes_model

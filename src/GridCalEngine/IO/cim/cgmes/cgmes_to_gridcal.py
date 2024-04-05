@@ -628,7 +628,8 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
 
         for cgmes_elm in device_list:
 
-            windings = get_windings(cgmes_elm)
+            windings = list(cgmes_elm.PowerTransformerEnd)
+            # windings = get_windings(cgmes_elm)
             # windings: List[PowerTransformerEnd] = list(cgmes_elm.references_to_me['PowerTransformerEnd'])
 
             if len(windings) == 2:
@@ -763,8 +764,9 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                     gcdev_elm.winding3.X0 = x0
                     gcdev_elm.winding3.G0 = g0
                     gcdev_elm.winding3.B0 = b0
-                    gcdev_model.add_transformer3w(gcdev_elm)
                     gcdev_elm.winding3.rate = windings[2].ratedS
+
+                    gcdev_model.add_transformer3w(gcdev_elm)
 
 
                 else:
