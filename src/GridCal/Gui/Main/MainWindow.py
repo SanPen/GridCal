@@ -3627,6 +3627,7 @@ class Ui_mainWindow(object):
         self.horizontalLayout_40.setObjectName(u"horizontalLayout_40")
         self.frame_77 = QFrame(self.tab_8)
         self.frame_77.setObjectName(u"frame_77")
+        self.frame_77.setMinimumSize(QSize(300, 0))
         self.frame_77.setFrameShape(QFrame.NoFrame)
         self.frame_77.setFrameShadow(QFrame.Raised)
         self.verticalLayout_37 = QVBoxLayout(self.frame_77)
@@ -3684,6 +3685,55 @@ class Ui_mainWindow(object):
 
         self.horizontalLayout_40.addWidget(self.frame_77)
 
+        self.frame_79 = QFrame(self.tab_8)
+        self.frame_79.setObjectName(u"frame_79")
+        self.frame_79.setMinimumSize(QSize(300, 0))
+        self.frame_79.setFrameShape(QFrame.NoFrame)
+        self.frame_79.setFrameShadow(QFrame.Raised)
+        self.gridLayout_5 = QGridLayout(self.frame_79)
+        self.gridLayout_5.setObjectName(u"gridLayout_5")
+        self.verticalSpacer_25 = QSpacerItem(20, 436, QSizePolicy.Minimum, QSizePolicy.Expanding)
+
+        self.gridLayout_5.addItem(self.verticalSpacer_25, 5, 0, 1, 1)
+
+        self.cgmes_boundary_set_label = QLabel(self.frame_79)
+        self.cgmes_boundary_set_label.setObjectName(u"cgmes_boundary_set_label")
+
+        self.gridLayout_5.addWidget(self.cgmes_boundary_set_label, 3, 0, 1, 1)
+
+        self.selectCGMESBoundarySetButton = QPushButton(self.frame_79)
+        self.selectCGMESBoundarySetButton.setObjectName(u"selectCGMESBoundarySetButton")
+        self.selectCGMESBoundarySetButton.setMaximumSize(QSize(80, 16777215))
+
+        self.gridLayout_5.addWidget(self.selectCGMESBoundarySetButton, 3, 1, 1, 1)
+
+        self.label_90 = QLabel(self.frame_79)
+        self.label_90.setObjectName(u"label_90")
+
+        self.gridLayout_5.addWidget(self.label_90, 2, 0, 1, 2)
+
+        self.line_31 = QFrame(self.frame_79)
+        self.line_31.setObjectName(u"line_31")
+        palette42 = QPalette()
+        palette42.setBrush(QPalette.Active, QPalette.WindowText, brush2)
+        palette42.setBrush(QPalette.Inactive, QPalette.WindowText, brush2)
+        palette42.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
+        self.line_31.setPalette(palette42)
+        self.line_31.setFrameShadow(QFrame.Plain)
+        self.line_31.setLineWidth(4)
+        self.line_31.setFrameShape(QFrame.HLine)
+
+        self.gridLayout_5.addWidget(self.line_31, 1, 0, 1, 2)
+
+        self.label_134 = QLabel(self.frame_79)
+        self.label_134.setObjectName(u"label_134")
+        self.label_134.setFont(font2)
+
+        self.gridLayout_5.addWidget(self.label_134, 0, 0, 1, 2)
+
+
+        self.horizontalLayout_40.addWidget(self.frame_79)
+
         self.horizontalSpacer_27 = QSpacerItem(659, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
         self.horizontalLayout_40.addItem(self.horizontalSpacer_27)
@@ -3716,11 +3766,11 @@ class Ui_mainWindow(object):
 
         self.label_69 = QLabel(self.frame_41)
         self.label_69.setObjectName(u"label_69")
-        palette42 = QPalette()
-        palette42.setBrush(QPalette.Active, QPalette.WindowText, brush3)
-        palette42.setBrush(QPalette.Inactive, QPalette.WindowText, brush3)
-        palette42.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
-        self.label_69.setPalette(palette42)
+        palette43 = QPalette()
+        palette43.setBrush(QPalette.Active, QPalette.WindowText, brush3)
+        palette43.setBrush(QPalette.Inactive, QPalette.WindowText, brush3)
+        palette43.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
+        self.label_69.setPalette(palette43)
         self.label_69.setFont(font2)
         self.label_69.setAlignment(Qt.AlignBottom|Qt.AlignLeading|Qt.AlignLeft)
 
@@ -3731,11 +3781,11 @@ class Ui_mainWindow(object):
 
         self.line_5 = QFrame(self.frame_7)
         self.line_5.setObjectName(u"line_5")
-        palette43 = QPalette()
-        palette43.setBrush(QPalette.Active, QPalette.WindowText, brush2)
-        palette43.setBrush(QPalette.Inactive, QPalette.WindowText, brush2)
-        palette43.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
-        self.line_5.setPalette(palette43)
+        palette44 = QPalette()
+        palette44.setBrush(QPalette.Active, QPalette.WindowText, brush2)
+        palette44.setBrush(QPalette.Inactive, QPalette.WindowText, brush2)
+        palette44.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
+        self.line_5.setPalette(palette44)
         self.line_5.setFrameShadow(QFrame.Plain)
         self.line_5.setLineWidth(4)
         self.line_5.setFrameShape(QFrame.HLine)
@@ -4952,6 +5002,16 @@ class Ui_mainWindow(object):
         self.saveResultsCheckBox.setToolTip(QCoreApplication.translate("mainWindow", u"If checked, the results are stored inside the gridcal file in a compressed format.", None))
 #endif // QT_CONFIG(tooltip)
         self.saveResultsCheckBox.setText(QCoreApplication.translate("mainWindow", u"Save results in .gridcal files", None))
+#if QT_CONFIG(tooltip)
+        self.cgmes_boundary_set_label.setToolTip(QCoreApplication.translate("mainWindow", u"Path of the CGMES default boundary set (single zip file)", None))
+#endif // QT_CONFIG(tooltip)
+        self.cgmes_boundary_set_label.setText(QCoreApplication.translate("mainWindow", u"...", None))
+#if QT_CONFIG(tooltip)
+        self.selectCGMESBoundarySetButton.setToolTip(QCoreApplication.translate("mainWindow", u"Select the CGMES boundary set (single zip file)", None))
+#endif // QT_CONFIG(tooltip)
+        self.selectCGMESBoundarySetButton.setText(QCoreApplication.translate("mainWindow", u"Select", None))
+        self.label_90.setText(QCoreApplication.translate("mainWindow", u"Boundary set", None))
+        self.label_134.setText(QCoreApplication.translate("mainWindow", u"CGMES", None))
         self.settings_tabWidget.setTabText(self.settings_tabWidget.indexOf(self.tab_8), QCoreApplication.translate("mainWindow", u"File", None))
         self.label_68.setText("")
         self.label_69.setText(QCoreApplication.translate("mainWindow", u"General settings", None))

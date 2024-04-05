@@ -49,6 +49,8 @@ def config_data_to_struct(data_, struct_):
                 instance.setChecked(bool(data_[key]))
             elif isinstance(instance, QtWidgets.QRadioButton):
                 instance.setChecked(bool(data_[key]))
+            elif isinstance(instance, str):
+                pass
             else:
                 raise Exception('unknown structure')
         else:
@@ -69,8 +71,13 @@ class ConfigurationMain(ResultsMain):
         # create main window
         ResultsMain.__init__(self, parent)
 
+        self.current_boundary_set: str = ""
+
         # check boxes
         self.ui.dark_mode_checkBox.clicked.connect(self.change_theme_mode)
+
+        # buttons
+        self.ui.selectCGMESBoundarySetButton.clicked.connect(self.select_cgmes_boundary_set)
 
     def change_theme_mode(self) -> None:
         """
@@ -265,7 +272,8 @@ class ConfigurationMain(ResultsMain):
                 "contingency_massive_report": self.ui.contingency_detailed_massive_report_checkBox
             },
             "file": {
-                "store_results_in_file": self.ui.saveResultsCheckBox
+                "store_results_in_file": self.ui.saveResultsCheckBox,
+                "current_boundary_set": self.current_boundary_set
             }
         }
 
@@ -275,8 +283,9 @@ class ConfigurationMain(ResultsMain):
         :return:
         """
 
-        def struct_to_data(data_: Dict[str, Union[float, int, str, bool, Dict[str, Union[float, int, str, bool, Dict]]]],
-                           struct_: Dict[str, Dict[str, any]]):
+        def struct_to_data(
+                data_: Dict[str, Union[float, int, str, bool, Dict[str, Union[float, int, str, bool, Dict]]]],
+                struct_: Dict[str, Dict[str, any]]):
             """
             Recursive function to get the config dictionary from the GUI values
             :param data_: Dictionary to fill
@@ -296,8 +305,16 @@ class ConfigurationMain(ResultsMain):
                     data_[key] = value.isChecked()
                 elif isinstance(value, QtWidgets.QRadioButton):
                     data_[key] = value.isChecked()
+                elif isinstance(value, str):
+                    data_[key] = value
+                elif isinstance(value, int):
+                    data_[key] = value
+                elif isinstance(value, float):
+                    data_[key] = value
+                elif isinstance(value, bool):
+                    data_[key] = value
                 else:
-                    raise Exception('unknown structure')
+                    raise Exception(f'unknown structure {value}')
 
         struct = self.get_config_structure()
         data = dict()
@@ -323,6 +340,22 @@ class ConfigurationMain(ResultsMain):
         struct = self.get_config_structure()
         config_data_to_struct(data_=data, struct_=struct)
 
+        # CGMES boundary set
+
+        """
+        "file": {
+                "store_results_in_file": self.ui.saveResultsCheckBox,
+                "current_boundary_set": self.current_boundary_set 
+            }
+        """
+
+        file_data = data.get("file", None)
+        if file_data is not None:
+            bd_path = file_data.get("current_boundary_set", "")
+            if os.path.exists(bd_path):
+                self.current_boundary_set = bd_path
+                self.ui.cgmes_boundary_set_label.setText(bd_path)
+
         if self.ui.dark_mode_checkBox.isChecked():
             set_dark_mode()
         else:
@@ -342,3 +375,21 @@ class ConfigurationMain(ResultsMain):
                     print(e)
                     self.save_gui_config()
                     print("Config file was erroneous, wrote a new one")
+
+    def select_cgmes_boundary_set(self):
+        """
+        Select the current boundary set
+        """
+        files_types = ("Boundary set (*.zip)")
+
+        dialogue = QtWidgets.QFileDialog(None,
+                                         caption='Select Boundary set file',
+                                         directory=self.project_directory,
+                                         filter=files_types)
+        # dialogue.setOption(QtWidgets.QFileDialog.Option.DontUseNativeDialog, True)
+
+        if dialogue.exec():
+            filenames = dialogue.selectedFiles()
+            if len(filenames) > 0:
+                self.current_boundary_set = filenames[0]
+                self.ui.cgmes_boundary_set_label.setText(self.current_boundary_set)
