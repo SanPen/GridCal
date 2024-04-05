@@ -601,6 +601,80 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
 
         cgmes_model.PowerTransformer_list.append(cm_transformer)
 
+    for mc_elm in multicircuit_model.transformers3w:
+        cm_transformer = cgmes.PowerTransformer(rdfid=form_rdfid(mc_elm.idtag))
+        cm_transformer.uuid = mc_elm.idtag
+        cm_transformer.description = mc_elm.code
+        cm_transformer.name = mc_elm.name
+        cm_transformer.Terminals = [create_cgmes_terminal(mc_elm.bus1, cgmes_model, logger),
+                                    create_cgmes_terminal(mc_elm.bus2, cgmes_model, logger),
+                                    create_cgmes_terminal(mc_elm.bus3, cgmes_model, logger)]
+        cm_transformer.PowerTransformerEnd = []
+
+        pte1 = cgmes.PowerTransformerEnd()
+        pte1.PowerTransformer = cm_transformer
+        pte1.ratedU = mc_elm.V1
+        pte1.ratedS = mc_elm.rate12
+        pte1.endNumber = 1
+        R, X, G, B, R0, X0, G0, B0 = (mc_elm.winding1.R, mc_elm.winding1.X, mc_elm.winding1.G, mc_elm.winding1.B, mc_elm.winding1.R0,
+                                      mc_elm.winding1.X0, mc_elm.winding1.G0, mc_elm.winding1.B0)
+        r, x, g, b, r0, x0, g0, b0 = get_ohm_values_power_transformer(R, X, G, B, R0, X0, G0, B0, mc_elm.winding1.rate, mc_elm.winding1.HV)
+        pte1.r = r
+        pte1.x = x
+        pte1.g = g
+        pte1.b = b
+        pte1.r0 = r0
+        pte1.x0 = x0
+        pte1.g0 = g0
+        pte1.b0 = b0
+
+        pte2 = cgmes.PowerTransformerEnd()
+        pte2.PowerTransformer = cm_transformer
+        pte2.ratedU = mc_elm.V2
+        pte2.ratedS = mc_elm.rate23
+        pte2.endNumber = 2
+        R, X, G, B, R0, X0, G0, B0 = (
+        mc_elm.winding2.R, mc_elm.winding2.X, mc_elm.winding2.G, mc_elm.winding2.B, mc_elm.winding2.R0,
+        mc_elm.winding2.X0, mc_elm.winding2.G0, mc_elm.winding2.B0)
+        r, x, g, b, r0, x0, g0, b0 = get_ohm_values_power_transformer(R, X, G, B, R0, X0, G0, B0, mc_elm.winding2.rate,
+                                                                      mc_elm.winding2.HV)
+        pte2.r = r
+        pte2.x = x
+        pte2.g = g
+        pte2.b = b
+        pte2.r0 = r0
+        pte2.x0 = x0
+        pte2.g0 = g0
+        pte2.b0 = b0
+
+        pte3 = cgmes.PowerTransformerEnd()
+        pte3.PowerTransformer = cm_transformer
+        pte3.ratedU = mc_elm.V3
+        pte3.ratedS = mc_elm.rate31
+        pte3.endNumber = 3
+        R, X, G, B, R0, X0, G0, B0 = (
+        mc_elm.winding3.R, mc_elm.winding3.X, mc_elm.winding3.G, mc_elm.winding3.B, mc_elm.winding3.R0,
+        mc_elm.winding3.X0, mc_elm.winding3.G0, mc_elm.winding3.B0)
+        r, x, g, b, r0, x0, g0, b0 = get_ohm_values_power_transformer(R, X, G, B, R0, X0, G0, B0, mc_elm.winding3.rate,
+                                                                      mc_elm.winding3.HV)
+        pte3.r = r
+        pte3.x = x
+        pte3.g = g
+        pte3.b = b
+        pte3.r0 = r0
+        pte3.x0 = x0
+        pte3.g0 = g0
+        pte3.b0 = b0
+
+        cm_transformer.PowerTransformerEnd.append(pte1)
+        cgmes_model.PowerTransformerEnd_list.append(pte1)
+        cm_transformer.PowerTransformerEnd.append(pte2)
+        cgmes_model.PowerTransformerEnd_list.append(pte2)
+        cm_transformer.PowerTransformerEnd.append(pte3)
+        cgmes_model.PowerTransformerEnd_list.append(pte3)
+
+        cgmes_model.PowerTransformer_list.append(cm_transformer)
+
 
 # endregion
 
