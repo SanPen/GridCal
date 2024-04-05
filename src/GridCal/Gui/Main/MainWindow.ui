@@ -966,7 +966,7 @@
           <widget class="QWidget" name="compiledArraysTab">
            <attribute name="icon">
             <iconset resource="icons.qrc">
-             <normaloff>:/Icons/icons/squares.svg</normaloff>:/Icons/icons/squares.svg</iconset>
+             <normaloff>:/Icons/icons/spmat.svg</normaloff>:/Icons/icons/spmat.svg</iconset>
            </attribute>
            <attribute name="title">
             <string>Compiled arrays</string>
@@ -8229,7 +8229,6 @@ QProgressBar::chunk{
     <addaction name="actionAdd_general_bus_branch_diagram"/>
     <addaction name="menuBus_Branch_options"/>
     <addaction name="actionAdd_map"/>
-    <addaction name="actionAdd_substation_diagram"/>
     <addaction name="separator"/>
     <addaction name="actionZoom_in"/>
     <addaction name="actionZoom_out"/>

@@ -23,8 +23,10 @@ from PySide6.QtGui import QPen, QCursor, QPixmap, QBrush, QColor, QTransform, QP
 from PySide6.QtWidgets import (QGraphicsLineItem, QGraphicsRectItem, QGraphicsPolygonItem,
                                QGraphicsEllipseItem, QGraphicsSceneMouseEvent, QGraphicsTextItem)
 from GridCal.Gui.Diagrams.BusBranchEditorWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, GenericDBWidget
-from GridCal.Gui.Diagrams.BusBranchEditorWidget.terminal_item import TerminalItem
+from GridCal.Gui.Diagrams.BusBranchEditorWidget.terminal_item import BarTerminalItem, RoundTerminalItem
 from GridCal.Gui.Diagrams.BusBranchEditorWidget.Substation.bus_graphics import BusGraphicItem
+from GridCal.Gui.Diagrams.BusBranchEditorWidget.Substation.cn_graphics import CnGraphicItem
+from GridCal.Gui.Diagrams.BusBranchEditorWidget.Substation.busbar_graphics import BusBarGraphicItem
 from GridCal.Gui.Diagrams.BusBranchEditorWidget.Fluid.fluid_node_graphics import FluidNodeGraphicItem
 from GridCal.Gui.messages import yes_no_question
 
@@ -41,8 +43,8 @@ from GridCalEngine.Devices.Fluid.fluid_node import FluidNode
 from GridCalEngine.Devices.Fluid.fluid_path import FluidPath
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
-    from GridCal.Gui.Diagrams.BusBranchEditorWidget import BusBranchEditorWidget
-    from GridCal.Gui.Diagrams.BusBranchEditorWidget import Transformer3WGraphicItem
+    from GridCal.Gui.Diagrams.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
+    from GridCal.Gui.Diagrams.BusBranchEditorWidget.Branches.transformer3w_graphics import Transformer3WGraphicItem
 
 
 class ArrowHead(QGraphicsPolygonItem):
@@ -216,6 +218,10 @@ class TransformerSymbol(QGraphicsRectItem):
         self.c2.setToolTip(toolTip)
 
     def redraw(self):
+        """
+
+        :return:
+        """
         h = self.parent.pos2.y() - self.parent.pos1.y()
         b = self.parent.pos2.x() - self.parent.pos1.x()
         ang = np.arctan2(h, b)
@@ -282,6 +288,10 @@ class VscSymbol(QGraphicsRectItem):
         self.setToolTip(toolTip)
 
     def redraw(self):
+        """
+
+        :return:
+        """
         h = self.parent.pos2.y() - self.parent.pos1.y()
         b = self.parent.pos2.x() - self.parent.pos1.x()
         ang = np.arctan2(h, b)
@@ -404,8 +414,8 @@ class LineGraphicTemplateItem(GenericDBWidget, QGraphicsLineItem):
     """
 
     def __init__(self,
-                 from_port: TerminalItem,
-                 to_port: Union[TerminalItem, None],
+                 from_port: Union[BarTerminalItem, RoundTerminalItem],
+                 to_port: Union[BarTerminalItem, RoundTerminalItem, None],
                  editor: BusBranchEditorWidget,
                  width=5,
                  api_object: Union[Line, Transformer2W, VSC, UPFC, HvdcLine, DcLine, FluidPath, None] = None,
@@ -450,8 +460,8 @@ class LineGraphicTemplateItem(GenericDBWidget, QGraphicsLineItem):
         self.pos1: QPointF = QPointF(0.0, 0.0)
         self.pos2: QPointF = QPointF(0.0, 0.0)
 
-        self._from_port: Union[TerminalItem, None] = None
-        self._to_port: Union[TerminalItem, None] = None
+        self._from_port: Union[BarTerminalItem, RoundTerminalItem, None] = None
+        self._to_port: Union[BarTerminalItem, RoundTerminalItem, None] = None
 
         # arrows
         self.view_arrows = True
@@ -471,14 +481,14 @@ class LineGraphicTemplateItem(GenericDBWidget, QGraphicsLineItem):
 
         self.set_colour(self.color, self.width, self.style)
 
-    def get_terminal_from(self) -> Union[None, TerminalItem]:
+    def get_terminal_from(self) -> Union[None, BarTerminalItem, RoundTerminalItem]:
         """
         Get the terminal from
         :return: TerminalItem 
         """
         return self._from_port
 
-    def get_terminal_to(self) -> Union[None, TerminalItem]:
+    def get_terminal_to(self) -> Union[None, BarTerminalItem, RoundTerminalItem]:
         """
         Get the terminal to
         :return: TerminalItem
@@ -634,7 +644,7 @@ class LineGraphicTemplateItem(GenericDBWidget, QGraphicsLineItem):
         i = self.editor.circuit.get_branches().index(self.api_object)
         self.editor.plot_branch(i, self.api_object)
 
-    def set_from_port(self, from_port: TerminalItem):
+    def set_from_port(self, from_port: BarTerminalItem):
         """
         Set the From terminal in a connection
         @param from_port: TerminalItem
@@ -650,7 +660,7 @@ class LineGraphicTemplateItem(GenericDBWidget, QGraphicsLineItem):
         self._from_port.update()
         self._from_port.get_parent().setZValue(0)
 
-    def set_to_port(self, to_port: TerminalItem):
+    def set_to_port(self, to_port: BarTerminalItem):
         """
         Set the To terminal in a connection
         @param to_port: TerminalItem
@@ -770,11 +780,11 @@ class LineGraphicTemplateItem(GenericDBWidget, QGraphicsLineItem):
             Pf = Sf.real
             Qf = Sf.imag
             Pt = St.real
-            Qt = St.imag
+            Qt_ = St.imag
             self.arrow_from_1.set_value(Pf, True, Pf < 0, name="Pf", units="MW")
             self.arrow_from_2.set_value(Qf, True, Qf < 0, name="Qf", units="MVAr")
             self.arrow_to_1.set_value(Pt, True, Pt > 0, name="Pt", units="MW")
-            self.arrow_to_2.set_value(Qt, True, Qt > 0, name="Qt", units="MVAr")
+            self.arrow_to_2.set_value(Qt_, True, Qt_ > 0, name="Qt", units="MVAr")
 
     def set_arrows_with_hvdc_power(self, Pf: float, Pt: float) -> None:
         """
@@ -833,6 +843,46 @@ class LineGraphicTemplateItem(GenericDBWidget, QGraphicsLineItem):
         else:
             return False
 
+    def is_from_port_a_cn(self) -> bool:
+        """
+
+        :return:
+        """
+        if self._from_port:
+            return isinstance(self.get_terminal_from_parent(), CnGraphicItem)
+        else:
+            return False
+
+    def is_to_port_a_cn(self) -> bool:
+        """
+
+        :return:
+        """
+        if self._to_port:
+            return isinstance(self.get_terminal_to_parent(), CnGraphicItem)
+        else:
+            return False
+
+    def is_from_port_a_busbar(self) -> bool:
+        """
+
+        :return:
+        """
+        if self._from_port:
+            return isinstance(self.get_terminal_from_parent(), BusBarGraphicItem)
+        else:
+            return False
+
+    def is_to_port_a_busbar(self) -> bool:
+        """
+
+        :return:
+        """
+        if self._to_port:
+            return isinstance(self.get_terminal_to_parent(), BusBarGraphicItem)
+        else:
+            return False
+
     def is_from_port_a_tr3(self) -> bool:
         """
 
@@ -840,7 +890,8 @@ class LineGraphicTemplateItem(GenericDBWidget, QGraphicsLineItem):
         """
         if self._from_port:
             if 'Transformer3WGraphicItem' not in sys.modules:
-                from GridCal.Gui.Diagrams.BusBranchEditorWidget import Transformer3WGraphicItem
+                from GridCal.Gui.Diagrams.BusBranchEditorWidget.Branches.transformer3w_graphics import \
+                    Transformer3WGraphicItem
             return isinstance(self.get_terminal_from_parent(), Transformer3WGraphicItem)
         else:
             return False
@@ -852,7 +903,8 @@ class LineGraphicTemplateItem(GenericDBWidget, QGraphicsLineItem):
         """
         if self._to_port:
             if 'Transformer3WGraphicItem' not in sys.modules:
-                from GridCal.Gui.Diagrams.BusBranchEditorWidget import Transformer3WGraphicItem
+                from GridCal.Gui.Diagrams.BusBranchEditorWidget.Branches.transformer3w_graphics import \
+                    Transformer3WGraphicItem
             return isinstance(self.get_terminal_to_parent(), Transformer3WGraphicItem)
         else:
             return False
@@ -960,6 +1012,34 @@ class LineGraphicTemplateItem(GenericDBWidget, QGraphicsLineItem):
         :return:
         """
         return self.is_from_port_a_bus() and self.is_to_port_a_fluid_node()
+
+    def connected_between_cn_and_bus(self):
+        """
+
+        :return:
+        """
+        return self.is_from_port_a_cn() and self.is_to_port_a_bus()
+
+    def connected_between_bus_and_cn(self):
+        """
+
+        :return:
+        """
+        return self.is_from_port_a_bus() and self.is_to_port_a_cn()
+
+    def connected_between_busbar_and_bus(self):
+        """
+
+        :return:
+        """
+        return self.is_from_port_a_busbar() and self.is_to_port_a_bus()
+
+    def connected_between_bus_and_busbar(self):
+        """
+
+        :return:
+        """
+        return self.is_from_port_a_bus() and self.is_to_port_a_busbar()
 
     def should_be_a_converter(self) -> bool:
         """

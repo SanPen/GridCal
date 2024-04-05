@@ -29,7 +29,7 @@ from GridCalEngine.Devices.Parents.editable_device import EditableDevice
 from GridCalEngine.Devices.types import FLUID_TYPES
 
 from GridCal.Gui.Diagrams.BusBranchEditorWidget.generic_graphics import ACTIVE, FONT_SCALE, GenericDBWidget
-from GridCal.Gui.Diagrams.BusBranchEditorWidget.terminal_item import TerminalItem, HandleItem
+from GridCal.Gui.Diagrams.BusBranchEditorWidget.terminal_item import BarTerminalItem, HandleItem
 from GridCal.Gui.Diagrams.BusBranchEditorWidget.Fluid.fluid_turbine_graphics import FluidTurbineGraphicItem
 from GridCal.Gui.Diagrams.BusBranchEditorWidget.Fluid.fluid_pump_graphics import FluidPumpGraphicItem
 from GridCal.Gui.Diagrams.BusBranchEditorWidget.Fluid.fluid_p2x_graphics import FluidP2xGraphicItem
@@ -95,8 +95,8 @@ class FluidNodeGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
     def __init__(self, editor: BusBranchEditorWidget, fluid_node: FluidNode,
                  parent=None, index=0, h: int = 20, w: int = 80, x: int = 0, y: int = 0):
 
-        GenericDBWidget.__init__(self, parent=parent, api_object=fluid_node, editor=editor)
-        super(FluidNodeGraphicItem, self).__init__(parent)
+        GenericDBWidget.__init__(self, parent=parent, api_object=fluid_node, editor=editor, draw_labels=True)
+        QtWidgets.QGraphicsRectItem.__init__(self, parent)
 
         self.min_w = 180.0
         self.min_h = 20.0
@@ -135,7 +135,7 @@ class FluidNodeGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
         self.label.setScale(FONT_SCALE)
 
         # connection terminals the block
-        self._terminal = TerminalItem('s', parent=self, editor=self.editor)  # , h=self.h))
+        self._terminal = BarTerminalItem('s', parent=self, editor=self.editor)  # , h=self.h))
         self._terminal.setPen(QPen(Qt.transparent, self.pen_width, self.style, Qt.RoundCap, Qt.RoundJoin))
 
         # Create corner for resize:
@@ -386,7 +386,7 @@ class FluidNodeGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
 
         menu.exec_(event.screenPos())
 
-    def get_terminal(self) -> TerminalItem:
+    def get_terminal(self) -> BarTerminalItem:
         """
         Get the hosting terminal of this bus object
         :return: TerminalItem

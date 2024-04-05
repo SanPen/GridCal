@@ -30,7 +30,7 @@ if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.BusBranchEditorWidget.Fluid.fluid_node_graphics import FluidNodeGraphicItem
 
 
-class TerminalItem(QGraphicsRectItem):
+class BarTerminalItem(QGraphicsRectItem):
     """
     Represents a connection point to a subsystem
     """
@@ -175,7 +175,7 @@ class TerminalItem(QGraphicsRectItem):
             self.process_callbacks(value)
             return value
         else:
-            return super(TerminalItem, self).itemChange(change, value)
+            return super(BarTerminalItem, self).itemChange(change, value)
 
     def mousePressEvent(self, event: QGraphicsSceneMouseEvent) -> None:
         """
@@ -209,17 +209,14 @@ class HandleItem(QGraphicsEllipseItem):
     A handle that can be moved by the mouse: Element to resize the boxes
     """
 
-    def __init__(self, parent: TerminalItem = None, callback: Callable = None) -> None:
+    def __init__(self, parent: BarTerminalItem = None, callback: Callable = None) -> None:
         """
 
         @param parent:
         """
         QGraphicsEllipseItem.__init__(self, QRectF(-4, -4, 8, 8), parent)
 
-        self.callbacks_list = list()
-
-        if callback is not None:
-            self.callbacks_list.append(callback)
+        self.callback = callback
 
         self.setBrush(Qt.red)
         self.setFlag(self.GraphicsItemFlag.ItemIsMovable, True)
@@ -237,8 +234,8 @@ class HandleItem(QGraphicsEllipseItem):
             x, y = value.x(), value.y()
 
             # This cannot be a signal because this is not a QObject
-            for cb in self.callbacks_list:
-                res = cb(x, y)
+            if self.callback is not None:
+                res = self.callback(x, y)
                 if res:
                     x, y = res
                     value = QPointF(x, y)
@@ -246,3 +243,175 @@ class HandleItem(QGraphicsEllipseItem):
 
         # Call superclass method:
         return super(HandleItem, self).itemChange(change, value)
+
+
+class RoundTerminalItem(QGraphicsEllipseItem):
+    """
+    Represents a connection point to a subsystem
+    """
+
+    def __init__(self,
+                 name: str,
+                 editor: BusBranchEditorWidget,
+                 parent: Union[None, BusGraphicItem, Transformer3WGraphicItem, FluidNodeGraphicItem] = None,
+                 h=10.0,
+                 w=10.0):
+        """
+
+        @param name:
+        @param editor:
+        @param parent:
+        """
+
+        QGraphicsEllipseItem.__init__(self, QRectF(-6.0, -6.0, h, w), parent)
+        self.setCursor(QCursor(Qt.CrossCursor))
+
+        # Properties:
+        self.color = ACTIVE['color']
+        self.pen_width = 2
+        self.style = ACTIVE['style']
+        self.setBrush(Qt.darkGray)
+        self.setPen(QPen(self.color, self.pen_width, self.style))
+
+        # terminal parent object
+        self.parent: Union[None, BusGraphicItem, Transformer3WGraphicItem, FluidNodeGraphicItem] = parent
+
+        # object -> callback
+        self._hosting_connections: Dict[LineGraphicTemplateItem, Callable[[float], None]] = dict()
+
+        self.editor = editor
+
+        # Name:
+        self.name = name
+        self.setFlag(QGraphicsRectItem.GraphicsItemFlag.ItemSendsScenePositionChanges, True)
+
+    def get_parent(self) -> Union[None, BusGraphicItem, Transformer3WGraphicItem]:
+        """
+        Returns the parent object
+        :return: Union[None, BusGraphicItem, Transformer3WGraphicItem]
+        """
+        return self.parent
+
+    @property
+    def w(self) -> float:
+        """
+        Width
+        """
+        return self.rect().width()
+
+    @property
+    def h(self) -> float:
+        """
+        Height
+        """
+        return self.rect().height()
+
+    @property
+    def x(self) -> float:
+        """
+        x position
+        """
+        return self.pos().x()
+
+    @property
+    def y(self) -> float:
+        """
+        y position
+        """
+        return self.pos().y()
+
+    @property
+    def xc(self) -> float:
+        """
+        x-center
+        :return:
+        """
+        return self.pos().x() - self.w / 2
+
+    @property
+    def yc(self) -> float:
+        """
+        Y-center
+        :return:
+        """
+        return self.pos().y() - self.h / 2
+
+    def add_hosting_connection(self,
+                               graphic_obj: LineGraphicTemplateItem,
+                               callback: Callable[[float], None]):
+        """
+        Add object graphically connected to the graphical bus
+        :param graphic_obj: LineGraphicTemplateItem (or child of this)
+        :param callback: callback function
+        """
+        self._hosting_connections[graphic_obj] = callback
+
+    def delete_hosting_connection(self, graphic_obj: LineGraphicTemplateItem):
+        """
+        Delete object graphically connected to the graphical bus
+        :param graphic_obj: LineGraphicTemplateItem (or child of this)
+        """
+        if graphic_obj in self._hosting_connections.keys():
+            del self._hosting_connections[graphic_obj]
+        else:
+            print(f'No such hosting connection {self.name} -> {graphic_obj}')
+
+    def update(self, rect: Union[QRectF, QRect] = ...):
+        """
+
+        :param rect:
+        :return:
+        """
+        self.process_callbacks(self.parent.pos() + self.pos())
+
+    def process_callbacks(self, value: QPointF, scale: float = 1.0):
+        """
+
+        :param value:
+        :param scale:
+        :return:
+        """
+        h2 = self.y - self.h / 2
+        w2 = self.x - self.w / 2
+
+        for i, (connection, call_back) in enumerate(self._hosting_connections.items()):
+            call_back(value + QPointF(w2, h2))
+
+    def itemChange(self, change: QGraphicsItem.GraphicsItemChange, value: Any) -> Any:
+        """
+
+        @param change:
+        @param value: This is a QPointF object with the coordinates of the upper left corner of the TerminalItem
+        @return:
+        """
+        if change == QGraphicsItem.GraphicsItemChange.ItemScenePositionHasChanged:
+            self.process_callbacks(value)
+            return value
+        else:
+            return super(RoundTerminalItem, self).itemChange(change, value)
+
+    def mousePressEvent(self, event: QGraphicsSceneMouseEvent) -> None:
+        """
+        Start a connection
+        :param event: QGraphicsSceneMouseEvent
+        """
+        self.editor.start_connection(self)
+
+    def remove_all_connections(self) -> None:
+        """
+        Removes all the terminal connections
+        """
+        for graphic_item, _ in self._hosting_connections.items():
+            self.editor.remove_element(graphic_object=graphic_item, device=graphic_item.api_object)
+
+        self._hosting_connections.clear()
+
+    def __str__(self):
+
+        if self.parent is None:
+            return f"Round Terminal [{hex(id(self))}]"
+        else:
+            return f"Round Terminal {self.parent} [{hex(id(self))}]"
+
+    def __repr__(self):
+        return str(self)

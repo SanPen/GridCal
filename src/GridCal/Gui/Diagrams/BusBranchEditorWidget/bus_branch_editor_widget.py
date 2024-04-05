@@ -36,8 +36,9 @@ from PySide6.QtSvg import QSvgGenerator
 
 from GridCalEngine.Devices.types import ALL_DEV_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.Devices.Substation import Bus
-from GridCalEngine.Devices.Parents.editable_device import EditableDevice
+from GridCalEngine.Devices.Substation.bus import Bus
+from GridCalEngine.Devices.Substation.busbar import BusBar
+from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.Devices.Branches.line import Line
 from GridCalEngine.Devices.Branches.dc_line import DcLine
 from GridCalEngine.Devices.Branches.transformer import Transformer2W
@@ -50,17 +51,19 @@ from GridCalEngine.Devices.Injections.generator import Generator
 from GridCalEngine.Devices.Fluid import FluidNode, FluidPath
 from GridCalEngine.Devices.Aggregation.investments_group import InvestmentsGroup
 from GridCalEngine.Devices.Aggregation.investment import Investment
-from GridCalEngine.enumerations import DeviceType
-from GridCalEngine.Simulations.driver_types import SimulationTypes
-from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.Devices.Diagrams.bus_branch_diagram import BusBranchDiagram
 from GridCalEngine.Devices.Diagrams.graphic_location import GraphicLocation
+from GridCalEngine.Simulations.driver_types import SimulationTypes
+from GridCalEngine.Simulations.driver_template import DriverTemplate
+from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec, Logger
 from GridCalEngine.Devices.types import BRANCH_TYPES
 
 from GridCal.Gui.Diagrams.graphics_manager import GraphicsManager
-from GridCal.Gui.Diagrams.BusBranchEditorWidget.terminal_item import TerminalItem
+from GridCal.Gui.Diagrams.BusBranchEditorWidget.terminal_item import BarTerminalItem, RoundTerminalItem
 from GridCal.Gui.Diagrams.BusBranchEditorWidget.Substation.bus_graphics import BusGraphicItem
+from GridCal.Gui.Diagrams.BusBranchEditorWidget.Substation.cn_graphics import CnGraphicItem
+from GridCal.Gui.Diagrams.BusBranchEditorWidget.Substation.busbar_graphics import BusBarGraphicItem
 from GridCal.Gui.Diagrams.BusBranchEditorWidget.Fluid.fluid_node_graphics import FluidNodeGraphicItem
 from GridCal.Gui.Diagrams.BusBranchEditorWidget.Fluid.fluid_path_graphics import FluidPathGraphicItem
 from GridCal.Gui.Diagrams.BusBranchEditorWidget.Branches.line_graphics import LineGraphicItem
@@ -101,8 +104,6 @@ To do this the graphic objects call "parent.circuit.<function or object>"
 '''
 
 
-
-
 class BusBranchLibraryModel(QStandardItemModel):
     """
     Items model to host the draggable icons
@@ -118,29 +119,30 @@ class BusBranchLibraryModel(QStandardItemModel):
 
         self.setColumnCount(1)
 
-        # add bus to the drag&drop
-        bus_icon = QIcon()
-        bus_icon.addPixmap(QPixmap(":/Icons/icons/bus_icon.svg"))
         self.bus_name = "Bus"
-        item = QStandardItem(bus_icon, self.bus_name)
-        item.setToolTip("Drag & drop this into the schematic")
-        self.appendRow(item)
-
-        # add transformer3w to the drag&drop
-        t3w_icon = QIcon()
-        t3w_icon.addPixmap(QPixmap(":/Icons/icons/transformer3w.svg"))
         self.transformer3w_name = "3W-Transformer"
-        item = QStandardItem(t3w_icon, self.transformer3w_name)
-        item.setToolTip("Drag & drop this into the schematic")
-        self.appendRow(item)
-
-        # add fluid-node to the drag&drop
-        dam_icon = QIcon()
-        dam_icon.addPixmap(QPixmap(":/Icons/icons/dam.svg"))
         self.fluid_node_name = "Fluid-node"
-        item = QStandardItem(dam_icon, self.fluid_node_name)
-        item.setToolTip("Drag & drop this into the schematic")
-        self.appendRow(item)
+        self.cn_name = "Connectivity node"
+        self.bb_name = "Bus bar"
+
+        self.add(name=self.bus_name, icon_name="bus_icon")
+        self.add(name=self.transformer3w_name, icon_name="transformer3w")
+        self.add(name=self.fluid_node_name, icon_name="dam")
+        self.add(name=self.cn_name, icon_name="cn_icon")
+        self.add(name=self.bb_name, icon_name="bus_bar_icon")
+
+    def add(self, name: str, icon_name: str):
+        """
+        Add element to the library
+        :param name: Name of the element
+        :param icon_name: Icon name, the path is taken care of
+        :return:
+        """
+        _icon = QIcon()
+        _icon.addPixmap(QPixmap(f":/Icons/icons/{icon_name}.svg"))
+        _item = QStandardItem(_icon, name)
+        _item.setToolTip(f"Drag & drop {name} into the schematic")
+        self.appendRow(_item)
 
     @staticmethod
     def to_bytes_array(val: str) -> QByteArray:
@@ -174,6 +176,20 @@ class BusBranchLibraryModel(QStandardItemModel):
         :return:
         """
         return self.to_bytes_array(self.fluid_node_name)
+
+    def get_connectivity_node_mime_data(self) -> QByteArray:
+        """
+
+        :return:
+        """
+        return self.to_bytes_array(self.cn_name)
+
+    def get_bus_bar_mime_data(self) -> QByteArray:
+        """
+
+        :return:
+        """
+        return self.to_bytes_array(self.bb_name)
 
     def mimeTypes(self) -> List[str]:
         """
@@ -434,9 +450,6 @@ def find_my_node(idtag_: str,
     return graphic_obj
 
 
-
-
-
 class BusBranchEditorWidget(QSplitter):
     """
     BusBranchEditorWidget
@@ -518,7 +531,7 @@ class BusBranchEditorWidget(QSplitter):
         self.addWidget(self.editor_graphics_view)
 
         # factor 1:10
-        splitter2.setStretchFactor(0, 1)
+        splitter2.setStretchFactor(0, 2)
         splitter2.setStretchFactor(1, 5)
 
         self.started_branch: Union[LineGraphicTemplateItem, None] = None
@@ -602,73 +615,51 @@ class BusBranchEditorWidget(QSplitter):
         """
         if event.mimeData().hasFormat('component/name'):
             obj_type = event.mimeData().data('component/name')
-            bus_data = self.library_model.get_bus_mime_data()
-            tr3w_data = self.library_model.get_3w_transformer_mime_data()
-            fluid_node_data = self.library_model.get_fluid_node_mime_data()
 
             point0 = self.editor_graphics_view.mapToScene(event.position().x(), event.position().y())
             x0 = point0.x()
             y0 = point0.y()
 
-            if bus_data == obj_type:
-                obj = Bus(name=f'Bus {len(self.circuit.get_buses())}',
-                          vnom=self.default_bus_voltage)
+            if obj_type == self.library_model.get_bus_mime_data():
+                obj = Bus(name=f'Bus {self.circuit.get_bus_number()}', vnom=self.default_bus_voltage)
+                graphic_object = BusGraphicItem(editor=self, bus=obj, x=x0, y=y0, h=20, w=80)
+                self.circuit.add_bus(obj=obj)
 
-                graphic_object = BusGraphicItem(editor=self,
-                                                bus=obj,
-                                                x=x0,
-                                                y=y0,
-                                                h=20,
-                                                w=80)
-
-                self.add_to_scene(graphic_object=graphic_object)
-
-                # weird but it's the only way to have graphical-API communication
-                self.circuit.add_bus(obj)
-
-                # add to the diagram list
-                self.update_diagram_element(device=obj,
-                                            x=x0,
-                                            y=y0,
-                                            w=graphic_object.w,
-                                            h=graphic_object.h,
-                                            r=0,
-                                            graphic_object=graphic_object)
-
-            elif tr3w_data == obj_type:
+            elif obj_type == self.library_model.get_3w_transformer_mime_data():
                 obj = Transformer3W(name=f"Transformer 3W {len(self.circuit.transformers3w)}")
                 graphic_object = self.create_transformer_3w_graphics(elm=obj, x=x0, y=y0)
-                self.add_to_scene(graphic_object=graphic_object)
-
-                # weird but it's the only way to have graphical-API communication
                 self.circuit.add_transformer3w(obj)
 
-                # add to the diagram list
-                self.update_diagram_element(device=obj,
-                                            x=x0,
-                                            y=y0,
-                                            w=graphic_object.w,
-                                            h=graphic_object.h,
-                                            r=0,
-                                            graphic_object=graphic_object)
-
-            elif fluid_node_data == obj_type:
-                obj = FluidNode(name=f"Fluid node {len(self.circuit.fluid_nodes)}")
-
+            elif obj_type == self.library_model.get_fluid_node_mime_data():
+                obj = FluidNode(name=f"Fluid node {self.circuit.get_fluid_nodes_number()}")
                 graphic_object = self.create_fluid_node_graphics(node=obj, x=x0, y=y0, h=20, w=80)
-                self.add_to_scene(graphic_object=graphic_object)
-
-                # weird but it's the only way to have graphical-API communication
                 self.circuit.add_fluid_node(obj)
 
-                # add to the diagram list
-                self.update_diagram_element(device=obj,
-                                            x=x0,
-                                            y=y0,
-                                            w=graphic_object.w,
-                                            h=graphic_object.h,
-                                            r=0,
-                                            graphic_object=graphic_object)
+            elif obj_type == self.library_model.get_connectivity_node_mime_data():
+                obj = ConnectivityNode(name=f"CN {len(self.circuit.get_connectivity_nodes())}")
+                graphic_object = self.create_connectivity_node_graphics(node=obj, x=x0, y=y0, h=40, w=40)
+                self.circuit.add_connectivity_node(obj)
+
+            elif obj_type == self.library_model.get_bus_bar_mime_data():
+                obj = BusBar(name=f"Bus bar {self.circuit.get_bus_bars_number()}")
+                graphic_object = self.create_bus_bar_graphics(node=obj, x=x0, y=y0, h=20, w=80)
+                self.circuit.add_bus_bar(obj)
+
+            else:
+                # unrecognized drop
+                return
+
+            # add to the scene
+            self.add_to_scene(graphic_object=graphic_object)
+
+            # add to the diagram list
+            self.update_diagram_element(device=obj,
+                                        x=x0,
+                                        y=y0,
+                                        w=graphic_object.w,
+                                        h=graphic_object.h,
+                                        r=0,
+                                        graphic_object=graphic_object)
 
     def graphicsWheelEvent(self, event: QWheelEvent) -> None:
         """
@@ -755,6 +746,34 @@ class BusBranchEditorWidget(QSplitter):
         """
 
         graphic_object = FluidNodeGraphicItem(editor=self, fluid_node=node, x=x, y=y, h=h, w=w)
+        return graphic_object
+
+    def create_connectivity_node_graphics(self, node: ConnectivityNode, x: int, y: int, h: int, w: int) -> CnGraphicItem:
+        """
+        Add connectivity node to graphics
+        :param node: GridCal connectivity node object
+        :param x: x coordinate
+        :param y: y coordinate
+        :param h: height (px)
+        :param w: width (px)
+        :return: CnGraphicItem
+        """
+
+        graphic_object = CnGraphicItem(editor=self, node=node, x=x, y=y, h=h, w=w)
+        return graphic_object
+
+    def create_bus_bar_graphics(self, node: BusBar, x: int, y: int, h: int, w: int) -> BusBarGraphicItem:
+        """
+        Add bus bar node to graphics
+        :param node: GridCal BusBar object
+        :param x: x coordinate
+        :param y: y coordinate
+        :param h: height (px)
+        :param w: width (px)
+        :return: BusBarGraphicItem
+        """
+
+        graphic_object = BusBarGraphicItem(editor=self, node=node, x=x, y=y, h=h, w=w)
         return graphic_object
 
     def set_data(self, circuit: MultiCircuit, diagram: BusBranchDiagram):
@@ -1195,7 +1214,7 @@ class BusBranchEditorWidget(QSplitter):
 
         return lst
 
-    def start_connection(self, port: TerminalItem) -> LineGraphicTemplateItem:
+    def start_connection(self, port: Union[BarTerminalItem, RoundTerminalItem]) -> LineGraphicTemplateItem:
         """
         Start the branch creation
         @param port:
@@ -1240,7 +1259,7 @@ class BusBranchEditorWidget(QSplitter):
             self.displacement = self.newCenterPos - self.startPos
             self.editor_graphics_view.setDragMode(QGraphicsView.DragMode.NoDrag)
 
-    def create_line(self, bus_from: Bus, bus_to: Bus, from_port: TerminalItem, to_port: TerminalItem):
+    def create_line(self, bus_from: Bus, bus_to: Bus, from_port: BarTerminalItem, to_port: BarTerminalItem):
         """
 
         :param bus_from:
@@ -1273,7 +1292,7 @@ class BusBranchEditorWidget(QSplitter):
         # set the connection placement
         graphic_object.setZValue(-1)
 
-    def create_dc_line(self, bus_from: Bus, bus_to: Bus, from_port: TerminalItem, to_port: TerminalItem):
+    def create_dc_line(self, bus_from: Bus, bus_to: Bus, from_port: BarTerminalItem, to_port: BarTerminalItem):
         """
 
         :param bus_from:
@@ -1305,7 +1324,7 @@ class BusBranchEditorWidget(QSplitter):
         # set the connection placement
         graphic_object.setZValue(-1)
 
-    def create_winding(self, from_port: TerminalItem, to_port: TerminalItem, api_object: Winding):
+    def create_winding(self, from_port: BarTerminalItem, to_port: BarTerminalItem, api_object: Winding):
         """
 
         :param from_port:
@@ -1331,7 +1350,7 @@ class BusBranchEditorWidget(QSplitter):
 
         return winding_graphics
 
-    def create_transformer(self, bus_from: Bus, bus_to: Bus, from_port: TerminalItem, to_port: TerminalItem):
+    def create_transformer(self, bus_from: Bus, bus_to: Bus, from_port: BarTerminalItem, to_port: BarTerminalItem):
         """
 
         :param bus_from:
@@ -1363,7 +1382,7 @@ class BusBranchEditorWidget(QSplitter):
         # set the connection placement
         graphic_object.setZValue(-1)
 
-    def create_vsc(self, bus_from: Bus, bus_to: Bus, from_port: TerminalItem, to_port: TerminalItem):
+    def create_vsc(self, bus_from: Bus, bus_to: Bus, from_port: BarTerminalItem, to_port: BarTerminalItem):
         """
 
         :param bus_from:
@@ -1395,7 +1414,7 @@ class BusBranchEditorWidget(QSplitter):
         # set the connection placement
         graphic_object.setZValue(-1)
 
-    def create_fluid_path(self, source: FluidNode, target: FluidNode, from_port: TerminalItem, to_port: TerminalItem):
+    def create_fluid_path(self, source: FluidNode, target: FluidNode, from_port: BarTerminalItem, to_port: BarTerminalItem):
         """
 
         :param source:
@@ -1436,14 +1455,14 @@ class BusBranchEditorWidget(QSplitter):
         # Clear or finnish the started connection:
         if self.started_branch is not None:
 
-            items = self.diagram_scene.items(event.scenePos())  # get the item (the terminal) at the mouse position
+            items = self.diagram_scene.items(event.scenePos())  # get the widgets at the mouse position
 
-            for item in items:
-                if isinstance(item, TerminalItem):  # connect only to terminals
-                    if item.get_parent() is not self.started_branch.get_terminal_from_parent():  # forbid connecting to itself
+            for arriving_widget in items:
+                if isinstance(arriving_widget, Union[BarTerminalItem, RoundTerminalItem]):  # arrivinf to a bus or bus-bar
 
-                        self.started_branch.set_to_port(item)
-                        # self.started_branch.bus_to = item.parent
+                    if arriving_widget.get_parent() is not self.started_branch.get_terminal_from_parent():  # forbid connecting to itself
+
+                        self.started_branch.set_to_port(arriving_widget)
 
                         if self.started_branch.connected_between_buses():  # electrical branch between electrical buses
 
@@ -2193,13 +2212,11 @@ class BusBranchEditorWidget(QSplitter):
         return tr3_graphic_object
 
     def add_api_fluid_node(self, node: FluidNode,
-                           injections_by_tpe: Dict[DeviceType, List[EditableDevice]],
-                           explode_factor: float = 1.0):
+                           injections_by_tpe: Dict[DeviceType, List[ALL_DEV_TYPES]]):
         """
         Add API bus to the diagram
         :param node: FluidNode instance
         :param injections_by_tpe
-        :param explode_factor: explode factor
         """
         x = 0
         y = 0
@@ -2440,8 +2457,7 @@ class BusBranchEditorWidget(QSplitter):
                     injections_by_fluid_node = self.circuit.get_injection_devices_grouped_by_fluid_node()
 
                 graphic_obj = self.add_api_fluid_node(node=elm,
-                                                      injections_by_tpe=injections_by_fluid_node.get(elm, dict()),
-                                                      explode_factor=1.0)
+                                                      injections_by_tpe=injections_by_fluid_node.get(elm, dict()))
 
             elif isinstance(elm, Line):
                 graphic_obj = self.add_api_line(elm)
@@ -2538,8 +2554,7 @@ class BusBranchEditorWidget(QSplitter):
                 prog_func((i + 1) / nn * 100.0)
 
             self.add_api_fluid_node(node=elm,
-                                    injections_by_tpe=injections_by_fluid_node.get(elm, dict()),
-                                    explode_factor=1.0)
+                                    injections_by_tpe=injections_by_fluid_node.get(elm, dict()))
 
         # --------------------------------------------------------------------------------------------------------------
         if text_func is not None:
@@ -2694,6 +2709,7 @@ class BusBranchEditorWidget(QSplitter):
         Clear the schematic
         """
         self.diagram_scene.clear()
+        self.graphics_manager.clear()
 
     def recolour_mode(self) -> None:
         """

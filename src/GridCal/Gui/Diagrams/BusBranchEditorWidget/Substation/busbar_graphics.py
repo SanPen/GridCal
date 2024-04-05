@@ -25,7 +25,7 @@ from PySide6.QtWidgets import QMenu, QGraphicsSceneMouseEvent
 from GridCal.Gui.messages import yes_no_question
 from GridCal.Gui.Diagrams.BusBranchEditorWidget.generic_graphics import (GenericDBWidget, ACTIVE, DEACTIVATED,
                                                                          FONT_SCALE, EMERGENCY)
-from GridCal.Gui.Diagrams.BusBranchEditorWidget.terminal_item import TerminalItem, HandleItem
+from GridCal.Gui.Diagrams.BusBranchEditorWidget.terminal_item import BarTerminalItem, HandleItem
 from GridCal.Gui.Diagrams.BusBranchEditorWidget.Injections.load_graphics import LoadGraphicItem, Load
 from GridCal.Gui.Diagrams.BusBranchEditorWidget.Injections.generator_graphics import GeneratorGraphicItem, Generator
 from GridCal.Gui.Diagrams.BusBranchEditorWidget.Injections.static_generator_graphics import (StaticGeneratorGraphicItem,
@@ -44,10 +44,10 @@ from GridCal.Gui.Diagrams.BusBranchEditorWidget.Injections.controllable_shunt_gr
 from GridCalEngine.enumerations import DeviceType, FaultType
 from GridCalEngine.Devices.types import INJECTION_DEVICE_TYPES
 from GridCalEngine.Simulations.Topology.topology_reduction_driver import reduce_buses
-from GridCalEngine.Devices.Substation import Bus
+from GridCalEngine.Devices.Substation.busbar import BusBar
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
-    from GridCal.Gui.Diagrams.BusBranchEditorWidget import BusBranchEditorWidget
+    from GridCal.Gui.Diagrams.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
 
 
 class BusBarGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
@@ -65,7 +65,7 @@ class BusBarGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
                  parent=None,
                  index=0,
                  editor: BusBranchEditorWidget = None,
-                 bus: Bus = None,
+                 node: BusBar = None,
                  h: int = 40,
                  w: int = 80,
                  x: int = 0,
@@ -81,7 +81,7 @@ class BusBarGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
         :param x:
         :param y:
         """
-        GenericDBWidget.__init__(self, parent=parent, api_object=bus, editor=editor, draw_labels=True)
+        GenericDBWidget.__init__(self, parent=parent, api_object=node, editor=editor, draw_labels=True)
         QtWidgets.QGraphicsRectItem.__init__(self, parent)
 
         self.min_w = 180.0
@@ -111,7 +111,7 @@ class BusBarGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
         self.tile.setOpacity(0.7)
 
         # connection terminals the block
-        self._terminal = TerminalItem('s', parent=self, editor=self.editor)  # , h=self.h))
+        self._terminal = BarTerminalItem('s', parent=self, editor=self.editor)  # , h=self.h))
         self._terminal.setPen(QPen(Qt.transparent, self.pen_width, self.style, Qt.RoundCap, Qt.RoundJoin))
 
         # Create corner for resize:
@@ -668,7 +668,7 @@ class BusBarGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
 
         self.setToolTip(msg)
 
-    def get_terminal(self) -> TerminalItem:
+    def get_terminal(self) -> BarTerminalItem:
         """
         Get the hosting terminal of this bus object
         :return: TerminalItem

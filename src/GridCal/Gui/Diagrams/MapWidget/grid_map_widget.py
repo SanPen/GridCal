@@ -339,7 +339,7 @@ class GridMapWidget(MapWidget):
 
 
 def generate_map_diagram(substations: List[Substation],
-                         voltage_level: List[VoltageLevel],
+                         voltage_levels: List[VoltageLevel],
                          lines: List[Line],
                          dc_lines: List[DcLine],
                          hvdc_lines: List[HvdcLine],
@@ -351,7 +351,7 @@ def generate_map_diagram(substations: List[Substation],
     """
     Add a elements to the schematic scene
     :param substations: list of Substation objects
-    :param voltage_level: list of VoltageLevel objects
+    :param voltage_levels: list of VoltageLevel objects
     :param lines: list of Line objects
     :param dc_lines: list of DcLine objects
     :param hvdc_lines: list of HvdcLine objects

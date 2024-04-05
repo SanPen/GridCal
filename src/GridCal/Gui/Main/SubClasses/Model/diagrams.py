@@ -31,10 +31,10 @@ from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCal.Gui.GeneralDialogues import CheckListDialogue, StartEndSelectionDialogue, InputSearchDialogue
 from GridCal.Gui.Diagrams.BusViewer.bus_viewer_dialogue import BusViewerWidget
 from GridCal.Gui.Diagrams.BusBranchEditorWidget.bus_branch_editor_widget import (BusBranchEditorWidget,
-                                                        BusGraphicItem,
-                                                        generate_bus_branch_diagram)
+                                                                                 BusGraphicItem,
+                                                                                 generate_bus_branch_diagram)
 from GridCal.Gui.Diagrams.NodeBreakerEditorWidget.node_breaker_editor_widget import NodeBreakerEditorWidget
-from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget
+from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget, generate_map_diagram
 from GridCal.Gui.messages import yes_no_question, error_msg, info_msg
 from GridCal.Gui.Main.SubClasses.Model.compiled_arrays import CompiledArraysMain
 from GridCal.Gui.Main.object_select_window import ObjectSelectWindow
@@ -805,17 +805,17 @@ class DiagramsMain(CompiledArraysMain):
         Add ageneral bus-branch diagram
         :return BusBranchEditorWidget
         """
-        diagram = generate_bus_branch_diagram(buses=self.circuit.buses,
-                                              lines=self.circuit.lines,
-                                              dc_lines=self.circuit.dc_lines,
-                                              transformers2w=self.circuit.transformers2w,
-                                              transformers3w=self.circuit.transformers3w,
-                                              windings=self.circuit.windings,
-                                              hvdc_lines=self.circuit.hvdc_lines,
-                                              vsc_devices=self.circuit.vsc_devices,
-                                              upfc_devices=self.circuit.upfc_devices,
-                                              fluid_nodes=self.circuit.fluid_nodes,
-                                              fluid_paths=self.circuit.fluid_paths,
+        diagram = generate_bus_branch_diagram(buses=self.circuit.get_buses(),
+                                              lines=self.circuit.get_lines(),
+                                              dc_lines=self.circuit.get_dc_lines(),
+                                              transformers2w=self.circuit.get_transformers2w(),
+                                              transformers3w=self.circuit.get_transformers3w(),
+                                              windings=self.circuit.get_windings(),
+                                              hvdc_lines=self.circuit.get_hvdc(),
+                                              vsc_devices=self.circuit.get_vsc(),
+                                              upfc_devices=self.circuit.get_upfc(),
+                                              fluid_nodes=self.circuit.get_fluid_nodes(),
+                                              fluid_paths=self.circuit.get_fluid_paths(),
                                               explode_factor=1.0,
                                               prog_func=None,
                                               text_func=None,
@@ -828,7 +828,7 @@ class DiagramsMain(CompiledArraysMain):
 
         diagram_widget.setStretchFactor(1, 10)
         diagram_widget.center_nodes()
-        self.add_diagram(diagram_widget)
+        self.add_diagram_widget(diagram_widget)
         self.set_diagrams_list_view()
         self.set_diagram_widget(diagram_widget)
 
@@ -850,10 +850,10 @@ class DiagramsMain(CompiledArraysMain):
 
             if isinstance(diagram_widget, BusBranchEditorWidget):
                 diagram = diagram_widget.get_selection_diagram()
-                self.add_diagram(BusBranchEditorWidget(self.circuit,
-                                                       diagram=diagram,
-                                                       default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
-                                                       time_index=self.get_diagram_slider_index()))
+                self.add_diagram_widget(BusBranchEditorWidget(self.circuit,
+                                                              diagram=diagram,
+                                                              default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
+                                                              time_index=self.get_diagram_slider_index()))
                 self.set_diagrams_list_view()
 
     def add_bus_vecinity_diagram_from_model(self):
@@ -914,7 +914,7 @@ class DiagramsMain(CompiledArraysMain):
                                                   name=root_bus.name + ' vecinity',
                                                   view_toolbar=False,
                                                   default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value())
-                        self.add_diagram(diagram)
+                        self.add_diagram_widget(diagram)
                         self.set_diagrams_list_view()
 
     def create_circuit_stored_diagrams(self):
@@ -980,7 +980,7 @@ class DiagramsMain(CompiledArraysMain):
                                       name=root_bus.name + ' vecinity',
                                       view_toolbar=False,
                                       default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value())
-            self.add_diagram(diagram)
+            self.add_diagram_widget(diagram)
             self.set_diagrams_list_view()
 
     def add_map_diagram(self) -> None:
@@ -990,16 +990,27 @@ class DiagramsMain(CompiledArraysMain):
         # select the tile source
         tile_source = self.tile_sources[self.ui.tile_provider_comboBox.currentText()]
 
+        diagram = generate_map_diagram(substations=self.circuit.get_substations(),
+                                       voltage_levels=self.circuit.get_voltage_levels(),
+                                       lines=self.circuit.get_lines(),
+                                       dc_lines=self.circuit.get_dc_lines(),
+                                       hvdc_lines=self.circuit.get_hvdc(),
+                                       fluid_nodes=self.circuit.get_fluid_nodes(),
+                                       fluid_paths=self.circuit.get_fluid_paths(),
+                                       prog_func=None,
+                                       text_func=None,
+                                       name='Map diagram')
+
         # create the map widget
         map_widget = GridMapWidget(parent=None,
                                    tile_src=tile_source,
                                    start_level=5,
                                    longitude=-15.41,
                                    latitude=40.11,
-                                   name='Map diagram')
-        # map_widget.GotoLevelAndPosition(5, -15.41, 40.11)
+                                   name='Map diagram',
+                                   diagram=diagram)
 
-        self.add_diagram(map_widget)
+        self.add_diagram_widget(map_widget)
         self.set_diagrams_list_view()
         self.set_diagram_widget(widget=map_widget)
 
@@ -1012,22 +1023,21 @@ class DiagramsMain(CompiledArraysMain):
                                                       diagram=None,
                                                       default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value())
 
-        self.add_diagram(node_breaker_widget)
+        self.add_diagram_widget(node_breaker_widget)
         self.set_diagrams_list_view()
         self.set_diagram_widget(widget=node_breaker_widget)
 
-    def add_diagram(self, diagram_widget: ALL_EDITORS):
+    def add_diagram_widget(self, diagram_widget: ALL_EDITORS):
         """
-        Add diagram
-        :param diagram_widget:
-        :return:
+        Add diagram widget, it also adds the diagram to the circuit for later
+        :param diagram_widget: Diagram widget object
         """
 
         # add the widget pointer
         self.diagram_widgets_list.append(diagram_widget)
 
         # add the diagram to the circuit
-        self.circuit.diagrams.append(diagram_widget.diagram)
+        self.circuit.add_diagram(diagram_widget.diagram)
 
     def remove_diagram(self):
         """

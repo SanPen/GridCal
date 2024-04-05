@@ -23,7 +23,7 @@ from PySide6.QtWidgets import QGraphicsItem, QGraphicsEllipseItem, QGraphicsRect
 
 from GridCalEngine.Devices.Branches.transformer3w import Transformer3W
 from GridCal.Gui.Diagrams.BusBranchEditorWidget.generic_graphics import ACTIVE, DEACTIVATED
-from GridCal.Gui.Diagrams.BusBranchEditorWidget.terminal_item import TerminalItem
+from GridCal.Gui.Diagrams.BusBranchEditorWidget.terminal_item import RoundTerminalItem
 from GridCal.Gui.Diagrams.BusBranchEditorWidget.Branches.winding_graphics import WindingGraphicItem
 from GridCal.Gui.messages import yes_no_question
 
@@ -105,7 +105,7 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
         yt = diameter * np.sin(angles) + diameter
 
         self.winding_circles: List[QGraphicsEllipseItem] = list()
-        self.terminals: List[TerminalItem] = list()
+        self.terminals: List[RoundTerminalItem] = list()
         self.connection_lines: List[WindingGraphicItem | None] = list()
 
         pen = QPen(self.color, self.pen_width, self.style)
@@ -116,7 +116,7 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
             winding_circle.setRect(0.0, 0.0, diameter, diameter)
             winding_circle.setPos(x[i], y[i])
 
-            terminal = TerminalItem("t", parent=self, editor=self.editor)
+            terminal = RoundTerminalItem("t", parent=self, editor=self.editor)
             terminal.setPos(xt[i], yt[i])
             terminal.setRotation(angles_deg[i])
 
@@ -280,12 +280,10 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
 
         # Arrange line positions
         for terminal in self.terminals:
-            x = int(2 * terminal.w / 3)
-            y = int(2 * terminal.h / 3)
-            m = QPointF(x, y)
+            m = QPointF(int(terminal.xc), int(terminal.yc))
             terminal.process_callbacks(self.pos() + terminal.pos() - m)
 
-    def get_connection_winding(self, from_port: TerminalItem, to_port: TerminalItem):
+    def get_connection_winding(self, from_port: RoundTerminalItem, to_port: RoundTerminalItem):
         """
         Find the winding between the terminals
         :param from_port: "from" terminal [TerminalItem]

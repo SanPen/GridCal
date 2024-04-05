@@ -1,5 +1,8 @@
 <RCC>
   <qresource prefix="Icons">
+    <file>icons/spmat.svg</file>
+    <file>icons/bus_bar_icon.svg</file>
+    <file>icons/cn_icon.svg</file>
     <file>icons/to_series_reactance.svg</file>
     <file>icons/scale.svg</file>
     <file>icons/time_series set.svg</file>

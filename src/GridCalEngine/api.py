@@ -22,10 +22,10 @@ from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_cir
 from GridCalEngine.enumerations import *
 
 
-def open_file(filename: str) -> MultiCircuit:
+def open_file(filename: Union[str, List[str]]) -> MultiCircuit:
     """
     Open file
-    :param filename: name of the file (.gridcal, .ejson, .m, etc.)
+    :param filename: name of the file (.gridcal, .ejson, .m, .xml, .zip, etc.) or list of files (.xml, .zip)
     :return: MultiCircuit instance
     """
     return FileOpen(file_name=filename).open()

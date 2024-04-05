@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="48"
+   height="48"
+   viewBox="0 0 48 48"
+   version="1.1"
+   id="svg4"
+   sodipodi:docname="bus_bar_icon.svg"
+   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <metadata
+     id="metadata10">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs8" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="2505"
+     inkscape:window-height="1016"
+     id="namedview6"
+     showgrid="false"
+     inkscape:zoom="4.2760417"
+     inkscape:cx="0.70158343"
+     inkscape:cy="93.193666"
+     inkscape:window-x="55"
+     inkscape:window-y="27"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg4"
+     inkscape:pagecheckerboard="0" />
+  <g
+     id="g845"
+     transform="translate(0.88479263,-4.4239631)"
+     style="fill:#333333;stroke:#333333">
+    <rect
+       ry="0"
+       y="21.161293"
+       x="5.0138187"
+       height="7.0783424"
+       width="7.3732719"
+       id="rect835"
+       style="opacity:0.853;fill:#333333;fill-opacity:1;stroke:#333333;stroke-width:0.01424989;stroke-linecap:square;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:stroke fill markers" />
+    <path
+       inkscape:connector-curvature="0"
+       id="path816"
+       d="M 7.4185002,35.023041 H 40.655232"
+       style="fill:#333333;fill-rule:evenodd;stroke:#333333;stroke-width:6.43819857;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+    <text
+       id="text839"
+       y="28.373415"
+       x="15.050968"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7.91466px;line-height:125%;font-family:'Alte Haas Grotesk';-inkscape-font-specification:'Alte Haas Grotesk';letter-spacing:0px;word-spacing:0px;fill:#333333;fill-opacity:1;stroke:#333333;stroke-width:0.197867px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       xml:space="preserve"
+       transform="scale(1.022082,0.97839505)"><tspan
+         style="fill:#333333;fill-opacity:1;stroke:#333333;stroke-width:0.197867px"
+         y="28.373415"
+         x="15.050968"
+         id="tspan837"
+         sodipodi:role="line">BusBar</tspan></text>
+  </g>
+</svg>
