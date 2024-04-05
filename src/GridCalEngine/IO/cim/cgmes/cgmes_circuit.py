@@ -186,7 +186,7 @@ def find_attribute(referenced_object, obj, property_name, association_inverse_di
         if isinstance(obj, globals()[c_class]) and c_prop == property_name:
             i_class = str(inverse).split('.')[0]
             i_prop = str(inverse).split('.')[-1]
-            if isinstance(referenced_object, globals()[i_class]) and i_prop in referenced_object.get_all_properties():
+            if isinstance(referenced_object, globals()[i_class]) and i_prop in vars(referenced_object):
                 return i_prop
             else:
                 continue
