@@ -102,5 +102,14 @@ ALL_DEV_TYPES = Union[
     GeneratorTechnology,
     BranchGroup,
     LineLocations,
-    LineLocation
+    LineLocation,
+    ModellingAuthority,
+    Fuel,
+    Investment,
+    InvestmentsGroup,
+    Contingency,
+    ContingencyGroup,
+    Technology,
+    UndergroundLineType,
+    SequenceLineType
 ]
