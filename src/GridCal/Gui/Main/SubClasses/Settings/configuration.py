@@ -17,7 +17,7 @@
 import json
 import os
 import qdarktheme
-from typing import Dict, Union
+from typing import Dict, Union, Any
 from PySide6 import QtWidgets
 
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
@@ -26,9 +26,9 @@ from GridCal.Gui.Diagrams.BusBranchEditorWidget.bus_branch_editor_widget import 
 from GridCal.Gui.Diagrams.BusBranchEditorWidget.generic_graphics import set_dark_mode, set_light_mode
 
 
-def config_data_to_struct(data_, struct_):
+def config_data_to_struct(data_: Dict[str, Any], struct_: Dict[str, Any]) -> None:
     """
-    Recursive function to set the GUI values from the config dictionary
+    Recursive function to set the GUI objects' values from the config dictionary
     :param data_: config dictionary with values from the file
     :param struct_: result of self.get_config_structure()
     """
@@ -70,8 +70,6 @@ class ConfigurationMain(ResultsMain):
 
         # create main window
         ResultsMain.__init__(self, parent)
-
-        self.current_boundary_set: str = ""
 
         # check boxes
         self.ui.dark_mode_checkBox.clicked.connect(self.change_theme_mode)
@@ -331,7 +329,7 @@ class ConfigurationMain(ResultsMain):
         with open(self.config_file_path(), "w") as f:
             f.write(json.dumps(data, indent=4))
 
-    def apply_gui_config(self, data: dict):
+    def apply_gui_config(self, data: Dict[str, Dict[str, Any]]):
         """
         Apply GUI configuration dictionary
         :param data: GUI configuration dictionary
@@ -349,13 +347,13 @@ class ConfigurationMain(ResultsMain):
             }
         """
 
-        file_data = data.get("file", None)
+        file_data: Dict[str, Any] = data.get("file", None)
         if file_data is not None:
             bd_path = file_data.get("current_boundary_set", "")
-            if os.path.exists(bd_path):
-                self.current_boundary_set = bd_path
-                self.ui.cgmes_boundary_set_label.setText(bd_path)
+            self.current_boundary_set = bd_path if os.path.exists(bd_path) else ""
+            self.ui.cgmes_boundary_set_label.setText(self.current_boundary_set)
 
+        # light / dark mode
         if self.ui.dark_mode_checkBox.isChecked():
             set_dark_mode()
         else:

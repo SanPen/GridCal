@@ -223,7 +223,6 @@ class IoMain(ConfigurationMain):
                                          caption='Open file',
                                          directory=self.project_directory,
                                          filter=files_types)
-        # dialogue.setOption(QtWidgets.QFileDialog.Option.DontUseNativeDialog, True)
 
         if dialogue.exec():
             filenames = dialogue.selectedFiles()
@@ -375,7 +374,6 @@ class IoMain(ConfigurationMain):
                 if isinstance(diagram, BusBranchEditorWidget):
                     diagram.center_nodes()
 
-
         self.collect_memory()
         self.setup_time_sliders()
 
@@ -457,13 +455,13 @@ class IoMain(ConfigurationMain):
         Save the circuit case to a file
         """
         # declare the allowed file types
-        files_types = "GridCal zip (*.gridcal);;" \
-                      "GridCal HDF5 (*.gch5);;" \
-                      "Excel (*.xlsx);;" \
-                      "CIM (*.xml);;" \
-                      "Electrical Json V3 (*.ejson3);;" \
-                      "Rawx (*.rawx);;" \
-                      "Sqlite (*.sqlite);;"
+        files_types = ("GridCal zip (*.gridcal);;"
+                       "GridCal HDF5 (*.gch5);;"
+                       "Excel (*.xlsx);;"
+                       "CIM (*.xml);;"
+                       "Electrical Json V3 (*.ejson3);;"
+                       "Rawx (*.rawx);;"
+                       "Sqlite (*.sqlite);;")
 
         if NEWTON_PA_AVAILABLE:
             files_types += "Newton (*.newton);;"
@@ -536,13 +534,14 @@ class IoMain(ConfigurationMain):
                 sessions = []
 
             # get json files to store
-            json_files = {"gui_config": self.get_gui_config_data()}
+            json_files = {"gui_config": self.get_gui_config_data(),
+                          "cgmes_boundary_set": self.current_boundary_set}
 
             self.save_file_thread_object = filedrv.FileSaveThread(circuit=self.circuit,
                                                                   file_name=filename,
                                                                   simulation_drivers=simulation_drivers,
                                                                   sessions=sessions,
-                                                                  json_files=json_files)
+                                                                  extra_info=json_files)
 
             # make connections
             self.save_file_thread_object.progress_signal.connect(self.ui.progressBar.setValue)

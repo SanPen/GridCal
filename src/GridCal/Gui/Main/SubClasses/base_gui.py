@@ -145,6 +145,8 @@ class BaseMainGui(QMainWindow):
 
         self.project_directory = os.path.expanduser("~")
 
+        self.current_boundary_set: str = ""
+
         # threads --------------------------------------------------------------------------------------------------
         self.painter = None
         self.open_file_thread_object = None

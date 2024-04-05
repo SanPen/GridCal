@@ -15,9 +15,11 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import os
-from typing import Union, List
+from typing import Union, List, Dict, Any
 from PySide6.QtCore import QThread, Signal
 
+from GridCal.Session.session import SimulationSession
+from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.IO.gridcal.zip_interface import get_session_tree, load_session_driver_objects
 from GridCalEngine.IO.file_handler import FileOpen, FileSave
@@ -123,16 +125,26 @@ class FileOpenThread(QThread):
 
 
 class FileSaveThread(QThread):
+    """
+    Thread to save
+    """
     progress_signal = Signal(float)
     progress_text = Signal(str)
     done_signal = Signal()
 
-    def __init__(self, circuit: MultiCircuit, file_name, simulation_drivers=list(), sessions=list(), json_files=dict()):
+    def __init__(self,
+                 circuit: MultiCircuit,
+                 file_name: str,
+                 simulation_drivers: List[DriverTemplate] = None,
+                 sessions: List[SimulationSession] = None,
+                 extra_info: Dict[str, Any] = None):
         """
         Constructor
         :param circuit: MultiCircuit instance
         :param file_name: name of the file where to save
         :param simulation_drivers: List of Simulation Drivers
+        :param sessions: List of SimulationSession
+        :param extra_info: Dictionary of extra information that needs to be passed to the driver
         """
         QThread.__init__(self)
 
@@ -142,11 +154,11 @@ class FileSaveThread(QThread):
 
         self.valid = False
 
-        self.simulation_drivers = simulation_drivers
+        self.simulation_drivers = simulation_drivers if simulation_drivers is not None else list()
 
-        self.sessions = sessions
+        self.sessions = sessions if sessions is not None else list()
 
-        self.json_files = json_files
+        self.extra_info = extra_info if extra_info is not None else dict()
 
         self.logger = Logger()
 
@@ -154,7 +166,7 @@ class FileSaveThread(QThread):
 
         self.__cancel__ = False
 
-    def get_session_tree(self):
+    def get_session_tree(self) -> Dict:
         """
         Get the session tree structure from a GridCal file
         :return:
@@ -182,7 +194,7 @@ class FileSaveThread(QThread):
         else:
             return dict()
 
-    def run(self):
+    def run(self) -> None:
         """
         run the file save procedure
         @return:
@@ -200,7 +212,7 @@ class FileSaveThread(QThread):
                                 progress_func=self.progress_signal.emit,
                                 simulation_drivers=self.simulation_drivers,
                                 sessions=self.sessions,
-                                json_files=self.json_files)
+                                extra_info=self.extra_info)
         try:
             self.logger = file_handler.save()
         except PermissionError:
@@ -214,4 +226,7 @@ class FileSaveThread(QThread):
         self.done_signal.emit()
 
     def cancel(self):
+        """
+        Activate the cancel flag
+        """
         self.__cancel__ = True

@@ -18,8 +18,9 @@ import os
 import json
 
 from collections.abc import Callable
-from typing import Union, List
+from typing import Union, List, Any, Dict
 
+from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.IO.cim.cgmes.cgmes_data_parser import CgmesDataParser
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.data_logger import DataLogger
@@ -283,8 +284,14 @@ class FileSave:
     FileSave
     """
 
-    def __init__(self, circuit: MultiCircuit, file_name, text_func=None, progress_func=None,
-                 simulation_drivers=list(), sessions=list(), json_files=dict()):
+    def __init__(self,
+                 circuit: MultiCircuit,
+                 file_name,
+                 text_func=None,
+                 progress_func=None,
+                 simulation_drivers: List[DriverTemplate] = None,
+                 sessions: List[Any] = None,
+                 extra_info: Dict[str, Any] = None):
         """
         File saver
         :param circuit: MultiCircuit
@@ -293,23 +300,23 @@ class FileSave:
         :param progress_func: Pointer to the progress function
         :param simulation_drivers: List of Simulation Drivers
         :param sessions: List of sessions
-        :param json_files: Dictionary of json files
+        :param extra_info: Dictionary of json files
         """
         self.circuit = circuit
 
         self.file_name = file_name
 
-        self.simulation_drivers = simulation_drivers
+        self.simulation_drivers = simulation_drivers if simulation_drivers else list()
 
-        self.sessions = sessions
+        self.sessions = sessions if sessions else list()
 
-        self.json_files = json_files
+        self.extra_info = extra_info if extra_info else dict()
 
         self.text_func = text_func
 
         self.progress_func = progress_func
 
-    def save(self):
+    def save(self) -> Logger:
         """
         Save the file in the corresponding format
         :return: logger with information
@@ -360,7 +367,7 @@ class FileSave:
 
         return logger
 
-    def save_zip(self):
+    def save_zip(self) -> Logger:
         """
         Save the circuit information in zip format
         :return: logger with information
@@ -378,7 +385,7 @@ class FileSave:
                                  model_data=model_data,
                                  sessions=self.sessions,
                                  diagrams=self.circuit.diagrams,
-                                 json_files=self.json_files,
+                                 json_files=self.extra_info,
                                  text_func=self.text_func,
                                  progress_func=self.progress_func,
                                  logger=logger)
@@ -402,7 +409,7 @@ class FileSave:
 
         return logger
 
-    def save_json_v3(self):
+    def save_json_v3(self) -> Logger:
         """
         Save the circuit information in json format
         :return:logger with information
