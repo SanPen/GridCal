@@ -29,9 +29,8 @@ from GridCalEngine.IO.gridcal.json_parser import save_json_file_v3
 from GridCalEngine.IO.cim.cim16.cim_parser import CIMExport
 from GridCalEngine.IO.gridcal.excel_interface import save_excel, load_from_xls, interpret_excel_v3, interprete_excel_v2
 from GridCalEngine.IO.gridcal.pack_unpack import gather_model_as_data_frames, parse_gridcal_data, gather_model_as_jsons
-from GridCalEngine.IO.matpower.matpower_parser import interpret_data_v1
+from GridCalEngine.IO.matpower.matpower_parser import interpret_data_v1, parse_matpower_file
 from GridCalEngine.IO.dgs.dgs_parser import dgs_to_circuit
-from GridCalEngine.IO.matpower.matpower_parser import parse_matpower_file
 from GridCalEngine.IO.others.dpx_parser import load_dpx
 from GridCalEngine.IO.others.ipa_parser import load_iPA
 from GridCalEngine.IO.gridcal.json_parser import parse_json, parse_json_data_v2, parse_json_data_v3
@@ -48,6 +47,32 @@ from GridCalEngine.IO.gridcal.h5_interface import save_h5, open_h5
 from GridCalEngine.IO.raw.rawx_parser_writer import parse_rawx, write_rawx
 from GridCalEngine.IO.others.pypsa_parser import parse_netcdf, parse_hdf5
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
+
+
+class FileSavingOptions:
+    """
+    This class is to store the extra stuff that needs to be passed to save more complex files
+    """
+    def __init__(self,
+                 cgmes_boundary_set: str = "",
+                 simulation_drivers: List[DriverTemplate] = None,
+                 sessions: List[Any] = None,
+                 dictionary_of_json_files: Dict[str, Dict[str, Any]] = None):
+        """
+        Constructor
+        :param cgmes_boundary_set: CGMES boundary set zip file path
+        :param simulation_drivers: List of Simulation Drivers
+        :param sessions: List of sessions
+        :param dictionary_of_json_files: Dictionary of json files
+        """
+
+        self.cgmes_boundary_set: str = cgmes_boundary_set
+
+        self.simulation_drivers = simulation_drivers if simulation_drivers else list()
+
+        self.sessions = sessions if sessions else list()
+
+        self.dictionary_of_json_files = dictionary_of_json_files if dictionary_of_json_files else dict()
 
 
 class FileOpen:
@@ -286,31 +311,23 @@ class FileSave:
 
     def __init__(self,
                  circuit: MultiCircuit,
-                 file_name,
+                 file_name: str,
+                 options: FileSavingOptions = FileSavingOptions(),
                  text_func=None,
-                 progress_func=None,
-                 simulation_drivers: List[DriverTemplate] = None,
-                 sessions: List[Any] = None,
-                 extra_info: Dict[str, Any] = None):
+                 progress_func=None):
         """
         File saver
         :param circuit: MultiCircuit
         :param file_name: file name to save to
+        :param options: FileSavingOptions
         :param text_func: Pointer to the text function
         :param progress_func: Pointer to the progress function
-        :param simulation_drivers: List of Simulation Drivers
-        :param sessions: List of sessions
-        :param extra_info: Dictionary of json files
         """
         self.circuit = circuit
 
         self.file_name = file_name
 
-        self.simulation_drivers = simulation_drivers if simulation_drivers else list()
-
-        self.sessions = sessions if sessions else list()
-
-        self.extra_info = extra_info if extra_info else dict()
+        self.options = options
 
         self.text_func = text_func
 
@@ -383,9 +400,9 @@ class FileSave:
         save_gridcal_data_to_zip(dfs=dfs,
                                  filename_zip=self.file_name,
                                  model_data=model_data,
-                                 sessions=self.sessions,
+                                 sessions=self.options.sessions,
                                  diagrams=self.circuit.diagrams,
-                                 json_files=self.extra_info,
+                                 json_files=self.options.dictionary_of_json_files,
                                  text_func=self.text_func,
                                  progress_func=self.progress_func,
                                  logger=logger)
@@ -415,7 +432,9 @@ class FileSave:
         :return:logger with information
         """
 
-        logger = save_json_file_v3(self.file_name, self.circuit, self.simulation_drivers)
+        logger = save_json_file_v3(self.file_name,
+                                   self.circuit,
+                                   self.options.simulation_drivers)
         return logger
 
     def save_cim(self):

@@ -9274,15 +9274,6 @@ QProgressBar::chunk{
     <string>New diagram from selection</string>
    </property>
   </action>
-  <action name="actionAdd_bus_vecinity_diagram">
-   <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/Icons/icons/grid_icon.svg</normaloff>:/Icons/icons/grid_icon.svg</iconset>
-   </property>
-   <property name="text">
-    <string>New bus vecinity diagram</string>
-   </property>
-  </action>
   <action name="actionAdd_general_bus_branch_diagram">
    <property name="icon">
     <iconset resource="icons.qrc">

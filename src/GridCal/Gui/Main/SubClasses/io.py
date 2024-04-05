@@ -27,7 +27,7 @@ import GridCal.Session.file_handler as filedrv
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCal.Gui.CoordinatesInput.coordinates_dialogue import CoordinatesInputGUI
 from GridCal.Gui.GeneralDialogues import LogsDialogue, CustomQuestionDialogue
-from GridCal.Gui.Diagrams.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
+from GridCal.Gui.Diagrams.DiagramEditorWidget.diagram_editor_widget import DiagramEditorWidget
 from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_msg
 from GridCal.Gui.GridGenerator.grid_generator_dialogue import GridGeneratorGUI
 from GridCal.Gui.RosetaExplorer.RosetaExplorer import RosetaExplorerGUI
@@ -342,8 +342,9 @@ class IoMain(ConfigurationMain):
                 self.ui.diskSessionsTreeView.setModel(mdl)
 
                 # apply the GUI settings if found:
-                if 'gui_config' in self.open_file_thread_object.json_files:
-                    self.apply_gui_config(data=self.open_file_thread_object.json_files['gui_config'])
+                gui_config_data = self.open_file_thread_object.json_files.get('gui_config', None)
+                if gui_config_data is not None:
+                    self.apply_gui_config(data=gui_config_data)
 
                 # clear the results
                 self.clear_results()
@@ -371,7 +372,7 @@ class IoMain(ConfigurationMain):
             # center nodes
             diagram = self.get_selected_diagram_widget()
             if diagram is not None:
-                if isinstance(diagram, BusBranchEditorWidget):
+                if isinstance(diagram, DiagramEditorWidget):
                     diagram.center_nodes()
 
         self.collect_memory()
@@ -422,7 +423,7 @@ class IoMain(ConfigurationMain):
 
                     # add to schematic
                     if diagram_widget is not None:
-                        if isinstance(diagram_widget, BusBranchEditorWidget):
+                        if isinstance(diagram_widget, DiagramEditorWidget):
                             injections_by_bus = self.circuit.get_injection_devices_grouped_by_bus()
                             injections_by_fluid_node = self.circuit.get_injection_devices_grouped_by_fluid_node()
                             diagram_widget.add_elements_to_schematic(buses=new_circuit.buses,
@@ -509,6 +510,27 @@ class IoMain(ConfigurationMain):
             # save directly
             self.save_file_now(self.file_name)
 
+    def get_file_save_options(self) -> filedrv.FileSavingOptions:
+        """
+        Compose the file saving options
+        :return: FileSavingOptions
+        """
+
+        if self.ui.saveResultsCheckBox.isChecked():
+            sessions = [self.session]
+        else:
+            sessions = list()
+
+        # get json files to store
+        json_files = {"gui_config": self.get_gui_config_data()}
+
+        options = filedrv.FileSavingOptions(cgmes_boundary_set=self.current_boundary_set,
+                                            simulation_drivers=self.get_simulations(),
+                                            sessions=sessions,
+                                            dictionary_of_json_files=json_files)
+
+        return options
+
     def save_file_now(self, filename):
         """
         Save the file right now, without questions
@@ -526,22 +548,9 @@ class IoMain(ConfigurationMain):
                     if ok:
                         self.save_file_thread_object.quit()
 
-            simulation_drivers = self.get_simulations()
-
-            if self.ui.saveResultsCheckBox.isChecked():
-                sessions = [self.session]
-            else:
-                sessions = []
-
-            # get json files to store
-            json_files = {"gui_config": self.get_gui_config_data(),
-                          "cgmes_boundary_set": self.current_boundary_set}
-
             self.save_file_thread_object = filedrv.FileSaveThread(circuit=self.circuit,
                                                                   file_name=filename,
-                                                                  simulation_drivers=simulation_drivers,
-                                                                  sessions=sessions,
-                                                                  extra_info=json_files)
+                                                                  options=self.get_file_save_options())
 
             # make connections
             self.save_file_thread_object.progress_signal.connect(self.ui.progressBar.setValue)
@@ -609,7 +618,7 @@ class IoMain(ConfigurationMain):
             # set circuit name
             diagram = self.get_selected_diagram_widget()
             if diagram is not None:
-                if isinstance(diagram, BusBranchEditorWidget):
+                if isinstance(diagram, DiagramEditorWidget):
                     diagram.name.setText(f"Random grid {self.circuit.get_bus_number()} buses")
 
             # set base magnitudes

@@ -22,39 +22,58 @@ from PySide6 import QtWidgets
 
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCal.Gui.Main.SubClasses.Results.results import ResultsMain
-from GridCal.Gui.Diagrams.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
-from GridCal.Gui.Diagrams.BusBranchEditorWidget.generic_graphics import set_dark_mode, set_light_mode
+from GridCal.Gui.Diagrams.DiagramEditorWidget.diagram_editor_widget import DiagramEditorWidget
+from GridCal.Gui.Diagrams.DiagramEditorWidget.generic_graphics import set_dark_mode, set_light_mode
 
 
-def config_data_to_struct(data_: Dict[str, Any], struct_: Dict[str, Any]) -> None:
+def config_data_to_struct(data_: Dict[str, Union[Dict[str, Any], str, Any]],
+                          struct_: Dict[str, Dict[str, Any]]) -> None:
     """
     Recursive function to set the GUI objects' values from the config dictionary
     :param data_: config dictionary with values from the file
     :param struct_: result of self.get_config_structure()
     """
-    for key, instance in struct_.items():
-        if key in data_:
-            if isinstance(instance, dict):
-                config_data_to_struct(data_[key], instance)
-            elif isinstance(instance, QtWidgets.QComboBox):
-                val = data_[key]
-                index = instance.findText(val)
-                if -1 < index < instance.count():
-                    instance.setCurrentIndex(index)
-            elif isinstance(instance, QtWidgets.QDoubleSpinBox):
-                instance.setValue(float(data_[key]))
-            elif isinstance(instance, QtWidgets.QSpinBox):
-                instance.setValue(int(data_[key]))
-            elif isinstance(instance, QtWidgets.QCheckBox):
-                instance.setChecked(bool(data_[key]))
-            elif isinstance(instance, QtWidgets.QRadioButton):
-                instance.setChecked(bool(data_[key]))
-            elif isinstance(instance, str):
+    for key, object_to_set in struct_.items():
+
+        # get the value in data_ that corresponds to the object to be set
+        corresponding_data = data_.get(key, None)
+
+        if corresponding_data is not None:
+
+            print("config debug:", key, corresponding_data)
+
+            if isinstance(object_to_set, dict):
+                config_data_to_struct(corresponding_data, object_to_set)
+
+            elif isinstance(object_to_set, QtWidgets.QComboBox):
+                index = object_to_set.findText(corresponding_data)
+                if -1 < index < object_to_set.count():
+                    object_to_set.setCurrentIndex(index)
+
+            elif isinstance(object_to_set, QtWidgets.QDoubleSpinBox):
+                object_to_set.setValue(float(corresponding_data))
+
+            elif isinstance(object_to_set, QtWidgets.QSpinBox):
+                object_to_set.setValue(int(corresponding_data))
+
+            elif isinstance(object_to_set, QtWidgets.QCheckBox):
+                object_to_set.setChecked(bool(corresponding_data))
+
+            elif isinstance(object_to_set, QtWidgets.QRadioButton):
+                object_to_set.setChecked(bool(corresponding_data))
+
+            elif isinstance(object_to_set, str):
+                pass
+            elif isinstance(object_to_set, float):
+                pass
+            elif isinstance(object_to_set, int):
+                pass
+            elif isinstance(object_to_set, bool):
                 pass
             else:
                 raise Exception('unknown structure')
         else:
-            print(key)
+            print(f"{key} has no entry in config")
 
 
 class ConfigurationMain(ResultsMain):
@@ -93,7 +112,7 @@ class ConfigurationMain(ResultsMain):
 
             diagram = self.get_selected_diagram_widget()
             if diagram is not None:
-                if isinstance(diagram, BusBranchEditorWidget):
+                if isinstance(diagram, DiagramEditorWidget):
                     diagram.set_dark_mode()
 
             self.colour_diagrams()
@@ -109,7 +128,7 @@ class ConfigurationMain(ResultsMain):
 
             diagram = self.get_selected_diagram_widget()
             if diagram is not None:
-                if isinstance(diagram, BusBranchEditorWidget):
+                if isinstance(diagram, DiagramEditorWidget):
                     diagram.set_light_mode()
 
             self.colour_diagrams()

@@ -30,6 +30,7 @@ from GridCalEngine.Devices.Fluid import FluidNode, FluidPath
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec
 from GridCalEngine.Devices.Substation.substation import Substation
 from GridCalEngine.Devices.Substation.voltage_level import VoltageLevel
+from GridCalEngine.Devices.types import ALL_DEV_TYPES
 
 from GridCal.Gui.Diagrams.MapWidget.map_widget import MapWidget, PolylineData, Place
 import GridCal.Gui.Visualization.visualization as viz
@@ -83,6 +84,10 @@ class GridMapWidget(MapWidget):
         :return:
         """
         self.diagram = diagram
+
+    def delete_diagram_element(self, device: ALL_DEV_TYPES):
+        # TODO: Implement this
+        pass
 
     @property
     def name(self):
