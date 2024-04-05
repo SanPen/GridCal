@@ -17,7 +17,7 @@
 from __future__ import annotations
 import numpy as np
 import pandas as pd
-from typing import Dict, List, Union, Any, Tuple, TYPE_CHECKING
+from typing import Dict, List, Union, Any, Tuple
 from PySide6 import QtCore, QtWidgets, QtGui
 from warnings import warn
 from enum import EnumMeta
