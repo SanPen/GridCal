@@ -40,7 +40,7 @@ def config_data_to_struct(data_: Dict[str, Union[Dict[str, Any], str, Any]],
 
         if corresponding_data is not None:
 
-            print("config debug:", key, corresponding_data)
+            # print("config debug:", key, corresponding_data)
 
             if isinstance(object_to_set, dict):
                 config_data_to_struct(corresponding_data, object_to_set)

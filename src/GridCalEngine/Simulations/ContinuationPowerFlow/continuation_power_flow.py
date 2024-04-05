@@ -752,7 +752,7 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Sbus_base, Sbus_t
                     continuation = False
 
             else:
-                raise Exception('Stop point ' + stop_at.value + ' not recognised.')
+                raise Exception(f'Stop point {stop_at.value} not recognised.')
 
             if adapt_step and continuation:
 
