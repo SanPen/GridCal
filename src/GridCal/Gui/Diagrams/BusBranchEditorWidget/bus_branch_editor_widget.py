@@ -545,8 +545,9 @@ class BusBranchEditorWidget(QSplitter):
         self.displacement = QPoint()
         self.startPos: Union[QPoint, None] = None
 
-        self.pos_label = QGraphicsTextItem()
-        self.add_to_scene(self.pos_label)
+        # for graphics dev porpuses
+        # self.pos_label = QGraphicsTextItem()
+        # self.add_to_scene(self.pos_label)
 
         # current time index from the GUI (None or 0, 1, 2, ..., n-1)
         self._time_index: Union[None, int] = time_index
@@ -1243,7 +1244,8 @@ class BusBranchEditorWidget(QSplitter):
             pos = event.scenePos()
             self.started_branch.setEndPos(pos)
 
-        self.pos_label.setPlainText(f"{event.scenePos().x()}, {event.scenePos().y()}")
+        # for graphics dev porpuses
+        # self.pos_label.setPlainText(f"{event.scenePos().x()}, {event.scenePos().y()}")
 
     def scene_mouse_press_event(self, event: QGraphicsSceneMouseEvent) -> None:
         """
