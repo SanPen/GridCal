@@ -925,8 +925,12 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csr
             SfX = sp.hstack([Sfva, Sfvm, lil_matrix((M, 2 * Ng + nsl + ndc))])
             StX = sp.hstack([Stva, Stvm, lil_matrix((M, 2 * Ng + nsl + ndc))])
 
-            HSf = 2 * (Sfmat.real @ SfX.real + Sfmat.imag @ SfX.imag)
-            HSt = 2 * (Stmat.real @ StX.real + Stmat.imag @ StX.imag)
+            if use_bound_slacks:
+                HSf = 2 * (Sfmat.real @ SfX.real + Sfmat.imag @ SfX.imag) + Hslsf
+                HSt = 2 * (Stmat.real @ StX.real + Stmat.imag @ StX.imag) + Hslst
+            else:
+                HSf = 2 * (Sfmat.real @ SfX.real + Sfmat.imag @ SfX.imag)
+                HSt = 2 * (Stmat.real @ StX.real + Stmat.imag @ StX.imag)
 
         if ctQ != ReactivePowerControlMode.NoControl:
             # tanmax curves (simplified capability curves of generators)
