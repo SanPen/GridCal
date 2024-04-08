@@ -23,6 +23,7 @@ from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor
 from PySide6.QtWidgets import QMenu, QGraphicsSceneMouseEvent
 
 from GridCal.Gui.messages import yes_no_question
+from GridCal.Gui.GuiFunctions import add_menu_entry
 from GridCal.Gui.Diagrams.DiagramEditorWidget.generic_graphics import (GenericDBWidget, ACTIVE, DEACTIVATED,
                                                                        FONT_SCALE, EMERGENCY)
 from GridCal.Gui.Diagrams.DiagramEditorWidget.terminal_item import BarTerminalItem, HandleItem
@@ -281,8 +282,7 @@ class BusGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
     def create_children_widgets(self, injections_by_tpe: Dict[DeviceType, List[INJECTION_DEVICE_TYPES]]):
         """
         Create the icons of the elements that are attached to the API bus object
-        Returns:
-            Nothing
+        Returns: Nothing
         """
 
         for tpe, dev_list in injections_by_tpe.items():
@@ -333,18 +333,24 @@ class BusGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
         menu = QMenu()
         menu.addSection("Bus")
 
-        pe = menu.addAction('Active')
-        pe.setCheckable(True)
-        pe.setChecked(self.api_object.active)
-        pe.triggered.connect(self.enable_disable_toggle)
+        add_menu_entry(menu=menu,
+                       text="Active",
+                       icon_path="",
+                       function_ptr=self.enable_disable_toggle,
+                       checkeable=True,
+                       checked_value=self.api_object.active)
+
+        add_menu_entry(menu=menu,
+                       text="Draw labels",
+                       icon_path="",
+                       function_ptr=self.enable_disable_label_drawing,
+                       checkeable=True,
+                       checked_value=self.draw_labels)
 
         sc = menu.addMenu('Short circuit')
         sc_icon = QIcon()
         sc_icon.addPixmap(QPixmap(":/Icons/icons/short_circuit.svg"))
         sc.setIcon(sc_icon)
-        # sc.setCheckable(True)
-        # sc.setChecked(self.sc_enabled)
-        # sc.triggered.connect(self.enable_disable_sc)
 
         sc_3p = sc.addAction('3-phase')
         sc_3p_icon = QIcon()
@@ -379,11 +385,6 @@ class BusGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
         sc_llg.triggered.connect(self.enable_disable_sc_llg)
 
         sc_no = sc.addAction('Disable')
-        # sc_no_icon = QIcon()
-        # sc_no_icon.addPixmap(QPixmap(":/Icons/icons/short_circuit.svg"))
-        # sc_no.setIcon(sc_no_icon)
-        # sc_no.setCheckable(True)
-        # sc_no.setChecked(self.api_object.is_dc)
         sc_no.triggered.connect(self.disable_sc)
 
         # types
@@ -835,19 +836,22 @@ class BusGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
         :param format_str:
         :return:
         """
-        vm = format_str.format(Vm)
-        vm_kv = format_str.format(Vm * self.api_object.Vnom)
-        va = format_str.format(Va)
-        msg = f"Bus {i}"
-        if tpe is not None:
-            msg += f" [{tpe}]"
-        msg += "<br>"
-        msg += f"v={vm}&lt;{va}º pu<br>"
-        msg += f"V={vm_kv} kV<br>"
-        if P is not None:
-            p = format_str.format(P)
-            q = format_str.format(Q)
-            msg += f"P={p} MW<br>Q={q} MVAr"
+        if self.draw_labels:
+            vm = format_str.format(Vm)
+            vm_kv = format_str.format(Vm * self.api_object.Vnom)
+            va = format_str.format(Va)
+            msg = f"Bus {i}"
+            if tpe is not None:
+                msg += f" [{tpe}]"
+            msg += "<br>"
+            msg += f"v={vm}&lt;{va}º pu<br>"
+            msg += f"V={vm_kv} kV<br>"
+            if P is not None:
+                p = format_str.format(P)
+                q = format_str.format(Q)
+                msg += f"P={p} MW<br>Q={q} MVAr"
+        else:
+            msg = ""
 
         title = self.api_object.name if self.api_object is not None else ""
         self.label.setHtml(f'<html><head/><body><p><span style=" font-size:10pt;">{title}<br/></span>'

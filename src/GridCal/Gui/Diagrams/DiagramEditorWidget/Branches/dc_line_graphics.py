@@ -20,7 +20,7 @@ import numpy as np
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtWidgets import QMenu, QLabel, QDoubleSpinBox, QPushButton, QVBoxLayout, QComboBox, QDialog, QGraphicsScene
-from GridCal.Gui.GuiFunctions import get_list_model
+from GridCal.Gui.GuiFunctions import get_list_model, add_menu_entry
 from GridCal.Gui.Diagrams.DiagramEditorWidget.terminal_item import BarTerminalItem, RoundTerminalItem
 from GridCalEngine.Devices.Branches.line import SequenceLineType, OverheadLineType, UndergroundLineType
 from GridCalEngine.Devices.Branches.dc_line import DcLine
@@ -263,6 +263,13 @@ class DcLineGraphicItem(LineGraphicTemplateItem):
             pe.setCheckable(True)
             pe.setChecked(self.api_object.active)
             pe.triggered.connect(self.enable_disable_toggle)
+
+            add_menu_entry(menu=menu,
+                           text="Draw labels",
+                           icon_path="",
+                           function_ptr=self.enable_disable_label_drawing,
+                           checkeable=True,
+                           checked_value=self.draw_labels)
 
             ra3 = menu.addAction('Editor')
             edit_icon = QIcon()

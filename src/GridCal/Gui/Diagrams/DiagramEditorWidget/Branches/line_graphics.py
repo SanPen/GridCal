@@ -19,6 +19,7 @@ from typing import TYPE_CHECKING, Union
 from PySide6.QtCore import Qt, QRectF
 from PySide6.QtGui import QPen, QIcon, QPixmap, QBrush
 from PySide6.QtWidgets import QMenu, QGraphicsRectItem, QGraphicsSceneContextMenuEvent
+from GridCal.Gui.GuiFunctions import add_menu_entry
 from GridCal.Gui.Diagrams.DiagramEditorWidget.terminal_item import BarTerminalItem, RoundTerminalItem
 from GridCal.Gui.Diagrams.DiagramEditorWidget.Branches.line_editor import LineEditor
 from GridCal.Gui.messages import yes_no_question, warning_msg
@@ -122,6 +123,12 @@ class LineGraphicItem(LineGraphicTemplateItem):
             pe.setCheckable(True)
             pe.setChecked(self.api_object.active)
             pe.triggered.connect(self.enable_disable_toggle)
+
+            add_menu_entry(menu=menu,
+                           text="Draw labels",
+                           function_ptr=self.enable_disable_label_drawing,
+                           checkeable=True,
+                           checked_value=self.draw_labels)
 
             ra3 = menu.addAction('Editor')
             edit_icon = QIcon()

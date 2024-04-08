@@ -19,8 +19,9 @@ from typing import TYPE_CHECKING, Union
 from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtWidgets import QMenu
 from GridCal.Gui.Diagrams.DiagramEditorWidget.terminal_item import BarTerminalItem, RoundTerminalItem
-from GridCalEngine.Devices.Branches.switch import Switch
+from GridCal.Gui.GuiFunctions import add_menu_entry
 from GridCal.Gui.Diagrams.DiagramEditorWidget.Branches.line_graphics_template import LineGraphicTemplateItem
+from GridCalEngine.Devices.Branches.switch import Switch
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.DiagramEditorWidget.diagram_editor_widget import DiagramEditorWidget
@@ -62,6 +63,12 @@ class SwitchGraphicItem(LineGraphicTemplateItem):
             pe.setCheckable(True)
             pe.setChecked(self.api_object.active)
             pe.triggered.connect(self.enable_disable_toggle)
+
+            add_menu_entry(menu=menu,
+                           text="Draw labels",
+                           function_ptr=self.enable_disable_label_drawing,
+                           checkeable=True,
+                           checked_value=self.draw_labels)
 
             rabf = menu.addAction('Change bus')
             move_bus_icon = QIcon()

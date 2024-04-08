@@ -18,6 +18,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Union
 from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtWidgets import QMenu
+from GridCal.Gui.GuiFunctions import add_menu_entry
 from GridCal.Gui.Diagrams.DiagramEditorWidget.terminal_item import BarTerminalItem, RoundTerminalItem
 from GridCalEngine.Devices.Branches.vsc import VSC
 from GridCal.Gui.Diagrams.DiagramEditorWidget.Branches.line_graphics_template import LineGraphicTemplateItem
@@ -68,6 +69,12 @@ class VscGraphicItem(LineGraphicTemplateItem):
                 pe_icon.addPixmap(QPixmap(":/Icons/icons/check_all.svg"))
             pe.setIcon(pe_icon)
             pe.triggered.connect(self.enable_disable_toggle)
+
+            add_menu_entry(menu=menu,
+                           text="Draw labels",
+                           function_ptr=self.enable_disable_label_drawing,
+                           checkeable=True,
+                           checked_value=self.draw_labels)
 
             rabf = menu.addAction('Change bus')
             move_bus_icon = QIcon()

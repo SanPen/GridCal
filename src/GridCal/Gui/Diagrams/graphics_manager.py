@@ -59,7 +59,7 @@ class GraphicsManager:
     Class to handle the correspondance between graphics and database devices
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         # this is a dictionary that groups by 2 levels:
         # first by DeviceType
         # second idtag -> GraphicItem

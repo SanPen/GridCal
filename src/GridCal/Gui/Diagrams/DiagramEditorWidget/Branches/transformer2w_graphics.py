@@ -18,6 +18,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Union
 from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtWidgets import QMenu
+from GridCal.Gui.GuiFunctions import add_menu_entry
 from GridCal.Gui.Diagrams.DiagramEditorWidget.Branches.line_graphics_template import LineGraphicTemplateItem
 from GridCal.Gui.Diagrams.DiagramEditorWidget.terminal_item import BarTerminalItem, RoundTerminalItem
 from GridCal.Gui.messages import yes_no_question
@@ -69,6 +70,12 @@ class TransformerGraphicItem(LineGraphicTemplateItem):
             pe.setCheckable(True)
             pe.setChecked(self.api_object.active)
             pe.triggered.connect(self.enable_disable_toggle)
+
+            add_menu_entry(menu=menu,
+                           text="Draw labels",
+                           function_ptr=self.enable_disable_label_drawing,
+                           checkeable=True,
+                           checked_value=self.draw_labels)
 
             ra2 = menu.addAction('Delete')
             del_icon = QIcon()

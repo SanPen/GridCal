@@ -141,6 +141,8 @@ class DiagramsMain(CompiledArraysMain):
         self.ui.actionAutoatic_layout.triggered.connect(self.auto_layout)
         self.ui.actionSearchDiagram.triggered.connect(self.search_diagram)
         self.ui.actionEdit_simulation_time_limits.triggered.connect(self.edit_time_interval)
+        self.ui.actionDisable_all_results_tags.triggered.connect(self.disable_all_results_tags)
+        self.ui.actionEnable_all_results_tags.triggered.connect(self.enable_all_results_tags)
 
         # Buttons
         self.ui.colour_results_pushButton.clicked.connect(self.colour_diagrams)
@@ -1503,3 +1505,21 @@ class DiagramsMain(CompiledArraysMain):
         # Convert global position to local position of the list widget
         mapped_pos = self.ui.diagramsListView.viewport().mapToGlobal(pos)
         context_menu.exec(mapped_pos)
+
+    def disable_all_results_tags(self):
+        """
+        Disable all tags for the selected diagram
+        """
+        diagram = self.get_selected_diagram_widget()
+
+        if isinstance(diagram, DiagramEditorWidget):
+            diagram.disable_all_results_tags()
+
+    def enable_all_results_tags(self):
+        """
+        Enable all tags for the selected diagram
+        """
+        diagram = self.get_selected_diagram_widget()
+
+        if isinstance(diagram, DiagramEditorWidget):
+            diagram.enable_all_results_tags()

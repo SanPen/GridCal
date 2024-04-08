@@ -193,15 +193,6 @@ class GenericDBWidget:
         self.draw_labels: bool = draw_labels
 
         # color
-        # if self.api_object is not None:
-        #     if hasattr(self.api_object, 'active'):
-        #         if self.api_object.active:
-        #             self.color = ACTIVE['color']
-        #             self.style = ACTIVE['style']
-        #         else:
-        #             self.color = DEACTIVATED['color']
-        #             self.style = DEACTIVATED['style']
-        # else:
         self.color = ACTIVE['color']
         self.style = ACTIVE['style']
 
@@ -210,12 +201,16 @@ class GenericDBWidget:
         Change the colour according to the system theme
         """
         if self.api_object is not None:
-            if self.api_object.active:
+            if hasattr(self.api_object, 'active'):
+                if self.api_object.active:
+                    self.color = ACTIVE['color']
+                    self.style = ACTIVE['style']
+                else:
+                    self.color = DEACTIVATED['color']
+                    self.style = DEACTIVATED['style']
+            else:
                 self.color = ACTIVE['color']
                 self.style = ACTIVE['style']
-            else:
-                self.color = DEACTIVATED['color']
-                self.style = DEACTIVATED['style']
         else:
             self.color = ACTIVE['color']
             self.style = ACTIVE['style']
@@ -233,3 +228,10 @@ class GenericDBWidget:
         :return:
         """
         self.draw_labels = False
+
+    def enable_disable_label_drawing(self):
+        """
+
+        :return:
+        """
+        self.draw_labels = not self.draw_labels

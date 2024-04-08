@@ -2804,17 +2804,35 @@ def get_cim_tree_model(cim_model: CgmesCircuit):
     return model
 
 
-def add_menu_entry(menu: QtWidgets.QMenu, text: str, icon_path: str, function_ptr):
+def add_menu_entry(menu: QtWidgets.QMenu,
+                   text: str,
+                   icon_path: str = "",
+                   function_ptr=None,
+                   checkeable=False,
+                   checked_value=False) -> QtGui.QAction:
     """
     Add a context menu entry
     :param menu:
     :param text:
     :param icon_path:
     :param function_ptr:
+    :param checkeable:
+    :param checked_value:
     :return:
     """
-    ra3 = menu.addAction(text)
-    edit_icon = QtGui.QIcon()
-    edit_icon.addPixmap(QtGui.QPixmap(icon_path))
-    ra3.setIcon(edit_icon)
-    ra3.triggered.connect(function_ptr)
+
+    entry = menu.addAction(text)
+
+    if checkeable:
+        entry.setCheckable(checkeable)
+        entry.setChecked(checked_value)
+
+    if len(icon_path) > 0:
+        edit_icon = QtGui.QIcon()
+        edit_icon.addPixmap(QtGui.QPixmap(icon_path))
+        entry.setIcon(edit_icon)
+
+    if function_ptr is not None:
+        entry.triggered.connect(function_ptr)
+
+    return entry

@@ -4025,6 +4025,22 @@ class DiagramEditorWidget(QSplitter):
             warning_msg("you must select the origin and destination buses!",
                         title='Change bus')
 
+    def disable_all_results_tags(self):
+        """
+        Disable all results' tags in this diagram
+        """
+        for device_tpe, type_dict in self.graphics_manager.graphic_dict.items():
+            for key, widget in type_dict.items():
+                widget.disable_label_drawing()
+
+    def enable_all_results_tags(self):
+        """
+        Enable all results' tags in this diagram
+        """
+        for device_tpe, type_dict in self.graphics_manager.graphic_dict.items():
+            for key, widget in type_dict.items():
+                widget.enable_label_drawing()
+
 
 def generate_bus_branch_diagram(buses: List[Bus],
                                 lines: List[Line],

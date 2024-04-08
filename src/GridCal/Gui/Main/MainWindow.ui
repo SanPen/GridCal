@@ -8317,6 +8317,8 @@ QProgressBar::chunk{
      <addaction name="actionSmaller_nodes"/>
      <addaction name="actionAutoatic_layout"/>
      <addaction name="actionTry_to_fix_buses_location"/>
+     <addaction name="actionDisable_all_results_tags"/>
+     <addaction name="actionEnable_all_results_tags"/>
      <addaction name="actionSet_schematic_positions_from_GPS_coordinates"/>
      <addaction name="separator"/>
      <addaction name="actionSelect_buses_by_area"/>
@@ -9292,15 +9294,6 @@ QProgressBar::chunk{
     <string>New map view</string>
    </property>
   </action>
-  <action name="actionAdd_substation_diagram">
-   <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/Icons/icons/add_substation.svg</normaloff>:/Icons/icons/add_substation.svg</iconset>
-   </property>
-   <property name="text">
-    <string>New substation diagram</string>
-   </property>
-  </action>
   <action name="actionRemove_selected_diagram">
    <property name="icon">
     <iconset resource="icons.qrc">
@@ -9416,6 +9409,24 @@ QProgressBar::chunk{
    </property>
    <property name="toolTip">
     <string>Scale the system load and or generation</string>
+   </property>
+  </action>
+  <action name="actionDisable_all_results_tags">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/uncheck_all.svg</normaloff>:/Icons/icons/uncheck_all.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Disable all results tags</string>
+   </property>
+  </action>
+  <action name="actionEnable_all_results_tags">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/check_all.svg</normaloff>:/Icons/icons/check_all.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Enable all results tags</string>
    </property>
   </action>
  </widget>
