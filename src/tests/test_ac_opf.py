@@ -100,7 +100,7 @@ def case_pegase89() -> NonlinearOPFResults:
     # return ac_optimal_power_flow(nc=nc, pf_options=pf_options)
     pf_options = gce.PowerFlowOptions(control_q=gce.ReactivePowerControlMode.NoControl)
     opf_options = gce.OptimalPowerFlowOptions(ips_method=gce.SolverType.NR, ips_tolerance=1e-10)
-    return ac_optimal_power_flow(nc=nc, pf_options=pf_options, opf_options=opf_options)
+    return ac_optimal_power_flow(nc=nc, pf_options=pf_options, opf_options=opf_options, use_bound_slacks=False)
 
 
 def test_ieee9():
