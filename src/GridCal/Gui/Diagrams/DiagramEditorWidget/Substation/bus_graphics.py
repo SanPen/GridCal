@@ -236,16 +236,16 @@ class BusGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
         """
         # Limit the block size to the minimum size:
         self.w = w if w > self.min_w else self.min_w
-        self.setRect(0.0, 0.0, w, self.min_h)
+        self.setRect(0.0, 0.0, self.w, self.min_h)
         y0 = self.offset
         x0 = 0
 
         # center label:
-        self.label.setPos(w + 5, -20)
+        self.label.setPos(self.w + 5, -20)
 
         # lower
         self._terminal.setPos(x0, y0)
-        self._terminal.setRect(0, 20, w, 10)
+        self._terminal.setRect(0, 20, self.w, 10)
 
         # rearrange children
         self.arrange_children()
@@ -254,12 +254,12 @@ class BusGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
         self.editor.update_diagram_element(device=self.api_object,
                                            x=self.pos().x(),
                                            y=self.pos().y(),
-                                           w=w,
+                                           w=self.w,
                                            h=int(self.min_h),
                                            r=self.rotation(),
                                            graphic_object=self)
 
-        return w, self.min_h
+        return self.w, self.min_h
 
     def arrange_children(self) -> None:
         """

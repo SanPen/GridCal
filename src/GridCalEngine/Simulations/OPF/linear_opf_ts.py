@@ -1397,7 +1397,7 @@ def add_hydro_formulation(t: Union[int, None],
 
         # f_obj -= p2x_flow
 
-    if t is not None:
+    if time_global_tidx is not None:
         # constraints for the node level
         for m in range(node_data.nelm):
             if t == 0:

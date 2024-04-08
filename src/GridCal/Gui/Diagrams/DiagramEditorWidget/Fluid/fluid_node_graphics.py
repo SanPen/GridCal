@@ -99,8 +99,8 @@ class FluidNodeGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
         QtWidgets.QGraphicsRectItem.__init__(self, parent)
 
         self.min_w = 180.0
-        self.min_h = 20.0
-        self.offset = 10
+        self.min_h = 40.0
+        self.offset = 20
         self.h = h if h >= self.min_h else self.min_h
         self.w = w if w >= self.min_w else self.min_w
 
@@ -118,32 +118,23 @@ class FluidNodeGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
         self.color = ACTIVE['fluid']
         self.style = ACTIVE['style']
 
-        # square
-        # self.tile_inside = RoundedRect(0, self.min_h/3, self.min_w, self.min_h / 3, 15, self)
-        # self.tile_inside.setBrush(QBrush(ACTIVE['fluid']))
-        # self.tile_inside.setOpacity(0.7)
-
-        self.tile = QGraphicsRectItem(0, 0, 20, 20)
-        self.tile.setPen(QPen(ACTIVE['color']))
-        self.tile.setBrush(QBrush(ACTIVE['fluid']))
-        self.tile.setOpacity(0.7)
-        # self.tile.set_percentage(36.0)
-
         # Label:
-        self.label = QtWidgets.QGraphicsTextItem(fluid_node.name, self)
+        self.label = QtWidgets.QGraphicsTextItem(self.api_object.name if self.api_object is not None else "", self)
         self.label.setDefaultTextColor(ACTIVE['text'])
         self.label.setScale(FONT_SCALE)
+
+        # square
+        self.tile = QtWidgets.QGraphicsRectItem(0, 0, 20, 20, self)
+        self.tile.setOpacity(0.7)
 
         # connection terminals the block
         self._terminal = BarTerminalItem('s', parent=self, editor=self.editor)  # , h=self.h))
         self._terminal.setPen(QPen(Qt.transparent, self.pen_width, self.style, Qt.RoundCap, Qt.RoundJoin))
 
         # Create corner for resize:
-        self.sizer = HandleItem(self._terminal)
-        self.sizer.setPos(self.w, 20)
-        self.sizer.callbacks_list.append(self.change_size)  # Connect the callback
+        self.sizer = HandleItem(self._terminal, callback=self.change_size)
+        self.sizer.setPos(self.w, self.h)
         self.sizer.setFlag(self.GraphicsItemFlag.ItemIsMovable)
-        # self.adapt()
 
         self.big_marker = None
 
@@ -249,45 +240,31 @@ class FluidNodeGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
         @return:
         """
         # Limit the block size to the minimum size:
-        if h is None:
-            h = self.min_h
-
-        if w < self.min_w:
-            w = self.min_w
-
-        self.setRect(0.0, 0.0, w, h)
-        self.h = h
-        self.w = w
+        self.w = w if w > self.min_w else self.min_w
+        self.setRect(0.0, 0.0, self.w, self.min_h)
+        y0 = self.offset
+        x0 = 0
 
         # center label:
-        rect = self.label.boundingRect()
-        lw, lh = rect.width(), rect.height()
-        lx = (w - lw) / 2
-        ly = (h - lh) / 2 - lh * (FONT_SCALE - 1)
-        self.label.setPos(lx, ly)
+        self.label.setPos(self.w + 5, -20)
 
         # lower
-        y0 = h + self.offset
-        x0 = 0
         self._terminal.setPos(x0, y0)
-        self._terminal.setRect(0, 0, w, 10)
-
-        # Set text
-        if self.api_object is not None:
-            self.label.setPlainText(self.api_object.name)
+        self._terminal.setRect(0, 20, self.w, 10)
 
         # rearrange children
         self.arrange_children()
 
+        # update editor diagram position
         self.editor.update_diagram_element(device=self.api_object,
                                            x=self.pos().x(),
                                            y=self.pos().y(),
-                                           w=w,
-                                           h=h,
+                                           w=self.w,
+                                           h=int(self.min_h),
                                            r=self.rotation(),
                                            graphic_object=self)
 
-        return w, h
+        return self.w, self.min_h
 
     def arrange_children(self):
         """
@@ -500,7 +477,9 @@ class FluidNodeGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
             self.editor.remove_element(device=self.api_object, graphic_object=self)
 
     def update_color(self):
-
+        """
+        Update the colour
+        """
         self.set_tile_color(QBrush(ACTIVE['color']))
 
     def plot_profiles(self):
