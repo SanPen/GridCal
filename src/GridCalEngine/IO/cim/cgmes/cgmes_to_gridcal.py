@@ -30,7 +30,7 @@ from GridCalEngine.IO.cim.cgmes.cgmes_utils import (get_nominal_voltage,
                                                     get_windings,
                                                     get_regulating_control, get_pu_values_power_transformer_end,
                                                     get_slack_id)
-from GridCalEngine.IO.cim.cgmes.gridcal_to_cgmes import gridcal_to_cgmes    #TODO move them here
+from GridCalEngine.IO.cim.cgmes.gridcal_to_cgmes import gridcal_to_cgmes  # TODO move them here
 from GridCalEngine.data_logger import DataLogger
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.identified_object import IdentifiedObject
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.terminal import Terminal
@@ -162,7 +162,7 @@ def find_connections(cgmes_elm: IdentifiedObject,
     return calc_nodes, cns
 
 
-def find_object_by_idtag(object_list, target_idtag):  #TODO move to somewhere
+def find_object_by_idtag(object_list, target_idtag):  # TODO move to somewhere
     """
     Finds an object with the specified idtag
      in the given object_list from a Multi Circuit.
@@ -238,16 +238,15 @@ def get_gcdev_calculation_nodes(cgmes_model: CgmesCircuit,
                               is_slack=is_slack,
                               is_dc=False,
                               # is_internal=False,
-                              area=None,    #TODO get tp area
-                              zone=None,    #TODO get tp zone
-                              substation=None,  #TODO
-                              voltage_level=volt_lev,   #TODO
-                              country=None,     #TODO
+                              area=None,  # TODO get tp area
+                              zone=None,  # TODO get tp zone
+                              substation=None,  # TODO
+                              voltage_level=volt_lev,  # TODO
+                              country=None,  # TODO
                               # latitude=0.0,
                               # longitude=0.0,
                               Vm0=vm,
                               Va0=va)
-
 
         gc_model.add_bus(gcdev_elm)
         calc_node_dict[gcdev_elm.idtag] = gcdev_elm
@@ -330,8 +329,8 @@ def get_gcdev_loads(cgmes_model: CgmesCircuit,
 
                     if cgmes_elm.LoadResponse.exponentModel:
                         print(f'Exponent model True at {cgmes_elm.name}')
-                        pass    #TODO convert exponent to ZIP
-                    else:       # ZIP model
+                        pass  # TODO convert exponent to ZIP
+                    else:  # ZIP model
                         # TODO check all attributes
                         p = cgmes_elm.p * cgmes_elm.LoadResponse.pConstantPower
                         q = cgmes_elm.q * cgmes_elm.LoadResponse.qConstantPower
@@ -489,7 +488,7 @@ def get_gcdev_external_grids(cgmes_model: CgmesCircuit,
     """
     # convert loads
     for device_list in [cgmes_model.EquivalentInjection_list]:
-        #TODO ExternalNetworkInjection
+        # TODO ExternalNetworkInjection
         for cgmes_elm in device_list:
             calc_nodes, cns = find_connections(cgmes_elm=cgmes_elm,
                                                device_to_terminal_dict=device_to_terminal_dict,
@@ -628,7 +627,13 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
 
         for cgmes_elm in device_list:
 
-            windings = get_windings(cgmes_elm)
+            windings = [None, None, None]
+            for pte in list(cgmes_elm.PowerTransformerEnd):
+                if hasattr(pte, "endNumber"):
+                    i = getattr(pte, "endNumber")
+                    windings[i - 1] = pte
+            windings = [x for x in windings if x is not None]
+            # windings = get_windings(cgmes_elm)
             # windings: List[PowerTransformerEnd] = list(cgmes_elm.references_to_me['PowerTransformerEnd'])
 
             if len(windings) == 2:
@@ -763,8 +768,9 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                     gcdev_elm.winding3.X0 = x0
                     gcdev_elm.winding3.G0 = g0
                     gcdev_elm.winding3.B0 = b0
-                    gcdev_model.add_transformer3w(gcdev_elm)
                     gcdev_elm.winding3.rate = windings[2].ratedS
+
+                    gcdev_model.add_transformer3w(gcdev_elm)
 
 
                 else:
@@ -907,13 +913,14 @@ def get_gcdev_switches(cgmes_model: CgmesCircuit,
                     # rate in MVA = A / 1000 * kV * sqrt(3)    CORRECTED!
                     op_rate = np.round((operational_current_rate / 1000.0) *
                                        cgmes_elm.BaseVoltage.nominalVoltage * 1.73205080756888,
-                                    4)
+                                       4)
                 else:
                     op_rate = 9999  # Corrected
 
-                if cgmes_elm.ratedCurrent is not None and cgmes_elm.ratedCurrent != 0.0:   # TODO
-                    rated_current = np.round((cgmes_elm.ratedCurrent / 1000.0) * cgmes_elm.BaseVoltage.nominalVoltage * 1.73205080756888,
-                                    4)
+                if cgmes_elm.ratedCurrent is not None and cgmes_elm.ratedCurrent != 0.0:  # TODO
+                    rated_current = np.round(
+                        (cgmes_elm.ratedCurrent / 1000.0) * cgmes_elm.BaseVoltage.nominalVoltage * 1.73205080756888,
+                        4)
                 else:
                     rated_current = op_rate
 
@@ -955,7 +962,6 @@ def get_gcdev_substations(cgmes_model: CgmesCircuit,
     for device_list in [cgmes_model.Substation_list]:
 
         for cgmes_elm in device_list:
-
             gcdev_elm = gcdev.Substation(
                 name=cgmes_elm.name,
                 idtag=cgmes_elm.uuid,

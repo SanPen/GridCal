@@ -39,7 +39,10 @@ def get_objects_dictionary() -> Dict[str, ALL_DEV_TYPES]:
     # this list must be sorted in dependency order so that the
     # loading algorithm is able to find the object substitutions
 
-    object_types = {'area': dev.Area(),
+    object_types = {
+                    'modelling_authority': dev.ModellingAuthority(),
+
+                    'area': dev.Area(),
                     'zone': dev.Zone(),
 
                     'substation': dev.Substation(),

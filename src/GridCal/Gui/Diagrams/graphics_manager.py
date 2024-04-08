@@ -20,20 +20,20 @@ from warnings import warn
 
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
 from GridCalEngine.enumerations import DeviceType
-from GridCal.Gui.Diagrams.BusBranchEditorWidget.Substation.bus_graphics import BusGraphicItem
-from GridCal.Gui.Diagrams.BusBranchEditorWidget.Fluid.fluid_node_graphics import FluidNodeGraphicItem
-from GridCal.Gui.Diagrams.BusBranchEditorWidget.Fluid.fluid_path_graphics import FluidPathGraphicItem
-from GridCal.Gui.Diagrams.BusBranchEditorWidget.Branches.line_graphics import LineGraphicItem
-from GridCal.Gui.Diagrams.BusBranchEditorWidget.Branches.winding_graphics import WindingGraphicItem
-from GridCal.Gui.Diagrams.BusBranchEditorWidget.Branches.dc_line_graphics import DcLineGraphicItem
-from GridCal.Gui.Diagrams.BusBranchEditorWidget.Branches.transformer2w_graphics import TransformerGraphicItem
-from GridCal.Gui.Diagrams.BusBranchEditorWidget.Branches.hvdc_graphics import HvdcGraphicItem
-from GridCal.Gui.Diagrams.BusBranchEditorWidget.Branches.vsc_graphics import VscGraphicItem
-from GridCal.Gui.Diagrams.BusBranchEditorWidget.Branches.upfc_graphics import UpfcGraphicItem
-from GridCal.Gui.Diagrams.BusBranchEditorWidget.Branches.series_reactance_graphics import SeriesReactanceGraphicItem
-from GridCal.Gui.Diagrams.BusBranchEditorWidget.Branches.line_graphics_template import LineGraphicTemplateItem
-from GridCal.Gui.Diagrams.BusBranchEditorWidget.Branches.transformer3w_graphics import Transformer3WGraphicItem
-from GridCal.Gui.Diagrams.BusBranchEditorWidget.Injections.generator_graphics import GeneratorGraphicItem
+from GridCal.Gui.Diagrams.DiagramEditorWidget.Substation.bus_graphics import BusGraphicItem
+from GridCal.Gui.Diagrams.DiagramEditorWidget.Fluid.fluid_node_graphics import FluidNodeGraphicItem
+from GridCal.Gui.Diagrams.DiagramEditorWidget.Fluid.fluid_path_graphics import FluidPathGraphicItem
+from GridCal.Gui.Diagrams.DiagramEditorWidget.Branches.line_graphics import LineGraphicItem
+from GridCal.Gui.Diagrams.DiagramEditorWidget.Branches.winding_graphics import WindingGraphicItem
+from GridCal.Gui.Diagrams.DiagramEditorWidget.Branches.dc_line_graphics import DcLineGraphicItem
+from GridCal.Gui.Diagrams.DiagramEditorWidget.Branches.transformer2w_graphics import TransformerGraphicItem
+from GridCal.Gui.Diagrams.DiagramEditorWidget.Branches.hvdc_graphics import HvdcGraphicItem
+from GridCal.Gui.Diagrams.DiagramEditorWidget.Branches.vsc_graphics import VscGraphicItem
+from GridCal.Gui.Diagrams.DiagramEditorWidget.Branches.upfc_graphics import UpfcGraphicItem
+from GridCal.Gui.Diagrams.DiagramEditorWidget.Branches.series_reactance_graphics import SeriesReactanceGraphicItem
+from GridCal.Gui.Diagrams.DiagramEditorWidget.Branches.line_graphics_template import LineGraphicTemplateItem
+from GridCal.Gui.Diagrams.DiagramEditorWidget.Branches.transformer3w_graphics import Transformer3WGraphicItem
+from GridCal.Gui.Diagrams.DiagramEditorWidget.Injections.generator_graphics import GeneratorGraphicItem
 
 
 ALL_BUS_BRACH_GRAPHICS = Union[
@@ -59,11 +59,17 @@ class GraphicsManager:
     Class to handle the correspondance between graphics and database devices
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         # this is a dictionary that groups by 2 levels:
         # first by DeviceType
         # second idtag -> GraphicItem
         self.graphic_dict: Dict[DeviceType, Dict[str, ALL_BUS_BRACH_GRAPHICS]] = dict()
+
+    def clear(self):
+        """
+        Clear all graphics references
+        """
+        self.graphic_dict.clear()
 
     def add_device(self, elm: ALL_DEV_TYPES, graphic: ALL_BUS_BRACH_GRAPHICS) -> None:
         """

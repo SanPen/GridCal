@@ -943,6 +943,8 @@ class DeviceType(Enum):
     LineLocation = "Line Location"
     LineLocations = "Line Locations"
 
+    ModellingAuthority = "Modelling Authority"
+
     def __str__(self) -> str:
         return str(self.value)
 

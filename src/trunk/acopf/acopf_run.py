@@ -351,7 +351,7 @@ def casehvdc():
     # Go back two directories
     new_directory = os.path.abspath(os.path.join(cwd, '..', '..', '..'))
 
-    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'IEEE14 - ntc areas_voltages_hvdc_shifter_l10free.gridcal')
+    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'IEEE25.gridcal')
 
     grid = gce.FileOpen(file_path).open()
 
@@ -371,10 +371,10 @@ if __name__ == '__main__':
     # linn5bus_example()
     # two_grids_of_3bus()
     # case9()
-    case14()
+    # case14()
     # case_gb()
     # case6ww()
     # case_pegase89()
-    # case300()
+    #case300()
     # casepegase13k()
-    # casehvdc()
+    casehvdc()

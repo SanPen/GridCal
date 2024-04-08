@@ -1318,9 +1318,18 @@ def add_hydro_formulation(t: Union[int, None],
         f_obj += node_data.spillage_cost[m] * node_vars.spillage[t, m]
         # f_obj += node_vars.spillage[t, m]
 
-        node_vars.current_level[t, m] = prob.add_var(lb=node_data.min_level[m],
-                                                     ub=node_data.max_level[m],
+        min_abs_level = node_data.max_level[m] * node_data.min_soc[m]
+
+        node_vars.current_level[t, m] = prob.add_var(lb=min_abs_level,
+                                                     ub=node_data.max_level[m] * node_data.max_soc[m],
                                                      name=join("level_", [t, m], "_"))
+
+        if min_abs_level < node_data.min_level[m]:
+            logger.add_error(msg='Node SOC is below the allowed minimum level',
+                             value=min_abs_level,
+                             expected_value=node_data.min_level[m],
+                             device_class="FluidNode",
+                             device_property=f"Min SOC at {t}")
 
     for m in range(path_data.nelm):
         path_vars.flow[t, m] = prob.add_var(lb=path_data.min_flow[m],
@@ -1397,7 +1406,7 @@ def add_hydro_formulation(t: Union[int, None],
 
         # f_obj -= p2x_flow
 
-    if t is not None:
+    if time_global_tidx is not None:
         # constraints for the node level
         for m in range(node_data.nelm):
             if t == 0:

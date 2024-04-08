@@ -17,7 +17,7 @@
 from __future__ import annotations
 import numpy as np
 import pandas as pd
-from typing import Dict, List, Union, Any, Tuple, TYPE_CHECKING
+from typing import Dict, List, Union, Any, Tuple
 from PySide6 import QtCore, QtWidgets, QtGui
 from warnings import warn
 from enum import EnumMeta
@@ -31,11 +31,6 @@ from GridCalEngine.data_logger import DataLogger
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit, IdentifiedObject
 from GridCalEngine.Devices.Branches.line_locations import LineLocations
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
-
-if TYPE_CHECKING:  # Only imports the below statements during type checking
-    from GridCal.Gui.Diagrams.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
-    from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget
-    from GridCal.Gui.Diagrams.BusViewer.bus_viewer_dialogue import BusViewerWidget
 
 
 class TreeDelegate(QtWidgets.QItemDelegate):
@@ -2356,90 +2351,87 @@ class ProfilesModel(QtCore.QAbstractTableModel):
             self.update()
 
 
-class DiagramsModel(QtCore.QAbstractListModel):
-    """
-    Model for the diagrams
-    # from GridCal.Gui.Diagrams.BusViewer.bus_viewer_dialogue import BusViewerGUI
-    # from GridCal.Gui.BusBranchEditorWidget import BusBranchEditorWidget
-    # from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget
-    """
-
-    def __init__(self, list_of_diagrams: List[Union[BusBranchEditorWidget, GridMapWidget, BusViewerWidget]]):
-        """
-        Enumeration model
-        :param list_of_diagrams: list of enumeration values to show
-        """
-        QtCore.QAbstractListModel.__init__(self)
-        self.items = list_of_diagrams
-
-        self.bus_branch_editor_icon = QtGui.QIcon()
-        self.bus_branch_editor_icon.addPixmap(QtGui.QPixmap(":/Icons/icons/schematic.svg"))
-
-        self.bus_branch_vecinity_icon = QtGui.QIcon()
-        self.bus_branch_vecinity_icon.addPixmap(QtGui.QPixmap(":/Icons/icons/grid_icon.svg"))
-
-        self.map_editor_icon = QtGui.QIcon()
-        self.map_editor_icon.addPixmap(QtGui.QPixmap(":/Icons/icons/map.svg"))
-
-    def flags(self, index: QtCore.QModelIndex):
-        """
-        Get the display mode
-        :param index:
-        :return:
-        """
-        return (QtCore.Qt.ItemFlag.ItemIsEditable |
-                QtCore.Qt.ItemFlag.ItemIsEnabled |
-                QtCore.Qt.ItemFlag.ItemIsSelectable)
-
-    def rowCount(self, parent=QtCore.QModelIndex()) -> int:
-        """
-
-        :param parent:
-        :return:
-        """
-        return len(self.items)
-
-    def data(self, index: QtCore.QModelIndex, role=QtCore.Qt.ItemDataRole.DisplayRole):
-        """
-
-        :param index:
-        :param role:
-        :return:
-        """
-        if index.isValid():
-
-            diagram = self.items[index.row()]
-
-            if role == QtCore.Qt.ItemDataRole.DisplayRole:
-                return diagram.name
-            elif role == QtCore.Qt.ItemDataRole.DecorationRole:
-
-                # TODO: Is this the only way?
-                from GridCal.Gui.Diagrams.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
-                from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget
-                from GridCal.Gui.Diagrams.BusViewer.bus_viewer_dialogue import BusViewerWidget
-
-                if isinstance(diagram, BusBranchEditorWidget):
-                    return self.bus_branch_editor_icon
-                elif isinstance(diagram, GridMapWidget):
-                    return self.map_editor_icon
-                elif isinstance(diagram, BusViewerWidget):
-                    return self.bus_branch_vecinity_icon
-
-        return None
-
-    def setData(self, index, value, role=None):
-        """
-        Set data by simple editor (whatever text)
-        :param index:
-        :param value:
-        :param role:
-        :return:
-        """
-
-        self.items[index.row()].name = value
-
-        return True
+# class DiagramsModel(QtCore.QAbstractListModel):
+#     """
+#     Model for the diagrams
+#     # from GridCal.Gui.Diagrams.BusViewer.bus_viewer_dialogue import BusViewerGUI
+#     # from GridCal.Gui.DiagramEditorWidget import DiagramEditorWidget
+#     # from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget
+#     """
+#
+#     def __init__(self, list_of_diagrams: List[Union[DiagramEditorWidget, GridMapWidget, BusViewerWidget]]):
+#         """
+#         Enumeration model
+#         :param list_of_diagrams: list of enumeration values to show
+#         """
+#         QtCore.QAbstractListModel.__init__(self)
+#         self.items = list_of_diagrams
+#
+#         self.bus_branch_editor_icon = QtGui.QIcon()
+#         self.bus_branch_editor_icon.addPixmap(QtGui.QPixmap(":/Icons/icons/schematic.svg"))
+#
+#         self.bus_branch_vecinity_icon = QtGui.QIcon()
+#         self.bus_branch_vecinity_icon.addPixmap(QtGui.QPixmap(":/Icons/icons/grid_icon.svg"))
+#
+#         self.map_editor_icon = QtGui.QIcon()
+#         self.map_editor_icon.addPixmap(QtGui.QPixmap(":/Icons/icons/map.svg"))
+#
+#     def flags(self, index: QtCore.QModelIndex):
+#         """
+#         Get the display mode
+#         :param index:
+#         :return:
+#         """
+#         return (QtCore.Qt.ItemFlag.ItemIsEditable |
+#                 QtCore.Qt.ItemFlag.ItemIsEnabled |
+#                 QtCore.Qt.ItemFlag.ItemIsSelectable)
+#
+#     def rowCount(self, parent=QtCore.QModelIndex()) -> int:
+#         """
+#
+#         :param parent:
+#         :return:
+#         """
+#         return len(self.items)
+#
+#     def data(self, index: QtCore.QModelIndex, role=QtCore.Qt.ItemDataRole.DisplayRole):
+#         """
+#
+#         :param index:
+#         :param role:
+#         :return:
+#         """
+#         if index.isValid():
+#
+#             diagram = self.items[index.row()]
+#
+#             if role == QtCore.Qt.ItemDataRole.DisplayRole:
+#                 return diagram.name
+#             elif role == QtCore.Qt.ItemDataRole.DecorationRole:
+#
+#                 # TODO: Is this the only way?
+#                 from GridCal.Gui.Diagrams.DiagramEditorWidget.diagram_editor_widget import DiagramEditorWidget
+#                 from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget
+#
+#                 if isinstance(diagram, DiagramEditorWidget):
+#                     return self.bus_branch_editor_icon
+#                 elif isinstance(diagram, GridMapWidget):
+#                     return self.map_editor_icon
+#
+#         return None
+#
+#     def setData(self, index, value, role=None):
+#         """
+#         Set data by simple editor (whatever text)
+#         :param index:
+#         :param value:
+#         :param role:
+#         :return:
+#         """
+#
+#         self.items[index.row()].name = value
+#
+#         return True
 
 
 def get_list_model(lst: List[Union[str, DeviceType]], checks=False, check_value=False) -> QtGui.QStandardItemModel:
@@ -2812,17 +2804,35 @@ def get_cim_tree_model(cim_model: CgmesCircuit):
     return model
 
 
-def add_menu_entry(menu: QtWidgets.QMenu, text: str, icon_path: str, function_ptr):
+def add_menu_entry(menu: QtWidgets.QMenu,
+                   text: str,
+                   icon_path: str = "",
+                   function_ptr=None,
+                   checkeable=False,
+                   checked_value=False) -> QtGui.QAction:
     """
     Add a context menu entry
     :param menu:
     :param text:
     :param icon_path:
     :param function_ptr:
+    :param checkeable:
+    :param checked_value:
     :return:
     """
-    ra3 = menu.addAction(text)
-    edit_icon = QtGui.QIcon()
-    edit_icon.addPixmap(QtGui.QPixmap(icon_path))
-    ra3.setIcon(edit_icon)
-    ra3.triggered.connect(function_ptr)
+
+    entry = menu.addAction(text)
+
+    if checkeable:
+        entry.setCheckable(checkeable)
+        entry.setChecked(checked_value)
+
+    if len(icon_path) > 0:
+        edit_icon = QtGui.QIcon()
+        edit_icon.addPixmap(QtGui.QPixmap(icon_path))
+        entry.setIcon(edit_icon)
+
+    if function_ptr is not None:
+        entry.triggered.connect(function_ptr)
+
+    return entry

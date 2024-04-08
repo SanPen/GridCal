@@ -32,6 +32,8 @@ class FluidNode(EditableDevice):
                  code: str = '',
                  min_level: float = 0.0,
                  max_level: float = 0.0,
+                 min_soc: float = 0.0,
+                 max_soc: float = 1.0,
                  current_level: float = 0.0,
                  spillage_cost: float = 1000.0,
                  inflow: float = 0.0,
@@ -58,6 +60,8 @@ class FluidNode(EditableDevice):
 
         self.min_level = min_level  # hm3
         self.max_level = max_level  # hm3
+        self.max_soc = max_soc  # p.u.
+        self.min_soc = min_soc  # p.u.
         self.initial_level = current_level  # hm3
         self.spillage_cost = spillage_cost  # m3/s
         self.inflow = inflow  # m3/s
@@ -67,11 +71,22 @@ class FluidNode(EditableDevice):
         self._inflow_prof = Profile(default_value=inflow)  # m3/s
         self._spillage_cost_prof = Profile(default_value=spillage_cost)  # e/(m3/s)
 
+        self._max_soc_prof = Profile(default_value=max_soc)  # p.u.
+        self._min_soc_prof = Profile(default_value=min_soc)  # p.u.
+
         self.register(key='min_level', units='hm3', tpe=float,
                       definition="Minimum amount of fluid at the node/reservoir")
 
         self.register(key='max_level', units='hm3', tpe=float,
                       definition="Maximum amount of fluid at the node/reservoir")
+
+        self.register(key='min_soc', units='p.u.', tpe=float,
+                      definition="Minimum SOC of fluid at the node/reservoir",
+                      profile_name='min_soc_prof')
+
+        self.register(key='max_soc', units='p.u.', tpe=float,
+                      definition="Maximum SOC of fluid at the node/reservoir",
+                      profile_name='max_soc_prof')
 
         self.register(key='initial_level', units='hm3', tpe=float,
                       definition="Initial level of the node/reservoir")
@@ -124,6 +139,40 @@ class FluidNode(EditableDevice):
         else:
             raise Exception(str(type(val)) + 'not supported to be set into a inflow_prof')
 
+    @property
+    def max_soc_prof(self) -> Profile:
+        """
+        Max soc profile
+        :return: Profile
+        """
+        return self._max_soc_prof
+
+    @max_soc_prof.setter
+    def max_soc_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._max_soc_prof = val
+        elif isinstance(val, np.ndarray):
+            self._max_soc_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a max soc prof')
+
+    @property
+    def min_soc_prof(self) -> Profile:
+        """
+        Min soc profile
+        :return: Profile
+        """
+        return self._min_soc_prof
+
+    @min_soc_prof.setter
+    def min_soc_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._min_soc_prof = val
+        elif isinstance(val, np.ndarray):
+            self._min_soc_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a min soc prof')
+
     def copy(self):
         """
         Make a deep copy of this object
@@ -135,6 +184,8 @@ class FluidNode(EditableDevice):
 
         fluid_node.min_level = self.min_level  # hm3
         fluid_node.max_level = self.max_level  # hm3
+        fluid_node.min_soc = self.min_soc  # p.u.
+        fluid_node.max_soc = self.max_soc  # p.u.
         fluid_node.initial_level = self.initial_level  # hm3
         fluid_node.spillage_cost = self.spillage_cost  # m3/s
         fluid_node.inflow = self.inflow  # m3/s
@@ -143,6 +194,8 @@ class FluidNode(EditableDevice):
 
         fluid_node.inflow_prof = self.inflow_prof  # m3/s
         fluid_node.spillage_cost_prof = self.spillage_cost_prof  # e/(m3/s)
+        fluid_node.max_soc_prof = self.max_soc_prof  # m3
+        fluid_node.min_soc_prof = self.min_soc_prof  # m3
 
         return fluid_node
 

@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="512"
+   height="512"
+   viewBox="0 0 512 512"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)"
+   sodipodi:docname="GridCal5_icon.svg"
+   inkscape:export-filename="/home/santi/Documentos/GitHub/GridCal/src/GridCal/Gui/Main/GridCal_icon.png"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90">
+  <defs
+     id="defs4" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.79549513"
+     inkscape:cx="195.86984"
+     inkscape:cy="217.11741"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     units="px"
+     inkscape:window-width="1848"
+     inkscape:window-height="1018"
+     inkscape:window-x="72"
+     inkscape:window-y="25"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Capa 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-540.36216)">
+    <g
+       id="g863"
+       transform="matrix(3.5950033,0,0,3.5950033,-615.62432,-2690.5827)"
+       style="fill:#37c8ab;stroke:#005544">
+      <g
+         id="g4541"
+         transform="translate(177.72284,-30.851643)">
+        <rect
+           style="opacity:1;fill:#37c8ab;fill-opacity:1;stroke:#005544;stroke-width:3.42260671;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+           id="rect4862-9"
+           width="102.96761"
+           height="102.96761"
+           x="13.401784"
+           y="936.46033"
+           ry="14.891859" />
+        <path
+           style="fill:#37c8ab;fill-rule:evenodd;stroke:#005544;stroke-width:2.55670834;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+           d="m 13.799443,1006.1765 c 0,0 2.190698,-46.77138 6.176144,-46.84038 4.125325,-0.0715 3.318087,55.85258 7.698377,55.86228 3.245415,0.01 3.640897,-44.25398 7.143441,-44.37053 2.466569,-0.082 4.008643,35.96363 7.308336,35.89873 2.319133,-0.046 4.554836,-28.55476 8.039476,-28.5991 2.501206,-0.0318 4.328651,25.8757 7.501062,25.798 2.663764,-0.066 5.477277,-21.28662 8.140798,-21.1928 2.315079,0.0815 3.394469,17.05166 6.247406,17.07392 2.183064,0.017 4.355591,-13.58 7.092777,-13.65792 1.976158,-0.0565 2.727108,9.48279 4.812952,9.4304 1.46143,-0.0363 2.72769,-6.04859 4.914286,-5.96179 1.540797,0.0613 2.53687,2.35577 4.053016,2.38478 1.977175,0.0383 3.900719,-0.78826 5.876856,-0.86723 2.16432,-0.0862 4.32006,0.36128 6.48483,0.43356 1.75544,0.0584 5.26891,0 5.26891,0 l 5.72489,-0.0546"
+           id="path4166-1"
+           inkscape:connector-curvature="0"
+           sodipodi:nodetypes="cssssssssssssaacc" />
+      </g>
+    </g>
+    <rect
+       style="opacity:1;fill:#00aa88;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:square;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:stroke fill markers"
+       id="rect865"
+       width="77.338036"
+       height="75.404579"
+       x="-562.63422"
+       y="306.05014" />
+    <rect
+       style="opacity:1;fill:#165044;fill-opacity:1;stroke:none;stroke-width:2.61818194;stroke-linecap:square;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:stroke fill markers"
+       id="rect867"
+       width="70.869766"
+       height="69.604233"
+       x="-518.16486"
+       y="342.78571" />
+    <rect
+       style="opacity:1;fill:#00203f;fill-opacity:0.94117647;stroke:none;stroke-width:4;stroke-linecap:square;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:stroke fill markers"
+       id="rect865-6"
+       width="77.338036"
+       height="75.404579"
+       x="-569.66956"
+       y="460.5256" />
+    <rect
+       style="opacity:1;fill:#adefd1;fill-opacity:0.94117647;stroke:none;stroke-width:2.61818194;stroke-linecap:square;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:stroke fill markers"
+       id="rect867-7"
+       width="70.869766"
+       height="69.604233"
+       x="-525.2002"
+       y="497.26114" />
+    <rect
+       ry="60.926529"
+       y="-315.50775"
+       x="-620.14917"
+       height="421.2677"
+       width="421.2677"
+       id="rect4862-9-3"
+       style="opacity:1;fill:#00203e;fill-opacity:0.65882353;stroke:#adf0d1;stroke-width:14.00278854;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.65882353" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:84.77301788px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#adf0d1;fill-opacity:0.65882353;stroke:none;stroke-width:2.11932564"
+       x="-576.8186"
+       y="-76.537895"
+       id="text4537"><tspan
+         sodipodi:role="line"
+         id="tspan4535"
+         x="-576.8186"
+         y="-76.537895"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'URW Gothic L';-inkscape-font-specification:'URW Gothic L';fill:#adf0d1;fill-opacity:0.65882353;stroke-width:2.11932564">GridCal</tspan></text>
+    <rect
+       ry="60.926529"
+       y="-168.04951"
+       x="-25.744947"
+       height="421.2677"
+       width="421.2677"
+       id="rect4862-9-3-5"
+       style="opacity:1;fill:#adf0d1;fill-opacity:0.65882353;stroke:#00203e;stroke-width:14.00278854;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.65882353" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:84.77301788px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#00203e;fill-opacity:0.65882353;stroke:none;stroke-width:2.11932564"
+       x="17.585619"
+       y="70.920334"
+       id="text4537-3"><tspan
+         sodipodi:role="line"
+         id="tspan4535-5"
+         x="17.585619"
+         y="70.920334"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'URW Gothic L';-inkscape-font-specification:'URW Gothic L';fill:#00203e;fill-opacity:0.65882353;stroke-width:2.11932564">GridCal</tspan></text>
+    <g
+       id="g863-6"
+       transform="matrix(4.0912642,0,0,4.0912642,-736.13113,-3124.8284)"
+       style="fill:#adf0d1;stroke:#00203e;stroke-opacity:0.65882355;fill-opacity:0.65882355">
+      <g
+         id="g4541-2"
+         transform="translate(177.72284,-30.851643)"
+         style="stroke:#00203e;stroke-opacity:0.65882355;fill:#adf0d1;fill-opacity:0.65882355;opacity:1">
+        <g
+           id="g1160"
+           transform="translate(163.38335,-231.17006)">
+          <rect
+             ry="14.891859"
+             y="936.46033"
+             x="13.401784"
+             height="102.96761"
+             width="102.96761"
+             id="rect4862-9-9"
+             style="opacity:1;fill:#a4e4c9;fill-opacity:0.99607843;stroke:#00203f;stroke-width:3.42260671;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.94117647" />
+          <path
+             sodipodi:nodetypes="cssssssssssssaacc"
+             inkscape:connector-curvature="0"
+             id="path4166-1-1"
+             d="m 13.799443,1006.1765 c 0,0 2.190698,-46.77138 6.176144,-46.84038 4.125325,-0.0715 3.318087,55.85258 7.698377,55.86228 3.245415,0.01 3.640897,-44.25398 7.143441,-44.37053 2.466569,-0.082 4.008643,35.96363 7.308336,35.89873 2.319133,-0.046 4.554836,-28.55476 8.039476,-28.5991 2.501206,-0.0318 4.328651,25.8757 7.501062,25.798 2.663764,-0.066 5.477277,-21.28662 8.140798,-21.1928 2.315079,0.0815 3.394469,17.05166 6.247406,17.07392 2.183064,0.017 4.355591,-13.58 7.092777,-13.65792 1.976158,-0.0565 2.727108,9.48279 4.812952,9.4304 1.46143,-0.0363 2.72769,-6.04859 4.914286,-5.96179 1.540797,0.0613 2.53687,2.35577 4.053016,2.38478 1.977175,0.0383 3.900719,-0.78826 5.876856,-0.86723 2.16432,-0.0862 4.32006,0.36128 6.48483,0.43356 1.75544,0.0584 5.26891,0 5.26891,0 l 5.72489,-0.0546"
+             style="fill:none;fill-opacity:0.65882353;fill-rule:evenodd;stroke:#00203f;stroke-width:2.55670834;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.94117647" />
+        </g>
+      </g>
+    </g>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:75.73434448px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#005544;fill-opacity:1;stroke:none;stroke-width:1.89335871"
+       x="119.93007"
+       y="1020.4292"
+       id="text836"><tspan
+         sodipodi:role="line"
+         id="tspan834"
+         x="119.93007"
+         y="1020.4292"
+         style="fill:#005544;fill-opacity:1;stroke-width:1.89335871">GridCal</tspan></text>
+  </g>
+</svg>

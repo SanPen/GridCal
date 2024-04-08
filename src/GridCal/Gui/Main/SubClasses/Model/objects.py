@@ -32,7 +32,7 @@ from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_m
 from GridCal.Gui.Main.SubClasses.Model.diagrams import DiagramsMain
 from GridCal.Gui.TowerBuilder.LineBuilderDialogue import TowerBuilderGUI
 from GridCal.Gui.GeneralDialogues import LogsDialogue
-from GridCal.Gui.Diagrams.BusBranchEditorWidget.bus_branch_editor_widget import BusBranchEditorWidget
+from GridCal.Gui.Diagrams.DiagramEditorWidget.diagram_editor_widget import DiagramEditorWidget
 from GridCal.Gui.SystemScaler.system_scaler import SystemScaler
 
 
@@ -289,6 +289,10 @@ class ObjectsTableMain(DiagramsMain):
                                    DeviceType.GeneratorDevice.value: self.circuit.get_generators(),
                                    }
 
+        elif elm_type == DeviceType.ModellingAuthority:
+            elm = dev.ModellingAuthority()
+            dictionary_of_lists = {}
+
         else:
             raise Exception('elm_type not understood: ' + elm_type.value)
 
@@ -464,7 +468,7 @@ class ObjectsTableMain(DiagramsMain):
 
             diagram = self.get_selected_diagram_widget()
 
-            if isinstance(diagram, BusBranchEditorWidget):
+            if isinstance(diagram, DiagramEditorWidget):
                 injections_by_bus = self.circuit.get_injection_devices_grouped_by_bus()
                 injections_by_fluid_node = self.circuit.get_injection_devices_grouped_by_fluid_node()
                 logger = bs.Logger()
@@ -609,6 +613,12 @@ class ObjectsTableMain(DiagramsMain):
 
                 obj = dev.GeneratorEmission()
                 self.circuit.add_generator_emission(obj)
+
+            elif elm_type == DeviceType.ModellingAuthority.value:
+
+                name = f'Modelling authority {self.circuit.get_modelling_authorities_number()}'
+                obj = dev.ModellingAuthority(name=name)
+                self.circuit.add_modelling_authority(obj)
 
             else:
                 info_msg("This object does not support table-like addition.\nUse the schematic instead.")
@@ -1032,6 +1042,16 @@ class ObjectsTableMain(DiagramsMain):
                           text="Edit",
                           icon_path=":/Icons/icons/edit.svg",
                           function_ptr=self.launch_object_editor)
+
+        gf.add_menu_entry(menu=context_menu,
+                          text="Add",
+                          icon_path=":/Icons/icons/plus.svg",
+                          function_ptr=self.add_objects)
+
+        gf.add_menu_entry(menu=context_menu,
+                          text="Delete",
+                          icon_path=":/Icons/icons/minus.svg",
+                          function_ptr=self.delete_selected_objects)
 
         context_menu.addSeparator()
 
