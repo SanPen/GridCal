@@ -35,8 +35,9 @@ class FluidNodeData:
 
         self.min_level = np.zeros(nelm, dtype=float)
         self.max_level = np.zeros(nelm, dtype=float)
+        self.min_soc = np.zeros(nelm, dtype=float)
+        self.max_soc = np.zeros(nelm, dtype=float)
         self.initial_level = np.zeros(nelm, dtype=float)
-        # self.bus_index = np.empty()  # TODO: check if relevant
         self.inflow = np.zeros(nelm, dtype=float)
         self.spillage_cost = np.zeros(nelm, dtype=float)
 
@@ -61,6 +62,8 @@ class FluidNodeData:
 
         data.min_level = self.min_level.copy()
         data.max_level = self.max_level.copy()
+        data.min_soc = self.min_soc.copy()
+        data.max_soc = self.max_soc.copy()
         data.initial_level = self.initial_level.copy()
 
         data.inflow = self.inflow.copy()
