@@ -939,7 +939,7 @@ class DiagramsMain(CompiledArraysMain):
 
         for diagram in self.circuit.diagrams:
 
-            if isinstance(diagram, dev.BusBranchDiagram):
+            if isinstance(diagram, dev.SchematicDiagram):
                 diagram_widget = DiagramEditorWidget(self.circuit,
                                                      diagram=diagram,
                                                      default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
@@ -1002,11 +1002,11 @@ class DiagramsMain(CompiledArraysMain):
 
     def add_diagram_widget_and_diagram(self,
                                        diagram_widget: ALL_EDITORS,
-                                       diagram: Union[dev.BusBranchDiagram, dev.MapDiagram]):
+                                       diagram: Union[dev.SchematicDiagram, dev.MapDiagram]):
         """
         Add diagram widget, it also adds the diagram to the circuit for later
         :param diagram_widget: Diagram widget object
-        :param diagram: BusBranchDiagram or MapDiagram
+        :param diagram: SchematicDiagram or MapDiagram
         """
 
         # add the widget pointer

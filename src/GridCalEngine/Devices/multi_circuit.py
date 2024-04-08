@@ -436,7 +436,7 @@ class MultiCircuit:
                     self.device_type_name_dict[key] = elm.device_type
 
         # list of declared diagrams
-        self.diagrams: List[Union[dev.MapDiagram, dev.BusBranchDiagram, dev.NodeBreakerDiagram]] = list()
+        self.diagrams: List[Union[dev.MapDiagram, dev.SchematicDiagram]] = list()
 
     def __str__(self):
         return str(self.name)
@@ -711,10 +711,10 @@ class MultiCircuit:
 
         return tp.find_different_states(states_array=self.get_branch_active_time_array())
 
-    def get_diagrams(self) -> List[Union[dev.MapDiagram, dev.BusBranchDiagram, dev.NodeBreakerDiagram]]:
+    def get_diagrams(self) -> List[Union[dev.MapDiagram, dev.SchematicDiagram]]:
         """
         Get list of diagrams
-        :return: MapDiagram, BusBranchDiagram, NodeBreakerDiagram device
+        :return: MapDiagram, SchematicDiagram device
         """
         return self.diagrams
 
@@ -725,18 +725,18 @@ class MultiCircuit:
         """
         return len(self.diagrams) > 0
 
-    def add_diagram(self, diagram: Union[dev.MapDiagram, dev.BusBranchDiagram, dev.NodeBreakerDiagram]):
+    def add_diagram(self, diagram: Union[dev.MapDiagram, dev.SchematicDiagram]):
         """
         Add diagram
-        :param diagram: MapDiagram, BusBranchDiagram, NodeBreakerDiagram device
+        :param diagram: MapDiagram, SchematicDiagram device
         :return:
         """
         self.diagrams.append(diagram)
 
-    def remove_diagram(self, diagram: Union[dev.MapDiagram, dev.BusBranchDiagram, dev.NodeBreakerDiagram]):
+    def remove_diagram(self, diagram: Union[dev.MapDiagram, dev.SchematicDiagram]):
         """
         Remove diagrams
-        :param diagram: MapDiagram, BusBranchDiagram, NodeBreakerDiagram device
+        :param diagram: MapDiagram, SchematicDiagram device
         """
         self.diagrams.remove(diagram)
 

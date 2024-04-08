@@ -51,7 +51,7 @@ from GridCalEngine.Devices.Injections.generator import Generator
 from GridCalEngine.Devices.Fluid import FluidNode, FluidPath
 from GridCalEngine.Devices.Aggregation.investments_group import InvestmentsGroup
 from GridCalEngine.Devices.Aggregation.investment import Investment
-from GridCalEngine.Devices.Diagrams.bus_branch_diagram import BusBranchDiagram
+from GridCalEngine.Devices.Diagrams.schematic_diagram import SchematicDiagram
 from GridCalEngine.Devices.Diagrams.graphic_location import GraphicLocation
 from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.driver_template import DriverTemplate
@@ -74,6 +74,7 @@ from GridCal.Gui.Diagrams.DiagramEditorWidget.Branches.hvdc_graphics import Hvdc
 from GridCal.Gui.Diagrams.DiagramEditorWidget.Branches.vsc_graphics import VscGraphicItem
 from GridCal.Gui.Diagrams.DiagramEditorWidget.Branches.upfc_graphics import UpfcGraphicItem
 from GridCal.Gui.Diagrams.DiagramEditorWidget.Branches.series_reactance_graphics import SeriesReactanceGraphicItem
+from GridCal.Gui.Diagrams.DiagramEditorWidget.Branches.switch_graphics import SwitchGraphicItem
 from GridCal.Gui.Diagrams.DiagramEditorWidget.Branches.line_graphics_template import LineGraphicTemplateItem
 from GridCal.Gui.Diagrams.DiagramEditorWidget.Branches.transformer3w_graphics import Transformer3WGraphicItem
 from GridCal.Gui.Diagrams.DiagramEditorWidget.Injections.generator_graphics import GeneratorGraphicItem
@@ -84,6 +85,18 @@ import GridCal.Gui.Visualization.palettes as palettes
 from GridCal.Gui.GuiFunctions import ObjectsModel, add_menu_entry
 from GridCal.Gui.messages import info_msg, error_msg, warning_msg, yes_no_question
 from matplotlib import pyplot as plt
+
+BRANCH_GRAPHICS = Union[
+    LineGraphicItem,
+    WindingGraphicItem,
+    DcLineGraphicItem,
+    TransformerGraphicItem,
+    HvdcGraphicItem,
+    VscGraphicItem,
+    UpfcGraphicItem,
+    SeriesReactanceGraphicItem,
+    SwitchGraphicItem
+]
 
 '''
 Structure:
@@ -96,8 +109,9 @@ Structure:
  |       
   - .circuit {MultiCircuit} (Calculation engine)
  |       
-  - .diagram {BusBranchDiagram} records the objects and their position to load and save diagrams
-
+  - .diagram {SchematicDiagram} records the DB objects and their position to load and save diagrams
+ |       
+  - .graphics_manager {GraphicsManager} records the DB objects and their diagram widgets
 
 The graphic objects need to call the API objects and functions inside the MultiCircuit instance.
 To do this the graphic objects call "parent.circuit.<function or object>"
@@ -458,13 +472,13 @@ class DiagramEditorWidget(QSplitter):
 
     def __init__(self,
                  circuit: MultiCircuit,
-                 diagram: Union[BusBranchDiagram, None],
+                 diagram: Union[SchematicDiagram, None],
                  default_bus_voltage: float = 10.0,
                  time_index: Union[None, int] = None):
         """
         Creates the Diagram Editor (DiagramEditorWidget)
         :param circuit: Circuit that is handling
-        :param diagram: BusBranchDiagram to use (optional)
+        :param diagram: SchematicDiagram to use (optional)
         :param default_bus_voltage: Default bus voltages (kV)
         :param time_index: time index to represent
         """
@@ -475,7 +489,7 @@ class DiagramEditorWidget(QSplitter):
         self.circuit: MultiCircuit = circuit
 
         # diagram to store the objects locations
-        self.diagram: BusBranchDiagram = diagram
+        self.diagram: SchematicDiagram = diagram
         self.graphics_manager = GraphicsManager()
 
         # default_bus_voltage (kV)
@@ -784,11 +798,11 @@ class DiagramEditorWidget(QSplitter):
         graphic_object = BusBarGraphicItem(editor=self, node=node, x=x, y=y, h=h, w=w)
         return graphic_object
 
-    def set_data(self, circuit: MultiCircuit, diagram: BusBranchDiagram):
+    def set_data(self, circuit: MultiCircuit, diagram: SchematicDiagram):
         """
         Set the widget data and redraw
         :param circuit: MultiCircuit
-        :param diagram: BusBranchDiagram
+        :param diagram: SchematicDiagram
         """
         self.clear()
         self.circuit = circuit
@@ -1124,10 +1138,10 @@ class DiagramEditorWidget(QSplitter):
         graphic_object: QGraphicsItem = self.graphics_manager.delete_device(device=device)
 
         if graphic_object is not None:
-            try:
-                self.remove_from_scene(graphic_object)
-            except:
-                warn(f"Could not remove {graphic_object} from the scene")
+            # try:
+            self.remove_from_scene(graphic_object)
+            # except:
+            #     warn(f"Could not remove {graphic_object} from the scene")
 
     def remove_element(self,
                        device: ALL_DEV_TYPES,
@@ -3142,12 +3156,12 @@ class DiagramEditorWidget(QSplitter):
         """
         return [e.api_object for e in self.diagram_scene.selectedItems()]
 
-    def get_selection_diagram(self) -> BusBranchDiagram:
+    def get_selection_diagram(self) -> SchematicDiagram:
         """
-        Get a BusBranchDiagram of the current selection
-        :return: BusBranchDiagram
+        Get a SchematicDiagram of the current selection
+        :return: SchematicDiagram
         """
-        diagram = BusBranchDiagram(name="Selection diagram")
+        diagram = SchematicDiagram(name="Selection diagram")
 
         # first pass (only buses)
         bus_dict = dict()
@@ -3164,7 +3178,7 @@ class DiagramEditorWidget(QSplitter):
 
         # second pass (Branches, and include their not selected buses)
         for item in self.diagram_scene.selectedItems():
-            if not isinstance(item, BusGraphicItem):
+            if isinstance(item, BRANCH_GRAPHICS):
 
                 # add the element
                 rect = item.boundingRect()
@@ -3176,23 +3190,21 @@ class DiagramEditorWidget(QSplitter):
                                                            r=item.rotation(),
                                                            api_object=item.api_object))
 
-                if hasattr(item.api_object, 'bus_from'):  # if the element is a branch ...
+                # get the api buses from and to
+                bus_from = item.api_object.bus_from
+                bus_to = item.api_object.bus_to
 
-                    # get the api buses from and to
-                    bus_from = item.api_object.bus_from
-                    bus_to = item.api_object.bus_to
+                for bus in [bus_from, bus_to]:
 
-                    for bus in [bus_from, bus_to]:
+                    # check that the bus is in the original diagram
+                    location = self.diagram.query_point(bus)
 
-                        # check that the bus is in the original diagram
-                        location = self.diagram.query_point(bus)
-
-                        if location and (bus.idtag not in bus_dict):
-                            # if the bus was not added in the first
-                            # pass and is in the original diagram, add it now
-                            diagram.set_point(device=bus, location=location)
-                            graphic_object = self.graphics_manager.query(elm=bus)
-                            bus_dict[bus.idtag] = graphic_object
+                    if location and (bus.idtag not in bus_dict):
+                        # if the bus was not added in the first
+                        # pass and is in the original diagram, add it now
+                        diagram.set_point(device=bus, location=location)
+                        graphic_object = self.graphics_manager.query(elm=bus)
+                        bus_dict[bus.idtag] = graphic_object
 
         # third pass: we must also add all those branches connecting the selected buses
         for lst in self.circuit.get_branch_lists():
@@ -4056,7 +4068,7 @@ def generate_bus_branch_diagram(buses: List[Bus],
                                 explode_factor=1.0,
                                 prog_func: Union[Callable, None] = None,
                                 text_func: Union[Callable, None] = None,
-                                name='Bus branch diagram') -> BusBranchDiagram:
+                                name='Bus branch diagram') -> SchematicDiagram:
     """
     Add a elements to the schematic scene
     :param buses: list of Bus objects
@@ -4076,7 +4088,7 @@ def generate_bus_branch_diagram(buses: List[Bus],
     :param name: name of the diagram
     """
 
-    diagram = BusBranchDiagram(name=name)
+    diagram = SchematicDiagram(name=name)
 
     # first create the buses
     if text_func is not None:
@@ -4344,7 +4356,7 @@ def make_vecinity_diagram(circuit: MultiCircuit, root_bus: Bus, max_level: int =
 #     app = QApplication(sys.argv)
 #
 #     window = DiagramEditorWidget(circuit=MultiCircuit(),
-#                                    diagram=BusBranchDiagram(),
+#                                    diagram=SchematicDiagram(),
 #                                    default_bus_voltage=10.0)
 #
 #     window.resize(1.61 * 700.0, 600.0)  # golden ratio
