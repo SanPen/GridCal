@@ -1914,6 +1914,13 @@
                    </widget>
                   </item>
                   <item>
+                   <widget class="QLabel" name="label_91">
+                    <property name="text">
+                     <string>     </string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
                    <widget class="QLineEdit" name="sourceCodeNameLineEdit">
                     <property name="toolTip">
                      <string>Name of the source code file</string>
@@ -1921,17 +1928,11 @@
                    </widget>
                   </item>
                   <item>
-                   <spacer name="horizontalSpacer_14">
-                    <property name="orientation">
-                     <enum>Qt::Horizontal</enum>
+                   <widget class="QLabel" name="label_98">
+                    <property name="text">
+                     <string>     </string>
                     </property>
-                    <property name="sizeHint" stdset="0">
-                     <size>
-                      <width>237</width>
-                      <height>20</height>
-                     </size>
-                    </property>
-                   </spacer>
+                   </widget>
                   </item>
                   <item>
                    <widget class="QPushButton" name="runSourceCodeButton">

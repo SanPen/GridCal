@@ -333,7 +333,7 @@ class CustomGraphicsView(QGraphicsView):
     CustomGraphicsView to handle the panning of the grid
     """
 
-    def __init__(self, scene: QGraphicsScene, parent: "BusBranchDiagramScene"):
+    def __init__(self, scene: QGraphicsScene, parent: "DiagramEditorWidget"):
         """
         Constructor
         :param scene: QGraphicsScene

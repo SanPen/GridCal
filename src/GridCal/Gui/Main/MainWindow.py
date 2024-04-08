@@ -1276,14 +1276,20 @@ class Ui_mainWindow(object):
 
         self.horizontalLayout_3.addWidget(self.saveSourceCodeButton)
 
+        self.label_91 = QLabel(self.frame_55)
+        self.label_91.setObjectName(u"label_91")
+
+        self.horizontalLayout_3.addWidget(self.label_91)
+
         self.sourceCodeNameLineEdit = QLineEdit(self.frame_55)
         self.sourceCodeNameLineEdit.setObjectName(u"sourceCodeNameLineEdit")
 
         self.horizontalLayout_3.addWidget(self.sourceCodeNameLineEdit)
 
-        self.horizontalSpacer_14 = QSpacerItem(237, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+        self.label_98 = QLabel(self.frame_55)
+        self.label_98.setObjectName(u"label_98")
 
-        self.horizontalLayout_3.addItem(self.horizontalSpacer_14)
+        self.horizontalLayout_3.addWidget(self.label_98)
 
         self.runSourceCodeButton = QPushButton(self.frame_55)
         self.runSourceCodeButton.setObjectName(u"runSourceCodeButton")
@@ -4603,9 +4609,11 @@ class Ui_mainWindow(object):
         self.saveSourceCodeButton.setToolTip(QCoreApplication.translate("mainWindow", u"Save the current source code", None))
 #endif // QT_CONFIG(tooltip)
         self.saveSourceCodeButton.setText("")
+        self.label_91.setText("")
 #if QT_CONFIG(tooltip)
         self.sourceCodeNameLineEdit.setToolTip(QCoreApplication.translate("mainWindow", u"Name of the source code file", None))
 #endif // QT_CONFIG(tooltip)
+        self.label_98.setText("")
 #if QT_CONFIG(tooltip)
         self.runSourceCodeButton.setToolTip(QCoreApplication.translate("mainWindow", u"Run the source code in the console", None))
 #endif // QT_CONFIG(tooltip)
