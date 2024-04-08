@@ -101,7 +101,8 @@ class ArrowHead(QGraphicsPolygonItem):
         self.setBrush(color)
         self.label.setDefaultTextColor(color)
 
-    def set_value(self, value: float, redraw=True, backwards=False, name="", units="", format_str="{:10.2f}"):
+    def set_value(self, value: float, redraw=True, backwards=False, name="", units="", format_str="{:10.2f}",
+                  draw_label: bool = True):
         """
         Set the sign with a value
         :param value: any real value
@@ -110,13 +111,17 @@ class ArrowHead(QGraphicsPolygonItem):
         :param name: name of the displayed magnitude (i.e. Pf)
         :param units: the units of the displayed magnitude (i.e MW)
         :param format_str: the formatting string of the displayed magnitude
+        :param draw_label: Draw label
         """
         # self.backwards = value < 0
         self.backwards = backwards
-        x = format_str.format(value)
-        msg = f'{name}:{x} {units}'
-        self.label.setPlainText(msg)
-        self.setToolTip(msg)
+
+        self.label.setVisible(draw_label)
+        if draw_label:
+            x = format_str.format(value)
+            msg = f'{name}:{x} {units}'
+            self.label.setPlainText(msg)
+            self.setToolTip(msg)
 
         if redraw:
             self.redraw()
@@ -781,10 +786,10 @@ class LineGraphicTemplateItem(GenericDBWidget, QGraphicsLineItem):
             Qf = Sf.imag
             Pt = St.real
             Qt_ = St.imag
-            self.arrow_from_1.set_value(Pf, True, Pf < 0, name="Pf", units="MW")
-            self.arrow_from_2.set_value(Qf, True, Qf < 0, name="Qf", units="MVAr")
-            self.arrow_to_1.set_value(Pt, True, Pt > 0, name="Pt", units="MW")
-            self.arrow_to_2.set_value(Qt_, True, Qt_ > 0, name="Qt", units="MVAr")
+            self.arrow_from_1.set_value(Pf, True, Pf < 0, name="Pf", units="MW", draw_label=self.draw_labels)
+            self.arrow_from_2.set_value(Qf, True, Qf < 0, name="Qf", units="MVAr", draw_label=self.draw_labels)
+            self.arrow_to_1.set_value(Pt, True, Pt > 0, name="Pt", units="MW", draw_label=self.draw_labels)
+            self.arrow_to_2.set_value(Qt_, True, Qt_ > 0, name="Qt", units="MVAr", draw_label=self.draw_labels)
 
     def set_arrows_with_hvdc_power(self, Pf: float, Pt: float) -> None:
         """
@@ -792,10 +797,10 @@ class LineGraphicTemplateItem(GenericDBWidget, QGraphicsLineItem):
         :param Pf: Complex power from
         :param Pt: Complex power to
         """
-        self.arrow_from_1.set_value(Pf, True, Pf < 0, name="Pf", units="MW")
-        self.arrow_from_2.set_value(Pf, True, Pf < 0, name="Pf", units="MW")
-        self.arrow_to_1.set_value(Pt, True, Pt > 0, name="Pt", units="MW")
-        self.arrow_to_2.set_value(Pt, True, Pt > 0, name="Pt", units="MW")
+        self.arrow_from_1.set_value(Pf, True, Pf < 0, name="Pf", units="MW", draw_label=self.draw_labels)
+        self.arrow_from_2.set_value(Pf, True, Pf < 0, name="Pf", units="MW", draw_label=self.draw_labels)
+        self.arrow_to_1.set_value(Pt, True, Pt > 0, name="Pt", units="MW", draw_label=self.draw_labels)
+        self.arrow_to_2.set_value(Pt, True, Pt > 0, name="Pt", units="MW", draw_label=self.draw_labels)
 
     def change_bus(self):
         """
