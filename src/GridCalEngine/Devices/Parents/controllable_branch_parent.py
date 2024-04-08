@@ -326,7 +326,7 @@ class ControllableBranchParent(BranchParent):
             raise Exception(str(type(val)) + 'not supported to be set into a temp_oper_prof')
 
     @property
-    def tap_changer(self) -> Profile:
+    def tap_changer(self) -> TapChanger:
         """
         Cost profile
         :return: Profile
@@ -382,14 +382,16 @@ class ControllableBranchParent(BranchParent):
         Move the tap changer one position up
         """
         self.tap_changer.tap_up()
-        self.tap_module = self.tap_changer.get_tap()
+        self.tap_module = self.tap_changer.get_tap_module()
+        self.tap_phase = self.tap_changer.get_tap_phase()
 
     def tap_down(self):
         """
         Move the tap changer one position up
         """
         self.tap_changer.tap_down()
-        self.tap_module = self.tap_changer.get_tap()
+        self.tap_module = self.tap_changer.get_tap_module()
+        self.tap_phase = self.tap_changer.get_tap_phase()
 
     def apply_tap_changer(self, tap_changer: TapChanger):
         """
@@ -403,6 +405,7 @@ class ControllableBranchParent(BranchParent):
         self.tap_changer = tap_changer
 
         if self.tap_module != 0:
-            self.tap_changer.set_tap(self.tap_module)
+            self.tap_changer.set_tap_module(tap_module=self.tap_module)
         else:
-            self.tap_module = self.tap_changer.get_tap()
+            self.tap_module = self.tap_changer.get_tap_module()
+            self.tap_phase = self.tap_changer.get_tap_phase()
