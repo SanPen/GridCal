@@ -201,11 +201,15 @@ class ControllableBranchParent(BranchParent):
         self.vset = vset
         self.Pset = Pset
 
-        self.control_mode: TransformerControlType = control_mode
+        self.control_mode: TransformerControlType = control_mode  # Legacy
+
         self.tap_module_control_mode: TapModuleControl = tap_module_control_mode
         self.tap_angle_control_mode: TapAngleControl = tap_angle_control_mode
+
         self.regulation_branch: BranchParent = regulation_branch
+
         self.regulation_bus: Bus = regulation_bus
+
         self.regulation_cn: ConnectivityNode = regulation_cn
 
         self.register(key='R', units='p.u.', tpe=float, definition='Total positive sequence resistance.')
@@ -254,13 +258,13 @@ class ControllableBranchParent(BranchParent):
                       definition='Objective power at the "from" side of when regulating the angle.')
 
         self.register(key='regulation_branch', units='', tpe=DeviceType.BranchDevice,
-                      definition='Branch where the controls are applied.')
+                      definition='Branch where the controls are applied.', editable=False)
 
         self.register(key='regulation_bus', units='', tpe=DeviceType.BusDevice,
-                      definition='Bus where the regulation is applied.')
+                      definition='Bus where the regulation is applied.', editable=False)
 
         self.register(key='regulation_cn', units='', tpe=DeviceType.ConnectivityNodeDevice,
-                      definition='Connectivity node where the regulation is applied.')
+                      definition='Connectivity node where the regulation is applied.', editable=False)
 
         self.register(key='temp_base', units='ºC', tpe=float, definition='Base temperature at which R was measured.')
         self.register(key='temp_oper', units='ºC', tpe=float, definition='Operation temperature to modify R.',

@@ -827,15 +827,14 @@ class NumericalCircuit:
     def get_simulation_indices(self) -> si.SimulationIndices:
         """
         Get the simulation indices
-        :return:
+        :return: SimulationIndices
         """
         return si.SimulationIndices(bus_types=self.bus_data.bus_types,
                                     Pbus=self.Sbus.real,
                                     control_mode=self.branch_data.control_mode,
                                     F=self.branch_data.F,
                                     T=self.branch_data.T,
-                                    dc=self.branch_data.dc
-                                    )
+                                    dc=self.branch_data.dc)
 
     def get_connectivity_matrices(self) -> tp.ConnectivityMatrices:
         """
