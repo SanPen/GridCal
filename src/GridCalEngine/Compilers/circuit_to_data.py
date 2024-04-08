@@ -1228,9 +1228,13 @@ def get_fluid_node_data(circuit: MultiCircuit,
         if time_series:
             data.inflow[k] = elm.inflow_prof[t_idx]
             data.spillage_cost[k] = elm.spillage_cost_prof[t_idx]
+            data.max_soc[k] = elm.max_soc_prof[t_idx]
+            data.min_soc[k] = elm.min_soc_prof[t_idx]
         else:
             data.inflow[k] = elm.inflow
             data.spillage_cost[k] = elm.spillage_cost
+            data.max_soc[k] = elm.max_soc
+            data.min_soc[k] = elm.min_soc
 
     return data, plant_dict
 
