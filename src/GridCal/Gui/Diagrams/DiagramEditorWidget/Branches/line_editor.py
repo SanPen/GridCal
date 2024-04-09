@@ -198,6 +198,7 @@ class LineEditor(QDialog):
         """
 
         if self.selected_template is not None:
+            self.line.length = self.l_spinner.value()
             self.line.apply_template(self.selected_template, Sbase=self.Sbase)
         else:
             length = self.l_spinner.value()
