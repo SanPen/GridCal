@@ -119,7 +119,7 @@ def create_cgmes_terminal(bus: Bus,
                          device=bus,
                          device_class=gcdev.Bus)
 
-    cgmes_model.Terminal_list.append(term)
+    cgmes_model.add(term)
 
     return term
 
@@ -157,32 +157,32 @@ def create_cgmes_generating_unit(gen: gcdev.Generator,
     new_rdf_id = get_new_rdfid()
     if gen.technology.name == 'General':
         sm = cgmes.GeneratingUnit(new_rdf_id)
-        cgmes_model.GeneratingUnit_list.append(sm)
+        cgmes_model.add(sm)
         return sm
 
     if gen.technology.name == 'Thermal':
         tgu = cgmes.ThermalGeneratingUnit(new_rdf_id)
-        cgmes_model.ThermalGeneratingUnit_list.append(tgu)
+        cgmes_model.add(tgu)
         return tgu
 
     if gen.technology.name == 'Hydro':
         hgu = cgmes.HydroGeneratingUnit(new_rdf_id)
-        cgmes_model.HydroGeneratingUnit_list.append(hgu)
+        cgmes_model.add(hgu)
         return hgu
 
     if gen.technology.name == 'Solar':
         sgu = cgmes.SolarGeneratingUnit(new_rdf_id)
-        cgmes_model.SolarGeneratingUnit_list.append(sgu)
+        cgmes_model.add(sgu)
         return sgu
 
     if gen.technology.name == 'Wind':
         wgu = cgmes.WindGeneratingUnit(new_rdf_id)
-        cgmes_model.WindGeneratingUnit_list.append(wgu)
+        cgmes_model.add(wgu)
         return wgu
 
     if gen.technology.name == 'Nuclear':
         ngu = cgmes.NuclearGeneratingUnit(new_rdf_id)
-        cgmes_model.NuclearGeneratingUnit_list.append(ngu)
+        cgmes_model.add(ngu)
         return ngu
 
     return None
@@ -208,7 +208,7 @@ def create_cgmes_regulating_control(
     # rc.targetValue = gen.Vset
     # rc.targetValueUnitMultiplier = 'k'
 
-    cgmes_model.RegulatingControl_list.append(rc)
+    cgmes_model.add(rc)
 
     return rc
 
@@ -244,7 +244,7 @@ def get_cgmes_base_voltages(multi_circuit_model: MultiCircuit,
             base_volt.name = f'_BV_{int(bus.Vnom)}'
             base_volt.nominalVoltage = bus.Vnom
 
-            cgmes_model.BaseVoltage_list.append(base_volt)
+            cgmes_model.add(base_volt)
     return
 
 
@@ -259,7 +259,7 @@ def get_cgmes_substations(multi_circuit_model: MultiCircuit,
             target_uuid=mc_elm.idtag  # TODO Community.idtag!
         )
 
-        cgmes_model.Substation_list.append(substation)
+        cgmes_model.add(substation)
 
 
 def get_cgmes_voltage_levels(multi_circuit_model: MultiCircuit,
@@ -289,7 +289,7 @@ def get_cgmes_voltage_levels(multi_circuit_model: MultiCircuit,
                     substation.VoltageLevels = list()
                 substation.VoltageLevels.append(vl)
 
-        cgmes_model.VoltageLevel_list.append(vl)
+        cgmes_model.add(vl)
 
 
 def get_cgmes_tn_nodes(multi_circuit_model: MultiCircuit,
@@ -317,7 +317,7 @@ def get_cgmes_tn_nodes(multi_circuit_model: MultiCircuit,
         # TODO bus should have association for VoltageLevel first
         # and the voltagelevel to the substation
 
-        cgmes_model.TopologicalNode_list.append(tn)
+        cgmes_model.add(tn)
 
     return
 
@@ -349,7 +349,7 @@ def get_cgmes_cn_nodes(multi_circuit_model: MultiCircuit,
                              device_class=gcdev.ConnectivityNode)
             # print(f'Topological node not found for cn: {cn.name}')
 
-        cgmes_model.ConnectivityNode_list.append(cn)
+        cgmes_model.add(cn)
 
     return
 
@@ -377,7 +377,7 @@ def get_cgmes_svvoltages(v_dict: Dict[str, Tuple[float, float]],
         sv_voltage.angle = angle
 
         # Add the SvVoltage instance to the SvVoltage_list
-        cgmes_model.SvVoltage_list.append(sv_voltage)
+        cgmes_model.add(sv_voltage)
 
     return cgmes_model
 
@@ -416,7 +416,7 @@ def get_cgmes_loads(multicircuit_model: MultiCircuit,
 
         cl.description = mc_elm.code
 
-        cgmes_model.ConformLoad_list.append(cl)
+        cgmes_model.add(cl)
 
 
 def get_cgmes_equivalent_injections(multicircuit_model: MultiCircuit,
@@ -441,7 +441,7 @@ def get_cgmes_equivalent_injections(multicircuit_model: MultiCircuit,
         ei.BaseVoltage = find_object_by_attribute(cgmes_model.BaseVoltage_list, "nominalVoltage",
                                                   mc_elm.bus.Vnom)
 
-        cgmes_model.EquivalentInjection_list.append(ei)
+        cgmes_model.add(ei)
 
 
 def get_cgmes_ac_line_segments(multicircuit_model: MultiCircuit,
@@ -482,7 +482,7 @@ def get_cgmes_ac_line_segments(multicircuit_model: MultiCircuit,
             # line.g0ch = mc_elm.G0 * Ybase
             line.b0ch = mc_elm.B0 * ybase
 
-        cgmes_model.ACLineSegment_list.append(line)
+        cgmes_model.add(line)
 
 
 def get_cgmes_operational_limits(multicircuit_model: MultiCircuit,
@@ -548,7 +548,7 @@ def get_cgmes_generators(multicircuit_model: MultiCircuit,
         # ...
         cgmes_syn.referencePriority = '0'  # ?
 
-        cgmes_model.SynchronousMachine_list.append(cgmes_syn)
+        cgmes_model.add(cgmes_syn)
 
 
 def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
@@ -595,11 +595,11 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
         pte2.endNumber = 2
 
         cm_transformer.PowerTransformerEnd.append(pte1)
-        cgmes_model.PowerTransformerEnd_list.append(pte1)
+        cgmes_model.add(pte1)
         cm_transformer.PowerTransformerEnd.append(pte2)
-        cgmes_model.PowerTransformerEnd_list.append(pte2)
+        cgmes_model.add(pte2)
 
-        cgmes_model.PowerTransformer_list.append(cm_transformer)
+        cgmes_model.add(cm_transformer)
 
     for mc_elm in multicircuit_model.transformers3w:
         cm_transformer = cgmes.PowerTransformer(rdfid=form_rdfid(mc_elm.idtag))
@@ -667,13 +667,13 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
         pte3.b0 = b0
 
         cm_transformer.PowerTransformerEnd.append(pte1)
-        cgmes_model.PowerTransformerEnd_list.append(pte1)
+        cgmes_model.add(pte1)
         cm_transformer.PowerTransformerEnd.append(pte2)
-        cgmes_model.PowerTransformerEnd_list.append(pte2)
+        cgmes_model.add(pte2)
         cm_transformer.PowerTransformerEnd.append(pte3)
-        cgmes_model.PowerTransformerEnd_list.append(pte3)
+        cgmes_model.add(pte3)
 
-        cgmes_model.PowerTransformer_list.append(cm_transformer)
+        cgmes_model.add(cm_transformer)
 
 
 # endregion
