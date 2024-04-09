@@ -20,13 +20,14 @@ import json
 from collections.abc import Callable
 from typing import Union, List, Any, Dict
 
+from GridCalEngine.IO.cim.cgmes.gridcal_to_cgmes import gridcal_to_cgmes
+from GridCalEngine.IO.cim.cgmes.cgmes_export import CimExporter
 from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.IO.cim.cgmes.cgmes_data_parser import CgmesDataParser
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.data_logger import DataLogger
 
 from GridCalEngine.IO.gridcal.json_parser import save_json_file_v3
-from GridCalEngine.IO.cim.cim16.cim_parser import CIMExport
 from GridCalEngine.IO.gridcal.excel_interface import save_excel, load_from_xls, interpret_excel_v3, interprete_excel_v2
 from GridCalEngine.IO.gridcal.pack_unpack import gather_model_as_data_frames, parse_gridcal_data, gather_model_as_jsons
 from GridCalEngine.IO.matpower.matpower_parser import interpret_data_v1, parse_matpower_file
@@ -53,6 +54,7 @@ class FileSavingOptions:
     """
     This class is to store the extra stuff that needs to be passed to save more complex files
     """
+
     def __init__(self,
                  cgmes_boundary_set: str = "",
                  simulation_drivers: List[DriverTemplate] = None,
@@ -442,11 +444,21 @@ class FileSave:
         Save the circuit information in CIM format
         :return: logger with information
         """
+        logger = Logger()
+        # CGMES version should be given in the settings
+        cgmes_circuit = CgmesCircuit(cgmes_version="", text_func=self.text_func,
+                                     progress_func=self.progress_func, logger=logger)
+        if self.options.cgmes_boundary_set != "":
+            data_parser = CgmesDataParser(text_func=self.text_func, progress_func=self.progress_func,
+                                          logger=logger)
+            data_parser.load_files(files=[self.options.cgmes_boundary_set])
+            cgmes_circuit.parse_files(data_parser=data_parser)
 
-        cim = CIMExport(self.circuit)
-        cim.save(file_name=self.file_name)
+        cgmes_circuit = gridcal_to_cgmes(self.circuit, cgmes_circuit, logger)
+        cim_exporter = CimExporter(cgmes_circuit=cgmes_circuit)
+        cim_exporter.export(self.file_name)
 
-        return cim.logger
+        return logger
 
     def save_h5(self):
         """
