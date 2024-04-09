@@ -12,7 +12,7 @@ from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.power_transformer import P
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.power_transformer_end import PowerTransformerEnd
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.terminal import Terminal
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.topological_node import TopologicalNode
-from GridCalEngine.IO.cim.cim16.cim_devices import BaseVoltage
+from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.base_voltage import BaseVoltage
 from GridCalEngine.data_logger import DataLogger
 
 tn_test = TopologicalNode(rdfid="tn1")
