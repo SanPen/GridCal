@@ -18,8 +18,6 @@ from typing import List, Union
 from enum import Enum
 import re
 import numpy as np
-from GridCalEngine.Simulations.results_table import ResultsTable
-from GridCalEngine.basic_structures import BoolVec, Mat
 
 
 def is_odd(number: int):
@@ -370,7 +368,7 @@ def parse_expression(expression: str) -> MasterFilter:
     :return: MasterFilter
     """
     mst_flt = MasterFilter()
-    master_tokens = re.split(r'(and|or)', expression)
+    master_tokens = re.split(r'(?<=\s)(and|or)(?=\s)', expression)
 
     for token in master_tokens:
 
@@ -388,7 +386,7 @@ def parse_expression(expression: str) -> MasterFilter:
     return mst_flt
 
 
-def is_numeric(obj):
+def is_numeric(obj: np.ndarray) -> bool:
     """
     Checks if the numpy array is numeric
     :param obj:
