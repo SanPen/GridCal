@@ -361,6 +361,10 @@ def get_profile_from_dict(profile: Profile,
             default_value = collection.get(data['default'], default_value)
             map_data = {int(key): collection.get(val, default_value) for key, val in sp_data['map'].items()}
 
+        if profile.dtype == DeviceType.BusDevice:  # manual correction for buses profile incorrect value
+            if default_value == "None":
+                default_value = profile.default_value
+
         profile.create_sparse(default_value=default_value, size=data['size'], map_data=map_data)
     else:
 

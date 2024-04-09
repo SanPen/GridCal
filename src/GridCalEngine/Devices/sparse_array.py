@@ -18,7 +18,31 @@
 
 from typing import Dict, Any, Union
 import numpy as np
+from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.basic_structures import Numeric, NumericVec, IntVec
+
+
+PROFILE_TYPES = Union[type(bool), type(int), type(float), DeviceType]
+
+
+def check_type(dtype: PROFILE_TYPES, value: Any) -> bool:
+    """
+    Checks that the type of value is the declared type in the profile
+    :param dtype: expected type
+    :param value: Any value
+    :return:
+    """
+    tpe = type(value)
+    if tpe in [bool, np.bool_]:
+        assert dtype == bool
+    elif tpe in [int, np.int32, np.int64]:
+        assert dtype == int or dtype == float
+    elif tpe in [float, np.float32, np.float64]:
+        assert dtype == float
+    else:
+        assert isinstance(dtype, DeviceType)
+
+    return True
 
 
 class SparseArray:
@@ -26,13 +50,22 @@ class SparseArray:
     SparseArray
     """
 
-    def __init__(self) -> None:
+    def __init__(self, data_type: PROFILE_TYPES) -> None:
         """
 
         """
+        self._dtype = data_type
         self._default_value: Numeric = 0
         self._size: int = 0
         self._map: Dict[int, Numeric] = dict()
+
+    @property
+    def dtype(self) -> Union[bool, int, float, DeviceType]:
+        """
+        Get the declared type
+        :return: type
+        """
+        return self._dtype
 
     @property
     def default_value(self):
@@ -49,7 +82,15 @@ class SparseArray:
         :param val:
         :return:
         """
-        self._default_value = val
+        if isinstance(self.dtype, DeviceType):
+            if val == "None":
+                val2 = None
+            else:
+                val2 = val
+        else:
+            val2 = val
+        check_type(dtype=self.dtype, value=val2)
+        self._default_value = val2
 
     def info(self):
         """
@@ -93,7 +134,7 @@ class SparseArray:
         :param default_value: default value
         :param data: data map
         """
-        self._default_value = default_value
+        self.default_value = default_value
         self._size = size
         self._map = data if data is not None else dict()
 
@@ -103,7 +144,7 @@ class SparseArray:
         :param array: NumericVec
         :param default_value: defult value of the array
         """
-        self._default_value = default_value
+        self.default_value = default_value
         self._size = len(array)
         self._map: Dict[int, Numeric] = dict()
 
@@ -119,7 +160,7 @@ class SparseArray:
         :param map_data:
         :return:
         """
-        self._default_value = default_value
+        self.default_value = default_value
         self._size = size
         self._map = map_data
 
@@ -128,7 +169,7 @@ class SparseArray:
         Fill the sparse array with the same value
         :param value: any value
         """
-        self._default_value = value
+        self.default_value = value
         self._map = dict()
 
     def toarray(self) -> NumericVec:

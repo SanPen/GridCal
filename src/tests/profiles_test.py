@@ -27,7 +27,7 @@ def test_sparse_array1():
     n = 10
     x = np.sin(np.arange(n) + 1.0)
 
-    s = SparseArray()
+    s = SparseArray(data_type=float)
     s.create_from_array(x, default_value=0.0)
 
     all_ok = True
@@ -51,7 +51,7 @@ def test_sparse_array2():
     for i in range(10, 30):
         x[i] = math.sin(i)
 
-    s = SparseArray()
+    s = SparseArray(data_type=float)
     s.create_from_array(x, default_value=0.0)
 
     all_ok = True
@@ -78,7 +78,7 @@ def test_sparse_array3():
 
     assert is_sparse  # should be sparse
 
-    s = SparseArray()
+    s = SparseArray(data_type=int)
     s.create_from_array(x, default_value=most_frequent)
 
     all_ok = True
@@ -102,7 +102,7 @@ def test_sparse_array4():
     for i in range(10, 30):
         x[i] = math.sin(i)
 
-    s = SparseArray()
+    s = SparseArray(data_type=int)
     s.create_from_array(x, default_value=0.0)
 
     # generate rando indices
