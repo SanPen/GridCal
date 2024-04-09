@@ -341,7 +341,7 @@ def parse_single(token: str) -> Union[Filter, None]:
     :param token: Token
     :return: Filter or None if the token is not valid
     """
-    elms = re.split(r'([<>=!]=?|in|starts|ends|like|notlike)', token)
+    elms = re.split(r'(?<=\s)([<>=!]=?|in|starts|ends|like|notlike)(?=\s)', token)
 
     if len(elms) == 3:
 
