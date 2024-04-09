@@ -1276,14 +1276,20 @@ class Ui_mainWindow(object):
 
         self.horizontalLayout_3.addWidget(self.saveSourceCodeButton)
 
+        self.label_91 = QLabel(self.frame_55)
+        self.label_91.setObjectName(u"label_91")
+
+        self.horizontalLayout_3.addWidget(self.label_91)
+
         self.sourceCodeNameLineEdit = QLineEdit(self.frame_55)
         self.sourceCodeNameLineEdit.setObjectName(u"sourceCodeNameLineEdit")
 
         self.horizontalLayout_3.addWidget(self.sourceCodeNameLineEdit)
 
-        self.horizontalSpacer_14 = QSpacerItem(237, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+        self.label_98 = QLabel(self.frame_55)
+        self.label_98.setObjectName(u"label_98")
 
-        self.horizontalLayout_3.addItem(self.horizontalSpacer_14)
+        self.horizontalLayout_3.addWidget(self.label_98)
 
         self.runSourceCodeButton = QPushButton(self.frame_55)
         self.runSourceCodeButton.setObjectName(u"runSourceCodeButton")
@@ -4041,10 +4047,10 @@ class Ui_mainWindow(object):
         self.menuBus_Branch_options.addAction(self.actionEnable_all_results_tags)
         self.menuBus_Branch_options.addAction(self.actionSet_schematic_positions_from_GPS_coordinates)
         self.menuBus_Branch_options.addSeparator()
+        self.menuBus_Branch_options.addAction(self.actionNew_bus_branch_diagram_from_selection)
         self.menuBus_Branch_options.addAction(self.actionSelect_buses_by_area)
         self.menuBus_Branch_options.addAction(self.actionSelect_buses_by_zone)
         self.menuBus_Branch_options.addAction(self.actionSelect_buses_by_country)
-        self.menuBus_Branch_options.addAction(self.actionNew_bus_branch_diagram_from_selection)
         self.menuBus_Branch_options.addSeparator()
         self.menuBus_Branch_options.addAction(self.actionDelete_selected)
         self.toolBar.addAction(self.actionNew_project)
@@ -4371,8 +4377,8 @@ class Ui_mainWindow(object):
         self.actionInvestments_evaluation.setShortcut(QCoreApplication.translate("mainWindow", u"Ctrl+I, Ctrl+E", None))
 #endif // QT_CONFIG(shortcut)
         self.actionNew_bus_branch_diagram_from_selection.setText(QCoreApplication.translate("mainWindow", u"New diagram from selection", None))
-        self.actionAdd_general_bus_branch_diagram.setText(QCoreApplication.translate("mainWindow", u"New bus-branch diagram", None))
-        self.actionAdd_map.setText(QCoreApplication.translate("mainWindow", u"New map view", None))
+        self.actionAdd_general_bus_branch_diagram.setText(QCoreApplication.translate("mainWindow", u"New schematic", None))
+        self.actionAdd_map.setText(QCoreApplication.translate("mainWindow", u"New map", None))
         self.actionRemove_selected_diagram.setText(QCoreApplication.translate("mainWindow", u"Remove selected diagram", None))
         self.actionReport_a_bug.setText(QCoreApplication.translate("mainWindow", u"Report a bug or feature", None))
         self.actionSearchDiagram.setText(QCoreApplication.translate("mainWindow", u"Search", None))
@@ -4603,9 +4609,11 @@ class Ui_mainWindow(object):
         self.saveSourceCodeButton.setToolTip(QCoreApplication.translate("mainWindow", u"Save the current source code", None))
 #endif // QT_CONFIG(tooltip)
         self.saveSourceCodeButton.setText("")
+        self.label_91.setText("")
 #if QT_CONFIG(tooltip)
         self.sourceCodeNameLineEdit.setToolTip(QCoreApplication.translate("mainWindow", u"Name of the source code file", None))
 #endif // QT_CONFIG(tooltip)
+        self.label_98.setText("")
 #if QT_CONFIG(tooltip)
         self.runSourceCodeButton.setToolTip(QCoreApplication.translate("mainWindow", u"Run the source code in the console", None))
 #endif // QT_CONFIG(tooltip)
@@ -5054,7 +5062,7 @@ class Ui_mainWindow(object):
         self.menuSimulations.setTitle(QCoreApplication.translate("mainWindow", u"Simulations", None))
         self.menuModel.setTitle(QCoreApplication.translate("mainWindow", u"Model", None))
         self.menuDiagrams.setTitle(QCoreApplication.translate("mainWindow", u"Diagram", None))
-        self.menuBus_Branch_options.setTitle(QCoreApplication.translate("mainWindow", u"Bus-Branch options", None))
+        self.menuBus_Branch_options.setTitle(QCoreApplication.translate("mainWindow", u"Current schematic", None))
         self.toolBar.setWindowTitle(QCoreApplication.translate("mainWindow", u"toolBar", None))
     # retranslateUi
 

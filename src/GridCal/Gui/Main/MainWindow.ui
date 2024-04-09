@@ -1914,6 +1914,13 @@
                    </widget>
                   </item>
                   <item>
+                   <widget class="QLabel" name="label_91">
+                    <property name="text">
+                     <string/>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
                    <widget class="QLineEdit" name="sourceCodeNameLineEdit">
                     <property name="toolTip">
                      <string>Name of the source code file</string>
@@ -1921,17 +1928,11 @@
                    </widget>
                   </item>
                   <item>
-                   <spacer name="horizontalSpacer_14">
-                    <property name="orientation">
-                     <enum>Qt::Horizontal</enum>
+                   <widget class="QLabel" name="label_98">
+                    <property name="text">
+                     <string/>
                     </property>
-                    <property name="sizeHint" stdset="0">
-                     <size>
-                      <width>237</width>
-                      <height>20</height>
-                     </size>
-                    </property>
-                   </spacer>
+                   </widget>
                   </item>
                   <item>
                    <widget class="QPushButton" name="runSourceCodeButton">
@@ -8311,7 +8312,7 @@ QProgressBar::chunk{
     </property>
     <widget class="QMenu" name="menuBus_Branch_options">
      <property name="title">
-      <string>Bus-Branch options</string>
+      <string>Current schematic</string>
      </property>
      <addaction name="actionBigger_nodes"/>
      <addaction name="actionSmaller_nodes"/>
@@ -8321,10 +8322,10 @@ QProgressBar::chunk{
      <addaction name="actionEnable_all_results_tags"/>
      <addaction name="actionSet_schematic_positions_from_GPS_coordinates"/>
      <addaction name="separator"/>
+     <addaction name="actionNew_bus_branch_diagram_from_selection"/>
      <addaction name="actionSelect_buses_by_area"/>
      <addaction name="actionSelect_buses_by_zone"/>
      <addaction name="actionSelect_buses_by_country"/>
-     <addaction name="actionNew_bus_branch_diagram_from_selection"/>
      <addaction name="separator"/>
      <addaction name="actionDelete_selected"/>
     </widget>
@@ -9282,7 +9283,7 @@ QProgressBar::chunk{
      <normaloff>:/Icons/icons/schematic.svg</normaloff>:/Icons/icons/schematic.svg</iconset>
    </property>
    <property name="text">
-    <string>New bus-branch diagram</string>
+    <string>New schematic</string>
    </property>
   </action>
   <action name="actionAdd_map">
@@ -9291,7 +9292,7 @@ QProgressBar::chunk{
      <normaloff>:/Icons/icons/map (add).svg</normaloff>:/Icons/icons/map (add).svg</iconset>
    </property>
    <property name="text">
-    <string>New map view</string>
+    <string>New map</string>
    </property>
   </action>
   <action name="actionRemove_selected_diagram">

@@ -19,7 +19,7 @@ from GridCalEngine.Devices.Diagrams.base_diagram import BaseDiagram
 from GridCalEngine.enumerations import DiagramType
 
 
-class BusBranchDiagram(BaseDiagram):
+class SchematicDiagram(BaseDiagram):
     """
     Diagram
     """
@@ -29,4 +29,4 @@ class BusBranchDiagram(BaseDiagram):
 
         :param name: Diagram name
         """
-        BaseDiagram.__init__(self, idtag=idtag, name=name, diagram_type=DiagramType.BusBranch)
+        BaseDiagram.__init__(self, idtag=idtag, name=name, diagram_type=DiagramType.Schematic)

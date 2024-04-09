@@ -1307,13 +1307,8 @@ def parse_gridcal_data(data: Dict[str, Union[str, float, Dict, pd.DataFrame, Dic
 
             for diagram_dict in data['diagrams']:
 
-                if diagram_dict['type'] == DiagramType.BusBranch.value:
-                    diagram = dev.BusBranchDiagram()
-                    diagram.parse_data(data=diagram_dict, obj_dict=obj_dict, logger=logger)
-                    circuit.add_diagram(diagram)
-
-                elif diagram_dict['type'] == DiagramType.NodeBreaker.value:
-                    diagram = dev.NodeBreakerDiagram()
+                if diagram_dict['type'] == DiagramType.Schematic.value:
+                    diagram = dev.SchematicDiagram()
                     diagram.parse_data(data=diagram_dict, obj_dict=obj_dict, logger=logger)
                     circuit.add_diagram(diagram)
 

@@ -531,9 +531,8 @@ class DiagramType(Enum):
     """
     Types of diagrams
     """
-    BusBranch = 'bus-branch'
+    Schematic = 'schematic'
     SubstationLineMap = 'substation-line-map'
-    NodeBreaker = 'node-breaker'
 
     def __str__(self):
         return self.value
