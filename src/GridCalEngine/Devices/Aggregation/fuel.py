@@ -43,7 +43,7 @@ class Fuel(EditableDevice):
 
         self.cost = cost
 
-        self._cost_prof = Profile(default_value=cost)
+        self._cost_prof = Profile(default_value=cost, data_type=float)
 
         self.color = color if color is not None else self.rnd_color()
 

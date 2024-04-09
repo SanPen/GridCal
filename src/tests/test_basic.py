@@ -49,19 +49,19 @@ def test_basic():
     """
     test_name = "test_basic"
     grid = MultiCircuit(name=test_name)
-    S_base = 100  # MVA
+    S_base = 100.0  # MVA
     grid.Sbase = S_base
     grid.time_profile = None
     grid.logger = Logger()
 
     # Create buses
     POI = Bus(name="POI",
-              vnom=100,  # kV
+              vnom=100.0,  # kV
               is_slack=True)
     grid.add_bus(POI)
 
     B_C3 = Bus(name="B_C3",
-               vnom=10)  # kV
+               vnom=10.0)  # kV
     grid.add_bus(B_C3)
 
     B_MV_M32 = Bus(name="B_MV_M32",
@@ -85,27 +85,27 @@ def test_basic():
     grid.add_static_generator(B_LV_M32, M32)
 
     # Create transformer types
-    s = 5  # MVA
-    z = 8  # %
-    xr = 40
+    s = 5.0  # MVA
+    z = 8.0  # %
+    xr = 40.0
     SS = TransformerType(name="SS",
-                         hv_nominal_voltage=100,  # kV
-                         lv_nominal_voltage=10,  # kV
+                         hv_nominal_voltage=100.0,  # kV
+                         lv_nominal_voltage=10.0,  # kV
                          nominal_power=s,
-                         copper_losses=complex_impedance(z, xr).real * s * 1000 / S_base,
+                         copper_losses=complex_impedance(z, xr).real * s * 1000.0 / S_base,
                          iron_losses=1e-20,
                          no_load_current=1e-20,
                          short_circuit_voltage=z)
     grid.add_transformer_type(SS)
 
-    s = 5  # MVA
-    z = 6  # %
-    xr = 20
+    s = 5.0  # MVA
+    z = 6.0  # %
+    xr = 20.0
     PM = TransformerType(name="PM",
-                         hv_nominal_voltage=10,  # kV
+                         hv_nominal_voltage=10.0,  # kV
                          lv_nominal_voltage=0.6,  # kV
                          nominal_power=s,
-                         copper_losses=complex_impedance(z, xr).real * s * 1000 / S_base,
+                         copper_losses=complex_impedance(z, xr).real * s * 1000.0 / S_base,
                          iron_losses=1e-20,
                          no_load_current=1e-20,
                          short_circuit_voltage=z)
@@ -236,9 +236,9 @@ def test_gridcal_basic_pi():
     grid.add_static_generator(B_LV_M32, M32)
 
     # Create transformer types
-    s = 5 # MVA
-    z = 8 # %
-    xr = 40
+    s = 5.0  # MVA
+    z = 8.0  # %
+    xr = 40.0
     SS = TransformerType(name="SS",
                          hv_nominal_voltage=100,  # kV
                          lv_nominal_voltage=10,  # kV
@@ -249,9 +249,9 @@ def test_gridcal_basic_pi():
                          short_circuit_voltage=z)
     grid.add_transformer_type(SS)
 
-    s = 5 # MVA
-    z = 6 # %
-    xr = 20
+    s = 5.0  # MVA
+    z = 6.0  # %
+    xr = 20.0
     PM = TransformerType(name="PM",
                          hv_nominal_voltage=10,  # kV
                          lv_nominal_voltage=0.6,  # kV

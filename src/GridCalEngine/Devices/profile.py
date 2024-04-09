@@ -20,8 +20,11 @@ from collections import Counter
 import numpy as np
 import numba as nb
 from GridCalEngine.basic_structures import Numeric, NumericVec, IntVec
+from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Devices.sparse_array import SparseArray
 
+
+PROFILE_TYPES = Union[type(bool), type(int), type(float), DeviceType]
 
 @nb.njit()
 def compress_array_numba(arr, base):
@@ -98,6 +101,7 @@ class Profile:
 
     def __init__(self,
                  default_value,
+                 data_type: PROFILE_TYPES,
                  arr: Union[None, NumericVec] = None,
                  sparsity_threshold: float = 0.8,
                  is_sparse: bool = False):
@@ -117,11 +121,11 @@ class Profile:
 
         self._sparsity_threshold: float = sparsity_threshold
 
-        self._dtype = type(default_value)  # float by default
+        self._dtype = data_type
 
         self._initialized: bool = False
 
-        self.default_value = default_value
+        self._default_value = default_value
 
         if arr is not None:
             self.set(arr=arr)
@@ -151,12 +155,31 @@ class Profile:
             return self._sparse_array.get_map()
 
     @property
-    def dtype(self) -> type:
+    def dtype(self) -> Union[bool, int, float, DeviceType]:
         """
         Get the declared type
         :return: type
         """
         return self._dtype
+
+    @property
+    def default_value(self) -> Union[bool, int, float, DeviceType]:
+        """
+        Get the declared type
+        :return: default_value
+        """
+        return self._default_value
+
+    @default_value.setter
+    def default_value(self, val):
+        """
+
+        :param val:
+        :return:
+        """
+        self._default_value = val
+        if self.sparse_array is not None:
+            self.sparse_array.default_value = self.default_value
 
     @property
     def is_sparse(self) -> bool:
@@ -197,15 +220,19 @@ class Profile:
         """
         return self._dense_array
 
-    def create_sparse(self, size: int, default_value: Numeric):
+    def create_sparse(self, size: int, default_value: Numeric, map_data: Dict[int, Numeric] = None):
         """
         Build sparse from definition
         :param size: size
         :param default_value: default value
+        :param map_data: map with the data
         """
         self._is_sparse = True
         self._sparse_array = SparseArray()
-        self._sparse_array.create(size=size, default_value=default_value)
+        if map_data is None:
+            self._sparse_array.create(size=size, default_value=default_value)
+        else:
+            self._sparse_array.create_from_dict(default_value=default_value, size=size, map_data=map_data)
         self._initialized = True
 
     def create_dense(self, size: int, default_value: Numeric):
@@ -268,15 +295,14 @@ class Profile:
                 self._sparse_array.create(size=len(arr),
                                           default_value=base,
                                           data=data_map)
-                self._dtype = type(base)
+                self.check_type(value=base)
             else:
+                self.check_type(value=arr[0])
                 self._is_sparse = False
                 self._dense_array = arr
-                self._dtype = arr.dtype
         else:
             self._is_sparse = False
             self._dense_array = arr
-            self._dtype = arr.dtype
 
         self._initialized = True
 
@@ -378,18 +404,37 @@ class Profile:
         else:
             self._dense_array = self._dense_array[indices]
 
+    def check_type(self, value) -> bool:
+        """
+        Checks that the type of value is the declared type in the profile
+        :param value: Any value
+        :return:
+        """
+        tpe = type(value)
+        if tpe in [bool, np.bool_]:
+            assert self.dtype == bool
+        elif tpe in [int, np.int32, np.int64]:
+            assert self.dtype == int
+        elif tpe in [float, np.float32, np.float64]:
+            assert self.dtype == float
+        else:
+            assert isinstance(self.dtype, DeviceType)
+
+        return True
+
     def fill(self, value: Any):
         """
         Fill this profile with the same value
         :param value: any value
         """
+        self.check_type(value=value)
+
         self.default_value = value
         self._is_sparse = True
         if self._sparse_array is None:
             self._sparse_array = SparseArray()
         self._sparse_array.fill(value)
         self._dense_array = None
-        self._dtype = type(value)
 
     def scale(self, value: Union[float, int]):
         """

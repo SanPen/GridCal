@@ -63,8 +63,8 @@ class CurrentInjection(InjectionParent):
         self.Ir = Ir
         self.Ii = Ii
 
-        self._Ir_prof = Profile(default_value=Ir)
-        self._Ii_prof = Profile(default_value=Ii)
+        self._Ir_prof = Profile(default_value=Ir, data_type=float)
+        self._Ii_prof = Profile(default_value=Ii, data_type=float)
 
         self.register(key='Ir', units='MW', tpe=float,
                       definition='Active power of the current component at V=1.0 p.u.',

@@ -42,6 +42,15 @@ class SparseArray:
         """
         return self._default_value
 
+    @default_value.setter
+    def default_value(self, val):
+        """
+
+        :param val:
+        :return:
+        """
+        self._default_value = val
+
     def info(self):
         """
         Return dictionary with information about the profile object and its content
@@ -54,14 +63,14 @@ class SparseArray:
             "map": hex(id(self._map)),
         }
 
-    def get_map(self):
+    def get_map(self) -> Dict[int, Numeric]:
         """
         Return the dictionary hosting the sparse data
         :return: Dict[int, Numeric]
         """
         return self._map
 
-    def insert(self, i, x):
+    def insert(self, i: int, x: Numeric):
         """
         Insert an element in the data dictionary
         :param i:

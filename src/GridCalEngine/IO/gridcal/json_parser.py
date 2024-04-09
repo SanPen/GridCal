@@ -74,28 +74,27 @@ def profile_to_json(profile: Profile) -> Dict[str, Any]:
                 'data': arr}
 
 
-def json_to_profile(d: Dict[str, Any]) -> Profile:
+def json_to_profile(profile: Profile, d: Dict[str, Any]) -> None:
     """
-    Convert a json
-    :param d:
-    :return:
+    Assign a json profile to a Profile object
+    :param profile: Profile to modify
+    :param d: json parsed dictionary
     """
     if isinstance(d, dict):
         if 'type' in d.keys():
             if d['type'] == 'sparse':
-                profile = Profile(default_value=d['base'], is_sparse=True)
                 profile.create_sparse(size=d['size'], default_value=d['base'])
-                profile.set_sparse_representation(indptr=d['indptr'], data=d['data'])
-                return profile
+                profile.set_sparse_data_from_data(indptr=d['indptr'], data=d['data'])
+                return None
 
             elif d['type'] == 'dense':
                 val = np.array(d['data'])
                 if len(val):
-                    profile = Profile(default_value=val[0])
+                    profile.default_value = val[0]
                     profile.set(arr=val)
                 else:
-                    profile = Profile(default_value=0)
-                return profile
+                    profile.default_value = 0
+                return None
             else:
                 raise Exception('Unknown profile type' + str(d['type']))
 
@@ -103,9 +102,9 @@ def json_to_profile(d: Dict[str, Any]) -> Profile:
             raise Exception("The passed dictionary is not a profile definition")
     elif isinstance(d, list):
         if len(d) > 0:
-            profile = Profile(default_value=d[0])
+            profile.default_value=d[0]
             profile.set(arr=np.array(d))
-            return profile
+            return None
     else:
         raise Exception("The passed value is not a list or dictionary definition")
 
@@ -426,7 +425,7 @@ def parse_json_data_v3(data: dict, logger: Logger):
                 bus_dict[jentry['id']] = bus
 
                 if has_profiles:
-                    bus.active_prof = json_to_profile(device_profiles_dict[bus.idtag]['active'])
+                    json_to_profile(bus.active_prof, device_profiles_dict[bus.idtag]['active'])
 
                 circuit.add_bus(bus)
 
@@ -458,10 +457,10 @@ def parse_json_data_v3(data: dict, logger: Logger):
 
                 if has_profiles:
                     profile_entry = device_profiles_dict[elm.idtag]
-                    elm.active_prof = json_to_profile(profile_entry['active'])
-                    elm.P_prof = json_to_profile(profile_entry['p'])
-                    elm.Vset_prof = json_to_profile(profile_entry['v'])
-                    elm.Pf_prof = json_to_profile(profile_entry['pf'])
+                    json_to_profile(elm.active_prof, profile_entry['active'])
+                    json_to_profile(elm.P_prof, profile_entry['p'])
+                    json_to_profile(elm.Vset_prof, profile_entry['v'])
+                    json_to_profile(elm.Pf_prof, profile_entry['pf'])
 
                 elm.bus = bus_dict[jentry['bus']]
                 circuit.add_generator(elm.bus, elm)
@@ -494,10 +493,10 @@ def parse_json_data_v3(data: dict, logger: Logger):
 
                 if has_profiles:
                     profile_entry = device_profiles_dict[elm.idtag]
-                    elm.active_prof = json_to_profile(profile_entry['active'])
-                    elm.P_prof = json_to_profile(profile_entry['p'])
-                    elm.Vset_prof = json_to_profile(profile_entry['v'])
-                    elm.Pf_prof = json_to_profile(profile_entry['pf'])
+                    json_to_profile(elm.active_prof, profile_entry['active'])
+                    json_to_profile(elm.P_prof, profile_entry['p'])
+                    json_to_profile(elm.Vset_prof, profile_entry['v'])
+                    json_to_profile(elm.Pf_prof, profile_entry['pf'])
 
                 elm.bus = bus_dict[jentry['bus']]
                 circuit.add_battery(elm.bus, elm)
@@ -525,13 +524,13 @@ def parse_json_data_v3(data: dict, logger: Logger):
 
                 if has_profiles:
                     profile_entry = device_profiles_dict[elm.idtag]
-                    elm.active_prof = json_to_profile(profile_entry['active'])
-                    elm.P_prof = json_to_profile(profile_entry['p'])
-                    elm.Q_prof = json_to_profile(profile_entry['q'])
-                    elm.Ir_prof = json_to_profile(profile_entry['ir'])
-                    elm.Ii_prof = json_to_profile(profile_entry['ii'])
-                    elm.G_prof = json_to_profile(profile_entry['g'])
-                    elm.B_prof = json_to_profile(profile_entry['b'])
+                    json_to_profile(elm.active_prof, profile_entry['active'])
+                    json_to_profile(elm.P_prof, profile_entry['p'])
+                    json_to_profile(elm.Q_prof, profile_entry['q'])
+                    json_to_profile(elm.Ir_prof, profile_entry['ir'])
+                    json_to_profile(elm.Ii_prof, profile_entry['ii'])
+                    json_to_profile(elm.G_prof, profile_entry['g'])
+                    json_to_profile(elm.B_prof, profile_entry['b'])
 
                 elm.bus = bus_dict[jentry['bus']]
                 circuit.add_load(elm.bus, elm)
@@ -570,9 +569,9 @@ def parse_json_data_v3(data: dict, logger: Logger):
 
                 if has_profiles:
                     profile_entry = device_profiles_dict[elm.idtag]
-                    elm.active_prof = json_to_profile(profile_entry['active'])
-                    elm.G_prof = json_to_profile(profile_entry['g'])
-                    elm.B_prof = json_to_profile(profile_entry['b'])
+                    json_to_profile(elm.active_prof, profile_entry['active'])
+                    json_to_profile(elm.G_prof, profile_entry['g'])
+                    json_to_profile(elm.B_prof, profile_entry['b'])
 
                 elm.bus = bus_dict[jentry['bus']]
                 circuit.add_shunt(elm.bus, elm)
@@ -637,8 +636,8 @@ def parse_json_data_v3(data: dict, logger: Logger):
 
                 if has_profiles:
                     profile_entry = device_profiles_dict[elm.idtag]
-                    elm.active_prof = json_to_profile(profile_entry['active'])
-                    elm.rate_prof = json_to_profile(profile_entry['rate'])
+                    json_to_profile(elm.active_prof, profile_entry['active'])
+                    json_to_profile(elm.rate_prof, profile_entry['rate'])
 
                 circuit.add_line(elm, logger=logger)
 
@@ -667,8 +666,8 @@ def parse_json_data_v3(data: dict, logger: Logger):
 
                 if has_profiles:
                     profile_entry = device_profiles_dict[elm.idtag]
-                    elm.active_prof = json_to_profile(profile_entry['active'])
-                    elm.rate_prof = json_to_profile(profile_entry['rate'])
+                    json_to_profile(elm.active_prof, profile_entry['active'])
+                    json_to_profile(elm.rate_prof, profile_entry['rate'])
 
                 circuit.add_dc_line(elm)
 
@@ -735,8 +734,8 @@ def parse_json_data_v3(data: dict, logger: Logger):
 
                 if has_profiles:
                     profile_entry = device_profiles_dict[elm.idtag]
-                    elm.active_prof = json_to_profile(profile_entry['active'])
-                    elm.rate_prof = json_to_profile(profile_entry['rate'])
+                    json_to_profile(elm.active_prof, profile_entry['active'])
+                    json_to_profile(elm.rate_prof, profile_entry['rate'])
 
                 circuit.add_transformer2w(elm)
 
@@ -795,8 +794,8 @@ def parse_json_data_v3(data: dict, logger: Logger):
 
                 if has_profiles:
                     profile_entry = device_profiles_dict[elm.idtag]
-                    elm.active_prof = json_to_profile(profile_entry['active'])
-                    elm.rate_prof = json_to_profile(profile_entry['rate'])
+                    json_to_profile(elm.active_prof, profile_entry['active'])
+                    json_to_profile(elm.rate_prof, profile_entry['rate'])
 
                 circuit.add_winding(elm)
                 windings_dict[elm.idtag] = elm
@@ -916,8 +915,8 @@ def parse_json_data_v3(data: dict, logger: Logger):
 
                 if has_profiles:
                     profile_entry = device_profiles_dict[elm.idtag]
-                    elm.active_prof = json_to_profile(profile_entry['active'])
-                    elm.rate_prof = json_to_profile(profile_entry['rate'])
+                    json_to_profile(elm.active_prof, profile_entry['active'])
+                    json_to_profile(elm.rate_prof, profile_entry['rate'])
 
                 circuit.add_vsc(elm)
 
@@ -964,12 +963,12 @@ def parse_json_data_v3(data: dict, logger: Logger):
 
                 if has_profiles:
                     profile_entry = device_profiles_dict[elm.idtag]
-                    elm.active_prof = json_to_profile(profile_entry['active'])
-                    elm.rate_prof = json_to_profile(profile_entry['rate'])
-                    elm.Pset_prof = json_to_profile(profile_entry['Pset'])
-                    elm.Vset_f_prof = json_to_profile(profile_entry['vset_from'])
-                    elm.Vset_t_prof = json_to_profile(profile_entry['vset_to'])
-                    elm.overload_cost_prof = json_to_profile(profile_entry['overload_cost'])
+                    json_to_profile(elm.active_prof, profile_entry['active'])
+                    json_to_profile(elm.rate_prof, profile_entry['rate'])
+                    json_to_profile(elm.Pset_prof, profile_entry['Pset'])
+                    json_to_profile(elm.Vset_f_prof, profile_entry['vset_from'])
+                    json_to_profile(elm.Vset_t_prof, profile_entry['vset_to'])
+                    json_to_profile(elm.overload_cost_prof, profile_entry['overload_cost'])
 
                 circuit.add_hvdc(elm)
 

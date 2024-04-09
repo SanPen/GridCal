@@ -570,7 +570,10 @@ class EditableDevice:
         """
         # get the value of the magnitude
         snapshot_value = getattr(self, magnitude)
-        val = Profile(default_value=snapshot_value)
+        # val = Profile(default_value=snapshot_value)
+
+        val = self.get_profile(magnitude=magnitude)
+
         val.create_sparse(size=len(index), default_value=snapshot_value)
 
         # set the profile variable associated with the magnitude

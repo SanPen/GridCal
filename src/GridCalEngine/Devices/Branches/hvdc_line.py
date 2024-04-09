@@ -228,11 +228,11 @@ class HvdcLine(BranchParent):
 
         self.control_mode = control_mode
 
-        self._Pset_prof: Vec = Profile(default_value=Pset)
-        self._active_prof: IntVec = Profile(default_value=active)
-        self._Vset_f_prof: Vec = Profile(default_value=Vset_f)
-        self._Vset_t_prof: Vec = Profile(default_value=Vset_t)
-        self._angle_droop_prof: Vec = Profile(default_value=angle_droop)
+        self._Pset_prof: Vec = Profile(default_value=Pset, data_type=float)
+        self._active_prof: IntVec = Profile(default_value=active, data_type=bool)
+        self._Vset_f_prof: Vec = Profile(default_value=Vset_f, data_type=float)
+        self._Vset_t_prof: Vec = Profile(default_value=Vset_t, data_type=float)
+        self._angle_droop_prof: Vec = Profile(default_value=angle_droop, data_type=float)
 
         self.n_lines = n_lines
 

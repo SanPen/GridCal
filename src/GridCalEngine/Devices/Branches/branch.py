@@ -162,7 +162,7 @@ class Branch(BranchParent):
         # Conductor base and operating temperatures in ºC
         self.temp_base = temp_base
         self.temp_oper = temp_oper
-        self._temp_oper_prof = Profile(default_value=temp_oper)
+        self._temp_oper_prof = Profile(default_value=temp_oper, data_type=float)
 
         # Conductor thermal constant (1/ºC)
         self.alpha = alpha
@@ -182,7 +182,7 @@ class Branch(BranchParent):
 
         # branch rating in MVA
         self.rate = rate
-        self._rate_prof = Profile(default_value=rate)
+        self._rate_prof = Profile(default_value=rate, data_type=float)
 
         # branch type: Line, Transformer, etc...
         self.branch_type = branch_type

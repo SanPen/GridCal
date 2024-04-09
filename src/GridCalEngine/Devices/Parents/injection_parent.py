@@ -68,12 +68,12 @@ class InjectionParent(EditableDevice):
                                 device_type=device_type)
 
         self._bus = bus
-        self._bus_prof = Profile(default_value=bus)
+        self._bus_prof = Profile(default_value=bus, data_type=DeviceType.BusDevice)
 
         self.cn = cn
 
         self.active = active
-        self._active_prof = Profile(default_value=active)
+        self._active_prof = Profile(default_value=active, data_type=bool)
 
         self.mttf = mttf
 
@@ -81,7 +81,7 @@ class InjectionParent(EditableDevice):
 
         self.Cost = Cost
 
-        self._Cost_prof = Profile(default_value=Cost)
+        self._Cost_prof = Profile(default_value=Cost, data_type=float)
 
         self.capex = capex
 
