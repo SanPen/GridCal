@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 from typing import List, Union
-from GridCalEngine.enumerations import SolverType, MIPSolvers, ZonalGrouping, TimeGrouping
+from GridCalEngine.enumerations import SolverType, MIPSolvers, ZonalGrouping, TimeGrouping, AcOpfMode
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 
 
@@ -50,6 +50,7 @@ class OptimalPowerFlowOptions:
                  ips_iterations: int = 100,
                  ips_trust_radius: float = 1.0,
                  ips_init_with_pf: bool = False,
+                 acopf_mode: AcOpfMode = AcOpfMode.ACOPFstd,
                  pf_results: PowerFlowResults = None):
         """
         Optimal power flow options
@@ -113,6 +114,8 @@ class OptimalPowerFlowOptions:
         self.export_model_fname: Union[None, str] = export_model_fname
 
         self.generate_report = generate_report
+
+        self.acopf_mode = acopf_mode
 
         # IPS settings
         self.ips_method: SolverType = ips_method
