@@ -14,7 +14,7 @@ from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.generating_unit import Gen
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.synchronous_machine import SynchronousMachine
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.terminal import Terminal
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.topological_node import TopologicalNode
-from GridCalEngine.IO.cim.cim16.cim_devices import RegulatingControl
+from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.regulating_control import RegulatingControl
 from GridCalEngine.data_logger import DataLogger
 
 tn_test = TopologicalNode()

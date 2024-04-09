@@ -286,8 +286,8 @@ def get_cgmes_voltage_levels(multi_circuit_model: MultiCircuit,
 
                 # link back
                 if substation.VoltageLevels is None:
-                    substation.VoltageLevels = set()
-                substation.VoltageLevels.add(vl)
+                    substation.VoltageLevels = list()
+                substation.VoltageLevels.append(vl)
 
         cgmes_model.VoltageLevel_list.append(vl)
 
@@ -679,16 +679,15 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
 # endregion
 
 
-def gridcal_to_cgmes(gc_model: MultiCircuit, logger: DataLogger) -> CgmesCircuit:
+def gridcal_to_cgmes(gc_model: MultiCircuit, cgmes_model: CgmesCircuit, logger: DataLogger) -> CgmesCircuit:
     """
     Converts the input Multi circuit to a new CGMES Circuit.
 
     :param gc_model: Multi circuit object
+    :param cgmes_model: CGMES circuit object
     :param logger: Logger object
     :return: CGMES circuit (as a new object)
     """
-
-    cgmes_model = CgmesCircuit(cgmes_version='2.4.15.')  # get from GUI
 
     get_cgmes_geograpical_regions(gc_model, cgmes_model, logger)
     get_cgmes_subgeograpical_regions(gc_model, cgmes_model, logger)

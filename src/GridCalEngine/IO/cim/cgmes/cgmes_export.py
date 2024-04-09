@@ -98,7 +98,7 @@ class CimExporter:
                     new_prof = json_dict['ProfileKeyword'][i].strip('[]').split(',')
                     self.class_filters[json_dict["Class Name"][i]][p_key]["Profile"].extend(new_prof)
 
-    def export(self):
+    def export_test(self):
         current_directory = os.path.dirname(__file__)
         with open(os.path.join(current_directory, "export_docs/eq.xml"), 'wb') as f:
             self.serialize(f, "EQ")
@@ -107,6 +107,18 @@ class CimExporter:
         with open(os.path.join(current_directory, "export_docs/sv.xml"), 'wb') as f:
             self.serialize(f, "SV")
         with open(os.path.join(current_directory, "export_docs/tp.xml"), 'wb') as f:
+            self.serialize(f, "TP")
+
+    def export(self, file_name):
+        name, extension = os.path.splitext(file_name)
+
+        with open(f"{name}_EQ{extension}", 'wb') as f:
+            self.serialize(f, "EQ")
+        with open(f"{name}_SSH{extension}", 'wb') as f:
+            self.serialize(f, "SSH")
+        with open(f"{name}_SV{extension}", 'wb') as f:
+            self.serialize(f, "SV")
+        with open(f"{name}_TP{extension}", 'wb') as f:
             self.serialize(f, "TP")
 
     def serialize(self, stream, profile):
