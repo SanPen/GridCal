@@ -377,6 +377,7 @@ class IoMain(ConfigurationMain):
 
         self.collect_memory()
         self.setup_time_sliders()
+        self.get_circuit_snapshot_datetime()
 
     def add_circuit(self):
         """
