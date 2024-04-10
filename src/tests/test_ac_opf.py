@@ -33,8 +33,7 @@ def case9() -> NonlinearOPFResults:
     print(cwd)
 
     # Go back two directories
-    new_directory = os.path.abspath(os.path.join(cwd, '..', '..'))
-    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case9.m')
+    file_path = os.path.join('data', 'grids', 'case9.m')
 
     grid = gce.FileOpen(file_path).open()
     nc = gce.compile_numerical_circuit_at(grid)
@@ -52,8 +51,7 @@ def case14() -> tuple[NonlinearOPFResults, NonlinearOPFResults, NonlinearOPFResu
     print(cwd)
 
     # Go back two directories
-    new_directory = os.path.abspath(os.path.join(cwd, '..', '..'))
-    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case14.m')
+    file_path = os.path.join('data', 'grids', 'case14.m')
 
     grid = gce.FileOpen(file_path).open()
 
@@ -75,7 +73,7 @@ def case14() -> tuple[NonlinearOPFResults, NonlinearOPFResults, NonlinearOPFResu
 
     for ll in range(len(grid.lines)):
         grid.lines[ll].monitor_loading = True
-        grid.lines[ll].Cost_prof.default_value *= 10000
+        grid.lines[ll].Cost_prof.default_value *= 10000  # TODO: why change the profile default, is this not a snapshot?
     for b in range(len(grid.buses)):
         grid.buses[b].Vm_cost *= 10000
 
@@ -96,8 +94,7 @@ def case_pegase89() -> NonlinearOPFResults:
     cwd = os.getcwd()
     print(cwd)
     # Go back two directories
-    new_directory = os.path.abspath(os.path.join(cwd, '..', '..'))
-    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case89pegase.m')
+    file_path = os.path.join('data', 'grids', 'case89pegase.m')
 
     grid = gce.FileOpen(file_path).open()
     nc = gce.compile_numerical_circuit_at(grid)

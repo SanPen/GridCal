@@ -145,8 +145,7 @@ def case9() -> NonlinearOPFResults:
     print(cwd)
 
     # Go back two directories
-    new_directory = os.path.abspath(os.path.join(cwd, '..', '..'))
-    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case9.m')
+    file_path = os.path.join('data', 'grids', 'case9.m')
 
     grid = gce.FileOpen(file_path).open()
     nc = gce.compile_numerical_circuit_at(grid)
@@ -163,8 +162,7 @@ def case14() -> NonlinearOPFResults:
     print(cwd)
 
     # Go back two directories
-    new_directory = os.path.abspath(os.path.join(cwd, '..', '..'))
-    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case14.m')
+    file_path = os.path.join('data', 'grids', 'case14.m')
 
     grid = gce.FileOpen(file_path).open()
     for l in grid.get_transformers2w():
@@ -183,8 +181,7 @@ def case_pegase89() -> NonlinearOPFResults:
     cwd = os.getcwd()
     print(cwd)
     # Go back two directories
-    new_directory = os.path.abspath(os.path.join(cwd, '..', '..'))
-    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case89pegase.m')
+    file_path = os.path.join('data', 'grids', 'case89pegase.m')
 
     grid = gce.FileOpen(file_path).open()
     grid.get_transformers2w()[3].control_mode = TransformerControlType.PtQt
