@@ -139,47 +139,6 @@ class LoadParent(InjectionParent):
         """
         return self.P_prof.toarray() + 1j * self.Q_prof.toarray()
 
-    def get_properties_dict(self, version=3):
-        """
-        Get json dictionary
-        :return:
-        """
-        if version in [2, 3]:
-            return {'id': self.idtag,
-                    'type': 'load',
-                    'phases': 'ps',
-                    'name': self.name,
-                    'name_code': self.code,
-                    'bus': self.bus.idtag,
-                    'active': bool(self.active),
-                    'p': self.P,
-                    'q': self.Q,
-                    'shedding_cost': self.Cost
-                    }
-        else:
-            return dict()
-
-    def get_profiles_dict(self, version=3):
-        """
-
-        :return:
-        """
-
-        if self.active_prof is not None:
-            active_profile = self.active_prof.tolist()
-            P_prof = self.P_prof.tolist()
-            Q_prof = self.Q_prof.tolist()
-
-        else:
-            active_profile = list()
-            P_prof = list()
-            Q_prof = list()
-
-        return {'id': self.idtag,
-                'active': active_profile,
-                'p': P_prof,
-                'q': Q_prof}
-
     def plot_profiles(self, time=None, show_fig=True):
         """
         Plot the time series results of this object

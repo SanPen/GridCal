@@ -48,21 +48,3 @@ class Technology(EditableDevice):
         self.register(key='name3', units='', tpe=str, definition='Name 3 of the technology')
         self.register(key='name4', units='', tpe=str, definition='Name 4 of the technology')
         self.register(key='color', units='', tpe=str, definition='Color to paint')
-
-    def get_properties_dict(self, version=3):
-        data = {'id': self.idtag,
-                'name': self.name,
-                'name2': self.name2,
-                'name3': self.name3,
-                'name4': self.name4,
-                'code': self.code
-                }
-        return data
-
-    def get_profiles_dict(self, version=3):
-        data = {'id': self.idtag}
-        return data
-
-    def get_units_dict(self, version=3):
-        data = {}
-        return data

@@ -157,7 +157,8 @@ class EditableDevice:
                  name: str,
                  idtag: Union[str, None],
                  code: str,
-                 device_type: DeviceType):
+                 device_type: DeviceType,
+                 comment: str = ""):
         """
         Class to generalize any editable device
         :param name: Asset's name
@@ -174,18 +175,24 @@ class EditableDevice:
 
         self.device_type: DeviceType = device_type
 
+        self.comment: str = comment
+
         # list of registered properties. This is supremelly useful when accessing via the Table and Tree models
         self.property_list: List[GCProp] = list()
 
+        # dictionary of properties
         self.registered_properties: Dict[str, GCProp] = dict()
 
+        # list of properties that cannot be edited
         self.non_editable_properties: List[str] = list()
+
 
         self.properties_with_profile: Dict[str, Optional[Any]] = dict()
 
         self.register(key='idtag', units='', tpe=str, definition='Unique ID', editable=False)
-        self.register(key='name', units='', tpe=str, definition='Name of the branch.')
+        self.register(key='name', units='', tpe=str, definition='Name of the device.')
         self.register(key='code', units='', tpe=str, definition='Secondary ID')
+        self.register(key='comment', units='', tpe=str, definition='User comment')
 
     def __str__(self) -> str:
         """
@@ -645,40 +652,6 @@ class EditableDevice:
         :return: Profile object
         """
         return getattr(self, prop.profile_name)
-
-    def get_properties_dict(self, version=3):
-        """
-
-        :param version:
-        :return:
-        """
-        return dict()
-
-    def get_units_dict(self, version=3):
-        """
-
-        :param version:
-        :return:
-        """
-        return dict()
-
-    def get_profiles_dict(self, version=3):
-        """
-
-        :param version:
-        :return:
-        """
-
-        """
-        {'id': self.idtag,
-        'active': active_prof,
-        'rate': rate_prof}
-        """
-        data = {'id': self.idtag}
-        for property_name, profile_name in self.properties_with_profile.items():
-            data[property_name] = profile_name
-
-        return data
 
     def copy(self):
         """

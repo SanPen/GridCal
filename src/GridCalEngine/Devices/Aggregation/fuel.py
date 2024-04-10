@@ -67,20 +67,3 @@ class Fuel(EditableDevice):
             self._cost_prof.set(arr=val)
         else:
             raise Exception(str(type(val)) + 'not supported to be set into a cost_prof')
-
-    def get_properties_dict(self, version=3):
-        data = {'id': self.idtag,
-                'name': self.name,
-                'code': self.code,
-                'cost': self.cost,
-                }
-        return data
-
-    def get_profiles_dict(self, version=3):
-        data = {'id': self.idtag,
-                'cost': self.cost_prof}
-        return data
-
-    def get_units_dict(self, version=3):
-        data = {}
-        return data

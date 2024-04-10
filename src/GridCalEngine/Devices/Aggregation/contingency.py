@@ -118,19 +118,3 @@ class Contingency(EditableDevice):
     def category(self, val):
         # self.group.category = val
         pass
-
-    def get_properties_dict(self, version=3):
-        """
-        Get json dictionary
-        :return:
-        """
-
-        return {
-            'id': self.idtag,
-            'name': self.name,
-            'name_code': self.code,
-            'group': self._group.idtag,
-            'device_uuid': self.device_idtag,
-            'prop': self.prop,
-            'value': self.value,
-        }

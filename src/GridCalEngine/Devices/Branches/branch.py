@@ -374,42 +374,6 @@ class Branch(BranchParent):
             data.append(obj)
         return data
 
-    def get_properties_dict(self, version=3):
-        """
-        Get json dictionary
-        :return:
-        """
-
-        d = {'id': self.idtag,
-             'type': 'branch',
-             'phases': 'ps',
-             'name': self.name,
-             'from': self.bus_from.idtag,
-             'to': self.bus_to.idtag,
-             'active': self.active,
-             'rate': self.rate,
-             'r': self.R,
-             'x': self.X,
-             'g': self.G,
-             'b': self.B,
-             'length': self.length,
-             'tap_module': self.tap_module,
-             'bus_to_regulated': self.bus_to_regulated,
-             'vset': self.vset,
-             'temp_base': self.temp_base,
-             'temp_oper': self.temp_oper,
-             'alpha': self.alpha,
-             'tap_angle': self.angle,
-             'branch_type': str(self.branch_type),
-             'active_profile': [],
-             'rate_prof': []}
-
-        if self.active_prof is not None:
-            d['active_profile'] = self.active_prof.tolist()
-            d['rate_prof'] = self.rate_prof.tolist()
-
-        return d
-
     def plot_profiles(self, time_series=None, my_index=0, show_fig=True):
         """
         Plot the time series results of this object

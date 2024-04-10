@@ -49,14 +49,14 @@ class Investment(EditableDevice):
                                 idtag=idtag,
                                 code=code,
                                 name=name,
-                                device_type=DeviceType.InvestmentDevice)
+                                device_type=DeviceType.InvestmentDevice,
+                                comment=comment)
 
         # Contingency type
         self.device_idtag = device_idtag
         self.CAPEX = CAPEX
         self.OPEX = OPEX
         self._group: InvestmentsGroup = group
-        self.comment = comment
 
         self.register(key='device_idtag', units='', tpe=str, definition='Unique ID')
         self.register(key='CAPEX', units='Me', tpe=float,
@@ -64,7 +64,6 @@ class Investment(EditableDevice):
         self.register(key='OPEX', units='Me', tpe=float,
                       definition='Operation expenditures. Maintenance costs among other recurrent costs.')
         self.register(key='group', units='', tpe=DeviceType.InvestmentsGroupDevice, definition='Investment group')
-        self.register(key='comment', units='', tpe=str, definition='Comments')
 
     @property
     def group(self) -> InvestmentsGroup:
@@ -90,20 +89,3 @@ class Investment(EditableDevice):
     def category(self, val):
         # self.group.category = val
         pass
-
-    def get_properties_dict(self, version=3):
-        """
-        Get json dictionary
-        :return:
-        """
-
-        return {
-            'id': self.idtag,
-            'name': self.name,
-            'name_code': self.code,
-            'group': self._group,
-            'device_idtag': self.device_idtag,
-            'CAPEX': self.CAPEX,
-            'OPEX': self.OPEX,
-            'comment': self.comment
-        }
