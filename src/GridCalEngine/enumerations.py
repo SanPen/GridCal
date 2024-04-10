@@ -561,6 +561,42 @@ class DiagramType(Enum):
         return list(map(lambda c: c.value, cls))
 
 
+
+class AcOpfMode(Enum):
+    """
+    AC-OPF problem types
+    """
+    ACOPFstd = 'ACOPFstd'
+    ACOPFslacks = 'ACOPFslacks'
+    ACOPFMaxInjections = 'ACOPFMaxInjections'
+
+    def __str__(self) -> str:
+        return str(self.value)
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
+        try:
+            return AcOpfMode[s]
+        except KeyError:
+            return s
+
+    @classmethod
+    def list(cls):
+        """
+
+        :return:
+        """
+        return list(map(lambda c: c.value, cls))
+
+
 class TransformerControlType(Enum):
     """
     Transformer control types

@@ -22,7 +22,7 @@ from scipy.sparse import lil_matrix
 from GridCalEngine.Utils.Sparse.csc import diags
 from typing import Tuple, Union
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec, csr_matrix, csc_matrix
-from GridCalEngine.enumerations import ReactivePowerControlMode
+from GridCalEngine.enumerations import ReactivePowerControlMode, AcOpfMode
 
 
 def x2var(x: Vec,
@@ -35,7 +35,7 @@ def x2var(x: Vec,
           ntapm: int,
           ntapt: int,
           ndc: int,
-          use_bound_slacks: bool) -> Tuple[Vec, Vec, Vec, Vec, Vec, Vec, Vec, Vec, Vec, Vec, Vec]:
+          acopf_mode: AcOpfMode) -> Tuple[Vec, Vec, Vec, Vec, Vec, Vec, Vec, Vec, Vec, Vec, Vec]:
     """
     Convert the x solution vector to its composing variables
     :param x: solution vector
@@ -68,7 +68,7 @@ def x2var(x: Vec,
     Qg = x[a: b]
     a = b
 
-    if use_bound_slacks:
+    if acopf_mode == AcOpfMode.ACOPFslacks:
         b += M
 
         sl_sf = x[a: b]
@@ -410,11 +410,12 @@ def compute_branch_power_second_derivatives(alltapm: Vec,
             dSbusdtdva, dSfdtdva, dStdtdva)
 
 
-def eval_f(x: Vec, Cg: csr_matrix, k_m: Vec, k_tau: Vec, nll: int, c0: Vec, c1: Vec, c2: Vec, c_s: Vec,
-           c_v: Vec, ig: Vec, npq: int, ndc: int, Sbase: float, use_bound_slacks: bool) -> float:
+def eval_f(x: Vec, Cg: csc_matrix, k_m: Vec, k_tau: Vec, nll: int, c0: Vec, c1: Vec, c2: Vec, c_s: Vec,
+           c_v: Vec, ig: Vec, npq: int, ndc: int, Sbase: float, acopf_mode: AcOpfMode) -> float:
     """
     Calculates the value of the objective function at the current state (given by x)
     :param x: State vector
+
     :param Cg: Generation connectivity matrix
     :param k_m: List with the index of the module controlled transformers
     :param k_tau: List with the index of the phase controlled transformers
@@ -437,7 +438,7 @@ def eval_f(x: Vec, Cg: csr_matrix, k_m: Vec, k_tau: Vec, nll: int, c0: Vec, c1: 
 
     _, _, Pg, Qg, sl_sf, sl_st, sl_vmax, sl_vmin, _, _, _ = x2var(x, nVa=N, nVm=N, nPg=Ng, nQg=Ng, npq=npq,
                                                                   M=nll, ntapm=ntapm, ntapt=ntapt, ndc=ndc,
-                                                                  use_bound_slacks=use_bound_slacks)
+                                                                  acopf_mode=acopf_mode)
     # Obj. function:  Active power generation costs plus overloads and voltage deviation penalties
     fval = 1e-4 * (np.sum((c0 + c1 * Pg * Sbase + c2 * np.power(Pg * Sbase, 2)))
                    + np.sum(c_s * (sl_sf + sl_st)) + np.sum(c_v * (sl_vmax + sl_vmin)))
@@ -445,9 +446,9 @@ def eval_f(x: Vec, Cg: csr_matrix, k_m: Vec, k_tau: Vec, nll: int, c0: Vec, c1: 
     return fval
 
 
-def eval_g(x: Vec, Ybus: csr_matrix, Yf: csr_matrix, Cg: csr_matrix, Sd: CxVec, ig: Vec, nig: Vec, nll: int, npq: int,
+def eval_g(x: Vec, Ybus: csc_matrix, Yf: csc_matrix, Cg: csc_matrix, Sd: CxVec, ig: Vec, nig: Vec, nll: int, npq: int,
            pv: Vec, f_nd_dc: Vec, t_nd_dc: Vec, fdc: Vec, tdc: Vec, Pf_nondisp: Vec, k_m: Vec, k_tau: Vec, Vm_max: Vec,
-           Sg_undis: CxVec, slack: Vec, use_bound_slacks: bool) -> Tuple[Vec, Vec]:
+           Sg_undis: CxVec, slack: Vec, acopf_mode: AcOpfMode) -> Tuple[Vec, Vec]:
     """
     Calculates the equality constraints at the current state (given by x)
     :param x: State vector
@@ -481,7 +482,7 @@ def eval_g(x: Vec, Ybus: csr_matrix, Yf: csr_matrix, Cg: csr_matrix, Sd: CxVec, 
 
     va, vm, Pg_dis, Qg_dis, sl_sf, sl_st, sl_vmax, sl_vmin, _, _, Pfdc = x2var(x, nVa=N, nVm=N, nPg=Ng, nQg=Ng, npq=npq,
                                                                                M=nll, ntapm=ntapm, ntapt=ntapt, ndc=ndc,
-                                                                               use_bound_slacks=use_bound_slacks)
+                                                                               acopf_mode=acopf_mode)
 
     V = vm * np.exp(1j * va)
     S = V * np.conj(Ybus @ V)
@@ -501,10 +502,10 @@ def eval_g(x: Vec, Ybus: csr_matrix, Yf: csr_matrix, Cg: csr_matrix, Sd: CxVec, 
     return gval, S
 
 
-def eval_h(x: Vec, Yf: csr_matrix, Yt: csr_matrix, from_idx: Vec, to_idx: Vec, pq: Vec, k_m: Vec, k_tau: Vec,
+def eval_h(x: Vec, Yf: csc_matrix, Yt: csc_matrix, from_idx: Vec, to_idx: Vec, pq: Vec, k_m: Vec, k_tau: Vec,
            Vm_max: Vec, Vm_min: Vec, Pg_max: Vec, Pg_min: Vec, Qg_max: Vec, Qg_min: Vec, tapm_max: Vec,
            tapm_min: Vec, tapt_max: Vec, tapt_min: Vec, Pdcmax: Vec, rates: Vec, il: Vec, ig: Vec,
-           tanmax: Vec, ctQ: ReactivePowerControlMode, use_bound_slacks: bool) -> Tuple[Vec, CxVec, CxVec]:
+           tanmax: Vec, ctQ: ReactivePowerControlMode, acopf_mode: AcOpfMode) -> Tuple[Vec, CxVec, CxVec]:
     """
     Calculates the inequality constraints at the current state (given by x)
     :param x: State vector
@@ -545,7 +546,7 @@ def eval_h(x: Vec, Yf: csr_matrix, Yt: csr_matrix, from_idx: Vec, to_idx: Vec, p
 
     va, vm, Pg, Qg, sl_sf, sl_st, sl_vmax, sl_vmin, tapm, tapt, Pfdc = x2var(x, nVa=N, nVm=N, nPg=Ng, nQg=Ng, npq=npq,
                                                                              M=nll, ntapm=ntapm, ntapt=ntapt, ndc=ndc,
-                                                                             use_bound_slacks=use_bound_slacks)
+                                                                             acopf_mode=acopf_mode)
 
     V = vm * np.exp(1j * va)
     Sf = V[from_idx[il]] * np.conj(Yf[il, :] @ V)
@@ -558,7 +559,7 @@ def eval_h(x: Vec, Yf: csr_matrix, Yt: csr_matrix, from_idx: Vec, to_idx: Vec, p
     St2 = np.conj(St) * St
     rates2 = np.power(rates[il], 2.0)
 
-    if use_bound_slacks:
+    if acopf_mode == AcOpfMode.ACOPFslacks:
         hval = np.r_[
             Sf2.real - rates2 - sl_sf,  # rates "lower limit"
             St2.real - rates2 - sl_st,  # rates "upper limit"
@@ -602,11 +603,11 @@ def eval_h(x: Vec, Yf: csr_matrix, Yt: csr_matrix, from_idx: Vec, to_idx: Vec, p
     return hval, Sftot, Sttot
 
 
-def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csr_matrix, Cf: csc, Ct: csc,
-                           Yf: csr_matrix, Yt: csr_matrix, Ybus: csr_matrix, Sbase: float, il: Vec, ig: Vec,
+def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csc_matrix, Cf: csc, Ct: csc,
+                           Yf: csc_matrix, Yt: csc_matrix, Ybus: csc_matrix, Sbase: float, il: Vec, ig: Vec,
                            slack: Vec, pq: Vec, pv: Vec, tanmax: Vec, alltapm: Vec, alltapt: Vec, fdc: Vec, tdc: Vec,
                            k_m: Vec, k_tau: Vec, mu, lmbda, R: Vec, X: Vec, F: Vec, T: Vec,
-                           ctQ: ReactivePowerControlMode, use_bound_slacks: bool, compute_jac: bool,
+                           ctQ: ReactivePowerControlMode, acopf_mode: AcOpfMode, compute_jac: bool,
                            compute_hess: bool) -> Tuple[Vec, csc, csc, csc, csc, csc]:
 
     """
@@ -663,9 +664,9 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csr
 
     va, vm, Pg, Qg, sl_sf, sl_st, sl_vmax, sl_vmin, tapm, tapt, Pfdc = x2var(x, nVa=N, nVm=N, nPg=Ng, nQg=Ng, npq=npq,
                                                                              M=M, ntapm=ntapm, ntapt=ntapt, ndc=ndc,
-                                                                             use_bound_slacks=use_bound_slacks)
+                                                                             acopf_mode=acopf_mode)
 
-    if use_bound_slacks:
+    if acopf_mode == AcOpfMode.ACOPFslacks:
         nsl = 2 * npq + 2 * M  # Number of slacks
     else:
         nsl = 0
@@ -689,7 +690,7 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csr
 
         fx[2 * N: 2 * N + Ng] = (2 * c2 * Pg * (Sbase * Sbase) + c1 * Sbase) * 1e-4
 
-        if use_bound_slacks:
+        if acopf_mode == AcOpfMode.ACOPFslacks:
             fx[npfvar: npfvar + M] = c_s
             fx[npfvar + M: npfvar + 2 * M] = c_s
             fx[npfvar + 2 * M: npfvar + 2 * M + npq] = c_v
@@ -847,7 +848,7 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csr
         Hqu = sp.hstack([lil_matrix((Ng, 2 * N + Ng)), diags(np.ones(Ng)), lil_matrix((Ng, NV - 2 * N - 2 * Ng))])
         Hql = sp.hstack([lil_matrix((Ng, 2 * N + Ng)), diags(- np.ones(Ng)), lil_matrix((Ng, NV - 2 * N - 2 * Ng))])
 
-        if use_bound_slacks:
+        if acopf_mode == AcOpfMode.ACOPFslacks:
             Hvu = sp.hstack([lil_matrix((npq, N)), diags(np.ones(npq)), lil_matrix((npq, 2 * Ng + 2 * M)),
                              diags(- np.ones(npq)), lil_matrix((npq, npq + ntapm + ntapt + ndc))])
 
@@ -884,7 +885,7 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csr
             SfX = sp.hstack([Sfva, Sfvm, lil_matrix((M, 2 * Ng + nsl)), Sftapm, Sftapt, lil_matrix((M, ndc))])
             StX = sp.hstack([Stva, Stvm, lil_matrix((M, 2 * Ng + nsl)), Sttapm, Sttapt, lil_matrix((M, ndc))])
 
-            if use_bound_slacks:
+            if acopf_mode == AcOpfMode.ACOPFslacks:
                 HSf = 2 * (Sfmat.real @ SfX.real + Sfmat.imag @ SfX.imag) + Hslsf
                 HSt = 2 * (Stmat.real @ StX.real + Stmat.imag @ StX.imag) + Hslst
             else:
@@ -925,7 +926,7 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csr
             SfX = sp.hstack([Sfva, Sfvm, lil_matrix((M, 2 * Ng + nsl + ndc))])
             StX = sp.hstack([Stva, Stvm, lil_matrix((M, 2 * Ng + nsl + ndc))])
 
-            if use_bound_slacks:
+            if acopf_mode == AcOpfMode.ACOPFslacks:
                 HSf = 2 * (Sfmat.real @ SfX.real + Sfmat.imag @ SfX.imag) + Hslsf
                 HSt = 2 * (Stmat.real @ StX.real + Stmat.imag @ StX.imag) + Hslst
             else:
