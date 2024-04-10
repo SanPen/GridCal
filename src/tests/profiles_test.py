@@ -103,7 +103,7 @@ def test_sparse_array4():
         x[i] = math.sin(i)
 
     s = SparseArray(data_type=int)
-    s.create_from_array(x, default_value=0.0)
+    s.create_from_array(x, default_value=0)
 
     # generate rando indices
     indices = np.random.randint(low=0, high=n, size=n)
