@@ -2,6 +2,7 @@ from GridCalEngine.Devices import MultiCircuit
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.IO.cim.cgmes.base import get_new_rdfid, form_rdfid
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
+from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.full_model import FullModel
 import GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices as cgmes
 import GridCalEngine.Devices as gcdev
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices import GeneratingUnit, \
@@ -94,6 +95,72 @@ def get_ohm_values_power_transformer(r, x, g, b, r0, x0, g0, b0, nominal_power, 
 # endregion
 
 # region create new classes for CC
+
+def create_headers(cgmes_model: CgmesCircuit, desc: str, scenariotime: str, modelingauthorityset: str, version: str):
+    from datetime import datetime
+
+    fm_list = [FullModel(rdfid=get_new_rdfid(), tpe="FullModel"), FullModel(rdfid=get_new_rdfid(), tpe="FullModel"),
+               FullModel(rdfid=get_new_rdfid(), tpe="FullModel"), FullModel(rdfid=get_new_rdfid(), tpe="FullModel")]
+    for fm in fm_list:
+        fm.scenarioTime = scenariotime
+        fm.modelingAuthoritySet = modelingauthorityset
+        current_time = datetime.utcnow()
+        formatted_time = current_time.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+        fm.created = formatted_time
+        fm.version = version
+        fm.description = desc
+
+    if cgmes_model.cgmes_version == "2.4.15":
+        profile_uris = {
+            "EQ": ["http://entsoe.eu/CIM/EquipmentCore/3/1",
+                   "http://entsoe.eu/CIM/EquipmentShortCircuit/3/1",
+                   "http://entsoe.eu/CIM/EquipmentOperation/3/1"],
+            "SSH": ["http://entsoe.eu/CIM/SteadyStateHypothesis/1/1"],
+            "TP": ["http://entsoe.eu/CIM/Topology/4/1"],
+            "SV": ["http://entsoe.eu/CIM/StateVariables/4/1"]
+        }
+    elif cgmes_model.cgmes_version == "3.0.0":
+        profile_uris = {
+            "EQ": ["http://iec.ch/TC57/ns/CIM/CoreEquipment-EU/3.0",
+                   "http://iec.ch/TC57/ns/CIM/Operation-EU/3.0",
+                   "http://iec.ch/TC57/ns/CIM/ShortCircuit-EU/3.0"],
+            "SSH": ["http://iec.ch/TC57/ns/CIM/SteadyStateHypothesis-EU/3.0"],
+            "TP": ["http://iec.ch/TC57/ns/CIM/Topology-EU/3.0"],
+            "SV": ["http://iec.ch/TC57/ns/CIM/StateVariables-EU/3.0"]
+        }
+    else:
+        return
+
+    # EQ profiles
+    prof = profile_uris.get("EQ")
+    fm_list[0].profile = [prof[0]]
+    if True:  # TODO How to decide if it contains Operation?
+        fm_list[0].profile.append(prof[1])
+    if True:  # TODO How to decide if it contains ShortCircuit?
+        fm_list[0].profile.append(prof[2])
+
+    fm_list[1].profile = profile_uris.get("SSH")
+    fm_list[2].profile = profile_uris.get("TP")
+    fm_list[3].profile = profile_uris.get("SV")
+
+    # DependentOn
+    eqbd_id = ""
+    tpbd_id = ""
+    for bd in cgmes_model.elements_by_type_boundary.get("FullModel"):
+        if ("http://entsoe.eu/CIM/EquipmentBoundary/3/1" in bd.profile or
+                "http://iec.ch/TC57/ns/CIM/EquipmentBoundary-EU" in bd.profile):
+            eqbd_id = bd.rdfid
+        if "http://entsoe.eu/CIM/TopologyBoundary/3/1" in bd.profile: # no TPBD in 3.0
+            tpbd_id = bd.rdfid
+
+    fm_list[0].DependentOn = [eqbd_id]
+    fm_list[1].DependentOn = [fm_list[0].rdfid]
+    if tpbd_id != "":
+        fm_list[2].DependentOn = [eqbd_id, tpbd_id, fm_list[0].rdfid]
+        fm_list[3].DependentOn = [tpbd_id, fm_list[0].rdfid, fm_list[1].rdfid, fm_list[2].rdfid]
+    else:
+        fm_list[2].DependentOn = [eqbd_id, fm_list[0].rdfid]
+        fm_list[3].DependentOn = [fm_list[0].rdfid, fm_list[1].rdfid, fm_list[2].rdfid]
 
 
 def create_cgmes_terminal(bus: Bus,
@@ -616,9 +683,11 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
         pte1.ratedU = mc_elm.V1
         pte1.ratedS = mc_elm.rate12
         pte1.endNumber = 1
-        R, X, G, B, R0, X0, G0, B0 = (mc_elm.winding1.R, mc_elm.winding1.X, mc_elm.winding1.G, mc_elm.winding1.B, mc_elm.winding1.R0,
-                                      mc_elm.winding1.X0, mc_elm.winding1.G0, mc_elm.winding1.B0)
-        r, x, g, b, r0, x0, g0, b0 = get_ohm_values_power_transformer(R, X, G, B, R0, X0, G0, B0, mc_elm.winding1.rate, mc_elm.winding1.HV)
+        R, X, G, B, R0, X0, G0, B0 = (
+            mc_elm.winding1.R, mc_elm.winding1.X, mc_elm.winding1.G, mc_elm.winding1.B, mc_elm.winding1.R0,
+            mc_elm.winding1.X0, mc_elm.winding1.G0, mc_elm.winding1.B0)
+        r, x, g, b, r0, x0, g0, b0 = get_ohm_values_power_transformer(R, X, G, B, R0, X0, G0, B0, mc_elm.winding1.rate,
+                                                                      mc_elm.winding1.HV)
         pte1.r = r
         pte1.x = x
         pte1.g = g
@@ -634,8 +703,8 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
         pte2.ratedS = mc_elm.rate23
         pte2.endNumber = 2
         R, X, G, B, R0, X0, G0, B0 = (
-        mc_elm.winding2.R, mc_elm.winding2.X, mc_elm.winding2.G, mc_elm.winding2.B, mc_elm.winding2.R0,
-        mc_elm.winding2.X0, mc_elm.winding2.G0, mc_elm.winding2.B0)
+            mc_elm.winding2.R, mc_elm.winding2.X, mc_elm.winding2.G, mc_elm.winding2.B, mc_elm.winding2.R0,
+            mc_elm.winding2.X0, mc_elm.winding2.G0, mc_elm.winding2.B0)
         r, x, g, b, r0, x0, g0, b0 = get_ohm_values_power_transformer(R, X, G, B, R0, X0, G0, B0, mc_elm.winding2.rate,
                                                                       mc_elm.winding2.HV)
         pte2.r = r
@@ -653,8 +722,8 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
         pte3.ratedS = mc_elm.rate31
         pte3.endNumber = 3
         R, X, G, B, R0, X0, G0, B0 = (
-        mc_elm.winding3.R, mc_elm.winding3.X, mc_elm.winding3.G, mc_elm.winding3.B, mc_elm.winding3.R0,
-        mc_elm.winding3.X0, mc_elm.winding3.G0, mc_elm.winding3.B0)
+            mc_elm.winding3.R, mc_elm.winding3.X, mc_elm.winding3.G, mc_elm.winding3.B, mc_elm.winding3.R0,
+            mc_elm.winding3.X0, mc_elm.winding3.G0, mc_elm.winding3.B0)
         r, x, g, b, r0, x0, g0, b0 = get_ohm_values_power_transformer(R, X, G, B, R0, X0, G0, B0, mc_elm.winding3.rate,
                                                                       mc_elm.winding3.HV)
         pte3.r = r
