@@ -15,12 +15,13 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import os
-from typing import Union, List
+from typing import Union, List, Dict
 from PySide6.QtCore import QThread, Signal
 
+from GridCal.Session.session import SimulationSession
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.IO.gridcal.zip_interface import get_session_tree, load_session_driver_objects
-from GridCalEngine.IO.file_handler import FileOpen, FileSave
+from GridCalEngine.IO.file_handler import FileOpen, FileSave, FileSavingOptions
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
 from GridCalEngine.data_logger import DataLogger
@@ -57,7 +58,7 @@ class FileOpenThread(QThread):
 
         self.__cancel__ = False
 
-    def get_session_tree(self):
+    def get_session_tree(self) -> Dict[str, Union[SimulationSession]]:
         """
         Get the session tree structure from a GridCal file
         :return:
@@ -79,13 +80,15 @@ class FileOpenThread(QThread):
         """
         if isinstance(self.file_name, str):
             if self.file_name.endswith('.gridcal'):
-                return load_session_driver_objects(self.file_name, session_name, study_name)
+                return load_session_driver_objects(file_name_zip=self.file_name,
+                                                   session_name=session_name,
+                                                   study_name=study_name)
             else:
                 return dict()
         else:
             return dict()
 
-    def run(self):
+    def run(self) -> None:
         """
         run the file open procedure
         """
@@ -118,21 +121,30 @@ class FileOpenThread(QThread):
 
         self.done_signal.emit()
 
-    def cancel(self):
+    def cancel(self) -> None:
+        """
+        Set the cancel flag
+        """
         self.__cancel__ = True
 
 
 class FileSaveThread(QThread):
+    """
+    Thread to save
+    """
     progress_signal = Signal(float)
     progress_text = Signal(str)
     done_signal = Signal()
 
-    def __init__(self, circuit: MultiCircuit, file_name, simulation_drivers=list(), sessions=list(), json_files=dict()):
+    def __init__(self,
+                 circuit: MultiCircuit,
+                 file_name: str,
+                 options: FileSavingOptions):
         """
         Constructor
         :param circuit: MultiCircuit instance
         :param file_name: name of the file where to save
-        :param simulation_drivers: List of Simulation Drivers
+        :param options: FileSavingOptions
         """
         QThread.__init__(self)
 
@@ -142,11 +154,7 @@ class FileSaveThread(QThread):
 
         self.valid = False
 
-        self.simulation_drivers = simulation_drivers
-
-        self.sessions = sessions
-
-        self.json_files = json_files
+        self.options = options
 
         self.logger = Logger()
 
@@ -154,7 +162,7 @@ class FileSaveThread(QThread):
 
         self.__cancel__ = False
 
-    def get_session_tree(self):
+    def get_session_tree(self) -> Dict:
         """
         Get the session tree structure from a GridCal file
         :return:
@@ -182,7 +190,7 @@ class FileSaveThread(QThread):
         else:
             return dict()
 
-    def run(self):
+    def run(self) -> None:
         """
         run the file save procedure
         @return:
@@ -194,13 +202,11 @@ class FileSaveThread(QThread):
 
         self.logger = Logger()
 
-        file_handler = FileSave(self.circuit,
-                                self.file_name,
+        file_handler = FileSave(circuit=self.circuit,
+                                file_name=self.file_name,
+                                options=self.options,
                                 text_func=self.progress_text.emit,
-                                progress_func=self.progress_signal.emit,
-                                simulation_drivers=self.simulation_drivers,
-                                sessions=self.sessions,
-                                json_files=self.json_files)
+                                progress_func=self.progress_signal.emit)
         try:
             self.logger = file_handler.save()
         except PermissionError:
@@ -214,4 +220,7 @@ class FileSaveThread(QThread):
         self.done_signal.emit()
 
     def cancel(self):
+        """
+        Activate the cancel flag
+        """
         self.__cancel__ = True

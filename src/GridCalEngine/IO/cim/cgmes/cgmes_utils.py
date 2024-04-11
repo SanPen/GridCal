@@ -74,7 +74,8 @@ def get_pu_values_power_transformer(power_transformer: PowerTransformer, System_
     :return:
     """
     try:
-        windings = get_windings(power_transformer)
+        # windings = get_windings(power_transformer)
+        windings = list(power_transformer.PowerTransformerEnd)
 
         R, X, G, B = 0, 0, 0, 0
         R0, X0, G0, B0 = 0, 0, 0, 0
@@ -103,7 +104,8 @@ def get_pu_values_power_transformer3w(power_transformer: PowerTransformer, Syste
     :return:
     """
     try:
-        windings = get_windings(power_transformer)
+        # windings = get_windings(power_transformer)
+        windings = list(power_transformer.PowerTransformerEnd)
 
         r12, r23, r31, x12, x23, x31 = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
 

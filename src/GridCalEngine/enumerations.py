@@ -531,9 +531,8 @@ class DiagramType(Enum):
     """
     Types of diagrams
     """
-    BusBranch = 'bus-branch'
+    Schematic = 'schematic'
     SubstationLineMap = 'substation-line-map'
-    NodeBreaker = 'node-breaker'
 
     def __str__(self):
         return self.value
@@ -550,6 +549,42 @@ class DiagramType(Enum):
         """
         try:
             return DiagramType[s]
+        except KeyError:
+            return s
+
+    @classmethod
+    def list(cls):
+        """
+
+        :return:
+        """
+        return list(map(lambda c: c.value, cls))
+
+
+
+class AcOpfMode(Enum):
+    """
+    AC-OPF problem types
+    """
+    ACOPFstd = 'ACOPFstd'
+    ACOPFslacks = 'ACOPFslacks'
+    ACOPFMaxInjections = 'ACOPFMaxInjections'
+
+    def __str__(self) -> str:
+        return str(self.value)
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
+        try:
+            return AcOpfMode[s]
         except KeyError:
             return s
 
@@ -942,6 +977,8 @@ class DeviceType(Enum):
 
     LineLocation = "Line Location"
     LineLocations = "Line Locations"
+
+    ModellingAuthority = "Modelling Authority"
 
     def __str__(self) -> str:
         return str(self.value)

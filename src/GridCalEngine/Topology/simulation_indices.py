@@ -179,7 +179,15 @@ class SimulationIndices:
                  F: IntVec,
                  T: IntVec,
                  dc: IntVec):
+        """
 
+        :param bus_types: Bus type initial guess array
+        :param Pbus: Active power per bus array
+        :param control_mode: Branch control mode array
+        :param F: Array of bus_from indices
+        :param T: Array of bus_to indices
+        :param dc: Arra of is DC ? per bus
+        """
         # master aray of bus types (nbus)
         self.bus_types = bus_types
 

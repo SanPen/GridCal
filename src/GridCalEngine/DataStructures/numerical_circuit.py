@@ -225,7 +225,8 @@ class NumericalCircuit:
         self.Ibus_: CxVec = None
         self.YloadBus_: CxVec = None
         self.Yshunt_from_devices_: CxVec = None
-
+        self.Bmax_bus_: Vec = None
+        self.Bmin_bus_: Vec = None
         self.Qmax_bus_: Vec = None
         self.Qmin_bus_: Vec = None
 
@@ -263,7 +264,6 @@ class NumericalCircuit:
         self.Ibus_: CxVec = None
         self.YloadBus_: CxVec = None
         self.Yshunt_from_devices_: CxVec = None
-
         self.Qmax_bus_: Vec = None
         self.Qmin_bus_: Vec = None
         self.Bmax_bus_: Vec = None
@@ -398,11 +398,7 @@ class NumericalCircuit:
 
         return nc
 
-    def get_structures_list(self) -> List[Union[ds.BusData, ds.LoadData, ds.ShuntData,
-    ds.GeneratorData, ds.BatteryData,
-    ds.BranchData, ds.HvdcData,
-    ds.FluidNodeData, ds.FluidTurbineData, ds.FluidPumpData,
-    ds.FluidP2XData, ds.FluidPathData]]:
+    def get_structures_list(self) -> List[ALL_STRUCTS]:
         """
         Get a list of the structures inside the NumericalCircuit
         :return:
@@ -831,15 +827,14 @@ class NumericalCircuit:
     def get_simulation_indices(self) -> si.SimulationIndices:
         """
         Get the simulation indices
-        :return:
+        :return: SimulationIndices
         """
         return si.SimulationIndices(bus_types=self.bus_data.bus_types,
                                     Pbus=self.Sbus.real,
                                     control_mode=self.branch_data.control_mode,
                                     F=self.branch_data.F,
                                     T=self.branch_data.T,
-                                    dc=self.branch_data.dc
-                                    )
+                                    dc=self.branch_data.dc)
 
     def get_connectivity_matrices(self) -> tp.ConnectivityMatrices:
         """

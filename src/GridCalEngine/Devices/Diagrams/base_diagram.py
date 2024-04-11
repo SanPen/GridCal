@@ -234,7 +234,10 @@ class BaseDiagram:
 
         self.name = data['name']
 
-        self.diagram_type = DiagramType(data['type'])
+        if data['type'] == 'bus-branch':
+            self.diagram_type = DiagramType.Schematic
+        else:
+            self.diagram_type = DiagramType(data['type'])
 
         for category, loc_dict in data['data'].items():
 

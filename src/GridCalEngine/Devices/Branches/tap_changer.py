@@ -19,7 +19,7 @@ import numpy as np
 import pandas as pd
 from typing import Union, Dict
 from GridCalEngine.enumerations import TapChangerTypes
-from GridCalEngine.basic_structures import IntVec, Vec
+from GridCalEngine.basic_structures import Vec
 
 
 def find_closest_number(arr: Vec, target: float) -> int:

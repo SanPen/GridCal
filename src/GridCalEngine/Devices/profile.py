@@ -20,7 +20,8 @@ from collections import Counter
 import numpy as np
 import numba as nb
 from GridCalEngine.basic_structures import Numeric, NumericVec, IntVec
-from GridCalEngine.Devices.sparse_array import SparseArray
+from GridCalEngine.enumerations import DeviceType
+from GridCalEngine.Devices.sparse_array import SparseArray, PROFILE_TYPES, check_type
 
 
 @nb.njit()
@@ -98,6 +99,7 @@ class Profile:
 
     def __init__(self,
                  default_value,
+                 data_type: PROFILE_TYPES,
                  arr: Union[None, NumericVec] = None,
                  sparsity_threshold: float = 0.8,
                  is_sparse: bool = False):
@@ -117,11 +119,11 @@ class Profile:
 
         self._sparsity_threshold: float = sparsity_threshold
 
-        self._dtype = type(default_value)  # float by default
+        self._dtype = data_type
 
         self._initialized: bool = False
 
-        self.default_value = default_value
+        self._default_value = default_value
 
         if arr is not None:
             self.set(arr=arr)
@@ -151,12 +153,31 @@ class Profile:
             return self._sparse_array.get_map()
 
     @property
-    def dtype(self) -> type:
+    def dtype(self) -> Union[bool, int, float, DeviceType]:
         """
         Get the declared type
         :return: type
         """
         return self._dtype
+
+    @property
+    def default_value(self) -> Union[bool, int, float, DeviceType]:
+        """
+        Get the declared type
+        :return: default_value
+        """
+        return self._default_value
+
+    @default_value.setter
+    def default_value(self, val):
+        """
+
+        :param val:
+        :return:
+        """
+        self._default_value = val
+        if self.sparse_array is not None:
+            self.sparse_array.default_value = self.default_value
 
     @property
     def is_sparse(self) -> bool:
@@ -197,15 +218,19 @@ class Profile:
         """
         return self._dense_array
 
-    def create_sparse(self, size: int, default_value: Numeric):
+    def create_sparse(self, size: int, default_value: Numeric, map_data: Dict[int, Numeric] = None):
         """
         Build sparse from definition
         :param size: size
         :param default_value: default value
+        :param map_data: map with the data
         """
         self._is_sparse = True
-        self._sparse_array = SparseArray()
-        self._sparse_array.create(size=size, default_value=default_value)
+        self._sparse_array = SparseArray(data_type=self.dtype)
+        if map_data is None:
+            self._sparse_array.create(size=size, default_value=default_value)
+        else:
+            self._sparse_array.create_from_dict(default_value=default_value, size=size, map_data=map_data)
         self._initialized = True
 
     def create_dense(self, size: int, default_value: Numeric):
@@ -254,7 +279,7 @@ class Profile:
                     base = bool(base)
 
                 self._is_sparse = True
-                self._sparse_array = SparseArray()
+                self._sparse_array = SparseArray(data_type=self.dtype)
 
                 if most_common_count > 1:
                     if isinstance(arr, np.ndarray):
@@ -268,15 +293,14 @@ class Profile:
                 self._sparse_array.create(size=len(arr),
                                           default_value=base,
                                           data=data_map)
-                self._dtype = type(base)
+                check_type(dtype=self.dtype, value=base)
             else:
+                check_type(dtype=self.dtype, value=arr[0])
                 self._is_sparse = False
                 self._dense_array = arr
-                self._dtype = arr.dtype
         else:
             self._is_sparse = False
             self._dense_array = arr
-            self._dtype = arr.dtype
 
         self._initialized = True
 
@@ -383,13 +407,14 @@ class Profile:
         Fill this profile with the same value
         :param value: any value
         """
+        check_type(dtype=self.dtype, value=value)
+
         self.default_value = value
         self._is_sparse = True
         if self._sparse_array is None:
-            self._sparse_array = SparseArray()
+            self._sparse_array = SparseArray(data_type=self.dtype)
         self._sparse_array.fill(value)
         self._dense_array = None
-        self._dtype = type(value)
 
     def scale(self, value: Union[float, int]):
         """

@@ -30,6 +30,7 @@ from GridCalEngine.Devices.Fluid import FluidNode, FluidPath
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec
 from GridCalEngine.Devices.Substation.substation import Substation
 from GridCalEngine.Devices.Substation.voltage_level import VoltageLevel
+from GridCalEngine.Devices.types import ALL_DEV_TYPES
 
 from GridCal.Gui.Diagrams.MapWidget.map_widget import MapWidget, PolylineData, Place
 import GridCal.Gui.Visualization.visualization as viz
@@ -83,6 +84,10 @@ class GridMapWidget(MapWidget):
         :return:
         """
         self.diagram = diagram
+
+    def delete_diagram_element(self, device: ALL_DEV_TYPES):
+        # TODO: Implement this
+        pass
 
     @property
     def name(self):
@@ -339,7 +344,7 @@ class GridMapWidget(MapWidget):
 
 
 def generate_map_diagram(substations: List[Substation],
-                         voltage_level: List[VoltageLevel],
+                         voltage_levels: List[VoltageLevel],
                          lines: List[Line],
                          dc_lines: List[DcLine],
                          hvdc_lines: List[HvdcLine],
@@ -351,7 +356,7 @@ def generate_map_diagram(substations: List[Substation],
     """
     Add a elements to the schematic scene
     :param substations: list of Substation objects
-    :param voltage_level: list of VoltageLevel objects
+    :param voltage_levels: list of VoltageLevel objects
     :param lines: list of Line objects
     :param dc_lines: list of DcLine objects
     :param hvdc_lines: list of HvdcLine objects

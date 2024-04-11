@@ -86,16 +86,16 @@ class ShuntParent(InjectionParent):
                                  device_type=device_type)
 
         self.G = G
-        self._G_prof = Profile(default_value=G)
+        self._G_prof = Profile(default_value=G, data_type=float)
 
         self.B = B
-        self._B_prof = Profile(default_value=B)
+        self._B_prof = Profile(default_value=B, data_type=float)
 
         self.G0 = G0
-        self._G0_prof = Profile(default_value=G0)
+        self._G0_prof = Profile(default_value=G0, data_type=float)
 
         self.B0 = B0
-        self._B0_prof = Profile(default_value=B0)
+        self._B0_prof = Profile(default_value=B0, data_type=float)
 
         self.register(key='G', units='MW', tpe=float, definition='Active power', profile_name='G_prof')
         self.register(key='B', units='MVAr', tpe=float, definition='Reactive power', profile_name='B_prof')
@@ -173,47 +173,6 @@ class ShuntParent(InjectionParent):
             self._B0_prof.set(arr=val)
         else:
             raise Exception(str(type(val)) + 'not supported to be set into a B_prof')
-
-    def get_properties_dict(self, version=3):
-        """
-        Get json dictionary
-        :return:
-        """
-        if version in [2, 3]:
-            return {'id': self.idtag,
-                    'type': 'load',
-                    'phases': 'ps',
-                    'name': self.name,
-                    'name_code': self.code,
-                    'bus': self.bus.idtag,
-                    'active': bool(self.active),
-                    'g': self.G,
-                    'b': self.B,
-                    'shedding_cost': self.Cost
-                    }
-        else:
-            return dict()
-
-    def get_profiles_dict(self, version=3):
-        """
-
-        :return:
-        """
-
-        if self.active_prof is not None:
-            active_profile = self.active_prof.tolist()
-            G_prof = self.G_prof.tolist()
-            B_prof = self.B_prof.tolist()
-
-        else:
-            active_profile = list()
-            G_prof = list()
-            B_prof = list()
-
-        return {'id': self.idtag,
-                'active': active_profile,
-                'g': G_prof,
-                'b': B_prof}
 
     def plot_profiles(self, time=None, show_fig=True):
         """

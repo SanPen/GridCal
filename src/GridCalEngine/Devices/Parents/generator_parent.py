@@ -87,15 +87,15 @@ class GeneratorParent(InjectionParent):
                                  device_type=device_type)
 
         self.control_bus = control_bus
-        self._control_bus_prof = Profile(default_value=control_bus)
+        self._control_bus_prof = Profile(default_value=control_bus, data_type=DeviceType.BusDevice)
 
         self.control_cn = control_cn
 
         self.P = P
-        self._P_prof = Profile(default_value=P)
+        self._P_prof = Profile(default_value=P, data_type=float)
 
         self.srap_enabled = srap_enabled
-        self._srap_enabled_prof = Profile(default_value=srap_enabled)
+        self._srap_enabled_prof = Profile(default_value=srap_enabled, data_type=bool)
 
         # Minimum dispatched power in MW
         self.Pmin = Pmin
@@ -166,43 +166,6 @@ class GeneratorParent(InjectionParent):
             self._srap_enabled_prof.set(arr=val)
         else:
             raise Exception(str(type(val)) + 'not supported to be set into srap_enabled_prof')
-
-    def get_properties_dict(self, version=3):
-        """
-        Get json dictionary
-        :return:
-        """
-        if version in [2, 3]:
-            return {'id': self.idtag,
-                    'type': 'load',
-                    'phases': 'ps',
-                    'name': self.name,
-                    'name_code': self.code,
-                    'bus': self.bus.idtag,
-                    'active': bool(self.active),
-                    'p': self.P,
-                    'shedding_cost': self.Cost
-                    }
-        else:
-            return dict()
-
-    def get_profiles_dict(self, version=3):
-        """
-
-        :return:
-        """
-
-        if self.active_prof is not None:
-            active_profile = self.active_prof.tolist()
-            P_prof = self.P_prof.tolist()
-
-        else:
-            active_profile = list()
-            P_prof = list()
-
-        return {'id': self.idtag,
-                'active': active_profile,
-                'p': P_prof}
 
     def get_S(self) -> complex:
         """

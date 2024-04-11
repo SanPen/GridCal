@@ -316,6 +316,9 @@ class MultiCircuit:
         # technologies
         self.technologies: List[dev.Technology] = list()
 
+        # Modelling authority
+        self.modelling_authorities: List[dev.ModellingAuthority] = list()
+
         # fuels
         self.fuels: List[dev.Fuel] = list()
 
@@ -394,6 +397,7 @@ class MultiCircuit:
                 dev.InvestmentsGroup(),
                 dev.Investment(),
                 dev.BranchGroup(),
+                dev.ModellingAuthority()
             ],
             "Tags & Associations": [
                 dev.Technology(),
@@ -432,7 +436,7 @@ class MultiCircuit:
                     self.device_type_name_dict[key] = elm.device_type
 
         # list of declared diagrams
-        self.diagrams: List[Union[dev.MapDiagram, dev.BusBranchDiagram, dev.NodeBreakerDiagram]] = list()
+        self.diagrams: List[Union[dev.MapDiagram, dev.SchematicDiagram]] = list()
 
     def __str__(self):
         return str(self.name)
@@ -707,10 +711,10 @@ class MultiCircuit:
 
         return tp.find_different_states(states_array=self.get_branch_active_time_array())
 
-    def get_diagrams(self) -> List[Union[dev.MapDiagram, dev.BusBranchDiagram, dev.NodeBreakerDiagram]]:
+    def get_diagrams(self) -> List[Union[dev.MapDiagram, dev.SchematicDiagram]]:
         """
         Get list of diagrams
-        :return: MapDiagram, BusBranchDiagram, NodeBreakerDiagram device
+        :return: MapDiagram, SchematicDiagram device
         """
         return self.diagrams
 
@@ -721,18 +725,18 @@ class MultiCircuit:
         """
         return len(self.diagrams) > 0
 
-    def add_diagram(self, diagram: Union[dev.MapDiagram, dev.BusBranchDiagram, dev.NodeBreakerDiagram]):
+    def add_diagram(self, diagram: Union[dev.MapDiagram, dev.SchematicDiagram]):
         """
         Add diagram
-        :param diagram: MapDiagram, BusBranchDiagram, NodeBreakerDiagram device
+        :param diagram: MapDiagram, SchematicDiagram device
         :return:
         """
         self.diagrams.append(diagram)
 
-    def remove_diagram(self, diagram: Union[dev.MapDiagram, dev.BusBranchDiagram, dev.NodeBreakerDiagram]):
+    def remove_diagram(self, diagram: Union[dev.MapDiagram, dev.SchematicDiagram]):
         """
         Remove diagrams
-        :param diagram: MapDiagram, BusBranchDiagram, NodeBreakerDiagram device
+        :param diagram: MapDiagram, SchematicDiagram device
         """
         self.diagrams.remove(diagram)
 
@@ -1755,7 +1759,58 @@ class MultiCircuit:
 
         self.branch_groups.remove(obj)
 
-    def get_elements_by_type(self, device_type: DeviceType):
+    # ------------------------------------------------------------------------------------------------------------------
+    # modelling_authority
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def get_modelling_authorities(self) -> List[dev.ModellingAuthority]:
+        """
+        List of modelling_authorities
+        :return: List[dev.ModellingAuthority]
+        """
+        return self.modelling_authorities
+
+    def get_modelling_authorities_number(self) -> int:
+        """
+        Size of the list of modelling_authorities
+        :return: size of modelling_authorities
+        """
+        return len(self.modelling_authorities)
+
+    def get_modelling_authority_at(self, i: int) -> dev.ModellingAuthority:
+        """
+        Get modelling_authority at i
+        :param i: index
+        :return: ModellingAuthority
+        """
+        return self.modelling_authorities[i]
+
+    def get_modelling_authority_names(self) -> StrVec:
+        """
+        Array of modelling_authority names
+        :return: StrVec
+        """
+        return np.array([e.name for e in self.modelling_authorities])
+
+    def add_modelling_authority(self, obj: dev.ModellingAuthority):
+        """
+        Add a ModellingAuthority object
+        :param obj: ModellingAuthority instance
+        """
+
+        if self.time_profile is not None:
+            obj.create_profiles(self.time_profile)
+        self.modelling_authorities.append(obj)
+
+    def delete_modelling_authority(self, obj: dev.ModellingAuthority) -> None:
+        """
+        Add a ModellingAuthority object
+        :param obj: ModellingAuthority instance
+        """
+
+        self.modelling_authorities.remove(obj)
+
+    def get_elements_by_type(self, device_type: DeviceType) -> List[ALL_DEV_TYPES]:
         """
         Get set of elements and their parent nodes
         :param device_type: DeviceTYpe instance
@@ -1944,6 +1999,9 @@ class MultiCircuit:
 
         elif device_type == DeviceType.TimeDevice:
             return self.get_time_array()
+
+        elif device_type == DeviceType.ModellingAuthority:
+            return self.get_modelling_authorities()
 
         else:
             raise Exception('Element type not understood ' + str(device_type))
@@ -2136,6 +2194,9 @@ class MultiCircuit:
         elif device_type == DeviceType.IfMeasurementDevice:
             self.if_measurements = devices
 
+        elif device_type == DeviceType.ModellingAuthority:
+            self.modelling_authorities = devices
+
         else:
             raise Exception('Element type not understood ' + str(device_type))
 
@@ -2313,6 +2374,9 @@ class MultiCircuit:
         elif element_type == DeviceType.IfMeasurementDevice:
             return self.delete_if_measurement(obj)
 
+        elif element_type == DeviceType.ModellingAuthority:
+            return self.delete_modelling_authority(obj)
+
         else:
             raise Exception('Element type not understood ' + str(element_type))
 
@@ -2418,6 +2482,7 @@ class MultiCircuit:
                 'pf_measurements',
                 'qf_measurements',
                 'if_measurements',
+                'modelling_authorities'
                 ]
 
         for pr in ppts:
@@ -2430,46 +2495,9 @@ class MultiCircuit:
         Clear the multi-circuit (remove the bus and branch objects)
         """
 
-        for lst in self.get_branch_lists():
-            lst.clear()
-
-        for lst in self.get_injection_devices_lists():
-            lst.clear()
-
-        self.areas = list()
-        self.technologies = list()
-        self.contingencies = list()
-        self.contingency_groups = list()
-        self.investments = list()
-        self.investments_groups = list()
-        self.fuels = list()
-        self.emission_gases = list()
-
-        # Should accept buses
-        self.buses = list()
-        self.voltage_levels = list()
-        self.substations = list()
-
-        # List of overhead line objects
-        self.overhead_line_types = list()
-
-        # list of wire types
-        self.wire_types = list()
-
-        # underground cable lines
-        self.underground_cable_types = list()
-
-        # sequence modelled lines
-        self.sequence_line_types = list()
-
-        # List of transformer types
-        self.transformer_types = list()
-
-        self.time_profile = None
-
-        self.contingencies = list()
-
-        self.branch_groups = list()
+        for key, elm_list in self.objects_with_profiles.items():
+            for elm in elm_list:
+                self.get_elements_by_type(device_type=elm.device_type).clear()
 
     def get_catalogue_dict(self, branches_only=False):
         """

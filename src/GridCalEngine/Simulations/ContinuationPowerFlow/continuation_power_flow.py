@@ -297,8 +297,15 @@ def predictor(V, lam, Ybus, Sxfr, pv: IntVec, pq: IntVec, step: float, z, Vprv, 
     J2 = [   J   dF_dlam
            dP_dV dP_dlam ]
     '''
-    J2 = sp.vstack([sp.hstack([J, dF_dlam.reshape(nj, 1)]),
-                    sp.hstack([dP_dV, dP_dlam])], format="csc")
+
+    last_col = np.empty((nj, 1))
+    last_col[:, 0] = dF_dlam
+
+    last_row = np.empty((1, nj + 1))
+    last_row[0, :nj] = dP_dV
+    last_row[0, nj] = dP_dlam
+
+    J2 = sp.vstack([sp.hstack([J, last_col], format="csc"), last_row], format="csc")
 
     Va_prev = np.angle(V)
     Vm_prev = np.abs(V)
@@ -424,8 +431,17 @@ def corrector(Ybus, Sbus, V0, pv: IntVec, pq: IntVec, lam0, Sxfr, Vprv, lamprv, 
         J = [   J   dF_dlam 
               dP_dV dP_dlam ]
         '''
-        J = sp.vstack([sp.hstack([J, dF_dlam.reshape(nj, 1)]),
-                       sp.hstack([dP_dV, dP_dlam])], format="csc")
+        # J = sp.vstack([sp.hstack([J, dF_dlam.reshape(nj, 1)]),
+        #                sp.hstack([dP_dV, dP_dlam])], format="csc")
+
+        last_col = np.empty((nj, 1))
+        last_col[:, 0] = dF_dlam
+
+        last_row = np.empty((1, nj + 1))
+        last_row[0, :nj] = dP_dV
+        last_row[0, nj] = dP_dlam
+
+        J = sp.vstack([sp.hstack([J, last_col], format="csc"), last_row], format="csc")
 
         # compute update step
         dx = linear_solver(J, F)
@@ -736,7 +752,7 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Sbus_base, Sbus_t
                     continuation = False
 
             else:
-                raise Exception('Stop point ' + stop_at.value + ' not recognised.')
+                raise Exception(f'Stop point {stop_at.value} not recognised.')
 
             if adapt_step and continuation:
 

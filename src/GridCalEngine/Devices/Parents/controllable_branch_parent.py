@@ -172,7 +172,7 @@ class ControllableBranchParent(BranchParent):
         # Conductor base and operating temperatures in ºC
         self.temp_base = temp_base
         self.temp_oper = temp_oper
-        self._temp_oper_prof = Profile(default_value=temp_oper)
+        self._temp_oper_prof = Profile(default_value=temp_oper, data_type=float)
 
         # Conductor thermal constant (1/ºC)
         self.alpha = alpha
@@ -187,11 +187,11 @@ class ControllableBranchParent(BranchParent):
         else:
             self.tap_module = self._tap_changer.get_tap_module()
 
-        self._tap_module_prof = Profile(default_value=tap_module)
+        self._tap_module_prof = Profile(default_value=tap_module, data_type=float)
 
         # Tap angle
         self.tap_phase = tap_phase
-        self._tap_phase_prof = Profile(default_value=tap_phase)
+        self._tap_phase_prof = Profile(default_value=tap_phase, data_type=float)
 
         self.tap_module_max = tap_module_max
         self.tap_module_min = tap_module_min
@@ -201,11 +201,15 @@ class ControllableBranchParent(BranchParent):
         self.vset = vset
         self.Pset = Pset
 
-        self.control_mode: TransformerControlType = control_mode
+        self.control_mode: TransformerControlType = control_mode  # Legacy
+
         self.tap_module_control_mode: TapModuleControl = tap_module_control_mode
         self.tap_angle_control_mode: TapAngleControl = tap_angle_control_mode
+
         self.regulation_branch: BranchParent = regulation_branch
+
         self.regulation_bus: Bus = regulation_bus
+
         self.regulation_cn: ConnectivityNode = regulation_cn
 
         self.register(key='R', units='p.u.', tpe=float, definition='Total positive sequence resistance.')
@@ -254,13 +258,13 @@ class ControllableBranchParent(BranchParent):
                       definition='Objective power at the "from" side of when regulating the angle.')
 
         self.register(key='regulation_branch', units='', tpe=DeviceType.BranchDevice,
-                      definition='Branch where the controls are applied.')
+                      definition='Branch where the controls are applied.', editable=False)
 
         self.register(key='regulation_bus', units='', tpe=DeviceType.BusDevice,
-                      definition='Bus where the regulation is applied.')
+                      definition='Bus where the regulation is applied.', editable=False)
 
         self.register(key='regulation_cn', units='', tpe=DeviceType.ConnectivityNodeDevice,
-                      definition='Connectivity node where the regulation is applied.')
+                      definition='Connectivity node where the regulation is applied.', editable=False)
 
         self.register(key='temp_base', units='ºC', tpe=float, definition='Base temperature at which R was measured.')
         self.register(key='temp_oper', units='ºC', tpe=float, definition='Operation temperature to modify R.',
@@ -322,7 +326,7 @@ class ControllableBranchParent(BranchParent):
             raise Exception(str(type(val)) + 'not supported to be set into a temp_oper_prof')
 
     @property
-    def tap_changer(self) -> Profile:
+    def tap_changer(self) -> TapChanger:
         """
         Cost profile
         :return: Profile
@@ -378,14 +382,16 @@ class ControllableBranchParent(BranchParent):
         Move the tap changer one position up
         """
         self.tap_changer.tap_up()
-        self.tap_module = self.tap_changer.get_tap()
+        self.tap_module = self.tap_changer.get_tap_module()
+        self.tap_phase = self.tap_changer.get_tap_phase()
 
     def tap_down(self):
         """
         Move the tap changer one position up
         """
         self.tap_changer.tap_down()
-        self.tap_module = self.tap_changer.get_tap()
+        self.tap_module = self.tap_changer.get_tap_module()
+        self.tap_phase = self.tap_changer.get_tap_phase()
 
     def apply_tap_changer(self, tap_changer: TapChanger):
         """
@@ -399,6 +405,7 @@ class ControllableBranchParent(BranchParent):
         self.tap_changer = tap_changer
 
         if self.tap_module != 0:
-            self.tap_changer.set_tap(self.tap_module)
+            self.tap_changer.set_tap_module(tap_module=self.tap_module)
         else:
-            self.tap_module = self.tap_changer.get_tap()
+            self.tap_module = self.tap_changer.get_tap_module()
+            self.tap_phase = self.tap_changer.get_tap_phase()

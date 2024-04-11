@@ -30,7 +30,7 @@ This is a list of actions to check
 
 Videos
 -----------
-Video 1. Create a substation
+*Video 1. Create a substation
 
    - 1 Drag the bus
      - Define name
@@ -131,14 +131,14 @@ Video 7: Add a profile to an object property
         - 4 Important! Unmark both, set unasigned to zero, and normalize.
         - 5 Accept
 
-Video 8: Scale load / generation per area
+*Video 8: Scale load / generation per area
     - 1 Menu - Model - Scale
     - 2 Select the Zone/ Region/Munipality I want to scale up/down
     - 3 Select the factor
     - 4 Choose if I want to do it in the snapshot (default), or if I want to extend it to the profiles (mark the check)
     - 5 Do it
 
-Video 9: Clustering
+*Video 9: Clustering
     - 1. Explain what clustering is, and how it is done.
     - 2. Explain how it is performed. Settings number of clusters
     - 3. Explain results expansion
@@ -156,7 +156,9 @@ Video 11: Contingency analysis
     - 4. Results (same as in Redeval)
     - 5. Show SRAP results
 
-Video 12: Visualization
+*Video 12: Visualization
+    - Zoom - scroll
+    - Move - CTRL + drag
     - Part 1: Vecinity diagram
         - 1 In DB- Bus/Line/..., select a bus/line/...
         - 2 Click on add bus "Bus Vecinity viewer of the selected items"
@@ -171,10 +173,17 @@ Video 12: Visualization
         - 4 Click on center view
         - 5 CLick (+) button to expand it
 
-Video 13: Filters
+*Video 13: Filters
     - In DB objects, filter bus by name: "idxobj.name like arenas" where name is the header. If the headers has units avoid them "idxobj.Vnom = 132.0"
     - Note1:The filters in Objects are also applied to Time series
     - Note2:For results, normally it is better to download the file
+
+*Video 14: Snaphsot-Time series
+ - How to run time - series
+ - How to run clustered (time series)- cluster needed before
+ - How to take and hour
+
+
 
 
 

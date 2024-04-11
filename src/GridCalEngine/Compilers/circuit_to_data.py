@@ -63,10 +63,10 @@ def get_bus_data(circuit: MultiCircuit,
         bus_data.angle_max[i] = bus.angle_max
 
         if bus.is_slack:
-            bus_data.bus_types[i] = 3  # VD
+            bus_data.bus_types[i] = BusMode.Slack.value  # VD
         else:
             # bus.determine_bus_type().value
-            bus_data.bus_types[i] = 1  # PQ by default, later it is modified by generators and batteries
+            bus_data.bus_types[i] = BusMode.PQ.value  # PQ by default, later it is modified by generators and batteries
 
         if bus.substation is not None:
             bus_data.substations[i] = substation_dict[bus.substation]
@@ -172,11 +172,11 @@ def get_load_data(circuit: MultiCircuit,
 
         # change stuff depending on the modes
         if elm.mode == ExternalGridMode.VD:
-            bus_data.bus_types[i] = 3  # set as Slack
+            bus_data.bus_types[i] = BusMode.Slack.value  # set as Slack
 
         elif elm.mode == ExternalGridMode.PV:
-            if bus_data.bus_types[i] != 3:  # if it is not Slack
-                bus_data.bus_types[i] = 2  # set as PV
+            if bus_data.bus_types[i] != BusMode.Slack.value:  # if it is not Slack
+                bus_data.bus_types[i] = BusMode.PV.value  # set as PV
 
                 if not use_stored_guess:
 
@@ -381,8 +381,8 @@ def get_generator_data(circuit: MultiCircuit,
 
                 if elm.is_controlled:
 
-                    if bus_data.bus_types[i] != 3:  # if it is not Slack
-                        bus_data.bus_types[i] = 2  # set as PV
+                    if bus_data.bus_types[i] != BusMode.Slack.value:  # if it is not Slack
+                        bus_data.bus_types[i] = BusMode.PV.value  # set as PV
 
                         if not use_stored_guess:
                             if Vbus[i].real == 1.0:
@@ -410,8 +410,8 @@ def get_generator_data(circuit: MultiCircuit,
                     bus_data.srap_availbale_power[i] += data.p[k]
 
                 if elm.is_controlled:
-                    if bus_data.bus_types[i] != 3:  # if it is not Slack
-                        bus_data.bus_types[i] = 2  # set as PV
+                    if bus_data.bus_types[i] != BusMode.Slack.value:  # if it is not Slack
+                        bus_data.bus_types[i] = BusMode.PV.value  # set as PV
 
                     if not use_stored_guess:
                         if Vbus[i].real == 1.0:
@@ -519,8 +519,8 @@ def get_battery_data(circuit: MultiCircuit,
                     bus_data.srap_availbale_power[i] += data.p[k]
 
                 if elm.is_controlled:
-                    if bus_data.bus_types[i] != 3:  # if it is not Slack
-                        bus_data.bus_types[i] = 2  # set as PV
+                    if bus_data.bus_types[i] != BusMode.Slack.value:  # if it is not Slack
+                        bus_data.bus_types[i] = BusMode.PV.value  # set as PV
 
                         if not use_stored_guess:
                             if Vbus[i].real == 1.0:
@@ -548,8 +548,8 @@ def get_battery_data(circuit: MultiCircuit,
                     bus_data.srap_availbale_power[i] += data.p[k]
 
                 if elm.is_controlled:
-                    if bus_data.bus_types[i] != 3:  # if it is not Slack
-                        bus_data.bus_types[i] = 2  # set as PV
+                    if bus_data.bus_types[i] != BusMode.Slack.value:  # if it is not Slack
+                        bus_data.bus_types[i] = BusMode.PV.value  # set as PV
 
                     if not use_stored_guess:
                         if Vbus[i].real == 1.0:
@@ -1228,9 +1228,13 @@ def get_fluid_node_data(circuit: MultiCircuit,
         if time_series:
             data.inflow[k] = elm.inflow_prof[t_idx]
             data.spillage_cost[k] = elm.spillage_cost_prof[t_idx]
+            data.max_soc[k] = elm.max_soc_prof[t_idx]
+            data.min_soc[k] = elm.min_soc_prof[t_idx]
         else:
             data.inflow[k] = elm.inflow
             data.spillage_cost[k] = elm.spillage_cost
+            data.max_soc[k] = elm.max_soc
+            data.min_soc[k] = elm.min_soc
 
     return data, plant_dict
 

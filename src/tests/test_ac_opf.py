@@ -16,12 +16,11 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import os
-from typing import Tuple
 
 import numpy as np
 import GridCalEngine.api as gce
-from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import ac_optimal_power_flow, NonlinearOPFResults
 from GridCalEngine.enumerations import TransformerControlType
+from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import ac_optimal_power_flow
 from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import NonlinearOPFResults
 
 
@@ -34,8 +33,7 @@ def case9() -> NonlinearOPFResults:
     print(cwd)
 
     # Go back two directories
-    new_directory = os.path.abspath(os.path.join(cwd, '..', '..'))
-    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case9.m')
+    file_path = os.path.join('data', 'grids', 'case9.m')
 
     grid = gce.FileOpen(file_path).open()
     nc = gce.compile_numerical_circuit_at(grid)
@@ -53,8 +51,7 @@ def case14() -> tuple[NonlinearOPFResults, NonlinearOPFResults, NonlinearOPFResu
     print(cwd)
 
     # Go back two directories
-    new_directory = os.path.abspath(os.path.join(cwd, '..', '..'))
-    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case14.m')
+    file_path = os.path.join('data', 'grids', 'case14.m')
 
     grid = gce.FileOpen(file_path).open()
 
@@ -63,9 +60,12 @@ def case14() -> tuple[NonlinearOPFResults, NonlinearOPFResults, NonlinearOPFResu
 
     nc = gce.compile_numerical_circuit_at(grid)
     pf_options = gce.PowerFlowOptions(control_q=gce.ReactivePowerControlMode.NoControl)
-    opf_options = gce.OptimalPowerFlowOptions(ips_method=gce.SolverType.NR, ips_tolerance=1e-8, ips_iterations=50)
-    base_sol = ac_optimal_power_flow(nc=nc, pf_options=pf_options, opf_options=opf_options, use_bound_slacks=False)
-    slack_sol = ac_optimal_power_flow(nc=nc, pf_options=pf_options, opf_options=opf_options, use_bound_slacks=True)
+    opf_options = gce.OptimalPowerFlowOptions(ips_method=gce.SolverType.NR, ips_tolerance=1e-8, ips_iterations=50,
+                                              acopf_mode=gce.AcOpfMode.ACOPFstd)
+    base_sol = ac_optimal_power_flow(nc=nc, pf_options=pf_options, opf_options=opf_options)
+
+    opf_options.acopf_mode = gce.AcOpfMode.ACOPFslacks
+    slack_sol = ac_optimal_power_flow(nc=nc, pf_options=pf_options, opf_options=opf_options)
 
     grid.transformers2w[0].control_mode = TransformerControlType.PtQt
     grid.transformers2w[1].control_mode = TransformerControlType.Pf
@@ -73,13 +73,16 @@ def case14() -> tuple[NonlinearOPFResults, NonlinearOPFResults, NonlinearOPFResu
 
     for ll in range(len(grid.lines)):
         grid.lines[ll].monitor_loading = True
-        grid.lines[ll].Cost_prof.default_value *= 10000
+        grid.lines[ll].Cost_prof.default_value *= 10000  # TODO: why change the profile default, is this not a snapshot?
     for b in range(len(grid.buses)):
         grid.buses[b].Vm_cost *= 10000
 
     nc = gce.compile_numerical_circuit_at(grid)
-    tap_sol = ac_optimal_power_flow(nc=nc, pf_options=pf_options, opf_options=opf_options, use_bound_slacks=False)
-    tap_slack_sol = ac_optimal_power_flow(nc=nc, pf_options=pf_options, opf_options=opf_options, use_bound_slacks=True)
+    opf_options.acopf_mode = gce.AcOpfMode.ACOPFstd
+    tap_sol = ac_optimal_power_flow(nc=nc, pf_options=pf_options, opf_options=opf_options)
+
+    opf_options.acopf_mode = gce.AcOpfMode.ACOPFslacks
+    tap_slack_sol = ac_optimal_power_flow(nc=nc, pf_options=pf_options, opf_options=opf_options)
 
     return base_sol, slack_sol, tap_sol, tap_slack_sol
 
@@ -91,15 +94,15 @@ def case_pegase89() -> NonlinearOPFResults:
     cwd = os.getcwd()
     print(cwd)
     # Go back two directories
-    new_directory = os.path.abspath(os.path.join(cwd, '..', '..'))
-    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case89pegase.m')
+    file_path = os.path.join('data', 'grids', 'case89pegase.m')
 
     grid = gce.FileOpen(file_path).open()
     nc = gce.compile_numerical_circuit_at(grid)
     # pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, tolerance=1e-8)
     # return ac_optimal_power_flow(nc=nc, pf_options=pf_options)
     pf_options = gce.PowerFlowOptions(control_q=gce.ReactivePowerControlMode.NoControl)
-    opf_options = gce.OptimalPowerFlowOptions(ips_method=gce.SolverType.NR, ips_tolerance=1e-10)
+    opf_options = gce.OptimalPowerFlowOptions(ips_method=gce.SolverType.NR, ips_tolerance=1e-10,
+                                              acopf_mode=gce.AcOpfMode.ACOPFstd)
     return ac_optimal_power_flow(nc=nc, pf_options=pf_options, opf_options=opf_options)
 
 

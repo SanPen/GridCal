@@ -16,8 +16,8 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import zipfile
 from typing import List, Union, Callable
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15 import cgmesProfile
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15 import CgmesCircuit
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
+from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
 
 
 def write_cgmes(filename_zip: str, model: CgmesCircuit, profiles: List[cgmesProfile],

@@ -25,7 +25,6 @@ from GridCalEngine.Devices.multi_circuit import MultiCircuit
 import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.Parents.editable_device import GCProp
 from GridCalEngine.Devices.profile import Profile
-from GridCalEngine.Devices.sparse_array import SparseArray
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
 from GridCalEngine.enumerations import DiagramType, DeviceType, SubObjectType, TransformerControlType
 
@@ -39,7 +38,10 @@ def get_objects_dictionary() -> Dict[str, ALL_DEV_TYPES]:
     # this list must be sorted in dependency order so that the
     # loading algorithm is able to find the object substitutions
 
-    object_types = {'area': dev.Area(),
+    object_types = {
+                    'modelling_authority': dev.ModellingAuthority(),
+
+                    'area': dev.Area(),
                     'zone': dev.Zone(),
 
                     'substation': dev.Substation(),
@@ -335,20 +337,23 @@ def profile_todict_str(profile: Profile) -> Dict[str, str]:
         }
 
 
-def get_profile_from_dict(data: Dict[str, Union[str, Union[Any, Dict[str, Any]]]],
-                          collection: Union[None, Dict[str, Any]] = None) -> Profile:
+def get_profile_from_dict(profile: Profile,
+                          data: Dict[str, Union[str, Union[Any, Dict[str, Any]]]],
+                          collection: Union[None, Dict[str, Any]] = None):
     """
     Create a profile from json dict data
+    :param profile: Profile object to fill in
     :param data: Json dict data
     :param collection: if the collection is provided, it will be used to convert idtags into objects
-    :return: Profile
+    :return: None
     """
     default_value = data['default']
-    profile = Profile(default_value=default_value, is_sparse=bool(data['is_sparse']))
+    is_sparse = bool(data['is_sparse'])
+    # profile = Profile(default_value=default_value, is_sparse=bool(data['is_sparse']))
 
-    if profile.is_sparse:
+    if is_sparse:
         sp_data = data['sparse_data']
-        profile._sparse_array = SparseArray()
+
         if collection is None:
             map_data = {int(key): val for key, val in sp_data['map'].items()}
 
@@ -356,7 +361,11 @@ def get_profile_from_dict(data: Dict[str, Union[str, Union[Any, Dict[str, Any]]]
             default_value = collection.get(data['default'], default_value)
             map_data = {int(key): collection.get(val, default_value) for key, val in sp_data['map'].items()}
 
-        profile.sparse_array.create_from_dict(default_value=default_value, size=data['size'], map_data=map_data)
+        if profile.dtype == DeviceType.BusDevice:  # manual correction for buses profile incorrect value
+            if default_value == "None":
+                default_value = profile.default_value
+
+        profile.create_sparse(default_value=default_value, size=data['size'], map_data=map_data)
     else:
 
         if collection is None:
@@ -365,7 +374,7 @@ def get_profile_from_dict(data: Dict[str, Union[str, Union[Any, Dict[str, Any]]]
             arr = [collection.get(i, default_value) for i in data['dense_data']]
         profile.set(np.array(arr))
     profile.set_initialized()
-    return profile
+
 
 
 def gridcal_object_to_json(elm: ALL_DEV_TYPES) -> Dict[str, str]:
@@ -926,12 +935,13 @@ def search_and_apply_json_profile(json_entry: Dict[str, Dict[str, Union[str, Uni
         # search the profile in the json
         json_profile = json_entry.get(gc_prop.profile_name, None)
 
+        profile: Profile = elm.get_profile(magnitude=gc_prop.name)
+
         if json_profile is None:
             # the profile was not found, so we fill it with the default stuff
-            elm.get_profile(magnitude=gc_prop.name).fill(property_value)
+            profile.fill(property_value)
         else:
-            profile = get_profile_from_dict(data=json_profile, collection=collection)
-            elm.set_profile(prop=gc_prop, arr=profile)
+            get_profile_from_dict(profile=profile, data=json_profile, collection=collection)
 
 
 def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
@@ -1304,13 +1314,8 @@ def parse_gridcal_data(data: Dict[str, Union[str, float, Dict, pd.DataFrame, Dic
 
             for diagram_dict in data['diagrams']:
 
-                if diagram_dict['type'] == DiagramType.BusBranch.value:
-                    diagram = dev.BusBranchDiagram()
-                    diagram.parse_data(data=diagram_dict, obj_dict=obj_dict, logger=logger)
-                    circuit.add_diagram(diagram)
-
-                elif diagram_dict['type'] == DiagramType.NodeBreaker.value:
-                    diagram = dev.NodeBreakerDiagram()
+                if diagram_dict['type'] in [DiagramType.Schematic.value, "bus-branch"]:
+                    diagram = dev.SchematicDiagram()
                     diagram.parse_data(data=diagram_dict, obj_dict=obj_dict, logger=logger)
                     circuit.add_diagram(diagram)
 

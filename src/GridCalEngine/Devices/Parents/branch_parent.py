@@ -87,16 +87,16 @@ class BranchParent(EditableDevice):
 
         # connectivity
         self.bus_from = bus_from
-        self._bus_from_prof = Profile(default_value=bus_from)
+        self._bus_from_prof = Profile(default_value=bus_from, data_type=DeviceType.BusDevice)
 
         self.bus_to = bus_to
-        self._bus_to_prof = Profile(default_value=bus_to)
+        self._bus_to_prof = Profile(default_value=bus_to, data_type=DeviceType.BusDevice)
 
         self.cn_from = cn_from
         self.cn_to = cn_to
 
         self.active = active
-        self._active_prof = Profile(default_value=active)
+        self._active_prof = Profile(default_value=active, data_type=bool)
 
         self.contingency_enabled: bool = contingency_enabled
 
@@ -108,7 +108,7 @@ class BranchParent(EditableDevice):
 
         self.Cost = Cost
 
-        self._Cost_prof = Profile(default_value=Cost)
+        self._Cost_prof = Profile(default_value=Cost, data_type=float)
 
         self.capex = capex
 
@@ -118,13 +118,13 @@ class BranchParent(EditableDevice):
 
         # line rating in MVA
         self.rate = rate
-        self._rate_prof = Profile(default_value=rate)
+        self._rate_prof = Profile(default_value=rate, data_type=float)
 
         self.contingency_factor = contingency_factor
-        self._contingency_factor_prof = Profile(default_value=contingency_factor)
+        self._contingency_factor_prof = Profile(default_value=contingency_factor, data_type=float)
 
         self.protection_rating_factor = protection_rating_factor
-        self._protection_rating_factor_prof = Profile(default_value=protection_rating_factor)
+        self._protection_rating_factor_prof = Profile(default_value=protection_rating_factor, data_type=float)
 
         # List of measurements
         self.group: Union[BranchGroup, None] = None

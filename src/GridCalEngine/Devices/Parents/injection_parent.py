@@ -68,12 +68,12 @@ class InjectionParent(EditableDevice):
                                 device_type=device_type)
 
         self._bus = bus
-        self._bus_prof = Profile(default_value=bus)
+        self._bus_prof = Profile(default_value=bus, data_type=DeviceType.BusDevice)
 
         self.cn = cn
 
         self.active = active
-        self._active_prof = Profile(default_value=active)
+        self._active_prof = Profile(default_value=active, data_type=bool)
 
         self.mttf = mttf
 
@@ -81,7 +81,7 @@ class InjectionParent(EditableDevice):
 
         self.Cost = Cost
 
-        self._Cost_prof = Profile(default_value=Cost)
+        self._Cost_prof = Profile(default_value=Cost, data_type=float)
 
         self.capex = capex
 
@@ -120,11 +120,15 @@ class InjectionParent(EditableDevice):
 
     @bus.setter
     def bus(self, val: Bus):
-        if isinstance(val, Bus):
+        if val is None:
             self._bus = val
             self._bus_prof.fill(value=val)
         else:
-            raise Exception(str(type(val)) + 'not supported to be set into a bus')
+            if isinstance(val, Bus):
+                self._bus = val
+                self._bus_prof.fill(value=val)
+            else:
+                raise Exception(str(type(val)) + 'not supported to be set into a bus')
 
     @property
     def bus_prof(self) -> Profile:

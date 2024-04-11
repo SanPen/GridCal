@@ -95,7 +95,7 @@ class Bus(EditableDevice):
                                 device_type=DeviceType.BusDevice)
 
         self.active = active
-        self._active_prof = Profile(default_value=active)
+        self._active_prof = Profile(default_value=active, data_type=bool)
 
         # Nominal voltage (kV)
         self.Vnom = vnom
