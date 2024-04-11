@@ -17,6 +17,21 @@ from typing import Dict, List, Tuple, Union
 
 
 # region UTILS
+
+class ReferenceManager:
+    # use it after an element object added
+    def __init__(self):
+        self.data = dict()
+
+    def add(self, cgmes_obj: cgmes.Base):
+
+        tpe_dict = self.data.get(cgmes_obj.tpe, None)
+        if tpe_dict is None:
+            self.data[cgmes_obj.tpe] = {cgmes_obj.rdfid: cgmes_obj}
+        else:
+            tpe_dict[cgmes_obj.rdfid] = cgmes_obj
+
+
 # def find_terms_connections():
 #     pass   # TODO
 
@@ -538,9 +553,9 @@ def get_cgmes_power_transformer_ends():
     pass
 
 
-def get_cgmes_linear_shunt(multicircuit_model: MultiCircuit,
-                           cgmes_model: CgmesCircuit,
-                           logger: DataLogger):
+def get_cgmes_linear_shunts(multicircuit_model: MultiCircuit,
+                            cgmes_model: CgmesCircuit,
+                            logger: DataLogger):
     """
     Converts Multi Circuit shunts
     into CGMES Linear shunt compensator
@@ -556,7 +571,7 @@ def get_cgmes_linear_shunt(multicircuit_model: MultiCircuit,
         lsc = cgmes.LinearShuntCompensator(rdfid=form_rdfid(mc_elm.idtag))
         lsc.name = mc_elm.name
         lsc.description = mc_elm.code
-        # lsc.EquipmentContainer: VoltageLevel
+        # lsc.EquipmentContainer: VoltageLevel .. like at tn_nodes line 284
         lsc.RegulatingControl = False
         lsc.controlEnabled = False
         lsc.maximumSections = 1
@@ -602,6 +617,6 @@ def gridcal_to_cgmes(gc_model: MultiCircuit, logger: DataLogger) -> CgmesCircuit
     get_cgmes_ac_line_segments(gc_model, cgmes_model, logger)
     # transformers, windings
 
-    # shunts
+    get_cgmes_linear_shunts(gc_model, cgmes_model, logger)
 
     return cgmes_model

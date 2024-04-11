@@ -1125,4 +1125,6 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
     # end = time.time()
     # print("ET export time: ", end - start, "sec")
 
+    # logger.to_dict()  #
+
     return gc_model
