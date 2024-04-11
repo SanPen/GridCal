@@ -226,7 +226,7 @@ def find_references(elements_by_type: Dict[str, List[IdentifiedObject]],
                 # at this point val is always the string that came in the XML
                 value = getattr(element, property_name)
                 if value is not None and isinstance(value, IdentifiedObject):
-                    value = value.rdfid
+                    continue
 
                 if value is not None:  # if the value is something...
 
@@ -329,7 +329,7 @@ def find_references(elements_by_type: Dict[str, List[IdentifiedObject]],
                             referenced_object_list = set()
                             for v in value:
                                 if isinstance(v, IdentifiedObject):
-                                    v = v.rdfid
+                                    continue
 
                                 referenced_object = all_objects_dict.get(v, None)
 
@@ -452,6 +452,8 @@ def convert_data_to_objects(data: Dict[str, Dict[str, Dict[str, str]]],
     :param logger:DataLogger
     :return: None
     """
+    import time
+    start = time.time()
     for class_name, objects_dict in data.items():
 
         objects_list = list()
@@ -478,7 +480,9 @@ def convert_data_to_objects(data: Dict[str, Dict[str, Dict[str, str]]],
                 logger.add_error("Class not recognized", device_class=class_name)
 
         elements_by_type[class_name] = objects_list
-
+    endt = time.time()
+    print("data to object: ", endt - start, "sec")
+    start = time.time()
     # replace refferences by actual objects
     find_references(elements_by_type=elements_by_type,
                     all_objects_dict=all_objects_dict,
@@ -486,6 +490,8 @@ def convert_data_to_objects(data: Dict[str, Dict[str, Dict[str, str]]],
                     association_inverse_dict=association_inverse_dict,
                     logger=logger,
                     mark_used=True)
+    endt = time.time()
+    print("find references: ", endt - start, "sec")
 
 
 class CgmesCircuit(BaseCircuit):
@@ -1008,7 +1014,7 @@ class CgmesCircuit(BaseCircuit):
         #                               progress_func=self.progress_func,
         #                               logger=self.logger)
         # data_parser.load_files(files=files)
-
+        import time
         # set the data
         self.set_data(data=data_parser.data,
                       boundary_set=data_parser.boudary_set)
@@ -1022,7 +1028,7 @@ class CgmesCircuit(BaseCircuit):
                                 class_dict=self.class_dict,
                                 association_inverse_dict=self.association_inverse_dict,
                                 logger=self.logger)
-
+        start = time.time()
         # convert the dictionaries to the internal class model,
         # this marks as used only the boundary set objects that are referenced,
         # this allows to delete the excess of boundary set objects later
@@ -1033,7 +1039,8 @@ class CgmesCircuit(BaseCircuit):
                                 class_dict=self.class_dict,
                                 association_inverse_dict=self.association_inverse_dict,
                                 logger=self.logger)
-
+        endt = time.time()
+        print("Data to objects time: ", endt - start, "sec")
         # Assign the data from all_objects_dict to the appropriate lists in the circuit
         self.assign_data_to_lists()
 

@@ -1122,16 +1122,16 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
 
     print('debug')
 
-    # Gridcal to cgmes
-    cgmes_circuit = CgmesCircuit()
-    cgmes_model_export = gridcal_to_cgmes(gc_model, cgmes_circuit, logger)
+    # # Gridcal to cgmes
+    # cgmes_model_export = CgmesCircuit()
+    # cgmes_model_export = gridcal_to_cgmes(gc_model, cgmes_model_export, logger)
 
     # Export test for the imported data
-    start = time.time()
-    serializer = CimExporter(cgmes_model)
-    serializer.export_test()
-    end = time.time()
-    print("ET export time: ", end - start, "sec")
+    # start = time.time()
+    # serializer = CimExporter(cgmes_model)
+    # serializer.export_test()
+    # end = time.time()
+    # print("ET export time: ", end - start, "sec")
 
     # Export data converted from gridcal
 

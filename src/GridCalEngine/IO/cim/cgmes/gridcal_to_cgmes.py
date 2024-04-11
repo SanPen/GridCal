@@ -112,14 +112,16 @@ def get_ohm_values_power_transformer(r, x, g, b, r0, x0, g0, b0, nominal_power, 
 
 # region create new classes for CC
 
-def create_headers(cgmes_model: CgmesCircuit, desc: str, scenariotime: str, modelingauthorityset: str, version: str):
+def create_cgmes_headers(cgmes_model: CgmesCircuit, desc: str = "", scenariotime: str = "",
+                         modelingauthorityset: str = "", version: str = ""):
     from datetime import datetime
 
     fm_list = [FullModel(rdfid=get_new_rdfid(), tpe="FullModel"), FullModel(rdfid=get_new_rdfid(), tpe="FullModel"),
                FullModel(rdfid=get_new_rdfid(), tpe="FullModel"), FullModel(rdfid=get_new_rdfid(), tpe="FullModel")]
     for fm in fm_list:
         fm.scenarioTime = scenariotime
-        fm.modelingAuthoritySet = modelingauthorityset
+        if modelingauthorityset != "":
+            fm.modelingAuthoritySet = modelingauthorityset
         current_time = datetime.utcnow()
         formatted_time = current_time.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
         fm.created = formatted_time
@@ -162,21 +164,30 @@ def create_headers(cgmes_model: CgmesCircuit, desc: str, scenariotime: str, mode
     # DependentOn
     eqbd_id = ""
     tpbd_id = ""
-    for bd in cgmes_model.elements_by_type_boundary.get("FullModel"):
-        if ("http://entsoe.eu/CIM/EquipmentBoundary/3/1" in bd.profile or
-                "http://iec.ch/TC57/ns/CIM/EquipmentBoundary-EU" in bd.profile):
-            eqbd_id = bd.rdfid
-        if "http://entsoe.eu/CIM/TopologyBoundary/3/1" in bd.profile: # no TPBD in 3.0
-            tpbd_id = bd.rdfid
+    try:
+        for bd in cgmes_model.elements_by_type_boundary.get("FullModel"):
+            if ("http://entsoe.eu/CIM/EquipmentBoundary/3/1" in bd.profile or
+                    "http://iec.ch/TC57/ns/CIM/EquipmentBoundary-EU" in bd.profile):
+                eqbd_id = bd.rdfid
+            if "http://entsoe.eu/CIM/TopologyBoundary/3/1" in bd.profile:  # no TPBD in 3.0
+                tpbd_id = bd.rdfid
 
-    fm_list[0].DependentOn = [eqbd_id]
-    fm_list[1].DependentOn = [fm_list[0].rdfid]
-    if tpbd_id != "":
-        fm_list[2].DependentOn = [eqbd_id, tpbd_id, fm_list[0].rdfid]
-        fm_list[3].DependentOn = [tpbd_id, fm_list[0].rdfid, fm_list[1].rdfid, fm_list[2].rdfid]
-    else:
-        fm_list[2].DependentOn = [eqbd_id, fm_list[0].rdfid]
+        fm_list[0].DependentOn = [eqbd_id]
+        fm_list[1].DependentOn = [fm_list[0].rdfid]
+        if tpbd_id != "":
+            fm_list[2].DependentOn = [eqbd_id, tpbd_id, fm_list[0].rdfid]
+            fm_list[3].DependentOn = [tpbd_id, fm_list[0].rdfid, fm_list[1].rdfid, fm_list[2].rdfid]
+        else:
+            fm_list[2].DependentOn = [eqbd_id, fm_list[0].rdfid]
+            fm_list[3].DependentOn = [fm_list[0].rdfid, fm_list[1].rdfid, fm_list[2].rdfid]
+    except TypeError:
+        print("Missing default boundary files")
+        fm_list[1].DependentOn = [fm_list[0].rdfid]
+        fm_list[2].DependentOn = [fm_list[0].rdfid]
         fm_list[3].DependentOn = [fm_list[0].rdfid, fm_list[1].rdfid, fm_list[2].rdfid]
+
+    cgmes_model.FullModel_list = fm_list
+    return cgmes_model
 
 
 def create_cgmes_terminal(bus: Bus,
@@ -764,7 +775,6 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
         cgmes_model.add(cm_transformer)
 
 
-
 def get_cgmes_linear_shunts(multicircuit_model: MultiCircuit,
                             cgmes_model: CgmesCircuit,
                             logger: DataLogger):
@@ -779,7 +789,6 @@ def get_cgmes_linear_shunts(multicircuit_model: MultiCircuit,
     """
 
     for mc_elm in multicircuit_model.shunts:
-
         lsc = cgmes.LinearShuntCompensator(rdfid=form_rdfid(mc_elm.idtag))
         lsc.name = mc_elm.name
         lsc.description = mc_elm.code
@@ -796,6 +805,7 @@ def get_cgmes_linear_shunts(multicircuit_model: MultiCircuit,
         lsc.Terminals = create_cgmes_terminal(mc_elm.bus, cgmes_model, logger)
 
         cgmes_model.LinearShuntCompensator_list.append(lsc)
+
 
 # endregion
 
