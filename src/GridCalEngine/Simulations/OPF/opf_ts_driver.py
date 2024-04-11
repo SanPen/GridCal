@@ -271,7 +271,13 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
         while i < n and not self.__cancel__:
             start_ = groups[i - 1]
             end_ = groups[i]
-            time_indices = np.arange(start_, end_)
+
+            # Grab the last time index in the last group
+            if i == n - 1:
+                time_indices = np.arange(start_, end_ + 1)
+            else:
+                time_indices = np.arange(start_, end_)
+
             # show progress message
             print(start_, ':', end_, ' [', end_ - start_, ']')
             self.report_text('Running OPF for the time group {0} '
