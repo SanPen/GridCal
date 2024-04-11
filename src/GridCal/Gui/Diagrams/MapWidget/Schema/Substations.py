@@ -26,7 +26,7 @@ import random
 from GridCalEngine.IO.matpower.matpower_branch_definitions import QT
 
 
-class NodeGraphicItem(QtWidgets.QGraphicsRectItem):
+class SubstationGraphicItem(QtWidgets.QGraphicsEllipseItem):
     """
       Represents a block in the diagram
       Has an x and y and width and height
