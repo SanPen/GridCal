@@ -37,6 +37,8 @@ from PySide6.QtSvg import QSvgGenerator
 from GridCalEngine.Devices.types import ALL_DEV_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Devices.Substation.bus import Bus
+from GridCalEngine.Devices.Substation.substation import Substation
+from GridCalEngine.Devices.Substation.voltage_level import VoltageLevel
 from GridCalEngine.Devices.Substation.busbar import BusBar
 from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.Devices.Branches.line import Line
@@ -3614,6 +3616,140 @@ class DiagramEditorWidget(QSplitter):
                     else:
                         api_object.active_prof.fill(False)
 
+    def split_line_now(self, line_graphics: LineGraphicItem, position: float, extra_km: float):
+        """
+
+        :param line_graphics:
+        :param position:
+        :param extra_km:
+        :return:
+        """
+
+        if 0.0 < position < 1.0:
+
+            # Each of the Branches will have the proportional impedance
+            # Bus_from           Middle_bus            Bus_To
+            # o----------------------o--------------------o
+            #   >-------- x -------->|
+            #   (x: distance measured in per unit (0~1)
+            line = line_graphics.api_object
+            name = line.name + ' split'
+            mid_sub = Substation(name=name,
+                                 area=line.bus_from.area,
+                                 zone=line.bus_from.zone,
+                                 country=line.bus_from.country)
+            mid_vl = VoltageLevel(name=name, substation=mid_sub)
+            mid_bus = Bus(name=name,
+                          vnom=line.bus_from.Vnom,
+                          vmin=line.bus_from.Vmin,
+                          vmax=line.bus_from.Vmax,
+                          voltage_level=mid_vl,
+                          substation=mid_sub,
+                          area=line.bus_from.area,
+                          zone=line.bus_from.zone,
+                          country=line.bus_from.country)
+
+            bus_f_graphics_data = self.diagram.query_point(line.bus_from)
+            bus_t_graphics_data = self.diagram.query_point(line.bus_to)
+            bus_f_graphic_obj = self.graphics_manager.query(line.bus_from)
+            bus_t_graphic_obj = self.graphics_manager.query(line.bus_to)
+
+            if bus_f_graphics_data is None:
+                error_msg(f"{line.bus_from} was not found in the diagram")
+                return None
+            if bus_t_graphics_data is None:
+                error_msg(f"{line.bus_to} was not found in the diagram")
+                return None
+            if bus_f_graphic_obj is None:
+                error_msg(f"{line.bus_from} was not found in the graphics manager")
+                return None
+            if bus_t_graphic_obj is None:
+                error_msg(f"{line.bus_to} was not found in the graphics manager")
+                return None
+
+            # C(x, y) = (x1 + t * (x2 - x1), y1 + t * (y2 - y1))
+            middle_bus_x = int(bus_f_graphics_data.x + (bus_t_graphics_data.x - bus_f_graphics_data.x) * position)
+            middle_bus_y = int(bus_f_graphics_data.y + (bus_t_graphics_data.y - bus_f_graphics_data.y) * position)
+
+            position_a = position + (extra_km / line.length) if line.length > 0.0 else position
+
+            # create first split
+            br1 = Line(name=line.name + ' split 1',
+                       bus_from=line.bus_from,
+                       bus_to=mid_bus,
+                       r=line.R * position_a,
+                       x=line.X * position_a,
+                       b=line.B * position_a,
+                       r0=line.R0 * position_a,
+                       x0=line.X0 * position_a,
+                       b0=line.B0 * position_a,
+                       r2=line.R2 * position_a,
+                       x2=line.X2 * position_a,
+                       b2=line.B2 * position_a,
+                       length=line.length * position_a,
+                       rate=line.rate,
+                       contingency_factor=line.contingency_factor,
+                       protection_rating_factor=line.protection_rating_factor)
+
+            position_c = (1.0 - position) + (extra_km / line.length) if line.length > 0.0 else (1.0 - position)
+            br2 = Line(name=line.name + ' split 2',
+                       bus_from=mid_bus,
+                       bus_to=line.bus_to,
+                       r=line.R * position_c,
+                       x=line.X * position_c,
+                       b=line.B * position_c,
+                       r0=line.R0 * position_c,
+                       x0=line.X0 * position_c,
+                       b0=line.B0 * position_c,
+                       r2=line.R2 * position_c,
+                       x2=line.X2 * position_c,
+                       b2=line.B2 * position_c,
+                       length=line.length * position_c,
+                       rate=line.rate,
+                       contingency_factor=line.contingency_factor,
+                       protection_rating_factor=line.protection_rating_factor)
+
+            # deactivate the original line
+            line_graphics.api_object.active = False
+            line_graphics.api_object.active_prof.fill(False)
+            line_graphics.set_enable(False)
+
+            # add to gridcal the new 2 lines and the bus
+            self.circuit.add_bus(mid_bus)
+            self.circuit.add_line(br1)
+            self.circuit.add_line(br2)
+
+            # add new stuff as new investment
+            inv_group = InvestmentsGroup(name=line.name + ' split', category='Line split')
+            self.circuit.add_investments_group(inv_group)
+            self.circuit.add_investment(
+                Investment(name=mid_bus.name, device_idtag=mid_bus.idtag, group=inv_group))
+            self.circuit.add_investment(Investment(name=br1.name, device_idtag=br1.idtag, group=inv_group))
+            self.circuit.add_investment(Investment(name=br2.name, device_idtag=br2.idtag, group=inv_group))
+
+            # add to the schematic the new 2 lines and the bus
+            middle_bus_graphics = self.add_api_bus(bus=mid_bus,
+                                                   injections_by_tpe=dict(),
+                                                   x0=middle_bus_x,
+                                                   y0=middle_bus_y)
+            br1_graphics = self.add_api_line(branch=br1,
+                                             bus_f_graphic0=bus_f_graphic_obj,
+                                             bus_t_graphic0=middle_bus_graphics)
+            br2_graphics = self.add_api_line(branch=br2,
+                                             bus_f_graphic0=middle_bus_graphics,
+                                             bus_t_graphic0=bus_t_graphic_obj)
+
+            self.add_to_scene(middle_bus_graphics)
+            self.add_to_scene(br1_graphics)
+            self.add_to_scene(br2_graphics)
+
+            # redraw
+            bus_f_graphic_obj.arrange_children()
+            bus_t_graphic_obj.arrange_children()
+            middle_bus_graphics.arrange_children()
+        else:
+            error_msg("Incorrect position", 'Line split')
+
     def split_line(self, line_graphics: LineGraphicItem):
         """
         Split line
@@ -3631,131 +3767,22 @@ class DiagramEditorWidget(QSplitter):
         if dlg.exec_():
 
             if dlg.is_accepted:
-
                 position = dlg.value / 100.0
 
-                if 0.0 < position < 1.0:
-
-                    # Each of the Branches will have the proportional impedance
-                    # Bus_from           Middle_bus            Bus_To
-                    # o----------------------o--------------------o
-                    #   >-------- x -------->|
-                    #   (x: distance measured in per unit (0~1)
-                    line = line_graphics.api_object
-
-                    mid_bus = Bus(name=line.name + ' split',
-                                  vnom=line.bus_from.Vnom,
-                                  vmin=line.bus_from.Vmin,
-                                  vmax=line.bus_from.Vmax)
-
-                    bus_f_graphics_data = self.diagram.query_point(line.bus_from)
-                    bus_t_graphics_data = self.diagram.query_point(line.bus_to)
-                    bus_f_graphic_obj = self.graphics_manager.query(line.bus_from)
-                    bus_t_graphic_obj = self.graphics_manager.query(line.bus_to)
-
-                    if bus_f_graphics_data is None:
-                        error_msg(f"{line.bus_from} was not found in the diagram")
-                        return None
-                    if bus_t_graphics_data is None:
-                        error_msg(f"{line.bus_to} was not found in the diagram")
-                        return None
-                    if bus_f_graphic_obj is None:
-                        error_msg(f"{line.bus_from} was not found in the graphics manager")
-                        return None
-                    if bus_t_graphic_obj is None:
-                        error_msg(f"{line.bus_to} was not found in the graphics manager")
-                        return None
-
-                    # C(x, y) = (x1 + t * (x2 - x1), y1 + t * (y2 - y1))
-                    middle_bus_x = bus_f_graphics_data.x + (bus_t_graphics_data.x - bus_f_graphics_data.x) * position
-                    middle_bus_y = bus_f_graphics_data.y + (bus_t_graphics_data.y - bus_f_graphics_data.y) * position
-
-                    # create first split
-                    br1 = Line(name=line.name + ' split 1',
-                               bus_from=line.bus_from,
-                               bus_to=mid_bus,
-                               r=line.R * position,
-                               x=line.X * position,
-                               b=line.B * position,
-                               r0=line.R0 * position,
-                               x0=line.X0 * position,
-                               b0=line.B0 * position,
-                               r2=line.R2 * position,
-                               x2=line.X2 * position,
-                               b2=line.B2 * position,
-                               length=line.length * position,
-                               rate=line.rate,
-                               contingency_factor=line.contingency_factor,
-                               protection_rating_factor=line.protection_rating_factor)
-
-                    position_c = 1.0 - position
-                    br2 = Line(name=line.name + ' split 2',
-                               bus_from=mid_bus,
-                               bus_to=line.bus_to,
-                               r=line.R * position_c,
-                               x=line.X * position_c,
-                               b=line.B * position_c,
-                               r0=line.R0 * position_c,
-                               x0=line.X0 * position_c,
-                               b0=line.B0 * position_c,
-                               r2=line.R2 * position_c,
-                               x2=line.X2 * position_c,
-                               b2=line.B2 * position_c,
-                               length=line.length * position_c,
-                               rate=line.rate,
-                               contingency_factor=line.contingency_factor,
-                               protection_rating_factor=line.protection_rating_factor)
-
-                    # deactivate the original line
-                    line_graphics.api_object.active = False
-                    line_graphics.api_object.active_prof.fill(False)
-                    line_graphics.set_enable(False)
-
-                    # add to gridcal the new 2 lines and the bus
-                    self.circuit.add_bus(mid_bus)
-                    self.circuit.add_line(br1)
-                    self.circuit.add_line(br2)
-
-                    # add new stuff as new investment
-                    inv_group = InvestmentsGroup(name=line.name + ' split', category='Line split')
-                    self.circuit.add_investments_group(inv_group)
-                    self.circuit.add_investment(
-                        Investment(name=mid_bus.name, device_idtag=mid_bus.idtag, group=inv_group))
-                    self.circuit.add_investment(Investment(name=br1.name, device_idtag=br1.idtag, group=inv_group))
-                    self.circuit.add_investment(Investment(name=br2.name, device_idtag=br2.idtag, group=inv_group))
-
-                    # add to the schematic the new 2 lines and the bus
-                    middle_bus_graphics = self.add_api_bus(bus=mid_bus,
-                                                           injections_by_tpe=dict(),
-                                                           x0=middle_bus_x,
-                                                           y0=middle_bus_y)
-                    br1_graphics = self.add_api_line(branch=br1,
-                                                     bus_f_graphic0=bus_f_graphic_obj,
-                                                     bus_t_graphic0=middle_bus_graphics)
-                    br2_graphics = self.add_api_line(branch=br2,
-                                                     bus_f_graphic0=middle_bus_graphics,
-                                                     bus_t_graphic0=bus_t_graphic_obj)
-
-                    self.add_to_scene(middle_bus_graphics)
-                    self.add_to_scene(br1_graphics)
-                    self.add_to_scene(br2_graphics)
-
-                    # redraw
-                    bus_f_graphic_obj.arrange_children()
-                    bus_t_graphic_obj.arrange_children()
-                    middle_bus_graphics.arrange_children()
-                else:
-                    error_msg("Incorrect position", 'Line split')
+                self.split_line_now(line_graphics=line_graphics,
+                                    position=position,
+                                    extra_km=0.0)
 
     def split_line_in_out(self, line_graphics: LineGraphicItem):
         """
         Split line and create extra substations so that an in/out is formed
         :param line_graphics: Original LineGraphicItem to split
         """
+        title = "Split line with input/output"
         dlg = InputNumberDialogue(min_value=1.0,
                                   max_value=99.0,
                                   is_int=False,
-                                  title="Split line with input/output",
+                                  title=title,
                                   text="Enter the distance from the beginning of the \n"
                                        "line as a percentage of the total length",
                                   suffix=' %',
@@ -3772,8 +3799,8 @@ class DiagramEditorWidget(QSplitter):
                     dlg2 = InputNumberDialogue(min_value=0.01,
                                                max_value=99999999.0,
                                                is_int=False,
-                                               title="Split line with input/output",
-                                               text="Distance from the original line",
+                                               title=title,
+                                               text="Distance from the splitting point",
                                                suffix=' km',
                                                decimals=2,
                                                default_value=1.0)
@@ -3782,201 +3809,229 @@ class DiagramEditorWidget(QSplitter):
 
                         if dlg2.is_accepted:
 
-                            # Each of the Branches will have the proportional impedance
-                            # Bus_from           Middle_bus            Bus_To
-                            # o----------------------o--------------------o
-                            #   >-------- x -------->|
-                            #   (x: distance measured in per unit (0~1)
-                            line = line_graphics.api_object
-                            bus_f_graphics_data = self.diagram.query_point(line.bus_from)
-                            bus_t_graphics_data = self.diagram.query_point(line.bus_to)
-                            bus_f_graphic_obj = self.graphics_manager.query(line.bus_from)
-                            bus_t_graphic_obj = self.graphics_manager.query(line.bus_to)
+                            create_extra_nodes = yes_no_question(text="Add extra buses?", title=title)
 
-                            if bus_f_graphics_data is None:
-                                error_msg(f"{line.bus_from} was not found in the diagram")
-                                return None
-                            if bus_t_graphics_data is None:
-                                error_msg(f"{line.bus_to} was not found in the diagram")
-                                return None
-                            if bus_f_graphic_obj is None:
-                                error_msg(f"{line.bus_from} was not found in the graphics manager")
-                                return None
-                            if bus_t_graphic_obj is None:
-                                error_msg(f"{line.bus_to} was not found in the graphics manager")
-                                return None
+                            if create_extra_nodes:
+                                # Each of the Branches will have the proportional impedance
+                                # Bus_from           Middle_bus            Bus_To
+                                # o----------------------o--------------------o
+                                #   >-------- x -------->|
+                                #   (x: distance measured in per unit (0~1)
+                                line = line_graphics.api_object
+                                bus_f_graphics_data = self.diagram.query_point(line.bus_from)
+                                bus_t_graphics_data = self.diagram.query_point(line.bus_to)
+                                bus_f_graphic_obj = self.graphics_manager.query(line.bus_from)
+                                bus_t_graphic_obj = self.graphics_manager.query(line.bus_to)
 
-                            # C(x, y) = (x1 + t * (x2 - x1), y1 + t * (y2 - y1))
-                            mid_x = bus_f_graphics_data.x + (bus_t_graphics_data.x - bus_f_graphics_data.x) * position
-                            mid_y = bus_f_graphics_data.y + (bus_t_graphics_data.y - bus_f_graphics_data.y) * position
+                                if bus_f_graphics_data is None:
+                                    error_msg(f"{line.bus_from} was not found in the diagram")
+                                    return None
+                                if bus_t_graphics_data is None:
+                                    error_msg(f"{line.bus_to} was not found in the diagram")
+                                    return None
+                                if bus_f_graphic_obj is None:
+                                    error_msg(f"{line.bus_from} was not found in the graphics manager")
+                                    return None
+                                if bus_t_graphic_obj is None:
+                                    error_msg(f"{line.bus_to} was not found in the graphics manager")
+                                    return None
 
-                            B1 = Bus(name=line.name + ' split bus 1',
-                                     vnom=line.bus_from.Vnom,
-                                     vmin=line.bus_from.Vmin,
-                                     vmax=line.bus_from.Vmax)
+                                # C(x, y) = (x1 + t * (x2 - x1), y1 + t * (y2 - y1))
+                                mid_x = bus_f_graphics_data.x + (
+                                            bus_t_graphics_data.x - bus_f_graphics_data.x) * position
+                                mid_y = bus_f_graphics_data.y + (
+                                            bus_t_graphics_data.y - bus_f_graphics_data.y) * position
 
-                            B2 = Bus(name=line.name + ' split bus 2',
-                                     vnom=line.bus_from.Vnom,
-                                     vmin=line.bus_from.Vmin,
-                                     vmax=line.bus_from.Vmax)
+                                B1 = Bus(name=line.name + ' split bus 1',
+                                         vnom=line.bus_from.Vnom,
+                                         vmin=line.bus_from.Vmin,
+                                         vmax=line.bus_from.Vmax,
+                                         area=line.bus_from.area,
+                                         zone=line.bus_from.zone,
+                                         country=line.bus_from.country)
 
-                            B3 = Bus(name=line.name + ' new bus',
-                                     vnom=line.bus_from.Vnom,
-                                     vmin=line.bus_from.Vmin,
-                                     vmax=line.bus_from.Vmax)
+                                B2 = Bus(name=line.name + ' split bus 2',
+                                         vnom=line.bus_from.Vnom,
+                                         vmin=line.bus_from.Vmin,
+                                         vmax=line.bus_from.Vmax,
+                                         area=line.bus_from.area,
+                                         zone=line.bus_from.zone,
+                                         country=line.bus_from.country)
 
-                            # create first split
-                            br1 = Line(name=line.name + ' split 1',
-                                       bus_from=line.bus_from,
-                                       bus_to=B1,
-                                       r=line.R * position,
-                                       x=line.X * position,
-                                       b=line.B * position,
-                                       r0=line.R0 * position,
-                                       x0=line.X0 * position,
-                                       b0=line.B0 * position,
-                                       r2=line.R2 * position,
-                                       x2=line.X2 * position,
-                                       b2=line.B2 * position,
-                                       length=line.length * position,
-                                       rate=line.rate,
-                                       contingency_factor=line.contingency_factor,
-                                       protection_rating_factor=line.protection_rating_factor)
+                                mid_sub = Substation(name=line.name + ' new bus',
+                                                     area=line.bus_from.area,
+                                                     zone=line.bus_from.zone,
+                                                     country=line.bus_from.country)
+                                mid_vl = VoltageLevel(name=line.name + ' new bus',
+                                                      substation=mid_sub)
+                                B3 = Bus(name=line.name + ' new bus',
+                                         vnom=line.bus_from.Vnom,
+                                         vmin=line.bus_from.Vmin,
+                                         vmax=line.bus_from.Vmax,
+                                         voltage_level=mid_vl,
+                                         substation=mid_sub,
+                                         area=line.bus_from.area,
+                                         zone=line.bus_from.zone,
+                                         country=line.bus_from.country)
 
-                            position_c = 1.0 - position
-                            br2 = Line(name=line.name + ' split 2',
-                                       bus_from=B2,
-                                       bus_to=line.bus_to,
-                                       r=line.R * position_c,
-                                       x=line.X * position_c,
-                                       b=line.B * position_c,
-                                       r0=line.R0 * position_c,
-                                       x0=line.X0 * position_c,
-                                       b0=line.B0 * position_c,
-                                       r2=line.R2 * position_c,
-                                       x2=line.X2 * position_c,
-                                       b2=line.B2 * position_c,
-                                       length=line.length * position_c,
-                                       rate=line.rate,
-                                       contingency_factor=line.contingency_factor,
-                                       protection_rating_factor=line.protection_rating_factor)
+                                # create first split
+                                br1 = Line(name=line.name + ' split 1',
+                                           bus_from=line.bus_from,
+                                           bus_to=B1,
+                                           r=line.R * position,
+                                           x=line.X * position,
+                                           b=line.B * position,
+                                           r0=line.R0 * position,
+                                           x0=line.X0 * position,
+                                           b0=line.B0 * position,
+                                           r2=line.R2 * position,
+                                           x2=line.X2 * position,
+                                           b2=line.B2 * position,
+                                           length=line.length * position,
+                                           rate=line.rate,
+                                           contingency_factor=line.contingency_factor,
+                                           protection_rating_factor=line.protection_rating_factor)
 
-                            # kilometers of the in/out appart from the original line
-                            km_io = dlg2.value
-                            proportion_io = km_io / line.length
+                                position_c = 1.0 - position
+                                br2 = Line(name=line.name + ' split 2',
+                                           bus_from=B2,
+                                           bus_to=line.bus_to,
+                                           r=line.R * position_c,
+                                           x=line.X * position_c,
+                                           b=line.B * position_c,
+                                           r0=line.R0 * position_c,
+                                           x0=line.X0 * position_c,
+                                           b0=line.B0 * position_c,
+                                           r2=line.R2 * position_c,
+                                           x2=line.X2 * position_c,
+                                           b2=line.B2 * position_c,
+                                           length=line.length * position_c,
+                                           rate=line.rate,
+                                           contingency_factor=line.contingency_factor,
+                                           protection_rating_factor=line.protection_rating_factor)
 
-                            br3 = Line(name=line.name + ' in',
-                                       bus_from=B1,
-                                       bus_to=B3,
-                                       r=line.R * proportion_io,
-                                       x=line.X * proportion_io,
-                                       b=line.B * proportion_io,
-                                       r0=line.R0 * proportion_io,
-                                       x0=line.X0 * proportion_io,
-                                       b0=line.B0 * proportion_io,
-                                       r2=line.R2 * proportion_io,
-                                       x2=line.X2 * proportion_io,
-                                       b2=line.B2 * proportion_io,
-                                       length=line.length * proportion_io,
-                                       rate=line.rate,
-                                       contingency_factor=line.contingency_factor,
-                                       protection_rating_factor=line.protection_rating_factor)
+                                # kilometers of the in/out appart from the original line
+                                km_io = dlg2.value
+                                proportion_io = km_io / line.length
 
-                            br4 = Line(name=line.name + ' out',
-                                       bus_from=B3,
-                                       bus_to=B2,
-                                       r=line.R * proportion_io,
-                                       x=line.X * proportion_io,
-                                       b=line.B * proportion_io,
-                                       r0=line.R0 * proportion_io,
-                                       x0=line.X0 * proportion_io,
-                                       b0=line.B0 * proportion_io,
-                                       r2=line.R2 * proportion_io,
-                                       x2=line.X2 * proportion_io,
-                                       b2=line.B2 * proportion_io,
-                                       length=line.length * proportion_io,
-                                       rate=line.rate,
-                                       contingency_factor=line.contingency_factor,
-                                       protection_rating_factor=line.protection_rating_factor)
+                                br3 = Line(name=line.name + ' in',
+                                           bus_from=B1,
+                                           bus_to=B3,
+                                           r=line.R * proportion_io,
+                                           x=line.X * proportion_io,
+                                           b=line.B * proportion_io,
+                                           r0=line.R0 * proportion_io,
+                                           x0=line.X0 * proportion_io,
+                                           b0=line.B0 * proportion_io,
+                                           r2=line.R2 * proportion_io,
+                                           x2=line.X2 * proportion_io,
+                                           b2=line.B2 * proportion_io,
+                                           length=line.length * proportion_io,
+                                           rate=line.rate,
+                                           contingency_factor=line.contingency_factor,
+                                           protection_rating_factor=line.protection_rating_factor)
 
-                            # deactivate the original line
-                            line_graphics.api_object.active = False
-                            line_graphics.api_object.active_prof.fill(False)
-                            line_graphics.set_enable(False)
+                                br4 = Line(name=line.name + ' out',
+                                           bus_from=B3,
+                                           bus_to=B2,
+                                           r=line.R * proportion_io,
+                                           x=line.X * proportion_io,
+                                           b=line.B * proportion_io,
+                                           r0=line.R0 * proportion_io,
+                                           x0=line.X0 * proportion_io,
+                                           b0=line.B0 * proportion_io,
+                                           r2=line.R2 * proportion_io,
+                                           x2=line.X2 * proportion_io,
+                                           b2=line.B2 * proportion_io,
+                                           length=line.length * proportion_io,
+                                           rate=line.rate,
+                                           contingency_factor=line.contingency_factor,
+                                           protection_rating_factor=line.protection_rating_factor)
 
-                            # add to gridcal the new 2 lines and the bus
-                            self.circuit.add_bus(B1)
-                            self.circuit.add_bus(B2)
-                            self.circuit.add_bus(B3)
-                            self.circuit.add_line(br1)
-                            self.circuit.add_line(br2)
-                            self.circuit.add_line(br3)
-                            self.circuit.add_line(br4)
+                                # deactivate the original line
+                                line_graphics.api_object.active = False
+                                line_graphics.api_object.active_prof.fill(False)
+                                line_graphics.set_enable(False)
 
-                            # add new stuff as new investment
-                            inv_group = InvestmentsGroup(name=line.name + ' in/out', category='Line in/out')
-                            self.circuit.add_investments_group(inv_group)
-                            self.circuit.add_investment(
-                                Investment(name=B1.name, device_idtag=B1.idtag, group=inv_group))
-                            self.circuit.add_investment(
-                                Investment(name=B2.name, device_idtag=B2.idtag, group=inv_group))
-                            self.circuit.add_investment(
-                                Investment(name=B3.name, device_idtag=B3.idtag, group=inv_group))
-                            self.circuit.add_investment(
-                                Investment(name=br1.name, device_idtag=br1.idtag, group=inv_group))
-                            self.circuit.add_investment(
-                                Investment(name=br2.name, device_idtag=br2.idtag, group=inv_group))
-                            self.circuit.add_investment(
-                                Investment(name=br3.name, device_idtag=br3.idtag, group=inv_group))
-                            self.circuit.add_investment(
-                                Investment(name=br4.name, device_idtag=br4.idtag, group=inv_group))
+                                # add to gridcal the new 2 lines and the bus
+                                self.circuit.add_bus(B1)
+                                self.circuit.add_bus(B2)
+                                self.circuit.add_bus(B3)
+                                self.circuit.add_line(br1)
+                                self.circuit.add_line(br2)
+                                self.circuit.add_line(br3)
+                                self.circuit.add_line(br4)
 
-                            # add to the schematic the new 2 lines and the bus
-                            B1_graphics = self.add_api_bus(bus=B1,
-                                                           injections_by_tpe=dict(),
-                                                           x0=mid_x,
-                                                           y0=mid_y)
+                                # add new stuff as new investment
+                                inv_group = InvestmentsGroup(name=line.name + ' in/out', category='Line in/out')
+                                self.circuit.add_investments_group(inv_group)
+                                self.circuit.add_investment(
+                                    Investment(name=B1.name, device_idtag=B1.idtag, group=inv_group))
+                                self.circuit.add_investment(
+                                    Investment(name=B2.name, device_idtag=B2.idtag, group=inv_group))
+                                self.circuit.add_investment(
+                                    Investment(name=B3.name, device_idtag=B3.idtag, group=inv_group))
+                                self.circuit.add_investment(
+                                    Investment(name=br1.name, device_idtag=br1.idtag, group=inv_group))
+                                self.circuit.add_investment(
+                                    Investment(name=br2.name, device_idtag=br2.idtag, group=inv_group))
+                                self.circuit.add_investment(
+                                    Investment(name=br3.name, device_idtag=br3.idtag, group=inv_group))
+                                self.circuit.add_investment(
+                                    Investment(name=br4.name, device_idtag=br4.idtag, group=inv_group))
 
-                            B2_graphics = self.add_api_bus(bus=B2,
-                                                           injections_by_tpe=dict(),
-                                                           x0=mid_x,
-                                                           y0=mid_y)
+                                # add to the schematic the new 2 lines and the bus
+                                B1_graphics = self.add_api_bus(bus=B1,
+                                                               injections_by_tpe=dict(),
+                                                               x0=mid_x,
+                                                               y0=mid_y)
 
-                            B3_graphics = self.add_api_bus(bus=B3,
-                                                           injections_by_tpe=dict(),
-                                                           x0=mid_x,
-                                                           y0=mid_y)
+                                B2_graphics = self.add_api_bus(bus=B2,
+                                                               injections_by_tpe=dict(),
+                                                               x0=mid_x,
+                                                               y0=mid_y)
 
-                            br1_graphics = self.add_api_line(branch=br1,
-                                                             bus_f_graphic0=bus_f_graphic_obj,
-                                                             bus_t_graphic0=B1_graphics)
+                                B3_graphics = self.add_api_bus(bus=B3,
+                                                               injections_by_tpe=dict(),
+                                                               x0=mid_x,
+                                                               y0=mid_y)
 
-                            br2_graphics = self.add_api_line(branch=br2,
-                                                             bus_f_graphic0=B2_graphics,
-                                                             bus_t_graphic0=bus_t_graphic_obj)
+                                br1_graphics = self.add_api_line(branch=br1,
+                                                                 bus_f_graphic0=bus_f_graphic_obj,
+                                                                 bus_t_graphic0=B1_graphics)
 
-                            br3_graphics = self.add_api_line(branch=br3,
-                                                             bus_f_graphic0=B1_graphics,
-                                                             bus_t_graphic0=B3_graphics)
+                                br2_graphics = self.add_api_line(branch=br2,
+                                                                 bus_f_graphic0=B2_graphics,
+                                                                 bus_t_graphic0=bus_t_graphic_obj)
 
-                            br4_graphics = self.add_api_line(branch=br4,
-                                                             bus_f_graphic0=B3_graphics,
-                                                             bus_t_graphic0=B2_graphics)
+                                br3_graphics = self.add_api_line(branch=br3,
+                                                                 bus_f_graphic0=B1_graphics,
+                                                                 bus_t_graphic0=B3_graphics)
 
-                            self.add_to_scene(B1_graphics)
-                            self.add_to_scene(B2_graphics)
-                            self.add_to_scene(B3_graphics)
-                            self.add_to_scene(br1_graphics)
-                            self.add_to_scene(br2_graphics)
-                            self.add_to_scene(br3_graphics)
-                            self.add_to_scene(br4_graphics)
+                                br4_graphics = self.add_api_line(branch=br4,
+                                                                 bus_f_graphic0=B3_graphics,
+                                                                 bus_t_graphic0=B2_graphics)
 
-                            # redraw
-                            bus_f_graphic_obj.arrange_children()
-                            bus_t_graphic_obj.arrange_children()
-                            B1_graphics.arrange_children()
-                            B2_graphics.arrange_children()
-                            B3_graphics.arrange_children()
+                                self.add_to_scene(B1_graphics)
+                                self.add_to_scene(B2_graphics)
+                                self.add_to_scene(B3_graphics)
+                                self.add_to_scene(br1_graphics)
+                                self.add_to_scene(br2_graphics)
+                                self.add_to_scene(br3_graphics)
+                                self.add_to_scene(br4_graphics)
+
+                                # redraw
+                                bus_f_graphic_obj.arrange_children()
+                                bus_t_graphic_obj.arrange_children()
+                                B1_graphics.arrange_children()
+                                B2_graphics.arrange_children()
+                                B3_graphics.arrange_children()
+                            else:
+                                self.split_line_now(line_graphics=line_graphics,
+                                                    position=position,
+                                                    extra_km=dlg2.value)
+                        else:
+                            pass
                 else:
                     error_msg("Incorrect position", 'Line split')
 
