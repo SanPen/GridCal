@@ -27,6 +27,7 @@ import GridCal.Gui.GuiFunctions as gf
 import GridCalEngine.Utils.Filtering as flt
 from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
+from GridCalEngine.Topology.detect_substations import detect_substations
 from GridCal.Gui.Analysis.object_plot_analysis import object_histogram_analysis
 from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_msg
 from GridCal.Gui.Main.SubClasses.Model.diagrams import DiagramsMain
@@ -68,6 +69,7 @@ class ObjectsTableMain(DiagramsMain):
         self.ui.actionDelete_inconsistencies.triggered.connect(self.delete_inconsistencies)
         self.ui.actionClean_database.triggered.connect(self.clean_database)
         self.ui.actionScale.triggered.connect(self.scale)
+        self.ui.actionDetect_substations.triggered.connect(self.detect_substations)
 
         # tree click
         self.ui.dataStructuresTreeView.clicked.connect(self.view_objects_data)
@@ -1030,6 +1032,17 @@ class ObjectsTableMain(DiagramsMain):
         """
         system_scaler_window = SystemScaler(grid=self.circuit, parent=self)
         system_scaler_window.exec()
+
+    def detect_substations(self):
+        """
+        Call the detect substations logc
+        """
+
+        ok = yes_no_question("Do you want to try to detect substations and voltage levels in the grid model?",
+                             "Detect substations")
+
+        if ok:
+            detect_substations(grid=self.circuit)
 
     def show_objects_context_menu(self, pos: QtCore.QPoint):
         """

@@ -8338,6 +8338,7 @@ QProgressBar::chunk{
     <addaction name="actionDetect_transformers"/>
     <addaction name="actionEdit_simulation_time_limits"/>
     <addaction name="actionProcess_topology"/>
+    <addaction name="actionDetect_substations"/>
     <addaction name="actionFuse_devices"/>
     <addaction name="actionre_index_time"/>
     <addaction name="actionScale"/>
@@ -9474,6 +9475,15 @@ QProgressBar::chunk{
    </property>
    <property name="text">
     <string>Enable all results tags</string>
+   </property>
+  </action>
+  <action name="actionDetect_substations">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/chip.svg</normaloff>:/Icons/icons/chip.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Detect substations</string>
    </property>
   </action>
  </widget>
