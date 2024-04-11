@@ -48,7 +48,6 @@ class TimeEventsMain(ObjectsTableMain):
         # Buttons
         self.ui.new_profiles_structure_pushButton.clicked.connect(self.new_profiles_structure)
         self.ui.delete_profiles_structure_pushButton.clicked.connect(self.delete_profiles_structure)
-        # self.ui.set_profile_state_button.clicked.connect(self.set_profiles_state_to_grid)
         self.ui.edit_profiles_pushButton.clicked.connect(self.import_profiles)
         self.ui.edit_profiles_from_models_pushButton.clicked.connect(self.import_profiles_from_models)
         self.ui.set_profile_state_button.clicked.connect(self.set_profile_state_to_snapshot)
@@ -461,6 +460,13 @@ class TimeEventsMain(ObjectsTableMain):
                         "that you prefer.\n\n"
                         "Use the 'Create profiles button'.")
 
+    def get_circuit_snapshot_datetime(self):
+        """
+        Set the datetime from the circuit
+        """
+        val = self.circuit.snapshot_time
+        self.ui.snapshot_dateTimeEdit.setDateTime(val)
+
     def set_profile_state_to_snapshot(self):
         """
         Set the selected profiles state in the grid
@@ -469,6 +475,7 @@ class TimeEventsMain(ObjectsTableMain):
 
         if idx > -1:
             self.circuit.set_state(t=idx)
+            self.get_circuit_snapshot_datetime()
         else:
             info_msg('Select a time series step to copy to the snapshot', 'Set snapshot')
 

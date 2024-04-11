@@ -1,26 +1,35 @@
 import math
-
+from GridCal.Gui.Diagrams.MapWidget.Schema.Line import Line
 from GridCal.Gui.Diagrams.MapWidget.Schema.Nodes import NodeGraphicItem
 from GridCal.Gui.Diagrams.MapWidget.Schema.Connector import Connector
+from GridCal.Gui.Diagrams.MapWidget.Schema.Substations import SubstationGraphicItem
 from GridCalEngine.Devices import MultiCircuit
 
 
 class schemaManager:
-    def __init__(self, scene):
+    def __init__(self, scene, devX, devY):
         self.disableMove = False
         self.Scene = scene
-        self.Nodes = list()
-        self.ConnectorList = []
-        self.CreateDummySchema()
-    def UpdateConnectors(self):
-        print("Updating connectors")
-        for conector in self.ConnectorList:
-            conector.update()
+        self.Lines = list()
+        self.Substations = list()
+        # self.CreateDummySchema()
+        self.devX = devX
+        self.devY = devY
+        self.CurrentLine = None
 
-    def createSchema(self, circuit: MultiCircuit):
-        for line in circuit.dc_lines:
-            fromBus = line.bus_from
-            toBus = line.bus_to
+    def CreateLine(self):
+        newLine = Line(self)
+        self.Lines.append(newLine)
+        self.CurrentLine = newLine
+
+    def UpdateConnectors(self):
+        for line in self.Lines:
+            for conector in line.ConnectorList:
+                conector.update()
+
+    def CreateSubstation(self, lat, long):
+        node = SubstationGraphicItem(self,0.5, lat * self.devX, long * self.devY)
+        self.Substations.append(node)
 
     def CreateDummySchema(self):
         # Define the parameters for the array formation
@@ -29,17 +38,21 @@ class schemaManager:
         start_y = -2800  # Y-coordinate of the starting point
         spacing_x = 2.5  # Horizontal spacing between points
         spacing_y = 2.5  # Vertical spacing between points
+        self.devX = 1
+        self.devY = 1
+        count = 0
         # Create nodes in an array formation
         for i in range(num_points):
+            self.CreateLine()
             for j in range(num_points):
                 x = start_x + i * spacing_x
                 y = start_y + j * spacing_y
-                node = NodeGraphicItem(self, 0.5, x,
-                                       y)  # Assuming NodeGraphicItem takes (scene, type, x, y) as arguments
-                self.Nodes.append(node)
+                count = count + 1
+                self.CurrentLine.CreateNode(x, y)
+                if count > 10:
+                    self.CreateSubstation(x, y)
+                    count = 0
 
             # Create connectors between nodes
             for j in range(1, num_points):
-                con = Connector(self, self.Nodes[(i * num_points) + j - 1],
-                                self.Nodes[(i * num_points) + j])  # Assuming Connector takes (scene, node1, node2) as arguments
-                self.ConnectorList.append(con)
+                self.CurrentLine.CreateConnector((i * num_points) + j - 1, (i * num_points) + j)
