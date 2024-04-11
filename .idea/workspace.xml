@@ -29,11 +29,11 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Added substation and voltage level detection">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="passed r_x_threshold to detect_substations">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.ui" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.ui" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/objects.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/objects.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/__version__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/__version__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/__version__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/__version__.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -156,7 +156,7 @@
     &quot;Python tests.Nosetests in test_topology_processor.py.executor&quot;: &quot;Run&quot;,
     &quot;Python tests.Nosetests in tests.executor&quot;: &quot;Run&quot;,
     &quot;Python.AnalysisDialogue.executor&quot;: &quot;Run&quot;,
-    &quot;Python.ExecuteGridCal.executor&quot;: &quot;Debug&quot;,
+    &quot;Python.ExecuteGridCal.executor&quot;: &quot;Profiler&quot;,
     &quot;Python.ac_opf_derivatives_bound_slacks.executor&quot;: &quot;Debug&quot;,
     &quot;Python.acopf_run.executor&quot;: &quot;Run&quot;,
     &quot;Python.case10.executor&quot;: &quot;Run&quot;,
@@ -1391,6 +1391,7 @@
       <workItem from="1712766305511" duration="1238000" />
       <workItem from="1712778933042" duration="1196000" />
       <workItem from="1712820459786" duration="8315000" />
+      <workItem from="1712838564147" duration="1748000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1735,7 +1736,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="583" />
+    <option name="localTasksCounter" value="584" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1781,7 +1782,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="More graphics improvements" />
     <MESSAGE value="Added modelling authority, still unsure how to use it" />
     <MESSAGE value="Improved connections display" />
     <MESSAGE value="Commented out debugging scene position label" />
@@ -1806,7 +1806,8 @@
     <MESSAGE value="Removed phantom code" />
     <MESSAGE value="GUI reconfiguration&#10;Added snapshot_time" />
     <MESSAGE value="Added substation and voltage level detection" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added substation and voltage level detection" />
+    <MESSAGE value="passed r_x_threshold to detect_substations" />
+    <option name="LAST_COMMIT_MESSAGE" value="passed r_x_threshold to detect_substations" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
