@@ -50,7 +50,14 @@ pip install GridCal
 You may need to use `pip3` if you are under Linux or MacOS, both of which 
 come with Python pre-installed already.
 
+### Install into an environment
 
+```bash
+python3 -m venv gc5venv
+source gc5venv/bin/activate
+pip install GridCal
+gridcal
+```
 
 ### Run the graphical user interface
 
