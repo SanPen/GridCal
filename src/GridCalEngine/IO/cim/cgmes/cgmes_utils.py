@@ -290,12 +290,16 @@ def get_voltage_shunt(shunt: LinearShuntCompensator, logger: DataLogger):
             return None
 
 
-def get_values_shunt(shunt: LinearShuntCompensator, logger: DataLogger, Sbase: float = 100.0):
+def get_values_shunt(shunt: LinearShuntCompensator,
+                     logger: DataLogger,
+                     Sbase: float = 100.0):
     """
     Get the per-unit values of the Shunt (per Section)
 
+    :param shunt: CGMES Linear shunt compensator
+    :param logger: Datalogger
     :param Sbase: Sbase in MVA
-    :return: G, B
+    :return: G, B, G0, B0
     """
     if shunt.BaseVoltage is not None:
         Vnom = get_voltage_shunt(shunt, logger=logger)

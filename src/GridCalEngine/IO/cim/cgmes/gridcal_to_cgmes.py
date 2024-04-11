@@ -3,6 +3,7 @@ from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.IO.cim.cgmes.base import get_new_rdfid, form_rdfid
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.full_model import FullModel
+from GridCalEngine.IO.cim.cgmes.base import Base
 import GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices as cgmes
 import GridCalEngine.Devices as gcdev
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices import GeneratingUnit, \
@@ -18,6 +19,21 @@ from typing import Dict, List, Tuple, Union
 
 
 # region UTILS
+
+class ReferenceManager:
+    # use it after an element object added
+    def __init__(self):
+        self.data = dict()
+
+    def add(self, cgmes_obj: Base):
+
+        tpe_dict = self.data.get(cgmes_obj.tpe, None)
+        if tpe_dict is None:
+            self.data[cgmes_obj.tpe] = {cgmes_obj.rdfid: cgmes_obj}
+        else:
+            tpe_dict[cgmes_obj.rdfid] = cgmes_obj
+
+
 # def find_terms_connections():
 #     pass   # TODO
 
@@ -179,6 +195,7 @@ def create_cgmes_terminal(bus: Bus,
         object_list=cgmes_model.TopologicalNode_list,
         target_uuid=bus.idtag
     )
+
     if isinstance(tn, cgmes.TopologicalNode):
         term.TopologicalNode = tn
     else:
@@ -266,7 +283,9 @@ def create_cgmes_regulating_control(
     """
     new_rdf_id = get_new_rdfid()
     rc = cgmes.RegulatingControl(rdfid=new_rdf_id)
+
     rc.name = f'_RC_{gen.name}'
+    rc.RegulatingCondEq = gen
     # rc.mode: RegulatingControlModeKind
     # rc.Terminal
     # rc.discrete
@@ -745,6 +764,39 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
         cgmes_model.add(cm_transformer)
 
 
+
+def get_cgmes_linear_shunts(multicircuit_model: MultiCircuit,
+                            cgmes_model: CgmesCircuit,
+                            logger: DataLogger):
+    """
+    Converts Multi Circuit shunts
+    into CGMES Linear shunt compensator
+
+    :param multicircuit_model:
+    :param cgmes_model:
+    :param logger:
+    :return:
+    """
+
+    for mc_elm in multicircuit_model.shunts:
+
+        lsc = cgmes.LinearShuntCompensator(rdfid=form_rdfid(mc_elm.idtag))
+        lsc.name = mc_elm.name
+        lsc.description = mc_elm.code
+        # lsc.EquipmentContainer: VoltageLevel .. like at tn_nodes line 284
+        lsc.RegulatingControl = False
+        lsc.controlEnabled = False
+        lsc.maximumSections = 1
+        # lsc.nomU = lsc.EquipmentContainer.BaseVoltage.nominalVoltage
+        # lsc.bPerSection = mc_elm.B / (lsc.nomU ** 2)
+        # lsc.gPerSection = mc_elm.G / (lsc.nomU ** 2)
+        # lsc.sections = ?
+        # lsc.normalSections = ?
+
+        lsc.Terminals = create_cgmes_terminal(mc_elm.bus, cgmes_model, logger)
+
+        cgmes_model.LinearShuntCompensator_list.append(lsc)
+
 # endregion
 
 
@@ -776,6 +828,8 @@ def gridcal_to_cgmes(gc_model: MultiCircuit, cgmes_model: CgmesCircuit, logger: 
     get_cgmes_ac_line_segments(gc_model, cgmes_model, logger)
     # transformers, windings
     get_cgmes_power_transformers(gc_model, cgmes_model, logger)
+
     # shunts
+    get_cgmes_linear_shunts(gc_model, cgmes_model, logger)
 
     return cgmes_model
