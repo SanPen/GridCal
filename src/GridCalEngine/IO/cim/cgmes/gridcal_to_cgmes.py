@@ -3,6 +3,7 @@ from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.IO.cim.cgmes.base import get_new_rdfid, form_rdfid
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.full_model import FullModel
+from GridCalEngine.IO.cim.cgmes.base import Base
 import GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices as cgmes
 import GridCalEngine.Devices as gcdev
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices import GeneratingUnit, \
@@ -24,7 +25,7 @@ class ReferenceManager:
     def __init__(self):
         self.data = dict()
 
-    def add(self, cgmes_obj: cgmes.Base):
+    def add(self, cgmes_obj: Base):
 
         tpe_dict = self.data.get(cgmes_obj.tpe, None)
         if tpe_dict is None:
