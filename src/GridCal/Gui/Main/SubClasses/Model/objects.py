@@ -1042,7 +1042,9 @@ class ObjectsTableMain(DiagramsMain):
                              "Detect substations")
 
         if ok:
-            detect_substations(grid=self.circuit)
+            val = 1.0 / (10.0**self.ui.rxThresholdSpinBox.value())
+            detect_substations(grid=self.circuit,
+                               r_x_threshold=val)
 
     def show_objects_context_menu(self, pos: QtCore.QPoint):
         """
