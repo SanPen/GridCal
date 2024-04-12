@@ -31,7 +31,7 @@ from PySide6.QtGui import (QIcon, QPixmap, QImage, QPainter, QStandardItemModel,
                            QContextMenuEvent)
 from PySide6.QtWidgets import (QGraphicsView, QListView, QTableView, QVBoxLayout, QHBoxLayout, QFrame,
                                QSplitter, QMessageBox, QAbstractItemView, QGraphicsScene, QGraphicsSceneMouseEvent,
-                               QGraphicsItem, QGraphicsTextItem, QMenu, QWidget)
+                               QGraphicsItem)
 from PySide6.QtSvg import QSvgGenerator
 
 from GridCalEngine.Devices.types import ALL_DEV_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES
@@ -84,7 +84,7 @@ from GridCal.Gui.Diagrams.DiagramEditorWidget.generic_graphics import ACTIVE
 from GridCal.Gui.GeneralDialogues import InputNumberDialogue
 import GridCal.Gui.Visualization.visualization as viz
 import GridCal.Gui.Visualization.palettes as palettes
-from GridCal.Gui.GuiFunctions import ObjectsModel, add_menu_entry
+from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCal.Gui.messages import info_msg, error_msg, warning_msg, yes_no_question
 from matplotlib import pyplot as plt
 
@@ -450,20 +450,20 @@ class CustomGraphicsView(QGraphicsView):
         # context_menu.exec(event.globalPos())
 
 
-def find_my_node(idtag_: str,
-                 bus_dict: Dict[str, BusGraphicItem],
-                 fluid_node_dict: Dict[str, FluidNodeGraphicItem]):
-    """
-    Function to look for the bus or fluid node
-    :param idtag_: bus or fluidnode idtag
-    :param bus_dict:
-    :param fluid_node_dict:
-    :return: Matching graphic object
-    """
-    graphic_obj = bus_dict.get(idtag_, None)
-    if graphic_obj is None:
-        graphic_obj = fluid_node_dict.get(idtag_, None)
-    return graphic_obj
+# def find_my_node(idtag_: str,
+#                  bus_dict: Dict[str, BusGraphicItem],
+#                  fluid_node_dict: Dict[str, FluidNodeGraphicItem]):
+#     """
+#     Function to look for the bus or fluid node
+#     :param idtag_: bus or fluidnode idtag
+#     :param bus_dict:
+#     :param fluid_node_dict:
+#     :return: Matching graphic object
+#     """
+#     graphic_obj = bus_dict.get(idtag_, None)
+#     if graphic_obj is None:
+#         graphic_obj = fluid_node_dict.get(idtag_, None)
+#     return graphic_obj
 
 
 class DiagramEditorWidget(QSplitter):
@@ -811,256 +811,320 @@ class DiagramEditorWidget(QSplitter):
         self.diagram = diagram
         self.draw()
 
-    def draw(self) -> None:
+    def draw_additional_diagram(self, diagram: SchematicDiagram) -> None:
         """
-        Draw diagram
-        :return:
+        Draw a new diagram
+        :param diagram: SchematicDiagram
         """
         inj_dev_by_bus = self.circuit.get_injection_devices_grouped_by_bus()
         inj_dev_by_fluid_node = self.circuit.get_injection_devices_grouped_by_fluid_node()
 
         # add buses first
-        bus_dict: Dict[str, BusGraphicItem] = dict()
-        fluid_node_dict: Dict[str, FluidNodeGraphicItem] = dict()
-        windings_dict: Dict[str, WindingGraphicItem] = dict()
-        for category, points_group in self.diagram.data.items():
+        # bus_dict: Dict[str, BusGraphicItem] = dict()
+        # fluid_node_dict: Dict[str, FluidNodeGraphicItem] = dict()
+        # windings_dict: Dict[str, WindingGraphicItem] = dict()
+        for category, points_group in diagram.data.items():
 
             if category == DeviceType.BusDevice.value:
 
                 for idtag, location in points_group.locations.items():
-                    # add the graphic object to the diagram view
-                    graphic_object = self.create_bus_graphics(bus=location.api_object,
-                                                              x=location.x,
-                                                              y=location.y,
-                                                              h=location.h,
-                                                              w=location.w)
-                    self.add_to_scene(graphic_object=graphic_object)
 
-                    # create the bus children
-                    graphic_object.create_children_widgets(
-                        injections_by_tpe=inj_dev_by_bus.get(location.api_object, dict())
-                    )
+                    # search for the api object, because it may be created already
+                    graphic_object = self.graphics_manager.query(elm=location.api_object)
 
-                    graphic_object.change_size(w=location.w)
+                    if graphic_object is None:
+                        # add the graphic object to the diagram view
+                        graphic_object = self.create_bus_graphics(bus=location.api_object,
+                                                                  x=location.x,
+                                                                  y=location.y,
+                                                                  h=location.h,
+                                                                  w=location.w)
+                        self.add_to_scene(graphic_object=graphic_object)
 
-                    # add buses reference for later
-                    bus_dict[idtag] = graphic_object
-                    self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
+                        # create the bus children
+                        graphic_object.create_children_widgets(
+                            injections_by_tpe=inj_dev_by_bus.get(location.api_object, dict())
+                        )
+
+                        graphic_object.change_size(w=location.w)
+
+                        # add buses reference for later
+                        # bus_dict[idtag] = graphic_object
+                        self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
 
             elif category == DeviceType.Transformer3WDevice.value:
 
                 for idtag, location in points_group.locations.items():
-                    elm: Transformer3W = location.api_object
 
-                    graphic_object = self.create_transformer_3w_graphics(elm=elm,
-                                                                         x=location.x,
-                                                                         y=location.y)
-                    self.add_to_scene(graphic_object=graphic_object)
+                    # search for the api object, because it may be created already
+                    graphic_object = self.graphics_manager.query(elm=location.api_object)
 
-                    bus_1_graphic = bus_dict[elm.bus1.idtag]
-                    bus_2_graphic = bus_dict[elm.bus2.idtag]
-                    bus_3_graphic = bus_dict[elm.bus3.idtag]
+                    if graphic_object is None:
+                        elm: Transformer3W = location.api_object
 
-                    conn1 = WindingGraphicItem(from_port=graphic_object.terminals[0],
-                                               to_port=bus_1_graphic.get_terminal(),
-                                               editor=self)
+                        graphic_object = self.create_transformer_3w_graphics(elm=elm,
+                                                                             x=location.x,
+                                                                             y=location.y)
+                        self.add_to_scene(graphic_object=graphic_object)
 
-                    graphic_object.set_connection(i=0, bus=elm.bus1, conn=conn1)
+                        bus_1_graphic = self.graphics_manager.query(elm.bus1)
+                        bus_2_graphic = self.graphics_manager.query(elm.bus2)
+                        bus_3_graphic = self.graphics_manager.query(elm.bus3)
 
-                    conn2 = WindingGraphicItem(from_port=graphic_object.terminals[1],
-                                               to_port=bus_2_graphic.get_terminal(),
-                                               editor=self)
-                    graphic_object.set_connection(i=1, bus=elm.bus2, conn=conn2)
+                        conn1 = WindingGraphicItem(from_port=graphic_object.terminals[0],
+                                                   to_port=bus_1_graphic.get_terminal(),
+                                                   editor=self)
 
-                    conn3 = WindingGraphicItem(from_port=graphic_object.terminals[2],
-                                               to_port=bus_3_graphic.get_terminal(),
-                                               editor=self)
-                    graphic_object.set_connection(i=2, bus=elm.bus3, conn=conn3)
+                        graphic_object.set_connection(i=0, bus=elm.bus1, conn=conn1)
 
-                    graphic_object.set_position(x=location.x, y=location.y)
-                    graphic_object.change_size(h=location.h, w=location.w)
+                        conn2 = WindingGraphicItem(from_port=graphic_object.terminals[1],
+                                                   to_port=bus_2_graphic.get_terminal(),
+                                                   editor=self)
+                        graphic_object.set_connection(i=1, bus=elm.bus2, conn=conn2)
 
-                    self.add_to_scene(graphic_object=conn1)
-                    self.add_to_scene(graphic_object=conn2)
-                    self.add_to_scene(graphic_object=conn3)
+                        conn3 = WindingGraphicItem(from_port=graphic_object.terminals[2],
+                                                   to_port=bus_3_graphic.get_terminal(),
+                                                   editor=self)
+                        graphic_object.set_connection(i=2, bus=elm.bus3, conn=conn3)
 
-                    graphic_object.update_conn()
-                    self.graphics_manager.add_device(elm=elm, graphic=graphic_object)
-                    self.graphics_manager.add_device(elm=elm.winding1, graphic=conn1)
-                    self.graphics_manager.add_device(elm=elm.winding2, graphic=conn2)
-                    self.graphics_manager.add_device(elm=elm.winding3, graphic=conn3)
+                        graphic_object.set_position(x=location.x, y=location.y)
+                        graphic_object.change_size(h=location.h, w=location.w)
 
-                    # register the windings for the branches pass
-                    windings_dict[elm.winding1.idtag] = conn1
-                    windings_dict[elm.winding2.idtag] = conn2
-                    windings_dict[elm.winding3.idtag] = conn3
+                        self.add_to_scene(graphic_object=conn1)
+                        self.add_to_scene(graphic_object=conn2)
+                        self.add_to_scene(graphic_object=conn3)
+
+                        graphic_object.update_conn()
+                        self.graphics_manager.add_device(elm=elm, graphic=graphic_object)
+                        self.graphics_manager.add_device(elm=elm.winding1, graphic=conn1)
+                        self.graphics_manager.add_device(elm=elm.winding2, graphic=conn2)
+                        self.graphics_manager.add_device(elm=elm.winding3, graphic=conn3)
+
+                        # register the windings for the branches pass
+                        # windings_dict[elm.winding1.idtag] = conn1
+                        # windings_dict[elm.winding2.idtag] = conn2
+                        # windings_dict[elm.winding3.idtag] = conn3
 
             if category == DeviceType.FluidNodeDevice.value:
 
                 for idtag, location in points_group.locations.items():
-                    # add the graphic object to the diagram view
-                    graphic_object = self.create_fluid_node_graphics(node=location.api_object,
-                                                                     x=location.x,
-                                                                     y=location.y,
-                                                                     h=location.h,
-                                                                     w=location.w)
-                    self.add_to_scene(graphic_object=graphic_object)
 
-                    # create the bus children
-                    graphic_object.create_children_widgets(
-                        injections_by_tpe=inj_dev_by_fluid_node.get(location.api_object, dict()))
+                    # search for the api object, because it may be created already
+                    graphic_object = self.graphics_manager.query(elm=location.api_object)
 
-                    graphic_object.change_size(h=location.h,
-                                               w=location.w)
+                    if graphic_object is None:
 
-                    # add fluid node reference for later
-                    fluid_node_dict[idtag] = graphic_object
-                    self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
+                        # add the graphic object to the diagram view
+                        graphic_object = self.create_fluid_node_graphics(node=location.api_object,
+                                                                         x=location.x,
+                                                                         y=location.y,
+                                                                         h=location.h,
+                                                                         w=location.w)
+                        self.add_to_scene(graphic_object=graphic_object)
 
-                    # map the internal bus
-                    # if location.api_object.bus is not None:
-                    #     bus_dict[location.api_object.bus.idtag] = graphic_object
+                        # create the bus children
+                        graphic_object.create_children_widgets(
+                            injections_by_tpe=inj_dev_by_fluid_node.get(location.api_object, dict()))
+
+                        graphic_object.change_size(h=location.h,
+                                                   w=location.w)
+
+                        # add fluid node reference for later
+                        # fluid_node_dict[idtag] = graphic_object
+                        self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
+
+                        # map the internal bus
+                        # if location.api_object.bus is not None:
+                        #     bus_dict[location.api_object.bus.idtag] = graphic_object
 
             else:
                 # pass for now...
                 pass
 
         # add the rest of the branches
-        for category, points_group in self.diagram.data.items():
+        for category, points_group in diagram.data.items():
 
             if category == DeviceType.LineDevice.value:
 
                 for idtag, location in points_group.locations.items():
-                    branch: Line = location.api_object
-                    if branch.bus_from is not None and branch.bus_to is not None:
-                        bus_f_graphic_obj = find_my_node(branch.bus_from.idtag, bus_dict, fluid_node_dict)
-                        bus_t_graphic_obj = find_my_node(branch.bus_to.idtag, bus_dict, fluid_node_dict)
 
-                        if bus_f_graphic_obj and bus_t_graphic_obj:
-                            graphic_object = LineGraphicItem(from_port=bus_f_graphic_obj.get_terminal(),
-                                                             to_port=bus_t_graphic_obj.get_terminal(),
-                                                             editor=self,
-                                                             api_object=branch)
-                            self.add_to_scene(graphic_object=graphic_object)
+                    # search for the api object, because it may be created already
+                    graphic_object = self.graphics_manager.query(elm=location.api_object)
 
-                            graphic_object.redraw()
-                            self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
+                    if graphic_object is None:
+
+                        branch: Line = location.api_object
+                        if branch.bus_from is not None and branch.bus_to is not None:
+                            bus_f_graphic_obj = self.graphics_manager.query(branch.bus_from)
+                            bus_t_graphic_obj = self.graphics_manager.query(branch.bus_to)
+
+                            if bus_f_graphic_obj and bus_t_graphic_obj:
+                                graphic_object = LineGraphicItem(from_port=bus_f_graphic_obj.get_terminal(),
+                                                                 to_port=bus_t_graphic_obj.get_terminal(),
+                                                                 editor=self,
+                                                                 api_object=branch)
+                                self.add_to_scene(graphic_object=graphic_object)
+
+                                graphic_object.redraw()
+                                self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
 
             elif category == DeviceType.DCLineDevice.value:
 
                 for idtag, location in points_group.locations.items():
-                    branch: DcLine = location.api_object
-                    if branch.bus_from is not None and branch.bus_to is not None:
-                        bus_f_graphic_obj = find_my_node(branch.bus_from.idtag, bus_dict, fluid_node_dict)
-                        bus_t_graphic_obj = find_my_node(branch.bus_to.idtag, bus_dict, fluid_node_dict)
 
-                        if bus_f_graphic_obj and bus_t_graphic_obj:
-                            graphic_object = DcLineGraphicItem(from_port=bus_f_graphic_obj.get_terminal(),
-                                                               to_port=bus_t_graphic_obj.get_terminal(),
-                                                               editor=self,
-                                                               api_object=branch)
-                            self.add_to_scene(graphic_object=graphic_object)
+                    # search for the api object, because it may be created already
+                    graphic_object = self.graphics_manager.query(elm=location.api_object)
 
-                            graphic_object.redraw()
-                            self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
+                    if graphic_object is None:
+
+                        branch: DcLine = location.api_object
+                        if branch.bus_from is not None and branch.bus_to is not None:
+                            bus_f_graphic_obj = self.graphics_manager.query(branch.bus_from)
+                            bus_t_graphic_obj = self.graphics_manager.query(branch.bus_to)
+
+                            if bus_f_graphic_obj and bus_t_graphic_obj:
+                                graphic_object = DcLineGraphicItem(from_port=bus_f_graphic_obj.get_terminal(),
+                                                                   to_port=bus_t_graphic_obj.get_terminal(),
+                                                                   editor=self,
+                                                                   api_object=branch)
+                                self.add_to_scene(graphic_object=graphic_object)
+
+                                graphic_object.redraw()
+                                self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
 
             elif category == DeviceType.HVDCLineDevice.value:
 
                 for idtag, location in points_group.locations.items():
-                    branch: HvdcLine = location.api_object
-                    if branch.bus_from is not None and branch.bus_to is not None:
-                        bus_f_graphic_obj = find_my_node(branch.bus_from.idtag, bus_dict, fluid_node_dict)
-                        bus_t_graphic_obj = find_my_node(branch.bus_to.idtag, bus_dict, fluid_node_dict)
 
-                        if bus_f_graphic_obj and bus_t_graphic_obj:
-                            graphic_object = HvdcGraphicItem(from_port=bus_f_graphic_obj.get_terminal(),
-                                                             to_port=bus_t_graphic_obj.get_terminal(),
-                                                             editor=self,
-                                                             api_object=branch)
-                            self.add_to_scene(graphic_object=graphic_object)
+                    # search for the api object, because it may be created already
+                    graphic_object = self.graphics_manager.query(elm=location.api_object)
 
-                            graphic_object.redraw()
-                            self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
+                    if graphic_object is None:
+
+                        branch: HvdcLine = location.api_object
+                        if branch.bus_from is not None and branch.bus_to is not None:
+                            bus_f_graphic_obj = self.graphics_manager.query(branch.bus_from)
+                            bus_t_graphic_obj = self.graphics_manager.query(branch.bus_to)
+
+                            if bus_f_graphic_obj and bus_t_graphic_obj:
+                                graphic_object = HvdcGraphicItem(from_port=bus_f_graphic_obj.get_terminal(),
+                                                                 to_port=bus_t_graphic_obj.get_terminal(),
+                                                                 editor=self,
+                                                                 api_object=branch)
+                                self.add_to_scene(graphic_object=graphic_object)
+
+                                graphic_object.redraw()
+                                self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
 
             elif category == DeviceType.VscDevice.value:
 
                 for idtag, location in points_group.locations.items():
-                    branch: VSC = location.api_object
-                    if branch.bus_from is not None and branch.bus_to is not None:
-                        bus_f_graphic_obj = find_my_node(branch.bus_from.idtag, bus_dict, fluid_node_dict)
-                        bus_t_graphic_obj = find_my_node(branch.bus_to.idtag, bus_dict, fluid_node_dict)
 
-                        if bus_f_graphic_obj and bus_t_graphic_obj:
-                            graphic_object = VscGraphicItem(from_port=bus_f_graphic_obj.get_terminal(),
-                                                            to_port=bus_t_graphic_obj.get_terminal(),
-                                                            editor=self,
-                                                            api_object=branch)
-                            self.add_to_scene(graphic_object=graphic_object)
+                    # search for the api object, because it may be created already
+                    graphic_object = self.graphics_manager.query(elm=location.api_object)
 
-                            graphic_object.redraw()
-                            self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
+                    if graphic_object is None:
+
+                        branch: VSC = location.api_object
+                        if branch.bus_from is not None and branch.bus_to is not None:
+                            bus_f_graphic_obj = self.graphics_manager.query(branch.bus_from)
+                            bus_t_graphic_obj = self.graphics_manager.query(branch.bus_to)
+
+                            if bus_f_graphic_obj and bus_t_graphic_obj:
+                                graphic_object = VscGraphicItem(from_port=bus_f_graphic_obj.get_terminal(),
+                                                                to_port=bus_t_graphic_obj.get_terminal(),
+                                                                editor=self,
+                                                                api_object=branch)
+                                self.add_to_scene(graphic_object=graphic_object)
+
+                                graphic_object.redraw()
+                                self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
 
             elif category == DeviceType.UpfcDevice.value:
 
                 for idtag, location in points_group.locations.items():
-                    branch: UPFC = location.api_object
-                    if branch.bus_from is not None and branch.bus_to is not None:
-                        bus_f_graphic_obj = find_my_node(branch.bus_from.idtag, bus_dict, fluid_node_dict)
-                        bus_t_graphic_obj = find_my_node(branch.bus_to.idtag, bus_dict, fluid_node_dict)
 
-                        if bus_f_graphic_obj and bus_t_graphic_obj:
-                            graphic_object = UpfcGraphicItem(from_port=bus_f_graphic_obj.get_terminal(),
-                                                             to_port=bus_t_graphic_obj.get_terminal(),
-                                                             editor=self,
-                                                             api_object=branch)
-                            self.add_to_scene(graphic_object=graphic_object)
+                    # search for the api object, because it may be created already
+                    graphic_object = self.graphics_manager.query(elm=location.api_object)
 
-                            graphic_object.redraw()
-                            self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
+                    if graphic_object is None:
+
+                        branch: UPFC = location.api_object
+                        if branch.bus_from is not None and branch.bus_to is not None:
+                            bus_f_graphic_obj = self.graphics_manager.query(branch.bus_from)
+                            bus_t_graphic_obj = self.graphics_manager.query(branch.bus_to)
+
+                            if bus_f_graphic_obj and bus_t_graphic_obj:
+                                graphic_object = UpfcGraphicItem(from_port=bus_f_graphic_obj.get_terminal(),
+                                                                 to_port=bus_t_graphic_obj.get_terminal(),
+                                                                 editor=self,
+                                                                 api_object=branch)
+                                self.add_to_scene(graphic_object=graphic_object)
+
+                                graphic_object.redraw()
+                                self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
 
             elif category == DeviceType.Transformer2WDevice.value:
 
                 for idtag, location in points_group.locations.items():
-                    branch: Transformer2W = location.api_object
-                    if branch.bus_from is not None and branch.bus_to is not None:
-                        bus_f_graphic_obj = find_my_node(branch.bus_from.idtag, bus_dict, fluid_node_dict)
-                        bus_t_graphic_obj = find_my_node(branch.bus_to.idtag, bus_dict, fluid_node_dict)
 
-                        if bus_f_graphic_obj and bus_t_graphic_obj:
-                            graphic_object = TransformerGraphicItem(from_port=bus_f_graphic_obj.get_terminal(),
-                                                                    to_port=bus_t_graphic_obj.get_terminal(),
-                                                                    editor=self,
-                                                                    api_object=branch)
-                            self.add_to_scene(graphic_object=graphic_object)
+                    # search for the api object, because it may be created already
+                    graphic_object = self.graphics_manager.query(elm=location.api_object)
 
-                            graphic_object.redraw()
-                            self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
+                    if graphic_object is None:
+
+                        branch: Transformer2W = location.api_object
+                        if branch.bus_from is not None and branch.bus_to is not None:
+                            bus_f_graphic_obj = self.graphics_manager.query(branch.bus_from)
+                            bus_t_graphic_obj = self.graphics_manager.query(branch.bus_to)
+
+                            if bus_f_graphic_obj and bus_t_graphic_obj:
+                                graphic_object = TransformerGraphicItem(from_port=bus_f_graphic_obj.get_terminal(),
+                                                                        to_port=bus_t_graphic_obj.get_terminal(),
+                                                                        editor=self,
+                                                                        api_object=branch)
+                                self.add_to_scene(graphic_object=graphic_object)
+
+                                graphic_object.redraw()
+                                self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
 
             elif category == DeviceType.WindingDevice.value:
 
                 for idtag, location in points_group.locations.items():
-                    # branch: Winding = location.api_object
-                    graphic_object = windings_dict[idtag]
-                    graphic_object.redraw()
-                    self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
+
+                    # search for the api object, because it may be created already
+                    graphic_object = self.graphics_manager.query(elm=location.api_object)
+
+                    if graphic_object is None:
+
+                        # branch: Winding = location.api_object
+                        # graphic_object = windings_dict[idtag]
+                        graphic_object.redraw()
+                        self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
 
             elif category == DeviceType.FluidPathDevice.value:
 
                 for idtag, location in points_group.locations.items():
-                    branch: FluidPath = location.api_object
-                    if branch.source is not None and branch.target is not None:
-                        bus_f_graphic_obj = fluid_node_dict.get(branch.source.idtag, None)
-                        bus_t_graphic_obj = fluid_node_dict.get(branch.target.idtag, None)
 
-                        if bus_f_graphic_obj and bus_t_graphic_obj:
-                            graphic_object = FluidPathGraphicItem(from_port=bus_f_graphic_obj.get_terminal(),
-                                                                  to_port=bus_t_graphic_obj.get_terminal(),
-                                                                  editor=self,
-                                                                  api_object=branch)
-                            self.add_to_scene(graphic_object=graphic_object)
+                    # search for the api object, because it may be created already
+                    graphic_object = self.graphics_manager.query(elm=location.api_object)
 
-                            graphic_object.redraw()
-                            self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
+                    if graphic_object is None:
+
+                        branch: FluidPath = location.api_object
+                        if branch.source is not None and branch.target is not None:
+                            bus_f_graphic_obj = self.graphics_manager.query(branch.source)
+                            bus_t_graphic_obj = self.graphics_manager.query(branch.target)
+
+                            if bus_f_graphic_obj and bus_t_graphic_obj:
+                                graphic_object = FluidPathGraphicItem(from_port=bus_f_graphic_obj.get_terminal(),
+                                                                      to_port=bus_t_graphic_obj.get_terminal(),
+                                                                      editor=self,
+                                                                      api_object=branch)
+                                self.add_to_scene(graphic_object=graphic_object)
+
+                                graphic_object.redraw()
+                                self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
 
             else:
                 pass
@@ -1071,6 +1135,23 @@ class DiagramEditorWidget(QSplitter):
             graphics_dict = self.graphics_manager.get_device_type_dict(device_type=category)
             for idtag, graphic in graphics_dict.items():
                 graphic.arrange_children()
+
+    def draw(self) -> None:
+        """
+        Draw the stored diagram
+        """
+        self.draw_additional_diagram(diagram=self.diagram)
+
+    def expand_diagram_from_bus(self, root_bus: Bus) -> None:
+        """
+        Expand the diagram from one bus
+        :param root_bus: Root bus to expand from
+        """
+        extra_diagram = make_vecinity_diagram(circuit=self.circuit,
+                                              root_bus=root_bus,
+                                              max_level=1)
+
+        self.draw_additional_diagram(diagram=extra_diagram)
 
     @property
     def name(self):
@@ -3577,7 +3658,7 @@ class DiagramEditorWidget(QSplitter):
                 # plot the profiles
                 plt.show()
 
-    def set_rate_to_profile(self, api_object):
+    def set_rate_to_profile(self, api_object: ALL_DEV_TYPES):
         """
 
         :param api_object:
@@ -3592,7 +3673,7 @@ class DiagramEditorWidget(QSplitter):
                 if reply == QMessageBox.StandardButton.Yes.value:
                     api_object.rate_prof.fill(api_object.rate)
 
-    def set_active_status_to_profile(self, api_object, override_question=False):
+    def set_active_status_to_profile(self, api_object: ALL_DEV_TYPES, override_question=False):
         """
 
         :param api_object:
@@ -3722,10 +3803,13 @@ class DiagramEditorWidget(QSplitter):
             # add new stuff as new investment
             inv_group = InvestmentsGroup(name=line.name + ' split', category='Line split')
             self.circuit.add_investments_group(inv_group)
-            self.circuit.add_investment(
-                Investment(name=mid_bus.name, device_idtag=mid_bus.idtag, group=inv_group))
+            self.circuit.add_investment(Investment(name=mid_bus.name, device_idtag=mid_bus.idtag, group=inv_group))
             self.circuit.add_investment(Investment(name=br1.name, device_idtag=br1.idtag, group=inv_group))
             self.circuit.add_investment(Investment(name=br2.name, device_idtag=br2.idtag, group=inv_group))
+            # include the deactivation of the original line
+            self.circuit.add_investment(Investment(name=line_graphics.api_object.name,
+                                                   device_idtag=line_graphics.api_object.idtag,
+                                                   status=False, group=inv_group))
 
             # add to the schematic the new 2 lines and the bus
             middle_bus_graphics = self.add_api_bus(bus=mid_bus,
@@ -3838,9 +3922,9 @@ class DiagramEditorWidget(QSplitter):
 
                                 # C(x, y) = (x1 + t * (x2 - x1), y1 + t * (y2 - y1))
                                 mid_x = bus_f_graphics_data.x + (
-                                            bus_t_graphics_data.x - bus_f_graphics_data.x) * position
+                                        bus_t_graphics_data.x - bus_f_graphics_data.x) * position
                                 mid_y = bus_f_graphics_data.y + (
-                                            bus_t_graphics_data.y - bus_f_graphics_data.y) * position
+                                        bus_t_graphics_data.y - bus_f_graphics_data.y) * position
 
                                 B1 = Bus(name=line.name + ' split bus 1',
                                          vnom=line.bus_from.Vnom,
@@ -3966,19 +4050,24 @@ class DiagramEditorWidget(QSplitter):
                                 inv_group = InvestmentsGroup(name=line.name + ' in/out', category='Line in/out')
                                 self.circuit.add_investments_group(inv_group)
                                 self.circuit.add_investment(
-                                    Investment(name=B1.name, device_idtag=B1.idtag, group=inv_group))
+                                    Investment(name=B1.name, device_idtag=B1.idtag, status=True, group=inv_group))
                                 self.circuit.add_investment(
-                                    Investment(name=B2.name, device_idtag=B2.idtag, group=inv_group))
+                                    Investment(name=B2.name, device_idtag=B2.idtag, status=True, group=inv_group))
                                 self.circuit.add_investment(
-                                    Investment(name=B3.name, device_idtag=B3.idtag, group=inv_group))
+                                    Investment(name=B3.name, device_idtag=B3.idtag, status=True, group=inv_group))
                                 self.circuit.add_investment(
-                                    Investment(name=br1.name, device_idtag=br1.idtag, group=inv_group))
+                                    Investment(name=br1.name, device_idtag=br1.idtag, status=True, group=inv_group))
                                 self.circuit.add_investment(
-                                    Investment(name=br2.name, device_idtag=br2.idtag, group=inv_group))
+                                    Investment(name=br2.name, device_idtag=br2.idtag, status=True, group=inv_group))
                                 self.circuit.add_investment(
-                                    Investment(name=br3.name, device_idtag=br3.idtag, group=inv_group))
+                                    Investment(name=br3.name, device_idtag=br3.idtag, status=True, group=inv_group))
                                 self.circuit.add_investment(
-                                    Investment(name=br4.name, device_idtag=br4.idtag, group=inv_group))
+                                    Investment(name=br4.name, device_idtag=br4.idtag, status=True, group=inv_group))
+
+                                # include the deactivation of the original line
+                                self.circuit.add_investment(Investment(name=line_graphics.api_object.name,
+                                                                       device_idtag=line_graphics.api_object.idtag,
+                                                                       status=False, group=inv_group))
 
                                 # add to the schematic the new 2 lines and the bus
                                 B1_graphics = self.add_api_bus(bus=B1,
@@ -4118,6 +4207,7 @@ def generate_bus_branch_diagram(buses: List[Bus],
                                 hvdc_lines: List[HvdcLine],
                                 vsc_devices: List[VSC],
                                 upfc_devices: List[UPFC],
+                                series_reactances: List[SeriesReactance],
                                 fluid_nodes: List[FluidNode],
                                 fluid_paths: List[FluidPath],
                                 explode_factor=1.0,
@@ -4135,8 +4225,9 @@ def generate_bus_branch_diagram(buses: List[Bus],
     :param hvdc_lines: list of HvdcLine objects
     :param vsc_devices: list Vsc objects
     :param upfc_devices: List of UPFC devices
-    :param fluid_nodes:
-    :param fluid_paths:
+    :param series_reactances: List of SeriesReactance
+    :param fluid_nodes: List of FluidNode
+    :param fluid_paths: List of FluidPath
     :param explode_factor: factor of "explosion": Separation of the nodes factor
     :param prog_func: progress report function
     :param text_func: Text report function
@@ -4209,6 +4300,18 @@ def generate_bus_branch_diagram(buses: List[Bus],
 
     nn = len(transformers2w)
     for i, branch in enumerate(transformers2w):
+
+        if prog_func is not None:
+            prog_func((i + 1) / nn * 100.0)
+
+        diagram.set_point(device=branch, location=GraphicLocation())
+
+    # --------------------------------------------------------------------------------------------------------------
+    if text_func is not None:
+        text_func('Creating schematic series reactances devices')
+
+    nn = len(series_reactances)
+    for i, branch in enumerate(series_reactances):
 
         if prog_func is not None:
             prog_func((i + 1) / nn * 100.0)
@@ -4295,9 +4398,23 @@ def generate_bus_branch_diagram(buses: List[Bus],
     return diagram
 
 
-def make_vecinity_diagram(circuit: MultiCircuit, root_bus: Bus, max_level: int = 1):
+def get_devices_to_expand(circuit: MultiCircuit,
+                          root_bus: Bus,
+                          max_level: int = 1) -> Tuple[
+    List[Bus],
+    List[Line],
+    List[DcLine],
+    List[Transformer2W],
+    List[Transformer3W],
+    List[Winding],
+    List[HvdcLine],
+    List[VSC],
+    List[UPFC],
+    List[SeriesReactance],
+    List[FluidNode],
+    List[FluidPath]]:
     """
-    Create a vecinity diagram
+    get lists of devices to expand given a root bus
     :param circuit: MultiCircuit
     :param root_bus: Bus
     :param max_level: max expansion level
@@ -4346,15 +4463,16 @@ def make_vecinity_diagram(circuit: MultiCircuit, root_bus: Bus, max_level: int =
                     pass
 
     # sort Branches
-    lines = list()
-    dc_lines = list()
-    transformers2w = list()
-    transformers3w = list()
-    windings = list()
-    hvdc_lines = list()
-    vsc_converters = list()
-    upfc_devices = list()
-    fluid_paths = list()
+    lines: List[Line] = list()
+    dc_lines: List[DcLine] = list()
+    transformers2w: List[Transformer2W] = list()
+    transformers3w: List[Transformer3W] = list()
+    windings: List[Winding] = list()
+    hvdc_lines: List[HvdcLine] = list()
+    vsc_converters: List[VSC] = list()
+    upfc_devices: List[UPFC] = list()
+    series_reactances: List[SeriesReactance] = list()
+    fluid_paths: List[FluidPath] = list()
 
     for obj in selected_branches:
 
@@ -4387,6 +4505,25 @@ def make_vecinity_diagram(circuit: MultiCircuit, root_bus: Bus, max_level: int =
         else:
             raise Exception('Unrecognized branch type ' + obj.device_type.value)
 
+    return (list(buses), lines, dc_lines, transformers2w, transformers3w, windings, hvdc_lines,
+            vsc_converters, upfc_devices, series_reactances, list(fluid_nodes), fluid_paths)
+
+
+def make_vecinity_diagram(circuit: MultiCircuit, root_bus: Bus, max_level: int = 1):
+    """
+    Create a vecinity diagram
+    :param circuit: MultiCircuit
+    :param root_bus: Bus
+    :param max_level: max expansion level
+    :return:
+    """
+
+    (buses, lines, dc_lines, transformers2w,
+     transformers3w, windings, hvdc_lines,
+     vsc_converters, upfc_devices,
+     series_reactances,
+     fluid_nodes, fluid_paths) = get_devices_to_expand(circuit=circuit, root_bus=root_bus, max_level=max_level)
+
     # Draw schematic subset
     diagram = generate_bus_branch_diagram(buses=list(buses),
                                           lines=lines,
@@ -4397,6 +4534,7 @@ def make_vecinity_diagram(circuit: MultiCircuit, root_bus: Bus, max_level: int =
                                           hvdc_lines=hvdc_lines,
                                           vsc_devices=vsc_converters,
                                           upfc_devices=upfc_devices,
+                                          series_reactances=series_reactances,
                                           fluid_nodes=list(fluid_nodes),
                                           fluid_paths=fluid_paths,
                                           explode_factor=1.0,
