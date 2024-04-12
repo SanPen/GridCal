@@ -1569,8 +1569,6 @@ def run_linear_opf_ts(grid: MultiCircuit,
                                                    all_generators_fixed=all_generators_fixed)
 
         # formulate batteries --------------------------------------------------------------------------------------
-        if global_t_idx >= 670:
-            print('a')
         if local_t_idx == 0 and energy_0 is None:
             # declare the initial energy of the batteries
             energy_0 = nc.battery_data.soc_0 * nc.battery_data.enom  # in MWh here
