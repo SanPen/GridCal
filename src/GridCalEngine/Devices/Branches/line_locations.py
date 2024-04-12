@@ -116,7 +116,7 @@ class LineLocations(EditableDevice):
             values = np.array(data)
             self.set(data=values)
         else:
-            self.data = np.zeros((0, 4))
+            self.data = list()
 
     def set(self, data: np.ndarray):
         """
