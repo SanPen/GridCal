@@ -2437,7 +2437,7 @@ class MultiCircuit:
 
         return data
 
-    def gat_all_elements_dict_by_type(self) -> dict[Callable[[], Any], Union[dict[str, ALL_DEV_TYPES], Any]]:
+    def get_all_elements_dict_by_type(self) -> dict[Callable[[], Any], Union[dict[str, ALL_DEV_TYPES], Any]]:
         """
         Get a dictionary of all elements by type
         :return:

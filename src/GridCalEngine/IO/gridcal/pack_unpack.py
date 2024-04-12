@@ -1315,7 +1315,7 @@ def parse_gridcal_data(data: Dict[str, Union[str, float, Dict, pd.DataFrame, Dic
     if 'diagrams' in data.keys():
 
         if len(data['diagrams']):
-            obj_dict = circuit.gat_all_elements_dict_by_type()
+            obj_dict = circuit.get_all_elements_dict_by_type()
 
             for diagram_dict in data['diagrams']:
 

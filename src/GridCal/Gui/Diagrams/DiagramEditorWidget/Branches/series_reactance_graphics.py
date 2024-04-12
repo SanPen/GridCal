@@ -32,7 +32,8 @@ class SeriesReactanceGraphicItem(LineGraphicTemplateItem):
                  from_port: Union[BarTerminalItem, RoundTerminalItem],
                  to_port: Union[BarTerminalItem, RoundTerminalItem],
                  editor: DiagramEditorWidget, width=5,
-                 api_object: SeriesReactance = None):
+                 api_object: SeriesReactance = None,
+                 draw_labels: bool = True):
         """
 
         :param from_port:
@@ -46,7 +47,8 @@ class SeriesReactanceGraphicItem(LineGraphicTemplateItem):
                                          to_port=to_port,
                                          editor=editor,
                                          width=width,
-                                         api_object=api_object)
+                                         api_object=api_object,
+                                         draw_labels=draw_labels)
 
     def contextMenuEvent(self, event):
         """

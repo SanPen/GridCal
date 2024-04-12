@@ -82,7 +82,7 @@ class PointsGroup:
         return points
 
     def parse_data(self,
-                   data: Dict[str, Dict[str, Union[int, float, List[Tuple[float, float]]]]],
+                   data: Dict[str, Dict[str, Union[int, float, bool, List[Tuple[float, float]]]]],
                    obj_dict: Dict[str, ALL_DEV_TYPES],
                    logger: Logger,
                    category: str = "") -> None:
@@ -111,6 +111,7 @@ class PointsGroup:
                                                             w=location['w'],
                                                             h=location['h'],
                                                             r=location['r'],
+                                                            draw_labels=location.get('draw_labels', True),
                                                             api_object=api_object)
                 if 'latitude' in location:
                     self.locations[idtag] = MapLocation(latitude=location['latitude'],
