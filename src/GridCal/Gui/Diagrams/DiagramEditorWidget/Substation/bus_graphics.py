@@ -431,11 +431,11 @@ class BusGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
         da.setIcon(del_icon)
         da.triggered.connect(self.remove)
 
-        re = menu.addAction('Reduce')
+        re = menu.addAction('Expand schematic')
         re_icon = QIcon()
-        re_icon.addPixmap(QPixmap(":/Icons/icons/grid_reduction.svg"))
+        re_icon.addPixmap(QPixmap(":/Icons/icons/grid_icon.svg"))
         re.setIcon(re_icon)
-        re.triggered.connect(self.reduce)
+        re.triggered.connect(self.expand_diagram_from_bus)
 
         menu.addSection("Add")
 
@@ -501,16 +501,6 @@ class BusGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
         """
         self._terminal.remove_all_connections()
 
-    def reduce(self):
-        """
-        Reduce this bus
-        :return:
-        """
-        ok = yes_no_question('Are you sure that you want to reduce this bus', 'Reduce bus')
-        if ok:
-            reduce_buses(self.editor.circuit, [self.api_object])
-            self.remove()
-
     def remove(self, ask: bool = True) -> None:
         """
         Remove this element
@@ -537,6 +527,12 @@ class BusGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
             self.set_tile_color(QBrush(ACTIVE['color']))
         else:
             self.set_tile_color(QBrush(DEACTIVATED['color']))
+
+    def expand_diagram_from_bus(self) -> None:
+        """
+        Expands the diagram from this bus
+        """
+        self.editor.expand_diagram_from_bus(root_bus=self.api_object)
 
     def enable_disable_toggle(self):
         """
