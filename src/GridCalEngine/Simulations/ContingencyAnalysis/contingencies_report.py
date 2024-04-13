@@ -394,7 +394,7 @@ class ContingencyResultsReport:
             default=-999999
         )
 
-        df["Overload for reporting weighted with cluster"] = df["Overload for reporting"]*df["Probability cluster"]
+        df["Overload for reporting weighted with cluster"] = df["Overload for reporting"] * df["Probability cluster"]
 
         # Count the number of Hours the monitored line appears
 
@@ -402,14 +402,16 @@ class ContingencyResultsReport:
         df_monit_time_pu = pd.pivot_table(df_, values='Probability cluster', index="Monitored", aggfunc="sum")
         df_monit_time_clust = pd.pivot_table(df_, values='Probability cluster', index="Monitored", aggfunc="count")
 
-        df['Time this line is monitored by any contingency (pu)'] = df['Monitored'].map(df_monit_time_pu['Probability cluster'])
-        df['Number of clusters this line is monitored'] = df['Monitored'].map(df_monit_time_clust['Probability cluster'])
-
+        df['Time this line is monitored by any contingency (pu)'] = df['Monitored'].map(
+            df_monit_time_pu['Probability cluster'])
+        df['Number of clusters this line is monitored'] = df['Monitored'].map(
+            df_monit_time_clust['Probability cluster'])
 
         # Group de columns by Area1, Area2, Monitored, Contingency
         df_grp = df.groupby(
             ["Area 1", "Area 2", "Monitored", "Contingency", "Base rating (MW)", "Contingency rating (MW)",
-             "SRAP rating (MW)","Time this line is monitored by any contingency (pu)","Number of clusters this line is monitored"])
+             "SRAP rating (MW)", "Time this line is monitored by any contingency (pu)",
+             "Number of clusters this line is monitored"])
 
         # Compute the columns
         ov_max = df_grp["Overload for reporting"].max()
@@ -428,10 +430,11 @@ class ContingencyResultsReport:
         else:
             ov_max_dates = ov_max_date.values
 
-        #new, work in progress
-        ov_avg_clust = df_grp["Overload for reporting weighted with cluster"].sum()/df_grp["Probability cluster"].sum() #checked
-        ov_desvest_clust = df_grp["Overload for reporting weighted with cluster"].std()/df_grp["Probability cluster"].sum()
-
+        # new, work in progress
+        ov_avg_clust = df_grp["Overload for reporting weighted with cluster"].sum() / df_grp[
+            "Probability cluster"].sum()  # checked
+        ov_desvest_clust = df_grp["Overload for reporting weighted with cluster"].std() / df_grp[
+            "Probability cluster"].sum()
 
         # Create the new dataframe with the columns we need
         df_summary = pd.DataFrame({
@@ -469,11 +472,14 @@ class ContingencyResultsReport:
 
         df_summary = df_summary.sort_values(by="Contingency", ascending=False)
 
-        cols_1dec = ["Number of clusters this line is monitored","Number of clusters with this overload (h)"]
-        cols_2dec = ["Base rating (MW)","Contingency rating (MW)","SRAP rating (MW)"]
-        cols_4dec = ["Overload max (pu)","Overload average weighting time (pu)","Annual time the Monitored line is overloaded by this contingency (pu)","Time this line is monitored by any contingency (pu)","Overload average for clusters(pu)","Standard deviation for clusters(pu)"]
+        cols_1dec = ["Number of clusters this line is monitored", "Number of clusters with this overload (h)"]
+        cols_2dec = ["Base rating (MW)", "Contingency rating (MW)", "SRAP rating (MW)"]
+        cols_4dec = ["Overload max (pu)", "Overload average weighting time (pu)",
+                     "Annual time the Monitored line is overloaded by this contingency (pu)",
+                     "Time this line is monitored by any contingency (pu)", "Overload average for clusters(pu)",
+                     "Standard deviation for clusters(pu)"]
 
-        df_summary[cols_1dec]=df_summary[cols_1dec].map(lambda x:f'{x:.1f}')
+        df_summary[cols_1dec] = df_summary[cols_1dec].map(lambda x: f'{x:.1f}')
         df_summary[cols_2dec] = df_summary[cols_2dec].map(lambda x: f'{x:.2f}')
         df_summary[cols_4dec] = df_summary[cols_4dec].map(lambda x: f'{x:.4f}')
 
@@ -550,13 +556,19 @@ class ContingencyResultsReport:
         if contingency_idx == 0:  # only doing it once per hour
 
             for m in mon_idx:
+                if len(area_names):
+                    area_from = area_names[bus_area_indices[F[m]]]
+                    area_to = area_names[bus_area_indices[T[m]]]
+                else:
+                    area_from = ""
+                    area_to = ""
 
                 if abs(base_flow[m]) > numerical_circuit.rates[m]:  # only add if overloaded
 
                     self.add(time_index=t if t is not None else 0,
-                             t_prob = t_prob,
-                             area_from=area_names[bus_area_indices[F[m]]],
-                             area_to=area_names[bus_area_indices[T[m]]],
+                             t_prob=t_prob,
+                             area_from=area_from,
+                             area_to=area_to,
                              base_name=numerical_circuit.branch_data.names[m],
                              contingency_name='Base',
                              base_rating=numerical_circuit.branch_data.rates[m],
@@ -575,6 +587,13 @@ class ContingencyResultsReport:
 
         # Now evalueting the effect of contingencies
         for m in mon_idx:  # for each monitored branch ...
+
+            if len(area_names):
+                area_from = area_names[bus_area_indices[F[m]]]
+                area_to = area_names[bus_area_indices[T[m]]]
+            else:
+                area_from = ""
+                area_to = ""
 
             c_flow = abs(contingency_flows[m])
             b_flow = abs(base_flow[m])
@@ -681,8 +700,8 @@ class ContingencyResultsReport:
                 if detailed_massive_report:
                     self.add(time_index=t if t is not None else 0,
                              t_prob=t_prob,
-                             area_from=area_names[bus_area_indices[F[m]]],
-                             area_to=area_names[bus_area_indices[T[m]]],
+                             area_from=area_from,
+                             area_to=area_to,
                              base_name=numerical_circuit.branch_data.names[m],
                              contingency_name=contingency_group.name,
                              base_rating=numerical_circuit.branch_data.rates[m],

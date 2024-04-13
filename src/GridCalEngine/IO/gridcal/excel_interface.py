@@ -195,7 +195,7 @@ def load_from_xls(filename: str) -> Dict[str, pd.DataFrame]:
                     # pandas does not read complex numbers right,
                     # so when we expect a complex number input, parse directly
                     for c in df.columns.values:
-                        df[c] = df[c].apply(lambda x: np.complex(x))
+                        df[c] = df[c].apply(lambda x: complex(x))
 
                 data[name] = df
 
@@ -246,16 +246,23 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
                 attr = 'template'
 
             if hasattr(obj_, attr):
-                conv = obj_.registered_properties[attr].tpe  # get the type converter
-                if conv is None:
-                    setattr(obj_, attr, values[a])
-                elif conv is dev.BranchType:
-                    # cbr = BranchTypeConverter(None)
-                    setattr(obj_, attr, dev.BranchType(values[a]))
-                elif isinstance(conv, DeviceType):
-                    pass
+
+                prop = obj_.registered_properties.get(attr, None)
+
+                if prop is not None:
+                    conv = prop.tpe  # get the type converter
+                    if conv is None:
+                        setattr(obj_, attr, values[a])
+                    elif conv is dev.BranchType:
+                        # cbr = BranchTypeConverter(None)
+                        setattr(obj_, attr, dev.BranchType(values[a]))
+                    elif isinstance(conv, DeviceType):
+                        pass
+                    else:
+                        setattr(obj_, attr, conv(values[a]))
                 else:
-                    setattr(obj_, attr, conv(values[a]))
+                    # the property wasn't found
+                    pass
             else:
 
                 if attr in ['Y', 'Z', 'I', 'S', 'seq_resistance', 'seq_admittance', 'Zf']:
@@ -315,7 +322,6 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
             set_object_attributes(obj, hdr, vals[i, :])
             bus_dict[obj.name] = obj
             circuit.add_bus(obj)
-            obj.ensure_profiles_exist(circuit.time_profile)
     else:
         circuit.logger.add_warning('No buses in the file!')
 
@@ -372,7 +378,6 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
                 obj.name += f"{circuit.get_loads_number()} @{bus.name}"
 
             circuit.add_load(bus, api_obj=obj)
-            obj.ensure_profiles_exist(circuit.time_profile)
     else:
         circuit.logger.add_warning('No loads in the file!')
 
@@ -414,7 +419,6 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
 
             obj.bus = bus
             circuit.add_generator(bus=bus, api_obj=obj)
-            obj.ensure_profiles_exist(circuit.time_profile)
     else:
         circuit.logger.add_warning('No controlled generator in the file!')
 
@@ -454,7 +458,6 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
                 obj.name += str(circuit.get_batteries_number() + 1) + '@' + bus.name
 
             circuit.add_battery(bus=bus, api_obj=obj)
-            obj.ensure_profiles_exist(circuit.time_profile)
     else:
         circuit.logger.add_warning('No battery in the file!')
 
@@ -495,7 +498,6 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
 
             obj.bus = bus
             circuit.add_static_generator(bus=bus, api_obj=obj)
-            obj.ensure_profiles_exist(circuit.time_profile)
     else:
         circuit.logger.add_warning('No static generator in the file!')
 
@@ -525,7 +527,6 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
 
             obj.bus = bus
             circuit.add_shunt(bus=bus, api_obj=obj)
-            obj.ensure_profiles_exist(circuit.time_profile)
     else:
         circuit.logger.add_warning('No shunt in the file!')
 
@@ -635,7 +636,6 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
 
             # set the branch
             circuit.add_branch(obj)
-            obj.ensure_profiles_exist(circuit.time_profile)
 
     else:
         circuit.logger.add_warning('No Branches in the file!')
@@ -732,7 +732,6 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
             set_object_attributes(obj, hdr, vals[i, :])
             bus_dict[obj.name] = obj
             circuit.add_bus(obj)
-            obj.ensure_profiles_exist(circuit.time_profile)
     else:
         circuit.logger.add_warning('No buses in the file!')
 
@@ -778,7 +777,6 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
 
             obj.bus = bus
             circuit.add_load(bus=bus, api_obj=obj)
-            obj.ensure_profiles_exist(circuit.time_profile)
     else:
         circuit.logger.add_warning('No loads in the file!')
 
@@ -833,7 +831,6 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
 
             obj.bus = bus
             circuit.add_generator(bus=bus, api_obj=obj)
-            obj.ensure_profiles_exist(circuit.time_profile)
     else:
         circuit.logger.add_warning('No controlled generator in the file!')
 
@@ -880,7 +877,6 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
 
             obj.bus = bus
             circuit.add_battery(bus=bus, api_obj=obj)
-            obj.ensure_profiles_exist(circuit.time_profile)
     else:
         circuit.logger.add_warning('No battery in the file!')
 
@@ -931,7 +927,6 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
 
             obj.bus = bus
             circuit.add_static_generator(bus=bus, api_obj=obj)
-            obj.ensure_profiles_exist(circuit.time_profile)
     else:
         circuit.logger.add_warning('No static generator in the file!')
 
@@ -982,7 +977,6 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
 
             obj.bus = bus
             circuit.add_shunt(bus=bus, api_obj=obj)
-            obj.ensure_profiles_exist(circuit.time_profile)
     else:
         circuit.logger.add_warning('No shunt in the file!')
 
@@ -1099,7 +1093,6 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
 
             # set the branch
             circuit.add_branch(obj)
-            obj.ensure_profiles_exist(circuit.time_profile)
 
             if 'branch_active_prof' in data.keys():
                 val = data['branch_active_prof'].values[:, i]
