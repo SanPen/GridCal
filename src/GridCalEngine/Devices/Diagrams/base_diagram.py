@@ -89,7 +89,7 @@ class PointsGroup:
         """
         Parse file data ito this class
         :param data: json dictionary
-        :param obj_dict: dicrtionary of relevant objects (idtag, object)
+        :param obj_dict: dictionary of relevant objects (idtag, object)
         :param logger: Logger
         :param category: category
         """
@@ -101,6 +101,7 @@ class PointsGroup:
 
             if api_object is None:
                 # locations with no API object are not created
+                print()
                 logger.add_error("Diagram location could not find API object",
                                  device_class=category,
                                  device=idtag,)

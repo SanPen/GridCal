@@ -1285,6 +1285,7 @@ def add_hydro_formulation(t: Union[int, None],
                           p2x_data: FluidP2XData,
                           generator_data: GeneratorData,
                           generator_vars: GenerationVars,
+                          fluid_level_0: Vec,
                           prob: LpModel,
                           logger: Logger):
     """
@@ -1303,6 +1304,7 @@ def add_hydro_formulation(t: Union[int, None],
     :param p2x_data: FluidP2XData
     :param generator_data: GeneratorData
     :param generator_vars: GeneratorVars
+    :param fluid_level_0: Initial node level
     :param prob: OR problem
     :param logger: log of the LP
     :return objective function
@@ -1410,14 +1412,14 @@ def add_hydro_formulation(t: Union[int, None],
         # constraints for the node level
         for m in range(node_data.nelm):
             if t == 0:
-                # Initialize level at the initial one (from snapshot), akin to dt=0
                 if len(time_array) > time_global_tidx + 1:
                     dt = (time_array[time_global_tidx + 1] - time_array[time_global_tidx]).seconds
                 else:
                     dt = 3600
 
+                # Initialize level at fluid_level_0
                 prob.add_cst(cst=(node_vars.current_level[t, m] ==
-                                  node_data.initial_level[m]
+                                  fluid_level_0[m]
                                   + dt * node_data.inflow[m]
                                   + dt * node_vars.flow_in[t, m]
                                   + dt * node_vars.p2x_flow[t, m]
@@ -1453,6 +1455,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
                       areas_from: List[Area] = None,
                       areas_to: List[Area] = None,
                       energy_0: Union[Vec, None] = None,
+                      fluid_level_0: Union[Vec, None] = None,
                       logger: Logger = Logger(),
                       progress_text: Union[None, Callable[[str], None]] = None,
                       progress_func: Union[None, Callable[[float], None]] = None,
@@ -1474,6 +1477,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
     :param areas_from:
     :param areas_to:
     :param energy_0:
+    :param fluid_level_0: initial fluid level of the nodes
     :param logger: logger instance
     :param progress_text:
     :param progress_func:
@@ -1501,9 +1505,6 @@ def run_linear_opf_ts(grid: MultiCircuit,
     n_hvdc = grid.get_hvdc_number()
     n_fluid_node = grid.get_fluid_nodes_number()
     n_fluid_path = grid.get_fluid_paths_number()
-    n_fluid_turbine = grid.get_fluid_turbines_number()
-    n_fluid_pump = grid.get_fluid_pumps_number()
-    n_fluid_p2x = grid.get_fluid_p2xs_number()
     n_fluid_inj = grid.get_fluid_injection_number()
 
     # gather the fuels and emission rates matrices
@@ -1665,6 +1666,10 @@ def run_linear_opf_ts(grid: MultiCircuit,
                         f_obj += mip_vars.branch_vars.flows[local_t_idx, k] * (- sense)
 
             # add hydro side -------------------------------------------------------------------------------------------
+            if local_t_idx == 0 and fluid_level_0 is None:
+                # declare the initial level of the fluid nodes
+                fluid_level_0 = nc.fluid_node_data.initial_level
+
             if n_fluid_node > 0:
                 f_obj += add_hydro_formulation(t=local_t_idx,
                                                time_global_tidx=global_t_idx,
@@ -1680,6 +1685,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
                                                p2x_data=nc.fluid_p2x_data,
                                                generator_data=nc.generator_data,
                                                generator_vars=mip_vars.gen_vars,
+                                               fluid_level_0=fluid_level_0,
                                                prob=lp_model,
                                                logger=logger)
 

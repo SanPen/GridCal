@@ -267,6 +267,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
         n = len(groups)
         i = 1
         energy_0: Union[Vec, None] = None  # at the beginning
+        fluid_level_0: Union[Vec, None] = None
 
         while i < n and not self.__cancel__:
             start_ = groups[i - 1]
@@ -299,6 +300,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                                          areas_from=self.options.areas_from,
                                          areas_to=self.options.areas_to,
                                          energy_0=energy_0,
+                                         fluid_level_0=fluid_level_0,
                                          logger=self.logger,
                                          export_model_fname=self.options.export_model_fname)
 
@@ -344,6 +346,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
             self.results.converged[time_indices] = np.array([opf_vars.acceptable_solution] * opf_vars.nt)
 
             energy_0 = self.results.battery_energy[end_ - 1, :]
+            fluid_level_0 = self.results.fluid_node_current_level[end_ - 1, :]
 
             # update progress bar
             self.report_progress2(i, len(groups))

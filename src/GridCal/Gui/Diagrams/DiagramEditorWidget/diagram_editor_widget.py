@@ -937,7 +937,8 @@ class DiagramEditorWidget(QSplitter):
                         # add fluid node reference for later
                         # fluid_node_dict[idtag] = graphic_object
                         self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
-                        self.graphics_manager.add_device(elm=location.api_object.bus, graphic=graphic_object)
+                        if location.api_object.bus is not None:
+                            self.graphics_manager.add_device(elm=location.api_object.bus, graphic=graphic_object)
 
                         # map the internal bus
                         # if location.api_object.bus is not None:
