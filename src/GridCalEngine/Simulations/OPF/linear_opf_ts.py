@@ -1000,7 +1000,7 @@ def add_linear_branches_formulation(t: int,
     :param branch_vars: BranchVars
     :param bus_vars: BusVars
     :param prob: OR problem
-    :param inf: number considered infinte
+    :param inf: number considered infinite
     :return objective function
     """
     f_obj = 0.0

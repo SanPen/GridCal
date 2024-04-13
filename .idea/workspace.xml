@@ -29,8 +29,11 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Add test fluid node level grouping">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Add HVDC dispatching test">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/hvdc_line.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/hvdc_line.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/linear_opf_ts.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/linear_opf_ts.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/tests/test_opf_dispatches_controls.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/test_opf_dispatches_controls.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -149,6 +152,7 @@
     "Python tests.Nosetests in test_ptdf.py.executor": "Run",
     "Python tests.Nosetests in test_topology_processor.py.executor": "Run",
     "Python tests.Nosetests in tests.executor": "Run",
+    "Python tests.pytest in test_opf_dispatches_controls.py.executor": "Debug",
     "Python tests.pytest in test_opf_time_concatenation.py.executor": "Run",
     "Python.AnalysisDialogue.executor": "Run",
     "Python.ExecuteGridCal.executor": "Run",
@@ -202,7 +206,7 @@
       <recent name="C:\WorkProjects\PycharmProjects\GridCal\src\GridCalEngine\IO\cim\cgmes\export_docs" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.ExecuteGridCal">
+  <component name="RunManager">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -1723,7 +1727,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="572" />
+    <option name="localTasksCounter" value="574" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1769,7 +1773,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="5.0.21" />
     <MESSAGE value="Missing init" />
     <MESSAGE value="5.0.22" />
     <MESSAGE value="Created GenericDBWidget" />
@@ -1794,7 +1797,8 @@
     <MESSAGE value="Improved line split logic" />
     <MESSAGE value="Fixed setup to prevent pyside regression" />
     <MESSAGE value="Add test fluid node level grouping" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add test fluid node level grouping" />
+    <MESSAGE value="Add HVDC dispatching test" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add HVDC dispatching test" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2195,19 +2199,9 @@
           <option name="timeStamp" value="1508" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/opf_driver.py</url>
-          <line>56</line>
-          <option name="timeStamp" value="1512" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Devices/Diagrams/base_diagram.py</url>
-          <line>104</line>
-          <option name="timeStamp" value="1517" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Devices/Diagrams/base_diagram.py</url>
-          <line>103</line>
-          <option name="timeStamp" value="1519" />
+          <url>file://$PROJECT_DIR$/src/tests/test_opf_dispatches_controls.py</url>
+          <line>252</line>
+          <option name="timeStamp" value="1528" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
