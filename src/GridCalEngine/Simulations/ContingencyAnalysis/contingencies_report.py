@@ -443,11 +443,10 @@ class ContingencyResultsReport:
             "Monitored": ov_max.index.get_level_values("Monitored"),
             "Contingency": ov_max.index.get_level_values("Contingency"),
 
-            "Area 1": ov_max.index.get_level_values("Area 1"),
-            "Area 2": ov_max.index.get_level_values("Area 2"),
-
-            "Monitored": ov_max.index.get_level_values("Monitored"),
-            "Contingency": ov_max.index.get_level_values("Contingency"),
+            # "Area 1": ov_max.index.get_level_values("Area 1"),
+            # "Area 2": ov_max.index.get_level_values("Area 2"),
+            # "Monitored": ov_max.index.get_level_values("Monitored"),
+            # "Contingency": ov_max.index.get_level_values("Contingency"),
 
             "Base rating (MW)": ov_max.index.get_level_values("Base rating (MW)"),
             "Contingency rating (MW)": ov_max.index.get_level_values("Contingency rating (MW)"),
