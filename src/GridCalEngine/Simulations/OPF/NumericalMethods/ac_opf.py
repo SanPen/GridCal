@@ -501,10 +501,10 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
 
     # Check the active elements and their operational limits.
     br_mon_idx = nc.branch_data.get_monitor_enabled_indices()
-    gen_disp_idx = nc.generator_data.get_dispatchable_indices()
+    gen_disp_idx = nc.generator_data.get_dispatchable_active_indices()
     ind_gens = np.arange(len(Pg_max))
-    nig = np.where(~np.isin(ind_gens, gen_disp_idx))[0]
-    Sg_undis = (nc.generator_data.get_injections() / nc.Sbase)[nig]
+    gen_nondisp_idx = nc.generator_data.get_non_dispatchable_indices()
+    Sg_undis = (nc.generator_data.get_injections() / nc.Sbase)[gen_nondisp_idx]
     rates = nc.rates / Sbase  # Line loading limits. If the grid is not well conditioned, add constant value (i.e. +100)
     Va_max = nc.bus_data.angle_max  # This limits are not really used as of right now.
     Va_min = nc.bus_data.angle_min
@@ -555,8 +555,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     if opf_options.acopf_mode == AcOpfMode.ACOPFslacks:
         nsl = 2 * npq + 2 * n_br_mon
         # Slack relaxations for constraints
-        c_s = 1 * np.power(nc.branch_data.overload_cost[br_mon_idx] + 1e-9, 1.0)  # Cost squared since the slack is also squared
-        c_v = 1 * nc.bus_data.cost_v[pq] + 1e-9
+        c_s = 1 * np.power(nc.branch_data.overload_cost[br_mon_idx] + 0.1, 1.0)  # Cost squared since the slack is also squared
+        c_v = 1 * (nc.bus_data.cost_v[pq] + 0.1)
         sl_sf0 = np.ones(n_br_mon)
         sl_st0 = np.ones(n_br_mon)
         sl_vmax0 = np.ones(npq)
@@ -629,7 +629,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                                        arg=(admittances, Cg, Sd, slack, from_idx, to_idx,
                                             pq, pv, Va_max, Va_min, Vm_max, Vm_min, Pg_max, Pg_min,
                                             Qg_max, Qg_min, tapm_max, tapm_min, tapt_max, tapt_min, alltapm, alltapt,
-                                            k_m, k_tau, k_mtau, c0, c1, c2, Sbase, rates, br_mon_idx, gen_disp_idx, nig,
+                                            k_m, k_tau, k_mtau, c0, c1, c2, Sbase, rates, br_mon_idx, gen_disp_idx, gen_nondisp_idx,
                                             Sg_undis, pf_options.control_Q, opf_options.acopf_mode),
                                        verbose=opf_options.verbose,
                                        max_iter=opf_options.ips_iterations,
@@ -644,7 +644,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                                            arg=(admittances, Cg, Sd, slack, from_idx, to_idx, pq, pv,
                                                 Va_max, Va_min, Vm_max, Vm_min, Pg_max, Pg_min, Qg_max, Qg_min,
                                                 tapm_max, tapm_min, tapt_max, tapt_min, k_m, k_tau, k_mtau,
-                                                c0, c1, c2, Sbase, rates, br_mon_idx, gen_disp_idx, nig, Sg_undis,
+                                                c0, c1, c2, Sbase, rates, br_mon_idx, gen_disp_idx, gen_nondisp_idx, Sg_undis,
                                                 opf_options.acopf_mode, 1e-5),
                                            verbose=opf_options.verbose,
                                            max_iter=opf_options.ips_iterations,
@@ -658,7 +658,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                                                 f_disp_hvdc, t_disp_hvdc, n_disp_hvdc, pq, pv, Pf_nondisp, P_hvdc_max, Vm_max, Vm_min, Pg_max,
                                                 Pg_min, tanmax, Qg_max, Qg_min, tapm_max, tapm_min, tapt_max, tapt_min,
                                                 alltapm, alltapt, k_m, k_tau, c0, c1, c2, c_s, c_v, Sbase, rates, br_mon_idx,
-                                                n_br_mon, gen_disp_idx, nig, Sg_undis, pf_options.control_Q, opf_options.acopf_mode),
+                                                n_br_mon, gen_disp_idx, gen_nondisp_idx, Sg_undis, pf_options.control_Q, opf_options.acopf_mode),
                                            verbose=opf_options.verbose,
                                            max_iter=opf_options.ips_iterations,
                                            tol=opf_options.ips_tolerance,
@@ -671,18 +671,18 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                                                  acopf_mode=opf_options.acopf_mode)
 
     # Save Results DataFrame for tests
-    # pd.DataFrame(Va).transpose().to_csv('pegase89resth.csv')
-    # pd.DataFrame(Vm).transpose().to_csv('pegase89resV.csv')
-    # pd.DataFrame(Pg_dis).transpose().to_csv('pegase89resP.csv')
-    # pd.DataFrame(Qg_dis).transpose().to_csv('pegase89resQ.csv')
+    #pd.DataFrame(Va).transpose().to_csv('REEresth.csv')
+    #pd.DataFrame(Vm).transpose().to_csv('REEresV.csv')
+    #pd.DataFrame(Pg_dis).transpose().to_csv('REEresP.csv')
+    #pd.DataFrame(Qg_dis).transpose().to_csv('REEresQ.csv')
 
     Pg = np.zeros(len(ind_gens))
     Qg = np.zeros(len(ind_gens))
 
     Pg[gen_disp_idx] = Pg_dis
     Qg[gen_disp_idx] = Qg_dis
-    Pg[nig] = np.real(Sg_undis)
-    Qg[nig] = np.imag(Sg_undis)
+    Pg[gen_nondisp_idx] = np.real(Sg_undis)
+    Qg[gen_nondisp_idx] = np.imag(Sg_undis)
 
     # convert the lagrange multipliers to significant ones
     lam_p, lam_q = result.lam[:nbus], result.lam[nbus:2 * nbus]

@@ -413,7 +413,7 @@ def interior_point_solver(x0: Vec,
         lx = ret.fx + Hx_t @ mu + Gx_t @ lam
         feascond = max([g_norm, max(ret.H)]) / (1 + max([np.linalg.norm(x, np.Inf), z_norm]))
         gradcond = np.linalg.norm(lx, np.Inf) / (1 + max([lam_norm, mu_norm]))
-        error = np.max([feascond, gradcond])
+        error = np.max([feascond, gradcond, gamma])
 
         z_inv = diags(1.0 / z)
         mu_diag = diags(mu)
