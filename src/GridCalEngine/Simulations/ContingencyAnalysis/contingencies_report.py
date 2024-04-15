@@ -258,7 +258,7 @@ class ContingencyResultsReport:
         """
         Add report data
         :param time_index:
-        :param t_prob_
+        :param t_prob:
         :param area_from:
         :param area_to:
         :param base_name:
