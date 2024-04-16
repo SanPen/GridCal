@@ -356,18 +356,23 @@ class CgmesDataParser(BaseCircuit):
                     self.parsed_data[file_name] = file_cgmes_data
                     profile = model_info.get('profile', '')
 
-                    for prof in profile:
-                        if prof in cgmes2_4_15_uri:
-                            self.cgmes_version = "2.4.15"
-                        elif prof in cgmes3_0_0_uri:
-                            self.cgmes_version = "3.0.0"
-
                     if isinstance(profile, list):
+                        for prof in profile:
+                            if prof in cgmes2_4_15_uri:
+                                self.cgmes_version = "2.4.15"
+                            elif prof in cgmes3_0_0_uri:
+                                self.cgmes_version = "3.0.0"
+
                         if 'Boundary' in profile[0]:
                             merge(self.boudary_set, file_cgmes_data, self.logger)
                         else:
                             merge(self.data, file_cgmes_data, self.logger)
                     else:
+                        if profile in cgmes2_4_15_uri:
+                            self.cgmes_version = "2.4.15"
+                        elif profile in cgmes3_0_0_uri:
+                            self.cgmes_version = "3.0.0"
+
                         if 'Boundary' in profile:
                             merge(self.boudary_set, file_cgmes_data, self.logger)
                         else:

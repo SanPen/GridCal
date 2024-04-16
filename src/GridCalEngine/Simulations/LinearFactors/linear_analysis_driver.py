@@ -56,7 +56,11 @@ class LinearAnalysisDriver(DriverTemplate):
         self.opf_results = opf_results
 
         # Results
-        self.results: Union[LinearAnalysisResults, None] = None
+        self.results: Union[LinearAnalysisResults, None] = LinearAnalysisResults(n_br=0,
+                                                                                 n_bus=0,
+                                                                                 br_names=(),
+                                                                                 bus_names=(),
+                                                                                 bus_types=())
 
         self.all_solved: bool = True
 

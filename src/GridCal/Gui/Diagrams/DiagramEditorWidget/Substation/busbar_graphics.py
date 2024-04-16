@@ -159,6 +159,7 @@ class BusBarGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
                                            w=self.w,
                                            h=self.h,
                                            r=self.rotation(),
+                                           draw_labels=self.draw_labels,
                                            graphic_object=self)
 
     def add_big_marker(self, color: Union[None, QColor] = Qt.red, tool_tip_text: str = ""):
@@ -257,6 +258,7 @@ class BusBarGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
                                            w=w,
                                            h=int(self.min_h),
                                            r=self.rotation(),
+                                           draw_labels=self.draw_labels,
                                            graphic_object=self)
 
         return w, self.min_h

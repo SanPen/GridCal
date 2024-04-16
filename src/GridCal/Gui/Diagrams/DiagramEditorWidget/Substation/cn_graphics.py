@@ -43,7 +43,6 @@ from GridCal.Gui.Diagrams.DiagramEditorWidget.Injections.controllable_shunt_grap
 
 from GridCalEngine.enumerations import DeviceType, FaultType
 from GridCalEngine.Devices.types import INJECTION_DEVICE_TYPES
-from GridCalEngine.Simulations.Topology.topology_reduction_driver import reduce_buses
 from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
@@ -146,6 +145,7 @@ class CnGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
                                            w=self.w,
                                            h=self.h,
                                            r=self.rotation(),
+                                           draw_labels=self.draw_labels,
                                            graphic_object=self)
 
     def set_position(self, x: int, y: int) -> None:

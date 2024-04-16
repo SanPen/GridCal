@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'MainWindow.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.7.0
+## Created by: Qt User Interface Compiler version 6.6.3
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -1583,7 +1583,7 @@ class Ui_mainWindow(object):
         self.line_14.setPalette(palette2)
         self.line_14.setFrameShadow(QFrame.Plain)
         self.line_14.setLineWidth(4)
-        self.line_14.setFrameShape(QFrame.Shape.HLine)
+        self.line_14.setFrameShape(QFrame.HLine)
 
         self.gridLayout_9.addWidget(self.line_14, 1, 0, 1, 2)
 
@@ -1680,7 +1680,7 @@ class Ui_mainWindow(object):
         self.line_17.setPalette(palette4)
         self.line_17.setFrameShadow(QFrame.Plain)
         self.line_17.setLineWidth(4)
-        self.line_17.setFrameShape(QFrame.Shape.HLine)
+        self.line_17.setFrameShape(QFrame.HLine)
 
         self.gridLayout_2.addWidget(self.line_17, 1, 0, 1, 3)
 
@@ -1974,7 +1974,7 @@ class Ui_mainWindow(object):
         self.line_16.setPalette(palette7)
         self.line_16.setFrameShadow(QFrame.Plain)
         self.line_16.setLineWidth(4)
-        self.line_16.setFrameShape(QFrame.Shape.HLine)
+        self.line_16.setFrameShape(QFrame.HLine)
 
         self.gridLayout_10.addWidget(self.line_16, 2, 0, 1, 5)
 
@@ -2110,7 +2110,7 @@ class Ui_mainWindow(object):
         self.line_27.setPalette(palette9)
         self.line_27.setFrameShadow(QFrame.Plain)
         self.line_27.setLineWidth(4)
-        self.line_27.setFrameShape(QFrame.Shape.HLine)
+        self.line_27.setFrameShape(QFrame.HLine)
 
         self.gridLayout_13.addWidget(self.line_27, 1, 0, 1, 4)
 
@@ -2258,7 +2258,7 @@ class Ui_mainWindow(object):
         self.line_26.setPalette(palette10)
         self.line_26.setFrameShadow(QFrame.Plain)
         self.line_26.setLineWidth(4)
-        self.line_26.setFrameShape(QFrame.Shape.HLine)
+        self.line_26.setFrameShape(QFrame.HLine)
 
         self.gridLayout_4.addWidget(self.line_26, 1, 0, 1, 2)
 
@@ -2379,7 +2379,7 @@ class Ui_mainWindow(object):
         self.line_22.setPalette(palette12)
         self.line_22.setFrameShadow(QFrame.Plain)
         self.line_22.setLineWidth(4)
-        self.line_22.setFrameShape(QFrame.Shape.HLine)
+        self.line_22.setFrameShape(QFrame.HLine)
 
         self.gridLayout_14.addWidget(self.line_22, 1, 0, 1, 2)
 
@@ -2563,7 +2563,7 @@ class Ui_mainWindow(object):
         self.line_25.setPalette(palette15)
         self.line_25.setFrameShadow(QFrame.Plain)
         self.line_25.setLineWidth(4)
-        self.line_25.setFrameShape(QFrame.Shape.HLine)
+        self.line_25.setFrameShape(QFrame.HLine)
 
         self.gridLayout_28.addWidget(self.line_25, 2, 0, 1, 2)
 
@@ -2612,7 +2612,7 @@ class Ui_mainWindow(object):
         self.line_24.setPalette(palette16)
         self.line_24.setFrameShadow(QFrame.Plain)
         self.line_24.setLineWidth(4)
-        self.line_24.setFrameShape(QFrame.Shape.HLine)
+        self.line_24.setFrameShape(QFrame.HLine)
 
         self.gridLayout_21.addWidget(self.line_24, 14, 0, 1, 2)
 
@@ -2664,7 +2664,7 @@ class Ui_mainWindow(object):
         self.line_30.setPalette(palette18)
         self.line_30.setFrameShadow(QFrame.Plain)
         self.line_30.setLineWidth(4)
-        self.line_30.setFrameShape(QFrame.Shape.HLine)
+        self.line_30.setFrameShape(QFrame.HLine)
 
         self.gridLayout_21.addWidget(self.line_30, 19, 0, 1, 2)
 
@@ -2734,7 +2734,7 @@ class Ui_mainWindow(object):
         self.line_29.setPalette(palette20)
         self.line_29.setFrameShadow(QFrame.Plain)
         self.line_29.setLineWidth(4)
-        self.line_29.setFrameShape(QFrame.Shape.HLine)
+        self.line_29.setFrameShape(QFrame.HLine)
 
         self.gridLayout_21.addWidget(self.line_29, 9, 0, 1, 3)
 
@@ -2854,7 +2854,7 @@ class Ui_mainWindow(object):
         self.line_4.setPalette(palette24)
         self.line_4.setFrameShadow(QFrame.Plain)
         self.line_4.setLineWidth(4)
-        self.line_4.setFrameShape(QFrame.Shape.HLine)
+        self.line_4.setFrameShape(QFrame.HLine)
 
         self.gridLayout_6.addWidget(self.line_4, 1, 0, 1, 3)
 
@@ -2872,7 +2872,7 @@ class Ui_mainWindow(object):
         self.line_10.setPalette(palette25)
         self.line_10.setFrameShadow(QFrame.Plain)
         self.line_10.setLineWidth(4)
-        self.line_10.setFrameShape(QFrame.Shape.HLine)
+        self.line_10.setFrameShape(QFrame.HLine)
 
         self.gridLayout_6.addWidget(self.line_10, 9, 0, 1, 3)
 
@@ -2977,7 +2977,7 @@ class Ui_mainWindow(object):
         self.line_21.setPalette(palette27)
         self.line_21.setFrameShadow(QFrame.Plain)
         self.line_21.setLineWidth(4)
-        self.line_21.setFrameShape(QFrame.Shape.HLine)
+        self.line_21.setFrameShape(QFrame.HLine)
 
         self.verticalLayout_36.addWidget(self.line_21)
 
@@ -3009,7 +3009,7 @@ class Ui_mainWindow(object):
         self.line_13.setPalette(palette28)
         self.line_13.setFrameShadow(QFrame.Plain)
         self.line_13.setLineWidth(4)
-        self.line_13.setFrameShape(QFrame.Shape.HLine)
+        self.line_13.setFrameShape(QFrame.HLine)
 
         self.verticalLayout_36.addWidget(self.line_13)
 
@@ -3090,7 +3090,7 @@ class Ui_mainWindow(object):
         self.line_8.setPalette(palette30)
         self.line_8.setFrameShadow(QFrame.Plain)
         self.line_8.setLineWidth(4)
-        self.line_8.setFrameShape(QFrame.Shape.HLine)
+        self.line_8.setFrameShape(QFrame.HLine)
 
         self.verticalLayout_25.addWidget(self.line_8)
 
@@ -3179,7 +3179,7 @@ class Ui_mainWindow(object):
         self.line_20.setPalette(palette32)
         self.line_20.setFrameShadow(QFrame.Plain)
         self.line_20.setLineWidth(4)
-        self.line_20.setFrameShape(QFrame.Shape.HLine)
+        self.line_20.setFrameShape(QFrame.HLine)
 
         self.verticalLayout_21.addWidget(self.line_20)
 
@@ -3265,7 +3265,7 @@ class Ui_mainWindow(object):
         self.line_9.setPalette(palette34)
         self.line_9.setFrameShadow(QFrame.Plain)
         self.line_9.setLineWidth(4)
-        self.line_9.setFrameShape(QFrame.Shape.HLine)
+        self.line_9.setFrameShape(QFrame.HLine)
 
         self.verticalLayout_31.addWidget(self.line_9)
 
@@ -3541,7 +3541,7 @@ class Ui_mainWindow(object):
         self.line_6.setPalette(palette40)
         self.line_6.setFrameShadow(QFrame.Plain)
         self.line_6.setLineWidth(4)
-        self.line_6.setFrameShape(QFrame.Shape.HLine)
+        self.line_6.setFrameShape(QFrame.HLine)
 
         self.verticalLayout_7.addWidget(self.line_6)
 
@@ -3640,7 +3640,7 @@ class Ui_mainWindow(object):
         self.line_28.setPalette(palette42)
         self.line_28.setFrameShadow(QFrame.Plain)
         self.line_28.setLineWidth(4)
-        self.line_28.setFrameShape(QFrame.Shape.HLine)
+        self.line_28.setFrameShape(QFrame.HLine)
 
         self.gridLayout_11.addWidget(self.line_28, 1, 0, 1, 2)
 
@@ -3716,7 +3716,7 @@ class Ui_mainWindow(object):
         self.line_31.setPalette(palette44)
         self.line_31.setFrameShadow(QFrame.Plain)
         self.line_31.setLineWidth(4)
-        self.line_31.setFrameShape(QFrame.Shape.HLine)
+        self.line_31.setFrameShape(QFrame.HLine)
 
         self.gridLayout_5.addWidget(self.line_31, 1, 0, 1, 3)
 
@@ -3801,7 +3801,7 @@ class Ui_mainWindow(object):
         self.line_5.setPalette(palette46)
         self.line_5.setFrameShadow(QFrame.Plain)
         self.line_5.setLineWidth(4)
-        self.line_5.setFrameShape(QFrame.Shape.HLine)
+        self.line_5.setFrameShape(QFrame.HLine)
 
         self.verticalLayout_12.addWidget(self.line_5)
 
@@ -3969,7 +3969,7 @@ class Ui_mainWindow(object):
         self.toolBar.setIconSize(QSize(26, 26))
         self.toolBar.setToolButtonStyle(Qt.ToolButtonIconOnly)
         self.toolBar.setFloatable(False)
-        mainWindow.addToolBar(Qt.ToolBarArea.TopToolBarArea, self.toolBar)
+        mainWindow.addToolBar(Qt.TopToolBarArea, self.toolBar)
 
         self.menuBar.addAction(self.menuProject.menuAction())
         self.menuBar.addAction(self.menuActions.menuAction())

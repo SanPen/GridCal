@@ -1,6 +1,6 @@
 from GridCalEngine.Devices import MultiCircuit
 from GridCalEngine.Devices.Substation.bus import Bus
-from GridCalEngine.IO.cim.cgmes.base import get_new_rdfid, form_rdfid
+from GridCalEngine.IO.cim.cgmes.base import get_new_rdfid, form_rdfid, rfid2uuid
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.full_model import FullModel
 from GridCalEngine.IO.cim.cgmes.base import Base
@@ -38,33 +38,36 @@ class ReferenceManager:
 #     pass   # TODO
 
 
-def find_object_by_uuid(object_list, target_uuid):  # TODO move to CGMES utils
+def find_object_by_uuid(cgmes_model: CgmesCircuit, object_list, target_uuid):  # TODO move to CGMES utils
     """
     Finds an object with the specified uuid
      in the given object_list from a CGMES Circuit.
 
     Args:
+        cgmes_model:
         object_list (list[MyObject]): List of MyObject instances.
         target_uuid (str): The uuid to search for.
 
     Returns:
         MyObject or None: The found object or None if not found.
     """
+    boundary_obj_dict = cgmes_model.all_objects_dict_boundary
+    if boundary_obj_dict is not None:
+        for k, obj in boundary_obj_dict.items():
+            if rfid2uuid(k) == target_uuid:
+                return obj
     for obj in object_list:
         if obj.uuid == target_uuid:
             return obj
     return None
 
 
-def find_object_by_tn_uuid(object_list: List[cgmes.VoltageLevel], target_uuid):
-    """ for Voltage Levels.. """
-    for obj in object_list:
-        if obj.TopologicalNode.uuid == target_uuid:
-            return obj
-    return None
-
-
-def find_object_by_vnom(object_list: List[cgmes.BaseVoltage], target_vnom):
+def find_object_by_vnom(cgmes_model: CgmesCircuit, object_list: List[cgmes.BaseVoltage], target_vnom):
+    boundary_obj_list = cgmes_model.elements_by_type_boundary.get("BaseVoltage")
+    if boundary_obj_list is not None:
+        for obj in boundary_obj_list:
+            if obj.nominalVoltage == target_vnom:
+                return obj
     for obj in object_list:
         if obj.nominalVoltage == target_vnom:
             return obj
@@ -174,12 +177,11 @@ def create_cgmes_headers(cgmes_model: CgmesCircuit, desc: str = "", scenariotime
 
         fm_list[0].DependentOn = [eqbd_id]
         fm_list[1].DependentOn = [fm_list[0].rdfid]
+        fm_list[2].DependentOn = [fm_list[0].rdfid]
         if tpbd_id != "":
-            fm_list[2].DependentOn = [eqbd_id, tpbd_id, fm_list[0].rdfid]
-            fm_list[3].DependentOn = [tpbd_id, fm_list[0].rdfid, fm_list[1].rdfid, fm_list[2].rdfid]
+            fm_list[3].DependentOn = [tpbd_id, fm_list[1].rdfid, fm_list[2].rdfid]
         else:
-            fm_list[2].DependentOn = [eqbd_id, fm_list[0].rdfid]
-            fm_list[3].DependentOn = [fm_list[0].rdfid, fm_list[1].rdfid, fm_list[2].rdfid]
+            fm_list[3].DependentOn = [fm_list[1].rdfid, fm_list[2].rdfid]
     except TypeError:
         print("Missing default boundary files")
         fm_list[1].DependentOn = [fm_list[0].rdfid]
@@ -203,6 +205,7 @@ def create_cgmes_terminal(bus: Bus,
     # term.ConductingEquipment = BusBarSection
     term.connected = True
     tn = find_object_by_uuid(
+        cgmes_model=cgmes_model,
         object_list=cgmes_model.TopologicalNode_list,
         target_uuid=bus.idtag
     )
@@ -327,13 +330,22 @@ def get_cgmes_subgeograpical_regions(multi_circuit_model: MultiCircuit,
     pass
 
 
+def get_base_voltage_from_boundary(cgmes_model: CgmesCircuit, vnom: float):
+    bv_list = cgmes_model.elements_by_type_boundary.get("BaseVoltage")
+    if bv_list is not None:
+        for bv in bv_list:
+            if bv.nominalVoltage == vnom:
+                return bv
+    return None
+
+
 def get_cgmes_base_voltages(multi_circuit_model: MultiCircuit,
                             cgmes_model: CgmesCircuit,
                             logger: DataLogger) -> None:
     base_volt_set = set()
     for bus in multi_circuit_model.buses:
 
-        if bus.Vnom not in base_volt_set:
+        if bus.Vnom not in base_volt_set and get_base_voltage_from_boundary(cgmes_model, vnom=bus.Vnom) is None:
             base_volt_set.add(bus.Vnom)
 
             new_rdf_id = get_new_rdfid()
@@ -352,6 +364,7 @@ def get_cgmes_substations(multi_circuit_model: MultiCircuit,
         substation = cgmes.Substation(rdfid=form_rdfid(mc_elm.idtag))
         substation.name = mc_elm.name
         substation.Region = find_object_by_uuid(
+            cgmes_model=cgmes_model,
             object_list=cgmes_model.SubGeographicalRegion_list,
             target_uuid=mc_elm.idtag  # TODO Community.idtag!
         )
@@ -367,6 +380,7 @@ def get_cgmes_voltage_levels(multi_circuit_model: MultiCircuit,
         vl = cgmes.VoltageLevel(rdfid=form_rdfid(mc_elm.idtag))
         vl.name = mc_elm.name
         vl.BaseVoltage = find_object_by_vnom(
+            cgmes_model=cgmes_model,
             object_list=cgmes_model.BaseVoltage_list,
             target_vnom=mc_elm.Vnom
         )
@@ -375,6 +389,7 @@ def get_cgmes_voltage_levels(multi_circuit_model: MultiCircuit,
 
         if mc_elm.substation is not None:
             substation: cgmes.Substation = find_object_by_uuid(
+                cgmes_model=cgmes_model,
                 object_list=cgmes_model.Substation_list,
                 target_uuid=mc_elm.substation.idtag
             )
@@ -397,12 +412,14 @@ def get_cgmes_tn_nodes(multi_circuit_model: MultiCircuit,
         tn = cgmes.TopologicalNode(rdfid=bus.idtag)
         tn.name = bus.name
         tn.BaseVoltage = find_object_by_vnom(
+            cgmes_model=cgmes_model,
             object_list=cgmes_model.BaseVoltage_list,
             target_vnom=bus.Vnom
         )
 
         if bus.voltage_level is not None:  # VoltageLevel
             vl: cgmes.VoltageLevel = find_object_by_uuid(
+                cgmes_model=cgmes_model,
                 object_list=cgmes_model.VoltageLevel_list,
                 target_uuid=bus.voltage_level.idtag
             )
@@ -426,9 +443,9 @@ def get_cgmes_cn_nodes(multi_circuit_model: MultiCircuit,
 
         cn = cgmes.ConnectivityNode(rdfid=form_rdfid(mc_elm.idtag))
         cn.name = mc_elm.name
-        tn = None
         if mc_elm.default_bus is not None:
             tn: cgmes.TopologicalNode = find_object_by_uuid(
+                cgmes_model=cgmes_model,
                 object_list=cgmes_model.TopologicalNode_list,
                 target_uuid=mc_elm.default_bus.idtag
             )
@@ -438,12 +455,12 @@ def get_cgmes_cn_nodes(multi_circuit_model: MultiCircuit,
                 tn.ConnectivityNodes = cn  # link back
             else:
                 logger.add_error(msg='No TopologinalNode found',
-                                 device=cn,
+                                 device=cn.name,
                                  device_class=cn.tpe)
         else:
             logger.add_error(msg='Connectivity Node has no default bus',
-                             device=mc_elm,
-                             device_class=gcdev.ConnectivityNode)
+                             device=mc_elm.name,
+                             device_class=mc_elm.device_type)
             # print(f'Topological node not found for cn: {cn.name}')
 
         cgmes_model.add(cn)
@@ -535,8 +552,9 @@ def get_cgmes_equivalent_injections(multicircuit_model: MultiCircuit,
         ei.name = mc_elm.name
         ei.p = mc_elm.P
         ei.q = mc_elm.Q
-        ei.BaseVoltage = find_object_by_attribute(cgmes_model.BaseVoltage_list, "nominalVoltage",
-                                                  mc_elm.bus.Vnom)
+        ei.BaseVoltage = find_object_by_vnom(cgmes_model=cgmes_model,
+                                             object_list=cgmes_model.BaseVoltage_list,
+                                             target_vnom=mc_elm.bus.Vnom)
 
         cgmes_model.add(ei)
 
@@ -558,11 +576,10 @@ def get_cgmes_ac_line_segments(multicircuit_model: MultiCircuit,
         line = cgmes.ACLineSegment(rdfid=form_rdfid(mc_elm.idtag))
         line.description = mc_elm.code
         line.name = mc_elm.name
-        line.BaseVoltage = find_object_by_attribute(
-            object_list=cgmes_model.BaseVoltage_list,
-            target_attr_name="nominalVoltage",
-            target_value=mc_elm.get_max_bus_nominal_voltage()
-        )  # which Vnom we need?
+        line.BaseVoltage = find_object_by_vnom(cgmes_model=cgmes_model,
+                                               object_list=cgmes_model.BaseVoltage_list,
+                                               target_vnom=mc_elm.get_max_bus_nominal_voltage()
+                                               )  # which Vnom we need?
         vnom = line.BaseVoltage.nominalVoltage
 
         if vnom is not None:

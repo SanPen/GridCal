@@ -118,6 +118,7 @@ def optimal_linear_contingency_analysis(grid: MultiCircuit,
                                  areas_from=list(),
                                  areas_to=list(),
                                  energy_0=None,
+                                 fluid_level_0=None,
                                  logger=logger,
                                  export_model_fname=None)
 

@@ -87,8 +87,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
             n_fluid_node=self.grid.get_fluid_nodes_number(),
             n_fluid_path=self.grid.get_fluid_paths_number(),
             n_fluid_injection=self.grid.get_fluid_injection_number(),
-            time_array=self.grid.time_profile[self.time_indices] if self.time_indices is not None else [
-                datetime.datetime.now()],
+            time_array=self.grid.time_profile[self.time_indices] if self.time_indices is not None else [datetime.datetime.now()],
             bus_types=np.ones(self.grid.get_bus_number(), dtype=int),
             clustering_results=clustering_results)
 
@@ -267,11 +266,18 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
         n = len(groups)
         i = 1
         energy_0: Union[Vec, None] = None  # at the beginning
+        fluid_level_0: Union[Vec, None] = None
 
         while i < n and not self.__cancel__:
             start_ = groups[i - 1]
             end_ = groups[i]
-            time_indices = np.arange(start_, end_)
+
+            # Grab the last time index in the last group
+            if i == n - 1:
+                time_indices = np.arange(start_, end_ + 1)
+            else:
+                time_indices = np.arange(start_, end_)
+
             # show progress message
             print(start_, ':', end_, ' [', end_ - start_, ']')
             self.report_text('Running OPF for the time group {0} '
@@ -293,6 +299,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                                          areas_from=self.options.areas_from,
                                          areas_to=self.options.areas_to,
                                          energy_0=energy_0,
+                                         fluid_level_0=fluid_level_0,
                                          logger=self.logger,
                                          export_model_fname=self.options.export_model_fname)
 
@@ -338,6 +345,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
             self.results.converged[time_indices] = np.array([opf_vars.acceptable_solution] * opf_vars.nt)
 
             energy_0 = self.results.battery_energy[end_ - 1, :]
+            fluid_level_0 = self.results.fluid_node_current_level[end_ - 1, :]
 
             # update progress bar
             self.report_progress2(i, len(groups))

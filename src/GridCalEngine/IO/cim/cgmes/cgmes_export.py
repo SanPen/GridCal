@@ -154,7 +154,7 @@ class CimExporter:
                         "description": "str"}
 
         for instance in self.cgmes_circuit.FullModel_list:
-            instance_dict = instance.parsed_properties
+            instance_dict = instance.__dict__
             if self.is_in_profile(instance_profiles=instance_dict.get("profile"), model_profile=profile):
                 element = Et.Element("md:FullModel", {"rdf:about": "urn:uuid:" + instance.rdfid})
                 for attr_name, attr_value in instance_dict.items():

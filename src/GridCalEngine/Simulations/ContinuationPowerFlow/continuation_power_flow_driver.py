@@ -30,21 +30,21 @@ class ContinuationPowerFlowDriver(DriverTemplate):
     name = 'Continuation Power Flow'
     tpe = SimulationTypes.ContinuationPowerFlow_run
 
-    def __init__(self, circuit: MultiCircuit,
+    def __init__(self, grid: MultiCircuit,
                  options: ContinuationPowerFlowOptions,
                  inputs: ContinuationPowerFlowInput,
                  pf_options: PowerFlowOptions,
                  opf_results=None, t=0):
         """
         ContinuationPowerFlowDriver constructor
-        :param circuit: NumericalCircuit instance
+        :param grid: NumericalCircuit instance
         :param options: ContinuationPowerFlowOptions instance
         :param inputs: ContinuationPowerFlowInput instance
         :param pf_options: PowerFlowOptions instance
         :param opf_results:
         """
 
-        DriverTemplate.__init__(self, grid=circuit)
+        DriverTemplate.__init__(self, grid=grid)
 
         # voltage stability options
         self.options = options
@@ -57,7 +57,12 @@ class ContinuationPowerFlowDriver(DriverTemplate):
 
         self.t = t
 
-        self.results = None
+        self.results = ContinuationPowerFlowResults(nval=0,
+                                                    nbus=0,
+                                                    nbr=0,
+                                                    bus_names=[],
+                                                    branch_names=[],
+                                                    bus_types=[])
 
     def get_steps(self):
         """
@@ -68,7 +73,7 @@ class ContinuationPowerFlowDriver(DriverTemplate):
         else:
             return list()
 
-    def progress_callback(self, lmbda):
+    def progress_callback(self, lmbda: float) -> None:
         """
         Send progress report
         :param lmbda: lambda value

@@ -293,7 +293,8 @@ class ConfigurationMain(ResultsMain):
             },
             "file": {
                 "store_results_in_file": self.ui.saveResultsCheckBox,
-                "current_boundary_set": self.current_boundary_set
+                "current_boundary_set": self.current_boundary_set,
+                "cgmes_selected_version": self.ui.cgmes_version_comboBox
             }
         }
 

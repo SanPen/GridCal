@@ -22,16 +22,17 @@ import chardet
 import pandas as pd
 import zipfile
 from warnings import warn
-from typing import List, Dict, Any, Union, Callable
+from typing import List, Dict, Union, Callable
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.IO.gridcal.generic_io_functions import parse_config_df, CustomJSONizer
+from GridCalEngine.Simulations.results_template import DriverToSave
 import GridCalEngine.Devices as dev
 
 
 def save_gridcal_data_to_zip(dfs: Dict[str, pd.DataFrame],
                              filename_zip: str,
                              model_data: Dict[str, Dict[str, str]],
-                             sessions: List[Any],
+                             sessions_data: List[DriverToSave],
                              diagrams: List[Union[dev.MapDiagram, dev.SchematicDiagram]],
                              json_files: Dict[str, dict],
                              text_func: Union[None, Callable[[str], None]] = None,
@@ -42,7 +43,7 @@ def save_gridcal_data_to_zip(dfs: Dict[str, pd.DataFrame],
     :param dfs: dictionary of pandas dataFrames {name: DataFrame}
     :param filename_zip: file name where to save all
     :param model_data: dictionary of json data opposed to the dataframes collection
-    :param sessions: SimulationSession instance
+    :param sessions_data: List of DriverToSave instances, representing the results drivers data
     :param diagrams: List of Diagram objects
     :param json_files: List of configuration json files to save Dict[file_name, dictionary to save]
     :param text_func: pointer to function that prints the names
@@ -66,7 +67,7 @@ def save_gridcal_data_to_zip(dfs: Dict[str, pd.DataFrame],
             try:
                 f_zip_ptr.writestr(filename, json.dumps(object_data, indent=4, cls=CustomJSONizer))
             except TypeError as e:
-                logger.add_error(msg=e, device_class=object_type_name)
+                logger.add_error(msg=str(e), device_class=object_type_name)
                 warn(f"{object_type_name}: {e}")
 
         # save diagrams
@@ -115,42 +116,62 @@ def save_gridcal_data_to_zip(dfs: Dict[str, pd.DataFrame],
             i += 1
 
         # pre-count the sessions
-        n_items = 0
-        for session in sessions:
-            for drv_name, drv in session.drivers.items():
-                if hasattr(drv, 'results'):
-                    if drv.results is not None:
-                        for arr_name, arr in drv.results.get_arrays().items():
-                            n_items += 1
+        n_items = len(sessions_data)
 
         # save sessions
         i = 0
-        for session in sessions:
-            for drv_name, drv in session.drivers.items():
-                if hasattr(drv, 'results'):
-                    if drv.results is not None:
-                        for arr_name, arr in drv.results.get_arrays().items():
-                            filename = 'sessions/' + session.name + '/' + drv.tpe.value + '/' + arr_name
+        for session_data in sessions_data:
 
-                            if text_func is not None:
-                                text_func('Flushing ' + filename + ' to ' + filename_zip + '...')
+            if session_data.results is not None:
 
-                            with BytesIO() as buffer:
-                                # save the DataFrame to the buffer, protocol4 is to be compatible with python 3.6
-                                np.save(buffer, np.array(arr))  # save the DataFrame to the buffer
-                                f_zip_ptr.writestr(filename + '.npy',
-                                                   buffer.getvalue())  # save the buffer to the zip file
+                # traverse the registered results
+                for arr_name, arr_prop in session_data.results.data_variables.items():
 
-                            if progress_func is not None:
-                                progress_func((i + 1) / n_items * 100)
+                    filename = 'sessions/' + session_data.name + '/' + session_data.tpe.value + '/' + arr_name
 
-                            i += 1
+                    if text_func is not None:
+                        text_func('Flushing ' + filename + ' to ' + filename_zip + '...')
+
+                    # get the array
+                    arr = getattr(session_data.results, arr_name)
+
+                    with BytesIO() as buffer:
+                        # pack the array into a DataFrame
+
+                        try:
+                            if np.iscomplexobj(arr):
+                                filename += "__complex__"
+                                pd.DataFrame(data=np.c_[arr.real, arr.imag]).to_parquet(buffer)
+                            else:
+                                pd.DataFrame(data=arr).to_parquet(buffer)
+
+                            # save the buffer to the zip file
+                            f_zip_ptr.writestr(filename + ".parquet", buffer.getvalue())
+
+                        except ValueError as e:
+                            warn(str(e))
+
+                    if progress_func is not None:
+                        progress_func((i + 1) / n_items * 100)
+
+                    i += 1
+
+            # save logger
+            if session_data.logger is not None:
+                filename = 'sessions/' + session_data.name + '/' + session_data.tpe.value + '/logger.parquet'
+                with BytesIO() as buffer:
+                    # save the DataFrame to the buffer, protocol4 is to be compatible with python 3.6
+                    session_data.logger.to_df().to_parquet(buffer)
+                    # save the buffer to the zip file
+                    f_zip_ptr.writestr(filename, buffer.getvalue())
 
     if n_failed:
         print('Failed to pickle several profiles, but saved them as csv.\nFor improved speed install Pandas >= 1.2')
 
 
-def read_data_frame_from_zip(file_pointer, extension: str, index_col=None, logger=Logger()):
+def read_data_frame_from_zip(file_pointer,
+                             extension: str,
+                             index_col=None, logger=Logger()) -> Union[None, pd.DataFrame]:
     """
     read DataFrame
     :param file_pointer: Pointer to the file within the zip file
@@ -189,6 +210,26 @@ def read_data_frame_from_zip(file_pointer, extension: str, index_col=None, logge
                 logger.add_error(str(e) + ' Upgrading pandas might help.', device=file_pointer.name)
                 return None
 
+        elif extension == '.feather':
+            try:
+                return pd.read_feather(file_pointer)
+            except ValueError as e:
+                logger.add_error(str(e), device=file_pointer.name)
+                return None
+            except AttributeError as e:
+                logger.add_error(str(e) + ' Upgrading pandas might help.', device=file_pointer.name)
+                return None
+
+        elif extension == '.hdf':
+            try:
+                return pd.read_hdf(file_pointer, key='array')
+            except ValueError as e:
+                logger.add_error(str(e), device=file_pointer.name)
+                return None
+            except AttributeError as e:
+                logger.add_error(str(e) + ' Upgrading pandas might help.', device=file_pointer.name)
+                return None
+
     except EOFError:
         logger.add_error("EOF error", device=file_pointer.name)
         return None
@@ -209,19 +250,19 @@ def get_frames_from_zip(file_name_zip: str,
     :param logger:
     :return: list of DataFrames
     """
+    data = {'diagrams': list(),
+            'model_data': dict()}
+    json_files = dict()
 
     # open the zip file
     try:
         zip_file_pointer = zipfile.ZipFile(file_name_zip)
     except zipfile.BadZipFile:
-        return None
+        return data, json_files
 
     names = zip_file_pointer.namelist()
 
     n = len(names)
-    data = {'diagrams': list(),
-            'model_data': dict()}
-    json_files = dict()
 
     # for each file in the zip file...
     for i, file_name in enumerate(names):
@@ -329,13 +370,15 @@ def get_session_tree(file_name_zip: str):
     return data
 
 
-def load_session_driver_objects(file_name_zip: str, session_name: str, study_name: str):
+def load_session_driver_objects(file_name_zip: str,
+                                session_name: str,
+                                study_name: str) -> Dict[str, Union[None, pd.DataFrame]]:
     """
     Get the sessions structure
     :param file_name_zip:
     :param session_name:
     :param study_name:
-    :return:
+    :return: Dict[str, Union[None, pd.DataFrame]]
     """
     try:
         zip_file_pointer = zipfile.ZipFile(file_name_zip)
@@ -344,7 +387,7 @@ def load_session_driver_objects(file_name_zip: str, session_name: str, study_nam
 
     data = dict()
 
-    # traverse the zip names and pick all those that start with sessions/session_name/study_name
+    # traverse the zip names and pick all those that start with sessions_data/session_name/study_name
     for name in zip_file_pointer.namelist():
         if '/' in name:
             path = name.split('/')
@@ -360,15 +403,10 @@ def load_session_driver_objects(file_name_zip: str, session_name: str, study_nam
                     # read the data
                     data[arr_name] = read_data_frame_from_zip(file_pointer, extension)
 
-                    # try:
-                    #     data[arr_name] = np.load(file_pointer)
-                    # except ValueError:
-                    #     data[arr_name] = np.load(file_pointer, allow_pickle=True)
-
     return data
 
 
-def get_xml_content(file_ptr):
+def get_xml_content(file_ptr: zipfile.ZipExtFile) -> List[str]:
     """
     Reads the content of a file
     :param file_ptr: File pointer (from file or zip file)
@@ -383,7 +421,7 @@ def get_xml_content(file_ptr):
         try:
             detection = chardet.detect(first_line)
             encoding = detection['encoding']
-        except:
+        except TypeError:
             encoding = 'utf-8'
 
     # sequential back to the start
@@ -398,7 +436,7 @@ def get_xml_content(file_ptr):
 
 def get_xml_from_zip(file_name_zip: str,
                      text_func: Union[None, Callable[[str], None]] = None,
-                     progress_func: Union[None, Callable[[float], None]] = None,):
+                     progress_func: Union[None, Callable[[float], None]] = None, ):
     """
     Get the .xml files from a zip file
     :param file_name_zip: name of the zip file

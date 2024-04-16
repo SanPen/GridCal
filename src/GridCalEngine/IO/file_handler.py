@@ -48,6 +48,8 @@ from GridCalEngine.IO.gridcal.h5_interface import save_h5, open_h5
 from GridCalEngine.IO.raw.rawx_parser_writer import parse_rawx, write_rawx
 from GridCalEngine.IO.others.pypsa_parser import parse_netcdf, parse_hdf5
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Simulations.results_template import DriverToSave
+from GridCalEngine.enumerations import CGMESVersions
 
 
 class FileSavingOptions:
@@ -58,21 +60,25 @@ class FileSavingOptions:
     def __init__(self,
                  cgmes_boundary_set: str = "",
                  simulation_drivers: List[DriverTemplate] = None,
-                 sessions: List[Any] = None,
-                 dictionary_of_json_files: Dict[str, Dict[str, Any]] = None):
+                 sessions_data: List[DriverToSave] = None,
+                 dictionary_of_json_files: Dict[str, Dict[str, Any]] = None,
+                 cgmes_version: CGMESVersions = CGMESVersions.v2_4_15):
         """
         Constructor
         :param cgmes_boundary_set: CGMES boundary set zip file path
         :param simulation_drivers: List of Simulation Drivers
-        :param sessions: List of sessions
+        :param sessions_data: List of sessions_data
         :param dictionary_of_json_files: Dictionary of json files
+        :param cgmes_version: Version to use with CGMES
         """
+
+        self.cgmes_vesrion: CGMESVersions = cgmes_version
 
         self.cgmes_boundary_set: str = cgmes_boundary_set
 
         self.simulation_drivers = simulation_drivers if simulation_drivers else list()
 
-        self.sessions = sessions if sessions else list()
+        self.sessions_data: List[DriverToSave] = sessions_data if sessions_data else list()
 
         self.dictionary_of_json_files = dictionary_of_json_files if dictionary_of_json_files else dict()
 
@@ -125,7 +131,7 @@ class FileOpen:
                 _, file_extension = os.path.splitext(f)
                 if file_extension.lower() not in ['.xml', '.zip']:
                     raise Exception('Loading multiple files that are not XML/Zip (xml or zip is for CIM or CGMES)')
-            import time
+
             data_parser = CgmesDataParser(text_func=text_func, progress_func=progress_func, logger=self.cgmes_logger)
             data_parser.load_files(files=self.file_name)
             self.cgmes_circuit = CgmesCircuit(cgmes_version=data_parser.cgmes_version, text_func=text_func,
@@ -398,7 +404,7 @@ class FileSave:
         save_gridcal_data_to_zip(dfs=dfs,
                                  filename_zip=self.file_name,
                                  model_data=model_data,
-                                 sessions=self.options.sessions,
+                                 sessions_data=self.options.sessions_data,
                                  diagrams=self.circuit.diagrams,
                                  json_files=self.options.dictionary_of_json_files,
                                  text_func=self.text_func,

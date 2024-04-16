@@ -158,7 +158,9 @@ class GridMapWidget(MapWidget):
                             self.schema_Manager.CurrentLine.CreateConnector(i1, i2)
             elif category == DeviceType.VoltageLevelDevice.value:
                 for idtag, location in points_group.locations.items():
-                    self.schema_Manager.CreateSubstation(location.latitude, location.longitude)
+                    if(location.api_object.substation):
+                        objectSubs = location.api_object.substation
+                        self.schema_Manager.CreateSubstation(objectSubs.longitude, -objectSubs.latitude)
 
     def colour_results(self,
                        buses: List[Bus],

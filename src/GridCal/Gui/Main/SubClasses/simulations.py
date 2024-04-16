@@ -630,7 +630,7 @@ class SimulationsMain(TimeEventsMain):
         """
         if use_opf:
 
-            drv, opf_time_series_results = self.session.get_driver_results(SimulationTypes.OPFTimeSeries_run)
+            opf_time_series_results = self.session.optimal_power_flow_ts
 
             if opf_time_series_results is None:
                 if use_opf:
@@ -765,16 +765,12 @@ class SimulationsMain(TimeEventsMain):
         """
         # update the results in the circuit structures
 
-        drv, results = self.session.get_driver_results(sim.SimulationTypes.PowerFlow_run)
+        results = self.session.power_flow
 
         if results is not None:
             self.ui.progress_label.setText('Colouring power flow results in the grid...')
-            # QtGui.QGuiApplication.processEvents()
-
             self.remove_simulation(sim.SimulationTypes.PowerFlow_run)
-
             self.update_available_results()
-
             self.colour_diagrams()
 
         else:
@@ -793,7 +789,7 @@ class SimulationsMain(TimeEventsMain):
         if len(self.circuit.buses) > 0:
             if not self.session.is_this_running(sim.SimulationTypes.ShortCircuit_run):
 
-                pf_drv, pf_results = self.session.get_driver_results(sim.SimulationTypes.PowerFlow_run)
+                pf_results = self.session.power_flow
 
                 if pf_results is not None:
 
@@ -861,15 +857,13 @@ class SimulationsMain(TimeEventsMain):
 
         """
         # update the results in the circuit structures
-        drv, results = self.session.get_driver_results(sim.SimulationTypes.ShortCircuit_run)
-        self.remove_simulation(sim.SimulationTypes.ShortCircuit_run)
+        results = self.session.short_circuit
+
         if results is not None:
 
             self.ui.progress_label.setText('Colouring short circuit results in the grid...')
-            QtGui.QGuiApplication.processEvents()
-
+            self.remove_simulation(sim.SimulationTypes.ShortCircuit_run)
             self.update_available_results()
-
             self.colour_diagrams()
 
         else:
@@ -927,12 +921,10 @@ class SimulationsMain(TimeEventsMain):
         Returns:
 
         """
-        drv, results = self.session.get_driver_results(sim.SimulationTypes.LinearAnalysis_run)
-
         self.remove_simulation(sim.SimulationTypes.LinearAnalysis_run)
 
         # update the results in the circuit structures
-        # if not drv.__cancel__:
+        results = self.session.linear_power_flow
         if results is not None:
 
             self.ui.progress_label.setText('Colouring PTDF results in the grid...')
@@ -982,10 +974,10 @@ class SimulationsMain(TimeEventsMain):
         Returns:
 
         """
-        drv, results = self.session.get_driver_results(sim.SimulationTypes.LinearAnalysis_TS_run)
         self.remove_simulation(sim.SimulationTypes.LinearAnalysis_TS_run)
 
         # update the results in the circuit structures
+        results = self.session.linear_power_flow_ts
         if results is not None:
 
             # expand the clusters
@@ -1071,11 +1063,10 @@ class SimulationsMain(TimeEventsMain):
         Returns:
 
         """
-        drv, results = self.session.get_driver_results(sim.SimulationTypes.ContingencyAnalysis_run)
         self.remove_simulation(sim.SimulationTypes.ContingencyAnalysis_run)
 
         # update the results in the circuit structures
-        # if not drv.__cancel__:
+        results = self.session.contingency
         if results is not None:
 
             self.ui.progress_label.setText('Colouring contingency analysis results in the grid...')
@@ -1106,11 +1097,11 @@ class SimulationsMain(TimeEventsMain):
 
                         self.LOCK()
 
-                        drv = sim.ContingencyAnalysisTimeSeries(grid=self.circuit,
-                                                                options=self.get_contingency_options(),
-                                                                time_indices=self.get_time_indices(),
-                                                                clustering_results=self.get_clustering_results(),
-                                                                engine=self.get_preferred_engine())
+                        drv = sim.ContingencyAnalysisTimeSeriesDriver(grid=self.circuit,
+                                                                      options=self.get_contingency_options(),
+                                                                      time_indices=self.get_time_indices(),
+                                                                      clustering_results=self.get_clustering_results(),
+                                                                      engine=self.get_preferred_engine())
 
                         self.session.run(drv,
                                          post_func=self.post_contingency_analysis_ts,
@@ -1133,11 +1124,10 @@ class SimulationsMain(TimeEventsMain):
         Returns:
 
         """
-        drv, results = self.session.get_driver_results(sim.SimulationTypes.ContingencyAnalysisTS_run)
         self.remove_simulation(sim.SimulationTypes.ContingencyAnalysisTS_run)
 
         # update the results in the circuit structures
-        # if not drv.__cancel__:
+        results = self.session.contingency_ts
         if results is not None:
 
             # expand the clusters
@@ -1184,7 +1174,7 @@ class SimulationsMain(TimeEventsMain):
                 sense_hvdc_br = np.array([sense for i, bus, sense in lst_hvdc_br])
 
                 if self.ui.usePfValuesForAtcCheckBox.isChecked():
-                    pf_drv, pf_results = self.session.get_driver_results(sim.SimulationTypes.PowerFlow_run)
+                    pf_results = self.session.power_flow
                     if pf_results is not None:
                         Pf = pf_results.Sf.real
                         Pf_hvdc = pf_results.hvdc_Pf.real
@@ -1250,11 +1240,10 @@ class SimulationsMain(TimeEventsMain):
         Returns:
 
         """
-        drv, results = self.session.get_driver_results(sim.SimulationTypes.NetTransferCapacity_run)
         self.remove_simulation(sim.SimulationTypes.NetTransferCapacity_run)
+        results = self.session.net_transfer_capacity
 
         # update the results in the circuit structures
-        # if not drv.__cancel__:
         if results is not None:
 
             self.ui.progress_label.setText('Colouring ATC results in the grid...')
@@ -1301,7 +1290,7 @@ class SimulationsMain(TimeEventsMain):
                     sense_hvdc_br = np.array([sense for i, bus, sense in lst_hvdc_br])
 
                     if self.ui.usePfValuesForAtcCheckBox.isChecked():
-                        pf_drv, pf_results = self.session.get_driver_results(sim.SimulationTypes.TimeSeries_run)
+                        pf_results = self.session.power_flow_ts
                         if pf_results is not None:
                             Pf = pf_results.Sf.real
                             Pf_hvdc = pf_results.hvdc_Pf.real
@@ -1372,11 +1361,10 @@ class SimulationsMain(TimeEventsMain):
         Returns:
 
         """
-        drv, results = self.session.get_driver_results(sim.SimulationTypes.NetTransferCapacityTS_run)
         self.remove_simulation(sim.SimulationTypes.NetTransferCapacityTS_run)
 
         # update the results in the circuit structures
-        # if not drv.__cancel__:
+        results = self.session.net_transfer_capacity_ts
         if results is not None:
 
             # expand the clusters
@@ -1401,7 +1389,7 @@ class SimulationsMain(TimeEventsMain):
 
         if len(self.circuit.buses) > 0:
 
-            pf_drv, pf_results = self.session.get_driver_results(sim.SimulationTypes.PowerFlow_run)
+            pf_drv, pf_results = self.session.power_flow_driver_and_results
 
             if pf_results is not None:
 
@@ -1503,7 +1491,7 @@ class SimulationsMain(TimeEventsMain):
                         pf_options = self.get_selected_power_flow_options()
 
                         # create object
-                        drv = sim.ContinuationPowerFlowDriver(circuit=self.circuit,
+                        drv = sim.ContinuationPowerFlowDriver(grid=self.circuit,
                                                               options=vc_options,
                                                               inputs=vc_inputs,
                                                               pf_options=pf_options)
@@ -1521,7 +1509,7 @@ class SimulationsMain(TimeEventsMain):
                             # lock the UI
                             self.LOCK()
 
-                            pf_drv.run_at(start_idx)
+                            pf_drv.run_at(start_idx)  # TODO: inspect this
 
                             # get the power Injections array to get the initial and end points
                             Sprof = self.circuit.get_Sbus_prof()
@@ -1532,7 +1520,7 @@ class SimulationsMain(TimeEventsMain):
                             pf_options = self.get_selected_power_flow_options()
 
                             # create object
-                            drv = sim.ContinuationPowerFlowDriver(circuit=self.circuit,
+                            drv = sim.ContinuationPowerFlowDriver(grid=self.circuit,
                                                                   options=vc_options,
                                                                   inputs=vc_inputs,
                                                                   pf_options=pf_options)
@@ -1555,7 +1543,7 @@ class SimulationsMain(TimeEventsMain):
         Actions performed after the voltage stability. Launched by the thread after its execution
         :return:
         """
-        drv, results = self.session.get_driver_results(sim.SimulationTypes.ContinuationPowerFlow_run)
+        results = self.session.continuation_power_flow
 
         if results is not None:
 
@@ -1620,7 +1608,7 @@ class SimulationsMain(TimeEventsMain):
         @return:
         """
 
-        drv, results = self.session.get_driver_results(sim.SimulationTypes.TimeSeries_run)
+        results = self.session.power_flow_ts
 
         if results is not None:
 
@@ -1690,7 +1678,7 @@ class SimulationsMain(TimeEventsMain):
         @return:
         """
 
-        drv, results = self.session.get_driver_results(sim.SimulationTypes.StochasticPowerFlow)
+        results = self.session.stochastic_power_flow
 
         if results is not None:
 
@@ -1712,10 +1700,9 @@ class SimulationsMain(TimeEventsMain):
         """
 
         # update the results in the circuit structures
-        drv, results = self.session.get_driver_results(sim.SimulationTypes.Cascade_run)
-
         self.remove_simulation(sim.SimulationTypes.Cascade_run)
 
+        results = self.session.cascade
         n = len(results.events)
 
         if n > 0:
@@ -1802,7 +1789,7 @@ class SimulationsMain(TimeEventsMain):
         ips_iterations = self.ui.ips_iterations_spinBox.value()
         ips_trust_radius = self.ui.ips_trust_radius_doubleSpinBox.value()
         ips_init_with_pf = self.ui.ips_initialize_with_pf_checkBox.isChecked()
-        pf_results = self.session.get_driver_results(SimulationTypes.PowerFlow_run)
+        pf_results = self.session.power_flow
 
         options = sim.OptimalPowerFlowOptions(solver=solver,
                                               time_grouping=time_grouping,
@@ -1863,7 +1850,7 @@ class SimulationsMain(TimeEventsMain):
         """
         Actions to run after the OPF simulation
         """
-        drv, results = self.session.get_driver_results(sim.SimulationTypes.OPF_run)
+        results = self.session.optimal_power_flow
 
         if results is not None:
 
@@ -1932,7 +1919,7 @@ class SimulationsMain(TimeEventsMain):
         Post OPF Time Series
         """
 
-        drv, results = self.session.get_driver_results(sim.SimulationTypes.OPFTimeSeries_run)
+        results = self.session.optimal_power_flow_ts
 
         if results is not None:
 
@@ -1961,12 +1948,12 @@ class SimulationsMain(TimeEventsMain):
 
             if self.circuit.time_profile is not None:
 
-                drv, results = self.session.get_driver_results(sim.SimulationTypes.OPFTimeSeries_run)
+                results = self.session.optimal_power_flow_ts
 
                 if results is not None:
 
-                    quit_msg = "Are you sure that you want overwrite the time events " \
-                               "with the simulated by the OPF time series?"
+                    quit_msg = ("Are you sure that you want overwrite the time events "
+                                "with the simulated by the OPF time series?")
                     reply = QtWidgets.QMessageBox.question(self, 'Message', quit_msg,
                                                            QtWidgets.QMessageBox.StandardButton.Yes,
                                                            QtWidgets.QMessageBox.StandardButton.No)
@@ -2072,7 +2059,7 @@ class SimulationsMain(TimeEventsMain):
         """
         Actions to run after the OPF simulation
         """
-        drv, results = self.session.get_driver_results(sim.SimulationTypes.OPF_NTC_run)
+        results = self.session.optimal_net_transfer_capacity
 
         if results is not None:
             self.remove_simulation(sim.SimulationTypes.OPF_NTC_run)
@@ -2124,7 +2111,7 @@ class SimulationsMain(TimeEventsMain):
         Actions to run after the optimal net transfer capacity time series simulation
         """
 
-        drv, results = self.session.get_driver_results(sim.SimulationTypes.OPF_NTC_TS_run)
+        results = self.session.optimal_net_transfer_capacity_ts
 
         if results is not None:
 
@@ -2151,7 +2138,7 @@ class SimulationsMain(TimeEventsMain):
         """
         if self.ui.actionFind_node_groups.isChecked():
 
-            drv, ptdf_results = self.session.get_driver_results(sim.SimulationTypes.LinearAnalysis_run)
+            ptdf_results = self.session.linear_power_flow
 
             if ptdf_results is not None:
 
@@ -2183,7 +2170,7 @@ class SimulationsMain(TimeEventsMain):
         self.UNLOCK()
         print('\nGroups:')
 
-        drv, results = self.session.get_driver_results(sim.SimulationTypes.NodeGrouping_run)
+        drv, _ = self.session.node_groups_driver
 
         if drv is not None:
 
@@ -2236,7 +2223,7 @@ class SimulationsMain(TimeEventsMain):
 
         :return:
         """
-        drv, results = self.session.get_driver_results(sim.SimulationTypes.InputsAnalysis_run)
+        results = self.session.inputs_analysis
 
         if results is not None:
             self.remove_simulation(sim.SimulationTypes.InputsAnalysis_run)
@@ -2255,7 +2242,7 @@ class SimulationsMain(TimeEventsMain):
 
             if self.ui.actionStorage_location_suggestion.isChecked():
 
-                ts_drv, ts_results = self.session.get_driver_results(sim.SimulationTypes.TimeSeries_run)
+                ts_results = self.session.power_flow_ts
 
                 if ts_results is not None:
 
@@ -2376,11 +2363,11 @@ class SimulationsMain(TimeEventsMain):
         """
         Post investments evaluation
         """
-        drv, results = self.session.get_driver_results(sim.SimulationTypes.InvestmestsEvaluation_run)
-        self.remove_simulation(sim.SimulationTypes.InvestmestsEvaluation_run)
+        results = self.session.investments_evaluation
 
         # update the results in the circuit structures
         if results is not None:
+            self.remove_simulation(sim.SimulationTypes.InvestmestsEvaluation_run)
 
             self.ui.progress_label.setText('Colouring investments evaluation results in the grid...')
             QtGui.QGuiApplication.processEvents()
@@ -2399,7 +2386,7 @@ class SimulationsMain(TimeEventsMain):
         :return: ClusteringResults or None
         """
         if self.ui.actionUse_clustering.isChecked():
-            _, clustering_results = self.session.get_driver_results(sim.SimulationTypes.ClusteringAnalysis_run)
+            clustering_results = self.session.clustering
 
             if clustering_results is not None:
                 n = len(clustering_results.time_indices)
@@ -2465,8 +2452,9 @@ class SimulationsMain(TimeEventsMain):
 
         """
         # update the results in the circuit structures
-        drv, results = self.session.get_driver_results(sim.SimulationTypes.ClusteringAnalysis_run)
         self.remove_simulation(sim.SimulationTypes.ClusteringAnalysis_run)
+
+        results = self.session.clustering
         if results is not None:
 
             self.update_available_results()
@@ -2536,7 +2524,7 @@ class SimulationsMain(TimeEventsMain):
         if self.ui.actionUse_clustering.isChecked():
 
             # check if there are clustering results yet
-            _, clustering_results = self.session.get_driver_results(sim.SimulationTypes.ClusteringAnalysis_run)
+            clustering_results = self.session.clustering
 
             if clustering_results is not None:
                 n = len(clustering_results.time_indices)

@@ -306,3 +306,19 @@ class GeneratorData:
         :return:
         """
         return np.where(self.dispatchable == 1)[0]
+
+    def get_dispatchable_active_indices(self) -> IntVec:
+        """
+        Get the indices of dispatchable generators
+        :return:
+        """
+        x = (self.dispatchable * self.active).astype(int)
+        return np.where(x == 1)[0]
+
+    def get_non_dispatchable_indices(self) -> IntVec:
+        """
+        Get the indices of dispatchable generators
+        :return:
+        """
+        x = (~self.dispatchable * self.active).astype(int)
+        return np.where(x == 1)[0]

@@ -151,6 +151,7 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
                                          areas_from=self.options.areas_from,
                                          areas_to=self.options.areas_to,
                                          energy_0=None,
+                                         fluid_level_0=None,
                                          logger=self.logger,
                                          export_model_fname=self.options.export_model_fname)
 
