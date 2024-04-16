@@ -561,7 +561,6 @@ class DiagramType(Enum):
         return list(map(lambda c: c.value, cls))
 
 
-
 class AcOpfMode(Enum):
     """
     AC-OPF problem types
@@ -1265,6 +1264,32 @@ class LogSeverity(Enum):
         """
         try:
             return LogSeverity[s]
+        except KeyError:
+            return s
+
+
+class CGMESVersions(Enum):
+    """
+    Enumeration of logs severities
+    """
+    v2_4_15 = '2.4.15'
+    v3_0_0 = '3.0.0'
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
+        try:
+            return CGMESVersions[s]
         except KeyError:
             return s
 
