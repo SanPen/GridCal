@@ -682,6 +682,7 @@ class DiagramEditorWidget(QSplitter):
                                         w=graphic_object.w,
                                         h=graphic_object.h,
                                         r=0,
+                                        draw_labels=graphic_object.draw_labels,
                                         graphic_object=graphic_object)
 
     def graphicsWheelEvent(self, event: QWheelEvent) -> None:
@@ -726,7 +727,8 @@ class DiagramEditorWidget(QSplitter):
         """
         self.editor_graphics_view.scale(1.0 / scale_factor, 1.0 / scale_factor)
 
-    def create_bus_graphics(self, bus: Bus, x: int, y: int, h: int, w: int) -> BusGraphicItem:
+    def create_bus_graphics(self, bus: Bus, x: int, y: int, h: int, w: int,
+                            draw_labels: bool = True) -> BusGraphicItem:
         """
         create the Bus graphics
         :param bus: GridCal Bus object
@@ -734,6 +736,7 @@ class DiagramEditorWidget(QSplitter):
         :param y: y coordinate
         :param h: height (px)
         :param w: width (px)
+        :param draw_labels: Draw labels?
         :return: BusGraphicItem
         """
 
@@ -742,7 +745,8 @@ class DiagramEditorWidget(QSplitter):
                                         x=x,
                                         y=y,
                                         h=h,
-                                        w=w)
+                                        w=w,
+                                        draw_labels=draw_labels)
         return graphic_object
 
     def create_transformer_3w_graphics(self, elm: Transformer3W, x: int, y: int) -> Transformer3WGraphicItem:
@@ -757,7 +761,8 @@ class DiagramEditorWidget(QSplitter):
         graphic_object.setPos(QPoint(x, y))
         return graphic_object
 
-    def create_fluid_node_graphics(self, node: FluidNode, x: int, y: int, h: int, w: int) -> FluidNodeGraphicItem:
+    def create_fluid_node_graphics(self, node: FluidNode, x: int, y: int, h: int, w: int,
+                                   draw_labels: bool = True) -> FluidNodeGraphicItem:
         """
         Add fluid node to graphics
         :param node: GridCal FluidNode object
@@ -765,10 +770,12 @@ class DiagramEditorWidget(QSplitter):
         :param y: y coordinate
         :param h: height (px)
         :param w: width (px)
+        :param draw_labels: Draw labels?
         :return: FluidNodeGraphicItem
         """
 
-        graphic_object = FluidNodeGraphicItem(editor=self, fluid_node=node, x=x, y=y, h=h, w=w)
+        graphic_object = FluidNodeGraphicItem(editor=self, fluid_node=node, x=x, y=y, h=h, w=w,
+                                              draw_labels=draw_labels)
         return graphic_object
 
     def create_connectivity_node_graphics(self, node: ConnectivityNode, x: int, y: int, h: int,
@@ -820,9 +827,6 @@ class DiagramEditorWidget(QSplitter):
         inj_dev_by_fluid_node = self.circuit.get_injection_devices_grouped_by_fluid_node()
 
         # add buses first
-        # bus_dict: Dict[str, BusGraphicItem] = dict()
-        # fluid_node_dict: Dict[str, FluidNodeGraphicItem] = dict()
-        # windings_dict: Dict[str, WindingGraphicItem] = dict()
         for category, points_group in diagram.data.items():
 
             if category == DeviceType.BusDevice.value:
@@ -838,7 +842,8 @@ class DiagramEditorWidget(QSplitter):
                                                                   x=location.x,
                                                                   y=location.y,
                                                                   h=location.h,
-                                                                  w=location.w)
+                                                                  w=location.w,
+                                                                  draw_labels=location.draw_labels)
                         self.add_to_scene(graphic_object=graphic_object)
 
                         # create the bus children
@@ -905,7 +910,7 @@ class DiagramEditorWidget(QSplitter):
                         # windings_dict[elm.winding2.idtag] = conn2
                         # windings_dict[elm.winding3.idtag] = conn3
 
-            if category == DeviceType.FluidNodeDevice.value:
+            elif category == DeviceType.FluidNodeDevice.value:
 
                 for idtag, location in points_group.locations.items():
 
@@ -913,13 +918,13 @@ class DiagramEditorWidget(QSplitter):
                     graphic_object = self.graphics_manager.query(elm=location.api_object)
 
                     if graphic_object is None:
-
                         # add the graphic object to the diagram view
                         graphic_object = self.create_fluid_node_graphics(node=location.api_object,
                                                                          x=location.x,
                                                                          y=location.y,
                                                                          h=location.h,
-                                                                         w=location.w)
+                                                                         w=location.w,
+                                                                         draw_labels=location.draw_labels)
                         self.add_to_scene(graphic_object=graphic_object)
 
                         # create the bus children
@@ -932,6 +937,8 @@ class DiagramEditorWidget(QSplitter):
                         # add fluid node reference for later
                         # fluid_node_dict[idtag] = graphic_object
                         self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
+                        if location.api_object.bus is not None:
+                            self.graphics_manager.add_device(elm=location.api_object.bus, graphic=graphic_object)
 
                         # map the internal bus
                         # if location.api_object.bus is not None:
@@ -962,7 +969,8 @@ class DiagramEditorWidget(QSplitter):
                                 graphic_object = LineGraphicItem(from_port=bus_f_graphic_obj.get_terminal(),
                                                                  to_port=bus_t_graphic_obj.get_terminal(),
                                                                  editor=self,
-                                                                 api_object=branch)
+                                                                 api_object=branch,
+                                                                 draw_labels=location.draw_labels)
                                 self.add_to_scene(graphic_object=graphic_object)
 
                                 graphic_object.redraw()
@@ -986,7 +994,8 @@ class DiagramEditorWidget(QSplitter):
                                 graphic_object = DcLineGraphicItem(from_port=bus_f_graphic_obj.get_terminal(),
                                                                    to_port=bus_t_graphic_obj.get_terminal(),
                                                                    editor=self,
-                                                                   api_object=branch)
+                                                                   api_object=branch,
+                                                                   draw_labels=location.draw_labels)
                                 self.add_to_scene(graphic_object=graphic_object)
 
                                 graphic_object.redraw()
@@ -1010,7 +1019,8 @@ class DiagramEditorWidget(QSplitter):
                                 graphic_object = HvdcGraphicItem(from_port=bus_f_graphic_obj.get_terminal(),
                                                                  to_port=bus_t_graphic_obj.get_terminal(),
                                                                  editor=self,
-                                                                 api_object=branch)
+                                                                 api_object=branch,
+                                                                 draw_labels=location.draw_labels)
                                 self.add_to_scene(graphic_object=graphic_object)
 
                                 graphic_object.redraw()
@@ -1034,7 +1044,8 @@ class DiagramEditorWidget(QSplitter):
                                 graphic_object = VscGraphicItem(from_port=bus_f_graphic_obj.get_terminal(),
                                                                 to_port=bus_t_graphic_obj.get_terminal(),
                                                                 editor=self,
-                                                                api_object=branch)
+                                                                api_object=branch,
+                                                                draw_labels=location.draw_labels)
                                 self.add_to_scene(graphic_object=graphic_object)
 
                                 graphic_object.redraw()
@@ -1058,7 +1069,8 @@ class DiagramEditorWidget(QSplitter):
                                 graphic_object = UpfcGraphicItem(from_port=bus_f_graphic_obj.get_terminal(),
                                                                  to_port=bus_t_graphic_obj.get_terminal(),
                                                                  editor=self,
-                                                                 api_object=branch)
+                                                                 api_object=branch,
+                                                                 draw_labels=location.draw_labels)
                                 self.add_to_scene(graphic_object=graphic_object)
 
                                 graphic_object.redraw()
@@ -1082,7 +1094,33 @@ class DiagramEditorWidget(QSplitter):
                                 graphic_object = TransformerGraphicItem(from_port=bus_f_graphic_obj.get_terminal(),
                                                                         to_port=bus_t_graphic_obj.get_terminal(),
                                                                         editor=self,
-                                                                        api_object=branch)
+                                                                        api_object=branch,
+                                                                        draw_labels=location.draw_labels)
+                                self.add_to_scene(graphic_object=graphic_object)
+
+                                graphic_object.redraw()
+                                self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
+
+            elif category == DeviceType.SeriesReactanceDevice.value:
+
+                for idtag, location in points_group.locations.items():
+
+                    # search for the api object, because it may be created already
+                    graphic_object = self.graphics_manager.query(elm=location.api_object)
+
+                    if graphic_object is None:
+
+                        branch: SeriesReactance = location.api_object
+                        if branch.bus_from is not None and branch.bus_to is not None:
+                            bus_f_graphic_obj = self.graphics_manager.query(branch.bus_from)
+                            bus_t_graphic_obj = self.graphics_manager.query(branch.bus_to)
+
+                            if bus_f_graphic_obj and bus_t_graphic_obj:
+                                graphic_object = SeriesReactanceGraphicItem(from_port=bus_f_graphic_obj.get_terminal(),
+                                                                            to_port=bus_t_graphic_obj.get_terminal(),
+                                                                            editor=self,
+                                                                            api_object=branch,
+                                                                            draw_labels=location.draw_labels)
                                 self.add_to_scene(graphic_object=graphic_object)
 
                                 graphic_object.redraw()
@@ -1095,10 +1133,7 @@ class DiagramEditorWidget(QSplitter):
                     # search for the api object, because it may be created already
                     graphic_object = self.graphics_manager.query(elm=location.api_object)
 
-                    if graphic_object is None:
-
-                        # branch: Winding = location.api_object
-                        # graphic_object = windings_dict[idtag]
+                    if graphic_object is not None:
                         graphic_object.redraw()
                         self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
 
@@ -1120,7 +1155,8 @@ class DiagramEditorWidget(QSplitter):
                                 graphic_object = FluidPathGraphicItem(from_port=bus_f_graphic_obj.get_terminal(),
                                                                       to_port=bus_t_graphic_obj.get_terminal(),
                                                                       editor=self,
-                                                                      api_object=branch)
+                                                                      api_object=branch,
+                                                                      draw_labels=location.draw_labels)
                                 self.add_to_scene(graphic_object=graphic_object)
 
                                 graphic_object.redraw()
@@ -1172,6 +1208,7 @@ class DiagramEditorWidget(QSplitter):
 
     def update_diagram_element(self, device: ALL_DEV_TYPES,
                                x: int = 0, y: int = 0, w: int = 0, h: int = 0, r: float = 0,
+                               draw_labels: bool = True,
                                graphic_object: QGraphicsItem = None) -> None:
         """
         Set the position of a device in the diagram
@@ -1181,6 +1218,7 @@ class DiagramEditorWidget(QSplitter):
         :param h: height (px)
         :param w: width (px)
         :param r: rotation (deg)
+        :param draw_labels: Draw the labels?
         :param graphic_object: Graphic object associated
         """
         self.diagram.set_point(device=device,
@@ -1189,9 +1227,21 @@ class DiagramEditorWidget(QSplitter):
                                                         h=h,
                                                         w=w,
                                                         r=r,
+                                                        draw_labels=draw_labels,
                                                         api_object=device))
 
         self.graphics_manager.add_device(elm=device, graphic=graphic_object)
+
+    def update_label_drwaing_status(self, device: ALL_DEV_TYPES, draw_labels: bool) -> None:
+        """
+        Update the label drawing flag
+        :param device: Any database device
+        :param draw_labels: Draw labels?
+        """
+        location = self.diagram.query_point(device=device)
+
+        if location is not None:
+            location.draw_labels = draw_labels
 
     def add_to_scene(self, graphic_object: QGraphicsItem = None) -> None:
         """
@@ -1389,6 +1439,7 @@ class DiagramEditorWidget(QSplitter):
         self.add_to_scene(graphic_object=graphic_object)
 
         self.update_diagram_element(device=obj,
+                                    draw_labels=graphic_object.draw_labels,
                                     graphic_object=graphic_object)
 
         # add the new object to the circuit
@@ -1421,7 +1472,9 @@ class DiagramEditorWidget(QSplitter):
 
         self.add_to_scene(graphic_object=graphic_object)
 
-        self.update_diagram_element(device=obj, graphic_object=graphic_object)
+        self.update_diagram_element(device=obj,
+                                    draw_labels=graphic_object.draw_labels,
+                                    graphic_object=graphic_object)
 
         # add the new object to the circuit
         self.circuit.add_branch(obj)
@@ -1449,6 +1502,7 @@ class DiagramEditorWidget(QSplitter):
         self.add_to_scene(graphic_object=winding_graphics)
 
         self.update_diagram_element(device=winding_graphics.api_object,
+                                    draw_labels=winding_graphics.draw_labels,
                                     graphic_object=winding_graphics)
 
         self.started_branch.update_ports()
@@ -1479,7 +1533,9 @@ class DiagramEditorWidget(QSplitter):
 
         self.add_to_scene(graphic_object=graphic_object)
 
-        self.update_diagram_element(device=obj, graphic_object=graphic_object)
+        self.update_diagram_element(device=obj,
+                                    draw_labels=graphic_object.draw_labels,
+                                    graphic_object=graphic_object)
 
         # add the new object to the circuit
         self.circuit.add_branch(obj)
@@ -1511,7 +1567,9 @@ class DiagramEditorWidget(QSplitter):
 
         self.add_to_scene(graphic_object=graphic_object)
 
-        self.update_diagram_element(device=obj, graphic_object=graphic_object)
+        self.update_diagram_element(device=obj,
+                                    draw_labels=graphic_object.draw_labels,
+                                    graphic_object=graphic_object)
 
         # add the new object to the circuit
         self.circuit.add_branch(obj)
@@ -1544,7 +1602,9 @@ class DiagramEditorWidget(QSplitter):
 
         self.add_to_scene(graphic_object=graphic_object)
 
-        self.update_diagram_element(device=obj, graphic_object=graphic_object)
+        self.update_diagram_element(device=obj,
+                                    draw_labels=graphic_object.draw_labels,
+                                    graphic_object=graphic_object)
 
         # update the connection placement
         graphic_object.update_ports()
@@ -2092,6 +2152,7 @@ class DiagramEditorWidget(QSplitter):
                                     w=bus.w,
                                     h=bus.h,
                                     r=0,
+                                    draw_labels=graphic_object.draw_labels,
                                     graphic_object=graphic_object)
 
         return graphic_object
@@ -2123,7 +2184,9 @@ class DiagramEditorWidget(QSplitter):
                                          api_object=branch)
 
         graphic_object.redraw()
-        self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_object)
+        self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0,
+                                    draw_labels=graphic_object.draw_labels,
+                                    graphic_object=graphic_object)
         return graphic_object
 
     def add_api_line_between_fluid_graphics(self, branch: Line,
@@ -2143,7 +2206,9 @@ class DiagramEditorWidget(QSplitter):
                                          api_object=branch)
 
         graphic_object.redraw()
-        self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_object)
+        self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0,
+                                    draw_labels=graphic_object.draw_labels,
+                                    graphic_object=graphic_object)
         return graphic_object
 
     def add_api_dc_line(self, branch: DcLine):
@@ -2162,7 +2227,9 @@ class DiagramEditorWidget(QSplitter):
                                                api_object=branch)
 
             graphic_object.redraw()
-            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_object)
+            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0,
+                                        draw_labels=graphic_object.draw_labels,
+                                        graphic_object=graphic_object)
             return graphic_object
         else:
             print("Branch's buses were not found in the diagram :(")
@@ -2184,7 +2251,9 @@ class DiagramEditorWidget(QSplitter):
                                              api_object=branch)
 
             graphic_object.redraw()
-            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_object)
+            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0,
+                                        draw_labels=graphic_object.draw_labels,
+                                        graphic_object=graphic_object)
             return graphic_object
         else:
             print("Branch's buses were not found in the diagram :(")
@@ -2206,7 +2275,9 @@ class DiagramEditorWidget(QSplitter):
                                             api_object=branch)
 
             graphic_object.redraw()
-            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_object)
+            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0,
+                                        draw_labels=graphic_object.draw_labels,
+                                        graphic_object=graphic_object)
             return graphic_object
         else:
             print("Branch's buses were not found in the diagram :(")
@@ -2228,7 +2299,9 @@ class DiagramEditorWidget(QSplitter):
                                              api_object=branch)
 
             graphic_object.redraw()
-            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_object)
+            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0,
+                                        draw_labels=graphic_object.draw_labels,
+                                        graphic_object=graphic_object)
             return graphic_object
         else:
             print("Branch's buses were not found in the diagram :(")
@@ -2250,7 +2323,9 @@ class DiagramEditorWidget(QSplitter):
                                                         api_object=branch)
 
             graphic_object.redraw()
-            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_object)
+            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0,
+                                        draw_labels=graphic_object.draw_labels,
+                                        graphic_object=graphic_object)
             return graphic_object
         else:
             print("Branch's buses were not found in the diagram :(")
@@ -2272,7 +2347,9 @@ class DiagramEditorWidget(QSplitter):
                                                     api_object=branch)
 
             graphic_object.redraw()
-            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_object)
+            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0,
+                                        draw_labels=graphic_object.draw_labels,
+                                        graphic_object=graphic_object)
             return graphic_object
         else:
             print("Branch's buses were not found in the diagram :(")
@@ -2313,6 +2390,7 @@ class DiagramEditorWidget(QSplitter):
                                     w=80,
                                     h=80,
                                     r=0,
+                                    draw_labels=True,
                                     graphic_object=tr3_graphic_object)
 
         self.update_diagram_element(device=conn1.api_object, graphic_object=conn1)
@@ -2346,6 +2424,7 @@ class DiagramEditorWidget(QSplitter):
                                     w=graphic_object.w,
                                     h=graphic_object.h,
                                     r=0,
+                                    draw_labels=graphic_object.draw_labels,
                                     graphic_object=graphic_object)
 
         return graphic_object
@@ -2366,7 +2445,9 @@ class DiagramEditorWidget(QSplitter):
                                                   api_object=branch)
 
             graphic_object.redraw()
-            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_object)
+            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0,
+                                        draw_labels=graphic_object.draw_labels,
+                                        graphic_object=graphic_object)
             return graphic_object
         else:
             print("Branch's fluid nodes were not found in the diagram :(")
@@ -2391,8 +2472,9 @@ class DiagramEditorWidget(QSplitter):
         # delete from the schematic
         self.remove_from_scene(line_graphic)
 
-        self.update_diagram_element(device=hvdc, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_object)
-        # self.delete_diagram_element(device=line)
+        self.update_diagram_element(device=hvdc, x=0, y=0, w=0, h=0, r=0,
+                                    draw_labels=graphic_object.draw_labels,
+                                    graphic_object=graphic_object)
 
     def convert_line_to_transformer(self, line: Line, line_graphic: LineGraphicItem):
         """
@@ -2413,7 +2495,9 @@ class DiagramEditorWidget(QSplitter):
         # delete from the schematic
         self.remove_from_scene(line_graphic)
 
-        self.update_diagram_element(device=transformer, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_object)
+        self.update_diagram_element(device=transformer, x=0, y=0, w=0, h=0, r=0,
+                                    draw_labels=graphic_object.draw_labels,
+                                    graphic_object=graphic_object)
         # self.delete_diagram_element(device=line)
 
     def convert_line_to_vsc(self, line: Line, line_graphic: LineGraphicItem):
@@ -2435,8 +2519,9 @@ class DiagramEditorWidget(QSplitter):
         # delete from the schematic
         self.remove_from_scene(line_graphic)
 
-        self.update_diagram_element(device=vsc, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_object)
-        # self.delete_diagram_element(device=line)
+        self.update_diagram_element(device=vsc, x=0, y=0, w=0, h=0, r=0,
+                                    draw_labels=graphic_object.draw_labels,
+                                    graphic_object=graphic_object)
 
     def convert_line_to_upfc(self, line: Line, line_graphic: LineGraphicItem):
         """
@@ -2457,7 +2542,9 @@ class DiagramEditorWidget(QSplitter):
         # delete from the schematic
         self.remove_from_scene(line_graphic)
 
-        self.update_diagram_element(device=upfc, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_object)
+        self.update_diagram_element(device=upfc, x=0, y=0, w=0, h=0, r=0,
+                                    draw_labels=graphic_object.draw_labels,
+                                    graphic_object=graphic_object)
 
     def convert_line_to_series_reactance(self, line: Line, line_graphic: LineGraphicItem):
         """
@@ -2478,7 +2565,9 @@ class DiagramEditorWidget(QSplitter):
         # delete from the schematic
         self.remove_from_scene(line_graphic)
 
-        self.update_diagram_element(device=series_reactance, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_object)
+        self.update_diagram_element(device=series_reactance, x=0, y=0, w=0, h=0, r=0,
+                                    draw_labels=graphic_object.draw_labels,
+                                    graphic_object=graphic_object)
 
     def convert_fluid_path_to_line(self, element: FluidPath, item_graphic: FluidPathGraphicItem):
         """
@@ -2509,8 +2598,9 @@ class DiagramEditorWidget(QSplitter):
         # delete from the schematic
         self.remove_from_scene(item_graphic)
 
-        self.update_diagram_element(device=line, x=0, y=0, w=0, h=0, r=0, graphic_object=graphic_object)
-        # self.delete_diagram_element(device=element)
+        self.update_diagram_element(device=line, x=0, y=0, w=0, h=0, r=0,
+                                    draw_labels=graphic_object.draw_labels,
+                                    graphic_object=graphic_object)
 
     def convert_generator_to_battery(self, gen: Generator, graphic_object: GeneratorGraphicItem):
         """
@@ -3349,6 +3439,7 @@ class DiagramEditorWidget(QSplitter):
                                             w=graphic_object.w,
                                             h=graphic_object.h,
                                             r=0,
+                                            draw_labels=graphic_object.draw_labels,
                                             graphic_object=graphic_object)
                 graphic_object.set_position(x=x_m, y=y_m)
 

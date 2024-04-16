@@ -70,7 +70,8 @@ class BusGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
                  h: int = 40,
                  w: int = 80,
                  x: int = 0,
-                 y: int = 0):
+                 y: int = 0,
+                 draw_labels: bool = True):
         """
 
         :param parent:
@@ -82,7 +83,7 @@ class BusGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
         :param x:
         :param y:
         """
-        GenericDBWidget.__init__(self, parent=parent, api_object=bus, editor=editor, draw_labels=True)
+        GenericDBWidget.__init__(self, parent=parent, api_object=bus, editor=editor, draw_labels=draw_labels)
         QtWidgets.QGraphicsRectItem.__init__(self, parent)
 
         self.min_w = 180.0
@@ -160,6 +161,7 @@ class BusGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
                                            w=self.w,
                                            h=self.h,
                                            r=self.rotation(),
+                                           draw_labels=self.draw_labels,
                                            graphic_object=self)
 
     def add_big_marker(self, color: Union[None, QColor] = Qt.red, tool_tip_text: str = ""):
@@ -258,6 +260,7 @@ class BusGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
                                            w=self.w,
                                            h=int(self.min_h),
                                            r=self.rotation(),
+                                           draw_labels=self.draw_labels,
                                            graphic_object=self)
 
         return self.w, self.min_h

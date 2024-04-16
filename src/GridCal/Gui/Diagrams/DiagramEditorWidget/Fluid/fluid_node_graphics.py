@@ -93,9 +93,10 @@ class FluidNodeGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
     """
 
     def __init__(self, editor: DiagramEditorWidget, fluid_node: FluidNode,
-                 parent=None, index=0, h: int = 20, w: int = 80, x: int = 0, y: int = 0):
+                 parent=None, index=0, h: int = 20, w: int = 80, x: int = 0, y: int = 0,
+                 draw_labels: bool = True):
 
-        GenericDBWidget.__init__(self, parent=parent, api_object=fluid_node, editor=editor, draw_labels=True)
+        GenericDBWidget.__init__(self, parent=parent, api_object=fluid_node, editor=editor, draw_labels=draw_labels)
         QtWidgets.QGraphicsRectItem.__init__(self, parent)
 
         self.min_w = 180.0
@@ -181,6 +182,7 @@ class FluidNodeGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
                                            w=self.w,
                                            h=self.h,
                                            r=self.rotation(),
+                                           draw_labels=self.draw_labels,
                                            graphic_object=self)
 
     def set_position(self, x, y):
@@ -262,6 +264,7 @@ class FluidNodeGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
                                            w=self.w,
                                            h=int(self.min_h),
                                            r=self.rotation(),
+                                           draw_labels=self.draw_labels,
                                            graphic_object=self)
 
         return self.w, self.min_h

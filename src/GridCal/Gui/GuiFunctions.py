@@ -1353,7 +1353,7 @@ class ObjectsModel(QtCore.QAbstractTableModel):
         else:
             return QtCore.Qt.ItemFlag.ItemIsEnabled
 
-    def rowCount(self, parent=None):
+    def rowCount(self, parent: QtCore.QModelIndex = None) -> int:
         """
         Get number of rows
         :param parent:
@@ -1364,7 +1364,7 @@ class ObjectsModel(QtCore.QAbstractTableModel):
         else:
             return self.r
 
-    def columnCount(self, parent=None):
+    def columnCount(self, parent: QtCore.QModelIndex = None) -> int:
         """
         Get number of columns
         :param parent:
@@ -1435,7 +1435,7 @@ class ObjectsModel(QtCore.QAbstractTableModel):
 
         return None
 
-    def setData(self, index, value, role=None):
+    def setData(self, index: QtCore.QModelIndex, value: Union[float, str], role: Union[int, None] = None) -> bool:
         """
         Set data by simple editor (whatever text)
         :param index:
@@ -1509,7 +1509,7 @@ class ObjectsModel(QtCore.QAbstractTableModel):
             if self.transposed:
                 # for the properties in the schematic view
                 if orientation == QtCore.Qt.Orientation.Horizontal:
-                    return 'Value'
+                    return self.objects[0].device_type.value if len(self.objects) else 'Value'
                 elif orientation == QtCore.Qt.Orientation.Vertical:
                     if self.units[section] != '':
                         return self.attributes[section] + ' [' + self.units[section] + ']'

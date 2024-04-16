@@ -424,7 +424,8 @@ class LineGraphicTemplateItem(GenericDBWidget, QGraphicsLineItem):
                  editor: DiagramEditorWidget,
                  width=5,
                  api_object: Union[Line, Transformer2W, VSC, UPFC, HvdcLine, DcLine, FluidPath, None] = None,
-                 arrow_size=10):
+                 arrow_size=10,
+                 draw_labels: bool = True):
         """
 
         :param from_port:
@@ -433,8 +434,9 @@ class LineGraphicTemplateItem(GenericDBWidget, QGraphicsLineItem):
         :param width:
         :param api_object:
         :param arrow_size:
+        :param draw_labels:
         """
-        GenericDBWidget.__init__(self, parent=None, api_object=api_object, editor=editor, draw_labels=True)
+        GenericDBWidget.__init__(self, parent=None, api_object=api_object, editor=editor, draw_labels=draw_labels)
         QGraphicsLineItem.__init__(self)
 
         if isinstance(api_object, Transformer2W):

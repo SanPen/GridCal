@@ -190,11 +190,30 @@ class GenericDBWidget:
 
         self.editor: DiagramEditorWidget = editor
 
-        self.draw_labels: bool = draw_labels
+        self._draw_labels: bool = draw_labels
 
         # color
         self.color = ACTIVE['color']
         self.style = ACTIVE['style']
+
+    @property
+    def draw_labels(self) -> bool:
+        """
+        draw labels getter
+        :return: Bool
+        """
+        return self._draw_labels
+
+    @draw_labels.setter
+    def draw_labels(self, value: bool):
+        """
+        Draw labels setter, it updates the diagram
+        :param value: boolean
+        """
+        self._draw_labels = value
+
+        # update editor diagram position
+        self.editor.update_label_drwaing_status(device=self.api_object, draw_labels=self._draw_labels)
 
     def recolour_mode(self) -> None:
         """
@@ -235,3 +254,5 @@ class GenericDBWidget:
         :return:
         """
         self.draw_labels = not self.draw_labels
+
+

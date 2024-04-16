@@ -34,7 +34,8 @@ class HvdcGraphicItem(LineGraphicTemplateItem):
                  to_port: Union[BarTerminalItem, RoundTerminalItem],
                  editor: DiagramEditorWidget,
                  width=5,
-                 api_object: HvdcLine = None):
+                 api_object: HvdcLine = None,
+                 draw_labels: bool = True):
         """
 
         :param from_port:
@@ -48,7 +49,8 @@ class HvdcGraphicItem(LineGraphicTemplateItem):
                                          to_port=to_port,
                                          editor=editor,
                                          width=width,
-                                         api_object=api_object)
+                                         api_object=api_object,
+                                         draw_labels=draw_labels)
 
     def contextMenuEvent(self, event):
         """
