@@ -23,7 +23,7 @@ options_ = ContingencyAnalysisOptions(
     pf_options=PowerFlowOptions(),
 )
 
-simulation = ContingencyAnalysisTimeSeries(
+simulation = ContingencyAnalysisTimeSeriesDriver(
     grid=main_circuit,
     options=options_,
     time_indices=main_circuit.get_all_time_indices(),

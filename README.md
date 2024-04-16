@@ -723,6 +723,7 @@ Sequence voltage, currents and powers are also available.
 import os
 from matplotlib import pyplot as plt
 import GridCalEngine.api as gce
+
 plt.style.use('fivethirtyeight')
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
@@ -755,7 +756,7 @@ vc_inputs = gce.ContinuationPowerFlowInput(Sbase=base_power,
                                            Starget=base_power * 2)
 
 # declare the CPF driver and run
-vc = gce.ContinuationPowerFlowDriver(circuit=main_circuit,
+vc = gce.ContinuationPowerFlowDriver(grid=main_circuit,
                                      options=vc_options,
                                      inputs=vc_inputs,
                                      pf_options=pf_options)

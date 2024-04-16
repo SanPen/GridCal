@@ -15,171 +15,36 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from uuid import uuid4
-import numpy as np
+import pandas as pd
 from PySide6.QtCore import QThread, Signal
-from typing import Dict, Union
+from typing import Dict, Union, List
 from collections.abc import Callable
+from warnings import warn
 
 # Module imports
-from GridCalEngine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferCapacityResults
+from GridCalEngine.Simulations.ATC.available_transfer_capacity_driver import AvailableTransferCapacityDriver
 from GridCalEngine.Simulations.ATC.available_transfer_capacity_ts_driver import \
-    AvailableTransferCapacityTimeSeriesResults
-from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_results import ContingencyAnalysisResults
-from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_ts_results import \
-    ContingencyAnalysisTimeSeriesResults
-from GridCalEngine.Simulations.ContinuationPowerFlow.continuation_power_flow_driver import ContinuationPowerFlowResults
-from GridCalEngine.Simulations.LinearFactors.linear_analysis_driver import LinearAnalysisResults
-from GridCalEngine.Simulations.LinearFactors.linear_analysis_ts_driver import LinearAnalysisTimeSeriesResults
-from GridCalEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults
-from GridCalEngine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSeriesResults
-from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
-from GridCalEngine.Simulations.PowerFlow.power_flow_ts_driver import PowerFlowTimeSeriesResults
-from GridCalEngine.Simulations.ShortCircuitStudies.short_circuit_driver import ShortCircuitResults
-from GridCalEngine.Simulations.Stochastic.stochastic_power_flow_results import StochasticPowerFlowResults
+    AvailableTransferCapacityTimeSeriesDriver
+from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_driver import ContingencyAnalysisDriver
+from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_ts_driver import \
+    ContingencyAnalysisTimeSeriesDriver
+from GridCalEngine.Simulations.ContinuationPowerFlow.continuation_power_flow_driver import ContinuationPowerFlowDriver
+from GridCalEngine.Simulations.LinearFactors.linear_analysis_driver import LinearAnalysisDriver
+from GridCalEngine.Simulations.LinearFactors.linear_analysis_ts_driver import LinearAnalysisTimeSeriesDriver
+from GridCalEngine.Simulations.OPF.opf_driver import OptimalPowerFlowDriver
+from GridCalEngine.Simulations.OPF.opf_ts_driver import OptimalPowerFlowTimeSeriesDriver
+from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
+from GridCalEngine.Simulations.PowerFlow.power_flow_ts_driver import PowerFlowTimeSeriesDriver
+from GridCalEngine.Simulations.ShortCircuitStudies.short_circuit_driver import ShortCircuitDriver
+from GridCalEngine.Simulations.Stochastic.stochastic_power_flow_driver import StochasticPowerFlowDriver
+from GridCalEngine.Simulations.Clustering.clustering_driver import ClusteringDriver
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.enumerations import ResultTypes
 from GridCalEngine.basic_structures import Logger
 from GridCal.Session.results_model import ResultsModel
-
-
-def get_results_object_dictionary():
-    """
-    Get dictionary of recognizable result types in order to be able to load a driver from disk
-    :return: dictionary[driver name: empty results object]
-    """
-    lst = [(AvailableTransferCapacityResults(br_names=[],
-                                             bus_names=[],
-                                             rates=[],
-                                             contingency_rates=[],
-                                             clustering_results=None),
-            SimulationTypes.NetTransferCapacity_run),
-
-           (AvailableTransferCapacityTimeSeriesResults(br_names=[],
-                                                       bus_names=[],
-                                                       rates=[],
-                                                       contingency_rates=[],
-                                                       time_array=[],
-                                                       clustering_results=None),
-            SimulationTypes.NetTransferCapacityTS_run),
-
-           (ContingencyAnalysisResults(ncon=0,
-                                       nbus=0,
-                                       nbr=0,
-                                       bus_names=[],
-                                       branch_names=[],
-                                       bus_types=[],
-                                       con_names=[]),
-            SimulationTypes.ContingencyAnalysis_run),
-
-           (ContingencyAnalysisTimeSeriesResults(n=0,
-                                                 nbr=0,
-                                                 nc=0,
-                                                 time_array=[],
-                                                 bus_names=[],
-                                                 branch_names=[],
-                                                 bus_types=[],
-                                                 con_names=[],
-                                                 clustering_results=None),
-            SimulationTypes.ContingencyAnalysisTS_run),
-
-           (ContinuationPowerFlowResults(nval=0,
-                                         nbus=0,
-                                         nbr=0,
-                                         bus_names=[],
-                                         branch_names=[],
-                                         bus_types=[]),
-            SimulationTypes.ContinuationPowerFlow_run),
-
-           (LinearAnalysisResults(n_br=0,
-                                  n_bus=0,
-                                  br_names=(),
-                                  bus_names=(),
-                                  bus_types=()), SimulationTypes.LinearAnalysis_run),
-
-           (LinearAnalysisTimeSeriesResults(n=0,
-                                            m=0,
-                                            time_array=(),
-                                            bus_names=(),
-                                            bus_types=(),
-                                            branch_names=(),
-                                            clustering_results=None),
-            SimulationTypes.LinearAnalysis_TS_run),
-
-           (OptimalPowerFlowResults(bus_names=(), branch_names=(), load_names=(), generator_names=(), battery_names=(),
-                                    hvdc_names=(), bus_types=(), area_names=(), F=(), T=(), F_hvdc=(), T_hvdc=(),
-                                    bus_area_indices=()),
-            SimulationTypes.OPF_run),
-
-           (OptimalPowerFlowTimeSeriesResults(bus_names=[],
-                                              branch_names=[],
-                                              load_names=[],
-                                              generator_names=[],
-                                              battery_names=[],
-                                              hvdc_names=[],
-                                              fuel_names=[],
-                                              emission_names=[],
-                                              fluid_node_names=[],
-                                              fluid_path_names=[],
-                                              fluid_injection_names=[],
-                                              n=0,
-                                              m=0,
-                                              nt=0,
-                                              ngen=0,
-                                              nbat=0,
-                                              nload=0,
-                                              nhvdc=0,
-                                              n_fluid_node=0,
-                                              n_fluid_path=0,
-                                              n_fluid_injection=0,
-                                              time_array=None,
-                                              bus_types=(),
-                                              clustering_results=None),
-            SimulationTypes.OPFTimeSeries_run),
-
-           (PowerFlowResults(n=0,
-                             m=0,
-                             n_hvdc=0,
-                             bus_names=np.empty(0),
-                             branch_names=np.empty(0),
-                             hvdc_names=np.empty(0),
-                             bus_types=np.empty(0),
-                             clustering_results=None),
-            SimulationTypes.PowerFlow_run),
-
-           (PowerFlowTimeSeriesResults(n=0,
-                                       m=0,
-                                       n_hvdc=0,
-                                       bus_names=np.empty(0),
-                                       branch_names=np.empty(0),
-                                       hvdc_names=np.empty(0),
-                                       time_array=np.empty(0),
-                                       bus_types=np.empty(0),
-                                       area_names=None,
-                                       clustering_results=None),
-            SimulationTypes.TimeSeries_run),
-
-           (ShortCircuitResults(n=0,
-                                m=0,
-                                n_hvdc=0,
-                                bus_names=np.empty(0),
-                                branch_names=np.empty(0),
-                                hvdc_names=np.empty(0),
-                                bus_types=np.empty(0),
-                                area_names=None),
-            SimulationTypes.ShortCircuit_run),
-
-           (StochasticPowerFlowResults(n=0,
-                                       m=0,
-                                       p=0,
-                                       bus_names=np.empty(0),
-                                       branch_names=np.empty(0),
-                                       bus_types=np.empty(0)),
-            SimulationTypes.StochasticPowerFlow)
-           ]
-
-    return {tpe.value: (elm, tpe) for elm, tpe in lst}
+from GridCalEngine.Simulations.results_template import DriverToSave
 
 
 class GcThread(QThread):
@@ -210,6 +75,10 @@ class GcThread(QThread):
         self.__cancel__ = False
 
     def get_steps(self):
+        """
+
+        :return:
+        """
         return list()
 
     def run(self) -> None:
@@ -277,6 +146,19 @@ class SimulationSession:
         """
         # register
         self.drivers[driver.tpe] = driver
+
+    def get_save_data(self) -> List[DriverToSave]:
+        """
+        Get data to be saved
+        :return: List[DriverToSave]
+        """
+        data = list()
+        for tpe, drv in self.drivers.items():
+            data.append(DriverToSave(name=self.name,
+                                     tpe=tpe,
+                                     results=drv.results,
+                                     logger=drv.logger))
+        return data
 
     def run(self,
             driver: DriverTemplate,
@@ -406,7 +288,10 @@ class SimulationSession:
 
         return None
 
-    def register_driver_from_disk_data(self, grid: MultiCircuit, study_name: str, data_dict: dict):
+    def register_driver_from_disk_data(self,
+                                       grid: MultiCircuit,
+                                       study_name: str,
+                                       data_dict: Dict[str, pd.DataFrame]):
         """
         Create driver with the results
         :param grid: MultiCircuit instance
@@ -415,26 +300,98 @@ class SimulationSession:
         :return:
         """
 
+        time_indices = data_dict.get('time_indices', grid.get_all_time_indices())
+
         # get the results' object dictionary
-        drivers_dict = get_results_object_dictionary()
+        if study_name == AvailableTransferCapacityDriver.tpe.value:
+            drv = AvailableTransferCapacityDriver(grid=grid,
+                                                  options=None)
 
-        if study_name in drivers_dict.keys():
+        elif study_name == AvailableTransferCapacityTimeSeriesDriver.tpe.value:
+            drv = AvailableTransferCapacityTimeSeriesDriver(grid=grid,
+                                                            options=None,
+                                                            time_indices=time_indices,
+                                                            clustering_results=None)
 
-            # declare a dummy driver
-            drv = DriverTemplate(grid=grid)
+        elif study_name == ContingencyAnalysisDriver.tpe.value:
+            drv = ContingencyAnalysisDriver(grid=grid,
+                                            options=None)
 
-            # set the empty results driver
-            drv.results, drv.tpe = drivers_dict[study_name]
-            drv.name = drv.tpe.value
+        elif study_name == ContingencyAnalysisTimeSeriesDriver.tpe.value:
+            drv = ContingencyAnalysisTimeSeriesDriver(grid=grid,
+                                                      options=None,
+                                                      time_indices=time_indices,
+                                                      clustering_results=None)
 
-            # fill in the variables
-            for arr_name, arr in data_dict.items():
-                setattr(drv.results, arr_name, arr)
+        elif study_name == ContinuationPowerFlowDriver.tpe.value:
+            drv = ContinuationPowerFlowDriver(grid=grid,
+                                              options=None,
+                                              inputs=None,
+                                              pf_options=None,
+                                              opf_results=None)
 
-            # perform whatever operations are needed after loading
-            drv.results.consolidate_after_loading()
+        elif study_name == LinearAnalysisDriver.tpe.value:
+            drv = LinearAnalysisDriver(grid=grid,
+                                       options=None)
 
-            self.register(drv)
+        elif study_name == ContinuationPowerFlowDriver.tpe.value:
+            drv = LinearAnalysisTimeSeriesDriver(grid=grid,
+                                                 options=None,
+                                                 time_indices=time_indices,
+                                                 clustering_results=None)
+
+        elif study_name == OptimalPowerFlowDriver.tpe.value:
+            drv = OptimalPowerFlowDriver(grid=grid,
+                                         options=None)
+
+        elif study_name == OptimalPowerFlowTimeSeriesDriver.tpe.value:
+            drv = OptimalPowerFlowTimeSeriesDriver(grid=grid,
+                                                   options=None,
+                                                   time_indices=time_indices,
+                                                   clustering_results=None)
+
+        elif study_name == PowerFlowDriver.tpe.value:
+            drv = PowerFlowDriver(grid=grid,
+                                  options=None)
+
+        elif study_name == PowerFlowTimeSeriesDriver.tpe.value:
+            drv = PowerFlowTimeSeriesDriver(grid=grid,
+                                            options=None,
+                                            time_indices=time_indices,
+                                            clustering_results=None)
+
+        elif study_name == ShortCircuitDriver.tpe.value:
+            drv = ShortCircuitDriver(grid=grid,
+                                     options=None,
+                                     pf_options=None,
+                                     pf_results=None,
+                                     opf_results=None)
+
+        elif study_name == StochasticPowerFlowDriver.tpe.value:
+            drv = StochasticPowerFlowDriver(grid=grid,
+                                            options=None)
+
+        elif study_name == ClusteringDriver.tpe.value:
+            drv = ClusteringDriver(grid=grid,
+                                   options=None)
+
+        else:
+            warn(f"Session {study_name} not implemented for disk retrieval :/")
+            return
+
+        # fill in the saved results
+        drv.results.parse_saved_data(grid=grid, data_dict=data_dict)
+
+        # perform whatever operations are needed after loading
+        drv.results.consolidate_after_loading()
+
+        # parse the logger if available
+        logger_data = data_dict.get('logger', None)
+        if logger_data is not None:
+            drv.logger.parse_df(df=logger_data)
+
+        # register the driver
+        self.register(drv)
 
     def is_this_running(self, sim_tpe: SimulationTypes):
         """
