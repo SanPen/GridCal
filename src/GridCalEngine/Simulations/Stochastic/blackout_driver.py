@@ -98,7 +98,7 @@ class CascadingResults:
         pass
 
 
-class Cascading(DriverTemplate):
+class CascadingDriver(DriverTemplate):
     tpe = SimulationTypes.Cascade_run
 
     # TODO: re-make this simulation class

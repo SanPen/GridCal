@@ -650,7 +650,7 @@ class BaseMainGui(QMainWindow):
         branches = self.circuit.get_branches()
 
         if len(branches) > 0:
-            pf_drv, pf_results = self.session.get_driver_results(sim.SimulationTypes.PowerFlow_run)
+            pf_results = self.session.power_flow()
 
             if pf_results is not None:
                 factor = self.ui.branch_rating_doubleSpinBox.value()
