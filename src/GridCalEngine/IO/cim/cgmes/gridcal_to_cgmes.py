@@ -4,7 +4,8 @@ from GridCalEngine.IO.cim.cgmes.base import get_new_rdfid, form_rdfid
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.full_model import FullModel
 from GridCalEngine.IO.cim.cgmes.base import Base
-import GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices as cgmes
+import GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices as cgmes2
+import GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices as cgmes3
 import GridCalEngine.Devices as gcdev
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices import GeneratingUnit, \
     ThermalGeneratingUnit, HydroGeneratingUnit, SolarGeneratingUnit, \
@@ -390,7 +391,7 @@ def get_cgmes_tn_nodes(multi_circuit_model: MultiCircuit,
             target_vnom=bus.Vnom
         )
 
-        if bus.voltage_level is not None:  # VoltageLevel
+        if bus.voltage_level is not None and cgmes_model.VoltageLevel_list:  # VoltageLevel
             vl: cgmes.VoltageLevel = find_object_by_uuid(
                 object_list=cgmes_model.VoltageLevel_list,
                 target_uuid=bus.voltage_level.idtag

@@ -221,6 +221,8 @@ def get_gcdev_calculation_nodes(cgmes_model: CgmesCircuit,
         #     target_idtag=cgmes_elm.Substation.uuid  # gcdev_elm.idtag
         # )
 
+        # volt_lev = ''
+        # if cgmes_elm.ConnectivityNodeContainer != '':     for IEEE14 import when CoNoC is missing
         volt_lev = find_object_by_idtag(
             object_list=gc_model.voltage_levels,
             target_idtag=cgmes_elm.ConnectivityNodeContainer.uuid
@@ -632,7 +634,8 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
             for pte in list(cgmes_elm.PowerTransformerEnd):
                 if hasattr(pte, "endNumber"):
                     i = getattr(pte, "endNumber")
-                    windings[i - 1] = pte
+                    if i is not None:
+                        windings[i - 1] = pte
             windings = [x for x in windings if x is not None]
             # windings = get_windings(cgmes_elm)
             # windings: List[PowerTransformerEnd] = list(cgmes_elm.references_to_me['PowerTransformerEnd'])
@@ -1127,11 +1130,11 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
     cgmes_model_export = gridcal_to_cgmes(gc_model, cgmes_circuit, logger)
 
     # Export test for the imported data
-    start = time.time()
-    serializer = CimExporter(cgmes_model)
-    serializer.export_test()
-    end = time.time()
-    print("ET export time: ", end - start, "sec")
+    # start = time.time()
+    # serializer = CimExporter(cgmes_model_export)
+    # serializer.export_test()
+    # end = time.time()
+    # print("ET export time: ", end - start, "sec")
 
     # Export data converted from gridcal
 

@@ -635,21 +635,23 @@ def check_load_response_characteristic(load_response_characteristic: LoadRespons
                              device_class="LoadResponseCharacteristic",
                              expected_value="Existence of qConstantImpedance")
 
-        p_factor = load_response_characteristic.pConstantImpedance + load_response_characteristic.pConstantCurrent + load_response_characteristic.pConstantPower
-        q_factor = load_response_characteristic.qConstantImpedance + load_response_characteristic.qConstantCurrent + load_response_characteristic.qConstantPower
-        if not np.isclose(p_factor, 1):
-            err_counter += 1
-            logger.add_error(msg="pConstantImpedance + pConstantCurrent + pConstantPower different from 1",
-                             device=load_response_characteristic.rdfid,
-                             device_class="LoadResponseCharacteristic",
-                             expected_value="1.0")
-
-        if not np.isclose(q_factor, 1):
-            err_counter += 1
-            logger.add_error(msg="qConstantImpedance + qConstantCurrent + qConstantPower different from 1",
-                             device=load_response_characteristic.rdfid,
-                             device_class="LoadResponseCharacteristic",
-                             expected_value="1.0")
+        # p_factor = 0
+        # p_factor += load_response_characteristic.pConstantImpedance if load_response_characteristic.pConstantImpedance != ''
+        # p_factor = load_response_characteristic.pConstantImpedance + load_response_characteristic.pConstantCurrent + load_response_characteristic.pConstantPower
+        # q_factor = load_response_characteristic.qConstantImpedance + load_response_characteristic.qConstantCurrent + load_response_characteristic.qConstantPower
+        # if not np.isclose(p_factor, 1):
+        #     err_counter += 1
+        #     logger.add_error(msg="pConstantImpedance + pConstantCurrent + pConstantPower different from 1",
+        #                      device=load_response_characteristic.rdfid,
+        #                      device_class="LoadResponseCharacteristic",
+        #                      expected_value="1.0")
+        #
+        # if not np.isclose(q_factor, 1):
+        #     err_counter += 1
+        #     logger.add_error(msg="qConstantImpedance + qConstantCurrent + qConstantPower different from 1",
+        #                      device=load_response_characteristic.rdfid,
+        #                      device_class="LoadResponseCharacteristic",
+        #                      expected_value="1.0")
 
     return err_counter == 0
 
