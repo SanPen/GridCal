@@ -460,7 +460,7 @@ def get_cgmes_cn_nodes(multi_circuit_model: MultiCircuit,
         else:
             logger.add_error(msg='Connectivity Node has no default bus',
                              device=mc_elm.name,
-                             device_class=gcdev.ConnectivityNode.type_name)
+                             device_class=mc_elm.device_type)
             # print(f'Topological node not found for cn: {cn.name}')
 
         cgmes_model.add(cn)
