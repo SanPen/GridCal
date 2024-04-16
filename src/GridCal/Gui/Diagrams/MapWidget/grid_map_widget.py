@@ -19,6 +19,7 @@ import numpy as np
 from PySide6.QtWidgets import QWidget
 from collections.abc import Callable
 
+from GridCal.Gui.Diagrams.MapWidget.Schema.Nodes import NodeGraphicItem
 from GridCalEngine.Devices.Diagrams.map_location import MapLocation
 from GridCalEngine.Devices.Substation import Bus
 from GridCalEngine.Devices.Branches.line import Line
@@ -37,7 +38,7 @@ import GridCal.Gui.Visualization.visualization as viz
 import GridCal.Gui.Visualization.palettes as palettes
 from GridCal.Gui.Diagrams.graphics_manager import GraphicsManager
 from GridCal.Gui.Diagrams.MapWidget.Tiles.tiles import Tiles
-
+from GridCalEngine.enumerations import DeviceType
 
 class GridMapWidget(MapWidget):
 
@@ -65,6 +66,9 @@ class GridMapWidget(MapWidget):
                                               start_level=start_level,
                                               longitude=longitude,
                                               latitude=latitude) if diagram is None else diagram
+
+        if self.diagram:
+            self.draw()
 
         # add empty polylines layer
         self.polyline_layer_id = self.AddPolylineLayer(data=[],
@@ -133,6 +137,30 @@ class GridMapWidget(MapWidget):
         # print('Map lat:', latitude, 'lon:', longitude)
         self.diagram.latitude = latitude
         self.diagram.longitude = longitude
+
+
+    def draw(self) -> None:
+        for category, points_group in self.diagram.data.items():
+            if category == DeviceType.SubstationDevice.value:
+                for idtag, location in points_group.locations.items():
+                    self.schema_Manager.CreateSubstation(location.latitude, location.longitude)
+            elif category == DeviceType.LineDevice.value:
+
+                for idtag, location in points_group.locations.items():
+                    self.schema_Manager.CreateLine()
+                    line: Line = location.api_object
+                    for elm in line.locations.data:
+                        self.schema_Manager.CurrentLine.CreateNode(elm.long, -elm.lat)
+                        nodSiz = len(self.schema_Manager.CurrentLine.Nodes)
+                        if(nodSiz > 1):
+                            i1 = nodSiz - 1
+                            i2 = nodSiz - 2
+                            self.schema_Manager.CurrentLine.CreateConnector(i1, i2)
+            elif category == DeviceType.VoltageLevelDevice.value:
+                for idtag, location in points_group.locations.items():
+                    if(location.api_object.substation):
+                        objectSubs = location.api_object.substation
+                        self.schema_Manager.CreateSubstation(objectSubs.longitude, -objectSubs.latitude)
 
     def colour_results(self,
                        buses: List[Bus],
@@ -380,6 +408,18 @@ def generate_map_diagram(substations: List[Substation],
             prog_func((i + 1) / nn * 100.0)
 
         diagram.set_point(device=substation, location=MapLocation())
+
+    # --------------------------------------------------------------------------------------------------------------
+    if text_func is not None:
+        text_func('Creating schematic buses')
+
+    nn = len(voltage_levels)
+    for i, voltageLevel in enumerate(voltage_levels):
+
+        if prog_func is not None:
+            prog_func((i + 1) / nn * 100.0)
+
+        diagram.set_point(device=voltageLevel, location=MapLocation())
 
     # --------------------------------------------------------------------------------------------------------------
     if text_func is not None:

@@ -31,7 +31,8 @@ class UpfcGraphicItem(LineGraphicTemplateItem):
 
     def __init__(self, from_port: BarTerminalItem, to_port: BarTerminalItem,
                  editor: DiagramEditorWidget, width=5,
-                 api_object: UPFC = None):
+                 api_object: UPFC = None,
+                 draw_labels: bool = True):
         """
 
         :param from_port:
@@ -45,7 +46,8 @@ class UpfcGraphicItem(LineGraphicTemplateItem):
                                          to_port=to_port,
                                          editor=editor,
                                          width=width,
-                                         api_object=api_object)
+                                         api_object=api_object,
+                                         draw_labels=draw_labels)
 
     def contextMenuEvent(self, event):
         """

@@ -62,6 +62,17 @@ class PowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         self.opf_time_series_results = opf_time_series_results
 
+        self.results = PowerFlowTimeSeriesResults(n=0,
+                                                  m=0,
+                                                  n_hvdc=0,
+                                                  bus_names=np.empty(0),
+                                                  branch_names=np.empty(0),
+                                                  hvdc_names=np.empty(0),
+                                                  time_array=np.empty(0),
+                                                  bus_types=np.empty(0),
+                                                  area_names=None,
+                                                  clustering_results=None)
+
     def run_single_thread(self, time_indices) -> PowerFlowTimeSeriesResults:
         """
         Run single thread time series

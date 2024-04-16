@@ -96,6 +96,9 @@ class ConfigurationMain(ResultsMain):
         # buttons
         self.ui.selectCGMESBoundarySetButton.clicked.connect(self.select_cgmes_boundary_set)
 
+        # DateTime change
+        self.ui.snapshot_dateTimeEdit.dateTimeChanged.connect(self.snapshot_datetime_changed)
+
     def change_theme_mode(self) -> None:
         """
         Change the GUI theme
@@ -397,16 +400,22 @@ class ConfigurationMain(ResultsMain):
         """
         Select the current boundary set
         """
-        files_types = ("Boundary set (*.zip)")
+        files_types = "Boundary set (*.zip)"
 
         dialogue = QtWidgets.QFileDialog(None,
                                          caption='Select Boundary set file',
                                          directory=self.project_directory,
                                          filter=files_types)
-        # dialogue.setOption(QtWidgets.QFileDialog.Option.DontUseNativeDialog, True)
-
         if dialogue.exec():
             filenames = dialogue.selectedFiles()
             if len(filenames) > 0:
                 self.current_boundary_set = filenames[0]
                 self.ui.cgmes_boundary_set_label.setText(self.current_boundary_set)
+
+    def snapshot_datetime_changed(self):
+        """
+        Upon change of the snapshot datetime, change the circuit snapshot datetime
+        """
+        date_time_value = self.ui.snapshot_dateTimeEdit.dateTime().toPython()
+
+        self.circuit.snapshot_time = date_time_value

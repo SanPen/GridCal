@@ -41,7 +41,8 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
                  editor: DiagramEditorWidget,
                  width=10,
                  api_object: FluidPath = None,
-                 arrow_size=15):
+                 arrow_size=15,
+                 draw_labels: bool = True):
         """
         
         :param from_port:
@@ -51,7 +52,7 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
         :param api_object:
         :param arrow_size:
         """
-        GenericDBWidget.__init__(self, parent=None, api_object=api_object, editor=editor, draw_labels=True)
+        GenericDBWidget.__init__(self, parent=None, api_object=api_object, editor=editor, draw_labels=draw_labels)
         LineGraphicTemplateItem.__init__(self,
                                          from_port=from_port,
                                          to_port=to_port,

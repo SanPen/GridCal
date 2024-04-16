@@ -82,14 +82,14 @@ class PointsGroup:
         return points
 
     def parse_data(self,
-                   data: Dict[str, Dict[str, Union[int, float, List[Tuple[float, float]]]]],
+                   data: Dict[str, Dict[str, Union[int, float, bool, List[Tuple[float, float]]]]],
                    obj_dict: Dict[str, ALL_DEV_TYPES],
                    logger: Logger,
                    category: str = "") -> None:
         """
         Parse file data ito this class
         :param data: json dictionary
-        :param obj_dict: dicrtionary of relevant objects (idtag, object)
+        :param obj_dict: dictionary of relevant objects (idtag, object)
         :param logger: Logger
         :param category: category
         """
@@ -101,6 +101,7 @@ class PointsGroup:
 
             if api_object is None:
                 # locations with no API object are not created
+                print()
                 logger.add_error("Diagram location could not find API object",
                                  device_class=category,
                                  device=idtag,)
@@ -111,6 +112,7 @@ class PointsGroup:
                                                             w=location['w'],
                                                             h=location['h'],
                                                             r=location['r'],
+                                                            draw_labels=location.get('draw_labels', True),
                                                             api_object=api_object)
                 if 'latitude' in location:
                     self.locations[idtag] = MapLocation(latitude=location['latitude'],

@@ -70,7 +70,8 @@ class BusGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
                  h: int = 40,
                  w: int = 80,
                  x: int = 0,
-                 y: int = 0):
+                 y: int = 0,
+                 draw_labels: bool = True):
         """
 
         :param parent:
@@ -82,7 +83,7 @@ class BusGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
         :param x:
         :param y:
         """
-        GenericDBWidget.__init__(self, parent=parent, api_object=bus, editor=editor, draw_labels=True)
+        GenericDBWidget.__init__(self, parent=parent, api_object=bus, editor=editor, draw_labels=draw_labels)
         QtWidgets.QGraphicsRectItem.__init__(self, parent)
 
         self.min_w = 180.0
@@ -160,6 +161,7 @@ class BusGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
                                            w=self.w,
                                            h=self.h,
                                            r=self.rotation(),
+                                           draw_labels=self.draw_labels,
                                            graphic_object=self)
 
     def add_big_marker(self, color: Union[None, QColor] = Qt.red, tool_tip_text: str = ""):
@@ -258,6 +260,7 @@ class BusGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
                                            w=self.w,
                                            h=int(self.min_h),
                                            r=self.rotation(),
+                                           draw_labels=self.draw_labels,
                                            graphic_object=self)
 
         return self.w, self.min_h
@@ -431,11 +434,11 @@ class BusGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
         da.setIcon(del_icon)
         da.triggered.connect(self.remove)
 
-        re = menu.addAction('Reduce')
+        re = menu.addAction('Expand schematic')
         re_icon = QIcon()
-        re_icon.addPixmap(QPixmap(":/Icons/icons/grid_reduction.svg"))
+        re_icon.addPixmap(QPixmap(":/Icons/icons/grid_icon.svg"))
         re.setIcon(re_icon)
-        re.triggered.connect(self.reduce)
+        re.triggered.connect(self.expand_diagram_from_bus)
 
         menu.addSection("Add")
 
@@ -501,16 +504,6 @@ class BusGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
         """
         self._terminal.remove_all_connections()
 
-    def reduce(self):
-        """
-        Reduce this bus
-        :return:
-        """
-        ok = yes_no_question('Are you sure that you want to reduce this bus', 'Reduce bus')
-        if ok:
-            reduce_buses(self.editor.circuit, [self.api_object])
-            self.remove()
-
     def remove(self, ask: bool = True) -> None:
         """
         Remove this element
@@ -537,6 +530,12 @@ class BusGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
             self.set_tile_color(QBrush(ACTIVE['color']))
         else:
             self.set_tile_color(QBrush(DEACTIVATED['color']))
+
+    def expand_diagram_from_bus(self) -> None:
+        """
+        Expands the diagram from this bus
+        """
+        self.editor.expand_diagram_from_bus(root_bus=self.api_object)
 
     def enable_disable_toggle(self):
         """

@@ -70,7 +70,12 @@ class StochasticPowerFlowDriver(DriverTemplate):
 
         self.simulation_type = simulation_type
 
-        self.results = None
+        self.results = StochasticPowerFlowResults(n=0,
+                                                  m=0,
+                                                  p=0,
+                                                  bus_names=np.empty(0),
+                                                  branch_names=np.empty(0),
+                                                  bus_types=np.empty(0))
 
         self.logger = Logger()
 

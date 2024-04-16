@@ -67,7 +67,7 @@ class CascadingStepsGUI(QtWidgets.QDialog):
                 options = self.gridcal_main.get_selected_power_flow_options()
                 options.solver_type = SolverType.LM
                 max_isl = self.gridcal_main.ui.cascading_islands_spinBox.value()
-                drv = sim.Cascading(self.gridcal_main.circuit.copy(), options, max_additional_islands=max_isl)
+                drv = sim.CascadingDriver(self.gridcal_main.circuit.copy(), options, max_additional_islands=max_isl)
 
                 self.gridcal_main.session.run(drv,
                                               post_func=self.gridcal_main.post_cascade,
@@ -101,9 +101,9 @@ class CascadingStepsGUI(QtWidgets.QDialog):
                 max_isl = self.gridcal_main.ui.cascading_islands_spinBox.value()
                 n_lsh_samples = self.gridcal_main.ui.max_iterations_stochastic_spinBox.value()
 
-                drv = sim.Cascading(self.gridcal_main.circuit.copy(), options,
-                                    max_additional_islands=max_isl,
-                                    n_lhs_samples_=n_lsh_samples)
+                drv = sim.CascadingDriver(self.gridcal_main.circuit.copy(), options,
+                                          max_additional_islands=max_isl,
+                                          n_lhs_samples_=n_lsh_samples)
 
                 self.gridcal_main.session.run(drv,
                                               post_func=self.gridcal_main.post_cascade,

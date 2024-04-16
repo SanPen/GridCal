@@ -39,91 +39,91 @@ def get_objects_dictionary() -> Dict[str, ALL_DEV_TYPES]:
     # loading algorithm is able to find the object substitutions
 
     object_types = {
-                    'modelling_authority': dev.ModellingAuthority(),
+        'modelling_authority': dev.ModellingAuthority(),
 
-                    'area': dev.Area(),
-                    'zone': dev.Zone(),
+        'area': dev.Area(),
+        'zone': dev.Zone(),
 
-                    'substation': dev.Substation(),
+        'substation': dev.Substation(),
 
-                    'voltage_level': dev.VoltageLevel(),
+        'voltage_level': dev.VoltageLevel(),
 
-                    'country': dev.Country(),
-                    'community': dev.Community(),
-                    'region': dev.Region(),
-                    'municipality': dev.Municipality(),
+        'country': dev.Country(),
+        'community': dev.Community(),
+        'region': dev.Region(),
+        'municipality': dev.Municipality(),
 
-                    'technology': dev.Technology(),
+        'technology': dev.Technology(),
 
-                    'fuel': dev.Fuel(),
+        'fuel': dev.Fuel(),
 
-                    'emission': dev.EmissionGas(),
+        'emission': dev.EmissionGas(),
 
-                    'bus': dev.Bus(),
+        'bus': dev.Bus(),
 
-                    'bus_bar': dev.BusBar(),
+        'bus_bar': dev.BusBar(),
 
-                    'connectivity node': dev.ConnectivityNode(),
+        'connectivity node': dev.ConnectivityNode(),
 
-                    'load': dev.Load(),
+        'load': dev.Load(),
 
-                    'static_generator': dev.StaticGenerator(),
+        'static_generator': dev.StaticGenerator(),
 
-                    'battery': dev.Battery(),
+        'battery': dev.Battery(),
 
-                    'generator': dev.Generator(),
+        'generator': dev.Generator(),
 
-                    'shunt': dev.Shunt(),
+        'shunt': dev.Shunt(),
 
-                    'linear_shunt': dev.ControllableShunt(),
+        'linear_shunt': dev.ControllableShunt(),
 
-                    'external_grid': dev.ExternalGrid(),
+        'external_grid': dev.ExternalGrid(),
 
-                    'current_injection': dev.CurrentInjection(),
+        'current_injection': dev.CurrentInjection(),
 
-                    'wires': dev.Wire(),
-                    'overhead_line_types': dev.OverheadLineType(),
-                    'underground_cable_types': dev.UndergroundLineType(),
-                    'sequence_line_types': dev.SequenceLineType(),
-                    'transformer_types': dev.TransformerType(),
+        'wires': dev.Wire(),
+        'overhead_line_types': dev.OverheadLineType(),
+        'underground_cable_types': dev.UndergroundLineType(),
+        'sequence_line_types': dev.SequenceLineType(),
+        'transformer_types': dev.TransformerType(),
 
-                    'branch_group': dev.BranchGroup(),
+        'branch_group': dev.BranchGroup(),
 
-                    'branch': dev.Branch(),
-                    'transformer2w': dev.Transformer2W(),
+        'branch': dev.Branch(),
+        'transformer2w': dev.Transformer2W(),
 
-                    'windings': dev.Winding(),
-                    'transformer3w': dev.Transformer3W(),
+        'windings': dev.Winding(),
+        'transformer3w': dev.Transformer3W(),
 
-                    'line': dev.Line(),
-                    'dc_line': dev.DcLine(None, None),
+        'line': dev.Line(),
+        'dc_line': dev.DcLine(None, None),
 
-                    'hvdc': dev.HvdcLine(),
+        'hvdc': dev.HvdcLine(),
 
-                    'vsc': dev.VSC(None, None),
-                    'upfc': dev.UPFC(None, None),
+        'vsc': dev.VSC(None, None),
+        'upfc': dev.UPFC(None, None),
 
-                    'series_reactance': dev.SeriesReactance(),
+        'series_reactance': dev.SeriesReactance(),
 
-                    'switch': dev.Switch(),
+        'switch': dev.Switch(),
 
-                    'contingency_group': dev.ContingencyGroup(),
-                    'contingency': dev.Contingency(),
+        'contingency_group': dev.ContingencyGroup(),
+        'contingency': dev.Contingency(),
 
-                    'investments_group': dev.InvestmentsGroup(),
-                    'investment': dev.Investment(),
+        'investments_group': dev.InvestmentsGroup(),
+        'investment': dev.Investment(),
 
-                    'generator_technology': dev.GeneratorTechnology(),
-                    'generator_fuel': dev.GeneratorFuel(),
-                    'generator_emission': dev.GeneratorEmission(),
+        'generator_technology': dev.GeneratorTechnology(),
+        'generator_fuel': dev.GeneratorFuel(),
+        'generator_emission': dev.GeneratorEmission(),
 
-                    'fluid_node': dev.FluidNode(),
-                    'fluid_path': dev.FluidPath(),
-                    'fluid_turbine': dev.FluidTurbine(),
-                    'fluid_pump': dev.FluidPump(),
-                    'fluid_p2x': dev.FluidP2x(),
+        'fluid_node': dev.FluidNode(),
+        'fluid_path': dev.FluidPath(),
+        'fluid_turbine': dev.FluidTurbine(),
+        'fluid_pump': dev.FluidPump(),
+        'fluid_p2x': dev.FluidP2x(),
 
-                    }
+    }
     return object_types
 
 
@@ -376,7 +376,6 @@ def get_profile_from_dict(profile: Profile,
     profile.set_initialized()
 
 
-
 def gridcal_object_to_json(elm: ALL_DEV_TYPES) -> Dict[str, str]:
     """
 
@@ -452,7 +451,8 @@ def gather_model_as_jsons(circuit: MultiCircuit) -> Dict[str, Dict[str, str]]:
     # time
     unix_time = circuit.get_unix_time()
     data['time'] = {'unix': unix_time.tolist(),
-                    'prob': list(np.ones(len(unix_time)))}
+                    'prob': list(np.ones(len(unix_time))),
+                    'snapshot_unix': circuit.get_snapshot_time_unix()}
 
     return data
 
@@ -1244,6 +1244,11 @@ def parse_gridcal_data(data: Dict[str, Union[str, float, Dict, pd.DataFrame, Dic
             tdata = model_data.get('time', None)
             if tdata is not None:
                 circuit.set_unix_time(arr=tdata['unix'])
+
+                snapshot_unix_time = tdata.get('snapshot_unix', None)
+                if snapshot_unix_time is not None:
+                    circuit.set_snapshot_time_unix(val=snapshot_unix_time)
+
             else:
                 logger.add_error(msg=f'The file must have time data regardless of the profiles existance')
                 circuit.time_profile = None
@@ -1310,7 +1315,7 @@ def parse_gridcal_data(data: Dict[str, Union[str, float, Dict, pd.DataFrame, Dic
     if 'diagrams' in data.keys():
 
         if len(data['diagrams']):
-            obj_dict = circuit.gat_all_elements_dict_by_type()
+            obj_dict = circuit.get_all_elements_dict_by_type()
 
             for diagram_dict in data['diagrams']:
 

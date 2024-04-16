@@ -200,17 +200,18 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
     tpe = SimulationTypes.NetTransferCapacityTS_run
     name = tpe.value
 
-    def __init__(
-            self, grid: MultiCircuit,
-            options: AvailableTransferCapacityOptions,
-            time_indices: np.ndarray,
-            clustering_results: Union[ClusteringResults, None] = None):
+    def __init__(self,
+                 grid: MultiCircuit,
+                 options: AvailableTransferCapacityOptions,
+                 time_indices: np.ndarray,
+                 clustering_results: Union[ClusteringResults, None] = None):
 
         """
         Power Transfer Distribution Factors class constructor
         :param grid: MultiCircuit Object
         :param options: OPF options
         :param time_indices: array of time indices to simulate
+        :param clustering_results: ClusteringResults (optional)
         """
 
         TimeSeriesDriverTemplate.__init__(

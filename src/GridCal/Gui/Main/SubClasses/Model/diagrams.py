@@ -28,8 +28,8 @@ import GridCalEngine.Simulations as sim
 import GridCal.Gui.GuiFunctions as gf
 import GridCal.Gui.Visualization.palettes as palettes
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
-from GridCal.Gui.GeneralDialogues import CheckListDialogue, StartEndSelectionDialogue, InputSearchDialogue, \
-    InputNumberDialogue
+from GridCal.Gui.GeneralDialogues import (CheckListDialogue, StartEndSelectionDialogue, InputSearchDialogue,
+                                          InputNumberDialogue)
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
 
 from GridCal.Gui.Diagrams.DiagramEditorWidget.diagram_editor_widget import (DiagramEditorWidget,
@@ -649,7 +649,7 @@ class DiagramsMain(CompiledArraysMain):
             else:
                 info_msg(f"{current_study} only has values for the snapshot")
 
-        elif current_study == sim.ContingencyAnalysisTimeSeries.tpe.value:
+        elif current_study == sim.ContingencyAnalysisTimeSeriesDriver.tpe.value:
             if t_idx is not None:
                 results: sim.ContingencyAnalysisTimeSeriesResults = self.session.get_results(
                     sim.SimulationTypes.ContingencyAnalysisTS_run)
@@ -770,17 +770,18 @@ class DiagramsMain(CompiledArraysMain):
 
             if isinstance(diagram_widget, DiagramEditorWidget):
                 # set pointer to the circuit
-                diagram = generate_bus_branch_diagram(buses=self.circuit.buses,
-                                                      lines=self.circuit.lines,
-                                                      dc_lines=self.circuit.dc_lines,
-                                                      transformers2w=self.circuit.transformers2w,
-                                                      transformers3w=self.circuit.transformers3w,
-                                                      windings=self.circuit.windings,
-                                                      hvdc_lines=self.circuit.hvdc_lines,
-                                                      vsc_devices=self.circuit.vsc_devices,
-                                                      upfc_devices=self.circuit.upfc_devices,
-                                                      fluid_nodes=self.circuit.fluid_nodes,
-                                                      fluid_paths=self.circuit.fluid_paths,
+                diagram = generate_bus_branch_diagram(buses=self.circuit.get_buses(),
+                                                      lines=self.circuit.get_lines(),
+                                                      dc_lines=self.circuit.get_dc_lines(),
+                                                      transformers2w=self.circuit.get_transformers2w(),
+                                                      transformers3w=self.circuit.get_transformers3w(),
+                                                      windings=self.circuit.get_windings(),
+                                                      hvdc_lines=self.circuit.get_hvdc(),
+                                                      vsc_devices=self.circuit.get_vsc(),
+                                                      upfc_devices=self.circuit.get_upfc(),
+                                                      series_reactances=self.circuit.get_series_reactances(),
+                                                      fluid_nodes=self.circuit.get_fluid_nodes(),
+                                                      fluid_paths=self.circuit.get_fluid_paths(),
                                                       explode_factor=1.0,
                                                       prog_func=None,
                                                       text_func=None)
@@ -811,6 +812,7 @@ class DiagramsMain(CompiledArraysMain):
                                               hvdc_lines=self.circuit.get_hvdc(),
                                               vsc_devices=self.circuit.get_vsc(),
                                               upfc_devices=self.circuit.get_upfc(),
+                                              series_reactances=self.circuit.get_series_reactances(),
                                               fluid_nodes=self.circuit.get_fluid_nodes(),
                                               fluid_paths=self.circuit.get_fluid_paths(),
                                               explode_factor=1.0,

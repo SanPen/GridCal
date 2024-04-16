@@ -342,8 +342,8 @@ class MapWidget(QWidget):
         self.schema_zoom = 1
         self.view.scale(initial_zoom_factor, initial_zoom_factor)
         self.remapSchema()
+        self.schema_Manager = schemaManager(self.scene, self.devXFact, self.devYFact)
         self.selTempDistance = 20
-        self.schema_Manager = schemaManager(self.scene)
 
     def convertToQMouseEvent(self, sceneMouseEvent):
         # Get relevant information from QGraphicsSceneMouseEvent

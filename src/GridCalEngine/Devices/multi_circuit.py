@@ -23,7 +23,7 @@ import numpy as np
 import pandas as pd
 from typing import List, Dict, Tuple, Union, Any, Callable, Set
 from uuid import getnode as get_mac, uuid4
-from datetime import timedelta, datetime
+import datetime as dateslib
 import networkx as nx
 from matplotlib import pyplot as plt
 from scipy.sparse import csc_matrix, lil_matrix
@@ -192,8 +192,8 @@ class MultiCircuit:
         # Base frequency in Hz
         self.fBase: float = fbase
 
-        # Should be able to accept Branches, Lines and Transformers alike
-        # self.Branches = list()
+        # snapshot time
+        self._snapshot_time: dateslib.datetime = dateslib.datetime.now()  # dateslib.datetime(year=2000, month=1, day=1)
 
         self.lines: List[dev.Line] = list()
 
@@ -442,6 +442,35 @@ class MultiCircuit:
         return str(self.name)
 
     @property
+    def snapshot_time(self) -> dateslib.datetime:
+        """
+        Returns the current snapshot time
+        :return: Datetime
+        """
+        return self._snapshot_time
+
+    @snapshot_time.setter
+    def snapshot_time(self, val: dateslib.datetime):
+        if type(val) is dateslib.datetime:  # isinstance doesn't work for this
+            self._snapshot_time = dateslib.datetime(year=val.year,
+                                                    month=val.month,
+                                                    day=val.day,
+                                                    hour=val.hour,
+                                                    minute=val.minute,
+                                                    second=val.second,
+                                                    microsecond=val.microsecond)
+        elif type(val) is pd.Timestamp:  # isinstance doesn't work for this
+            self._snapshot_time = dateslib.datetime(year=val.year,
+                                                    month=val.month,
+                                                    day=val.day,
+                                                    hour=val.hour,
+                                                    minute=val.minute,
+                                                    second=val.second,
+                                                    microsecond=val.microsecond)
+        else:
+            raise Exception(f'unsupported value set {val} for snapshot_time')
+
+    @property
     def has_time_series(self) -> bool:
         """
         Area there time series?
@@ -471,6 +500,20 @@ class MultiCircuit:
         :param arr: UNIX time iterable
         """
         self.time_profile = pd.to_datetime(arr, unit='s')
+
+    def get_snapshot_time_unix(self) -> int:
+        """
+        Get the unix representation of the snapshot time
+        :return: int
+        """
+        return int(self.snapshot_time.timestamp())
+
+    def set_snapshot_time_unix(self, val: int) -> None:
+        """
+        Convert unix datetime to python datetime
+        :param val: seconds since 1970-01-01T00:00:00
+        """
+        self.snapshot_time = pd.to_datetime(val * 1e9)
 
     def get_objects_with_profiles_list(self) -> List[ALL_DEV_TYPES]:
         """
@@ -2394,7 +2437,7 @@ class MultiCircuit:
 
         return data
 
-    def gat_all_elements_dict_by_type(self) -> dict[Callable[[], Any], Union[dict[str, ALL_DEV_TYPES], Any]]:
+    def get_all_elements_dict_by_type(self) -> dict[Callable[[], Any], Union[dict[str, ALL_DEV_TYPES], Any]]:
         """
         Get a dictionary of all elements by type
         :return:
@@ -2647,7 +2690,7 @@ class MultiCircuit:
 
         return graph_real_power_flow
 
-    def create_profiles(self, steps, step_length, step_unit, time_base: datetime = datetime.now()):
+    def create_profiles(self, steps, step_length, step_unit, time_base: dateslib.datetime = dateslib.datetime.now()):
         """
         Set the default profiles in all the objects enabled to have profiles.
         :param steps: Number of time steps
@@ -2659,11 +2702,11 @@ class MultiCircuit:
         index = np.empty(steps, dtype=object)
         for i in range(steps):
             if step_unit == 'h':
-                index[i] = time_base + timedelta(hours=i * step_length)
+                index[i] = time_base + dateslib.timedelta(hours=i * step_length)
             elif step_unit == 'm':
-                index[i] = time_base + timedelta(minutes=i * step_length)
+                index[i] = time_base + dateslib.timedelta(minutes=i * step_length)
             elif step_unit == 's':
-                index[i] = time_base + timedelta(seconds=i * step_length)
+                index[i] = time_base + dateslib.timedelta(seconds=i * step_length)
 
         index = pd.DatetimeIndex(index)
 
@@ -4436,7 +4479,7 @@ class MultiCircuit:
         else:
             raise Exception('There are no time series!')
 
-    def set_state(self, t):
+    def set_state(self, t: int):
         """
         Set the profiles state at the index t as the default values.
         """
@@ -4451,6 +4494,8 @@ class MultiCircuit:
 
         for branch in self.get_branches():
             branch.set_profile_values(t)
+
+        self.snapshot_time = self.time_profile[t]
 
     def get_bus_branch_connectivity_matrix(self) -> Tuple[csc_matrix, csc_matrix, csc_matrix]:
         """
@@ -5126,10 +5171,10 @@ class MultiCircuit:
         :param hours_per_step: number of hours per step, by default 1 hour by step
         """
         if year is None:
-            t0 = datetime.now()
+            t0 = dateslib.datetime.now()
             year = t0.year
 
-        t0 = datetime(year=year, month=1, day=1)
+        t0 = dateslib.datetime(year=year, month=1, day=1)
         self.re_index_time2(t0=t0, step_size=hours_per_step, step_unit='h')
 
     def re_index_time2(self, t0, step_size, step_unit):
@@ -5142,11 +5187,11 @@ class MultiCircuit:
         nt = self.get_time_number()
 
         if step_unit == 'h':
-            tm = [t0 + timedelta(hours=t * step_size) for t in range(nt)]
+            tm = [t0 + dateslib.timedelta(hours=t * step_size) for t in range(nt)]
         elif step_unit == 'm':
-            tm = [t0 + timedelta(minutes=t * step_size) for t in range(nt)]
+            tm = [t0 + dateslib.timedelta(minutes=t * step_size) for t in range(nt)]
         elif step_unit == 's':
-            tm = [t0 + timedelta(seconds=t * step_size) for t in range(nt)]
+            tm = [t0 + dateslib.timedelta(seconds=t * step_size) for t in range(nt)]
         else:
             raise Exception("Unsupported time unit")
 
@@ -5506,6 +5551,12 @@ class MultiCircuit:
                              expected_value=self.get_time_number())
         else:
             nt = self.get_time_number()
+
+        if self.snapshot_time != grid2.snapshot_time:
+            logger.add_error(msg="Different snapshot times",
+                             device_class="snapshot time",
+                             value=str(grid2.get_snapshot_time_unix),
+                             expected_value=self.get_snapshot_time_unix)
 
         # for each category
         for key, template_elms_list in self.objects_with_profiles.items():

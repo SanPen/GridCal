@@ -17,11 +17,13 @@
 from __future__ import annotations
 import json
 import numpy as np
+import pandas as pd
 from typing import List, Dict, Union, TYPE_CHECKING
 
 from GridCalEngine.Simulations.results_table import ResultsTable
-from GridCalEngine.basic_structures import IntVec, Vec, CxVec, StrVec, Mat, DateVec, CxMat
+from GridCalEngine.basic_structures import IntVec, Vec, CxVec, StrVec, Mat, DateVec, CxMat, Logger
 from GridCalEngine.enumerations import StudyResultsType, ResultTypes
+from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
@@ -73,7 +75,7 @@ class ResultsTemplate:
 
         self.study_results_type: StudyResultsType = study_results_type
 
-        self.available_results: Dict[ResultTypes: List[ResultTypes]] = available_results
+        self.available_results: Dict[ResultTypes, List[ResultTypes]] = available_results
 
         self.data_variables: Dict[str, ResultsProperty] = dict()
 
@@ -159,14 +161,6 @@ class ResultsTemplate:
             d = [x.value for x in self.available_results]
 
         return d
-
-    def get_arrays(self):
-        """
-        Get a dictionary with the array name and the actual array of the class (it also works with the derived class)
-        :return: {array_name: array}
-        """
-        property_names = [p for p in dir(self) if isinstance(getattr(self, p), np.ndarray)]
-        return {var_name: getattr(self, var_name) for var_name in property_names}
 
     def to_json(self, file_name):
         """
@@ -343,3 +337,65 @@ class ResultsTemplate:
                     else:
                         pass
                         # print(prop, value.ndim, value.dtype)
+
+    def parse_saved_data(self, grid: MultiCircuit, data_dict: Dict[str, pd.DataFrame]) -> None:
+        """
+
+        :param grid: MultiCircuit
+        :param data_dict: Dictionary with the info loaded from disk
+        :return:
+        """
+        self.time_array = grid.get_time_array()
+
+        for arr_name, df in data_dict.items():
+
+            is_complex = '__complex__' in arr_name
+            arr_name = arr_name.replace('__complex__', '')
+
+            # try to get the property of the saved file
+            res_prop: ResultsProperty = self.data_variables.get(arr_name, None)
+
+            if df is not None and res_prop is not None:
+
+                # it may be complex...
+                if is_complex:
+                    split_pt = int(df.columns.size / 2)
+                    r = df.values[:, :split_pt]
+                    i = df.values[:, split_pt:]
+                    array = r + 1j * i
+                else:
+                    # keep the 2D shape
+                    array = df.values
+
+                if array.shape[1] == 1:
+                    # if there is only one column, convert to array directly
+                    array = array[:, 0]
+
+                # it may be a single number...
+                if res_prop.tpe in [int, float, complex]:
+                    if array.size == 1:
+                        array = array[0]
+
+                setattr(self, res_prop.name, array)
+
+
+class DriverToSave:
+    """
+    Wrapper to save a driver
+    """
+    def __init__(self,
+                 name: str,
+                 tpe: SimulationTypes,
+                 results: ResultsTemplate,
+                 logger: Logger):
+        """
+
+        :param name:
+        :param tpe:
+        :param results:
+        :param logger:
+        """
+        self.name = name
+        self.tpe = tpe
+        self.results = results
+        self.logger = logger

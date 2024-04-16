@@ -112,7 +112,15 @@ class ShortCircuitDriver(DriverTemplate):
         # Options to use
         self.options = options
 
-        self.results: ShortCircuitResults = None
+        # declare an empty results object
+        self.results: ShortCircuitResults = ShortCircuitResults(n=0,
+                                                                m=0,
+                                                                n_hvdc=0,
+                                                                bus_names=np.empty(0),
+                                                                branch_names=np.empty(0),
+                                                                hvdc_names=np.empty(0),
+                                                                bus_types=np.empty(0),
+                                                                area_names=None)
 
         self.logger = Logger()
 
