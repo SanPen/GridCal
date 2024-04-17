@@ -258,6 +258,7 @@ class LogEntry:
     """
 
     def __init__(self,
+                 time: Union[str, None] = None,
                  msg="",
                  severity: LogSeverity = LogSeverity.Information,
                  device="",
@@ -267,7 +268,10 @@ class LogEntry:
                  device_property="",
                  object_value=None,
                  expected_object_value=None):
-        self.time = "{date:%H:%M:%S}".format(date=datetime.datetime.now())  # might use %Y/%m/%d %H:%M:%S
+        if time is None:
+            self.time = "{date:%H:%M:%S}".format(date=datetime.datetime.now())  # might use %Y/%m/%d %H:%M:%S
+        else:
+            self.time = time
         self.msg = str(msg)
         self.severity = severity
         self.device = device
@@ -495,6 +499,22 @@ class Logger:
                                               'Property', 'Device', 'Value', 'Expected value'])
         df.set_index('Time', inplace=True)
         return df
+
+    def parse_df(self, df: pd.DataFrame):
+        """
+        Parse DataFrame
+        :param df: DataFrame
+        """
+        for i, row in df.iterrows():
+            self.entries.append(LogEntry(msg=str(row["Message"]),
+                                         severity=LogSeverity(row["Severity"]),
+                                         device=str(row["Device"]),
+                                         value=str(row["Value"]),
+                                         expected_value=str(row["Expected value"]),
+                                         device_class=str(row["Class"]),
+                                         device_property=str(row["Property"]),
+                                         object_value="",
+                                         expected_object_value=""))
 
     def to_csv(self, fname):
         """

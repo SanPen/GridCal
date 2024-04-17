@@ -649,7 +649,7 @@ class DiagramsMain(CompiledArraysMain):
             else:
                 info_msg(f"{current_study} only has values for the snapshot")
 
-        elif current_study == sim.ContingencyAnalysisTimeSeries.tpe.value:
+        elif current_study == sim.ContingencyAnalysisTimeSeriesDriver.tpe.value:
             if t_idx is not None:
                 results: sim.ContingencyAnalysisTimeSeriesResults = self.session.get_results(
                     sim.SimulationTypes.ContingencyAnalysisTS_run)

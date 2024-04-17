@@ -518,16 +518,16 @@ class IoMain(ConfigurationMain):
         """
 
         if self.ui.saveResultsCheckBox.isChecked():
-            sessions = [self.session]
+            sessions_data = self.session.get_save_data()
         else:
-            sessions = list()
+            sessions_data = list()
 
         # get json files to store
         json_files = {"gui_config": self.get_gui_config_data()}
 
         options = filedrv.FileSavingOptions(cgmes_boundary_set=self.current_boundary_set,
                                             simulation_drivers=self.get_simulations(),
-                                            sessions=sessions,
+                                            sessions_data=sessions_data,
                                             dictionary_of_json_files=json_files)
 
         return options
@@ -759,10 +759,12 @@ class IoMain(ConfigurationMain):
                 session_name = path[0]
                 study_name = path[1]
                 if self.last_file_driver is not None:
-                    data_dict, json_files = self.last_file_driver.load_session_objects(session_name=session_name,
-                                                                                       study_name=study_name)
+                    data_dict = self.last_file_driver.load_session_objects(session_name=session_name,
+                                                                           study_name=study_name)
 
-                    self.session.register_driver_from_disk_data(self.circuit, study_name, data_dict)
+                    self.session.register_driver_from_disk_data(grid=self.circuit,
+                                                                study_name=study_name,
+                                                                data_dict=data_dict)
 
                     self.update_available_results()
                 else:

@@ -35,7 +35,7 @@ from GridCalEngine.Compilers.circuit_to_newton_pa import newton_pa_contingencies
 from GridCalEngine.Utils.NumericalMethods.weldorf_online_stddev import WeldorfOnlineStdDevMat
 
 
-class ContingencyAnalysisTimeSeries(TimeSeriesDriverTemplate):
+class ContingencyAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
     """
     Contingency Analysis Time Series
     """

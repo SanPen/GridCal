@@ -87,8 +87,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
             n_fluid_node=self.grid.get_fluid_nodes_number(),
             n_fluid_path=self.grid.get_fluid_paths_number(),
             n_fluid_injection=self.grid.get_fluid_injection_number(),
-            time_array=self.grid.time_profile[self.time_indices] if self.time_indices is not None else [
-                datetime.datetime.now()],
+            time_array=self.grid.time_profile[self.time_indices] if self.time_indices is not None else [datetime.datetime.now()],
             bus_types=np.ones(self.grid.get_bus_number(), dtype=int),
             clustering_results=clustering_results)
 

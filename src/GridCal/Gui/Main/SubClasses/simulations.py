@@ -1106,11 +1106,11 @@ class SimulationsMain(TimeEventsMain):
 
                         self.LOCK()
 
-                        drv = sim.ContingencyAnalysisTimeSeries(grid=self.circuit,
-                                                                options=self.get_contingency_options(),
-                                                                time_indices=self.get_time_indices(),
-                                                                clustering_results=self.get_clustering_results(),
-                                                                engine=self.get_preferred_engine())
+                        drv = sim.ContingencyAnalysisTimeSeriesDriver(grid=self.circuit,
+                                                                      options=self.get_contingency_options(),
+                                                                      time_indices=self.get_time_indices(),
+                                                                      clustering_results=self.get_clustering_results(),
+                                                                      engine=self.get_preferred_engine())
 
                         self.session.run(drv,
                                          post_func=self.post_contingency_analysis_ts,
@@ -1503,7 +1503,7 @@ class SimulationsMain(TimeEventsMain):
                         pf_options = self.get_selected_power_flow_options()
 
                         # create object
-                        drv = sim.ContinuationPowerFlowDriver(circuit=self.circuit,
+                        drv = sim.ContinuationPowerFlowDriver(grid=self.circuit,
                                                               options=vc_options,
                                                               inputs=vc_inputs,
                                                               pf_options=pf_options)
@@ -1532,7 +1532,7 @@ class SimulationsMain(TimeEventsMain):
                             pf_options = self.get_selected_power_flow_options()
 
                             # create object
-                            drv = sim.ContinuationPowerFlowDriver(circuit=self.circuit,
+                            drv = sim.ContinuationPowerFlowDriver(grid=self.circuit,
                                                                   options=vc_options,
                                                                   inputs=vc_inputs,
                                                                   pf_options=pf_options)

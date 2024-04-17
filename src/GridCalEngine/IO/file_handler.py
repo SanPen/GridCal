@@ -48,6 +48,7 @@ from GridCalEngine.IO.gridcal.h5_interface import save_h5, open_h5
 from GridCalEngine.IO.raw.rawx_parser_writer import parse_rawx, write_rawx
 from GridCalEngine.IO.others.pypsa_parser import parse_netcdf, parse_hdf5
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Simulations.results_template import DriverToSave
 
 
 class FileSavingOptions:
@@ -58,13 +59,13 @@ class FileSavingOptions:
     def __init__(self,
                  cgmes_boundary_set: str = "",
                  simulation_drivers: List[DriverTemplate] = None,
-                 sessions: List[Any] = None,
+                 sessions_data: List[DriverToSave] = None,
                  dictionary_of_json_files: Dict[str, Dict[str, Any]] = None):
         """
         Constructor
         :param cgmes_boundary_set: CGMES boundary set zip file path
         :param simulation_drivers: List of Simulation Drivers
-        :param sessions: List of sessions
+        :param sessions_data: List of sessions_data
         :param dictionary_of_json_files: Dictionary of json files
         """
 
@@ -72,7 +73,7 @@ class FileSavingOptions:
 
         self.simulation_drivers = simulation_drivers if simulation_drivers else list()
 
-        self.sessions = sessions if sessions else list()
+        self.sessions_data: List[DriverToSave] = sessions_data if sessions_data else list()
 
         self.dictionary_of_json_files = dictionary_of_json_files if dictionary_of_json_files else dict()
 
@@ -398,7 +399,7 @@ class FileSave:
         save_gridcal_data_to_zip(dfs=dfs,
                                  filename_zip=self.file_name,
                                  model_data=model_data,
-                                 sessions=self.options.sessions,
+                                 sessions_data=self.options.sessions_data,
                                  diagrams=self.circuit.diagrams,
                                  json_files=self.options.dictionary_of_json_files,
                                  text_func=self.text_func,

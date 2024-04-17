@@ -15,6 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+import numpy as np
 from typing import Union
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Simulations.driver_types import SimulationTypes
@@ -38,7 +39,10 @@ class ClusteringDriver(DriverTemplate):
 
         self.options: ClusteringAnalysisOptions = options
 
-        self.results: Union[ClusteringResults, None] = None
+        self.results: Union[ClusteringResults, None] = ClusteringResults(time_indices=np.empty(0, dtype=int),
+                                                                         sampled_probabilities=np.empty(0),
+                                                                         time_array=np.empty(0),
+                                                                         original_sample_idx=np.empty(0, dtype=int))
 
     def run(self):
         """
