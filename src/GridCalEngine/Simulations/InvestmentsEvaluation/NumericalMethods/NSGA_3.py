@@ -14,32 +14,32 @@ from pymoo.operators.sampling.rnd import IntegerRandomSampling
 
 class GridNsga(ElementwiseProblem):
 
-    def __init__(self):
-        super().__init__(n_var=20,
-                         n_obj=2,
-                         n_ieq_constr=1,
-                         xl=np.zeros(20),
-                         xu=np.ones(20),
+    def __init__(self, obj_func, n_var, n_obj):
+        super().__init__(n_var=n_var,
+                         n_obj=n_obj,
+                         n_ieq_constr=0,
+                         xl=np.zeros(n_var),
+                         xu=np.ones(n_var),
                          vtype=int,
                          )
+        self.obj_func = obj_func
 
     def _evaluate(self, x, out, *args, **kwargs):
-        objective_function = args[0]
-        objectives = objective_function(x)
-        out["F"] = objectives
+        out["F"] = self.obj_func(x)
 
 
 def NSGA_3(obj_func,
-           n_partitions: int=10,
-           n_var: int=1,
-           n_obj: int=1,
-           max_evals: int=30,
-           pop_size: int=1,
-           prob: float=1.0,
-           eta: float=3.0):
+           n_partitions: int = 10,
+           n_var: int = 1,
+           n_obj: int = 1,
+           max_evals: int = 30,
+           pop_size: int = 1,
+           prob: float = 1.0,
+           eta: float = 3.0):
 
-    problem = GridNsga()
-    ref_dirs = get_reference_directions("das-dennis", n_obj, n_partitions=n_partitions)
+    problem = GridNsga(obj_func, n_var, n_obj)
+    # ref_dirs = get_reference_directions("das-dennis", n_obj, n_partitions=n_partitions)
+    ref_dirs = get_reference_directions("energy", n_obj, n_partitions, seed=1)
     algorithm = NSGA3(pop_size=pop_size,
                       sampling=IntegerRandomSampling(),
                       crossover=SBX(prob=prob, eta=eta, vtype=float, repair=RoundingRepair()),

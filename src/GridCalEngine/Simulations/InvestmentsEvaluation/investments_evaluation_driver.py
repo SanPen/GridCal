@@ -227,7 +227,6 @@ class InvestmentsEvaluationDriver(DriverTemplate):
             objectives = InvestmentsEvaluationDriver.objective_function(x)
             out["F"] = objectives
 
-
     def objective_function_so(self, combination: IntVec):
         """
 
@@ -367,7 +366,6 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         # add baseline
         self.objective_function(combination=np.zeros(self.results.n_groups, dtype=int))
 
-
         # optimize
         sorted_y_, sorted_x_, y_population_, x_population_, f_population_ = MVRSM_mo_scaled(
             obj_func=self.objective_function,
@@ -472,14 +470,14 @@ class InvestmentsEvaluationDriver(DriverTemplate):
 
         # add baseline
         # self.objective_function(combination=np.zeros(self.results.n_groups, dtype=int))
-        self.evaluate_nsga(combination=np.zeros(self.results.n_groups, dtype=int), out=None)
+        # self.evaluate_nsga(combination=np.zeros(self.results.n_groups, dtype=int), out=None)
 
         # optimize
         X, obj_values = NSGA_3(
             obj_func=self.objective_function,
-            n_partitions=200,
-            n_var=20,
-            n_obj = 2,
+            n_partitions=10,
+            n_var=self.dim,
+            n_obj=6,
             max_evals=termination,
             pop_size=pop_size,
             prob=prob,
@@ -494,7 +492,8 @@ class InvestmentsEvaluationDriver(DriverTemplate):
                             voltage_score=obj_values[:, 2],
                             objective_function=obj_values,
                             combination=X,
-                            index_name=np.array(['Evaluation {}'.format(i) for i in range(len(obj_values))]))
+                            index_name=np.array(['Solution {}'.format(i) for i in range(len(obj_values))])
+                            )
 
         self.report_done()
 
