@@ -16,16 +16,18 @@ h5py>=2.9.0
 numba>=0.46
 PySide6 >= 6.5.0
 Cython
-pyproj
+pyproj~=3.6.1
 pyarrow
 fastparquet
-darkdetect
+darkdetect~=0.7.1
 pyqtdarktheme
 # qdarktheme
-nptyping
-windpowerlib
-pvlib
-hyperopt
-requests
+nptyping~=2.5.0
+windpowerlib~=0.2.2
+pvlib~=0.10.4
+hyperopt~=0.2.7
+requests~=2.31.0
 pytest >= 7.2.0
-rdflib
+rdflib~=7.0.0
+pymoo~=0.6.1.1
+setuptools~=68.2.0

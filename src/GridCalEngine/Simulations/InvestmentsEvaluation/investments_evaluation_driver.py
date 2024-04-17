@@ -28,11 +28,23 @@ from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.InvestmentsEvaluation.NumericalMethods.MVRSM_mo_scaled import MVRSM_mo_scaled
 from GridCalEngine.Simulations.InvestmentsEvaluation.NumericalMethods.MVRSM_mo_pareto import MVRSM_mo_pareto
+from GridCalEngine.Simulations.InvestmentsEvaluation.NumericalMethods.NSGA_3 import NSGA_3
 from GridCalEngine.Simulations.InvestmentsEvaluation.NumericalMethods.stop_crits import StochStopCriterion
 from GridCalEngine.Simulations.InvestmentsEvaluation.investments_evaluation_results import InvestmentsEvaluationResults
 from GridCalEngine.Simulations.InvestmentsEvaluation.investments_evaluation_options import InvestmentsEvaluationOptions
 from GridCalEngine.basic_structures import IntVec, Vec
 from GridCalEngine.enumerations import InvestmentEvaluationMethod
+
+from pymoo.core.problem import ElementwiseProblem
+from pymoo.util.ref_dirs import get_reference_directions
+from pymoo.optimize import minimize
+from pymoo.algorithms.moo.nsga3 import NSGA3
+from pymoo.visualization.scatter import Scatter
+
+from pymoo.operators.crossover.sbx import SBX
+from pymoo.operators.mutation.pm import PM
+from pymoo.operators.repair.rounding import RoundingRepair
+from pymoo.operators.sampling.rnd import IntegerRandomSampling
 
 
 def get_overload_score(loading, branches):
@@ -193,6 +205,29 @@ class InvestmentsEvaluationDriver(DriverTemplate):
 
         return all_scores
 
+    def evaluate_nsga(self, x, out, *args, **kwargs):
+        w = np.array([7, 4, 8, 5, 7, 3, 7, 8, 5, 4, 8, 8, 3, 6, 5, 2, 8, 6, 2, 5])
+        v = np.array([170, 469, 323, 31, 262, 245, 354, 58, 484, 68, 179, 485, 197, 473, 280, 199, 455, 184, 455, 60])
+        r = np.array([80, 87, 68, 72, 66, 77, 99, 85, 70, 93, 98, 72, 100, 89, 67, 86, 91, 70, 88, 79])
+        out["F"] = - np.dot(x, v), - np.dot(x, r)
+        out["G"] = np.dot(x, w) - 50
+
+    class GridNsga(ElementwiseProblem):
+
+        def __init__(self):
+            super().__init__(n_var=20,
+                             n_obj=2,
+                             n_ieq_constr=1,
+                             xl=np.zeros(20),
+                             xu=np.ones(20),
+                             vtype=int,
+                             )
+
+        def _evaluate(self, x, out, *args, **kwargs):
+            objectives = InvestmentsEvaluationDriver.objective_function(x)
+            out["F"] = objectives
+
+
     def objective_function_so(self, combination: IntVec):
         """
 
@@ -332,6 +367,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         # add baseline
         self.objective_function(combination=np.zeros(self.results.n_groups, dtype=int))
 
+
         # optimize
         sorted_y_, sorted_x_, y_population_, x_population_, f_population_ = MVRSM_mo_scaled(
             obj_func=self.objective_function,
@@ -409,6 +445,59 @@ class InvestmentsEvaluationDriver(DriverTemplate):
 
         self.report_done()
 
+    def optimized_evaluation_nsga_iii(self) -> None:
+
+        pop_size = round(self.dim * 1.5)
+        n_partitions = round(self.dim * 1.5)
+
+        lb = np.zeros(self.dim)
+        ub = np.ones(self.dim)
+
+        prob = 1.0
+        eta = 3.0
+        termination = 30
+
+        # stop_crit = StochStopCriterion(conf_dist, conf_level)  # ??
+        x0 = np.random.binomial(1, prob, self.dim)
+
+        # compile the snapshot
+        self.nc = compile_numerical_circuit_at(circuit=self.grid, t_idx=None)
+        self.results = InvestmentsEvaluationResults(investment_groups_names=self.grid.get_investment_groups_names(),
+                                                    max_eval=self.options.max_eval)
+        # disable all status
+        self.nc.set_investments_status(investments_list=self.grid.investments, status=0)
+
+        # evaluate the investments
+        self.__eval_index = 0
+
+        # add baseline
+        # self.objective_function(combination=np.zeros(self.results.n_groups, dtype=int))
+        self.evaluate_nsga(combination=np.zeros(self.results.n_groups, dtype=int), out=None)
+
+        # optimize
+        X, obj_values = NSGA_3(
+            obj_func=self.objective_function,
+            n_partitions=200,
+            n_var=20,
+            n_obj = 2,
+            max_evals=termination,
+            pop_size=pop_size,
+            prob=prob,
+            eta=eta
+        )
+
+        self.results.set_at(eval_idx=np.arange(len(obj_values)),
+                            capex=obj_values[:, 4],
+                            opex=obj_values[:, 5],
+                            losses=obj_values[:, 0],
+                            overload_score=obj_values[:, 1],
+                            voltage_score=obj_values[:, 2],
+                            objective_function=obj_values,
+                            combination=X,
+                            index_name=np.array(['Evaluation {}'.format(i) for i in range(len(obj_values))]))
+
+        self.report_done()
+
     def run(self):
         """
         run the QThread
@@ -428,6 +517,9 @@ class InvestmentsEvaluationDriver(DriverTemplate):
 
         elif self.options.solver == InvestmentEvaluationMethod.MVRSM_multi:
             self.optimized_evaluation_mvrsm_pareto()
+
+        elif self.options.solver == InvestmentEvaluationMethod.NSGA3:
+            self.optimized_evaluation_nsga_iii()
 
         else:
             raise Exception('Unsupported method')
