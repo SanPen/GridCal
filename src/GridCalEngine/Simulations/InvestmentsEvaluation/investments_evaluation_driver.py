@@ -453,7 +453,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
 
         prob = 1.0
         eta = 3.0
-        termination = 30
+        termination = 10
 
         # stop_crit = StochStopCriterion(conf_dist, conf_level)  # ??
         x0 = np.random.binomial(1, prob, self.dim)
@@ -475,7 +475,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         # optimize
         X, obj_values = NSGA_3(
             obj_func=self.objective_function,
-            n_partitions=10,
+            n_partitions=5,
             n_var=self.dim,
             n_obj=6,
             max_evals=termination,
@@ -484,15 +484,17 @@ class InvestmentsEvaluationDriver(DriverTemplate):
             eta=eta
         )
 
-        self.results.set_at(eval_idx=np.arange(len(obj_values)),
-                            capex=obj_values[:, 4],
-                            opex=obj_values[:, 5],
-                            losses=obj_values[:, 0],
-                            overload_score=obj_values[:, 1],
-                            voltage_score=obj_values[:, 2],
-                            objective_function=obj_values,
+        obj_res = obj_values[0]
+
+        self.results.set_at(eval_idx=np.arange(len(obj_res)),
+                            capex=obj_res[:, 4],
+                            opex=obj_res[:, 5],
+                            losses=obj_res[:, 0],
+                            overload_score=obj_res[:, 1],
+                            voltage_score=obj_res[:, 2],
+                            objective_function=[obj_res.sum(axis=1)],
                             combination=X,
-                            index_name=np.array(['Solution {}'.format(i) for i in range(len(obj_values))])
+                            index_name=np.array(['Solution {}'.format(i) for i in range(len(obj_res))])
                             )
 
         self.report_done()

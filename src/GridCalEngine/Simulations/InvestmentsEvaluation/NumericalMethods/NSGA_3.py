@@ -32,7 +32,7 @@ def NSGA_3(obj_func,
            n_partitions: int = 10,
            n_var: int = 1,
            n_obj: int = 1,
-           max_evals: int = 30,
+           max_evals: int = 10,
            pop_size: int = 1,
            prob: float = 1.0,
            eta: float = 3.0):
@@ -62,8 +62,5 @@ def NSGA_3(obj_func,
 
     # Extract the objective function values from each generation
     obj_values = [gen.pop.get("F") for gen in res.history]
-
-    # Calculate the minimum objective function value in each generation
-    min_obj_values = [np.min(val) for val in obj_values]
 
     return X, obj_values
