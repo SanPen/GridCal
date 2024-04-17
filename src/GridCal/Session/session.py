@@ -46,7 +46,15 @@ from GridCalEngine.Simulations.Stochastic.stochastic_power_flow_driver import (S
                                                                                StochasticPowerFlowResults)
 from GridCalEngine.Simulations.Clustering.clustering_driver import ClusteringDriver, ClusteringResults
 from GridCalEngine.Simulations.Stochastic.blackout_driver import CascadingDriver, CascadingResults
+from GridCalEngine.Simulations.InputsAnalysis.inputs_analysis_driver import InputsAnalysisDriver, InputsAnalysisResults
+from GridCalEngine.Simulations.InvestmentsEvaluation.investments_evaluation_driver import (InvestmentsEvaluationDriver,
+                                                                                           InvestmentsEvaluationResults)
 from GridCalEngine.Simulations.SigmaAnalysis.sigma_analysis_driver import SigmaAnalysisDriver, SigmaAnalysisResults
+from GridCalEngine.Simulations.NTC.ntc_driver import OptimalNetTransferCapacityDriver, OptimalNetTransferCapacityResults
+from GridCalEngine.Simulations.NTC.ntc_ts_driver import (OptimalNetTransferCapacityTimeSeriesDriver,
+                                                         OptimalNetTransferCapacityTimeSeriesResults)
+from GridCalEngine.Simulations.Topology.node_groups_driver import NodeGroupsDriver
+from GridCalEngine.Simulations.Topology.topology_processor_driver import TopologyProcessorDriver
 from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.results_template import DriverToSave
@@ -72,7 +80,13 @@ DRIVER_OBJECTS = Union[
     StochasticPowerFlowDriver,
     ClusteringDriver,
     CascadingDriver,
-    SigmaAnalysisDriver
+    SigmaAnalysisDriver,
+    OptimalNetTransferCapacityDriver,
+    OptimalNetTransferCapacityTimeSeriesDriver,
+    NodeGroupsDriver,
+    InputsAnalysisDriver,
+    InvestmentsEvaluationDriver,
+    TopologyProcessorDriver
 ]
 
 RESULTS_OBJECTS = Union[
@@ -91,7 +105,11 @@ RESULTS_OBJECTS = Union[
     StochasticPowerFlowResults,
     ClusteringResults,
     CascadingResults,
-    SigmaAnalysisResults
+    SigmaAnalysisResults,
+    OptimalNetTransferCapacityResults,
+    OptimalNetTransferCapacityTimeSeriesResults,
+    InputsAnalysisResults,
+    InvestmentsEvaluationResults
 ]
 
 
@@ -485,6 +503,15 @@ class SimulationSession:
         return results
 
     @property
+    def power_flow_driver_and_results(self) -> Tuple[PowerFlowDriver, PowerFlowResults]:
+        """
+
+        :return:
+        """
+        drv, results = self.get_driver_results(SimulationTypes.PowerFlow_run)
+        return drv, results
+
+    @property
     def power_flow_ts(self) -> PowerFlowTimeSeriesResults:
         """
 
@@ -584,12 +611,21 @@ class SimulationSession:
         return results
 
     @property
-    def optimal_net_transfer_capacity(self):
+    def optimal_net_transfer_capacity(self) -> OptimalNetTransferCapacityResults:
         """
 
         :return:
         """
         drv, results = self.get_driver_results(SimulationTypes.OPF_NTC_run)
+        return results
+
+    @property
+    def optimal_net_transfer_capacity_ts(self) -> OptimalNetTransferCapacityResults:
+        """
+
+        :return:
+        """
+        drv, results = self.get_driver_results(SimulationTypes.OPF_NTC_TS_run)
         return results
 
     @property
@@ -618,3 +654,30 @@ class SimulationSession:
         """
         drv, results = self.get_driver_results(SimulationTypes.Cascade_run)
         return results
+
+    @property
+    def inputs_analysis(self) -> InputsAnalysisResults:
+        """
+
+        :return:
+        """
+        drv, results = self.get_driver_results(SimulationTypes.InputsAnalysis_run)
+        return results
+
+    @property
+    def investments_evaluation(self) -> InvestmentsEvaluationResults:
+        """
+
+        :return:
+        """
+        drv, results = self.get_driver_results(SimulationTypes.InvestmestsEvaluation_run)
+        return results
+
+    @property
+    def node_groups_driver(self) -> NodeGroupsDriver:
+        """
+
+        :return:
+        """
+        drv, results = self.get_driver_results(SimulationTypes.NodeGrouping_run)
+        return drv
