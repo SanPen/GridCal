@@ -32,15 +32,15 @@ from GridCalEngine.IO.cim.cgmes.cgmes_data_parser import CgmesDataParser
 from GridCalEngine.IO.cim.cgmes.base import Base
 
 
-def find_attribute(referenced_object, obj, property_name, association_inverse_dict):
+def find_attribute(referenced_object, obj, property_name, association_inverse_dict, class_dict):
     for inverse, current in association_inverse_dict.items():
         c_class = str(current).split('.')[0]
         c_prop = str(current).split('.')[-1]
 
-        if obj.tpe == c_class and c_prop == property_name:
+        if isinstance(obj, class_dict.get(c_class)) and c_prop == property_name:
             i_class = str(inverse).split('.')[0]
             i_prop = str(inverse).split('.')[-1]
-            if referenced_object.tpe == i_class and i_prop in vars(referenced_object):
+            if isinstance(referenced_object, class_dict.get(i_class)) and i_prop in vars(referenced_object):
                 return i_prop
             else:
                 continue
@@ -53,6 +53,7 @@ def find_references(elements_by_type: Dict[str, List[Base]],
                     all_objects_dict: Dict[str, Base],
                     all_objects_dict_boundary: Union[Dict[str, Base], None],
                     association_inverse_dict,
+                    class_dict,
                     logger: DataLogger,
                     mark_used: bool) -> None:
     """
@@ -138,11 +139,13 @@ def find_references(elements_by_type: Dict[str, List[Base]],
                                 setattr(element, property_name, referenced_object)
 
                                 # register the inverse reference
-                                referenced_object.add_reference(element,
-                                                                find_attribute(referenced_object=referenced_object,
-                                                                               obj=element,
-                                                                               property_name=property_name,
-                                                                               association_inverse_dict=association_inverse_dict))
+                                ref_attribute = find_attribute(referenced_object=referenced_object,
+                                                               obj=element,
+                                                               property_name=property_name,
+                                                               association_inverse_dict=association_inverse_dict,
+                                                               class_dict=class_dict)
+                                if ref_attribute is not None:
+                                    referenced_object.add_reference(element, ref_attribute)
 
                                 # check that the type matches the expected type
                                 # if cim_prop.class_type in [ConnectivityNodeContainer, Base]:
@@ -205,11 +208,13 @@ def find_references(elements_by_type: Dict[str, List[Base]],
                                     referenced_object_list.add(referenced_object)
 
                                     # register the inverse reference
-                                    referenced_object.add_reference(element,
-                                                                    find_attribute(referenced_object=referenced_object,
-                                                                                   obj=element,
-                                                                                   property_name=property_name,
-                                                                                   association_inverse_dict=association_inverse_dict))
+                                    ref_attribute = find_attribute(referenced_object=referenced_object,
+                                                                   obj=element,
+                                                                   property_name=property_name,
+                                                                   association_inverse_dict=association_inverse_dict,
+                                                                   class_dict=class_dict)
+                                    if ref_attribute is not None:
+                                        referenced_object.add_reference(element, ref_attribute)
 
                                     # check that the type matches the expected type
                                     # if cim_prop.class_type in [ConnectivityNodeContainer, Base]:
@@ -342,6 +347,7 @@ def convert_data_to_objects(data: Dict[str, Dict[str, Dict[str, str]]],
                     all_objects_dict=all_objects_dict,
                     all_objects_dict_boundary=all_objects_dict_boundary,
                     association_inverse_dict=association_inverse_dict,
+                    class_dict=class_dict,
                     logger=logger,
                     mark_used=True)
     endt = time.time()
