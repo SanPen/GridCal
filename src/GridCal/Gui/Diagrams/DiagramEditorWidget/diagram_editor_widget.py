@@ -1360,7 +1360,7 @@ class DiagramEditorWidget(QSplitter):
         :return: tuple(bus index, bus_api_object, bus_graphic_object)
         """
         lst: List[Tuple[int, Bus, Union[BusGraphicItem, None]]] = list()
-        bus_graphics_dict = self.graphics_manager.get_device_type_dict(DeviceType.BusDevice.value)
+        bus_graphics_dict = self.graphics_manager.get_device_type_dict(DeviceType.BusDevice)
         bus_dict: Dict[str: Tuple[int, Bus]] = {b.idtag: (i, b) for i, b in enumerate(self.circuit.get_buses())}
 
         for bus_idtag, graphic_object in bus_graphics_dict.items():
