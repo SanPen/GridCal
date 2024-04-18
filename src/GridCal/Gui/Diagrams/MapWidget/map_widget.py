@@ -369,9 +369,11 @@ class MapWidget(QWidget):
 
         if event.type() == QEvent.GraphicsSceneMousePress:
             self.pressed = True
+            self.schema_Manager.disableMove = False
 
         if event.type() == QEvent.GraphicsSceneMouseRelease:
             self.pressed = False
+            self.schema_Manager.disableMove = True
 
         if event.type() == QEvent.GraphicsSceneMouseMove:
             if not self.schema_Manager.disableMove:
@@ -380,15 +382,23 @@ class MapWidget(QWidget):
         if event.type() == QEvent.GraphicsSceneWheel:
             view_center = self.view.mapToScene(self.view.viewport().rect().center())
 
+            zoomInitial = self.level
+
             if event.delta() > 0:
                 new_level = self.level + 1
-                self.zoom_in()
             else:
                 new_level = self.level - 1
-                self.zoom_out()
 
-            self.zoom_level(new_level, self.mouse_x, self.mouse_y)
-
+            val = self.zoom_level(new_level, self.mouse_x, self.mouse_y)
+            if val:
+                if event.delta() > 0:
+                    self.zoom_in()
+                else:
+                    self.zoom_out()
+            else:
+                self.level = zoomInitial
+                val = self.zoom_level(zoomInitial, self.mouse_x, self.mouse_y)
+            
             return True
 
         self.centerSchema()
@@ -723,18 +733,24 @@ class MapWidget(QWidget):
         """
         Handle a mouse wheel rotation.
         """
-        view_center = self.view.mapToScene(self.view.viewport().rect().center())
+        # view_center = self.view.mapToScene(self.view.viewport().rect().center())
 
-        if event.angleDelta().y() > 0:
-            new_level = self.level + 1
-            self.zoom_in()
-        else:
-            new_level = self.level - 1
-            self.zoom_out()
+        # if event.angleDelta().y() > 0:
+        #     new_level = self.level + 1
+        # else:
+        #     new_level = self.level - 1
 
-        self.zoom_level(new_level, self.mouse_x, self.mouse_y)
+        # val = self.zoom_level(new_level, self.mouse_x, self.mouse_y)
+        # if val:
+        #     if event.angleDelta().y() > 0:
+        #         self.zoom_in()
+        #     else:
+        #         self.zoom_out()
+        # else:
+        #     self.level = zoomInitial
+        #     val = self.zoom_level(zoomInitial, self.mouse_x, self.mouse_y)
 
-        self.centerSchema()
+        # self.centerSchema()
 
     def zoom_in(self):
         # Translate the scene to make the center point correspond to the origin

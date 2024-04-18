@@ -17,8 +17,8 @@ class schemaManager:
         self.devY = devY
         self.CurrentLine = None
 
-    def CreateLine(self):
-        newLine = Line(self)
+    def CreateLine(self, newLine):
+        newLine = Line(self, newLine)
         self.Lines.append(newLine)
         self.CurrentLine = newLine
 
@@ -27,8 +27,8 @@ class schemaManager:
             for conector in line.ConnectorList:
                 conector.update()
 
-    def CreateSubstation(self, lat, long):
-        node = SubstationGraphicItem(self,0.5, lat * self.devX, long * self.devY)
+    def CreateSubstation(self, objectSubs, lat, long):
+        node = SubstationGraphicItem(self, objectSubs, 0.5, lat * self.devX, long * self.devY)
         self.Substations.append(node)
 
     def CreateDummySchema(self):

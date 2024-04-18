@@ -37,7 +37,7 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem):
       - description
     """
 
-    def __init__(self, parent=None, r: int = 20, x: int = 0, y: int = 0):
+    def __init__(self, parent=None, newNode=None, r: int = 20, x: int = 0, y: int = 0):
         """
         :param parent:
         :param r:
@@ -49,7 +49,9 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem):
         self.x = x
         self.y = y
         self.Parent = parent
+        self.DiagramObject = newNode
         self.resize(r)
+        self.setAcceptHoverEvents(True)  # Enable hover events for the item
         self.setFlag(QtWidgets.QGraphicsItem.ItemIsMovable)  # Allow moving the node
         self.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable)  # Allow selecting the node
         parent.Scene.addItem(self)
@@ -66,46 +68,63 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem):
         # Assign color to the node
         self.setDefaultColor()
 
-    def updatePosition(self):
+        self.hovered = False
+        self.needsUpdateFirst = True
+        self.needsUpdateSecond = True
+
+    def updateRealPos(self):
         real_position = self.pos()
         center_point = self.getPos()
         self.x = center_point.x() + real_position.x()
         self.y = center_point.y() + real_position.y()
 
+    def updatePosition(self):
+        self.updateRealPos()
+        self.needsUpdateFirst = True
+        self.needsUpdateSecond = True
+        self.Parent.UpdateConnectors()
+        self.updateDiagram()
+
+    def updateDiagram(self):
+        real_position = self.pos()
+        center_point = self.getPos()
+        self.DiagramObject.lat = (center_point.x() + real_position.x()) / self.Parent.devX
+        self.DiagramObject.long = (center_point.y() + real_position.y()) / self.Parent.devY
+
     def mouseMoveEvent(self, event):
         """
         Event handler for mouse move events.
         """
-        self.updatePosition()
-        self.Parent.UpdateConnectors()
         super().mouseMoveEvent(event)
+        if self.hovered:
+            self.updatePosition()
 
     def mousePressEvent(self, event):
         """
         Event handler for mouse press events.
         """
-        if event.button() == Qt.LeftButton:
-            self.Parent.disableMove = True
         super().mousePressEvent(event)
+        self.Parent.disableMove = True
 
     def mouseReleaseEvent(self, event):
         """
         Event handler for mouse release events.
         """
-        if event.button() == Qt.LeftButton:
-            self.Parent.disableMove = False
         super().mouseReleaseEvent(event)
+        self.Parent.disableMove = True
 
     def hoverEnterEvent(self, event):
         """
         Event handler for when the mouse enters the item.
         """
-        self.setNodeColor(QT.Yellow, QT.Yellow)
+        self.hovered = True
+        self.setNodeColor(QColor(Qt.red), QColor(Qt.red))
 
     def hoverLeaveEvent(self, event):
         """
         Event handler for when the mouse leaves the item.
         """
+        self.hovered = False
         self.setDefaultColor()
 
     def setNodeColor(self, inner_color=None, border_color=None):
@@ -132,7 +151,7 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem):
         return center_point
 
     def getRealPos(self):
-        self.updatePosition()
+        self.updateRealPos()
         return [self.x, self.y]
 
     def resize(self, new_radius):

@@ -35,6 +35,7 @@ class Connector(QGraphicsLineItem):
         color = QColor(Qt.blue)
         self.setLineColor(color)
         self.update()
+        self.needsUpdate = True
 
     def setLineColor(self, color):
         pen = self.pen()
@@ -46,8 +47,12 @@ class Connector(QGraphicsLineItem):
 
     def update(self):
         # Get the positions of the first and second objects
-        first_pos = self.First.getRealPos()
-        second_pos = self.Second.getRealPos()
+        if(self.First.needsUpdateFirst or self.Second.needsUpdateSecond):
+            first_pos = self.First.getRealPos()
+            second_pos = self.Second.getRealPos()
 
-        # Set the line's starting and ending points
-        self.setLine(first_pos[0], first_pos[1], second_pos[0], second_pos[1])
+            # Set the line's starting and ending points
+            self.setLine(first_pos[0], first_pos[1], second_pos[0], second_pos[1])
+
+            self.First.needsUpdateFirst = False
+            self.Second.needsUpdateSecond = False
