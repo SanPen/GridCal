@@ -497,7 +497,7 @@ def MVRSM_mo_pareto(obj_func,
     :param max_evals: maximum number of evaluations
     :param n_objectives: number of objectives expected
     :param rand_evals: number of random initial evaluations
-    :param args: extra arguments to be passed to obj_func appart from x
+    :param args: extra arguments to be passed to obj_func apart from x
     :return: pareto front y, pareto front x, all y not sorted
     """
     d = len(x0)  # number of decision variables

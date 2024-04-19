@@ -36,15 +36,6 @@ from GridCalEngine.basic_structures import IntVec, Vec
 from GridCalEngine.enumerations import InvestmentEvaluationMethod
 
 from pymoo.core.problem import ElementwiseProblem
-from pymoo.util.ref_dirs import get_reference_directions
-from pymoo.optimize import minimize
-from pymoo.algorithms.moo.nsga3 import NSGA3
-from pymoo.visualization.scatter import Scatter
-
-from pymoo.operators.crossover.sbx import SBX
-from pymoo.operators.mutation.pm import PM
-from pymoo.operators.repair.rounding import RoundingRepair
-from pymoo.operators.sampling.rnd import IntegerRandomSampling
 
 
 def get_overload_score(loading, branches):
@@ -175,6 +166,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         overload_score = get_overload_score(res.loading, branches)
         voltage_module_score = get_voltage_module_score(res.voltage, buses)
         voltage_angle_score = get_voltage_phase_score(res.voltage, buses)
+        electrical_score = losses_score + overload_score + voltage_module_score + voltage_angle_score
         capex_array = np.array([inv.CAPEX for inv in inv_list])
         opex_array = np.array([inv.OPEX for inv in inv_list])
 
@@ -185,13 +177,10 @@ class InvestmentsEvaluationDriver(DriverTemplate):
 
         capex_score = np.sum(capex_array)
         opex_score = np.sum(opex_array)
+        financial_score = np.sum(capex_score + opex_score)
 
-        all_scores = np.array([losses_score,
-                               overload_score,
-                               voltage_module_score,
-                               voltage_angle_score,
-                               capex_score,
-                               opex_score])
+
+        all_scores = np.array([electrical_score, financial_score])
 
         # revert to disabled
         self.grid.set_investments_status(investments_list=inv_list,
@@ -205,19 +194,27 @@ class InvestmentsEvaluationDriver(DriverTemplate):
 
         return all_scores
 
-    def evaluate_nsga(self, x, out, *args, **kwargs):
-        w = np.array([7, 4, 8, 5, 7, 3, 7, 8, 5, 4, 8, 8, 3, 6, 5, 2, 8, 6, 2, 5])
-        v = np.array([170, 469, 323, 31, 262, 245, 354, 58, 484, 68, 179, 485, 197, 473, 280, 199, 455, 184, 455, 60])
-        r = np.array([80, 87, 68, 72, 66, 77, 99, 85, 70, 93, 98, 72, 100, 89, 67, 86, 91, 70, 88, 79])
-        out["F"] = - np.dot(x, v), - np.dot(x, r)
-        out["G"] = np.dot(x, w) - 50
+    class GridNsga(ElementwiseProblem):
+
+        def __init__(self, obj_func, n_var, n_obj):
+            super().__init__(n_var=n_var,
+                             n_obj=n_obj,
+                             n_ieq_constr=0,
+                             xl=np.zeros(n_var),
+                             xu=np.ones(n_var),
+                             vtype=int,
+                             )
+            self.obj_func = obj_func
+
+        def _evaluate(self, x, out, *args, **kwargs):
+            out["F"] = self.obj_func(x)
 
     class GridNsga(ElementwiseProblem):
 
         def __init__(self):
             super().__init__(n_var=20,
                              n_obj=2,
-                             n_ieq_constr=1,
+                             n_ieq_constr=0,
                              xl=np.zeros(20),
                              xu=np.ones(20),
                              vtype=int,
@@ -381,11 +378,13 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         )
 
         self.results.set_at(eval_idx=np.arange(len(y_population_)),
-                            capex=y_population_[:, 4],
-                            opex=y_population_[:, 5],
-                            losses=y_population_[:, 0],
-                            overload_score=y_population_[:, 1],
-                            voltage_score=y_population_[:, 2],
+                            # capex=y_population_[:, 4],
+                            # opex=y_population_[:, 5],
+                            # losses=y_population_[:, 0],
+                            # overload_score=y_population_[:, 1],
+                            # voltage_score=y_population_[:, 2],
+                            electrical=y_population_[:, 0],
+                            financial=y_population_[:, 1],
                             objective_function=f_population_,
                             combination=x_population_,
                             index_name=np.array(['Evaluation {}'.format(i) for i in range(len(y_population_))]))
@@ -432,11 +431,13 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         )
 
         self.results.set_at(eval_idx=np.arange(len(y_population_)),
-                            capex=y_population_[:, 4],
-                            opex=y_population_[:, 5],
-                            losses=y_population_[:, 0],
-                            overload_score=y_population_[:, 1],
-                            voltage_score=y_population_[:, 2],
+                            # capex=y_population_[:, 4],
+                            # opex=y_population_[:, 5],
+                            # losses=y_population_[:, 0],
+                            # overload_score=y_population_[:, 1],
+                            # voltage_score=y_population_[:, 2],
+                            electrical=y_population_[:, 0],
+                            financial=y_population_[:, 1],
                             objective_function=y_population_[:, 4] * 0.00001 + y_population_[:, 0],
                             combination=x_population_,
                             index_name=np.array(['Evaluation {}'.format(i) for i in range(len(y_population_))]))
@@ -448,15 +449,9 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         pop_size = round(self.dim * 1.5)
         n_partitions = round(self.dim * 1.5)
 
-        lb = np.zeros(self.dim)
-        ub = np.ones(self.dim)
-
         prob = 1.0
         eta = 3.0
-        termination = 10
-
-        # stop_crit = StochStopCriterion(conf_dist, conf_level)  # ??
-        x0 = np.random.binomial(1, prob, self.dim)
+        termination = 100
 
         # compile the snapshot
         self.nc = compile_numerical_circuit_at(circuit=self.grid, t_idx=None)
@@ -469,32 +464,32 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         self.__eval_index = 0
 
         # add baseline
-        # self.objective_function(combination=np.zeros(self.results.n_groups, dtype=int))
+        self.objective_function(combination=np.zeros(self.results.n_groups, dtype=int))
         # self.evaluate_nsga(combination=np.zeros(self.results.n_groups, dtype=int), out=None)
 
         # optimize
         X, obj_values = NSGA_3(
             obj_func=self.objective_function,
-            n_partitions=5,
+            n_partitions=n_partitions,
             n_var=self.dim,
-            n_obj=6,
+            n_obj=2,
             max_evals=termination,
             pop_size=pop_size,
             prob=prob,
             eta=eta
         )
 
-        obj_res = obj_values[0]
-
-        self.results.set_at(eval_idx=np.arange(len(obj_res)),
-                            capex=obj_res[:, 4],
-                            opex=obj_res[:, 5],
-                            losses=obj_res[:, 0],
-                            overload_score=obj_res[:, 1],
-                            voltage_score=obj_res[:, 2],
-                            objective_function=[obj_res.sum(axis=1)],
+        self.results.set_at(eval_idx=np.arange(len(obj_values)),
+                            # capex=obj_values[:, 4],
+                            # opex=obj_values[:, 5],
+                            # losses=obj_values[:, 0],
+                            # overload_score=obj_values[:, 1],
+                            # voltage_score=obj_values[:, 2],
+                            electrical=obj_values[:, 0],
+                            financial=obj_values[:, 1],
+                            objective_function=obj_values[0],
                             combination=X,
-                            index_name=np.array(['Solution {}'.format(i) for i in range(len(obj_res))])
+                            index_name=np.array(['Solution {}'.format(i) for i in range(len(obj_values))])
                             )
 
         self.report_done()

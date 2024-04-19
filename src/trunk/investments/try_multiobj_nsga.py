@@ -23,4 +23,7 @@ if __name__ == "__main__":
                                                pf_options=pf_options)
 
     inv = sim.InvestmentsEvaluationDriver(grid, options=options)
+    st_time = time.time()
     inv.run()
+    e_time = time.time()
+    print(e_time - st_time)
