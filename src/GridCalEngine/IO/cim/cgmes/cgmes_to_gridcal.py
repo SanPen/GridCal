@@ -32,16 +32,7 @@ from GridCalEngine.IO.cim.cgmes.cgmes_utils import (get_nominal_voltage,
                                                     get_slack_id)
 from GridCalEngine.IO.cim.cgmes.gridcal_to_cgmes import gridcal_to_cgmes  # TODO move them here
 from GridCalEngine.data_logger import DataLogger
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.identified_object import IdentifiedObject
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.terminal import Terminal
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.ac_line_segment import ACLineSegment
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.switch import Switch
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.disconnector import Disconnector
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.load_break_switch import LoadBreakSwitch
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.breaker import Breaker
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.conducting_equipment import ConductingEquipment
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.voltage_level import VoltageLevel
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.bay import Bay
+from GridCalEngine.IO.cim.cgmes.base import Base
 
 
 def get_gcdev_voltage_dict(cgmes_model: CgmesCircuit,
@@ -72,15 +63,19 @@ def get_gcdev_voltage_dict(cgmes_model: CgmesCircuit,
 
 
 def get_gcdev_device_to_terminal_dict(cgmes_model: CgmesCircuit,
-                                      logger: DataLogger) -> Dict[str, List[Terminal]]:
+                                      logger: DataLogger) -> Dict[str, List[Base]]:
     """
     Dictionary relating the conducting equipment to the terminal object(s)
     """
     # dictionary relating the conducting equipment to the terminal object
-    device_to_terminal_dict: Dict[str, List[Terminal]] = dict()
+    device_to_terminal_dict: Dict[str, List[Base]] = dict()
+
+    con_eq_type = cgmes_model.get_class_type("ConductingEquipment")
+    if con_eq_type is None:
+        return device_to_terminal_dict
 
     for e in cgmes_model.cgmes_assets.Terminal_list:
-        if isinstance(e.ConductingEquipment, ConductingEquipment):
+        if isinstance(e.ConductingEquipment, con_eq_type):
             lst = device_to_terminal_dict.get(e.ConductingEquipment.uuid, None)
             if lst is None:
                 device_to_terminal_dict[e.ConductingEquipment.uuid] = [e]
@@ -96,7 +91,7 @@ def get_gcdev_device_to_terminal_dict(cgmes_model: CgmesCircuit,
     return device_to_terminal_dict
 
 
-def find_terms_connections(cgmes_terminal: Terminal,
+def find_terms_connections(cgmes_terminal: Base,
                            calc_node_dict: Dict[str, gcdev.Bus],
                            cn_dict: Dict[str, gcdev.ConnectivityNode]):
     """
@@ -126,8 +121,8 @@ def find_terms_connections(cgmes_terminal: Terminal,
     return calc_node, cn
 
 
-def find_connections(cgmes_elm: IdentifiedObject,
-                     device_to_terminal_dict: Dict[str, List[Terminal]],
+def find_connections(cgmes_elm: Base,
+                     device_to_terminal_dict: Dict[str, List[Base]],
                      calc_node_dict: Dict[str, gcdev.Bus],
                      cn_dict: Dict[str, gcdev.ConnectivityNode],
                      logger: DataLogger):
@@ -248,7 +243,6 @@ def get_gcdev_calculation_nodes(cgmes_model: CgmesCircuit,
                               Vm0=vm,
                               Va0=va)
 
-
         gc_model.add_bus(gcdev_elm)
         calc_node_dict[gcdev_elm.idtag] = gcdev_elm
 
@@ -298,7 +292,7 @@ def get_gcdev_loads(cgmes_model: CgmesCircuit,
                     gcdev_model: MultiCircuit,
                     calc_node_dict: Dict[str, gcdev.Bus],
                     cn_dict: Dict[str, gcdev.ConnectivityNode],
-                    device_to_terminal_dict: Dict[str, List[Terminal]],
+                    device_to_terminal_dict: Dict[str, List[Base]],
                     logger: DataLogger) -> None:
     """
     Convert the CGMES loads to gcdev
@@ -370,7 +364,7 @@ def get_gcdev_generators(cgmes_model: CgmesCircuit,
                          gcdev_model: MultiCircuit,
                          calc_node_dict: Dict[str, gcdev.Bus],
                          cn_dict: Dict[str, gcdev.ConnectivityNode],
-                         device_to_terminal_dict: Dict[str, List[Terminal]],
+                         device_to_terminal_dict: Dict[str, List[Base]],
                          logger: DataLogger) -> None:
     """
     Convert the CGMES generators to gcdev
@@ -476,7 +470,7 @@ def get_gcdev_external_grids(cgmes_model: CgmesCircuit,
                              gcdev_model: MultiCircuit,
                              calc_node_dict: Dict[str, gcdev.Bus],
                              cn_dict: Dict[str, gcdev.ConnectivityNode],
-                             device_to_terminal_dict: Dict[str, List[Terminal]],
+                             device_to_terminal_dict: Dict[str, List[Base]],
                              logger: DataLogger) -> None:
     """
     Convert the CGMES loads to gcdev
@@ -522,7 +516,7 @@ def get_gcdev_ac_lines(cgmes_model: CgmesCircuit,
                        gcdev_model: MultiCircuit,
                        calc_node_dict: Dict[str, gcdev.Bus],
                        cn_dict: Dict[str, gcdev.ConnectivityNode],
-                       device_to_terminal_dict: Dict[str, List[Terminal]],
+                       device_to_terminal_dict: Dict[str, List[Base]],
                        logger: DataLogger,
                        Sbase: float) -> None:
     """
@@ -539,15 +533,16 @@ def get_gcdev_ac_lines(cgmes_model: CgmesCircuit,
 
     # build the ratings dictionary
     rates_dict = dict()
+    acline_type = cgmes_model.get_class_type("ACLineSegment")
     for e in cgmes_model.cgmes_assets.CurrentLimit_list:
         if not isinstance(e.OperationalLimitSet, str):
             if isinstance(e.OperationalLimitSet, list):
                 for ols in e.OperationalLimitSet:
-                    if isinstance(ols.Terminal.ConductingEquipment, ACLineSegment):
+                    if isinstance(ols.Terminal.ConductingEquipment, acline_type):
                         branch_id = ols.Terminal.ConductingEquipment.uuid
                         rates_dict[branch_id] = e.value
             else:
-                if isinstance(e.OperationalLimitSet.Terminal.ConductingEquipment, ACLineSegment):
+                if isinstance(e.OperationalLimitSet.Terminal.ConductingEquipment, acline_type):
                     branch_id = e.OperationalLimitSet.Terminal.ConductingEquipment.uuid
                     rates_dict[branch_id] = e.value
 
@@ -608,7 +603,7 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                               gcdev_model: MultiCircuit,
                               calc_node_dict: Dict[str, gcdev.Bus],
                               cn_dict: Dict[str, gcdev.ConnectivityNode],
-                              device_to_terminal_dict: Dict[str, List[Terminal]],
+                              device_to_terminal_dict: Dict[str, List[Base]],
                               logger: DataLogger,
                               Sbase: float) -> None:
     """
@@ -795,7 +790,7 @@ def get_gcdev_shunts(cgmes_model: CgmesCircuit,
                      gcdev_model: MultiCircuit,
                      calc_node_dict: Dict[str, gcdev.Bus],
                      cn_dict: Dict[str, gcdev.ConnectivityNode],
-                     device_to_terminal_dict: Dict[str, List[Terminal]],
+                     device_to_terminal_dict: Dict[str, List[Base]],
                      logger: DataLogger,
                      Sbase: float) -> None:
     """
@@ -856,7 +851,7 @@ def get_gcdev_controllable_shunts(
         gcdev_model: MultiCircuit,
         calc_node_dict: Dict[str, gcdev.Bus],
         cn_dict: Dict[str, gcdev.ConnectivityNode],
-        device_to_terminal_dict: Dict[str, List[Terminal]],
+        device_to_terminal_dict: Dict[str, List[Base]],
         logger: DataLogger,
         Sbase: float) -> None:
     """
@@ -883,7 +878,7 @@ def get_gcdev_switches(cgmes_model: CgmesCircuit,
                        gcdev_model: MultiCircuit,
                        calc_node_dict: Dict[str, gcdev.Bus],
                        cn_dict: Dict[str, gcdev.ConnectivityNode],
-                       device_to_terminal_dict: Dict[str, List[Terminal]],
+                       device_to_terminal_dict: Dict[str, List[Base]],
                        logger: DataLogger,
                        Sbase: float) -> None:
     """
@@ -900,11 +895,16 @@ def get_gcdev_switches(cgmes_model: CgmesCircuit,
     """
     # Build the ratings dictionary
     rates_dict = {}
+
+    sw_type = cgmes_model.get_class_type("Switch")
+    br_type = cgmes_model.get_class_type("Breaker")
+    ds_type = cgmes_model.get_class_type("Disconnector")
+    lbs_type = cgmes_model.get_class_type("LoadBreakSwitch")
     for e in cgmes_model.cgmes_assets.CurrentLimit_list:
         if not isinstance(e.OperationalLimitSet, str):
             conducting_equipment = e.OperationalLimitSet.Terminal.ConductingEquipment
             if isinstance(conducting_equipment,
-                          (Switch, Breaker, Disconnector, LoadBreakSwitch)):
+                          (sw_type, br_type, ds_type, lbs_type)):
                 branch_id = conducting_equipment.uuid
                 rates_dict[branch_id] = e.value
 
@@ -938,7 +938,8 @@ def get_gcdev_switches(cgmes_model: CgmesCircuit,
                 else:
                     op_rate = 9999  # Corrected
 
-                if cgmes_elm.ratedCurrent is not None and cgmes_elm.ratedCurrent != 0.0:  # TODO
+                if (cgmes_elm.ratedCurrent is not None and cgmes_elm.ratedCurrent != 0.0
+                        and cgmes_elm.BaseVoltage is not None):  # TODO
                     rated_current = np.round(
                         (cgmes_elm.ratedCurrent / 1000.0) * cgmes_elm.BaseVoltage.nominalVoltage * 1.73205080756888,
                         4)
@@ -1026,7 +1027,7 @@ def get_gcdev_busbars(cgmes_model: CgmesCircuit,
                       gcdev_model: MultiCircuit,
                       calc_node_dict: Dict[str, gcdev.Bus],
                       cn_dict: Dict[str, gcdev.ConnectivityNode],
-                      device_to_terminal_dict: Dict[str, List[Terminal]],
+                      device_to_terminal_dict: Dict[str, List[Base]],
                       logger: DataLogger
                       ) -> None:
     """
@@ -1054,10 +1055,12 @@ def get_gcdev_busbars(cgmes_model: CgmesCircuit,
                 calc_node = calc_nodes[0]
                 cn = cns[0]
 
+                vl_type = cgmes_model.get_class_type("VoltageLevel")
+                bay_type = cgmes_model.get_class_type("Bay")
                 container = cgmes_elm.EquipmentContainer
-                if isinstance(container, VoltageLevel):
+                if isinstance(container, vl_type):
                     substation = container.Substation
-                elif isinstance(container, Bay):
+                elif isinstance(container, bay_type):
                     substation = container.VoltageLevel.Substation
                 else:
                     substation = None

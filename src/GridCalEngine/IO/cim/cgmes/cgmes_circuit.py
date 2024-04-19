@@ -519,6 +519,9 @@ class CgmesCircuit(BaseCircuit):
 
         return True
 
+    def get_class_type(self, class_name: str) -> Base:
+        return self.cgmes_assets.class_dict.get(class_name)
+
     def get_properties(self) -> List[CgmesProperty]:
         """
         Get list of CIM properties
