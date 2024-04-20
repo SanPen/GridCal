@@ -14,8 +14,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from __future__ import annotations
-
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.identified_object import IdentifiedObject
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
@@ -27,7 +25,7 @@ class Location(IdentifiedObject):
 
 		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.coordinate_system import CoordinateSystem
 		self.CoordinateSystem: CoordinateSystem | None = None
-		self.mainAddress:  # TODO: missing something
+		self.mainAddress: str = None
 		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.power_system_resource import PowerSystemResource
 		self.PowerSystemResources: PowerSystemResource | None = None
 		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.position_point import PositionPoint
@@ -43,7 +41,7 @@ class Location(IdentifiedObject):
 		)
 		self.register_property(
 			name='mainAddress',
-			class_type=,
+			class_type=str,
 			multiplier=UnitMultiplier.none,
 			unit=UnitSymbol.none,
 			description='''''',

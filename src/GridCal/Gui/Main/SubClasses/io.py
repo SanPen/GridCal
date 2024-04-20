@@ -37,6 +37,7 @@ from GridCalEngine.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE
 from GridCalEngine.Compilers.circuit_to_pgm import PGM_AVAILABLE
 from GridCalEngine.IO.gridcal.contingency_parser import import_contingencies_from_json, export_contingencies_json_file
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
+from GridCalEngine.enumerations import CGMESVersions
 
 
 class IoMain(ConfigurationMain):
@@ -59,6 +60,9 @@ class IoMain(ConfigurationMain):
                                     '.dgs', '.m', '.raw', '.RAW', '.json',
                                     '.ejson2', '.ejson3',
                                     '.xml', '.rawx', '.zip', '.dpx', '.epc']
+
+        self.cgmes_version_dict = {x.value: x for x in [CGMESVersions.v2_4_15, CGMESVersions.v3_0_0]}
+        self.ui.cgmes_version_comboBox.setModel(gf.get_list_model(list(self.cgmes_version_dict.keys())))
 
         self.ui.actionNew_project.triggered.connect(self.new_project)
         self.ui.actionOpen_file.triggered.connect(self.open_file)
@@ -525,10 +529,13 @@ class IoMain(ConfigurationMain):
         # get json files to store
         json_files = {"gui_config": self.get_gui_config_data()}
 
+        cgmes_version = self.cgmes_version_dict[self.ui.cgmes_version_comboBox.currentText()]
+
         options = filedrv.FileSavingOptions(cgmes_boundary_set=self.current_boundary_set,
                                             simulation_drivers=self.get_simulations(),
                                             sessions_data=sessions_data,
-                                            dictionary_of_json_files=json_files)
+                                            dictionary_of_json_files=json_files,
+                                            cgmes_version=cgmes_version)
 
         return options
 

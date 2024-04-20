@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.acdc_converter import ACDCConverter
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile, VsPpccControlKind, UnitSymbol, VsQpccControlKind
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile, UnitSymbol, VsQpccControlKind, VsPpccControlKind
 
 
 class VsConverter(ACDCConverter):
@@ -52,7 +52,7 @@ class VsConverter(ACDCConverter):
 			class_type=float,
 			multiplier=UnitMultiplier.none,
 			unit=UnitSymbol.none,
-			description='''The maximum quotient between the AC converter voltage (Uc) and DC voltage (Ud). A factor typically less than 1. It is converter’s configuration data used in power flow.''',
+			description='''The maximum quotient between the AC converter voltage (Uc) and DC voltage (Ud). A factor typically less than 1. It is converterï¿½s configuration data used in power flow.''' ,
 			profiles=[]
 		)
 		self.register_property(

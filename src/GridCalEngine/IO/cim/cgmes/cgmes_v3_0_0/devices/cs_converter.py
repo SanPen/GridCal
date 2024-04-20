@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.acdc_converter import ACDCConverter
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile, UnitSymbol, CsPpccControlKind, CsOperatingModeKind
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile, UnitSymbol, CsOperatingModeKind, CsPpccControlKind
 
 
 class CsConverter(ACDCConverter):
@@ -115,7 +115,7 @@ class CsConverter(ACDCConverter):
 			class_type=CsOperatingModeKind,
 			multiplier=UnitMultiplier.none,
 			unit=UnitSymbol.none,
-			description='''Indicates whether the DC pole is operating as an inverter or as a rectifier. It is converter’s control variable used in power flow.''',
+			description='''Indicates whether the DC pole is operating as an inverter or as a rectifier. It is converterï¿½s control variable used in power flow.''' ,
 			profiles=[]
 		)
 		self.register_property(

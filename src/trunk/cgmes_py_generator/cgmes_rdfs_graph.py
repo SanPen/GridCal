@@ -67,7 +67,8 @@ def generate_cgmes_classes():
 
         # Filtering classes that are in the scope
         if (label not in not_in_scope_list and (len(class_stereotypes) == 0 or
-                                                any(element in class_stereotypes for element in stereotype_filter))):
+                                                any(element in class_stereotypes for element in stereotype_filter) or
+                                                (len(class_stereotypes) == 1 and class_stereotypes[0] == "Description"))):
 
             all_class.append(label)
             print(label)

@@ -297,7 +297,7 @@ class ResultsMain(SimulationsMain):
         """
         Copy the results from the OPF time series to the profiles
         """
-        drv, results = self.session.get_driver_results(sim.SimulationTypes.OPFTimeSeries_run)
+        results = self.session.optimal_power_flow_ts
 
         if results is not None:
 

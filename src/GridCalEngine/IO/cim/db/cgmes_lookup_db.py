@@ -38,7 +38,7 @@ class CgmesLookUpDb(BaseDb):
         pth = os.path.join(self.db_folder, file_name)
         data_parser = CgmesDataParser()
         data_parser.load_files(files=[pth])
-        self.circuit: CgmesCircuit = CgmesCircuit()
+        self.circuit: CgmesCircuit = CgmesCircuit(cgmes_version='2.4.15')
         self.circuit.parse_files(data_parser=data_parser, delete_unused=False, detect_circular_references=False)
 
     def get_structures_names(self) -> List[str]:
