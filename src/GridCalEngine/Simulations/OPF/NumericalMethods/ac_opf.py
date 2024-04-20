@@ -585,8 +585,15 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     # ignore power from Z and I of the load
 
     if pf_init:
-        p0gen = nc.generator_data.p[gen_disp_idx]
-        q0gen = (nc.generator_data.C_bus_elm.T @ np.imag(Sbus_pf / nc.Sbase))[gen_disp_idx]
+        gen_in_bus = np.zeros(nbus)
+        for bus in range(nc.generator_data.C_bus_elm.shape[0]):
+            gen_in_bus[bus] = np.sum(nc.generator_data.C_bus_elm[bus])
+        ngenforgen = nc.generator_data.C_bus_elm.T @ gen_in_bus
+        allPgen = nc.generator_data.C_bus_elm.T @ np.real(Sbus_pf / nc.Sbase) / ngenforgen
+        allQgen = nc.generator_data.C_bus_elm.T @ np.imag(Sbus_pf / nc.Sbase) / ngenforgen
+        Sg_undis = allPgen[gen_nondisp_idx] + 1j * allQgen[gen_nondisp_idx]
+        p0gen = allPgen[gen_disp_idx]
+        q0gen = allQgen[gen_disp_idx]
         vm0 = np.abs(voltage_pf)
         va0 = np.angle(voltage_pf)
         tapm0 = nc.branch_data.tap_module[k_m]
@@ -732,6 +739,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         result.plot_error()
 
     if not result.converged or result.converged:
+        logger.entries = list()
         for bus in range(nbus):
             if abs(result.dlam[bus]) >= 1e-3:
                 logger.add_warning('Nodal Power Balance convergence tolerance not achieved',
