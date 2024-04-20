@@ -18,6 +18,7 @@ __pycache__
 *.egg-info
 
 /src/tests/data/output/*.png
+/src/GridCal/Gui/Main/icons/.DS_Store
 
 Results.xlsx
 lynn5node.gridcal
