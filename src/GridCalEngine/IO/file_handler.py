@@ -49,6 +49,8 @@ from GridCalEngine.IO.raw.rawx_parser_writer import parse_rawx, write_rawx
 from GridCalEngine.IO.others.pypsa_parser import parse_netcdf, parse_hdf5
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Simulations.results_template import DriverToSave
+from GridCalEngine.Simulations.driver_types import SimulationTypes
+from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCalEngine.enumerations import CGMESVersions
 
 
@@ -81,6 +83,14 @@ class FileSavingOptions:
         self.sessions_data: List[DriverToSave] = sessions_data if sessions_data else list()
 
         self.dictionary_of_json_files = dictionary_of_json_files if dictionary_of_json_files else dict()
+
+
+    def get_power_flow_results(self) -> Union[None, PowerFlowResults]:
+        for data in self.sessions_data:
+            if data.tpe == SimulationTypes.PowerFlow_run:
+                return data.results
+
+        return None
 
 
 class FileOpen:
@@ -446,6 +456,7 @@ class FileSave:
         Save the circuit information in CIM format
         :return: logger with information
         """
+        # pf_results = self.options.get_power_flow_results()
         logger = Logger()
         # CGMES version should be given in the settings
         cgmes_circuit = CgmesCircuit(cgmes_version=self.options.cgmes_version.__str__(), text_func=self.text_func,
