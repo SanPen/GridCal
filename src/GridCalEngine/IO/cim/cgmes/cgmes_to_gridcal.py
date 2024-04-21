@@ -994,6 +994,14 @@ def get_gcdev_substations(cgmes_model: CgmesCircuit,
                 # latitude=0.0,     # later from GL profile/Location class
                 # longitude=0.0
             )
+            region = find_object_by_idtag(
+                object_list=gcdev_model.communities,
+                target_idtag=cgmes_elm.Region.uuid
+            )
+            if region is not None:
+                gcdev_elm.community = region
+            else:
+                print(f'No Community found for substation {gcdev_elm.name}')
 
             gcdev_model.add_substation(gcdev_elm)
 
@@ -1086,6 +1094,59 @@ def get_gcdev_busbars(cgmes_model: CgmesCircuit,
                                  expected_value=1)
 
 
+def get_gcdev_countries(cgmes_model: CgmesCircuit,
+                        gcdev_model: MultiCircuit,
+                        ) -> None:
+    """
+    Convert the CGMES GeoGrapicalRegions to gcdev Country
+
+    :param cgmes_model: CgmesCircuit
+    :param gcdev_model: gcdevCircuit
+    """
+    for device_list in [cgmes_model.cgmes_assets.GeographicalRegion_list]:
+
+        for cgmes_elm in device_list:
+            gcdev_elm = gcdev.Country(
+                name=cgmes_elm.name,
+                idtag=cgmes_elm.uuid,
+                code=cgmes_elm.description,
+                # latitude=0.0,     # later from GL profile/Location class
+                # longitude=0.0
+            )
+
+            gcdev_model.add_country(gcdev_elm)
+
+
+def get_gcdev_community(cgmes_model: CgmesCircuit,
+                        gcdev_model: MultiCircuit,
+                        ) -> None:
+    """
+    Convert the CGMES SubGeograpicalRegions to gcdev Community
+
+    :param cgmes_model: CgmesCircuit
+    :param gcdev_model: gcdevCircuit
+    """
+    for device_list in [cgmes_model.cgmes_assets.SubGeographicalRegion_list]:
+
+        for cgmes_elm in device_list:
+            gcdev_elm = gcdev.Community(
+                name=cgmes_elm.name,
+                idtag=cgmes_elm.uuid,
+                code=cgmes_elm.description,
+                # latitude=0.0,     # later from GL profile/Location class
+                # longitude=0.0
+            )
+
+            c = find_object_by_idtag(
+                object_list=gcdev_model.countries,
+                target_idtag=cgmes_elm.uuid
+            )
+            if c is not None:
+                gcdev_elm.country = c
+
+            gcdev_model.add_community(gcdev_elm)
+
+
 def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
                      logger: DataLogger) -> MultiCircuit:
     """
@@ -1105,6 +1166,8 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
     # parse_shunts(cgmes_model, circuit, busbar_dict, logger)
     # parse_generators(cgmes_model, circuit, busbar_dict, logger)
 
+    get_gcdev_countries(cgmes_model, gc_model)
+    get_gcdev_community(cgmes_model, gc_model)
     get_gcdev_substations(cgmes_model, gc_model)
     get_gcdev_voltage_levels(cgmes_model, gc_model, logger)
 
@@ -1129,7 +1192,7 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
     print('debug')
 
     # Gridcal to cgmes
-    cgmes_circuit = CgmesCircuit()
+    cgmes_circuit = CgmesCircuit(cgmes_version='2.4.15')
     cgmes_model_export = gridcal_to_cgmes(gc_model, cgmes_circuit, logger)
 
     # Export test for the imported data
