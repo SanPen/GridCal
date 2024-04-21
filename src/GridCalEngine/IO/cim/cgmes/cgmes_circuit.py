@@ -28,8 +28,8 @@ from GridCalEngine.IO.cim.cgmes.cgmes_poperty import CgmesProperty
 from GridCalEngine.IO.base.base_circuit import BaseCircuit
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
 from GridCalEngine.IO.cim.cgmes.cgmes_data_parser import CgmesDataParser
-
 from GridCalEngine.IO.cim.cgmes.base import Base
+from GridCalEngine.enumerations import CGMESVersions
 
 
 def find_attribute(referenced_object, obj, property_name, association_inverse_dict, class_dict):
@@ -360,7 +360,7 @@ class CgmesCircuit(BaseCircuit):
     """
 
     def __init__(self,
-                 cgmes_version: str = "",
+                 cgmes_version: CGMESVersions = CGMESVersions.v2_4_15,
                  text_func: Union[Callable, None] = None,
                  progress_func: Union[Callable, None] = None,
                  logger=DataLogger()):
@@ -375,10 +375,13 @@ class CgmesCircuit(BaseCircuit):
         self.text_func = text_func
         self.progress_func = progress_func
 
-        if cgmes_version == "2.4.15":
+        if cgmes_version == CGMESVersions.v2_4_15:
             self.cgmes_assets = Cgmes_2_4_15_Assets()
-        if cgmes_version == "3.0.0":
+        elif cgmes_version == CGMESVersions.v3_0_0:
             self.cgmes_assets = Cgmes_3_0_0_Assets()
+        else:
+            raise Exception(f"Unrecognized CGMES version {cgmes_version}")
+
             # classes to read, theo others are ignored
         self.classes = [key for key, va in self.cgmes_assets.class_dict.items()]
 
