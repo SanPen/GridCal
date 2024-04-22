@@ -11,9 +11,11 @@ import cProfile
 import pstats
 
 if __name__ == "__main__":
-    absolute_path = os.path.abspath(
-        os.path.join(os.getcwd(), 'Grids_and_profiles', 'grids', 'ding0_test_network_2_mvlv.gridcal'))
-    grid = FileOpen(absolute_path).open()
+    fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', 'ding0_test_network_2_mvlv.gridcal')
+    grid = FileOpen(fname).open()
+    # absolute_path = os.path.abspath(
+    #     os.path.join(os.getcwd(), 'Grids_and_profiles', 'grids', 'ding0_test_network_2_mvlv.gridcal'))
+    # grid = FileOpen(absolute_path).open()
 
     pf_options = sim.PowerFlowOptions()
     mvrsm_multi = InvestmentEvaluationMethod.MVRSM_multi

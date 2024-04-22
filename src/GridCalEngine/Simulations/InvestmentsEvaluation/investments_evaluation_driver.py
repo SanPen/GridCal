@@ -28,11 +28,14 @@ from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.InvestmentsEvaluation.NumericalMethods.MVRSM_mo_scaled import MVRSM_mo_scaled
 from GridCalEngine.Simulations.InvestmentsEvaluation.NumericalMethods.MVRSM_mo_pareto import MVRSM_mo_pareto
+from GridCalEngine.Simulations.InvestmentsEvaluation.NumericalMethods.NSGA_3 import NSGA_3
 from GridCalEngine.Simulations.InvestmentsEvaluation.NumericalMethods.stop_crits import StochStopCriterion
 from GridCalEngine.Simulations.InvestmentsEvaluation.investments_evaluation_results import InvestmentsEvaluationResults
 from GridCalEngine.Simulations.InvestmentsEvaluation.investments_evaluation_options import InvestmentsEvaluationOptions
 from GridCalEngine.basic_structures import IntVec, Vec
 from GridCalEngine.enumerations import InvestmentEvaluationMethod
+
+from pymoo.core.problem import ElementwiseProblem
 
 
 def get_overload_score(loading, branches):
@@ -163,6 +166,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         overload_score = get_overload_score(res.loading, branches)
         voltage_module_score = get_voltage_module_score(res.voltage, buses)
         voltage_angle_score = get_voltage_phase_score(res.voltage, buses)
+        electrical_score = losses_score + overload_score + voltage_module_score + voltage_angle_score
         capex_array = np.array([inv.CAPEX for inv in inv_list])
         opex_array = np.array([inv.OPEX for inv in inv_list])
 
@@ -173,13 +177,10 @@ class InvestmentsEvaluationDriver(DriverTemplate):
 
         capex_score = np.sum(capex_array)
         opex_score = np.sum(opex_array)
+        financial_score = np.sum(capex_score + opex_score)
 
-        all_scores = np.array([losses_score,
-                               overload_score,
-                               voltage_module_score,
-                               voltage_angle_score,
-                               capex_score,
-                               opex_score])
+
+        all_scores = np.array([electrical_score, financial_score])
 
         # revert to disabled
         self.grid.set_investments_status(investments_list=inv_list,
@@ -192,6 +193,36 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         self.report_progress2(self.__eval_index, self.options.max_eval)
 
         return all_scores
+
+    class GridNsga(ElementwiseProblem):
+
+        def __init__(self, obj_func, n_var, n_obj):
+            super().__init__(n_var=n_var,
+                             n_obj=n_obj,
+                             n_ieq_constr=0,
+                             xl=np.zeros(n_var),
+                             xu=np.ones(n_var),
+                             vtype=int,
+                             )
+            self.obj_func = obj_func
+
+        def _evaluate(self, x, out, *args, **kwargs):
+            out["F"] = self.obj_func(x)
+
+    class GridNsga(ElementwiseProblem):
+
+        def __init__(self):
+            super().__init__(n_var=20,
+                             n_obj=2,
+                             n_ieq_constr=0,
+                             xl=np.zeros(20),
+                             xu=np.ones(20),
+                             vtype=int,
+                             )
+
+        def _evaluate(self, x, out, *args, **kwargs):
+            objectives = InvestmentsEvaluationDriver.objective_function(x)
+            out["F"] = objectives
 
     def objective_function_so(self, combination: IntVec):
         """
@@ -347,11 +378,13 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         )
 
         self.results.set_at(eval_idx=np.arange(len(y_population_)),
-                            capex=y_population_[:, 4],
-                            opex=y_population_[:, 5],
-                            losses=y_population_[:, 0],
-                            overload_score=y_population_[:, 1],
-                            voltage_score=y_population_[:, 2],
+                            # capex=y_population_[:, 4],
+                            # opex=y_population_[:, 5],
+                            # losses=y_population_[:, 0],
+                            # overload_score=y_population_[:, 1],
+                            # voltage_score=y_population_[:, 2],
+                            electrical=y_population_[:, 0],
+                            financial=y_population_[:, 1],
                             objective_function=f_population_,
                             combination=x_population_,
                             index_name=np.array(['Evaluation {}'.format(i) for i in range(len(y_population_))]))
@@ -398,14 +431,66 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         )
 
         self.results.set_at(eval_idx=np.arange(len(y_population_)),
-                            capex=y_population_[:, 4],
-                            opex=y_population_[:, 5],
-                            losses=y_population_[:, 0],
-                            overload_score=y_population_[:, 1],
-                            voltage_score=y_population_[:, 2],
+                            # capex=y_population_[:, 4],
+                            # opex=y_population_[:, 5],
+                            # losses=y_population_[:, 0],
+                            # overload_score=y_population_[:, 1],
+                            # voltage_score=y_population_[:, 2],
+                            electrical=y_population_[:, 0],
+                            financial=y_population_[:, 1],
                             objective_function=y_population_[:, 4] * 0.00001 + y_population_[:, 0],
                             combination=x_population_,
                             index_name=np.array(['Evaluation {}'.format(i) for i in range(len(y_population_))]))
+
+        self.report_done()
+
+    def optimized_evaluation_nsga_iii(self) -> None:
+
+        pop_size = round(self.dim * 1.5)
+        n_partitions = round(self.dim * 1.5)
+
+        prob = 1.0
+        eta = 3.0
+        termination = 100
+
+        # compile the snapshot
+        self.nc = compile_numerical_circuit_at(circuit=self.grid, t_idx=None)
+        self.results = InvestmentsEvaluationResults(investment_groups_names=self.grid.get_investment_groups_names(),
+                                                    max_eval=self.options.max_eval)
+        # disable all status
+        self.nc.set_investments_status(investments_list=self.grid.investments, status=0)
+
+        # evaluate the investments
+        self.__eval_index = 0
+
+        # add baseline
+        self.objective_function(combination=np.zeros(self.results.n_groups, dtype=int))
+        # self.evaluate_nsga(combination=np.zeros(self.results.n_groups, dtype=int), out=None)
+
+        # optimize
+        X, obj_values = NSGA_3(
+            obj_func=self.objective_function,
+            n_partitions=n_partitions,
+            n_var=self.dim,
+            n_obj=2,
+            max_evals=termination,
+            pop_size=pop_size,
+            prob=prob,
+            eta=eta
+        )
+
+        self.results.set_at(eval_idx=np.arange(len(obj_values)),
+                            # capex=obj_values[:, 4],
+                            # opex=obj_values[:, 5],
+                            # losses=obj_values[:, 0],
+                            # overload_score=obj_values[:, 1],
+                            # voltage_score=obj_values[:, 2],
+                            electrical=obj_values[:, 0],
+                            financial=obj_values[:, 1],
+                            objective_function=obj_values[0],
+                            combination=X,
+                            index_name=np.array(['Solution {}'.format(i) for i in range(len(obj_values))])
+                            )
 
         self.report_done()
 
@@ -428,6 +513,9 @@ class InvestmentsEvaluationDriver(DriverTemplate):
 
         elif self.options.solver == InvestmentEvaluationMethod.MVRSM_multi:
             self.optimized_evaluation_mvrsm_pareto()
+
+        elif self.options.solver == InvestmentEvaluationMethod.NSGA3:
+            self.optimized_evaluation_nsga_iii()
 
         else:
             raise Exception('Unsupported method')
