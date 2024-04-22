@@ -22,6 +22,7 @@ import xml.etree.ElementTree as ET
 from GridCalEngine.data_logger import DataLogger
 from GridCalEngine.IO.base.base_circuit import BaseCircuit
 from GridCalEngine.IO.gridcal.zip_interface import get_xml_from_zip, get_xml_content
+from GridCalEngine.enumerations import CGMESVersions
 
 
 def find_id(child: ET.Element):
@@ -300,7 +301,7 @@ class CgmesDataParser(BaseCircuit):
         self.boudary_set: Dict[str, Dict[str, Dict[str, str]]] = dict()
 
         # store the CGMES version from the data files
-        self.cgmes_version = ""
+        self.cgmes_version: CGMESVersions = None
 
     def emit_text(self, val: str) -> None:
         """
@@ -359,9 +360,9 @@ class CgmesDataParser(BaseCircuit):
                     if isinstance(profile, list):
                         for prof in profile:
                             if prof in cgmes2_4_15_uri:
-                                self.cgmes_version = "2.4.15"
+                                self.cgmes_version = CGMESVersions.v2_4_15
                             elif prof in cgmes3_0_0_uri:
-                                self.cgmes_version = "3.0.0"
+                                self.cgmes_version = CGMESVersions.v3_0_0
 
                         if 'Boundary' in profile[0]:
                             merge(self.boudary_set, file_cgmes_data, self.logger)
@@ -369,9 +370,9 @@ class CgmesDataParser(BaseCircuit):
                             merge(self.data, file_cgmes_data, self.logger)
                     else:
                         if profile in cgmes2_4_15_uri:
-                            self.cgmes_version = "2.4.15"
+                            self.cgmes_version = CGMESVersions.v2_4_15
                         elif profile in cgmes3_0_0_uri:
-                            self.cgmes_version = "3.0.0"
+                            self.cgmes_version = CGMESVersions.v3_0_0
 
                         if 'Boundary' in profile:
                             merge(self.boudary_set, file_cgmes_data, self.logger)
@@ -396,9 +397,9 @@ class CgmesDataParser(BaseCircuit):
 
                     for prof in profile:
                         if prof in cgmes2_4_15_uri:
-                            self.cgmes_version = "2.4.15"
+                            self.cgmes_version = CGMESVersions.v2_4_15
                         elif prof in cgmes3_0_0_uri:
-                            self.cgmes_version = "3.0.0"
+                            self.cgmes_version = CGMESVersions.v3_0_0
 
                     if 'Boundary' in profile:
                         merge(self.boudary_set, file_cgmes_data, self.logger)

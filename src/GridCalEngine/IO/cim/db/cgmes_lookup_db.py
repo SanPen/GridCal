@@ -5,6 +5,7 @@ from GridCalEngine.IO.cim.cgmes.cgmes_data_parser import CgmesDataParser
 from GridCalEngine.IO.cim.db.base_db import BaseDb
 from GridCalEngine.IO.cim.db.file_system import get_create_roseta_db_folder
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
+from GridCalEngine.enumerations import CGMESVersions
 
 
 class CgmesLookUpDb(BaseDb):
@@ -38,7 +39,7 @@ class CgmesLookUpDb(BaseDb):
         pth = os.path.join(self.db_folder, file_name)
         data_parser = CgmesDataParser()
         data_parser.load_files(files=[pth])
-        self.circuit: CgmesCircuit = CgmesCircuit(cgmes_version='2.4.15')
+        self.circuit: CgmesCircuit = CgmesCircuit(cgmes_version=CGMESVersions.v2_4_15)
         self.circuit.parse_files(data_parser=data_parser, delete_unused=False, detect_circular_references=False)
 
     def get_structures_names(self) -> List[str]:

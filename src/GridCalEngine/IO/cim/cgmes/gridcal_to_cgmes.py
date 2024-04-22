@@ -11,6 +11,8 @@ from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResu
 from GridCalEngine.data_logger import DataLogger
 from typing import Dict, List, Tuple, Union
 
+from GridCalEngine.enumerations import CGMESVersions
+
 
 # region UTILS
 
@@ -121,7 +123,7 @@ def create_cgmes_headers(cgmes_model: CgmesCircuit, desc: str = "", scenariotime
         fm.version = version
         fm.description = desc
 
-    if cgmes_model.cgmes_version == "2.4.15":
+    if cgmes_model.cgmes_version == CGMESVersions.v2_4_15:
         profile_uris = {
             "EQ": ["http://entsoe.eu/CIM/EquipmentCore/3/1",
                    "http://entsoe.eu/CIM/EquipmentShortCircuit/3/1",
@@ -130,7 +132,7 @@ def create_cgmes_headers(cgmes_model: CgmesCircuit, desc: str = "", scenariotime
             "TP": ["http://entsoe.eu/CIM/Topology/4/1"],
             "SV": ["http://entsoe.eu/CIM/StateVariables/4/1"]
         }
-    elif cgmes_model.cgmes_version == "3.0.0":
+    elif cgmes_model.cgmes_version == CGMESVersions.v3_0_0:
         profile_uris = {
             "EQ": ["http://iec.ch/TC57/ns/CIM/CoreEquipment-EU/3.0",
                    "http://iec.ch/TC57/ns/CIM/Operation-EU/3.0",

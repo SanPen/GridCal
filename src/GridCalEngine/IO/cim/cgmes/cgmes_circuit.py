@@ -383,7 +383,7 @@ class CgmesCircuit(BaseCircuit):
         """
         BaseCircuit.__init__(self)
 
-        self.cgmes_version = cgmes_version
+        self.cgmes_version: CGMESVersions = cgmes_version
         self.logger: DataLogger = logger
 
         self.text_func = text_func
