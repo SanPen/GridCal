@@ -39,7 +39,7 @@ from GridCalEngine.IO.raw.raw_parser_writer import read_raw, write_raw
 from GridCalEngine.IO.raw.raw_to_gridcal import psse_to_gridcal
 from GridCalEngine.IO.raw.gridcal_to_raw import gridcal_to_raw
 from GridCalEngine.IO.epc.epc_parser import PowerWorldParser
-from GridCalEngine.IO.cim.cim16.cim_parser import CIMImport
+from GridCalEngine.IO.cim.cim16.cim_parser import CIMImport, CIMExport
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit, is_valid_cgmes
 from GridCalEngine.IO.cim.cgmes.cgmes_to_gridcal import cgmes_to_gridcal
 from GridCalEngine.IO.gridcal.zip_interface import save_gridcal_data_to_zip, get_frames_from_zip
@@ -380,6 +380,9 @@ class FileSave:
         elif self.file_name.endswith('.zip') and "CGMES" in self.options.type_selected:
             logger = self.save_cgmes()
 
+        elif self.file_name.endswith('.xml') and "CIM" in self.options.type_selected:
+            logger = self.save_cim()
+
         elif self.file_name.endswith('.gch5'):
             logger = self.save_h5()
 
@@ -401,7 +404,7 @@ class FileSave:
 
         return logger
 
-    def save_excel(self):
+    def save_excel(self) -> Logger:
         """
         Save the circuit information in excel format
         :return: logger with information
@@ -436,7 +439,7 @@ class FileSave:
 
         return logger
 
-    def save_sqlite(self):
+    def save_sqlite(self) -> Logger:
         """
         Save the circuit information in sqlite
         :return: logger with information
@@ -464,7 +467,18 @@ class FileSave:
                                    self.options.simulation_drivers)
         return logger
 
-    def save_cgmes(self):
+    def save_cim(self) -> Logger:
+        """
+        Save the circuit information in CIM format
+        :return: logger with information
+        """
+
+        cim = CIMExport(self.circuit)
+        cim.save(file_name=self.file_name)
+
+        return cim.logger
+
+    def save_cgmes(self) -> Logger:
         """
         Save the circuit information in CGMES format
         :return: logger with information
@@ -495,7 +509,7 @@ class FileSave:
 
         return logger
 
-    def save_h5(self):
+    def save_h5(self) -> Logger:
         """
         Save the circuit information in CIM format
         :return: logger with information
@@ -507,7 +521,7 @@ class FileSave:
 
         return logger
 
-    def save_raw(self):
+    def save_raw(self) -> Logger:
         """
         Save the circuit information in json format
         :return:logger with information
@@ -516,7 +530,7 @@ class FileSave:
         logger = write_raw(self.file_name, raw_circuit)
         return logger
 
-    def save_rawx(self):
+    def save_rawx(self) -> Logger:
         """
         Save the circuit information in json format
         :return:logger with information
@@ -525,7 +539,7 @@ class FileSave:
         logger = write_rawx(self.file_name, raw_circuit)
         return logger
 
-    def save_newton(self):
+    def save_newton(self) -> Logger:
         """
         Save the circuit information in sqlite
         :return: logger with information
@@ -546,7 +560,7 @@ class FileSave:
 
         return logger
 
-    def save_pgm(self):
+    def save_pgm(self) -> Logger:
         """
         Save to Power Grid Model format
         :return: logger with information
