@@ -129,7 +129,6 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         self._combinations[eval_idx, :] = combination
         self._index_names[eval_idx] = index_name
 
-
     def mdl(self, result_type) -> "ResultsTable":
         """
         Plot the results
