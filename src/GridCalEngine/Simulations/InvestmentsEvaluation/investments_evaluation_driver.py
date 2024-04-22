@@ -28,14 +28,12 @@ from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.InvestmentsEvaluation.NumericalMethods.MVRSM_mo_scaled import MVRSM_mo_scaled
 from GridCalEngine.Simulations.InvestmentsEvaluation.NumericalMethods.MVRSM_mo_pareto import MVRSM_mo_pareto
-from GridCalEngine.Simulations.InvestmentsEvaluation.NumericalMethods.NSGA_3 import NSGA_3
 from GridCalEngine.Simulations.InvestmentsEvaluation.NumericalMethods.stop_crits import StochStopCriterion
 from GridCalEngine.Simulations.InvestmentsEvaluation.investments_evaluation_results import InvestmentsEvaluationResults
 from GridCalEngine.Simulations.InvestmentsEvaluation.investments_evaluation_options import InvestmentsEvaluationOptions
 from GridCalEngine.basic_structures import IntVec, Vec
 from GridCalEngine.enumerations import InvestmentEvaluationMethod
-
-from pymoo.core.problem import ElementwiseProblem
+import GridCalEngine.Simulations.InvestmentsEvaluation.NumericalMethods.NSGA_3 as nsga3
 
 
 def get_overload_score(loading, branches):
@@ -73,6 +71,22 @@ def get_voltage_module_score(voltage, buses):
     cost = (vmax_diffs + vmin_diffs) * bus_cost
 
     return np.sum(cost)
+
+
+# class GridNsga(ElementwiseProblem):
+#
+#     def __init__(self, obj_func, n_var, n_obj):
+#         super().__init__(n_var=n_var,
+#                          n_obj=n_obj,
+#                          n_ieq_constr=0,
+#                          xl=np.zeros(n_var),
+#                          xu=np.ones(n_var),
+#                          vtype=int,
+#                          )
+#         self.obj_func = obj_func
+#
+#     def _evaluate(self, x, out, *args, **kwargs):
+#         out["F"] = self.obj_func(x)
 
 
 def get_voltage_phase_score(voltage, buses):
@@ -179,7 +193,6 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         opex_score = np.sum(opex_array)
         financial_score = np.sum(capex_score + opex_score)
 
-
         all_scores = np.array([electrical_score, financial_score])
 
         # revert to disabled
@@ -187,42 +200,24 @@ class InvestmentsEvaluationDriver(DriverTemplate):
                                          status=False,
                                          all_elemnts_dict=self.get_all_elements_dict)
 
+        self.report_progress2(self.__eval_index, self.options.max_eval)
+
+        self.results.set_at(eval_idx=self.__eval_index,
+                            capex=capex_score,
+                            opex=opex_score,
+                            losses=losses_score,
+                            overload_score=overload_score,
+                            voltage_score=voltage_module_score,
+                            electrical=electrical_score,
+                            financial=financial_score,
+                            objective_function_sum=financial_score + electrical_score,
+                            combination=combination,
+                            index_name=f'Solution {self.__eval_index}')
+
         # increase evaluations
         self.__eval_index += 1
 
-        self.report_progress2(self.__eval_index, self.options.max_eval)
-
         return all_scores
-
-    class GridNsga(ElementwiseProblem):
-
-        def __init__(self, obj_func, n_var, n_obj):
-            super().__init__(n_var=n_var,
-                             n_obj=n_obj,
-                             n_ieq_constr=0,
-                             xl=np.zeros(n_var),
-                             xu=np.ones(n_var),
-                             vtype=int,
-                             )
-            self.obj_func = obj_func
-
-        def _evaluate(self, x, out, *args, **kwargs):
-            out["F"] = self.obj_func(x)
-
-    class GridNsga(ElementwiseProblem):
-
-        def __init__(self):
-            super().__init__(n_var=20,
-                             n_obj=2,
-                             n_ieq_constr=0,
-                             xl=np.zeros(20),
-                             xu=np.ones(20),
-                             vtype=int,
-                             )
-
-        def _evaluate(self, x, out, *args, **kwargs):
-            objectives = InvestmentsEvaluationDriver.objective_function(x)
-            out["F"] = objectives
 
     def objective_function_so(self, combination: IntVec):
         """
@@ -338,7 +333,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         Run an optimized investment evaluation without considering multiple evaluation groups at a time
         """
 
-        # configure MVRSM:
+        self.report_text("Evaluating investments with MVRSM...")
 
         # number of random evaluations at the beginning
         rand_evals = round(self.dim * 1.5)
@@ -353,7 +348,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         # compile the snapshot
         self.nc = compile_numerical_circuit_at(circuit=self.grid, t_idx=None)
         self.results = InvestmentsEvaluationResults(investment_groups_names=self.grid.get_investment_groups_names(),
-                                                    max_eval=self.options.max_eval)
+                                                    max_eval=self.options.max_eval + 1)
         # disable all status
         self.nc.set_investments_status(investments_list=self.grid.investments, status=0)
 
@@ -361,7 +356,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         self.__eval_index = 0
 
         # add baseline
-        self.objective_function(combination=np.zeros(self.results.n_groups, dtype=int))
+        ret = self.objective_function(combination=np.zeros(self.results.n_groups, dtype=int))
 
         # optimize
         sorted_y_, sorted_x_, y_population_, x_population_, f_population_ = MVRSM_mo_scaled(
@@ -374,20 +369,8 @@ class InvestmentsEvaluationDriver(DriverTemplate):
             rand_evals=rand_evals,
             args=(),
             stop_crit=stop_crit,
-            n_objectives=6
+            n_objectives=len(ret)
         )
-
-        self.results.set_at(eval_idx=np.arange(len(y_population_)),
-                            # capex=y_population_[:, 4],
-                            # opex=y_population_[:, 5],
-                            # losses=y_population_[:, 0],
-                            # overload_score=y_population_[:, 1],
-                            # voltage_score=y_population_[:, 2],
-                            electrical=y_population_[:, 0],
-                            financial=y_population_[:, 1],
-                            objective_function=f_population_,
-                            combination=x_population_,
-                            index_name=np.array(['Evaluation {}'.format(i) for i in range(len(y_population_))]))
 
         self.report_done()
 
@@ -396,7 +379,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         Run an optimized investment evaluation without considering multiple evaluation groups at a time
         """
 
-        # configure MVRSM:
+        self.report_text("Evaluating investments with multi-objective MVRSM...")
 
         # number of random evaluations at the beginning
         rand_evals = round(self.dim * 1.5)
@@ -408,7 +391,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         # compile the snapshot
         self.nc = compile_numerical_circuit_at(circuit=self.grid, t_idx=None)
         self.results = InvestmentsEvaluationResults(investment_groups_names=self.grid.get_investment_groups_names(),
-                                                    max_eval=self.options.max_eval)
+                                                    max_eval=self.options.max_eval + 2)
         # disable all status
         self.nc.set_investments_status(investments_list=self.grid.investments, status=0)
 
@@ -416,7 +399,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         self.__eval_index = 0
 
         # add baseline
-        self.objective_function(combination=np.zeros(self.results.n_groups, dtype=int))
+        ret = self.objective_function(combination=np.zeros(self.results.n_groups, dtype=int))
 
         sorted_y_, sorted_x_, y_population_, x_population_ = MVRSM_mo_pareto(
             obj_func=self.objective_function,
@@ -425,38 +408,26 @@ class InvestmentsEvaluationDriver(DriverTemplate):
             ub=ub,
             num_int=self.dim,
             max_evals=self.options.max_eval,
-            n_objectives=6,
+            n_objectives=len(ret),
             rand_evals=rand_evals,
             args=()
         )
 
-        self.results.set_at(eval_idx=np.arange(len(y_population_)),
-                            # capex=y_population_[:, 4],
-                            # opex=y_population_[:, 5],
-                            # losses=y_population_[:, 0],
-                            # overload_score=y_population_[:, 1],
-                            # voltage_score=y_population_[:, 2],
-                            electrical=y_population_[:, 0],
-                            financial=y_population_[:, 1],
-                            objective_function=y_population_[:, 4] * 0.00001 + y_population_[:, 0],
-                            combination=x_population_,
-                            index_name=np.array(['Evaluation {}'.format(i) for i in range(len(y_population_))]))
-
         self.report_done()
 
     def optimized_evaluation_nsga_iii(self) -> None:
+        """
+        Run an optimized investment evaluation with NSGA3
+        """
+        self.report_text("Evaluating investments with NSGA3...")
 
-        pop_size = round(self.dim * 1.5)
-        n_partitions = round(self.dim * 1.5)
-
-        prob = 1.0
-        eta = 3.0
-        termination = 100
+        pop_size = int(round(self.dim))
+        n_partitions = pop_size  # int(round(pop_size / 3))
 
         # compile the snapshot
         self.nc = compile_numerical_circuit_at(circuit=self.grid, t_idx=None)
         self.results = InvestmentsEvaluationResults(investment_groups_names=self.grid.get_investment_groups_names(),
-                                                    max_eval=self.options.max_eval)
+                                                    max_eval=self.options.max_eval + 1)
         # disable all status
         self.nc.set_investments_status(investments_list=self.grid.investments, status=0)
 
@@ -464,33 +435,20 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         self.__eval_index = 0
 
         # add baseline
-        self.objective_function(combination=np.zeros(self.results.n_groups, dtype=int))
-        # self.evaluate_nsga(combination=np.zeros(self.results.n_groups, dtype=int), out=None)
+        ret = self.objective_function(combination=np.zeros(self.results.n_groups, dtype=int))
 
         # optimize
-        X, obj_values = NSGA_3(
+        X, obj_values = nsga3.NSGA_3(
             obj_func=self.objective_function,
             n_partitions=n_partitions,
             n_var=self.dim,
-            n_obj=2,
-            max_evals=termination,
+            n_obj=len(ret),
+            max_evals=self.options.max_eval,  # termination
             pop_size=pop_size,
-            prob=prob,
-            eta=eta
+            crossover_prob=0.2,
+            mutation_probability=0.1,
+            eta=3
         )
-
-        self.results.set_at(eval_idx=np.arange(len(obj_values)),
-                            # capex=obj_values[:, 4],
-                            # opex=obj_values[:, 5],
-                            # losses=obj_values[:, 0],
-                            # overload_score=obj_values[:, 1],
-                            # voltage_score=obj_values[:, 2],
-                            electrical=obj_values[:, 0],
-                            financial=obj_values[:, 1],
-                            objective_function=obj_values[0],
-                            combination=X,
-                            index_name=np.array(['Solution {}'.format(i) for i in range(len(obj_values))])
-                            )
 
         self.report_done()
 
