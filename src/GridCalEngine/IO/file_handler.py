@@ -49,6 +49,8 @@ from GridCalEngine.IO.raw.rawx_parser_writer import parse_rawx, write_rawx
 from GridCalEngine.IO.others.pypsa_parser import parse_netcdf, parse_hdf5
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Simulations.results_template import DriverToSave
+from GridCalEngine.Simulations.driver_types import SimulationTypes
+from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCalEngine.enumerations import CGMESVersions
 
 
@@ -81,6 +83,13 @@ class FileSavingOptions:
         self.sessions_data: List[DriverToSave] = sessions_data if sessions_data else list()
 
         self.dictionary_of_json_files = dictionary_of_json_files if dictionary_of_json_files else dict()
+
+    def get_power_flow_results(self) -> Union[None, PowerFlowResults]:
+        for data in self.sessions_data:
+            if data.tpe == SimulationTypes.PowerFlow_run:
+                return data.results
+
+        return None
 
 
 class FileOpen:
@@ -443,21 +452,30 @@ class FileSave:
 
     def save_cgmes(self):
         """
-        Save the circuit information in CIM format
+        Save the circuit information in CGMES format
         :return: logger with information
         """
         logger = Logger()
         # CGMES version should be given in the settings
-        cgmes_circuit = CgmesCircuit(cgmes_version=self.options.cgmes_version.__str__(), text_func=self.text_func,
+        cgmes_circuit = CgmesCircuit(cgmes_version=self.options.cgmes_version.__str__(),
+                                     text_func=self.text_func,
                                      progress_func=self.progress_func, logger=logger)
         if self.options.cgmes_boundary_set != "":
-            data_parser = CgmesDataParser(text_func=self.text_func, progress_func=self.progress_func,
+            data_parser = CgmesDataParser(text_func=self.text_func,
+                                          progress_func=self.progress_func,
                                           logger=logger)
             data_parser.load_files(files=[self.options.cgmes_boundary_set])
             cgmes_circuit.parse_files(data_parser=data_parser)
 
-        cgmes_circuit = gridcal_to_cgmes(self.circuit, cgmes_circuit, logger)
-        cgmes_circuit = create_cgmes_headers(cgmes_circuit, version="1", desc="Test description.", scenariotime="2021-02-09T19:30:00Z")
+        pf_results = self.options.get_power_flow_results()
+        cgmes_circuit = gridcal_to_cgmes(gc_model=self.circuit,
+                                         cgmes_model=cgmes_circuit,
+                                         pf_results=pf_results,
+                                         logger=logger)
+        cgmes_circuit = create_cgmes_headers(cgmes_model=cgmes_circuit,
+                                             version="1",
+                                             desc="Test description.",
+                                             scenariotime="2021-02-09T19:30:00Z")
         cim_exporter = CimExporter(cgmes_circuit=cgmes_circuit)
         cim_exporter.export(self.file_name)
 

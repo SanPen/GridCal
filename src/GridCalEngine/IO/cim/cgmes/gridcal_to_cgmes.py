@@ -6,6 +6,7 @@ from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.full_model import FullMode
 from GridCalEngine.IO.cim.cgmes.base import Base
 import GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices as cgmes
 import GridCalEngine.Devices as gcdev
+from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 
 from GridCalEngine.data_logger import DataLogger
 from typing import Dict, List, Tuple, Union
@@ -13,22 +14,18 @@ from typing import Dict, List, Tuple, Union
 
 # region UTILS
 
-class ReferenceManager:
-    # use it after an element object added
-    def __init__(self):
-        self.data = dict()
-
-    def add(self, cgmes_obj: Base):
-
-        tpe_dict = self.data.get(cgmes_obj.tpe, None)
-        if tpe_dict is None:
-            self.data[cgmes_obj.tpe] = {cgmes_obj.rdfid: cgmes_obj}
-        else:
-            tpe_dict[cgmes_obj.rdfid] = cgmes_obj
-
-
-# def find_terms_connections():
-#     pass   # TODO
+# class ReferenceManager:
+#     # use it after an element object added
+#     def __init__(self):
+#         self.data = dict()
+#
+#     def add(self, cgmes_obj: Base):
+#
+#         tpe_dict = self.data.get(cgmes_obj.tpe, None)
+#         if tpe_dict is None:
+#             self.data[cgmes_obj.tpe] = {cgmes_obj.rdfid: cgmes_obj}
+#         else:
+#             tpe_dict[cgmes_obj.rdfid] = cgmes_obj
 
 
 def find_object_by_uuid(cgmes_model: CgmesCircuit, object_list, target_uuid):  # TODO move to CGMES utils
@@ -314,13 +311,31 @@ def create_cgmes_regulating_control(
 def get_cgmes_geograpical_regions(multi_circuit_model: MultiCircuit,
                                   cgmes_model: CgmesCircuit,
                                   logger: DataLogger):
-    pass
+    for mc_elm in multi_circuit_model.countries:
+        geo_region = cgmes.GeographicalRegion(rdfid=form_rdfid(mc_elm.idtag))
+        geo_region.name = mc_elm.name
+        geo_region.description = mc_elm.code
+
+        cgmes_model.add(geo_region)
 
 
 def get_cgmes_subgeograpical_regions(multi_circuit_model: MultiCircuit,
                                      cgmes_model: CgmesCircuit,
                                      logger: DataLogger):
-    pass
+    for mc_elm in multi_circuit_model.communities:
+        sub_geo_region = cgmes.SubGeographicalRegion(rdfid=form_rdfid(mc_elm.idtag))
+        sub_geo_region.name = mc_elm.name
+        sub_geo_region.description = mc_elm.code
+
+        region = find_object_by_uuid(
+            cgmes_model=cgmes_model,
+            object_list=cgmes_model.cgmes_assets.GeographicalRegion_list,
+            target_uuid=mc_elm.idtag
+        )
+        if region is not None:
+            sub_geo_region.Region = region
+
+        cgmes_model.add(sub_geo_region)
 
 
 def get_base_voltage_from_boundary(cgmes_model: CgmesCircuit, vnom: float):
@@ -356,11 +371,17 @@ def get_cgmes_substations(multi_circuit_model: MultiCircuit,
     for mc_elm in multi_circuit_model.substations:
         substation = cgmes.Substation(rdfid=form_rdfid(mc_elm.idtag))
         substation.name = mc_elm.name
-        substation.Region = find_object_by_uuid(
+        region = find_object_by_uuid(
             cgmes_model=cgmes_model,
             object_list=cgmes_model.cgmes_assets.SubGeographicalRegion_list,
-            target_uuid=mc_elm.idtag  # TODO Community.idtag!
+            target_uuid=mc_elm.community.idtag  # TODO Community.idtag!
         )
+        if region is not None:
+            substation.Region = region
+        else:
+            print(f'Region not found for Substation {substation.name}')
+            logger.add_warning(msg='Region not found for Substation',
+                               device_class=cgmes.SubGeographicalRegion)
 
         cgmes_model.add(substation)
 
@@ -410,7 +431,7 @@ def get_cgmes_tn_nodes(multi_circuit_model: MultiCircuit,
             target_vnom=bus.Vnom
         )
 
-        if bus.voltage_level is not None:  # VoltageLevel
+        if bus.voltage_level is not None and cgmes_model.cgmes_assets.VoltageLevel_list:  # VoltageLevel
             vl: cgmes.VoltageLevel = find_object_by_uuid(
                 cgmes_model=cgmes_model,
                 object_list=cgmes_model.cgmes_assets.VoltageLevel_list,
@@ -459,34 +480,6 @@ def get_cgmes_cn_nodes(multi_circuit_model: MultiCircuit,
         cgmes_model.add(cn)
 
     return
-
-
-def get_cgmes_svvoltages(v_dict: Dict[str, Tuple[float, float]],
-                         cgmes_model: CgmesCircuit,
-                         logger: DataLogger) -> CgmesCircuit:
-    """
-    Creates a CgmesCircuit SvVoltage_list.
-
-    Args:
-        v_dict (Dict[str, Tuple[float, float]]): The voltage dictionary.
-        logger (DataLogger): The data logger for error handling.
-
-    Returns:
-        CgmesCircuit: A CgmesCircuit object with SvVoltage_list populated.
-    """
-    # TODO should it come from the results?
-    for uuid, (v, angle) in v_dict.items():
-        # Create an SvVoltage instance for each entry in v_dict
-        sv_voltage = cgmes.SvVoltage(
-            rdfid=uuid, tpe='SvVoltage'
-        )
-        sv_voltage.v = v
-        sv_voltage.angle = angle
-
-        # Add the SvVoltage instance to the SvVoltage_list
-        cgmes_model.add(sv_voltage)
-
-    return cgmes_model
 
 
 def get_cgmes_loads(multicircuit_model: MultiCircuit,
@@ -668,6 +661,8 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
         cm_transformer.name = mc_elm.name
         cm_transformer.Terminals = [create_cgmes_terminal(mc_elm.bus_from, cgmes_model, logger),
                                     create_cgmes_terminal(mc_elm.bus_to, cgmes_model, logger)]
+        cm_transformer.aggregate = False  # what is this?
+        # cm_transformer.EquipmentContainer: can be obtained only if the data is stored in MultiCircuit as well
 
         cm_transformer.PowerTransformerEnd = []
         pte1 = cgmes.PowerTransformerEnd()
@@ -817,15 +812,46 @@ def get_cgmes_linear_shunts(multicircuit_model: MultiCircuit,
         cgmes_model.add(lsc)
 
 
+def get_cgmes_sv_voltages(cgmes_model: CgmesCircuit,
+                          pf_results: PowerFlowResults,
+                          logger: DataLogger):
+    """
+    Creates a CgmesCircuit SvVoltage_list.
+
+    Args:
+        cgmes_model: CgmesCircuit
+        pf_results: PowerFlowResults
+        logger (DataLogger): The data logger for error handling.
+
+    Returns:
+        CgmesCircuit: A CgmesCircuit object with SvVoltage_list populated.
+    """
+    print('hello')
+    # for uuid, (v, angle) in v_dict.items():
+    #     # Create an SvVoltage instance for each entry in v_dict
+    #     sv_voltage = cgmes.SvVoltage(
+    #         rdfid=uuid, tpe='SvVoltage'
+    #     )
+    #     sv_voltage.v = v
+    #     sv_voltage.angle = angle
+    #
+    #     # Add the SvVoltage instance to the SvVoltage_list
+    #     cgmes_model.add(sv_voltage)
+
+
 # endregion
 
 
-def gridcal_to_cgmes(gc_model: MultiCircuit, cgmes_model: CgmesCircuit, logger: DataLogger) -> CgmesCircuit:
+def gridcal_to_cgmes(gc_model: MultiCircuit,
+                     cgmes_model: CgmesCircuit,
+                     pf_results: Union[None, PowerFlowResults],
+                     logger: DataLogger) -> CgmesCircuit:
     """
     Converts the input Multi circuit to a new CGMES Circuit.
 
     :param gc_model: Multi circuit object
     :param cgmes_model: CGMES circuit object
+    :param pf_results: power flow results from GridCal
     :param logger: Logger object
     :return: CGMES circuit (as a new object)
     """
@@ -850,6 +876,10 @@ def gridcal_to_cgmes(gc_model: MultiCircuit, cgmes_model: CgmesCircuit, logger: 
     get_cgmes_power_transformers(gc_model, cgmes_model, logger)
 
     # shunts
-    # get_cgmes_linear_shunts(gc_model, cgmes_model, logger)
+    get_cgmes_linear_shunts(gc_model, cgmes_model, logger)
+
+    # results: sv classes
+    if pf_results:
+        get_cgmes_sv_voltages(cgmes_model, pf_results, logger)
 
     return cgmes_model
