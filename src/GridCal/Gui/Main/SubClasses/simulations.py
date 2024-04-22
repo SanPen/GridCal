@@ -160,16 +160,18 @@ class SimulationsMain(TimeEventsMain):
         self.ui.stochastic_pf_method_comboBox.setModel(mdl)
 
         # investment evaluation methods
+        investment_methods = [
+            InvestmentEvaluationMethod.Independent,
+            InvestmentEvaluationMethod.NSGA3,
+            InvestmentEvaluationMethod.Hyperopt,
+            InvestmentEvaluationMethod.MVRSM,
+            InvestmentEvaluationMethod.MVRSM_multi
+        ]
         self.investment_evaluation_method_dict = OrderedDict()
-        self.investment_evaluation_method_dict[
-            InvestmentEvaluationMethod.Independent.value] = InvestmentEvaluationMethod.Independent
-        self.investment_evaluation_method_dict[
-            InvestmentEvaluationMethod.Hyperopt.value] = InvestmentEvaluationMethod.Hyperopt
-        self.investment_evaluation_method_dict[
-            InvestmentEvaluationMethod.MVRSM.value] = InvestmentEvaluationMethod.MVRSM
-        self.investment_evaluation_method_dict[
-            InvestmentEvaluationMethod.MVRSM_multi.value] = InvestmentEvaluationMethod.MVRSM_multi
-        lst = list(self.investment_evaluation_method_dict.keys())
+        lst = list()
+        for method in investment_methods:
+            self.investment_evaluation_method_dict[method.value] = method
+            lst.append(method.value)
         self.ui.investment_evaluation_method_ComboBox.setModel(gf.get_list_model(lst))
 
         # ptdf grouping modes
