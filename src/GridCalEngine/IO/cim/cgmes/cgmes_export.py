@@ -153,7 +153,7 @@ class CimExporter:
                         "Supersedes": "str",
                         "description": "str"}
 
-        for instance in self.cgmes_circuit.FullModel_list:
+        for instance in self.cgmes_circuit.cgmes_assets.FullModel_list:
             instance_dict = instance.__dict__
             if self.is_in_profile(instance_profiles=instance_dict.get("profile"), model_profile=profile):
                 element = Et.Element("md:FullModel", {"rdf:about": "urn:uuid:" + instance.rdfid})

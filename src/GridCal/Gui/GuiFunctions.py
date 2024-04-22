@@ -28,7 +28,7 @@ from GridCalEngine.Devices.Parents.editable_device import GCProp, EditableDevice
 from GridCalEngine.enumerations import DeviceType, ResultTypes
 from GridCalEngine.basic_structures import IntVec
 from GridCalEngine.data_logger import DataLogger
-from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit, IdentifiedObject
+from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit, Base
 from GridCalEngine.Devices.Branches.line_locations import LineLocations
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
 
@@ -2682,7 +2682,7 @@ def fast_data_to_numpy_text(data: np.ndarray):
 
 
 def add_cim_object_node(class_tag,
-                        device: IdentifiedObject,
+                        device: Base,
                         editable=False,
                         already_visited: Union[List, None] = None):
     """

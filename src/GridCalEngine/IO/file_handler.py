@@ -72,7 +72,7 @@ class FileSavingOptions:
         :param cgmes_version: Version to use with CGMES
         """
 
-        self.cgmes_vesrion: CGMESVersions = cgmes_version
+        self.cgmes_version: CGMESVersions = cgmes_version
 
         self.cgmes_boundary_set: str = cgmes_boundary_set
 
@@ -448,7 +448,7 @@ class FileSave:
         """
         logger = Logger()
         # CGMES version should be given in the settings
-        cgmes_circuit = CgmesCircuit(cgmes_version="2.4.15", text_func=self.text_func,
+        cgmes_circuit = CgmesCircuit(cgmes_version=self.options.cgmes_version.__str__(), text_func=self.text_func,
                                      progress_func=self.progress_func, logger=logger)
         if self.options.cgmes_boundary_set != "":
             data_parser = CgmesDataParser(text_func=self.text_func, progress_func=self.progress_func,
@@ -457,7 +457,7 @@ class FileSave:
             cgmes_circuit.parse_files(data_parser=data_parser)
 
         cgmes_circuit = gridcal_to_cgmes(self.circuit, cgmes_circuit, logger)
-        cgmes_circuit = create_cgmes_headers(cgmes_circuit, version="1")
+        cgmes_circuit = create_cgmes_headers(cgmes_circuit, version="1", desc="Test description.", scenariotime="2021-02-09T19:30:00Z")
         cim_exporter = CimExporter(cgmes_circuit=cgmes_circuit)
         cim_exporter.export(self.file_name)
 

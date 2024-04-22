@@ -6,13 +6,6 @@ from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.full_model import FullMode
 from GridCalEngine.IO.cim.cgmes.base import Base
 import GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices as cgmes
 import GridCalEngine.Devices as gcdev
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices import GeneratingUnit, \
-    ThermalGeneratingUnit, HydroGeneratingUnit, SolarGeneratingUnit, \
-    WindGeneratingUnit, NuclearGeneratingUnit
-
-# if cgmes_version == '2.4.15.':
-#     from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.terminal import \
-#         Terminal
 
 from GridCalEngine.data_logger import DataLogger
 from typing import Dict, List, Tuple, Union
@@ -188,7 +181,7 @@ def create_cgmes_headers(cgmes_model: CgmesCircuit, desc: str = "", scenariotime
         fm_list[2].DependentOn = [fm_list[0].rdfid]
         fm_list[3].DependentOn = [fm_list[0].rdfid, fm_list[1].rdfid, fm_list[2].rdfid]
 
-    cgmes_model.FullModel_list = fm_list
+    cgmes_model.cgmes_assets.FullModel_list = fm_list
     return cgmes_model
 
 
@@ -206,7 +199,7 @@ def create_cgmes_terminal(bus: Bus,
     term.connected = True
     tn = find_object_by_uuid(
         cgmes_model=cgmes_model,
-        object_list=cgmes_model.TopologicalNode_list,
+        object_list=cgmes_model.cgmes_assets.TopologicalNode_list,
         target_uuid=bus.idtag
     )
 
@@ -365,7 +358,7 @@ def get_cgmes_substations(multi_circuit_model: MultiCircuit,
         substation.name = mc_elm.name
         substation.Region = find_object_by_uuid(
             cgmes_model=cgmes_model,
-            object_list=cgmes_model.SubGeographicalRegion_list,
+            object_list=cgmes_model.cgmes_assets.SubGeographicalRegion_list,
             target_uuid=mc_elm.idtag  # TODO Community.idtag!
         )
 
@@ -381,7 +374,7 @@ def get_cgmes_voltage_levels(multi_circuit_model: MultiCircuit,
         vl.name = mc_elm.name
         vl.BaseVoltage = find_object_by_vnom(
             cgmes_model=cgmes_model,
-            object_list=cgmes_model.BaseVoltage_list,
+            object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
             target_vnom=mc_elm.Vnom
         )
         # vl.Bays = later
@@ -390,7 +383,7 @@ def get_cgmes_voltage_levels(multi_circuit_model: MultiCircuit,
         if mc_elm.substation is not None:
             substation: cgmes.Substation = find_object_by_uuid(
                 cgmes_model=cgmes_model,
-                object_list=cgmes_model.Substation_list,
+                object_list=cgmes_model.cgmes_assets.Substation_list,
                 target_uuid=mc_elm.substation.idtag
             )
             if substation:
@@ -413,14 +406,14 @@ def get_cgmes_tn_nodes(multi_circuit_model: MultiCircuit,
         tn.name = bus.name
         tn.BaseVoltage = find_object_by_vnom(
             cgmes_model=cgmes_model,
-            object_list=cgmes_model.BaseVoltage_list,
+            object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
             target_vnom=bus.Vnom
         )
 
         if bus.voltage_level is not None:  # VoltageLevel
             vl: cgmes.VoltageLevel = find_object_by_uuid(
                 cgmes_model=cgmes_model,
-                object_list=cgmes_model.VoltageLevel_list,
+                object_list=cgmes_model.cgmes_assets.VoltageLevel_list,
                 target_uuid=bus.voltage_level.idtag
             )
             tn.ConnectivityNodeContainer = vl
@@ -446,7 +439,7 @@ def get_cgmes_cn_nodes(multi_circuit_model: MultiCircuit,
         if mc_elm.default_bus is not None:
             tn: cgmes.TopologicalNode = find_object_by_uuid(
                 cgmes_model=cgmes_model,
-                object_list=cgmes_model.TopologicalNode_list,
+                object_list=cgmes_model.cgmes_assets.TopologicalNode_list,
                 target_uuid=mc_elm.default_bus.idtag
             )
             if tn is not None:
@@ -553,7 +546,7 @@ def get_cgmes_equivalent_injections(multicircuit_model: MultiCircuit,
         ei.p = mc_elm.P
         ei.q = mc_elm.Q
         ei.BaseVoltage = find_object_by_vnom(cgmes_model=cgmes_model,
-                                             object_list=cgmes_model.BaseVoltage_list,
+                                             object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
                                              target_vnom=mc_elm.bus.Vnom)
 
         cgmes_model.add(ei)
@@ -577,7 +570,7 @@ def get_cgmes_ac_line_segments(multicircuit_model: MultiCircuit,
         line.description = mc_elm.code
         line.name = mc_elm.name
         line.BaseVoltage = find_object_by_vnom(cgmes_model=cgmes_model,
-                                               object_list=cgmes_model.BaseVoltage_list,
+                                               object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
                                                target_vnom=mc_elm.get_max_bus_nominal_voltage()
                                                )  # which Vnom we need?
         vnom = line.BaseVoltage.nominalVoltage
@@ -821,7 +814,7 @@ def get_cgmes_linear_shunts(multicircuit_model: MultiCircuit,
 
         lsc.Terminals = create_cgmes_terminal(mc_elm.bus, cgmes_model, logger)
 
-        cgmes_model.LinearShuntCompensator_list.append(lsc)
+        cgmes_model.add(lsc)
 
 
 # endregion
@@ -857,6 +850,6 @@ def gridcal_to_cgmes(gc_model: MultiCircuit, cgmes_model: CgmesCircuit, logger: 
     get_cgmes_power_transformers(gc_model, cgmes_model, logger)
 
     # shunts
-    get_cgmes_linear_shunts(gc_model, cgmes_model, logger)
+    # get_cgmes_linear_shunts(gc_model, cgmes_model, logger)
 
     return cgmes_model
