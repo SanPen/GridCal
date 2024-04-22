@@ -57,21 +57,21 @@ def NSGA_3(obj_func,
 
     res = minimize(problem,
                    algorithm,
-                   ('n_gen', max_evals),
+                   ('n_eval', max_evals),
                    seed=1,
                    verbose=True,
-                   save_history=True)
+                   save_history=False)
 
-    _res = minimize(problem,
-                    NSGA3(pop_size=pop_size, sampling=IntegerRandomSampling(),
-                          crossover=SBX(prob=prob, eta=eta, vtype=float, repair=RoundingRepair()),
-                          mutation=PM(prob=prob, eta=eta, vtype=float, repair=RoundingRepair()),
-                          eliminate_duplicates=True,
-                          ref_dirs=ref_dirs),
-                    ('n_gen', max_evals),
-                    seed=1,
-                    verbose=True,
-                    save_history=True)
+    # _res = minimize(problem,
+    #                 NSGA3(pop_size=pop_size, sampling=IntegerRandomSampling(),
+    #                       crossover=SBX(prob=prob, eta=eta, vtype=float, repair=RoundingRepair()),
+    #                       mutation=PM(prob=prob, eta=eta, vtype=float, repair=RoundingRepair()),
+    #                       eliminate_duplicates=True,
+    #                       ref_dirs=ref_dirs),
+    #                 ('n_eval', max_evals),
+    #                 seed=1,
+    #                 verbose=True,
+    #                 save_history=False)
 
     X = res.X
     F = res.F
@@ -80,17 +80,17 @@ def NSGA_3(obj_func,
     print(f'Best F: ', F)
 
     # Extract the objective function values from each generation
-    obj_values = [gen.pop.get("F") for gen in res.history]
+    # obj_values = [gen.pop.get("F") for gen in res.history]
 
     # Calculate the minimum objective function value in each generation
-    min_obj_values = [np.min(val) for val in obj_values]
+    # min_obj_values = [np.min(val) for val in obj_values]
 
     plot = Scatter()
     plot.add(problem.pareto_front(), plot_type="line", color="black", alpha=0.7)
     # plt.scatter(F[:, 0], F[:, 1], s=30, facecolors='none', edgecolors='blue')
     plot.add(res.F, facecolor="none", edgecolor="red")
-    plot.add(_res.F, facecolor="none", edgecolor="blue")
-    plot.show()
+    # plot.add(_res.F, facecolor="none", edgecolor="blue")
+    # plot.show()
 
     # ret = [np.min(e.pop.get("F")) for e in res.history]
     # _ret = [np.min(e.pop.get("F")) for e in _res.history]
@@ -103,4 +103,4 @@ def NSGA_3(obj_func,
     # plt.legend()
     # plt.show()
 
-    return X, obj_values[0]
+    return X, F

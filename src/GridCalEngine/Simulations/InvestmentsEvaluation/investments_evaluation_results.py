@@ -93,27 +93,40 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         """
         return self._index_names
 
-    def set_at(self, eval_idx, electrical, financial, objective_function,
-               combination: IntVec, index_name: str) -> None:
+    def set_at(self, eval_idx,
+               capex: float,
+               opex: float,
+               losses: float,
+               overload_score: float,
+               voltage_score: float,
+               electrical: float,
+               financial: float,
+               objective_function_sum: float,
+               combination: IntVec,
+               index_name: str) -> None:
         """
         Set the results at an investment group
         :param eval_idx: evaluation index
+        :param capex:
+        :param opex:
+        :param losses:
+        :param overload_score:
+        :param voltage_score:
         :param electrical:
         :param financial:
-        :param objective_function:
+        :param objective_function_sum:
         :param combination: vector of size (n_investment_groups) with ones in those investments used
         :param index_name: Name of the evaluation
         """
-        # self._capex[eval_idx] = capex
-        # self._opex[eval_idx] = opex
-        # self._losses[eval_idx] = losses
-        # self._overload_score[eval_idx] = overload_score
-        # self._voltage_score[eval_idx] = voltage_score
+        self._capex[eval_idx] = capex
+        self._opex[eval_idx] = opex
+        self._losses[eval_idx] = losses
+        self._overload_score[eval_idx] = overload_score
+        self._voltage_score[eval_idx] = voltage_score
         self._electrical[eval_idx] = electrical
         self._financial[eval_idx] = financial
-        self._f_obj[eval_idx] = objective_function[0]
-        self._combinations[eval_idx, :] = combination[0]
-        # self._combinations[eval_idx, :] = combination
+        self._f_obj[eval_idx] = objective_function_sum
+        self._combinations[eval_idx, :] = combination
         self._index_names[eval_idx] = index_name
 
 
@@ -156,9 +169,9 @@ class InvestmentsEvaluationResults(ResultsTemplate):
 
         elif result_type == ResultTypes.InvestmentsParetoPlot:
             labels = self._index_names
-            columns = ["CAPEX (M€) + OPEX (M€)", "Objective function"]
-            x = self._electrical
-            y = self._financial
+            columns = ["Investment cost (M€)", "Technical cost (M€)"]
+            x = self._financial
+            y = self._electrical
             data = np.c_[x, y]
             y_label = ''
             title = ''
