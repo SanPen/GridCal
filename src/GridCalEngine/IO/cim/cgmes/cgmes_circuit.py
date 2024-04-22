@@ -354,6 +354,20 @@ def convert_data_to_objects(data: Dict[str, Dict[str, Dict[str, str]]],
     print("find references: ", endt - start, "sec")
 
 
+def is_valid_cgmes(cgmes_version) -> bool:
+    """
+    Check if the version is CGMES
+    :param cgmes_version:
+    :return:
+    """
+    if cgmes_version == CGMESVersions.v2_4_15:
+        return True
+    elif cgmes_version == CGMESVersions.v3_0_0:
+        return True
+    else:
+        return False
+
+
 class CgmesCircuit(BaseCircuit):
     """
     CgmesCircuit
@@ -380,7 +394,8 @@ class CgmesCircuit(BaseCircuit):
         elif cgmes_version == CGMESVersions.v3_0_0:
             self.cgmes_assets = Cgmes_3_0_0_Assets()
         else:
-            raise Exception(f"Unrecognized CGMES version {cgmes_version}")
+            logger.add_error(msg=f"Unrecognized CGMES version {cgmes_version}")
+            raise ValueError(f"Unrecognized CGMES version {cgmes_version}")
 
             # classes to read, theo others are ignored
         self.classes = [key for key, va in self.cgmes_assets.class_dict.items()]
