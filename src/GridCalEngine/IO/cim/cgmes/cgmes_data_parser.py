@@ -301,7 +301,7 @@ class CgmesDataParser(BaseCircuit):
         self.boudary_set: Dict[str, Dict[str, Dict[str, str]]] = dict()
 
         # store the CGMES version from the data files
-        self.cgmes_version: CGMESVersions = None
+        self.cgmes_version: Union[None, CGMESVersions] = None
 
     def emit_text(self, val: str) -> None:
         """

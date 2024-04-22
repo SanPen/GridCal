@@ -7,11 +7,10 @@ from GridCalEngine.IO.cim.cgmes.base import Base
 import GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices as cgmes
 import GridCalEngine.Devices as gcdev
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
+from GridCalEngine.enumerations import CGMESVersions
 
 from GridCalEngine.data_logger import DataLogger
 from typing import Dict, List, Tuple, Union
-
-from GridCalEngine.enumerations import CGMESVersions
 
 
 # region UTILS
@@ -142,7 +141,7 @@ def create_cgmes_headers(cgmes_model: CgmesCircuit, desc: str = "", scenariotime
             "SV": ["http://iec.ch/TC57/ns/CIM/StateVariables-EU/3.0"]
         }
     else:
-        return
+        raise ValueError(f"CGMES format not supported {cgmes_model.cgmes_version}")
 
     # EQ profiles
     prof = profile_uris.get("EQ")
@@ -245,6 +244,13 @@ def create_cgmes_generating_unit(gen: gcdev.Generator,
     """
 
     new_rdf_id = get_new_rdfid()
+
+    if gen.technology is None:
+        # Assume general
+        sm = cgmes.GeneratingUnit(new_rdf_id)
+        cgmes_model.add(sm)
+        return sm
+
     if gen.technology.name == 'General':
         sm = cgmes.GeneratingUnit(new_rdf_id)
         cgmes_model.add(sm)
@@ -376,7 +382,7 @@ def get_cgmes_substations(multi_circuit_model: MultiCircuit,
         region = find_object_by_uuid(
             cgmes_model=cgmes_model,
             object_list=cgmes_model.cgmes_assets.SubGeographicalRegion_list,
-            target_uuid=mc_elm.community.idtag  # TODO Community.idtag!
+            target_uuid=mc_elm.community.idtag if mc_elm.community is not None else ""  # TODO Community.idtag!
         )
         if region is not None:
             substation.Region = region
@@ -800,7 +806,7 @@ def get_cgmes_linear_shunts(multicircuit_model: MultiCircuit,
         lsc.name = mc_elm.name
         lsc.description = mc_elm.code
         # lsc.EquipmentContainer: VoltageLevel .. like at tn_nodes line 284
-        lsc.RegulatingControl = False
+        # lsc.RegulatingControl = False  # TODO: Should be an object
         lsc.controlEnabled = False
         lsc.maximumSections = 1
         # lsc.nomU = lsc.EquipmentContainer.BaseVoltage.nominalVoltage

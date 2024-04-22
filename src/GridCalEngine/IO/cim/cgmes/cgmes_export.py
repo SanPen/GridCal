@@ -15,6 +15,8 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+import zipfile
+from io import StringIO
 from rdflib import OWL
 from rdflib.graph import Graph
 from rdflib.namespace import RDF, RDFS
@@ -22,6 +24,8 @@ from rdflib.namespace import RDF, RDFS
 import json
 import os
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
+from GridCalEngine.IO.cim.cgmes.export_template_data import RDFS_serialization_2_4_15, RDFS_serialization_3_0_0
+from GridCalEngine.enumerations import CGMESVersions
 import xml.etree.ElementTree as Et
 import xml.dom.minidom
 
@@ -47,8 +51,16 @@ class CimExporter:
         current_directory = os.path.dirname(__file__)
 
         rdf_serialization = Graph()
-        rdf_serialization.parse(source=os.path.join(current_directory, "export_docs\RDFSSerialisation.ttl"),
-                                format="ttl")
+        # rdf_serialization.parse(source=os.path.join(current_directory,
+        #                                             os.path.join("export_docs", "RDFSSerialisation.ttl")),
+        #                         format="ttl")
+
+        if cgmes_circuit.cgmes_version == CGMESVersions.v2_4_15:
+            rdf_serialization.parse(data=RDFS_serialization_2_4_15, format="ttl")
+        elif cgmes_circuit.cgmes_version == CGMESVersions.v3_0_0:
+            rdf_serialization.parse(data=RDFS_serialization_3_0_0, format="ttl")
+        else:
+            raise ValueError(f"CGMES format not supported {cgmes_circuit.cgmes_version}")
 
         self.enum_dict = dict()
         self.about_dict = dict()
@@ -110,16 +122,24 @@ class CimExporter:
             self.serialize(f, "TP")
 
     def export(self, file_name):
-        name, extension = os.path.splitext(file_name)
+        fname = os.path.basename(file_name)
+        name, extension = os.path.splitext(fname)
 
-        with open(f"{name}_EQ{extension}", 'wb') as f:
-            self.serialize(f, "EQ")
-        with open(f"{name}_SSH{extension}", 'wb') as f:
-            self.serialize(f, "SSH")
-        with open(f"{name}_SV{extension}", 'wb') as f:
-            self.serialize(f, "SV")
-        with open(f"{name}_TP{extension}", 'wb') as f:
-            self.serialize(f, "TP")
+        with zipfile.ZipFile(file_name, 'w', zipfile.ZIP_DEFLATED) as f_zip_ptr:
+            for prof in ['EQ', 'SSH', 'SV', 'TP']:
+                with StringIO() as buffer:
+                    self.serialize(stream=buffer, profile=prof)
+                    f_zip_ptr.writestr(f"{name}_{prof}.xml", buffer.getvalue())
+
+
+            # with open(f"{name}_EQ{extension}", 'wb') as f:
+            #     self.serialize(f, "EQ")
+            # with open(f"{name}_SSH{extension}", 'wb') as f:
+            #     self.serialize(f, "SSH")
+            # with open(f"{name}_SV{extension}", 'wb') as f:
+            #     self.serialize(f, "SV")
+            # with open(f"{name}_TP{extension}", 'wb') as f:
+            #     self.serialize(f, "TP")
 
     def serialize(self, stream, profile):
         root = Et.Element("rdf:RDF", self.namespaces)
@@ -129,7 +149,8 @@ class CimExporter:
         root.extend(other_elements)
 
         xmlstr = xml.dom.minidom.parseString(Et.tostring(root)).toprettyxml(indent="   ")
-        stream.write(xmlstr.encode('utf-8'))
+        # stream.write(xmlstr.encode('utf-8'))
+        stream.write(xmlstr)
 
     def is_in_profile(self, instance_profiles, model_profile):
         if isinstance(instance_profiles, list):

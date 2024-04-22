@@ -467,6 +467,7 @@ class IoMain(ConfigurationMain):
         files_types = ("GridCal zip (*.gridcal);;"
                        "GridCal HDF5 (*.gch5);;"
                        "Excel (*.xlsx);;"
+                       "CGMES (*.zip);;"
                        "CIM (*.xml);;"
                        "Electrical Json V3 (*.ejson3);;"
                        "Rawx (*.rawx);;"
@@ -499,6 +500,7 @@ class IoMain(ConfigurationMain):
                 extension = dict()
                 extension['Excel (*.xlsx)'] = '.xlsx'
                 extension['CIM (*.xml)'] = '.xml'
+                extension['CGMES (*.zip)'] = '.zip'
                 extension['Electrical Json V2 (*.ejson2)'] = '.ejson2'
                 extension['Electrical Json V3 (*.ejson3)'] = '.ejson3'
                 extension['GridCal zip (*.gridcal)'] = '.gridcal'
@@ -513,7 +515,7 @@ class IoMain(ConfigurationMain):
 
                 # we were able to compose the file correctly, now save it
                 self.file_name = filename
-                self.save_file_now(self.file_name)
+                self.save_file_now(self.file_name, type_selected=type_selected)
         else:
             # save directly
             self.save_file_now(self.file_name)
@@ -542,10 +544,12 @@ class IoMain(ConfigurationMain):
 
         return options
 
-    def save_file_now(self, filename):
+    def save_file_now(self, filename: str, type_selected: str = ""):
         """
         Save the file right now, without questions
         :param filename: filename to save to
+        :param type_selected: File type description as it appears
+                              in the file saving dialogue i.e. GridCal zip (*.gridcal)
         """
 
         if ('file_save' not in self.stuff_running_now) and ('file_open' not in self.stuff_running_now):
@@ -559,9 +563,12 @@ class IoMain(ConfigurationMain):
                     if ok:
                         self.save_file_thread_object.quit()
 
+            options = self.get_file_save_options()
+            options.type_selected = type_selected
+
             self.save_file_thread_object = filedrv.FileSaveThread(circuit=self.circuit,
                                                                   file_name=filename,
-                                                                  options=self.get_file_save_options())
+                                                                  options=options)
 
             # make connections
             self.save_file_thread_object.progress_signal.connect(self.ui.progressBar.setValue)

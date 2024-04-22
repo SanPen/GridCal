@@ -84,6 +84,9 @@ class FileSavingOptions:
 
         self.dictionary_of_json_files = dictionary_of_json_files if dictionary_of_json_files else dict()
 
+        # File type description as it appears in the file saving dialogue i.e. GridCal zip (*.gridcal)
+        self.type_selected: str = ""
+
     def get_power_flow_results(self) -> Union[None, PowerFlowResults]:
         """
         Try to extract the power flow results
@@ -374,7 +377,7 @@ class FileSave:
         elif self.file_name.endswith('.ejson3'):
             logger = self.save_json_v3()
 
-        elif self.file_name.endswith('.xml'):
+        elif self.file_name.endswith('.zip') and "CGMES" in self.options.type_selected:
             logger = self.save_cgmes()
 
         elif self.file_name.endswith('.gch5'):
@@ -468,7 +471,7 @@ class FileSave:
         """
         logger = Logger()
         # CGMES version should be given in the settings
-        cgmes_circuit = CgmesCircuit(cgmes_version=self.options.cgmes_version.__str__(),
+        cgmes_circuit = CgmesCircuit(cgmes_version=self.options.cgmes_version,
                                      text_func=self.text_func,
                                      progress_func=self.progress_func, logger=logger)
         if self.options.cgmes_boundary_set != "":
