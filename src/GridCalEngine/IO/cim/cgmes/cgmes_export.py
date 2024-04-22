@@ -24,7 +24,8 @@ from rdflib.namespace import RDF, RDFS
 import json
 import os
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
-from GridCalEngine.IO.cim.cgmes.export_template_data import RDFS_serialization_2_4_15, RDFS_serialization_3_0_0
+from GridCalEngine.IO.cim.cgmes.export_template_data import (RDFS_serialization_2_4_15, RDFS_serialization_3_0_0,
+                                                             RDFS_INFO_2_4_15, RDFS_INFO_3_0_0)
 from GridCalEngine.enumerations import CGMESVersions
 import xml.etree.ElementTree as Et
 import xml.dom.minidom
@@ -33,20 +34,7 @@ import xml.dom.minidom
 class CimExporter:
     def __init__(self, cgmes_circuit: CgmesCircuit):
         self.cgmes_circuit = cgmes_circuit
-        self.namespaces = {
-            "xmlns:cim": "http://iec.ch/TC57/2013/CIM-schema-cim16#",
-            "xmlns:md": "http://iec.ch/TC57/61970-552/ModelDescription/1#",
-            "xmlns:entsoe": "http://entsoe.eu/CIM/SchemaExtension/3/1#",
-            "xmlns:rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
-        }
-        self.profile_uris = {
-            "EQ": ["http://entsoe.eu/CIM/EquipmentCore/3/1",
-                   "http://entsoe.eu/CIM/EquipmentShortCircuit/3/1",
-                   "http://entsoe.eu/CIM/EquipmentOperation/3/1"],
-            "SSH": ["http://entsoe.eu/CIM/SteadyStateHypothesis/1/1"],
-            "TP": ["http://entsoe.eu/CIM/Topology/4/1"],
-            "SV": ["http://entsoe.eu/CIM/StateVariables/4/1"]
-        }
+
 
         current_directory = os.path.dirname(__file__)
 
@@ -57,8 +45,38 @@ class CimExporter:
 
         if cgmes_circuit.cgmes_version == CGMESVersions.v2_4_15:
             rdf_serialization.parse(data=RDFS_serialization_2_4_15, format="ttl")
+
+            self.namespaces = {
+                "xmlns:cim": "http://iec.ch/TC57/2013/CIM-schema-cim16#",
+                "xmlns:md": "http://iec.ch/TC57/61970-552/ModelDescription/1#",
+                "xmlns:entsoe": "http://entsoe.eu/CIM/SchemaExtension/3/1#",
+                "xmlns:rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+            }
+            self.profile_uris = {
+                "EQ": ["http://entsoe.eu/CIM/EquipmentCore/3/1",
+                       "http://entsoe.eu/CIM/EquipmentShortCircuit/3/1",
+                       "http://entsoe.eu/CIM/EquipmentOperation/3/1"],
+                "SSH": ["http://entsoe.eu/CIM/SteadyStateHypothesis/1/1"],
+                "TP": ["http://entsoe.eu/CIM/Topology/4/1"],
+                "SV": ["http://entsoe.eu/CIM/StateVariables/4/1"]
+            }
         elif cgmes_circuit.cgmes_version == CGMESVersions.v3_0_0:
             rdf_serialization.parse(data=RDFS_serialization_3_0_0, format="ttl")
+
+            self.namespaces = {
+                "xmlns:cim": "http://iec.ch/TC57/CIM100#",
+                "xmlns:md": "http://iec.ch/TC57/61970-552/ModelDescription/1#",
+                "xmlns:eu": "http://iec.ch/TC57/CIM100-European#",
+                "xmlns:rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+            }
+            self.profile_uris = {
+                "EQ": ["http://iec.ch/TC57/ns/CIM/CoreEquipment-EU/3.0"],
+                "OP": ["http://iec.ch/TC57/ns/CIM/Operation-EU/3.0"],
+                "SC": ["http://iec.ch/TC57/ns/CIM/ShortCircuit-EU/3.0"],
+                "SSH": ["http://iec.ch/TC57/ns/CIM/SteadyStateHypothesis-EU/3.0"],
+                "TP": ["http://iec.ch/TC57/ns/CIM/Topology-EU/3.0"],
+                "SV": ["http://iec.ch/TC57/ns/CIM/StateVariables-EU/3.0"]
+            }
         else:
             raise ValueError(f"CGMES format not supported {cgmes_circuit.cgmes_version}")
 
@@ -110,27 +128,22 @@ class CimExporter:
                     new_prof = json_dict['ProfileKeyword'][i].strip('[]').split(',')
                     self.class_filters[json_dict["Class Name"][i]][p_key]["Profile"].extend(new_prof)
 
-    def export_test(self):
-        current_directory = os.path.dirname(__file__)
-        with open(os.path.join(current_directory, "export_docs/eq.xml"), 'wb') as f:
-            self.serialize(f, "EQ")
-        with open(os.path.join(current_directory, "export_docs/ssh.xml"), 'wb') as f:
-            self.serialize(f, "SSH")
-        with open(os.path.join(current_directory, "export_docs/sv.xml"), 'wb') as f:
-            self.serialize(f, "SV")
-        with open(os.path.join(current_directory, "export_docs/tp.xml"), 'wb') as f:
-            self.serialize(f, "TP")
-
     def export(self, file_name):
         fname = os.path.basename(file_name)
         name, extension = os.path.splitext(fname)
 
+        if self.cgmes_circuit.cgmes_version == CGMESVersions.v2_4_15:
+            profiles_to_export = ['EQ', 'SSH', 'SV', 'TP']
+        elif self.cgmes_circuit.cgmes_version == CGMESVersions.v3_0_0:
+            profiles_to_export = ['EQ', 'OP', 'SC', 'SSH', 'SV', 'TP']
+        else:
+            raise ValueError(f"Unrecognized CGMES version {self.cgmes_circuit.cgmes_version}")
+
         with zipfile.ZipFile(file_name, 'w', zipfile.ZIP_DEFLATED) as f_zip_ptr:
-            for prof in ['EQ', 'SSH', 'SV', 'TP']:
+            for prof in profiles_to_export:
                 with StringIO() as buffer:
                     self.serialize(stream=buffer, profile=prof)
                     f_zip_ptr.writestr(f"{name}_{prof}.xml", buffer.getvalue())
-
 
             # with open(f"{name}_EQ{extension}", 'wb') as f:
             #     self.serialize(f, "EQ")

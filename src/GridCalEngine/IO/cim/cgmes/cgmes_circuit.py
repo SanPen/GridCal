@@ -374,7 +374,7 @@ class CgmesCircuit(BaseCircuit):
     """
 
     def __init__(self,
-                 cgmes_version: CGMESVersions = CGMESVersions.v2_4_15,
+                 cgmes_version: Union[None, CGMESVersions] = None,
                  text_func: Union[Callable, None] = None,
                  progress_func: Union[Callable, None] = None,
                  logger=DataLogger()):

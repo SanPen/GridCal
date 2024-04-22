@@ -110,8 +110,16 @@ def create_cgmes_headers(cgmes_model: CgmesCircuit, desc: str = "", scenariotime
                          modelingauthorityset: str = "", version: str = ""):
     from datetime import datetime
 
-    fm_list = [FullModel(rdfid=get_new_rdfid(), tpe="FullModel"), FullModel(rdfid=get_new_rdfid(), tpe="FullModel"),
-               FullModel(rdfid=get_new_rdfid(), tpe="FullModel"), FullModel(rdfid=get_new_rdfid(), tpe="FullModel")]
+    if cgmes_model.cgmes_version == CGMESVersions.v2_4_15:
+        fm_list = [FullModel(rdfid=get_new_rdfid(), tpe="FullModel"), FullModel(rdfid=get_new_rdfid(), tpe="FullModel"),
+                   FullModel(rdfid=get_new_rdfid(), tpe="FullModel"), FullModel(rdfid=get_new_rdfid(), tpe="FullModel")]
+    elif cgmes_model.cgmes_version == CGMESVersions.v3_0_0:
+        fm_list = [FullModel(rdfid=get_new_rdfid(), tpe="FullModel"), FullModel(rdfid=get_new_rdfid(), tpe="FullModel"),
+                   FullModel(rdfid=get_new_rdfid(), tpe="FullModel"), FullModel(rdfid=get_new_rdfid(), tpe="FullModel"),
+                   FullModel(rdfid=get_new_rdfid(), tpe="FullModel"), FullModel(rdfid=get_new_rdfid(), tpe="FullModel")]
+    else:
+        raise ValueError(f"CGMES format not supported {cgmes_model.cgmes_version}")
+
     for fm in fm_list:
         fm.scenarioTime = scenariotime
         if modelingauthorityset != "":
@@ -133,9 +141,9 @@ def create_cgmes_headers(cgmes_model: CgmesCircuit, desc: str = "", scenariotime
         }
     elif cgmes_model.cgmes_version == CGMESVersions.v3_0_0:
         profile_uris = {
-            "EQ": ["http://iec.ch/TC57/ns/CIM/CoreEquipment-EU/3.0",
-                   "http://iec.ch/TC57/ns/CIM/Operation-EU/3.0",
-                   "http://iec.ch/TC57/ns/CIM/ShortCircuit-EU/3.0"],
+            "EQ": ["http://iec.ch/TC57/ns/CIM/CoreEquipment-EU/3.0"],
+            "OP": ["http://iec.ch/TC57/ns/CIM/Operation-EU/3.0"],
+            "SC": ["http://iec.ch/TC57/ns/CIM/ShortCircuit-EU/3.0"],
             "SSH": ["http://iec.ch/TC57/ns/CIM/SteadyStateHypothesis-EU/3.0"],
             "TP": ["http://iec.ch/TC57/ns/CIM/Topology-EU/3.0"],
             "SV": ["http://iec.ch/TC57/ns/CIM/StateVariables-EU/3.0"]
@@ -143,13 +151,19 @@ def create_cgmes_headers(cgmes_model: CgmesCircuit, desc: str = "", scenariotime
     else:
         raise ValueError(f"CGMES format not supported {cgmes_model.cgmes_version}")
 
-    # EQ profiles
-    prof = profile_uris.get("EQ")
-    fm_list[0].profile = [prof[0]]
-    if True:  # TODO How to decide if it contains Operation?
-        fm_list[0].profile.append(prof[1])
-    if True:  # TODO How to decide if it contains ShortCircuit?
-        fm_list[0].profile.append(prof[2])
+    if cgmes_model.cgmes_version == CGMESVersions.v2_4_15:
+        prof = profile_uris.get("EQ")
+        fm_list[0].profile = [prof[0]]
+        if True:  # TODO How to decide if it contains Operation?
+            fm_list[0].profile.append(prof[1])
+        if True:  # TODO How to decide if it contains ShortCircuit?
+            fm_list[0].profile.append(prof[2])
+    elif cgmes_model.cgmes_version == CGMESVersions.v3_0_0:
+        fm_list[0].profile = profile_uris.get("EQ")
+        fm_list[4].profile = profile_uris.get("OP")
+        fm_list[5].profile = profile_uris.get("SC")
+    else:
+        raise ValueError(f"CGMES format not supported {cgmes_model.cgmes_version}")
 
     fm_list[1].profile = profile_uris.get("SSH")
     fm_list[2].profile = profile_uris.get("TP")
