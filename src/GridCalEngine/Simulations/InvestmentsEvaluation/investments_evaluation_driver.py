@@ -128,6 +128,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         self.results = InvestmentsEvaluationResults(investment_groups_names=grid.get_investment_groups_names(),
                                                     max_eval=0)
 
+        # objective evaluation number
         self.__eval_index = 0
 
         # dictionary of investment groups
@@ -200,8 +201,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
                                          status=False,
                                          all_elemnts_dict=self.get_all_elements_dict)
 
-        self.report_progress2(self.__eval_index, self.options.max_eval)
-
+        # record the evaluation
         self.results.set_at(eval_idx=self.__eval_index,
                             capex=capex_score,
                             opex=opex_score,
@@ -213,6 +213,9 @@ class InvestmentsEvaluationDriver(DriverTemplate):
                             objective_function_sum=financial_score + electrical_score,
                             combination=combination,
                             index_name=f'Solution {self.__eval_index}')
+
+        # Report the progress
+        self.report_progress2(self.__eval_index, self.options.max_eval)
 
         # increase evaluations
         self.__eval_index += 1
@@ -422,7 +425,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         self.report_text("Evaluating investments with NSGA3...")
 
         pop_size = int(round(self.dim))
-        n_partitions = pop_size  # int(round(pop_size / 3))
+        n_partitions = int(round(pop_size / 3))
 
         # compile the snapshot
         self.nc = compile_numerical_circuit_at(circuit=self.grid, t_idx=None)
@@ -452,10 +455,9 @@ class InvestmentsEvaluationDriver(DriverTemplate):
 
         self.report_done()
 
-    def run(self):
+    def run(self) -> None:
         """
         run the QThread
-        :return:
         """
 
         self.tic()
@@ -479,6 +481,3 @@ class InvestmentsEvaluationDriver(DriverTemplate):
             raise Exception('Unsupported method')
 
         self.toc()
-
-    def cancel(self):
-        self.__cancel__ = True

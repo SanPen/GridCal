@@ -3,10 +3,14 @@ from pymoo.core.problem import ElementwiseProblem
 from pymoo.util.ref_dirs import get_reference_directions
 from pymoo.optimize import minimize
 from pymoo.algorithms.moo.nsga3 import NSGA3
+from pymoo.algorithms.moo.age import AGEMOEA
+from pymoo.operators.crossover.pntx import TwoPointCrossover
+from pymoo.operators.mutation.bitflip import BitflipMutation
+from pymoo.operators.sampling.rnd import BinaryRandomSampling
 from pymoo.operators.crossover.sbx import SBX
 from pymoo.operators.mutation.pm import PM
 from pymoo.operators.repair.rounding import RoundingRepair
-from pymoo.operators.sampling.rnd import IntegerRandomSampling
+from pymoo.operators.sampling.rnd import IntegerRandomSampling, BinaryRandomSampling
 from pymoo.visualization.scatter import Scatter
 from pymoo.algorithms.moo.unsga3 import UNSGA3
 import matplotlib.pyplot as plt
@@ -72,11 +76,17 @@ def NSGA_3(obj_func,
     ref_dirs = get_reference_directions("energy", n_obj, n_partitions, seed=1)
 
     algorithm = UNSGA3(pop_size=pop_size,
-                       sampling=IntegerRandomSampling(),
+                       sampling=BinaryRandomSampling(),
                        crossover=SBX(prob=crossover_prob, eta=eta, vtype=float, repair=RoundingRepair()),
                        mutation=PM(prob=mutation_probability, eta=eta, vtype=float, repair=RoundingRepair()),
                        eliminate_duplicates=True,
                        ref_dirs=ref_dirs)
+
+    # algorithm = AGEMOEA(pop_size=pop_size,
+    #                     sampling=BinaryRandomSampling(),
+    #                     crossover=TwoPointCrossover(),
+    #                     mutation=BitflipMutation(),
+    #                     eliminate_duplicates=True)
 
     res = minimize(problem=problem,
                    algorithm=algorithm,
