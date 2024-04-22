@@ -28,14 +28,12 @@ from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.InvestmentsEvaluation.NumericalMethods.MVRSM_mo_scaled import MVRSM_mo_scaled
 from GridCalEngine.Simulations.InvestmentsEvaluation.NumericalMethods.MVRSM_mo_pareto import MVRSM_mo_pareto
-from GridCalEngine.Simulations.InvestmentsEvaluation.NumericalMethods.NSGA_3 import NSGA_3
 from GridCalEngine.Simulations.InvestmentsEvaluation.NumericalMethods.stop_crits import StochStopCriterion
 from GridCalEngine.Simulations.InvestmentsEvaluation.investments_evaluation_results import InvestmentsEvaluationResults
 from GridCalEngine.Simulations.InvestmentsEvaluation.investments_evaluation_options import InvestmentsEvaluationOptions
 from GridCalEngine.basic_structures import IntVec, Vec
 from GridCalEngine.enumerations import InvestmentEvaluationMethod
-
-from pymoo.core.problem import ElementwiseProblem
+import GridCalEngine.Simulations.InvestmentsEvaluation.NumericalMethods.NSGA_3 as nsga3
 
 
 def get_overload_score(loading, branches):
@@ -426,10 +424,6 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         pop_size = int(round(self.dim))
         n_partitions = pop_size  # int(round(pop_size / 3))
 
-        prob = 1.0
-        eta = 3.0
-        termination = 100
-
         # compile the snapshot
         self.nc = compile_numerical_circuit_at(circuit=self.grid, t_idx=None)
         self.results = InvestmentsEvaluationResults(investment_groups_names=self.grid.get_investment_groups_names(),
@@ -442,18 +436,18 @@ class InvestmentsEvaluationDriver(DriverTemplate):
 
         # add baseline
         ret = self.objective_function(combination=np.zeros(self.results.n_groups, dtype=int))
-        # self.evaluate_nsga(combination=np.zeros(self.results.n_groups, dtype=int), out=None)
 
         # optimize
-        X, obj_values = NSGA_3(
+        X, obj_values = nsga3.NSGA_3(
             obj_func=self.objective_function,
             n_partitions=n_partitions,
             n_var=self.dim,
             n_obj=len(ret),
             max_evals=self.options.max_eval,  # termination
             pop_size=pop_size,
-            prob=prob,
-            eta=eta
+            crossover_prob=0.2,
+            mutation_probability=0.1,
+            eta=3
         )
 
         self.report_done()

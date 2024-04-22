@@ -3,31 +3,45 @@ from pymoo.core.problem import ElementwiseProblem
 from pymoo.util.ref_dirs import get_reference_directions
 from pymoo.optimize import minimize
 from pymoo.algorithms.moo.nsga3 import NSGA3
-
 from pymoo.operators.crossover.sbx import SBX
 from pymoo.operators.mutation.pm import PM
 from pymoo.operators.repair.rounding import RoundingRepair
 from pymoo.operators.sampling.rnd import IntegerRandomSampling
-from inspect import signature
 from pymoo.visualization.scatter import Scatter
-import matplotlib.pyplot as plt
-
 from pymoo.algorithms.moo.unsga3 import UNSGA3
+import matplotlib.pyplot as plt
+from inspect import signature
 
 
 class GridNsga(ElementwiseProblem):
+    """
+
+    """
 
     def __init__(self, obj_func, n_var, n_obj):
+        """
+
+        :param obj_func:
+        :param n_var:
+        :param n_obj:
+        """
         super().__init__(n_var=n_var,
                          n_obj=n_obj,
                          n_ieq_constr=0,
                          xl=np.zeros(n_var),
                          xu=np.ones(n_var),
-                         vtype=int,
-                         )
+                         vtype=int)
         self.obj_func = obj_func
 
     def _evaluate(self, x, out, *args, **kwargs):
+        """
+
+        :param x:
+        :param out:
+        :param args:
+        :param kwargs:
+        :return:
+        """
         out["F"] = self.obj_func(x)
 
 
@@ -37,8 +51,63 @@ def NSGA_3(obj_func,
            n_obj=2,
            max_evals: int = 30,
            pop_size: int = 1,
-           prob: float = 1.0,
+           crossover_prob: float = 0.05,
+           mutation_probability=0.01,
            eta: float = 3.0):
+    """
+
+    :param obj_func:
+    :param n_partitions:
+    :param n_var:
+    :param n_obj:
+    :param max_evals:
+    :param pop_size:
+    :param crossover_prob:
+    :param mutation_probability:
+    :param eta:
+    :return:
+    """
+    problem = GridNsga(obj_func, n_var, n_obj)
+
+    ref_dirs = get_reference_directions("energy", n_obj, n_partitions, seed=1)
+
+    algorithm = UNSGA3(pop_size=pop_size,
+                       sampling=IntegerRandomSampling(),
+                       crossover=SBX(prob=crossover_prob, eta=eta, vtype=float, repair=RoundingRepair()),
+                       mutation=PM(prob=mutation_probability, eta=eta, vtype=float, repair=RoundingRepair()),
+                       eliminate_duplicates=True,
+                       ref_dirs=ref_dirs)
+
+    res = minimize(problem=problem,
+                   algorithm=algorithm,
+                   termination=('n_eval', max_evals),
+                   seed=1,
+                   verbose=True,
+                   save_history=False)
+
+    return res.X, res.F
+
+
+def NSGA_3_debug(obj_func,
+                 n_partitions: int = 100,
+                 n_var: int = 1,
+                 n_obj=2,
+                 max_evals: int = 30,
+                 pop_size: int = 1,
+                 prob: float = 1.0,
+                 eta: float = 3.0):
+    """
+
+    :param obj_func:
+    :param n_partitions:
+    :param n_var:
+    :param n_obj:
+    :param max_evals:
+    :param pop_size:
+    :param prob:
+    :param eta:
+    :return:
+    """
     problem = GridNsga(obj_func, n_var, n_obj)
     # ref_dirs = get_reference_directions("das-dennis", n_obj, n_partitions=n_partitions)
     ref_dirs = get_reference_directions("energy", n_obj, n_partitions, seed=1)
