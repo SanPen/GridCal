@@ -1192,8 +1192,12 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
     print('debug')
 
     # Gridcal to cgmes
-    cgmes_circuit = CgmesCircuit(cgmes_version='2.4.15')
-    cgmes_model_export = gridcal_to_cgmes(gc_model, cgmes_circuit, logger)
+    # cgmes_circuit = CgmesCircuit(cgmes_version='2.4.15')
+    # cgmes_circuit = CgmesCircuit(
+    #     cgmes_version=self.options.cgmes_version.__str__(),
+    #     text_func=self.text_func,
+    #     progress_func=self.progress_func, logger=logger)
+    # cgmes_model_export = gridcal_to_cgmes(gc_model, cgmes_circuit, None, logger)
 
     # Export test for the imported data
     # start = time.time()

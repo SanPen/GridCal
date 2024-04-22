@@ -6,6 +6,7 @@ from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.full_model import FullMode
 from GridCalEngine.IO.cim.cgmes.base import Base
 import GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices as cgmes
 import GridCalEngine.Devices as gcdev
+from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 
 from GridCalEngine.data_logger import DataLogger
 from typing import Dict, List, Tuple, Union
@@ -481,34 +482,6 @@ def get_cgmes_cn_nodes(multi_circuit_model: MultiCircuit,
     return
 
 
-def get_cgmes_svvoltages(v_dict: Dict[str, Tuple[float, float]],
-                         cgmes_model: CgmesCircuit,
-                         logger: DataLogger) -> CgmesCircuit:
-    """
-    Creates a CgmesCircuit SvVoltage_list.
-
-    Args:
-        v_dict (Dict[str, Tuple[float, float]]): The voltage dictionary.
-        logger (DataLogger): The data logger for error handling.
-
-    Returns:
-        CgmesCircuit: A CgmesCircuit object with SvVoltage_list populated.
-    """
-    # TODO should it come from the results?
-    for uuid, (v, angle) in v_dict.items():
-        # Create an SvVoltage instance for each entry in v_dict
-        sv_voltage = cgmes.SvVoltage(
-            rdfid=uuid, tpe='SvVoltage'
-        )
-        sv_voltage.v = v
-        sv_voltage.angle = angle
-
-        # Add the SvVoltage instance to the SvVoltage_list
-        cgmes_model.add(sv_voltage)
-
-    return cgmes_model
-
-
 def get_cgmes_loads(multicircuit_model: MultiCircuit,
                     cgmes_model: CgmesCircuit,
                     logger: DataLogger):
@@ -839,15 +812,46 @@ def get_cgmes_linear_shunts(multicircuit_model: MultiCircuit,
         cgmes_model.add(lsc)
 
 
+def get_cgmes_sv_voltages(cgmes_model: CgmesCircuit,
+                          pf_results: PowerFlowResults,
+                          logger: DataLogger):
+    """
+    Creates a CgmesCircuit SvVoltage_list.
+
+    Args:
+        cgmes_model: CgmesCircuit
+        pf_results: PowerFlowResults
+        logger (DataLogger): The data logger for error handling.
+
+    Returns:
+        CgmesCircuit: A CgmesCircuit object with SvVoltage_list populated.
+    """
+    print('hello')
+    # for uuid, (v, angle) in v_dict.items():
+    #     # Create an SvVoltage instance for each entry in v_dict
+    #     sv_voltage = cgmes.SvVoltage(
+    #         rdfid=uuid, tpe='SvVoltage'
+    #     )
+    #     sv_voltage.v = v
+    #     sv_voltage.angle = angle
+    #
+    #     # Add the SvVoltage instance to the SvVoltage_list
+    #     cgmes_model.add(sv_voltage)
+
+
 # endregion
 
 
-def gridcal_to_cgmes(gc_model: MultiCircuit, cgmes_model: CgmesCircuit, logger: DataLogger) -> CgmesCircuit:
+def gridcal_to_cgmes(gc_model: MultiCircuit,
+                     cgmes_model: CgmesCircuit,
+                     pf_results: Union[None, PowerFlowResults],
+                     logger: DataLogger) -> CgmesCircuit:
     """
     Converts the input Multi circuit to a new CGMES Circuit.
 
     :param gc_model: Multi circuit object
     :param cgmes_model: CGMES circuit object
+    :param pf_results: power flow results from GridCal
     :param logger: Logger object
     :return: CGMES circuit (as a new object)
     """
@@ -873,5 +877,9 @@ def gridcal_to_cgmes(gc_model: MultiCircuit, cgmes_model: CgmesCircuit, logger: 
 
     # shunts
     get_cgmes_linear_shunts(gc_model, cgmes_model, logger)
+
+    # results: sv classes
+    if pf_results:
+        get_cgmes_sv_voltages(cgmes_model, pf_results, logger)
 
     return cgmes_model

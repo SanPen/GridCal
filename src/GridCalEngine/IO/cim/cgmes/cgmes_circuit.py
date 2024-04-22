@@ -375,7 +375,8 @@ class CgmesCircuit(BaseCircuit):
         self.text_func = text_func
         self.progress_func = progress_func
 
-        if cgmes_version == CGMESVersions.v2_4_15:
+        # if cgmes_version == CGMESVersions.v2_4_15:
+        if cgmes_version == '2.4.15':
             self.cgmes_assets = Cgmes_2_4_15_Assets()
         elif cgmes_version == CGMESVersions.v3_0_0:
             self.cgmes_assets = Cgmes_3_0_0_Assets()
