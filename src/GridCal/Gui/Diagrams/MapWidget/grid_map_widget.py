@@ -143,14 +143,13 @@ class GridMapWidget(MapWidget):
         for category, points_group in self.diagram.data.items():
             if category == DeviceType.SubstationDevice.value:
                 for idtag, location in points_group.locations.items():
-                    self.schema_Manager.CreateSubstation(location.latitude, location.longitude)
+                    self.schema_Manager.CreateSubstation(None, location.latitude, location.longitude)
             elif category == DeviceType.LineDevice.value:
-
                 for idtag, location in points_group.locations.items():
-                    self.schema_Manager.CreateLine()
                     line: Line = location.api_object
+                    self.schema_Manager.CreateLine(Line)
                     for elm in line.locations.data:
-                        self.schema_Manager.CurrentLine.CreateNode(elm.long, -elm.lat)
+                        self.schema_Manager.CurrentLine.CreateNode(elm, elm.long, -elm.lat)
                         nodSiz = len(self.schema_Manager.CurrentLine.Nodes)
                         if(nodSiz > 1):
                             i1 = nodSiz - 1
@@ -160,7 +159,7 @@ class GridMapWidget(MapWidget):
                 for idtag, location in points_group.locations.items():
                     if(location.api_object.substation):
                         objectSubs = location.api_object.substation
-                        self.schema_Manager.CreateSubstation(objectSubs.longitude, -objectSubs.latitude)
+                        self.schema_Manager.CreateSubstation(objectSubs, objectSubs.longitude, -objectSubs.latitude)
 
     def colour_results(self,
                        buses: List[Bus],
