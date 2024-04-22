@@ -27,8 +27,9 @@ from GridCal.Gui.Diagrams.MapWidget.Schema.Nodes import NodeGraphicItem
 
 
 class Line:
-    def __init__(self, parent):
+    def __init__(self, parent, newLine):
         self.Parent = parent
+        self.DiagramObject = newLine
         self.Nodes = list()
         self.ConnectorList = []
 
@@ -38,8 +39,8 @@ class Line:
             con = Connector(self.Parent, self.Nodes[i1], self.Nodes[i2])  # Assuming Connector takes (scene, node1, node2) as arguments
             self.ConnectorList.append(con)
 
-    def CreateNode(self, lat, long):
-        node = NodeGraphicItem(self.Parent,0.005, lat * self.Parent.devX, long * self.Parent.devY)
+    def CreateNode(self, newNode, lat, long):
+        node = NodeGraphicItem(self.Parent, newNode,0.005, lat * self.Parent.devX, long * self.Parent.devY)
         self.Nodes.append(node)
 
 

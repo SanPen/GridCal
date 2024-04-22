@@ -39,8 +39,8 @@ from GridCalEngine.IO.raw.raw_parser_writer import read_raw, write_raw
 from GridCalEngine.IO.raw.raw_to_gridcal import psse_to_gridcal
 from GridCalEngine.IO.raw.gridcal_to_raw import gridcal_to_raw
 from GridCalEngine.IO.epc.epc_parser import PowerWorldParser
-# from GridCalEngine.IO.cim.cim16.cim_parser import CIMImport
-from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
+from GridCalEngine.IO.cim.cim16.cim_parser import CIMImport
+from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit, is_valid_cgmes
 from GridCalEngine.IO.cim.cgmes.cgmes_to_gridcal import cgmes_to_gridcal
 from GridCalEngine.IO.gridcal.zip_interface import save_gridcal_data_to_zip, get_frames_from_zip
 from GridCalEngine.IO.gridcal.sqlite_interface import save_data_frames_to_sqlite, open_data_frames_from_sqlite
@@ -85,6 +85,10 @@ class FileSavingOptions:
         self.dictionary_of_json_files = dictionary_of_json_files if dictionary_of_json_files else dict()
 
     def get_power_flow_results(self) -> Union[None, PowerFlowResults]:
+        """
+        Try to extract the power flow results
+        :return: None or PowerFlowResults
+        """
         for data in self.sessions_data:
             if data.tpe == SimulationTypes.PowerFlow_run:
                 return data.results
@@ -139,7 +143,7 @@ class FileOpen:
             for f in self.file_name:
                 _, file_extension = os.path.splitext(f)
                 if file_extension.lower() not in ['.xml', '.zip']:
-                    raise Exception('Loading multiple files that are not XML/Zip (xml or zip is for CIM or CGMES)')
+                    raise ValueError('Loading multiple files that are not XML/Zip (xml or zip is for CIM or CGMES)')
 
             data_parser = CgmesDataParser(text_func=text_func, progress_func=progress_func, logger=self.cgmes_logger)
             data_parser.load_files(files=self.file_name)
@@ -280,10 +284,17 @@ class FileOpen:
                     data_parser = CgmesDataParser(text_func=text_func, progress_func=progress_func,
                                                   logger=self.cgmes_logger)
                     data_parser.load_files(files=[self.file_name])
-                    self.cgmes_circuit = CgmesCircuit(cgmes_version=data_parser.cgmes_version, text_func=text_func,
-                                                      progress_func=progress_func, logger=self.cgmes_logger)
-                    self.cgmes_circuit.parse_files(data_parser=data_parser)
-                    self.circuit = cgmes_to_gridcal(cgmes_model=self.cgmes_circuit, logger=self.cgmes_logger)
+
+                    if is_valid_cgmes(data_parser.cgmes_version):
+                        self.cgmes_circuit = CgmesCircuit(cgmes_version=data_parser.cgmes_version, text_func=text_func,
+                                                          progress_func=progress_func, logger=self.cgmes_logger)
+                        self.cgmes_circuit.parse_files(data_parser=data_parser)
+                        self.circuit = cgmes_to_gridcal(cgmes_model=self.cgmes_circuit, logger=self.cgmes_logger)
+                    else:
+                        # try CIM
+                        parser = CIMImport(text_func=text_func, progress_func=progress_func)
+                        self.circuit = parser.load_cim_file(self.file_name)
+                        self.logger += parser.logger
 
                 elif file_extension.lower() == '.hdf5':
                     self.circuit = parse_hdf5(self.file_name, self.logger)

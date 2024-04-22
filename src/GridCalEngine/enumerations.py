@@ -100,6 +100,7 @@ class InvestmentEvaluationMethod(Enum):
     Hyperopt = "Hyperopt"
     MVRSM = "MVRSM"
     MVRSM_multi = "MVRSM_multi"
+    NSGA3 = "NSGA3"
 
     def __str__(self):
         return self.value
