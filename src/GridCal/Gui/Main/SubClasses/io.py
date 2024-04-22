@@ -16,7 +16,6 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import os
-from warnings import warn
 from typing import Union
 import pandas as pd
 from PySide6 import QtWidgets
@@ -371,7 +370,11 @@ class IoMain(ConfigurationMain):
                         dlg.exec_()
 
             else:
-                warn('The file was not valid')
+                warning_msg(text='Error while loading the file(s)')
+                # else, show the logger if it is necessary
+                if len(self.open_file_thread_object.logger) > 0:
+                    dlg = LogsDialogue('Open file logger', self.open_file_thread_object.logger)
+                    dlg.exec_()
         else:
             # center nodes
             diagram = self.get_selected_diagram_widget()
