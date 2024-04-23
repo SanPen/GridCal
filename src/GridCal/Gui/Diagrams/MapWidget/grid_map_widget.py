@@ -16,10 +16,11 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from typing import Union, List
 import numpy as np
-from PySide6.QtWidgets import QWidget
+from PySide6.QtWidgets import QWidget, QGraphicsItem
 from collections.abc import Callable
 
 from GridCal.Gui.Diagrams.MapWidget.Schema.Nodes import NodeGraphicItem
+from GridCalEngine.Devices import GraphicLocation
 from GridCalEngine.Devices.Diagrams.map_location import MapLocation
 from GridCalEngine.Devices.Substation import Bus
 from GridCalEngine.Devices.Branches.line import Line
@@ -138,18 +139,49 @@ class GridMapWidget(MapWidget):
         self.diagram.latitude = latitude
         self.diagram.longitude = longitude
 
+    def update_diagram_element(self, device: ALL_DEV_TYPES,
+                               x: int = 0, y: int = 0, w: int = 0, h: int = 0, r: float = 0,
+                               draw_labels: bool = True,
+                               graphic_object: QGraphicsItem = None) -> None:
+        """
+        Set the position of a device in the diagram
+        :param device: EditableDevice
+        :param x: x position (px)
+        :param y: y position (px)
+        :param h: height (px)
+        :param w: width (px)
+        :param r: rotation (deg)
+        :param draw_labels: Draw the labels?
+        :param graphic_object: Graphic object associated
+        """
+        self.diagram.set_point(device=device,
+                               location=GraphicLocation(x=x,
+                                                        y=y,
+                                                        h=h,
+                                                        w=w,
+                                                        r=r,
+                                                        draw_labels=draw_labels,
+                                                        api_object=device))
+
+        self.graphics_manager.add_device(elm=device, graphic=graphic_object)
 
     def draw(self) -> None:
         for category, points_group in self.diagram.data.items():
             if category == DeviceType.SubstationDevice.value:
                 for idtag, location in points_group.locations.items():
-                    self.schema_Manager.CreateSubstation(None, location.latitude, location.longitude)
+                    self.schema_Manager.CreateSubstation(None, None, location.latitude, location.longitude)
             elif category == DeviceType.LineDevice.value:
                 for idtag, location in points_group.locations.items():
                     line: Line = location.api_object
                     self.schema_Manager.CreateLine(Line)
                     for elm in line.locations.data:
-                        self.schema_Manager.CurrentLine.CreateNode(elm, elm.long, -elm.lat)
+                        self.schema_Manager.CurrentLine.CreateNode(
+                            diagramEditor=self,
+                            diagramObject=line,
+                            diagramSubObject=elm,
+                            lat=elm.lat,
+                            long=elm.long)
+
                         nodSiz = len(self.schema_Manager.CurrentLine.Nodes)
                         if(nodSiz > 1):
                             i1 = nodSiz - 1
@@ -159,7 +191,11 @@ class GridMapWidget(MapWidget):
                 for idtag, location in points_group.locations.items():
                     if(location.api_object.substation):
                         objectSubs = location.api_object.substation
-                        self.schema_Manager.CreateSubstation(objectSubs, objectSubs.longitude, -objectSubs.latitude)
+                        self.schema_Manager.CreateSubstation(
+                            diagramEditor=self,
+                            diagramObject=location.api_object,
+                            lat=objectSubs.longitude,
+                            long=-objectSubs.latitude)
 
     def colour_results(self,
                        buses: List[Bus],

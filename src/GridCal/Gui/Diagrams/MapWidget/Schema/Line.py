@@ -39,8 +39,8 @@ class Line:
             con = Connector(self.Parent, self.Nodes[i1], self.Nodes[i2])  # Assuming Connector takes (scene, node1, node2) as arguments
             self.ConnectorList.append(con)
 
-    def CreateNode(self, newNode, lat, long):
-        node = NodeGraphicItem(self.Parent, newNode,0.005, lat * self.Parent.devX, long * self.Parent.devY)
+    def CreateNode(self,  diagramEditor, diagramObject, diagramSubObject, lat, long):
+        node = NodeGraphicItem(self.Parent, diagramEditor, diagramObject, diagramSubObject,0.005, long * self.Parent.devX, -lat * self.Parent.devY)
         self.Nodes.append(node)
 
 
