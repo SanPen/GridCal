@@ -16,19 +16,17 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 import numpy as np
-from typing import Union, TYPE_CHECKING
+from typing import List, TYPE_CHECKING
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, QPoint, QRectF, QRect
 from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor
-from PySide6.QtWidgets import QMenu, QGraphicsSceneMouseEvent
-import random
-from GridCalEngine.IO.matpower.matpower_branch_definitions import QT
+from GridCalEngine.Devices.Substation.substation import Substation
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget
 
 
-class SubstationGraphicItem(QtWidgets.QGraphicsEllipseItem):
+class SubstationGraphicItem(QtWidgets.QGraphicsRectItem):
     """
       Represents a block in the diagram
       Has an x and y and width and height
@@ -39,26 +37,38 @@ class SubstationGraphicItem(QtWidgets.QGraphicsEllipseItem):
       - description
     """
 
-    def __init__(self, parent = None, diagramEditor:GridMapWidget = None, diagramObject = None, r: int = 20, x: int = 0, y: int = 0):
+    def __init__(self,
+                 editor: GridMapWidget,
+                 api_object: Substation,
+                 lat: float,
+                 lon: float,
+                 r: float = 20.0):
         """
-        :param parent:
+
+        :param editor:
+        :param api_object:
+        :param lat:
+        :param lon:
         :param r:
-        :param x:
-        :param y:
         """
         super().__init__()
 
+        self.setRect(0.0, 0.0, r, r)
+        self.lat = lat
+        self.lon = lon
+        x, y = editor.to_x_y(lat=lat, lon=lon)
         self.x = x
         self.y = y
-        self.Parent = parent
+        self.radius = r
         self.draw_labels = True
-        self.DiagramEditor = diagramEditor
-        self.DiagramObject = diagramObject
+
+        self.editor: GridMapWidget = editor
+        self.api_object: Substation = api_object
+
         self.resize(r)
         self.setAcceptHoverEvents(True)  # Enable hover events for the item
         self.setFlag(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsMovable)  # Allow moving the node
         self.setFlag(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)  # Allow selecting the node
-        parent.Scene.addItem(self)
 
         # Create a pen with reduced line width
         self.change_pen_width(0.5)
@@ -85,16 +95,12 @@ class SubstationGraphicItem(QtWidgets.QGraphicsEllipseItem):
     def updateDiagram(self):
         real_position = self.pos()
         center_point = self.getPos()
-        lat = (center_point.x() + real_position.x()) / self.Parent.devX
-        long = (center_point.y() + real_position.y()) / self.Parent.devY
+        lat, long = self.editor.to_lat_lon(x=center_point.x() + real_position.x(),
+                                           y=center_point.y() + real_position.y())
 
-        self.DiagramEditor.update_diagram_element(device=self.DiagramObject,
-                                           lat=lat,
-                                           log=long,
-                                           w=self.w,
-                                           h=self.h,
-                                           r=self.rotation(),
-                                           draw_labels=self.draw_labels,
+        self.editor.update_diagram_element(device=self.api_object,
+                                           latitude=lat,
+                                           longitude=long,
                                            graphic_object=self)
 
     def mouseMoveEvent(self, event):
@@ -104,21 +110,21 @@ class SubstationGraphicItem(QtWidgets.QGraphicsEllipseItem):
         super().mouseMoveEvent(event)
         if self.hovered:
             self.updatePosition()
-            self.Parent.UpdateConnectors()
+            self.editor.UpdateConnectors()
 
     def mousePressEvent(self, event):
         """
         Event handler for mouse press events.
         """
         super().mousePressEvent(event)
-        self.Parent.disableMove = True
+        self.editor.disableMove = True
 
     def mouseReleaseEvent(self, event):
         """
         Event handler for mouse release events.
         """
         super().mouseReleaseEvent(event)
-        self.Parent.disableMove = True
+        self.editor.disableMove = True
 
     def hoverEnterEvent(self, event):
         """
@@ -159,14 +165,14 @@ class SubstationGraphicItem(QtWidgets.QGraphicsEllipseItem):
 
     def getRealPos(self):
         self.updatePosition()
-        return [self.x, self.y]
+        return self.x, self.y
 
     def resize(self, new_radius):
         """
         Resize the node.
         :param new_radius: New radius for the node.
         """
-        self.Radius = new_radius
+        self.radius = new_radius
         self.setRect(self.x - new_radius, self.y - new_radius, new_radius * 2, new_radius * 2)
 
     def change_pen_width(self, width):

@@ -31,7 +31,6 @@ from PySide6.QtWidgets import QSizePolicy, QWidget, QMessageBox, QGraphicsScene,
 from PySide6.QtGui import QPainter, QColor, QPixmap, QPen, QFont, QFontMetrics, QPolygon, QBrush, QCursor, \
     QMouseEvent, QKeyEvent, QWheelEvent, QResizeEvent, QEnterEvent, QPaintEvent
 
-from GridCal.Gui.Diagrams.MapWidget.Schema.SchemaManager import schemaManager
 from GridCal.Gui.Diagrams.MapWidget.map_events import LevelEvent, PositionEvent, SelectEvent, BoxSelectEvent
 from GridCal.Gui.Diagrams.MapWidget.logger import log
 from GridCal.Gui.Diagrams.MapWidget.Layers.point_layer import PointLayer, PointData
@@ -293,12 +292,12 @@ class MapWidget(QWidget):
         self.yPan = 0
 
         # Create a QGraphicsScene
-        self.scene = QGraphicsScene(self)
-        self.scene.setSceneRect(0, 0, 800, 600)  # Set the scene rect as per your requirements
+        self.diagram_scene = QGraphicsScene(self)
+        self.diagram_scene.setSceneRect(0, 0, 800, 600)  # Set the scene rect as per your requirements
         self.zoom_factor = 2
 
         # Create a QGraphicsView and set the scene
-        self.view = QGraphicsView(self.scene)
+        self.view = QGraphicsView(self.diagram_scene)
         self.view.setAlignment(Qt.AlignLeft | Qt.AlignTop)
 
         # Set the scroll bars policy to off
@@ -318,7 +317,7 @@ class MapWidget(QWidget):
         # self.view.installEventFilter(self)
 
         # Install an event filter on the QGraphicsView
-        self.scene.installEventFilter(self)
+        self.diagram_scene.installEventFilter(self)
 
         # Make the layout transparent
         self.layout().setContentsMargins(0, 0, 0, 0)
@@ -332,17 +331,20 @@ class MapWidget(QWidget):
         self.diagram_w = 25000
         self.diagram_H = 25000
 
+        self.pressed = False
+        self.disableMove = False
+
         # Set initial zoom level (change the values as needed)
-        initial_zoom_factor = 1
-        self.devXFact  = 22.8
-        self.devYFact = 33.0
+        # initial_zoom_factor = 1
+        # self.devXFact = 22.8
+        # self.devYFact = 33.0
         initial_zoom_factor = 0.47
-        self.devXFact  = 48.3
+        self.devXFact = 48.3
         self.devYFact = 61.9
         self.schema_zoom = 1
         self.view.scale(initial_zoom_factor, initial_zoom_factor)
         self.remapSchema()
-        self.schema_Manager = schemaManager(self.scene, self.devXFact, self.devYFact)
+
         self.selTempDistance = 20
 
     def convertToQMouseEvent(self, sceneMouseEvent):
@@ -369,14 +371,14 @@ class MapWidget(QWidget):
 
         if event.type() == QEvent.GraphicsSceneMousePress:
             self.pressed = True
-            self.schema_Manager.disableMove = False
+            self.disableMove = False
 
         if event.type() == QEvent.GraphicsSceneMouseRelease:
             self.pressed = False
-            self.schema_Manager.disableMove = True
+            self.disableMove = True
 
         if event.type() == QEvent.GraphicsSceneMouseMove:
-            if not self.schema_Manager.disableMove:
+            if not self.disableMove:
                 self.mouseMoveEvent(self.convertToQMouseEvent(event))
 
         if event.type() == QEvent.GraphicsSceneWheel:
@@ -398,7 +400,7 @@ class MapWidget(QWidget):
             else:
                 self.level = zoomInitial
                 val = self.zoom_level(zoomInitial, self.mouse_x, self.mouse_y)
-            
+
             return True
 
         self.centerSchema()
@@ -406,17 +408,7 @@ class MapWidget(QWidget):
         # Pass the event to the base class
         return super().eventFilter(obj, event)
 
-        return wheel_event
-
-    def change_size_and_pen_width_all(self, new_radius, pen_width):
-        """
-        Change the size and pen width of all elements in Schema.
-        :param new_radius: New radius for the nodes.
-        :param pen_width: New pen width for the nodes.
-        """
-        for node in self.schema_Manager.Nodes:
-            node.resize(new_radius)
-            node.change_pen_width(pen_width)
+        # return wheel_event
 
     def on_tile_available(self, level: int, x: float, y: float, image: QPixmap, error: bool):
         """Called when a new 'net tile is available.
@@ -632,7 +624,7 @@ class MapWidget(QWidget):
         '''
 
         level, xgeo, ygeo = self.get_level_and_position()
-        if (xgeo != None):
+        if xgeo is not None:
             xgeo = xgeo * self.devXFact  # TODO: improve transforming function from adhoc values to true transformer
             ygeo = -ygeo * self.devYFact  # TODO: improve transforming function from adhoc values to true transformer
             point = QPointF(xgeo, ygeo)
