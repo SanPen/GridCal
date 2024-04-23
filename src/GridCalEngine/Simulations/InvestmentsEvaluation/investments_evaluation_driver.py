@@ -24,6 +24,8 @@ from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDrive
 from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Devices.Aggregation.investment import Investment
+from GridCalEngine.Devices.Substation.bus import Bus
+from GridCalEngine.Devices.types import BRANCH_TYPES
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.InvestmentsEvaluation.NumericalMethods.MVRSM_mo_scaled import MVRSM_mo_scaled
@@ -31,12 +33,12 @@ from GridCalEngine.Simulations.InvestmentsEvaluation.NumericalMethods.MVRSM_mo_p
 from GridCalEngine.Simulations.InvestmentsEvaluation.NumericalMethods.stop_crits import StochStopCriterion
 from GridCalEngine.Simulations.InvestmentsEvaluation.investments_evaluation_results import InvestmentsEvaluationResults
 from GridCalEngine.Simulations.InvestmentsEvaluation.investments_evaluation_options import InvestmentsEvaluationOptions
-from GridCalEngine.basic_structures import IntVec, Vec
+from GridCalEngine.Simulations.InvestmentsEvaluation.NumericalMethods.NSGA_3 import NSGA_3
 from GridCalEngine.enumerations import InvestmentEvaluationMethod
-import GridCalEngine.Simulations.InvestmentsEvaluation.NumericalMethods.NSGA_3 as nsga3
+from GridCalEngine.basic_structures import IntVec, Vec, CxVec
 
 
-def get_overload_score(loading, branches):
+def get_overload_score(loading: CxVec, branches: List[BRANCH_TYPES]) -> float:
     """
     Compute overload score by multiplying the loadings above 100% by the associated branch cost.
     :param loading: load results
@@ -55,7 +57,7 @@ def get_overload_score(loading, branches):
     return np.sum(cost)
 
 
-def get_voltage_module_score(voltage, buses):
+def get_voltage_module_score(voltage: CxVec, buses: List[Bus]) -> float:
     """
     Compute voltage module score by multiplying the voltages outside limits by the associated bus costs.
     :param voltage: voltage results
@@ -73,23 +75,7 @@ def get_voltage_module_score(voltage, buses):
     return np.sum(cost)
 
 
-# class GridNsga(ElementwiseProblem):
-#
-#     def __init__(self, obj_func, n_var, n_obj):
-#         super().__init__(n_var=n_var,
-#                          n_obj=n_obj,
-#                          n_ieq_constr=0,
-#                          xl=np.zeros(n_var),
-#                          xu=np.ones(n_var),
-#                          vtype=int,
-#                          )
-#         self.obj_func = obj_func
-#
-#     def _evaluate(self, x, out, *args, **kwargs):
-#         out["F"] = self.obj_func(x)
-
-
-def get_voltage_phase_score(voltage, buses):
+def get_voltage_phase_score(voltage: CxVec, buses: List[Bus]) -> float:
     """
     Compute voltage phase score by multiplying the phases outside limits by the associated bus costs.
     :param voltage: voltage results
@@ -441,7 +427,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         ret = self.objective_function(combination=np.zeros(self.results.n_groups, dtype=int))
 
         # optimize
-        X, obj_values = nsga3.NSGA_3(
+        X, obj_values = NSGA_3(
             obj_func=self.objective_function,
             n_partitions=n_partitions,
             n_var=self.dim,
