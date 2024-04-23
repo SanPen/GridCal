@@ -1,12 +1,32 @@
+# GridCal
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 3 of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
 from pymoo.core.problem import ElementwiseProblem
 from pymoo.util.ref_dirs import get_reference_directions
 from pymoo.optimize import minimize
 from pymoo.algorithms.moo.nsga3 import NSGA3
+from pymoo.algorithms.moo.age import AGEMOEA
+from pymoo.operators.crossover.pntx import TwoPointCrossover
+from pymoo.operators.mutation.bitflip import BitflipMutation
+from pymoo.operators.sampling.rnd import BinaryRandomSampling
 from pymoo.operators.crossover.sbx import SBX
 from pymoo.operators.mutation.pm import PM
 from pymoo.operators.repair.rounding import RoundingRepair
-from pymoo.operators.sampling.rnd import IntegerRandomSampling
+from pymoo.operators.sampling.rnd import IntegerRandomSampling, BinaryRandomSampling
 from pymoo.visualization.scatter import Scatter
 from pymoo.algorithms.moo.unsga3 import UNSGA3
 import matplotlib.pyplot as plt
@@ -72,11 +92,17 @@ def NSGA_3(obj_func,
     ref_dirs = get_reference_directions("energy", n_obj, n_partitions, seed=1)
 
     algorithm = UNSGA3(pop_size=pop_size,
-                       sampling=IntegerRandomSampling(),
+                       sampling=BinaryRandomSampling(),
                        crossover=SBX(prob=crossover_prob, eta=eta, vtype=float, repair=RoundingRepair()),
                        mutation=PM(prob=mutation_probability, eta=eta, vtype=float, repair=RoundingRepair()),
                        eliminate_duplicates=True,
                        ref_dirs=ref_dirs)
+
+    # algorithm = AGEMOEA(pop_size=pop_size,
+    #                     sampling=BinaryRandomSampling(),
+    #                     crossover=TwoPointCrossover(),
+    #                     mutation=BitflipMutation(),
+    #                     eliminate_duplicates=True)
 
     res = minimize(problem=problem,
                    algorithm=algorithm,

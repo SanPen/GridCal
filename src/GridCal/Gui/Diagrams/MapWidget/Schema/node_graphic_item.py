@@ -15,18 +15,19 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
-import numpy as np
-from typing import Union, TYPE_CHECKING
+from typing import Tuple, TYPE_CHECKING
 from PySide6 import QtWidgets
-from PySide6.QtCore import Qt, QPoint, QRectF, QRect
-from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor
-from PySide6.QtWidgets import QMenu, QGraphicsSceneMouseEvent
-import random
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QBrush, QColor
 
-from GridCalEngine.IO.matpower.matpower_branch_definitions import QT
+from GridCalEngine.Devices.Branches.line_locations import LineLocation
+from GridCal.Gui.Diagrams.MapWidget.Schema.map_template_line import MapTemplateLine
+
+if TYPE_CHECKING:  # Only imports the below statements during type checking
+    from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget
 
 
-class SubstationGraphicItem(QtWidgets.QGraphicsEllipseItem):
+class NodeGraphicItem(QtWidgets.QGraphicsRectItem):
     """
       Represents a block in the diagram
       Has an x and y and width and height
@@ -37,24 +38,40 @@ class SubstationGraphicItem(QtWidgets.QGraphicsEllipseItem):
       - description
     """
 
-    def __init__(self, parent = None, newNode = None, r: int = 20, x: int = 0, y: int = 0):
+    def __init__(self,
+                 editor: GridMapWidget,
+                 line_container: MapTemplateLine,
+                 api_object: LineLocation,
+                 lat: float,
+                 lon: float,
+                 r: float = 20.0):
         """
-        :param parent:
+
+        :param editor:
+        :param line_container:
+        :param api_object:
+        :param lat:
+        :param lon:
         :param r:
-        :param x:
-        :param y:
         """
         super().__init__()
 
+        self.lat = lat
+        self.lon = lon
+        x, y = editor.to_x_y(lat=lat, lon=lon)
         self.x = x
         self.y = y
-        self.Parent = parent
-        self.DiagramObject = newNode
+        self.radius = r
+        self.draw_labels = True
+
+        self.editor: GridMapWidget = editor
+        self.line_container: MapTemplateLine = line_container
+        self.api_object: LineLocation = api_object
+
         self.resize(r)
         self.setAcceptHoverEvents(True)  # Enable hover events for the item
-        self.setFlag(QtWidgets.QGraphicsItem.ItemIsMovable)  # Allow moving the node
-        self.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable)  # Allow selecting the node
-        parent.Scene.addItem(self)
+        self.setFlag(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsMovable)  # Allow moving the node
+        self.setFlag(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)  # Allow selecting the node
 
         # Create a pen with reduced line width
         self.change_pen_width(0.5)
@@ -67,22 +84,39 @@ class SubstationGraphicItem(QtWidgets.QGraphicsEllipseItem):
 
         # Assign color to the node
         self.setDefaultColor()
-        self.hovered = False
-        self.needsUpdate = False
 
-    def updatePosition(self):
+        self.hovered = False
+        self.needsUpdateFirst = True
+        self.needsUpdateSecond = True
+
+    def updateRealPos(self):
         real_position = self.pos()
         center_point = self.getPos()
         self.x = center_point.x() + real_position.x()
         self.y = center_point.y() + real_position.y()
-        self.needsUpdate = True
+
+    def updatePosition(self):
+        self.updateRealPos()
+        self.needsUpdateFirst = True
+        self.needsUpdateSecond = True
+        self.line_container.update_connectors()
         self.updateDiagram()
 
     def updateDiagram(self):
+        """
+
+        :return:
+        """
         real_position = self.pos()
         center_point = self.getPos()
-        self.DiagramObject.lat = (center_point.x() + real_position.x()) / self.Parent.devX
-        self.DiagramObject.long = (center_point.y() + real_position.y()) / self.Parent.devY
+
+        lat, long = self.editor.to_lat_lon(x=center_point.x() + real_position.x(),
+                                           y=center_point.y() + real_position.y())
+
+        self.editor.update_diagram_element(device=self.api_object,
+                                           latitude=lat,
+                                           longitude=long,
+                                           graphic_object=self)
 
     def mouseMoveEvent(self, event):
         """
@@ -91,28 +125,27 @@ class SubstationGraphicItem(QtWidgets.QGraphicsEllipseItem):
         super().mouseMoveEvent(event)
         if self.hovered:
             self.updatePosition()
-            self.Parent.UpdateConnectors()
 
     def mousePressEvent(self, event):
         """
         Event handler for mouse press events.
         """
         super().mousePressEvent(event)
-        self.Parent.disableMove = True
+        self.editor.disableMove = True
 
     def mouseReleaseEvent(self, event):
         """
         Event handler for mouse release events.
         """
         super().mouseReleaseEvent(event)
-        self.Parent.disableMove = True
+        self.editor.disableMove = True
 
     def hoverEnterEvent(self, event):
         """
         Event handler for when the mouse enters the item.
         """
-        self.setNodeColor(QColor(Qt.red), QColor(Qt.red))
         self.hovered = True
+        self.setNodeColor(QColor(Qt.red), QColor(Qt.red))
 
     def hoverLeaveEvent(self, event):
         """
@@ -144,16 +177,16 @@ class SubstationGraphicItem(QtWidgets.QGraphicsEllipseItem):
 
         return center_point
 
-    def getRealPos(self):
-        self.updatePosition()
-        return [self.x, self.y]
+    def getRealPos(self) -> Tuple[float, float]:
+        self.updateRealPos()
+        return self.x, self.y
 
     def resize(self, new_radius):
         """
         Resize the node.
         :param new_radius: New radius for the node.
         """
-        self.Radius = new_radius
+        self.radius = new_radius
         self.setRect(self.x - new_radius, self.y - new_radius, new_radius * 2, new_radius * 2)
 
     def change_pen_width(self, width):
