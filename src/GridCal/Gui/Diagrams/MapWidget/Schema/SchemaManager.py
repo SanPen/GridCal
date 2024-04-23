@@ -27,8 +27,10 @@ class schemaManager:
             for conector in line.ConnectorList:
                 conector.update()
 
-    def CreateSubstation(self, objectSubs, lat, long):
-        node = SubstationGraphicItem(self, objectSubs, 0.5, lat * self.devX, long * self.devY)
+    def CreateSubstation(self, diagramEditor=None, diagramObject=None, lat=0.0, long=0.0):
+        posX = long * self.devX
+        posY = -lat * self.devY
+        node = SubstationGraphicItem(self, diagramEditor, diagramObject, 0.5, posX, posY)
         self.Substations.append(node)
 
     def CreateDummySchema(self):

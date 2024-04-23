@@ -25,6 +25,8 @@ import random
 
 from GridCalEngine.IO.matpower.matpower_branch_definitions import QT
 
+if TYPE_CHECKING:  # Only imports the below statements during type checking
+    from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget
 
 class NodeGraphicItem(QtWidgets.QGraphicsRectItem):
     """
@@ -37,7 +39,7 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem):
       - description
     """
 
-    def __init__(self, parent=None, newNode=None, r: int = 20, x: int = 0, y: int = 0):
+    def __init__(self, parent=None , diagramEditor:GridMapWidget = None, diagramObject = None, diagramSubObject = None, r: int = 20, x: int = 0, y: int = 0):
         """
         :param parent:
         :param r:
@@ -49,11 +51,14 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem):
         self.x = x
         self.y = y
         self.Parent = parent
-        self.DiagramObject = newNode
+        self.draw_labels = True
+        self.DiagramEditor = diagramEditor
+        self.DiagramObject = diagramObject
+        self.DiagramSubObject = diagramSubObject
         self.resize(r)
         self.setAcceptHoverEvents(True)  # Enable hover events for the item
-        self.setFlag(QtWidgets.QGraphicsItem.ItemIsMovable)  # Allow moving the node
-        self.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable)  # Allow selecting the node
+        self.setFlag(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsMovable)  # Allow moving the node
+        self.setFlag(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)  # Allow selecting the node
         parent.Scene.addItem(self)
 
         # Create a pen with reduced line width
@@ -88,8 +93,16 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem):
     def updateDiagram(self):
         real_position = self.pos()
         center_point = self.getPos()
-        self.DiagramObject.lat = (center_point.x() + real_position.x()) / self.Parent.devX
-        self.DiagramObject.long = (center_point.y() + real_position.y()) / self.Parent.devY
+        lat = (center_point.x() + real_position.x()) / self.Parent.devX
+        long = (center_point.y() + real_position.y()) / self.Parent.devY
+        self.DiagramEditor.update_diagram_element(device=self.DiagramObject,
+                                           lat=lat,
+                                           log=long,
+                                           w=self.w,
+                                           h=self.h,
+                                           r=self.rotation(),
+                                           draw_labels=self.draw_labels,
+                                           graphic_object=self)
 
     def mouseMoveEvent(self, event):
         """
