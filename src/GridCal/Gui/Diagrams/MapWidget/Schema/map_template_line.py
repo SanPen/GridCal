@@ -22,7 +22,7 @@ from PySide6.QtCore import Qt, QPoint, QRectF, QRect
 from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor, QPainterPath
 from PySide6.QtWidgets import QGraphicsScene, QGraphicsLineItem, QGraphicsPathItem
 
-from GridCal.Gui.Diagrams.MapWidget.Schema.Connector import Connector
+from GridCal.Gui.Diagrams.MapWidget.Schema.segment import Segment
 from GridCalEngine.Devices.types import BRANCH_TYPES
 
 if TYPE_CHECKING:
@@ -60,7 +60,7 @@ class MapTemplateLine:
         """
         self.nodes_list.append(node)
 
-    def add_segment(self, segment: Connector):
+    def add_segment(self, segment: Segment):
         """
         Add segment
         :param segment: Connector

@@ -24,7 +24,7 @@ if TYPE_CHECKING:
     from GridCal.Gui.Diagrams.MapWidget.Schema.node_graphic_item import NodeGraphicItem
 
 
-class Connector(QGraphicsLineItem):
+class Segment(QGraphicsLineItem):
     """
     Segment joining two NodeGraphicItem
     """

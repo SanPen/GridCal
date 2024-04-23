@@ -15,11 +15,10 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
-import numpy as np
-from typing import Union, TYPE_CHECKING
+from typing import TYPE_CHECKING
 from PySide6 import QtWidgets
-from PySide6.QtCore import Qt, QPoint, QRectF, QRect
-from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QBrush, QColor
 from GridCalEngine.Devices.Substation.voltage_level import VoltageLevel
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
@@ -54,6 +53,7 @@ class VoltageLevelGraphicItem(QtWidgets.QGraphicsEllipseItem):
         :param r:
         """
         super().__init__(parent=parent)
+        parent.register_voltage_level(vl=self)
 
         self.lat = lat
         self.lon = lon

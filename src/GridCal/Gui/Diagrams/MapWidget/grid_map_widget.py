@@ -38,7 +38,7 @@ from GridCalEngine.Devices.Branches.line_locations import LineLocation
 
 from GridCal.Gui.Diagrams.MapWidget.Schema.map_template_line import MapTemplateLine
 from GridCal.Gui.Diagrams.MapWidget.Schema.node_graphic_item import NodeGraphicItem
-from GridCal.Gui.Diagrams.MapWidget.Schema.Connector import Connector
+from GridCal.Gui.Diagrams.MapWidget.Schema.segment import Segment
 from GridCal.Gui.Diagrams.MapWidget.Schema.substation_graphic_item import SubstationGraphicItem
 from GridCal.Gui.Diagrams.MapWidget.Schema.voltage_level_graphic_item import VoltageLevelGraphicItem
 from GridCal.Gui.Diagrams.MapWidget.map_widget import MapWidget, PolylineData, Place
@@ -257,8 +257,8 @@ class GridMapWidget(MapWidget):
                 i1 = nodSiz - 1
                 i2 = nodSiz - 2
                 # Assuming Connector takes (scene, node1, node2) as arguments
-                segment_graphic_object = Connector(first=line_container.nodes_list[i1],
-                                                   second=line_container.nodes_list[i2])
+                segment_graphic_object = Segment(first=line_container.nodes_list[i1],
+                                                 second=line_container.nodes_list[i2])
 
                 # register the segment in the line
                 line_container.add_segment(segment=segment_graphic_object)
@@ -379,6 +379,11 @@ class GridMapWidget(MapWidget):
 
             elif category == DeviceType.FluidPathDevice.value:
                 pass  # TODO: implementar
+
+        # sort voltage levels at the substations
+        dev_dict = self.graphics_manager.get_device_type_dict(device_type=DeviceType.SubstationDevice)
+        for idtag, graphic_object in dev_dict.items():
+            graphic_object.sort_voltage_levels()
 
     def change_size_and_pen_width_all(self, new_radius, pen_width):
         """
