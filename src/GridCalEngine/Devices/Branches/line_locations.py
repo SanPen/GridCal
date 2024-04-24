@@ -97,17 +97,18 @@ class LineLocations(EditableDevice):
         """
         return self.data
 
-    def add(self, sequence: int, latitude: float, longitude: float, altitude: float = 0.0):
+    def add(self, sequence: int, latitude: float, longitude: float, altitude: float = 0.0, idtag: str = ""):
         """
         Append row to this object (very slow)
         :param sequence: Sequence of the point
         :param latitude: Latitude (deg)
         :param longitude: Longitude (deg)
         :param altitude: Altitude (m)
+        :param idtag: Known idtag
         """
-        self.data.append(LineLocation(lat=latitude, lon=longitude, z=altitude, seq=sequence))
+        self.data.append(LineLocation(lat=latitude, lon=longitude, z=altitude, seq=sequence, idtag=idtag))
 
-    def parse(self, data: List[Tuple[int, float, float, float]]):
+    def parse(self, data: List[Union[Tuple[int, float, float, float], Tuple[int, float, float, float, str]]]):
         """
         Parse Json data
         :param data: List of lists with (latitude, longitude, altitude)
@@ -127,26 +128,37 @@ class LineLocations(EditableDevice):
             if data.shape[1] == 4:
                 self.data.clear()
                 for sequence, latitude, longitude, altitude in data:
-                    self.data.append(LineLocation(lat=latitude, lon=longitude, z=altitude, seq=sequence))
+                    self.data.append(LineLocation(lat=float(latitude),
+                                                  lon=float(longitude),
+                                                  z=float(altitude),
+                                                  seq=int(float(sequence))))
+            elif data.shape[1] == 5:
+                self.data.clear()
+                for sequence, latitude, longitude, altitude, idtag in data:
+                    self.data.append(LineLocation(lat=float(latitude),
+                                                  lon=float(longitude),
+                                                  z=float(altitude),
+                                                  seq=int(float(sequence)),
+                                                  idtag=str(idtag)))
             else:
                 raise ValueError('Locations data does not have exactly 3 columns')
         else:
             raise ValueError('Location data must be 2-dimensional: (n_points, 3)')
 
-    def to_list(self) -> List[Tuple[int, float, float, float]]:
+    def to_list(self) -> List[Tuple[int, float, float, float, str]]:
         """
         Convert data to list of lists for Json usage
         :return: List[Tuple[int, float, float, float]] -> [(sequence, latitude, longitude, altitude)]
         """
 
-        return [(loc.seq, loc.lat, loc.long, loc.alt) for loc in self.data]
+        return [(loc.seq, loc.lat, loc.long, loc.alt, loc.idtag) for loc in self.data]
 
     def to_df(self) -> pd.DataFrame:
         """
         Convert data to DataFrame
         :return: DataFrame
         """
-        return pd.DataFrame(data=self.to_list(), columns=["sequence", "latitude", "longitude", "altitude"])
+        return pd.DataFrame(data=self.to_list(), columns=["sequence", "latitude", "longitude", "altitude", "idtag"])
 
     def __eq__(self, other: "LineLocations") -> bool:
         """
