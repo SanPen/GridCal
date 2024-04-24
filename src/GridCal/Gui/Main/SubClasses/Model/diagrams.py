@@ -951,8 +951,9 @@ class DiagramsMain(CompiledArraysMain):
                 self.diagram_widgets_list.append(diagram_widget)
 
             elif isinstance(diagram, dev.MapDiagram):
-                # select the tile source
-                tile_source = self.tile_sources[self.ui.tile_provider_comboBox.currentText()]
+                # select the tile source from the diagram, if not fund pick the one from the GUI
+                defualt_tile_source = self.tile_sources[self.ui.tile_provider_comboBox.currentText()]
+                tile_source = self.tile_sources.get(diagram.tile_source, defualt_tile_source)
 
                 # create the map widget
                 map_widget = GridMapWidget(parent=None,
@@ -989,13 +990,19 @@ class DiagramsMain(CompiledArraysMain):
                                        text_func=None,
                                        name='Map diagram')
 
+        # set other default properties of the diagram
+        diagram.tile_source = self.ui.tile_provider_comboBox.currentText()
+        diagram.start_level = 5
+        diagram.longitude = -15.41
+        diagram.latitude = 40.11
+
         # create the map widget
         map_widget = GridMapWidget(parent=None,
                                    tile_src=tile_source,
-                                   start_level=5,
-                                   longitude=-15.41,
-                                   latitude=40.11,
-                                   name='Map diagram',
+                                   start_level=diagram.start_level,
+                                   longitude=diagram.longitude,
+                                   latitude=diagram.latitude,
+                                   name=diagram.name,
                                    diagram=diagram)
 
         self.add_diagram_widget_and_diagram(diagram_widget=map_widget, diagram=diagram)

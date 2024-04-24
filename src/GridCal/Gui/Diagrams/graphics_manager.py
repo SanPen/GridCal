@@ -34,6 +34,10 @@ from GridCal.Gui.Diagrams.DiagramEditorWidget.Branches.series_reactance_graphics
 from GridCal.Gui.Diagrams.DiagramEditorWidget.Branches.line_graphics_template import LineGraphicTemplateItem
 from GridCal.Gui.Diagrams.DiagramEditorWidget.Branches.transformer3w_graphics import Transformer3WGraphicItem
 from GridCal.Gui.Diagrams.DiagramEditorWidget.Injections.generator_graphics import GeneratorGraphicItem
+from GridCal.Gui.Diagrams.MapWidget.Schema.map_template_line import MapTemplateLine
+from GridCal.Gui.Diagrams.MapWidget.Schema.voltage_level_graphic_item import VoltageLevelGraphicItem
+from GridCal.Gui.Diagrams.MapWidget.Schema.node_graphic_item import NodeGraphicItem
+from GridCal.Gui.Diagrams.MapWidget.Schema.substation_graphic_item import SubstationGraphicItem
 
 
 ALL_BUS_BRACH_GRAPHICS = Union[
@@ -53,6 +57,15 @@ ALL_BUS_BRACH_GRAPHICS = Union[
     GeneratorGraphicItem
 ]
 
+ALL_MAP_GRAPHICS = Union[
+    MapTemplateLine,
+    VoltageLevelGraphicItem,
+    NodeGraphicItem,
+    SubstationGraphicItem
+]
+
+ALL_GRAPHICS = Union[ALL_BUS_BRACH_GRAPHICS, ALL_MAP_GRAPHICS]
+
 
 class GraphicsManager:
     """
@@ -63,7 +76,7 @@ class GraphicsManager:
         # this is a dictionary that groups by 2 levels:
         # first by DeviceType
         # second idtag -> GraphicItem
-        self.graphic_dict: Dict[DeviceType, Dict[str, ALL_BUS_BRACH_GRAPHICS]] = dict()
+        self.graphic_dict: Dict[DeviceType, Dict[str, ALL_GRAPHICS]] = dict()
 
     def clear(self):
         """
@@ -71,7 +84,7 @@ class GraphicsManager:
         """
         self.graphic_dict.clear()
 
-    def add_device(self, elm: ALL_DEV_TYPES, graphic: ALL_BUS_BRACH_GRAPHICS) -> None:
+    def add_device(self, elm: ALL_DEV_TYPES, graphic: ALL_GRAPHICS) -> None:
         """
         Add the graphic of a device
         :param elm: Any database device
@@ -79,7 +92,7 @@ class GraphicsManager:
         """
         if graphic is not None:  # it makes no sense to add a None graphic
 
-            elm_dict: Dict[str, ALL_BUS_BRACH_GRAPHICS] = self.graphic_dict.get(elm.device_type, None)
+            elm_dict: Dict[str, ALL_GRAPHICS] = self.graphic_dict.get(elm.device_type, None)
 
             if elm_dict is None:
                 self.graphic_dict[elm.device_type] = {elm.idtag: graphic}
@@ -94,7 +107,7 @@ class GraphicsManager:
         else:
             raise ValueError(f"Trying to set a None graphic object for {elm}")
 
-    def delete_device(self, device: ALL_DEV_TYPES) -> Union[ALL_BUS_BRACH_GRAPHICS, None]:
+    def delete_device(self, device: ALL_DEV_TYPES) -> Union[ALL_GRAPHICS, None]:
         """
         Delete device from the registry and return the object if it exists
         :param device: Any database device
@@ -118,36 +131,36 @@ class GraphicsManager:
         else:
             return None
 
-    def query(self, elm: ALL_DEV_TYPES) -> Union[None, ALL_BUS_BRACH_GRAPHICS]:
+    def query(self, elm: ALL_DEV_TYPES) -> Union[None, ALL_GRAPHICS]:
         """
         Query the graphic of a database element
         :param elm: Any database element
         :return: Corresponding graphic
         """
-        elm_dict: Dict[str, ALL_BUS_BRACH_GRAPHICS] = self.graphic_dict.get(elm.device_type, None)
+        elm_dict: Dict[str, ALL_GRAPHICS] = self.graphic_dict.get(elm.device_type, None)
 
         if elm_dict is None:
             return None
         else:
             return elm_dict.get(elm.idtag, None)
 
-    def get_device_type_list(self, device_type: DeviceType) -> List[ALL_BUS_BRACH_GRAPHICS]:
+    def get_device_type_list(self, device_type: DeviceType) -> List[ALL_GRAPHICS]:
         """
         Get the list of graphics of a device type
         :param device_type: DeviceType
-        :return: List[ALL_BUS_BRACH_GRAPHICS]
+        :return: List[ALL_GRAPHICS]
         """
-        elm_dict: Dict[str, ALL_BUS_BRACH_GRAPHICS] = self.graphic_dict.get(device_type, None)
+        elm_dict: Dict[str, ALL_GRAPHICS] = self.graphic_dict.get(device_type, None)
 
         if elm_dict is None:
             return list()
         else:
             return [graphic for idtag, graphic in elm_dict.items()]
 
-    def get_device_type_dict(self, device_type: DeviceType) -> Dict[str, ALL_BUS_BRACH_GRAPHICS]:
+    def get_device_type_dict(self, device_type: DeviceType) -> Dict[str, ALL_GRAPHICS]:
         """
         Get the list of graphics of a device type
         :param device_type: DeviceType
-        :return: Dict[str, ALL_BUS_BRACH_GRAPHICS]
+        :return: Dict[str, ALL_GRAPHICS]
         """
         return self.graphic_dict.get(device_type, dict())
