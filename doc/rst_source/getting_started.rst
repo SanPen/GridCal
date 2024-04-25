@@ -559,8 +559,8 @@ Linear optimization
 Run a linear optimization and verify with power flow
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Often ties, you want to dispatch the generation using a linear
-optimization, to then *veryfy* the results using the power exact power
+Often times, you want to dispatch the generation using a linear
+optimization, to then *verify* the results using the power exact power
 flow. With GridCal, to do so is as easy as passing the results of the
 OPF into the PowerFlowDriver:
 
