@@ -26,7 +26,7 @@ import GridCal.Session.file_handler as filedrv
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCal.Gui.CoordinatesInput.coordinates_dialogue import CoordinatesInputGUI
 from GridCal.Gui.GeneralDialogues import LogsDialogue, CustomQuestionDialogue
-from GridCal.Gui.Diagrams.DiagramEditorWidget.diagram_editor_widget import DiagramEditorWidget
+from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
 from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_msg
 from GridCal.Gui.GridGenerator.grid_generator_dialogue import GridGeneratorGUI
 from GridCal.Gui.RosetaExplorer.RosetaExplorer import RosetaExplorerGUI
@@ -379,7 +379,7 @@ class IoMain(ConfigurationMain):
             # center nodes
             diagram = self.get_selected_diagram_widget()
             if diagram is not None:
-                if isinstance(diagram, DiagramEditorWidget):
+                if isinstance(diagram, SchematicWidget):
                     diagram.center_nodes()
 
         self.collect_memory()
@@ -431,7 +431,7 @@ class IoMain(ConfigurationMain):
 
                     # add to schematic
                     if diagram_widget is not None:
-                        if isinstance(diagram_widget, DiagramEditorWidget):
+                        if isinstance(diagram_widget, SchematicWidget):
                             injections_by_bus = self.circuit.get_injection_devices_grouped_by_bus()
                             injections_by_fluid_node = self.circuit.get_injection_devices_grouped_by_fluid_node()
                             diagram_widget.add_elements_to_schematic(buses=new_circuit.buses,
@@ -636,7 +636,7 @@ class IoMain(ConfigurationMain):
             # set circuit name
             diagram = self.get_selected_diagram_widget()
             if diagram is not None:
-                if isinstance(diagram, DiagramEditorWidget):
+                if isinstance(diagram, SchematicWidget):
                     diagram.name.setText(f"Random grid {self.circuit.get_bus_number()} buses")
 
             # set base magnitudes

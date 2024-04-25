@@ -33,7 +33,7 @@ from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_m
 from GridCal.Gui.Main.SubClasses.Model.diagrams import DiagramsMain
 from GridCal.Gui.TowerBuilder.LineBuilderDialogue import TowerBuilderGUI
 from GridCal.Gui.GeneralDialogues import LogsDialogue
-from GridCal.Gui.Diagrams.DiagramEditorWidget.diagram_editor_widget import DiagramEditorWidget
+from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
 from GridCal.Gui.SystemScaler.system_scaler import SystemScaler
 
 
@@ -470,7 +470,7 @@ class ObjectsTableMain(DiagramsMain):
 
             diagram = self.get_selected_diagram_widget()
 
-            if isinstance(diagram, DiagramEditorWidget):
+            if isinstance(diagram, SchematicWidget):
                 injections_by_bus = self.circuit.get_injection_devices_grouped_by_bus()
                 injections_by_fluid_node = self.circuit.get_injection_devices_grouped_by_fluid_node()
                 logger = bs.Logger()

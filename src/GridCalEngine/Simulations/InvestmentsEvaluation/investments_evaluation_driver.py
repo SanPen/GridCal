@@ -21,7 +21,6 @@ import functools
 from typing import List, Dict, Union
 from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
-from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Devices.Aggregation.investment import Investment
 from GridCalEngine.Devices.Substation.bus import Bus
@@ -34,7 +33,7 @@ from GridCalEngine.Simulations.InvestmentsEvaluation.NumericalMethods.stop_crits
 from GridCalEngine.Simulations.InvestmentsEvaluation.investments_evaluation_results import InvestmentsEvaluationResults
 from GridCalEngine.Simulations.InvestmentsEvaluation.investments_evaluation_options import InvestmentsEvaluationOptions
 from GridCalEngine.Simulations.InvestmentsEvaluation.NumericalMethods.NSGA_3 import NSGA_3
-from GridCalEngine.enumerations import InvestmentEvaluationMethod
+from GridCalEngine.enumerations import InvestmentEvaluationMethod, SimulationTypes
 from GridCalEngine.basic_structures import IntVec, Vec, CxVec
 
 
